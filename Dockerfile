@@ -2,7 +2,6 @@ FROM node:18-slim AS production
 WORKDIR /srv/app
 COPY package*.json .
 RUN npm install
-COPY .svelte-kit ./.svelte-kit
 COPY svelte.config.js .
 COPY tsconfig.json .
 COPY vite.config.ts .
