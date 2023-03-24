@@ -20,4 +20,4 @@ services:
       timeout: 3s
       retries: 3
     volumes:
-      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./docker/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
