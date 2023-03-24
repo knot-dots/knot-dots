@@ -21,3 +21,15 @@ services:
       retries: 3
     volumes:
       - ./docker/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.0.1
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - ./docker/keycloak/import:/opt/keycloak/data/import
