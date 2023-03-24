@@ -1,6 +1,6 @@
 FROM node:18-slim AS production
 WORKDIR /srv/app
-COPY package*.json .
+COPY package*.json ./
 RUN npm install
 COPY svelte.config.js .
 COPY tsconfig.json .
