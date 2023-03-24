@@ -15,4 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag knot-dots/strategytool:$(date +%s) --target production
+        run: docker build . --file docker/app/Dockerfile --tag knot-dots/strategytool:$(date +%s) --target production
