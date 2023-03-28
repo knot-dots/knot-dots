@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Build the Docker image
-        run: docker build . --file docker/app/Dockerfile --tag knot-dots/strategytool:$(date +%s) --target production
+      - uses: docker/build-push-action@v4
+        with:
+          file: docker/app/Dockerfile
+          push: false
+          tags: knot-dots/strategytool:${{ github.sha }}
