@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+
+env:
+  REGISTRY: rg.fr-par.scw.cloud/knot-dots
+
 jobs:
 
   build:
@@ -15,15 +19,15 @@ jobs:
     steps:
       - uses: docker/login-action@v2
         with:
-          registry: rg.fr-par.scw.cloud/knot-dots
+          registry: ${{ env.REGISTRY }}
           username: nologin
           password: ${{ secrets.SCW_SECRET_KEY }}
       - uses: docker/build-push-action@v4
         with:
-          cache-from: type=registry,ref=rg.fr-par.scw.cloud/knot-dots/strategytool:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/strategytool:latest
           cache-to: type=inline
           file: docker/app/Dockerfile
           push: true
           tags: |
-            rg.fr-par.scw.cloud/knot-dots/strategytool:${{ github.sha }}
-            rg.fr-par.scw.cloud/knot-dots/strategytool:latest
+            ${{ env.REGISTRY }}/strategytool:${{ github.sha }}
+            ${{ env.REGISTRY }}/strategytool:latest
