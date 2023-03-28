@@ -20,6 +20,10 @@ jobs:
           password: ${{ secrets.SCW_SECRET_KEY }}
       - uses: docker/build-push-action@v4
         with:
+          cache-from: type=registry,ref=rg.fr-par.scw.cloud/knot-dots/strategytool:latest
+          cache-to: type=inline
           file: docker/app/Dockerfile
           push: true
-          tags: rg.fr-par.scw.cloud/knot-dots/strategytool:${{ github.sha }}
+          tags: |
+            rg.fr-par.scw.cloud/knot-dots/strategytool:${{ github.sha }}
+            rg.fr-par.scw.cloud/knot-dots/strategytool:latest
