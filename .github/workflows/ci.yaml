@@ -13,8 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: docker/login-action@v2
+        with:
+          registry: rg.fr-par.scw.cloud/knot-dots
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
       - uses: docker/build-push-action@v4
         with:
           file: docker/app/Dockerfile
-          push: false
-          tags: knot-dots/strategytool:${{ github.sha }}
+          push: true
+          tags: rg.fr-par.scw.cloud/knot-dots/strategytool:${{ github.sha }}
