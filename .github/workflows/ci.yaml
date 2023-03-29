@@ -27,6 +27,7 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/strategytool:latest
           cache-to: type=inline
           file: docker/app/Dockerfile
+          target: production
           push: true
           tags: |
             ${{ env.REGISTRY }}/strategytool:${{ github.sha }}
