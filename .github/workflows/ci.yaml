@@ -1,11 +1,10 @@
-name: Docker Image CI
+name: CI
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
 
 env:
   REGISTRY: rg.fr-par.scw.cloud/knot-dots
