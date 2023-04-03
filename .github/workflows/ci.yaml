@@ -27,7 +27,7 @@ jobs:
           cache-to: type=inline
           file: docker/app/Dockerfile
           target: production
-          push: true
+          push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.REGISTRY }}/strategytool:${{ github.sha }}
             ${{ env.REGISTRY }}/strategytool:latest
