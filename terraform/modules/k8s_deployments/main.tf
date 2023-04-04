@@ -83,6 +83,11 @@ resource "kubernetes_ingress_v1" "strategytool" {
   metadata {
     name      = local.ingress_name
     namespace = "default"
+
+    annotations = {
+      "cert-manager.io/cluster-issuer"                   = local.cluster_issuer_name
+      "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
+    }
   }
 
   spec {
@@ -102,6 +107,11 @@ resource "kubernetes_ingress_v1" "strategytool" {
           path_type = "Prefix"
         }
       }
+    }
+
+    tls {
+      hosts       = [var.strategytool_host]
+      secret_name = "strategytool-cert"
     }
   }
 }
