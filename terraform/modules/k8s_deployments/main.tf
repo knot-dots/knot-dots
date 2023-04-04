@@ -3,11 +3,19 @@ terraform {
     helm = {
       source = "hashicorp/helm"
     }
+    kubectl = {
+      source = "gavinbunney/kubectl"
+    }
     kubernetes = {
       source = "hashicorp/kubernetes"
     }
   }
   required_version = ">= 0.13"
+}
+
+locals {
+  cluster_issuer_name = "letsencrypt"
+  ingress_name        = "strategytool"
 }
 
 resource "helm_release" "traefik_ingress" {
@@ -45,9 +53,35 @@ resource "helm_release" "cert_manager" {
   }
 }
 
+resource "kubectl_manifest" "cluster_issuer" {
+  yaml_body = <<YAML
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: ${local.cluster_issuer_name}
+spec:
+  acme:
+    # You must replace this email address with your own.
+    # Let's Encrypt will use this to contact you about expiring
+    # certificates, and issues related to your account.
+    email: daniel@knotdots.de
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      # Secret resource used to store the account's private key.
+      name: issuer-account-key
+    # Add a single challenge solver, HTTP01
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+YAML
+
+  depends_on = [helm_release.cert_manager]
+}
+
 resource "kubernetes_ingress_v1" "strategytool" {
   metadata {
-    name      = "strategytool"
+    name      = local.ingress_name
     namespace = "default"
   }
 

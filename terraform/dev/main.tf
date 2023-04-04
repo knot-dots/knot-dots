@@ -10,6 +10,11 @@ terraform {
       version = "~> 2.0"
     }
 
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.0"
+    }
+
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
@@ -42,6 +47,15 @@ provider "helm" {
       module.k8s_cluster.kubeconfig.cluster_ca_certificate
     )
   }
+}
+
+provider "kubectl" {
+  load_config_file = false
+  host             = module.k8s_cluster.kubeconfig.host
+  token            = module.k8s_cluster.kubeconfig.token
+  cluster_ca_certificate = base64decode(
+    module.k8s_cluster.kubeconfig.cluster_ca_certificate
+  )
 }
 
 provider "kubernetes" {
