@@ -27,3 +27,7 @@ variable "registry_server" {
 variable "registry_username" {
   type = string
 }
+
+variable "with_scaleway_lb" {
+  type = bool
+}

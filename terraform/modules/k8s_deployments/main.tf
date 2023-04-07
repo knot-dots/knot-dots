@@ -35,12 +35,29 @@ resource "helm_release" "traefik_ingress" {
   }
 
   set {
+    name  = "ports.web.hostPort"
+    value = 80
+  }
+
+  set {
+    name  = "ports.websecure.hostPort"
+    value = 443
+  }
+
+  set {
     name  = "ports.websecure.http.tls"
     value = true
+  }
+
+  set {
+    name  = "service.type"
+    value = var.with_scaleway_lb ? "LoadBalancer" : "ClusterIP"
   }
 }
 
 resource "helm_release" "cert_manager" {
+  count = var.with_scaleway_lb ? 1 : 0
+
   name             = "cert-manager"
   namespace        = "cert-manager"
   create_namespace = true
@@ -54,6 +71,8 @@ resource "helm_release" "cert_manager" {
 }
 
 resource "kubectl_manifest" "cluster_issuer" {
+  count = var.with_scaleway_lb ? 1 : 0
+
   yaml_body = <<YAML
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -85,8 +104,8 @@ resource "kubernetes_ingress_v1" "strategytool" {
     namespace = "default"
 
     annotations = {
-      "cert-manager.io/cluster-issuer"                   = local.cluster_issuer_name
-      "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
+      "cert-manager.io/cluster-issuer"                   = var.with_scaleway_lb ? local.cluster_issuer_name : null
+      "traefik.ingress.kubernetes.io/router.entrypoints" = var.with_scaleway_lb ? "websecure" : "web"
     }
   }
 

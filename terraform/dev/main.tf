@@ -81,12 +81,16 @@ resource "scaleway_iam_api_key" "registry_password" {
 }
 
 resource "scaleway_domain_zone" "dev" {
+  count = var.with_scaleway_lb ? 1 : 0
+
   domain    = "dotstory.de"
   subdomain = "dev"
 }
 
 resource "scaleway_domain_record" "strategytool" {
-  dns_zone = scaleway_domain_zone.dev.id
+  count = var.with_scaleway_lb ? 1 : 0
+
+  dns_zone = scaleway_domain_zone.dev[count.index].id
   name     = "strategytool"
   type     = "A"
   //noinspection HILUnresolvedReference
@@ -98,6 +102,7 @@ module "k8s_cluster" {
   source = "../modules/k8s_cluster"
 
   cluster_name     = "k8s-dev"
+  with_scaleway_lb = var.with_scaleway_lb
 }
 
 module "k8s_deployments" {
@@ -106,6 +111,7 @@ module "k8s_deployments" {
   registry_password  = scaleway_iam_api_key.registry_password.secret_key
   registry_server    = "rg.fr-par.scw.cloud"
   registry_username  = "knot-dots"
-  strategytool_host  = "strategytool.dev.dotstory.de"
+  strategytool_host  = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
   strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:51a2a40fbd705de5ee5d3d0fce39a6f055e51a16"
+  with_scaleway_lb   = var.with_scaleway_lb
 }

@@ -5,3 +5,7 @@ output "kubeconfig" {
     token                  = null_resource.kubeconfig.triggers.token
   }
 }
+
+output "wildcard_dns" {
+  value = scaleway_k8s_cluster.this.wildcard_dns
+}

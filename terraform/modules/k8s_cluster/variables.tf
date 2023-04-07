@@ -20,3 +20,7 @@ variable "pool_size" {
   description = "The number of target nodes in the pool."
   type        = number
 }
+
+variable "with_scaleway_lb" {
+  type = bool
+}
