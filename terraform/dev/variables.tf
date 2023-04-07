@@ -9,6 +9,6 @@ variable "scaleway_project_id" {
 }
 
 variable "with_scaleway_lb" {
-  default = true
+  default = false
   type    = bool
 }
