@@ -1,22 +1,8 @@
-# create-svelte
+# StrategyTool [![CI](https://github.com/knot-dots/strategytool/actions/workflows/ci.yaml/badge.svg)](https://github.com/knot-dots/strategytool/actions/workflows/ci.yaml) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+## Getting started
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Install dependencies with `npm install` and start a development server:
 
 ```bash
 npm run dev
@@ -25,14 +11,20 @@ npm run dev
 npm run dev -- --open
 ```
 
-## Building
+## Deployment
 
-To create a production version of your app:
+The infrastructure is hosted by [Scaleway](https://www.scaleway.com) and managed with [Terraform](https://wwww.terraform.io).
+Follow the instructions for [authenticating the Scaleway provider](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs#authentication) and add a section to your `~/.aws/credentials` file using the same credentials:
 
-```bash
-npm run build
+```
+[strategytool]
+aws_access_key_id = <SCW_ACCESS_KEY>
+aws_secret_access_key = <SCW_SECRET_KEY>
 ```
 
-You can preview the production build with `npm run preview`.
+Now you are ready to modify the infrastructure and deployments with Terraform:
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+```bash
+cd terraform/dev
+terraform plan
+```
