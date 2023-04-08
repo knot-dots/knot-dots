@@ -33,5 +33,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      - PUBLIC_KC_CLIENT_ID
+      - PUBLIC_KC_REALM
+      - PUBLIC_KC_URL
     volumes:
       - ./src:/srv/app/src
