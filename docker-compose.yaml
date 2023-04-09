@@ -2,8 +2,8 @@ services:
   db:
     image: postgres:14
     environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U dev" ]
       interval: 3s
@@ -34,6 +34,10 @@ services:
       db:
         condition: service_healthy
     environment:
+      - PGDATABASE
+      - PGHOST
+      - PGUSER
+      - PGPASSWORD
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL

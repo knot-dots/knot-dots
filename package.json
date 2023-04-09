@@ -37,6 +37,8 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"keycloak-js": "^21.1.0-1"
+		"keycloak-js": "^21.1.0-1",
+		"slonik": "^33.1.4",
+		"zod": "^3.21.4"
 	}
 }
