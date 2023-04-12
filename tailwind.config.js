@@ -10,10 +10,10 @@ const config = {
 		extend: {
 			// see default breakpoints at https://tailwindcss.com/docs/screens
 			screens: {
-				xs: '360px',
-				s: '768px',
-				m: '1440px',
-				l: '1920px'
+				sm: '360px',
+				md: '768px',
+				lg: '1440px',
+				xl: '1920px'
 			}
 		}
 	},
