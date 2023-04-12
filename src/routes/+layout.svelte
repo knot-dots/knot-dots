@@ -22,12 +22,13 @@
 			<img src={logo} class="mr-3 h-6 s:h-9" alt="Knot Dots logo" />
 		</NavBrand>
 		<NavHamburger on:click={toggle} />
-		<ButtonGroup>
-			<Button>Strategies</Button>
-			<Button>Objectives</Button>
-			<Button>Measures</Button>
-		</ButtonGroup>
-
+		<div class="{hidden ? "hidden s:block" : "block"}">
+			<ButtonGroup>
+				<Button>Strategies</Button>
+				<Button>Objectives</Button>
+				<Button>Measures</Button>
+			</ButtonGroup>
+		</div>
 		<NavUl {hidden}>
 			<!-- <NavLi href="/" active={true}>Home</NavLi> -->
 			<NavLi href="/about"><Button color="alternative" size="sm">Log in</Button></NavLi>
