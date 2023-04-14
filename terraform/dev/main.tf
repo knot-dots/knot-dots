@@ -112,6 +112,6 @@ module "k8s_deployments" {
   registry_server    = "rg.fr-par.scw.cloud"
   registry_username  = "knot-dots"
   strategytool_host  = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
-  strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:51a2a40fbd705de5ee5d3d0fce39a6f055e51a16"
+  strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:854fd040c9e3b1edb7aedf01aefa20e5fc8f0688"
   with_scaleway_lb   = var.with_scaleway_lb
 }
