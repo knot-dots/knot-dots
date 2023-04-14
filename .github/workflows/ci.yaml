@@ -3,8 +3,10 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    paths-ignore: [ "terraform/**" ]
   pull_request:
     branches: [ "main" ]
+    paths-ignore: [ "terraform/**" ]
 
 env:
   REGISTRY: rg.fr-par.scw.cloud/knot-dots

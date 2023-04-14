@@ -1,3 +1,4 @@
+.terraform
 /.svelte-kit
 /build
 docker-compose.override.yaml
