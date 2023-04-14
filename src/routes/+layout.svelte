@@ -31,7 +31,7 @@
 </script>
 
 <Navbar
-	navClass="px-2 md:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
+	navClass="px-2 md:px-4 py-2.5 md:py-0 absolute w-full z-20 top-0 left-0 border-b"
 	fluid={true}
 	let:hidden
 	let:toggle
@@ -55,7 +55,7 @@
 		<NavLi href="/services"><Button size="sm">Register</Button></NavLi>
 	</NavUl>
 </Navbar>
-<div class="flex mt-[56px] md:mt-[88px] ">
+<div class="flex mt-[56px] md:mt-[68px] ">
 	<Sidebar asideClass="{sidebarExpanded ? 'w-60' : 'w-[68px]'} flex-none">
 		<SidebarWrapper>
 			<SidebarGroup>
