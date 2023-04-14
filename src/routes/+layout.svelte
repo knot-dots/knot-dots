@@ -56,7 +56,7 @@
 	</NavUl>
 </Navbar>
 <div class="flex mt-[56px] md:mt-[68px] ">
-	<Sidebar asideClass="{sidebarExpanded ? 'w-60' : 'w-[68px]'} flex-none">
+	<Sidebar asideClass="{sidebarExpanded ? 'w-60' : 'w-[68px]'} flex-none hidden md:block">
 		<SidebarWrapper>
 			<SidebarGroup>
 				{#if sidebarExpanded}
