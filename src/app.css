@@ -1,3 +1,208 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+    --color-blue-200: #C3DDFD;
+    --color-blue-700: #1A56DB;
+    --color-blue-900: #233876;
+    --color-gray-100: #F3F4F6;
+    --color-gray-200: #E5E7EB;
+    --color-gray-300: #E2E2EA;
+    --color-gray-400: #D5D5DC;
+    --color-gray-500: #6B7280;
+    --color-gray-800: #1F2A37;
+    --color-primary: var(--color-blue-700);
+
+    --focus-color: var(--color-blue-900);
+    --hover-color: var(--color-gray-400);
+    --active-color: var(--color-blue-200);
+    --button-border-color: #D1D5DB;
+
+    --nav-height: 65px;
+}
+
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+ul,
+ol,
+dl,
+dd {
+    margin: 0;
+}
+
+/* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+ul,
+ol {
+    list-style: none;
+    padding-left: 0;
+}
+
+/* Set core root defaults */
+html:focus-within {
+    scroll-behavior: smooth;
+}
+
+/* Set core body defaults */
+body {
+    color: var(--color-gray-800);
+    font-family: 'Inter', sans-serif;
+    font-size: 100%;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.5;
+    min-height: 100vh;
+    text-rendering: optimizeSpeed;
+}
+
+/* A elements that don't have a class get default styles */
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Make images easier to work with */
+img,
+picture,
+svg {
+    max-width: 100%;
+    display: block;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button,
+textarea,
+select {
+    font: inherit;
+}
+
+/* Remove all animations, transitions and smooth scroll for people that prefer not to see them */
+@media (prefers-reduced-motion: reduce) {
+    html:focus-within {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Button styles */
+button,
+.button {
+    --bg-color: transparent;
+    --padding-x: 19px;
+    --padding-y: 9px;
+
+    background-color: var(--bg-color);
+    border: solid 1px var(--button-border-color);
+    border-radius: 8px;
+    font-weight: 500;
+    padding: var(--padding-y) var(--padding-x);
+    margin: 0;
+}
+
+button.primary,
+.button.primary {
+    --bg-color: var(--color-primary);
+    --button-border-color: var(--color-primary);
+
+    color: white;
+}
+
+button:hover,
+.button:hover {
+    --bg-color: var(--hover-color);
+    --button-border-color: inherit;
+}
+
+button:focus,
+.button:focus {
+    border: 3px solid var(--focus-color)
+}
+
+button:active,
+.button:active {
+    --bg-color: var(--color-gray-300)
+}
+
+button:disabled,
+.button:disabled {
+    --bg-color: var(--color-gray-100)
+}
+
+button.primary:disabled,
+.button.primary:disabled {
+    --bg-color: var(--color-gray-300)
+}
+
+/* Button group */
+.button-group {
+    display: flex;
+}
+
+.button-group > li {
+    display: block;
+}
+
+.button-group > li > button {
+    border: none;
+    border-radius: 0;
+}
+
+.button-group > li {
+    border: solid 1px var(--button-border-color);
+    border-right-width: 0;
+}
+
+.button-group > li:first-child {
+    border-radius: 6px 0 0 6px;
+}
+
+.button-group > li:last-child {
+    border-radius: 0 6px 6px 0;
+    border-right-width: 1px;
+}
+
+/* SVG icons */
+.icon-20 {
+    --size: 20px;
+
+    height: var(--size);
+    width: var(--size);
+}
+
+.icon-24 {
+    --size: 24px;
+
+    height: var(--size);
+    width: var(--size);
+}
+
+.icon-32 {
+    --size: 32px;
+
+    height: var(--size);
+    width: var(--size);
+}
+
+/* Utility classes */
+.is-hidden {
+    display: none;
+}

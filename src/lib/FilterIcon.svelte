@@ -1,14 +1,8 @@
-<script lang="ts">
-	export let svgClass: string;
-</script>
-
 <svg
-	width="20"
-	height="20"
+	class={$$props.class}
 	viewBox="0 0 20 20"
 	fill="currentColor"
 	xmlns="http://www.w3.org/2000/svg"
-	class={svgClass}
 >
 	<path
 		fill-rule="evenodd"
