@@ -1,6 +1,6 @@
 <script lang="ts">
-	import MenuCloseIcon from '$lib/MenuCloseIcon.svelte';
-	import MenuOpenIcon from '$lib/MenuOpenIcon.svelte';
+	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
+	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import logo from '$lib/assets/logo.png';
 	import { navigationToggle } from '$lib/stores';
 

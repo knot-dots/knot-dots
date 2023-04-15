@@ -1,15 +1,15 @@
 <script lang="ts">
-	import ChevronLeftIcon from '$lib/ChevronLeftIcon.svelte';
-	import ChevronRightIcon from '$lib/ChevronRightIcon.svelte';
-	import FilterIcon from '$lib/FilterIcon.svelte';
-	import LoginIcon from '$lib/LoginIcon.svelte';
-	import MapIcon from '$lib/MapIcon.svelte';
-	import QuestionMarkCircleIcon from '$lib/QuestionMarkCircleIcon.svelte';
-	import RegisterIcon from '$lib/RegisterIcon.svelte';
-	import SortDescendingIcon from '$lib/SortDescendingIcon.svelte';
-	import TableIcon from '$lib/TableIcon.svelte';
-	import UserGroupIcon from '$lib/UserGroupIcon.svelte';
-	import ViewBoardsIcon from '$lib/ViewBoardsIcon.svelte';
+	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
+	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
+	import FilterIcon from '$lib/icons/FilterIcon.svelte';
+	import LoginIcon from '$lib/icons/LoginIcon.svelte';
+	import MapIcon from '$lib/icons/MapIcon.svelte';
+	import QuestionMarkCircleIcon from '$lib/icons/QuestionMarkCircleIcon.svelte';
+	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
+	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
+	import TableIcon from '$lib/icons/TableIcon.svelte';
+	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
+	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
 	import { navigationToggle } from '$lib/stores.js';
 
 	let isExpanded = true;
