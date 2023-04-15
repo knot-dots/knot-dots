@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
@@ -21,27 +22,27 @@
 <aside class:is-expanded={isExpanded} class:is-visible={$navigationToggle}>
 	<ul class="group group-controls">
 		<li class:is-hidden={!isExpanded}>
-			<button title="View boards">
+			<button title={$_('boards')}>
 				<ViewBoardsIcon class="icon-24" />
 			</button>
 		</li>
 		<li class:is-hidden={!isExpanded}>
-			<button title="Map">
+			<button title={$_('map')}>
 				<MapIcon class="icon-24" />
 			</button>
 		</li>
 		<li class:is-hidden={!isExpanded}>
-			<button title="Table">
+			<button title={$_('table')}>
 				<TableIcon class="icon-24" />
 			</button>
 		</li>
 		<li>
 			{#if isExpanded}
-				<button class="primary" on:click={toggleSidebar} title="Collapse sidebar">
+				<button class="primary" on:click={toggleSidebar} title={$_('collapse_sidebar')}>
 					<ChevronLeftIcon class="icon-24" />
 				</button>
 			{:else}
-				<button class="primary" on:click={toggleSidebar} title="Expand sidebar">
+				<button class="primary" on:click={toggleSidebar} title={$_('expand_sidebar')}>
 					<ChevronRightIcon class="icon-24" />
 				</button>
 			{/if}
@@ -52,13 +53,13 @@
 		<li>
 			<button>
 				<FilterIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>Filter</span>
+				<span class:is-hidden={!isExpanded}>{$_('filter')}</span>
 			</button>
 		</li>
 		<li>
 			<button>
 				<SortDescendingIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>Sort</span>
+				<span class:is-hidden={!isExpanded}>{$_('sort')}</span>
 			</button>
 		</li>
 	</ul>
@@ -67,13 +68,13 @@
 		<li>
 			<a href="/help">
 				<QuestionMarkCircleIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>Help</span>
+				<span class:is-hidden={!isExpanded}>{$_('help')}</span>
 			</a>
 		</li>
 		<li>
 			<a href="/about">
 				<UserGroupIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>About us</span>
+				<span class:is-hidden={!isExpanded}>{$_('about')}</span>
 			</a>
 		</li>
 	</ul>
@@ -82,13 +83,13 @@
 		<li>
 			<a href="/">
 				<LoginIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
-				<span class:is-hidden={!isExpanded}>Log in</span>
+				<span class:is-hidden={!isExpanded}>{$_('login')}</span>
 			</a>
 		</li>
 		<li>
 			<a href="/register" class="button primary">
 				<RegisterIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
-				<span class:is-hidden={!isExpanded}>Register</span>
+				<span class:is-hidden={!isExpanded}>{$_('register')}</span>
 			</a>
 		</li>
 	</ul>

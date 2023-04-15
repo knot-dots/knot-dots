@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import logo from '$lib/assets/logo.png';
@@ -15,9 +16,9 @@
 	</a>
 
 	<ul class="button-group button-group-boards" class:is-visible={$navigationToggle}>
-		<li><button>Strategies</button></li>
-		<li><button>Objectives</button></li>
-		<li><button>Measures</button></li>
+		<li><button>{$_('strategies')}</button></li>
+		<li><button>{$_('objectives')}</button></li>
+		<li><button>{$_('measures')}</button></li>
 	</ul>
 
 	<button class="menu" on:click={toggle}>
@@ -29,8 +30,8 @@
 	</button>
 
 	<ul class="user-menu">
-		<li><a href="/">Log in</a></li>
-		<li><a href="/register" class="button primary">Register</a></li>
+		<li><a href="/">{$_('login')}</a></li>
+		<li><a href="/register" class="button primary">{$_('register')}</a></li>
 	</ul>
 </nav>
 
