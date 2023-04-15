@@ -2,8 +2,10 @@
 	import ChevronLeftIcon from '$lib/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/FilterIcon.svelte';
+	import LoginIcon from '$lib/LoginIcon.svelte';
 	import MapIcon from '$lib/MapIcon.svelte';
 	import QuestionMarkCircleIcon from '$lib/QuestionMarkCircleIcon.svelte';
+	import RegisterIcon from '$lib/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/SortDescendingIcon.svelte';
 	import TableIcon from '$lib/TableIcon.svelte';
 	import UserGroupIcon from '$lib/UserGroupIcon.svelte';
@@ -75,6 +77,21 @@
 			</a>
 		</li>
 	</ul>
+
+	<ul class="group group-user-menu">
+		<li>
+			<a href="/">
+				<LoginIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
+				<span class:is-hidden={!isExpanded}>Log in</span>
+			</a>
+		</li>
+		<li>
+			<a href="/register" class="button primary">
+				<RegisterIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
+				<span class:is-hidden={!isExpanded}>Register</span>
+			</a>
+		</li>
+	</ul>
 </aside>
 
 <style>
@@ -134,16 +151,26 @@
 		padding-bottom: 1rem;
 	}
 
+	.group.group-user-menu {
+		margin: auto 0 1rem;
+	}
+
 	.group-actions button,
-	.group-links a {
+	.group-links a,
+	.group-user-menu a {
 		align-items: center;
 		display: flex;
 		padding: 14px 14px;
 		text-align: left;
 	}
 
+	.group.group-user-menu a {
+		justify-content: center;
+	}
+
 	aside.is-expanded .group-actions button,
-	aside.is-expanded .group-links a {
+	aside.is-expanded .group-links a,
+	aside.is-expanded .group-user-menu a {
 		gap: 0.5rem;
 		padding: 12px 20px;
 		width: 100%;
