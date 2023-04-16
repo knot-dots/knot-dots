@@ -1,1 +1,1 @@
-strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:b0f3ba56b5dde332375cb72802f734396acad7db"
+strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:787c2614bb134a4a283bab97514f789c8733ee98"
