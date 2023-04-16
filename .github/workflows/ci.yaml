@@ -52,3 +52,21 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/strategytool:${{ github.sha }}
             ${{ env.REGISTRY }}/strategytool:latest
+
+  update:
+
+    needs: [ build ]
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          echo 'strategytool_image = "${{ env.REGISTRY }}/strategytool:${{ github.sha }}"' > ./terraform/dev/terraform.tfvars
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          git commit -am "Update image tag"
+          git push
