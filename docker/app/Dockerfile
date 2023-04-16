@@ -4,11 +4,11 @@ COPY package*.json ./
 RUN npm install
 COPY postcss.config.js .
 COPY svelte.config.js .
-COPY tailwind.config.js .
 COPY tsconfig.json .
 COPY vite.config.ts .
 COPY src ./src
 COPY static ./static
+RUN npm run check
 RUN npm run build
 EXPOSE 3000
 CMD ["node", "build"]

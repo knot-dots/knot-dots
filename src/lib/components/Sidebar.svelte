@@ -1,0 +1,179 @@
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
+	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
+	import FilterIcon from '$lib/icons/FilterIcon.svelte';
+	import LoginIcon from '$lib/icons/LoginIcon.svelte';
+	import MapIcon from '$lib/icons/MapIcon.svelte';
+	import QuestionMarkCircleIcon from '$lib/icons/QuestionMarkCircleIcon.svelte';
+	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
+	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
+	import TableIcon from '$lib/icons/TableIcon.svelte';
+	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
+	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
+	import { navigationToggle } from '$lib/stores.js';
+
+	let isExpanded = true;
+	function toggleSidebar() {
+		isExpanded = !isExpanded;
+	}
+</script>
+
+<aside id="aside-0" class:is-expanded={isExpanded} class:is-visible={$navigationToggle}>
+	<ul class="group group-controls">
+		<li class:is-hidden={!isExpanded}>
+			<button title={$_('boards')}>
+				<ViewBoardsIcon class="icon-24" />
+			</button>
+		</li>
+		<li class:is-hidden={!isExpanded}>
+			<button title={$_('map')}>
+				<MapIcon class="icon-24" />
+			</button>
+		</li>
+		<li class:is-hidden={!isExpanded}>
+			<button title={$_('table')}>
+				<TableIcon class="icon-24" />
+			</button>
+		</li>
+		<li>
+			{#if isExpanded}
+				<button class="primary" on:click={toggleSidebar} title={$_('collapse_sidebar')}>
+					<ChevronLeftIcon class="icon-24" />
+				</button>
+			{:else}
+				<button class="primary" on:click={toggleSidebar} title={$_('expand_sidebar')}>
+					<ChevronRightIcon class="icon-24" />
+				</button>
+			{/if}
+		</li>
+	</ul>
+
+	<ul class="group group-actions">
+		<li>
+			<button>
+				<FilterIcon class="icon-20" />
+				<span class:is-hidden={!isExpanded}>{$_('filter')}</span>
+			</button>
+		</li>
+		<li>
+			<button>
+				<SortDescendingIcon class="icon-20" />
+				<span class:is-hidden={!isExpanded}>{$_('sort')}</span>
+			</button>
+		</li>
+	</ul>
+
+	<ul class="group group-links">
+		<li>
+			<a href="/help">
+				<QuestionMarkCircleIcon class="icon-20" />
+				<span class:is-hidden={!isExpanded}>{$_('help')}</span>
+			</a>
+		</li>
+		<li>
+			<a href="/about">
+				<UserGroupIcon class="icon-20" />
+				<span class:is-hidden={!isExpanded}>{$_('about')}</span>
+			</a>
+		</li>
+	</ul>
+
+	<ul class="group group-user-menu">
+		<li>
+			<a href="/">
+				<LoginIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
+				<span class:is-hidden={!isExpanded}>{$_('login')}</span>
+			</a>
+		</li>
+		<li>
+			<a href="/register" class="button primary">
+				<RegisterIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
+				<span class:is-hidden={!isExpanded}>{$_('register')}</span>
+			</a>
+		</li>
+	</ul>
+</aside>
+
+<style>
+	aside {
+		border-right: solid 1px var(--color-gray-200);
+		display: none;
+		flex-direction: column;
+		flex-shrink: 0;
+		gap: 1rem;
+		width: 4.75rem;
+	}
+
+	@media (min-width: 768px) {
+		aside {
+			display: flex;
+		}
+	}
+
+	aside.is-visible {
+		display: flex;
+	}
+
+	aside.is-expanded {
+		width: 18rem;
+	}
+
+	aside > ul {
+		padding: 1rem 0.75rem 0;
+	}
+
+	aside > ul:nth-child(n + 2) {
+		border-top: solid 1px var(--color-gray-200);
+	}
+
+	.group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.group.group-controls {
+		flex-direction: row;
+	}
+
+	.group.group-controls li:last-child {
+		margin-left: auto;
+	}
+
+	.group.group-controls button {
+		--padding-x: 12px;
+		--padding-y: 12px;
+	}
+
+	.group.group-links {
+		border-bottom: solid 1px var(--color-gray-200);
+		color: var(--color-gray-500);
+		padding-bottom: 1rem;
+	}
+
+	.group.group-user-menu {
+		margin: auto 0 1rem;
+	}
+
+	.group-actions button,
+	.group-links a,
+	.group-user-menu a {
+		align-items: center;
+		display: flex;
+		padding: 14px 14px;
+		text-align: left;
+	}
+
+	.group.group-user-menu a {
+		justify-content: center;
+	}
+
+	aside.is-expanded .group-actions button,
+	aside.is-expanded .group-links a,
+	aside.is-expanded .group-user-menu a {
+		gap: 0.5rem;
+		padding: 12px 20px;
+		width: 100%;
+	}
+</style>
