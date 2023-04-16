@@ -52,3 +52,27 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/strategytool:${{ github.sha }}
             ${{ env.REGISTRY }}/strategytool:latest
+
+  update:
+
+#    if: github.event_name == 'push'
+
+    needs: [ build ]
+
+    runs-on: ubuntu-latest
+
+    env:
+      CI_COMMIT_MESSAGE: "Update image"
+      CI_USER_EMAIL: "actions@github.com"
+      CI_USER_NAME: "GitHub Actions"
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - run: |
+          echo 'strategytool_image = "${{ env.REGISTRY }}/strategytool:${{ github.sha }}"' > ./terraform/dev/terraform.tfvars
+          git config --global user.name "${{ env.CI_USER_NAME }}"
+          git config --global user.email "${{ env.CI_USER_EMAIL }}"
+          git commit -am "${{ env.CI_COMMIT_MESSAGE }}"
+          git push
