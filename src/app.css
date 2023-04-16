@@ -134,7 +134,7 @@ button:hover,
 
 button:focus,
 .button:focus {
-    border: 3px solid var(--focus-color)
+    outline: 3px solid var(--focus-color)
 }
 
 button:active,
@@ -178,6 +178,12 @@ button.primary:disabled,
 .button-group > li:last-child {
     border-radius: 0 6px 6px 0;
     border-right-width: 1px;
+}
+
+.button-group button:focus,
+.button-group .button:focus {
+    background-color: var(--hover-color);
+    outline: none;
 }
 
 /* SVG icons */
