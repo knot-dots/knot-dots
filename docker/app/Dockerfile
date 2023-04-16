@@ -8,6 +8,7 @@ COPY tsconfig.json .
 COPY vite.config.ts .
 COPY src ./src
 COPY static ./static
+RUN npm run check
 RUN npm run build
 EXPOSE 3000
 CMD ["node", "build"]
