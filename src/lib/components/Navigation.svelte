@@ -21,7 +21,13 @@
 		<li><button>{$_('measures')}</button></li>
 	</ul>
 
-	<button class="menu" on:click={toggle}>
+	<button
+		class="menu"
+		on:click={toggle}
+		aria-controls="aside-0"
+		aria-expanded={$navigationToggle}
+		aria-label={$navigationToggle ? $_('close_sidebar') : $_('open_sidebar')}
+	>
 		{#if $navigationToggle}
 			<MenuCloseIcon class="icon-32" />
 		{:else}

@@ -19,7 +19,7 @@
 	}
 </script>
 
-<aside class:is-expanded={isExpanded} class:is-visible={$navigationToggle}>
+<aside id="aside-0" class:is-expanded={isExpanded} class:is-visible={$navigationToggle}>
 	<ul class="group group-controls">
 		<li class:is-hidden={!isExpanded}>
 			<button title={$_('boards')}>
