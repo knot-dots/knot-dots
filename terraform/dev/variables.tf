@@ -8,6 +8,11 @@ variable "scaleway_project_id" {
   type    = string
 }
 
+variable "strategytool_image" {
+  default = "rg.fr-par.scw.cloud/knot-dots/strategytool:latest"
+  type    = string
+}
+
 variable "with_scaleway_lb" {
   default = false
   type    = bool
