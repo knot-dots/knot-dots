@@ -12,11 +12,15 @@ const config: PlaywrightTestConfig = {
 			use: { ...devices['iPhone 8'] }
 		}
 	],
+	use: {
+		trace: 'on-first-retry'
+	},
 	webServer: {
 		command: 'npm run build && npm run preview',
 		port: 4173
 	},
 	reporter: process.env.CI ? 'github' : 'list',
+	retries: process.env.CI ? 1 : 0,
 	testDir: 'tests'
 };
 
