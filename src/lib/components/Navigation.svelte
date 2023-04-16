@@ -12,7 +12,7 @@
 
 <nav>
 	<a class="logo" href="/">
-		<img src={logo} alt="knot dots logo" />
+		<img src={logo} alt={$_('home')} />
 	</a>
 
 	<ul class="button-group button-group-boards" class:is-visible={$navigationToggle}>
