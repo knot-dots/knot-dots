@@ -14,6 +14,6 @@ variable "strategytool_image" {
 }
 
 variable "with_scaleway_lb" {
-  default = false
+  default = true
   type    = bool
 }
