@@ -1,16 +1,4 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: docker/app/Dockerfile
-    ports:
-      - "5173:5173"
-      - "3000:3000"
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./src:/srv/app/src
   db:
     image: postgres:14
     environment:
@@ -35,3 +23,15 @@ services:
       - --import-realm
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import
+  strategytool:
+    build:
+      context: .
+      dockerfile: docker/strategytool/Dockerfile
+    ports:
+      - "5173:5173"
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/srv/app/src
