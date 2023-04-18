@@ -128,8 +128,26 @@ resource "kubernetes_ingress_v1" "strategytool" {
       }
     }
 
+    rule {
+      host = var.keycloak_host
+      http {
+        path {
+          backend {
+            service {
+              name = "keyloak"
+              port {
+                number = 8001
+              }
+            }
+          }
+          path      = "/"
+          path_type = "Prefix"
+        }
+      }
+    }
+
     tls {
-      hosts       = [var.strategytool_host]
+      hosts       = [var.keycloak_host, var.strategytool_host]
       secret_name = "strategytool-cert"
     }
   }
@@ -207,6 +225,138 @@ resource "kubernetes_deployment_v1" "strategytool" {
 
         image_pull_secrets {
           name = kubernetes_secret_v1.image_pull_secret.metadata[0].name
+        }
+      }
+    }
+  }
+}
+
+resource "random_password" "keycloak" {
+  length  = 16
+  special = true
+}
+
+resource "kubernetes_secret_v1" "keycloak" {
+  metadata {
+    name = "keycloak-credentials"
+  }
+
+  data = {
+    KEYCLOAK_ADMIN          = "admin"
+    KEYCLOAK_ADMIN_PASSWORD = random_password.keycloak.result
+  }
+}
+
+resource "kubernetes_service_v1" "keycloak" {
+  metadata {
+    name      = var.keycloak_name
+    namespace = "default"
+  }
+
+  spec {
+    selector = {
+      "app.kubernetes.io/name" = var.keycloak_name
+    }
+
+    port {
+      port        = 8001
+      target_port = 8080
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "keycloak" {
+  metadata {
+    name      = var.keycloak_name
+    namespace = "default"
+    labels = {
+      "app.kubernetes.io/name" = var.keycloak_name
+    }
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        "app.kubernetes.io/name" = var.keycloak_name
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          "app.kubernetes.io/name" = var.keycloak_name
+        }
+      }
+
+      spec {
+        container {
+          image = var.keycloak_image
+          args  = ["start"]
+          name  = "app"
+
+          env {
+            name  = "KC_DB_PASSWORD"
+            value = var.databases["keycloak"].db_password
+          }
+
+          env {
+            name  = "KC_DB_URL_PORT"
+            value = var.databases["keycloak"].db_port
+          }
+
+          env {
+            name  = "KC_DB_URL_DATABASE"
+            value = "keycloak"
+          }
+
+          env {
+            name  = "KC_DB_URL_HOST"
+            value = var.databases["keycloak"].db_host
+          }
+
+          env {
+            name  = "KC_DB_USERNAME"
+            value = var.databases["keycloak"].db_user
+          }
+
+          env {
+            name  = "KC_HOSTNAME_STRICT"
+            value = "false"
+          }
+
+          env {
+            name  = "KC_PROXY"
+            value = "edge"
+          }
+
+          env_from {
+            secret_ref {
+              name = kubernetes_secret_v1.keycloak.metadata[0].name
+            }
+          }
+
+          resources {
+            limits = {
+              cpu    = "0.5"
+              memory = "1024Mi"
+            }
+            requests = {
+              cpu    = "250m"
+              memory = "512Mi"
+            }
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/health/live"
+              port = 8080
+            }
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+
         }
       }
     }

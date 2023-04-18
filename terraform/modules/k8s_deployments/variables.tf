@@ -1,3 +1,26 @@
+variable "databases" {
+  type = map(object({
+    db_host     = string
+    db_name     = string
+    db_password = string
+    db_port     = string
+    db_user     = string
+  }))
+}
+
+variable "keycloak_host" {
+  type = string
+}
+
+variable "keycloak_image" {
+  type = string
+}
+
+variable "keycloak_name" {
+  default = "keycloak"
+  type    = string
+}
+
 variable "strategytool_host" {
   type = string
 }
