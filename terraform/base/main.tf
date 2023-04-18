@@ -71,7 +71,8 @@ resource "scaleway_iam_policy" "container_registry_publishers" {
       "LoadBalancersReadOnly",
       "ObjectStorageObjectsDelete",
       "ObjectStorageObjectsRead",
-      "ObjectStorageObjectsWrite"
+      "ObjectStorageObjectsWrite",
+      "RelationalDatabasesReadOnly"
     ]
     project_ids = [var.scaleway_project_id]
   }
