@@ -59,7 +59,7 @@ resource "scaleway_iam_application" "github" {
   description = ""
 }
 
-resource "scaleway_iam_policy" "container_registry_publishers" {
+resource "scaleway_iam_policy" "github" {
   name           = "GitHub"
   application_id = scaleway_iam_application.github.id
 
