@@ -98,6 +98,37 @@ resource "scaleway_domain_record" "strategytool" {
   ttl  = 3600
 }
 
+resource "scaleway_domain_record" "keycloak" {
+  count = var.with_scaleway_lb ? 1 : 0
+
+  dns_zone = scaleway_domain_zone.dev[count.index].id
+  name     = "keycloak"
+  type     = "A"
+  //noinspection HILUnresolvedReference
+  data = module.k8s_deployments.load_balancer_ip
+  ttl  = 3600
+}
+
+resource "scaleway_rdb_instance" "dev" {
+  name                      = "rdb-dev"
+  node_type                 = "DB-DEV-S"
+  engine                    = "PostgreSQL-14"
+  is_ha_cluster             = false
+  disable_backup            = false
+  backup_same_region        = true
+  backup_schedule_frequency = 24
+  backup_schedule_retention = 7
+}
+
+module "rdb_databases" {
+  source = "../modules/rdb_databases"
+
+  for_each = toset(["keycloak"])
+
+  name                  = each.key
+  scaleway_rdb_instance = scaleway_rdb_instance.dev
+}
+
 module "k8s_cluster" {
   source = "../modules/k8s_cluster"
 
@@ -108,9 +139,12 @@ module "k8s_cluster" {
 module "k8s_deployments" {
   source = "../modules/k8s_deployments"
 
+  databases          = module.rdb_databases
   registry_password  = scaleway_iam_api_key.registry_password.secret_key
   registry_server    = "rg.fr-par.scw.cloud"
   registry_username  = "knot-dots"
+  keycloak_host      = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
+  keycloak_image     = var.keycloak_image
   strategytool_host  = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
   strategytool_image = var.strategytool_image
   with_scaleway_lb   = var.with_scaleway_lb
