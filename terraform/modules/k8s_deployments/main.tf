@@ -353,7 +353,7 @@ resource "kubernetes_deployment_v1" "keycloak" {
               path = "/health/live"
               port = 8080
             }
-            initial_delay_seconds = 3
+            initial_delay_seconds = 60
             period_seconds        = 3
           }
 
