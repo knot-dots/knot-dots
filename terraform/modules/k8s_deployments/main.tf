@@ -134,7 +134,7 @@ resource "kubernetes_ingress_v1" "strategytool" {
         path {
           backend {
             service {
-              name = "keyloak"
+              name = "keycloak"
               port {
                 number = 8001
               }
