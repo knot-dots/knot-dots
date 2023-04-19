@@ -27,7 +27,7 @@
 	div {
 		display: flex;
 		padding-top: var(--nav-height);
-		min-height: 100vh;
+		height: 100vh;
 		width: 100%;
 	}
 
