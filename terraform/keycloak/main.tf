@@ -87,7 +87,7 @@ resource "keycloak_realm" "knot_dots" {
     from = "keycloak@dotstory.de"
     host = "smtp.tem.scw.cloud"
     port = 2465
-    ssl = true
+    ssl  = true
 
     auth {
       password = scaleway_iam_api_key.keycloak.secret_key

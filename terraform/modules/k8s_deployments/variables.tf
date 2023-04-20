@@ -21,6 +21,10 @@ variable "keycloak_name" {
   type    = string
 }
 
+variable "keycloak_realm" {
+  type = string
+}
+
 variable "strategytool_host" {
   type = string
 }
