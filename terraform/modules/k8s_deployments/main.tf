@@ -201,6 +201,21 @@ resource "kubernetes_deployment_v1" "strategytool" {
           image = var.strategytool_image
           name  = "app"
 
+          env {
+            name  = "PUBLIC_KC_CLIENT_ID"
+            value = var.strategytool_name
+          }
+
+          env {
+            name  = "PUBLIC_KC_REALM"
+            value = var.keycloak_realm
+          }
+
+          env {
+            name  = "PUBLIC_KC_URL"
+            value = "https://${var.keycloak_host}"
+          }
+
           resources {
             limits = {
               cpu    = "0.5"

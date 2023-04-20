@@ -145,6 +145,7 @@ module "k8s_deployments" {
   registry_username  = "knot-dots"
   keycloak_host      = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
   keycloak_image     = var.keycloak_image
+  keycloak_realm     = "knot-dots"
   strategytool_host  = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
   strategytool_image = var.strategytool_image
   with_scaleway_lb   = var.with_scaleway_lb

@@ -4,6 +4,7 @@
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import LoginIcon from '$lib/icons/LoginIcon.svelte';
+	import LogoutIcon from '$lib/icons/LogoutIcon.svelte';
 	import MapIcon from '$lib/icons/MapIcon.svelte';
 	import QuestionMarkCircleIcon from '$lib/icons/QuestionMarkCircleIcon.svelte';
 	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
@@ -11,7 +12,7 @@
 	import TableIcon from '$lib/icons/TableIcon.svelte';
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
-	import { navigationToggle } from '$lib/stores.js';
+	import { keycloak, navigationToggle, user } from '$lib/stores.js';
 
 	let isExpanded = true;
 	function toggleSidebar() {
@@ -80,18 +81,33 @@
 	</ul>
 
 	<ul class="group group-user-menu">
-		<li>
-			<a href="/">
-				<LoginIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
-				<span class:is-hidden={!isExpanded}>{$_('login')}</span>
-			</a>
-		</li>
-		<li>
-			<a href="/register" class="button primary">
-				<RegisterIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
-				<span class:is-hidden={!isExpanded}>{$_('register')}</span>
-			</a>
-		</li>
+		{#if $user.isAuthenticated}
+			<li>
+				<a href={$keycloak.accountUrl}>
+					<span class="avatar avatar-m">{$user.givenName.at(0)} {$user.familyName.at(0)}</span>
+					<span class:is-hidden={!isExpanded}>{$user.givenName} {$user.familyName}</span>
+				</a>
+			</li>
+			<li>
+				<a href={$keycloak.logoutUrl} class="button">
+					<LogoutIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
+					<span class:is-hidden={!isExpanded}>{$_('logout')}</span>
+				</a>
+			</li>
+		{:else}
+			<li>
+				<a href={$keycloak.loginUrl}>
+					<LoginIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
+					<span class:is-hidden={!isExpanded}>{$_('login')}</span>
+				</a>
+			</li>
+			<li>
+				<a href={$keycloak.registerUrl} class="button primary">
+					<RegisterIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
+					<span class:is-hidden={!isExpanded}>{$_('register')}</span>
+				</a>
+			</li>
+		{/if}
 	</ul>
 </aside>
 
@@ -167,6 +183,10 @@
 
 	.group.group-user-menu a {
 		justify-content: center;
+	}
+
+	.group.group-user-menu li:first-child a {
+		padding: 0;
 	}
 
 	aside.is-expanded .group-actions button,
