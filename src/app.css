@@ -1,5 +1,6 @@
 :root {
     --color-blue-200: #C3DDFD;
+    --color-blue-500: #3F83F8;
     --color-blue-700: #1A56DB;
     --color-blue-900: #233876;
     --color-gray-100: #F3F4F6;
@@ -206,6 +207,29 @@ button.primary:disabled,
 
     height: var(--size);
     width: var(--size);
+}
+
+/* Avatars */
+.avatar {
+    background-color: var(--color-blue-500);
+    border-radius: 50%;
+    display: inline-block;
+    font-size: var(--font-size);
+    height: calc(2 * var(--radius));
+    line-height: 1;
+    padding: calc(var(--radius) - var(--font-size) / 2) 0;
+    text-align: center;
+    width: calc(2 * var(--radius));;
+}
+
+.avatar.avatar-s {
+    --radius: 1rem;
+    --font-size: 0.75rem;
+}
+
+.avatar.avatar-m {
+    --radius: 1.5rem;
+    --font-size: 1rem;
 }
 
 /* Utility classes */
