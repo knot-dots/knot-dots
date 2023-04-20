@@ -1,8 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { initKeycloak } from '$lib/authentication';
+
+	onMount(() => {
+		initKeycloak({ enableLogging: true, silentCheckSsoFallback: false });
+	});
 </script>
 
 <svelte:head>

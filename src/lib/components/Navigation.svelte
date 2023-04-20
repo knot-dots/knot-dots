@@ -3,7 +3,7 @@
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import logo from '$lib/assets/logo.png';
-	import { navigationToggle } from '$lib/stores';
+	import { keycloak, navigationToggle, user } from '$lib/stores';
 
 	function toggle() {
 		navigationToggle.update((v) => !v);
@@ -21,6 +21,24 @@
 		<li><button>{$_('measures')}</button></li>
 	</ul>
 
+	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
+		{#if $user.isAuthenticated}
+			<li>
+				<a href={$keycloak.accountUrl}>
+					<span class="avatar avatar-s">{$user.givenName.at(0)}{$user.familyName.at(0)}</span>
+				</a>
+			</li>
+			<li>
+				<a href={$keycloak.logoutUrl}>{$_('logout')}</a>
+			</li>
+		{:else}
+			<li><a href={$keycloak.loginUrl}>{$_('login')}</a></li>
+			<li>
+				<a href={$keycloak.registerUrl} class="button primary">{$_('register')}</a>
+			</li>
+		{/if}
+	</ul>
+
 	<button
 		class="menu"
 		on:click={toggle}
@@ -34,11 +52,6 @@
 			<MenuOpenIcon class="icon-32" />
 		{/if}
 	</button>
-
-	<ul class="user-menu">
-		<li><a href="/">{$_('login')}</a></li>
-		<li><a href="/register" class="button primary">{$_('register')}</a></li>
-	</ul>
 </nav>
 
 <style>
@@ -70,15 +83,25 @@
 
 	.button-group.button-group-boards {
 		display: flex;
-		margin-top: 0;
+		margin-left: auto;
 		overflow-y: scroll;
 	}
 
 	.user-menu {
-		display: none;
-		list-style: none;
-		justify-content: space-between;
 		gap: 1rem;
+		justify-content: space-between;
+		list-style: none;
+		margin-left: auto;
+	}
+
+	.user-menu.is-authenticated {
+		align-items: center;
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.user-menu.is-authenticated > li:last-child {
+		display: none;
 	}
 
 	.menu {
@@ -95,8 +118,13 @@
 			gap: 1.5rem;
 		}
 
-		.user-menu {
-			display: flex;
+		.user-menu.is-authenticated > li:first-child {
+			border-right: solid 1px var(--color-gray-200);
+			padding-right: 12px;
+		}
+
+		.user-menu.is-authenticated > li:last-child {
+			display: initial;
 		}
 
 		.menu {
