@@ -15,7 +15,7 @@
 		<img src={logo} alt={$_('home')} />
 	</a>
 
-	<ul class="button-group button-group-boards" class:is-visible={$navigationToggle}>
+	<ul class="button-group button-group-boards">
 		<li><button>{$_('strategies')}</button></li>
 		<li><button>{$_('objectives')}</button></li>
 		<li><button>{$_('measures')}</button></li>
@@ -72,10 +72,6 @@
 		display: flex;
 		margin-top: 0;
 		overflow-y: scroll;
-	}
-
-	.button-group.button-group-boards.is-visible {
-		display: flex;
 	}
 
 	.user-menu {
