@@ -1,5 +1,6 @@
 {
 	"about": "Über uns",
+	"add_item": "Hinzufügen",
 	"boards": "Bretter",
 	"collapse_sidebar": "Seitenleiste zuklappen",
 	"close_sidebar": "Seitenleiste schließen",
@@ -11,11 +12,15 @@
 	"logout": "Abmelden",
 	"map": "Karte",
 	"measures": "Maßnahmen",
+	"models": "Leitbilder",
 	"objectives": "Ziele",
 	"open_sidebar": "Seitenleiste öffnen",
+	"operational_goals": "Operative Ziele",
 	"page_title": "Strategie-Werkzeug",
 	"register": "Registrieren",
 	"sort": "Sortieren",
+	"strategic_goals": "Strategische Ziele",
 	"strategies": "Strategien",
-	"table": "Tabelle"
+	"table": "Tabelle",
+	"topics": "Themenfelder"
 }

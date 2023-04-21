@@ -9,7 +9,13 @@
 	--color-gray-400: #d5d5dc;
 	--color-gray-500: #6b7280;
 	--color-gray-800: #1f2a37;
+	--color-red-300: #f8b4b4;
 	--color-primary: var(--color-blue-700);
+
+	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
+	--shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
+	--shadow-xl: 0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px rgba(0, 0, 0, 0.04);
+	--shadow-2xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
 
 	--focus-color: var(--color-blue-900);
 	--hover-color: var(--color-gray-400);

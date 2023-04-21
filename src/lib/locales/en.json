@@ -1,5 +1,6 @@
 {
 	"about": "About us",
+	"add_item": "Add item",
 	"boards": "Boards",
 	"collapse_sidebar": "Collapse sidebar",
 	"close_sidebar": "Close sidebar",
@@ -11,11 +12,15 @@
 	"logout": "Log out",
 	"map": "Map",
 	"measures": "Measures",
+	"models": "Models",
 	"objectives": "Objectives",
+	"operational_goals": "Operational goals",
 	"open_sidebar": "Open sidebar",
 	"page_title": "StrategyTool",
 	"register": "Register",
 	"sort": "Sort",
 	"strategies": "Strategies",
-	"table": "Table"
+	"strategic_goals": "Strategic goals",
+	"table": "Table",
+	"topics": "Topics"
 }
