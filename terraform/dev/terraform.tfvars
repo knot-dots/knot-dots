@@ -1,2 +1,2 @@
-strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:d5c1e2eae10ec69f33150fc2ea1c43b240a5bc95"
-keycloak_image     = "rg.fr-par.scw.cloud/knot-dots/keycloak:d5c1e2eae10ec69f33150fc2ea1c43b240a5bc95"
+strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:a08c9171fcd93f0ba70122e5fd6f70e76a1231ad"
+keycloak_image     = "rg.fr-par.scw.cloud/knot-dots/keycloak:a08c9171fcd93f0ba70122e5fd6f70e76a1231ad"
