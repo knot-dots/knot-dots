@@ -1,11 +1,15 @@
 <script lang="ts">
 	import logo from '$lib/assets/logo.png';
+	import { Icon, InformationCircle, Share } from 'svelte-hero-icons';
 </script>
 
 <article class="card">
 	<header>
 		<h3>Title</h3>
-		<span class="header-icons">Icons</span>
+		<span class="header-icons">
+			<Icon src={InformationCircle} size="20" />
+			<Icon src={Share} size="20" />
+		</span>
 	</header>
 	<img src={logo} alt="placeholder" />
 	<div class="text">
@@ -42,6 +46,15 @@
 	header h3 {
 		font-size: 1rem;
 		font-weight: 700;
+	}
+
+	.header-icons {
+		display: flex;
+		gap: 12px;
+	}
+
+	:global(.header-icons svg) {
+		stroke-width: 2.5px;
 	}
 
 	img {
