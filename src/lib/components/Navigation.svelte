@@ -83,15 +83,13 @@
 
 	.button-group.button-group-boards {
 		display: flex;
-		margin-left: auto;
+		margin: 0 auto;
 		overflow-y: scroll;
 	}
 
 	.user-menu {
+		display: none;
 		gap: 1rem;
-		justify-content: space-between;
-		list-style: none;
-		margin-left: auto;
 	}
 
 	.user-menu.is-authenticated {
@@ -116,6 +114,10 @@
 	@media (min-width: 768px) {
 		nav {
 			gap: 1.5rem;
+		}
+
+		.user-menu {
+			display: flex;
 		}
 
 		.user-menu.is-authenticated > li:first-child {
