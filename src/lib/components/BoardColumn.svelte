@@ -17,11 +17,11 @@
 
 <style>
 	section {
+		display: flex;
 		flex-basis: 320px;
+		flex-direction: column;
 		flex-grow: 0;
 		flex-shrink: 0;
-		display: flex;
-		flex-direction: column;
 		gap: 16px;
 	}
 
@@ -31,15 +31,15 @@
 	}
 
 	header {
-		margin-bottom: 24px;
-		height: 59px;
 		background: white;
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
-		padding: 16px;
 		color: var(--color-gray-800);
 		display: flex;
+		height: 59px;
 		justify-content: space-between;
+		margin-bottom: 24px;
+		padding: 16px;
 	}
 
 	header h2 {
