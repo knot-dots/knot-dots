@@ -152,11 +152,13 @@ button:active,
 button:disabled,
 .button:disabled {
 	--bg-color: var(--color-gray-100);
+    --button-border-color: var(--color-gray-100);
 }
 
 button.primary:disabled,
 .button.primary:disabled {
 	--bg-color: var(--color-gray-300);
+    --button-border-color: var(--color-gray-300);
 }
 
 /* Button group */
