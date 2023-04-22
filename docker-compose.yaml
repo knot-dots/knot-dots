@@ -9,8 +9,26 @@ services:
       interval: 3s
       timeout: 3s
       retries: 3
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/migrate/Dockerfile
+    command:
+      - -database
+      - postgres:///?sslmode=disable
+      - -path
+      - /srv/migrations
+      - up
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - PGDATABASE
+      - PGHOST
+      - PGPASSWORD
+      - PGUSER
     volumes:
-      - ./docker/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./sql/migrations:/srv/migrations
   keycloak:
     image: quay.io/keycloak/keycloak:21.0.1
     ports:
@@ -36,8 +54,8 @@ services:
     environment:
       - PGDATABASE
       - PGHOST
-      - PGUSER
       - PGPASSWORD
+      - PGUSER
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
