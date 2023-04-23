@@ -2,8 +2,10 @@
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
 	"boards": "Bretter",
+	"category":  "Kategorie",
 	"collapse_sidebar": "Seitenleiste zuklappen",
 	"close_sidebar": "Seitenleiste schließen",
+	"description": "Beschreibung",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
 	"help": "Hilfe",
@@ -37,9 +39,11 @@
 		"16": "Frieden, Gerechtigkeit und starke Institutionen",
 		"17": "Partnerschaften zur Erreichung der Ziele"
 	},
+	"save": "Speichern",
 	"sort": "Sortieren",
 	"strategic_goals": "Strategische Ziele",
 	"strategies": "Strategien",
 	"table": "Tabelle",
+	"title": "Titel",
 	"topics": "Themenfelder"
 }
