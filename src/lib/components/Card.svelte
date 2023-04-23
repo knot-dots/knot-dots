@@ -1,28 +1,25 @@
 <script lang="ts">
-	import logo from '$lib/assets/logo.png';
 	import { Icon, InformationCircle, Share } from 'svelte-hero-icons';
+
+	export let title: string;
+	export let description: string;
+	export let category: string;
 </script>
 
 <article class="card">
 	<header>
-		<h3>Title</h3>
+		<h3>{title}</h3>
 		<span class="header-icons">
 			<Icon src={InformationCircle} size="20" />
 			<Icon src={Share} size="20" />
 		</span>
 	</header>
-	<img src={logo} alt="placeholder" />
 	<div class="text">
-		<p>
-			Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eaque, alias vitae consequuntur,
-			similique fugiat voluptate soluta ratione natus porro beatae excepturi ex cum ipsa?
-			Perferendis, expedita quo. Quibusdam, voluptates. Eveniet!
-		</p>
+		{@html description}
 	</div>
 	<footer>
 		<div class="badges">
-			<span class="badge">Text</span>
-			<span class="badge">Text</span>
+			<span class="badge">{category}</span>
 		</div>
 	</footer>
 </article>
@@ -55,12 +52,6 @@
 
 	:global(.header-icons svg) {
 		stroke-width: 2.5px;
-	}
-
-	img {
-		width: 100%;
-		margin-top: 20px;
-		border-radius: 8px;
 	}
 
 	.text {
