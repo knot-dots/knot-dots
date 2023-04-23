@@ -1,7 +1,10 @@
 <script lang="ts">
-	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import { _ } from 'svelte-i18n';
+	import FilterIcon from '$lib/icons/FilterIcon.svelte';
+	import type { ContainerType } from '$lib/models';
+
 	export let title: string;
+	export let containerType: ContainerType;
 </script>
 
 <section>
@@ -11,7 +14,7 @@
 	</header>
 	<slot />
 	<footer>
-		<button class="primary" disabled>{$_('add_item')}</button>
+		<a href="/container/{containerType}" class="button primary">{$_('add_item')}</a>
 	</footer>
 </section>
 
@@ -23,11 +26,6 @@
 		flex-grow: 0;
 		flex-shrink: 0;
 		gap: 16px;
-	}
-
-	footer,
-	footer button {
-		width: 100%;
 	}
 
 	header {
@@ -45,5 +43,10 @@
 	header h2 {
 		font-size: inherit;
 		font-weight: 600;
+	}
+
+	footer a {
+		display: block;
+		text-align: center;
 	}
 </style>
