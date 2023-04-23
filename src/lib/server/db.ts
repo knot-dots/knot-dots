@@ -49,6 +49,10 @@ const user = z.object({
 	subject: z.string().uuid()
 });
 
+const userWithRevision = user.extend({
+	revision: z.number().int().positive()
+});
+
 const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
@@ -75,6 +79,7 @@ const newContainer = containerWithUser.omit({
 const typeAliases = {
 	container,
 	user,
+	userWithRevision,
 	void: z.object({}).strict()
 };
 
@@ -107,5 +112,35 @@ export function createContainer(container: NewContainer) {
 
 			return { ...containerResult, user: userResult };
 		});
+	};
+}
+
+export function getManyContainers() {
+	return async (connection: DatabaseConnection) => {
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE valid_currently
+			ORDER BY valid_from;
+    `);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${sql.join(
+							containerResult.map((c) => c.revision),
+							sql.fragment`, `
+						)})
+					`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
 	};
 }
