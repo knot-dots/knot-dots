@@ -7,7 +7,7 @@ import type {
 	SerializableValue
 } from 'slonik';
 import { z } from 'zod';
-import { containerTypes } from '$lib/models';
+import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -52,7 +52,11 @@ const user = z.object({
 const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
-	payload: z.record(z.string(), z.unknown()),
+	payload: z.object({
+		category: sustainableDevelopmentGoals,
+		description: z.string(),
+		title: z.string()
+	}),
 	realm: z.string(),
 	revision: z.number().int().positive(),
 	valid_currently: z.boolean(),
