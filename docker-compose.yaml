@@ -52,6 +52,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      - KC_URL
       - PGDATABASE
       - PGHOST
       - PGPASSWORD

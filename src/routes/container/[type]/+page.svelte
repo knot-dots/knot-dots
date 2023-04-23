@@ -1,9 +1,28 @@
 <script lang="ts">
+	import type { ActionResult } from '@sveltejs/kit';
 	import { _ } from 'svelte-i18n';
+	import { applyAction, deserialize } from '$app/forms';
 	import { sustainableDevelopmentGoals } from '$lib/models';
+
+	async function handleSubmit(event: SubmitEvent) {
+		const data = new FormData(event.target as HTMLFormElement);
+
+		const response = await fetch((event.target as HTMLFormElement).action, {
+			method: 'POST',
+			body: data,
+			headers: {
+				...(sessionStorage.getItem('token')
+					? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
+					: undefined)
+			}
+		});
+
+		const result: ActionResult = deserialize(await response.text());
+		await applyAction(result);
+	}
 </script>
 
-<form method="POST">
+<form method="POST" on:submit|preventDefault={handleSubmit}>
 	<label>
 		{$_('title')}
 		<input name="title" type="text" required />
