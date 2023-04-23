@@ -1,6 +1,13 @@
 import { SchemaValidationError, createPool, createSqlTag } from 'slonik';
-import type { DatabaseConnection, DatabasePool, Interceptor, QueryResultRow } from 'slonik';
+import type {
+	DatabaseConnection,
+	DatabasePool,
+	Interceptor,
+	QueryResultRow,
+	SerializableValue
+} from 'slonik';
 import { z } from 'zod';
+import { containerTypes } from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -35,4 +42,66 @@ export async function getPool() {
 		});
 	}
 	return pool;
+}
+
+const user = z.object({
+	issuer: z.string().url().max(1024),
+	subject: z.string().uuid()
+});
+
+const container = z.object({
+	guid: z.string().uuid(),
+	type: containerTypes,
+	payload: z.record(z.string(), z.unknown()),
+	realm: z.string(),
+	revision: z.number().int().positive(),
+	valid_currently: z.boolean(),
+	valid_from: z.number().int()
+});
+
+const containerWithUser = container.extend({ user: z.array(user) });
+
+const newContainer = containerWithUser.omit({
+	guid: true,
+	revision: true,
+	valid_currently: true,
+	valid_from: true
+});
+
+const typeAliases = {
+	container,
+	user,
+	void: z.object({}).strict()
+};
+
+export type User = z.infer<typeof user>;
+
+export type Container = z.infer<typeof containerWithUser>;
+
+export type NewContainer = z.infer<typeof newContainer>;
+
+const sql = createSqlTag({ typeAliases });
+
+export function createContainer(container: NewContainer) {
+	return (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const containerResult = await txConnection.one(sql.typeAlias('container')`
+          INSERT INTO container (type, payload, realm)
+          VALUES (${container.type},
+                  ${sql.jsonb(<SerializableValue>container.payload)},
+                  ${container.realm})
+          RETURNING *
+      `);
+
+			const userValues = container.user.map((u) => [u.issuer, containerResult.revision, u.subject]);
+			const userResult = await txConnection.many(sql.typeAlias('user')`
+          INSERT INTO container_user (issuer, revision, subject)
+          SELECT *
+          FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+          RETURNING issuer, subject
+      `);
+
+			return { ...containerResult, user: userResult };
+		});
+	};
 }
