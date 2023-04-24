@@ -1,7 +1,8 @@
-FROM node:18-slim AS production
+FROM node:18-slim AS builder
 WORKDIR /srv/app
 COPY package*.json ./
-RUN npm install
+RUN npm clean-install --silent
+RUN npx playwright install --with-deps
 COPY postcss.config.js .
 COPY svelte.config.js .
 COPY tsconfig.json .
@@ -10,17 +11,22 @@ COPY src ./src
 COPY static ./static
 RUN npm run check
 RUN npm run build
-EXPOSE 3000
-CMD ["node", "build"]
 
-FROM production AS dev
-EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
-FROM production AS qa
-RUN npx playwright install --with-deps
+FROM builder AS qa
 VOLUME /srv/app/test-results
 ENV CI=""
 COPY playwright.config.ts .
 COPY tests ./tests
 CMD ["npx", "playwright", "test"]
+
+FROM builder AS dev
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+FROM node:18-slim AS production
+WORKDIR /srv/app
+COPY --from=builder /srv/app/package.json .
+COPY --from=builder /srv/app/node_modules ./node_modules
+COPY --from=builder /srv/app/build ./build
+EXPOSE 3000
+CMD ["node", "build"]
