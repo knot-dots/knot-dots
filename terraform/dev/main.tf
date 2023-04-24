@@ -123,7 +123,7 @@ resource "scaleway_rdb_instance" "dev" {
 module "rdb_databases" {
   source = "../modules/rdb_databases"
 
-  for_each = toset(["keycloak"])
+  for_each = toset(["keycloak", "strategytool"])
 
   name                  = each.key
   scaleway_rdb_instance = scaleway_rdb_instance.dev
@@ -146,6 +146,7 @@ module "k8s_deployments" {
   keycloak_host      = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
   keycloak_image     = var.keycloak_image
   keycloak_realm     = "knot-dots"
+  migrate_image      = var.migrate_image
   strategytool_host  = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
   strategytool_image = var.strategytool_image
   with_scaleway_lb   = var.with_scaleway_lb

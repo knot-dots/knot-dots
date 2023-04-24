@@ -202,6 +202,36 @@ resource "kubernetes_deployment_v1" "strategytool" {
           name  = "app"
 
           env {
+            name  = "KC_URL"
+            value = "https://${var.keycloak_host}"
+          }
+
+          env {
+            name  = "PGDATABASE"
+            value = var.databases["strategytool"].db_name
+          }
+
+          env {
+            name  = "PGHOST"
+            value = var.databases["strategytool"].db_host
+          }
+
+          env {
+            name  = "PGPASSWORD"
+            value = var.databases["strategytool"].db_password
+          }
+
+          env {
+            name  = "PGPORT"
+            value = var.databases["strategytool"].db_port
+          }
+
+          env {
+            name  = "PGUSER"
+            value = var.databases["strategytool"].db_user
+          }
+
+          env {
             name  = "PUBLIC_KC_CLIENT_ID"
             value = var.strategytool_name
           }
@@ -238,6 +268,12 @@ resource "kubernetes_deployment_v1" "strategytool" {
 
         }
 
+        init_container {
+          name  = "wait-for-migrate"
+          image = "groundnuty/k8s-wait-for:no-root-v1.7"
+          args  = ["job", var.migrate_name]
+        }
+
         image_pull_secrets {
           name = kubernetes_secret_v1.image_pull_secret.metadata[0].name
         }
@@ -246,6 +282,76 @@ resource "kubernetes_deployment_v1" "strategytool" {
   }
 }
 
+resource "kubernetes_job_v1" "migrate" {
+  metadata {
+    name      = var.migrate_name
+    namespace = "default"
+    labels = {
+      "app.kubernetes.io/name"    = var.migrate_name
+      "app.kubernetes.io/part-of" = var.strategytool_name
+    }
+  }
+
+  spec {
+    backoff_limit              = 1
+    ttl_seconds_after_finished = 300
+
+    template {
+      metadata {
+        labels = {
+          "app.kubernetes.io/name"    = var.migrate_name
+          "app.kubernetes.io/part-of" = var.strategytool_name
+        }
+      }
+
+      spec {
+        container {
+          name  = "migrate"
+          image = var.migrate_image
+          args  = ["-database", "postgres:///", "-path", "/srv/migrations", "up"]
+
+          env {
+            name  = "PGDATABASE"
+            value = var.databases["strategytool"].db_name
+          }
+
+          env {
+            name  = "PGHOST"
+            value = var.databases["strategytool"].db_host
+          }
+
+          env {
+            name  = "PGPASSWORD"
+            value = var.databases["strategytool"].db_password
+          }
+
+          env {
+            name  = "PGPORT"
+            value = var.databases["strategytool"].db_port
+          }
+
+          env {
+            name  = "PGUSER"
+            value = var.databases["strategytool"].db_user
+          }
+
+          resources {
+            limits = {
+              cpu    = "0.5"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "250m"
+              memory = "50Mi"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
 resource "random_password" "keycloak" {
   length  = 16
   special = true
@@ -253,7 +359,8 @@ resource "random_password" "keycloak" {
 
 resource "kubernetes_secret_v1" "keycloak" {
   metadata {
-    name = "keycloak-credentials"
+    name      = "keycloak-credentials"
+    namespace = "default"
   }
 
   data = {

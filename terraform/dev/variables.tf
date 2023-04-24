@@ -3,6 +3,11 @@ variable "keycloak_image" {
   type    = string
 }
 
+variable "migrate_image" {
+  default = "rg.fr-par.scw.cloud/knot-dots/migrate:latest"
+  type    = string
+}
+
 variable "scaleway_organization_id" {
   default = "8b915777-a8ba-4fa0-8193-fda1211c424b"
   type    = string
