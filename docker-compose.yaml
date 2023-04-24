@@ -41,10 +41,27 @@ services:
       - --import-realm
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import
+  playwright:
+    build:
+      context: .
+      dockerfile: docker/strategytool/Dockerfile
+      target: qa
+    depends_on:
+      - migrate
+    environment:
+      - PGDATABASE
+      - PGHOST
+      - PGPASSWORD
+      - PGUSER
+    profiles:
+      - qa
+    volumes:
+      - ./test-results:/srv/app/test-results
   strategytool:
     build:
       context: .
       dockerfile: docker/strategytool/Dockerfile
+      target: dev
     ports:
       - "5173:5173"
       - "3000:3000"
