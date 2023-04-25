@@ -32,8 +32,7 @@ const containerTypeValues = [
 	'model',
 	'operational_goal',
 	'strategic_goal',
-	'strategy',
-	'topic'
+	'strategy'
 ] as const;
 
 export const containerTypes = z.enum(containerTypeValues);
