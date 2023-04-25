@@ -48,6 +48,7 @@ export const actions = {
 		const payload = {
 			category: data.get('category') as SustainableDevelopmentGoal,
 			description: data.get('description') as string,
+			summary: data.get('summary') as string,
 			title: data.get('title') as string
 		};
 		const user = [

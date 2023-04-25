@@ -37,6 +37,10 @@
 		<input name="title" type="text" required />
 	</label>
 	<label>
+		{$_('summary')}
+		<textarea name="summary" required />
+	</label>
+	<label>
 		{$_('description')}
 		<textarea name="description" required />
 	</label>

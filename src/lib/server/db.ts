@@ -63,6 +63,7 @@ const container = z.object({
 	payload: z.object({
 		category: sustainableDevelopmentGoals,
 		description: z.string(),
+		summary: z.string().optional(),
 		title: z.string()
 	}),
 	realm: z.string(),
