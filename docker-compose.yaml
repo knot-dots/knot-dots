@@ -49,6 +49,7 @@ services:
     depends_on:
       - migrate
     environment:
+      - CI
       - PGDATABASE
       - PGHOST
       - PGPASSWORD
