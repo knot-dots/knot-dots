@@ -12,10 +12,12 @@
 		<h2>{title}</h2>
 		<FilterIcon class="icon-20" />
 	</header>
-	<slot />
-	<footer>
-		<a href="/container/{containerType}" class="button primary">{$_('add_item')}</a>
-	</footer>
+	<div class="vertical-scroll-wrapper">
+		<slot />
+		<footer>
+			<a href="/container/{containerType}" class="button primary">{$_('add_item')}</a>
+		</footer>
+	</div>
 </section>
 
 <style>
@@ -25,7 +27,6 @@
 		flex-direction: column;
 		flex-grow: 0;
 		flex-shrink: 0;
-		gap: 16px;
 	}
 
 	header {
@@ -38,6 +39,7 @@
 		justify-content: space-between;
 		margin-bottom: 24px;
 		padding: 16px;
+		align-items: center;
 	}
 
 	header h2 {
@@ -48,5 +50,13 @@
 	footer a {
 		display: block;
 		text-align: center;
+	}
+
+	.vertical-scroll-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		margin-bottom: 16px;
+		overflow-y: scroll;
 	}
 </style>

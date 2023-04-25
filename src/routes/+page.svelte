@@ -10,7 +10,6 @@
 
 	const columns = [
 		{ title: 'strategies', containerType: containerTypes.enum.strategy },
-		{ title: 'topics', containerType: containerTypes.enum.topic },
 		{ title: 'models', containerType: containerTypes.enum.model },
 		{ title: 'strategic_goals', containerType: containerTypes.enum.strategic_goal },
 		{ title: 'operational_goals', containerType: containerTypes.enum.operational_goal },
