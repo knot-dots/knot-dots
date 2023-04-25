@@ -282,6 +282,37 @@ resource "kubernetes_deployment_v1" "strategytool" {
   }
 }
 
+resource "kubernetes_role_v1" "strategytool" {
+  metadata {
+    name = var.strategytool_name
+    namespace = "default"
+  }
+
+  rule {
+    api_groups = ["batch"]
+    resources = ["jobs"]
+    verbs =["get", "list"]
+  }
+}
+
+resource "kubernetes_role_binding_v1" "strategytool" {
+  metadata {
+    name = var.strategytool_name
+    namespace = "default"
+  }
+
+  subject {
+    kind = "ServiceAccount"
+    name = "default"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = var.strategytool_name
+  }
+}
+
 resource "kubernetes_job_v1" "migrate" {
   metadata {
     name      = var.migrate_name
