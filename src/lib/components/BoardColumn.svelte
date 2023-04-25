@@ -38,6 +38,7 @@
 		justify-content: space-between;
 		margin-bottom: 24px;
 		padding: 16px;
+		align-items: center;
 	}
 
 	header h2 {
