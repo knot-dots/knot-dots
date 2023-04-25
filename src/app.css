@@ -1,15 +1,23 @@
 :root {
 	--color-blue-200: #c3ddfd;
 	--color-blue-500: #3f83f8;
+	--color-blue-600: #1c64f2;
 	--color-blue-700: #1a56db;
 	--color-blue-900: #233876;
+	--color-gray-050: #f9fafb;
 	--color-gray-100: #f3f4f6;
 	--color-gray-200: #e5e7eb;
 	--color-gray-300: #e2e2ea;
 	--color-gray-400: #d5d5dc;
 	--color-gray-500: #6b7280;
 	--color-gray-800: #1f2a37;
+	--color-green-050: #f3faf7;
+	--color-green-500: #0e9f6e;
+	--color-green-700: #046c4e;
+	--color-red-050: #fdf2f2;
 	--color-red-300: #f8b4b4;
+	--color-red-500: #f05252;
+	--color-red-700: #c81e1e;
 	--color-primary: var(--color-blue-700);
 
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
@@ -152,13 +160,13 @@ button:active,
 button:disabled,
 .button:disabled {
 	--bg-color: var(--color-gray-100);
-    --button-border-color: var(--color-gray-100);
+	--button-border-color: var(--color-gray-100);
 }
 
 button.primary:disabled,
 .button.primary:disabled {
 	--bg-color: var(--color-gray-300);
-    --button-border-color: var(--color-gray-300);
+	--button-border-color: var(--color-gray-300);
 }
 
 /* Button group */
@@ -193,6 +201,61 @@ button.primary:disabled,
 .button-group .button:focus {
 	background-color: var(--hover-color);
 	outline: none;
+}
+
+/* Form controls */
+label {
+	font-weight: 500;
+}
+
+input,
+select,
+textarea {
+	appearance: none;
+	background-color: var(--color-gray-050);
+	border: solid 1px var(--color-gray-300);
+	border-radius: 8px;
+	color: var(--color-gray-500);
+	display: block;
+	font-weight: 400;
+	line-height: 1.2;
+	padding: 12px 16px;
+	width: 100%;
+}
+
+select {
+	background: url(/src/lib/assets/chevron-down.svg);
+	background-position: right 12px center;
+	background-repeat: no-repeat;
+	background-size: 18px;
+}
+
+textarea {
+	min-height: 81px;
+	resize: vertical;
+}
+
+
+input:active,
+select:active,
+textarea:active {
+	border-color: var(--color-blue-600);
+}
+
+input:invalid,
+select:invalid,
+textarea:invalid {
+	background-color: var(--color-red-050);
+	border-color: var(--color-red-500);
+	color: var(--color-red-700);
+}
+
+input:valid,
+select:valid,
+textarea:valid {
+	background-color: var(--color-green-050);
+	border-color: var(--color-green-500);
+	color: var(--color-green-700);
 }
 
 /* SVG icons */

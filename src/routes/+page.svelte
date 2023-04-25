@@ -1,5 +1,33 @@
-<script>
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
+	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Card from '$lib/components/Card.svelte';
+	import { containerTypes } from '$lib/models';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
+
+	const columns = [
+		{ title: 'strategies', containerType: containerTypes.enum.strategy },
+		{ title: 'topics', containerType: containerTypes.enum.topic },
+		{ title: 'models', containerType: containerTypes.enum.model },
+		{ title: 'strategic_goals', containerType: containerTypes.enum.strategic_goal },
+		{ title: 'operational_goals', containerType: containerTypes.enum.operational_goal },
+		{ title: 'measures', containerType: containerTypes.enum.measure }
+	];
 </script>
 
-<Board />
+<Board>
+	{#each columns as column (column.title)}
+		<BoardColumn title={$_(column.title)} containerType={column.containerType}>
+			{#each data.containers.filter((c) => c.type === column.containerType) as container}
+				<Card
+					title={container.payload.title}
+					description={container.payload.description}
+					category={$_(container.payload.category)}
+				/>
+			{/each}
+		</BoardColumn>
+	{/each}
+</Board>

@@ -25,6 +25,15 @@ variable "keycloak_realm" {
   type = string
 }
 
+variable "migrate_image" {
+  type = string
+}
+
+variable "migrate_name" {
+  default = "migrate"
+  type    = string
+}
+
 variable "strategytool_host" {
   type = string
 }

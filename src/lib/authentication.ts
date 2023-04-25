@@ -16,6 +16,10 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 			givenName: kc.idTokenParsed?.given_name,
 			isAuthenticated: true
 		});
+		keycloak.update((v) => ({
+			...v,
+			logoutUrl: kc.createLogoutUrl()
+		}));
 		sessionStorage.idToken = kc.idToken;
 		sessionStorage.refreshToken = kc.refreshToken;
 		sessionStorage.token = kc.token;
@@ -39,12 +43,12 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 		token: sessionStorage.token
 	}).catch((reason) => console.log(reason));
 
-	keycloak.set({
+	keycloak.update((v) => ({
+		...v,
 		accountUrl: kc.createAccountUrl(),
 		loginUrl: kc.createLoginUrl(),
-		logoutUrl: kc.createLogoutUrl(),
 		registerUrl: kc.createRegisterUrl()
-	});
+	}));
 
 	return kc;
 }

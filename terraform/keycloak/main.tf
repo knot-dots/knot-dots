@@ -38,6 +38,18 @@ resource "scaleway_iam_application" "keycloak" {
   name = "Keycloak"
 }
 
+resource "scaleway_iam_policy" "keycloak" {
+  name           = "Keycloak"
+  application_id = scaleway_iam_application.keycloak.id
+
+  rule {
+    permission_set_names = [
+      "TransactionalEmailEmailFullAccess"
+    ]
+    project_ids = [var.scaleway_project_id]
+  }
+}
+
 resource "scaleway_iam_api_key" "keycloak" {
   application_id = scaleway_iam_application.keycloak.id
 }

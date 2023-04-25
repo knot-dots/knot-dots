@@ -7,7 +7,11 @@
 	import { initKeycloak } from '$lib/authentication';
 
 	onMount(() => {
-		initKeycloak({ enableLogging: true, silentCheckSsoFallback: false });
+		initKeycloak({
+			checkLoginIframe: false,
+			enableLogging: true,
+			silentCheckSsoFallback: false
+		});
 	});
 </script>
 
