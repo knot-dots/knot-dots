@@ -40,7 +40,7 @@ export const actions = {
 				} else if (e instanceof jose.errors.JWTClaimValidationFailed) {
 					throw error(403, { message: 'Insufficient claims' });
 				} else {
-					throw error(500, { message: e.message });
+					throw e;
 				}
 			});
 
