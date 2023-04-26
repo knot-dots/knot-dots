@@ -29,10 +29,10 @@
 				</a>
 			</li>
 			<li>
-				<a href={$keycloak.logoutUrl}>{$_('logout')}</a>
+				<a href={$keycloak.logoutUrl} class="button quiet">{$_('logout')}</a>
 			</li>
 		{:else}
-			<li><a href={$keycloak.loginUrl}>{$_('login')}</a></li>
+			<li><a href={$keycloak.loginUrl} class="button quiet">{$_('login')}</a></li>
 			<li>
 				<a href={$keycloak.registerUrl} class="button primary">{$_('register')}</a>
 			</li>

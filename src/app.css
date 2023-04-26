@@ -80,7 +80,7 @@ body {
 	text-rendering: optimizeSpeed;
 }
 
-/* A elements that don't have a class get default styles */
+/* Links */
 a {
 	color: inherit;
 	text-decoration: none;
@@ -141,10 +141,21 @@ button.primary,
 	color: white;
 }
 
+button.quiet,
+.button.quiet {
+	--bg-color: transparent;
+	--button-border-color: transparent;
+}
+
 button:hover,
 .button:hover {
 	--bg-color: var(--hover-color);
 	--button-border-color: inherit;
+}
+
+button.quiet:hover,
+.button.quiet:hover {
+	--hover-color: transparent;
 }
 
 button:focus,

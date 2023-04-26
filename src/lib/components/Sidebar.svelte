@@ -67,13 +67,13 @@
 
 	<ul class="group group-links">
 		<li>
-			<a href="/help">
+			<a href="/help" class="button quiet">
 				<QuestionMarkCircleIcon class="icon-20" />
 				<span class:is-hidden={!isExpanded}>{$_('help')}</span>
 			</a>
 		</li>
 		<li>
-			<a href="/about">
+			<a href="/about" class="button quiet">
 				<UserGroupIcon class="icon-20" />
 				<span class:is-hidden={!isExpanded}>{$_('about')}</span>
 			</a>
@@ -83,20 +83,20 @@
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
 			<li>
-				<a href={$keycloak.accountUrl}>
+				<a href={$keycloak.accountUrl} class="button quiet">
 					<span class="avatar avatar-m">{$user.givenName.at(0)} {$user.familyName.at(0)}</span>
 					<span class:is-hidden={!isExpanded}>{$user.givenName} {$user.familyName}</span>
 				</a>
 			</li>
 			<li>
-				<a href={$keycloak.logoutUrl} class="button">
+				<a href={$keycloak.logoutUrl} class="button quiet">
 					<LogoutIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
 					<span class:is-hidden={!isExpanded}>{$_('logout')}</span>
 				</a>
 			</li>
 		{:else}
 			<li>
-				<a href={$keycloak.loginUrl}>
+				<a href={$keycloak.loginUrl} class="button quiet">
 					<LoginIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
 					<span class:is-hidden={!isExpanded}>{$_('login')}</span>
 				</a>
@@ -149,6 +149,14 @@
 		gap: 0.5rem;
 	}
 
+	.group button,
+	.group .button {
+		align-items: center;
+		display: flex;
+		padding: 14px 14px;
+		text-align: left;
+	}
+
 	.group.group-controls {
 		flex-direction: row;
 	}
@@ -172,26 +180,13 @@
 		margin: auto 0 1rem;
 	}
 
-	.group-actions button,
-	.group-links a,
-	.group-user-menu a {
-		align-items: center;
-		display: flex;
-		padding: 14px 14px;
-		text-align: left;
-	}
-
-	.group.group-user-menu a {
+	.group.group-user-menu .button {
 		justify-content: center;
 	}
 
-	.group.group-user-menu li:first-child a {
-		padding: 0;
-	}
-
 	aside.is-expanded .group-actions button,
-	aside.is-expanded .group-links a,
-	aside.is-expanded .group-user-menu a {
+	aside.is-expanded .group-links .button,
+	aside.is-expanded .group-user-menu .button {
 		gap: 0.5rem;
 		padding: 12px 20px;
 		width: 100%;
