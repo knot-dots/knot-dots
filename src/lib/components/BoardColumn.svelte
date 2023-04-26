@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import type { ContainerType } from '$lib/models';
+	import { user } from '$lib/stores';
 
 	export let title: string;
 	export let containerType: ContainerType;
@@ -15,7 +16,11 @@
 	<div class="vertical-scroll-wrapper">
 		<slot />
 		<footer>
-			<a href="/container/{containerType}" class="button primary">{$_('add_item')}</a>
+			{#if $user.isAuthenticated}
+				<a href="/container/{containerType}" class="button primary">{$_('add_item')}</a>
+			{:else}
+				<button class="primary" disabled>{$_('add_item')}</button>
+			{/if}
 		</footer>
 	</div>
 </section>
@@ -47,9 +52,10 @@
 		font-weight: 600;
 	}
 
-	footer a {
+	footer > * {
 		display: block;
 		text-align: center;
+		width: 100%;
 	}
 
 	.vertical-scroll-wrapper {
