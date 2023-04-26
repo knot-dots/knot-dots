@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { Icon, ChevronDown, ChevronUp } from 'svelte-hero-icons';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
@@ -12,11 +13,23 @@
 	import TableIcon from '$lib/icons/TableIcon.svelte';
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
+	import { sustainableDevelopmentGoals } from '$lib/models';
 	import { keycloak, navigationToggle, user } from '$lib/stores.js';
 
 	let isExpanded = true;
 	function toggleSidebar() {
 		isExpanded = !isExpanded;
+		if (!isExpanded) {
+			filtersExpanded = false;
+		}
+	}
+
+	let filtersExpanded = false;
+	function toggleFilters() {
+		filtersExpanded = !filtersExpanded;
+		if (filtersExpanded) {
+			isExpanded = true;
+		}
 	}
 </script>
 
@@ -52,10 +65,22 @@
 
 	<ul class="group group-actions">
 		<li>
-			<button>
+			<button on:click={toggleFilters} aria-controls="filters" aria-expanded={filtersExpanded}>
 				<FilterIcon class="icon-20" />
 				<span class:is-hidden={!isExpanded}>{$_('filter')}</span>
+				<span class:is-hidden={!isExpanded}>
+					<Icon src={filtersExpanded ? ChevronUp : ChevronDown} size="20" />
+				</span>
 			</button>
+			<ul id="filters" class="collapsible" class:is-hidden={!filtersExpanded}>
+				{#each sustainableDevelopmentGoals.options as option}
+					<li>
+						<label>
+							<input type="checkbox" name={option} />{$_(option)}
+						</label>
+					</li>
+				{/each}
+			</ul>
 		</li>
 		<li>
 			<button>
@@ -143,6 +168,14 @@
 		border-top: solid 1px var(--color-gray-200);
 	}
 
+	button[aria-expanded='true'] {
+		--bg-color: var(--color-gray-400);
+	}
+
+	button[aria-controls='filters'] > span:last-child {
+		margin-left: auto;
+	}
+
 	.group {
 		display: flex;
 		flex-direction: column;
@@ -190,5 +223,30 @@
 		gap: 0.5rem;
 		padding: 12px 20px;
 		width: 100%;
+	}
+
+	.collapsible {
+		border-radius: 8px;
+		box-shadow: var(--shadow-md);
+		padding: 12px 17px 12px 12px;
+		margin-top: 8px;
+		max-height: 10rem;
+		overflow-y: scroll;
+	}
+
+	.collapsible > li {
+		margin-bottom: 12px;
+	}
+
+	.collapsible > li:last-child {
+		margin-bottom: 0;
+	}
+
+	.collapsible label {
+		display: block;
+		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
