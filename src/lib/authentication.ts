@@ -52,3 +52,9 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 
 	return kc;
 }
+
+export const key = Symbol();
+
+export interface KeycloakContext {
+	getKeycloak: () => Keycloak;
+}
