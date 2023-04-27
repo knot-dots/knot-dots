@@ -1,13 +1,21 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import type Keycloak from 'keycloak-js';
+	import { onMount, setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { initKeycloak } from '$lib/authentication';
+	import { initKeycloak, key } from '$lib/authentication';
+	import type { KeycloakContext } from '$lib/authentication';
+
+	let kc: Keycloak;
+
+	setContext<KeycloakContext>(key, {
+		getKeycloak: () => kc
+	});
 
 	onMount(() => {
-		initKeycloak({
+		kc = initKeycloak({
 			checkLoginIframe: false,
 			enableLogging: true,
 			silentCheckSsoFallback: false

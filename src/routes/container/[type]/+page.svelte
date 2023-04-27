@@ -1,12 +1,21 @@
 <script lang="ts">
 	import type { ActionResult } from '@sveltejs/kit';
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { applyAction, deserialize } from '$app/forms';
+	import { key } from '$lib/authentication';
+	import type { KeycloakContext } from '$lib/authentication';
 	import { sustainableDevelopmentGoals } from '$lib/models';
+
+	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
 
+		// Ensure a fresh token will be included in the Authorization header.
+		await getKeycloak()
+			.updateToken(-1)
+			.catch((reason) => reason);
 		const response = await fetch((event.target as HTMLFormElement).action, {
 			method: 'POST',
 			body: data,

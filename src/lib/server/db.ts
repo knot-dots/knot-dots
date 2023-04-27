@@ -25,7 +25,11 @@ const createResultParserInterceptor = (): Interceptor => {
 			const validationResult = resultParser.safeParse(row);
 
 			if (!validationResult.success) {
-				throw new SchemaValidationError(actualQuery, row.toString(), validationResult.error.issues);
+				throw new SchemaValidationError(
+					actualQuery,
+					row as SerializableValue,
+					validationResult.error.issues
+				);
 			}
 
 			return validationResult.data as QueryResultRow;

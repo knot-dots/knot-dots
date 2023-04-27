@@ -25,6 +25,14 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 		sessionStorage.token = kc.token;
 	};
 
+	kc.onAuthRefreshSuccess = () => {
+		sessionStorage.idToken = kc.idToken;
+		sessionStorage.refreshToken = kc.refreshToken;
+		sessionStorage.token = kc.token;
+	};
+
+	kc.onAuthRefreshError = kc.clearToken;
+
 	kc.onAuthLogout = () => {
 		user.set({
 			familyName: '',
@@ -51,4 +59,10 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 	}));
 
 	return kc;
+}
+
+export const key = Symbol();
+
+export interface KeycloakContext {
+	getKeycloak: () => Keycloak;
 }

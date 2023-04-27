@@ -39,6 +39,8 @@
 	"type": "module",
 	"dependencies": {
 		"keycloak-js": "^21.1.0-1",
+		"roarr": "^7.15.0",
+		"serialize-error": "^11.0.0",
 		"slonik": "^33.1.4",
 		"zod": "^3.21.4"
 	}
