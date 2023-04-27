@@ -1,27 +1,31 @@
 <script lang="ts">
 	import { Icon, InformationCircle, Share } from 'svelte-hero-icons';
 
+	export let guid: string;
+	export let type: string;
 	export let title: string;
 	export let description: string;
 	export let category: string;
 </script>
 
-<article class="card">
-	<header>
-		<h3>{title}</h3>
-		<span class="header-icons">
-			<Icon src={Share} size="20" />
-		</span>
-	</header>
-	<div class="text">
-		{@html description}
-	</div>
-	<footer>
-		<div class="badges">
-			<span class="badge">{category}</span>
+<a href={`/container/${type}/${guid}`} {title}>
+	<article class="card">
+		<header>
+			<h3>{title}</h3>
+			<span class="header-icons">
+				<Icon src={Share} size="20" />
+			</span>
+		</header>
+		<div class="text">
+			{@html description}
 		</div>
-	</footer>
-</article>
+		<footer>
+			<div class="badges">
+				<span class="badge">{category}</span>
+			</div>
+		</footer>
+	</article>
+</a>
 
 <style>
 	.card {
