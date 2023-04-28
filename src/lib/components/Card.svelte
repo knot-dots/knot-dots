@@ -46,6 +46,7 @@
 
 	.header-icons {
 		display: flex;
+		flex-shrink: 0;
 		gap: 12px;
 	}
 
