@@ -20,7 +20,7 @@ test('navigation contains expected elements', async ({ page, viewport }) => {
 		page.getByRole('navigation').getByRole('button', { name: 'Strategies' })
 	).toBeVisible();
 	await expect(
-		page.getByRole('navigation').getByRole('button', { name: 'Objectives' })
+		page.getByRole('navigation').getByRole('link', { name: 'Objectives' })
 	).toBeVisible();
 	await expect(
 		page.getByRole('navigation').getByRole('button', { name: 'Measures' })
