@@ -123,13 +123,13 @@
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
 			<li>
-				<a href={$keycloak.accountUrl} class="button quiet">
+				<a href={$keycloak.accountUrl}>
 					<span class="avatar avatar-m">{$user.givenName.at(0)} {$user.familyName.at(0)}</span>
 					<span class:is-hidden={!isExpanded}>{$user.givenName} {$user.familyName}</span>
 				</a>
 			</li>
 			<li>
-				<a href={$keycloak.logoutUrl} class="button quiet">
+				<a href={$keycloak.logoutUrl} class="button">
 					<LogoutIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
 					<span class:is-hidden={!isExpanded}>{$_('logout')}</span>
 				</a>
@@ -197,11 +197,12 @@
 		gap: 0.5rem;
 	}
 
-	.group button,
-	.group .button {
+	.group > li > a,
+	.group > li > button {
+		--padding-x: 14px;
+		--padding-y: 14px;
 		align-items: center;
 		display: flex;
-		padding: 14px 14px;
 		text-align: left;
 	}
 
@@ -228,15 +229,17 @@
 		margin: auto 0 1rem;
 	}
 
-	.group.group-user-menu .button {
+	.group.group-user-menu a {
+		--padding-x: 0;
 		justify-content: center;
 	}
 
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-links .button,
-	aside.is-expanded .group-user-menu .button {
+	aside.is-expanded .group-user-menu a {
+		--padding-x: 20px;
+		--padding-y: 12px;
 		gap: 0.5rem;
-		padding: 12px 20px;
 		width: 100%;
 	}
 
