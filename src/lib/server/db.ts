@@ -119,12 +119,18 @@ export function createContainer(container: NewContainer) {
 	};
 }
 
-export function getManyContainers() {
+export function getManyContainers(categories: string[]) {
 	return async (connection: DatabaseConnection) => {
+		const booleanExpressions = [sql.fragment`valid_currently`];
+		if (categories.length > 0) {
+			booleanExpressions.push(
+				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
+			);
+		}
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE valid_currently
+			WHERE ${sql.join(booleanExpressions, sql.fragment` AND `)}
 			ORDER BY valid_from;
     `);
 
