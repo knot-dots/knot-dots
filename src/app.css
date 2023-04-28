@@ -165,7 +165,9 @@ button:focus,
 }
 
 button:active,
-.button:active {
+.button:active,
+button.is-active,
+.button.is-active {
 	--bg-color: var(--color-gray-300);
 }
 
