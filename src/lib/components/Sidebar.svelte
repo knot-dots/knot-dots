@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { Icon, ChevronDown, ChevronUp } from 'svelte-hero-icons';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
@@ -24,7 +27,14 @@
 		}
 	}
 
-	let filtersExpanded = false;
+	const hash = $page.url.hash;
+	let selectedCategory: string[] = $page.url.searchParams.getAll('category');
+	$: if (browser) {
+		const query = new URLSearchParams(selectedCategory.map((f) => ['category', f]));
+		goto(`?${query.toString()}${hash}`);
+	}
+
+	let filtersExpanded = selectedCategory.length > 0;
 	function toggleFilters() {
 		filtersExpanded = !filtersExpanded;
 		if (filtersExpanded) {
@@ -76,7 +86,12 @@
 				{#each sustainableDevelopmentGoals.options as option}
 					<li>
 						<label>
-							<input type="checkbox" name={option} />{$_(option)}
+							<input
+								type="checkbox"
+								name="filters"
+								value={option}
+								bind:group={selectedCategory}
+							/>{$_(option)}
 						</label>
 					</li>
 				{/each}
