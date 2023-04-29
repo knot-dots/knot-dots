@@ -29,9 +29,13 @@
 	}
 
 	const hash = $page.url.hash;
-	let selectedCategory: string[] = $page.url.searchParams.getAll('category');
-	$: if (browser) {
+	let selectedCategory = $page.url.searchParams.getAll('category');
+	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
+	$: if (browser && $page.url.pathname == '/') {
 		const query = new URLSearchParams(selectedCategory.map((f) => ['category', f]));
+		if (selectedSort != 'modified') {
+			query.append('sort', selectedSort);
+		}
 		goto(`?${query.toString()}${hash}`);
 	}
 
@@ -43,7 +47,7 @@
 		}
 	}
 
-	let sortExpanded = false;
+	let sortExpanded = selectedSort != 'modified';
 
 	function toggleSort() {
 		sortExpanded = !sortExpanded;
@@ -118,13 +122,13 @@
 			<ul id="sort" class="collapsible" class:is-hidden={!sortExpanded}>
 				<li>
 					<label>
-						<input type="radio" value={'modified'} />
+						<input type="radio" value={'modified'} bind:group={selectedSort} />
 						{$_('sort_modified')}
 					</label>
 				</li>
 				<li>
 					<label>
-						<input type="radio" value={'alpha'} />
+						<input type="radio" value={'alpha'} bind:group={selectedSort} />
 						{$_('sort_alphabetically')}
 					</label>
 				</li>
