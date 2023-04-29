@@ -51,10 +51,14 @@ services:
       - migrate
     environment:
       - CI
+      - KC_URL
       - PGDATABASE
       - PGHOST
       - PGPASSWORD
       - PGUSER
+      - PUBLIC_KC_CLIENT_ID
+      - PUBLIC_KC_REALM
+      - PUBLIC_KC_URL
     profiles:
       - qa
     volumes:
