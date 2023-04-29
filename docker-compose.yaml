@@ -42,15 +42,14 @@ services:
       - --import-realm
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import
-  playwright:
+  preview:
     build:
       context: .
       dockerfile: docker/strategytool/Dockerfile
-      target: qa
+      target: production
     depends_on:
       - migrate
     environment:
-      - CI
       - KC_URL
       - PGDATABASE
       - PGHOST
@@ -59,10 +58,10 @@ services:
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
+    ports:
+      - "3000:3000"
     profiles:
       - qa
-    volumes:
-      - ./test-results:/srv/app/test-results
   strategytool:
     build:
       context: .
@@ -70,7 +69,6 @@ services:
       target: dev
     ports:
       - "5173:5173"
-      - "3000:3000"
     depends_on:
       db:
         condition: service_healthy

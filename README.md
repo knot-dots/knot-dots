@@ -35,7 +35,8 @@ The tests are run automatically as part of the continuous integration workflow.
 To execute the tests locally run:
 
 ```bash
-docker compose run --rm playwright
+npx playwright install --with-deps
+npx playwright test
 ```
 
 ## Deployment
