@@ -24,6 +24,7 @@
 		isExpanded = !isExpanded;
 		if (!isExpanded) {
 			filtersExpanded = false;
+			sortExpanded = false;
 		}
 	}
 
@@ -38,6 +39,15 @@
 	function toggleFilters() {
 		filtersExpanded = !filtersExpanded;
 		if (filtersExpanded) {
+			isExpanded = true;
+		}
+	}
+
+	let sortExpanded = false;
+
+	function toggleSort() {
+		sortExpanded = !sortExpanded;
+		if (sortExpanded) {
 			isExpanded = true;
 		}
 	}
@@ -98,10 +108,27 @@
 			</ul>
 		</li>
 		<li>
-			<button>
+			<button on:click={toggleSort} aria-controls="sort" aria-expanded={sortExpanded}>
 				<SortDescendingIcon class="icon-20" />
 				<span class:is-hidden={!isExpanded}>{$_('sort')}</span>
+				<span class:is-hidden={!isExpanded}
+					><Icon src={sortExpanded ? ChevronUp : ChevronDown} size="20" /></span
+				>
 			</button>
+			<ul id="sort" class="collapsible" class:is-hidden={!sortExpanded}>
+				<li>
+					<label>
+						<input type="radio" value={'modified'} />
+						{$_('sort_modified')}
+					</label>
+				</li>
+				<li>
+					<label>
+						<input type="radio" value={'alpha'} />
+						{$_('sort_alphabetically')}
+					</label>
+				</li>
+			</ul>
 		</li>
 	</ul>
 
@@ -187,7 +214,7 @@
 		--bg-color: var(--color-gray-400);
 	}
 
-	button[aria-controls='filters'] > span:last-child {
+	button[aria-controls] > span:last-child {
 		margin-left: auto;
 	}
 

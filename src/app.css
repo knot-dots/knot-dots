@@ -269,7 +269,8 @@ textarea:valid {
 	color: var(--color-green-700);
 }
 
-label > input[type='checkbox'] {
+label > input[type='checkbox'],
+label > input[type='radio'] {
 	margin-right: 8px;
 	vertical-align: top;
 }
