@@ -119,19 +119,25 @@ export function createContainer(container: NewContainer) {
 	};
 }
 
-export function getManyContainers(categories: string[]) {
+export function getManyContainers(categories: string[], sort: string) {
 	return async (connection: DatabaseConnection) => {
-		const booleanExpressions = [sql.fragment`valid_currently`];
+		const conditions = [sql.fragment`valid_currently`];
 		if (categories.length > 0) {
-			booleanExpressions.push(
+			conditions.push(
 				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
 			);
 		}
+
+		let order_by = sql.fragment`valid_from`;
+		if (sort == 'alpha') {
+			order_by = sql.fragment`payload->>'title'`;
+		}
+
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${sql.join(booleanExpressions, sql.fragment` AND `)}
-			ORDER BY valid_from;
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
+			ORDER BY ${order_by};
     `);
 
 		const userResult =
