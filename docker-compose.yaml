@@ -29,6 +29,7 @@ services:
       - PGUSER
     volumes:
       - ./sql/migrations:/srv/migrations
+    working_dir: /srv/migrations
   keycloak:
     image: quay.io/keycloak/keycloak:21.0.1
     ports:
