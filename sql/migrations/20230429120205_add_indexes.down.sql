@@ -1,0 +1,2 @@
+DROP INDEX container_payload_category_idx;
+DROP INDEX container_payload_title_idx;
