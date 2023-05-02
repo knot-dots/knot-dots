@@ -128,6 +128,7 @@ button,
 	background-color: var(--bg-color);
 	border: solid 1px var(--button-border-color);
 	border-radius: 8px;
+	display: inline-block;
 	font-weight: 500;
 	padding: var(--padding-y) var(--padding-x);
 	margin: 0;
@@ -164,7 +165,9 @@ button:focus,
 }
 
 button:active,
-.button:active {
+.button:active,
+button.is-active,
+.button.is-active {
 	--bg-color: var(--color-gray-300);
 }
 
@@ -189,7 +192,8 @@ button.primary:disabled,
 	display: block;
 }
 
-.button-group > li > button {
+.button-group > li > button,
+.button-group > li > .button {
 	border: none;
 	border-radius: 0;
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import FilterIcon from '$lib/icons/FilterIcon.svelte';
+	import { Icon, Plus } from 'svelte-hero-icons';
 	import type { ContainerType } from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -11,7 +11,9 @@
 <section>
 	<header>
 		<h2>{title}</h2>
-		<FilterIcon class="icon-20" />
+		{#if $user.isAuthenticated}
+			<a href="/container/{containerType}" title={$_('add_item')}><Icon src={Plus} size="20" /></a>
+		{/if}
 	</header>
 	<div class="vertical-scroll-wrapper">
 		<slot />
@@ -50,6 +52,10 @@
 	header h2 {
 		font-size: inherit;
 		font-weight: 600;
+	}
+
+	:global(header svg) {
+		stroke-width: 2.5px;
 	}
 
 	footer > * {

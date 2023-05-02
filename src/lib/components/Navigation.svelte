@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import logo from '$lib/assets/logo.png';
@@ -17,7 +18,9 @@
 
 	<ul class="button-group button-group-boards">
 		<li><button>{$_('strategies')}</button></li>
-		<li><button>{$_('objectives')}</button></li>
+		<li>
+			<a href="/" class="button" class:is-active={$page.url.pathname == '/'}>{$_('objectives')}</a>
+		</li>
 		<li><button>{$_('measures')}</button></li>
 	</ul>
 

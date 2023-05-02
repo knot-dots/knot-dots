@@ -10,7 +10,6 @@
 	<header>
 		<h3>{title}</h3>
 		<span class="header-icons">
-			<Icon src={InformationCircle} size="20" />
 			<Icon src={Share} size="20" />
 		</span>
 	</header>
@@ -47,6 +46,7 @@
 
 	.header-icons {
 		display: flex;
+		flex-shrink: 0;
 		gap: 12px;
 	}
 
