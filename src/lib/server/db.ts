@@ -120,6 +120,26 @@ export function createContainer(container: NewContainer) {
 	};
 }
 
+export function getContainerByGuid(guid: string) {
+	return async (connection: DatabaseConnection) => {
+		const containerResult = await connection.one(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE guid = ${guid}
+				AND valid_currently;
+		`);
+		const userResult = await connection.any(sql.typeAlias('userWithRevision')`
+			SELECT *
+			FROM container_user
+			WHERE revision = ${containerResult.revision}
+		`);
+		return {
+			...containerResult,
+			user: userResult.map(({ issuer, subject }) => ({ issuer, subject }))
+		};
+	};
+}
+
 export function getManyContainers(categories: string[], sort: string) {
 	return async (connection: DatabaseConnection) => {
 		const conditions = [sql.fragment`valid_currently`];
