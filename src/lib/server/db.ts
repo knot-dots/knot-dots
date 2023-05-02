@@ -81,6 +81,12 @@ const newContainer = containerWithUser.omit({
 	valid_from: true
 });
 
+const modifiedContainer = containerWithUser.omit({
+	revision: true,
+	valid_currently: true,
+	valid_from: true
+});
+
 const typeAliases = {
 	container,
 	user,
@@ -93,6 +99,8 @@ export type User = z.infer<typeof user>;
 export type Container = z.infer<typeof containerWithUser>;
 
 export type NewContainer = z.infer<typeof newContainer>;
+
+export type ModifiedContainer = z.infer<typeof modifiedContainer>
 
 const sql = createSqlTag({ typeAliases });
 
@@ -113,6 +121,39 @@ export function createContainer(container: NewContainer) {
           SELECT *
           FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
           RETURNING issuer, subject
+      `);
+
+			return { ...containerResult, user: userResult };
+		});
+	};
+}
+
+export function updateContainer(container: ModifiedContainer) {
+	return (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			await txConnection.query(sql.typeAlias('void')`
+				UPDATE container
+				SET valid_currently = false
+				WHERE guid = ${container.guid}
+			`);
+
+			const containerResult = await txConnection.one(sql.typeAlias('container')`
+				INSERT INTO container (type, payload, realm, guid)
+				VALUES (
+					${container.type},
+					${sql.jsonb(<SerializableValue>container.payload)},
+					${container.realm},
+					${container.guid}
+				)
+				RETURNING *
+      `);
+
+			const userValues = container.user.map((u) => [u.issuer, containerResult.revision, u.subject]);
+			const userResult = await txConnection.many(sql.typeAlias('user')`
+				INSERT INTO container_user (issuer, revision, subject)
+				SELECT *
+				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+				RETURNING issuer, subject
       `);
 
 			return { ...containerResult, user: userResult };
