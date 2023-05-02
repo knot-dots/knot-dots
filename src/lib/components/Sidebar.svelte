@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { Icon, ChevronDown, ChevronUp } from 'svelte-hero-icons';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
@@ -12,11 +16,44 @@
 	import TableIcon from '$lib/icons/TableIcon.svelte';
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
+	import { sustainableDevelopmentGoals } from '$lib/models';
 	import { keycloak, navigationToggle, user } from '$lib/stores.js';
 
 	let isExpanded = true;
 	function toggleSidebar() {
 		isExpanded = !isExpanded;
+		if (!isExpanded) {
+			filtersExpanded = false;
+			sortExpanded = false;
+		}
+	}
+
+	const hash = $page.url.hash;
+	let selectedCategory = $page.url.searchParams.getAll('category');
+	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
+	$: if (browser && $page.url.pathname == '/') {
+		const query = new URLSearchParams(selectedCategory.map((f) => ['category', f]));
+		if (selectedSort != 'modified') {
+			query.append('sort', selectedSort);
+		}
+		goto(`?${query.toString()}${hash}`);
+	}
+
+	let filtersExpanded = selectedCategory.length > 0;
+	function toggleFilters() {
+		filtersExpanded = !filtersExpanded;
+		if (filtersExpanded) {
+			isExpanded = true;
+		}
+	}
+
+	let sortExpanded = selectedSort != 'modified';
+
+	function toggleSort() {
+		sortExpanded = !sortExpanded;
+		if (sortExpanded) {
+			isExpanded = true;
+		}
 	}
 </script>
 
@@ -52,16 +89,50 @@
 
 	<ul class="group group-actions">
 		<li>
-			<button>
+			<button on:click={toggleFilters} aria-controls="filters" aria-expanded={filtersExpanded}>
 				<FilterIcon class="icon-20" />
 				<span class:is-hidden={!isExpanded}>{$_('filter')}</span>
+				<span class:is-hidden={!isExpanded}>
+					<Icon src={filtersExpanded ? ChevronUp : ChevronDown} size="20" />
+				</span>
 			</button>
+			<ul id="filters" class="collapsible" class:is-hidden={!filtersExpanded}>
+				{#each sustainableDevelopmentGoals.options as option}
+					<li>
+						<label>
+							<input
+								type="checkbox"
+								name="filters"
+								value={option}
+								bind:group={selectedCategory}
+							/>{$_(option)}
+						</label>
+					</li>
+				{/each}
+			</ul>
 		</li>
 		<li>
-			<button>
+			<button on:click={toggleSort} aria-controls="sort" aria-expanded={sortExpanded}>
 				<SortDescendingIcon class="icon-20" />
 				<span class:is-hidden={!isExpanded}>{$_('sort')}</span>
+				<span class:is-hidden={!isExpanded}
+					><Icon src={sortExpanded ? ChevronUp : ChevronDown} size="20" /></span
+				>
 			</button>
+			<ul id="sort" class="collapsible" class:is-hidden={!sortExpanded}>
+				<li>
+					<label>
+						<input type="radio" value={'modified'} bind:group={selectedSort} />
+						{$_('sort_modified')}
+					</label>
+				</li>
+				<li>
+					<label>
+						<input type="radio" value={'alpha'} bind:group={selectedSort} />
+						{$_('sort_alphabetically')}
+					</label>
+				</li>
+			</ul>
 		</li>
 	</ul>
 
@@ -83,13 +154,13 @@
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
 			<li>
-				<a href={$keycloak.accountUrl} class="button quiet">
+				<a href={$keycloak.accountUrl}>
 					<span class="avatar avatar-m">{$user.givenName.at(0)} {$user.familyName.at(0)}</span>
 					<span class:is-hidden={!isExpanded}>{$user.givenName} {$user.familyName}</span>
 				</a>
 			</li>
 			<li>
-				<a href={$keycloak.logoutUrl} class="button quiet">
+				<a href={$keycloak.logoutUrl} class="button">
 					<LogoutIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
 					<span class:is-hidden={!isExpanded}>{$_('logout')}</span>
 				</a>
@@ -143,17 +214,26 @@
 		border-top: solid 1px var(--color-gray-200);
 	}
 
+	button[aria-expanded='true'] {
+		--bg-color: var(--color-gray-400);
+	}
+
+	button[aria-controls] > span:last-child {
+		margin-left: auto;
+	}
+
 	.group {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
 	}
 
-	.group button,
-	.group .button {
+	.group > li > a,
+	.group > li > button {
+		--padding-x: 14px;
+		--padding-y: 14px;
 		align-items: center;
 		display: flex;
-		padding: 14px 14px;
 		text-align: left;
 	}
 
@@ -180,15 +260,42 @@
 		margin: auto 0 1rem;
 	}
 
-	.group.group-user-menu .button {
+	.group.group-user-menu a {
+		--padding-x: 0;
 		justify-content: center;
 	}
 
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-links .button,
-	aside.is-expanded .group-user-menu .button {
+	aside.is-expanded .group-user-menu a {
+		--padding-x: 20px;
+		--padding-y: 12px;
 		gap: 0.5rem;
-		padding: 12px 20px;
 		width: 100%;
+	}
+
+	.collapsible {
+		border-radius: 8px;
+		box-shadow: var(--shadow-md);
+		padding: 12px 17px 12px 12px;
+		margin-top: 8px;
+		max-height: 10rem;
+		overflow-y: scroll;
+	}
+
+	.collapsible > li {
+		margin-bottom: 12px;
+	}
+
+	.collapsible > li:last-child {
+		margin-bottom: 0;
+	}
+
+	.collapsible label {
+		display: block;
+		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>

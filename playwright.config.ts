@@ -16,8 +16,10 @@ const config: PlaywrightTestConfig = {
 		trace: 'on-first-retry'
 	},
 	webServer: {
-		command: 'npm run build && npm run preview',
-		port: 4173
+		command: 'docker compose up --build preview',
+		port: 3000,
+		reuseExistingServer: !process.env.CI,
+		timeout: 120 * 1000
 	},
 	reporter: process.env.CI ? 'github' : 'list',
 	retries: process.env.CI ? 1 : 0,

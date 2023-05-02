@@ -2,7 +2,6 @@ FROM node:18-slim AS builder
 WORKDIR /srv/app
 COPY package*.json ./
 RUN npm clean-install --silent
-RUN npx playwright install --with-deps
 COPY postcss.config.js .
 COPY svelte.config.js .
 COPY tsconfig.json .
@@ -11,13 +10,6 @@ COPY src ./src
 COPY static ./static
 RUN npm run check
 RUN npm run build
-
-FROM builder AS qa
-VOLUME /srv/app/test-results
-ENV CI=""
-COPY playwright.config.ts .
-COPY tests ./tests
-CMD ["npx", "playwright", "test"]
 
 FROM builder AS dev
 EXPOSE 5173
