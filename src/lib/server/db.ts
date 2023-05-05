@@ -87,8 +87,15 @@ const modifiedContainer = containerWithUser.omit({
 	valid_from: true
 });
 
+const relation = z.object({
+	object: z.number().int().positive(),
+	predicate: z.string().max(128),
+	subject: z.number().int().positive()
+});
+
 const typeAliases = {
 	container,
+	relation,
 	user,
 	userWithRevision,
 	void: z.object({}).strict()
@@ -101,6 +108,8 @@ export type Container = z.infer<typeof containerWithUser>;
 export type NewContainer = z.infer<typeof newContainer>;
 
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
+
+export type Relation = z.infer<typeof relation>;
 
 const sql = createSqlTag({ typeAliases });
 
