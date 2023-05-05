@@ -87,54 +87,56 @@
 		</li>
 	</ul>
 
-	<ul class="group group-actions">
-		<li>
-			<button on:click={toggleFilters} aria-controls="filters" aria-expanded={filtersExpanded}>
-				<FilterIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>{$_('filter')}</span>
-				<span class:is-hidden={!isExpanded}>
-					<Icon src={filtersExpanded ? ChevronUp : ChevronDown} size="20" />
-				</span>
-			</button>
-			<ul id="filters" class="collapsible" class:is-hidden={!filtersExpanded}>
-				{#each sustainableDevelopmentGoals.options as option}
+	{#if $page.url.pathname === '/'}
+		<ul class="group group-actions">
+			<li>
+				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={filtersExpanded}>
+					<FilterIcon class="icon-20" />
+					<span class:is-hidden={!isExpanded}>{$_('filter')}</span>
+					<span class:is-hidden={!isExpanded}>
+						<Icon src={filtersExpanded ? ChevronUp : ChevronDown} size="20" />
+					</span>
+				</button>
+				<ul id="filters" class="collapsible" class:is-hidden={!filtersExpanded}>
+					{#each sustainableDevelopmentGoals.options as option}
+						<li>
+							<label>
+								<input
+									type="checkbox"
+									name="filters"
+									value={option}
+									bind:group={selectedCategory}
+								/>{$_(option)}
+							</label>
+						</li>
+					{/each}
+				</ul>
+			</li>
+			<li>
+				<button on:click={toggleSort} aria-controls="sort" aria-expanded={sortExpanded}>
+					<SortDescendingIcon class="icon-20" />
+					<span class:is-hidden={!isExpanded}>{$_('sort')}</span>
+					<span class:is-hidden={!isExpanded}
+						><Icon src={sortExpanded ? ChevronUp : ChevronDown} size="20" /></span
+					>
+				</button>
+				<ul id="sort" class="collapsible" class:is-hidden={!sortExpanded}>
 					<li>
 						<label>
-							<input
-								type="checkbox"
-								name="filters"
-								value={option}
-								bind:group={selectedCategory}
-							/>{$_(option)}
+							<input type="radio" value={'modified'} bind:group={selectedSort} />
+							{$_('sort_modified')}
 						</label>
 					</li>
-				{/each}
-			</ul>
-		</li>
-		<li>
-			<button on:click={toggleSort} aria-controls="sort" aria-expanded={sortExpanded}>
-				<SortDescendingIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>{$_('sort')}</span>
-				<span class:is-hidden={!isExpanded}
-					><Icon src={sortExpanded ? ChevronUp : ChevronDown} size="20" /></span
-				>
-			</button>
-			<ul id="sort" class="collapsible" class:is-hidden={!sortExpanded}>
-				<li>
-					<label>
-						<input type="radio" value={'modified'} bind:group={selectedSort} />
-						{$_('sort_modified')}
-					</label>
-				</li>
-				<li>
-					<label>
-						<input type="radio" value={'alpha'} bind:group={selectedSort} />
-						{$_('sort_alphabetically')}
-					</label>
-				</li>
-			</ul>
-		</li>
-	</ul>
+					<li>
+						<label>
+							<input type="radio" value={'alpha'} bind:group={selectedSort} />
+							{$_('sort_alphabetically')}
+						</label>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	{/if}
 
 	<ul class="group group-links">
 		<li>
