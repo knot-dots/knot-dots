@@ -4,8 +4,8 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { isContainerType } from '$lib/models';
 import type { SustainableDevelopmentGoal } from '$lib/models';
-import { createContainer } from '$lib/server/db';
-import type { Actions } from './$types';
+import { getContainerByGuid, updateContainer } from '$lib/server/db';
+import type { Actions, PageServerLoad } from './$types';
 
 export const actions = {
 	default: async ({ locals, params, request }) => {
@@ -58,7 +58,8 @@ export const actions = {
 			}
 		];
 		await locals.pool.connect(
-			createContainer({
+			updateContainer({
+				guid: params.guid,
 				payload,
 				type: params.type,
 				realm: env.PUBLIC_KC_REALM ?? '',
@@ -69,3 +70,7 @@ export const actions = {
 		throw redirect(303, '/');
 	}
 } satisfies Actions;
+
+export const load = (async ({ params, locals }) => {
+	return await locals.pool.connect(getContainerByGuid(params.guid));
+}) satisfies PageServerLoad;

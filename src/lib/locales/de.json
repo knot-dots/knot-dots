@@ -2,6 +2,7 @@
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
 	"boards": "Bretter",
+	"cancel": "Abbrechen",
 	"category":  "Kategorie",
 	"collapse_sidebar": "Seitenleiste zuklappen",
 	"close_sidebar": "Seitenleiste schließen",
@@ -46,6 +47,7 @@
 	"sort_modified": "Zuletzt bearbeitet",
 	"strategic_goals": "Strategische Ziele",
 	"strategies": "Strategien",
+	"summary": "Zusammenfassung",
 	"table": "Tabelle",
 	"title": "Titel"
 }

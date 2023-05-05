@@ -22,8 +22,10 @@
 		<BoardColumn title={$_(column.title)} containerType={column.containerType}>
 			{#each data.containers.filter((c) => c.type === column.containerType) as container}
 				<Card
+					guid={container.guid}
+					type={container.type}
 					title={container.payload.title}
-					description={container.payload.description}
+					summary={container.payload.summary ?? ''}
 					category={$_(container.payload.category)}
 				/>
 			{/each}

@@ -31,42 +31,41 @@
 	}
 </script>
 
-<form method="POST" on:submit|preventDefault={handleSubmit}>
-	<label>
-		{$_('title')}
-		<input name="title" type="text" required />
-	</label>
-	<label>
-		{$_('description')}
-		<textarea name="description" required />
-	</label>
-	<label>
-		{$_('category')}
-		<select name="category" required>
-			<option label="" />
-			{#each sustainableDevelopmentGoals.options as goal}
-				<option label={$_(goal)}>{goal}</option>
-			{/each}
-		</select>
-	</label>
-	<p>
+<form class="details" method="POST" on:submit|preventDefault={handleSubmit}>
+	<header>
+		<label>
+			{$_('title')}
+			<input name="title" type="text" required />
+		</label>
+	</header>
+
+	<div class="details-content">
+		<div class="details-content-column">
+			<label>
+				{$_('summary')}
+				<textarea name="summary" maxlength="200" required />
+			</label>
+			<label>
+				{$_('description')}
+				<textarea name="description" required />
+			</label>
+		</div>
+		<div class="details-content-column">
+			<label>
+				{$_('category')}
+				<select name="category" required>
+					<option label="" />
+					{#each sustainableDevelopmentGoals.options as goal}
+						<option value={goal}>
+							{$_(goal)}
+						</option>
+					{/each}
+				</select>
+			</label>
+		</div>
+	</div>
+
+	<footer>
 		<button class="primary">{$_('save')}</button>
-	</p>
+	</footer>
 </form>
-
-<style>
-	form {
-		background: white;
-		border-radius: 8px;
-		box-shadow: var(--shadow-md);
-		display: flex;
-		flex-direction: column;
-		gap: 18px;
-		padding: 16px;
-	}
-
-	form label:first-child {
-		padding-bottom: 18px;
-		border-bottom: solid 1px var(--color-gray-300);
-	}
-</style>
