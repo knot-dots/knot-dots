@@ -41,7 +41,7 @@
 </script>
 
 {#if !editing}
-	<article>
+	<article class="details">
 		<header>
 			<h2>{container.payload.title}</h2>
 			<div class="icons">
@@ -51,8 +51,8 @@
 			</div>
 		</header>
 
-		<div class="content">
-			<div class="content-column">
+		<div class="details-content">
+			<div class="details-content-column">
 				<div class="summary">
 					<h3>{$_('summary')}</h3>
 					{container.payload.summary ?? ''}
@@ -62,7 +62,7 @@
 					{container.payload.description}
 				</div>
 			</div>
-			<div class="content-column">
+			<div class="details-content-column">
 				<div class="category">
 					<h3>{$_('category')}</h3>
 					{$_(container.payload.category)}
@@ -71,7 +71,7 @@
 		</div>
 	</article>
 {:else}
-	<form method="POST" on:submit|preventDefault={handleSubmit}>
+	<form class="details" method="POST" on:submit|preventDefault={handleSubmit}>
 		<header>
 			<label>
 				{$_('title')}
@@ -79,8 +79,8 @@
 			</label>
 		</header>
 
-		<div class="content">
-			<div class="content-column">
+		<div class="details-content">
+			<div class="details-content-column">
 				<label>
 					{$_('summary')}
 					<textarea name="summary" value={container.payload.summary ?? ''} required />
@@ -90,7 +90,7 @@
 					<textarea name="description" value={container.payload.description} required />
 				</label>
 			</div>
-			<div class="content-column">
+			<div class="details-content-column">
 				<label>
 					{$_('category')}
 					<select name="category" required>
@@ -113,8 +113,7 @@
 {/if}
 
 <style>
-	article,
-	form {
+	.details {
 		background-color: white;
 		border-radius: 8px;
 		border: 1px solid var(--color-gray-200);
@@ -123,13 +122,12 @@
 	}
 
 	@media (min-width: 768px) {
-		article,
-		form {
+		.details {
 			padding: 2rem 4rem;
 		}
 	}
 
-	header {
+	.details header {
 		align-items: center;
 		border-bottom: solid 1px var(--color-gray-300);
 		display: flex;
@@ -139,18 +137,18 @@
 		padding: 24px;
 	}
 
-	header h2,
-	header label {
+	.details header h2,
+	.details header label {
 		font-size: 1.125rem;
 		font-weight: 600;
 	}
 
-	header .icons {
+	.details header .icons {
 		display: flex;
 		gap: 16px;
 	}
 
-	.content {
+	.details-content {
 		color: var(--color-gray-500);
 		display: flex;
 		flex-direction: column;
@@ -158,17 +156,17 @@
 		padding: 0 24px;
 	}
 
-	.content:before {
+	.details-content:before {
 		border-bottom: 1px solid var(--color-gray-300);
 		content: '';
 		margin: 0 -24px;
 	}
 
-	.content > :first-child {
+	.details-content > :first-child {
 		order: -1;
 	}
 
-	.content-column {
+	.details-content-column {
 		display: flex;
 		flex-basis: 100%;
 		flex-direction: column;
@@ -177,21 +175,21 @@
 	}
 
 	@media (min-width: 1440px) {
-		header {
+		.details header {
 			margin-bottom: 0;
 		}
 
-		.content {
+		.details-content {
 			flex-direction: row;
 		}
 
-		.content:before {
+		.details-content:before {
 			border-left: 1px solid var(--color-gray-300);
 			content: '';
 			margin: initial;
 		}
 
-		.content-column {
+		.details-content-column {
 			padding-top: 24px;
 		}
 	}
@@ -201,13 +199,13 @@
 		gap: 48px;
 	}
 
-	h3 {
+	.details h3 {
 		color: var(--color-gray-800);
 		font-size: inherit;
 		font-weight: 500;
 	}
 
-	footer {
+	.details footer {
 		padding: 24px;
 	}
 </style>

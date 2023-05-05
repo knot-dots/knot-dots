@@ -31,7 +31,7 @@
 	}
 </script>
 
-<form method="POST" on:submit|preventDefault={handleSubmit}>
+<form class="details" method="POST" on:submit|preventDefault={handleSubmit}>
 	<header>
 		<label>
 			{$_('title')}
@@ -39,8 +39,8 @@
 		</label>
 	</header>
 
-	<div class="content">
-		<div class="content-column">
+	<div class="details-content">
+		<div class="details-content-column">
 			<label>
 				{$_('summary')}
 				<textarea name="summary" required />
@@ -50,7 +50,7 @@
 				<textarea name="description" required />
 			</label>
 		</div>
-		<div class="content-column">
+		<div class="details-content-column">
 			<label>
 				{$_('category')}
 				<select name="category" required>
@@ -71,7 +71,7 @@
 </form>
 
 <style>
-	form {
+	.details {
 		background-color: white;
 		border-radius: 8px;
 		border: 1px solid var(--color-gray-200);
@@ -80,12 +80,12 @@
 	}
 
 	@media (min-width: 768px) {
-		form {
+		.details {
 			padding: 2rem 4rem;
 		}
 	}
 
-	header {
+	.details header {
 		align-items: center;
 		border-bottom: solid 1px var(--color-gray-300);
 		display: flex;
@@ -95,12 +95,12 @@
 		padding: 24px;
 	}
 
-	header label {
+	.details header label {
 		font-size: 1.125rem;
 		font-weight: 600;
 	}
 
-	.content {
+	.details-content {
 		color: var(--color-gray-500);
 		display: flex;
 		flex-direction: column;
@@ -108,17 +108,17 @@
 		padding: 0 24px;
 	}
 
-	.content:before {
+	.details-content:before {
 		border-bottom: 1px solid var(--color-gray-300);
 		content: '';
 		margin: 0 -24px;
 	}
 
-	.content > :first-child {
+	.details-content > :first-child {
 		order: -1;
 	}
 
-	.content-column {
+	.details-content .details-content-column {
 		display: flex;
 		flex-basis: 100%;
 		flex-direction: column;
@@ -127,26 +127,26 @@
 	}
 
 	@media (min-width: 1440px) {
-		header {
+		.details > header {
 			margin-bottom: 0;
 		}
 
-		.content {
+		.details-content {
 			flex-direction: row;
 		}
 
-		.content:before {
+		.details-content:before {
 			border-left: 1px solid var(--color-gray-300);
 			content: '';
 			margin: initial;
 		}
 
-		.content-column {
+		.details-content-column {
 			padding-top: 24px;
 		}
 	}
 
-	footer {
+	.details footer {
 		padding: 24px;
 	}
 </style>
