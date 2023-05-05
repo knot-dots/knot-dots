@@ -66,7 +66,7 @@ const container = z.object({
 		summary: z.string().max(200).optional(),
 		title: z.string()
 	}),
-	realm: z.string(),
+	realm: z.string().max(1024),
 	revision: z.number().int().positive(),
 	valid_currently: z.boolean(),
 	valid_from: z.number().int()
