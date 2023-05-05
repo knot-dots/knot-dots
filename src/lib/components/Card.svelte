@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, InformationCircle, Share } from 'svelte-hero-icons';
+	import { Icon, Share } from 'svelte-hero-icons';
 
 	export let guid: string;
 	export let type: string;
