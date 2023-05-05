@@ -83,7 +83,12 @@
 			<div class="details-content-column">
 				<label>
 					{$_('summary')}
-					<textarea name="summary" value={container.payload.summary ?? ''} required />
+					<textarea
+						name="summary"
+						maxlength="200"
+						value={container.payload.summary ?? ''}
+						required
+					/>
 				</label>
 				<label>
 					{$_('description')}

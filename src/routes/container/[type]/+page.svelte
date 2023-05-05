@@ -43,7 +43,7 @@
 		<div class="details-content-column">
 			<label>
 				{$_('summary')}
-				<textarea name="summary" required />
+				<textarea name="summary" maxlength="200" required />
 			</label>
 			<label>
 				{$_('description')}

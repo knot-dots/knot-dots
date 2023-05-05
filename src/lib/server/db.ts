@@ -63,7 +63,7 @@ const container = z.object({
 	payload: z.object({
 		category: sustainableDevelopmentGoals,
 		description: z.string(),
-		summary: z.string().optional(),
+		summary: z.string().max(200).optional(),
 		title: z.string()
 	}),
 	realm: z.string(),
@@ -100,7 +100,7 @@ export type Container = z.infer<typeof containerWithUser>;
 
 export type NewContainer = z.infer<typeof newContainer>;
 
-export type ModifiedContainer = z.infer<typeof modifiedContainer>
+export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 const sql = createSqlTag({ typeAliases });
 
