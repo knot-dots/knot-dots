@@ -25,7 +25,7 @@
 					guid={container.guid}
 					type={container.type}
 					title={container.payload.title}
-					description={container.payload.description}
+					summary={container.payload.summary ?? ''}
 					category={$_(container.payload.category)}
 				/>
 			{/each}

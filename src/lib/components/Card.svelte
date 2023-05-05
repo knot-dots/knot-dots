@@ -4,7 +4,7 @@
 	export let guid: string;
 	export let type: string;
 	export let title: string;
-	export let description: string;
+	export let summary: string;
 	export let category: string;
 </script>
 
@@ -17,7 +17,7 @@
 			</span>
 		</header>
 		<div class="text">
-			{@html description}
+			{@html summary}
 		</div>
 		<footer>
 			<div class="badges">
