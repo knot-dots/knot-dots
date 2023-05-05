@@ -32,45 +32,121 @@
 </script>
 
 <form method="POST" on:submit|preventDefault={handleSubmit}>
-	<label>
-		{$_('title')}
-		<input name="title" type="text" required />
-	</label>
-	<label>
-		{$_('summary')}
-		<textarea name="summary" required />
-	</label>
-	<label>
-		{$_('description')}
-		<textarea name="description" required />
-	</label>
-	<label>
-		{$_('category')}
-		<select name="category" required>
-			<option label="" />
-			{#each sustainableDevelopmentGoals.options as goal}
-				<option label={$_(goal)}>{goal}</option>
-			{/each}
-		</select>
-	</label>
-	<p>
+	<header>
+		<label>
+			{$_('title')}
+			<input name="title" type="text" required />
+		</label>
+	</header>
+
+	<div class="content">
+		<div class="content-column">
+			<label>
+				{$_('summary')}
+				<textarea name="summary" required />
+			</label>
+			<label>
+				{$_('description')}
+				<textarea name="description" required />
+			</label>
+		</div>
+		<div class="content-column">
+			<label>
+				{$_('category')}
+				<select name="category" required>
+					<option label="" />
+					{#each sustainableDevelopmentGoals.options as goal}
+						<option value={goal}>
+							{$_(goal)}
+						</option>
+					{/each}
+				</select>
+			</label>
+		</div>
+	</div>
+
+	<footer>
 		<button class="primary">{$_('save')}</button>
-	</p>
+	</footer>
 </form>
 
 <style>
 	form {
-		background: white;
+		background-color: white;
 		border-radius: 8px;
-		box-shadow: var(--shadow-md);
-		display: flex;
-		flex-direction: column;
-		gap: 18px;
-		padding: 16px;
+		border: 1px solid var(--color-gray-200);
+		box-shadow: var(--shadow-lg);
+		height: calc(100% - 1rem);
 	}
 
-	form label:first-child {
-		padding-bottom: 18px;
+	@media (min-width: 768px) {
+		form {
+			padding: 2rem 4rem;
+		}
+	}
+
+	header {
+		align-items: center;
 		border-bottom: solid 1px var(--color-gray-300);
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		margin-bottom: 24px;
+		padding: 24px;
+	}
+
+	header label {
+		font-size: 1.125rem;
+		font-weight: 600;
+	}
+
+	.content {
+		color: var(--color-gray-500);
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		padding: 0 24px;
+	}
+
+	.content:before {
+		border-bottom: 1px solid var(--color-gray-300);
+		content: '';
+		margin: 0 -24px;
+	}
+
+	.content > :first-child {
+		order: -1;
+	}
+
+	.content-column {
+		display: flex;
+		flex-basis: 100%;
+		flex-direction: column;
+		flex: 1;
+		gap: 18px;
+	}
+
+	@media (min-width: 1440px) {
+		header {
+			margin-bottom: 0;
+		}
+
+		.content {
+			flex-direction: row;
+		}
+
+		.content:before {
+			border-left: 1px solid var(--color-gray-300);
+			content: '';
+			margin: initial;
+		}
+
+		.content-column {
+			padding-top: 24px;
+		}
+	}
+
+	footer {
+		padding: 24px;
 	}
 </style>
