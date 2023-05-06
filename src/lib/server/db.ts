@@ -8,6 +8,7 @@ import type {
 } from 'slonik';
 import { z } from 'zod';
 import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
+import type { ContainerType } from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -210,6 +211,48 @@ export function getManyContainers(categories: string[], sort: string) {
 			WHERE ${sql.join(conditions, sql.fragment` AND `)}
 			ORDER BY ${order_by};
     `);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${sql.join(
+							containerResult.map((c) => c.revision),
+							sql.fragment`, `
+						)})
+					`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function maybePartOf(containerType: ContainerType) {
+	return async (connection: DatabaseConnection) => {
+		let candidateType: ContainerType;
+		if (containerType == 'model') {
+			candidateType = 'strategy';
+		} else if (containerType == 'strategic_goal') {
+			candidateType = 'model';
+		} else if (containerType == 'operational_goal') {
+			candidateType = 'strategic_goal';
+		} else if (containerType == 'measure') {
+			candidateType = 'operational_goal';
+		} else {
+			return [];
+		}
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE type = ${candidateType} AND valid_currently
+			ORDER BY payload->>'title' DESC
+		`);
 
 		const userResult =
 			containerResult.length > 0
