@@ -61,13 +61,16 @@ export const actions = {
 			}
 		];
 		await locals.pool.connect(
-			updateContainer({
-				guid: params.guid,
-				payload,
-				type: params.type,
-				realm: env.PUBLIC_KC_REALM ?? '',
-				user
-			})
+			updateContainer(
+				{
+					guid: params.guid,
+					payload,
+					type: params.type,
+					realm: env.PUBLIC_KC_REALM ?? '',
+					user
+				},
+				relations
+			)
 		);
 
 		throw redirect(303, '/');

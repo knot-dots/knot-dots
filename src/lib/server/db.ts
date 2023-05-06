@@ -94,6 +94,11 @@ const relation = z.object({
 	subject: z.number().int().positive()
 });
 
+const partialRelation = z.union([
+	relation.partial({ object: true }),
+	relation.partial({ subject: true })
+]);
+
 const typeAliases = {
 	container,
 	relation,
@@ -111,6 +116,8 @@ export type NewContainer = z.infer<typeof newContainer>;
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export type Relation = z.infer<typeof relation>;
+
+export type PartialRelation = z.infer<typeof partialRelation>;
 
 const sql = createSqlTag({ typeAliases });
 
@@ -138,7 +145,7 @@ export function createContainer(container: NewContainer) {
 	};
 }
 
-export function updateContainer(container: ModifiedContainer) {
+export function updateContainer(container: ModifiedContainer, relations: PartialRelation[]) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			await txConnection.query(sql.typeAlias('void')`
@@ -164,6 +171,17 @@ export function updateContainer(container: ModifiedContainer) {
 				SELECT *
 				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
 				RETURNING issuer, subject
+      `);
+
+			const relationValues = relations.map((r) => [
+				r.object ?? containerResult.revision,
+				r.predicate,
+				r.subject ?? containerResult.revision
+			]);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_relation (object, predicate, subject)
+				SELECT *
+				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
       `);
 
 			return { ...containerResult, user: userResult };
