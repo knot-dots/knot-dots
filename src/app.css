@@ -359,6 +359,7 @@ label:has(> input[type='checkbox'], > input[type='radio']) {
 
 .details header h2,
 .details header label {
+	flex-grow: 1;
 	font-size: 1.125rem;
 	font-weight: 600;
 }
@@ -388,9 +389,8 @@ label:has(> input[type='checkbox'], > input[type='radio']) {
 
 .details-content-column {
 	display: flex;
-	flex-basis: 100%;
 	flex-direction: column;
-	flex: 1;
+	flex: 1 1 100%;
 	gap: 18px;
 }
 
