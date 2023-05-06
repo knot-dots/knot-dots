@@ -279,6 +279,14 @@ label > input[type='radio'] {
 	vertical-align: top;
 }
 
+label:has(> input[type='checkbox'], > input[type='radio']) {
+	display: block;
+	line-height: 1.2em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 /* SVG icons */
 .icon-20 {
 	--size: 20px;

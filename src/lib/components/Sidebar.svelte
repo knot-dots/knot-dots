@@ -292,12 +292,4 @@
 	.collapsible > li:last-child {
 		margin-bottom: 0;
 	}
-
-	.collapsible label {
-		display: block;
-		line-height: 1.2;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
 </style>
