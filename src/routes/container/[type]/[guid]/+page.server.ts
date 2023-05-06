@@ -4,7 +4,7 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { isContainerType } from '$lib/models';
 import type { SustainableDevelopmentGoal } from '$lib/models';
-import { getContainerByGuid, updateContainer } from '$lib/server/db';
+import { getContainerByGuid, maybePartOf, updateContainer } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 
 export const actions = {
@@ -51,6 +51,9 @@ export const actions = {
 			summary: data.get('summary') as string,
 			title: data.get('title') as string
 		};
+		const relations = data
+			.getAll('is-part-of')
+			.map((v) => ({ predicate: 'is-part-of', object: Number(v) }));
 		const user = [
 			{
 				issuer: iss as string,
@@ -72,5 +75,10 @@ export const actions = {
 } satisfies Actions;
 
 export const load = (async ({ params, locals }) => {
-	return await locals.pool.connect(getContainerByGuid(params.guid));
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	const isPartOfOptions = await locals.pool.connect(maybePartOf(container.type));
+	return {
+		container,
+		isPartOfOptions
+	};
 }) satisfies PageServerLoad;

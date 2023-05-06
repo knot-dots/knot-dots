@@ -6,12 +6,14 @@
 	import { applyAction, deserialize } from '$app/forms';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { sustainableDevelopmentGoals } from '$lib/models';
+	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/server/db';
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	export let container: Container;
+	export let isPartOfOptions: Container[];
+
 	let editing = false;
 
 	function toggleEditMode() {
@@ -107,6 +109,27 @@
 						{/each}
 					</select>
 				</label>
+				{#if container.type !== containerTypes.enum.strategy}
+					<fieldset>
+						<legend>
+							{#if container.type === containerTypes.enum.model}
+								{$_('superordinate_strategies')}
+							{:else if container.type === containerTypes.enum.strategic_goal}
+								{$_('superordinate_models')}
+							{:else if container.type === containerTypes.enum.operational_goal}
+								{$_('superordinate_strategic_goals')}
+							{:else if container.type === containerTypes.enum.measure}
+								{$_('superordinate_operational_goals')}
+							{/if}
+						</legend>
+						{#each isPartOfOptions as option}
+							<label>
+								<input type="checkbox" name="is-part-of" value={option.revision} />
+								{option.payload.title}
+							</label>
+						{/each}
+					</fieldset>
+				{/if}
 			</div>
 		</div>
 

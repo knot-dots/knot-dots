@@ -48,6 +48,10 @@
 	"strategies": "Strategies",
 	"strategic_goals": "Strategic goals",
 	"summary": "Summary",
+	"superordinate_strategies": "Superordinate strategies",
+	"superordinate_models": "Superordinate models",
+	"superordinate_strategic_goals": "Superordinate strategic goals",
+	"superordinate_operational_goals": "Superordinate operational goals",
 	"table": "Table",
 	"title": "Title"
 }

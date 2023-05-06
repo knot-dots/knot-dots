@@ -287,6 +287,14 @@ label:has(> input[type='checkbox'], > input[type='radio']) {
 	white-space: nowrap;
 }
 
+fieldset {
+	border: solid 1px var(--color-gray-300);
+	border-radius: 8px;
+	margin-inline: 0;
+	min-width: 0;
+	padding: 12px 16px;
+}
+
 /* SVG icons */
 .icon-20 {
 	--size: 20px;
