@@ -54,10 +54,6 @@ const user = z.object({
 	subject: z.string().uuid()
 });
 
-const userWithRevision = user.extend({
-	revision: z.number().int().positive()
-});
-
 const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
@@ -69,20 +65,19 @@ const container = z.object({
 	}),
 	realm: z.string().max(1024),
 	revision: z.number().int().positive(),
+	user: z.array(user),
 	valid_currently: z.boolean(),
 	valid_from: z.number().int()
 });
 
-const containerWithUser = container.extend({ user: z.array(user) });
-
-const newContainer = containerWithUser.omit({
+const newContainer = container.omit({
 	guid: true,
 	revision: true,
 	valid_currently: true,
 	valid_from: true
 });
 
-const modifiedContainer = containerWithUser.omit({
+const modifiedContainer = container.omit({
 	revision: true,
 	valid_currently: true,
 	valid_from: true
@@ -100,16 +95,18 @@ const partialRelation = z.union([
 ]);
 
 const typeAliases = {
-	container,
+	container: container.omit({ user: true }),
 	relation,
 	user,
-	userWithRevision,
+	userWithRevision: user.extend({
+		revision: z.number().int().positive()
+	}),
 	void: z.object({}).strict()
 };
 
 export type User = z.infer<typeof user>;
 
-export type Container = z.infer<typeof containerWithUser>;
+export type Container = z.infer<typeof container>;
 
 export type NewContainer = z.infer<typeof newContainer>;
 
