@@ -49,6 +49,17 @@ export async function getPool() {
 	return pool;
 }
 
+const relation = z.object({
+	object: z.number().int().positive(),
+	predicate: z.string().max(128),
+	subject: z.number().int().positive()
+});
+
+const partialRelation = z.union([
+	relation.partial({ object: true }),
+	relation.partial({ subject: true })
+]);
+
 const user = z.object({
 	issuer: z.string().url().max(1024),
 	subject: z.string().uuid()
@@ -64,38 +75,36 @@ const container = z.object({
 		title: z.string()
 	}),
 	realm: z.string().max(1024),
+	relation: z.array(relation),
 	revision: z.number().int().positive(),
 	user: z.array(user),
 	valid_currently: z.boolean(),
 	valid_from: z.number().int()
 });
 
-const newContainer = container.omit({
-	guid: true,
-	revision: true,
-	valid_currently: true,
-	valid_from: true
-});
+const newContainer = container
+	.omit({
+		guid: true,
+		revision: true,
+		valid_currently: true,
+		valid_from: true
+	})
+	.extend({
+		relation: z.array(partialRelation)
+	});
 
-const modifiedContainer = container.omit({
-	revision: true,
-	valid_currently: true,
-	valid_from: true
-});
-
-const relation = z.object({
-	object: z.number().int().positive(),
-	predicate: z.string().max(128),
-	subject: z.number().int().positive()
-});
-
-const partialRelation = z.union([
-	relation.partial({ object: true }),
-	relation.partial({ subject: true })
-]);
+const modifiedContainer = container
+	.omit({
+		revision: true,
+		valid_currently: true,
+		valid_from: true
+	})
+	.extend({
+		relation: z.array(partialRelation)
+	});
 
 const typeAliases = {
-	container: container.omit({ user: true }),
+	container: container.omit({ relation: true, user: true }),
 	relation,
 	user,
 	userWithRevision: user.extend({
@@ -137,12 +146,23 @@ export function createContainer(container: NewContainer) {
           RETURNING issuer, subject
       `);
 
+			const relationValues = container.relation.map((r) => [
+				r.object ?? containerResult.revision,
+				r.predicate,
+				r.subject ?? containerResult.revision
+			]);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_relation (object, predicate, subject)
+				SELECT *
+				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
+      `);
+
 			return { ...containerResult, user: userResult };
 		});
 	};
 }
 
-export function updateContainer(container: ModifiedContainer, relations: PartialRelation[]) {
+export function updateContainer(container: ModifiedContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			await txConnection.query(sql.typeAlias('void')`
@@ -170,7 +190,7 @@ export function updateContainer(container: ModifiedContainer, relations: Partial
 				RETURNING issuer, subject
       `);
 
-			const relationValues = relations.map((r) => [
+			const relationValues = container.relation.map((r) => [
 				r.object ?? containerResult.revision,
 				r.predicate,
 				r.subject ?? containerResult.revision
@@ -199,8 +219,14 @@ export function getContainerByGuid(guid: string) {
 			FROM container_user
 			WHERE revision = ${containerResult.revision}
 		`);
+		const relationResult = await connection.any(sql.typeAlias('relation')`
+			SELECT *
+			FROM container_relation
+			WHERE subject = ${containerResult.revision}
+		`);
 		return {
 			...containerResult,
+			relation: relationResult.map((r) => r),
 			user: userResult.map(({ issuer, subject }) => ({ issuer, subject }))
 		};
 	};
@@ -283,6 +309,7 @@ export function maybePartOf(containerType: ContainerType) {
 
 		return containerResult.map((c) => ({
 			...c,
+			relation: [],
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))

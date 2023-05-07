@@ -62,6 +62,7 @@ export const actions = {
 				payload,
 				type: params.type,
 				realm: env.PUBLIC_KC_REALM ?? '',
+				relation: [],
 				user
 			})
 		);

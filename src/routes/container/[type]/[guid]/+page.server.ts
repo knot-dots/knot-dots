@@ -51,7 +51,7 @@ export const actions = {
 			summary: data.get('summary') as string,
 			title: data.get('title') as string
 		};
-		const relations = data
+		const relation = data
 			.getAll('is-part-of')
 			.map((v) => ({ predicate: 'is-part-of', object: Number(v) }));
 		const user = [
@@ -61,16 +61,14 @@ export const actions = {
 			}
 		];
 		await locals.pool.connect(
-			updateContainer(
-				{
-					guid: params.guid,
-					payload,
-					type: params.type,
-					realm: env.PUBLIC_KC_REALM ?? '',
-					user
-				},
-				relations
-			)
+			updateContainer({
+				guid: params.guid,
+				payload,
+				type: params.type,
+				realm: env.PUBLIC_KC_REALM ?? '',
+				relation,
+				user
+			})
 		);
 
 		throw redirect(303, '/');
