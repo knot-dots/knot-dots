@@ -100,7 +100,7 @@
 	<form class="details" method="POST" on:submit|preventDefault={handleSubmit}>
 		<header>
 			<label>
-				{$_('title')}
+				{$_(container.type)}
 				<input name="title" type="text" value={container.payload.title} required />
 			</label>
 		</header>

@@ -59,7 +59,7 @@
 <form class="details" method="POST" on:submit|preventDefault={handleSubmit}>
 	<header>
 		<label>
-			{$_('title')}
+			{$_(containerType)}
 			<input name="title" type="text" required />
 		</label>
 	</header>
