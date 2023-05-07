@@ -6,7 +6,7 @@
 	import { applyAction, deserialize } from '$app/forms';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
+	import { containerTypes, predicates, sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/server/db';
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
@@ -124,7 +124,15 @@
 						</legend>
 						{#each isPartOfOptions as option}
 							<label>
-								<input type="checkbox" name="is-part-of" value={option.revision} />
+								<input
+									type="checkbox"
+									name="is-part-of"
+									value={option.revision}
+									checked={container.relation.findIndex(
+										(r) =>
+											r.predicate === predicates.enum['is-part-of'] && r.object === option.revision
+									) > -1}
+								/>
 								{option.payload.title}
 							</label>
 						{/each}
