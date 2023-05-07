@@ -8,8 +8,7 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
-	import type { ContainerType } from '$lib/models';
-	import type { Relation } from '$lib/server/db';
+	import type { ContainerType, Relation } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;

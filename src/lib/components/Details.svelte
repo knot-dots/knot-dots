@@ -8,7 +8,7 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
-	import type { Container } from '$lib/server/db';
+	import type { Container } from '$lib/models';
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 

@@ -7,8 +7,8 @@ import type {
 	SerializableValue
 } from 'slonik';
 import { z } from 'zod';
-import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
-import type { ContainerType } from '$lib/models';
+import { container, relation, user } from '$lib/models';
+import type { Container, ContainerType, ModifiedContainer, NewContainer } from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -49,60 +49,6 @@ export async function getPool() {
 	return pool;
 }
 
-const relation = z.object({
-	object: z.number().int().positive(),
-	predicate: z.string().max(128),
-	subject: z.number().int().positive()
-});
-
-const partialRelation = z.union([
-	relation.partial({ object: true }),
-	relation.partial({ subject: true })
-]);
-
-const user = z.object({
-	issuer: z.string().url().max(1024),
-	subject: z.string().uuid()
-});
-
-const container = z.object({
-	guid: z.string().uuid(),
-	type: containerTypes,
-	payload: z.object({
-		category: sustainableDevelopmentGoals,
-		description: z.string(),
-		summary: z.string().max(200).optional(),
-		title: z.string()
-	}),
-	realm: z.string().max(1024),
-	relation: z.array(relation),
-	revision: z.number().int().positive(),
-	user: z.array(user),
-	valid_currently: z.boolean(),
-	valid_from: z.number().int()
-});
-
-const newContainer = container
-	.omit({
-		guid: true,
-		revision: true,
-		valid_currently: true,
-		valid_from: true
-	})
-	.extend({
-		relation: z.array(partialRelation)
-	});
-
-const modifiedContainer = container
-	.omit({
-		revision: true,
-		valid_currently: true,
-		valid_from: true
-	})
-	.extend({
-		relation: z.array(partialRelation)
-	});
-
 const typeAliases = {
 	container: container.omit({ relation: true, user: true }),
 	relation,
@@ -112,18 +58,6 @@ const typeAliases = {
 	}),
 	void: z.object({}).strict()
 };
-
-export type User = z.infer<typeof user>;
-
-export type Container = z.infer<typeof container>;
-
-export type NewContainer = z.infer<typeof newContainer>;
-
-export type ModifiedContainer = z.infer<typeof modifiedContainer>;
-
-export type Relation = z.infer<typeof relation>;
-
-export type PartialRelation = z.infer<typeof partialRelation>;
 
 const sql = createSqlTag({ typeAliases });
 
