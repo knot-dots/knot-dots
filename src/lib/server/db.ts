@@ -201,6 +201,16 @@ export function updateContainer(container: ModifiedContainer) {
 				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
       `);
 
+			// Create new records for relations having this container as object.
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_relation (object, predicate, subject)
+				SELECT ${containerResult.revision}, cr.predicate, cr.subject
+				FROM container_relation cr
+				JOIN container c ON c.revision = cr.object
+				WHERE c.guid = ${container.guid}
+				GROUP BY c.guid, cr.predicate, cr.subject
+      `);
+
 			return { ...containerResult, user: userResult };
 		});
 	};
