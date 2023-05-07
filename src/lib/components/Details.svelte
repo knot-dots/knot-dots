@@ -65,9 +65,11 @@
 				</div>
 			</div>
 			<div class="details-content-column">
-				<div class="category">
-					<h3>{$_('category')}</h3>
-					{$_(container.payload.category)}
+				<div class="meta">
+					<h3 class="meta-key">{$_('category')}</h3>
+					<ul class="meta-value">
+						<li>{$_(container.payload.category)}</li>
+					</ul>
 				</div>
 			</div>
 		</div>
@@ -149,8 +151,16 @@
 {/if}
 
 <style>
-	.category {
+	.meta {
 		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 48px;
+	}
+	.meta-key {
+		flex: 0 0 140px;
+	}
+	.meta-value {
+		flex: 1;
 	}
 </style>
