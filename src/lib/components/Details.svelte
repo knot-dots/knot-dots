@@ -6,7 +6,8 @@
 	import { applyAction, deserialize } from '$app/forms';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { containerTypes, predicates, sustainableDevelopmentGoals } from '$lib/models';
+	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import { sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/server/db';
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
@@ -122,35 +123,11 @@
 						{/each}
 					</select>
 				</label>
-				{#if container.type !== containerTypes.enum.strategy}
-					<fieldset>
-						<legend>
-							{#if container.type === containerTypes.enum.model}
-								{$_('superordinate_strategies')}
-							{:else if container.type === containerTypes.enum.strategic_goal}
-								{$_('superordinate_models')}
-							{:else if container.type === containerTypes.enum.operational_goal}
-								{$_('superordinate_strategic_goals')}
-							{:else if container.type === containerTypes.enum.measure}
-								{$_('superordinate_operational_goals')}
-							{/if}
-						</legend>
-						{#each isPartOfOptions as option}
-							<label>
-								<input
-									type="checkbox"
-									name="is-part-of"
-									value={option.revision}
-									checked={container.relation.findIndex(
-										(r) =>
-											r.predicate === predicates.enum['is-part-of'] && r.object === option.revision
-									) > -1}
-								/>
-								{option.payload.title}
-							</label>
-						{/each}
-					</fieldset>
-				{/if}
+				<RelationSelector
+					{isPartOfOptions}
+					containerType={container.type}
+					selected={container.relation}
+				/>
 			</div>
 		</div>
 
