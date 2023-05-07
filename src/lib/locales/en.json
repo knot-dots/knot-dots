@@ -24,6 +24,10 @@
 	"register": "Register",
 	"relations": "Relations",
 	"save": "Save",
+	"save_and_create_model": "Save and add model",
+	"save_and_create_strategic_goal": "Save and add strategic goal",
+	"save_and_create_operational_goal": "Save and add operational goal",
+	"save_and_create_measure": "Save and add measure",
 	"sdg": {
 		"01": "No poverty",
 		"02": "Zero hunger",

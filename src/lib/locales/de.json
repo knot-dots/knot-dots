@@ -43,6 +43,10 @@
 		"17": "Partnerschaften zur Erreichung der Ziele"
 	},
 	"save": "Speichern",
+	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
+	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
+	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
+	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",

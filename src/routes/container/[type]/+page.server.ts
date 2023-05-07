@@ -61,7 +61,7 @@ export const actions = {
 				subject: sub as string
 			}
 		];
-		await locals.pool.connect(
+		const result = await locals.pool.connect(
 			createContainer({
 				payload,
 				type: params.type,
@@ -71,7 +71,12 @@ export const actions = {
 			})
 		);
 
-		throw redirect(303, '/');
+		let location = '/';
+		if (data.has('redirect')) {
+			location = `${data.get('redirect')}?is-part-of=${result.revision}`;
+		}
+
+		throw redirect(303, location);
 	}
 } satisfies Actions;
 

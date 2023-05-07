@@ -20,10 +20,22 @@
 
 	const { isPartOfOptions } = data;
 
-	const selected: Relation[] = [];
+	const selected: Relation[] = $page.url.searchParams
+		.getAll('is-part-of')
+		.map((o) => ({ object: Number(o), predicate: 'is-part-of', subject: 0 }));
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
+
+		if (event.submitter?.id === 'save-and-create-model') {
+			data.append('redirect', `/container/model`);
+		} else if (event.submitter?.id === 'save-and-create-strategic-goal') {
+			data.append('redirect', `/container/strategic_goal`);
+		} else if (event.submitter?.id === 'save-and-create-operational-goal') {
+			data.append('redirect', `/container/operational_goal`);
+		} else if (event.submitter?.id === 'save-and-create-measure') {
+			data.append('redirect', `/container/measure`);
+		}
 
 		// Ensure a fresh token will be included in the Authorization header.
 		await getKeycloak()
@@ -81,5 +93,22 @@
 
 	<footer>
 		<button class="primary">{$_('save')}</button>
+		{#if $page.params.type === containerTypes.enum.strategy}
+			<button id="save-and-create-model">
+				{$_('save_and_create_model')}
+			</button>
+		{:else if $page.params.type == containerTypes.enum.model}
+			<button id="save-and-create-strategic-goal">
+				{$_('save_and_create_strategic_goal')}
+			</button>
+		{:else if $page.params.type === containerTypes.enum.strategic_goal}
+			<button id="save-and-create-operational-goal">
+				{$_('save_and_create_operational_goal')}
+			</button>
+		{:else if $page.params.type === containerTypes.enum.operational_goal}
+			<button id="save-and-create-measure">
+				{$_('save_and_create_measure')}
+			</button>
+		{/if}
 	</footer>
 </form>

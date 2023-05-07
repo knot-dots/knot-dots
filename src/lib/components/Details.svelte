@@ -7,7 +7,7 @@
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { sustainableDevelopmentGoals } from '$lib/models';
+	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/server/db';
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
@@ -24,6 +24,16 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
+
+		if (event.submitter?.id === 'save-and-create-model') {
+			data.append('redirect', `/container/model`);
+		} else if (event.submitter?.id === 'save-and-create-strategic-goal') {
+			data.append('redirect', `/container/strategic_goal`);
+		} else if (event.submitter?.id === 'save-and-create-operational-goal') {
+			data.append('redirect', `/container/operational_goal`);
+		} else if (event.submitter?.id === 'save-and-create-measure') {
+			data.append('redirect', `/container/measure`);
+		}
 
 		// Ensure a fresh token will be included in the Authorization header.
 		await getKeycloak()
@@ -132,7 +142,24 @@
 		</div>
 
 		<footer>
-			<button class="primary">{$_('save')}</button>
+			<button id="save" class="primary">{$_('save')}</button>
+			{#if container.type === containerTypes.enum.strategy}
+				<button id="save-and-create-model">
+					{$_('save_and_create_model')}
+				</button>
+			{:else if container.type == containerTypes.enum.model}
+				<button id="save-and-create-strategic-goal">
+					{$_('save_and_create_strategic_goal')}
+				</button>
+			{:else if container.type === containerTypes.enum.strategic_goal}
+				<button id="save-and-create-operational-goal">
+					{$_('save_and_create_operational_goal')}
+				</button>
+			{:else if container.type === containerTypes.enum.operational_goal}
+				<button id="save-and-create-measure">
+					{$_('save_and_create_measure')}
+				</button>
+			{/if}
 			<button type="button" on:click={toggleEditMode}>{$_('cancel')}</button>
 		</footer>
 	</form>
