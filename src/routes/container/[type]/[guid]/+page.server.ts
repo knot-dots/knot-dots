@@ -4,7 +4,12 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { isContainerType } from '$lib/models';
 import type { SustainableDevelopmentGoal } from '$lib/models';
-import { getContainerByGuid, maybePartOf, updateContainer } from '$lib/server/db';
+import {
+	getAllRelationObjects,
+	getContainerByGuid,
+	maybePartOf,
+	updateContainer
+} from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 
 export const actions = {
@@ -78,8 +83,6 @@ export const actions = {
 export const load = (async ({ params, locals }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	const isPartOfOptions = await locals.pool.connect(maybePartOf(container.type));
-	return {
-		container,
-		isPartOfOptions
-	};
+	const relationObjects = await locals.pool.connect(getAllRelationObjects(container));
+	return { container, isPartOfOptions, relationObjects };
 }) satisfies PageServerLoad;

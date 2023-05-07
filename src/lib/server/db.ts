@@ -274,6 +274,25 @@ export function getManyContainers(categories: string[], sort: string) {
 	};
 }
 
+export function getAllRelationObjects(container: Container) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		if (container.relation.length === 0) {
+			return [];
+		}
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE revision IN (${sql.join(
+				container.relation.map((r) => r.object as number),
+				sql.fragment`, `
+			)})
+				AND valid_currently
+			ORDER BY payload->>'title' DESC;
+		`);
+		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
+	};
+}
+
 export function maybePartOf(containerType: ContainerType) {
 	return async (connection: DatabaseConnection) => {
 		let candidateType: ContainerType;

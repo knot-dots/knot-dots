@@ -5,4 +5,8 @@
 	export let data: PageData;
 </script>
 
-<Details container={data.container} isPartOfOptions={data.isPartOfOptions} />
+<Details
+	container={data.container}
+	isPartOfOptions={data.isPartOfOptions}
+	relationObjects={data.relationObjects}
+/>
