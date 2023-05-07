@@ -3,11 +3,24 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { applyAction, deserialize } from '$app/forms';
+	import { page } from '$app/stores';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { sustainableDevelopmentGoals } from '$lib/models';
+	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
+	import type { ContainerType } from '$lib/models';
+	import type { Relation } from '$lib/server/db';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
+
+	const containerType = $page.params.type as ContainerType;
+
+	const { isPartOfOptions } = data;
+
+	const selected: Relation[] = [];
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
@@ -62,6 +75,7 @@
 					{/each}
 				</select>
 			</label>
+			<RelationSelector {containerType} {isPartOfOptions} {selected} />
 		</div>
 	</div>
 
