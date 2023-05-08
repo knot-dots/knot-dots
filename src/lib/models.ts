@@ -42,3 +42,13 @@ export type ContainerType = z.infer<typeof containerTypes>;
 export function isContainerType(value: unknown): value is ContainerType {
 	return containerTypeValues.includes(value as ContainerType);
 }
+
+const predicateValues = ['is-part-of'] as const;
+
+export const predicates = z.enum(predicateValues);
+
+export type Predicate = z.infer<typeof predicates>;
+
+export function isPredicate(value: unknown): value is Predicate {
+	return predicateValues.includes(value as Predicate);
+}

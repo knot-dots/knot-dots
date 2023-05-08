@@ -232,6 +232,7 @@ textarea {
 	border-radius: 8px;
 	color: var(--color-gray-500);
 	display: block;
+	font-size: 1rem;
 	font-weight: 400;
 	line-height: 1.2;
 	padding: 12px 16px;
@@ -249,7 +250,6 @@ textarea {
 	min-height: 81px;
 	resize: vertical;
 }
-
 
 input[type="text"]:active,
 select:active,
@@ -277,6 +277,22 @@ label > input[type='checkbox'],
 label > input[type='radio'] {
 	margin-right: 8px;
 	vertical-align: top;
+}
+
+label:has(> input[type='checkbox'], > input[type='radio']) {
+	display: block;
+	line-height: 1.2em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+fieldset {
+	border: solid 1px var(--color-gray-300);
+	border-radius: 8px;
+	margin-inline: 0;
+	min-width: 0;
+	padding: 12px 16px;
 }
 
 /* SVG icons */
@@ -351,6 +367,7 @@ label > input[type='radio'] {
 
 .details header h2,
 .details header label {
+	flex-grow: 1;
 	font-size: 1.125rem;
 	font-weight: 600;
 }
@@ -380,9 +397,8 @@ label > input[type='radio'] {
 
 .details-content-column {
 	display: flex;
-	flex-basis: 100%;
 	flex-direction: column;
-	flex: 1;
+	flex: 1 1 100%;
 	gap: 18px;
 }
 
@@ -402,6 +418,7 @@ label > input[type='radio'] {
 	}
 
 	.details-content-column {
+		min-width: 0;
 		padding-top: 24px;
 	}
 }

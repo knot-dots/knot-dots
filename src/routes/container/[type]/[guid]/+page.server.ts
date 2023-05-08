@@ -4,7 +4,12 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { isContainerType } from '$lib/models';
 import type { SustainableDevelopmentGoal } from '$lib/models';
-import { getContainerByGuid, updateContainer } from '$lib/server/db';
+import {
+	getAllRelationObjects,
+	getContainerByGuid,
+	maybePartOf,
+	updateContainer
+} from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 
 export const actions = {
@@ -51,26 +56,38 @@ export const actions = {
 			summary: data.get('summary') as string,
 			title: data.get('title') as string
 		};
+		const relation = data
+			.getAll('is-part-of')
+			.map((v) => ({ predicate: 'is-part-of', object: Number(v) }));
 		const user = [
 			{
 				issuer: iss as string,
 				subject: sub as string
 			}
 		];
-		await locals.pool.connect(
+		const result = await locals.pool.connect(
 			updateContainer({
 				guid: params.guid,
 				payload,
 				type: params.type,
 				realm: env.PUBLIC_KC_REALM ?? '',
+				relation,
 				user
 			})
 		);
 
-		throw redirect(303, '/');
+		let location = '/';
+		if (data.has('redirect')) {
+			location = `${data.get('redirect')}?is-part-of=${result.revision}`;
+		}
+
+		throw redirect(303, location);
 	}
 } satisfies Actions;
 
 export const load = (async ({ params, locals }) => {
-	return await locals.pool.connect(getContainerByGuid(params.guid));
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	const isPartOfOptions = await locals.pool.connect(maybePartOf(container.type));
+	const relationObjects = await locals.pool.connect(getAllRelationObjects(container));
+	return { container, isPartOfOptions, relationObjects };
 }) satisfies PageServerLoad;

@@ -8,6 +8,7 @@ import type {
 } from 'slonik';
 import { z } from 'zod';
 import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
+import type { ContainerType } from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -48,13 +49,20 @@ export async function getPool() {
 	return pool;
 }
 
+const relation = z.object({
+	object: z.number().int().positive(),
+	predicate: z.string().max(128),
+	subject: z.number().int().positive()
+});
+
+const partialRelation = z.union([
+	relation.partial({ object: true }),
+	relation.partial({ subject: true })
+]);
+
 const user = z.object({
 	issuer: z.string().url().max(1024),
 	subject: z.string().uuid()
-});
-
-const userWithRevision = user.extend({
-	revision: z.number().int().positive()
 });
 
 const container = z.object({
@@ -66,41 +74,56 @@ const container = z.object({
 		summary: z.string().max(200).optional(),
 		title: z.string()
 	}),
-	realm: z.string(),
+	realm: z.string().max(1024),
+	relation: z.array(relation),
 	revision: z.number().int().positive(),
+	user: z.array(user),
 	valid_currently: z.boolean(),
 	valid_from: z.number().int()
 });
 
-const containerWithUser = container.extend({ user: z.array(user) });
+const newContainer = container
+	.omit({
+		guid: true,
+		revision: true,
+		valid_currently: true,
+		valid_from: true
+	})
+	.extend({
+		relation: z.array(partialRelation)
+	});
 
-const newContainer = containerWithUser.omit({
-	guid: true,
-	revision: true,
-	valid_currently: true,
-	valid_from: true
-});
-
-const modifiedContainer = containerWithUser.omit({
-	revision: true,
-	valid_currently: true,
-	valid_from: true
-});
+const modifiedContainer = container
+	.omit({
+		revision: true,
+		valid_currently: true,
+		valid_from: true
+	})
+	.extend({
+		relation: z.array(partialRelation)
+	});
 
 const typeAliases = {
-	container,
+	container: container.omit({ relation: true, user: true }),
+	relation,
 	user,
-	userWithRevision,
+	userWithRevision: user.extend({
+		revision: z.number().int().positive()
+	}),
 	void: z.object({}).strict()
 };
 
 export type User = z.infer<typeof user>;
 
-export type Container = z.infer<typeof containerWithUser>;
+export type Container = z.infer<typeof container>;
 
 export type NewContainer = z.infer<typeof newContainer>;
 
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
+
+export type Relation = z.infer<typeof relation>;
+
+export type PartialRelation = z.infer<typeof partialRelation>;
 
 const sql = createSqlTag({ typeAliases });
 
@@ -121,6 +144,17 @@ export function createContainer(container: NewContainer) {
           SELECT *
           FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
           RETURNING issuer, subject
+      `);
+
+			const relationValues = container.relation.map((r) => [
+				r.object ?? containerResult.revision,
+				r.predicate,
+				r.subject ?? containerResult.revision
+			]);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_relation (object, predicate, subject)
+				SELECT *
+				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
       `);
 
 			return { ...containerResult, user: userResult };
@@ -156,6 +190,27 @@ export function updateContainer(container: ModifiedContainer) {
 				RETURNING issuer, subject
       `);
 
+			const relationValues = container.relation.map((r) => [
+				r.object ?? containerResult.revision,
+				r.predicate,
+				r.subject ?? containerResult.revision
+			]);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_relation (object, predicate, subject)
+				SELECT *
+				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
+      `);
+
+			// Create new records for relations having this container as object.
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_relation (object, predicate, subject)
+				SELECT ${containerResult.revision}, cr.predicate, cr.subject
+				FROM container_relation cr
+				JOIN container c ON c.revision = cr.object
+				WHERE c.guid = ${container.guid}
+				GROUP BY c.guid, cr.predicate, cr.subject
+      `);
+
 			return { ...containerResult, user: userResult };
 		});
 	};
@@ -174,8 +229,14 @@ export function getContainerByGuid(guid: string) {
 			FROM container_user
 			WHERE revision = ${containerResult.revision}
 		`);
+		const relationResult = await connection.any(sql.typeAlias('relation')`
+			SELECT *
+			FROM container_relation
+			WHERE subject = ${containerResult.revision}
+		`);
 		return {
 			...containerResult,
+			relation: relationResult.map((r) => r),
 			user: userResult.map(({ issuer, subject }) => ({ issuer, subject }))
 		};
 	};
@@ -216,6 +277,68 @@ export function getManyContainers(categories: string[], sort: string) {
 
 		return containerResult.map((c) => ({
 			...c,
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function getAllRelationObjects(container: Container) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		if (container.relation.length === 0) {
+			return [];
+		}
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE revision IN (${sql.join(
+				container.relation.map((r) => r.object as number),
+				sql.fragment`, `
+			)})
+				AND valid_currently
+			ORDER BY payload->>'title' DESC;
+		`);
+		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
+	};
+}
+
+export function maybePartOf(containerType: ContainerType) {
+	return async (connection: DatabaseConnection) => {
+		let candidateType: ContainerType;
+		if (containerType == 'model') {
+			candidateType = 'strategy';
+		} else if (containerType == 'strategic_goal') {
+			candidateType = 'model';
+		} else if (containerType == 'operational_goal') {
+			candidateType = 'strategic_goal';
+		} else if (containerType == 'measure') {
+			candidateType = 'operational_goal';
+		} else {
+			return [];
+		}
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE type = ${candidateType} AND valid_currently
+			ORDER BY payload->>'title' DESC
+		`);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${sql.join(
+							containerResult.map((c) => c.revision),
+							sql.fragment`, `
+						)})
+					`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: [],
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
