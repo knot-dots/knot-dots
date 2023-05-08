@@ -9,6 +9,7 @@
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/models';
+	import { user } from '$lib/stores';
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
@@ -58,11 +59,13 @@
 	<article class="details">
 		<header>
 			<h2>{container.payload.title}</h2>
-			<div class="icons">
-				<button on:click={toggleEditMode} class="quiet">
-					<Icon solid src={Pencil} size="20" />
-				</button>
-			</div>
+			{#if $user.isAuthenticated}
+				<div class="icons">
+					<button on:click={toggleEditMode} class="quiet">
+						<Icon solid src={Pencil} size="20" />
+					</button>
+				</div>
+			{/if}
 		</header>
 
 		<div class="details-content">
