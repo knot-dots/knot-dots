@@ -304,14 +304,14 @@ export function getAllRelatedContainers(guid: string) {
 				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'operational_goal'
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
-			LEFT JOIN
+			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object, c.type
 				FROM container c
 				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'strategic_goal'
 				WHERE c.valid_currently
 			) s3 ON s2.object = s3.subject
-			LEFT JOIN
+			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object, c.type
 				FROM container c
