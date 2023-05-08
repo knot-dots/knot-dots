@@ -7,8 +7,8 @@ import type {
 	SerializableValue
 } from 'slonik';
 import { z } from 'zod';
-import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
-import type { ContainerType } from '$lib/models';
+import { container, relation, user } from '$lib/models';
+import type { Container, ContainerType, ModifiedContainer, NewContainer } from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -49,81 +49,17 @@ export async function getPool() {
 	return pool;
 }
 
-const relation = z.object({
-	object: z.number().int().positive(),
-	predicate: z.string().max(128),
-	subject: z.number().int().positive()
-});
-
-const partialRelation = z.union([
-	relation.partial({ object: true }),
-	relation.partial({ subject: true })
-]);
-
-const user = z.object({
-	issuer: z.string().url().max(1024),
-	subject: z.string().uuid()
-});
-
-const container = z.object({
-	guid: z.string().uuid(),
-	type: containerTypes,
-	payload: z.object({
-		category: sustainableDevelopmentGoals,
-		description: z.string(),
-		summary: z.string().max(200).optional(),
-		title: z.string()
-	}),
-	realm: z.string().max(1024),
-	relation: z.array(relation),
-	revision: z.number().int().positive(),
-	user: z.array(user),
-	valid_currently: z.boolean(),
-	valid_from: z.number().int()
-});
-
-const newContainer = container
-	.omit({
-		guid: true,
-		revision: true,
-		valid_currently: true,
-		valid_from: true
-	})
-	.extend({
-		relation: z.array(partialRelation)
-	});
-
-const modifiedContainer = container
-	.omit({
-		revision: true,
-		valid_currently: true,
-		valid_from: true
-	})
-	.extend({
-		relation: z.array(partialRelation)
-	});
-
 const typeAliases = {
 	container: container.omit({ relation: true, user: true }),
 	relation,
+	relationPath: z.object({}).catchall(z.number().int().positive().nullable()),
+	revision: z.object({ revision: z.number().int().positive() }),
 	user,
 	userWithRevision: user.extend({
 		revision: z.number().int().positive()
 	}),
 	void: z.object({}).strict()
 };
-
-export type User = z.infer<typeof user>;
-
-export type Container = z.infer<typeof container>;
-
-export type NewContainer = z.infer<typeof newContainer>;
-
-export type ModifiedContainer = z.infer<typeof modifiedContainer>;
-
-export type Relation = z.infer<typeof relation>;
-
-export type PartialRelation = z.infer<typeof partialRelation>;
 
 const sql = createSqlTag({ typeAliases });
 
@@ -343,5 +279,66 @@ export function maybePartOf(containerType: ContainerType) {
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
 		}));
+	};
+}
+
+export function getAllRelatedContainers(guid: string) {
+	return async (connection: DatabaseConnection) => {
+		const revision = await connection.oneFirst(sql.typeAlias('revision')`
+			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
+		`);
+
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8
+			FROM
+			(
+				SELECT cr.subject, cr.predicate, cr.object, c.type
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'measure'
+				WHERE c.valid_currently
+			) s1
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object, c.type
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'operational_goal'
+				WHERE c.valid_currently
+			) s2 ON s1.object = s2.subject
+			LEFT JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object, c.type
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'strategic_goal'
+				WHERE c.valid_currently
+			) s3 ON s2.object = s3.subject
+			LEFT JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object, c.type
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'model'
+				WHERE c.valid_currently
+			) s4 ON s3.object = s4.subject
+			WHERE s1.subject = ${revision}
+				OR s1.object = ${revision}
+				OR s2.subject = ${revision}
+				OR s2.object = ${revision}
+				OR s3.subject = ${revision}
+				OR s3.object = ${revision}
+				OR s4.subject = ${revision}
+			  OR s4.object = ${revision}
+		`);
+
+		return connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE revision IN (${sql.join(
+				relationPathResult
+					.map((r) => Object.values(r))
+					.flat()
+					.concat([revision]),
+				sql.fragment`, `
+			)})
+				AND valid_currently
+		`);
 	};
 }

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { containerTypes, predicates } from '$lib/models';
-	import type { ContainerType } from '$lib/models';
-	import type { Container, Relation } from '$lib/server/db';
+	import type { Container, ContainerType, Relation } from '$lib/models';
 
 	export let containerType: ContainerType;
 	export let isPartOfOptions: Container[];
