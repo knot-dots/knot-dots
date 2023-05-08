@@ -15,7 +15,7 @@
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
-			<a href={relatedTo === guid ? '/' : `/?related-to=${guid}`} class="header-icons">
+			<a href={relatedTo === guid ? '/' : `/?related-to=${guid}`} class="header-icons button quiet">
 				<Icon src={Share} size="20" />
 			</a>
 		</header>
@@ -42,6 +42,7 @@
 	}
 
 	header {
+		align-items: center;
 		display: flex;
 		justify-content: space-between;
 	}
@@ -52,9 +53,9 @@
 	}
 
 	.header-icons {
-		display: flex;
+		--padding-x: 12px;
+		--padding-y: 12px;
 		flex-shrink: 0;
-		gap: 12px;
 	}
 
 	:global(.header-icons svg) {
