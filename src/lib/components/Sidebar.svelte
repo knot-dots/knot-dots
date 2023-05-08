@@ -32,7 +32,8 @@
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
 	$: if (browser && $page.url.pathname == '/') {
-		const query = new URLSearchParams(selectedCategory.map((f) => ['category', f]));
+		const query = new URLSearchParams($page.url.searchParams);
+		selectedCategory.forEach((c) => query.append('category', c));
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
 		}

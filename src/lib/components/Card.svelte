@@ -1,20 +1,23 @@
 <script lang="ts">
 	import { Icon, Share } from 'svelte-hero-icons';
+	import { page } from '$app/stores';
 
 	export let guid: string;
 	export let type: string;
 	export let title: string;
 	export let summary: string;
 	export let category: string;
+
+	$: relatedTo = $page.url.searchParams.get('related-to');
 </script>
 
 <a href={`/container/${type}/${guid}`} {title}>
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
-			<span class="header-icons">
+			<a href={relatedTo === guid ? '/' : `/?related-to=${guid}`} class="header-icons">
 				<Icon src={Share} size="20" />
-			</span>
+			</a>
 		</header>
 		<div class="text">
 			{@html summary}
