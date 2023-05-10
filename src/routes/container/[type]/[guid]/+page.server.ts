@@ -1,6 +1,4 @@
 import { error, redirect } from '@sveltejs/kit';
-import * as jose from 'jose';
-import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { isContainerType } from '$lib/models';
 import type { SustainableDevelopmentGoal } from '$lib/models';
@@ -18,36 +16,9 @@ export const actions = {
 			throw error(404, 'Unknown container type');
 		}
 
-		if (
-			!request.headers.has('Authorization') ||
-			!request.headers.get('Authorization')?.startsWith('Bearer ')
-		) {
+		if (locals.user == null) {
 			throw error(401, { message: 'Missing authorization' });
 		}
-
-		const token = (request.headers.get('Authorization') as string).substring(7);
-
-		const jwks = jose.createRemoteJWKSet(
-			new URL(`${privateEnv.KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/certs`)
-		);
-		const {
-			payload: { iss, sub }
-		} = await jose
-			.jwtVerify(token, jwks, {
-				issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
-				requiredClaims: ['iss', 'sub']
-			})
-			.catch((e) => {
-				if (e instanceof jose.errors.JWTInvalid) {
-					throw error(401, { message: 'Invalid token' });
-				} else if (e instanceof jose.errors.JWTExpired) {
-					throw error(401, { message: 'Expired token' });
-				} else if (e instanceof jose.errors.JWTClaimValidationFailed) {
-					throw error(401, { message: 'Insufficient claims' });
-				} else {
-					throw e;
-				}
-			});
 
 		const data = await request.formData();
 		const payload = {
@@ -59,12 +30,6 @@ export const actions = {
 		const relation = data
 			.getAll('is-part-of')
 			.map((v) => ({ predicate: 'is-part-of', object: Number(v) }));
-		const user = [
-			{
-				issuer: iss as string,
-				subject: sub as string
-			}
-		];
 		const result = await locals.pool.connect(
 			updateContainer({
 				guid: params.guid,
@@ -72,7 +37,7 @@ export const actions = {
 				type: params.type,
 				realm: env.PUBLIC_KC_REALM ?? '',
 				relation,
-				user
+				user: [locals.user]
 			})
 		);
 
