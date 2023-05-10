@@ -39,11 +39,11 @@ export const actions = {
 			})
 			.catch((e) => {
 				if (e instanceof jose.errors.JWTInvalid) {
-					throw error(403, { message: 'Invalid token' });
+					throw error(401, { message: 'Invalid token' });
 				} else if (e instanceof jose.errors.JWTExpired) {
-					throw error(403, { message: 'Expired token' });
+					throw error(401, { message: 'Expired token' });
 				} else if (e instanceof jose.errors.JWTClaimValidationFailed) {
-					throw error(403, { message: 'Insufficient claims' });
+					throw error(401, { message: 'Insufficient claims' });
 				} else {
 					throw e;
 				}
