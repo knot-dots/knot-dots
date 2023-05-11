@@ -1,10 +1,11 @@
 <script lang="ts">
-	import type { ActionResult } from '@sveltejs/kit';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { applyAction, deserialize } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import { env } from '$env/dynamic/public';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
+	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import type { PageData } from './$types';
@@ -17,33 +18,52 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
-
-		if (event.submitter?.id === 'save-and-create-model') {
-			data.append('redirect', `/container/model`);
-		} else if (event.submitter?.id === 'save-and-create-strategic-goal') {
-			data.append('redirect', `/container/strategic_goal`);
-		} else if (event.submitter?.id === 'save-and-create-operational-goal') {
-			data.append('redirect', `/container/operational_goal`);
-		} else if (event.submitter?.id === 'save-and-create-measure') {
-			data.append('redirect', `/container/measure`);
-		}
+		const modifiedContainer: ModifiedContainer = {
+			guid: container.guid,
+			payload: {
+				category: data.get('category') as SustainableDevelopmentGoal,
+				description: data.get('description') as string,
+				summary: data.get('summary') as string,
+				title: data.get('title') as string
+			},
+			realm: env.PUBLIC_KC_REALM ?? '',
+			relation: data
+				.getAll('is-part-of')
+				.map((v) => ({ predicate: 'is-part-of', object: Number(v) })),
+			type: container.type as ContainerType,
+			user: []
+		};
 
 		// Ensure a fresh token will be included in the Authorization header.
 		await getKeycloak()
 			.updateToken(-1)
 			.catch((reason) => null);
-		const response = await fetch((event.target as HTMLFormElement).action, {
+		const response = await fetch(`/container/${container.guid}/revision`, {
 			method: 'POST',
-			body: data,
+			body: JSON.stringify(modifiedContainer),
 			headers: {
 				...(sessionStorage.getItem('token')
 					? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-					: undefined)
+					: undefined),
+				'Content-Type': 'application/json'
 			}
 		});
 
-		const result: ActionResult = deserialize(await response.text());
-		await applyAction(result);
+		if (response.ok) {
+			const result = await response.json();
+
+			if (event.submitter?.id === 'save-and-create-model') {
+				await goto(`/container/model?is-part-of=${result.revision}`);
+			} else if (event.submitter?.id === 'save-and-create-strategic-goal') {
+				await goto(`/container/strategic_goal?is-part-of=${result.revision}`);
+			} else if (event.submitter?.id === 'save-and-create-operational-goal') {
+				await goto(`/container/operational_goal?is-part-of=${result.revision}`);
+			} else if (event.submitter?.id === 'save-and-create-measure') {
+				await goto(`/container/measure?is-part-of=${result.revision}`);
+			} else {
+				await goto('/');
+			}
+		}
 	}
 </script>
 

@@ -1,57 +1,80 @@
 <script lang="ts">
-	import type { ActionResult } from '@sveltejs/kit';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { applyAction, deserialize } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
-	import type { ContainerType, Relation } from '$lib/models';
+	import type {
+		ContainerType,
+		NewContainer,
+		Relation,
+		SustainableDevelopmentGoal
+	} from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
-	const containerType = $page.params.type as ContainerType;
+	$: containerType = $page.params.type as ContainerType;
 
-	const { isPartOfOptions } = data;
+	$: isPartOfOptions = data.isPartOfOptions;
 
-	const selected: Relation[] = $page.url.searchParams
+	$: selected = $page.url.searchParams
 		.getAll('is-part-of')
-		.map((o) => ({ object: Number(o), predicate: 'is-part-of', subject: 0 }));
+		.map((o): Relation => ({ object: Number(o), predicate: 'is-part-of', subject: 0 }));
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
-
-		if (event.submitter?.id === 'save-and-create-model') {
-			data.append('redirect', `/container/model`);
-		} else if (event.submitter?.id === 'save-and-create-strategic-goal') {
-			data.append('redirect', `/container/strategic_goal`);
-		} else if (event.submitter?.id === 'save-and-create-operational-goal') {
-			data.append('redirect', `/container/operational_goal`);
-		} else if (event.submitter?.id === 'save-and-create-measure') {
-			data.append('redirect', `/container/measure`);
-		}
+		const container: NewContainer = {
+			payload: {
+				category: data.get('category') as SustainableDevelopmentGoal,
+				description: data.get('description') as string,
+				summary: data.get('summary') as string,
+				title: data.get('title') as string
+			},
+			realm: env.PUBLIC_KC_REALM ?? '',
+			relation: data
+				.getAll('is-part-of')
+				.map((v) => ({ predicate: 'is-part-of', object: Number(v) })),
+			type: containerType,
+			user: []
+		};
 
 		// Ensure a fresh token will be included in the Authorization header.
 		await getKeycloak()
 			.updateToken(-1)
 			.catch((reason) => reason);
-		const response = await fetch((event.target as HTMLFormElement).action, {
+		const response = await fetch('/container', {
 			method: 'POST',
-			body: data,
+			body: JSON.stringify(container),
 			headers: {
 				...(sessionStorage.getItem('token')
 					? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-					: undefined)
+					: undefined),
+				'Content-Type': 'application/json'
 			}
 		});
 
-		const result: ActionResult = deserialize(await response.text());
-		await applyAction(result);
+		if (response.ok) {
+			const result = await response.json();
+
+			if (event.submitter?.id === 'save-and-create-model') {
+				await goto(`/container/model?is-part-of=${result.revision}`);
+			} else if (event.submitter?.id === 'save-and-create-strategic-goal') {
+				await goto(`/container/strategic_goal?is-part-of=${result.revision}`);
+			} else if (event.submitter?.id === 'save-and-create-operational-goal') {
+				await goto(`/container/operational_goal?is-part-of=${result.revision}`);
+			} else if (event.submitter?.id === 'save-and-create-measure') {
+				await goto(`/container/measure?is-part-of=${result.revision}`);
+			} else {
+				await goto('/');
+			}
+		}
 	}
 </script>
 
@@ -59,7 +82,9 @@
 	<header>
 		<label>
 			{$_(containerType)}
-			<input name="title" type="text" required />
+			{#key containerType}
+				<input name="title" type="text" required />
+			{/key}
 		</label>
 	</header>
 
@@ -67,24 +92,30 @@
 		<div class="details-content-column">
 			<label>
 				{$_('summary')}
-				<textarea name="summary" maxlength="200" required />
+				{#key containerType}
+					<textarea name="summary" maxlength="200" required />
+				{/key}
 			</label>
 			<label>
 				{$_('description')}
-				<textarea name="description" required />
+				{#key containerType}
+					<textarea name="description" required />
+				{/key}
 			</label>
 		</div>
 		<div class="details-content-column">
 			<label>
 				{$_('category')}
-				<select name="category" required>
-					<option label="" />
-					{#each sustainableDevelopmentGoals.options as goal}
-						<option value={goal}>
-							{$_(goal)}
-						</option>
-					{/each}
-				</select>
+				{#key containerType}
+					<select name="category" required>
+						<option label="" />
+						{#each sustainableDevelopmentGoals.options as goal}
+							<option value={goal}>
+								{$_(goal)}
+							</option>
+						{/each}
+					</select>
+				{/key}
 			</label>
 			<RelationSelector {containerType} {isPartOfOptions} {selected} />
 		</div>
@@ -92,19 +123,19 @@
 
 	<footer>
 		<button class="primary">{$_('save')}</button>
-		{#if $page.params.type === containerTypes.enum.strategy}
+		{#if containerType === containerTypes.enum.strategy}
 			<button id="save-and-create-model">
 				{$_('save_and_create_model')}
 			</button>
-		{:else if $page.params.type == containerTypes.enum.model}
+		{:else if containerType === containerTypes.enum.model}
 			<button id="save-and-create-strategic-goal">
 				{$_('save_and_create_strategic_goal')}
 			</button>
-		{:else if $page.params.type === containerTypes.enum.strategic_goal}
+		{:else if containerType === containerTypes.enum.strategic_goal}
 			<button id="save-and-create-operational-goal">
 				{$_('save_and_create_operational_goal')}
 			</button>
-		{:else if $page.params.type === containerTypes.enum.operational_goal}
+		{:else if containerType === containerTypes.enum.operational_goal}
 			<button id="save-and-create-measure">
 				{$_('save_and_create_measure')}
 			</button>
