@@ -94,7 +94,7 @@ export const container = z.object({
 
 export type Container = z.infer<typeof container>;
 
-const newContainer = container
+export const newContainer = container
 	.omit({
 		guid: true,
 		revision: true,
@@ -107,7 +107,7 @@ const newContainer = container
 
 export type NewContainer = z.infer<typeof newContainer>;
 
-const modifiedContainer = container
+export const modifiedContainer = container
 	.omit({
 		revision: true,
 		valid_currently: true,
