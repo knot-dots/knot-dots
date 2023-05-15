@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { goto } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
+	import { key } from '$lib/authentication';
+	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
 	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import type { PageData } from './$types';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -125,6 +125,6 @@
 				{$_('save_and_create_measure')}
 			</button>
 		{/if}
-		<a href="../{container.guid}" class="button quiet">{$_('cancel')}</a>
+		<a href="../{container.guid}" class="button">{$_('cancel')}</a>
 	</footer>
 </form>

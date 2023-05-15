@@ -12,14 +12,14 @@
 	<header>
 		<h2>{title}</h2>
 		{#if $user.isAuthenticated}
-			<a href="/container/{containerType}" title={$_('add_item')}><Icon src={Plus} size="20" /></a>
+			<a href="/{containerType}/new" title={$_('add_item')}><Icon src={Plus} size="20" /></a>
 		{/if}
 	</header>
 	<div class="vertical-scroll-wrapper">
 		<slot />
 		<footer>
 			{#if $user.isAuthenticated}
-				<a href="/container/{containerType}" class="button primary">{$_('add_item')}</a>
+				<a href="/{containerType}/new" class="button primary">{$_('add_item')}</a>
 			{:else}
 				<button class="primary" disabled>{$_('add_item')}</button>
 			{/if}

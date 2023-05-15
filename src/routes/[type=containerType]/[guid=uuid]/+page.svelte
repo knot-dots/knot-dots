@@ -14,7 +14,7 @@
 		<h2>{container.payload.title}</h2>
 		{#if $user.isAuthenticated}
 			<div class="icons">
-				<a href="{container.guid}/revision" class="button quiet">
+				<a href="{container.guid}/edit" class="button quiet">
 					<Icon solid src={Pencil} size="20" />
 				</a>
 			</div>

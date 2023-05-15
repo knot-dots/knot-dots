@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
@@ -15,6 +14,7 @@
 		SustainableDevelopmentGoal
 	} from '$lib/models';
 	import type { PageData } from './$types';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -64,13 +64,13 @@
 			const result = await response.json();
 
 			if (event.submitter?.id === 'save-and-create-model') {
-				await goto(`/container/model?is-part-of=${result.revision}`);
+				await goto(`/model/new?is-part-of=${result.revision}`);
 			} else if (event.submitter?.id === 'save-and-create-strategic-goal') {
-				await goto(`/container/strategic_goal?is-part-of=${result.revision}`);
+				await goto(`/strategic_goal/new?is-part-of=${result.revision}`);
 			} else if (event.submitter?.id === 'save-and-create-operational-goal') {
-				await goto(`/container/operational_goal?is-part-of=${result.revision}`);
+				await goto(`/operational_goal/new?is-part-of=${result.revision}`);
 			} else if (event.submitter?.id === 'save-and-create-measure') {
-				await goto(`/container/measure?is-part-of=${result.revision}`);
+				await goto(`/measure/new?is-part-of=${result.revision}`);
 			} else {
 				await goto('/');
 			}

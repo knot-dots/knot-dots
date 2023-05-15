@@ -11,7 +11,7 @@
 	$: relatedTo = $page.url.searchParams.get('related-to');
 </script>
 
-<a href={`/container/${type}/${guid}`} {title}>
+<a href={`/${type}/${guid}`} {title}>
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
