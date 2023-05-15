@@ -15,7 +15,10 @@
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
-			<a href={relatedTo === guid ? '/' : `/?related-to=${guid}`} class="header-icons button quiet">
+			<a
+				href={relatedTo === guid ? '/' : `/?related-to=${guid}`}
+				class="header-icons button quiet {relatedTo === guid ? 'is-active' : ''}"
+			>
 				<Icon src={Share} size="20" />
 			</a>
 		</header>
