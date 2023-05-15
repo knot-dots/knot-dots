@@ -7,6 +7,10 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			pool: DatabasePool;
+			user: {
+				issuer: string;
+				subject: string;
+			} | null;
 		}
 		// interface PageData {}
 		// interface Platform {}
