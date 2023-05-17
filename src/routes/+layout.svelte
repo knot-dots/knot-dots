@@ -48,5 +48,6 @@
 		background-color: var(--color-gray-100);
 		min-width: 0;
 		padding: 1rem 1rem 0;
+		display: flex;
 	}
 </style>

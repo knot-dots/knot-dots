@@ -9,9 +9,16 @@
 	export let category: string;
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
+
+	function setPreviewContainer(guid: string) {
+			const query = new URLSearchParams($page.url.searchParams);
+			query.delete('container-preview');
+			query.append('container-preview', guid);
+			return `?${query.toString()}`
+	}
 </script>
 
-<a href={`/${type}/${guid}`} {title}>
+<a href={setPreviewContainer(guid)}>
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
@@ -32,6 +39,7 @@
 		</footer>
 	</article>
 </a>
+
 
 <style>
 	.card {
