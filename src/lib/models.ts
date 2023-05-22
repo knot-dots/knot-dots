@@ -19,6 +19,7 @@ const sdgValues = [
 	'sdg.16',
 	'sdg.17'
 ] as const;
+
 export const sustainableDevelopmentGoals = z.enum(sdgValues);
 
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
@@ -51,6 +52,22 @@ export type Predicate = z.infer<typeof predicates>;
 
 export function isPredicate(value: unknown): value is Predicate {
 	return predicateValues.includes(value as Predicate);
+}
+
+const statusValues = [
+	'status.idea',
+	'status.in_implementation',
+	'status.in_operation',
+	'status.in_planning',
+	'status.terminated'
+] as const;
+
+export const status = z.enum(statusValues);
+
+export type Status = z.infer<typeof status>;
+
+export function isStatus(value: unknown): value is Status {
+	return statusValues.includes(value as Status);
 }
 
 export const relation = z.object({
