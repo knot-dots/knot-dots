@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { modifiedContainer } from '$lib/models';
-import { createContainer, updateContainer } from '$lib/server/db';
+import { updateContainer } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
