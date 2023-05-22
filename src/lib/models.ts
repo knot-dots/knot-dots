@@ -56,9 +56,9 @@ export function isPredicate(value: unknown): value is Predicate {
 
 const statusValues = [
 	'status.idea',
+	'status.in_planning',
 	'status.in_implementation',
 	'status.in_operation',
-	'status.in_planning',
 	'status.terminated'
 ] as const;
 
@@ -95,12 +95,25 @@ export type User = z.infer<typeof user>;
 export const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
-	payload: z.object({
-		category: sustainableDevelopmentGoals,
-		description: z.string(),
-		summary: z.string().max(200).optional(),
-		title: z.string()
-	}),
+	payload: z.union([
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
+			.strict(),
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				status: status,
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
+			.strict()
+	]),
 	realm: z.string().max(1024),
 	relation: z.array(relation),
 	revision: z.number().int().positive(),
