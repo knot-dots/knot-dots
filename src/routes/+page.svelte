@@ -8,6 +8,7 @@
 	import type { PageData } from './$types';
 	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 	import { user } from '$lib/stores';
+	import { slide } from 'svelte/transition';
 
 	export let data: PageData;
 
@@ -46,7 +47,7 @@
 </Board>
 
 {#if containerPreviewData}
-	<article class="details-overlay">
+	<article class="details-overlay" transition:slide="{{ axis: "x"}}">
 		<header>
 			<h2>{containerPreviewData?.payload.title}</h2>
 			<div class="icons">
