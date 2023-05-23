@@ -4,6 +4,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import { containerTypes } from '$lib/models';
+	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 	import { user } from '$lib/stores';
@@ -20,6 +21,12 @@
 
 	$: containerPreviewData = data.containerPreviewData;
 	$: relationObjects = data.relationObjects;
+
+	function closeOverlay() {
+			const query = new URLSearchParams($page.url.searchParams);
+			query.delete('container-preview');
+			return `?${query.toString()}`
+	}
 </script>
 
 <Board>
@@ -48,7 +55,7 @@
 						<Icon solid src={Pencil} size="20" />
 					</a>
 				{/if}
-				<button class="quiet"><Icon solid src={XMark} size="20" /></button>
+				<a href={closeOverlay()} class="button quiet"><Icon solid src={XMark} size="20" /></a>
 			</div>
 		</header>
 
