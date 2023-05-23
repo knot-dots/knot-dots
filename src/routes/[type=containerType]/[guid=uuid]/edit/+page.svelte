@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { containerTypes, sustainableDevelopmentGoals } from '$lib/models';
+	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models';
 	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
 	import type { PageData } from './$types';
-	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -24,7 +24,8 @@
 				category: data.get('category') as SustainableDevelopmentGoal,
 				description: data.get('description') as string,
 				summary: data.get('summary') as string,
-				title: data.get('title') as string
+				title: data.get('title') as string,
+				...(data.has('status') ? { status: data.get('status') } : undefined)
 			},
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
@@ -87,6 +88,18 @@
 			</label>
 		</div>
 		<div class="details-content-column">
+			{#if 'status' in container.payload}
+				<label>
+					{$_('status.label')}
+					<select name="status" required>
+						{#each status.options as statusOption}
+							<option selected={statusOption === container.payload.status} value={statusOption}>
+								{$_(statusOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+			{/if}
 			<label>
 				{$_('category')}
 				<select name="category" required>

@@ -53,6 +53,14 @@
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",
+	"status": {
+		"idea": "Idee",
+		"in_implementation": "In Umsetzung",
+		"in_operation": "In Betrieb",
+		"in_planning": "In Planung",
+		"label": "Status",
+		"terminated": "Beendet"
+	},
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",
 	"strategy": "Strategie",

@@ -19,6 +19,7 @@ const sdgValues = [
 	'sdg.16',
 	'sdg.17'
 ] as const;
+
 export const sustainableDevelopmentGoals = z.enum(sdgValues);
 
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
@@ -53,6 +54,22 @@ export function isPredicate(value: unknown): value is Predicate {
 	return predicateValues.includes(value as Predicate);
 }
 
+const statusValues = [
+	'status.idea',
+	'status.in_planning',
+	'status.in_implementation',
+	'status.in_operation',
+	'status.terminated'
+] as const;
+
+export const status = z.enum(statusValues);
+
+export type Status = z.infer<typeof status>;
+
+export function isStatus(value: unknown): value is Status {
+	return statusValues.includes(value as Status);
+}
+
 export const relation = z.object({
 	object: z.number().int().positive(),
 	predicate: z.string().max(128),
@@ -78,12 +95,25 @@ export type User = z.infer<typeof user>;
 export const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
-	payload: z.object({
-		category: sustainableDevelopmentGoals,
-		description: z.string(),
-		summary: z.string().max(200).optional(),
-		title: z.string()
-	}),
+	payload: z.union([
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
+			.strict(),
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				status: status,
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
+			.strict()
+	]),
 	realm: z.string().max(1024),
 	relation: z.array(relation),
 	revision: z.number().int().positive(),
