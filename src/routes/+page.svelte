@@ -92,6 +92,7 @@
 				{/if}
 			</div>
 		</div>
+		<a class="button primary" href="/{containerPreviewData.type}/{containerPreviewData.guid}">{$_("read_more")}</a>
 	</article>
 {/if}
 
