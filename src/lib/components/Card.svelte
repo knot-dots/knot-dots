@@ -9,16 +9,17 @@
 	export let category: string;
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
+	let containerPreviewURL: string;
 
-	function setPreviewContainer(guid: string) {
-			const query = new URLSearchParams($page.url.searchParams);
-			query.delete('container-preview');
-			query.append('container-preview', guid);
-			return `?${query.toString()}`
+	$: {
+		const query = new URLSearchParams($page.url.searchParams);
+		query.delete('container-preview');
+		query.append('container-preview', guid);
+		containerPreviewURL = `?${query.toString()}`
 	}
 </script>
 
-<a href={setPreviewContainer(guid)}>
+<a href={containerPreviewURL}>
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
