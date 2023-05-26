@@ -220,6 +220,48 @@ export function getManyContainers(categories: string[], sort: string) {
 	};
 }
 
+export function getManyContainersByType(type: ContainerType, categories: string[], sort: string) {
+	return async (connection: DatabaseConnection) => {
+		const conditions = [sql.fragment`valid_currently`, sql.fragment`type = ${type}`];
+		if (categories.length > 0) {
+			conditions.push(
+				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
+			);
+		}
+
+		let order_by = sql.fragment`valid_from`;
+		if (sort == 'alpha') {
+			order_by = sql.fragment`payload->>'title'`;
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
+			ORDER BY ${order_by};
+    `);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${sql.join(
+							containerResult.map((c) => c.revision),
+							sql.fragment`, `
+						)})
+					`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
 export function getAllRelationObjects(container: Container) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		if (container.relation.length === 0) {
