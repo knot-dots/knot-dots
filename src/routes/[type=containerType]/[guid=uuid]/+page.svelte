@@ -58,18 +58,3 @@
 		</div>
 	</div>
 </article>
-
-<style>
-	.meta {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 48px;
-	}
-	.meta-key {
-		flex: 0 0 140px;
-	}
-	.meta-value {
-		flex: 1;
-	}
-</style>
