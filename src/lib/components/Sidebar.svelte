@@ -17,11 +17,17 @@
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
 	import { sustainableDevelopmentGoals } from '$lib/models';
-	import { keycloak, navigationToggle, user } from '$lib/stores.js';
+	import { keycloak, navigationToggle, sidebarToggle, user } from '$lib/stores.js';
 
-	let isExpanded = true;
+	$: isExpanded = true
+
+	sidebarToggle.subscribe(value => {
+		isExpanded = value;
+	})
+
 	function toggleSidebar() {
 		isExpanded = !isExpanded;
+		sidebarToggle.update(value => isExpanded);
 		if (!isExpanded) {
 			filtersExpanded = false;
 			sortExpanded = false;
@@ -46,6 +52,7 @@
 		filtersExpanded = !filtersExpanded;
 		if (filtersExpanded) {
 			isExpanded = true;
+			sidebarToggle.update(value => isExpanded);
 		}
 	}
 
@@ -55,6 +62,7 @@
 		sortExpanded = !sortExpanded;
 		if (sortExpanded) {
 			isExpanded = true;
+			sidebarToggle.update(value => isExpanded);
 		}
 	}
 </script>
