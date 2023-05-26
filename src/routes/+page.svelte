@@ -47,7 +47,7 @@
 </Board>
 
 {#if containerPreviewData}
-	<article class="details-overlay" transition:slide="{{ axis: "x"}}">
+	<article class="details" transition:slide="{{ axis: "x"}}">
 		<header>
 			<h2>{containerPreviewData?.payload.title}</h2>
 			<div class="icons">
@@ -60,8 +60,8 @@
 			</div>
 		</header>
 
-		<div class="details-overlay-content">
-			<div class="details-overlay-content-column">
+		<div class="details-content">
+			<div class="details-content-column">
 				<div class="summary">
 					<h3>{$_('summary')}</h3>
 					{containerPreviewData?.payload.summary ?? ''}
@@ -71,7 +71,7 @@
 					{containerPreviewData?.payload.description}
 				</div>
 			</div>
-			<div class="details-overlay-content-column">
+			<div class="details-content-column">
 				<div class="meta">
 					<h3 class="meta-key">{$_('category')}</h3>
 					<ul class="meta-value">
@@ -92,98 +92,39 @@
 				{/if}
 			</div>
 		</div>
-		<a class="button primary" href="/{containerPreviewData.type}/{containerPreviewData.guid}">{$_("read_more")}</a>
+		<footer>
+			<a class="button primary" href="/{containerPreviewData.type}/{containerPreviewData.guid}">{$_("read_more")}</a>
+		</footer>
 	</article>
 {/if}
 
 <style>
 	/* Container details page and form */
-	.details-overlay {
-		background-color: white;
-		border-radius: 8px;
-		border: 1px solid var(--color-gray-200);
-		box-shadow: var(--shadow-lg);
+	.details {
 		height: calc(100% + 1rem);
 		flex: 1 0 calc(100% + 2rem);
 		margin: -1rem;
+		padding: 0;
 	}
 
-	.details-overlay header {
-		align-items: center;
-		border-bottom: solid 1px var(--color-gray-300);
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		margin-bottom: 24px;
-		padding: 24px;
+	.details-content {
+		padding-bottom: 1.5rem;
 	}
 
-	.details-overlay header h2 {
-		flex-grow: 1;
-		font-size: 1.125rem;
-		font-weight: 600;
-	}
-
-	.details-overlay header .icons {
-		display: flex;
-		gap: 16px;
-	}
-
-	.details-overlay-content {
-		color: var(--color-gray-500);
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-		padding: 0 24px;
-	}
-
-	.details-overlay-content:before {
-		border-bottom: 1px solid var(--color-gray-300);
-		content: '';
-		margin: 0 -24px;
-	}
-
-	.details-overlay-content > :first-child {
-		order: -1;
-	}
-
-	.details-overlay-content-column {
-		display: flex;
-		flex-direction: column;
-		flex: 1 1 100%;
-		gap: 18px;
-	}
 
 	@media (min-width: 768px) {
-		.details-overlay {
+		.details {
 			flex-basis: 80%;
 		}
 	}
 
 	@media (min-width: 1440px) {
-		.details-overlay {
+		.details {
 			flex-basis: 65%;
-		}
-
-		.details-overlay header {
-			margin-bottom: 0;
-		}
-
-		.details-overlay-content:before {
-			border-left: 1px solid var(--color-gray-300);
-			content: '';
-			margin: initial;
-		}
-
-		.details-overlay-content-column {
-			min-width: 0;
-			padding-top: 24px;
 		}
 	}
 
-	.details-overlay h3 {
-		color: var(--color-gray-800);
-		font-size: inherit;
-		font-weight: 500;
+	footer {
+		border-top: 1px solid var(--color-gray-300);
 	}
 </style>
