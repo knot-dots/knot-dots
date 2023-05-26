@@ -19,9 +19,15 @@
 	<ul class="button-group button-group-boards">
 		<li><button>{$_('strategies')}</button></li>
 		<li>
-			<a href="/" class="button" class:is-active={$page.url.pathname == '/'}>{$_('objectives')}</a>
+			<a href="/" class="button" class:is-active={$page.url.pathname == '/'}>
+				{$_('objectives')}
+			</a>
 		</li>
-		<li><button>{$_('measures')}</button></li>
+		<li>
+			<a href="/measures" class="button" class:is-active={$page.url.pathname == '/measures'}>
+				{$_('measures')}
+			</a>
+		</li>
 	</ul>
 
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
