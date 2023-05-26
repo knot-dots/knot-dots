@@ -17,26 +17,23 @@
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
 	import { sustainableDevelopmentGoals } from '$lib/models';
-	import { keycloak, navigationToggle, sidebarToggle, user } from '$lib/stores.js';
+	import { filtersToggle, keycloak, navigationToggle, sidebarToggle, sortToggle, user } from '$lib/stores.js';
 
-	$: isExpanded = true
-
-	sidebarToggle.subscribe(value => {
-		isExpanded = value;
-	})
+	let selectedCategory = $page.url.searchParams.getAll('category');
+	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
+	$filtersToggle = selectedCategory.length > 0;
+	$sortToggle  = selectedSort != 'modified';
 
 	function toggleSidebar() {
-		isExpanded = !isExpanded;
-		sidebarToggle.update(value => isExpanded);
-		if (!isExpanded) {
-			filtersExpanded = false;
-			sortExpanded = false;
+		$sidebarToggle = !$sidebarToggle
+		if (!$sidebarToggle) {
+			$filtersToggle = false;
+			$sortToggle = false;
 		}
 	}
 
 	const hash = $page.url.hash;
-	let selectedCategory = $page.url.searchParams.getAll('category');
-	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
+
 	$: if (browser && ['/', '/measures'].includes($page.url.pathname)) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
@@ -47,45 +44,42 @@
 		goto(`?${query.toString()}${hash}`);
 	}
 
-	let filtersExpanded = selectedCategory.length > 0;
+
 	function toggleFilters() {
-		filtersExpanded = !filtersExpanded;
-		if (filtersExpanded) {
-			isExpanded = true;
-			sidebarToggle.update(value => isExpanded);
+		$filtersToggle = !$filtersToggle;
+		if ($filtersToggle) {
+			$sidebarToggle = true
 		}
 	}
 
-	let sortExpanded = selectedSort != 'modified';
 
 	function toggleSort() {
-		sortExpanded = !sortExpanded;
-		if (sortExpanded) {
-			isExpanded = true;
-			sidebarToggle.update(value => isExpanded);
+		$sortToggle = !$sortToggle;
+		if ($sortToggle) {
+			$sidebarToggle = true
 		}
 	}
 </script>
 
-<aside id="aside-0" class:is-expanded={isExpanded} class:is-visible={$navigationToggle}>
+<aside id="aside-0" class:is-expanded={$sidebarToggle} class:is-visible={$navigationToggle}>
 	<ul class="group group-controls">
-		<li class:is-hidden={!isExpanded}>
+		<li class:is-hidden={!$sidebarToggle}>
 			<button title={$_('boards')}>
 				<ViewBoardsIcon class="icon-24" />
 			</button>
 		</li>
-		<li class:is-hidden={!isExpanded}>
+		<li class:is-hidden={!$sidebarToggle}>
 			<button title={$_('map')}>
 				<MapIcon class="icon-24" />
 			</button>
 		</li>
-		<li class:is-hidden={!isExpanded}>
+		<li class:is-hidden={!$sidebarToggle}>
 			<button title={$_('table')}>
 				<TableIcon class="icon-24" />
 			</button>
 		</li>
 		<li>
-			{#if isExpanded}
+			{#if $sidebarToggle}
 				<button class="primary" on:click={toggleSidebar} title={$_('collapse_sidebar')}>
 					<ChevronLeftIcon class="icon-24" />
 				</button>
@@ -100,14 +94,14 @@
 	{#if ['/', '/measures'].includes($page.url.pathname)}
 		<ul class="group group-actions">
 			<li>
-				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={filtersExpanded}>
+				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
 					<FilterIcon class="icon-20" />
-					<span class:is-hidden={!isExpanded}>{$_('filter')}</span>
-					<span class:is-hidden={!isExpanded}>
-						<Icon src={filtersExpanded ? ChevronUp : ChevronDown} size="20" />
+					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+					<span class:is-hidden={!$sidebarToggle}>
+						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
 					</span>
 				</button>
-				<ul id="filters" class="collapsible" class:is-hidden={!filtersExpanded}>
+				<ul id="filters" class="collapsible" class:is-hidden={!$filtersToggle}>
 					{#each sustainableDevelopmentGoals.options as option}
 						<li>
 							<label>
@@ -123,14 +117,14 @@
 				</ul>
 			</li>
 			<li>
-				<button on:click={toggleSort} aria-controls="sort" aria-expanded={sortExpanded}>
+				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
 					<SortDescendingIcon class="icon-20" />
-					<span class:is-hidden={!isExpanded}>{$_('sort')}</span>
-					<span class:is-hidden={!isExpanded}
-						><Icon src={sortExpanded ? ChevronUp : ChevronDown} size="20" /></span
+					<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
+					<span class:is-hidden={!$sidebarToggle}
+						><Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" /></span
 					>
 				</button>
-				<ul id="sort" class="collapsible" class:is-hidden={!sortExpanded}>
+				<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
 					<li>
 						<label>
 							<input type="radio" value={'modified'} bind:group={selectedSort} />
@@ -152,13 +146,13 @@
 		<li>
 			<a href="/help" class="button quiet">
 				<QuestionMarkCircleIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>{$_('help')}</span>
+				<span class:is-hidden={!$sidebarToggle}>{$_('help')}</span>
 			</a>
 		</li>
 		<li>
 			<a href="/about" class="button quiet">
 				<UserGroupIcon class="icon-20" />
-				<span class:is-hidden={!isExpanded}>{$_('about')}</span>
+				<span class:is-hidden={!$sidebarToggle}>{$_('about')}</span>
 			</a>
 		</li>
 	</ul>
@@ -168,26 +162,26 @@
 			<li>
 				<a href={$keycloak.accountUrl}>
 					<span class="avatar avatar-m">{$user.givenName.at(0)} {$user.familyName.at(0)}</span>
-					<span class:is-hidden={!isExpanded}>{$user.givenName} {$user.familyName}</span>
+					<span class:is-hidden={!$sidebarToggle}>{$user.givenName} {$user.familyName}</span>
 				</a>
 			</li>
 			<li>
 				<a href={$keycloak.logoutUrl} class="button">
-					<LogoutIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
-					<span class:is-hidden={!isExpanded}>{$_('logout')}</span>
+					<LogoutIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
+					<span class:is-hidden={!$sidebarToggle}>{$_('logout')}</span>
 				</a>
 			</li>
 		{:else}
 			<li>
 				<a href={$keycloak.loginUrl} class="button quiet">
-					<LoginIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
-					<span class:is-hidden={!isExpanded}>{$_('login')}</span>
+					<LoginIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
+					<span class:is-hidden={!$sidebarToggle}>{$_('login')}</span>
 				</a>
 			</li>
 			<li>
 				<a href={$keycloak.registerUrl} class="button primary">
-					<RegisterIcon class={isExpanded ? 'is-hidden' : 'icon-20'} />
-					<span class:is-hidden={!isExpanded}>{$_('register')}</span>
+					<RegisterIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
+					<span class:is-hidden={!$sidebarToggle}>{$_('register')}</span>
 				</a>
 			</li>
 		{/if}

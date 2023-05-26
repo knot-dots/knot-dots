@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Icon, Share } from 'svelte-hero-icons';
 	import { page } from '$app/stores';
+	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
 
 	export let guid: string;
 	export let type: string;
@@ -29,9 +30,15 @@
 		}
 		relatedToURL = `?${query.toString()}`
 	}
+
+	function closeSidebar() {
+		$sidebarToggle = false;
+		$filtersToggle = false;
+		$sortToggle = false;
+	}
 </script>
 
-<a href={containerPreviewURL}>
+<a href={containerPreviewURL} on:click={closeSidebar}>
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
