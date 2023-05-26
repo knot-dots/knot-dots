@@ -9,7 +9,7 @@
 	const { container, relationObjects } = data;
 </script>
 
-<article class="details">
+<article class="details is-page">
 	<header>
 		<h2>{container.payload.title}</h2>
 		{#if $user.isAuthenticated}
@@ -21,8 +21,8 @@
 		{/if}
 	</header>
 
-	<div class="details-content">
-		<div class="details-content-column">
+	<div class="details-content is-page">
+		<div class="details-content-column is-page">
 			<div class="summary">
 				<h3>{$_('summary')}</h3>
 				{container.payload.summary ?? ''}
@@ -32,7 +32,7 @@
 				{container.payload.description}
 			</div>
 		</div>
-		<div class="details-content-column">
+		<div class="details-content-column is-page">
 			{#if 'status' in container.payload}
 				<div class="meta">
 					<h3 class="meta-key">{$_('status.label')}</h3>

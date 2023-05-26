@@ -403,21 +403,21 @@ fieldset {
 }
 
 @media (min-width: 1440px) {
-	.details header {
+	.details.is-page header {
 		margin-bottom: 0;
 	}
 
-	.details-content {
+	.details-content.is-page {
 		flex-direction: row;
 	}
 
-	.details-content:before {
+	.details-content.is-page:before {
 		border-left: 1px solid var(--color-gray-300);
 		content: '';
 		margin: initial;
 	}
 
-	.details-content-column {
+	.details-content-column.is-page {
 		min-width: 0;
 		padding-top: 24px;
 	}
