@@ -31,7 +31,7 @@
 	const hash = $page.url.hash;
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
-	$: if (browser && $page.url.pathname == '/') {
+	$: if (browser && ['/', '/measures'].includes($page.url.pathname)) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
 		selectedCategory.forEach((c) => query.append('category', c));
@@ -89,7 +89,7 @@
 		</li>
 	</ul>
 
-	{#if $page.url.pathname === '/'}
+	{#if ['/', '/measures'].includes($page.url.pathname)}
 		<ul class="group group-actions">
 			<li>
 				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={filtersExpanded}>

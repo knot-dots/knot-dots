@@ -22,9 +22,7 @@ test('navigation contains expected elements', async ({ page, viewport }) => {
 	await expect(
 		page.getByRole('navigation').getByRole('link', { name: 'Objectives' })
 	).toBeVisible();
-	await expect(
-		page.getByRole('navigation').getByRole('button', { name: 'Measures' })
-	).toBeVisible();
+	await expect(page.getByRole('navigation').getByRole('link', { name: 'Measures' })).toBeVisible();
 
 	if (viewport && viewport.width >= 1440) {
 		await expect(page.getByRole('navigation').getByRole('link', { name: 'Log in' })).toBeVisible();

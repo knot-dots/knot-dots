@@ -62,7 +62,7 @@
 			} else if (event.submitter?.id === 'save-and-create-measure') {
 				await goto(`/container/measure?is-part-of=${result.revision}`);
 			} else {
-				await goto('/');
+				await goto(`../${container.guid}`);
 			}
 		}
 	}
