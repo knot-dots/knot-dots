@@ -9,6 +9,7 @@
 	export let category: string;
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
+	let relatedToURL: string;
 	let containerPreviewURL: string;
 
 	$: {
@@ -17,6 +18,17 @@
 		query.append('container-preview', guid);
 		containerPreviewURL = `?${query.toString()}`
 	}
+
+	$: {
+		const query = new URLSearchParams($page.url.searchParams);
+		if (relatedTo === guid) {
+			query.delete('related-to');
+		} else {
+			query.delete('related-to');
+			query.append('related-to', guid);
+		}
+		relatedToURL = `?${query.toString()}`
+	}
 </script>
 
 <a href={containerPreviewURL}>
@@ -24,7 +36,7 @@
 		<header>
 			<h3>{title}</h3>
 			<a
-				href={relatedTo === guid ? '/' : `/?related-to=${guid}`}
+				href={relatedToURL}
 				class="header-icons button quiet {relatedTo === guid ? 'is-active' : ''}"
 			>
 				<Icon src={Share} size="20" />
