@@ -22,9 +22,8 @@
 		});
 	});
 
-	function isBoardLayout() {
-		return ['/', '/measures'].includes($page.url.pathname);
-	}
+$: isBoardLayout = ['/', '/measures'].includes($page.url.pathname);
+
 </script>
 
 <svelte:head>
@@ -34,7 +33,7 @@
 <Navigation />
 <div>
 	<Sidebar />
-	<main class:board-layout={isBoardLayout()}>
+	<main class:board-layout={isBoardLayout}>
 		<slot />
 	</main>
 </div>
