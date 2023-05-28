@@ -16,7 +16,7 @@
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('container-preview');
 		query.append('container-preview', guid);
-		containerPreviewURL = `?${query.toString()}`
+		containerPreviewURL = `?${query.toString()}`;
 	}
 
 	$: {
@@ -27,7 +27,7 @@
 			query.delete('related-to');
 			query.append('related-to', guid);
 		}
-		relatedToURL = `?${query.toString()}`
+		relatedToURL = `?${query.toString()}`;
 	}
 
 	function closeSidebar() {
@@ -58,7 +58,6 @@
 		</footer>
 	</article>
 </a>
-
 
 <style>
 	.card {
