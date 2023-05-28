@@ -4,7 +4,6 @@
 	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
 
 	export let guid: string;
-	export let type: string;
 	export let title: string;
 	export let summary: string;
 	export let category: string;
@@ -17,7 +16,7 @@
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('container-preview');
 		query.append('container-preview', guid);
-		containerPreviewURL = `?${query.toString()}`
+		containerPreviewURL = `?${query.toString()}`;
 	}
 
 	$: {
@@ -28,7 +27,7 @@
 			query.delete('related-to');
 			query.append('related-to', guid);
 		}
-		relatedToURL = `?${query.toString()}`
+		relatedToURL = `?${query.toString()}`;
 	}
 
 	function closeSidebar() {
@@ -60,16 +59,14 @@
 	</article>
 </a>
 
-
 <style>
 	.card {
-		box-sizing: border-box;
-		width: 100%;
-		padding: 20px;
 		background: #ffffff;
 		border: 1px solid var(--color-gray-200);
-		box-shadow: var(--shadow-md);
 		border-radius: 8px;
+		box-shadow: var(--shadow-md);
+		padding: 20px;
+		width: 100%;
 	}
 
 	header {
@@ -102,9 +99,9 @@
 	}
 
 	.badges {
+		align-items: flex-start;
 		display: flex;
 		flex-direction: row;
-		align-items: flex-start;
 		gap: 12px;
 		margin-top: 20px;
 	}

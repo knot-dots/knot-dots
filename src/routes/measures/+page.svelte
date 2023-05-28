@@ -3,6 +3,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import Overlay from '$lib/components/Overlay.svelte';
 	import { status } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -15,7 +16,6 @@
 			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status == statusOption) as container}
 				<Card
 					guid={container.guid}
-					type={container.type}
 					title={container.payload.title}
 					summary={container.payload.summary ?? ''}
 					category={$_(container.payload.category)}
@@ -24,3 +24,10 @@
 		</BoardColumn>
 	{/each}
 </Board>
+
+{#if data.containerPreviewData}
+	<Overlay
+		containerPreviewData={data.containerPreviewData}
+		relationObjects={data.relationObjects ?? []}
+	/>
+{/if}

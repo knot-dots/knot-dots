@@ -68,7 +68,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
-		margin-bottom: 16px;
 		overflow-y: scroll;
 	}
 </style>
