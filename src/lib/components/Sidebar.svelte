@@ -279,7 +279,7 @@
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-links .button,
 	aside.is-expanded .group-user-menu a {
-		--padding-x: 20px;
+		--padding-x: 14px;
 		--padding-y: 12px;
 		gap: 0.5rem;
 		width: 100%;
