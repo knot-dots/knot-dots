@@ -17,15 +17,22 @@
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
 	import { sustainableDevelopmentGoals } from '$lib/models';
-	import { filtersToggle, keycloak, navigationToggle, sidebarToggle, sortToggle, user } from '$lib/stores.js';
+	import {
+		filtersToggle,
+		keycloak,
+		navigationToggle,
+		sidebarToggle,
+		sortToggle,
+		user
+	} from '$lib/stores.js';
 
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
 	$filtersToggle = selectedCategory.length > 0;
-	$sortToggle  = selectedSort != 'modified';
+	$sortToggle = selectedSort != 'modified';
 
 	function toggleSidebar() {
-		$sidebarToggle = !$sidebarToggle
+		$sidebarToggle = !$sidebarToggle;
 		if (!$sidebarToggle) {
 			$filtersToggle = false;
 			$sortToggle = false;
@@ -44,19 +51,17 @@
 		goto(`?${query.toString()}${hash}`);
 	}
 
-
 	function toggleFilters() {
 		$filtersToggle = !$filtersToggle;
 		if ($filtersToggle) {
-			$sidebarToggle = true
+			$sidebarToggle = true;
 		}
 	}
-
 
 	function toggleSort() {
 		$sortToggle = !$sortToggle;
 		if ($sortToggle) {
-			$sidebarToggle = true
+			$sidebarToggle = true;
 		}
 	}
 </script>

@@ -22,8 +22,7 @@
 		});
 	});
 
-$: isBoardLayout = ['/', '/measures'].includes($page.url.pathname);
-
+	$: isBoardLayout = ['/', '/measures'].includes($page.url.pathname);
 </script>
 
 <svelte:head>

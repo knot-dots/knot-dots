@@ -24,9 +24,9 @@
 	$: relationObjects = data.relationObjects;
 
 	function closeOverlay() {
-			const query = new URLSearchParams($page.url.searchParams);
-			query.delete('container-preview');
-			return `?${query.toString()}`
+		const query = new URLSearchParams($page.url.searchParams);
+		query.delete('container-preview');
+		return `?${query.toString()}`;
 	}
 </script>
 
@@ -47,12 +47,15 @@
 </Board>
 
 {#if containerPreviewData}
-	<article class="details" transition:slide="{{ axis: "x"}}">
+	<article class="details" transition:slide={{ axis: 'x' }}>
 		<header>
 			<h2>{containerPreviewData?.payload.title}</h2>
 			<div class="icons">
 				{#if $user.isAuthenticated}
-					<a href="{containerPreviewData.type}/{containerPreviewData?.guid}/edit" class="button quiet">
+					<a
+						href="{containerPreviewData.type}/{containerPreviewData?.guid}/edit"
+						class="button quiet"
+					>
 						<Icon solid src={Pencil} size="20" />
 					</a>
 				{/if}
