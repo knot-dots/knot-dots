@@ -61,13 +61,13 @@
 
 <style>
 	.card {
-		box-sizing: border-box;
-		width: 100%;
-		padding: 20px;
 		background: #ffffff;
 		border: 1px solid var(--color-gray-200);
-		box-shadow: var(--shadow-md);
 		border-radius: 8px;
+		box-shadow: var(--shadow-md);
+		box-sizing: border-box;
+		padding: 20px;
+		width: 100%;
 	}
 
 	header {
@@ -100,9 +100,9 @@
 	}
 
 	.badges {
+		align-items: flex-start;
 		display: flex;
 		flex-direction: row;
-		align-items: flex-start;
 		gap: 12px;
 		margin-top: 20px;
 	}
