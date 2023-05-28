@@ -65,7 +65,6 @@
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
-		box-sizing: border-box;
 		padding: 20px;
 		width: 100%;
 	}
