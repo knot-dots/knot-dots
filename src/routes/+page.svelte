@@ -93,38 +93,51 @@
 			</div>
 		</div>
 		<footer>
-			<a class="button primary" href="/{containerPreviewData.type}/{containerPreviewData.guid}">{$_("read_more")}</a>
+			<a class="button primary" href="/{containerPreviewData.type}/{containerPreviewData.guid}">
+				{$_('read_more')}
+			</a>
 		</footer>
 	</article>
 {/if}
 
 <style>
-	/* Container details page and form */
 	.details {
-		height: calc(100% + 1rem);
-		flex: 1 0 calc(100% + 2rem);
-		margin: -1rem;
+		height: calc(100%);
+		margin-left: -1rem;
+		overflow: hidden;
 		padding: 0;
+		width: 100%;
+	}
+
+	.details > * {
+		min-width: 100vw;
 	}
 
 	.details-content {
 		padding-bottom: 1.5rem;
 	}
 
-
 	@media (min-width: 768px) {
 		.details {
-			flex-basis: 80%;
+			width: 80%;
+		}
+
+		.details > * {
+			min-width: calc((100vw - 18rem) * 0.8);
 		}
 	}
 
 	@media (min-width: 1440px) {
 		.details {
-			flex-basis: 65%;
+			width: 65%;
+		}
+
+		.details > * {
+			min-width: calc((100vw - 18rem) * 0.65);
 		}
 	}
 
-	footer {
-		border-top: 1px solid var(--color-gray-300);
+	.details footer {
+		border-top: 65vw;
 	}
 </style>
