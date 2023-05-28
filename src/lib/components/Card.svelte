@@ -4,7 +4,6 @@
 	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
 
 	export let guid: string;
-	export let type: string;
 	export let title: string;
 	export let summary: string;
 	export let category: string;

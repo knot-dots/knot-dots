@@ -16,7 +16,6 @@
 			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status == statusOption) as container}
 				<Card
 					guid={container.guid}
-					type={container.type}
 					title={container.payload.title}
 					summary={container.payload.summary ?? ''}
 					category={$_(container.payload.category)}
