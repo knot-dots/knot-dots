@@ -3,6 +3,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import Overlay from '$lib/components/Overlay.svelte';
 	import { status } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -24,3 +25,10 @@
 		</BoardColumn>
 	{/each}
 </Board>
+
+{#if data.containerPreviewData}
+	<Overlay
+		containerPreviewData={data.containerPreviewData}
+		relationObjects={data.relationObjects ?? []}
+	/>
+{/if}
