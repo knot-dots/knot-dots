@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import { Icon, Plus } from 'svelte-hero-icons';
+	import { _ } from 'svelte-i18n';
 	import type { ContainerType } from '$lib/models';
 	import { user } from '$lib/stores';
 

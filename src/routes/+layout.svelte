@@ -4,10 +4,10 @@
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
 	import { page } from '$app/stores';
-	import Navigation from '$lib/components/Navigation.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { initKeycloak, key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
+	import Navigation from '$lib/components/Navigation.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	let kc: Keycloak;
 
 	setContext<KeycloakContext>(key, {

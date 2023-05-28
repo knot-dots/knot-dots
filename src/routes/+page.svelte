@@ -1,14 +1,14 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import { containerTypes } from '$lib/models';
-	import { page } from '$app/stores';
-	import type { PageData } from './$types';
-	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 	import { user } from '$lib/stores';
-	import { slide } from 'svelte/transition';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
 
