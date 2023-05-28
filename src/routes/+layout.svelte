@@ -3,11 +3,11 @@
 	import { onMount, setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
-	import Navigation from '$lib/components/Navigation.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { page } from '$app/stores';
 	import { initKeycloak, key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-
+	import Navigation from '$lib/components/Navigation.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	let kc: Keycloak;
 
 	setContext<KeycloakContext>(key, {
@@ -21,6 +21,8 @@
 			silentCheckSsoFallback: false
 		});
 	});
+
+	$: isBoardLayout = ['/', '/measures'].includes($page.url.pathname);
 </script>
 
 <svelte:head>
@@ -30,7 +32,7 @@
 <Navigation />
 <div>
 	<Sidebar />
-	<main>
+	<main class:board-layout={isBoardLayout}>
 		<slot />
 	</main>
 </div>
@@ -47,6 +49,11 @@
 		flex-grow: 1;
 		background-color: var(--color-gray-100);
 		min-width: 0;
-		padding: 1rem 1rem 0;
+		padding: 1rem;
+	}
+
+	main.board-layout {
+		display: flex;
+		padding: 0;
 	}
 </style>

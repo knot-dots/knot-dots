@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Icon, Share } from 'svelte-hero-icons';
 	import { page } from '$app/stores';
+	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
 
 	export let guid: string;
 	export let type: string;
@@ -9,13 +10,42 @@
 	export let category: string;
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
+	let relatedToURL: string;
+	let containerPreviewURL: string;
+
+	$: {
+		const query = new URLSearchParams($page.url.searchParams);
+		query.delete('container-preview');
+		query.append('container-preview', guid);
+		containerPreviewURL = `?${query.toString()}`
+	}
+
+	$: {
+		const query = new URLSearchParams($page.url.searchParams);
+		if (relatedTo === guid) {
+			query.delete('related-to');
+		} else {
+			query.delete('related-to');
+			query.append('related-to', guid);
+		}
+		relatedToURL = `?${query.toString()}`
+	}
+
+	function closeSidebar() {
+		$sidebarToggle = false;
+		$filtersToggle = false;
+		$sortToggle = false;
+	}
 </script>
 
-<a href={`/${type}/${guid}`} {title}>
+<a href={containerPreviewURL} on:click={closeSidebar}>
 	<article class="card">
 		<header>
 			<h3>{title}</h3>
-			<a href={relatedTo === guid ? '/' : `/?related-to=${guid}`} class="header-icons button quiet">
+			<a
+				href={relatedToURL}
+				class="header-icons button quiet {relatedTo === guid ? 'is-active' : ''}"
+			>
 				<Icon src={Share} size="20" />
 			</a>
 		</header>
@@ -29,6 +59,7 @@
 		</footer>
 	</article>
 </a>
+
 
 <style>
 	.card {
