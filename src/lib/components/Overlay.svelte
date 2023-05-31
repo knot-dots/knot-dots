@@ -41,6 +41,12 @@
 			</div>
 		</div>
 		<div class="details-content-column">
+			{#if 'status' in containerPreviewData.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('status.label')}</h3>
+					<p class="meta-value">{$_(containerPreviewData.payload.status)}</p>
+				</div>
+			{/if}
 			<div class="meta">
 				<h3 class="meta-key">{$_('category')}</h3>
 				<ul class="meta-value">
