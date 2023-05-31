@@ -18,13 +18,10 @@
 
 <article class="details" transition:slide={{ axis: 'x' }}>
 	<header>
-		<h2>{containerPreviewData?.payload.title}</h2>
+		<h2>{containerPreviewData.payload.title}</h2>
 		<div class="icons">
 			{#if $user.isAuthenticated}
-				<a
-					href="{containerPreviewData.type}/{containerPreviewData?.guid}/edit"
-					class="button quiet"
-				>
+				<a href="{containerPreviewData.type}/{containerPreviewData.guid}/edit" class="button quiet">
 					<Icon solid src={Pencil} size="20" />
 				</a>
 			{/if}
@@ -36,18 +33,18 @@
 		<div class="details-content-column">
 			<div class="summary">
 				<h3>{$_('summary')}</h3>
-				{containerPreviewData?.payload.summary ?? ''}
+				{containerPreviewData.payload.summary ?? ''}
 			</div>
 			<div class="description">
 				<h3>{$_('description')}</h3>
-				{containerPreviewData?.payload.description}
+				{containerPreviewData.payload.description}
 			</div>
 		</div>
 		<div class="details-content-column">
 			<div class="meta">
 				<h3 class="meta-key">{$_('category')}</h3>
 				<ul class="meta-value">
-					<li>{$_(containerPreviewData?.payload.category)}</li>
+					<li>{$_(containerPreviewData.payload.category)}</li>
 				</ul>
 			</div>
 			{#if relationObjects}
