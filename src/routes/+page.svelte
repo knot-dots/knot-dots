@@ -36,6 +36,7 @@
 {#if data.containerPreviewData}
 	<Overlay
 		containerPreviewData={data.containerPreviewData}
+		isPartOfOptions={data.isPartOfOptions ?? []}
 		relationObjects={data.relationObjects ?? []}
 	/>
 {/if}
