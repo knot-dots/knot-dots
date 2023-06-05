@@ -12,7 +12,8 @@
 
 	export let data: PageData;
 
-	const { container, isPartOfOptions } = data;
+	$: container = data.container;
+	$: isPartOfOptions = data.isPartOfOptions;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 

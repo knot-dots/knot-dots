@@ -6,7 +6,8 @@
 
 	export let data: PageData;
 
-	const { container, relationObjects } = data;
+	$: container = data.container;
+	$: relationObjects = data.relationObjects;
 </script>
 
 <article class="details is-page">
