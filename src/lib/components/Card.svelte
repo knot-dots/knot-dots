@@ -38,7 +38,7 @@
 </script>
 
 <a href={containerPreviewURL} on:click={closeSidebar}>
-	<article class="card">
+	<article class="card" class:is-active={$page.url.searchParams.get('container-preview') === guid}>
 		<header>
 			<h3>{title}</h3>
 			<a
@@ -67,6 +67,10 @@
 		box-shadow: var(--shadow-md);
 		padding: 20px;
 		width: 100%;
+	}
+
+	.card.is-active {
+		background: var(--color-gray-300);
 	}
 
 	header {
