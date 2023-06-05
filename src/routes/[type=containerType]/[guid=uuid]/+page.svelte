@@ -50,7 +50,7 @@
 				<ul class="meta-value">
 					{#each relationObjects as { guid, payload, type }}
 						<li>
-							<a href="/container/{type}/{guid}">{payload.title}</a>
+							<a href="/{type}/{guid}">{payload.title}</a>
 						</li>
 					{/each}
 				</ul>
