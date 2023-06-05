@@ -78,9 +78,7 @@
 		{#if edit}
 			<label>
 				{$_(containerPreviewData.type)}
-				{#key containerPreviewData.type}
-					<input name="title" type="text" value={containerPreviewData.payload.title} required />
-				{/key}
+				<input name="title" type="text" value={containerPreviewData.payload.title} required />
 			</label>
 		{:else}
 			<h2>{containerPreviewData.payload.title}</h2>
@@ -100,14 +98,12 @@
 			{#if edit}
 				<label>
 					{$_('summary')}
-					{#key containerPreviewData.guid}
-						<textarea
-							name="summary"
-							maxlength="200"
-							value={containerPreviewData.payload.summary ?? ''}
-							required
-						/>
-					{/key}
+					<textarea
+						name="summary"
+						maxlength="200"
+						value={containerPreviewData.payload.summary ?? ''}
+						required
+					/>
 				</label>
 			{:else}
 				<div class="summary">
@@ -118,13 +114,7 @@
 			{#if edit}
 				<label>
 					{$_('description')}
-					{#key containerPreviewData.guid}
-						<textarea
-							name="description"
-							value={containerPreviewData.payload.description}
-							required
-						/>
-					{/key}
+					<textarea name="description" value={containerPreviewData.payload.description} required />
 				</label>
 			{:else}
 				<div class="description">
@@ -138,18 +128,16 @@
 				{#if edit && containerPreviewData.type === containerTypes.enum.measure}
 					<label>
 						{$_('status.label')}
-						{#key containerPreviewData.guid}
-							<select name="status" required>
-								{#each status.options as statusOption}
-									<option
-										selected={statusOption === containerPreviewData.payload.status}
-										value={statusOption}
-									>
-										{$_(statusOption)}
-									</option>
-								{/each}
-							</select>
-						{/key}
+						<select name="status" required>
+							{#each status.options as statusOption}
+								<option
+									selected={statusOption === containerPreviewData.payload.status}
+									value={statusOption}
+								>
+									{$_(statusOption)}
+								</option>
+							{/each}
+						</select>
 					</label>
 				{:else}
 					<div class="meta">
@@ -161,16 +149,14 @@
 			{#if edit}
 				<label>
 					{$_('category')}
-					{#key containerPreviewData.guid}
-						<select name="category" required>
-							<option label="" />
-							{#each sustainableDevelopmentGoals.options as goal}
-								<option selected={goal === containerPreviewData.payload.category} value={goal}>
-									{$_(goal)}
-								</option>
-							{/each}
-						</select>
-					{/key}
+					<select name="category" required>
+						<option label="" />
+						{#each sustainableDevelopmentGoals.options as goal}
+							<option selected={goal === containerPreviewData.payload.category} value={goal}>
+								{$_(goal)}
+							</option>
+						{/each}
+					</select>
 				</label>
 			{:else}
 				<div class="meta">
