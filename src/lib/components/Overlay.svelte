@@ -135,7 +135,7 @@
 		</div>
 		<div class="details-content-column">
 			{#if 'status' in containerPreviewData.payload}
-				{#if edit && containerPreviewData.type === containerTypes.enum.measure}}
+				{#if edit && containerPreviewData.type === containerTypes.enum.measure}
 					<label>
 						{$_('status.label')}
 						{#key containerPreviewData.guid}
