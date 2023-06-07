@@ -1,5 +1,6 @@
 import Keycloak from 'keycloak-js';
 import type { KeycloakInitOptions } from 'keycloak-js';
+import { page } from '$app/stores';
 import { env } from '$env/dynamic/public';
 import { keycloak, user } from '$lib/stores';
 
@@ -57,6 +58,15 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 		loginUrl: kc.createLoginUrl(),
 		registerUrl: kc.createRegisterUrl()
 	}));
+
+	page.subscribe(() => {
+		keycloak.set({
+			accountUrl: kc.createAccountUrl(),
+			loginUrl: kc.createLoginUrl(),
+			logoutUrl: kc.createLogoutUrl(),
+			registerUrl: kc.createRegisterUrl()
+		});
+	});
 
 	return kc;
 }
