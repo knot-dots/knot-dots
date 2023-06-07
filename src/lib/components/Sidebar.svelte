@@ -13,7 +13,6 @@
 	import QuestionMarkCircleIcon from '$lib/icons/QuestionMarkCircleIcon.svelte';
 	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
-	import TableIcon from '$lib/icons/TableIcon.svelte';
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
 	import { sustainableDevelopmentGoals } from '$lib/models';
@@ -44,6 +43,7 @@
 	$: if (browser && ['/', '/measures'].includes($page.url.pathname)) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
+		query.delete('sort');
 		selectedCategory.forEach((c) => query.append('category', c));
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
@@ -76,11 +76,6 @@
 		<li class:is-hidden={!$sidebarToggle}>
 			<button title={$_('map')}>
 				<MapIcon class="icon-24" />
-			</button>
-		</li>
-		<li class:is-hidden={!$sidebarToggle}>
-			<button title={$_('table')}>
-				<TableIcon class="icon-24" />
 			</button>
 		</li>
 		<li>
