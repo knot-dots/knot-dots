@@ -204,7 +204,7 @@
 	.details {
 		height: calc(100%);
 		margin-left: -1rem;
-		overflow: hidden;
+		overflow-x: hidden;
 		padding: 0;
 		width: 100%;
 	}
