@@ -44,6 +44,7 @@
 	$: if (browser && ['/', '/measures'].includes($page.url.pathname)) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
+		query.delete('sort');
 		selectedCategory.forEach((c) => query.append('category', c));
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
