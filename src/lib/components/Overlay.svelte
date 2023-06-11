@@ -9,6 +9,7 @@
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import type { Container } from '$lib/models.js';
 	import { user } from '$lib/stores.js';
@@ -129,6 +130,17 @@
 			{#if 'indicator' in containerPreviewData.payload}
 				{#if edit}
 					<IndicatorWizard bind:indicator={containerPreviewData.payload.indicator} />
+				{:else if containerPreviewData.payload.indicator.length > 0}
+					<div class="indicator">
+						<h3>{$_('indicator.legend')}</h3>
+						<ProgressBar
+							fulfillmentDate={containerPreviewData.payload.indicator[0].fulfillmentDate}
+							max={containerPreviewData.payload.indicator[0].max}
+							min={containerPreviewData.payload.indicator[0].min}
+							quantity={containerPreviewData.payload.indicator[0].quantity}
+							value={containerPreviewData.payload.indicator[0].value}
+						/>
+					</div>
 				{/if}
 			{/if}
 		</div>

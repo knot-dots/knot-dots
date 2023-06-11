@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Icon, Pencil } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import { user } from '$lib/stores';
 	import type { PageData } from './$types';
 
@@ -32,6 +33,18 @@
 				<h3>{$_('description')}</h3>
 				{container.payload.description}
 			</div>
+			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
+				<div class="indicator">
+					<h3>{$_('indicator.legend')}</h3>
+					<ProgressBar
+						fulfillmentDate={container.payload.indicator[0].fulfillmentDate}
+						max={container.payload.indicator[0].max}
+						min={container.payload.indicator[0].min}
+						quantity={container.payload.indicator[0].quantity}
+						value={container.payload.indicator[0].value}
+					/>
+				</div>
+			{/if}
 		</div>
 		<div class="details-content-column is-page">
 			{#if 'status' in container.payload}
