@@ -102,10 +102,32 @@ export const user = z.object({
 
 export type User = z.infer<typeof user>;
 
+const indicator = z.object({
+	max: z.coerce.number().nonnegative(),
+	min: z.coerce.number().nonnegative(),
+	quantity: z.string().optional(),
+	fulfillmentDate: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional(),
+	value: z.number().nonnegative().optional()
+});
+
+export type Indicator = z.infer<typeof indicator>;
+
 export const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
 	payload: z.union([
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				indicator: z.array(indicator).max(1),
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
+			.strict(),
 		z
 			.object({
 				category: sustainableDevelopmentGoals,
