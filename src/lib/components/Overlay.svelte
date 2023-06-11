@@ -8,10 +8,11 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
+	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import type { Container } from '$lib/models.js';
 	import { user } from '$lib/stores.js';
-	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models.js';
+	import { status, sustainableDevelopmentGoals } from '$lib/models.js';
 	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
 
 	export let containerPreviewData: Container;
@@ -37,7 +38,10 @@
 				description: data.get('description') as string,
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
-				...(data.has('status') ? { status: data.get('status') } : undefined)
+				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...('indicator' in containerPreviewData.payload
+					? { indicator: containerPreviewData.payload.indicator }
+					: undefined)
 			},
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
@@ -122,10 +126,15 @@
 					{containerPreviewData.payload.description}
 				</div>
 			{/if}
+			{#if 'indicator' in containerPreviewData.payload}
+				{#if edit}
+					<IndicatorWizard bind:indicator={containerPreviewData.payload.indicator} />
+				{/if}
+			{/if}
 		</div>
 		<div class="details-content-column">
 			{#if 'status' in containerPreviewData.payload}
-				{#if edit && containerPreviewData.type === containerTypes.enum.measure}
+				{#if edit}
 					<label>
 						{$_('status.label')}
 						<select name="status" required>

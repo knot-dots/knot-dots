@@ -9,6 +9,7 @@
 	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models';
 	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
 	import type { PageData } from './$types';
+	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 
 	export let data: PageData;
 
@@ -26,7 +27,10 @@
 				description: data.get('description') as string,
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
-				...(data.has('status') ? { status: data.get('status') } : undefined)
+				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...('indicator' in container.payload
+					? { indicator: container.payload.indicator }
+					: undefined)
 			},
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
@@ -87,6 +91,9 @@
 				{$_('description')}
 				<textarea name="description" value={container.payload.description} required />
 			</label>
+			{#if 'indicator' in container.payload}
+				<IndicatorWizard bind:indicator={container.payload.indicator} />
+			{/if}
 		</div>
 		<div class="details-content-column">
 			{#if 'status' in container.payload}

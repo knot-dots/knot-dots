@@ -12,6 +12,9 @@
 	"filter": "Filtern",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"indicator": {
+		"legend": "Indikator"
+	},
 	"login": "Anmelden",
 	"logout": "Abmelden",
 	"map": "Karte",

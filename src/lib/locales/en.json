@@ -12,6 +12,9 @@
 	"filter": "Filter",
 	"help": "Help",
 	"home": "Home screen",
+	"indicator": {
+		"legend": "Indicator"
+	},
 	"login": "Log in",
 	"logout": "Log out",
 	"map": "Map",
