@@ -70,6 +70,16 @@ export function isStatus(value: unknown): value is Status {
 	return statusValues.includes(value as Status);
 }
 
+const quantityValues = ['quantity.co2', 'quantity.cycle_path'] as const;
+
+export const quantities = z.enum(quantityValues);
+
+export type Quantity = z.infer<typeof quantities>;
+
+export function isQuantity(value: unknown): value is Quantity {
+	return quantityValues.includes(value as Quantity);
+}
+
 export const relation = z.object({
 	object: z.number().int().positive(),
 	predicate: z.string().max(128),
