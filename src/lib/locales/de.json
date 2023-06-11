@@ -13,7 +13,9 @@
 	"help": "Hilfe",
 	"home": "Startseite",
 	"indicator": {
-		"legend": "Indikator"
+		"fulfillment_date": "Erfüllungsdatum",
+		"legend": "Indikator",
+		"quantity": "Größe"
 	},
 	"login": "Anmelden",
 	"logout": "Abmelden",
@@ -27,6 +29,10 @@
 	"operational_goal": "Operatives Ziel",
 	"operational_goals": "Operative Ziele",
 	"page_title": "Strategie-Werkzeug",
+	"quantity": {
+		"co2": "t CO₂",
+		"cycle_path": "km Radweg"
+	},
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relations": "Beziehungen",
