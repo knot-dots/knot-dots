@@ -223,6 +223,7 @@ label {
 	font-weight: 500;
 }
 
+input[type="date"],
 input[type="text"],
 select,
 textarea {
@@ -239,6 +240,11 @@ textarea {
 	width: 100%;
 }
 
+input[type="range"] {
+	display: block;
+	padding: 12px 0;
+}
+
 select {
 	background: url(/src/lib/assets/chevron-down.svg);
 	background-position: right 12px center;
@@ -251,12 +257,14 @@ textarea {
 	resize: vertical;
 }
 
+input[type="date"]:active,
 input[type="text"]:active,
 select:active,
 textarea:active {
 	border-color: var(--color-blue-600);
 }
 
+input[type="date"]:invalid,
 input[type="text"]:invalid,
 select:invalid,
 textarea:invalid {
@@ -265,6 +273,7 @@ textarea:invalid {
 	color: var(--color-red-700);
 }
 
+input[type="date"]:valid,
 input[type="text"]:valid,
 select:valid,
 textarea:valid {
