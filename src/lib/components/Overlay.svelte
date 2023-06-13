@@ -8,13 +8,15 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
-	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import type { Container } from '$lib/models.js';
+	import ContainerEditForm from '$lib/components/ContainerEditForm.svelte';
+	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import type {
+		Container,
+		ContainerType,
+		ModifiedContainer,
+		SustainableDevelopmentGoal
+	} from '$lib/models';
 	import { user } from '$lib/stores.js';
-	import { status, sustainableDevelopmentGoals } from '$lib/models.js';
-	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
 
 	export let containerPreviewData: Container;
 	export let relationObjects: Container[];
@@ -74,82 +76,15 @@
 
 <div class="overlay" transition:slide={{ axis: 'x' }}>
 	{#if edit}
-		<form class="details" method="POST" on:submit|preventDefault={handleSubmit}>
-			<header>
-				<label>
-					{$_(containerPreviewData.type)}
-					<input name="title" type="text" value={containerPreviewData.payload.title} required />
-				</label>
-			</header>
-
-			<div class="details-content">
-				<div class="details-content-column">
-					<label>
-						{$_('summary')}
-						<textarea
-							name="summary"
-							maxlength="200"
-							value={containerPreviewData.payload.summary ?? ''}
-							required
-						/>
-					</label>
-					<label>
-						{$_('description')}
-						<textarea
-							name="description"
-							value={containerPreviewData.payload.description}
-							required
-						/>
-					</label>
-					{#if 'indicator' in containerPreviewData.payload}
-						<IndicatorWizard bind:indicator={containerPreviewData.payload.indicator} />
-					{/if}
-				</div>
-				<div class="details-content-column">
-					{#if 'status' in containerPreviewData.payload}
-						<label>
-							{$_('status.label')}
-							<select name="status" required>
-								{#each status.options as statusOption}
-									<option
-										selected={statusOption === containerPreviewData.payload.status}
-										value={statusOption}
-									>
-										{$_(statusOption)}
-									</option>
-								{/each}
-							</select>
-						</label>
-					{/if}
-					<label>
-						{$_('category')}
-						<select name="category" required>
-							<option label="" />
-							{#each sustainableDevelopmentGoals.options as goal}
-								<option selected={goal === containerPreviewData.payload.category} value={goal}>
-									{$_(goal)}
-								</option>
-							{/each}
-						</select>
-					</label>
-					{#if relationObjects}
-						<RelationSelector
-							{isPartOfOptions}
-							containerType={containerPreviewData.type}
-							selected={containerPreviewData.relation}
-						/>
-					{/if}
-				</div>
-			</div>
-
-			<footer>
+		<ContainerEditForm container={containerPreviewData} {isPartOfOptions} on:submit={handleSubmit}>
+			<svelte:fragment slot="footer">
 				<button id="save" class="primary">{$_('save')}</button>
 				<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
-			</footer>
-		</form>
+			</svelte:fragment>
+		</ContainerEditForm>
 	{:else}
-		<article class="details">
-			<header>
+		<ContainerDetailView container={containerPreviewData} {relationObjects}>
+			<svelte:fragment slot="header">
 				<h2>{containerPreviewData.payload.title}</h2>
 				<div class="icons">
 					{#if $user.isAuthenticated}
@@ -159,65 +94,8 @@
 					{/if}
 					<a href={closeOverlay()} class="button quiet"><Icon solid src={XMark} size="20" /></a>
 				</div>
-			</header>
-
-			<div class="details-content">
-				<div class="details-content-column">
-					<div class="summary">
-						<h3>{$_('summary')}</h3>
-						{containerPreviewData.payload.summary ?? ''}
-					</div>
-					<div class="description">
-						<h3>{$_('description')}</h3>
-						{containerPreviewData.payload.description}
-					</div>
-					{#if 'indicator' in containerPreviewData.payload}
-						<div class="indicator">
-							<h3>{$_('indicator.legend')}</h3>
-							<ProgressBar
-								fulfillmentDate={containerPreviewData.payload.indicator[0].fulfillmentDate}
-								max={containerPreviewData.payload.indicator[0].max}
-								min={containerPreviewData.payload.indicator[0].min}
-								quantity={containerPreviewData.payload.indicator[0].quantity}
-								value={containerPreviewData.payload.indicator[0].value}
-							/>
-						</div>
-					{/if}
-				</div>
-				<div class="details-content-column">
-					{#if 'status' in containerPreviewData.payload}
-						<div class="meta">
-							<h3 class="meta-key">{$_('status.label')}</h3>
-							<p class="meta-value">{$_(containerPreviewData.payload.status)}</p>
-						</div>
-					{/if}
-					<div class="meta">
-						<h3 class="meta-key">{$_('category')}</h3>
-						<ul class="meta-value">
-							<li>{$_(containerPreviewData.payload.category)}</li>
-						</ul>
-					</div>
-					{#if relationObjects}
-						<div class="meta">
-							<h3 class="meta-key">{$_('relations')}</h3>
-							<ul class="meta-value">
-								{#each relationObjects as { guid, payload, type }}
-									<li>
-										<a href="/{type}/{guid}">{payload.title}</a>
-									</li>
-								{/each}
-							</ul>
-						</div>
-					{/if}
-				</div>
-			</div>
-
-			<footer>
-				<a class="button primary" href="/{containerPreviewData.type}/{containerPreviewData.guid}">
-					{$_('read_more')}
-				</a>
-			</footer>
-		</article>
+			</svelte:fragment>
+		</ContainerDetailView>
 	{/if}
 </div>
 
@@ -232,10 +110,6 @@
 
 	.overlay > * {
 		min-width: 100vw;
-	}
-
-	.details-content {
-		padding-bottom: 1.5rem;
 	}
 
 	@media (min-width: 768px) {
@@ -256,9 +130,5 @@
 		.overlay > * {
 			min-width: calc((100vw - 18rem) * 0.65);
 		}
-	}
-
-	.details footer {
-		border-top: 65vw;
 	}
 </style>
