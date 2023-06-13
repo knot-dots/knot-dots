@@ -225,8 +225,8 @@ label {
 	font-weight: 500;
 }
 
-input[type="date"],
-input[type="text"],
+input[type='date'],
+input[type='text'],
 select,
 textarea {
 	appearance: none;
@@ -242,7 +242,7 @@ textarea {
 	width: 100%;
 }
 
-input[type="range"] {
+input[type='range'] {
 	display: block;
 	padding: 12px 0;
 }
@@ -260,15 +260,15 @@ textarea {
 	resize: vertical;
 }
 
-input[type="date"]:active,
-input[type="text"]:active,
+input[type='date']:active,
+input[type='text']:active,
 select:active,
 textarea:active {
 	border-color: var(--color-blue-600);
 }
 
-input[type="date"]:invalid,
-input[type="text"]:invalid,
+input[type='date']:invalid,
+input[type='text']:invalid,
 select:invalid,
 textarea:invalid {
 	background-color: var(--color-red-050);
@@ -276,8 +276,8 @@ textarea:invalid {
 	color: var(--color-red-700);
 }
 
-input[type="date"]:valid,
-input[type="text"]:valid,
+input[type='date']:valid,
+input[type='text']:valid,
 select:valid,
 textarea:valid {
 	background-color: var(--color-green-050);
@@ -456,9 +456,11 @@ fieldset {
 	flex-wrap: wrap;
 	gap: 48px;
 }
+
 .meta-key {
 	flex: 0 0 140px;
 }
+
 .meta-value {
 	flex: 1;
 }
