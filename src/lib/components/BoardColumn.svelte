@@ -42,7 +42,6 @@
 		box-shadow: var(--shadow-md);
 		color: var(--color-gray-800);
 		display: flex;
-		height: 59px;
 		justify-content: space-between;
 		margin-bottom: 24px;
 		padding: 16px;

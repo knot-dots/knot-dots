@@ -252,6 +252,7 @@ select {
 	background-position: right 12px center;
 	background-repeat: no-repeat;
 	background-size: 18px;
+	padding-right: 34px;
 }
 
 textarea {
@@ -354,11 +355,14 @@ fieldset {
 /* Container details page and form */
 .details {
 	background-color: white;
-	border-radius: 8px;
 	border: 1px solid var(--color-gray-200);
 	box-shadow: var(--shadow-lg);
 	height: 100%;
 	overflow-y: scroll;
+}
+
+.details.is-page {
+	border-radius: 8px;
 }
 
 @media (min-width: 768px) {
@@ -439,6 +443,7 @@ fieldset {
 	color: var(--color-gray-800);
 	font-size: inherit;
 	font-weight: 500;
+	margin-bottom: 0.875rem;
 }
 
 .details footer {
