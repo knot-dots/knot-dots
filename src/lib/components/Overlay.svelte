@@ -87,7 +87,12 @@
 
 <div class="overlay" transition:slide={{ axis: 'x' }}>
 	{#if edit}
-		<ContainerEditForm container={containerPreviewData} {isPartOfOptions} on:submit={handleSubmit}>
+		<ContainerEditForm
+			container={containerPreviewData}
+			{isPartOfOptions}
+			{relationObjects}
+			on:submit={handleSubmit}
+		>
 			<svelte:fragment slot="footer">
 				<button id="save" class="primary">{$_('save')}</button>
 				<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>

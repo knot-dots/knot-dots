@@ -2,18 +2,12 @@
 	import { _ } from 'svelte-i18n';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { containerTypes, predicates, status, sustainableDevelopmentGoals } from '$lib/models';
+	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
 	export let isPartOfOptions: Container[];
-
-	let relationObjects = isPartOfOptions.filter(
-		(o) =>
-			container.relation.findIndex(
-				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === o.revision
-			) > -1
-	);
+	export let relationObjects: Container[];
 </script>
 
 <form class="details" method="POST" on:submit|preventDefault>

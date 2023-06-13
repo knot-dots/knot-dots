@@ -89,7 +89,7 @@
 	}
 </script>
 
-<ContainerEditForm {container} {isPartOfOptions} on:submit={handleSubmit}>
+<ContainerEditForm {container} {isPartOfOptions} {relationObjects} on:submit={handleSubmit}>
 	<svelte:fragment slot="footer">
 		<button id="save" class="primary">{$_('save')}</button>
 		{#if container.type === containerTypes.enum.strategy}
