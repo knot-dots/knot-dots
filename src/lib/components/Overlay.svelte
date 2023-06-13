@@ -34,6 +34,14 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
+		const indicatorContribution = new Map();
+
+		for (let o of relationObjects) {
+			if (data.has(`indicatorContribution-${o.guid}`)) {
+				indicatorContribution.set(o.guid, data.get(`indicatorContribution-${o.guid}`));
+			}
+		}
+
 		const modifiedContainer: ModifiedContainer = {
 			guid: containerPreviewData.guid,
 			payload: {
@@ -42,6 +50,9 @@
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
 				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...(indicatorContribution.size > 0
+					? { indicatorContribution: Object.fromEntries(indicatorContribution) }
+					: undefined),
 				...('indicator' in containerPreviewData.payload
 					? { indicator: containerPreviewData.payload.indicator }
 					: undefined)

@@ -30,8 +30,16 @@
 	"operational_goals": "Operative Ziele",
 	"page_title": "Strategie-Werkzeug",
 	"quantity": {
-		"co2": "t CO₂",
-		"cycle_path": "km Radweg"
+		"co2": {
+			"description": "",
+			"input_prompt": "Wie viele Tonnen CO₂ sollen durch die Maßnahme eingespart werden",
+			"label": "t CO₂"
+		},
+		"cycle_path": {
+			"description": "",
+			"input_prompt": "Wie viele Kilometer Radweg sollen innerhalb der Maßnahme gebaut werden",
+			"label": "km Radweg"
+		}
 	},
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",

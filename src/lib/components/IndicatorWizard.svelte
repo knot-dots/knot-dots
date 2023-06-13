@@ -30,7 +30,7 @@
 		<select name="indicator-quantity" bind:value={indicator[0].quantity} required>
 			<option />
 			{#each quantities.options as quantityOption}
-				<option value={quantityOption}>{$_(quantityOption)}</option>
+				<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
 			{/each}
 		</select>
 		<input

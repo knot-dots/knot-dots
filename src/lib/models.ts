@@ -140,6 +140,9 @@ export const container = z.object({
 			.object({
 				category: sustainableDevelopmentGoals,
 				description: z.string(),
+				indicatorContribution: z
+					.record(z.string().uuid(), z.coerce.number().nonnegative())
+					.optional(),
 				status: status,
 				summary: z.string().max(200).optional(),
 				title: z.string()

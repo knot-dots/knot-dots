@@ -13,14 +13,22 @@
 		<span class="max">{max}</span>
 		<div class="bar">
 			{#if value}
-				<span class="value" style:width={`${(100 * value) / max}%`} />
+				<span
+					class="value"
+					style:width={`${(100 * value) / max}%`}
+					style:background-color={value > 0.7
+						? 'var(--color-green-500)'
+						: value > 0.3
+						? 'var(--color-yellow-200)'
+						: 'var(--color-red-600)'}
+				/>
 			{:else}
 				<span class="value" style:width="0%" />
 			{/if}
 		</div>
 	</div>
 	{#if quantity}
-		<div class="quantity">{$_(quantity)}</div>
+		<div class="quantity">{$_(`${quantity}.label`)}</div>
 	{/if}
 	{#if fulfillmentDate}
 		<div class="fulfillmentDate">

@@ -2,11 +2,18 @@
 	import { _ } from 'svelte-i18n';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { status, sustainableDevelopmentGoals } from '$lib/models';
+	import { containerTypes, predicates, status, sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
 	export let isPartOfOptions: Container[];
+
+	let relationObjects = isPartOfOptions.filter(
+		(o) =>
+			container.relation.findIndex(
+				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === o.revision
+			) > -1
+	);
 </script>
 
 <form class="details" method="POST" on:submit|preventDefault>
@@ -29,6 +36,23 @@
 			</label>
 			{#if 'indicator' in container.payload}
 				<IndicatorWizard bind:indicator={container.payload.indicator} />
+			{/if}
+			{#if container.type === containerTypes.enum.measure}
+				{#each relationObjects as o}
+					{#if 'indicator' in o.payload && 'quantity' in o.payload.indicator[0]}
+						<label>
+							{$_(`${o.payload.indicator[0].quantity}.input_prompt`)}
+							<input
+								type="text"
+								inputmode="numeric"
+								name="indicatorContribution-{o.guid}"
+								value={'indicatorContribution' in container.payload
+									? container.payload.indicatorContribution?.[o.guid]
+									: ''}
+							/>
+						</label>
+					{/if}
+				{/each}
 			{/if}
 		</div>
 		<div class="details-content-column">

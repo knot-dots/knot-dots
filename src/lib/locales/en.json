@@ -30,8 +30,16 @@
 	"open_sidebar": "Open sidebar",
 	"page_title": "StrategyTool",
 	"quantity": {
-		"co2": "t CO₂",
-		"cycle_path": "km cycle paths"
+		"co2": {
+			"description": "",
+			"input_prompt": "",
+			"label": "t CO₂"
+		},
+		"cycle_path": {
+			"description": "",
+			"input_prompt": "",
+			"label": "km cycle path"
+		}
 	},
 	"read_more": "Read more",
 	"register": "Register",

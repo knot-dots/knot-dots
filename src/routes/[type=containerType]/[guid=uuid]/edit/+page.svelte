@@ -6,7 +6,7 @@
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import ContainerEditForm from '$lib/components/ContainerEditForm.svelte';
-	import { containerTypes } from '$lib/models';
+	import { containerTypes, predicates } from '$lib/models';
 	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -14,11 +14,25 @@
 
 	$: container = data.container;
 	$: isPartOfOptions = data.isPartOfOptions;
+	$: relationObjects = isPartOfOptions.filter(
+		(o) =>
+			container.relation.findIndex(
+				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === o.revision
+			) > -1
+	);
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
+		const indicatorContribution = new Map();
+
+		for (let o of relationObjects) {
+			if (data.has(`indicatorContribution-${o.guid}`)) {
+				indicatorContribution.set(o.guid, data.get(`indicatorContribution-${o.guid}`));
+			}
+		}
+
 		const modifiedContainer: ModifiedContainer = {
 			guid: container.guid,
 			payload: {
@@ -27,6 +41,9 @@
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
 				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...(indicatorContribution.size > 0
+					? { indicatorContribution: Object.fromEntries(indicatorContribution) }
+					: undefined),
 				...('indicator' in container.payload
 					? { indicator: container.payload.indicator }
 					: undefined)
