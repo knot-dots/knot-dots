@@ -70,6 +70,12 @@
 					<p class="meta-value">{$_(container.payload.status)}</p>
 				</div>
 			{/if}
+			{#if 'level' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('level.label')}</h3>
+					<p class="meta-value">{$_(container.payload.level)}</p>
+				</div>
+			{/if}
 			<div class="meta">
 				<h3 class="meta-key">{$_('category')}</h3>
 				<ul class="meta-value">
