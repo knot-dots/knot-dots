@@ -89,6 +89,12 @@
 		"terminated": "Terminated"
 	},
 	"strategy": "Strategy",
+	"strategy_type": {
+		"label": "Strategy type",
+		"mobility": "Mobility",
+		"sustainability": "Sustainability",
+		"smart_city": "Smart city"
+	},
 	"strategies": "Strategies",
 	"strategic_goal": "Strategic goal",
 	"strategic_goals": "Strategic goals",
