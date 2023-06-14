@@ -44,6 +44,23 @@ export function isContainerType(value: unknown): value is ContainerType {
 	return containerTypeValues.includes(value as ContainerType);
 }
 
+const levelValues = [
+	'level.global',
+	'level.multi_lateral',
+	'level.national',
+	'level.state',
+	'level.regional',
+	'level.local'
+] as const;
+
+export const levels = z.enum(levelValues);
+
+export type Level = z.infer<typeof levels>;
+
+export function isLevel(value: unknown): value is Level {
+	return levelValues.includes(value as Level);
+}
+
 const predicateValues = ['is-part-of'] as const;
 
 export const predicates = z.enum(predicateValues);
