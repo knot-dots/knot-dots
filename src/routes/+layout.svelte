@@ -28,7 +28,7 @@
 		});
 	});
 
-	$: isBoardLayout = ['/', '/measures'].includes($page.url.pathname);
+	$: isBoardLayout = ['/', '/measures', '/strategies'].includes($page.url.pathname);
 
 	const duration = 300;
 	const delay = duration + 100;
@@ -36,6 +36,7 @@
 
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
+
 </script>
 
 <svelte:head>

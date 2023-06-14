@@ -34,7 +34,7 @@
 
 	const hash = $page.url.hash;
 
-	$: if (browser && ['/', '/measures'].includes($page.url.pathname)) {
+	$: if (browser && ['/', '/measures', '/strategies'].includes($page.url.pathname)) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
 		query.delete('sort');
@@ -107,7 +107,7 @@
 		</li>
 	</ul>
 
-	{#if ['/', '/measures'].includes($page.url.pathname)}
+	{#if ['/', '/measures', '/strategies'].includes($page.url.pathname)}
 		<ul class="group group-actions">
 			<li>
 				<form class="search" data-sveltekit-keepfocus>
