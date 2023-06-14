@@ -10,6 +10,7 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { BOARD_ROUTES } from '$lib/globals';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -28,7 +29,7 @@
 		});
 	});
 
-	$: isBoardLayout = ['/', '/measures', '/strategies'].includes($page.url.pathname);
+	$: isBoardLayout = BOARD_ROUTES.includes($page.url.pathname);
 
 	const duration = 300;
 	const delay = duration + 100;
@@ -36,7 +37,6 @@
 
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
-
 </script>
 
 <svelte:head>
