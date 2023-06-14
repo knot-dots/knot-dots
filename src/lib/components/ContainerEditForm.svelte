@@ -66,7 +66,7 @@
 					{$_('level.label')}
 					<select name="level" required>
 						{#each levels.options as levelOption}
-							<option value={levelOption}>
+							<option selected={levelOption === container.payload.level} value={levelOption}>
 								{$_(levelOption)}
 							</option>
 						{/each}
