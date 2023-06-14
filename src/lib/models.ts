@@ -87,6 +87,20 @@ export function isStatus(value: unknown): value is Status {
 	return statusValues.includes(value as Status);
 }
 
+const strategyTypeValues = [
+	'strategy_type.mobility',
+	'strategy_type.sustainability',
+	'strategy_type.smart_city'
+] as const;
+
+export const strategyTypes = z.enum(strategyTypeValues);
+
+export type StrategyType = z.infer<typeof strategyTypes>;
+
+export function isStrategyType(value: unknown): value is StrategyType {
+	return strategyTypeValues.includes(value as StrategyType);
+}
+
 const quantityValues = ['quantity.co2', 'quantity.cycle_path'] as const;
 
 export const quantities = z.enum(quantityValues);
