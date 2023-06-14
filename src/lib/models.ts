@@ -164,6 +164,15 @@ export const container = z.object({
 				summary: z.string().max(200).optional(),
 				title: z.string()
 			})
+			.strict(),
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				level: levels,
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
 			.strict()
 	]),
 	realm: z.string().max(1024),
