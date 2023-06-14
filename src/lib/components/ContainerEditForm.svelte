@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models';
+	import { containerTypes, levels, status, sustainableDevelopmentGoals } from '$lib/models';
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
@@ -57,6 +57,17 @@
 						{#each status.options as statusOption}
 							<option selected={statusOption === container.payload.status} value={statusOption}>
 								{$_(statusOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+			{:else if 'level' in container.payload}
+				<label>
+					{$_('level.label')}
+					<select name="level" required>
+						{#each levels.options as levelOption}
+							<option value={levelOption}>
+								{$_(levelOption)}
 							</option>
 						{/each}
 					</select>
