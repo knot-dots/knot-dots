@@ -184,6 +184,7 @@ export const container = z.object({
 				category: sustainableDevelopmentGoals,
 				description: z.string(),
 				level: levels,
+				strategy_type: strategyTypes,
 				summary: z.string().max(200).optional(),
 				title: z.string()
 			})
