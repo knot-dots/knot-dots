@@ -1,24 +1,22 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	export let max: number;
-	export let min: number;
-	export let quantity: string | undefined;
-	export let value: number | undefined;
-	export let fulfillmentDate: string | undefined;
+	import type { Indicator } from '$lib/models';
+
+	export let indicator: Indicator;
 </script>
 
 <div class="progress">
 	<div class="wrapper">
-		<span class="min">{min}</span>
-		<span class="max">{max}</span>
+		<span class="min">{indicator.min}</span>
+		<span class="max">{indicator.max}</span>
 		<div class="bar">
-			{#if value}
+			{#if indicator.value}
 				<span
 					class="value"
-					style:width={`${(100 * value) / max}%`}
-					style:background-color={value > 0.7
+					style:width={`${(100 * indicator.value) / indicator.max}%`}
+					style:background-color={indicator.value > 0.7
 						? 'var(--color-green-500)'
-						: value > 0.3
+						: indicator.value > 0.3
 						? 'var(--color-yellow-200)'
 						: 'var(--color-red-600)'}
 				/>
@@ -27,12 +25,12 @@
 			{/if}
 		</div>
 	</div>
-	{#if quantity}
-		<div class="quantity">{$_(`${quantity}.label`)}</div>
+	{#if indicator.quantity}
+		<div class="quantity">{$_(`${indicator.quantity}.label`)}</div>
 	{/if}
-	{#if fulfillmentDate}
+	{#if indicator.fulfillmentDate}
 		<div class="fulfillmentDate">
-			{$_('indicator.fulfillment_date')}: {new Date(fulfillmentDate).toLocaleDateString()}
+			{$_('indicator.fulfillment_date')}: {new Date(indicator.fulfillmentDate).toLocaleDateString()}
 		</div>
 	{/if}
 </div>

@@ -38,13 +38,7 @@
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
 					<h3>{$_('indicator.legend')}</h3>
-					<ProgressBar
-						fulfillmentDate={container.payload.indicator[0].fulfillmentDate}
-						max={container.payload.indicator[0].max}
-						min={container.payload.indicator[0].min}
-						quantity={container.payload.indicator[0].quantity}
-						value={container.payload.indicator[0].value}
-					/>
+					<ProgressBar indicator={container.payload.indicator[0]} />
 				</div>
 			{/if}
 			{#if 'indicatorContribution' in container.payload}
