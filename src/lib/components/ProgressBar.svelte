@@ -12,6 +12,8 @@
 		[status.enum['status.in_implementation']]: 0
 	};
 
+	let contributionsAbsolute = 0;
+
 	$: {
 		contributions[status.enum['status.in_operation']] = 0;
 		contributions[status.enum['status.in_implementation']] = 0;
@@ -26,6 +28,7 @@
 			) {
 				contributions[c.payload.status] +=
 					(c.payload.indicatorContribution[guid] / indicator.max) * 100;
+				contributionsAbsolute += c.payload.indicatorContribution[guid];
 			}
 		}
 	}
@@ -39,6 +42,7 @@
 			{#if indicator.value}
 				<span
 					class="value"
+					title={String(indicator.value)}
 					style:width={`${(100 * indicator.value) / indicator.max}%`}
 					style:background-color={indicator.value > 0.7
 						? 'var(--color-green-500)'
@@ -47,10 +51,20 @@
 						: 'var(--color-red-600)'}
 				/>
 			{:else if contributions[status.enum['status.in_operation']] >= 100}
-				<span class="value" style:background-color="var(--color-green-500)" style:width="100%" />
+				<span
+					class="value"
+					title={$_(`${indicator.quantity}.description`, {
+						values: { contribution: contributionsAbsolute }
+					})}
+					style:background-color="var(--color-green-500)"
+					style:width="100%"
+				/>
 			{:else if contributions[status.enum['status.in_operation']] + contributions[status.enum['status.in_implementation']] >= 100}
 				<span
 					class="value"
+					title={$_(`${indicator.quantity}.description`, {
+						values: { contribution: contributionsAbsolute }
+					})}
 					style:background="linear-gradient(to right, var(--color-green-500) {contributions[
 						status.enum['status.in_operation']
 					]}%, var(--color-yellow-200) {contributions[status.enum['status.in_operation']]}% 100%)"
@@ -59,6 +73,9 @@
 			{:else}
 				<span
 					class="value"
+					title={$_(`${indicator.quantity}.description`, {
+						values: { contribution: contributionsAbsolute }
+					})}
 					style:background="linear-gradient(to right, var(--color-green-500) {contributions[
 						status.enum['status.in_operation']
 					]}%, var(--color-yellow-200) {contributions[status.enum['status.in_operation']]}% {contributions[
