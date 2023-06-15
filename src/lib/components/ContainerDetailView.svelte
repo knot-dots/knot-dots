@@ -70,10 +70,14 @@
 					<p class="meta-value">{$_(container.payload.status)}</p>
 				</div>
 			{/if}
-			{#if 'level' in container.payload}
+			{#if 'level' in container.payload && 'strategy_type' in container.payload}
 				<div class="meta">
 					<h3 class="meta-key">{$_('level.label')}</h3>
 					<p class="meta-value">{$_(container.payload.level)}</p>
+				</div>
+				<div class="meta">
+					<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+					<p class="meta-value">{$_(container.payload.strategy_type)}</p>
 				</div>
 			{/if}
 			<div class="meta">
