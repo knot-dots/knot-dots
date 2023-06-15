@@ -10,11 +10,13 @@
 	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models';
 	import type {
 		ContainerType,
+		Indicator,
 		NewContainer,
 		Relation,
 		SustainableDevelopmentGoal
 	} from '$lib/models';
 	import type { PageData } from './$types';
+	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 
 	export let data: PageData;
 
@@ -28,6 +30,8 @@
 		.getAll('is-part-of')
 		.map((o): Relation => ({ object: Number(o), predicate: 'is-part-of', subject: 0 }));
 
+	let indicator = [] as Indicator[];
+
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
 		const container: NewContainer = {
@@ -36,7 +40,8 @@
 				description: data.get('description') as string,
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
-				...(data.has('status') ? { status: data.get('status') } : undefined)
+				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...(containerType == containerTypes.enum.operational_goal ? { indicator } : undefined)
 			},
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
@@ -103,6 +108,9 @@
 					<textarea name="description" required />
 				{/key}
 			</label>
+			{#if containerType === containerTypes.enum.operational_goal}
+				<IndicatorWizard bind:indicator />
+			{/if}
 		</div>
 		<div class="details-content-column">
 			{#if containerType === containerTypes.enum.measure}

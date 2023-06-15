@@ -8,14 +8,18 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import type { Container } from '$lib/models.js';
+	import ContainerEditForm from '$lib/components/ContainerEditForm.svelte';
+	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import type {
+		Container,
+		ContainerType,
+		ModifiedContainer,
+		SustainableDevelopmentGoal
+	} from '$lib/models';
 	import { user } from '$lib/stores.js';
-	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models.js';
-	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
 
 	export let containerPreviewData: Container;
-	export let relationObjects: Container[];
+	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
@@ -30,6 +34,14 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
+		const indicatorContribution = new Map();
+
+		for (let c of relatedContainers) {
+			if (data.has(`indicatorContribution-${c.guid}`)) {
+				indicatorContribution.set(c.guid, data.get(`indicatorContribution-${c.guid}`));
+			}
+		}
+
 		const modifiedContainer: ModifiedContainer = {
 			guid: containerPreviewData.guid,
 			payload: {
@@ -37,7 +49,13 @@
 				description: data.get('description') as string,
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
-				...(data.has('status') ? { status: data.get('status') } : undefined)
+				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...(indicatorContribution.size > 0
+					? { indicatorContribution: Object.fromEntries(indicatorContribution) }
+					: undefined),
+				...('indicator' in containerPreviewData.payload
+					? { indicator: containerPreviewData.payload.indicator }
+					: undefined)
 			},
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
@@ -67,141 +85,38 @@
 	}
 </script>
 
-<svelte:element
-	this={edit ? 'form' : 'article'}
-	class="details"
-	method={edit ? 'POST' : undefined}
-	on:submit|preventDefault={edit ? handleSubmit : undefined}
-	transition:slide={{ axis: 'x' }}
->
-	<header>
-		{#if edit}
-			<label>
-				{$_(containerPreviewData.type)}
-				<input name="title" type="text" value={containerPreviewData.payload.title} required />
-			</label>
-		{:else}
-			<h2>{containerPreviewData.payload.title}</h2>
-			<div class="icons">
-				{#if $user.isAuthenticated}
-					<button class="quiet" on:click={() => (edit = true)}>
-						<Icon solid src={Pencil} size="20" />
-					</button>
-				{/if}
-				<a href={closeOverlay()} class="button quiet"><Icon solid src={XMark} size="20" /></a>
-			</div>
-		{/if}
-	</header>
-
-	<div class="details-content">
-		<div class="details-content-column">
-			{#if edit}
-				<label>
-					{$_('summary')}
-					<textarea
-						name="summary"
-						maxlength="200"
-						value={containerPreviewData.payload.summary ?? ''}
-						required
-					/>
-				</label>
-			{:else}
-				<div class="summary">
-					<h3>{$_('summary')}</h3>
-					{containerPreviewData.payload.summary ?? ''}
+<div class="overlay" transition:slide={{ axis: 'x' }}>
+	{#if edit}
+		<ContainerEditForm
+			container={containerPreviewData}
+			{isPartOfOptions}
+			{relatedContainers}
+			on:submit={handleSubmit}
+		>
+			<svelte:fragment slot="footer">
+				<button id="save" class="primary">{$_('save')}</button>
+				<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+			</svelte:fragment>
+		</ContainerEditForm>
+	{:else}
+		<ContainerDetailView container={containerPreviewData} {relatedContainers}>
+			<svelte:fragment slot="header">
+				<h2>{containerPreviewData.payload.title}</h2>
+				<div class="icons">
+					{#if $user.isAuthenticated}
+						<button class="quiet" on:click={() => (edit = true)}>
+							<Icon solid src={Pencil} size="20" />
+						</button>
+					{/if}
+					<a href={closeOverlay()} class="button quiet"><Icon solid src={XMark} size="20" /></a>
 				</div>
-			{/if}
-			{#if edit}
-				<label>
-					{$_('description')}
-					<textarea name="description" value={containerPreviewData.payload.description} required />
-				</label>
-			{:else}
-				<div class="description">
-					<h3>{$_('description')}</h3>
-					{containerPreviewData.payload.description}
-				</div>
-			{/if}
-		</div>
-		<div class="details-content-column">
-			{#if 'status' in containerPreviewData.payload}
-				{#if edit && containerPreviewData.type === containerTypes.enum.measure}
-					<label>
-						{$_('status.label')}
-						<select name="status" required>
-							{#each status.options as statusOption}
-								<option
-									selected={statusOption === containerPreviewData.payload.status}
-									value={statusOption}
-								>
-									{$_(statusOption)}
-								</option>
-							{/each}
-						</select>
-					</label>
-				{:else}
-					<div class="meta">
-						<h3 class="meta-key">{$_('status.label')}</h3>
-						<p class="meta-value">{$_(containerPreviewData.payload.status)}</p>
-					</div>
-				{/if}
-			{/if}
-			{#if edit}
-				<label>
-					{$_('category')}
-					<select name="category" required>
-						<option label="" />
-						{#each sustainableDevelopmentGoals.options as goal}
-							<option selected={goal === containerPreviewData.payload.category} value={goal}>
-								{$_(goal)}
-							</option>
-						{/each}
-					</select>
-				</label>
-			{:else}
-				<div class="meta">
-					<h3 class="meta-key">{$_('category')}</h3>
-					<ul class="meta-value">
-						<li>{$_(containerPreviewData.payload.category)}</li>
-					</ul>
-				</div>
-			{/if}
-			{#if relationObjects}
-				{#if edit}
-					<RelationSelector
-						{isPartOfOptions}
-						containerType={containerPreviewData.type}
-						selected={containerPreviewData.relation}
-					/>
-				{:else}
-					<div class="meta">
-						<h3 class="meta-key">{$_('relations')}</h3>
-						<ul class="meta-value">
-							{#each relationObjects as { guid, payload, type }}
-								<li>
-									<a href="/{type}/{guid}">{payload.title}</a>
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
-			{/if}
-		</div>
-	</div>
-	<footer>
-		{#if edit}
-			<button id="save" class="primary">{$_('save')}</button>
-			<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
-		{:else}
-			<a class="button primary" href="/{containerPreviewData.type}/{containerPreviewData.guid}">
-				{$_('read_more')}
-			</a>
-		{/if}
-	</footer>
-</svelte:element>
+			</svelte:fragment>
+		</ContainerDetailView>
+	{/if}
+</div>
 
 <style>
-	.details {
+	.overlay {
 		height: calc(100%);
 		margin-left: -1rem;
 		overflow-x: hidden;
@@ -209,35 +124,27 @@
 		width: 100%;
 	}
 
-	.details > * {
+	.overlay > * {
 		min-width: 100vw;
 	}
 
-	.details-content {
-		padding-bottom: 1.5rem;
-	}
-
 	@media (min-width: 768px) {
-		.details {
+		.overlay {
 			width: 80%;
 		}
 
-		.details > * {
+		.overlay > * {
 			min-width: calc((100vw - 18rem) * 0.8);
 		}
 	}
 
 	@media (min-width: 1440px) {
-		.details {
+		.overlay {
 			width: 65%;
 		}
 
-		.details > * {
+		.overlay > * {
 			min-width: calc((100vw - 18rem) * 0.65);
 		}
-	}
-
-	.details footer {
-		border-top: 65vw;
 	}
 </style>

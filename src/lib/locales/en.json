@@ -12,6 +12,11 @@
 	"filter": "Filter",
 	"help": "Help",
 	"home": "Home screen",
+	"indicator": {
+		"fulfillment_date": "Fulfillment date",
+		"legend": "Indicator",
+		"quantity": "Quantity"
+	},
 	"login": "Log in",
 	"logout": "Log out",
 	"map": "Map",
@@ -24,6 +29,18 @@
 	"operational_goals": "Operational goals",
 	"open_sidebar": "Open sidebar",
 	"page_title": "StrategyTool",
+	"quantity": {
+		"co2": {
+			"description": "",
+			"input_prompt": "",
+			"label": "t CO₂"
+		},
+		"cycle_path": {
+			"description": "",
+			"input_prompt": "",
+			"label": "km cycle path"
+		}
+	},
 	"read_more": "Read more",
 	"register": "Register",
 	"relations": "Relations",

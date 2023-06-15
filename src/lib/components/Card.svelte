@@ -99,7 +99,7 @@
 		font-size: 0.875rem;
 
 		color: var(--color-gray-500);
-		margin-top: 20px;
+		margin: 1rem 0 0.875rem;
 	}
 
 	.badges {

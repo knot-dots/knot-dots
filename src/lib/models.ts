@@ -70,6 +70,16 @@ export function isStatus(value: unknown): value is Status {
 	return statusValues.includes(value as Status);
 }
 
+const quantityValues = ['quantity.co2', 'quantity.cycle_path'] as const;
+
+export const quantities = z.enum(quantityValues);
+
+export type Quantity = z.infer<typeof quantities>;
+
+export function isQuantity(value: unknown): value is Quantity {
+	return quantityValues.includes(value as Quantity);
+}
+
 export const relation = z.object({
 	object: z.number().int().positive(),
 	predicate: z.string().max(128),
@@ -92,10 +102,32 @@ export const user = z.object({
 
 export type User = z.infer<typeof user>;
 
+const indicator = z.object({
+	max: z.coerce.number().nonnegative(),
+	min: z.coerce.number().nonnegative(),
+	quantity: z.string().optional(),
+	fulfillmentDate: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional(),
+	value: z.number().nonnegative().optional()
+});
+
+export type Indicator = z.infer<typeof indicator>;
+
 export const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
 	payload: z.union([
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				indicator: z.array(indicator).max(1),
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
+			.strict(),
 		z
 			.object({
 				category: sustainableDevelopmentGoals,
@@ -108,6 +140,9 @@ export const container = z.object({
 			.object({
 				category: sustainableDevelopmentGoals,
 				description: z.string(),
+				indicatorContribution: z
+					.record(z.string().uuid(), z.coerce.number().nonnegative())
+					.optional(),
 				status: status,
 				summary: z.string().max(200).optional(),
 				title: z.string()

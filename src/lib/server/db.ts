@@ -168,7 +168,7 @@ export function getContainerByGuid(guid: string) {
 		const relationResult = await connection.any(sql.typeAlias('relation')`
 			SELECT *
 			FROM container_relation
-			WHERE subject = ${containerResult.revision}
+			WHERE subject = ${containerResult.revision} OR object = ${containerResult.revision}
 		`);
 		return {
 			...containerResult,
@@ -262,7 +262,7 @@ export function getManyContainersByType(type: ContainerType, categories: string[
 	};
 }
 
-export function getAllRelationObjects(container: Container) {
+export function getAllDirectlyRelatedContainers(container: Container) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		if (container.relation.length === 0) {
 			return [];
@@ -271,13 +271,15 @@ export function getAllRelationObjects(container: Container) {
 			SELECT *
 			FROM container
 			WHERE revision IN (${sql.join(
-				container.relation.map((r) => r.object as number),
+				container.relation.map((r) => r.object).concat(container.relation.map((r) => r.subject)),
 				sql.fragment`, `
 			)})
 				AND valid_currently
 			ORDER BY payload->>'title' DESC;
 		`);
-		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
+		return containerResult
+			.map((c) => ({ ...c, relation: [], user: [] }))
+			.filter(({ guid }) => guid != container.guid);
 	};
 }
 

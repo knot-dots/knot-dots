@@ -1,6 +1,6 @@
 import {
 	getAllRelatedContainers,
-	getAllRelationObjects,
+	getAllDirectlyRelatedContainers,
 	getContainerByGuid,
 	getManyContainers,
 	maybePartOf
@@ -11,7 +11,7 @@ export const load = (async ({ locals, url }) => {
 	let containers;
 	let containerPreviewData;
 	let isPartOfOptions;
-	let relationObjects;
+	let relatedContainers;
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
 			getAllRelatedContainers(url.searchParams.get('related-to') as string)
@@ -24,10 +24,10 @@ export const load = (async ({ locals, url }) => {
 	if (url.searchParams.has('container-preview')) {
 		const previewGuid = url.searchParams.get('container-preview') ?? '';
 		containerPreviewData = await locals.pool.connect(getContainerByGuid(previewGuid));
-		[isPartOfOptions, relationObjects] = await Promise.all([
+		[isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(containerPreviewData.type)),
-			locals.pool.connect(getAllRelationObjects(containerPreviewData))
+			locals.pool.connect(getAllDirectlyRelatedContainers(containerPreviewData))
 		]);
 	}
-	return { containers, containerPreviewData, isPartOfOptions, relationObjects };
+	return { containers, containerPreviewData, isPartOfOptions, relatedContainers };
 }) satisfies PageServerLoad;
