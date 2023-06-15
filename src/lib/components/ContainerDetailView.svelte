@@ -5,7 +5,7 @@
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
-	export let relationObjects: Container[];
+	export let relatedContainers: Container[];
 
 	let isPage = $page.url.pathname == `/${container.type}/${container.guid}`;
 </script>
@@ -54,7 +54,7 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('relations')}</h3>
 				<ul class="meta-value">
-					{#each relationObjects as { guid, payload, type }}
+					{#each relatedContainers as { guid, payload, type }}
 						<li>
 							<a href="/{type}/{guid}">{payload.title}</a>
 						</li>

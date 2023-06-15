@@ -1,8 +1,8 @@
-import { getAllRelationObjects, getContainerByGuid } from '$lib/server/db';
+import { getAllDirectlyRelatedContainers, getContainerByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params, locals }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
-	const relationObjects = await locals.pool.connect(getAllRelationObjects(container));
-	return { container, relationObjects };
+	const relatedContainers = await locals.pool.connect(getAllDirectlyRelatedContainers(container));
+	return { container, relatedContainers };
 }) satisfies PageServerLoad;

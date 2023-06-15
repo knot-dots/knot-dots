@@ -7,7 +7,7 @@
 
 	export let container: Container;
 	export let isPartOfOptions: Container[];
-	export let relationObjects: Container[];
+	export let relatedContainers: Container[];
 </script>
 
 <form class="details" method="POST" on:submit|preventDefault>
@@ -32,7 +32,7 @@
 				<IndicatorWizard bind:indicator={container.payload.indicator} />
 			{/if}
 			{#if container.type === containerTypes.enum.measure}
-				{#each relationObjects as o}
+				{#each relatedContainers as o}
 					{#if 'indicator' in o.payload && 'quantity' in o.payload.indicator[0]}
 						<label>
 							{$_(`${o.payload.indicator[0].quantity}.input_prompt`)}

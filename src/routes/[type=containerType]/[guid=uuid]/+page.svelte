@@ -7,10 +7,10 @@
 	export let data: PageData;
 
 	$: container = data.container;
-	$: relationObjects = data.relationObjects;
+	$: relatedContainers = data.relatedContainers;
 </script>
 
-<ContainerDetailView {container} {relationObjects}>
+<ContainerDetailView {container} {relatedContainers}>
 	<svelte:fragment slot="header">
 		<h2>{container.payload.title}</h2>
 		{#if $user.isAuthenticated}

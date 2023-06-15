@@ -14,7 +14,7 @@
 
 	$: container = data.container;
 	$: isPartOfOptions = data.isPartOfOptions;
-	$: relationObjects = isPartOfOptions.filter(
+	$: relatedContainers = isPartOfOptions.filter(
 		(o) =>
 			container.relation.findIndex(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === o.revision
@@ -27,9 +27,9 @@
 		const data = new FormData(event.target as HTMLFormElement);
 		const indicatorContribution = new Map();
 
-		for (let o of relationObjects) {
-			if (data.has(`indicatorContribution-${o.guid}`)) {
-				indicatorContribution.set(o.guid, data.get(`indicatorContribution-${o.guid}`));
+		for (let c of relatedContainers) {
+			if (data.has(`indicatorContribution-${c.guid}`)) {
+				indicatorContribution.set(c.guid, data.get(`indicatorContribution-${c.guid}`));
 			}
 		}
 
@@ -89,7 +89,7 @@
 	}
 </script>
 
-<ContainerEditForm {container} {isPartOfOptions} {relationObjects} on:submit={handleSubmit}>
+<ContainerEditForm {container} {isPartOfOptions} {relatedContainers} on:submit={handleSubmit}>
 	<svelte:fragment slot="footer">
 		<button id="save" class="primary">{$_('save')}</button>
 		{#if container.type === containerTypes.enum.strategy}

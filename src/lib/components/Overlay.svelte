@@ -19,7 +19,7 @@
 	import { user } from '$lib/stores.js';
 
 	export let containerPreviewData: Container;
-	export let relationObjects: Container[];
+	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
@@ -36,9 +36,9 @@
 		const data = new FormData(event.target as HTMLFormElement);
 		const indicatorContribution = new Map();
 
-		for (let o of relationObjects) {
-			if (data.has(`indicatorContribution-${o.guid}`)) {
-				indicatorContribution.set(o.guid, data.get(`indicatorContribution-${o.guid}`));
+		for (let c of relatedContainers) {
+			if (data.has(`indicatorContribution-${c.guid}`)) {
+				indicatorContribution.set(c.guid, data.get(`indicatorContribution-${c.guid}`));
 			}
 		}
 
@@ -90,7 +90,7 @@
 		<ContainerEditForm
 			container={containerPreviewData}
 			{isPartOfOptions}
-			{relationObjects}
+			{relatedContainers}
 			on:submit={handleSubmit}
 		>
 			<svelte:fragment slot="footer">
@@ -99,7 +99,7 @@
 			</svelte:fragment>
 		</ContainerEditForm>
 	{:else}
-		<ContainerDetailView container={containerPreviewData} {relationObjects}>
+		<ContainerDetailView container={containerPreviewData} {relatedContainers}>
 			<svelte:fragment slot="header">
 				<h2>{containerPreviewData.payload.title}</h2>
 				<div class="icons">
