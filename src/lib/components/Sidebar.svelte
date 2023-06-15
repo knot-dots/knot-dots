@@ -266,6 +266,12 @@
 		margin: auto 0 1rem;
 	}
 
+	@media (min-width: 768px) {
+		.group.group-user-menu {
+			display: none;
+		}
+	}
+
 	.group.group-user-menu a {
 		--padding-x: 0;
 		justify-content: center;
