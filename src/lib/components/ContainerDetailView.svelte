@@ -38,7 +38,11 @@
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
 					<h3>{$_('indicator.legend')}</h3>
-					<ProgressBar indicator={container.payload.indicator[0]} />
+					<ProgressBar
+						guid={container.guid}
+						indicator={container.payload.indicator[0]}
+						contributors={relatedContainers}
+					/>
 				</div>
 			{/if}
 			{#if 'indicatorContribution' in container.payload}

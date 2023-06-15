@@ -1,8 +1,34 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import type { Indicator } from '$lib/models';
+	import { status } from '$lib/models';
+	import type { Container, Indicator, Status } from '$lib/models';
 
+	export let guid: string;
 	export let indicator: Indicator;
+	export let contributors: Container[];
+
+	let contributions: Record<string, number> = {
+		[status.enum['status.in_operation']]: 0,
+		[status.enum['status.in_implementation']]: 0
+	};
+
+	$: {
+		contributions[status.enum['status.in_operation']] = 0;
+		contributions[status.enum['status.in_implementation']] = 0;
+
+		for (let c of contributors) {
+			if (
+				'status' in c.payload &&
+				c.payload.status in contributions &&
+				'indicatorContribution' in c.payload &&
+				c.payload.indicatorContribution &&
+				guid in c.payload.indicatorContribution
+			) {
+				contributions[c.payload.status] +=
+					(c.payload.indicatorContribution[guid] / indicator.max) * 100;
+			}
+		}
+	}
 </script>
 
 <div class="progress">
@@ -20,8 +46,28 @@
 						? 'var(--color-yellow-200)'
 						: 'var(--color-red-600)'}
 				/>
+			{:else if contributions[status.enum['status.in_operation']] >= 100}
+				<span class="value" style:background-color="var(--color-green-500)" style:width="100%" />
+			{:else if contributions[status.enum['status.in_operation']] + contributions[status.enum['status.in_implementation']] >= 100}
+				<span
+					class="value"
+					style:background="linear-gradient(to right, var(--color-green-500) {contributions[
+						status.enum['status.in_operation']
+					]}%, var(--color-yellow-200) {contributions[status.enum['status.in_operation']]}% 100%)"
+					style:width="100%"
+				/>
 			{:else}
-				<span class="value" style:width="0%" />
+				<span
+					class="value"
+					style:background="linear-gradient(to right, var(--color-green-500) {contributions[
+						status.enum['status.in_operation']
+					]}%, var(--color-yellow-200) {contributions[status.enum['status.in_operation']]}% {contributions[
+						status.enum['status.in_operation']
+					] + contributions[status.enum['status.in_implementation']]}%, var(--color-red-600) {contributions[
+						status.enum['status.in_operation']
+					] + contributions[status.enum['status.in_implementation']]}%) 100%"
+					style:width="100%"
+				/>
 			{/if}
 		</div>
 	</div>
