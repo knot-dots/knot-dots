@@ -8,6 +8,16 @@
 	export let relatedContainers: Container[];
 
 	let isPage = $page.url.pathname == `/${container.type}/${container.guid}`;
+
+	function containerURL(type: string, guid: string) {
+		if (isPage) {
+			return `/${type}/${guid}`;
+		} else {
+			const query = new URLSearchParams($page.url.searchParams);
+			query.set('container-preview', guid);
+			return `?${query.toString()}`;
+		}
+	}
 </script>
 
 <article class="details" class:is-page={isPage}>
@@ -35,6 +45,23 @@
 						quantity={container.payload.indicator[0].quantity}
 						value={container.payload.indicator[0].value}
 					/>
+				</div>
+			{/if}
+			{#if 'indicatorContribution' in container.payload}
+				<div class="indicatorContribution">
+					<h3>{$_('indicator.contribution')}</h3>
+					{#each relatedContainers as { guid, payload, type }}
+						{#if 'indicator' in payload && 'quantity' in payload.indicator[0]}
+							<h4>
+								<a href={containerURL(type, guid)}>{payload.title}</a>
+							</h4>
+							<p>
+								{$_(`${payload.indicator[0].quantity}.description`, {
+									values: { contribution: container.payload.indicatorContribution?.[guid] ?? 0 }
+								})}
+							</p>
+						{/if}
+					{/each}
 				</div>
 			{/if}
 		</div>
