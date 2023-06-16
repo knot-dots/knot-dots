@@ -101,6 +101,29 @@ export function isStrategyType(value: unknown): value is StrategyType {
 	return strategyTypeValues.includes(value as StrategyType);
 }
 
+const topicValues = [
+	'topic.economy',
+	'topic.health',
+	'topic.mobility',
+	'topic.living',
+	'topic.environment',
+	'topic.education_and_culture',
+	'topic.social_justice',
+	'topic.digital_municipality',
+	'topic.demographics',
+	'topic.cityscape',
+	'topic.citizen_participation',
+	'topic.security'
+] as const;
+
+export const topics = z.enum(topicValues);
+
+export type topic = z.infer<typeof topics>;
+
+export function isTopic(value: unknown): value is topic {
+	return topicValues.includes(value as topic);
+}
+
 const quantityValues = ['quantity.co2', 'quantity.cycle_path'] as const;
 
 export const quantities = z.enum(quantityValues);
