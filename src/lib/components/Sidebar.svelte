@@ -25,19 +25,12 @@
 		user
 	} from '$lib/stores.js';
 
-	let terms = $page.url.searchParams.get('terms');
+	let timer: any;
+	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
 	$filtersToggle = selectedCategory.length > 0;
 	$sortToggle = selectedSort != 'modified';
-
-	function toggleSidebar() {
-		$sidebarToggle = !$sidebarToggle;
-		if (!$sidebarToggle) {
-			$filtersToggle = false;
-			$sortToggle = false;
-		}
-	}
 
 	const hash = $page.url.hash;
 
@@ -49,7 +42,29 @@
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
 		}
-		goto(`?${query.toString()}${hash}`);
+		goto(`?${query.toString()}${hash}`, { keepFocus: true });
+	}
+
+	$: if (browser && terms) {
+		debouncedSearch();
+	}
+
+	function debouncedSearch() {
+		clearTimeout(timer);
+		timer = setTimeout(search, 500);
+	}
+
+	function search() {
+		const searchParams = new URLSearchParams([['terms', terms]]);
+		goto(`?${searchParams.toString()}`, { keepFocus: true, replaceState: true });
+	}
+
+	function toggleSidebar() {
+		$sidebarToggle = !$sidebarToggle;
+		if (!$sidebarToggle) {
+			$filtersToggle = false;
+			$sortToggle = false;
+		}
 	}
 
 	function toggleFilters() {
@@ -95,7 +110,7 @@
 	{#if ['/', '/measures'].includes($page.url.pathname)}
 		<ul class="group group-actions">
 			<li>
-				<form class="search" method="get">
+				<form class="search" data-sveltekit-keepfocus>
 					<button
 						type={$sidebarToggle ? 'submit' : 'button'}
 						on:click={!$sidebarToggle ? toggleSidebar : undefined}
