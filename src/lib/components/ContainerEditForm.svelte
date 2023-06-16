@@ -33,7 +33,7 @@
 			{/if}
 			{#if container.type === containerTypes.enum.measure}
 				{#each relatedContainers as o}
-					{#if 'indicator' in o.payload && 'quantity' in o.payload.indicator[0]}
+					{#if 'indicator' in o.payload && o.payload.indicator.length > 0 && 'quantity' in o.payload.indicator[0]}
 						<label>
 							{$_(`${o.payload.indicator[0].quantity}.input_prompt`)}
 							<input
