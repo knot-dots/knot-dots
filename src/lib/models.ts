@@ -208,6 +208,7 @@ export const container = z.object({
 				description: z.string(),
 				level: levels,
 				strategy_type: strategyTypes,
+				topic: topics,
 				summary: z.string().max(200).optional(),
 				title: z.string()
 			})
