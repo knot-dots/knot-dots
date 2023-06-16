@@ -17,6 +17,7 @@
 	} from '$lib/models';
 	import type {
 		ContainerType,
+		Level,
 		Indicator,
 		NewContainer,
 		Relation,
@@ -30,6 +31,7 @@
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	$: containerType = $page.params.type as ContainerType;
+	$: level = $page.params.level as Level;
 
 	$: isPartOfOptions = data.isPartOfOptions;
 
@@ -139,7 +141,7 @@
 					{$_('level.label')}
 					<select name="level" required>
 						{#each levels.options as levelOption}
-							<option value={levelOption}>
+							<option value={levelOption} selected={levelOption.includes(level) ? true : false}>
 								{$_(levelOption)}
 							</option>
 						{/each}

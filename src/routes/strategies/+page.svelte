@@ -12,7 +12,7 @@
 
 <Board>
 	{#each levels.options as levelOption}
-		<BoardColumn containerType="strategy" title={$_(levelOption)}>
+		<BoardColumn containerType="strategy" title={$_(levelOption)} level={levelOption}>
 			{#each data.containers.filter((c) => 'level' in c.payload && c.payload.level == levelOption) as container}
 				<Card
 					guid={container.guid}
