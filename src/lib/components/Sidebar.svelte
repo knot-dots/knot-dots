@@ -25,6 +25,7 @@
 		sortToggle,
 		user
 	} from '$lib/stores.js';
+	import Filters from './Filters.svelte';
 
 	let timer: any;
 	let terms = $page.url.searchParams.get('terms') ?? '';
@@ -135,18 +136,7 @@
 					</span>
 				</button>
 				<ul id="filters" class="collapsible" class:is-hidden={!$filtersToggle}>
-					{#each sustainableDevelopmentGoals.options as option}
-						<li>
-							<label>
-								<input
-									type="checkbox"
-									name="filters"
-									value={option}
-									bind:group={selectedCategory}
-								/>{$_(option)}
-							</label>
-						</li>
-					{/each}
+					<Filters options={sustainableDevelopmentGoals.options} bind:selectedCategory={selectedCategory} />
 				</ul>
 			</li>
 			<li>
