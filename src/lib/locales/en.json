@@ -103,5 +103,20 @@
 	"superordinate_models": "Superordinate models",
 	"superordinate_strategic_goals": "Superordinate strategic goals",
 	"superordinate_operational_goals": "Superordinate operational goals",
-	"table": "Table"
+	"table": "Table",
+	"topic": {
+		"citizen_participation": "Citizen participation",
+		"cityscape": "Cityscape",
+		"demographics": "Demographics",
+		"digital_municipality": "Digital municipality",
+		"economy": "Economy",
+		"education_and_culture": "Education & culture",
+		"environment": "Environment",
+		"health": "Health",
+		"label": "Topic",
+		"living": "Living",
+		"mobility": "Mobility",
+		"security": "Security",
+		"social_justice": "Social justice"
+	}
 }
