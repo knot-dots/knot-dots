@@ -7,7 +7,8 @@
 		levels,
 		status,
 		strategyTypes,
-		sustainableDevelopmentGoals
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
 	import type { Container } from '$lib/models';
 
@@ -67,7 +68,7 @@
 						{/each}
 					</select>
 				</label>
-			{:else if 'level' in container.payload && 'strategy_type' in container.payload}
+			{:else if 'level' in container.payload && 'strategy_type' in container.payload && 'topic' in container.payload}
 				<label>
 					{$_('level.label')}
 					<select name="level" required>
@@ -87,6 +88,16 @@
 								value={strategyTypeOption}
 							>
 								{$_(strategyTypeOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{$_('topic.label')}
+					<select name="topic" required>
+						{#each topics.options as topicOption}
+							<option selected={topicOption === container.payload.topic} value={topicOption}>
+								{$_(topicOption)}
 							</option>
 						{/each}
 					</select>
