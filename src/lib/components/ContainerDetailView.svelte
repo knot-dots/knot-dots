@@ -49,7 +49,7 @@
 				<div class="indicatorContribution">
 					<h3>{$_('indicator.contribution')}</h3>
 					{#each relatedContainers as { guid, payload, type }}
-						{#if 'indicator' in payload && 'quantity' in payload.indicator[0]}
+						{#if 'indicator' in payload && payload.indicator.length > 0 && 'quantity' in payload.indicator[0]}
 							<h4>
 								<a href={containerURL(type, guid)}>{payload.title}</a>
 							</h4>
