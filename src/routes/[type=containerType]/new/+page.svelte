@@ -7,7 +7,14 @@
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { containerTypes, levels, status, strategyTypes, sustainableDevelopmentGoals } from '$lib/models';
+	import {
+		containerTypes,
+		levels,
+		status,
+		strategyTypes,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
 	import type {
 		ContainerType,
 		Indicator,
@@ -43,6 +50,7 @@
 				...(data.has('status') ? { status: data.get('status') } : undefined),
 				...(data.has('level') ? { level: data.get('level') } : undefined),
 				...(data.has('strategy-type') ? { strategy_type: data.get('strategy-type') } : undefined),
+				...(data.has('topic') ? { topic: data.get('topic') } : undefined),
 				...(containerType == containerTypes.enum.operational_goal ? { indicator } : undefined)
 			},
 			realm: env.PUBLIC_KC_REALM ?? '',
@@ -143,6 +151,16 @@
 						{#each strategyTypes.options as strategyTypeOption}
 							<option value={strategyTypeOption}>
 								{$_(strategyTypeOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{$_('topic.label')}
+					<select name="topic" required>
+						{#each topics.options as topicOption}
+							<option value={topicOption}>
+								{$_(topicOption)}
 							</option>
 						{/each}
 					</select>
