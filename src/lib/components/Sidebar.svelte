@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { Icon, ChevronDown, ChevronUp } from 'svelte-hero-icons';
+	import { ChevronDown, ChevronUp, Icon, MagnifyingGlass } from 'svelte-hero-icons';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -25,6 +25,7 @@
 		user
 	} from '$lib/stores.js';
 
+	let terms = $page.url.searchParams.get('terms');
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
 	$filtersToggle = selectedCategory.length > 0;
@@ -93,6 +94,22 @@
 
 	{#if ['/', '/measures'].includes($page.url.pathname)}
 		<ul class="group group-actions">
+			<li>
+				<form class="search" method="get">
+					<button
+						type={$sidebarToggle ? 'submit' : 'button'}
+						on:click={!$sidebarToggle ? toggleSidebar : undefined}
+					>
+						<Icon src={MagnifyingGlass} size="20" mini />
+					</button>
+					<input
+						type="search"
+						name="terms"
+						bind:value={terms}
+						style:display={$sidebarToggle ? 'block' : 'none'}
+					/>
+				</form>
+			</li>
 			<li>
 				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
 					<FilterIcon class="icon-20" />
@@ -234,8 +251,8 @@
 		gap: 0.5rem;
 	}
 
-	.group > li > a,
-	.group > li > button {
+	.group > li a,
+	.group > li button {
 		--padding-x: 14px;
 		--padding-y: 14px;
 		align-items: center;
@@ -301,5 +318,29 @@
 
 	.collapsible > li:last-child {
 		margin-bottom: 0;
+	}
+
+	.search {
+		display: flex;
+	}
+
+	.search > button {
+		--bg-color: var(--color-gray-050);
+		color: var(--color-gray-500);
+		flex: 0 0 51px;
+	}
+
+	.search > input {
+		background-color: var(--color-gray-050);
+		border-bottom-left-radius: 0;
+		border-left: none;
+		border-top-left-radius: 0;
+		margin: 0 0 0 -8px;
+		padding: 13px 14px 13px 0px;
+		width: 100%;
+	}
+
+	.search > button:hover {
+		--bg-color: var(--color-gray-400);
 	}
 </style>

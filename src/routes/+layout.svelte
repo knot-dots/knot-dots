@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type Keycloak from 'keycloak-js';
 	import { onMount, setContext } from 'svelte';
+	import { cubicIn, cubicOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
 	import { page } from '$app/stores';
@@ -8,6 +10,10 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
+
 	let kc: Keycloak;
 
 	setContext<KeycloakContext>(key, {
@@ -23,6 +29,13 @@
 	});
 
 	$: isBoardLayout = ['/', '/measures'].includes($page.url.pathname);
+
+	const duration = 300;
+	const delay = duration + 100;
+	const y = 10;
+
+	const transitionIn = { easing: cubicOut, y, duration, delay };
+	const transitionOut = { easing: cubicIn, y: -y, duration };
 </script>
 
 <svelte:head>
@@ -30,12 +43,14 @@
 </svelte:head>
 
 <Navigation />
-<div>
-	<Sidebar />
-	<main class:board-layout={isBoardLayout}>
-		<slot />
-	</main>
-</div>
+{#key data.pathname}
+	<div in:fly={transitionIn} out:fly={transitionOut}>
+		<Sidebar />
+		<main class:board-layout={isBoardLayout}>
+			<slot />
+		</main>
+	</div>
+{/key}
 
 <style>
 	div {

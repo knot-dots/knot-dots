@@ -178,12 +178,17 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
-export function getManyContainers(categories: string[], sort: string) {
+export function getManyContainers(categories: string[], terms: string, sort: string) {
 	return async (connection: DatabaseConnection) => {
 		const conditions = [sql.fragment`valid_currently`];
 		if (categories.length > 0) {
 			conditions.push(
 				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
+			);
+		}
+		if (terms.trim() != '') {
+			conditions.push(
+				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
 			);
 		}
 
@@ -220,12 +225,22 @@ export function getManyContainers(categories: string[], sort: string) {
 	};
 }
 
-export function getManyContainersByType(type: ContainerType, categories: string[], sort: string) {
+export function getManyContainersByType(
+	type: ContainerType,
+	categories: string[],
+	terms: string,
+	sort: string
+) {
 	return async (connection: DatabaseConnection) => {
 		const conditions = [sql.fragment`valid_currently`, sql.fragment`type = ${type}`];
 		if (categories.length > 0) {
 			conditions.push(
 				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
+			);
+		}
+		if (terms.trim() != '') {
+			conditions.push(
+				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
 			);
 		}
 

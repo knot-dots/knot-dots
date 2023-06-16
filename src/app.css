@@ -226,6 +226,7 @@ label {
 }
 
 input[type='date'],
+input[type='search'],
 input[type='text'],
 select,
 textarea {
@@ -261,6 +262,7 @@ textarea {
 }
 
 input[type='date']:active,
+input[type='search']:active,
 input[type='text']:active,
 select:active,
 textarea:active {
@@ -268,6 +270,7 @@ textarea:active {
 }
 
 input[type='date']:invalid,
+input[type='search']:invalid,
 input[type='text']:invalid,
 select:invalid,
 textarea:invalid {
@@ -390,6 +393,7 @@ fieldset {
 
 .details header .icons {
 	display: flex;
+	flex-shrink: 0;
 	gap: 16px;
 }
 

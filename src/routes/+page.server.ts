@@ -18,7 +18,11 @@ export const load = (async ({ locals, url }) => {
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getManyContainers(url.searchParams.getAll('category'), url.searchParams.get('sort') ?? '')
+			getManyContainers(
+				url.searchParams.getAll('category'),
+				url.searchParams.get('terms') ?? '',
+				url.searchParams.get('sort') ?? ''
+			)
 		);
 	}
 	if (url.searchParams.has('container-preview')) {
