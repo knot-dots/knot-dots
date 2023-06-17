@@ -14,11 +14,14 @@
 	--color-green-050: #f3faf7;
 	--color-green-500: #0e9f6e;
 	--color-green-700: #046c4e;
+	--color-indigo-050: #f0f5ff;
+	--color-orange-050: #fff8f1;
 	--color-red-050: #fdf2f2;
 	--color-red-300: #f8b4b4;
 	--color-red-500: #f05252;
 	--color-red-600: #e02424;
 	--color-red-700: #c81e1e;
+	--color-yellow-050: #fdfdea;
 	--color-yellow-200: #fce96a;
 	--color-primary: var(--color-blue-700);
 
