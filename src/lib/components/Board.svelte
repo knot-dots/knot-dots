@@ -6,9 +6,9 @@
 	.board {
 		display: flex;
 		flex: 1 1;
-		gap: 1.5rem;
+		gap: 0.75rem;
 		height: calc(100% - 2rem);
-		margin: 1rem;
+		margin: 0.75rem 0.375rem;
 		overflow: scroll;
 	}
 </style>
