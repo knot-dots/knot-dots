@@ -206,51 +206,40 @@ const indicator = z.object({
 
 export type Indicator = z.infer<typeof indicator>;
 
+const basePayload = z
+	.object({
+		category: sustainableDevelopmentGoals,
+		description: z.string(),
+		summary: z.string().max(200).optional(),
+		title: z.string()
+	})
+	.strict();
+
+const measurePayload = basePayload
+	.extend({
+		indicatorContribution: z.record(z.string().uuid(), z.coerce.number().nonnegative()).optional(),
+		status: status
+	})
+	.strict();
+
+const operationalGoalPayload = basePayload
+	.extend({
+		indicator: z.array(indicator).max(1)
+	})
+	.strict();
+
+const strategyPayload = basePayload
+	.extend({
+		level: levels,
+		strategyType: strategyTypes,
+		topic: topics
+	})
+	.strict();
+
 export const container = z.object({
 	guid: z.string().uuid(),
 	type: containerTypes,
-	payload: z.union([
-		z
-			.object({
-				category: sustainableDevelopmentGoals,
-				description: z.string(),
-				indicator: z.array(indicator).max(1),
-				summary: z.string().max(200).optional(),
-				title: z.string()
-			})
-			.strict(),
-		z
-			.object({
-				category: sustainableDevelopmentGoals,
-				description: z.string(),
-				summary: z.string().max(200).optional(),
-				title: z.string()
-			})
-			.strict(),
-		z
-			.object({
-				category: sustainableDevelopmentGoals,
-				description: z.string(),
-				indicatorContribution: z
-					.record(z.string().uuid(), z.coerce.number().nonnegative())
-					.optional(),
-				status: status,
-				summary: z.string().max(200).optional(),
-				title: z.string()
-			})
-			.strict(),
-		z
-			.object({
-				category: sustainableDevelopmentGoals,
-				description: z.string(),
-				level: levels,
-				strategyType: strategyTypes,
-				topic: topics,
-				summary: z.string().max(200).optional(),
-				title: z.string()
-			})
-			.strict()
-	]),
+	payload: z.union([basePayload, measurePayload, operationalGoalPayload, strategyPayload]),
 	realm: z.string().max(1024),
 	relation: z.array(relation),
 	revision: z.number().int().positive(),
