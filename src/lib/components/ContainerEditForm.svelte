@@ -3,8 +3,8 @@
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import {
-		containerTypes,
 		levels,
+		payloadTypes,
 		status,
 		strategyTypes,
 		sustainableDevelopmentGoals,
@@ -20,7 +20,7 @@
 <form class="details" method="POST" on:submit|preventDefault>
 	<header>
 		<label>
-			{$_(container.type)}
+			{$_(container.payload.type)}
 			<input name="title" type="text" value={container.payload.title} required />
 		</label>
 	</header>
@@ -41,7 +41,7 @@
 					locked={container.payload.indicator.length > 0}
 				/>
 			{/if}
-			{#if container.type === containerTypes.enum.measure}
+			{#if container.payload.type === payloadTypes.enum.measure}
 				{#each relatedContainers as o}
 					{#if 'indicator' in o.payload && o.payload.indicator.length > 0 && 'quantity' in o.payload.indicator[0]}
 						<label>
@@ -119,7 +119,7 @@
 			</label>
 			<RelationSelector
 				{isPartOfOptions}
-				containerType={container.type}
+				payloadType={container.payload.type}
 				selected={container.relation}
 			/>
 		</div>

@@ -8,7 +8,7 @@ import type {
 } from 'slonik';
 import { z } from 'zod';
 import { container, relation, user } from '$lib/models';
-import type { Container, ContainerType, ModifiedContainer, NewContainer } from '$lib/models';
+import type { Container, ModifiedContainer, NewContainer, PayloadType } from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -67,10 +67,8 @@ export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			const containerResult = await txConnection.one(sql.typeAlias('container')`
-          INSERT INTO container (type, payload, realm)
-          VALUES (${container.type},
-                  ${sql.jsonb(<SerializableValue>container.payload)},
-                  ${container.realm})
+          INSERT INTO container (payload, realm)
+          VALUES (${sql.jsonb(<SerializableValue>container.payload)}, ${container.realm})
           RETURNING *
       `);
 
@@ -108,9 +106,8 @@ export function updateContainer(container: ModifiedContainer) {
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('container')`
-				INSERT INTO container (type, payload, realm, guid)
+				INSERT INTO container (payload, realm, guid)
 				VALUES (
-					${container.type},
 					${sql.jsonb(<SerializableValue>container.payload)},
 					${container.realm},
 					${container.guid}
@@ -254,7 +251,7 @@ export function getManyContainers(
 }
 
 export function getManyContainersByType(
-	type: ContainerType,
+	type: PayloadType,
 	categories: string[],
 	topics: string[],
 	strategyTypes: string[],
@@ -262,7 +259,7 @@ export function getManyContainersByType(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection) => {
-		const conditions = [sql.fragment`valid_currently`, sql.fragment`type = ${type}`];
+		const conditions = [sql.fragment`valid_currently`, sql.fragment`payload->>'type' = ${type}`];
 		if (categories.length > 0) {
 			conditions.push(
 				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
@@ -350,9 +347,9 @@ export function getAllDirectlyRelatedContainers(container: Container) {
 	};
 }
 
-export function maybePartOf(containerType: ContainerType) {
+export function maybePartOf(containerType: PayloadType) {
 	return async (connection: DatabaseConnection) => {
-		let candidateType: ContainerType;
+		let candidateType: PayloadType;
 		if (containerType == 'model') {
 			candidateType = 'strategy';
 		} else if (containerType == 'strategic_goal') {
@@ -367,7 +364,7 @@ export function maybePartOf(containerType: ContainerType) {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE type = ${candidateType} AND valid_currently
+			WHERE payload->>'type' = ${candidateType} AND valid_currently
 			ORDER BY payload->>'title' DESC
 		`);
 
@@ -403,30 +400,30 @@ export function getAllRelatedContainers(guid: string) {
 			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8
 			FROM
 			(
-				SELECT cr.subject, cr.predicate, cr.object, c.type
+				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'measure'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'measure'
 				WHERE c.valid_currently
 			) s1
 			FULL JOIN
 			(
-				SELECT cr.subject, cr.predicate, cr.object, c.type
+				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'operational_goal'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'operational_goal'
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
 			FULL JOIN
 			(
-				SELECT cr.subject, cr.predicate, cr.object, c.type
+				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'strategic_goal'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'strategic_goal'
 				WHERE c.valid_currently
 			) s3 ON s2.object = s3.subject
 			FULL JOIN
 			(
-				SELECT cr.subject, cr.predicate, cr.object, c.type
+				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.type = 'model'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'model'
 				WHERE c.valid_currently
 			) s4 ON s3.object = s4.subject
 			WHERE s1.subject = ${revision}

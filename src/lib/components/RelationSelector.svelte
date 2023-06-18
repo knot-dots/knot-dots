@@ -1,23 +1,23 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { containerTypes, predicates } from '$lib/models';
-	import type { Container, ContainerType, Relation } from '$lib/models';
+	import { payloadTypes, predicates } from '$lib/models';
+	import type { Container, PayloadType, Relation } from '$lib/models';
 
-	export let containerType: ContainerType;
+	export let payloadType: PayloadType;
 	export let isPartOfOptions: Container[];
 	export let selected: Relation[];
 </script>
 
-{#if containerType !== containerTypes.enum.strategy}
+{#if payloadType !== payloadTypes.enum.strategy}
 	<fieldset>
 		<legend>
-			{#if containerType === containerTypes.enum.model}
+			{#if payloadType === payloadTypes.enum.model}
 				{$_('superordinate_strategies')}
-			{:else if containerType === containerTypes.enum.strategic_goal}
+			{:else if payloadType === payloadTypes.enum.strategic_goal}
 				{$_('superordinate_models')}
-			{:else if containerType === containerTypes.enum.operational_goal}
+			{:else if payloadType === payloadTypes.enum.operational_goal}
 				{$_('superordinate_strategic_goals')}
-			{:else if containerType === containerTypes.enum.measure}
+			{:else if payloadType === payloadTypes.enum.measure}
 				{$_('superordinate_operational_goals')}
 			{/if}
 		</legend>

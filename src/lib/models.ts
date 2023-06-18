@@ -30,7 +30,7 @@ export function isSustainableDevelopmentGoal(value: unknown): value is Sustainab
 	return sdgValues.includes(value as SustainableDevelopmentGoal);
 }
 
-const containerTypeValues = [
+const payloadTypeValues = [
 	'measure',
 	'model',
 	'operational_goal',
@@ -38,12 +38,12 @@ const containerTypeValues = [
 	'strategy'
 ] as const;
 
-export const containerTypes = z.enum(containerTypeValues);
+export const payloadTypes = z.enum(payloadTypeValues);
 
-export type ContainerType = z.infer<typeof containerTypes>;
+export type PayloadType = z.infer<typeof payloadTypes>;
 
-export function isContainerType(value: unknown): value is ContainerType {
-	return containerTypeValues.includes(value as ContainerType);
+export function isPayloadType(value: unknown): value is PayloadType {
+	return payloadTypeValues.includes(value as PayloadType);
 }
 
 const levelValues = [
@@ -218,13 +218,27 @@ const basePayload = z
 const measurePayload = basePayload
 	.extend({
 		indicatorContribution: z.record(z.string().uuid(), z.coerce.number().nonnegative()).optional(),
-		status: status
+		status: status,
+		type: z.literal(payloadTypes.enum.measure)
+	})
+	.strict();
+
+const modelPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum.model)
 	})
 	.strict();
 
 const operationalGoalPayload = basePayload
 	.extend({
-		indicator: z.array(indicator).max(1)
+		indicator: z.array(indicator).max(1),
+		type: z.literal(payloadTypes.enum.operational_goal)
+	})
+	.strict();
+
+const strategicGoalPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum.strategic_goal)
 	})
 	.strict();
 
@@ -232,14 +246,24 @@ const strategyPayload = basePayload
 	.extend({
 		level: levels,
 		strategyType: strategyTypes,
-		topic: topics
+		topic: topics,
+		type: z.literal(payloadTypes.enum.strategy)
 	})
 	.strict();
 
+const payload = z.discriminatedUnion('type', [
+	measurePayload,
+	modelPayload,
+	operationalGoalPayload,
+	strategicGoalPayload,
+	strategyPayload
+]);
+
+export type Payload = z.infer<typeof payload>;
+
 export const container = z.object({
 	guid: z.string().uuid(),
-	type: containerTypes,
-	payload: z.union([basePayload, measurePayload, operationalGoalPayload, strategyPayload]),
+	payload: payload,
 	realm: z.string().max(1024),
 	relation: z.array(relation),
 	revision: z.number().int().positive(),

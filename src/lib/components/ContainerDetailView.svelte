@@ -7,7 +7,7 @@
 	export let container: Container;
 	export let relatedContainers: Container[];
 
-	let isPage = $page.url.pathname == `/${container.type}/${container.guid}`;
+	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
 	function containerURL(type: string, guid: string) {
 		if (isPage) {
@@ -48,10 +48,10 @@
 			{#if 'indicatorContribution' in container.payload}
 				<div class="indicatorContribution">
 					<h3>{$_('indicator.contribution')}</h3>
-					{#each relatedContainers as { guid, payload, type }}
+					{#each relatedContainers as { guid, payload }}
 						{#if 'indicator' in payload && payload.indicator.length > 0 && 'quantity' in payload.indicator[0]}
 							<h4>
-								<a href={containerURL(type, guid)}>{payload.title}</a>
+								<a href={containerURL(payload.type, guid)}>{payload.title}</a>
 							</h4>
 							<p>
 								{$_(`${payload.indicator[0].quantity}.description`, {
@@ -93,9 +93,9 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('relations')}</h3>
 				<ul class="meta-value">
-					{#each relatedContainers as { guid, payload, type }}
+					{#each relatedContainers as { guid, payload }}
 						<li>
-							<a href="/{type}/{guid}">{payload.title}</a>
+							<a href="/{payload.type}/{guid}">{payload.title}</a>
 						</li>
 					{/each}
 				</ul>
@@ -105,7 +105,7 @@
 
 	{#if !isPage}
 		<footer>
-			<a class="button primary" href="/{container.type}/{container.guid}">
+			<a class="button primary" href="/{container.payload.type}/{container.guid}">
 				{$_('read_more')}
 			</a>
 		</footer>
