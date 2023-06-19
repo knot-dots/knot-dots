@@ -15,7 +15,7 @@
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>
 		{/if}
 	</header>
-	<div class="vertical-scroll-wrapper">
+	<div class="vertical-scroll-wrapper masked-overflow">
 		<slot />
 		<footer>
 			{#if $user.isAuthenticated}
@@ -47,7 +47,7 @@
 		color: var(--color-gray-800);
 		display: flex;
 		justify-content: space-between;
-		padding: 0.25rem 0.625rem;
+		padding: 0.25rem 0.625rem 0;
 	}
 
 	header h2 {
@@ -79,10 +79,12 @@
 	}
 
 	.vertical-scroll-wrapper {
+		--mask-height: 0.875rem;
+
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
 		overflow-y: scroll;
-		padding-bottom: 6px;
+		padding: var(--mask-height) 0;
 	}
 </style>

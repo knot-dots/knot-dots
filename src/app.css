@@ -472,6 +472,26 @@ fieldset {
 	flex: 1;
 }
 
+/* Fade out overflow effect */
+.masked-overflow {
+	--mask-height: 2rem;
+	--mask-image-content: linear-gradient(
+		to bottom,
+		transparent,
+		black var(--mask-height),
+		black calc(100% - var(--mask-height)),
+		transparent
+	);
+	--mask-size-content: 100% 100%;
+
+	mask-image: var(--mask-image-content);
+	mask-size: var(--mask-size-content);
+	mask-position: 0 0, 100% 0;
+	mask-repeat: no-repeat, no-repeat;
+	overflow-y: auto;
+	padding-bottom: var(--mask-height);
+}
+
 /* Utility classes */
 .is-hidden {
 	display: none;
