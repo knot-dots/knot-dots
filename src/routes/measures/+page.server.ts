@@ -21,6 +21,8 @@ export const load = (async ({ locals, url }) => {
 			getManyContainersByType(
 				'measure',
 				url.searchParams.getAll('category'),
+				url.searchParams.getAll('topic'),
+				url.searchParams.getAll('strategyType'),
 				url.searchParams.get('terms') ?? '',
 				url.searchParams.get('sort') ?? ''
 			)

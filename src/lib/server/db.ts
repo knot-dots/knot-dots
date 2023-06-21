@@ -178,12 +178,26 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
-export function getManyContainers(categories: string[], terms: string, sort: string) {
+export function getManyContainers(
+	categories: string[],
+	topics: string[],
+	strategyTypes: string[],
+	terms: string,
+	sort: string
+) {
 	return async (connection: DatabaseConnection) => {
 		const conditions = [sql.fragment`valid_currently`];
 		if (categories.length > 0) {
 			conditions.push(
 				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
+			);
+		}
+		if (topics.length > 0) {
+			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
+		}
+		if (strategyTypes.length > 0) {
+			conditions.push(
+				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
 			);
 		}
 		if (terms.trim() != '') {
@@ -228,6 +242,8 @@ export function getManyContainers(categories: string[], terms: string, sort: str
 export function getManyContainersByType(
 	type: ContainerType,
 	categories: string[],
+	topics: string[],
+	strategyTypes: string[],
 	terms: string,
 	sort: string
 ) {
@@ -236,6 +252,14 @@ export function getManyContainersByType(
 		if (categories.length > 0) {
 			conditions.push(
 				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
+			);
+		}
+		if (topics.length > 0) {
+			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
+		}
+		if (strategyTypes.length > 0) {
+			conditions.push(
+				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
 			);
 		}
 		if (terms.trim() != '') {

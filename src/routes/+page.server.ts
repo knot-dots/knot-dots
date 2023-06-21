@@ -20,6 +20,8 @@ export const load = (async ({ locals, url }) => {
 		containers = await locals.pool.connect(
 			getManyContainers(
 				url.searchParams.getAll('category'),
+				url.searchParams.getAll('topic'),
+				url.searchParams.getAll('strategyType'),
 				url.searchParams.get('terms') ?? '',
 				url.searchParams.get('sort') ?? ''
 			)
