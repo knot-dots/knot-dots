@@ -92,11 +92,32 @@
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",
 	"strategy": "Strategie",
+	"strategy_type": {
+		"label": "Art",
+		"mobility": "Mobilität",
+		"sustainability": "Nachhaltigkeit",
+		"smart_city": "Smart city"
+	},
 	"strategies": "Strategien",
 	"summary": "Zusammenfassung",
 	"superordinate_strategies": "Übergeordnete Strategien",
 	"superordinate_models": "Übergeordnete Leitbilder",
 	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_operational_goals": "Übergeordnete operative Ziele",
-	"table": "Tabelle"
+	"table": "Tabelle",
+	"topic": {
+		"citizen_participation": "Bürgerbeteiligung",
+		"cityscape": "Stadtbild",
+		"demographics": "Demographie",
+		"digital_municipality": "Digitale Kommune",
+		"economy": "Wirtschaft und Versorgung",
+		"education_and_culture": "Kultur und Bildung",
+		"environment": "Umweltschutz",
+		"health": "Gesundheit",
+		"label": "Themenfeld",
+		"living": "Wohnen und Quartiere",
+		"mobility": "Mobilität",
+		"security": "Sicherheit",
+		"social_justice": "Soziale Gerechtigkeit"
+	}
 }
