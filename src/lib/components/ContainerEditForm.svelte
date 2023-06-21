@@ -68,7 +68,7 @@
 						{/each}
 					</select>
 				</label>
-			{:else if 'level' in container.payload && 'strategy_type' in container.payload && 'topic' in container.payload}
+			{:else if 'level' in container.payload && 'strategyType' in container.payload && 'topic' in container.payload}
 				<label>
 					{$_('level.label')}
 					<select name="level" required>
@@ -84,7 +84,7 @@
 					<select name="strategy-type" required>
 						{#each strategyTypes.options as strategyTypeOption}
 							<option
-								selected={strategyTypeOption === container.payload.strategy_type}
+								selected={strategyTypeOption === container.payload.strategyType}
 								value={strategyTypeOption}
 							>
 								{$_(strategyTypeOption)}
