@@ -5,22 +5,21 @@
 	import { user } from '$lib/stores';
 
 	export let title: string;
-	export let containerType: ContainerType;
-	export let level: Level;
+	export let addItemUrl: string;
 </script>
 
 <section>
 	<header>
 		<h2>{title}</h2>
 		{#if $user.isAuthenticated}
-			<a href="/{containerType}/{level ? `${level.split('.').pop()}/` : ""}new" title={$_('add_item')}><Icon src={Plus} size="20" /></a>
+			<a href={addItemUrl} title={$_('add_item')}><Icon src={Plus} size="20" /></a>
 		{/if}
 	</header>
 	<div class="vertical-scroll-wrapper">
 		<slot />
 		<footer>
 			{#if $user.isAuthenticated}
-				<a href="/{containerType}/new" class="button primary">{$_('add_item')}</a>
+				<a href={addItemUrl} class="button primary">{$_('add_item')}</a>
 			{:else}
 				<button class="primary" disabled>{$_('add_item')}</button>
 			{/if}

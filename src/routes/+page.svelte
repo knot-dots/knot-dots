@@ -20,7 +20,7 @@
 
 <Board>
 	{#each columns as column (column.title)}
-		<BoardColumn title={$_(column.title)} containerType={column.containerType}>
+		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.containerType}/new`}>
 			{#each data.containers.filter((c) => c.type === column.containerType) as container}
 				<Card
 					guid={container.guid}

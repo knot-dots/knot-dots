@@ -12,7 +12,7 @@
 
 <Board>
 	{#each status.options as statusOption}
-		<BoardColumn containerType="measure" title={$_(statusOption)}>
+		<BoardColumn addItemUrl="/measure/new" title={$_(statusOption)}>
 			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status == statusOption) as container}
 				<Card
 					guid={container.guid}
