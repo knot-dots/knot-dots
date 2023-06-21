@@ -16,7 +16,7 @@
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
-	import { sustainableDevelopmentGoals } from '$lib/models';
+	import { strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import {
 		filtersToggle,
 		keycloak,
@@ -30,8 +30,11 @@
 	let timer: any;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
+	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
+	let selectedTopic = $page.url.searchParams.getAll('topic');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
-	$filtersToggle = selectedCategory.length > 0;
+	$filtersToggle =
+		selectedCategory.length > 0 || selectedStrategyType.length > 0 || selectedTopic.length > 0;
 	$sortToggle = selectedSort != 'modified';
 
 	const hash = $page.url.hash;
@@ -39,8 +42,12 @@
 	$: if (browser && BOARD_ROUTES.includes($page.url.pathname)) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
+		query.delete('strategyType');
+		query.delete('topic');
 		query.delete('sort');
 		selectedCategory.forEach((c) => query.append('category', c));
+		selectedStrategyType.forEach((c) => query.append('strategyType', c));
+		selectedTopic.forEach((c) => query.append('topic', c));
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
 		}
@@ -136,7 +143,29 @@
 					</span>
 				</button>
 				<ul id="filters" class="collapsible" class:is-hidden={!$filtersToggle}>
-					<Filters options={sustainableDevelopmentGoals.options} bind:selectedCategory={selectedCategory} />
+					{#if $page.url.pathname === '/strategies'}
+						<li>
+							<Filters
+								label={$_('strategy_type.label')}
+								options={strategyTypes.options}
+								bind:selectedOptions={selectedStrategyType}
+							/>
+						</li>
+						<li>
+							<Filters
+								label={$_('topic.label')}
+								options={topics.options}
+								bind:selectedOptions={selectedTopic}
+							/>
+						</li>
+					{:else}
+						<li>
+							<Filters
+								options={sustainableDevelopmentGoals.options}
+								bind:selectedOptions={selectedCategory}
+							/>
+						</li>
+					{/if}
 				</ul>
 			</li>
 			<li>
@@ -314,7 +343,7 @@
 		box-shadow: var(--shadow-md);
 		padding: 12px 17px 12px 12px;
 		margin-top: 8px;
-		max-height: 10rem;
+		max-height: 12rem;
 		overflow-y: scroll;
 	}
 
