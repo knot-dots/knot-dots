@@ -19,7 +19,7 @@ export const load = (async ({ locals, url }) => {
 	} else {
 		containers = await locals.pool.connect(
 			getManyContainersByType(
-				'measure',
+				'strategy',
 				url.searchParams.getAll('category'),
 				url.searchParams.getAll('topic'),
 				url.searchParams.getAll('strategyType'),

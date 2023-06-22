@@ -2,7 +2,14 @@
 	import { _ } from 'svelte-i18n';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models';
+	import {
+		containerTypes,
+		levels,
+		status,
+		strategyTypes,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
@@ -57,6 +64,40 @@
 						{#each status.options as statusOption}
 							<option selected={statusOption === container.payload.status} value={statusOption}>
 								{$_(statusOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+			{:else if 'level' in container.payload && 'strategyType' in container.payload && 'topic' in container.payload}
+				<label>
+					{$_('level.label')}
+					<select name="level" required>
+						{#each levels.options as levelOption}
+							<option selected={levelOption === container.payload.level} value={levelOption}>
+								{$_(levelOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{$_('strategy_type.label')}
+					<select name="strategy-type" required>
+						{#each strategyTypes.options as strategyTypeOption}
+							<option
+								selected={strategyTypeOption === container.payload.strategyType}
+								value={strategyTypeOption}
+							>
+								{$_(strategyTypeOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{$_('topic.label')}
+					<select name="topic" required>
+						{#each topics.options as topicOption}
+							<option selected={topicOption === container.payload.topic} value={topicOption}>
+								{$_(topicOption)}
 							</option>
 						{/each}
 					</select>

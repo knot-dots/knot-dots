@@ -4,6 +4,7 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { BOARD_ROUTES } from '$lib/globals';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
@@ -15,7 +16,7 @@
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
-	import { sustainableDevelopmentGoals } from '$lib/models';
+	import { strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import {
 		filtersToggle,
 		keycloak,
@@ -24,21 +25,29 @@
 		sortToggle,
 		user
 	} from '$lib/stores.js';
+	import Filters from './Filters.svelte';
 
 	let timer: any;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
+	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
+	let selectedTopic = $page.url.searchParams.getAll('topic');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
-	$filtersToggle = selectedCategory.length > 0;
+	$filtersToggle =
+		selectedCategory.length > 0 || selectedStrategyType.length > 0 || selectedTopic.length > 0;
 	$sortToggle = selectedSort != 'modified';
 
 	const hash = $page.url.hash;
 
-	$: if (browser && ['/', '/measures'].includes($page.url.pathname)) {
+	$: if (browser && BOARD_ROUTES.includes($page.url.pathname)) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
+		query.delete('strategyType');
+		query.delete('topic');
 		query.delete('sort');
 		selectedCategory.forEach((c) => query.append('category', c));
+		selectedStrategyType.forEach((c) => query.append('strategyType', c));
+		selectedTopic.forEach((c) => query.append('topic', c));
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
 		}
@@ -107,7 +116,7 @@
 		</li>
 	</ul>
 
-	{#if ['/', '/measures'].includes($page.url.pathname)}
+	{#if BOARD_ROUTES.includes($page.url.pathname)}
 		<ul class="group group-actions">
 			<li>
 				<form class="search" data-sveltekit-keepfocus>
@@ -134,18 +143,29 @@
 					</span>
 				</button>
 				<ul id="filters" class="collapsible" class:is-hidden={!$filtersToggle}>
-					{#each sustainableDevelopmentGoals.options as option}
+					{#if $page.url.pathname === '/strategies'}
 						<li>
-							<label>
-								<input
-									type="checkbox"
-									name="filters"
-									value={option}
-									bind:group={selectedCategory}
-								/>{$_(option)}
-							</label>
+							<Filters
+								label={$_('strategy_type.label')}
+								options={strategyTypes.options}
+								bind:selectedOptions={selectedStrategyType}
+							/>
 						</li>
-					{/each}
+						<li>
+							<Filters
+								label={$_('topic.label')}
+								options={topics.options}
+								bind:selectedOptions={selectedTopic}
+							/>
+						</li>
+					{:else}
+						<li>
+							<Filters
+								options={sustainableDevelopmentGoals.options}
+								bind:selectedOptions={selectedCategory}
+							/>
+						</li>
+					{/if}
 				</ul>
 			</li>
 			<li>
@@ -323,7 +343,7 @@
 		box-shadow: var(--shadow-md);
 		padding: 12px 17px 12px 12px;
 		margin-top: 8px;
-		max-height: 10rem;
+		max-height: 12rem;
 		overflow-y: scroll;
 	}
 

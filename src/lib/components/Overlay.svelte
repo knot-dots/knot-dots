@@ -50,6 +50,9 @@
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
 				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...(data.has('level') ? { level: data.get('level') } : undefined),
+				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
+				...(data.has('topic') ? { topic: data.get('topic') } : undefined),
 				...(indicatorContribution.size > 0
 					? { indicatorContribution: Object.fromEntries(indicatorContribution) }
 					: undefined),

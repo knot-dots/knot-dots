@@ -17,7 +17,11 @@
 	</a>
 
 	<ul class="button-group button-group-boards">
-		<li><button>{$_('strategies')}</button></li>
+		<li>
+			<a href="/strategies" class="button" class:is-active={$page.url.pathname == '/strategies'}>
+				{$_('strategies')}
+			</a>
+		</li>
 		<li>
 			<a href="/" class="button" class:is-active={$page.url.pathname == '/'}>
 				{$_('objectives')}

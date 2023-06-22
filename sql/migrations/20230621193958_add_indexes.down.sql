@@ -1,0 +1,2 @@
+DROP INDEX container_payload_topic_idx;
+DROP INDEX container_payload_strategy_type_idx;

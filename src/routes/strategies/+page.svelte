@@ -4,16 +4,19 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { status } from '$lib/models';
+	import { levels } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 </script>
 
 <Board>
-	{#each status.options as statusOption}
-		<BoardColumn addItemUrl="/measure/new" title={$_(statusOption)}>
-			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status == statusOption) as container}
+	{#each levels.options as levelOption}
+		<BoardColumn
+			addItemUrl="/strategy/{`${levelOption.split('.').pop()}`}/new"
+			title={$_(levelOption)}
+		>
+			{#each data.containers.filter((c) => 'level' in c.payload && c.payload.level == levelOption) as container}
 				<Card
 					guid={container.guid}
 					title={container.payload.title}

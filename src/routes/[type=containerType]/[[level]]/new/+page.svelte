@@ -7,9 +7,17 @@
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { containerTypes, status, sustainableDevelopmentGoals } from '$lib/models';
+	import {
+		containerTypes,
+		levels,
+		status,
+		strategyTypes,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
 	import type {
 		ContainerType,
+		Level,
 		Indicator,
 		NewContainer,
 		Relation,
@@ -23,6 +31,7 @@
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	$: containerType = $page.params.type as ContainerType;
+	$: level = $page.params.level as Level;
 
 	$: isPartOfOptions = data.isPartOfOptions;
 
@@ -41,6 +50,9 @@
 				summary: data.get('summary') as string,
 				title: data.get('title') as string,
 				...(data.has('status') ? { status: data.get('status') } : undefined),
+				...(data.has('level') ? { level: data.get('level') } : undefined),
+				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
+				...(data.has('topic') ? { topic: data.get('topic') } : undefined),
 				...(containerType == containerTypes.enum.operational_goal ? { indicator } : undefined)
 			},
 			realm: env.PUBLIC_KC_REALM ?? '',
@@ -78,7 +90,7 @@
 			} else if (event.submitter?.id === 'save-and-create-measure') {
 				await goto(`/measure/new?is-part-of=${result.revision}`);
 			} else {
-				await goto(`${result.guid}`);
+				await goto(`/${containerType}/${result.guid}`);
 			}
 		}
 	}
@@ -120,6 +132,37 @@
 						{#each status.options as statusOption}
 							<option value={statusOption}>
 								{$_(statusOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+			{:else if containerType === containerTypes.enum.strategy}
+				<label>
+					{$_('level.label')}
+					<select name="level" required>
+						{#each levels.options as levelOption}
+							<option value={levelOption} selected={levelOption.includes(level) ? true : false}>
+								{$_(levelOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{$_('strategy_type.label')}
+					<select name="strategy-type" required>
+						{#each strategyTypes.options as strategyTypeOption}
+							<option value={strategyTypeOption}>
+								{$_(strategyTypeOption)}
+							</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{$_('topic.label')}
+					<select name="topic" required>
+						{#each topics.options as topicOption}
+							<option value={topicOption}>
+								{$_(topicOption)}
 							</option>
 						{/each}
 					</select>

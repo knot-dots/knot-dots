@@ -44,6 +44,23 @@ export function isContainerType(value: unknown): value is ContainerType {
 	return containerTypeValues.includes(value as ContainerType);
 }
 
+const levelValues = [
+	'level.global',
+	'level.multi_lateral',
+	'level.national',
+	'level.state',
+	'level.regional',
+	'level.local'
+] as const;
+
+export const levels = z.enum(levelValues);
+
+export type Level = z.infer<typeof levels>;
+
+export function isLevel(value: unknown): value is Level {
+	return levelValues.includes(value as Level);
+}
+
 const predicateValues = ['is-part-of'] as const;
 
 export const predicates = z.enum(predicateValues);
@@ -68,6 +85,43 @@ export type Status = z.infer<typeof status>;
 
 export function isStatus(value: unknown): value is Status {
 	return statusValues.includes(value as Status);
+}
+
+const strategyTypeValues = [
+	'strategy_type.mobility',
+	'strategy_type.sustainability',
+	'strategy_type.smart_city'
+] as const;
+
+export const strategyTypes = z.enum(strategyTypeValues);
+
+export type StrategyType = z.infer<typeof strategyTypes>;
+
+export function isStrategyType(value: unknown): value is StrategyType {
+	return strategyTypeValues.includes(value as StrategyType);
+}
+
+const topicValues = [
+	'topic.economy',
+	'topic.health',
+	'topic.mobility',
+	'topic.living',
+	'topic.environment',
+	'topic.education_and_culture',
+	'topic.social_justice',
+	'topic.digital_municipality',
+	'topic.demographics',
+	'topic.cityscape',
+	'topic.citizen_participation',
+	'topic.security'
+] as const;
+
+export const topics = z.enum(topicValues);
+
+export type topic = z.infer<typeof topics>;
+
+export function isTopic(value: unknown): value is topic {
+	return topicValues.includes(value as topic);
 }
 
 const quantityValues = ['quantity.co2', 'quantity.cycle_path'] as const;
@@ -144,6 +198,17 @@ export const container = z.object({
 					.record(z.string().uuid(), z.coerce.number().nonnegative())
 					.optional(),
 				status: status,
+				summary: z.string().max(200).optional(),
+				title: z.string()
+			})
+			.strict(),
+		z
+			.object({
+				category: sustainableDevelopmentGoals,
+				description: z.string(),
+				level: levels,
+				strategyType: strategyTypes,
+				topic: topics,
 				summary: z.string().max(200).optional(),
 				title: z.string()
 			})
