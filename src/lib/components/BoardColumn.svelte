@@ -32,7 +32,7 @@
 
 <style>
 	section {
-		background-color: var(--color-indigo-050);
+		background-color: var(--bg-color, var(--color-indigo-050));
 		border-radius: 8px;
 		display: flex;
 		flex-basis: 20.75rem;
