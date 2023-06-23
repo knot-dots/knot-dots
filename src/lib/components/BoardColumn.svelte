@@ -18,7 +18,7 @@
 		<slot />
 		<footer>
 			{#if $user.isAuthenticated}
-				<a href={addItemUrl} class="button primary">
+				<a href={addItemUrl}>
 					{$_('add_item')}
 					<Icon src={PlusSmall} size="24" mini />
 				</a>
@@ -59,12 +59,16 @@
 	}
 
 	footer {
-		background: #ffffff;
+		background-color: #ffffff;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		flex-shrink: 0;
 		overflow: hidden;
+	}
+
+	footer:hover {
+		background-color: var(--color-gray-200);
 	}
 
 	footer a {
