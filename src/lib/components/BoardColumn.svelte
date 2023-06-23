@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import type { ContainerType, Level } from '$lib/models';
 	import { user } from '$lib/stores';
 
 	export let title: string;
