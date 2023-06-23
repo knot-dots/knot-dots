@@ -89,6 +89,7 @@
 	},
 	"strategy": "Strategy",
 	"strategy_type": {
+		"isek": "Intergated urban development concept",
 		"label": "Strategy type",
 		"mobility": "Mobility",
 		"sustainability": "Sustainability",
