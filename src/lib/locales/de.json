@@ -86,8 +86,7 @@
 		"in_implementation": "In Umsetzung",
 		"in_operation": "In Betrieb",
 		"in_planning": "In Planung",
-		"label": "Status",
-		"terminated": "Beendet"
+		"label": "Status"
 	},
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",

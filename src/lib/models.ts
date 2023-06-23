@@ -75,8 +75,7 @@ const statusValues = [
 	'status.idea',
 	'status.in_planning',
 	'status.in_implementation',
-	'status.in_operation',
-	'status.terminated'
+	'status.in_operation'
 ] as const;
 
 export const status = z.enum(statusValues);
