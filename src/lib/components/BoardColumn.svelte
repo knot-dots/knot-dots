@@ -1,15 +1,22 @@
 <script lang="ts">
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
+	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { user } from '$lib/stores';
 
 	export let title: string;
+	export let icon: IconSource | undefined = undefined;
 	export let addItemUrl: string;
 </script>
 
 <section>
 	<header>
-		<h2>{title}</h2>
+		<h2>
+			{title}
+			{#if icon}
+				<Icon src={icon} size="16" mini />
+			{/if}
+		</h2>
 		{#if $user.isAuthenticated}
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>
 		{/if}
@@ -50,8 +57,11 @@
 	}
 
 	header h2 {
+		align-items: baseline;
+		display: flex;
 		font-size: inherit;
 		font-weight: 700;
+		gap: 0.5rem;
 	}
 
 	:global(header svg) {
