@@ -4,6 +4,7 @@
 	import type { Indicator } from '$lib/models';
 
 	export let indicator: Indicator[];
+	export let locked = false;
 
 	let indicatorType =
 		indicator.length > 0
@@ -36,7 +37,7 @@
 
 <fieldset class="indicator">
 	<legend>{$_('indicator.legend')}</legend>
-	<select name="indicator" bind:value={indicatorType} on:change={select}>
+	<select name="indicator" bind:value={indicatorType} on:change={select} disabled={locked}>
 		<option value="okr">{$_('indicator.okr')}</option>
 		{#each quantities.options as quantityOption}
 			<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
@@ -48,12 +49,14 @@
 			inputmode="numeric"
 			name="indicator-max"
 			bind:value={indicator[0].max}
+			readonly={locked}
 			required
 		/>
 		<input
 			type="date"
 			name="indicator-fulfillmentDate"
 			bind:value={indicator[0].fulfillmentDate}
+			readonly={locked}
 			required
 		/>
 	{:else if indicator.length > 0}
