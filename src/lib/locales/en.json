@@ -15,6 +15,7 @@
 	"indicator": {
 		"fulfillment_date": "Fulfillment date",
 		"legend": "Indicator",
+		"okr": "OKR",
 		"quantity": "Quantity"
 	},
 	"level": {

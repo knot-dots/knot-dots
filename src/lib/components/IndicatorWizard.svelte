@@ -1,38 +1,48 @@
 <script lang="ts">
-	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { quantities } from '$lib/models';
 	import type { Indicator } from '$lib/models';
 
 	export let indicator: Indicator[];
 
-	function addOKR() {
-		indicator = [...indicator, { max: 1, min: 0, value: 0.5 }];
-	}
+	let indicatorType =
+		indicator.length > 0
+			? 'quantity' in indicator[0]
+				? (indicator[0].quantity as string)
+				: 'okr'
+			: '';
 
-	function addQuantity() {
-		indicator = [...indicator, { max: 100, min: 0, quantity: '', value: 0, fulfillmentDate: '' }];
+	function select(event: Event) {
+		if ((event.target as HTMLSelectElement).value == 'okr') {
+			indicator = [
+				{
+					max: 1,
+					min: 0,
+					value: 0.5
+				}
+			];
+		} else if ((event.target as HTMLSelectElement).value.startsWith('quantity.')) {
+			indicator = [
+				{
+					max: 100,
+					min: 0,
+					quantity: (event.target as HTMLSelectElement).value,
+					value: 0
+				}
+			];
+		}
 	}
 </script>
 
 <fieldset class="indicator">
 	<legend>{$_('indicator.legend')}</legend>
-	{#if indicator.length == 0}
-		<button type="button" class="primary" on:click={addOKR}>
-			<Icon src={Plus} size="20" mini />
-			{$_('add_okr')}
-		</button>
-		<button type="button" class="primary" on:click={addQuantity}>
-			<Icon src={Plus} size="20" mini />
-			{$_('add_quantity')}
-		</button>
-	{:else if 'quantity' in indicator[0]}
-		<select name="indicator-quantity" bind:value={indicator[0].quantity} required>
-			<option />
-			{#each quantities.options as quantityOption}
-				<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
-			{/each}
-		</select>
+	<select name="indicator" bind:value={indicatorType} on:change={select}>
+		<option value="okr">{$_('indicator.okr')}</option>
+		{#each quantities.options as quantityOption}
+			<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
+		{/each}
+	</select>
+	{#if indicator.length > 0 && 'quantity' in indicator[0]}
 		<input
 			type="text"
 			inputmode="numeric"
@@ -46,7 +56,7 @@
 			bind:value={indicator[0].fulfillmentDate}
 			required
 		/>
-	{:else}
+	{:else if indicator.length > 0}
 		<input
 			type="range"
 			name="indicator-value"
@@ -59,19 +69,10 @@
 </fieldset>
 
 <style>
-	button {
-		align-items: center;
-		display: inline-flex;
-	}
-
-	:global(button > svg) {
-		margin-left: -1px;
-		margin-right: 2px;
-	}
-
-	.indicator input,
-	.indicator select {
+	input,
+	select {
 		display: inline;
+		vertical-align: middle;
 		width: initial;
 	}
 
