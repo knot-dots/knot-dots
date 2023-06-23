@@ -121,7 +121,7 @@
 <style>
 	.overlay {
 		height: calc(100%);
-		margin-left: -1rem;
+		margin-left: -0.375rem;
 		overflow-x: hidden;
 		padding: 0;
 		width: 100%;
