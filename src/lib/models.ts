@@ -75,8 +75,7 @@ const statusValues = [
 	'status.idea',
 	'status.in_planning',
 	'status.in_implementation',
-	'status.in_operation',
-	'status.terminated'
+	'status.in_operation'
 ] as const;
 
 export const status = z.enum(statusValues);
@@ -90,7 +89,8 @@ export function isStatus(value: unknown): value is Status {
 const strategyTypeValues = [
 	'strategy_type.mobility',
 	'strategy_type.sustainability',
-	'strategy_type.smart_city'
+	'strategy_type.smart_city',
+	'strategy_type.isek'
 ] as const;
 
 export const strategyTypes = z.enum(strategyTypeValues);

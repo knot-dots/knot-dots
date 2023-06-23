@@ -1,18 +1,40 @@
 <script lang="ts">
+	import { Cog8Tooth, Flag, LightBulb, Pencil } from 'svelte-hero-icons';
+	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { status } from '$lib/models';
+	import type { Status } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+
+	const statusColors = new Map<Status, string>([
+		[status.enum['status.idea'], '--color-red-050'],
+		[status.enum['status.in_planning'], '--color-orange-050'],
+		[status.enum['status.in_implementation'], '--color-yellow-050'],
+		[status.enum['status.in_operation'], '--color-green-050']
+	]);
+
+	const statusIcons = new Map<Status, IconSource>([
+		[status.enum['status.idea'], LightBulb],
+		[status.enum['status.in_planning'], Pencil],
+		[status.enum['status.in_implementation'], Cog8Tooth],
+		[status.enum['status.in_operation'], Flag]
+	]);
 </script>
 
 <Board>
 	{#each status.options as statusOption}
-		<BoardColumn addItemUrl="/measure/new" title={$_(statusOption)}>
+		<BoardColumn
+			--bg-color="var({statusColors.get(statusOption)})"
+			addItemUrl="/measure/new"
+			title={$_(statusOption)}
+			icon={statusIcons.get(statusOption)}
+		>
 			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status == statusOption) as container}
 				<Card
 					guid={container.guid}

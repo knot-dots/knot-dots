@@ -63,7 +63,7 @@
 
 	main {
 		flex-grow: 1;
-		background-color: var(--color-gray-100);
+		background-color: var(--color-gray-050);
 		min-width: 0;
 		padding: 1rem;
 	}

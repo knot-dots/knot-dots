@@ -85,11 +85,11 @@
 		"in_implementation": "In implementation",
 		"in_operation": "In operation",
 		"in_planning": "In planning",
-		"label": "Status",
-		"terminated": "Terminated"
+		"label": "Status"
 	},
 	"strategy": "Strategy",
 	"strategy_type": {
+		"isek": "Intergated urban development concept",
 		"label": "Strategy type",
 		"mobility": "Mobility",
 		"sustainability": "Sustainability",

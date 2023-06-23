@@ -54,9 +54,7 @@
 		goto(`?${query.toString()}${hash}`, { keepFocus: true });
 	}
 
-	$: if (browser && terms) {
-		debouncedSearch();
-	}
+	$: terms, browser && debouncedSearch();
 
 	function debouncedSearch() {
 		clearTimeout(timer);
