@@ -41,12 +41,12 @@
 	"page_title": "Strategie-Werkzeug",
 	"quantity": {
 		"co2": {
-			"description": "Es {contribution, plural, one {soll # Tonne CO₂} other {sollen # Tonnen CO₂}} eingespart werden.",
+			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}} ",
 			"input_prompt": "Wie viele Tonnen CO₂ sollen eingespart werden?",
 			"label": "t CO₂"
 		},
 		"cycle_path": {
-			"description": "Es {contribution, plural, one {wurde #} other {wurden #}} Kilometer Radweg geschaffen.",
+			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
 			"input_prompt": "Wie viele Kilometer Radweg werden gebaut?",
 			"label": "km Radweg"
 		}

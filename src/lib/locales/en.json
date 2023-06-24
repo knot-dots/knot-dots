@@ -41,13 +41,13 @@
 	"page_title": "StrategyTool",
 	"quantity": {
 		"co2": {
-			"description": "",
-			"input_prompt": "",
+			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}} ",
+			"input_prompt": "How many tons of CO₂ will be saved?",
 			"label": "t CO₂"
 		},
 		"cycle_path": {
-			"description": "",
-			"input_prompt": "",
+			"description": "{contribution, plural, one {# kilometer of cycle paths will be built.} other {# kilometers of cycle paths will be built.}}",
+			"input_prompt": "How many kilometers of cycle paths will be built?",
 			"label": "km cycle path"
 		}
 	},
