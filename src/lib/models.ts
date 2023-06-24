@@ -139,6 +139,16 @@ export function isQuantity(value: unknown): value is Quantity {
 	return quantityValues.includes(value as Quantity);
 }
 
+const unitValues = ['unit.kilowatt_hour', 'unit.kilometer', 'unit.ton'] as const;
+
+export const units = z.enum(unitValues);
+
+export type Unit = z.infer<typeof units>;
+
+export function isUnit(value: unknown): value is Unit {
+	return unitValues.includes(value as Unit);
+}
+
 export const relation = z.object({
 	object: z.number().int().positive(),
 	predicate: z.string().max(128),
