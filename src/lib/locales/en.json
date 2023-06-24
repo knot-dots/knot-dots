@@ -35,9 +35,9 @@
 	"model": "Model",
 	"models": "Models",
 	"objectives": "Objectives",
+	"open_sidebar": "Open sidebar",
 	"operational_goal": "Operational goal",
 	"operational_goals": "Operational goals",
-	"open_sidebar": "Open sidebar",
 	"page_title": "StrategyTool",
 	"quantity": {
 		"co2": {
@@ -88,23 +88,22 @@
 		"in_planning": "In planning",
 		"label": "Status"
 	},
+	"strategic_goal": "Strategic goal",
+	"strategic_goals": "Strategic goals",
+	"strategies": "Strategies",
 	"strategy": "Strategy",
 	"strategy_type": {
-		"isek": "Intergated urban development concept",
+		"isek": "Integrated urban development concept",
 		"label": "Strategy type",
 		"mobility": "Mobility",
 		"sustainability": "Sustainability",
 		"smart_city": "Smart city"
 	},
-	"strategies": "Strategies",
-	"strategic_goal": "Strategic goal",
-	"strategic_goals": "Strategic goals",
 	"summary": "Summary",
-	"superordinate_strategies": "Superordinate strategies",
 	"superordinate_models": "Superordinate models",
-	"superordinate_strategic_goals": "Superordinate strategic goals",
 	"superordinate_operational_goals": "Superordinate operational goals",
-	"table": "Table",
+	"superordinate_strategic_goals": "Superordinate strategic goals",
+	"superordinate_strategies": "Superordinate strategies",
 	"topic": {
 		"citizen_participation": "Citizen participation",
 		"cityscape": "Cityscape",

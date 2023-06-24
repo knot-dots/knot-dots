@@ -13,7 +13,6 @@
 	"help": "Hilfe",
 	"home": "Startseite",
 	"indicator": {
-		"contribution": "Beiträge zu operativen Zielen",
 		"fulfillment_date": "Erfüllungsdatum",
 		"legend": "Indikator",
 		"okr": "OKR",
@@ -55,6 +54,11 @@
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relations": "Beziehungen",
+	"save": "Speichern",
+	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
+	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
+	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
+	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"sdg": {
 		"01": "Keine Armut",
 		"02": "Kein Hunger",
@@ -74,11 +78,6 @@
 		"16": "Frieden, Gerechtigkeit und starke Institutionen",
 		"17": "Partnerschaften zur Erreichung der Ziele"
 	},
-	"save": "Speichern",
-	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
-	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
-	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
-	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",
@@ -91,21 +90,20 @@
 	},
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",
+	"strategies": "Strategien",
 	"strategy": "Strategie",
 	"strategy_type": {
+		"isek": "ISEK",
 		"label": "Art",
 		"mobility": "Mobilität",
 		"sustainability": "Nachhaltigkeit",
-		"smart_city": "Smart city",
-		"isek": "ISEK"
+		"smart_city": "Smart City"
 	},
-	"strategies": "Strategien",
 	"summary": "Zusammenfassung",
-	"superordinate_strategies": "Übergeordnete Strategien",
 	"superordinate_models": "Übergeordnete Leitbilder",
-	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_operational_goals": "Übergeordnete operative Ziele",
-	"table": "Tabelle",
+	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
+	"superordinate_strategies": "Übergeordnete Strategien",
 	"topic": {
 		"citizen_participation": "Bürgerbeteiligung",
 		"cityscape": "Stadtbild",
