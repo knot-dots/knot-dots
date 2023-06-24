@@ -72,9 +72,9 @@
 						{$_(container.payload.status)}
 					</span>
 				</div>
-			{:else}
+			{:else if 'topic' in container.payload}
 				<div class="badges">
-					<span class="badge">{$_(container.payload.category)}</span>
+					<span class="badge">{$_(container.payload.topic)}</span>
 				</div>
 			{/if}
 		</footer>
