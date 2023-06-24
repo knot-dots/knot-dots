@@ -6,6 +6,7 @@
 	export let guid: string;
 	export let indicator: Indicator;
 	export let contributors: Container[];
+	export let compact = false;
 
 	let unit =
 		'quantity' in indicator && unitByQuantity.has(indicator.quantity as Quantity)
@@ -39,9 +40,12 @@
 	}
 </script>
 
-<div class="progress">
+<div class="progress" class:progress--compact={compact}>
 	<div class="wrapper">
 		<span class="min">{indicator.min} {unit}</span>
+		{#if compact}
+			<span class="label">{$_(`${indicator.quantity}.label`)}</span>
+		{/if}
 		<span class="max">{indicator.max} {unit}</span>
 		<div class="bar">
 			{#if indicator.value}
@@ -93,10 +97,10 @@
 			{/if}
 		</div>
 	</div>
-	{#if indicator.quantity}
+	{#if indicator.quantity && !compact}
 		<div class="quantity">{$_(`${indicator.quantity}.label`)}</div>
 	{/if}
-	{#if indicator.fulfillmentDate}
+	{#if indicator.fulfillmentDate && !compact}
 		<div class="fulfillmentDate">
 			{$_('indicator.fulfillment_date')}: {new Date(indicator.fulfillmentDate).toLocaleDateString()}
 		</div>
@@ -113,6 +117,10 @@
 		gap: 12px;
 		margin-bottom: 0.875rem;
 		padding: 12px 20px;
+	}
+	.progress.progress--compact {
+		border: none;
+		padding: 0;
 	}
 	.wrapper {
 		display: flex;
