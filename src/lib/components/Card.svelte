@@ -57,7 +57,7 @@
 			{@html container.payload.summary ?? ''}
 		</div>
 		<footer>
-			{#if 'indicator' in container.payload}
+			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<ProgressBar
 					guid={container.guid}
 					indicator={container.payload.indicator[0]}
