@@ -232,6 +232,7 @@ export function getManyContainers(
 
 		return containerResult.map((c) => ({
 			...c,
+			relation: [],
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
@@ -294,6 +295,7 @@ export function getManyContainersByType(
 
 		return containerResult.map((c) => ({
 			...c,
+			relation: [],
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
@@ -411,7 +413,7 @@ export function getAllRelatedContainers(guid: string) {
 			  OR s4.object = ${revision}
 		`);
 
-		return connection.any(sql.typeAlias('container')`
+		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
 			WHERE revision IN (${sql.join(
@@ -423,5 +425,7 @@ export function getAllRelatedContainers(guid: string) {
 			)})
 				AND valid_currently
 		`);
+
+		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
 	};
 }
