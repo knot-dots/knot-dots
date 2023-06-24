@@ -236,7 +236,7 @@ export function getManyContainers(
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
 			  SELECT *
-			  FROM dev.public.container_relation
+			  FROM container_relation
 			  WHERE object IN (${revisions}) OR subject IN (${revisions})
 			`)
 				: [];
@@ -312,7 +312,7 @@ export function getManyContainersByType(
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
 			  SELECT *
-			  FROM dev.public.container_relation
+			  FROM container_relation
 			  WHERE object IN (${revisions}) OR subject IN (${revisions})
 			`)
 				: [];
