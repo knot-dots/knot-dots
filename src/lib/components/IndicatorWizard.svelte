@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { quantities } from '$lib/models';
-	import type { Indicator } from '$lib/models';
+	import { quantities, unitByQuantity } from '$lib/models';
+	import type { Indicator, Quantity, Unit } from '$lib/models';
 
 	export let indicator: Indicator[];
 	export let locked = false;
@@ -12,6 +12,11 @@
 				? (indicator[0].quantity as string)
 				: 'okr'
 			: '';
+
+	let unit: Unit | undefined =
+		indicator.length > 0 && 'quantity' in indicator[0]
+			? unitByQuantity.get(indicator[0].quantity as Quantity)
+			: undefined;
 
 	function select(event: Event) {
 		if ((event.target as HTMLSelectElement).value == 'okr') {
@@ -31,6 +36,7 @@
 					value: 0
 				}
 			];
+			unit = unitByQuantity.get(indicator[0].quantity as Quantity);
 		}
 	}
 </script>
@@ -44,14 +50,19 @@
 		{/each}
 	</select>
 	{#if indicator.length > 0 && 'quantity' in indicator[0]}
-		<input
-			type="text"
-			inputmode="numeric"
-			name="indicator-max"
-			bind:value={indicator[0].max}
-			readonly={locked}
-			required
-		/>
+		<span class:input-with-addon={unit}>
+			<input
+				type="text"
+				inputmode="numeric"
+				name="indicator-max"
+				bind:value={indicator[0].max}
+				readonly={locked}
+				required
+			/>
+			{#if unit}
+				<span class="addon">{$_(unit)}</span>
+			{/if}
+		</span>
 		<input
 			type="date"
 			name="indicator-fulfillmentDate"
@@ -84,8 +95,30 @@
 		max-height: 45px;
 	}
 
-	.indicator input[name='indicator-max'] {
+	input[name='indicator-max'] {
 		text-align: right;
 		width: 6em;
+	}
+
+	.input-with-addon {
+		display: inline-flex;
+	}
+
+	.input-with-addon input {
+		border-bottom-right-radius: 0;
+		border-top-right-radius: 0;
+	}
+
+	.input-with-addon .addon {
+		align-items: center;
+		background-color: var(--color-gray-200);
+		border: solid 1px var(--color-gray-300);
+		border-bottom-right-radius: 8px;
+		border-left: none;
+		border-top-right-radius: 8px;
+		color: var(--color-gray-900);
+		display: inline-flex;
+		margin: 0.125rem 0;
+		padding: 0 0.75rem;
 	}
 </style>

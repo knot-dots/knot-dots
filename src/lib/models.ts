@@ -149,6 +149,12 @@ export function isUnit(value: unknown): value is Unit {
 	return unitValues.includes(value as Unit);
 }
 
+export const unitByQuantity = new Map<Quantity, Unit>([
+	[quantities.enum['quantity.co2'], units.enum['unit.ton']],
+	[quantities.enum['quantity.cycle_path'], units.enum['unit.kilometer']],
+	[quantities.enum['quantity.solar_energy'], units.enum['unit.kilowatt_hour']]
+]);
+
 export const relation = z.object({
 	object: z.number().int().positive(),
 	predicate: z.string().max(128),

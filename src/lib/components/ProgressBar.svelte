@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { status } from '$lib/models';
-	import type { Container, Indicator, Status } from '$lib/models';
+	import { status, unitByQuantity } from '$lib/models';
+	import type { Container, Indicator, Quantity, Status } from '$lib/models';
 
 	export let guid: string;
 	export let indicator: Indicator;
 	export let contributors: Container[];
+
+	let unit =
+		'quantity' in indicator && unitByQuantity.has(indicator.quantity as Quantity)
+			? $_(unitByQuantity.get(indicator.quantity as Quantity) as string)
+			: '';
 
 	let contributions: Record<string, number> = {
 		[status.enum['status.in_operation']]: 0,
@@ -36,8 +41,8 @@
 
 <div class="progress">
 	<div class="wrapper">
-		<span class="min">{indicator.min}</span>
-		<span class="max">{indicator.max}</span>
+		<span class="min">{indicator.min} {unit}</span>
+		<span class="max">{indicator.max} {unit}</span>
 		<div class="bar">
 			{#if indicator.value}
 				<span

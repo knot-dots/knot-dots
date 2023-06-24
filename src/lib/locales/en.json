@@ -43,12 +43,12 @@
 		"co2": {
 			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}} ",
 			"input_prompt": "How many tons of CO₂ will be saved?",
-			"label": "t CO₂"
+			"label": "CO₂"
 		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {# kilometer of cycle paths will be built.} other {# kilometers of cycle paths will be built.}}",
 			"input_prompt": "How many kilometers of cycle paths will be built?",
-			"label": "km cycle path"
+			"label": "cycle path"
 		},
 		"parking_space": {
 			"description": "{contribution, plural, one {# parking spaces will be repurposed.} other {# parking spaces will be repurposed.}}",
@@ -58,7 +58,7 @@
 		"solar_energy": {
 			"description": "{contribution, plural, one {# kilowatt hour  of solar energy has been generated.} other {# kilowatt hours of solar energy have been generated.}}",
 			"input_prompt": "How many kilowatt hours of solar energy will be generated?",
-			"label": "kWh solar energy"
+			"label": "solar energy"
 		}
 	},
 	"read_more": "Read more",
@@ -128,5 +128,10 @@
 		"mobility": "Mobility",
 		"security": "Security",
 		"social_justice": "Social justice"
+	},
+	"unit": {
+		"kilowatt_hour": "kWh",
+		"kilometer": "km",
+		"ton": "t"
 	}
 }
