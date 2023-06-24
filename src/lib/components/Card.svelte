@@ -38,41 +38,64 @@
 		$filtersToggle = false;
 		$sortToggle = false;
 	}
+
+	let previewLink: HTMLAnchorElement;
+
+	function handleClick(event: MouseEvent) {
+		if (previewLink == event.target) {
+			return;
+		}
+		const isTextSelected = window.getSelection()?.toString();
+		if (!isTextSelected) {
+			previewLink.click();
+		}
+	}
+
+	function handleKeyUp(event: KeyboardEvent) {
+		if (event.key == 'Enter') {
+			previewLink.click();
+		}
+	}
 </script>
 
-<a href={containerPreviewURL} on:click={closeSidebar}>
-	<article
-		class="card"
-		class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
-	>
-		<header>
-			<h3>{container.payload.title}</h3>
-		</header>
-		<div class="text">
-			{@html container.payload.summary ?? ''}
-		</div>
-		<footer>
-			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
-				<ProgressBar
-					guid={container.guid}
-					indicator={container.payload.indicator[0]}
-					contributors={relatedContainers}
-					compact
-				/>
-			{:else if 'status' in container.payload}
-				<span class="badge badge--{statusColors.get(container.payload.status)}">
-					<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
-					{$_(container.payload.status)}
-				</span>
-			{:else if 'topic' in container.payload}
-				<span class="badge">{$_(container.payload.topic)}</span>
-			{/if}
-			<a href={relatedToURL} class="button {relatedTo === container.guid ? 'is-active' : ''}">
-				<Icon src={Share} size="20" mini />
+<article
+	class="card"
+	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
+	on:click={handleClick}
+	on:keyup={handleKeyUp}
+>
+	<header>
+		<h3>
+			<a href={containerPreviewURL} bind:this={previewLink} on:click={closeSidebar}>
+				{container.payload.title}
 			</a>
-		</footer>
-	</article>
-</a>
+		</h3>
+	</header>
+	<div class="text">
+		{@html container.payload.summary ?? ''}
+	</div>
+
+	<footer>
+		{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
+			<ProgressBar
+				guid={container.guid}
+				indicator={container.payload.indicator[0]}
+				contributors={relatedContainers}
+				compact
+			/>
+		{:else if 'status' in container.payload}
+			<span class="badge badge--{statusColors.get(container.payload.status)}">
+				<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
+				{$_(container.payload.status)}
+			</span>
+		{:else if 'topic' in container.payload}
+			<span class="badge">{$_(container.payload.topic)}</span>
+		{/if}
+		<a href={relatedToURL} class="button {relatedTo === container.guid ? 'is-active' : ''}">
+			<Icon src={Share} size="20" mini />
+		</a>
+	</footer>
+</article>
 
 <style>
 	.card {
@@ -80,12 +103,16 @@
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
+		cursor: pointer;
 		padding: 1.25rem;
 		width: 100%;
 	}
 
+	.card:hover,
+	.card:focus-within,
 	.card.is-active {
 		background: var(--color-gray-300);
+		outline: none;
 	}
 
 	header {
