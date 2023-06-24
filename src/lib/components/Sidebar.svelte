@@ -62,7 +62,11 @@
 	}
 
 	function search() {
-		const searchParams = new URLSearchParams([['terms', terms]]);
+		const searchParams = new URLSearchParams($page.url.searchParams);
+		searchParams.delete('terms');
+		if (terms) {
+			searchParams.set('terms', terms);
+		}
 		goto(`?${searchParams.toString()}`, { keepFocus: true, replaceState: true });
 	}
 

@@ -1,52 +1,76 @@
 <script lang="ts">
-	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { quantities } from '$lib/models';
-	import type { Indicator } from '$lib/models';
+	import { quantities, unitByQuantity } from '$lib/models';
+	import type { Indicator, Quantity, Unit } from '$lib/models';
 
 	export let indicator: Indicator[];
+	export let locked = false;
 
-	function addOKR() {
-		indicator = [...indicator, { max: 1, min: 0, value: 0.5 }];
-	}
+	let indicatorType =
+		indicator.length > 0
+			? 'quantity' in indicator[0]
+				? (indicator[0].quantity as string)
+				: 'okr'
+			: '';
 
-	function addQuantity() {
-		indicator = [...indicator, { max: 100, min: 0, quantity: '', value: 0, fulfillmentDate: '' }];
+	let unit: Unit | undefined =
+		indicator.length > 0 && 'quantity' in indicator[0]
+			? unitByQuantity.get(indicator[0].quantity as Quantity)
+			: undefined;
+
+	function select(event: Event) {
+		if ((event.target as HTMLSelectElement).value == 'okr') {
+			indicator = [
+				{
+					max: 1,
+					min: 0,
+					value: 0.5
+				}
+			];
+		} else if ((event.target as HTMLSelectElement).value.startsWith('quantity.')) {
+			indicator = [
+				{
+					max: 100,
+					min: 0,
+					quantity: (event.target as HTMLSelectElement).value,
+					value: 0
+				}
+			];
+			unit = unitByQuantity.get(indicator[0].quantity as Quantity);
+		}
 	}
 </script>
 
 <fieldset class="indicator">
 	<legend>{$_('indicator.legend')}</legend>
-	{#if indicator.length == 0}
-		<button type="button" class="primary" on:click={addOKR}>
-			<Icon src={Plus} size="20" mini />
-			{$_('add_okr')}
-		</button>
-		<button type="button" class="primary" on:click={addQuantity}>
-			<Icon src={Plus} size="20" mini />
-			{$_('add_quantity')}
-		</button>
-	{:else if 'quantity' in indicator[0]}
-		<select name="indicator-quantity" bind:value={indicator[0].quantity} required>
-			<option />
-			{#each quantities.options as quantityOption}
-				<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
-			{/each}
-		</select>
-		<input
-			type="text"
-			inputmode="numeric"
-			name="indicator-max"
-			bind:value={indicator[0].max}
-			required
-		/>
+	<select name="indicator" bind:value={indicatorType} on:change={select} disabled={locked}>
+		<option value="okr">{$_('indicator.okr')}</option>
+		{#each quantities.options as quantityOption}
+			<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
+		{/each}
+	</select>
+	{#if indicator.length > 0 && 'quantity' in indicator[0]}
+		<span class:input-with-addon={unit}>
+			<input
+				type="text"
+				inputmode="numeric"
+				name="indicator-max"
+				bind:value={indicator[0].max}
+				readonly={locked}
+				required
+			/>
+			{#if unit}
+				<span class="addon">{$_(unit)}</span>
+			{/if}
+		</span>
 		<input
 			type="date"
 			name="indicator-fulfillmentDate"
 			bind:value={indicator[0].fulfillmentDate}
+			readonly={locked}
 			required
 		/>
-	{:else}
+	{:else if indicator.length > 0}
 		<input
 			type="range"
 			name="indicator-value"
@@ -59,19 +83,10 @@
 </fieldset>
 
 <style>
-	button {
-		align-items: center;
-		display: inline-flex;
-	}
-
-	:global(button > svg) {
-		margin-left: -1px;
-		margin-right: 2px;
-	}
-
-	.indicator input,
-	.indicator select {
+	input,
+	select {
 		display: inline;
+		vertical-align: middle;
 		width: initial;
 	}
 
@@ -80,8 +95,30 @@
 		max-height: 45px;
 	}
 
-	.indicator input[name='indicator-max'] {
+	input[name='indicator-max'] {
 		text-align: right;
 		width: 6em;
+	}
+
+	.input-with-addon {
+		display: inline-flex;
+	}
+
+	.input-with-addon input {
+		border-bottom-right-radius: 0;
+		border-top-right-radius: 0;
+	}
+
+	.input-with-addon .addon {
+		align-items: center;
+		background-color: var(--color-gray-200);
+		border: solid 1px var(--color-gray-300);
+		border-bottom-right-radius: 8px;
+		border-left: none;
+		border-top-right-radius: 8px;
+		color: var(--color-gray-900);
+		display: inline-flex;
+		margin: 0.125rem 0;
+		padding: 0 0.75rem;
 	}
 </style>

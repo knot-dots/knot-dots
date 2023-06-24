@@ -36,7 +36,10 @@
 				<textarea name="description" value={container.payload.description} required />
 			</label>
 			{#if 'indicator' in container.payload}
-				<IndicatorWizard bind:indicator={container.payload.indicator} />
+				<IndicatorWizard
+					bind:indicator={container.payload.indicator}
+					locked={container.payload.indicator.length > 0}
+				/>
 			{/if}
 			{#if container.type === containerTypes.enum.measure}
 				{#each relatedContainers as o}

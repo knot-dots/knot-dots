@@ -218,20 +218,34 @@ export function getManyContainers(
 			ORDER BY ${order_by};
     `);
 
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
 		const userResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('userWithRevision')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${sql.join(
-							containerResult.map((c) => c.revision),
-							sql.fragment`, `
-						)})
+						WHERE revision IN (${revisions})
 					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+			  SELECT *
+			  FROM dev.public.container_relation
+			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+			`)
 				: [];
 
 		return containerResult.map((c) => ({
 			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
@@ -280,20 +294,34 @@ export function getManyContainersByType(
 			ORDER BY ${order_by};
     `);
 
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
 		const userResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('userWithRevision')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${sql.join(
-							containerResult.map((c) => c.revision),
-							sql.fragment`, `
-						)})
+						WHERE revision IN (${revisions})
 					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+			  SELECT *
+			  FROM dev.public.container_relation
+			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+			`)
 				: [];
 
 		return containerResult.map((c) => ({
 			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
@@ -411,7 +439,7 @@ export function getAllRelatedContainers(guid: string) {
 			  OR s4.object = ${revision}
 		`);
 
-		return connection.any(sql.typeAlias('container')`
+		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
 			WHERE revision IN (${sql.join(
@@ -423,5 +451,7 @@ export function getAllRelatedContainers(guid: string) {
 			)})
 				AND valid_currently
 		`);
+
+		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
 	};
 }

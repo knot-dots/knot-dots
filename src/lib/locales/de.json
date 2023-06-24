@@ -13,9 +13,9 @@
 	"help": "Hilfe",
 	"home": "Startseite",
 	"indicator": {
-		"contribution": "Beiträge zu operativen Zielen",
 		"fulfillment_date": "Erfüllungsdatum",
 		"legend": "Indikator",
+		"okr": "OKR",
 		"quantity": "Größe"
 	},
 	"level": {
@@ -41,19 +41,34 @@
 	"page_title": "Strategie-Werkzeug",
 	"quantity": {
 		"co2": {
-			"description": "Es {contribution, plural, one {soll # Tonne CO₂} other {sollen # Tonnen CO₂}} eingespart werden.",
+			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}} ",
 			"input_prompt": "Wie viele Tonnen CO₂ sollen eingespart werden?",
-			"label": "t CO₂"
+			"label": "CO₂"
 		},
 		"cycle_path": {
-			"description": "Es {contribution, plural, one {wurde #} other {wurden #}} Kilometer Radweg geschaffen.",
+			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
 			"input_prompt": "Wie viele Kilometer Radweg werden gebaut?",
-			"label": "km Radweg"
+			"label": "Radweg"
+		},
+		"parking_space": {
+			"description": "{contribution, plural, one {Es wurde # Parkplatz umgewidmet.} other {Es wurden # Parkplätze umgewidmet.}}",
+			"input_prompt": "Wie viele Parkplätze werden umgewidmet?",
+			"label": "umgewidmete Parkplätze"
+		},
+		"solar_energy": {
+			"description": "{contribution, plural, one {Es wurde # Kilowattstunde Solarenergie erzeugt.} other {Es wurden # Kilowattstunden Solarenergie erzeugt.}}",
+			"input_prompt": "Wie viele Kilowattstunden an Solarenergie sollen erzeugt werden?",
+			"label": "Solarenergie"
 		}
 	},
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relations": "Beziehungen",
+	"save": "Speichern",
+	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
+	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
+	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
+	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"sdg": {
 		"01": "Keine Armut",
 		"02": "Kein Hunger",
@@ -66,18 +81,13 @@
 		"09": "Industrie, Innovation und Infrastruktur",
 		"10": "Weniger Ungleichheiten",
 		"11": "Nachhaltige Städte und Gemeinden",
-		"12": "Nachaltige/r Konsum und Produktion",
+		"12": "Nachhaltige/r Konsum und Produktion",
 		"13": "Maßnahmen zum Klimaschutz",
 		"14": "Leben unter Wasser",
 		"15": "Leben an Land",
 		"16": "Frieden, Gerechtigkeit und starke Institutionen",
 		"17": "Partnerschaften zur Erreichung der Ziele"
 	},
-	"save": "Speichern",
-	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
-	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
-	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
-	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",
@@ -90,21 +100,20 @@
 	},
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",
+	"strategies": "Strategien",
 	"strategy": "Strategie",
 	"strategy_type": {
+		"isek": "ISEK",
 		"label": "Art",
 		"mobility": "Mobilität",
 		"sustainability": "Nachhaltigkeit",
-		"smart_city": "Smart city",
-		"isek": "ISEK"
+		"smart_city": "Smart City"
 	},
-	"strategies": "Strategien",
 	"summary": "Zusammenfassung",
-	"superordinate_strategies": "Übergeordnete Strategien",
 	"superordinate_models": "Übergeordnete Leitbilder",
-	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_operational_goals": "Übergeordnete operative Ziele",
-	"table": "Tabelle",
+	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
+	"superordinate_strategies": "Übergeordnete Strategien",
 	"topic": {
 		"citizen_participation": "Bürgerbeteiligung",
 		"cityscape": "Stadtbild",
@@ -119,5 +128,10 @@
 		"mobility": "Mobilität",
 		"security": "Sicherheit",
 		"social_justice": "Soziale Gerechtigkeit"
+	},
+	"unit": {
+		"kilowatt_hour": "kWh",
+		"kilometer": "km",
+		"ton": "t"
 	}
 }

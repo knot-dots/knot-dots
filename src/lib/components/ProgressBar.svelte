@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { status } from '$lib/models';
-	import type { Container, Indicator, Status } from '$lib/models';
+	import { status, unitByQuantity } from '$lib/models';
+	import type { Container, Indicator, Quantity, Status } from '$lib/models';
 
 	export let guid: string;
 	export let indicator: Indicator;
 	export let contributors: Container[];
+	export let compact = false;
+
+	let unit =
+		'quantity' in indicator && unitByQuantity.has(indicator.quantity as Quantity)
+			? $_(unitByQuantity.get(indicator.quantity as Quantity) as string)
+			: '';
 
 	let contributions: Record<string, number> = {
 		[status.enum['status.in_operation']]: 0,
@@ -34,10 +40,13 @@
 	}
 </script>
 
-<div class="progress">
+<div class="progress" class:progress--compact={compact}>
 	<div class="wrapper">
-		<span class="min">{indicator.min}</span>
-		<span class="max">{indicator.max}</span>
+		<span class="min">{indicator.min} {unit}</span>
+		{#if compact}
+			<span class="label">{$_(`${indicator.quantity}.label`)}</span>
+		{/if}
+		<span class="max">{indicator.max} {unit}</span>
 		<div class="bar">
 			{#if indicator.value}
 				<span
@@ -88,10 +97,10 @@
 			{/if}
 		</div>
 	</div>
-	{#if indicator.quantity}
+	{#if indicator.quantity && !compact}
 		<div class="quantity">{$_(`${indicator.quantity}.label`)}</div>
 	{/if}
-	{#if indicator.fulfillmentDate}
+	{#if indicator.fulfillmentDate && !compact}
 		<div class="fulfillmentDate">
 			{$_('indicator.fulfillment_date')}: {new Date(indicator.fulfillmentDate).toLocaleDateString()}
 		</div>
@@ -108,6 +117,10 @@
 		gap: 12px;
 		margin-bottom: 0.875rem;
 		padding: 12px 20px;
+	}
+	.progress.progress--compact {
+		border: none;
+		padding: 0;
 	}
 	.wrapper {
 		display: flex;

@@ -124,7 +124,12 @@ export function isTopic(value: unknown): value is topic {
 	return topicValues.includes(value as topic);
 }
 
-const quantityValues = ['quantity.co2', 'quantity.cycle_path'] as const;
+const quantityValues = [
+	'quantity.co2',
+	'quantity.cycle_path',
+	'quantity.parking_space',
+	'quantity.solar_energy'
+] as const;
 
 export const quantities = z.enum(quantityValues);
 
@@ -133,6 +138,22 @@ export type Quantity = z.infer<typeof quantities>;
 export function isQuantity(value: unknown): value is Quantity {
 	return quantityValues.includes(value as Quantity);
 }
+
+const unitValues = ['unit.kilowatt_hour', 'unit.kilometer', 'unit.ton'] as const;
+
+export const units = z.enum(unitValues);
+
+export type Unit = z.infer<typeof units>;
+
+export function isUnit(value: unknown): value is Unit {
+	return unitValues.includes(value as Unit);
+}
+
+export const unitByQuantity = new Map<Quantity, Unit>([
+	[quantities.enum['quantity.co2'], units.enum['unit.ton']],
+	[quantities.enum['quantity.cycle_path'], units.enum['unit.kilometer']],
+	[quantities.enum['quantity.solar_energy'], units.enum['unit.kilowatt_hour']]
+]);
 
 export const relation = z.object({
 	object: z.number().int().positive(),
