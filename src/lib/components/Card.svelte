@@ -2,10 +2,13 @@
 	import { Icon, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import type { Container } from '$lib/models';
 	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
 
 	export let container: Container;
+
+	export let relatedContainers: Container[] = [];
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
 	let relatedToURL: string;
@@ -54,9 +57,18 @@
 			{@html container.payload.summary ?? ''}
 		</div>
 		<footer>
-			<div class="badges">
-				<span class="badge">{$_(container.payload.category)}</span>
-			</div>
+			{#if 'indicator' in container.payload}
+				<ProgressBar
+					guid={container.guid}
+					indicator={container.payload.indicator[0]}
+					contributors={relatedContainers}
+					compact
+				/>
+			{:else}
+				<div class="badges">
+					<span class="badge">{$_(container.payload.category)}</span>
+				</div>
+			{/if}
 		</footer>
 	</article>
 </a>
