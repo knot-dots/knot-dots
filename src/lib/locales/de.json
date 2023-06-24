@@ -49,6 +49,16 @@
 			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
 			"input_prompt": "Wie viele Kilometer Radweg werden gebaut?",
 			"label": "km Radweg"
+		},
+		"parking_space": {
+			"description": "{contribution, plural, one {Es wurde # Parkplatz umgewidmet.} other {Es wurden # Parkplätze umgewidmet.}}",
+			"input_prompt": "Wie viele Parkplätze werden umgewidmet?",
+			"label": "umgewidmete Parkplätze"
+		},
+		"solar_energy": {
+			"description": "{contribution, plural, one {Es wurde # Kilowattstunde Solarenergie erzeugt.} other {Es wurden # Kilowattstunden Solarenergie erzeugt.}}",
+			"input_prompt": "Wie viele Kilowattstunden an Solarenergie sollen erzeugt werden?",
+			"label": "kWh Solarenergie"
 		}
 	},
 	"read_more": "Mehr anzeigen",

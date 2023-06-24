@@ -124,7 +124,12 @@ export function isTopic(value: unknown): value is topic {
 	return topicValues.includes(value as topic);
 }
 
-const quantityValues = ['quantity.co2', 'quantity.cycle_path'] as const;
+const quantityValues = [
+	'quantity.co2',
+	'quantity.cycle_path',
+	'quantity.parking_space',
+	'quantity.solar_energy'
+] as const;
 
 export const quantities = z.enum(quantityValues);
 
