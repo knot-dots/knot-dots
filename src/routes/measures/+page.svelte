@@ -13,10 +13,10 @@
 	export let data: PageData;
 
 	const statusColors = new Map<Status, string>([
-		[status.enum['status.idea'], '--color-red-050'],
-		[status.enum['status.in_planning'], '--color-orange-050'],
-		[status.enum['status.in_implementation'], '--color-yellow-050'],
-		[status.enum['status.in_operation'], '--color-green-050']
+		[status.enum['status.idea'], 'red'],
+		[status.enum['status.in_planning'], 'orange'],
+		[status.enum['status.in_implementation'], 'yellow'],
+		[status.enum['status.in_operation'], 'green']
 	]);
 
 	const statusIcons = new Map<Status, IconSource>([
@@ -30,7 +30,7 @@
 <Board>
 	{#each status.options as statusOption}
 		<BoardColumn
-			--bg-color="var({statusColors.get(statusOption)})"
+			--bg-color="var(--color-{statusColors.get(statusOption)}-050)"
 			addItemUrl="/measure/new"
 			title={$_(statusOption)}
 			icon={statusIcons.get(statusOption)}
