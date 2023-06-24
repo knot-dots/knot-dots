@@ -47,12 +47,6 @@
 	>
 		<header>
 			<h3>{container.payload.title}</h3>
-			<a
-				href={relatedToURL}
-				class="header-icons button quiet {relatedTo === container.guid ? 'is-active' : ''}"
-			>
-				<Icon src={Share} size="20" />
-			</a>
 		</header>
 		<div class="text">
 			{@html container.payload.summary ?? ''}
@@ -66,17 +60,16 @@
 					compact
 				/>
 			{:else if 'status' in container.payload}
-				<div class="badges">
-					<span class="badge badge--{statusColors.get(container.payload.status)}">
-						<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
-						{$_(container.payload.status)}
-					</span>
-				</div>
+				<span class="badge badge--{statusColors.get(container.payload.status)}">
+					<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
+					{$_(container.payload.status)}
+				</span>
 			{:else if 'topic' in container.payload}
-				<div class="badges">
-					<span class="badge">{$_(container.payload.topic)}</span>
-				</div>
+				<span class="badge">{$_(container.payload.topic)}</span>
 			{/if}
+			<a href={relatedToURL} class="button {relatedTo === container.guid ? 'is-active' : ''}">
+				<Icon src={Share} size="20" mini />
+			</a>
 		</footer>
 	</article>
 </a>
@@ -87,7 +80,7 @@
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
-		padding: 20px;
+		padding: 1.25rem;
 		width: 100%;
 	}
 
@@ -96,9 +89,7 @@
 	}
 
 	header {
-		align-items: center;
-		display: flex;
-		justify-content: space-between;
+		margin-bottom: 1rem;
 	}
 
 	header h3 {
@@ -106,30 +97,31 @@
 		font-weight: 700;
 	}
 
-	.header-icons {
-		--padding-x: 12px;
-		--padding-y: 12px;
-		flex-shrink: 0;
-	}
-
-	:global(.header-icons svg) {
-		stroke-width: 2.5px;
-	}
-
 	.text {
-		font-weight: 500;
-		font-size: 0.875rem;
-
 		color: var(--color-gray-500);
-		margin: 1rem 0 0.875rem;
+		font-size: 0.875rem;
+		font-weight: 500;
+		margin-bottom: 1rem;
 	}
 
-	.badges {
-		align-items: flex-start;
+	footer {
+		align-items: flex-end;
 		display: flex;
 		flex-direction: row;
 		gap: 12px;
-		margin-top: 20px;
+		justify-content: space-between;
+	}
+
+	footer :global(.progress) {
+		flex-grow: 1;
+	}
+
+	footer .button:last-child {
+		--padding-x: 0.625rem;
+		--padding-y: 0.625rem;
+
+		flex-grow: 0;
+		flex-shrink: 0;
 	}
 
 	.badge {
