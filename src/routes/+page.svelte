@@ -22,12 +22,7 @@
 	{#each columns as column (column.title)}
 		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.containerType}/new`}>
 			{#each data.containers.filter((c) => c.type === column.containerType) as container}
-				<Card
-					guid={container.guid}
-					title={container.payload.title}
-					summary={container.payload.summary ?? ''}
-					category={$_(container.payload.category)}
-				/>
+				<Card {container} />
 			{/each}
 		</BoardColumn>
 	{/each}

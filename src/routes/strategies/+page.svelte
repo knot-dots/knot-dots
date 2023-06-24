@@ -17,12 +17,7 @@
 			title={$_(levelOption)}
 		>
 			{#each data.containers.filter((c) => 'level' in c.payload && c.payload.level == levelOption) as container}
-				<Card
-					guid={container.guid}
-					title={container.payload.title}
-					summary={container.payload.summary ?? ''}
-					category={$_(container.payload.category)}
-				/>
+				<Card {container} />
 			{/each}
 		</BoardColumn>
 	{/each}

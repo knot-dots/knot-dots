@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { Icon, Share } from 'svelte-hero-icons';
+	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import type { Container } from '$lib/models';
 	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
 
-	export let guid: string;
-	export let title: string;
-	export let summary: string;
-	export let category: string;
+	export let container: Container;
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
 	let relatedToURL: string;
@@ -15,17 +14,17 @@
 	$: {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('container-preview');
-		query.append('container-preview', guid);
+		query.append('container-preview', container.guid);
 		containerPreviewURL = `?${query.toString()}`;
 	}
 
 	$: {
 		const query = new URLSearchParams($page.url.searchParams);
-		if (relatedTo === guid) {
+		if (relatedTo === container.guid) {
 			query.delete('related-to');
 		} else {
 			query.delete('related-to');
-			query.append('related-to', guid);
+			query.append('related-to', container.guid);
 		}
 		relatedToURL = `?${query.toString()}`;
 	}
@@ -38,22 +37,25 @@
 </script>
 
 <a href={containerPreviewURL} on:click={closeSidebar}>
-	<article class="card" class:is-active={$page.url.searchParams.get('container-preview') === guid}>
+	<article
+		class="card"
+		class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
+	>
 		<header>
-			<h3>{title}</h3>
+			<h3>{container.payload.title}</h3>
 			<a
 				href={relatedToURL}
-				class="header-icons button quiet {relatedTo === guid ? 'is-active' : ''}"
+				class="header-icons button quiet {relatedTo === container.guid ? 'is-active' : ''}"
 			>
 				<Icon src={Share} size="20" />
 			</a>
 		</header>
 		<div class="text">
-			{@html summary}
+			{@html container.payload.summary ?? ''}
 		</div>
 		<footer>
 			<div class="badges">
-				<span class="badge">{category}</span>
+				<span class="badge">{$_(container.payload.category)}</span>
 			</div>
 		</footer>
 	</article>
