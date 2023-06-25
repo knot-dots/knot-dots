@@ -26,7 +26,7 @@
 		Status,
 		StrategyType,
 		SustainableDevelopmentGoal,
-		topic
+		Topic
 	} from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -76,7 +76,7 @@
 				...basePayload,
 				level: data.get('level') as Level,
 				strategyType: data.get('strategy-type') as StrategyType,
-				topic: data.get('topic') as topic,
+				topic: data.get('topic') as Topic,
 				type: payloadTypes.enum.strategy
 			};
 		} else {

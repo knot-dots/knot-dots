@@ -134,10 +134,10 @@ const topicValues = [
 
 export const topics = z.enum(topicValues);
 
-export type topic = z.infer<typeof topics>;
+export type Topic = z.infer<typeof topics>;
 
-export function isTopic(value: unknown): value is topic {
-	return topicValues.includes(value as topic);
+export function isTopic(value: unknown): value is Topic {
+	return topicValues.includes(value as Topic);
 }
 
 const quantityValues = [
