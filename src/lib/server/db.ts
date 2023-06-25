@@ -150,7 +150,7 @@ export function updateContainer(container: ModifiedContainer) {
 }
 
 export function getContainerByGuid(guid: string) {
-	return async (connection: DatabaseConnection) => {
+	return async (connection: DatabaseConnection): Promise<Container> => {
 		const containerResult = await connection.one(sql.typeAlias('container')`
 			SELECT *
 			FROM container
@@ -182,7 +182,7 @@ export function getManyContainers(
 	terms: string,
 	sort: string
 ) {
-	return async (connection: DatabaseConnection) => {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = [sql.fragment`valid_currently`];
 		if (categories.length > 0) {
 			conditions.push(
@@ -258,7 +258,7 @@ export function getManyContainersByType(
 	terms: string,
 	sort: string
 ) {
-	return async (connection: DatabaseConnection) => {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = [sql.fragment`valid_currently`, sql.fragment`payload->>'type' = ${type}`];
 		if (categories.length > 0) {
 			conditions.push(
@@ -348,7 +348,7 @@ export function getAllDirectlyRelatedContainers(container: Container) {
 }
 
 export function maybePartOf(containerType: PayloadType) {
-	return async (connection: DatabaseConnection) => {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		let candidateType: PayloadType;
 		if (containerType == 'model') {
 			candidateType = 'strategy';
@@ -391,7 +391,7 @@ export function maybePartOf(containerType: PayloadType) {
 }
 
 export function getAllRelatedContainers(guid: string) {
-	return async (connection: DatabaseConnection) => {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
 		`);
