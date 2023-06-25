@@ -118,29 +118,36 @@
 		margin-bottom: 0.875rem;
 		padding: 12px 20px;
 	}
+
 	.progress.progress--compact {
 		border: none;
+		margin-bottom: 0;
 		padding: 0;
 	}
+
 	.wrapper {
 		display: flex;
 		justify-content: space-between;
 		flex: 1 1 80%;
 		flex-wrap: wrap;
 	}
+
 	.bar {
 		--height: 6px;
 		background-color: var(--color-gray-200);
 		border-radius: calc(var(--height) * 0.5);
 		height: var(--height);
+		margin-top: 0.375rem;
 		overflow: hidden;
 		width: 100%;
 	}
+
 	.value {
 		background-color: var(--color-blue-600);
 		display: block;
 		height: 100%;
 	}
+
 	.fulfillmentDate {
 		flex: 0 0 100%;
 	}

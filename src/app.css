@@ -16,7 +16,9 @@
 	--color-green-500: #0e9f6e;
 	--color-green-700: #046c4e;
 	--color-indigo-050: #f0f5ff;
+	--color-indigo-500: #6875f5;
 	--color-orange-050: #fff8f1;
+	--color-orange-600: #ff5a1f;
 	--color-red-050: #fdf2f2;
 	--color-red-300: #f8b4b4;
 	--color-red-500: #f05252;
@@ -24,6 +26,7 @@
 	--color-red-700: #c81e1e;
 	--color-yellow-050: #fdfdea;
 	--color-yellow-200: #fce96a;
+	--color-yellow-400: #e3a008;
 	--color-primary: var(--color-blue-700);
 
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);

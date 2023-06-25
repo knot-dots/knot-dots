@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { Icon, Share } from 'svelte-hero-icons';
+	import { Icon, LightBulb, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import type { Container } from '$lib/models';
 	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
+	import { statusColors, statusIcons } from '$lib/models';
 
 	export let container: Container;
 
@@ -37,41 +38,64 @@
 		$filtersToggle = false;
 		$sortToggle = false;
 	}
+
+	let previewLink: HTMLAnchorElement;
+
+	function handleClick(event: MouseEvent) {
+		if (previewLink == event.target) {
+			return;
+		}
+		const isTextSelected = window.getSelection()?.toString();
+		if (!isTextSelected) {
+			previewLink.click();
+		}
+	}
+
+	function handleKeyUp(event: KeyboardEvent) {
+		if (event.key == 'Enter') {
+			previewLink.click();
+		}
+	}
 </script>
 
-<a href={containerPreviewURL} on:click={closeSidebar}>
-	<article
-		class="card"
-		class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
-	>
-		<header>
-			<h3>{container.payload.title}</h3>
-			<a
-				href={relatedToURL}
-				class="header-icons button quiet {relatedTo === container.guid ? 'is-active' : ''}"
-			>
-				<Icon src={Share} size="20" />
+<article
+	class="card"
+	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
+	on:click={handleClick}
+	on:keyup={handleKeyUp}
+>
+	<header>
+		<h3>
+			<a href={containerPreviewURL} bind:this={previewLink} on:click={closeSidebar}>
+				{container.payload.title}
 			</a>
-		</header>
-		<div class="text">
-			{@html container.payload.summary ?? ''}
-		</div>
-		<footer>
-			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
-				<ProgressBar
-					guid={container.guid}
-					indicator={container.payload.indicator[0]}
-					contributors={relatedContainers}
-					compact
-				/>
-			{:else}
-				<div class="badges">
-					<span class="badge">{$_(container.payload.category)}</span>
-				</div>
-			{/if}
-		</footer>
-	</article>
-</a>
+		</h3>
+	</header>
+	<div class="text">
+		{@html container.payload.summary ?? ''}
+	</div>
+
+	<footer>
+		{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
+			<ProgressBar
+				guid={container.guid}
+				indicator={container.payload.indicator[0]}
+				contributors={relatedContainers}
+				compact
+			/>
+		{:else if 'status' in container.payload}
+			<span class="badge badge--{statusColors.get(container.payload.status)}">
+				<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
+				{$_(container.payload.status)}
+			</span>
+		{:else if 'topic' in container.payload}
+			<span class="badge">{$_(container.payload.topic)}</span>
+		{/if}
+		<a href={relatedToURL} class="button {relatedTo === container.guid ? 'is-active' : ''}">
+			<Icon src={Share} size="20" mini />
+		</a>
+	</footer>
+</article>
 
 <style>
 	.card {
@@ -79,18 +103,20 @@
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
-		padding: 20px;
+		cursor: pointer;
+		padding: 1.25rem;
 		width: 100%;
 	}
 
+	.card:hover,
+	.card:focus-within,
 	.card.is-active {
 		background: var(--color-gray-300);
+		outline: none;
 	}
 
 	header {
-		align-items: center;
-		display: flex;
-		justify-content: space-between;
+		margin-bottom: 1rem;
 	}
 
 	header h3 {
@@ -98,36 +124,65 @@
 		font-weight: 700;
 	}
 
-	.header-icons {
-		--padding-x: 12px;
-		--padding-y: 12px;
-		flex-shrink: 0;
-	}
-
-	:global(.header-icons svg) {
-		stroke-width: 2.5px;
-	}
-
 	.text {
-		font-weight: 500;
-		font-size: 0.875rem;
-
 		color: var(--color-gray-500);
-		margin: 1rem 0 0.875rem;
+		font-size: 0.875rem;
+		font-weight: 500;
+		margin-bottom: 1rem;
 	}
 
-	.badges {
-		align-items: flex-start;
+	footer {
+		align-items: flex-end;
 		display: flex;
 		flex-direction: row;
 		gap: 12px;
-		margin-top: 20px;
+		justify-content: space-between;
+	}
+
+	footer :global(.progress) {
+		flex-grow: 1;
+	}
+
+	footer .button:last-child {
+		--padding-x: 0.625rem;
+		--padding-y: 0.625rem;
+
+		flex-grow: 0;
+		flex-shrink: 0;
 	}
 
 	.badge {
-		text-align: center;
-		padding: 3px 10px;
-		background: var(--color-red-300);
+		--bg-color: var(--color-indigo-050);
+		--color: var(--color-indigo-500);
+
+		align-items: center;
+		background-color: var(--bg-color);
 		border-radius: 6px;
+		color: var(--color);
+		display: inline-flex;
+		justify-content: center;
+		gap: 0.25rem;
+		padding: 0.125rem 0.75rem;
+		text-align: center;
+	}
+
+	.badge.badge--red {
+		--bg-color: var(--color-red-050);
+		--color: var(--color-red-600);
+	}
+
+	.badge.badge--orange {
+		--bg-color: var(--color-orange-050);
+		--color: var(--color-orange-600);
+	}
+
+	.badge.badge--yellow {
+		--bg-color: var(--color-yellow-050);
+		--color: var(--color-yellow-400);
+	}
+
+	.badge.badge--green {
+		--bg-color: var(--color-green-050);
+		--color: var(--color-green-500);
 	}
 </style>

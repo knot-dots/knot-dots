@@ -13,6 +13,7 @@
 	"help": "Hilfe",
 	"home": "Startseite",
 	"indicator": {
+		"contribution": "Beitrag zu operativem Ziel",
 		"fulfillment_date": "Erfüllungsdatum",
 		"legend": "Indikator",
 		"okr": "OKR",
