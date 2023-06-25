@@ -274,6 +274,36 @@ export const container = z.object({
 
 export type Container = z.infer<typeof container>;
 
+const measureContainer = container.extend({
+	payload: measurePayload
+});
+
+export type MeasureContainer = z.infer<typeof measureContainer>;
+
+const modelContainer = container.extend({
+	payload: modelPayload
+});
+
+export type ModelContainer = z.infer<typeof modelContainer>;
+
+const operationalGoalContainer = container.extend({
+	payload: operationalGoalPayload
+});
+
+export type OperationalGoalContainer = z.infer<typeof operationalGoalContainer>;
+
+const strategicGoalContainer = container.extend({
+	payload: strategicGoalPayload
+});
+
+export type StrategicGoalContainer = z.infer<typeof strategicGoalContainer>;
+
+const strategyContainer = container.extend({
+	payload: strategyPayload
+});
+
+export type StrategyContainer = z.infer<typeof strategyContainer>;
+
 export const newContainer = container
 	.omit({
 		guid: true,
