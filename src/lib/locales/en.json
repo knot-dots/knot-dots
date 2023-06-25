@@ -13,6 +13,7 @@
 	"help": "Help",
 	"home": "Home screen",
 	"indicator": {
+		"contribution": "Contribution to operative goal",
 		"fulfillment_date": "Fulfillment date",
 		"legend": "Indicator",
 		"okr": "OKR",
