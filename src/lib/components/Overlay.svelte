@@ -107,11 +107,13 @@
 				<h2>{containerPreviewData.payload.title}</h2>
 				<div class="icons">
 					{#if $user.isAuthenticated}
-						<button class="quiet" on:click={() => (edit = true)}>
+						<button class="icons-element" on:click={() => (edit = true)}>
 							<Icon solid src={Pencil} size="20" />
 						</button>
 					{/if}
-					<a href={closeOverlay()} class="button quiet"><Icon solid src={XMark} size="20" /></a>
+					<a href={closeOverlay()} class="button icons-element">
+						<Icon solid src={XMark} size="20" />
+					</a>
 				</div>
 			</svelte:fragment>
 		</ContainerDetailView>

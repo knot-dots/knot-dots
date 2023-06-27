@@ -20,13 +20,13 @@
 	}
 </script>
 
-<article class="details" class:is-page={isPage}>
+<article class="details">
 	<header>
 		<slot name="header" />
 	</header>
 
-	<div class="details-content" class:is-page={isPage}>
-		<div class="details-content-column" class:is-page={isPage}>
+	<div class="details-content">
+		<div class="details-content-column">
 			<div class="summary">
 				<h3>{$_('summary')}</h3>
 				{container.payload.summary ?? ''}
@@ -63,7 +63,7 @@
 				</div>
 			{/if}
 		</div>
-		<div class="details-content-column" class:is-page={isPage}>
+		<div class="details-content-column">
 			{#if 'status' in container.payload}
 				<div class="meta">
 					<h3 class="meta-key">{$_('status.label')}</h3>
