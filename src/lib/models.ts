@@ -433,3 +433,13 @@ export interface CustomEventMap {
 		result: Container;
 	};
 }
+
+export function isPartOf(container: { relation: PartialRelation[] }) {
+	return function (candidate: Container) {
+		return (
+			container.relation.findIndex(
+				(r) => r.predicate === predicates.enum['is-part-of'] && r.subject === candidate.revision
+			) > -1
+		);
+	};
+}
