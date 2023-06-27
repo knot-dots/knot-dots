@@ -367,6 +367,7 @@ fieldset {
 	background-color: white;
 	border: 1px solid var(--color-gray-200);
 	box-shadow: var(--shadow-lg);
+	container-type: inline-size;
 	height: 100%;
 	overflow-y: scroll;
 }
@@ -429,22 +430,22 @@ fieldset {
 	gap: 18px;
 }
 
-@media (min-width: 1440px) {
-	.details.is-page header {
+@container (min-width: 768px) {
+	.details header {
 		margin-bottom: 0;
 	}
 
-	.details-content.is-page {
+	.details-content {
 		flex-direction: row;
 	}
 
-	.details-content.is-page:before {
+	.details-content:before {
 		border-left: 1px solid var(--color-gray-300);
 		content: '';
 		margin: initial;
 	}
 
-	.details-content-column.is-page {
+	.details-content-column {
 		min-width: 0;
 		padding-top: 24px;
 	}
