@@ -372,7 +372,7 @@ fieldset {
 	overflow-y: scroll;
 }
 
-.details.is-page {
+.details.details--page {
 	border-radius: 8px;
 }
 

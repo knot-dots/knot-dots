@@ -20,7 +20,7 @@
 	}
 </script>
 
-<article class="details">
+<article class="details" class:details--page={isPage}>
 	<header>
 		<slot name="header" />
 	</header>
