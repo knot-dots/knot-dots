@@ -33,6 +33,10 @@
 	<div class="details-content">
 		<div class="details-content-column">
 			<div class="meta">
+				<h3 class="meta-key">{$_('object')}</h3>
+				<p class="meta-value">{$_(container.payload.type)}</p>
+			</div>
+			<div class="meta">
 				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
 				<p class="meta-value">{$_(container.payload.strategyType)}</p>
 			</div>

@@ -81,6 +81,10 @@
 			{/if}
 		</div>
 		<div class="details-content-column">
+			<div class="meta">
+				<h3 class="meta-key">{$_('object')}</h3>
+				<p class="meta-value">{$_(container.payload.type)}</p>
+			</div>
 			{#if 'status' in container.payload}
 				<div class="meta">
 					<h3 class="meta-key">{$_('status.label')}</h3>
