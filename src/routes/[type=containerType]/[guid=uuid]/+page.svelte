@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, Pencil } from 'svelte-hero-icons';
+	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import { user } from '$lib/stores';
 	import type { PageData } from './$types';
@@ -13,12 +13,15 @@
 <ContainerDetailView {container} {relatedContainers}>
 	<svelte:fragment slot="header">
 		<h2>{container.payload.title}</h2>
-		{#if $user.isAuthenticated}
-			<div class="icons">
+		<div class="icons">
+			{#if $user.isAuthenticated}
 				<a href="{container.guid}/edit" class="icons-element">
 					<Icon solid src={Pencil} size="20" />
 				</a>
-			</div>
-		{/if}
+			{/if}
+			<button class="icons-element" type="button" on:click={() => window.history.back()}>
+				<Icon solid src={ChevronLeft} size="20" />
+			</button>
+		</div>
 	</svelte:fragment>
 </ContainerDetailView>
