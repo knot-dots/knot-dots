@@ -402,7 +402,20 @@ fieldset {
 .details header .icons {
 	display: flex;
 	flex-shrink: 0;
-	gap: 16px;
+	gap: 1rem;
+}
+
+.details header .icons-element {
+	--padding-x: 0;
+	--padding-y: 0;
+
+	border: none;
+}
+
+.details header .icons-element:hover {
+	--bg-color: transparent;
+
+	color: var(--color-gray-500);
 }
 
 .details-content {
