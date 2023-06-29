@@ -490,6 +490,17 @@ fieldset {
 	flex: 1;
 }
 
+/* Bytemd markdown editor */
+.markdown-body ul, .bytemd-body ul {
+	list-style: disc;
+	list-style-position: inside;
+}
+
+.markdown-body ol, .bytemd-body ol {
+	list-style-type: decimal;
+	list-style-position: inside;
+}
+
 /* Fade out overflow effect */
 .masked-overflow {
 	--mask-height: 2rem;
