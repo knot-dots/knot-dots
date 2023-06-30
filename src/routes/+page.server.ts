@@ -12,7 +12,7 @@ export const load = (async ({ locals, url }) => {
 	let overlayData;
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedContainers(url.searchParams.get('related-to') as string)
+			getAllRelatedContainers(url.searchParams.get('related-to') as string, [], [], [], '', '')
 		);
 	} else {
 		containers = await locals.pool.connect(
