@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { ChevronDown, ChevronUp, Icon, MagnifyingGlass } from 'svelte-hero-icons';
+	import {
+		ChevronDown,
+		ChevronUp,
+		Icon,
+		InformationCircle,
+		MagnifyingGlass,
+		Share
+	} from 'svelte-hero-icons';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { BOARD_ROUTES } from '$lib/globals';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
@@ -39,7 +45,7 @@
 
 	const hash = $page.url.hash;
 
-	$: if (browser && BOARD_ROUTES.includes($page.url.pathname)) {
+	$: if (browser && 'overlayData' in $page.data) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
 		query.delete('strategyType');
@@ -118,7 +124,34 @@
 		</li>
 	</ul>
 
-	{#if BOARD_ROUTES.includes($page.url.pathname)}
+	{#if 'container' in $page.data}
+		<ul class="group group-tabs">
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
+				>
+					<Icon src={InformationCircle} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
+				</a>
+			</li>
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
+				>
+					<Icon src={Share} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('relations')}</span>
+				</a>
+			</li>
+		</ul>
+	{/if}
+
+	{#if 'overlayData' in $page.data}
 		<ul class="group group-actions">
 			<li>
 				<form class="search" data-sveltekit-keepfocus>
@@ -333,6 +366,7 @@
 
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-links .button,
+	aside.is-expanded .group-tabs .button,
 	aside.is-expanded .group-user-menu a {
 		--padding-x: 14px;
 		--padding-y: 12px;

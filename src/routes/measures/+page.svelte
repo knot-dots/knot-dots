@@ -25,10 +25,6 @@
 	{/each}
 </Board>
 
-{#if data.containerPreviewData}
-	<Overlay
-		containerPreviewData={data.containerPreviewData}
-		isPartOfOptions={data.isPartOfOptions ?? []}
-		relatedContainers={data.relatedContainers ?? []}
-	/>
+{#if data.overlayData}
+	<Overlay {...data.overlayData} />
 {/if}

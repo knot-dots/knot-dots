@@ -390,8 +390,40 @@ export function maybePartOf(containerType: PayloadType) {
 	};
 }
 
-export function getAllRelatedContainers(guid: string) {
+export function getAllRelatedContainers(
+	guid: string,
+	categories: string[],
+	topics: string[],
+	strategyTypes: string[],
+	terms: string,
+	sort: string
+) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const conditions = [sql.fragment`valid_currently`];
+		if (categories.length > 0) {
+			conditions.push(
+				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
+			);
+		}
+		if (topics.length > 0) {
+			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
+		}
+		if (strategyTypes.length > 0) {
+			conditions.push(
+				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
+			);
+		}
+		if (terms.trim() != '') {
+			conditions.push(
+				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+			);
+		}
+
+		let order_by = sql.fragment`valid_from`;
+		if (sort == 'alpha') {
+			order_by = sql.fragment`payload->>'title'`;
+		}
+
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
 		`);
@@ -446,7 +478,8 @@ export function getAllRelatedContainers(guid: string) {
 					.concat([revision]),
 				sql.fragment`, `
 			)})
-				AND valid_currently
+				AND ${sql.join(conditions, sql.fragment` AND `)}
+			ORDER BY ${order_by}
 		`);
 
 		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));

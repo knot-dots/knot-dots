@@ -1,31 +1,27 @@
 import {
-	getAllRelatedContainers,
 	getAllDirectlyRelatedContainers,
+	getAllRelatedContainers,
 	getContainerByGuid,
-	getManyContainersByType,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, url }) => {
-	let containers;
+export const load = (async ({ params, locals, url }) => {
 	let overlayData;
-	if (url.searchParams.has('related-to')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(url.searchParams.get('related-to') as string, [], [], [], '', '')
-		);
-	} else {
-		containers = await locals.pool.connect(
-			getManyContainersByType(
-				'measure',
-				url.searchParams.getAll('category'),
-				url.searchParams.getAll('topic'),
-				url.searchParams.getAll('strategyType'),
-				url.searchParams.get('terms') ?? '',
-				url.searchParams.get('sort') ?? ''
-			)
-		);
-	}
+
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	const relatedContainers = await locals.pool.connect(getAllDirectlyRelatedContainers(container));
+	const allRelatedContainers = await locals.pool.connect(
+		getAllRelatedContainers(
+			container.guid,
+			url.searchParams.getAll('category'),
+			url.searchParams.getAll('topic'),
+			url.searchParams.getAll('strategyType'),
+			url.searchParams.get('terms') ?? '',
+			url.searchParams.get('sort') ?? ''
+		)
+	);
+
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';
 		const container = await locals.pool.connect(getContainerByGuid(guid));
@@ -35,5 +31,6 @@ export const load = (async ({ locals, url }) => {
 		]);
 		overlayData = { container, isPartOfOptions, relatedContainers };
 	}
-	return { containers, overlayData };
+
+	return { allRelatedContainers, container, overlayData, relatedContainers };
 }) satisfies PageServerLoad;

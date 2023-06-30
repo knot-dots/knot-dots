@@ -4,8 +4,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { payloadTypes, predicates } from '$lib/models';
-	import type { Container } from '$lib/models';
+	import { payloadTypes } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -17,23 +16,13 @@
 		{ title: 'operational_goals', payloadType: payloadTypes.enum.operational_goal },
 		{ title: 'measures', payloadType: payloadTypes.enum.measure }
 	];
-
-	function isPartOf(container: Container) {
-		return function (candidate: Container) {
-			return (
-				container.relation.findIndex(
-					(r) => r.predicate === predicates.enum['is-part-of'] && r.subject === candidate.revision
-				) > -1
-			);
-		};
-	}
 </script>
 
 <Board>
 	{#each columns as column (column.title)}
 		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.payloadType}/new`}>
-			{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
-				<Card {container} relatedContainers={data.containers.filter(isPartOf(container))} />
+			{#each data.allRelatedContainers.filter((c) => c.payload.type === column.payloadType) as container}
+				<Card {container} relatedContainers={data.relatedContainers} />
 			{/each}
 		</BoardColumn>
 	{/each}

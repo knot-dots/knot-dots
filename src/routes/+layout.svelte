@@ -10,10 +10,9 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { BOARD_ROUTES } from '$lib/globals';
-	import type { PageData } from './$types';
+	import type { LayoutData } from './$types';
 
-	export let data: PageData;
+	export let data: LayoutData;
 
 	let kc: Keycloak;
 
@@ -28,8 +27,6 @@
 			silentCheckSsoFallback: false
 		});
 	});
-
-	$: isBoardLayout = BOARD_ROUTES.includes($page.url.pathname);
 
 	const duration = 300;
 	const delay = duration + 100;
@@ -47,7 +44,7 @@
 {#key data.pathname}
 	<div in:fly={transitionIn} out:fly={transitionOut}>
 		<Sidebar />
-		<main class:board-layout={isBoardLayout}>
+		<main class:board-layout={'overlayData' in $page.data}>
 			<slot />
 		</main>
 	</div>
