@@ -146,7 +146,7 @@
 		width: 100%;
 	}
 
-	.overlay > * {
+	.overlay > :global(*) {
 		min-width: 100vw;
 	}
 
@@ -155,7 +155,7 @@
 			width: 80%;
 		}
 
-		.overlay > * {
+		.overlay > :global(*) {
 			min-width: calc((100vw - 18rem) * 0.8);
 		}
 	}
@@ -165,7 +165,7 @@
 			width: 65%;
 		}
 
-		.overlay > * {
+		.overlay > :global(*) {
 			min-width: calc((100vw - 18rem) * 0.65);
 		}
 	}
