@@ -32,7 +32,7 @@ export const load = (async ({ locals, url }) => {
 		const previewGuid = url.searchParams.get('container-preview') ?? '';
 		containerPreviewData = await locals.pool.connect(getContainerByGuid(previewGuid));
 		[isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(maybePartOf(containerPreviewData.type)),
+			locals.pool.connect(maybePartOf(containerPreviewData.payload.type)),
 			locals.pool.connect(getAllDirectlyRelatedContainers(containerPreviewData))
 		]);
 	}

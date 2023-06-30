@@ -6,31 +6,36 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
+	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import {
-		containerTypes,
 		levels,
+		payloadTypes,
 		status,
 		strategyTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
 	import type {
-		ContainerType,
-		Level,
 		Indicator,
+		Level,
 		NewContainer,
+		Payload,
+		PayloadType,
 		Relation,
-		SustainableDevelopmentGoal
+		Status,
+		StrategyType,
+		SustainableDevelopmentGoal,
+		Topic
 	} from '$lib/models';
 	import type { PageData } from './$types';
-	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 
 	export let data: PageData;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
-	$: containerType = $page.params.type as ContainerType;
+	$: payloadType = $page.params.type as PayloadType;
+
 	$: level = $page.params.level as Level;
 
 	$: isPartOfOptions = data.isPartOfOptions;
@@ -43,23 +48,47 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		const data = new FormData(event.target as HTMLFormElement);
+
+		const basePayload = {
+			category: data.get('category') as SustainableDevelopmentGoal,
+			description: data.get('description') as string,
+			summary: data.get('summary') as string,
+			title: data.get('title') as string,
+			type: payloadType
+		};
+
+		let payload;
+
+		if (payloadType === payloadTypes.enum.measure) {
+			payload = {
+				...basePayload,
+				status: data.get('status') as Status,
+				type: payloadTypes.enum.measure
+			};
+		} else if (payloadType === payloadTypes.enum.operational_goal) {
+			payload = {
+				...basePayload,
+				indicator: indicator,
+				type: payloadTypes.enum.operational_goal
+			};
+		} else if (payloadType === payloadTypes.enum.strategy) {
+			payload = {
+				...basePayload,
+				level: data.get('level') as Level,
+				strategyType: data.get('strategy-type') as StrategyType,
+				topic: data.get('topic') as Topic,
+				type: payloadTypes.enum.strategy
+			};
+		} else {
+			payload = basePayload;
+		}
+
 		const container: NewContainer = {
-			payload: {
-				category: data.get('category') as SustainableDevelopmentGoal,
-				description: data.get('description') as string,
-				summary: data.get('summary') as string,
-				title: data.get('title') as string,
-				...(data.has('status') ? { status: data.get('status') } : undefined),
-				...(data.has('level') ? { level: data.get('level') } : undefined),
-				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
-				...(data.has('topic') ? { topic: data.get('topic') } : undefined),
-				...(containerType == containerTypes.enum.operational_goal ? { indicator } : undefined)
-			},
+			payload: payload as Payload,
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
 				.getAll('is-part-of')
 				.map((v) => ({ predicate: 'is-part-of', object: Number(v) })),
-			type: containerType,
 			user: []
 		};
 
@@ -90,7 +119,7 @@
 			} else if (event.submitter?.id === 'save-and-create-measure') {
 				await goto(`/measure/new?is-part-of=${result.revision}`);
 			} else {
-				await goto(`/${containerType}/${result.guid}`);
+				await goto(`/${payloadType}/${result.guid}`);
 			}
 		}
 	}
@@ -99,8 +128,8 @@
 <form class="details" method="POST" on:submit|preventDefault={handleSubmit}>
 	<header>
 		<label>
-			{$_(containerType)}
-			{#key containerType}
+			{$_(payloadType)}
+			{#key payloadType}
 				<input name="title" type="text" required />
 			{/key}
 		</label>
@@ -110,22 +139,22 @@
 		<div class="details-content-column">
 			<label>
 				{$_('summary')}
-				{#key containerType}
+				{#key payloadType}
 					<textarea name="summary" maxlength="200" required />
 				{/key}
 			</label>
 			<label>
 				{$_('description')}
-				{#key containerType}
+				{#key payloadType}
 					<textarea name="description" required />
 				{/key}
 			</label>
-			{#if containerType === containerTypes.enum.operational_goal}
+			{#if payloadType === payloadTypes.enum.operational_goal}
 				<IndicatorWizard bind:indicator />
 			{/if}
 		</div>
 		<div class="details-content-column">
-			{#if containerType === containerTypes.enum.measure}
+			{#if payloadType === payloadTypes.enum.measure}
 				<label>
 					{$_('status.label')}
 					<select name="status" required>
@@ -136,7 +165,7 @@
 						{/each}
 					</select>
 				</label>
-			{:else if containerType === containerTypes.enum.strategy}
+			{:else if payloadType === payloadTypes.enum.strategy}
 				<label>
 					{$_('level.label')}
 					<select name="level" required>
@@ -170,7 +199,7 @@
 			{/if}
 			<label>
 				{$_('category')}
-				{#key containerType}
+				{#key payloadType}
 					<select name="category" required>
 						<option label="" />
 						{#each sustainableDevelopmentGoals.options as goal}
@@ -181,25 +210,25 @@
 					</select>
 				{/key}
 			</label>
-			<RelationSelector {containerType} {isPartOfOptions} {selected} />
+			<RelationSelector {payloadType} {isPartOfOptions} {selected} />
 		</div>
 	</div>
 
 	<footer>
 		<button class="primary">{$_('save')}</button>
-		{#if containerType === containerTypes.enum.strategy}
+		{#if payloadType === payloadTypes.enum.strategy}
 			<button id="save-and-create-model">
 				{$_('save_and_create_model')}
 			</button>
-		{:else if containerType === containerTypes.enum.model}
+		{:else if payloadType === payloadTypes.enum.model}
 			<button id="save-and-create-strategic-goal">
 				{$_('save_and_create_strategic_goal')}
 			</button>
-		{:else if containerType === containerTypes.enum.strategic_goal}
+		{:else if payloadType === payloadTypes.enum.strategic_goal}
 			<button id="save-and-create-operational-goal">
 				{$_('save_and_create_operational_goal')}
 			</button>
-		{:else if containerType === containerTypes.enum.operational_goal}
+		{:else if payloadType === payloadTypes.enum.operational_goal}
 			<button id="save-and-create-measure">
 				{$_('save_and_create_measure')}
 			</button>

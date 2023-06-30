@@ -10,10 +10,12 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import ContainerEditForm from '$lib/components/ContainerEditForm.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import { payloadTypes } from '$lib/models';
 	import type {
 		Container,
-		ContainerType,
 		ModifiedContainer,
+		Payload,
+		Status,
 		SustainableDevelopmentGoal
 	} from '$lib/models';
 	import { user } from '$lib/stores.js';
@@ -42,29 +44,49 @@
 			}
 		}
 
-		const modifiedContainer: ModifiedContainer = {
-			guid: containerPreviewData.guid,
-			payload: {
-				category: data.get('category') as SustainableDevelopmentGoal,
-				description: data.get('description') as string,
-				summary: data.get('summary') as string,
-				title: data.get('title') as string,
-				...(data.has('status') ? { status: data.get('status') } : undefined),
-				...(data.has('level') ? { level: data.get('level') } : undefined),
-				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
-				...(data.has('topic') ? { topic: data.get('topic') } : undefined),
+		const basePayload = {
+			category: data.get('category') as SustainableDevelopmentGoal,
+			description: data.get('description') as string,
+			summary: data.get('summary') as string,
+			title: data.get('title') as string,
+			type: containerPreviewData.payload.type
+		};
+
+		let payload;
+
+		if (containerPreviewData.payload.type === payloadTypes.enum.measure) {
+			payload = {
+				...basePayload,
 				...(indicatorContribution.size > 0
 					? { indicatorContribution: Object.fromEntries(indicatorContribution) }
 					: undefined),
+				status: data.get('status') as Status
+			};
+		} else if (containerPreviewData.payload.type === payloadTypes.enum.operational_goal) {
+			payload = {
+				...basePayload,
 				...('indicator' in containerPreviewData.payload
 					? { indicator: containerPreviewData.payload.indicator }
 					: undefined)
-			},
+			};
+		} else if (containerPreviewData.payload.type === payloadTypes.enum.strategy) {
+			payload = {
+				...basePayload,
+				...(data.has('level') ? { level: data.get('level') } : undefined),
+				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
+				...(data.has('topic') ? { topic: data.get('topic') } : undefined)
+			};
+		} else {
+			payload = basePayload;
+		}
+
+		const modifiedContainer: ModifiedContainer = {
+			guid: containerPreviewData.guid,
+			payload: payload as Payload,
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
 				.getAll('is-part-of')
 				.map((v) => ({ predicate: 'is-part-of', object: Number(v) })),
-			type: containerPreviewData.type as ContainerType,
 			user: []
 		};
 

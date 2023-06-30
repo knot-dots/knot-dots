@@ -1,6 +1,6 @@
 import type { ParamMatcher } from '@sveltejs/kit';
-import { isContainerType } from '$lib/models';
+import { isPayloadType } from '$lib/models';
 
 export const match = ((param) => {
-	return isContainerType(param);
+	return isPayloadType(param);
 }) satisfies ParamMatcher;

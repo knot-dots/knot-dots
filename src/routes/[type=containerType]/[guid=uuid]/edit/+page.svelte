@@ -6,8 +6,8 @@
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import ContainerEditForm from '$lib/components/ContainerEditForm.svelte';
-	import { containerTypes, predicates } from '$lib/models';
-	import type { ContainerType, ModifiedContainer, SustainableDevelopmentGoal } from '$lib/models';
+	import { payloadTypes, predicates } from '$lib/models';
+	import type { ModifiedContainer, Payload, Status, SustainableDevelopmentGoal } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -33,29 +33,52 @@
 			}
 		}
 
-		const modifiedContainer: ModifiedContainer = {
-			guid: container.guid,
-			payload: {
-				category: data.get('category') as SustainableDevelopmentGoal,
-				description: data.get('description') as string,
-				summary: data.get('summary') as string,
-				title: data.get('title') as string,
-				...(data.has('status') ? { status: data.get('status') } : undefined),
-				...(data.has('level') ? { level: data.get('level') } : undefined),
-				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
-				...(data.has('topic') ? { topic: data.get('topic') } : undefined),
+		const basePayload = {
+			category: data.get('category') as SustainableDevelopmentGoal,
+			description: data.get('description') as string,
+			summary: data.get('summary') as string,
+			title: data.get('title') as string,
+			type: container.payload.type
+		};
+
+		let payload;
+
+		if (container.payload.type === payloadTypes.enum.measure) {
+			payload = {
+				...basePayload,
 				...(indicatorContribution.size > 0
 					? { indicatorContribution: Object.fromEntries(indicatorContribution) }
 					: undefined),
+				status: data.get('status') as Status,
+				type: payloadTypes.enum.measure
+			};
+		} else if (container.payload.type === payloadTypes.enum.operational_goal) {
+			payload = {
+				...basePayload,
 				...('indicator' in container.payload
 					? { indicator: container.payload.indicator }
-					: undefined)
-			},
+					: undefined),
+				type: payloadTypes.enum.operational_goal
+			};
+		} else if (container.payload.type === payloadTypes.enum.strategy) {
+			payload = {
+				...basePayload,
+				...(data.has('level') ? { level: data.get('level') } : undefined),
+				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
+				...(data.has('topic') ? { topic: data.get('topic') } : undefined),
+				type: payloadTypes.enum.strategy
+			};
+		} else {
+			payload = basePayload;
+		}
+
+		const modifiedContainer: ModifiedContainer = {
+			guid: container.guid,
+			payload: payload as Payload,
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
 				.getAll('is-part-of')
 				.map((v) => ({ predicate: 'is-part-of', object: Number(v) })),
-			type: container.type as ContainerType,
 			user: []
 		};
 
@@ -95,19 +118,19 @@
 <ContainerEditForm {container} {isPartOfOptions} {relatedContainers} on:submit={handleSubmit}>
 	<svelte:fragment slot="footer">
 		<button id="save" class="primary">{$_('save')}</button>
-		{#if container.type === containerTypes.enum.strategy}
+		{#if container.payload.type === payloadTypes.enum.strategy}
 			<button id="save-and-create-model">
 				{$_('save_and_create_model')}
 			</button>
-		{:else if container.type === containerTypes.enum.model}
+		{:else if container.payload.type === payloadTypes.enum.model}
 			<button id="save-and-create-strategic-goal">
 				{$_('save_and_create_strategic_goal')}
 			</button>
-		{:else if container.type === containerTypes.enum.strategic_goal}
+		{:else if container.payload.type === payloadTypes.enum.strategic_goal}
 			<button id="save-and-create-operational-goal">
 				{$_('save_and_create_operational_goal')}
 			</button>
-		{:else if container.type === containerTypes.enum.operational_goal}
+		{:else if container.payload.type === payloadTypes.enum.operational_goal}
 			<button id="save-and-create-measure">
 				{$_('save_and_create_measure')}
 			</button>
