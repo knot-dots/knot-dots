@@ -11,9 +11,9 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { BOARD_ROUTES } from '$lib/globals';
-	import type { PageData } from './$types';
+	import type { LayoutData } from './$types';
 
-	export let data: PageData;
+	export let data: LayoutData;
 
 	let kc: Keycloak;
 
