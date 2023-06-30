@@ -90,16 +90,6 @@
 					<li>{$_(container.payload.category)}</li>
 				</ul>
 			</div>
-			<div class="meta">
-				<h3 class="meta-key">{$_('relations')}</h3>
-				<ul class="meta-value">
-					{#each relatedContainers as { guid, payload }}
-						<li>
-							<a href="/{payload.type}/{guid}">{payload.title}</a>
-						</li>
-					{/each}
-				</ul>
-			</div>
 		</div>
 	</div>
 
