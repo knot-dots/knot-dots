@@ -18,7 +18,7 @@
 		Status,
 		SustainableDevelopmentGoal
 	} from '$lib/models';
-	import { user } from '$lib/stores.js';
+	import { sidebarToggle, user } from '$lib/stores.js';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
@@ -128,7 +128,11 @@
 							<Icon solid src={Pencil} size="20" />
 						</button>
 					{/if}
-					<a href={closeOverlay()} class="button icons-element">
+					<a
+						href={closeOverlay()}
+						class="button icons-element"
+						on:click={() => ($sidebarToggle = true)}
+					>
 						<Icon solid src={XMark} size="20" />
 					</a>
 				</div>
@@ -146,7 +150,7 @@
 		width: 100%;
 	}
 
-	.overlay > * {
+	.overlay > :global(*) {
 		min-width: 100vw;
 	}
 
@@ -155,7 +159,7 @@
 			width: 80%;
 		}
 
-		.overlay > * {
+		.overlay > :global(*) {
 			min-width: calc((100vw - 18rem) * 0.8);
 		}
 	}
@@ -165,7 +169,7 @@
 			width: 65%;
 		}
 
-		.overlay > * {
+		.overlay > :global(*) {
 			min-width: calc((100vw - 18rem) * 0.65);
 		}
 	}

@@ -177,7 +177,7 @@
 						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
 					</span>
 				</button>
-				<ul id="filters" class="collapsible" class:is-hidden={!$filtersToggle}>
+				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
 					{#if $page.url.pathname === '/strategies'}
 						<li>
 							<Filters
@@ -193,14 +193,14 @@
 								bind:selectedOptions={selectedTopic}
 							/>
 						</li>
-					{:else}
-						<li>
-							<Filters
-								options={sustainableDevelopmentGoals.options}
-								bind:selectedOptions={selectedCategory}
-							/>
-						</li>
 					{/if}
+					<li>
+						<Filters
+							label={$_('category')}
+							options={sustainableDevelopmentGoals.options}
+							bind:selectedOptions={selectedCategory}
+						/>
+					</li>
 				</ul>
 			</li>
 			<li>
@@ -375,12 +375,13 @@
 	}
 
 	.collapsible {
+		--mask-height: 0.5rem;
+
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
-		padding: 12px 17px 12px 12px;
-		margin-top: 8px;
+		padding: 4px 17px 12px 12px;
+		margin-top: 0.5rem;
 		max-height: 12rem;
-		overflow-y: scroll;
 	}
 
 	.collapsible > li {

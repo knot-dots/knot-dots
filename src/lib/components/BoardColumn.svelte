@@ -97,7 +97,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
-		overflow-y: scroll;
 		padding: var(--mask-height) 0;
 	}
 </style>
