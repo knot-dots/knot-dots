@@ -91,8 +91,8 @@
 				<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
 				{$_(container.payload.status)}
 			</span>
-		{:else if 'topic' in container.payload}
-			<span class="badge">{$_(container.payload.topic)}</span>
+		{:else if 'strategyType' in container.payload}
+			<span class="badge">{$_(container.payload.strategyType)}</span>
 		{/if}
 		<a href={relatedToURL} class="button {relatedTo === container.guid ? 'is-active' : ''}">
 			<Icon src={Share} size="20" mini />
