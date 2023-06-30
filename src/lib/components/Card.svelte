@@ -17,8 +17,11 @@
 
 	$: {
 		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('container-preview');
-		query.append('container-preview', container.guid);
+		if (query.get('container-preview') === container.guid) {
+			query.delete('container-preview');
+		} else {
+			query.set('container-preview', container.guid);
+		}
 		containerPreviewURL = `?${query.toString()}`;
 	}
 
