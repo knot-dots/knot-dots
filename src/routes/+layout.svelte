@@ -28,8 +28,6 @@
 		});
 	});
 
-	$: isBoardLayout = 'overlayData' in $page.data;
-
 	const duration = 300;
 	const delay = duration + 100;
 	const y = 10;
@@ -46,7 +44,7 @@
 {#key data.pathname}
 	<div in:fly={transitionIn} out:fly={transitionOut}>
 		<Sidebar />
-		<main class:board-layout={isBoardLayout}>
+		<main class:board-layout={'overlayData' in $page.data}>
 			<slot />
 		</main>
 	</div>
