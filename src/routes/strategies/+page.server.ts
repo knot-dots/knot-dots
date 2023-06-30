@@ -9,9 +9,7 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url }) => {
 	let containers;
-	let containerPreviewData;
-	let isPartOfOptions;
-	let relatedContainers;
+	let overlayData;
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
 			getAllRelatedContainers(url.searchParams.get('related-to') as string)
@@ -29,12 +27,13 @@ export const load = (async ({ locals, url }) => {
 		);
 	}
 	if (url.searchParams.has('container-preview')) {
-		const previewGuid = url.searchParams.get('container-preview') ?? '';
-		containerPreviewData = await locals.pool.connect(getContainerByGuid(previewGuid));
-		[isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(maybePartOf(containerPreviewData.payload.type)),
-			locals.pool.connect(getAllDirectlyRelatedContainers(containerPreviewData))
+		const guid = url.searchParams.get('container-preview') ?? '';
+		const container = await locals.pool.connect(getContainerByGuid(guid));
+		const [isPartOfOptions, relatedContainers] = await Promise.all([
+			locals.pool.connect(maybePartOf(container.payload.type)),
+			locals.pool.connect(getAllDirectlyRelatedContainers(container))
 		]);
+		overlayData = { container, isPartOfOptions, relatedContainers };
 	}
-	return { containers, containerPreviewData, isPartOfOptions, relatedContainers };
+	return { containers, overlayData };
 }) satisfies PageServerLoad;
