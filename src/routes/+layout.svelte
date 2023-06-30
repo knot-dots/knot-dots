@@ -10,7 +10,6 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { BOARD_ROUTES } from '$lib/globals';
 	import type { LayoutData } from './$types';
 
 	export let data: LayoutData;
@@ -29,7 +28,7 @@
 		});
 	});
 
-	$: isBoardLayout = BOARD_ROUTES.includes($page.url.pathname);
+	$: isBoardLayout = 'overlayData' in $page.data;
 
 	const duration = 300;
 	const delay = duration + 100;

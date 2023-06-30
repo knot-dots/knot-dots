@@ -4,7 +4,6 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { BOARD_ROUTES } from '$lib/globals';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
@@ -39,7 +38,7 @@
 
 	const hash = $page.url.hash;
 
-	$: if (browser && BOARD_ROUTES.includes($page.url.pathname)) {
+	$: if (browser && 'overlayData' in $page.data) {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
 		query.delete('strategyType');
@@ -118,7 +117,7 @@
 		</li>
 	</ul>
 
-	{#if BOARD_ROUTES.includes($page.url.pathname)}
+	{#if 'overlayData' in $page.data}
 		<ul class="group group-actions">
 			<li>
 				<form class="search" data-sveltekit-keepfocus>
