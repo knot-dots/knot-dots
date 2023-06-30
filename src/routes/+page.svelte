@@ -41,7 +41,7 @@
 
 {#if data.containerPreviewData}
 	<Overlay
-		containerPreviewData={data.containerPreviewData}
+		container={data.containerPreviewData}
 		isPartOfOptions={data.isPartOfOptions ?? []}
 		relatedContainers={data.relatedContainers ?? []}
 	/>

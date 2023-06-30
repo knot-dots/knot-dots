@@ -20,7 +20,7 @@
 	} from '$lib/models';
 	import { user } from '$lib/stores.js';
 
-	export let containerPreviewData: Container;
+	export let container: Container;
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
 
@@ -49,12 +49,12 @@
 			description: data.get('description') as string,
 			summary: data.get('summary') as string,
 			title: data.get('title') as string,
-			type: containerPreviewData.payload.type
+			type: container.payload.type
 		};
 
 		let payload;
 
-		if (containerPreviewData.payload.type === payloadTypes.enum.measure) {
+		if (container.payload.type === payloadTypes.enum.measure) {
 			payload = {
 				...basePayload,
 				...(indicatorContribution.size > 0
@@ -62,14 +62,14 @@
 					: undefined),
 				status: data.get('status') as Status
 			};
-		} else if (containerPreviewData.payload.type === payloadTypes.enum.operational_goal) {
+		} else if (container.payload.type === payloadTypes.enum.operational_goal) {
 			payload = {
 				...basePayload,
-				...('indicator' in containerPreviewData.payload
-					? { indicator: containerPreviewData.payload.indicator }
+				...('indicator' in container.payload
+					? { indicator: container.payload.indicator }
 					: undefined)
 			};
-		} else if (containerPreviewData.payload.type === payloadTypes.enum.strategy) {
+		} else if (container.payload.type === payloadTypes.enum.strategy) {
 			payload = {
 				...basePayload,
 				...(data.has('level') ? { level: data.get('level') } : undefined),
@@ -81,7 +81,7 @@
 		}
 
 		const modifiedContainer: ModifiedContainer = {
-			guid: containerPreviewData.guid,
+			guid: container.guid,
 			payload: payload as Payload,
 			realm: env.PUBLIC_KC_REALM ?? '',
 			relation: data
@@ -94,7 +94,7 @@
 		await getKeycloak()
 			.updateToken(-1)
 			.catch((reason) => null);
-		const response = await fetch(`/container/${containerPreviewData.guid}/revision`, {
+		const response = await fetch(`/container/${container.guid}/revision`, {
 			method: 'POST',
 			body: JSON.stringify(modifiedContainer),
 			headers: {
@@ -112,21 +112,16 @@
 
 <div class="overlay" transition:slide={{ axis: 'x' }}>
 	{#if edit}
-		<ContainerEditForm
-			container={containerPreviewData}
-			{isPartOfOptions}
-			{relatedContainers}
-			on:submit={handleSubmit}
-		>
+		<ContainerEditForm {container} {isPartOfOptions} {relatedContainers} on:submit={handleSubmit}>
 			<svelte:fragment slot="footer">
 				<button id="save" class="primary">{$_('save')}</button>
 				<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 			</svelte:fragment>
 		</ContainerEditForm>
 	{:else}
-		<ContainerDetailView container={containerPreviewData} {relatedContainers}>
+		<ContainerDetailView {container} {relatedContainers}>
 			<svelte:fragment slot="header">
-				<h2>{containerPreviewData.payload.title}</h2>
+				<h2>{container.payload.title}</h2>
 				<div class="icons">
 					{#if $user.isAuthenticated}
 						<button class="icons-element" on:click={() => (edit = true)}>
