@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { ChevronDown, ChevronUp, Icon, MagnifyingGlass } from 'svelte-hero-icons';
+	import {
+		ChevronDown,
+		ChevronUp,
+		Icon,
+		InformationCircle,
+		MagnifyingGlass,
+		Share
+	} from 'svelte-hero-icons';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -116,6 +123,33 @@
 			{/if}
 		</li>
 	</ul>
+
+	{#if 'container' in $page.data}
+		<ul class="group group-tabs">
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
+				>
+					<Icon src={InformationCircle} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
+				</a>
+			</li>
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
+				>
+					<Icon src={Share} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('relations')}</span>
+				</a>
+			</li>
+		</ul>
+	{/if}
 
 	{#if 'overlayData' in $page.data}
 		<ul class="group group-actions">
@@ -332,6 +366,7 @@
 
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-links .button,
+	aside.is-expanded .group-tabs .button,
 	aside.is-expanded .group-user-menu a {
 		--padding-x: 14px;
 		--padding-y: 12px;
