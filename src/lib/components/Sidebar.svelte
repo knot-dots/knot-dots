@@ -382,7 +382,6 @@
 		padding: 4px 17px 12px 12px;
 		margin-top: 0.5rem;
 		max-height: 12rem;
-		overflow-y: scroll;
 	}
 
 	.collapsible > li {
