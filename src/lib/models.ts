@@ -328,3 +328,10 @@ export const modifiedContainer = container
 	});
 
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
+
+export interface CustomEventMap {
+	submitSuccessful: {
+		event: SubmitEvent;
+		result: Container;
+	};
+}
