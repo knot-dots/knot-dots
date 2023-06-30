@@ -193,14 +193,14 @@
 								bind:selectedOptions={selectedTopic}
 							/>
 						</li>
-					{:else}
-						<li>
-							<Filters
-								options={sustainableDevelopmentGoals.options}
-								bind:selectedOptions={selectedCategory}
-							/>
-						</li>
 					{/if}
+					<li>
+						<Filters
+							label={$_('category')}
+							options={sustainableDevelopmentGoals.options}
+							bind:selectedOptions={selectedCategory}
+						/>
+					</li>
 				</ul>
 			</li>
 			<li>
