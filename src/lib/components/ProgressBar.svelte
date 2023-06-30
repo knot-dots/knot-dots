@@ -8,10 +8,7 @@
 	export let contributors: Container[];
 	export let compact = false;
 
-	let unit =
-		'quantity' in indicator && unitByQuantity.has(indicator.quantity as Quantity)
-			? $_(unitByQuantity.get(indicator.quantity as Quantity) as string)
-			: '';
+	let unit = '';
 
 	let contributions: Record<string, number> = {
 		[status.enum['status.in_operation']]: 0,
@@ -21,8 +18,13 @@
 	let contributionsAbsolute = 0;
 
 	$: {
+		unit =
+			'quantity' in indicator && unitByQuantity.has(indicator.quantity as Quantity)
+				? $_(unitByQuantity.get(indicator.quantity as Quantity) as string)
+				: '';
 		contributions[status.enum['status.in_operation']] = 0;
 		contributions[status.enum['status.in_implementation']] = 0;
+		contributionsAbsolute = 0;
 
 		for (let c of contributors) {
 			if (
