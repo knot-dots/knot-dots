@@ -280,11 +280,19 @@ const measureContainer = container.extend({
 
 export type MeasureContainer = z.infer<typeof measureContainer>;
 
+export function isMeasureContainer(container: Container): container is MeasureContainer {
+	return container.payload.type === payloadTypes.enum.measure;
+}
+
 const modelContainer = container.extend({
 	payload: modelPayload
 });
 
 export type ModelContainer = z.infer<typeof modelContainer>;
+
+export function isModelContainer(container: Container): container is ModelContainer {
+	return container.payload.type === payloadTypes.enum.model;
+}
 
 const operationalGoalContainer = container.extend({
 	payload: operationalGoalPayload
@@ -292,17 +300,33 @@ const operationalGoalContainer = container.extend({
 
 export type OperationalGoalContainer = z.infer<typeof operationalGoalContainer>;
 
+export function isOperationalGoalContainer(
+	container: Container
+): container is OperationalGoalContainer {
+	return container.payload.type === payloadTypes.enum.operational_goal;
+}
+
 const strategicGoalContainer = container.extend({
 	payload: strategicGoalPayload
 });
 
 export type StrategicGoalContainer = z.infer<typeof strategicGoalContainer>;
 
+export function isStrategicGoalGoalContainer(
+	container: Container
+): container is StrategicGoalContainer {
+	return container.payload.type === payloadTypes.enum.strategic_goal;
+}
+
 const strategyContainer = container.extend({
 	payload: strategyPayload
 });
 
 export type StrategyContainer = z.infer<typeof strategyContainer>;
+
+export function isStrategyContainer(container: Container): container is StrategyContainer {
+	return container.payload.type === payloadTypes.enum.strategy;
+}
 
 export const newContainer = container
 	.omit({

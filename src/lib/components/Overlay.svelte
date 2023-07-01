@@ -1,30 +1,28 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import { slide } from 'svelte/transition';
 	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { slide } from 'svelte/transition';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { env } from '$env/dynamic/public';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
-	import ContainerEditForm from '$lib/components/ContainerEditForm.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import { payloadTypes } from '$lib/models';
-	import type {
-		Container,
-		ModifiedContainer,
-		Payload,
-		Status,
-		SustainableDevelopmentGoal
+	import MeasureForm from '$lib/components/MeasureForm.svelte';
+	import ModelForm from '$lib/components/ModelForm.svelte';
+	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
+	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
+	import StrategyForm from '$lib/components/StrategyForm.svelte';
+	import {
+		isMeasureContainer,
+		isModelContainer,
+		isOperationalGoalContainer,
+		isStrategicGoalGoalContainer,
+		isStrategyContainer
 	} from '$lib/models';
+	import type { Container } from '$lib/models';
 	import { sidebarToggle, user } from '$lib/stores.js';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
-
-	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	let edit = false;
 
@@ -34,77 +32,7 @@
 		return `?${query.toString()}`;
 	}
 
-	async function handleSubmit(event: SubmitEvent) {
-		const data = new FormData(event.target as HTMLFormElement);
-		const indicatorContribution = new Map();
-
-		for (let c of relatedContainers) {
-			if (data.has(`indicatorContribution-${c.guid}`)) {
-				indicatorContribution.set(c.guid, data.get(`indicatorContribution-${c.guid}`));
-			}
-		}
-
-		const basePayload = {
-			category: data.get('category') as SustainableDevelopmentGoal,
-			description: data.get('description') as string,
-			summary: data.get('summary') as string,
-			title: data.get('title') as string,
-			type: container.payload.type
-		};
-
-		let payload;
-
-		if (container.payload.type === payloadTypes.enum.measure) {
-			payload = {
-				...basePayload,
-				...(indicatorContribution.size > 0
-					? { indicatorContribution: Object.fromEntries(indicatorContribution) }
-					: undefined),
-				status: data.get('status') as Status
-			};
-		} else if (container.payload.type === payloadTypes.enum.operational_goal) {
-			payload = {
-				...basePayload,
-				...('indicator' in container.payload
-					? { indicator: container.payload.indicator }
-					: undefined)
-			};
-		} else if (container.payload.type === payloadTypes.enum.strategy) {
-			payload = {
-				...basePayload,
-				...(data.has('level') ? { level: data.get('level') } : undefined),
-				...(data.has('strategy-type') ? { strategyType: data.get('strategy-type') } : undefined),
-				...(data.has('topic') ? { topic: data.get('topic') } : undefined)
-			};
-		} else {
-			payload = basePayload;
-		}
-
-		const modifiedContainer: ModifiedContainer = {
-			guid: container.guid,
-			payload: payload as Payload,
-			realm: env.PUBLIC_KC_REALM ?? '',
-			relation: data
-				.getAll('is-part-of')
-				.map((v) => ({ predicate: 'is-part-of', object: Number(v) })),
-			user: []
-		};
-
-		// Ensure a fresh token will be included in the Authorization header.
-		await getKeycloak()
-			.updateToken(-1)
-			.catch((reason) => null);
-		const response = await fetch(`/container/${container.guid}/revision`, {
-			method: 'POST',
-			body: JSON.stringify(modifiedContainer),
-			headers: {
-				...(sessionStorage.getItem('token')
-					? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-					: undefined),
-				'Content-Type': 'application/json'
-			}
-		});
-
+	async function afterSubmit() {
 		await invalidateAll();
 		edit = false;
 	}
@@ -112,12 +40,37 @@
 
 <div class="overlay" transition:slide={{ axis: 'x' }}>
 	{#if edit}
-		<ContainerEditForm {container} {isPartOfOptions} {relatedContainers} on:submit={handleSubmit}>
-			<svelte:fragment slot="footer">
-				<button id="save" class="primary">{$_('save')}</button>
-				<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
-			</svelte:fragment>
-		</ContainerEditForm>
+		{#if isMeasureContainer(container)}
+			<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+				</svelte:fragment>
+			</MeasureForm>
+		{:else if isModelContainer(container)}
+			<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+				</svelte:fragment>
+			</ModelForm>
+		{:else if isOperationalGoalContainer(container)}
+			<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+				</svelte:fragment>
+			</OperationalGoalForm>
+		{:else if isStrategicGoalGoalContainer(container)}
+			<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+				</svelte:fragment>
+			</StrategicGoalForm>
+		{:else if isStrategyContainer(container)}
+			<StrategyForm {container} on:submitSuccessful={afterSubmit}>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+				</svelte:fragment>
+			</StrategyForm>
+		{/if}
 	{:else}
 		<ContainerDetailView {container} {relatedContainers}>
 			<svelte:fragment slot="header">
