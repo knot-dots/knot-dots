@@ -274,6 +274,60 @@ export const container = z.object({
 
 export type Container = z.infer<typeof container>;
 
+const measureContainer = container.extend({
+	payload: measurePayload
+});
+
+export type MeasureContainer = z.infer<typeof measureContainer>;
+
+export function isMeasureContainer(container: Container): container is MeasureContainer {
+	return container.payload.type === payloadTypes.enum.measure;
+}
+
+const modelContainer = container.extend({
+	payload: modelPayload
+});
+
+export type ModelContainer = z.infer<typeof modelContainer>;
+
+export function isModelContainer(container: Container): container is ModelContainer {
+	return container.payload.type === payloadTypes.enum.model;
+}
+
+const operationalGoalContainer = container.extend({
+	payload: operationalGoalPayload
+});
+
+export type OperationalGoalContainer = z.infer<typeof operationalGoalContainer>;
+
+export function isOperationalGoalContainer(
+	container: Container
+): container is OperationalGoalContainer {
+	return container.payload.type === payloadTypes.enum.operational_goal;
+}
+
+const strategicGoalContainer = container.extend({
+	payload: strategicGoalPayload
+});
+
+export type StrategicGoalContainer = z.infer<typeof strategicGoalContainer>;
+
+export function isStrategicGoalGoalContainer(
+	container: Container
+): container is StrategicGoalContainer {
+	return container.payload.type === payloadTypes.enum.strategic_goal;
+}
+
+const strategyContainer = container.extend({
+	payload: strategyPayload
+});
+
+export type StrategyContainer = z.infer<typeof strategyContainer>;
+
+export function isStrategyContainer(container: Container): container is StrategyContainer {
+	return container.payload.type === payloadTypes.enum.strategy;
+}
+
 export const newContainer = container
 	.omit({
 		guid: true,
@@ -287,6 +341,80 @@ export const newContainer = container
 
 export type NewContainer = z.infer<typeof newContainer>;
 
+const emptyContainer = newContainer.extend({
+	payload: z.discriminatedUnion('type', [
+		measurePayload.partial().merge(measurePayload.pick({ type: true })),
+		modelPayload.partial().merge(modelPayload.pick({ type: true })),
+		operationalGoalPayload
+			.partial()
+			.merge(operationalGoalPayload.pick({ indicator: true, type: true })),
+		strategicGoalPayload.partial().merge(strategicGoalPayload.pick({ type: true })),
+		strategyPayload.partial().merge(strategyPayload.pick({ type: true }))
+	])
+});
+
+export type EmptyContainer = z.infer<typeof emptyContainer>;
+
+const emptyMeasureContainer = emptyContainer.extend({
+	payload: measurePayload.partial().merge(measurePayload.pick({ type: true }))
+});
+
+export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
+
+export function isEmptyMeasureContainer(
+	container: EmptyContainer
+): container is EmptyMeasureContainer {
+	return container.payload.type === payloadTypes.enum.measure;
+}
+
+const emptyModelContainer = emptyContainer.extend({
+	payload: modelPayload.partial().merge(modelPayload.pick({ type: true }))
+});
+
+export type EmptyModelContainer = z.infer<typeof emptyModelContainer>;
+
+export function isEmptyModelContainer(container: EmptyContainer): container is EmptyModelContainer {
+	return container.payload.type === payloadTypes.enum.model;
+}
+
+const emptyOperationalGoalContainer = emptyContainer.extend({
+	payload: operationalGoalPayload
+		.partial()
+		.merge(operationalGoalPayload.pick({ indicator: true, type: true }))
+});
+
+export type EmptyOperationalGoalContainer = z.infer<typeof emptyOperationalGoalContainer>;
+
+export function isEmptyOperationalGoalContainer(
+	container: EmptyContainer
+): container is EmptyOperationalGoalContainer {
+	return container.payload.type === payloadTypes.enum.operational_goal;
+}
+
+const emptyStrategicGoalContainer = emptyContainer.extend({
+	payload: strategicGoalPayload.partial().merge(strategicGoalPayload.pick({ type: true }))
+});
+
+export type EmptyStrategicGoalContainer = z.infer<typeof emptyStrategicGoalContainer>;
+
+export function isEmptyStrategicGoalContainer(
+	container: EmptyContainer
+): container is EmptyStrategicGoalContainer {
+	return container.payload.type === payloadTypes.enum.strategic_goal;
+}
+
+const emptyStrategyContainer = emptyContainer.extend({
+	payload: strategyPayload.partial().merge(strategyPayload.pick({ type: true }))
+});
+
+export type EmptyStrategyContainer = z.infer<typeof emptyStrategyContainer>;
+
+export function isEmptyStrategyContainer(
+	container: EmptyContainer
+): container is EmptyStrategyContainer {
+	return container.payload.type === payloadTypes.enum.strategy;
+}
+
 export const modifiedContainer = container
 	.omit({
 		revision: true,
@@ -298,3 +426,10 @@ export const modifiedContainer = container
 	});
 
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
+
+export interface CustomEventMap {
+	submitSuccessful: {
+		event: SubmitEvent;
+		result: Container;
+	};
+}
