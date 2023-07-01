@@ -6,9 +6,15 @@
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import { modifiedContainer, newContainer } from '$lib/models';
-	import type { Container, CustomEventMap, ModifiedContainer, NewContainer } from '$lib/models';
+	import type {
+		Container,
+		CustomEventMap,
+		EmptyContainer,
+		ModifiedContainer,
+		NewContainer
+	} from '$lib/models';
 
-	export let container: Container;
+	export let container: Container | EmptyContainer;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 

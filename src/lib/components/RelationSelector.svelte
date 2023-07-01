@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { payloadTypes, predicates } from '$lib/models';
-	import type { Container, PayloadType, Relation } from '$lib/models';
+	import type { Container, PartialRelation, PayloadType } from '$lib/models';
 
 	export let payloadType: PayloadType;
 	export let isPartOfOptions: Container[];
-	export let selected: Relation[];
+	export let selected: PartialRelation[];
 </script>
 
 {#if payloadType !== payloadTypes.enum.strategy}

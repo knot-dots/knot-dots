@@ -2,9 +2,9 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import { levels, strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
-	import type { StrategyContainer } from '$lib/models';
+	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
 
-	export let container: StrategyContainer;
+	export let container: StrategyContainer | EmptyStrategyContainer;
 </script>
 
 <ContainerForm {container} on:submitSuccessful>

@@ -3,9 +3,14 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { predicates, status, sustainableDevelopmentGoals } from '$lib/models';
-	import type { Container, MeasureContainer, OperationalGoalContainer } from '$lib/models';
+	import type {
+		Container,
+		EmptyMeasureContainer,
+		MeasureContainer,
+		OperationalGoalContainer
+	} from '$lib/models';
 
-	export let container: MeasureContainer;
+	export let container: MeasureContainer | EmptyMeasureContainer;
 	export let isPartOfOptions: Container[];
 
 	let relatedContainers: OperationalGoalContainer[] = [];

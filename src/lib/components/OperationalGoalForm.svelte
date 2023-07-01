@@ -4,9 +4,13 @@
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals } from '$lib/models';
-	import type { Container, OperationalGoalContainer } from '$lib/models.js';
+	import type {
+		Container,
+		OperationalGoalContainer,
+		EmptyOperationalGoalContainer
+	} from '$lib/models.js';
 
-	export let container: OperationalGoalContainer;
+	export let container: OperationalGoalContainer | EmptyOperationalGoalContainer;
 	export let isPartOfOptions: Container[];
 </script>
 

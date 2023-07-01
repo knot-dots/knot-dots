@@ -3,9 +3,9 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals } from '$lib/models';
-	import type { Container, StrategicGoalContainer } from '$lib/models';
+	import type { Container, EmptyStrategicGoalContainer, StrategicGoalContainer } from '$lib/models';
 
-	export let container: StrategicGoalContainer;
+	export let container: StrategicGoalContainer | EmptyStrategicGoalContainer;
 	export let isPartOfOptions: Container[];
 </script>
 
