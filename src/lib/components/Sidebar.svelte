@@ -182,7 +182,7 @@
 						<li>
 							<Filters
 								label={$_('strategy_type.label')}
-								options={strategyTypes.options}
+								options={strategyTypes.options.map((o) => [$_(o), o])}
 								bind:selectedOptions={selectedStrategyType}
 							/>
 						</li>
@@ -190,14 +190,14 @@
 					<li>
 						<Filters
 							label={$_('topic.label')}
-							options={topics.options}
+							options={topics.options.map((o) => [$_(o), o])}
 							bind:selectedOptions={selectedTopic}
 						/>
 					</li>
 					<li>
 						<Filters
 							label={$_('category')}
-							options={sustainableDevelopmentGoals.options}
+							options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
 							bind:selectedOptions={selectedCategory}
 						/>
 					</li>
