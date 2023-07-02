@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { predicates, status, sustainableDevelopmentGoals } from '$lib/models';
+	import { predicates, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type {
 		Container,
 		EmptyMeasureContainer,
@@ -63,6 +63,16 @@
 				{#each status.options as statusOption}
 					<option value={statusOption}>
 						{$_(statusOption)}
+					</option>
+				{/each}
+			</select>
+		</label>
+		<label>
+			{$_('topic.label')}
+			<select name="topic" bind:value={container.payload.topic} multiple>
+				{#each topics.options as topicOption}
+					<option value={topicOption}>
+						{$_(topicOption)}
 					</option>
 				{/each}
 			</select>

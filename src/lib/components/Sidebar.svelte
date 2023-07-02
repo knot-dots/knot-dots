@@ -186,14 +186,14 @@
 								bind:selectedOptions={selectedStrategyType}
 							/>
 						</li>
-						<li>
-							<Filters
-								label={$_('topic.label')}
-								options={topics.options}
-								bind:selectedOptions={selectedTopic}
-							/>
-						</li>
 					{/if}
+					<li>
+						<Filters
+							label={$_('topic.label')}
+							options={topics.options}
+							bind:selectedOptions={selectedTopic}
+						/>
+					</li>
 					<li>
 						<Filters
 							label={$_('category')}

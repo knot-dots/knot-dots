@@ -48,13 +48,16 @@
 		const topic: Topic[] = [];
 		switch (type) {
 			case payloadTypes.enum.measure:
-				return { ...base, payload: { category, type } } as EmptyMeasureContainer;
+				return { ...base, payload: { category, topic, type } } as EmptyMeasureContainer;
 			case payloadTypes.enum.model:
-				return { ...base, payload: { category, type } } as EmptyModelContainer;
+				return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
 			case payloadTypes.enum.operational_goal:
-				return { ...base, payload: { category, indicator, type } } as EmptyOperationalGoalContainer;
+				return {
+					...base,
+					payload: { category, indicator, topic, type }
+				} as EmptyOperationalGoalContainer;
 			case payloadTypes.enum.strategic_goal:
-				return { ...base, payload: { category, type } } as EmptyStrategicGoalContainer;
+				return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
 			default:
 				return { ...base, payload: { category, topic, type } } as EmptyStrategyContainer;
 		}

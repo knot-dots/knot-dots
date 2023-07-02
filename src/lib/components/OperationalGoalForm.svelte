@@ -3,7 +3,7 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { sustainableDevelopmentGoals } from '$lib/models';
+	import { sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type {
 		Container,
 		OperationalGoalContainer,
@@ -22,6 +22,16 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
+		<label>
+			{$_('topic.label')}
+			<select name="topic" bind:value={container.payload.topic} multiple>
+				{#each topics.options as topicOption}
+					<option value={topicOption}>
+						{$_(topicOption)}
+					</option>
+				{/each}
+			</select>
+		</label>
 		<label>
 			{$_('category')}
 			<select name="category" bind:value={container.payload.category} multiple>
