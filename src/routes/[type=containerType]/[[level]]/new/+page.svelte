@@ -49,7 +49,7 @@
 				return { ...base, payload: { indicator: [], type } } as EmptyOperationalGoalContainer;
 			case payloadTypes.enum.strategic_goal:
 				return { ...base, payload: { type } } as EmptyStrategicGoalContainer;
-			case payloadTypes.enum.strategy:
+			default:
 				return { ...base, payload: { type } } as EmptyStrategyContainer;
 		}
 	})(payloadType);
