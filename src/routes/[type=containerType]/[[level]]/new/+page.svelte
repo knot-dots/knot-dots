@@ -26,7 +26,8 @@
 		Indicator,
 		PartialRelation,
 		PayloadType,
-		SustainableDevelopmentGoal
+		SustainableDevelopmentGoal,
+		Topic
 	} from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -44,6 +45,7 @@
 		const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];
+		const topic: Topic[] = [];
 		switch (type) {
 			case payloadTypes.enum.measure:
 				return { ...base, payload: { category, type } } as EmptyMeasureContainer;
@@ -54,7 +56,7 @@
 			case payloadTypes.enum.strategic_goal:
 				return { ...base, payload: { category, type } } as EmptyStrategicGoalContainer;
 			default:
-				return { ...base, payload: { category, type } } as EmptyStrategyContainer;
+				return { ...base, payload: { category, topic, type } } as EmptyStrategyContainer;
 		}
 	})(payloadType);
 

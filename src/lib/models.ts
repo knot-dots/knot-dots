@@ -246,7 +246,7 @@ const strategyPayload = basePayload
 	.extend({
 		level: levels,
 		strategyType: strategyTypes,
-		topic: topics,
+		topic: z.array(topics),
 		type: z.literal(payloadTypes.enum.strategy)
 	})
 	.strict();

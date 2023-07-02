@@ -120,7 +120,11 @@
 				</div>
 				<div class="meta">
 					<h3 class="meta-key">{$_('topic.label')}</h3>
-					<p class="meta-value">{$_(container.payload.topic)}</p>
+					<ul class="meta-value meta-value--topic">
+						{#each container.payload.topic as topic}
+							<li>{$_(topic)}</li>
+						{/each}
+					</ul>
 				</div>
 			{/if}
 			<div class="meta">

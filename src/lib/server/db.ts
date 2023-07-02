@@ -188,7 +188,7 @@ export function getManyContainers(
 			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
 		}
 		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
+			conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(topics, 'text')}`);
 		}
 		if (strategyTypes.length > 0) {
 			conditions.push(
@@ -262,7 +262,7 @@ export function getManyContainersByType(
 			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
 		}
 		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
+			conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(topics, 'text')}`);
 		}
 		if (strategyTypes.length > 0) {
 			conditions.push(
@@ -400,7 +400,7 @@ export function getAllRelatedContainers(
 			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
 		}
 		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
+			conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(topics, 'text')}`);
 		}
 		if (strategyTypes.length > 0) {
 			conditions.push(
