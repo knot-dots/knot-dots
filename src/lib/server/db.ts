@@ -185,9 +185,7 @@ export function getManyContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = [sql.fragment`valid_currently`];
 		if (categories.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
-			);
+			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
 		}
 		if (topics.length > 0) {
 			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
@@ -261,9 +259,7 @@ export function getManyContainersByType(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = [sql.fragment`valid_currently`, sql.fragment`payload->>'type' = ${type}`];
 		if (categories.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
-			);
+			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
 		}
 		if (topics.length > 0) {
 			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
@@ -401,9 +397,7 @@ export function getAllRelatedContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = [sql.fragment`valid_currently`];
 		if (categories.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
-			);
+			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
 		}
 		if (topics.length > 0) {
 			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);

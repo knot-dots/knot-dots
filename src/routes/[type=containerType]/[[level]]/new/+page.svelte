@@ -23,8 +23,10 @@
 		EmptyOperationalGoalContainer,
 		EmptyStrategicGoalContainer,
 		EmptyStrategyContainer,
+		Indicator,
 		PartialRelation,
-		PayloadType
+		PayloadType,
+		SustainableDevelopmentGoal
 	} from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -40,17 +42,19 @@
 
 	$: container = ((type: PayloadType) => {
 		const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
+		const category: SustainableDevelopmentGoal[] = [];
+		const indicator: Indicator[] = [];
 		switch (type) {
 			case payloadTypes.enum.measure:
-				return { ...base, payload: { type } } as EmptyMeasureContainer;
+				return { ...base, payload: { category, type } } as EmptyMeasureContainer;
 			case payloadTypes.enum.model:
-				return { ...base, payload: { type } } as EmptyModelContainer;
+				return { ...base, payload: { category, type } } as EmptyModelContainer;
 			case payloadTypes.enum.operational_goal:
-				return { ...base, payload: { indicator: [], type } } as EmptyOperationalGoalContainer;
+				return { ...base, payload: { category, indicator, type } } as EmptyOperationalGoalContainer;
 			case payloadTypes.enum.strategic_goal:
-				return { ...base, payload: { type } } as EmptyStrategicGoalContainer;
+				return { ...base, payload: { category, type } } as EmptyStrategicGoalContainer;
 			default:
-				return { ...base, payload: { type } } as EmptyStrategyContainer;
+				return { ...base, payload: { category, type } } as EmptyStrategyContainer;
 		}
 	})(payloadType);
 

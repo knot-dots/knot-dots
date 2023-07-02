@@ -24,8 +24,7 @@
 	<svelte:fragment slot="meta">
 		<label>
 			{$_('category')}
-			<select name="category" bind:value={container.payload.category} required>
-				<option label="" />
+			<select name="category" bind:value={container.payload.category} multiple>
 				{#each sustainableDevelopmentGoals.options as goal}
 					<option value={goal}>
 						{$_(goal)}

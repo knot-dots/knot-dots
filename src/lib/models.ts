@@ -208,7 +208,7 @@ export type Indicator = z.infer<typeof indicator>;
 
 const basePayload = z
 	.object({
-		category: sustainableDevelopmentGoals,
+		category: z.array(sustainableDevelopmentGoals),
 		description: z.string(),
 		summary: z.string().max(200).optional(),
 		title: z.string()
