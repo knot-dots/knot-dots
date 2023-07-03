@@ -2,7 +2,7 @@ import {
 	getAllRelatedContainers,
 	getAllDirectlyRelatedContainers,
 	getContainerByGuid,
-	getManyContainersByType,
+	getManyContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -16,7 +16,7 @@ export const load = (async ({ locals, url }) => {
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getManyContainersByType(
+			getManyContainers(
 				{
 					categories: url.searchParams.getAll('category'),
 					topics: url.searchParams.getAll('topic'),

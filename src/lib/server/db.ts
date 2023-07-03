@@ -222,59 +222,7 @@ export function getManyContainers(
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
-	},
-	sort: string
-) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT *
-			FROM container
-			WHERE ${prepareWhereCondition(filters)}
-			ORDER BY ${prepareOrderByExpression(sort)};
-    `);
-
-		const revisions = sql.join(
-			containerResult.map((c) => c.revision),
-			sql.fragment`, `
-		);
-
-		const userResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userWithRevision')`
-						SELECT *
-						FROM container_user
-						WHERE revision IN (${revisions})
-					`)
-				: [];
-
-		const relationResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			`)
-				: [];
-
-		return containerResult.map((c) => ({
-			...c,
-			relation: relationResult.filter(
-				({ object, subject }) => object === c.revision || subject === c.revision
-			),
-			user: userResult
-				.filter((u) => u.revision === c.revision)
-				.map(({ issuer, subject }) => ({ issuer, subject }))
-		}));
-	};
-}
-
-export function getManyContainersByType(
-	filters: {
-		categories?: string[];
-		strategyTypes?: string[];
-		terms?: string;
-		topics?: string[];
-		type: PayloadType;
+		type?: PayloadType;
 	},
 	sort: string
 ) {
