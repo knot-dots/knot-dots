@@ -175,6 +175,39 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
+function prepareWhereCondition(filters: {
+	categories?: string[];
+	strategyTypes?: string[];
+	terms?: string;
+	topics?: string[];
+	type?: PayloadType;
+}) {
+	const conditions = [sql.fragment`valid_currently`];
+	if (filters.categories?.length) {
+		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
+	}
+	if (filters.strategyTypes?.length) {
+		conditions.push(
+			sql.fragment`payload->>'strategyType' IN (${sql.join(
+				filters.strategyTypes,
+				sql.fragment`, `
+			)})`
+		);
+	}
+	if (filters.terms?.trim()) {
+		conditions.push(
+			sql.fragment`plainto_tsquery('german', ${filters.terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+		);
+	}
+	if (filters.topics?.length) {
+		conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
+	}
+	if (filters.type) {
+		conditions.push(sql.fragment`payload->>'type' = ${filters.type}`);
+	}
+	return conditions;
+}
+
 export function getManyContainers(
 	categories: string[],
 	topics: string[],
@@ -183,23 +216,7 @@ export function getManyContainers(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = [sql.fragment`valid_currently`];
-		if (categories.length > 0) {
-			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
-		}
-		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(topics, 'text')}`);
-		}
-		if (strategyTypes.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
-			);
-		}
-		if (terms.trim() != '') {
-			conditions.push(
-				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
-			);
-		}
+		const conditions = prepareWhereCondition({ categories, topics, strategyTypes, terms });
 
 		let order_by = sql.fragment`valid_from`;
 		if (sort == 'alpha') {
@@ -257,23 +274,7 @@ export function getManyContainersByType(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = [sql.fragment`valid_currently`, sql.fragment`payload->>'type' = ${type}`];
-		if (categories.length > 0) {
-			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
-		}
-		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(topics, 'text')}`);
-		}
-		if (strategyTypes.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
-			);
-		}
-		if (terms.trim() != '') {
-			conditions.push(
-				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
-			);
-		}
+		const conditions = prepareWhereCondition({ categories, strategyTypes, terms, topics, type });
 
 		let order_by = sql.fragment`valid_from`;
 		if (sort == 'alpha') {
@@ -395,23 +396,7 @@ export function getAllRelatedContainers(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = [sql.fragment`valid_currently`];
-		if (categories.length > 0) {
-			conditions.push(sql.fragment`payload->'category' ?| ${sql.array(categories, 'text')}`);
-		}
-		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(topics, 'text')}`);
-		}
-		if (strategyTypes.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
-			);
-		}
-		if (terms.trim() != '') {
-			conditions.push(
-				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
-			);
-		}
+		const conditions = prepareWhereCondition({ categories, strategyTypes, terms, topics });
 
 		let order_by = sql.fragment`valid_from`;
 		if (sort == 'alpha') {
