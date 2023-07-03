@@ -208,6 +208,14 @@ function prepareWhereCondition(filters: {
 	return conditions;
 }
 
+function prepareOrderByExpression(sort: string) {
+	let order_by = sql.fragment`valid_from`;
+	if (sort == 'alpha') {
+		order_by = sql.fragment`payload->>'title'`;
+	}
+	return order_by;
+}
+
 export function getManyContainers(
 	categories: string[],
 	topics: string[],
@@ -218,10 +226,7 @@ export function getManyContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = prepareWhereCondition({ categories, topics, strategyTypes, terms });
 
-		let order_by = sql.fragment`valid_from`;
-		if (sort == 'alpha') {
-			order_by = sql.fragment`payload->>'title'`;
-		}
+		const order_by = prepareOrderByExpression(sort);
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
@@ -276,10 +281,7 @@ export function getManyContainersByType(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = prepareWhereCondition({ categories, strategyTypes, terms, topics, type });
 
-		let order_by = sql.fragment`valid_from`;
-		if (sort == 'alpha') {
-			order_by = sql.fragment`payload->>'title'`;
-		}
+		const order_by = prepareOrderByExpression(sort);
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
@@ -398,10 +400,7 @@ export function getAllRelatedContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const conditions = prepareWhereCondition({ categories, strategyTypes, terms, topics });
 
-		let order_by = sql.fragment`valid_from`;
-		if (sort == 'alpha') {
-			order_by = sql.fragment`payload->>'title'`;
-		}
+		const order_by = prepareOrderByExpression(sort);
 
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
