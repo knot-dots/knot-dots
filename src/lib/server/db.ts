@@ -217,22 +217,19 @@ function prepareOrderByExpression(sort: string) {
 }
 
 export function getManyContainers(
-	categories: string[],
-	topics: string[],
-	strategyTypes: string[],
-	terms: string,
+	filters: {
+		categories?: string[];
+		strategyTypes?: string[];
+		terms?: string;
+		topics?: string[];
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${prepareWhereCondition({
-				categories,
-				topics,
-				strategyTypes,
-				terms
-			})}
+			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
@@ -272,24 +269,20 @@ export function getManyContainers(
 }
 
 export function getManyContainersByType(
-	type: PayloadType,
-	categories: string[],
-	topics: string[],
-	strategyTypes: string[],
-	terms: string,
+	filters: {
+		categories?: string[];
+		strategyTypes?: string[];
+		terms?: string;
+		topics?: string[];
+		type: PayloadType;
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${prepareWhereCondition({
-				categories,
-				strategyTypes,
-				terms,
-				topics,
-				type
-			})}
+			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
@@ -394,10 +387,12 @@ export function maybePartOf(containerType: PayloadType) {
 
 export function getAllRelatedContainers(
 	guid: string,
-	categories: string[],
-	topics: string[],
-	strategyTypes: string[],
-	terms: string,
+	filters: {
+		categories?: string[];
+		strategyTypes?: string[];
+		terms?: string;
+		topics?: string[];
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
@@ -455,12 +450,7 @@ export function getAllRelatedContainers(
 					.concat([revision]),
 				sql.fragment`, `
 			)})
-				AND ${prepareWhereCondition({
-					categories,
-					strategyTypes,
-					terms,
-					topics
-				})}
+				AND ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
