@@ -205,7 +205,7 @@ function prepareWhereCondition(filters: {
 	if (filters.type) {
 		conditions.push(sql.fragment`payload->>'type' = ${filters.type}`);
 	}
-	return conditions;
+	return sql.join(conditions, sql.fragment` AND `);
 }
 
 function prepareOrderByExpression(sort: string) {
@@ -227,15 +227,12 @@ export function getManyContainers(
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${sql.join(
-				prepareWhereCondition({
-					categories,
-					topics,
-					strategyTypes,
-					terms
-				}),
-				sql.fragment` AND `
-			)}
+			WHERE ${prepareWhereCondition({
+				categories,
+				topics,
+				strategyTypes,
+				terms
+			})}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
@@ -286,16 +283,13 @@ export function getManyContainersByType(
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${sql.join(
-				prepareWhereCondition({
-					categories,
-					strategyTypes,
-					terms,
-					topics,
-					type
-				}),
-				sql.fragment` AND `
-			)}
+			WHERE ${prepareWhereCondition({
+				categories,
+				strategyTypes,
+				terms,
+				topics,
+				type
+			})}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
@@ -461,15 +455,12 @@ export function getAllRelatedContainers(
 					.concat([revision]),
 				sql.fragment`, `
 			)})
-				AND ${sql.join(
-					prepareWhereCondition({
-						categories,
-						strategyTypes,
-						terms,
-						topics
-					}),
-					sql.fragment` AND `
-				)}
+				AND ${prepareWhereCondition({
+					categories,
+					strategyTypes,
+					terms,
+					topics
+				})}
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
