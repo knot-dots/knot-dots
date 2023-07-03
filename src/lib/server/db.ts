@@ -224,15 +224,19 @@ export function getManyContainers(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = prepareWhereCondition({ categories, topics, strategyTypes, terms });
-
-		const order_by = prepareOrderByExpression(sort);
-
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${order_by};
+			WHERE ${sql.join(
+				prepareWhereCondition({
+					categories,
+					topics,
+					strategyTypes,
+					terms
+				}),
+				sql.fragment` AND `
+			)}
+			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
 		const revisions = sql.join(
@@ -279,15 +283,20 @@ export function getManyContainersByType(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = prepareWhereCondition({ categories, strategyTypes, terms, topics, type });
-
-		const order_by = prepareOrderByExpression(sort);
-
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${order_by};
+			WHERE ${sql.join(
+				prepareWhereCondition({
+					categories,
+					strategyTypes,
+					terms,
+					topics,
+					type
+				}),
+				sql.fragment` AND `
+			)}
+			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
 		const revisions = sql.join(
@@ -398,10 +407,6 @@ export function getAllRelatedContainers(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = prepareWhereCondition({ categories, strategyTypes, terms, topics });
-
-		const order_by = prepareOrderByExpression(sort);
-
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
 		`);
@@ -456,8 +461,16 @@ export function getAllRelatedContainers(
 					.concat([revision]),
 				sql.fragment`, `
 			)})
-				AND ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${order_by}
+				AND ${sql.join(
+					prepareWhereCondition({
+						categories,
+						strategyTypes,
+						terms,
+						topics
+					}),
+					sql.fragment` AND `
+				)}
+			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
 		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
