@@ -3,6 +3,7 @@ import {
 	getAllDirectlyRelatedContainers,
 	getContainerByGuid,
 	getManyContainers,
+	getAllRelatedContainersByStrategyType,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -13,6 +14,18 @@ export const load = (async ({ locals, url }) => {
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
 			getAllRelatedContainers(url.searchParams.get('related-to') as string, {}, '')
+		);
+	} else if (url.searchParams.has('strategyType')) {
+		containers = await locals.pool.connect(
+			getAllRelatedContainersByStrategyType(
+				url.searchParams.getAll('strategyType'),
+				{
+					categories: url.searchParams.getAll('category'),
+					topics: url.searchParams.getAll('topic'),
+					terms: url.searchParams.get('terms') ?? ''
+				},
+				url.searchParams.get('sort') ?? ''
+			)
 		);
 	} else {
 		containers = await locals.pool.connect(

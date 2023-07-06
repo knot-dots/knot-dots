@@ -178,15 +178,13 @@
 					</span>
 				</button>
 				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					{#if $page.url.pathname === '/strategies'}
-						<li>
-							<Filters
-								label={$_('strategy_type.label')}
-								options={strategyTypes.options.map((o) => [$_(o), o])}
-								bind:selectedOptions={selectedStrategyType}
-							/>
-						</li>
-					{/if}
+					<li>
+						<Filters
+							label={$_('strategy_type.label')}
+							options={strategyTypes.options.map((o) => [$_(o), o])}
+							bind:selectedOptions={selectedStrategyType}
+						/>
+					</li>
 					<li>
 						<Filters
 							label={$_('topic.label')}
