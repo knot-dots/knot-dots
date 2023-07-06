@@ -405,3 +405,65 @@ export function getAllRelatedContainers(
 		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
 	};
 }
+
+export function getAllRelatedContainersByStrategyType(
+	strategyTypes: string[],
+	filters: {
+		categories?: string[];
+		terms?: string;
+		topics?: string[];
+	},
+	sort: string
+) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8
+			FROM
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'measure'
+				WHERE c.valid_currently
+			) s1
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'operational_goal'
+				WHERE c.valid_currently
+			) s2 ON s1.object = s2.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'strategic_goal'
+				WHERE c.valid_currently
+			) s3 ON s2.object = s3.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'model'
+				WHERE c.valid_currently
+			) s4 ON s3.object = s4.subject
+			JOIN container c ON s4.object = c.revision
+				WHERE c.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
+		`);
+
+		const containerResult =
+			relationPathResult.length > 0
+				? await connection.any(sql.typeAlias('container')`
+						SELECT *
+						FROM container
+						WHERE revision IN (${sql.join(
+							relationPathResult.map((r) => Object.values(r)).flat(),
+							sql.fragment`, `
+						)})
+							AND ${prepareWhereCondition({})}
+						ORDER BY ${prepareOrderByExpression(sort)}
+		`)
+				: [];
+
+		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
+	};
+}
