@@ -209,7 +209,7 @@ function prepareWhereCondition(filters: {
 }
 
 function prepareOrderByExpression(sort: string) {
-	let order_by = sql.fragment`valid_from`;
+	let order_by = sql.fragment`valid_from DESC`;
 	if (sort == 'alpha') {
 		order_by = sql.fragment`payload->>'title'`;
 	}
