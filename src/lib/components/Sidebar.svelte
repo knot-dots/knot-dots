@@ -227,21 +227,6 @@
 		</ul>
 	{/if}
 
-	<ul class="group group-links">
-		<li>
-			<a href="/help" class="button quiet">
-				<QuestionMarkCircleIcon class="icon-20" />
-				<span class:is-hidden={!$sidebarToggle}>{$_('help')}</span>
-			</a>
-		</li>
-		<li>
-			<a href="/about" class="button quiet">
-				<UserGroupIcon class="icon-20" />
-				<span class:is-hidden={!$sidebarToggle}>{$_('about')}</span>
-			</a>
-		</li>
-	</ul>
-
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
 			<li>
@@ -363,7 +348,6 @@
 	}
 
 	aside.is-expanded .group-actions button,
-	aside.is-expanded .group-links .button,
 	aside.is-expanded .group-tabs .button,
 	aside.is-expanded .group-user-menu a {
 		--padding-x: 14px;
