@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Editor } from 'bytemd';
+	import 'bytemd/dist/index.css';
 	import { createEventDispatcher, getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
@@ -13,7 +15,6 @@
 		ModifiedContainer,
 		NewContainer
 	} from '$lib/models';
-
 	export let container: Container | EmptyContainer;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
@@ -84,7 +85,7 @@
 			</label>
 			<label>
 				{$_('description')}
-				<textarea name="description" bind:value={container.payload.description} required />
+				<Editor value={container.payload.description ?? ""} on:change={(e) => container.payload.description = e.detail.value } />
 			</label>
 			<slot name="extra-data" />
 		</div>

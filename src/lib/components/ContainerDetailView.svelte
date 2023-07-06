@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Viewer } from 'bytemd';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import sdg01 from '$lib/assets/sdg/sdg-01.svg';
@@ -71,7 +72,7 @@
 			</div>
 			<div class="description">
 				<h3>{$_('description')}</h3>
-				{container.payload.description}
+				<Viewer value={container.payload.description}/>
 			</div>
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
