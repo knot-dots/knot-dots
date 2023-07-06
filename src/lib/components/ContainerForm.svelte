@@ -70,10 +70,8 @@
 <form class="details" on:submit|preventDefault={handleSubmit}>
 	<header>
 		<label>
-			<label>
-				{$_(`${container.payload.type}`)}
-				<input name="title" type="text" bind:value={container.payload.title} required />
-			</label>
+			{$_(`${container.payload.type}`)}
+			<input name="title" type="text" bind:value={container.payload.title} required />
 		</label>
 	</header>
 

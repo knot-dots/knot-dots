@@ -62,6 +62,8 @@
 </script>
 
 <article
+	tabindex="-1"
+	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
 	on:click={handleClick}

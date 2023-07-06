@@ -12,14 +12,13 @@
 
 	export let container: OperationalGoalContainer | EmptyOperationalGoalContainer;
 	export let isPartOfOptions: Container[];
+
+	let indicatorLocked = container.payload.indicator.length > 0;
 </script>
 
 <ContainerForm {container} on:submitSuccessful>
 	<svelte:fragment slot="extra-data">
-		<IndicatorWizard
-			bind:indicator={container.payload.indicator}
-			locked={container.payload.indicator.length > 0}
-		/>
+		<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
