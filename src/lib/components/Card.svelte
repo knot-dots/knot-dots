@@ -114,7 +114,6 @@
 	}
 
 	.card:hover,
-	.card:focus-within,
 	.card.is-active {
 		background: var(--color-gray-300);
 		outline: none;
