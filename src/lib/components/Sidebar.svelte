@@ -11,16 +11,15 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import Filters from '$lib/components/Filters.svelte';
 	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
 	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import LoginIcon from '$lib/icons/LoginIcon.svelte';
 	import LogoutIcon from '$lib/icons/LogoutIcon.svelte';
 	import MapIcon from '$lib/icons/MapIcon.svelte';
-	import QuestionMarkCircleIcon from '$lib/icons/QuestionMarkCircleIcon.svelte';
 	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
-	import UserGroupIcon from '$lib/icons/UserGroupIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
 	import { strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import {
@@ -31,7 +30,6 @@
 		sortToggle,
 		user
 	} from '$lib/stores.js';
-	import Filters from './Filters.svelte';
 
 	let timer: any;
 	let terms = $page.url.searchParams.get('terms') ?? '';
