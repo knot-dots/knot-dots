@@ -154,6 +154,7 @@
 
 		flex-grow: 0;
 		flex-shrink: 0;
+		margin-left: auto;
 	}
 
 	.badge {
