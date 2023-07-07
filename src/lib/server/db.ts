@@ -459,7 +459,7 @@ export function getAllRelatedContainersByStrategyType(
 							relationPathResult.map((r) => Object.values(r)).flat(),
 							sql.fragment`, `
 						)})
-							AND ${prepareWhereCondition({})}
+							AND ${prepareWhereCondition(filters)}
 						ORDER BY ${prepareOrderByExpression(sort)}
 		`)
 				: [];
