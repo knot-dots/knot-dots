@@ -14,10 +14,12 @@ export const load = (async ({ params, locals, url }) => {
 	const allRelatedContainers = await locals.pool.connect(
 		getAllRelatedContainers(
 			container.guid,
-			url.searchParams.getAll('category'),
-			url.searchParams.getAll('topic'),
-			url.searchParams.getAll('strategyType'),
-			url.searchParams.get('terms') ?? '',
+			{
+				categories: url.searchParams.getAll('category'),
+				topics: url.searchParams.getAll('topic'),
+				strategyTypes: url.searchParams.getAll('strategyType'),
+				terms: url.searchParams.get('terms') ?? ''
+			},
 			url.searchParams.get('sort') ?? ''
 		)
 	);

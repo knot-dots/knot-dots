@@ -175,120 +175,63 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
-export function getManyContainers(
-	categories: string[],
-	topics: string[],
-	strategyTypes: string[],
-	terms: string,
-	sort: string
-) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = [sql.fragment`valid_currently`];
-		if (categories.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
-			);
-		}
-		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
-		}
-		if (strategyTypes.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
-			);
-		}
-		if (terms.trim() != '') {
-			conditions.push(
-				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
-			);
-		}
-
-		let order_by = sql.fragment`valid_from`;
-		if (sort == 'alpha') {
-			order_by = sql.fragment`payload->>'title'`;
-		}
-
-		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT *
-			FROM container
-			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${order_by};
-    `);
-
-		const revisions = sql.join(
-			containerResult.map((c) => c.revision),
-			sql.fragment`, `
+function prepareWhereCondition(filters: {
+	categories?: string[];
+	strategyTypes?: string[];
+	terms?: string;
+	topics?: string[];
+	type?: PayloadType;
+}) {
+	const conditions = [sql.fragment`valid_currently`];
+	if (filters.categories?.length) {
+		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
+	}
+	if (filters.strategyTypes?.length) {
+		conditions.push(
+			sql.fragment`payload->>'strategyType' IN (${sql.join(
+				filters.strategyTypes,
+				sql.fragment`, `
+			)})`
 		);
-
-		const userResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userWithRevision')`
-						SELECT *
-						FROM container_user
-						WHERE revision IN (${revisions})
-					`)
-				: [];
-
-		const relationResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			`)
-				: [];
-
-		return containerResult.map((c) => ({
-			...c,
-			relation: relationResult.filter(
-				({ object, subject }) => object === c.revision || subject === c.revision
-			),
-			user: userResult
-				.filter((u) => u.revision === c.revision)
-				.map(({ issuer, subject }) => ({ issuer, subject }))
-		}));
-	};
+	}
+	if (filters.terms?.trim()) {
+		conditions.push(
+			sql.fragment`plainto_tsquery('german', ${filters.terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+		);
+	}
+	if (filters.topics?.length) {
+		conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
+	}
+	if (filters.type) {
+		conditions.push(sql.fragment`payload->>'type' = ${filters.type}`);
+	}
+	return sql.join(conditions, sql.fragment` AND `);
 }
 
-export function getManyContainersByType(
-	type: PayloadType,
-	categories: string[],
-	topics: string[],
-	strategyTypes: string[],
-	terms: string,
+function prepareOrderByExpression(sort: string) {
+	let order_by = sql.fragment`valid_from DESC`;
+	if (sort == 'alpha') {
+		order_by = sql.fragment`payload->>'title'`;
+	}
+	return order_by;
+}
+
+export function getManyContainers(
+	filters: {
+		categories?: string[];
+		strategyTypes?: string[];
+		terms?: string;
+		topics?: string[];
+		type?: PayloadType;
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = [sql.fragment`valid_currently`, sql.fragment`payload->>'type' = ${type}`];
-		if (categories.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
-			);
-		}
-		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
-		}
-		if (strategyTypes.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
-			);
-		}
-		if (terms.trim() != '') {
-			conditions.push(
-				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
-			);
-		}
-
-		let order_by = sql.fragment`valid_from`;
-		if (sort == 'alpha') {
-			order_by = sql.fragment`payload->>'title'`;
-		}
-
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${order_by};
+			WHERE ${prepareWhereCondition(filters)}
+			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
 		const revisions = sql.join(
@@ -392,38 +335,15 @@ export function maybePartOf(containerType: PayloadType) {
 
 export function getAllRelatedContainers(
 	guid: string,
-	categories: string[],
-	topics: string[],
-	strategyTypes: string[],
-	terms: string,
+	filters: {
+		categories?: string[];
+		strategyTypes?: string[];
+		terms?: string;
+		topics?: string[];
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = [sql.fragment`valid_currently`];
-		if (categories.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'category' IN (${sql.join(categories, sql.fragment`, `)})`
-			);
-		}
-		if (topics.length > 0) {
-			conditions.push(sql.fragment`payload->>'topic' IN (${sql.join(topics, sql.fragment`, `)})`);
-		}
-		if (strategyTypes.length > 0) {
-			conditions.push(
-				sql.fragment`payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})`
-			);
-		}
-		if (terms.trim() != '') {
-			conditions.push(
-				sql.fragment`plainto_tsquery('german', ${terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
-			);
-		}
-
-		let order_by = sql.fragment`valid_from`;
-		if (sort == 'alpha') {
-			order_by = sql.fragment`payload->>'title'`;
-		}
-
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
 		`);
@@ -478,9 +398,71 @@ export function getAllRelatedContainers(
 					.concat([revision]),
 				sql.fragment`, `
 			)})
-				AND ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${order_by}
+				AND ${prepareWhereCondition(filters)}
+			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
+
+		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
+	};
+}
+
+export function getAllRelatedContainersByStrategyType(
+	strategyTypes: string[],
+	filters: {
+		categories?: string[];
+		terms?: string;
+		topics?: string[];
+	},
+	sort: string
+) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8
+			FROM
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'measure'
+				WHERE c.valid_currently
+			) s1
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'operational_goal'
+				WHERE c.valid_currently
+			) s2 ON s1.object = s2.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'strategic_goal'
+				WHERE c.valid_currently
+			) s3 ON s2.object = s3.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'model'
+				WHERE c.valid_currently
+			) s4 ON s3.object = s4.subject
+			JOIN container c ON s4.object = c.revision
+				WHERE c.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
+		`);
+
+		const containerResult =
+			relationPathResult.length > 0
+				? await connection.any(sql.typeAlias('container')`
+						SELECT *
+						FROM container
+						WHERE revision IN (${sql.join(
+							relationPathResult.map((r) => Object.values(r)).flat(),
+							sql.fragment`, `
+						)})
+							AND ${prepareWhereCondition({})}
+						ORDER BY ${prepareOrderByExpression(sort)}
+		`)
+				: [];
 
 		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
 	};

@@ -208,10 +208,11 @@ export type Indicator = z.infer<typeof indicator>;
 
 const basePayload = z
 	.object({
-		category: sustainableDevelopmentGoals,
+		category: z.array(sustainableDevelopmentGoals),
 		description: z.string(),
 		summary: z.string().max(200).optional(),
-		title: z.string()
+		title: z.string(),
+		topic: z.array(topics)
 	})
 	.strict();
 
@@ -246,7 +247,6 @@ const strategyPayload = basePayload
 	.extend({
 		level: levels,
 		strategyType: strategyTypes,
-		topic: topics,
 		type: z.literal(payloadTypes.enum.strategy)
 	})
 	.strict();

@@ -118,23 +118,29 @@
 					<h3 class="meta-key">{$_('strategy_type.label')}</h3>
 					<p class="meta-value">{$_(container.payload.strategyType)}</p>
 				</div>
-				<div class="meta">
-					<h3 class="meta-key">{$_('topic.label')}</h3>
-					<p class="meta-value">{$_(container.payload.topic)}</p>
-				</div>
 			{/if}
 			<div class="meta">
+				<h3 class="meta-key">{$_('topic.label')}</h3>
+				<ul class="meta-value meta-value--topic">
+					{#each container.payload.topic as topic}
+						<li>{$_(topic)}</li>
+					{/each}
+				</ul>
+			</div>
+			<div class="meta">
 				<h3 class="meta-key">{$_('category')}</h3>
-				<ul class="meta-value">
-					<li>
-						<img
-							src={sdgIcons.get(container.payload.category)}
-							alt={$_(container.payload.category)}
-							title={$_(container.payload.category)}
-							width="66"
-							height="66"
-						/>
-					</li>
+				<ul class="meta-value meta-value--category">
+					{#each container.payload.category as category}
+						<li>
+							<img
+								src={sdgIcons.get(category)}
+								alt={$_(category)}
+								title={$_(category)}
+								width="66"
+								height="66"
+							/>
+						</li>
+					{/each}
 				</ul>
 			</div>
 		</div>
@@ -148,3 +154,9 @@
 		</footer>
 	{/if}
 </article>
+
+<style>
+	.meta-value--category li {
+		display: inline-block;
+	}
+</style>

@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
-
-	export let options: string[];
+	export let options: string[][];
 	export let selectedOptions: string[];
 	export let label: string | undefined = undefined;
 </script>
@@ -10,12 +8,11 @@
 	<p>{label}</p>
 {/if}
 <ul>
-	{#each options as option}
+	{#each options as [label, value]}
 		<li>
 			<label>
-				<input type="checkbox" name="filters" value={option} bind:group={selectedOptions} />{$_(
-					option
-				)}
+				<input type="checkbox" name="filters" {value} bind:group={selectedOptions} />
+				{label}
 			</label>
 		</li>
 	{/each}

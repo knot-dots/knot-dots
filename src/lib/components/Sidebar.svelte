@@ -178,26 +178,24 @@
 					</span>
 				</button>
 				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					{#if $page.url.pathname === '/strategies'}
-						<li>
-							<Filters
-								label={$_('strategy_type.label')}
-								options={strategyTypes.options}
-								bind:selectedOptions={selectedStrategyType}
-							/>
-						</li>
-						<li>
-							<Filters
-								label={$_('topic.label')}
-								options={topics.options}
-								bind:selectedOptions={selectedTopic}
-							/>
-						</li>
-					{/if}
+					<li>
+						<Filters
+							label={$_('strategy_type.label')}
+							options={strategyTypes.options.map((o) => [$_(o), o])}
+							bind:selectedOptions={selectedStrategyType}
+						/>
+					</li>
+					<li>
+						<Filters
+							label={$_('topic.label')}
+							options={topics.options.map((o) => [$_(o), o])}
+							bind:selectedOptions={selectedTopic}
+						/>
+					</li>
 					<li>
 						<Filters
 							label={$_('category')}
-							options={sustainableDevelopmentGoals.options}
+							options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
 							bind:selectedOptions={selectedCategory}
 						/>
 					</li>
@@ -228,21 +226,6 @@
 			</li>
 		</ul>
 	{/if}
-
-	<ul class="group group-links">
-		<li>
-			<a href="/help" class="button quiet">
-				<QuestionMarkCircleIcon class="icon-20" />
-				<span class:is-hidden={!$sidebarToggle}>{$_('help')}</span>
-			</a>
-		</li>
-		<li>
-			<a href="/about" class="button quiet">
-				<UserGroupIcon class="icon-20" />
-				<span class:is-hidden={!$sidebarToggle}>{$_('about')}</span>
-			</a>
-		</li>
-	</ul>
 
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
@@ -282,6 +265,7 @@
 		flex-direction: column;
 		flex-shrink: 0;
 		gap: 1rem;
+		padding-bottom: 1rem;
 		width: 4.75rem;
 	}
 
@@ -300,7 +284,12 @@
 	}
 
 	aside > ul {
+		min-height: 0;
 		padding: 1rem 0.75rem 0;
+	}
+
+	aside > ul > li {
+		min-height: 0;
 	}
 
 	aside > ul:nth-child(n + 2) {
@@ -332,6 +321,7 @@
 
 	.group.group-controls {
 		flex-direction: row;
+		flex-shrink: 0;
 	}
 
 	.group.group-controls li:last-child {
@@ -343,14 +333,18 @@
 		--padding-y: 12px;
 	}
 
-	.group.group-links {
-		border-bottom: solid 1px var(--color-gray-200);
-		color: var(--color-gray-500);
-		padding-bottom: 1rem;
+	.group.group-actions > :first-child,
+	.group.group-actions > :last-child {
+		flex-shrink: 0;
+	}
+
+	.group.group-tabs {
+		flex-shrink: 0;
 	}
 
 	.group.group-user-menu {
-		margin: auto 0 1rem;
+		flex-shrink: 0;
+		margin-top: auto;
 	}
 
 	@media (min-width: 768px) {
@@ -365,7 +359,6 @@
 	}
 
 	aside.is-expanded .group-actions button,
-	aside.is-expanded .group-links .button,
 	aside.is-expanded .group-tabs .button,
 	aside.is-expanded .group-user-menu a {
 		--padding-x: 14px;
@@ -381,7 +374,7 @@
 		box-shadow: var(--shadow-md);
 		padding: 4px 17px 12px 12px;
 		margin-top: 0.5rem;
-		max-height: 12rem;
+		max-height: calc(100% - 4rem);
 	}
 
 	.collapsible > li {

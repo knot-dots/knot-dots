@@ -2,7 +2,7 @@ import {
 	getAllRelatedContainers,
 	getAllDirectlyRelatedContainers,
 	getContainerByGuid,
-	getManyContainersByType,
+	getManyContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -12,16 +12,18 @@ export const load = (async ({ locals, url }) => {
 	let overlayData;
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedContainers(url.searchParams.get('related-to') as string, [], [], [], '', '')
+			getAllRelatedContainers(url.searchParams.get('related-to') as string, {}, '')
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getManyContainersByType(
-				'strategy',
-				url.searchParams.getAll('category'),
-				url.searchParams.getAll('topic'),
-				url.searchParams.getAll('strategyType'),
-				url.searchParams.get('terms') ?? '',
+			getManyContainers(
+				{
+					categories: url.searchParams.getAll('category'),
+					topics: url.searchParams.getAll('topic'),
+					strategyTypes: url.searchParams.getAll('strategyType'),
+					terms: url.searchParams.get('terms') ?? '',
+					type: 'strategy'
+				},
 				url.searchParams.get('sort') ?? ''
 			)
 		);

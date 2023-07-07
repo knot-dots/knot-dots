@@ -114,7 +114,6 @@
 	}
 
 	.card:hover,
-	.card:focus-within,
 	.card.is-active {
 		background: var(--color-gray-300);
 		outline: none;
@@ -154,6 +153,7 @@
 
 		flex-grow: 0;
 		flex-shrink: 0;
+		margin-left: auto;
 	}
 
 	.badge {

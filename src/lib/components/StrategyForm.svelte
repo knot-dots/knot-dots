@@ -31,7 +31,7 @@
 		</label>
 		<label>
 			{$_('topic.label')}
-			<select name="topic" bind:value={container.payload.topic} required>
+			<select name="topic" bind:value={container.payload.topic} multiple>
 				{#each topics.options as topicOption}
 					<option value={topicOption}>
 						{$_(topicOption)}
@@ -41,8 +41,7 @@
 		</label>
 		<label>
 			{$_('category')}
-			<select name="category" bind:value={container.payload.category} required>
-				<option label="" />
+			<select name="category" bind:value={container.payload.category} multiple>
 				{#each sustainableDevelopmentGoals.options as goal}
 					<option value={goal}>
 						{$_(goal)}
