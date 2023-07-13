@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { Viewer } from 'bytemd';
-	import { Icon, Pencil } from 'svelte-hero-icons';
+	import { Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import {
+		isModelContainer,
+		isOperationalGoalContainer,
+		isStrategicGoalGoalContainer
+	} from '$lib/models';
 	import type { Container } from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -22,6 +27,24 @@
 	{/if}
 	<footer>
 		<a class="button" href="/{container.payload.type}/{container.guid}">{$_('read_more')}</a>
+		{#if $user.isAuthenticated}
+			{#if isModelContainer(container)}
+				<a class="button primary" href="?new=strategic_goal&is-part-of={container.revision}">
+					<Icon src={PlusSmall} size="24" mini />
+					{$_('strategic_goal')}
+				</a>
+			{:else if isStrategicGoalGoalContainer(container)}
+				<a class="button primary" href="?new=operational_goal&is-part-of={container.revision}">
+					<Icon src={PlusSmall} size="24" mini />
+					{$_('operational_goal')}
+				</a>
+			{:else if isOperationalGoalContainer(container)}
+				<a class="button primary" href="?new=measure&is-part-of={container.revision}">
+					<Icon src={PlusSmall} size="24" mini />
+					{$_('measure')}
+				</a>
+			{/if}
+		{/if}
 	</footer>
 </div>
 
@@ -32,12 +55,14 @@
 		font-weight: 500;
 	}
 
-	div {
+	.chapter {
 		padding: 1.5rem;
 	}
 
 	.chapter footer {
 		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 1rem;
 		margin-top: 1rem;
 		padding: 0;

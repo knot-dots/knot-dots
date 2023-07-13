@@ -30,6 +30,36 @@ export const load = (async ({ params, locals, url }) => {
 			container: selectedContainer,
 			isPartOfOptions
 		};
+	} else if (url.searchParams.has('new')) {
+		const selected = url.searchParams
+			.getAll('is-part-of')
+			.map((o): PartialRelation => ({ object: Number(o), predicate: 'is-part-of' }));
+		const newContainer = ((type: PayloadType) => {
+			const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
+			const category: SustainableDevelopmentGoal[] = [];
+			const indicator: Indicator[] = [];
+			const topic: Topic[] = [];
+			switch (type) {
+				case payloadTypes.enum.measure:
+					return { ...base, payload: { category, topic, type } } as EmptyMeasureContainer;
+				case payloadTypes.enum.operational_goal:
+					return {
+						...base,
+						payload: { category, indicator, topic, type }
+					} as EmptyOperationalGoalContainer;
+				case payloadTypes.enum.strategic_goal:
+					return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
+				default:
+					return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
+			}
+		})(url.searchParams.get('new') as PayloadType);
+		const isPartOfOptions = await locals.pool.connect(
+			maybePartOf(url.searchParams.get('new') as PayloadType)
+		);
+		strategyOverlayData = {
+			container: newContainer,
+			isPartOfOptions
+		};
 	}
 
 	return {
