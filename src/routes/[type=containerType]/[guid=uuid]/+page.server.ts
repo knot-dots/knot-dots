@@ -38,7 +38,7 @@ export const load = (async ({ params, locals, url }) => {
 	} else if (url.searchParams.has('new')) {
 		const selected = url.searchParams
 			.getAll('is-part-of')
-			.map((o): PartialRelation => ({ object: Number(o), predicate: 'is-part-of' }));
+			.map((o): PartialRelation => ({ object: Number(o), position: 0, predicate: 'is-part-of' }));
 		const newContainer = ((type: PayloadType) => {
 			const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
 			const category: SustainableDevelopmentGoal[] = [];

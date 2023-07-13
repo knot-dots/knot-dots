@@ -80,15 +80,16 @@ export function createContainer(container: NewContainer) {
           RETURNING issuer, subject
       `);
 
-			const relationValues = container.relation.map((r) => [
+			const relationValues = container.relation.map((r, position) => [
 				r.object ?? containerResult.revision,
+				position,
 				r.predicate,
 				r.subject ?? containerResult.revision
 			]);
 			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, predicate, subject)
+				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
+				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
       `);
 
 			return { ...containerResult, user: userResult };
@@ -125,23 +126,24 @@ export function updateContainer(container: ModifiedContainer) {
 
 			const relationValues = container.relation.map((r) => [
 				r.object ?? containerResult.revision,
+				r.position,
 				r.predicate,
 				r.subject ?? containerResult.revision
 			]);
 			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, predicate, subject)
+				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
+				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
       `);
 
 			// Create new records for relations having this container as object.
 			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, predicate, subject)
-				SELECT ${containerResult.revision}, cr.predicate, cr.subject
+				INSERT INTO container_relation (object, position, predicate, subject)
+				SELECT ${containerResult.revision}, cr.position, cr.predicate, cr.subject
 				FROM container_relation cr
 				JOIN container c ON c.revision = cr.object
 				WHERE c.guid = ${container.guid}
-				GROUP BY c.guid, cr.predicate, cr.subject
+				GROUP BY c.guid, cr.predicate, cr.subject, cr.position
       `);
 
 			return { ...containerResult, user: userResult };
@@ -166,6 +168,7 @@ export function getContainerByGuid(guid: string) {
 			SELECT *
 			FROM container_relation
 			WHERE subject = ${containerResult.revision} OR object = ${containerResult.revision}
+			ORDER BY position
 		`);
 		return {
 			...containerResult,
@@ -199,6 +202,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			SELECT *
 			FROM container_relation
 			WHERE subject IN (${revisions}) OR object IN (${revisions})
+			ORDER BY position
 		`);
 
 		return containerResult.map((c) => ({
@@ -292,6 +296,7 @@ export function getManyContainers(
 			  SELECT *
 			  FROM container_relation
 			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+			  ORDER BY position
 			`)
 				: [];
 
@@ -443,6 +448,7 @@ export function getAllRelatedContainers(
 			  SELECT *
 			  FROM container_relation
 			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+				ORDER BY position
 			`)
 				: [];
 

@@ -39,7 +39,7 @@
 
 	$: selected = $page.url.searchParams
 		.getAll('is-part-of')
-		.map((o): PartialRelation => ({ object: Number(o), predicate: 'is-part-of' }));
+		.map((o): PartialRelation => ({ object: Number(o), position: 0, predicate: 'is-part-of' }));
 
 	$: container = ((type: PayloadType) => {
 		const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };

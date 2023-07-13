@@ -211,6 +211,7 @@ export const unitByQuantity = new Map<Quantity, Unit>([
 
 export const relation = z.object({
 	object: z.number().int().positive(),
+	position: z.number().int().nonnegative(),
 	predicate: z.string().max(128),
 	subject: z.number().int().positive()
 });
