@@ -17,7 +17,7 @@
 		<h2>{container.payload.title}</h2>
 		<div class="icons">
 			{#if $user.isAuthenticated}
-				<a href="{container.guid}/edit" class="icons-element">
+				<a href="?edit={container.guid}" class="icons-element">
 					<Icon solid src={Pencil} size="20" />
 				</a>
 			{/if}

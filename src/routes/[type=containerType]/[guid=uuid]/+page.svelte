@@ -2,6 +2,7 @@
 	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
+	import StrategyOverlay from '$lib/components/StrategyOverlay.svelte';
 	import { isStrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 	import type { PageData } from './$types';
@@ -14,6 +15,9 @@
 
 {#if isStrategyContainer(container)}
 	<StrategyDetailView {container} relatedContainers={data.relatedContainers} />
+	{#if data.strategyOverlayData}
+		<StrategyOverlay {...data.strategyOverlayData} />
+	{/if}
 {:else}
 	<ContainerDetailView {container} {relatedContainers}>
 		<svelte:fragment slot="header">
