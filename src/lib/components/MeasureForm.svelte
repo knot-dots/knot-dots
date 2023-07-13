@@ -15,7 +15,7 @@
 	export let container: MeasureContainer | EmptyMeasureContainer;
 	export let isPartOfOptions: Container[];
 
-	let relatedContainers: OperationalGoalContainer[] = [];
+	let relatedContainers: OperationalGoalContainer[];
 
 	$: {
 		relatedContainers = isPartOfOptions.filter(
