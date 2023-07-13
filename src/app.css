@@ -374,6 +374,9 @@ fieldset {
 
 .details.details--page {
 	border-radius: 8px;
+	flex: 1 1;
+	height: calc(100% - 2rem);
+	margin: 1rem;
 }
 
 @media (min-width: 768px) {

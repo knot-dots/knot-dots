@@ -53,20 +53,16 @@
 <style>
 	div {
 		display: flex;
-		padding-top: var(--nav-height);
 		height: 100vh;
+		padding-top: var(--nav-height);
 		width: 100%;
 	}
 
 	main {
-		flex-grow: 1;
 		background-color: white;
-		min-width: 0;
-		padding: 1rem;
-	}
-
-	main.board-layout {
 		display: flex;
+		flex-grow: 1;
+		min-width: 0;
 		padding: 0;
 	}
 </style>

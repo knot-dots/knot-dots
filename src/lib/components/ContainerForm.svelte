@@ -13,7 +13,14 @@
 		ModifiedContainer,
 		NewContainer
 	} from '$lib/models';
+	import { page } from '$app/stores';
+
 	export let container: Container | EmptyContainer;
+
+	let isPage =
+		'guid' in container
+			? $page.url.pathname == `/${container.payload.type}/${container.guid}/edit`
+			: $page.url.pathname == `/${container.payload.type}/new`;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
@@ -65,7 +72,7 @@
 	}
 </script>
 
-<form class="details" on:submit|preventDefault={handleSubmit}>
+<form class="details" class:details--page={isPage} on:submit|preventDefault={handleSubmit}>
 	<header>
 		<label>
 			{$_(`${container.payload.type}`)}
