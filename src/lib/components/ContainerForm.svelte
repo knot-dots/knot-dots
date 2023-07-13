@@ -83,7 +83,10 @@
 			</label>
 			<label>
 				{$_('description')}
-				<Editor value={container.payload.description ?? ""} on:change={(e) => container.payload.description = e.detail.value } />
+				<Editor
+					value={container.payload.description ?? ''}
+					on:change={(e) => (container.payload.description = e.detail.value)}
+				/>
 			</label>
 			<slot name="extra-data" />
 		</div>

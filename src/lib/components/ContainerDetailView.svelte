@@ -35,7 +35,7 @@
 			</div>
 			<div class="description">
 				<h3>{$_('description')}</h3>
-				<Viewer value={container.payload.description}/>
+				<Viewer value={container.payload.description} />
 			</div>
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
