@@ -117,9 +117,3 @@
 		</footer>
 	{/if}
 </article>
-
-<style>
-	.meta-value--category li {
-		display: inline-block;
-	}
-</style>

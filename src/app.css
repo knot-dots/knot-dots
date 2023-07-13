@@ -490,6 +490,10 @@ fieldset {
 	flex: 1;
 }
 
+.meta-value--category li {
+	display: inline-block;
+}
+
 /* Bytemd markdown editor */
 .markdown-body ul, .bytemd-body ul {
 	list-style: disc;
