@@ -274,6 +274,7 @@ export function getAllDirectlyRelatedContainers(container: Container) {
 		if (container.relation.length === 0) {
 			return [];
 		}
+
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
@@ -284,9 +285,40 @@ export function getAllDirectlyRelatedContainers(container: Container) {
 				AND valid_currently
 			ORDER BY payload->>'title' DESC;
 		`);
-		return containerResult
-			.map((c) => ({ ...c, relation: [], user: [] }))
-			.filter(({ guid }) => guid != container.guid);
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+			  SELECT *
+			  FROM container_relation
+			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+			  ORDER BY position
+			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
 	};
 }
 
@@ -402,7 +434,39 @@ export function getAllRelatedContainers(
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
-		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+			  SELECT *
+			  FROM container_relation
+			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+			  ORDER BY position
+			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
 	};
 }
 
@@ -464,6 +528,38 @@ export function getAllRelatedContainersByStrategyType(
 		`)
 				: [];
 
-		return containerResult.map((c) => ({ ...c, relation: [], user: [] }));
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+			  SELECT *
+			  FROM container_relation
+			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+			  ORDER BY position
+			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
 	};
 }
