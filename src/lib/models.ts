@@ -281,6 +281,10 @@ const strategicGoalPayload = basePayload
 	.strict();
 
 const strategyPayload = basePayload
+	.omit({
+		description: true,
+		summary: true
+	})
 	.extend({
 		level: levels,
 		strategyType: strategyTypes,

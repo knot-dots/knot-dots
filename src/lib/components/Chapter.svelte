@@ -8,7 +8,9 @@
 
 <div class="chapter">
 	<h3>{container.payload.title}</h3>
-	<Viewer value={container.payload.description} />
+	{#if 'description' in container.payload}
+		<Viewer value={container.payload.description} />
+	{/if}
 	<footer>
 		<a class="button" href="/{container.payload.type}/{container.guid}">{$_('read_more')}</a>
 	</footer>

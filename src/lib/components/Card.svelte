@@ -76,9 +76,12 @@
 			</a>
 		</h3>
 	</header>
-	<div class="text">
-		{@html container.payload.summary ?? ''}
-	</div>
+
+	{#if 'summary' in container.payload}
+		<div class="text">
+			{@html container.payload.summary ?? ''}
+		</div>
+	{/if}
 
 	<footer>
 		{#if 'indicator' in container.payload && container.payload.indicator.length > 0}

@@ -29,14 +29,18 @@
 
 	<div class="details-content">
 		<div class="details-content-column">
-			<div class="summary">
-				<h3>{$_('summary')}</h3>
-				{container.payload.summary ?? ''}
-			</div>
-			<div class="description">
-				<h3>{$_('description')}</h3>
-				<Viewer value={container.payload.description} />
-			</div>
+			{#if 'summary' in container.payload}
+				<div class="summary">
+					<h3>{$_('summary')}</h3>
+					{container.payload.summary ?? ''}
+				</div>
+			{/if}
+			{#if 'description' in container.payload}
+				<div class="description">
+					<h3>{$_('description')}</h3>
+					<Viewer value={container.payload.description} />
+				</div>
+			{/if}
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
 					<h3>{$_('indicator.legend')}</h3>

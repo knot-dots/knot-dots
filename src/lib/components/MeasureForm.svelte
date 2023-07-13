@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Editor } from 'bytemd';
+	import 'bytemd/dist/index.css';
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
@@ -40,7 +42,18 @@
 </script>
 
 <ContainerForm {container} on:submitSuccessful>
-	<svelte:fragment slot="extra-data">
+	<svelte:fragment slot="data">
+		<label>
+			{$_('summary')}
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
+		</label>
+		<label>
+			{$_('description')}
+			<Editor
+				value={container.payload.description ?? ''}
+				on:change={(e) => (container.payload.description = e.detail.value)}
+			/>
+		</label>
 		{#each relatedContainers as o}
 			{#if container.payload.indicatorContribution?.[o.guid]}
 				<label>

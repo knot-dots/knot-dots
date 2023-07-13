@@ -8,17 +8,7 @@
 </script>
 
 <ContainerForm {container} on:submitSuccessful>
-	<svelte:fragment slot="meta">
-		<label>
-			{$_('level.label')}
-			<select name="level" bind:value={container.payload.level} required>
-				{#each levels.options as levelOption}
-					<option value={levelOption}>
-						{$_(levelOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
+	<svelte:fragment slot="data">
 		<label>
 			{$_('strategy_type.label')}
 			<select name="strategy-type" bind:value={container.payload.strategyType} required>
@@ -45,6 +35,16 @@
 				{#each sustainableDevelopmentGoals.options as goal}
 					<option value={goal}>
 						{$_(goal)}
+					</option>
+				{/each}
+			</select>
+		</label>
+		<label>
+			{$_('level.label')}
+			<select name="level" bind:value={container.payload.level} required>
+				{#each levels.options as levelOption}
+					<option value={levelOption}>
+						{$_(levelOption)}
 					</option>
 				{/each}
 			</select>
