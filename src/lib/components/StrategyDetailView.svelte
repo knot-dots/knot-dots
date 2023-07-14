@@ -3,17 +3,23 @@
 	import { _, date } from 'svelte-i18n';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
-	import { isModelContainer, isPartOf, isTextContainer, sdgIcons } from '$lib/models';
-	import type { Container, StrategyContainer } from '$lib/models';
+	import { isModelContainer, predicates, sdgIcons } from '$lib/models';
+	import type { Container, ModelContainer, StrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
 	export let revisions: Container[];
 
-	$: parts = relatedContainers
-		.filter((c) => isModelContainer(c) || isTextContainer(c))
-		.filter(isPartOf(container));
+	$: parts = container.relation
+		.filter(
+			({ object, predicate, subject }) =>
+				predicate == predicates.enum['is-part-of'] &&
+				relatedContainers.find((r) => r.revision == subject) &&
+				'revision' in container &&
+				object == container.revision
+		)
+		.map(({ subject }) => relatedContainers.find((r) => r.revision == subject) as ModelContainer);
 </script>
 
 <article class="details details--page">
