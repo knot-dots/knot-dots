@@ -34,6 +34,17 @@ variable "migrate_name" {
   type    = string
 }
 
+variable "strategytool_api_key" {
+  type = object({
+    access_key = string
+    secret_key = string
+  })
+}
+
+variable "strategytool_bucket_name" {
+  type = string
+}
+
 variable "strategytool_host" {
   type = string
 }
@@ -45,6 +56,10 @@ variable "strategytool_image" {
 variable "strategytool_name" {
   default = "strategytool"
   type    = string
+}
+
+variable "strategytool_region" {
+  type = string
 }
 
 variable "strategytool_replicas" {

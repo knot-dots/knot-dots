@@ -202,6 +202,26 @@ resource "kubernetes_deployment_v1" "strategytool" {
           name  = "app"
 
           env {
+            name  = "SCW_API_ACCESS_KEY"
+            value = var.strategytool_api_key.access_key
+          }
+
+          env {
+            name  = "SCW_API_SECRET_KEY"
+            value = var.strategytool_api_key.secret_key
+          }
+
+          env {
+            name  = "SCW_BUCKET_NAME"
+            value = var.strategytool_bucket_name
+          }
+
+          env {
+            name  = "SCW_REGION"
+            value = var.strategytool_region
+          }
+
+          env {
             name  = "KC_URL"
             value = "https://${var.keycloak_host}"
           }
@@ -284,20 +304,20 @@ resource "kubernetes_deployment_v1" "strategytool" {
 
 resource "kubernetes_role_v1" "strategytool" {
   metadata {
-    name = var.strategytool_name
+    name      = var.strategytool_name
     namespace = "default"
   }
 
   rule {
     api_groups = ["batch"]
-    resources = ["jobs"]
-    verbs =["get", "list"]
+    resources  = ["jobs"]
+    verbs      = ["get", "list"]
   }
 }
 
 resource "kubernetes_role_binding_v1" "strategytool" {
   metadata {
-    name = var.strategytool_name
+    name      = var.strategytool_name
     namespace = "default"
   }
 
