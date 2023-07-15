@@ -11,10 +11,9 @@ export const load = (async ({ params, locals, url }) => {
 	let overlayData;
 
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
-	const relatedContainers = await locals.pool.connect(getAllDirectlyRelatedContainers(container));
 	const allRelatedContainers = await locals.pool.connect(
 		getAllRelatedContainers(
-			container.guid,
+			params.guid,
 			{
 				categories: url.searchParams.getAll('category'),
 				topics: url.searchParams.getAll('topic'),
@@ -36,5 +35,5 @@ export const load = (async ({ params, locals, url }) => {
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}
 
-	return { allRelatedContainers, container, overlayData, relatedContainers };
+	return { allRelatedContainers, container, overlayData };
 }) satisfies PageServerLoad;
