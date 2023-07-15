@@ -317,7 +317,7 @@ export const container = z.object({
 	revision: z.number().int().positive(),
 	user: z.array(user),
 	valid_currently: z.boolean(),
-	valid_from: z.number().int()
+	valid_from: z.coerce.date()
 });
 
 export type Container = z.infer<typeof container>;

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Viewer } from 'bytemd';
-	import { _ } from 'svelte-i18n';
+	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import { sdgIcons } from '$lib/models';
@@ -132,6 +132,18 @@
 					<p class="meta-value">{$_(container.payload.level)}</p>
 				</div>
 			{/if}
+			<div class="meta">
+				<h3 class="meta-key">{$_('created_date')}</h3>
+				<ul class="meta-value">
+					<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
+				</ul>
+			</div>
+			<div class="meta">
+				<h3 class="meta-key">{$_('modified_date')}</h3>
+				<ul class="meta-value">
+					<li>{$date(container.valid_from, { format: 'medium' })}</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 
