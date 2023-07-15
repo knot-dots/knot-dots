@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { ChevronLeft, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import Chapter from '$lib/components/Chapter.svelte';
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
-	import { isModelContainer, isPartOf, sdgIcons } from '$lib/models';
+	import { isModelContainer, isPartOf, isTextContainer, sdgIcons } from '$lib/models';
 	import type { Container, StrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
 
-	$: parts = relatedContainers.filter(isModelContainer).filter(isPartOf(container));
+	$: parts = relatedContainers
+		.filter((c) => isModelContainer(c) || isTextContainer(c))
+		.filter(isPartOf(container));
 </script>
 
 <article class="details details--page">
@@ -69,6 +72,10 @@
 
 	<footer>
 		{#if $user.isAuthenticated}
+			<a class="button primary" href="?new=text&is-part-of={container.revision}">
+				<Icon src={PlusSmall} size="24" mini />
+				{$_('text')}
+			</a>
 			<a class="button primary" href="?new=model&is-part-of={container.revision}">
 				<Icon src={PlusSmall} size="24" mini />
 				{$_('strategic_goal')}
@@ -78,7 +85,11 @@
 
 	<div class="chapters">
 		{#each parts as p}
-			<ModelChapter container={p} {relatedContainers} />
+			{#if isModelContainer(p)}
+				<ModelChapter container={p} {relatedContainers} />
+			{:else}
+				<Chapter container={p} />
+			{/if}
 		{/each}
 	</div>
 </article>

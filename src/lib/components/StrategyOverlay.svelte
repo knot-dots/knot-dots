@@ -8,16 +8,19 @@
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
+	import TextForm from '$lib/components/TextForm.svelte';
 	import {
 		isEmptyMeasureContainer,
 		isEmptyModelContainer,
 		isEmptyOperationalGoalContainer,
 		isEmptyStrategicGoalContainer,
+		isEmptyTextContainer,
 		isMeasureContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
 		isStrategicGoalGoalContainer,
-		isStrategyContainer
+		isStrategyContainer,
+		isTextContainer
 	} from '$lib/models';
 	import type { Container, CustomEventMap, EmptyContainer } from '$lib/models';
 
@@ -66,6 +69,12 @@
 					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
 				</svelte:fragment>
 			</StrategyForm>
+		{:else if isTextContainer(container)}
+			<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+				<svelte:fragment slot="extra-buttons">
+					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
+				</svelte:fragment>
+			</TextForm>
 		{/if}
 	{:else if isEmptyMeasureContainer(container)}
 		<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
@@ -91,6 +100,12 @@
 				<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
 			</svelte:fragment>
 		</StrategicGoalForm>
+	{:else if isEmptyTextContainer(container)}
+		<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<svelte:fragment slot="extra-buttons">
+				<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
+			</svelte:fragment>
+		</TextForm>
 	{/if}
 </div>
 

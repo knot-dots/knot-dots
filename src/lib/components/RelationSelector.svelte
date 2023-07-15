@@ -19,6 +19,8 @@
 				{$_('superordinate_strategic_goals')}
 			{:else if payloadType === payloadTypes.enum.measure}
 				{$_('superordinate_operational_goals')}
+			{:else if payloadType === payloadTypes.enum.text}
+				{$_('superordinate_chapters')}
 			{/if}
 		</legend>
 		{#each isPartOfOptions as option}

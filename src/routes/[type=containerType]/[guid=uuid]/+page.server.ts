@@ -6,6 +6,7 @@ import type {
 	EmptyModelContainer,
 	EmptyOperationalGoalContainer,
 	EmptyStrategicGoalContainer,
+	EmptyTextContainer,
 	Indicator,
 	PartialRelation,
 	PayloadType,
@@ -42,6 +43,8 @@ export const load = (async ({ params, locals, url }) => {
 			switch (type) {
 				case payloadTypes.enum.measure:
 					return { ...base, payload: { category, topic, type } } as EmptyMeasureContainer;
+				case payloadTypes.enum.model:
+					return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
 				case payloadTypes.enum.operational_goal:
 					return {
 						...base,
@@ -50,7 +53,7 @@ export const load = (async ({ params, locals, url }) => {
 				case payloadTypes.enum.strategic_goal:
 					return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
 				default:
-					return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
+					return { ...base, payload: { type } } as EmptyTextContainer;
 			}
 		})(url.searchParams.get('new') as PayloadType);
 		const isPartOfOptions = await locals.pool.connect(
