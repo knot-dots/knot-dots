@@ -306,7 +306,6 @@ export function getAllDirectlyRelatedContainers(container: Container) {
 			  SELECT *
 			  FROM container_relation
 			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			  ORDER BY position
 			`)
 				: [];
 
@@ -454,7 +453,6 @@ export function getAllRelatedContainers(
 			  SELECT *
 			  FROM container_relation
 			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			  ORDER BY position
 			`)
 				: [];
 
