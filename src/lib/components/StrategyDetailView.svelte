@@ -9,6 +9,7 @@
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
+	export let revisions: Container[];
 
 	$: parts = relatedContainers
 		.filter((c) => isModelContainer(c) || isTextContainer(c))

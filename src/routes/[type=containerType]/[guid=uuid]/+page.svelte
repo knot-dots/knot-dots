@@ -11,15 +11,16 @@
 
 	$: container = data.container;
 	$: relatedContainers = data.relatedContainers;
+	$: revisions = data.revisions;
 </script>
 
 {#if isStrategyContainer(container)}
-	<StrategyDetailView {container} relatedContainers={data.relatedContainers} />
+	<StrategyDetailView {container} {relatedContainers} {revisions} />
 	{#if data.strategyOverlayData}
 		<StrategyOverlay {...data.strategyOverlayData} />
 	{/if}
 {:else}
-	<ContainerDetailView {container} {relatedContainers}>
+	<ContainerDetailView {container} {relatedContainers} {revisions}>
 		<svelte:fragment slot="header">
 			<h2>{container.payload.title}</h2>
 			<div class="icons">

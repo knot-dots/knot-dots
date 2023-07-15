@@ -20,9 +20,11 @@
 	import type { Container } from '$lib/models';
 	import { sidebarToggle, user } from '$lib/stores.js';
 
-	export let container: Container;
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
+	export let revisions: Container[];
+
+	$: container = revisions[revisions.length - 1];
 
 	let edit = false;
 
@@ -72,7 +74,7 @@
 			</StrategyForm>
 		{/if}
 	{:else}
-		<ContainerDetailView {container} {relatedContainers}>
+		<ContainerDetailView {container} {relatedContainers} {revisions}>
 			<svelte:fragment slot="header">
 				<h2>{container.payload.title}</h2>
 				<div class="icons">

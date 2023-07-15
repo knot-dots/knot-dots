@@ -8,6 +8,7 @@
 
 	export let container: Container;
 	export let relatedContainers: Container[];
+	export let revisions: Container[];
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
