@@ -4,8 +4,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { payloadTypes, predicates } from '$lib/models';
-	import type { Container } from '$lib/models';
+	import { isPartOf, payloadTypes } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -17,16 +16,6 @@
 		{ title: 'operational_goals', payloadType: payloadTypes.enum.operational_goal },
 		{ title: 'measures', payloadType: payloadTypes.enum.measure }
 	];
-
-	function isPartOf(container: Container) {
-		return function (candidate: Container) {
-			return (
-				container.relation.findIndex(
-					(r) => r.predicate === predicates.enum['is-part-of'] && r.subject === candidate.revision
-				) > -1
-			);
-		};
-	}
 </script>
 
 <Board>

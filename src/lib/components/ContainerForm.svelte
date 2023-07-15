@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Editor } from 'bytemd';
-	import 'bytemd/dist/index.css';
 	import { createEventDispatcher, getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
@@ -77,15 +75,7 @@
 
 	<div class="details-content">
 		<div class="details-content-column">
-			<label>
-				{$_('summary')}
-				<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
-			</label>
-			<label>
-				{$_('description')}
-				<Editor value={container.payload.description ?? ""} on:change={(e) => container.payload.description = e.detail.value } />
-			</label>
-			<slot name="extra-data" />
+			<slot name="data" />
 		</div>
 
 		<div class="details-content-column">

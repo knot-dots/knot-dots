@@ -23,16 +23,14 @@
 	</header>
 	<div class="vertical-scroll-wrapper masked-overflow">
 		<slot />
-		<footer>
-			{#if $user.isAuthenticated}
+		{#if $user.isAuthenticated}
+			<footer>
 				<a href={addItemUrl}>
 					{$_('add_item')}
 					<Icon src={PlusSmall} size="24" mini />
 				</a>
-			{:else}
-				<a>{$_('add_item')} <Icon src={PlusSmall} size="24" mini /></a>
-			{/if}
-		</footer>
+			</footer>
+		{/if}
 	</div>
 </section>
 

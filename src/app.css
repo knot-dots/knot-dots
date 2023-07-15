@@ -454,7 +454,6 @@ fieldset {
 
 	.details-content:before {
 		border-left: 1px solid var(--color-gray-300);
-		content: '';
 		margin: initial;
 	}
 
@@ -488,6 +487,10 @@ fieldset {
 
 .meta-value {
 	flex: 1;
+}
+
+.meta-value--category li {
+	display: inline-block;
 }
 
 /* Bytemd markdown editor */
