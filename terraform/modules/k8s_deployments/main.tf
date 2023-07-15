@@ -324,8 +324,7 @@ resource "kubernetes_job_v1" "migrate" {
   }
 
   spec {
-    backoff_limit              = 1
-    ttl_seconds_after_finished = 300
+    backoff_limit = 1
 
     template {
       metadata {
