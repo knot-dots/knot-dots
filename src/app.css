@@ -137,7 +137,7 @@ button,
 	background-color: var(--bg-color);
 	border: solid 1px var(--button-border-color);
 	border-radius: 8px;
-	display: inline-block;
+	display: inline-flex;
 	font-weight: 500;
 	padding: var(--padding-y) var(--padding-x);
 	margin: 0;
@@ -248,6 +248,29 @@ textarea {
 	line-height: 1.2;
 	padding: 12px 16px;
 	width: 100%;
+}
+
+input[type='file'] {
+	background-color: var(--color-gray-050);
+	border: solid 1px var(--color-gray-300);
+	border-radius: 8px;
+	color: var(--color-gray-500);
+	display: block;
+	font-size: 1rem;
+	font-weight: 400;
+	line-height: 1.2;
+	padding: 0 16px 0 0;
+	width: 100%;
+}
+
+input[type='file']::file-selector-button {
+	background-color: var(--color-gray-800);
+	border: none;
+	border-bottom-left-radius: 8px;
+	border-top-left-radius: 8px;
+	color: white;
+	margin: 0 16px 0 -16px;
+	padding: 12px 16px 12px 32px;
 }
 
 input[type='range'] {
@@ -374,6 +397,9 @@ fieldset {
 
 .details.details--page {
 	border-radius: 8px;
+	flex: 1 1;
+	height: calc(100% - 2rem);
+	margin: 1rem;
 }
 
 @media (min-width: 768px) {

@@ -5,7 +5,7 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { modifiedContainer, newContainer } from '$lib/models';
+	import { modifiedContainer, newContainer, payloadTypes } from '$lib/models';
 	import type {
 		Container,
 		CustomEventMap,
@@ -13,7 +13,14 @@
 		ModifiedContainer,
 		NewContainer
 	} from '$lib/models';
+	import { page } from '$app/stores';
+
 	export let container: Container | EmptyContainer;
+
+	let isPage =
+		'guid' in container
+			? $page.url.pathname == `/${container.payload.type}/${container.guid}/edit`
+			: $page.url.pathname == `/${container.payload.type}/new`;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
@@ -24,6 +31,7 @@
 		let data: ModifiedContainer | NewContainer;
 
 		const formData = new FormData(event.target as HTMLFormElement);
+
 		const parseResult = z.union([modifiedContainer, newContainer]).safeParse({
 			...container,
 			realm: env.PUBLIC_KC_REALM,
@@ -37,6 +45,24 @@
 			data = parseResult.data;
 		} else {
 			return;
+		}
+
+		if (formData.has('upload') && data.payload.type == payloadTypes.enum.strategy) {
+			const uploadResponse = await fetch('/upload', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					...(sessionStorage.getItem('token')
+						? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
+						: undefined)
+				}
+			});
+
+			if (uploadResponse.ok) {
+				data.payload.image = uploadResponse.headers.get('Location') as string;
+			} else {
+				return;
+			}
 		}
 
 		if ('guid' in container) {
@@ -65,7 +91,7 @@
 	}
 </script>
 
-<form class="details" on:submit|preventDefault={handleSubmit}>
+<form class="details" class:details--page={isPage} on:submit|preventDefault={handleSubmit}>
 	<header>
 		<label>
 			{$_(`${container.payload.type}`)}

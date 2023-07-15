@@ -6,12 +6,14 @@
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
+	import TextForm from '$lib/components/TextForm.svelte';
 	import {
 		isMeasureContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
 		isStrategicGoalGoalContainer,
-		isStrategyContainer
+		isStrategyContainer,
+		isTextContainer
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
 	import type { PageData } from './$types';
@@ -70,4 +72,6 @@
 			</button>
 		</svelte:fragment>
 	</StrategyForm>
+{:else if isTextContainer(container)}
+	<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {/if}

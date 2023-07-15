@@ -1,15 +1,18 @@
 <script lang="ts">
-	import type { Container, StrategyContainer } from '$lib/models';
+	import { ChevronLeft, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { isModelContainer, isPartOf, sdgIcons } from '$lib/models';
+	import Chapter from '$lib/components/Chapter.svelte';
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
+	import { isModelContainer, isPartOf, isTextContainer, sdgIcons } from '$lib/models';
+	import type { Container, StrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
-	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
 
-	$: parts = relatedContainers.filter(isModelContainer).filter(isPartOf(container));
+	$: parts = relatedContainers
+		.filter((c) => isModelContainer(c) || isTextContainer(c))
+		.filter(isPartOf(container));
 </script>
 
 <article class="details details--page">
@@ -17,7 +20,7 @@
 		<h2>{container.payload.title}</h2>
 		<div class="icons">
 			{#if $user.isAuthenticated}
-				<a href="{container.guid}/edit" class="icons-element">
+				<a href="?edit={container.guid}" class="icons-element">
 					<Icon solid src={Pencil} size="20" />
 				</a>
 			{/if}
@@ -26,6 +29,7 @@
 			</button>
 		</div>
 	</header>
+
 	<div class="details-content">
 		<div class="details-content-column">
 			<div class="meta">
@@ -57,6 +61,7 @@
 				</ul>
 			</div>
 		</div>
+
 		<div class="details-content-column">
 			<div class="meta">
 				<h3 class="meta-key">{$_('level.label')}</h3>
@@ -64,9 +69,27 @@
 			</div>
 		</div>
 	</div>
+
+	<footer>
+		{#if $user.isAuthenticated}
+			<a class="button primary" href="?new=text&is-part-of={container.revision}">
+				<Icon src={PlusSmall} size="24" mini />
+				{$_('text')}
+			</a>
+			<a class="button primary" href="?new=model&is-part-of={container.revision}">
+				<Icon src={PlusSmall} size="24" mini />
+				{$_('strategic_goal')}
+			</a>
+		{/if}
+	</footer>
+
 	<div class="chapters">
 		{#each parts as p}
-			<ModelChapter container={p} {relatedContainers} />
+			{#if isModelContainer(p)}
+				<ModelChapter container={p} {relatedContainers} />
+			{:else}
+				<Chapter container={p} />
+			{/if}
 		{/each}
 	</div>
 </article>

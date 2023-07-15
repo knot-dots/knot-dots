@@ -111,10 +111,12 @@
 		"smart_city": "Smart City"
 	},
 	"summary": "Zusammenfassung",
+	"superordinate_chapters": "Übergeordnete Kapitel",
 	"superordinate_models": "Übergeordnete Leitbilder",
 	"superordinate_operational_goals": "Übergeordnete operative Ziele",
 	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_strategies": "Übergeordnete Strategien",
+	"text": "Ergänzungstext",
 	"topic": {
 		"citizen_participation": "Bürgerbeteiligung",
 		"cityscape": "Stadtbild",

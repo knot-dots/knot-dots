@@ -41,6 +41,17 @@
 					<Viewer value={container.payload.description} />
 				</div>
 			{/if}
+			{#if 'body' in container.payload}
+				<div class="body">
+					<h3>{$_('Body')}</h3>
+					<Viewer value={container.payload.body} />
+				</div>
+			{/if}
+			{#if 'image' in container.payload}
+				<div class="image">
+					<img alt={$_('cover_image')} src={container.payload.image} />
+				</div>
+			{/if}
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
 					<h3>{$_('indicator.legend')}</h3>
@@ -82,30 +93,34 @@
 					<p class="meta-value">{$_(container.payload.strategyType)}</p>
 				</div>
 			{/if}
-			<div class="meta">
-				<h3 class="meta-key">{$_('topic.label')}</h3>
-				<ul class="meta-value meta-value--topic">
-					{#each container.payload.topic as topic}
-						<li>{$_(topic)}</li>
-					{/each}
-				</ul>
-			</div>
-			<div class="meta">
-				<h3 class="meta-key">{$_('category')}</h3>
-				<ul class="meta-value meta-value--category">
-					{#each container.payload.category as category}
-						<li>
-							<img
-								src={sdgIcons.get(category)}
-								alt={$_(category)}
-								title={$_(category)}
-								width="66"
-								height="66"
-							/>
-						</li>
-					{/each}
-				</ul>
-			</div>
+			{#if 'topic' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('topic.label')}</h3>
+					<ul class="meta-value meta-value--topic">
+						{#each container.payload.topic as topic}
+							<li>{$_(topic)}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+			{#if 'category' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('category')}</h3>
+					<ul class="meta-value meta-value--category">
+						{#each container.payload.category as category}
+							<li>
+								<img
+									src={sdgIcons.get(category)}
+									alt={$_(category)}
+									title={$_(category)}
+									width="66"
+									height="66"
+								/>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 			{#if 'level' in container.payload}
 				<div class="meta">
 					<h3 class="meta-key">{$_('level.label')}</h3>

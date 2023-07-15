@@ -80,6 +80,30 @@ resource "scaleway_iam_api_key" "registry_password" {
   application_id = data.scaleway_iam_application.kapsule.id
 }
 
+resource "scaleway_iam_application" "strategytool" {
+  name        = "StrategyTool"
+  description = ""
+}
+
+resource "scaleway_iam_policy" "strategytool" {
+  name           = "StrategyTool"
+  application_id = scaleway_iam_application.strategytool.id
+
+  rule {
+    permission_set_names = [
+      "ObjectStorageObjectsDelete",
+      "ObjectStorageObjectsRead",
+      "ObjectStorageObjectsWrite",
+    ]
+    project_ids = [var.scaleway_project_id]
+  }
+}
+
+resource "scaleway_iam_api_key" "strategytool" {
+  application_id     = scaleway_iam_application.strategytool.id
+  default_project_id = var.scaleway_project_id
+}
+
 resource "scaleway_domain_zone" "dev" {
   count = var.with_scaleway_lb ? 1 : 0
 
@@ -120,6 +144,15 @@ resource "scaleway_rdb_instance" "dev" {
   backup_schedule_retention = 7
 }
 
+resource "scaleway_object_bucket" "upload" {
+  name = "strategytool-upload"
+}
+
+resource "scaleway_object_bucket_acl" "upload" {
+  bucket = scaleway_object_bucket.upload.name
+  acl    = "private"
+}
+
 module "rdb_databases" {
   source = "../modules/rdb_databases"
 
@@ -139,15 +172,18 @@ module "k8s_cluster" {
 module "k8s_deployments" {
   source = "../modules/k8s_deployments"
 
-  databases          = module.rdb_databases
-  registry_password  = scaleway_iam_api_key.registry_password.secret_key
-  registry_server    = "rg.fr-par.scw.cloud"
-  registry_username  = "knot-dots"
-  keycloak_host      = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
-  keycloak_image     = var.keycloak_image
-  keycloak_realm     = "knot-dots"
-  migrate_image      = var.migrate_image
-  strategytool_host  = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
-  strategytool_image = var.strategytool_image
-  with_scaleway_lb   = var.with_scaleway_lb
+  databases                = module.rdb_databases
+  registry_password        = scaleway_iam_api_key.registry_password.secret_key
+  registry_server          = "rg.fr-par.scw.cloud"
+  registry_username        = "knot-dots"
+  keycloak_host            = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
+  keycloak_image           = var.keycloak_image
+  keycloak_realm           = "knot-dots"
+  migrate_image            = var.migrate_image
+  strategytool_api_key     = scaleway_iam_api_key.strategytool
+  strategytool_bucket_name = scaleway_object_bucket.upload.name
+  strategytool_host        = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
+  strategytool_image       = var.strategytool_image
+  strategytool_region      = "fr-par"
+  with_scaleway_lb         = var.with_scaleway_lb
 }

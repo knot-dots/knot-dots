@@ -323,22 +323,26 @@ export function getAllDirectlyRelatedContainers(container: Container) {
 
 export function maybePartOf(containerType: PayloadType) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		let candidateType: PayloadType;
+		let candidateType: PayloadType[];
 		if (containerType == 'model') {
-			candidateType = 'strategy';
+			candidateType = ['strategy'];
 		} else if (containerType == 'strategic_goal') {
-			candidateType = 'model';
+			candidateType = ['model'];
 		} else if (containerType == 'operational_goal') {
-			candidateType = 'strategic_goal';
+			candidateType = ['strategic_goal'];
 		} else if (containerType == 'measure') {
-			candidateType = 'operational_goal';
+			candidateType = ['operational_goal'];
+		} else if (containerType == 'text') {
+			candidateType = ['model', 'operational_goal', 'strategic_goal', 'strategy'];
 		} else {
 			return [];
 		}
+
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE payload->>'type' = ${candidateType} AND valid_currently
+			WHERE payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
+			  AND valid_currently
 			ORDER BY payload->>'title' DESC
 		`);
 
@@ -385,28 +389,28 @@ export function getAllRelatedContainers(
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'measure'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('measure', 'text')
 				WHERE c.valid_currently
 			) s1
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'operational_goal'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('operational_goal', 'text')
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'strategic_goal'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('strategic_goal', 'text')
 				WHERE c.valid_currently
 			) s3 ON s2.object = s3.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'model'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('model', 'text')
 				WHERE c.valid_currently
 			) s4 ON s3.object = s4.subject
 			WHERE s1.subject = ${revision}

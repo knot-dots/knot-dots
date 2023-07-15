@@ -72,7 +72,8 @@ const payloadTypeValues = [
 	'model',
 	'operational_goal',
 	'strategic_goal',
-	'strategy'
+	'strategy',
+	'text'
 ] as const;
 
 export const payloadTypes = z.enum(payloadTypeValues);
@@ -286,10 +287,15 @@ const strategyPayload = basePayload
 		summary: true
 	})
 	.extend({
+		image: z.string().url().optional(),
 		level: levels,
 		strategyType: strategyTypes,
 		type: z.literal(payloadTypes.enum.strategy)
 	})
+	.strict();
+
+const textPayload = z
+	.object({ body: z.string(), title: z.string(), type: z.literal(payloadTypes.enum.text) })
 	.strict();
 
 const payload = z.discriminatedUnion('type', [
@@ -297,7 +303,8 @@ const payload = z.discriminatedUnion('type', [
 	modelPayload,
 	operationalGoalPayload,
 	strategicGoalPayload,
-	strategyPayload
+	strategyPayload,
+	textPayload
 ]);
 
 export type Payload = z.infer<typeof payload>;
@@ -369,6 +376,16 @@ export function isStrategyContainer(container: Container): container is Strategy
 	return container.payload.type === payloadTypes.enum.strategy;
 }
 
+const textContainer = container.extend({
+	payload: textPayload
+});
+
+export type TextContainer = z.infer<typeof textContainer>;
+
+export function isTextContainer(container: Container): container is TextContainer {
+	return container.payload.type === payloadTypes.enum.text;
+}
+
 export const newContainer = container
 	.omit({
 		guid: true,
@@ -390,7 +407,8 @@ const emptyContainer = newContainer.extend({
 			.partial()
 			.merge(operationalGoalPayload.pick({ indicator: true, type: true })),
 		strategicGoalPayload.partial().merge(strategicGoalPayload.pick({ type: true })),
-		strategyPayload.partial().merge(strategyPayload.pick({ type: true }))
+		strategyPayload.partial().merge(strategyPayload.pick({ type: true })),
+		textPayload.partial().merge(textPayload.pick({ type: true }))
 	])
 });
 
@@ -454,6 +472,16 @@ export function isEmptyStrategyContainer(
 	container: EmptyContainer
 ): container is EmptyStrategyContainer {
 	return container.payload.type === payloadTypes.enum.strategy;
+}
+
+const emptyTextContainer = emptyContainer.extend({
+	payload: textPayload.partial().merge(textPayload.pick({ type: true }))
+});
+
+export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
+
+export function isEmptyTextContainer(container: EmptyContainer): container is EmptyTextContainer {
+	return container.payload.type === payloadTypes.enum.text;
 }
 
 export const modifiedContainer = container
