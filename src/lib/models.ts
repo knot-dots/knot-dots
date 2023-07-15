@@ -286,6 +286,7 @@ const strategyPayload = basePayload
 		summary: true
 	})
 	.extend({
+		image: z.string().url().optional(),
 		level: levels,
 		strategyType: strategyTypes,
 		type: z.literal(payloadTypes.enum.strategy)

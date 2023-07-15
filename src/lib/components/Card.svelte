@@ -81,6 +81,8 @@
 		<div class="text">
 			{@html container.payload.summary ?? ''}
 		</div>
+	{:else if 'image' in container.payload}
+		<img alt={$_('cover_image')} class="text" src={container.payload.image} />
 	{/if}
 
 	<footer>

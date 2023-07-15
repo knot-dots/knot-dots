@@ -10,6 +10,15 @@
 <ContainerForm {container} on:submitSuccessful>
 	<svelte:fragment slot="data">
 		<label>
+			<input type="file" name="upload" accept="image/png,image/jpeg" />
+			{#if 'image' in container.payload}
+				<img alt={$_('cover_image')} src={container.payload.image} />
+			{/if}
+		</label>
+	</svelte:fragment>
+
+	<svelte:fragment slot="meta">
+		<label>
 			{$_('strategy_type.label')}
 			<select name="strategy-type" bind:value={container.payload.strategyType} required>
 				{#each strategyTypes.options as strategyTypeOption}

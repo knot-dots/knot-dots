@@ -41,6 +41,11 @@
 					<Viewer value={container.payload.description} />
 				</div>
 			{/if}
+			{#if 'image' in container.payload}
+				<div class="image">
+					<img alt={$_('cover_image')} src={container.payload.image} />
+				</div>
+			{/if}
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
 					<h3>{$_('indicator.legend')}</h3>
