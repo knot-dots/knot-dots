@@ -76,6 +76,12 @@
 					<p class="meta-value">{$_(container.payload.status)}</p>
 				</div>
 			{/if}
+			{#if 'strategyType' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+					<p class="meta-value">{$_(container.payload.strategyType)}</p>
+				</div>
+			{/if}
 			<div class="meta">
 				<h3 class="meta-key">{$_('topic.label')}</h3>
 				<ul class="meta-value meta-value--topic">
@@ -100,6 +106,12 @@
 					{/each}
 				</ul>
 			</div>
+			{#if 'level' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('level.label')}</h3>
+					<p class="meta-value">{$_(container.payload.level)}</p>
+				</div>
+			{/if}
 		</div>
 	</div>
 
