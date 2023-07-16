@@ -4,7 +4,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { payloadTypes } from '$lib/models';
+	import { isPartOf, payloadTypes } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -22,7 +22,7 @@
 	{#each columns as column (column.title)}
 		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.payloadType}/new`}>
 			{#each data.allRelatedContainers.filter((c) => c.payload.type === column.payloadType) as container}
-				<Card {container} relatedContainers={data.relatedContainers} />
+				<Card {container} relatedContainers={data.allRelatedContainers.filter(isPartOf)} />
 			{/each}
 		</BoardColumn>
 	{/each}

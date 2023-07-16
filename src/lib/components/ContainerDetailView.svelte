@@ -1,13 +1,19 @@
 <script lang="ts">
 	import { Viewer } from 'bytemd';
-	import { _ } from 'svelte-i18n';
+	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { sdgIcons } from '$lib/models';
+	import { isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
+
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
+	export let revisions: Container[];
+
+	$: strategy = isStrategyContainer(container)
+		? container
+		: relatedContainers.find(isStrategyContainer);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
@@ -29,104 +35,115 @@
 
 	<div class="details-content">
 		<div class="details-content-column">
-			{#if 'summary' in container.payload}
-				<div class="summary">
-					<h3>{$_('summary')}</h3>
-					{container.payload.summary ?? ''}
-				</div>
-			{/if}
-			{#if 'description' in container.payload}
-				<div class="description">
-					<h3>{$_('description')}</h3>
-					<Viewer value={container.payload.description} />
-				</div>
-			{/if}
-			{#if 'body' in container.payload}
-				<div class="body">
-					<h3>{$_('Body')}</h3>
-					<Viewer value={container.payload.body} />
-				</div>
-			{/if}
-			{#if 'image' in container.payload}
-				<div class="image">
-					<img alt={$_('cover_image')} src={container.payload.image} />
-				</div>
-			{/if}
-			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
-				<div class="indicator">
-					<h3>{$_('indicator.legend')}</h3>
-					<ProgressBar
-						guid={container.guid}
-						indicator={container.payload.indicator[0]}
-						contributors={relatedContainers}
-					/>
-				</div>
-			{/if}
-			{#if 'indicatorContribution' in container.payload}
-				<div class="indicatorContribution">
-					<h3>{$_('indicator.contribution')}</h3>
-					{#each relatedContainers as { guid, payload }}
-						{#if 'indicator' in payload && payload.indicator.length > 0 && 'quantity' in payload.indicator[0]}
-							<h4>
-								<a href={containerURL(payload.type, guid)}>{payload.title}</a>
-							</h4>
-							<p>
-								{$_(`${payload.indicator[0].quantity}.description`, {
-									values: { contribution: container.payload.indicatorContribution?.[guid] ?? 0 }
-								})}
-							</p>
-						{/if}
-					{/each}
-				</div>
-			{/if}
+			<slot name="data">
+				{#if 'summary' in container.payload}
+					<div class="summary">
+						<h3>{$_('summary')}</h3>
+						{container.payload.summary ?? ''}
+					</div>
+				{/if}
+				{#if 'description' in container.payload}
+					<div class="description">
+						<h3>{$_('description')}</h3>
+						<Viewer value={container.payload.description} />
+					</div>
+				{/if}
+				{#if 'body' in container.payload}
+					<div class="body">
+						<h3>{$_('Body')}</h3>
+						<Viewer value={container.payload.body} />
+					</div>
+				{/if}
+				{#if 'image' in container.payload}
+					<div class="image">
+						<img alt={$_('cover_image')} src={container.payload.image} />
+					</div>
+				{/if}
+				{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
+					<div class="indicator">
+						<h3>{$_('indicator.legend')}</h3>
+						<ProgressBar
+							guid={container.guid}
+							indicator={container.payload.indicator[0]}
+							contributors={relatedContainers.filter(isMeasureContainer)}
+						/>
+					</div>
+				{/if}
+			</slot>
 		</div>
+
 		<div class="details-content-column">
-			{#if 'status' in container.payload}
+			<slot name="meta">
 				<div class="meta">
-					<h3 class="meta-key">{$_('status.label')}</h3>
-					<p class="meta-value">{$_(container.payload.status)}</p>
+					<h3 class="meta-key">{$_('object')}</h3>
+					<p class="meta-value">{$_(container.payload.type)}</p>
 				</div>
-			{/if}
-			{#if 'strategyType' in container.payload}
+				{#if 'strategyType' in container.payload}
+					<div class="meta">
+						<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+						<p class="meta-value">{$_(container.payload.strategyType)}</p>
+					</div>
+				{:else if strategy}
+					<div class="meta">
+						<h3 class="meta-key">{$_('strategy')}</h3>
+						<p class="meta-value">
+							<a href={containerURL(strategy.payload.type, strategy.guid)}>
+								{$_(strategy.payload.title)}
+							</a>
+						</p>
+					</div>
+					<div class="meta">
+						<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+						<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
+					</div>
+				{/if}
+				{#if 'topic' in container.payload}
+					<div class="meta">
+						<h3 class="meta-key">{$_('topic.label')}</h3>
+						<ul class="meta-value meta-value--topic">
+							{#each container.payload.topic as topic}
+								<li>{$_(topic)}</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+				{#if 'category' in container.payload}
+					<div class="meta">
+						<h3 class="meta-key">{$_('category')}</h3>
+						<ul class="meta-value meta-value--category">
+							{#each container.payload.category as category}
+								<li>
+									<img
+										src={sdgIcons.get(category)}
+										alt={$_(category)}
+										title={$_(category)}
+										width="66"
+										height="66"
+									/>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+				{#if 'level' in container.payload}
+					<div class="meta">
+						<h3 class="meta-key">{$_('level.label')}</h3>
+						<p class="meta-value">{$_(container.payload.level)}</p>
+					</div>
+				{/if}
 				<div class="meta">
-					<h3 class="meta-key">{$_('strategy_type.label')}</h3>
-					<p class="meta-value">{$_(container.payload.strategyType)}</p>
-				</div>
-			{/if}
-			{#if 'topic' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('topic.label')}</h3>
-					<ul class="meta-value meta-value--topic">
-						{#each container.payload.topic as topic}
-							<li>{$_(topic)}</li>
-						{/each}
+					<h3 class="meta-key">{$_('created_date')}</h3>
+					<ul class="meta-value">
+						<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
 					</ul>
 				</div>
-			{/if}
-			{#if 'category' in container.payload}
 				<div class="meta">
-					<h3 class="meta-key">{$_('category')}</h3>
-					<ul class="meta-value meta-value--category">
-						{#each container.payload.category as category}
-							<li>
-								<img
-									src={sdgIcons.get(category)}
-									alt={$_(category)}
-									title={$_(category)}
-									width="66"
-									height="66"
-								/>
-							</li>
-						{/each}
+					<h3 class="meta-key">{$_('modified_date')}</h3>
+					<ul class="meta-value">
+						<li>{$date(container.valid_from, { format: 'medium' })}</li>
 					</ul>
 				</div>
-			{/if}
-			{#if 'level' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('level.label')}</h3>
-					<p class="meta-value">{$_(container.payload.level)}</p>
-				</div>
-			{/if}
+			</slot>
 		</div>
 	</div>
 

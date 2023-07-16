@@ -92,7 +92,6 @@
 
 	input[type='date'] {
 		display: inline-flex;
-		max-height: 45px;
 	}
 
 	input[name='indicator-max'] {

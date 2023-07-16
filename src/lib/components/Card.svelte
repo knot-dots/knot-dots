@@ -160,39 +160,4 @@
 		flex-shrink: 0;
 		margin-left: auto;
 	}
-
-	.badge {
-		--bg-color: var(--color-indigo-050);
-		--color: var(--color-indigo-500);
-
-		align-items: center;
-		background-color: var(--bg-color);
-		border-radius: 6px;
-		color: var(--color);
-		display: inline-flex;
-		justify-content: center;
-		gap: 0.25rem;
-		padding: 0.125rem 0.75rem;
-		text-align: center;
-	}
-
-	.badge.badge--red {
-		--bg-color: var(--color-red-050);
-		--color: var(--color-red-600);
-	}
-
-	.badge.badge--orange {
-		--bg-color: var(--color-orange-050);
-		--color: var(--color-orange-600);
-	}
-
-	.badge.badge--yellow {
-		--bg-color: var(--color-yellow-050);
-		--color: var(--color-yellow-400);
-	}
-
-	.badge.badge--green {
-		--bg-color: var(--color-green-050);
-		--color: var(--color-green-500);
-	}
 </style>

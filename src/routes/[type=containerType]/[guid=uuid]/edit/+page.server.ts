@@ -1,4 +1,4 @@
-import { getAllDirectlyRelatedContainers, getContainerByGuid, maybePartOf } from '$lib/server/db';
+import { getContainerByGuid, maybePartOf } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params, locals }) => {

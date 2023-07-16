@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChevronLeft, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
-	import { _ } from 'svelte-i18n';
+	import { _, date } from 'svelte-i18n';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
 	import { isModelContainer, isPartOf, isTextContainer, sdgIcons } from '$lib/models';
@@ -9,6 +9,7 @@
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
+	export let revisions: Container[];
 
 	$: parts = relatedContainers
 		.filter((c) => isModelContainer(c) || isTextContainer(c))
@@ -32,6 +33,10 @@
 
 	<div class="details-content">
 		<div class="details-content-column">
+			<div class="meta">
+				<h3 class="meta-key">{$_('object')}</h3>
+				<p class="meta-value">{$_(container.payload.type)}</p>
+			</div>
 			<div class="meta">
 				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
 				<p class="meta-value">{$_(container.payload.strategyType)}</p>
@@ -66,6 +71,18 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('level.label')}</h3>
 				<p class="meta-value">{$_(container.payload.level)}</p>
+			</div>
+			<div class="meta">
+				<h3 class="meta-key">{$_('created_date')}</h3>
+				<ul class="meta-value">
+					<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
+				</ul>
+			</div>
+			<div class="meta">
+				<h3 class="meta-key">{$_('modified_date')}</h3>
+				<ul class="meta-value">
+					<li>{$date(container.valid_from, { format: 'medium' })}</li>
+				</ul>
 			</div>
 		</div>
 	</div>

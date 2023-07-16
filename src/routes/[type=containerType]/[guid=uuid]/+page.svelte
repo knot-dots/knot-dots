@@ -3,23 +3,41 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import StrategyOverlay from '$lib/components/StrategyOverlay.svelte';
-	import { isStrategyContainer } from '$lib/models';
+	import { isMeasureContainer, isStrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 	import type { PageData } from './$types';
+	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 
 	export let data: PageData;
 
 	$: container = data.container;
 	$: relatedContainers = data.relatedContainers;
+	$: revisions = data.revisions;
 </script>
 
 {#if isStrategyContainer(container)}
-	<StrategyDetailView {container} relatedContainers={data.relatedContainers} />
+	<StrategyDetailView {container} {relatedContainers} {revisions} />
 	{#if data.strategyOverlayData}
 		<StrategyOverlay {...data.strategyOverlayData} />
 	{/if}
+{:else if isMeasureContainer(container)}
+	<MeasureDetailView {container} {relatedContainers} {revisions}>
+		<svelte:fragment slot="header">
+			<h2>{container.payload.title}</h2>
+			<div class="icons">
+				{#if $user.isAuthenticated}
+					<a href="{container.guid}/edit" class="icons-element">
+						<Icon solid src={Pencil} size="20" />
+					</a>
+				{/if}
+				<button class="icons-element" type="button" on:click={() => window.history.back()}>
+					<Icon solid src={ChevronLeft} size="20" />
+				</button>
+			</div>
+		</svelte:fragment>
+	</MeasureDetailView>
 {:else}
-	<ContainerDetailView {container} {relatedContainers}>
+	<ContainerDetailView {container} {relatedContainers} {revisions}>
 		<svelte:fragment slot="header">
 			<h2>{container.payload.title}</h2>
 			<div class="icons">

@@ -1,5 +1,5 @@
 import {
-	getAllDirectlyRelatedContainers,
+	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
 	getContainerByGuid,
 	maybePartOf
@@ -10,10 +10,9 @@ export const load = (async ({ params, locals, url }) => {
 	let overlayData;
 
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
-	const relatedContainers = await locals.pool.connect(getAllDirectlyRelatedContainers(container));
 	const allRelatedContainers = await locals.pool.connect(
 		getAllRelatedContainers(
-			container.guid,
+			params.guid,
 			{
 				categories: url.searchParams.getAll('category'),
 				topics: url.searchParams.getAll('topic'),
@@ -26,13 +25,14 @@ export const load = (async ({ params, locals, url }) => {
 
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';
-		const container = await locals.pool.connect(getContainerByGuid(guid));
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.payload.type)),
-			locals.pool.connect(getAllDirectlyRelatedContainers(container))
+			locals.pool.connect(getAllRelatedContainers(guid, {}, ''))
 		]);
-		overlayData = { container, isPartOfOptions, relatedContainers };
+		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}
 
-	return { allRelatedContainers, container, overlayData, relatedContainers };
+	return { allRelatedContainers, container, overlayData };
 }) satisfies PageServerLoad;

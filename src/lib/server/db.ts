@@ -175,6 +175,44 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
+export function getAllContainerRevisionsByGuid(guid: string) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const containerResult = await connection.many(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE guid = ${guid}
+			ORDER BY valid_from;
+		`);
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult = await connection.any(sql.typeAlias('userWithRevision')`
+			SELECT *
+			FROM container_user
+			WHERE revision IN (${revisions})
+		`);
+
+		const relationResult = await connection.any(sql.typeAlias('relation')`
+			SELECT *
+			FROM container_relation
+			WHERE subject IN (${revisions}) OR object IN (${revisions})
+		`);
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
 function prepareWhereCondition(filters: {
 	categories?: string[];
 	strategyTypes?: string[];
@@ -233,58 +271,6 @@ export function getManyContainers(
 			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
-
-		const revisions = sql.join(
-			containerResult.map((c) => c.revision),
-			sql.fragment`, `
-		);
-
-		const userResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userWithRevision')`
-						SELECT *
-						FROM container_user
-						WHERE revision IN (${revisions})
-					`)
-				: [];
-
-		const relationResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			`)
-				: [];
-
-		return containerResult.map((c) => ({
-			...c,
-			relation: relationResult.filter(
-				({ object, subject }) => object === c.revision || subject === c.revision
-			),
-			user: userResult
-				.filter((u) => u.revision === c.revision)
-				.map(({ issuer, subject }) => ({ issuer, subject }))
-		}));
-	};
-}
-
-export function getAllDirectlyRelatedContainers(container: Container) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		if (container.relation.length === 0) {
-			return [];
-		}
-
-		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT *
-			FROM container
-			WHERE revision IN (${sql.join(
-				container.relation.map((r) => r.object).concat(container.relation.map((r) => r.subject)),
-				sql.fragment`, `
-			)})
-				AND valid_currently
-			ORDER BY payload->>'title' DESC;
-		`);
 
 		const revisions = sql.join(
 			containerResult.map((c) => c.revision),

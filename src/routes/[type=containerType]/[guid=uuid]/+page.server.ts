@@ -13,13 +13,17 @@ import type {
 	SustainableDevelopmentGoal,
 	Topic
 } from '$lib/models';
-import { getAllRelatedContainers, getContainerByGuid, maybePartOf } from '$lib/server/db';
+import {
+	getAllContainerRevisionsByGuid,
+	getAllRelatedContainers,
+	maybePartOf
+} from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params, locals, url }) => {
 	let strategyOverlayData;
 
-	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.guid));
 	const relatedContainers = await locals.pool.connect(getAllRelatedContainers(params.guid, {}, ''));
 
 	if (url.searchParams.has('edit')) {
@@ -66,8 +70,9 @@ export const load = (async ({ params, locals, url }) => {
 	}
 
 	return {
-		container,
+		container: revisions[revisions.length - 1],
 		relatedContainers,
+		revisions,
 		...(strategyOverlayData ? { strategyOverlayData } : undefined)
 	};
 }) satisfies PageServerLoad;
