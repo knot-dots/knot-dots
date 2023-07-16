@@ -5,6 +5,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
@@ -73,6 +74,26 @@
 				</svelte:fragment>
 			</StrategyForm>
 		{/if}
+	{:else if isMeasureContainer(container)}
+		<MeasureDetailView {container} {relatedContainers} {revisions}>
+			<svelte:fragment slot="header">
+				<h2>{container.payload.title}</h2>
+				<div class="icons">
+					{#if $user.isAuthenticated}
+						<button class="icons-element" on:click={() => (edit = true)}>
+							<Icon solid src={Pencil} size="20" />
+						</button>
+					{/if}
+					<a
+						href={closeOverlay()}
+						class="button icons-element"
+						on:click={() => ($sidebarToggle = true)}
+					>
+						<Icon solid src={XMark} size="20" />
+					</a>
+				</div>
+			</svelte:fragment>
+		</MeasureDetailView>
 	{:else}
 		<ContainerDetailView {container} {relatedContainers} {revisions}>
 			<svelte:fragment slot="header">

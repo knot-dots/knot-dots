@@ -11,16 +11,6 @@
 	export let revisions: Container[];
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
-
-	function containerURL(type: string, guid: string) {
-		if (isPage) {
-			return `/${type}/${guid}`;
-		} else {
-			const query = new URLSearchParams($page.url.searchParams);
-			query.set('container-preview', guid);
-			return `?${query.toString()}`;
-		}
-	}
 </script>
 
 <article class="details" class:details--page={isPage}>
@@ -64,23 +54,6 @@
 						/>
 					</div>
 				{/if}
-				{#if 'indicatorContribution' in container.payload}
-					<div class="indicatorContribution">
-						<h3>{$_('indicator.contribution')}</h3>
-						{#each relatedContainers as { guid, payload }}
-							{#if 'indicator' in payload && payload.indicator.length > 0 && 'quantity' in payload.indicator[0]}
-								<h4>
-									<a href={containerURL(payload.type, guid)}>{payload.title}</a>
-								</h4>
-								<p>
-									{$_(`${payload.indicator[0].quantity}.description`, {
-										values: { contribution: container.payload.indicatorContribution?.[guid] ?? 0 }
-									})}
-								</p>
-							{/if}
-						{/each}
-					</div>
-				{/if}
 			</slot>
 		</div>
 
@@ -90,12 +63,6 @@
 					<h3 class="meta-key">{$_('object')}</h3>
 					<p class="meta-value">{$_(container.payload.type)}</p>
 				</div>
-				{#if 'status' in container.payload}
-					<div class="meta">
-						<h3 class="meta-key">{$_('status.label')}</h3>
-						<p class="meta-value">{$_(container.payload.status)}</p>
-					</div>
-				{/if}
 				{#if 'strategyType' in container.payload}
 					<div class="meta">
 						<h3 class="meta-key">{$_('strategy_type.label')}</h3>
