@@ -4,7 +4,13 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import { sdgIcons, status, statusColors, statusIcons } from '$lib/models';
+	import {
+		isOperationalGoalContainer,
+		sdgIcons,
+		status,
+		statusColors,
+		statusIcons
+	} from '$lib/models';
 	import type { Container, MeasureContainer, Status } from '$lib/models';
 
 	export let container: MeasureContainer;
@@ -81,7 +87,7 @@
 		{#if 'indicatorContribution' in selectedRevision.payload}
 			<div class="indicatorContribution">
 				<h3>{$_('effects')}</h3>
-				{#each relatedContainers as { guid, payload }}
+				{#each relatedContainers.filter(isOperationalGoalContainer) as { guid, payload }}
 					{#if 'indicator' in payload && payload.indicator.length > 0 && 'quantity' in payload.indicator[0]}
 						<h4>
 							<a href={containerURL(payload.type, guid)}>{payload.title}</a>

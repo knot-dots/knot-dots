@@ -3,7 +3,7 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { sdgIcons } from '$lib/models';
+	import { isMeasureContainer, sdgIcons } from '$lib/models';
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
@@ -50,7 +50,7 @@
 						<ProgressBar
 							guid={container.guid}
 							indicator={container.payload.indicator[0]}
-							contributors={relatedContainers}
+							contributors={relatedContainers.filter(isMeasureContainer)}
 						/>
 					</div>
 				{/if}

@@ -1,6 +1,5 @@
 import {
 	getAllContainerRevisionsByGuid,
-	getAllDirectlyRelatedContainers,
 	getAllRelatedContainers,
 	getAllRelatedContainersByStrategyType,
 	getManyContainers,
@@ -46,7 +45,7 @@ export const load = (async ({ locals, url }) => {
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.payload.type)),
-			locals.pool.connect(getAllDirectlyRelatedContainers(container))
+			locals.pool.connect(getAllRelatedContainers(guid, {}, ''))
 		]);
 		overlayData = {
 			isPartOfOptions,
