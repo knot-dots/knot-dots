@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Viewer } from 'bytemd';
 	import { Icon, LightBulb } from 'svelte-hero-icons';
-	import { _, date } from 'svelte-i18n';
+	import { _, date, number } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import {
@@ -86,6 +86,25 @@
 		<div class="description">
 			<h3>{$_('measure.description')}</h3>
 			<Viewer value={selectedRevision.payload.description} />
+		</div>
+		<div class="resource">
+			<h3>{$_('resources.label')}</h3>
+			<ul>
+				{#each selectedRevision.payload.resource as resource}
+					<li class="resource-item">
+						<span>{resource.label}</span>
+						<span>{$number(resource.amount)}</span>
+						<span>{resource.unit}</span>
+						<span>
+							{$date(new Date(resource.fulfillmentDate), {
+								day: '2-digit',
+								month: '2-digit',
+								year: 'numeric'
+							})}
+						</span>
+					</li>
+				{/each}
+			</ul>
 		</div>
 		{#if 'indicatorContribution' in selectedRevision.payload}
 			<div class="indicatorContribution">
@@ -193,6 +212,19 @@
 </ContainerDetailView>
 
 <style>
+	.resource-item {
+		display: flex;
+		gap: 1rem;
+	}
+
+	.resource-item > * {
+		flex: 1 1 0;
+	}
+
+	.resource-item > :nth-child(2) {
+		text-align: right;
+	}
+
 	.tabs > .tab-item {
 		opacity: 0.3;
 	}

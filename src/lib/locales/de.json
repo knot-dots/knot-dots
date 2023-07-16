@@ -74,6 +74,12 @@
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relations": "Beziehungen",
+	"resources": {
+		"amount": "Menge",
+		"fulfillmentDate": "Erfüllungsdatum",
+		"label": "Ressourcenbedarf",
+		"unit": "Einheit"
+	},
 	"save": "Speichern",
 	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
 	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
