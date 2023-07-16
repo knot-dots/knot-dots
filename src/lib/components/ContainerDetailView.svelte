@@ -3,14 +3,29 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { isMeasureContainer, sdgIcons } from '$lib/models';
+	import { isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
+
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: Container[];
 
+	$: strategy = isStrategyContainer(container)
+		? container
+		: relatedContainers.find(isStrategyContainer);
+
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
+
+	function containerURL(type: string, guid: string) {
+		if (isPage) {
+			return `/${type}/${guid}`;
+		} else {
+			const query = new URLSearchParams($page.url.searchParams);
+			query.set('container-preview', guid);
+			return `?${query.toString()}`;
+		}
+	}
 </script>
 
 <article class="details" class:details--page={isPage}>
@@ -67,6 +82,19 @@
 					<div class="meta">
 						<h3 class="meta-key">{$_('strategy_type.label')}</h3>
 						<p class="meta-value">{$_(container.payload.strategyType)}</p>
+					</div>
+				{:else if strategy}
+					<div class="meta">
+						<h3 class="meta-key">{$_('strategy')}</h3>
+						<p class="meta-value">
+							<a href={containerURL(strategy.payload.type, strategy.guid)}>
+								{$_(strategy.payload.title)}
+							</a>
+						</p>
+					</div>
+					<div class="meta">
+						<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+						<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
 					</div>
 				{/if}
 				{#if 'topic' in container.payload}

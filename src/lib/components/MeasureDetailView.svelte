@@ -6,6 +6,7 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import {
 		isOperationalGoalContainer,
+		isStrategyContainer,
 		sdgIcons,
 		status,
 		statusColors,
@@ -30,6 +31,8 @@
 			selectedRevision = container;
 		}
 	}
+
+	$: strategy = relatedContainers.find(isStrategyContainer);
 
 	function tabURL(status: Status) {
 		const query = new URLSearchParams($page.url.searchParams);
@@ -114,6 +117,20 @@
 			<h3 class="meta-key">{$_('object')}</h3>
 			<p class="meta-value">{$_(selectedRevision.payload.type)}</p>
 		</div>
+		{#if strategy}
+			<div class="meta">
+				<h3 class="meta-key">{$_('strategy')}</h3>
+				<p class="meta-value">
+					<a href={containerURL(strategy.payload.type, strategy.guid)}>
+						{$_(strategy.payload.title)}
+					</a>
+				</p>
+			</div>
+			<div class="meta">
+				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+				<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
+			</div>
+		{/if}
 		<div class="meta">
 			<h3 class="meta-key">{$_('topic.label')}</h3>
 			<ul class="meta-value meta-value--topic">
