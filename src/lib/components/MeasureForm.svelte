@@ -55,7 +55,7 @@
 			/>
 		</label>
 		{#each relatedContainers as o}
-			{#if container.payload.indicatorContribution?.[o.guid]}
+			{#if container.payload.indicatorContribution?.[o.guid] !== undefined}
 				<label>
 					{$_(`${o.payload.indicator[0].quantity}.input_prompt`)}
 					<input
