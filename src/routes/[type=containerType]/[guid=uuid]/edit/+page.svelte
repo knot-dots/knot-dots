@@ -39,7 +39,7 @@
 </script>
 
 {#if isMeasureContainer(container)}
-	<MeasureForm {container} {isPartOfOptions} on:submitSucessful={afterSubmit} />
+	<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {:else if isModelContainer(container)}
 	<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
