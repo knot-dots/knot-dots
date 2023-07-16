@@ -44,6 +44,7 @@
 		if (parseResult.success) {
 			data = parseResult.data;
 		} else {
+			alert(parseResult.error);
 			return;
 		}
 

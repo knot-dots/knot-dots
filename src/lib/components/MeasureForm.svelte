@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import { predicates, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type {
 		Container,
@@ -54,6 +55,7 @@
 				on:change={(e) => (container.payload.description = e.detail.value)}
 			/>
 		</label>
+		<ResourcePlanner {container} />
 		{#each relatedContainers as o}
 			{#if container.payload.indicatorContribution?.[o.guid] !== undefined}
 				<label>

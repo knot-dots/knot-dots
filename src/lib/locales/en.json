@@ -74,6 +74,12 @@
 	"read_more": "Read more",
 	"register": "Register",
 	"relations": "Relations",
+	"resource": {
+		"amount": "Amount",
+		"fulfillmentDate": "Fulfillment date",
+		"label": "Label",
+		"unit": "Unit"
+	},
 	"save": "Save",
 	"save_and_create_model": "Save and add model",
 	"save_and_create_strategic_goal": "Save and add strategic goal",
