@@ -33,6 +33,8 @@
 	"logout": "Log out",
 	"map": "Map",
 	"measure": "Measure",
+	"measure.description": "Intended effects",
+	"measure.summary": "Short description",
 	"measures": "Measures",
 	"model": "Model",
 	"models": "Models",

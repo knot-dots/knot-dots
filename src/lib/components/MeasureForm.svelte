@@ -44,11 +44,11 @@
 <ContainerForm {container} on:submitSuccessful>
 	<svelte:fragment slot="data">
 		<label>
-			{$_('summary')}
+			{$_('measure.summary')}
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
 		</label>
 		<label>
-			{$_('description')}
+			{$_('measure.description')}
 			<Editor
 				value={container.payload.description ?? ''}
 				on:change={(e) => (container.payload.description = e.detail.value)}
