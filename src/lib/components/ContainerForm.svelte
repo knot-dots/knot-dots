@@ -48,6 +48,11 @@
 			return;
 		}
 
+		// Ensure a fresh token will be included in the Authorization header.
+		await getKeycloak()
+			.updateToken(-1)
+			.catch(() => null);
+
 		if (formData.has('upload') && data.payload.type == payloadTypes.enum.strategy) {
 			const uploadResponse = await fetch('/upload', {
 				method: 'POST',
@@ -69,11 +74,6 @@
 		if ('guid' in container) {
 			url = `/container/${container.guid}/revision`;
 		}
-
-		// Ensure a fresh token will be included in the Authorization header.
-		await getKeycloak()
-			.updateToken(-1)
-			.catch(() => null);
 
 		const response = await fetch(url, {
 			method: 'POST',
