@@ -32,6 +32,7 @@
 	function closeOverlay() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('container-preview');
+		query.delete('status');
 		return `?${query.toString()}`;
 	}
 
