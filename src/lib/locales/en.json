@@ -1,6 +1,7 @@
 {
 	"about": "About us",
 	"add_item": "Add item",
+	"annotation": "Annotation",
 	"boards": "Boards",
 	"cancel": "Cancel",
 	"category": "Category",
@@ -8,6 +9,7 @@
 	"close_sidebar": "Close sidebar",
 	"created_date": "Created at",
 	"description": "Description",
+	"end_date": "End",
 	"error.unexpected": "We are working on it.",
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
@@ -45,6 +47,7 @@
 	"operational_goal": "Operational goal",
 	"operational_goals": "Operational goals",
 	"page_title": "StrategyTool",
+	"planned_duration": "Planned duration",
 	"quantity": {
 		"co2": {
 			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}} ",
@@ -97,6 +100,7 @@
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",
 	"sort_modified": "Last modified",
+	"start_date": "start",
 	"status": {
 		"idea": "Idea",
 		"in_implementation": "In implementation",

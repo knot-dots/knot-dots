@@ -66,20 +66,17 @@
 					/>
 				</label>
 			{/if}
+			<label>
+				{$_('annotation')}
+				<Editor
+					value={container.payload.annotation ?? ''}
+					on:change={(e) => (container.payload.annotation = e.detail.value)}
+				/>
+			</label>
 		{/each}
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
-		<label>
-			{$_('status.label')}
-			<select name="status" bind:value={container.payload.status} required>
-				{#each status.options as statusOption}
-					<option value={statusOption}>
-						{$_(statusOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
 		<label>
 			{$_('topic.label')}
 			<select name="topic" bind:value={container.payload.topic} multiple>
@@ -100,6 +97,27 @@
 				{/each}
 			</select>
 		</label>
+		<label>
+			{$_('status.label')}
+			<select name="status" bind:value={container.payload.status} required>
+				{#each status.options as statusOption}
+					<option value={statusOption}>
+						{$_(statusOption)}
+					</option>
+				{/each}
+			</select>
+		</label>
+		<fieldset class="duration">
+			<legend>{$_('planned_duration')}</legend>
+			<label>
+				{$_('start_date')}
+				<input type="date" name="startDate" bind:value={container.payload.startDate} required />
+			</label>
+			<label>
+				{$_('end_date')}
+				<input type="date" name="endDate" bind:value={container.payload.endDate} required />
+			</label>
+		</fieldset>
 		<RelationSelector
 			{isPartOfOptions}
 			payloadType={container.payload.type}
@@ -111,3 +129,10 @@
 		<slot name="extra-buttons" />
 	</slot>
 </ContainerForm>
+
+<style>
+	.duration {
+		display: flex;
+		gap: 1rem;
+	}
+</style>

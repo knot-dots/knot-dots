@@ -1,6 +1,7 @@
 {
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
+	"annotation": "Anmerkungen",
 	"boards": "Bretter",
 	"cancel": "Abbrechen",
 	"category": "Kategorie",
@@ -8,6 +9,7 @@
 	"close_sidebar": "Seitenleiste schließen",
 	"created_date": "Erstellungsdatum",
 	"description": "Beschreibung",
+	"end_date": "Ende",
 	"error.unexpected": "Wir arbeiten daran.",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
@@ -45,6 +47,7 @@
 	"operational_goal": "Operatives Ziel",
 	"operational_goals": "Operative Ziele",
 	"page_title": "Strategie-Werkzeug",
+	"planned_duration": "Geplante Laufzeit",
 	"quantity": {
 		"co2": {
 			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}} ",
@@ -97,6 +100,7 @@
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",
+	"start_date": "Beginn",
 	"status": {
 		"idea": "Idee",
 		"in_implementation": "In Umsetzung",
