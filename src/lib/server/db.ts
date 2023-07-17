@@ -8,7 +8,13 @@ import type {
 } from 'slonik';
 import { z } from 'zod';
 import { container, relation, user } from '$lib/models';
-import type { Container, ModifiedContainer, NewContainer, PayloadType } from '$lib/models';
+import type {
+	Container,
+	ModifiedContainer,
+	NewContainer,
+	PayloadType,
+	Relation
+} from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -147,6 +153,20 @@ export function updateContainer(container: ModifiedContainer) {
       `);
 
 			return { ...containerResult, user: userResult };
+		});
+	};
+}
+
+export function updateContainerRelationPosition(relation: Relation[]) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			await Promise.all(
+				relation.map(({ object, subject }, position) =>
+					txConnection.query(sql.typeAlias('void')`
+						UPDATE container_relation SET position = ${position} WHERE object = ${object} AND subject = ${subject}
+					`)
+				)
+			);
 		});
 	};
 }
