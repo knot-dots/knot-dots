@@ -96,11 +96,11 @@
 
 		<footer>
 			{#if $user.isAuthenticated}
-				<a class="button primary" href="?new=text&is-part-of={container.revision}">
+				<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
 					<Icon src={PlusSmall} size="24" mini />
 					{$_('text')}
 				</a>
-				<a class="button primary" href="?new=model&is-part-of={container.revision}">
+				<a class="button primary" href="?overlay-new=model&is-part-of={container.revision}">
 					<Icon src={PlusSmall} size="24" mini />
 					{$_('model')}
 				</a>
