@@ -27,15 +27,28 @@ export const load = (async ({ params, locals, url }) => {
 	const relatedContainers = await locals.pool.connect(getAllRelatedContainers(params.guid, {}, ''));
 
 	if (url.searchParams.has('edit')) {
+		strategyOverlayData = {
+			container: revisions[revisions.length - 1],
+			isPartOfOptions: [],
+			relatedContainers,
+			revisions
+		};
+	} else if (url.searchParams.has('container-preview')) {
+		const guid = url.searchParams.get('container-preview') as string;
 		const selectedContainer = relatedContainers.find(
-			(c) => url.searchParams.get('edit') == c.guid
+			(c) => url.searchParams.get('container-preview') == c.guid
 		) as Container;
-		const isPartOfOptions = await locals.pool.connect(maybePartOf(selectedContainer.payload.type));
+		const [isPartOfOptions, revisions] = await Promise.all([
+			locals.pool.connect(maybePartOf(selectedContainer.payload.type)),
+			locals.pool.connect(getAllContainerRevisionsByGuid(guid))
+		]);
 		strategyOverlayData = {
 			container: selectedContainer,
-			isPartOfOptions
+			isPartOfOptions,
+			relatedContainers,
+			revisions
 		};
-	} else if (url.searchParams.has('new')) {
+	} else if (url.searchParams.has('overlay-new')) {
 		const selected = url.searchParams
 			.getAll('is-part-of')
 			.map((o): PartialRelation => ({ object: Number(o), position: 0, predicate: 'is-part-of' }));
@@ -59,13 +72,15 @@ export const load = (async ({ params, locals, url }) => {
 				default:
 					return { ...base, payload: { type } } as EmptyTextContainer;
 			}
-		})(url.searchParams.get('new') as PayloadType);
+		})(url.searchParams.get('overlay-new') as PayloadType);
 		const isPartOfOptions = await locals.pool.connect(
-			maybePartOf(url.searchParams.get('new') as PayloadType)
+			maybePartOf(url.searchParams.get('overlay-new') as PayloadType)
 		);
 		strategyOverlayData = {
 			container: newContainer,
-			isPartOfOptions
+			isPartOfOptions,
+			relatedContainers,
+			revisions
 		};
 	}
 

@@ -140,9 +140,13 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('strategy')}</h3>
 				<p class="meta-value">
-					<a href={containerURL(strategy.payload.type, strategy.guid)}>
+					{#if $page.url.pathname == `/strategy/${strategy.guid}`}
 						{$_(strategy.payload.title)}
-					</a>
+					{:else}
+						<a href={containerURL(strategy.payload.type, strategy.guid)}>
+							{$_(strategy.payload.title)}
+						</a>
+					{/if}
 				</p>
 			</div>
 			<div class="meta">

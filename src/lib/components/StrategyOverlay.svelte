@@ -23,89 +23,152 @@
 		isTextContainer
 	} from '$lib/models';
 	import type { Container, CustomEventMap, EmptyContainer } from '$lib/models';
+	import { sidebarToggle, user } from '$lib/stores';
+	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
+	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 
 	export let container: Container | EmptyContainer;
-
 	export let isPartOfOptions: Container[];
+	export let relatedContainers: Container[];
+	export let revisions: Container[];
+
+	$: edit = $page.url.searchParams.has('overlay-new') || $page.url.searchParams.has('edit');
+
+	function closeOverlay() {
+		const query = new URLSearchParams($page.url.searchParams);
+		query.delete('container-preview');
+		query.delete('edit');
+		query.delete('overlay-new');
+		query.delete('status');
+		query.delete('is-part-of');
+		return `?${query.toString()}`;
+	}
 
 	async function afterSubmit(event: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		if ('guid' in container) {
 			await invalidateAll();
+			edit = false;
 		} else {
-			await goto(`?edit=${event.detail.result.guid}`, { invalidateAll: true });
+			await goto(`?container-preview=${event.detail.result.guid}`, { invalidateAll: true });
+			edit = false;
 		}
 	}
 </script>
 
 <div class="overlay" transition:slide={{ axis: 'x' }}>
-	{#if 'guid' in container}
-		{#if isMeasureContainer(container)}
+	{#if edit}
+		{#if 'guid' in container}
+			{#if isMeasureContainer(container)}
+				<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+					<svelte:fragment slot="extra-buttons">
+						<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					</svelte:fragment>
+				</MeasureForm>
+			{:else if isModelContainer(container)}
+				<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+					<svelte:fragment slot="extra-buttons">
+						<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					</svelte:fragment>
+				</ModelForm>
+			{:else if isOperationalGoalContainer(container)}
+				<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+					<svelte:fragment slot="extra-buttons">
+						<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					</svelte:fragment>
+				</OperationalGoalForm>
+			{:else if isStrategicGoalGoalContainer(container)}
+				<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+					<svelte:fragment slot="extra-buttons">
+						<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					</svelte:fragment>
+				</StrategicGoalForm>
+			{:else if isStrategyContainer(container)}
+				<StrategyForm {container} on:submitSuccessful={afterSubmit}>
+					<svelte:fragment slot="extra-buttons">
+						<a class="button" href={closeOverlay()}>{$_('cancel')}</a>
+					</svelte:fragment>
+				</StrategyForm>
+			{:else if isTextContainer(container)}
+				<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+					<svelte:fragment slot="extra-buttons">
+						<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					</svelte:fragment>
+				</TextForm>
+			{/if}
+		{:else if isEmptyMeasureContainer(container)}
 			<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
-					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
+					<a class="button" href={closeOverlay()}>{$_('cancel')}</a>
 				</svelte:fragment>
 			</MeasureForm>
-		{:else if isModelContainer(container)}
+		{:else if isEmptyModelContainer(container)}
 			<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
-					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
+					<a class="button" href={closeOverlay()}>{$_('cancel')}</a>
 				</svelte:fragment>
 			</ModelForm>
-		{:else if isOperationalGoalContainer(container)}
+		{:else if isEmptyOperationalGoalContainer(container)}
 			<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
-					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
+					<a class="button" href={closeOverlay()}>{$_('cancel')}</a>
 				</svelte:fragment>
 			</OperationalGoalForm>
-		{:else if isStrategicGoalGoalContainer(container)}
+		{:else if isEmptyStrategicGoalContainer(container)}
 			<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
-					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
+					<a class="button" href={closeOverlay()}>{$_('cancel')}</a>
 				</svelte:fragment>
 			</StrategicGoalForm>
-		{:else if isStrategyContainer(container)}
-			<StrategyForm {container} on:submitSuccessful={afterSubmit}>
-				<svelte:fragment slot="extra-buttons">
-					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
-				</svelte:fragment>
-			</StrategyForm>
-		{:else if isTextContainer(container)}
+		{:else if isEmptyTextContainer(container)}
 			<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
-					<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
+					<a class="button" href={closeOverlay()}>{$_('cancel')}</a>
 				</svelte:fragment>
 			</TextForm>
 		{/if}
-	{:else if isEmptyMeasureContainer(container)}
-		<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-			<svelte:fragment slot="extra-buttons">
-				<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
-			</svelte:fragment>
-		</MeasureForm>
-	{:else if isEmptyModelContainer(container)}
-		<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-			<svelte:fragment slot="extra-buttons">
-				<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
-			</svelte:fragment>
-		</ModelForm>
-	{:else if isEmptyOperationalGoalContainer(container)}
-		<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-			<svelte:fragment slot="extra-buttons">
-				<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
-			</svelte:fragment>
-		</OperationalGoalForm>
-	{:else if isEmptyStrategicGoalContainer(container)}
-		<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-			<svelte:fragment slot="extra-buttons">
-				<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
-			</svelte:fragment>
-		</StrategicGoalForm>
-	{:else if isEmptyTextContainer(container)}
-		<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-			<svelte:fragment slot="extra-buttons">
-				<a class="button" href={$page.url.pathname}>{$_('cancel')}</a>
-			</svelte:fragment>
-		</TextForm>
+	{:else if 'guid' in container}
+		{#if isMeasureContainer(container)}
+			<MeasureDetailView {container} {relatedContainers} {revisions}>
+				<svelte:fragment slot="header">
+					<h2>{container.payload.title}</h2>
+					<div class="icons">
+						{#if $user.isAuthenticated}
+							<button class="icons-element" on:click={() => (edit = true)}>
+								<Icon solid src={Pencil} size="20" />
+							</button>
+						{/if}
+						<a
+							href={closeOverlay()}
+							class="button icons-element"
+							on:click={() => ($sidebarToggle = true)}
+						>
+							<Icon solid src={XMark} size="20" />
+						</a>
+					</div>
+				</svelte:fragment>
+			</MeasureDetailView>
+		{:else}
+			<ContainerDetailView {container} {relatedContainers} {revisions}>
+				<svelte:fragment slot="header">
+					<h2>{container.payload.title}</h2>
+					<div class="icons">
+						{#if $user.isAuthenticated}
+							<button class="icons-element" on:click={() => (edit = true)}>
+								<Icon solid src={Pencil} size="20" />
+							</button>
+						{/if}
+						<a
+							href={closeOverlay()}
+							class="button icons-element"
+							on:click={() => ($sidebarToggle = true)}
+						>
+							<Icon solid src={XMark} size="20" />
+						</a>
+					</div>
+				</svelte:fragment>
+			</ContainerDetailView>
+		{/if}
 	{/if}
 </div>
 

@@ -91,9 +91,6 @@
 							<Icon src={ArrowUp} size="20" />
 						</button>
 					{/if}
-					<a href="?edit={container.guid}" class="icons-element">
-						<Icon solid src={Pencil} size="20" />
-					</a>
 				{/if}
 			</h3>
 			{#if 'body' in container.payload}
@@ -104,32 +101,38 @@
 			{/if}
 		</div>
 		<aside>
-			<a class="button" href="/{container.payload.type}/{container.guid}">{$_('read_more')}</a>
+			<a class="button" href="?container-preview={container.guid}">{$_('read_more')}</a>
 			{#if $user.isAuthenticated}
 				{#if isModelContainer(container)}
-					<a class="button primary" href="?new=text&is-part-of={container.revision}">
+					<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('text')}
 					</a>
-					<a class="button primary" href="?new=strategic_goal&is-part-of={container.revision}">
+					<a
+						class="button primary"
+						href="?overlay-new=strategic_goal&is-part-of={container.revision}"
+					>
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('strategic_goal')}
 					</a>
 				{:else if isStrategicGoalGoalContainer(container)}
-					<a class="button primary" href="?new=text&is-part-of={container.revision}">
+					<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('text')}
 					</a>
-					<a class="button primary" href="?new=operational_goal&is-part-of={container.revision}">
+					<a
+						class="button primary"
+						href="?overlay-new=operational_goal&is-part-of={container.revision}"
+					>
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('operational_goal')}
 					</a>
 				{:else if isOperationalGoalContainer(container)}
-					<a class="button primary" href="?new=text&is-part-of={container.revision}">
+					<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('text')}
 					</a>
-					<a class="button primary" href="?new=measure&is-part-of={container.revision}">
+					<a class="button primary" href="?overlay-new=measure&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('measure')}
 					</a>
