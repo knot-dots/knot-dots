@@ -101,17 +101,22 @@
 			</a>
 			<a class="button primary" href="?new=model&is-part-of={container.revision}">
 				<Icon src={PlusSmall} size="24" mini />
-				{$_('strategic_goal')}
+				{$_('model')}
 			</a>
 		{/if}
 	</footer>
 
 	<div class="chapters">
-		{#each parts as p}
+		{#each parts as p, i}
 			{#if isModelContainer(p)}
-				<ModelChapter container={p} isPartOf={container} {relatedContainers} />
+				<ModelChapter
+					chapter={String(i + 1)}
+					container={p}
+					isPartOf={container}
+					{relatedContainers}
+				/>
 			{:else}
-				<Chapter container={p} isPartOf={container} />
+				<Chapter chapter={String(i + 1)} container={p} isPartOf={container} />
 			{/if}
 		{/each}
 	</div>

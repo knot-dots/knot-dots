@@ -9,6 +9,7 @@
 	} from '$lib/models';
 	import OperationalGoalChapter from '$lib/components/OperationalGoalChapter.svelte';
 
+	export let chapter = '';
 	export let container: StrategicGoalContainer;
 	export let isPartOf: ModelContainer;
 	export let relatedContainers: Container[] = [];
@@ -27,11 +28,16 @@
 		);
 </script>
 
-<Chapter {container} {isPartOf} />
-{#each parts as p}
+<Chapter {chapter} {container} {isPartOf} />
+{#each parts as p, i}
 	{#if isOperationalGoalContainer(p)}
-		<OperationalGoalChapter container={p} isPartOf={container} {relatedContainers} />
+		<OperationalGoalChapter
+			chapter={`${chapter}.${i + 1}`}
+			container={p}
+			isPartOf={container}
+			{relatedContainers}
+		/>
 	{:else}
-		<Chapter container={p} isPartOf={container} />
+		<Chapter chapter={`${chapter}.${i + 1}`} container={p} isPartOf={container} />
 	{/if}
 {/each}

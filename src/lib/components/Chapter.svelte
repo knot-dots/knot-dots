@@ -15,6 +15,7 @@
 	import type { Container, Relation } from '$lib/models';
 	import { user } from '$lib/stores';
 
+	export let chapter = '';
 	export let container: Container;
 	export let isPartOf: Container;
 
@@ -70,6 +71,7 @@
 
 <div class="chapter">
 	<h3>
+		{chapter}
 		{container.payload.title}
 		{#if $user.isAuthenticated}
 			{#if currentIndex < isPartOfRelation.length - 1}
