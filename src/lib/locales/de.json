@@ -76,6 +76,7 @@
 	"relations": "Beziehungen",
 	"resources": {
 		"amount": "Menge",
+		"description": "Beschreibung",
 		"fulfillmentDate": "Erfüllungsdatum",
 		"label": "Ressourcenbedarf",
 		"unit": "Einheit"

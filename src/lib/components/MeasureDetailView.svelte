@@ -94,9 +94,9 @@
 			<ul>
 				{#each selectedRevision.payload.resource as resource}
 					<li class="resource-item">
-						<span>{resource.label}</span>
-						<span>{$number(resource.amount)}</span>
+						<span>{resource.description}</span>
 						<span>{resource.unit}</span>
+						<span>{$number(resource.amount)}</span>
 						<span>
 							{$date(new Date(resource.fulfillmentDate), {
 								day: '2-digit',
@@ -127,10 +127,22 @@
 				{/each}
 			</div>
 		{/if}
-		<div class="annotation">
-			<h3>{$_('annotation')}</h3>
-			<Viewer value={selectedRevision.payload.annotation} />
-		</div>
+		{#if container.payload.status == status.enum['status.in_planning']}
+			<div class="annotation">
+				<h3>{$_('annotation')}</h3>
+				<Viewer value={selectedRevision.payload.annotation} />
+			</div>
+		{:else if container.payload.status == status.enum['status.in_implementation']}
+			<div class="comment">
+				<h3>{$_('comment')}</h3>
+				<Viewer value={selectedRevision.payload.comment} />
+			</div>
+		{:else if container.payload.status == status.enum['status.in_operation']}
+			<div class="result">
+				<h3>{$_('result')}</h3>
+				<Viewer value={selectedRevision.payload.result} />
+			</div>
+		{/if}
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
@@ -219,15 +231,23 @@
 
 <style>
 	.resource-item {
+		border-bottom: solid 1px var(--color-gray-300);
+		column-gap: 1rem;
 		display: flex;
-		gap: 1rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.5rem;
+		padding-bottom: 0.5rem;
 	}
 
 	.resource-item > * {
-		flex: 1 1 0;
+		flex: 0 1 0;
 	}
 
-	.resource-item > :nth-child(2) {
+	.resource-item > :nth-child(1) {
+		flex: 1 0 100%;
+	}
+
+	.resource-item > :nth-child(3) {
 		text-align: right;
 	}
 
