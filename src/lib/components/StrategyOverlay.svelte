@@ -121,26 +121,25 @@
 
 	.overlay > :global(*) {
 		min-width: 100vw;
-		padding: 1rem;
 	}
 
 	@media (min-width: 768px) {
 		.overlay {
-			width: 50%;
+			width: 80%;
 		}
 
 		.overlay > :global(*) {
-			min-width: calc((100vw - 18rem) * 0.5);
+			min-width: calc((100vw - 18rem) * 0.8);
 		}
 	}
 
 	@media (min-width: 1440px) {
 		.overlay {
-			width: 40%;
+			width: 65%;
 		}
 
 		.overlay > :global(*) {
-			min-width: calc((100vw - 18rem) * 0.4);
+			min-width: calc((100vw - 18rem) * 0.65);
 		}
 	}
 </style>
