@@ -144,12 +144,4 @@
 	.chapters {
 		border-top: solid 1px var(--color-gray-300);
 	}
-
-	.chapters > :global(*) {
-		border-bottom: solid 1px var(--color-gray-300);
-	}
-
-	.chapters > :global(*:last-child) {
-		border-bottom: none;
-	}
 </style>

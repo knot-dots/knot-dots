@@ -76,32 +76,34 @@
 
 {#if show}
 	<div class="chapter">
-		<h3>
-			{chapter}
-			{container.payload.title}
-			{#if $user.isAuthenticated}
-				{#if currentIndex < isPartOfRelation.length - 1}
-					<button class="icons-element" type="button" on:click={moveDown}>
-						<Icon src={ArrowDown} size="20" />
-					</button>
+		<div class="content">
+			<h3>
+				{chapter}
+				{container.payload.title}
+				{#if $user.isAuthenticated}
+					{#if currentIndex < isPartOfRelation.length - 1}
+						<button class="icons-element" type="button" on:click={moveDown}>
+							<Icon src={ArrowDown} size="20" />
+						</button>
+					{/if}
+					{#if currentIndex > 0}
+						<button class="icons-element" type="button" on:click={moveUp}>
+							<Icon src={ArrowUp} size="20" />
+						</button>
+					{/if}
+					<a href="?edit={container.guid}" class="icons-element">
+						<Icon solid src={Pencil} size="20" />
+					</a>
 				{/if}
-				{#if currentIndex > 0}
-					<button class="icons-element" type="button" on:click={moveUp}>
-						<Icon src={ArrowUp} size="20" />
-					</button>
-				{/if}
-				<a href="?edit={container.guid}" class="icons-element">
-					<Icon solid src={Pencil} size="20" />
-				</a>
+			</h3>
+			{#if 'body' in container.payload}
+				<Viewer value={container.payload.body} />
 			{/if}
-		</h3>
-		{#if 'body' in container.payload}
-			<Viewer value={container.payload.body} />
-		{/if}
-		{#if 'description' in container.payload}
-			<Viewer value={container.payload.description} />
-		{/if}
-		<footer>
+			{#if 'description' in container.payload}
+				<Viewer value={container.payload.description} />
+			{/if}
+		</div>
+		<aside>
 			<a class="button" href="/{container.payload.type}/{container.guid}">{$_('read_more')}</a>
 			{#if $user.isAuthenticated}
 				{#if isModelContainer(container)}
@@ -133,7 +135,7 @@
 					</a>
 				{/if}
 			{/if}
-		</footer>
+		</aside>
 	</div>
 {/if}
 
@@ -148,16 +150,42 @@
 		margin-left: auto;
 	}
 
-	.chapter {
-		padding: 1.5rem;
-	}
-
-	.chapter footer {
+	aside {
+		align-items: flex-start;
+		border-bottom: solid 1px var(--color-gray-300);
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
+		flex: 0 0 30%;
 		gap: 1rem;
-		margin-top: 1rem;
-		padding: 0;
+		padding: 0 1.5rem 1.5rem;
+	}
+
+	.chapter {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.content {
+		flex: 1 0;
+		padding: 1.5rem 1.5rem 0;
+	}
+
+	@media (min-width: 1440px) {
+		aside {
+			border-bottom: none;
+			border-left: solid 1px var(--color-gray-300);
+			flex-direction: column;
+			padding: 1.5rem;
+		}
+
+		.chapter {
+			flex-direction: row;
+		}
+
+		.content {
+			padding: 1.5rem;
+		}
 	}
 </style>
