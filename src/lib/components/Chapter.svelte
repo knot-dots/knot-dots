@@ -4,6 +4,7 @@
 	import { ArrowDown, ArrowUp, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import {
@@ -22,6 +23,10 @@
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	let isPartOfRelation: Relation[];
+
+	$: show =
+		!$page.url.searchParams.has('payloadType') ||
+		$page.url.searchParams.getAll('payloadType').includes(container.payload.type);
 
 	$: isPartOfRelation = isPartOf.relation.filter(
 		({ object, predicate }) =>
@@ -69,66 +74,68 @@
 	}
 </script>
 
-<div class="chapter">
-	<h3>
-		{chapter}
-		{container.payload.title}
-		{#if $user.isAuthenticated}
-			{#if currentIndex < isPartOfRelation.length - 1}
-				<button class="icons-element" type="button" on:click={moveDown}>
-					<Icon src={ArrowDown} size="20" />
-				</button>
+{#if show}
+	<div class="chapter">
+		<h3>
+			{chapter}
+			{container.payload.title}
+			{#if $user.isAuthenticated}
+				{#if currentIndex < isPartOfRelation.length - 1}
+					<button class="icons-element" type="button" on:click={moveDown}>
+						<Icon src={ArrowDown} size="20" />
+					</button>
+				{/if}
+				{#if currentIndex > 0}
+					<button class="icons-element" type="button" on:click={moveUp}>
+						<Icon src={ArrowUp} size="20" />
+					</button>
+				{/if}
+				<a href="?edit={container.guid}" class="icons-element">
+					<Icon solid src={Pencil} size="20" />
+				</a>
 			{/if}
-			{#if currentIndex > 0}
-				<button class="icons-element" type="button" on:click={moveUp}>
-					<Icon src={ArrowUp} size="20" />
-				</button>
-			{/if}
-			<a href="?edit={container.guid}" class="icons-element">
-				<Icon solid src={Pencil} size="20" />
-			</a>
+		</h3>
+		{#if 'body' in container.payload}
+			<Viewer value={container.payload.body} />
 		{/if}
-	</h3>
-	{#if 'body' in container.payload}
-		<Viewer value={container.payload.body} />
-	{/if}
-	{#if 'description' in container.payload}
-		<Viewer value={container.payload.description} />
-	{/if}
-	<footer>
-		<a class="button" href="/{container.payload.type}/{container.guid}">{$_('read_more')}</a>
-		{#if $user.isAuthenticated}
-			{#if isModelContainer(container)}
-				<a class="button primary" href="?new=text&is-part-of={container.revision}">
-					<Icon src={PlusSmall} size="24" mini />
-					{$_('text')}
-				</a>
-				<a class="button primary" href="?new=strategic_goal&is-part-of={container.revision}">
-					<Icon src={PlusSmall} size="24" mini />
-					{$_('strategic_goal')}
-				</a>
-			{:else if isStrategicGoalGoalContainer(container)}
-				<a class="button primary" href="?new=text&is-part-of={container.revision}">
-					<Icon src={PlusSmall} size="24" mini />
-					{$_('text')}
-				</a>
-				<a class="button primary" href="?new=operational_goal&is-part-of={container.revision}">
-					<Icon src={PlusSmall} size="24" mini />
-					{$_('operational_goal')}
-				</a>
-			{:else if isOperationalGoalContainer(container)}
-				<a class="button primary" href="?new=text&is-part-of={container.revision}">
-					<Icon src={PlusSmall} size="24" mini />
-					{$_('text')}
-				</a>
-				<a class="button primary" href="?new=measure&is-part-of={container.revision}">
-					<Icon src={PlusSmall} size="24" mini />
-					{$_('measure')}
-				</a>
-			{/if}
+		{#if 'description' in container.payload}
+			<Viewer value={container.payload.description} />
 		{/if}
-	</footer>
-</div>
+		<footer>
+			<a class="button" href="/{container.payload.type}/{container.guid}">{$_('read_more')}</a>
+			{#if $user.isAuthenticated}
+				{#if isModelContainer(container)}
+					<a class="button primary" href="?new=text&is-part-of={container.revision}">
+						<Icon src={PlusSmall} size="24" mini />
+						{$_('text')}
+					</a>
+					<a class="button primary" href="?new=strategic_goal&is-part-of={container.revision}">
+						<Icon src={PlusSmall} size="24" mini />
+						{$_('strategic_goal')}
+					</a>
+				{:else if isStrategicGoalGoalContainer(container)}
+					<a class="button primary" href="?new=text&is-part-of={container.revision}">
+						<Icon src={PlusSmall} size="24" mini />
+						{$_('text')}
+					</a>
+					<a class="button primary" href="?new=operational_goal&is-part-of={container.revision}">
+						<Icon src={PlusSmall} size="24" mini />
+						{$_('operational_goal')}
+					</a>
+				{:else if isOperationalGoalContainer(container)}
+					<a class="button primary" href="?new=text&is-part-of={container.revision}">
+						<Icon src={PlusSmall} size="24" mini />
+						{$_('text')}
+					</a>
+					<a class="button primary" href="?new=measure&is-part-of={container.revision}">
+						<Icon src={PlusSmall} size="24" mini />
+						{$_('measure')}
+					</a>
+				{/if}
+			{/if}
+		</footer>
+	</div>
+{/if}
 
 <style>
 	h3 {

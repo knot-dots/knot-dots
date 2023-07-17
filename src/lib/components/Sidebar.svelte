@@ -21,7 +21,13 @@
 	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
-	import { strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
+	import {
+		isStrategyContainer,
+		payloadTypes,
+		strategyTypes,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
 	import {
 		filtersToggle,
 		keycloak,
@@ -34,11 +40,15 @@
 	let timer: any;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
+	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
 	let selectedTopic = $page.url.searchParams.getAll('topic');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
 	$filtersToggle =
-		selectedCategory.length > 0 || selectedStrategyType.length > 0 || selectedTopic.length > 0;
+		selectedCategory.length > 0 ||
+		selectedStrategyType.length > 0 ||
+		selectedTopic.length > 0 ||
+		selectedPayloadType.length > 0;
 	$sortToggle = selectedSort != 'modified';
 
 	const hash = $page.url.hash;
@@ -56,6 +66,13 @@
 			query.append('sort', selectedSort);
 		}
 		goto(`?${query.toString()}${hash}`, { keepFocus: true });
+	}
+
+	$: if (browser && 'container' in $page.data && isStrategyContainer($page.data.container)) {
+		const query = new URLSearchParams($page.url.searchParams);
+		query.delete('payloadType');
+		selectedPayloadType.forEach((t) => query.append('payloadType', t));
+		goto(`?${query.toString()}${hash}`, { keepFocus: true, replaceState: true });
 	}
 
 	$: terms, browser && debouncedSearch();
@@ -219,6 +236,36 @@
 							<input type="radio" value={'alpha'} bind:group={selectedSort} />
 							{$_('sort_alphabetically')}
 						</label>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	{:else if 'container' in $page.data && isStrategyContainer($page.data.container)}
+		<ul class="group group-actions">
+			<li>
+				<button
+					on:click={toggleFilters}
+					aria-controls="strategy-filters"
+					aria-expanded={$filtersToggle}
+				>
+					<FilterIcon class="icon-20" />
+					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+					<span class:is-hidden={!$sidebarToggle}>
+						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+					</span>
+				</button>
+				<ul
+					id="strategy-filters"
+					class="collapsible masked-overflow"
+					class:is-hidden={!$filtersToggle}
+				>
+					<li>
+						<Filters
+							options={payloadTypes.options
+								.filter((o) => o != payloadTypes.enum.strategy)
+								.map((o) => [$_(o), o])}
+							bind:selectedOptions={selectedPayloadType}
+						/>
 					</li>
 				</ul>
 			</li>
