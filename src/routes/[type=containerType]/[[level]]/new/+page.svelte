@@ -45,10 +45,11 @@
 		const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];
+		const resource: [] = [];
 		const topic: Topic[] = [];
 		switch (type) {
 			case payloadTypes.enum.measure:
-				return { ...base, payload: { category, topic, type } } as EmptyMeasureContainer;
+				return { ...base, payload: { category, resource, topic, type } } as EmptyMeasureContainer;
 			case payloadTypes.enum.model:
 				return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
 			case payloadTypes.enum.operational_goal:
