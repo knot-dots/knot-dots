@@ -1,10 +1,16 @@
 <script lang="ts">
 	import Chapter from '$lib/components/Chapter.svelte';
-	import type { Container, ModelContainer, StrategicGoalContainer } from '$lib/models';
+	import type {
+		Container,
+		ModelContainer,
+		StrategicGoalContainer,
+		StrategyContainer
+	} from '$lib/models';
 	import { isStrategicGoalGoalContainer, predicates } from '$lib/models';
 	import StrategicGoalChapter from '$lib/components/StrategicGoalChapter.svelte';
 
 	export let container: ModelContainer;
+	export let isPartOf: StrategyContainer;
 	export let relatedContainers: Container[] = [];
 
 	$: parts = container.relation
@@ -21,11 +27,11 @@
 		);
 </script>
 
-<Chapter {container} />
+<Chapter {container} {isPartOf} />
 {#each parts as p}
 	{#if isStrategicGoalGoalContainer(p)}
-		<StrategicGoalChapter container={p} {relatedContainers} />
+		<StrategicGoalChapter container={p} isPartOf={container} {relatedContainers} />
 	{:else}
-		<Chapter container={p} />
+		<Chapter container={p} isPartOf={container} />
 	{/if}
 {/each}

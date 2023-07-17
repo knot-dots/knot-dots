@@ -109,9 +109,9 @@
 	<div class="chapters">
 		{#each parts as p}
 			{#if isModelContainer(p)}
-				<ModelChapter container={p} {relatedContainers} />
+				<ModelChapter container={p} isPartOf={container} {relatedContainers} />
 			{:else}
-				<Chapter container={p} />
+				<Chapter container={p} isPartOf={container} />
 			{/if}
 		{/each}
 	</div>
