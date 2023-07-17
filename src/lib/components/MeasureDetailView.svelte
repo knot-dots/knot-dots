@@ -63,10 +63,12 @@
 					class:tab-item--active={statusOption == selectedRevision.payload.status}
 				>
 					{#if status.options.findIndex((o) => statusOption == o) <= status.options.findIndex((o) => container.payload.status == o)}
-						<a class="badge badge--{statusColors.get(statusOption)}" href={tabURL(statusOption)}>
-							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</a>
+						{#key $page.url}
+							<a class="badge badge--{statusColors.get(statusOption)}" href={tabURL(statusOption)}>
+								<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
+								{$_(statusOption)}
+							</a>
+						{/key}
 					{:else}
 						<span class="badge badge--{statusColors.get(statusOption)}">
 							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
