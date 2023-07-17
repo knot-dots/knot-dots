@@ -185,8 +185,10 @@ export function getContainerByGuid(guid: string) {
 			WHERE revision = ${containerResult.revision}
 		`);
 		const relationResult = await connection.any(sql.typeAlias('relation')`
-			SELECT *
-			FROM container_relation
+			SELECT cr.*
+			FROM container_relation cr
+			JOIN container co ON cr.object = co.revision AND co.valid_currently
+			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
 			WHERE subject = ${containerResult.revision} OR object = ${containerResult.revision}
 			ORDER BY position
 		`);
@@ -219,8 +221,10 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 		`);
 
 		const relationResult = await connection.any(sql.typeAlias('relation')`
-			SELECT *
-			FROM container_relation
+			SELECT cr.*
+			FROM container_relation cr
+			JOIN container co ON cr.object = co.revision AND co.valid_currently
+			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
 			WHERE subject IN (${revisions}) OR object IN (${revisions})
 			ORDER BY position
 		`);
@@ -313,10 +317,12 @@ export function getManyContainers(
 		const relationResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			  ORDER BY position
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
 			`)
 				: [];
 
@@ -465,10 +471,12 @@ export function getAllRelatedContainers(
 		const relationResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-				ORDER BY position
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
 			`)
 				: [];
 
@@ -559,10 +567,12 @@ export function getAllRelatedContainersByStrategyType(
 		const relationResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			  ORDER BY position
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
 			`)
 				: [];
 
