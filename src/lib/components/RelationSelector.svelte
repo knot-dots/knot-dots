@@ -26,7 +26,7 @@
 		{#each isPartOfOptions as option}
 			<label>
 				<input
-					type="checkbox"
+					type="radio"
 					name="is-part-of"
 					value={option.revision}
 					checked={selected.findIndex(
