@@ -94,9 +94,9 @@
 			<ul>
 				{#each selectedRevision.payload.resource as resource}
 					<li class="resource-item">
-						<span>{resource.label}</span>
-						<span>{$number(resource.amount)}</span>
+						<span>{resource.description}</span>
 						<span>{resource.unit}</span>
+						<span>{$number(resource.amount)}</span>
 						<span>
 							{$date(new Date(resource.fulfillmentDate), {
 								day: '2-digit',
@@ -219,15 +219,23 @@
 
 <style>
 	.resource-item {
+		border-bottom: solid 1px var(--color-gray-300);
+		column-gap: 1rem;
 		display: flex;
-		gap: 1rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.5rem;
+		padding-bottom: 0.5rem;
 	}
 
 	.resource-item > * {
-		flex: 1 1 0;
+		flex: 0 1 0;
 	}
 
-	.resource-item > :nth-child(2) {
+	.resource-item > :nth-child(1) {
+		flex: 1 0 100%;
+	}
+
+	.resource-item > :nth-child(3) {
 		text-align: right;
 	}
 

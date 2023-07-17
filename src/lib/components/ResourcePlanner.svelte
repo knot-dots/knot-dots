@@ -8,7 +8,7 @@
 	function add() {
 		container.payload.resource = [
 			...(container.payload.resource ?? []),
-			{ amount: 0, fulfillmentDate: '', label: '', unit: '' }
+			{ amount: 0, description: '', fulfillmentDate: '', unit: '' }
 		];
 	}
 
@@ -29,8 +29,8 @@
 	{#each container.payload.resource ?? [] as resource, i}
 		<div class="resource">
 			<label>
-				{$_('resources.label')}
-				<input type="text" name="label" maxlength="50" bind:value={resource.label} required />
+				{$_('resources.description')}
+				<textarea name="description" maxlength="200" bind:value={resource.description} required />
 			</label>
 			<label>
 				{$_('resources.unit')}

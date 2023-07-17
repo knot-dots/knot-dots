@@ -76,8 +76,9 @@
 	"relations": "Relations",
 	"resource": {
 		"amount": "Amount",
+		"description": "Description",
 		"fulfillmentDate": "Fulfillment date",
-		"label": "Label",
+		"label": "Resource requirement",
 		"unit": "Unit"
 	},
 	"save": "Save",

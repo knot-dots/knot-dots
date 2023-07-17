@@ -262,7 +262,7 @@ const measurePayload = basePayload
 		indicatorContribution: z.record(z.string().uuid(), z.coerce.number().nonnegative()).optional(),
 		resource: z.array(
 			z.object({
-				label: z.string(),
+				description: z.string(),
 				amount: z.coerce.number(),
 				unit: z.string(),
 				fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
