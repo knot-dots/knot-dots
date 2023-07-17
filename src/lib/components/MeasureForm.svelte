@@ -68,13 +68,31 @@
 					/>
 				</label>
 			{/if}
-			<label>
-				{$_('annotation')}
-				<Editor
-					value={container.payload.annotation ?? ''}
-					on:change={(e) => (container.payload.annotation = e.detail.value)}
-				/>
-			</label>
+			{#if container.payload.status == status.enum['status.in_planning']}
+				<label>
+					{$_('annotation')}
+					<Editor
+						value={container.payload.annotation ?? ''}
+						on:change={(e) => (container.payload.annotation = e.detail.value)}
+					/>
+				</label>
+			{:else if container.payload.status == status.enum['status.in_implementation']}
+				<label>
+					{$_('comment')}
+					<Editor
+						value={container.payload.comment ?? ''}
+						on:change={(e) => (container.payload.comment = e.detail.value)}
+					/>
+				</label>
+			{:else if container.payload.status == status.enum['status.in_operation']}
+				<label>
+					{$_('result')}
+					<Editor
+						value={container.payload.result ?? ''}
+						on:change={(e) => (container.payload.result = e.detail.value)}
+					/>
+				</label>
+			{/if}
 		{/each}
 	</svelte:fragment>
 

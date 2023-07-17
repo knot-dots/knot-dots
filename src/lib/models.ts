@@ -258,6 +258,7 @@ const basePayload = z
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().optional(),
+		comment: z.string().optional(),
 		endDate: z.string().refine((v) => z.coerce.date().safeParse(v)),
 		indicatorContribution: z.record(z.string().uuid(), z.coerce.number().nonnegative()).optional(),
 		resource: z.array(
@@ -268,6 +269,7 @@ const measurePayload = basePayload
 				fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
 			})
 		),
+		result: z.string().optional(),
 		startDate: z.string().refine((v) => z.coerce.date().safeParse(v)),
 		status: status,
 		type: z.literal(payloadTypes.enum.measure)
