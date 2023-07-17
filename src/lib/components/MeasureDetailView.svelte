@@ -63,10 +63,12 @@
 					class:tab-item--active={statusOption == selectedRevision.payload.status}
 				>
 					{#if status.options.findIndex((o) => statusOption == o) <= status.options.findIndex((o) => container.payload.status == o)}
-						<a class="badge badge--{statusColors.get(statusOption)}" href={tabURL(statusOption)}>
-							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</a>
+						{#key $page.url}
+							<a class="badge badge--{statusColors.get(statusOption)}" href={tabURL(statusOption)}>
+								<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
+								{$_(statusOption)}
+							</a>
+						{/key}
 					{:else}
 						<span class="badge badge--{statusColors.get(statusOption)}">
 							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
@@ -140,9 +142,13 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('strategy')}</h3>
 				<p class="meta-value">
-					<a href={containerURL(strategy.payload.type, strategy.guid)}>
+					{#if $page.url.pathname == `/strategy/${strategy.guid}`}
 						{$_(strategy.payload.title)}
-					</a>
+					{:else}
+						<a href={containerURL(strategy.payload.type, strategy.guid)}>
+							{$_(strategy.payload.title)}
+						</a>
+					{/if}
 				</p>
 			</div>
 			<div class="meta">

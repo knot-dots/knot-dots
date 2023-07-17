@@ -1,22 +1,43 @@
 <script lang="ts">
 	import Chapter from '$lib/components/Chapter.svelte';
-	import { isPartOf, isOperationalGoalContainer, isTextContainer } from '$lib/models';
-	import type { Container, StrategicGoalContainer } from '$lib/models';
+	import { isOperationalGoalContainer, predicates } from '$lib/models';
+	import type {
+		Container,
+		ModelContainer,
+		OperationalGoalContainer,
+		StrategicGoalContainer
+	} from '$lib/models';
 	import OperationalGoalChapter from '$lib/components/OperationalGoalChapter.svelte';
 
+	export let chapter = '';
 	export let container: StrategicGoalContainer;
+	export let isPartOf: ModelContainer;
 	export let relatedContainers: Container[] = [];
 
-	$: parts = relatedContainers
-		.filter((c) => isOperationalGoalContainer(c) || isTextContainer(c))
-		.filter(isPartOf(container));
+	$: parts = container.relation
+		.filter(
+			({ object, predicate, subject }) =>
+				predicate == predicates.enum['is-part-of'] &&
+				relatedContainers.find((r) => r.revision == subject) &&
+				'revision' in container &&
+				object == container.revision
+		)
+		.map(
+			({ subject }) =>
+				relatedContainers.find((r) => r.revision == subject) as OperationalGoalContainer
+		);
 </script>
 
-<Chapter {container} />
-{#each parts as p}
+<Chapter {chapter} {container} {isPartOf} />
+{#each parts as p, i}
 	{#if isOperationalGoalContainer(p)}
-		<OperationalGoalChapter container={p} {relatedContainers} />
+		<OperationalGoalChapter
+			chapter={`${chapter}.${i + 1}`}
+			container={p}
+			isPartOf={container}
+			{relatedContainers}
+		/>
 	{:else}
-		<Chapter container={p} />
+		<Chapter chapter={`${chapter}.${i + 1}`} container={p} isPartOf={container} />
 	{/if}
 {/each}

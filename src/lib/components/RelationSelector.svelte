@@ -8,7 +8,7 @@
 	export let selected: PartialRelation[];
 </script>
 
-{#if payloadType !== payloadTypes.enum.strategy}
+{#if payloadType !== payloadTypes.enum.strategy && selected.length == 0}
 	<fieldset>
 		<legend>
 			{#if payloadType === payloadTypes.enum.model}

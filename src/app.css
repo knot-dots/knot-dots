@@ -430,25 +430,6 @@ fieldset {
 	font-weight: 600;
 }
 
-.details header .icons {
-	display: flex;
-	flex-shrink: 0;
-	gap: 1rem;
-}
-
-.details header .icons-element {
-	--padding-x: 0;
-	--padding-y: 0;
-
-	border: none;
-}
-
-.details header .icons-element:hover {
-	--bg-color: transparent;
-
-	color: var(--color-gray-500);
-}
-
 .details-content {
 	color: var(--color-gray-500);
 	display: flex;
@@ -503,6 +484,25 @@ fieldset {
 
 .details footer {
 	padding: 24px;
+}
+
+.icons {
+	display: flex;
+	flex-shrink: 0;
+	gap: 1rem;
+}
+
+.icons-element {
+	--padding-x: 0;
+	--padding-y: 0;
+
+	border: none;
+}
+
+.icons-element:hover {
+	--bg-color: transparent;
+
+	color: var(--color-gray-500);
 }
 
 .meta {

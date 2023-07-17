@@ -8,7 +8,13 @@ import type {
 } from 'slonik';
 import { z } from 'zod';
 import { container, relation, user } from '$lib/models';
-import type { Container, ModifiedContainer, NewContainer, PayloadType } from '$lib/models';
+import type {
+	Container,
+	ModifiedContainer,
+	NewContainer,
+	PayloadType,
+	Relation
+} from '$lib/models';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -80,15 +86,16 @@ export function createContainer(container: NewContainer) {
           RETURNING issuer, subject
       `);
 
-			const relationValues = container.relation.map((r) => [
+			const relationValues = container.relation.map((r, position) => [
 				r.object ?? containerResult.revision,
+				position,
 				r.predicate,
 				r.subject ?? containerResult.revision
 			]);
 			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, predicate, subject)
+				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
+				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
       `);
 
 			return { ...containerResult, user: userResult };
@@ -125,26 +132,41 @@ export function updateContainer(container: ModifiedContainer) {
 
 			const relationValues = container.relation.map((r) => [
 				r.object ?? containerResult.revision,
+				r.position,
 				r.predicate,
 				r.subject ?? containerResult.revision
 			]);
 			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, predicate, subject)
+				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(relationValues, ['int4', 'text', 'int4'])}
+				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
       `);
 
 			// Create new records for relations having this container as object.
 			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, predicate, subject)
-				SELECT ${containerResult.revision}, cr.predicate, cr.subject
+				INSERT INTO container_relation (object, position, predicate, subject)
+				SELECT ${containerResult.revision}, cr.position, cr.predicate, cr.subject
 				FROM container_relation cr
 				JOIN container c ON c.revision = cr.object
 				WHERE c.guid = ${container.guid}
-				GROUP BY c.guid, cr.predicate, cr.subject
+				GROUP BY c.guid, cr.predicate, cr.subject, cr.position
       `);
 
 			return { ...containerResult, user: userResult };
+		});
+	};
+}
+
+export function updateContainerRelationPosition(relation: Relation[]) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			await Promise.all(
+				relation.map(({ object, subject }, position) =>
+					txConnection.query(sql.typeAlias('void')`
+						UPDATE container_relation SET position = ${position} WHERE object = ${object} AND subject = ${subject}
+					`)
+				)
+			);
 		});
 	};
 }
@@ -163,9 +185,12 @@ export function getContainerByGuid(guid: string) {
 			WHERE revision = ${containerResult.revision}
 		`);
 		const relationResult = await connection.any(sql.typeAlias('relation')`
-			SELECT *
-			FROM container_relation
+			SELECT cr.*
+			FROM container_relation cr
+			JOIN container co ON cr.object = co.revision AND co.valid_currently
+			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
 			WHERE subject = ${containerResult.revision} OR object = ${containerResult.revision}
+			ORDER BY position
 		`);
 		return {
 			...containerResult,
@@ -196,9 +221,12 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 		`);
 
 		const relationResult = await connection.any(sql.typeAlias('relation')`
-			SELECT *
-			FROM container_relation
+			SELECT cr.*
+			FROM container_relation cr
+			JOIN container co ON cr.object = co.revision AND co.valid_currently
+			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
 			WHERE subject IN (${revisions}) OR object IN (${revisions})
+			ORDER BY position
 		`);
 
 		return containerResult.map((c) => ({
@@ -289,9 +317,12 @@ export function getManyContainers(
 		const relationResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
 			`)
 				: [];
 
@@ -440,9 +471,12 @@ export function getAllRelatedContainers(
 		const relationResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
 			`)
 				: [];
 
@@ -533,10 +567,12 @@ export function getAllRelatedContainersByStrategyType(
 		const relationResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('relation')`
-			  SELECT *
-			  FROM container_relation
-			  WHERE object IN (${revisions}) OR subject IN (${revisions})
-			  ORDER BY position
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
 			`)
 				: [];
 
