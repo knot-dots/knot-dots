@@ -61,7 +61,13 @@
 			.updateToken(-1)
 			.catch(() => null);
 
-		if (formData.has('upload') && data.payload.type == payloadTypes.enum.strategy) {
+		const upload = formData.get('upload');
+
+		if (
+			upload instanceof File &&
+			upload.size > 0 &&
+			data.payload.type == payloadTypes.enum.strategy
+		) {
 			const uploadResponse = await fetch('/upload', {
 				method: 'POST',
 				body: formData,
