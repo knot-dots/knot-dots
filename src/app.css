@@ -535,6 +535,10 @@ fieldset {
 	list-style-position: inside;
 }
 
+.markdown-body p {
+	margin: 0.875rem 0;
+}
+
 /* Fade out overflow effect */
 .masked-overflow {
 	--mask-height: 2rem;
