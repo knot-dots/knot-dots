@@ -110,9 +110,9 @@
 		<div class="chapters">
 			{#each parts as p}
 				{#if isModelContainer(p)}
-					<ModelChapter container={p} isPartOf={container} {relatedContainers} />
+					<ModelChapter container={p} headingTag="h3" isPartOf={container} {relatedContainers} />
 				{:else}
-					<Chapter container={p} isPartOf={container} />
+					<Chapter container={p} headingTag="h3" isPartOf={container} />
 				{/if}
 			{/each}
 		</div>
@@ -130,6 +130,11 @@
 		height: calc(100% - 2rem);
 		margin: 1rem;
 		min-width: calc(100vw - 20rem);
+	}
+
+	.details header h2 {
+		font-size: 2.125rem;
+		font-weight: 800;
 	}
 
 	.details-content::before {

@@ -16,6 +16,7 @@
 	import type { Container, Relation } from '$lib/models';
 	import { user } from '$lib/stores';
 
+	export let headingTag: string;
 	export let container: Container;
 	export let isPartOf: Container;
 
@@ -76,7 +77,7 @@
 {#if show}
 	<div class="chapter">
 		<div class="content">
-			<h3>
+			<svelte:element this={headingTag}>
 				{container.payload.title}
 				{#if $user.isAuthenticated}
 					{#if currentIndex < isPartOfRelation.length - 1}
@@ -90,7 +91,7 @@
 						</button>
 					{/if}
 				{/if}
-			</h3>
+			</svelte:element>
 			{#if 'body' in container.payload}
 				<Viewer value={container.payload.body} />
 			{/if}
@@ -141,14 +142,39 @@
 {/if}
 
 <style>
-	h3 {
+	h3,
+	h4,
+	h5,
+	h6 {
 		display: flex;
 		justify-content: space-between;
+	}
+
+	h3 button:first-of-type,
+	h4 button:first-of-type,
+	h5 button:first-of-type,
+	h6 button:first-of-type {
+		margin-left: auto;
+	}
+
+	h3 {
+		font-size: 1.8rem;
+		font-weight: 700;
+	}
+
+	h4 {
+		font-size: 1.44rem;
+		fotn-weight: 600;
+	}
+
+	h5 {
+		font-size: 1.2rem;
 		font-weight: 500;
 	}
 
-	h3 button:first-of-type {
-		margin-left: auto;
+	h6 {
+		font-size: 1rem;
+		font-weight: 500;
 	}
 
 	aside {
