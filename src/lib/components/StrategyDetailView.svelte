@@ -108,16 +108,11 @@
 		</footer>
 
 		<div class="chapters">
-			{#each parts as p, i}
+			{#each parts as p}
 				{#if isModelContainer(p)}
-					<ModelChapter
-						chapter={String(i + 1)}
-						container={p}
-						isPartOf={container}
-						{relatedContainers}
-					/>
+					<ModelChapter container={p} isPartOf={container} {relatedContainers} />
 				{:else}
-					<Chapter chapter={String(i + 1)} container={p} isPartOf={container} />
+					<Chapter container={p} isPartOf={container} />
 				{/if}
 			{/each}
 		</div>

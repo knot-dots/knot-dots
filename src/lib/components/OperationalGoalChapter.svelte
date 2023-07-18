@@ -8,7 +8,6 @@
 		StrategicGoalContainer
 	} from '$lib/models';
 
-	export let chapter = '';
 	export let container: OperationalGoalContainer;
 	export let isPartOf: StrategicGoalContainer;
 	export let relatedContainers: Container[] = [];
@@ -24,7 +23,7 @@
 		.map(({ subject }) => relatedContainers.find((r) => r.revision == subject) as MeasureContainer);
 </script>
 
-<Chapter {chapter} {container} {isPartOf} />
+<Chapter {container} {isPartOf} />
 {#each parts as p, i}
-	<Chapter chapter={`${chapter}.${i + 1}`} container={p} isPartOf={container} />
+	<Chapter container={p} isPartOf={container} />
 {/each}
