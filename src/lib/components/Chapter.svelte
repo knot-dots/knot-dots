@@ -164,7 +164,7 @@
 
 	h4 {
 		font-size: 1.44rem;
-		fotn-weight: 600;
+		font-weight: 600;
 	}
 
 	h5 {
