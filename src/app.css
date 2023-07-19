@@ -526,21 +526,27 @@ fieldset {
 	display: inline-block;
 }
 
-/* Bytemd markdown editor */
-.markdown-body ul,
-.bytemd-body ul {
-	list-style: disc;
-	list-style-position: inside;
-}
-
+/* Markdown editor and viewer */
 .markdown-body ol,
-.bytemd-body ol {
-	list-style-type: decimal;
-	list-style-position: inside;
+.milkdown .editor ol,
+.markdown-body ul:not(.contains-task-list) {
+	list-style: revert;
+	padding-inline-start: 1.5rem;
 }
 
-.markdown-body p {
+.markdown-body p,
+.milkdown .editor > p,
+.milkdown .editor > ul,
+.milkdown .editor > ol {
 	margin: 0.875rem 0;
+}
+
+.milkdown .editor > *:first-child {
+	margin-top: 0;
+}
+
+.milkdown .editor > *:last-child {
+	margin-bottom: 0;
 }
 
 /* Fade out overflow effect */
