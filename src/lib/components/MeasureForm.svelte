@@ -135,7 +135,7 @@
 			</label>
 			<label>
 				{$_('end_date')}
-				<input type="date" name="endDate" bind:value={container.payload.endDate} required />
+				<input type="date" name="endDate" bind:value={container.payload.endDate} />
 			</label>
 		</fieldset>
 		<RelationSelector
