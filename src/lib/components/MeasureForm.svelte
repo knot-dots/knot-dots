@@ -138,11 +138,7 @@
 				<input type="date" name="endDate" bind:value={container.payload.endDate} />
 			</label>
 		</fieldset>
-		<RelationSelector
-			{isPartOfOptions}
-			payloadType={container.payload.type}
-			selected={container.relation}
-		/>
+		<RelationSelector {container} {isPartOfOptions} />
 	</svelte:fragment>
 
 	<slot slot="extra-buttons">

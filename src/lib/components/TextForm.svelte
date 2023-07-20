@@ -22,11 +22,7 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
-		<RelationSelector
-			{isPartOfOptions}
-			payloadType={container.payload.type}
-			selected={container.relation}
-		/>
+		<RelationSelector {container} {isPartOfOptions} />
 	</svelte:fragment>
 
 	<slot slot="extra-buttons">

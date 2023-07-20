@@ -1,25 +1,24 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { payloadTypes, predicates } from '$lib/models';
-	import type { Container, PartialRelation, PayloadType } from '$lib/models';
+	import type { Container, EmptyContainer } from '$lib/models';
 
-	export let payloadType: PayloadType;
+	export let container: Container | EmptyContainer;
 	export let isPartOfOptions: Container[];
-	export let selected: PartialRelation[];
 </script>
 
-{#if payloadType !== payloadTypes.enum.strategy && selected.length == 0}
+{#if container.payload.type !== payloadTypes.enum.strategy && !('guid' in container)}
 	<fieldset>
 		<legend>
-			{#if payloadType === payloadTypes.enum.model}
+			{#if container.payload.type === payloadTypes.enum.model}
 				{$_('superordinate_strategies')}
-			{:else if payloadType === payloadTypes.enum.strategic_goal}
+			{:else if container.payload.type === payloadTypes.enum.strategic_goal}
 				{$_('superordinate_models')}
-			{:else if payloadType === payloadTypes.enum.operational_goal}
+			{:else if container.payload.type === payloadTypes.enum.operational_goal}
 				{$_('superordinate_strategic_goals')}
-			{:else if payloadType === payloadTypes.enum.measure}
+			{:else if container.payload.type === payloadTypes.enum.measure}
 				{$_('superordinate_operational_goals')}
-			{:else if payloadType === payloadTypes.enum.text}
+			{:else if container.payload.type === payloadTypes.enum.text}
 				{$_('superordinate_chapters')}
 			{/if}
 		</legend>
@@ -29,7 +28,7 @@
 					type="radio"
 					name="is-part-of"
 					value={option.revision}
-					checked={selected.findIndex(
+					checked={container.relation.findIndex(
 						(r) => r.predicate === predicates.enum['is-part-of'] && r.object === option.revision
 					) > -1}
 				/>
