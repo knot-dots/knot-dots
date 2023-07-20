@@ -32,6 +32,14 @@
 		"okr": "OKR",
 		"quantity": "Quantity"
 	},
+	"internal_objectives": {
+		"label": "Internal objectives",
+		"internal_strategy": "Internal strategy",
+		"visions": "Visions",
+		"strategic_goals": "Strategic goals",
+		"okrs": "OKRs",
+		"tasks": "Tasks"
+	},
 	"level": {
 		"global": "Global",
 		"label": "Level",
