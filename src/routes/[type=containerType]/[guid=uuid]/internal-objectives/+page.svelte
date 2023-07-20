@@ -14,10 +14,22 @@
 			title: 'internal_objectives.internal_strategy',
 			payloadType: payloadTypes.enum['internal_objective.internal_strategy']
 		},
-		{ title: 'internal_objectives.visions', payloadType: payloadTypes.enum['internal_objective.vision'] },
-		{ title: 'internal_objectives.strategic_goals', payloadType: payloadTypes.enum['internal_objective.strategic_goal'] },
-		{ title: 'internal_objectives.okrs', payloadType: payloadTypes.enum['internal_objective.okr'] },
-		{ title: 'internal_objectives.tasks', payloadType: payloadTypes.enum['internal_objective.task'] }
+		{
+			title: 'internal_objectives.visions',
+			payloadType: payloadTypes.enum['internal_objective.vision']
+		},
+		{
+			title: 'internal_objectives.strategic_goals',
+			payloadType: payloadTypes.enum['internal_objective.strategic_goal']
+		},
+		{
+			title: 'internal_objectives.okrs',
+			payloadType: payloadTypes.enum['internal_objective.okr']
+		},
+		{
+			title: 'internal_objectives.tasks',
+			payloadType: payloadTypes.enum['internal_objective.task']
+		}
 	];
 
 	let internalStrategy = data.containers.find(
