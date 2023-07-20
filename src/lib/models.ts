@@ -273,7 +273,10 @@ const measurePayload = basePayload
 			})
 		),
 		result: z.string().optional(),
-		startDate: z.string().refine((v) => z.coerce.date().safeParse(v)),
+		startDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		status: status,
 		type: z.literal(payloadTypes.enum.measure)
 	})

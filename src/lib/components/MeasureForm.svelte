@@ -131,7 +131,7 @@
 			<legend>{$_('planned_duration')}</legend>
 			<label>
 				{$_('start_date')}
-				<input type="date" name="startDate" bind:value={container.payload.startDate} required />
+				<input type="date" name="startDate" bind:value={container.payload.startDate} />
 			</label>
 			<label>
 				{$_('end_date')}

@@ -208,14 +208,14 @@
 		<div class="meta">
 			<h3 class="meta-key">{$_('planned_duration')}</h3>
 			<p class="meta-value">
-				{#if selectedRevision.payload.endDate}
+				{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}
 					{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–{$date(
 						new Date(selectedRevision.payload.endDate),
 						{
 							format: 'short'
 						}
 					)}
-				{:else}
+				{:else if selectedRevision.payload.startDate}
 					{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–
 				{/if}
 			</p>
