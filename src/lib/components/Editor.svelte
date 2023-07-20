@@ -11,19 +11,67 @@
 		rootCtx
 	} from '@milkdown/core';
 	import { listener, listenerCtx } from '@milkdown/plugin-listener';
+	import { upload, uploadConfig } from '@milkdown/plugin-upload';
+	import type { Uploader } from '@milkdown/plugin-upload';
 	import {
 		commonmark,
 		toggleEmphasisCommand,
 		toggleStrongCommand,
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
+	import { Node } from '@milkdown/prose/model';
+	import { getContext } from 'svelte';
 	import { Icon, ListBullet } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { key } from '$lib/authentication';
+	import type { KeycloakContext } from '$lib/authentication';
+	import { uploadAsFormData } from '$lib/client/upload';
 
 	export let value = '';
 	export let label = '';
 
 	const labelId = `label-${counter + 1}`;
+	const { getKeycloak } = getContext<KeycloakContext>(key);
+
+	const uploader: Uploader = async (files, schema) => {
+		const images: File[] = [];
+
+		for (let i = 0; i < files.length; i++) {
+			const file = files.item(i);
+			if (!file) {
+				continue;
+			}
+
+			if (!file.type.includes('image')) {
+				continue;
+			}
+
+			images.push(file);
+		}
+
+		// Ensure a fresh token will be included in the Authorization header.
+		await getKeycloak()
+			.updateToken(-1)
+			.catch(() => null);
+
+		const nodes: Array<Node | undefined> = await Promise.all(
+			images.map(async (image) => {
+				try {
+					const src = await uploadAsFormData(image, sessionStorage.getItem('token') ?? '');
+					const alt = image.name;
+					return schema.nodes.image.createAndFill({
+						src,
+						alt
+					}) as Node;
+				} catch (e) {
+					console.log(e);
+					return;
+				}
+			})
+		);
+
+		return nodes.filter((n): n is Node => n instanceof Node);
+	};
 
 	let editor: Editor;
 
@@ -41,6 +89,12 @@
 				});
 			})
 			.config((ctx) => {
+				ctx.update(uploadConfig.key, (prev) => ({
+					...prev,
+					uploader
+				}));
+			})
+			.config((ctx) => {
 				ctx.update(editorViewOptionsCtx, (prev) => ({
 					...prev,
 					attributes: { 'aria-labelledby': labelId }
@@ -48,6 +102,7 @@
 			})
 			.use(commonmark)
 			.use(listener)
+			.use(upload)
 			.create()
 			.then((e) => (editor = e));
 
