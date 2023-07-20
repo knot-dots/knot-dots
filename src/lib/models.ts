@@ -68,6 +68,11 @@ export function isSustainableDevelopmentGoal(value: unknown): value is Sustainab
 }
 
 const payloadTypeValues = [
+	'internal_objective.internal_strategy',
+	'internal_objective.vision',
+	'internal_objective.strategic_goal',
+	'internal_objective.okr',
+	'internal_objective.task',
 	'measure',
 	'model',
 	'operational_goal',
@@ -255,6 +260,36 @@ const basePayload = z
 	})
 	.strict();
 
+const internalStrategyPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum['internal_objective.internal_strategy'])
+	})
+	.strict();
+
+const visionPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum['internal_objective.vision'])
+	})
+	.strict();
+
+const internalObjectiveStrategicGoalPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum['internal_objective.strategic_goal'])
+	})
+	.strict();
+
+const okrPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum['internal_objective.okr'])
+	})
+	.strict();
+
+const taskPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum['internal_objective.task'])
+	})
+	.strict();
+
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().optional(),
@@ -322,6 +357,11 @@ const textPayload = z
 	.strict();
 
 const payload = z.discriminatedUnion('type', [
+	internalStrategyPayload,
+	visionPayload,
+	internalObjectiveStrategicGoalPayload,
+	okrPayload,
+	taskPayload,
 	measurePayload,
 	modelPayload,
 	operationalGoalPayload,
