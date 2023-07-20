@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import {
+	BuildingStorefront,
 		ChevronDown,
 		ChevronUp,
 		Icon,
@@ -163,6 +164,19 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('relations')}</span>
 				</a>
 			</li>
+			{#if $page.data.container.payload.type === 'measure'}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+					>
+						<Icon src={BuildingStorefront} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objectives.label')}</span>
+					</a>
+				</li>
+			{/if}
 		</ul>
 	{/if}
 
