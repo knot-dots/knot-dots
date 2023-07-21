@@ -26,7 +26,7 @@
 	}
 </script>
 
-{#if container.payload.type !== payloadTypes.enum.strategy && !('guid' in container)}
+{#if container.payload.type !== payloadTypes.enum.strategy}
 	<fieldset>
 		<legend>
 			{#if container.payload.type === payloadTypes.enum.model}
