@@ -5,6 +5,25 @@
 
 	export let container: Container | EmptyContainer;
 	export let isPartOfOptions: Container[];
+
+	$: index = container.relation.findIndex(({ predicate, subject }) =>
+		predicate === predicates.enum['is-part-of'] && 'revision' in container
+			? subject == container.revision
+			: true
+	);
+
+	function onChange(event: Event) {
+		container.relation = [
+			...container.relation.slice(0, index),
+			{
+				object: parseInt((event.target as HTMLInputElement).value),
+				position: 0,
+				predicate: predicates.enum['is-part-of'],
+				...('revision' in container ? { subject: container.revision } : undefined)
+			},
+			...container.relation.slice(index + 1)
+		];
+	}
 </script>
 
 {#if container.payload.type !== payloadTypes.enum.strategy && !('guid' in container)}
@@ -31,6 +50,7 @@
 					checked={container.relation.findIndex(
 						(r) => r.predicate === predicates.enum['is-part-of'] && r.object === option.revision
 					) > -1}
+					on:change={onChange}
 				/>
 				{option.payload.title}
 			</label>

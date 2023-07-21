@@ -35,17 +35,13 @@
 		const parseResult = z.union([modifiedContainer, newContainer]).safeParse({
 			...container,
 			realm: env.PUBLIC_KC_REALM,
-			relation: formData.has('is-part-of')
-				? formData
-						.getAll('is-part-of')
-						.map((v) => ({ object: Number(v), predicate: 'is-part-of', position: 0 }))
-				: container.relation
-						.filter((r) => ('guid' in container ? r.subject == container.revision : true))
-						.map(({ object, position, predicate }) => ({
-							predicate,
-							object,
-							position
-						})),
+			relation: container.relation
+				.filter((r) => ('guid' in container ? r.subject == container.revision : true))
+				.map(({ object, position, predicate }) => ({
+					predicate,
+					object,
+					position
+				})),
 			user: []
 		});
 
