@@ -6,7 +6,7 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { modifiedContainer, newContainer, payloadTypes } from '$lib/models';
+	import { modifiedContainer, newContainer, payloadTypes, predicates } from '$lib/models';
 	import type {
 		Container,
 		CustomEventMap,
@@ -24,6 +24,15 @@
 			: $page.url.pathname == `/${container.payload.type}/new`;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
+
+	$: mayDelete =
+		'guid' in container &&
+		container.relation.filter(
+			({ predicate, object }) =>
+				predicate == predicates.enum['is-part-of'] &&
+				'revision' in container &&
+				object == container.revision
+		).length == 0;
 
 	const dispatch =
 		createEventDispatcher<Pick<CustomEventMap, 'submitSuccessful' | 'deleteSuccessful'>>();
@@ -147,9 +156,11 @@
 	<footer>
 		<button class="primary" type="submit">{$_('save')}</button>
 		<slot name="extra-buttons" />
-		<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
-			<Icon src={Trash} size="20" />
-		</button>
+		{#if mayDelete}
+			<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
+				<Icon src={Trash} size="20" />
+			</button>
+		{/if}
 	</footer>
 </form>
 
