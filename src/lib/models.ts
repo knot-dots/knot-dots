@@ -517,6 +517,9 @@ export const modifiedContainer = container
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export interface CustomEventMap {
+	deleteSuccessful: {
+		event: Event;
+	};
 	submitSuccessful: {
 		event: SubmitEvent;
 		result: Container;
