@@ -12,7 +12,11 @@
 	"description": "Beschreibung",
 	"effects": "Wirkung",
 	"end_date": "Ende",
-	"error.unexpected": "Wir arbeiten daran.",
+	"error": {
+		"precondition_failed": "Die Ressource wurde verändert.",
+		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
+		"unexpected": "Wir arbeiten daran."
+	},
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
 	"help": "Hilfe",

@@ -6,7 +6,7 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { modifiedContainer, newContainer, payloadTypes, predicates } from '$lib/models';
+	import { etag, modifiedContainer, newContainer, payloadTypes, predicates } from '$lib/models';
 	import type {
 		Container,
 		CustomEventMap,
@@ -125,7 +125,8 @@
 					...(sessionStorage.getItem('token')
 						? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
 						: undefined),
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					'If-Match': etag(container)
 				}
 			});
 			if (response.ok) {

@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { etag } from '$lib/models';
 import { deleteContainer, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -16,13 +17,20 @@ export const GET = (async ({ locals, params }) => {
 	}
 }) satisfies RequestHandler;
 
-export const DELETE = (async ({ locals, params }) => {
+export const DELETE = (async ({ locals, params, request }) => {
 	if (locals.user == null) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
+	if (!request.headers.has('If-Match')) {
+		throw error(428, { message: unwrapFunctionStore(_)('error.precondition_required') });
+	}
+
 	try {
 		const container = await locals.pool.connect(getContainerByGuid(params.guid));
+		if (etag(container) != request.headers.get('If-Match')) {
+			throw error(412, { message: unwrapFunctionStore(_)('error.precondition_failed') });
+		}
 		await locals.pool.connect(deleteContainer({ ...container, user: [locals.user] }));
 		return new Response(null, { status: 204 });
 	} catch (e) {
