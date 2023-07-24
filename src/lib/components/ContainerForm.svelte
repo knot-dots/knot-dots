@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher, getContext } from 'svelte';
+	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { modifiedContainer, newContainer, payloadTypes } from '$lib/models';
+	import { etag, modifiedContainer, newContainer, payloadTypes, predicates } from '$lib/models';
 	import type {
 		Container,
 		CustomEventMap,
@@ -24,7 +25,17 @@
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
-	const dispatch = createEventDispatcher<Pick<CustomEventMap, 'submitSuccessful'>>();
+	$: mayDelete =
+		'guid' in container &&
+		container.relation.filter(
+			({ predicate, object }) =>
+				predicate == predicates.enum['is-part-of'] &&
+				'revision' in container &&
+				object == container.revision
+		).length == 0;
+
+	const dispatch =
+		createEventDispatcher<Pick<CustomEventMap, 'submitSuccessful' | 'deleteSuccessful'>>();
 
 	async function handleSubmit(event: SubmitEvent) {
 		let url = '/container';
@@ -100,6 +111,29 @@
 			dispatch('submitSuccessful', { event, result: (await response.json()) as Container });
 		}
 	}
+
+	async function handleDelete(event: Event) {
+		if ('guid' in container) {
+			// Ensure a fresh token will be included in the Authorization header.
+			await getKeycloak()
+				.updateToken(-1)
+				.catch(() => null);
+
+			const response = await fetch(`/container/${container.guid}`, {
+				method: 'DELETE',
+				headers: {
+					...(sessionStorage.getItem('token')
+						? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
+						: undefined),
+					'Content-Type': 'application/json',
+					'If-Match': etag(container)
+				}
+			});
+			if (response.ok) {
+				dispatch('deleteSuccessful', { event });
+			}
+		}
+	}
 </script>
 
 <form class="details" class:details--page={isPage} on:submit|preventDefault={handleSubmit}>
@@ -123,5 +157,22 @@
 	<footer>
 		<button class="primary" type="submit">{$_('save')}</button>
 		<slot name="extra-buttons" />
+		{#if mayDelete}
+			<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
+				<Icon src={Trash} size="20" />
+			</button>
+		{/if}
 	</footer>
 </form>
+
+<style>
+	footer {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.delete {
+		color: var(--color-red-500);
+		margin-left: auto;
+	}
+</style>

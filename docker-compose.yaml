@@ -15,7 +15,7 @@ services:
       dockerfile: docker/migrate/Dockerfile
     command:
       - -database
-      - postgres:///?sslmode=disable
+      - postgres:///
       - -path
       - /srv/migrations
       - up
@@ -26,6 +26,7 @@ services:
       - PGDATABASE
       - PGHOST
       - PGPASSWORD
+      - PGSSLMODE=disable
       - PGUSER
     volumes:
       - ./sql/migrations:/srv/migrations

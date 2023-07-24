@@ -157,6 +157,32 @@ export function updateContainer(container: ModifiedContainer) {
 	};
 }
 
+export function deleteContainer(container: Container) {
+	return (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			await txConnection.query(sql.typeAlias('void')`
+				UPDATE container
+				SET valid_currently = false
+				WHERE guid = ${container.guid}
+			`);
+
+			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
+				INSERT INTO container (payload, realm, guid, deleted)
+				SELECT payload, realm, guid, true FROM container
+				WHERE revision = ${container.revision}
+				RETURNING revision
+			`);
+
+			const userValues = container.user.map((u) => [u.issuer, deletedRevision, u.subject]);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_user (issuer, revision, subject)
+				SELECT *
+				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+      `);
+		});
+	};
+}
+
 export function updateContainerRelationPosition(relation: Relation[]) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
@@ -177,7 +203,8 @@ export function getContainerByGuid(guid: string) {
 			SELECT *
 			FROM container
 			WHERE guid = ${guid}
-				AND valid_currently;
+				AND valid_currently
+				AND NOT deleted
 		`);
 		const userResult = await connection.any(sql.typeAlias('userWithRevision')`
 			SELECT *
@@ -206,6 +233,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			SELECT *
 			FROM container
 			WHERE guid = ${guid}
+				AND NOT deleted
 			ORDER BY valid_from;
 		`);
 
@@ -248,7 +276,7 @@ function prepareWhereCondition(filters: {
 	topics?: string[];
 	type?: PayloadType;
 }) {
-	const conditions = [sql.fragment`valid_currently`];
+	const conditions = [sql.fragment`valid_currently`, sql.fragment`NOT deleted`];
 	if (filters.categories?.length) {
 		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
 	}
@@ -360,6 +388,7 @@ export function maybePartOf(containerType: PayloadType) {
 			FROM container
 			WHERE payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
 			  AND valid_currently
+			  AND NOT deleted
 			ORDER BY payload->>'title' DESC
 		`);
 

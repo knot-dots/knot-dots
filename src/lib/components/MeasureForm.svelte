@@ -42,7 +42,7 @@
 	}
 </script>
 
-<ContainerForm {container} on:submitSuccessful>
+<ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
 	<svelte:fragment slot="data">
 		<label>
 			{$_('measure.summary')}

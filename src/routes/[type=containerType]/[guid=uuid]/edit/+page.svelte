@@ -36,12 +36,26 @@
 			await goto(`../${container.guid}`);
 		}
 	}
+
+	async function afterDelete() {
+		await goto('/');
+	}
 </script>
 
 {#if isMeasureContainer(container)}
-	<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+	<MeasureForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	/>
 {:else if isModelContainer(container)}
-	<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<ModelForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-strategic-goal">
 				{$_('save_and_create_strategic_goal')}
@@ -49,7 +63,12 @@
 		</svelte:fragment>
 	</ModelForm>
 {:else if isOperationalGoalContainer(container)}
-	<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<OperationalGoalForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-measure">
 				{$_('save_and_create_measure')}
@@ -57,7 +76,12 @@
 		</svelte:fragment>
 	</OperationalGoalForm>
 {:else if isStrategicGoalGoalContainer(container)}
-	<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<StrategicGoalForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-operational-goal">
 				{$_('save_and_create_operational_goal')}
@@ -65,7 +89,7 @@
 		</svelte:fragment>
 	</StrategicGoalForm>
 {:else if isStrategyContainer(container)}
-	<StrategyForm {container} on:submitSuccessful={afterSubmit}>
+	<StrategyForm {container} on:submitSuccessful={afterSubmit} on:deleteSuccessful={afterDelete}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-model">
 				{$_('save_and_create_model')}
@@ -73,5 +97,10 @@
 		</svelte:fragment>
 	</StrategyForm>
 {:else if isTextContainer(container)}
-	<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+	<TextForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	/>
 {/if}

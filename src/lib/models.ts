@@ -517,6 +517,9 @@ export const modifiedContainer = container
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export interface CustomEventMap {
+	deleteSuccessful: {
+		event: Event;
+	};
 	submitSuccessful: {
 		event: SubmitEvent;
 		result: Container;
@@ -531,4 +534,8 @@ export function isPartOf(container: { relation: PartialRelation[] }) {
 			) > -1
 		);
 	};
+}
+
+export function etag(container: Container) {
+	return `"${container.revision}"`;
 }

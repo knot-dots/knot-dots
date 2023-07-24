@@ -7,7 +7,7 @@
 	export let container: StrategyContainer | EmptyStrategyContainer;
 </script>
 
-<ContainerForm {container} on:submitSuccessful>
+<ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
 	<svelte:fragment slot="data">
 		<label>
 			<input type="file" name="upload" accept="image/png,image/jpeg" />

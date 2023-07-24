@@ -8,10 +8,15 @@
 	"collapse_sidebar": "Collapse sidebar",
 	"close_sidebar": "Close sidebar",
 	"created_date": "Created at",
+	"delete": "Delete",
 	"description": "Description",
 	"effects": "Effects",
 	"end_date": "End",
-	"error.unexpected": "We are working on it.",
+	"error": {
+		"precondition_failed": "The resource has been modified.",
+		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
+		"unexpected": "We are working on it."
+	},
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
 	"help": "Help",
