@@ -535,3 +535,7 @@ export function isPartOf(container: { relation: PartialRelation[] }) {
 		);
 	};
 }
+
+export function etag(container: Container) {
+	return `"${container.revision}"`;
+}
