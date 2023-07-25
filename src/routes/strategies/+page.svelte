@@ -13,7 +13,7 @@
 <Board>
 	{#each levels.options as levelOption}
 		<BoardColumn
-			addItemUrl="/strategy/{`${levelOption.split('.').pop()}`}/new"
+			addItemUrl="/strategy/new?level={levelOption}"
 			title={$_(levelOption)}
 		>
 			{#each data.containers.filter((c) => 'level' in c.payload && c.payload.level == levelOption) as container}

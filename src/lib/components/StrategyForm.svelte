@@ -3,8 +3,11 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import { levels, strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
+	import { page } from '$app/stores';
 
 	export let container: StrategyContainer | EmptyStrategyContainer;
+
+	let levelParam = $page.url.searchParams.get('level');
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
@@ -52,7 +55,7 @@
 			{$_('level.label')}
 			<select name="level" bind:value={container.payload.level} required>
 				{#each levels.options as levelOption}
-					<option value={levelOption}>
+					<option value={levelOption} selected={levelOption === levelParam}>
 						{$_(levelOption)}
 					</option>
 				{/each}
