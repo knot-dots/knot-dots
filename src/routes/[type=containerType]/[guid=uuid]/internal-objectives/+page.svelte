@@ -31,21 +31,11 @@
 			payloadType: payloadTypes.enum['internal_objective.task']
 		}
 	];
-
-	let internalStrategy = data.containers.find(
-		(c) => c.payload.type === 'internal_objective.internal_strategy'
-	);
 </script>
 
 <Board>
 	{#each columns as column (column.title)}
-		<BoardColumn
-			title={$_(column.title)}
-			addItemUrl={`/${column.payloadType}/new`}
-			hideAddButton={(column.title === 'internal_objectives.internal_strategy' &&
-				internalStrategy) ||
-				(column.title !== 'internal_objectives.internal_strategy' && !internalStrategy)}
-		>
+		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.payloadType}/new`}>
 			{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
 				<Card {container} relatedContainers={data.containers.filter(isPartOf)} />
 			{/each}

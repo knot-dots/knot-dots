@@ -7,7 +7,6 @@
 	export let title: string;
 	export let icon: IconSource | undefined = undefined;
 	export let addItemUrl: string;
-	export let hideAddButton = false;
 </script>
 
 <section>
@@ -18,13 +17,13 @@
 				<Icon src={icon} size="16" mini />
 			{/if}
 		</h2>
-		{#if $user.isAuthenticated && !hideAddButton}
+		{#if $user.isAuthenticated}
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>
 		{/if}
 	</header>
 	<div class="vertical-scroll-wrapper masked-overflow">
 		<slot />
-		{#if $user.isAuthenticated && !hideAddButton}
+		{#if $user.isAuthenticated}
 			<footer>
 				<a href={addItemUrl}>
 					{$_('add_item')}
