@@ -449,6 +449,66 @@ export function isTextContainer(container: Container): container is TextContaine
 	return container.payload.type === payloadTypes.enum.text;
 }
 
+const internalStrategyContainer = container.extend({
+	payload: internalStrategyPayload
+});
+
+export type InternalStrategyContainer = z.infer<typeof internalStrategyContainer>;
+
+export function isInternalStrategyContainer(
+	container: Container
+): container is InternalStrategyContainer {
+	return container.payload.type === payloadTypes.enum['internal_objective.internal_strategy'];
+}
+
+const visionContainer = container.extend({
+	payload: visionPayload
+});
+
+export type VisionContainer = z.infer<typeof visionContainer>;
+
+export function isVisionContainer(
+	container: Container
+): container is VisionContainer {
+	return container.payload.type === payloadTypes.enum['internal_objective.vision'];
+}
+
+const internalObjectiveStrategicGoalContainer = container.extend({
+	payload: internalObjectiveStrategicGoalPayload
+});
+
+export type InternalObjectiveStrategicGoalContainer = z.infer<typeof internalObjectiveStrategicGoalContainer>;
+
+export function isInternalObjectiveStrategicGoalContainer(
+	container: Container
+): container is InternalObjectiveStrategicGoalContainer {
+	return container.payload.type === payloadTypes.enum['internal_objective.strategic_goal'];
+}
+
+const okrContainer = container.extend({
+	payload: okrPayload
+});
+
+export type OKRContainer = z.infer<typeof okrContainer>;
+
+export function isOKRContainer(
+	container: Container
+): container is OKRContainer {
+	return container.payload.type === payloadTypes.enum['internal_objective.okr'];
+}
+
+const taskContainer = container.extend({
+	payload: taskPayload
+});
+
+export type TaskContainer = z.infer<typeof taskContainer>;
+
+export function isTaskContainer(
+	container: Container
+): container is TaskContainer {
+	return container.payload.type === payloadTypes.enum['internal_objective.task'];
+}
+
 export const newContainer = container
 	.omit({
 		guid: true,
