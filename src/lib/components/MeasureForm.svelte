@@ -26,7 +26,10 @@
 				) > -1
 		) as OperationalGoalContainer[];
 
-		if (!('indicatorContribution' in container.payload)) {
+		if (
+			!container.payload.indicatorContribution ||
+			Object.keys(container.payload.indicatorContribution).length == 0
+		) {
 			const indicatorContribution: Record<string, number> = {};
 			relatedContainers.forEach((o) => {
 				if (
