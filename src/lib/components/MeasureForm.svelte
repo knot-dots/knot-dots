@@ -41,6 +41,7 @@
 				}
 			});
 			container.payload.indicatorContribution = indicatorContribution;
+			container.payload.indicatorContributionAchieved = indicatorContribution;
 		}
 	}
 </script>
@@ -68,6 +69,17 @@
 						inputmode="numeric"
 						name="indicatorContribution-{o.guid}"
 						bind:value={container.payload.indicatorContribution[o.guid]}
+					/>
+				</label>
+			{/if}
+			{#if container.payload.indicatorContributionAchieved?.[o.guid] !== undefined && [status.enum['status.in_implementation'], status.enum['status.in_operation']].some((s) => s == container.payload.status)}
+				<label>
+					{$_(`${o.payload.indicator[0].quantity}.input_prompt`)}
+					<input
+						type="text"
+						inputmode="numeric"
+						name="indicatorContributionAchieved-{o.guid}"
+						bind:value={container.payload.indicatorContributionAchieved[o.guid]}
 					/>
 				</label>
 			{/if}
