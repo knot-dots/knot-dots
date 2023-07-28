@@ -26,7 +26,7 @@
 	}
 </script>
 
-{#if container.payload.type !== payloadTypes.enum.strategy}
+{#if container.payload.type !== payloadTypes.enum.strategy && container.payload.type !== payloadTypes.enum['internal_objective.internal_strategy']}
 	<fieldset>
 		<legend>
 			{#if container.payload.type === payloadTypes.enum.model}
@@ -39,6 +39,14 @@
 				{$_('superordinate_operational_goals')}
 			{:else if container.payload.type === payloadTypes.enum.text}
 				{$_('superordinate_chapters')}
+			{:else if container.payload.type === payloadTypes.enum['internal_objective.vision']}
+				{$_('superordinate_internal_strategies')}
+			{:else if container.payload.type === payloadTypes.enum['internal_objective.strategic_goal']}
+				{$_('superordinate_visions')}
+			{:else if container.payload.type === payloadTypes.enum['internal_objective.okr']}
+				{$_('superordinate_strategic_goals')}
+			{:else if container.payload.type === payloadTypes.enum['internal_objective.task']}
+				{$_('superordinate_okrs')}
 			{/if}
 		</legend>
 		{#each isPartOfOptions as option}

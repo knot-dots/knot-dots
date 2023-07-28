@@ -379,6 +379,14 @@ export function maybePartOf(containerType: PayloadType) {
 			candidateType = ['operational_goal'];
 		} else if (containerType == 'text') {
 			candidateType = ['model', 'operational_goal', 'strategic_goal', 'strategy'];
+		} else if (containerType == 'internal_objective.vision') {
+			candidateType = ['internal_objective.internal_strategy']
+		} else if (containerType == 'internal_objective.strategic_goal') {
+			candidateType = ['internal_objective.vision']
+		} else if (containerType == 'internal_objective.okr') {
+			candidateType = ['internal_objective.strategic_goal']
+		} else if (containerType == 'internal_objective.task') {
+			candidateType = ['internal_objective.okr', ]
 		} else {
 			return [];
 		}
