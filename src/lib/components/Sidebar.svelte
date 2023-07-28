@@ -173,7 +173,7 @@
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					>
 						<Icon src={BuildingStorefront} size="20" solid />
-						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objectives.label')}</span>
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
 					</a>
 				</li>
 			{/if}

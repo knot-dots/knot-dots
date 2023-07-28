@@ -11,23 +11,23 @@
 
 	const columns = [
 		{
-			title: 'internal_objectives.internal_strategy',
+			title: 'internal_objective.internal_strategies',
 			payloadType: payloadTypes.enum['internal_objective.internal_strategy']
 		},
 		{
-			title: 'internal_objectives.visions',
+			title: 'internal_objective.visions',
 			payloadType: payloadTypes.enum['internal_objective.vision']
 		},
 		{
-			title: 'internal_objectives.strategic_goals',
+			title: 'internal_objective.strategic_goals',
 			payloadType: payloadTypes.enum['internal_objective.strategic_goal']
 		},
 		{
-			title: 'internal_objectives.okrs',
+			title: 'internal_objective.okrs',
 			payloadType: payloadTypes.enum['internal_objective.okr']
 		},
 		{
-			title: 'internal_objectives.tasks',
+			title: 'internal_objective.tasks',
 			payloadType: payloadTypes.enum['internal_objective.task']
 		}
 	];
