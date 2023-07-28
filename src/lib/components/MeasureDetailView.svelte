@@ -127,17 +127,17 @@
 				{/each}
 			</div>
 		{/if}
-		{#if container.payload.status == status.enum['status.in_planning']}
+		{#if selectedRevision.payload.status == status.enum['status.in_planning']}
 			<div class="annotation">
 				<h3>{$_('annotation')}</h3>
 				<Viewer value={selectedRevision.payload.annotation} />
 			</div>
-		{:else if container.payload.status == status.enum['status.in_implementation']}
+		{:else if selectedRevision.payload.status == status.enum['status.in_implementation']}
 			<div class="comment">
 				<h3>{$_('comment')}</h3>
 				<Viewer value={selectedRevision.payload.comment} />
 			</div>
-		{:else if container.payload.status == status.enum['status.in_operation']}
+		{:else if selectedRevision.payload.status == status.enum['status.in_operation']}
 			<div class="result">
 				<h3>{$_('result')}</h3>
 				<Viewer value={selectedRevision.payload.result} />
