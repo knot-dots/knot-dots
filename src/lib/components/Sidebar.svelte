@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import {
-	BuildingStorefront,
+		BuildingStorefront,
 		ChevronDown,
 		ChevronUp,
 		Icon,
 		InformationCircle,
 		MagnifyingGlass,
+		PencilSquare,
 		Share
 	} from 'svelte-hero-icons';
 	import { browser } from '$app/environment';
@@ -174,6 +175,17 @@
 					>
 						<Icon src={BuildingStorefront} size="20" solid />
 						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
+					</a>
+				</li>
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+					>
+						<Icon src={PencilSquare} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
 					</a>
 				</li>
 			{/if}
