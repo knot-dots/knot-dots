@@ -601,7 +601,8 @@ fieldset {
 .tabs {
 	display: flex;
 	flex-basis: 100%;
-	justify-content: space-between;
+	gap: 1rem;
+	justify-content: flex-start;
 	margin-top: 1rem;
 }
 
