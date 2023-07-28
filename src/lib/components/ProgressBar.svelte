@@ -45,9 +45,6 @@
 <div class="progress" class:progress--compact={compact}>
 	<div class="wrapper">
 		<span class="min">{indicator.min} {unit}</span>
-		{#if indicator.quantity && compact}
-			<span class="label">{$_(`${indicator.quantity}.label`)}</span>
-		{/if}
 		<span class="max">{indicator.max} {unit}</span>
 		<div class="bar">
 			{#if indicator.value}
