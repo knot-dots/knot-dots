@@ -616,3 +616,20 @@ export function getAllRelatedContainersByStrategyType(
 		}));
 	};
 }
+
+export function getAllContainersWithIndicatorContributions() {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE payload->>'indicatorContribution' IS NOT NULL
+				AND valid_currently
+				AND NOT deleted
+		`);
+		return containerResult.map((c) => ({
+			...c,
+			relation: [],
+			user: []
+		}));
+	};
+}
