@@ -5,6 +5,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
 	import InternalObjectiveStrategicGoalForm from './InternalObjectiveStrategicGoalForm.svelte';
 	import InternalStrategyForm from './InternalStrategyForm.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
@@ -17,6 +18,7 @@
 	import TaskForm from './TaskForm.svelte';
 	import VisionForm from './VisionForm.svelte';
 	import {
+		isInternalObjectiveContainer,
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
 		isMeasureContainer,
@@ -25,11 +27,8 @@
 		isOperationalGoalContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
-
 		isTaskContainer,
-
 		isVisionContainer
-
 	} from '$lib/models';
 	import type { Container } from '$lib/models';
 	import { sidebarToggle, user } from '$lib/stores.js';
@@ -129,9 +128,9 @@
 				{isPartOfOptions}
 				on:submitSuccessful={afterSubmit}
 			>
-			<svelte:fragment slot="extra-buttons">
-				<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
-			</svelte:fragment>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+				</svelte:fragment>
 			</InternalObjectiveStrategicGoalForm>
 		{:else if isOKRContainer(container)}
 			<OkrForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
@@ -166,6 +165,26 @@
 				</div>
 			</svelte:fragment>
 		</MeasureDetailView>
+	{:else if isInternalObjectiveContainer(container)}
+		<InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
+			<svelte:fragment slot="header">
+				<h2>{container.payload.title}</h2>
+				<div class="icons">
+					{#if $user.isAuthenticated}
+						<a href="{container.guid}/edit" class="icons-element">
+							<Icon solid src={Pencil} size="20" />
+						</a>
+					{/if}
+					<a
+						href={closeOverlay()}
+						class="button icons-element"
+						on:click={() => ($sidebarToggle = true)}
+					>
+						<Icon solid src={XMark} size="20" />
+					</a>
+				</div>
+			</svelte:fragment>
+		</InternalObjectiveDetailView>
 	{:else}
 		<ContainerDetailView {container} {relatedContainers} {revisions}>
 			<svelte:fragment slot="header">

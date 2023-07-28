@@ -501,10 +501,27 @@ const taskContainer = container.extend({
 
 export type TaskContainer = z.infer<typeof taskContainer>;
 
-export function isTaskContainer(
-	container: Container
-): container is TaskContainer {
+export function isTaskContainer(container: Container): container is TaskContainer {
 	return container.payload.type === payloadTypes.enum['internal_objective.task'];
+}
+
+export type InternalObjectiveContainer =
+	| InternalStrategyContainer
+	| VisionContainer
+	| InternalObjectiveStrategicGoalContainer
+	| OKRContainer
+	| TaskContainer;
+
+export function isInternalObjectiveContainer(
+	container: Container
+): container is InternalObjectiveContainer {
+	return (
+		container.payload.type === payloadTypes.enum['internal_objective.internal_strategy'] ||
+		container.payload.type === payloadTypes.enum['internal_objective.vision'] ||
+		container.payload.type === payloadTypes.enum['internal_objective.strategic_goal'] ||
+		container.payload.type === payloadTypes.enum['internal_objective.okr'] ||
+		container.payload.type === payloadTypes.enum['internal_objective.task']
+	);
 }
 
 export const newContainer = container
