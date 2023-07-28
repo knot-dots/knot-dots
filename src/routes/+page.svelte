@@ -22,7 +22,10 @@
 	{#each columns as column (column.title)}
 		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.payloadType}/new`}>
 			{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
-				<Card {container} relatedContainers={data.containers.filter(isPartOf(container))} />
+				<Card
+					{container}
+					relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf(container))}
+				/>
 			{/each}
 		</BoardColumn>
 	{/each}

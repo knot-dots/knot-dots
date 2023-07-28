@@ -1,5 +1,6 @@
 import {
 	getAllContainerRevisionsByGuid,
+	getAllContainersWithIndicatorContributions,
 	getAllRelatedContainers,
 	getContainerByGuid,
 	maybePartOf
@@ -9,21 +10,24 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ params, locals, url }) => {
 	let overlayData;
 
-	const [container, allRelatedContainers] = await Promise.all([
-		locals.pool.connect(getContainerByGuid(params.guid)),
-		locals.pool.connect(
-			getAllRelatedContainers(
-				params.guid,
-				{
-					categories: url.searchParams.getAll('category'),
-					topics: url.searchParams.getAll('topic'),
-					strategyTypes: url.searchParams.getAll('strategyType'),
-					terms: url.searchParams.get('terms') ?? ''
-				},
-				url.searchParams.get('sort') ?? ''
+	const [container, containersWithIndicatorContributions, allRelatedContainers] = await Promise.all(
+		[
+			locals.pool.connect(getContainerByGuid(params.guid)),
+			locals.pool.connect(getAllContainersWithIndicatorContributions()),
+			locals.pool.connect(
+				getAllRelatedContainers(
+					params.guid,
+					{
+						categories: url.searchParams.getAll('category'),
+						topics: url.searchParams.getAll('topic'),
+						strategyTypes: url.searchParams.getAll('strategyType'),
+						terms: url.searchParams.get('terms') ?? ''
+					},
+					url.searchParams.get('sort') ?? ''
+				)
 			)
-		)
-	]);
+		]
+	);
 
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';
@@ -36,5 +40,5 @@ export const load = (async ({ params, locals, url }) => {
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}
 
-	return { allRelatedContainers, container, overlayData };
+	return { allRelatedContainers, container, containersWithIndicatorContributions, overlayData };
 }) satisfies PageServerLoad;
