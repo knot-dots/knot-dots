@@ -20,6 +20,7 @@
 		toggleStrongCommand,
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
+	import { gfm } from '@milkdown/preset-gfm';
 	import { Node } from '@milkdown/prose/model';
 	import { getContext } from 'svelte';
 	import { ArrowUturnLeft, ArrowUturnRight, Icon, ListBullet } from 'svelte-hero-icons';
@@ -102,6 +103,7 @@
 				}));
 			})
 			.use(commonmark)
+			.use(gfm)
 			.use(history)
 			.use(listener)
 			.use(upload)
