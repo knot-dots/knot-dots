@@ -426,7 +426,7 @@ export function getAllRelatedContainers(
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
-			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
+			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
 		`);
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
