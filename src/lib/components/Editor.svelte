@@ -10,6 +10,7 @@
 		editorViewOptionsCtx,
 		rootCtx
 	} from '@milkdown/core';
+	import { history, redoCommand, undoCommand } from '@milkdown/plugin-history';
 	import { listener, listenerCtx } from '@milkdown/plugin-listener';
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
 	import type { Uploader } from '@milkdown/plugin-upload';
@@ -21,7 +22,7 @@
 	} from '@milkdown/preset-commonmark';
 	import { Node } from '@milkdown/prose/model';
 	import { getContext } from 'svelte';
-	import { Icon, ListBullet } from 'svelte-hero-icons';
+	import { ArrowUturnLeft, ArrowUturnRight, Icon, ListBullet } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
@@ -101,6 +102,7 @@
 				}));
 			})
 			.use(commonmark)
+			.use(history)
 			.use(listener)
 			.use(upload)
 			.create()
@@ -130,11 +132,33 @@
 			ctx.get(commandsCtx).call(wrapInBulletListCommand.key);
 		});
 	}
+
+	function undo() {
+		editor.action((ctx) => {
+			ctx.get(commandsCtx).call(undoCommand.key);
+		});
+	}
+
+	function redo() {
+		editor.action((ctx) => {
+			ctx.get(commandsCtx).call(redoCommand.key);
+		});
+	}
 </script>
 
 <div use:makeEditor>
 	<p id={labelId}>{label}</p>
 	<ul class="toolbar">
+		<li>
+			<button type="button" on:click={undo} on:mousedown|preventDefault>
+				<strong><Icon src={ArrowUturnLeft} size="16" /></strong>
+			</button>
+		</li>
+		<li>
+			<button type="button" on:click={redo} on:mousedown|preventDefault>
+				<strong><Icon src={ArrowUturnRight} size="16" /></strong>
+			</button>
+		</li>
 		<li>
 			<button type="button" on:click={toggleStrong} on:mousedown|preventDefault>
 				<strong>{$_('editor.strong')}</strong>
