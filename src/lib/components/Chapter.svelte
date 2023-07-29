@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Viewer } from 'bytemd';
 	import { getContext } from 'svelte';
-	import { ArrowDown, ArrowUp, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
+	import { ArrowDown, ArrowUp, Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';

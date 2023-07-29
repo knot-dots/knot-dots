@@ -72,7 +72,7 @@
 					/>
 				</label>
 			{/if}
-			{#if container.payload.indicatorContributionAchieved?.[o.guid] !== undefined && [status.enum['status.in_implementation'], status.enum['status.in_operation']].some((s) => s == container.payload.status)}
+			{#if container.payload.indicatorContributionAchieved?.[o.guid] !== undefined && [status.enum['status.in_implementation'], status.enum['status.in_operation']].some((s) => s === container.payload.status)}
 				<label>
 					{$_(`${o.payload.indicator[0].quantity}.input_prompt`)}
 					<input
@@ -84,7 +84,7 @@
 				</label>
 			{/if}
 		{/each}
-		{#if container.payload.status == status.enum['status.in_planning']}
+		{#if container.payload.status === status.enum['status.in_planning']}
 			<label>
 				{$_('annotation')}
 				<Editor
@@ -92,7 +92,7 @@
 					on:change={(e) => (container.payload.annotation = e.detail.value)}
 				/>
 			</label>
-		{:else if container.payload.status == status.enum['status.in_implementation']}
+		{:else if container.payload.status === status.enum['status.in_implementation']}
 			<label>
 				{$_('comment')}
 				<Editor
@@ -100,7 +100,7 @@
 					on:change={(e) => (container.payload.comment = e.detail.value)}
 				/>
 			</label>
-		{:else if container.payload.status == status.enum['status.in_operation']}
+		{:else if container.payload.status === status.enum['status.in_operation']}
 			<label>
 				{$_('result')}
 				<Editor

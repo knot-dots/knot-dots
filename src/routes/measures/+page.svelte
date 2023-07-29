@@ -18,7 +18,7 @@
 			title={$_(statusOption)}
 			icon={statusIcons.get(statusOption)}
 		>
-			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status == statusOption) as container}
+			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status === statusOption) as container}
 				<Card {container} />
 			{/each}
 		</BoardColumn>

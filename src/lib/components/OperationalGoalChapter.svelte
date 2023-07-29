@@ -25,6 +25,6 @@
 </script>
 
 <Chapter {container} {headingTag} {isPartOf} />
-{#each parts as p, i}
+{#each parts as p}
 	<Chapter container={p} headingTag="h6" isPartOf={container} />
 {/each}
