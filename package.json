@@ -44,7 +44,7 @@
 		"keycloak-js": "^21.1.2",
 		"roarr": "^7.15.0",
 		"serialize-error": "^11.0.0",
-		"slonik": "^33.3.3",
+		"slonik": "^34.0.1",
 		"uuid": "^9.0.0",
 		"zod": "^3.21.4"
 	}
