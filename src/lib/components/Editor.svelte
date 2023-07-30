@@ -16,24 +16,32 @@
 	import type { Uploader } from '@milkdown/plugin-upload';
 	import {
 		commonmark,
+		listItemSchema,
 		toggleEmphasisCommand,
 		toggleStrongCommand,
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
 	import { Node } from '@milkdown/prose/model';
+	import { $view as view } from '@milkdown/utils';
+	import { useNodeViewFactory, useProsemirrorAdapterProvider } from '@prosemirror-adapter/svelte';
+	import type { SvelteNodeViewComponent } from '@prosemirror-adapter/svelte';
 	import { getContext } from 'svelte';
 	import { ArrowUturnLeft, ArrowUturnRight, Icon, ListBullet } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import { uploadAsFormData } from '$lib/client/upload';
+	import ListItem from '$lib/components/ListItem.svelte';
 
 	export let value = '';
 	export let label = '';
 
 	const labelId = `label-${counter + 1}`;
 	const { getKeycloak } = getContext<KeycloakContext>(key);
+
+	useProsemirrorAdapterProvider();
+	const nodeViewFactory = useNodeViewFactory();
 
 	const uploader: Uploader = async (files, schema) => {
 		const images: File[] = [];
@@ -107,6 +115,14 @@
 			.use(history)
 			.use(listener)
 			.use(upload)
+			.use(
+				view(listItemSchema.node, () =>
+					nodeViewFactory({
+						component: ListItem as SvelteNodeViewComponent,
+						as: 'li'
+					})
+				)
+			)
 			.create()
 			.then((e) => (editor = e));
 
