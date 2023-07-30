@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Viewer } from 'bytemd';
 	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _, date, number } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isOperationalGoalContainer,
 		isStrategyContainer,

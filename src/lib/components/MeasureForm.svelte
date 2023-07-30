@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { Editor } from 'bytemd';
-	import 'bytemd/dist/index.css';
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import Editor from '$lib/components/Editor.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import { predicates, status, sustainableDevelopmentGoals, topics } from '$lib/models';
@@ -52,13 +51,7 @@
 			{$_('measure.summary')}
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
 		</label>
-		<label>
-			{$_('measure.description')}
-			<Editor
-				value={container.payload.description ?? ''}
-				on:change={(e) => (container.payload.description = e.detail.value)}
-			/>
-		</label>
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 		<ResourcePlanner {container} />
 		{#each relatedContainers as o}
 			{#if container.payload.indicatorContribution?.[o.guid] !== undefined}
@@ -85,29 +78,11 @@
 			{/if}
 		{/each}
 		{#if container.payload.status === status.enum['status.in_planning']}
-			<label>
-				{$_('annotation')}
-				<Editor
-					value={container.payload.annotation ?? ''}
-					on:change={(e) => (container.payload.annotation = e.detail.value)}
-				/>
-			</label>
+			<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
 		{:else if container.payload.status === status.enum['status.in_implementation']}
-			<label>
-				{$_('comment')}
-				<Editor
-					value={container.payload.comment ?? ''}
-					on:change={(e) => (container.payload.comment = e.detail.value)}
-				/>
-			</label>
+			<Editor label={$_('comment')} bind:value={container.payload.comment} />
 		{:else if container.payload.status === status.enum['status.in_operation']}
-			<label>
-				{$_('result')}
-				<Editor
-					value={container.payload.result ?? ''}
-					on:change={(e) => (container.payload.result = e.detail.value)}
-				/>
-			</label>
+			<Editor label={$_('result')} bind:value={container.payload.result} />
 		{/if}
 	</svelte:fragment>
 
