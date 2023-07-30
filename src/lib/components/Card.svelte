@@ -63,6 +63,7 @@
 
 <article
 	tabindex="-1"
+	title={container.payload.title}
 	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
@@ -101,7 +102,11 @@
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
 		{/if}
-		<a href={relatedToURL} class="button {relatedTo === container.guid ? 'is-active' : ''}">
+		<a
+			href={relatedToURL}
+			class="button {relatedTo === container.guid ? 'is-active' : ''}"
+			title={$_('show_related_objects')}
+		>
 			<Icon src={Share} size="20" mini />
 		</a>
 	</footer>
