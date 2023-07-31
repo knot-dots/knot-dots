@@ -622,7 +622,10 @@ export function getAllContainersWithIndicatorContributions() {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE payload->>'indicatorContribution' IS NOT NULL
+			WHERE (
+					payload->>'indicatorContribution' IS NOT NULL
+					OR payload->>'indicatorContribution' != '{}'
+				)
 				AND valid_currently
 				AND NOT deleted
 		`);
