@@ -41,7 +41,7 @@
 				}
 			});
 			container.payload.indicatorContribution = indicatorContribution;
-			container.payload.indicatorContributionAchieved = indicatorContribution;
+			container.payload.indicatorContributionAchieved = {...indicatorContribution};
 		}
 	}
 </script>
