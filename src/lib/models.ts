@@ -699,6 +699,24 @@ export const modifiedContainer = container
 		relation: z.array(partialRelation)
 	});
 
+	export type EmptyInternalObjectiveContainer =
+	| EmptyInternalStrategyContainer
+	| EmptyVisionContainer
+	| EmptyInternalObjectiveStrategicGoalContainer
+	| EmptyOKRContainer
+	| EmptyTaskContainer;
+
+export function isEmptyInternalObjectiveContainer(
+	container: Container
+): container is InternalObjectiveContainer {
+	return (
+		isEmptyInternalStrategyContainer(container) ||
+		isEmptyVisionContainer(container) ||
+		isEmptyStrategicGoalContainer(container) ||
+		isEmptyOKRContainer(container) ||
+		isEmptyTaskContainer(container)
+	);
+}
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export interface CustomEventMap {
