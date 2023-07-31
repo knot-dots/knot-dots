@@ -489,9 +489,9 @@ const okrContainer = container.extend({
 	payload: okrPayload
 });
 
-export type OKRContainer = z.infer<typeof okrContainer>;
+export type OkrContainer = z.infer<typeof okrContainer>;
 
-export function isOKRContainer(container: Container): container is OKRContainer {
+export function isOkrContainer(container: Container): container is OkrContainer {
 	return container.payload.type === payloadTypes.enum['internal_objective.okr'];
 }
 
@@ -509,7 +509,7 @@ export type InternalObjectiveContainer =
 	| InternalStrategyContainer
 	| VisionContainer
 	| InternalObjectiveStrategicGoalContainer
-	| OKRContainer
+	| OkrContainer
 	| TaskContainer;
 
 export function isInternalObjectiveContainer(
@@ -519,7 +519,7 @@ export function isInternalObjectiveContainer(
 		isInternalStrategyContainer(container) ||
 		isVisionContainer(container) ||
 		isStrategicGoalGoalContainer(container) ||
-		isOKRContainer(container) ||
+		isOkrContainer(container) ||
 		isTaskContainer(container)
 	);
 }
@@ -669,13 +669,13 @@ export function isEmptyInternalObjectiveStrategicGoalContainer(
 	return container.payload.type === payloadTypes.enum['internal_objective.strategic_goal'];
 }
 
-const emptyOKRContainer = emptyContainer.extend({
+const emptyOkrContainer = emptyContainer.extend({
 	payload: okrPayload.partial().merge(okrPayload.pick({ type: true }))
 });
 
-export type EmptyOKRContainer = z.infer<typeof emptyOKRContainer>;
+export type EmptyOkrContainer = z.infer<typeof emptyOkrContainer>;
 
-export function isEmptyOKRContainer(container: EmptyContainer): container is EmptyOKRContainer {
+export function isEmptyOkrContainer(container: EmptyContainer): container is EmptyOkrContainer {
 	return container.payload.type === payloadTypes.enum['internal_objective.okr'];
 }
 
@@ -703,7 +703,7 @@ export const modifiedContainer = container
 	| EmptyInternalStrategyContainer
 	| EmptyVisionContainer
 	| EmptyInternalObjectiveStrategicGoalContainer
-	| EmptyOKRContainer
+	| EmptyOkrContainer
 	| EmptyTaskContainer;
 
 export function isEmptyInternalObjectiveContainer(
@@ -713,7 +713,7 @@ export function isEmptyInternalObjectiveContainer(
 		isEmptyInternalStrategyContainer(container) ||
 		isEmptyVisionContainer(container) ||
 		isEmptyStrategicGoalContainer(container) ||
-		isEmptyOKRContainer(container) ||
+		isEmptyOkrContainer(container) ||
 		isEmptyTaskContainer(container)
 	);
 }

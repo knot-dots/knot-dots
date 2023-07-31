@@ -14,7 +14,7 @@
 		isEmptyInternalStrategyContainer,
 		isEmptyMeasureContainer,
 		isEmptyModelContainer,
-		isEmptyOKRContainer,
+		isEmptyOkrContainer,
 		isEmptyOperationalGoalContainer,
 		isEmptyStrategicGoalContainer,
 		isEmptyStrategyContainer,
@@ -157,7 +157,7 @@
 			</button>
 		</svelte:fragment>
 	</InternalObjectiveForm>
-{:else if isEmptyOKRContainer(container)}
+{:else if isEmptyOkrContainer(container)}
 	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">
