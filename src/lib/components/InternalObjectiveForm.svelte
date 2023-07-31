@@ -1,15 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import type {
-		Container,
-		EmptyOKRContainer,
-		OKRContainer
-	} from '$lib/models';
+	import type { Container, EmptyInternalObjectiveContainer, EmptyInternalObjectiveStrategicGoalContainer, InternalObjectiveContainer, InternalObjectiveStrategicGoalContainer } from '$lib/models';
 	import { Editor } from 'bytemd';
 	import RelationSelector from './RelationSelector.svelte';
 
-	export let container: OKRContainer | EmptyOKRContainer;
+	export let container: InternalObjectiveContainer| EmptyInternalObjectiveContainer;
 	export let isPartOfOptions: Container[];
 </script>
 

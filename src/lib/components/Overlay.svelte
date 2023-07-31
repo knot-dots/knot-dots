@@ -6,17 +6,12 @@
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
-	import InternalObjectiveStrategicGoalForm from './InternalObjectiveStrategicGoalForm.svelte';
-	import InternalStrategyForm from './InternalStrategyForm.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
-	import OkrForm from './okrForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
-	import TaskForm from './TaskForm.svelte';
-	import VisionForm from './VisionForm.svelte';
 	import {
 		isInternalObjectiveContainer,
 		isInternalObjectiveStrategicGoalContainer,
@@ -32,6 +27,7 @@
 	} from '$lib/models';
 	import type { Container } from '$lib/models';
 	import { sidebarToggle, user } from '$lib/stores.js';
+	import InternalObjectiveForm from './InternalObjectiveForm.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
@@ -111,19 +107,19 @@
 				</svelte:fragment>
 			</StrategyForm>
 		{:else if isInternalStrategyContainer(container)}
-			<InternalStrategyForm {container} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
-			</InternalStrategyForm>
+			</InternalObjectiveForm>
 		{:else if isVisionContainer(container)}
-			<VisionForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
-			</VisionForm>
+			</InternalObjectiveForm>
 		{:else if isInternalObjectiveStrategicGoalContainer(container)}
-			<InternalObjectiveStrategicGoalForm
+			<InternalObjectiveForm
 				{container}
 				{isPartOfOptions}
 				on:submitSuccessful={afterSubmit}
@@ -131,19 +127,19 @@
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
-			</InternalObjectiveStrategicGoalForm>
+			</InternalObjectiveForm>
 		{:else if isOKRContainer(container)}
-			<OkrForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
-			</OkrForm>
+			</InternalObjectiveForm>
 		{:else if isTaskContainer(container)}
-			<TaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
-			</TaskForm>
+			</InternalObjectiveForm>
 		{/if}
 	{:else if isMeasureContainer(container)}
 		<MeasureDetailView {container} {relatedContainers} {revisions}>

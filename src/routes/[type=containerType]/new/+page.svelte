@@ -3,19 +3,15 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
-	import InternalStrategyForm from '$lib/components/InternalStrategyForm.svelte';
-	import InternalObjectiveStrategicGoalForm from '$lib/components/InternalObjectiveStrategicGoalForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
-	import OkrForm from '$lib/components/okrForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
-	import TaskForm from '$lib/components/TaskForm.svelte';
-	import VisionForm from '$lib/components/VisionForm.svelte';
 	import {
-	isEmptyInternalObjectiveStrategicGoalContainer,
-	isEmptyInternalStrategyContainer,
+		isEmptyInternalObjectiveStrategicGoalContainer,
+		isEmptyInternalStrategyContainer,
 		isEmptyMeasureContainer,
 		isEmptyModelContainer,
 		isEmptyOKRContainer,
@@ -138,43 +134,43 @@
 		</svelte:fragment>
 	</StrategyForm>
 {:else if isEmptyInternalStrategyContainer(container)}
-	<InternalStrategyForm {container} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-vision">
 				{$_('save_and_create_vision')}
 			</button>
 		</svelte:fragment>
-	</InternalStrategyForm>
-	{:else if isEmptyVisionContainer(container)}
-	<VisionForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	</InternalObjectiveForm>
+{:else if isEmptyVisionContainer(container)}
+	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-internal-objective-strategic-goal">
 				{$_('save_and_create_strategic_goal')}
 			</button>
 		</svelte:fragment>
-	</VisionForm>
+	</InternalObjectiveForm>
 {:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
-	<InternalObjectiveStrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-okr">
 				{$_('save_and_create_okr')}
 			</button>
 		</svelte:fragment>
-	</InternalObjectiveStrategicGoalForm>
+	</InternalObjectiveForm>
 {:else if isEmptyOKRContainer(container)}
-	<OkrForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">
 				{$_('save_and_create_task')}
 			</button>
 		</svelte:fragment>
-	</OkrForm>
+	</InternalObjectiveForm>
 {:else if isEmptyTaskContainer(container)}
-	<TaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">
 				{$_('save_and_create_task')}
 			</button>
 		</svelte:fragment>
-	</TaskForm>
+	</InternalObjectiveForm>
 {/if}
