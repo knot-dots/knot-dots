@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { status, unitByQuantity } from '$lib/models';
-	import type { Container, Indicator, Quantity, Status } from '$lib/models';
+	import type { Container, Indicator, Quantity } from '$lib/models';
+	import { isMeasureContainer } from '$lib/models.js';
 
 	export let guid: string;
 	export let indicator: Indicator;
@@ -22,22 +23,34 @@
 			'quantity' in indicator && unitByQuantity.has(indicator.quantity as Quantity)
 				? $_(unitByQuantity.get(indicator.quantity as Quantity) as string)
 				: '';
-		contributions[status.enum['status.in_operation']] = 0;
-		contributions[status.enum['status.in_implementation']] = 0;
+		contributions['planned'] = 0;
+		contributions['achieved'] = 0;
 		contributionsAbsolute = 0;
 
 		for (let c of contributors) {
-			if (
-				'status' in c.payload &&
-				c.payload.status in contributions &&
-				'indicatorContribution' in c.payload &&
-				c.payload.indicatorContribution &&
-				guid in c.payload.indicatorContribution
-			) {
-				contributions[c.payload.status] +=
-					(c.payload.indicatorContribution[guid] / indicator.max) * 100;
-				contributionsAbsolute += c.payload.indicatorContribution[guid];
+			if (!isMeasureContainer(c)) {
+				continue;
 			}
+			if (
+				c.payload.status != status.enum['status.in_implementation'] &&
+				c.payload.status != status.enum['status.in_operation']
+			) {
+				continue;
+			}
+			if (c.payload.indicatorContribution?.[guid] == undefined) {
+				continue;
+			}
+			if (c.payload.indicatorContributionAchieved?.[guid]) {
+				contributions['achieved'] +=
+					(c.payload.indicatorContributionAchieved?.[guid] / indicator.max) * 100;
+				contributions['planned'] +=
+					((c.payload.indicatorContribution[guid] - c.payload.indicatorContributionAchieved[guid]) /
+						indicator.max) *
+					100;
+			} else {
+				contributions['planned'] += (c.payload.indicatorContribution[guid] / indicator.max) * 100;
+			}
+			contributionsAbsolute += c.payload.indicatorContribution[guid];
 		}
 	}
 </script>
@@ -45,9 +58,6 @@
 <div class="progress" class:progress--compact={compact}>
 	<div class="wrapper">
 		<span class="min">{indicator.min} {unit}</span>
-		{#if indicator.quantity && compact}
-			<span class="label">{$_(`${indicator.quantity}.label`)}</span>
-		{/if}
 		<span class="max">{indicator.max} {unit}</span>
 		<div class="bar">
 			{#if indicator.value}
@@ -61,7 +71,7 @@
 						? 'var(--color-yellow-200)'
 						: 'var(--color-red-600)'}
 				/>
-			{:else if contributions[status.enum['status.in_operation']] >= 100}
+			{:else if contributions['achieved'] >= 100}
 				<span
 					class="value"
 					title={$_(`${indicator.quantity}.description`, {
@@ -70,15 +80,15 @@
 					style:background-color="var(--color-green-500)"
 					style:width="100%"
 				/>
-			{:else if contributions[status.enum['status.in_operation']] + contributions[status.enum['status.in_implementation']] >= 100}
+			{:else if contributions['achieved'] + contributions['planned'] >= 100}
 				<span
 					class="value"
 					title={$_(`${indicator.quantity}.description`, {
 						values: { contribution: contributionsAbsolute }
 					})}
 					style:background="linear-gradient(to right, var(--color-green-500) {contributions[
-						status.enum['status.in_operation']
-					]}%, var(--color-yellow-200) {contributions[status.enum['status.in_operation']]}% 100%)"
+						'achieved'
+					]}%, var(--color-yellow-200) {contributions['achieved']}% 100%)"
 					style:width="100%"
 				/>
 			{:else}
@@ -88,12 +98,10 @@
 						values: { contribution: contributionsAbsolute }
 					})}
 					style:background="linear-gradient(to right, var(--color-green-500) {contributions[
-						status.enum['status.in_operation']
-					]}%, var(--color-yellow-200) {contributions[status.enum['status.in_operation']]}% {contributions[
-						status.enum['status.in_operation']
-					] + contributions[status.enum['status.in_implementation']]}%, var(--color-red-600) {contributions[
-						status.enum['status.in_operation']
-					] + contributions[status.enum['status.in_implementation']]}%) 100%"
+						'achieved'
+					]}%, var(--color-yellow-200) {contributions['achieved']}% {contributions['achieved'] +
+						contributions['planned']}%, var(--color-red-600) {contributions['achieved'] +
+						contributions['planned']}%) 100%"
 					style:width="100%"
 				/>
 			{/if}

@@ -26,7 +26,10 @@
 				) > -1
 		) as OperationalGoalContainer[];
 
-		if (!('indicatorContribution' in container.payload)) {
+		if (
+			!container.payload.indicatorContribution ||
+			Object.keys(container.payload.indicatorContribution).length == 0
+		) {
 			const indicatorContribution: Record<string, number> = {};
 			relatedContainers.forEach((o) => {
 				if (
@@ -38,6 +41,7 @@
 				}
 			});
 			container.payload.indicatorContribution = indicatorContribution;
+			container.payload.indicatorContributionAchieved = {...indicatorContribution};
 		}
 	}
 </script>
@@ -68,32 +72,43 @@
 					/>
 				</label>
 			{/if}
-			{#if container.payload.status == status.enum['status.in_planning']}
+			{#if container.payload.indicatorContributionAchieved?.[o.guid] !== undefined && [status.enum['status.in_implementation'], status.enum['status.in_operation']].some((s) => s == container.payload.status)}
 				<label>
-					{$_('annotation')}
-					<Editor
-						value={container.payload.annotation ?? ''}
-						on:change={(e) => (container.payload.annotation = e.detail.value)}
-					/>
-				</label>
-			{:else if container.payload.status == status.enum['status.in_implementation']}
-				<label>
-					{$_('comment')}
-					<Editor
-						value={container.payload.comment ?? ''}
-						on:change={(e) => (container.payload.comment = e.detail.value)}
-					/>
-				</label>
-			{:else if container.payload.status == status.enum['status.in_operation']}
-				<label>
-					{$_('result')}
-					<Editor
-						value={container.payload.result ?? ''}
-						on:change={(e) => (container.payload.result = e.detail.value)}
+					{$_(`${o.payload.indicator[0].quantity}.input_prompt`)}
+					<input
+						type="text"
+						inputmode="numeric"
+						name="indicatorContributionAchieved-{o.guid}"
+						bind:value={container.payload.indicatorContributionAchieved[o.guid]}
 					/>
 				</label>
 			{/if}
 		{/each}
+		{#if container.payload.status == status.enum['status.in_planning']}
+			<label>
+				{$_('annotation')}
+				<Editor
+					value={container.payload.annotation ?? ''}
+					on:change={(e) => (container.payload.annotation = e.detail.value)}
+				/>
+			</label>
+		{:else if container.payload.status == status.enum['status.in_implementation']}
+			<label>
+				{$_('comment')}
+				<Editor
+					value={container.payload.comment ?? ''}
+					on:change={(e) => (container.payload.comment = e.detail.value)}
+				/>
+			</label>
+		{:else if container.payload.status == status.enum['status.in_operation']}
+			<label>
+				{$_('result')}
+				<Editor
+					value={container.payload.result ?? ''}
+					on:change={(e) => (container.payload.result = e.detail.value)}
+				/>
+			</label>
+		{/if}
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
