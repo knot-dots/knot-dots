@@ -1,5 +1,6 @@
 import {
 	getAllContainerRevisionsByGuid,
+	getAllContainersWithIndicatorContributions,
 	getAllRelatedContainers,
 	getAllRelatedContainersByStrategyType,
 	getManyContainers,
@@ -9,35 +10,45 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url }) => {
 	let containers;
+	let containersWithIndicatorContributions;
 	let overlayData;
 	if (url.searchParams.has('related-to')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(url.searchParams.get('related-to') as string, {}, '')
-		);
+		[containers, containersWithIndicatorContributions] = await Promise.all([
+			locals.pool.connect(
+				getAllRelatedContainers(url.searchParams.get('related-to') as string, {}, '')
+			),
+			locals.pool.connect(getAllContainersWithIndicatorContributions())
+		]);
 	} else if (url.searchParams.has('strategyType')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainersByStrategyType(
-				url.searchParams.getAll('strategyType'),
-				{
-					categories: url.searchParams.getAll('category'),
-					topics: url.searchParams.getAll('topic'),
-					terms: url.searchParams.get('terms') ?? ''
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
+		[containers, containersWithIndicatorContributions] = await Promise.all([
+			locals.pool.connect(
+				getAllRelatedContainersByStrategyType(
+					url.searchParams.getAll('strategyType'),
+					{
+						categories: url.searchParams.getAll('category'),
+						topics: url.searchParams.getAll('topic'),
+						terms: url.searchParams.get('terms') ?? ''
+					},
+					url.searchParams.get('sort') ?? ''
+				)
+			),
+			locals.pool.connect(getAllContainersWithIndicatorContributions())
+		]);
 	} else {
-		containers = await locals.pool.connect(
-			getManyContainers(
-				{
-					categories: url.searchParams.getAll('category'),
-					topics: url.searchParams.getAll('topic'),
-					strategyTypes: url.searchParams.getAll('strategyType'),
-					terms: url.searchParams.get('terms') ?? ''
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
+		[containers, containersWithIndicatorContributions] = await Promise.all([
+			locals.pool.connect(
+				getManyContainers(
+					{
+						categories: url.searchParams.getAll('category'),
+						topics: url.searchParams.getAll('topic'),
+						strategyTypes: url.searchParams.getAll('strategyType'),
+						terms: url.searchParams.get('terms') ?? ''
+					},
+					url.searchParams.get('sort') ?? ''
+				)
+			),
+			locals.pool.connect(getAllContainersWithIndicatorContributions())
+		]);
 	}
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';
@@ -53,5 +64,5 @@ export const load = (async ({ locals, url }) => {
 			revisions
 		};
 	}
-	return { containers, overlayData };
+	return { containers, containersWithIndicatorContributions, overlayData };
 }) satisfies PageServerLoad;

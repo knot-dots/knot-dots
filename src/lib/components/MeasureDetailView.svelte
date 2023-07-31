@@ -60,9 +60,9 @@
 			{#each status.options as statusOption}
 				<li
 					class="tab-item"
-					class:tab-item--active={statusOption == selectedRevision.payload.status}
+					class:tab-item--active={statusOption === selectedRevision.payload.status}
 				>
-					{#if status.options.findIndex((o) => statusOption == o) <= status.options.findIndex((o) => container.payload.status == o)}
+					{#if status.options.findIndex((o) => statusOption === o) <= status.options.findIndex((o) => container.payload.status === o)}
 						{#key $page.url}
 							<a class="badge badge--{statusColors.get(statusOption)}" href={tabURL(statusOption)}>
 								<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
@@ -127,17 +127,17 @@
 				{/each}
 			</div>
 		{/if}
-		{#if selectedRevision.payload.status == status.enum['status.in_planning']}
+		{#if selectedRevision.payload.status === status.enum['status.in_planning']}
 			<div class="annotation">
 				<h3>{$_('annotation')}</h3>
 				<Viewer value={selectedRevision.payload.annotation} />
 			</div>
-		{:else if selectedRevision.payload.status == status.enum['status.in_implementation']}
+		{:else if selectedRevision.payload.status === status.enum['status.in_implementation']}
 			<div class="comment">
 				<h3>{$_('comment')}</h3>
 				<Viewer value={selectedRevision.payload.comment} />
 			</div>
-		{:else if selectedRevision.payload.status == status.enum['status.in_operation']}
+		{:else if selectedRevision.payload.status === status.enum['status.in_operation']}
 			<div class="result">
 				<h3>{$_('result')}</h3>
 				<Viewer value={selectedRevision.payload.result} />
@@ -154,7 +154,7 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('strategy')}</h3>
 				<p class="meta-value">
-					{#if $page.url.pathname == `/strategy/${strategy.guid}`}
+					{#if $page.url.pathname === `/strategy/${strategy.guid}`}
 						{$_(strategy.payload.title)}
 					{:else}
 						<a href={containerURL(strategy.payload.type, strategy.guid)}>

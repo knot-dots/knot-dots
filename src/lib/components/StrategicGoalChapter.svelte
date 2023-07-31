@@ -29,7 +29,7 @@
 </script>
 
 <Chapter {container} {headingTag} {isPartOf} />
-{#each parts as p, i}
+{#each parts as p}
 	{#if isOperationalGoalContainer(p)}
 		<OperationalGoalChapter
 			container={p}

@@ -37,7 +37,7 @@
 		user
 	} from '$lib/stores.js';
 
-	let timer: any;
+	let timer: ReturnType<typeof setTimeout>;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
@@ -144,7 +144,7 @@
 			<li>
 				<a
 					class="button"
-					class:is-active={$page.url.pathname ==
+					class:is-active={$page.url.pathname ===
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 				>
@@ -155,7 +155,7 @@
 			<li>
 				<a
 					class="button"
-					class:is-active={$page.url.pathname ==
+					class:is-active={$page.url.pathname ===
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
 				>
@@ -262,7 +262,7 @@
 					<li>
 						<Filters
 							options={payloadTypes.options
-								.filter((o) => o != payloadTypes.enum.strategy)
+								.filter((o) => o !== payloadTypes.enum.strategy)
 								.map((o) => [$_(o), o])}
 							bind:selectedOptions={selectedPayloadType}
 						/>
@@ -446,7 +446,7 @@
 		border-left: none;
 		border-top-left-radius: 0;
 		margin: 0 0 0 -8px;
-		padding: 13px 14px 13px 0px;
+		padding: 13px 14px 13px 0;
 		width: 100%;
 	}
 

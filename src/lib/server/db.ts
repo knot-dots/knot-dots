@@ -426,7 +426,7 @@ export function getAllRelatedContainers(
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
-			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently
+			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
 		`);
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
@@ -613,6 +613,26 @@ export function getAllRelatedContainersByStrategyType(
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function getAllContainersWithIndicatorContributions() {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE (
+					payload->>'indicatorContribution' IS NOT NULL
+					OR payload->>'indicatorContribution' != '{}'
+				)
+				AND valid_currently
+				AND NOT deleted
+		`);
+		return containerResult.map((c) => ({
+			...c,
+			relation: [],
+			user: []
 		}));
 	};
 }

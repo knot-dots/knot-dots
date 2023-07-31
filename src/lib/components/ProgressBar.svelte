@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { status, unitByQuantity } from '$lib/models';
+	import { isMeasureContainer, status, unitByQuantity } from '$lib/models';
 	import type { Container, Indicator, Quantity } from '$lib/models';
-	import { isMeasureContainer } from '$lib/models.js';
 
 	export let guid: string;
 	export let indicator: Indicator;
