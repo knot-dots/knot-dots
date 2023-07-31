@@ -516,11 +516,11 @@ export function isInternalObjectiveContainer(
 	container: Container
 ): container is InternalObjectiveContainer {
 	return (
-		container.payload.type === payloadTypes.enum['internal_objective.internal_strategy'] ||
-		container.payload.type === payloadTypes.enum['internal_objective.vision'] ||
-		container.payload.type === payloadTypes.enum['internal_objective.strategic_goal'] ||
-		container.payload.type === payloadTypes.enum['internal_objective.okr'] ||
-		container.payload.type === payloadTypes.enum['internal_objective.task']
+		isInternalStrategyContainer(container) ||
+		isVisionContainer(container) ||
+		isStrategicGoalGoalContainer(container) ||
+		isOKRContainer(container) ||
+		isTaskContainer(container)
 	);
 }
 
