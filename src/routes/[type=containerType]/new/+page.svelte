@@ -52,6 +52,15 @@
 				position: 2 ** 32 - 1,
 				predicate: 'is-part-of'
 			})
+		)
+		.concat(
+			$page.url.searchParams.getAll('is-part-of-measure').map(
+				(o): PartialRelation => ({
+					object: Number(o),
+					position: 2 ** 32 - 1,
+					predicate: 'is-part-of-measure'
+				})
+			)
 		);
 
 	$: container = ((type: PayloadType) => {

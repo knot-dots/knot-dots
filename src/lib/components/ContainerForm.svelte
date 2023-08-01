@@ -29,7 +29,8 @@
 		'guid' in container &&
 		container.relation.filter(
 			({ predicate, object }) =>
-				predicate == predicates.enum['is-part-of'] &&
+				(predicate == predicates.enum['is-part-of'] ||
+					predicate == predicates.enum['is-part-of-measure']) &&
 				'revision' in container &&
 				object == container.revision
 		).length == 0;

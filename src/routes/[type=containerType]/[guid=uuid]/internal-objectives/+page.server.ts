@@ -2,12 +2,14 @@ import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
 	getAllRelatedContainersByStrategyType,
+	getContainerByGuid,
 	getManyContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, url }) => {
+export const load = (async ({ locals, params, url }) => {
+	const measure = await locals.pool.connect(getContainerByGuid(params.guid));
 	let containers;
 	let overlayData;
 	if (url.searchParams.has('related-to')) {
@@ -53,5 +55,5 @@ export const load = (async ({ locals, url }) => {
 			revisions
 		};
 	}
-	return { containers, overlayData };
+	return { containers, measure, overlayData };
 }) satisfies PageServerLoad;

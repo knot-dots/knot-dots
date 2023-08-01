@@ -106,7 +106,7 @@ export function isLevel(value: unknown): value is Level {
 	return levelValues.includes(value as Level);
 }
 
-const predicateValues = ['is-part-of'] as const;
+const predicateValues = ['is-part-of', 'is-part-of-measure'] as const;
 
 export const predicates = z.enum(predicateValues);
 
