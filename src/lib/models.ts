@@ -145,6 +145,35 @@ export function isStatus(value: unknown): value is Status {
 	return statusValues.includes(value as Status);
 }
 
+const taskStatusValues = [
+	'task_status.idea',
+	'task_status.in_planning',
+	'task_status.in_progress',
+	'task_status.done'
+] as const;
+
+export const taskStatus = z.enum(taskStatusValues);
+
+export const taskStatusColors = new Map<TaskStatus, string>([
+	[taskStatus.enum['task_status.idea'], 'red'],
+	[taskStatus.enum['task_status.in_planning'], 'orange'],
+	[taskStatus.enum['task_status.in_progress'], 'yellow'],
+	[taskStatus.enum['task_status.done'], 'green']
+]);
+
+export const taskStatusIcons = new Map<TaskStatus, IconSource>([
+	[taskStatus.enum['task_status.idea'], LightBulb],
+	[taskStatus.enum['task_status.in_planning'], Pencil],
+	[taskStatus.enum['task_status.in_progress'], Cog8Tooth],
+	[taskStatus.enum['task_status.done'], Flag]
+]);
+
+export type TaskStatus = z.infer<typeof taskStatus>;
+
+export function isTaskStatus(value: unknown): value is Status {
+	return statusValues.includes(value as Status);
+}
+
 const strategyTypeValues = [
 	'strategy_type.mobility',
 	'strategy_type.sustainability',
@@ -286,6 +315,7 @@ const okrPayload = basePayload
 
 const taskPayload = basePayload
 	.extend({
+		taskStatus: taskStatus,
 		type: z.literal(payloadTypes.enum['internal_objective.task'])
 	})
 	.strict();

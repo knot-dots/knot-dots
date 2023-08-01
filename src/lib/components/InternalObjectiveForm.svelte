@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import type { Container, EmptyInternalObjectiveContainer, EmptyInternalObjectiveStrategicGoalContainer, InternalObjectiveContainer, InternalObjectiveStrategicGoalContainer } from '$lib/models';
+	import type {
+		Container,
+		EmptyInternalObjectiveContainer,
+		InternalObjectiveContainer,
+	} from '$lib/models';
 	import { Editor } from 'bytemd';
 	import RelationSelector from './RelationSelector.svelte';
 
-	export let container: InternalObjectiveContainer| EmptyInternalObjectiveContainer;
+	export let container: InternalObjectiveContainer | EmptyInternalObjectiveContainer;
 	export let isPartOfOptions: Container[];
 </script>
 
@@ -22,6 +26,7 @@
 				on:change={(e) => (container.payload.description = e.detail.value)}
 			/>
 		</label>
+		<slot name="extra-data" />
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">

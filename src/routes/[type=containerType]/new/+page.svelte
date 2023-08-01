@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
@@ -166,11 +167,5 @@
 		</svelte:fragment>
 	</InternalObjectiveForm>
 {:else if isEmptyTaskContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-task">
-				{$_('save_and_create_task')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveForm>
+	<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {/if}
