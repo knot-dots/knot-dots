@@ -61,6 +61,7 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <article
 	tabindex="-1"
 	title={container.payload.title}
