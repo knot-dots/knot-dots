@@ -161,6 +161,13 @@
 	"superordinate_strategies": "Superordinate strategies",
 	"superordinate_visions": "Superordinate visions",
 	"superordinate_okrs": "Superordinate OKRs",
+	"task_status": {
+		"done": "Done",
+		"idea": "Idea",
+		"in_planning": "In planning",
+		"in_progress": "In progress",
+		"label": "Status"
+	},
 	"text": "Text",
 	"topic": {
 		"citizen_participation": "Citizen participation",
