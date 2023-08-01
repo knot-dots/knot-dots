@@ -3,10 +3,15 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 
-	import type { Container } from '$lib/models';
+	import { isMeasureContainer, type Container } from '$lib/models';
 
 	export let container: Container;
+	export let relatedContainers: Container[];
 	export let revisions: Container[];
+
+	$: measure = isMeasureContainer(container)
+		? container
+		: relatedContainers.find(isMeasureContainer);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 </script>
