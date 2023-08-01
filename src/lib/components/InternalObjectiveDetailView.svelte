@@ -2,18 +2,11 @@
 	import { Viewer } from 'bytemd';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
 
 	import type { Container } from '$lib/models';
 
 	export let container: Container;
-	export let relatedContainers: Container[];
 	export let revisions: Container[];
-
-	$: strategy = isStrategyContainer(container)
-		? container
-		: relatedContainers.find(isStrategyContainer);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 </script>
