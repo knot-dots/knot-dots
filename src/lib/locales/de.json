@@ -17,6 +17,7 @@
 	"effects": "Wirkung",
 	"end_date": "Ende",
 	"error": {
+		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"unexpected": "Wir arbeiten daran."

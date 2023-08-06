@@ -17,6 +17,7 @@
 	"effects": "Effects",
 	"end_date": "End",
 	"error": {
+		"not_found": "Sorry, there is nothing to show here.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"unexpected": "We are working on it."
