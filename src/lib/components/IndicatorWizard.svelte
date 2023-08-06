@@ -106,7 +106,7 @@
 		border-top-right-radius: 8px;
 		color: var(--color-gray-900);
 		display: inline-flex;
-		margin: 0.125rem 0;
+		margin: 0;
 		padding: 0 0.75rem;
 	}
 </style>
