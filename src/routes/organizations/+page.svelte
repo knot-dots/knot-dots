@@ -3,14 +3,15 @@
 	import { _ } from 'svelte-i18n';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import OrganizationOverlay from '$lib/components/OrganizationOverlay.svelte';
-	import { user } from '$lib/stores';
+	import { payloadTypes } from '$lib/models';
+	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 </script>
 
 <div>
-	{#if $user.isAuthenticated}
+	{#if $ability.can('create', payloadTypes.enum.organization)}
 		<p>
 			<a class="button primary" href="/organization/new">
 				<Icon src={Plus} size="20" mini />
