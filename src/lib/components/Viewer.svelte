@@ -15,7 +15,6 @@
 	.use(rehypeStringify)
 	.process(value) then content}
 	<div class="markdown-body">
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html content}
 	</div>
 {/await}
