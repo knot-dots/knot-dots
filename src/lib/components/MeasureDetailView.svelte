@@ -12,11 +12,11 @@
 		statusColors,
 		statusIcons
 	} from '$lib/models';
-	import type { Container, MeasureContainer, Status } from '$lib/models';
+	import type { AnyContainer, Container, MeasureContainer, Status } from '$lib/models';
 
 	export let container: MeasureContainer;
 	export let relatedContainers: Container[];
-	export let revisions: Container[];
+	export let revisions: AnyContainer[];
 
 	let selectedRevision: MeasureContainer;
 

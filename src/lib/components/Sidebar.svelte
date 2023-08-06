@@ -22,6 +22,7 @@
 	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import {
+		isContainer,
 		isStrategyContainer,
 		payloadTypes,
 		strategyTypes,
@@ -127,7 +128,7 @@
 		</li>
 	</ul>
 
-	{#if 'container' in $page.data}
+	{#if 'container' in $page.data && isContainer($page.data.container)}
 		<ul class="group group-tabs">
 			<li>
 				<a

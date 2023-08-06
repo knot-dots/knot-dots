@@ -7,8 +7,9 @@ import type {
 	SerializableValue
 } from 'slonik';
 import { z } from 'zod';
-import { container, relation, user } from '$lib/models';
+import { anyContainer, container, organizationContainer, relation, user } from '$lib/models';
 import type {
+	AnyContainer,
 	Container,
 	ModifiedContainer,
 	NewContainer,
@@ -56,7 +57,9 @@ export async function getPool() {
 }
 
 const typeAliases = {
+	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
+	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	relation,
 	relationPath: z.object({}).catchall(z.number().int().positive().nullable()),
 	revision: z.object({ revision: z.number().int().positive() }),
@@ -72,7 +75,7 @@ const sql = createSqlTag({ typeAliases });
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			const containerResult = await txConnection.one(sql.typeAlias('container')`
+			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
           INSERT INTO container (payload, realm)
           VALUES (${sql.jsonb(<SerializableValue>container.payload)}, ${container.realm})
           RETURNING *
@@ -112,7 +115,7 @@ export function updateContainer(container: ModifiedContainer) {
 				WHERE guid = ${container.guid}
 			`);
 
-			const containerResult = await txConnection.one(sql.typeAlias('container')`
+			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
 				INSERT INTO container (payload, realm, guid)
 				VALUES (
 					${sql.jsonb(<SerializableValue>container.payload)},
@@ -157,7 +160,7 @@ export function updateContainer(container: ModifiedContainer) {
 	};
 }
 
-export function deleteContainer(container: Container) {
+export function deleteContainer(container: AnyContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			await txConnection.query(sql.typeAlias('void')`
@@ -198,8 +201,8 @@ export function updateContainerRelationPosition(relation: Relation[]) {
 }
 
 export function getContainerByGuid(guid: string) {
-	return async (connection: DatabaseConnection): Promise<Container> => {
-		const containerResult = await connection.one(sql.typeAlias('container')`
+	return async (connection: DatabaseConnection): Promise<AnyContainer> => {
+		const containerResult = await connection.one(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
 			WHERE guid = ${guid}
@@ -228,8 +231,8 @@ export function getContainerByGuid(guid: string) {
 }
 
 export function getAllContainerRevisionsByGuid(guid: string) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const containerResult = await connection.many(sql.typeAlias('container')`
+	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
+		const containerResult = await connection.many(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
 			WHERE guid = ${guid}
@@ -276,7 +279,11 @@ function prepareWhereCondition(filters: {
 	topics?: string[];
 	type?: PayloadType;
 }) {
-	const conditions = [sql.fragment`valid_currently`, sql.fragment`NOT deleted`];
+	const conditions = [
+		sql.fragment`valid_currently`,
+		sql.fragment`NOT deleted`,
+		sql.fragment`payload->>'type' != 'organization'`
+	];
 	if (filters.categories?.length) {
 		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
 	}

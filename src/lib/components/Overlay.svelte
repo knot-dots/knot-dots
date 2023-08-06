@@ -17,6 +17,7 @@
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import {
+		isContainer,
 		isInternalObjectiveContainer,
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
@@ -29,12 +30,12 @@
 		isTaskContainer,
 		isVisionContainer
 	} from '$lib/models';
-	import type { Container } from '$lib/models';
+	import type { AnyContainer, Container } from '$lib/models';
 	import { user } from '$lib/stores.js';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
-	export let revisions: Container[];
+	export let revisions: AnyContainer[];
 
 	$: container = revisions[revisions.length - 1];
 
@@ -198,7 +199,7 @@
 				</h2>
 			</svelte:fragment>
 		</InternalObjectiveDetailView>
-	{:else}
+	{:else if isContainer(container)}
 		<ContainerDetailView {container} {relatedContainers} {revisions}>
 			<svelte:fragment slot="header">
 				<h2>

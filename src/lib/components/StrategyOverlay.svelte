@@ -22,7 +22,7 @@
 		isStrategyContainer,
 		isTextContainer
 	} from '$lib/models';
-	import type { Container, CustomEventMap, EmptyContainer } from '$lib/models';
+	import type { AnyContainer, Container, CustomEventMap, EmptyContainer } from '$lib/models';
 	import { sidebarToggle, user } from '$lib/stores';
 	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
@@ -31,7 +31,7 @@
 	export let container: Container | EmptyContainer;
 	export let isPartOfOptions: Container[];
 	export let relatedContainers: Container[];
-	export let revisions: Container[];
+	export let revisions: AnyContainer[];
 
 	$: edit = $page.url.searchParams.has('overlay-new') || $page.url.searchParams.has('edit');
 

@@ -5,6 +5,7 @@
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import StrategyOverlay from '$lib/components/StrategyOverlay.svelte';
 	import {
+		isContainer,
 		isInternalObjectiveContainer,
 		isMeasureContainer,
 		isStrategyContainer,
@@ -81,7 +82,7 @@
 			</h2>
 		</svelte:fragment>
 	</InternalObjectiveDetailView>
-{:else}
+{:else if isContainer(container)}
 	<ContainerDetailView {container} {relatedContainers} {revisions}>
 		<svelte:fragment slot="header">
 			<h2>

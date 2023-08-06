@@ -4,12 +4,12 @@
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
 	import { isModelContainer, predicates, sdgIcons } from '$lib/models';
-	import type { Container, ModelContainer, StrategyContainer } from '$lib/models';
+	import type { AnyContainer, Container, ModelContainer, StrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
-	export let revisions: Container[];
+	export let revisions: AnyContainer[];
 
 	$: parts = container.relation
 		.filter(
