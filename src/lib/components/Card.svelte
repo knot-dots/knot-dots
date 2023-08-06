@@ -80,9 +80,9 @@
 	</header>
 
 	{#if 'summary' in container.payload}
-		<div class="text">
-			{@html container.payload.summary ?? ''}
-		</div>
+		<p class="text">
+			{container.payload.summary ?? ''}
+		</p>
 	{:else if 'image' in container.payload}
 		<img alt={$_('cover_image')} class="text" src={container.payload.image} />
 	{/if}
