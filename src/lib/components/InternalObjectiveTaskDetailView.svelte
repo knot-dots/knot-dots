@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Icon, LightBulb } from 'svelte-hero-icons';
-	import { _, date, number } from 'svelte-i18n';
+	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
