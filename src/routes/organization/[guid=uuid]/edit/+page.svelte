@@ -12,7 +12,7 @@
 	}
 
 	async function afterDelete() {
-		await goto('/');
+		await goto('/organizations');
 	}
 </script>
 
