@@ -8,7 +8,12 @@ export const filtersToggle = writable(false);
 
 export const sortToggle = writable(false);
 
-export const user = writable({ familyName: '', givenName: '', isAuthenticated: false });
+export const user = writable({
+	familyName: '',
+	givenName: '',
+	isAuthenticated: false,
+	roles: []
+});
 
 export const keycloak = writable({
 	accountUrl: '',
