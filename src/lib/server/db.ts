@@ -7,12 +7,20 @@ import type {
 	SerializableValue
 } from 'slonik';
 import { z } from 'zod';
-import { anyContainer, container, organizationContainer, relation, user } from '$lib/models';
+import {
+	anyContainer,
+	container,
+	organizationContainer,
+	payloadTypes,
+	relation,
+	user
+} from '$lib/models';
 import type {
 	AnyContainer,
 	Container,
 	ModifiedContainer,
 	NewContainer,
+	OrganizationContainer,
 	PayloadType,
 	Relation
 } from '$lib/models';
@@ -370,6 +378,44 @@ export function getManyContainers(
 			relation: relationResult.filter(
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function getManyOrganizationContainers(sort: string) {
+	return async (connection: DatabaseConnection): Promise<OrganizationContainer[]> => {
+		let orderBy = sql.fragment`valid_from DESC`;
+		if (sort == 'alpha') {
+			orderBy = sql.fragment`payload->>'name'`;
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('organizationContainer')`
+			SELECT *
+			FROM container
+			WHERE payload->>'type' = ${payloadTypes.enum.organization}
+			ORDER BY ${orderBy};
+    `);
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: [],
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
