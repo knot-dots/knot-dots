@@ -75,8 +75,6 @@
 		goto(`?${query.toString()}${hash}`, { keepFocus: true, replaceState: true });
 	}
 
-	$: terms, browser && debouncedSearch();
-
 	function debouncedSearch() {
 		clearTimeout(timer);
 		timer = setTimeout(search, 500);
@@ -194,6 +192,7 @@
 						type="search"
 						name="terms"
 						bind:value={terms}
+						on:input={debouncedSearch}
 						style:display={$sidebarToggle ? 'block' : 'none'}
 					/>
 				</form>
