@@ -28,6 +28,7 @@
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"image_upload_help": "JPG, PNG; maximal 512 kB",
 	"information": "Information",
 	"indicator": {
 		"contribution": "Beitrag zu operativem Ziel",
@@ -58,6 +59,7 @@
 		"state": "Land"
 	},
 	"login": "Anmelden",
+	"logo": "Logo",
 	"logout": "Abmelden",
 	"map": "Karte",
 	"measure": "Maßnahme",

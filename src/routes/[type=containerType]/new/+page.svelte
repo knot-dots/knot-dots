@@ -29,6 +29,7 @@
 		EmptyMeasureContainer,
 		EmptyModelContainer,
 		EmptyOperationalGoalContainer,
+		EmptyOrganizationContainer,
 		EmptyStrategicGoalContainer,
 		EmptyStrategyContainer,
 		Indicator,
@@ -101,6 +102,8 @@
 					...base,
 					payload: { category, indicator, topic, type }
 				} as EmptyOperationalGoalContainer;
+			case payloadTypes.enum.organization:
+				return { ...base, payload: { type } } as EmptyOrganizationContainer;
 			case payloadTypes.enum.strategic_goal:
 				return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
 			default:

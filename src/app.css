@@ -357,6 +357,10 @@ label:has(> input[type='checkbox'], > input[type='radio']) {
 	white-space: nowrap;
 }
 
+input + .help {
+	margin-top: 0.75rem;
+}
+
 fieldset {
 	border: solid 1px var(--color-gray-300);
 	border-radius: 8px;

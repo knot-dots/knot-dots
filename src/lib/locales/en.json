@@ -28,6 +28,7 @@
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
+	"image_upload_help": "JPG, PNG; max 512 kB",
 	"information": "Information",
 	"indicator": {
 		"contribution": "Contribution to operative goal",
@@ -58,6 +59,7 @@
 		"state": "State"
 	},
 	"login": "Log in",
+	"logo": "Logo",
 	"logout": "Log out",
 	"map": "Map",
 	"measure": "Measure",
