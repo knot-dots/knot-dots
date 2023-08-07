@@ -120,11 +120,7 @@
 				</svelte:fragment>
 			</InternalObjectiveForm>
 		{:else if isInternalObjectiveStrategicGoalContainer(container)}
-			<InternalObjectiveForm
-				{container}
-				{isPartOfOptions}
-				on:submitSuccessful={afterSubmit}
-			>
+			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
