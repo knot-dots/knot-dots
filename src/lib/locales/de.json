@@ -25,12 +25,12 @@
 	},
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
+	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
 	"information": "Information",
 	"indicator": {
 		"contribution": "Beitrag zu operativem Ziel",
-		"fulfillment_date": "Erfüllungsdatum",
 		"legend": "Indikator",
 		"okr": "OKR",
 		"quantity": "Größe"

@@ -63,13 +63,6 @@
 				<span class="addon">{$_(unit)}</span>
 			{/if}
 		</span>
-		<input
-			type="date"
-			name="indicator-fulfillmentDate"
-			bind:value={indicator[0].fulfillmentDate}
-			readonly={locked}
-			required
-		/>
 	{:else if indicator.length > 0}
 		<input
 			type="range"
@@ -88,10 +81,6 @@
 		display: inline;
 		vertical-align: middle;
 		width: initial;
-	}
-
-	input[type='date'] {
-		display: inline-flex;
 	}
 
 	input[name='indicator-max'] {

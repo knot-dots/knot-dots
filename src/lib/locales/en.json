@@ -25,12 +25,12 @@
 	},
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
+	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
 	"information": "Information",
 	"indicator": {
 		"contribution": "Contribution to operative goal",
-		"fulfillment_date": "Fulfillment date",
 		"legend": "Indicator",
 		"okr": "OKR",
 		"quantity": "Quantity"

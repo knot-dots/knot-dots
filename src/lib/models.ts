@@ -270,10 +270,6 @@ const indicator = z.object({
 	max: z.coerce.number().nonnegative(),
 	min: z.coerce.number().nonnegative(),
 	quantity: z.string().optional(),
-	fulfillmentDate: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional(),
 	value: z.number().nonnegative().optional()
 });
 
@@ -365,6 +361,10 @@ const modelPayload = basePayload
 
 const operationalGoalPayload = basePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		indicator: z.array(indicator).max(1),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})
