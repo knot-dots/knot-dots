@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
+	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
@@ -8,12 +10,17 @@
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TextForm from '$lib/components/TextForm.svelte';
 	import {
+		isInternalObjectiveStrategicGoalContainer,
+		isInternalStrategyContainer,
 		isMeasureContainer,
 		isModelContainer,
+		isOkrContainer,
 		isOperationalGoalContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
-		isTextContainer
+		isTaskContainer,
+		isTextContainer,
+		isVisionContainer
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
 	import type { PageData } from './$types';
@@ -32,6 +39,14 @@
 			await goto(`/operational_goal/new?is-part-of=${detail.result.revision}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-strategic-goal') {
 			await goto(`/strategic_goal/new?is-part-of=${detail.result.revision}`);
+		} else if (detail.event.submitter?.id === 'save-and-create-vision') {
+			await goto(`/internal_objective.vision/new?is-part-of=${detail.result.revision}`);
+		} else if (detail.event.submitter?.id === 'save-and-create-internal-objective-strategic-goal') {
+			await goto(`/internal_objective.strategic_goal/new?is-part-of=${detail.result.revision}`);
+		} else if (detail.event.submitter?.id === 'save-and-create-okr') {
+			await goto(`/internal_objective.okr/new?is-part-of=${detail.result.revision}`);
+		} else if (detail.event.submitter?.id === 'save-and-create-task') {
+			await goto(`/internal_objective.task/new?is-part-of=${detail.result.revision}`);
 		} else {
 			await goto(`../${container.guid}`);
 		}
@@ -103,4 +118,38 @@
 		on:submitSuccessful={afterSubmit}
 		on:deleteSuccessful={afterDelete}
 	/>
+{:else if isInternalStrategyContainer(container)}
+	<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit}>
+		<svelte:fragment slot="extra-buttons">
+			<button id="save-and-create-vision">
+				{$_('save_and_create_vision')}
+			</button>
+		</svelte:fragment>
+	</InternalObjectiveForm>
+{:else if isVisionContainer(container)}
+	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+		<svelte:fragment slot="extra-buttons">
+			<button id="save-and-create-internal-objective-strategic-goal">
+				{$_('save_and_create_strategic_goal')}
+			</button>
+		</svelte:fragment>
+	</InternalObjectiveForm>
+{:else if isInternalObjectiveStrategicGoalContainer(container)}
+	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+		<svelte:fragment slot="extra-buttons">
+			<button id="save-and-create-okr">
+				{$_('save_and_create_okr')}
+			</button>
+		</svelte:fragment>
+	</InternalObjectiveForm>
+{:else if isOkrContainer(container)}
+	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+		<svelte:fragment slot="extra-buttons">
+			<button id="save-and-create-task">
+				{$_('save_and_create_task')}
+			</button>
+		</svelte:fragment>
+	</InternalObjectiveForm>
+{:else if isTaskContainer(container)}
+	<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {/if}
