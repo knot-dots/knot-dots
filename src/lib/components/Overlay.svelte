@@ -28,6 +28,7 @@
 	import type { Container } from '$lib/models';
 	import { sidebarToggle, user } from '$lib/stores.js';
 	import InternalObjectiveForm from './InternalObjectiveForm.svelte';
+	import InternalObjectiveTaskForm from './InternalObjectiveTaskForm.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
@@ -135,11 +136,11 @@
 				</svelte:fragment>
 			</InternalObjectiveForm>
 		{:else if isTaskContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
-			</InternalObjectiveForm>
+			</InternalObjectiveTaskForm>
 		{/if}
 	{:else if isMeasureContainer(container)}
 		<MeasureDetailView {container} {relatedContainers} {revisions}>
