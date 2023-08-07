@@ -164,43 +164,48 @@
 	}
 </script>
 
-<div use:makeEditor>
+<div>
 	<p id={labelId}>{label}</p>
-	<ul class="toolbar">
-		<li>
-			<button type="button" on:click={undo} on:mousedown|preventDefault>
-				<strong><Icon src={ArrowUturnLeft} size="16" /></strong>
-			</button>
-		</li>
-		<li>
-			<button type="button" on:click={redo} on:mousedown|preventDefault>
-				<strong><Icon src={ArrowUturnRight} size="16" /></strong>
-			</button>
-		</li>
-		<li>
-			<button type="button" on:click={toggleStrong} on:mousedown|preventDefault>
-				<strong>{$_('editor.strong')}</strong>
-			</button>
-		</li>
-		<li>
-			<button type="button" on:click={toggleEmphasis} on:mousedown|preventDefault>
-				<em>{$_('editor.emphasis')}</em>
-			</button>
-		</li>
-		<li>
-			<button type="button" on:click={wrapInBulletList} on:mousedown|preventDefault>
-				<Icon src={ListBullet} size="20" />
-			</button>
-		</li>
-	</ul>
+	<div class="focus-indicator" use:makeEditor>
+		<ul class="toolbar">
+			<li>
+				<button type="button" on:click={undo} on:mousedown|preventDefault>
+					<strong><Icon src={ArrowUturnLeft} size="16" /></strong>
+				</button>
+			</li>
+			<li>
+				<button type="button" on:click={redo} on:mousedown|preventDefault>
+					<strong><Icon src={ArrowUturnRight} size="16" /></strong>
+				</button>
+			</li>
+			<li>
+				<button type="button" on:click={toggleStrong} on:mousedown|preventDefault>
+					<strong>{$_('editor.strong')}</strong>
+				</button>
+			</li>
+			<li>
+				<button type="button" on:click={toggleEmphasis} on:mousedown|preventDefault>
+					<em>{$_('editor.emphasis')}</em>
+				</button>
+			</li>
+			<li>
+				<button type="button" on:click={wrapInBulletList} on:mousedown|preventDefault>
+					<Icon src={ListBullet} size="20" />
+				</button>
+			</li>
+		</ul>
+	</div>
 </div>
 
 <style>
-	.toolbar {
+	.focus-indicator {
 		border: solid 1px var(--color-gray-300);
-		border-top-left-radius: 8px;
-		border-top-right-radius: 8px;
+		border-radius: 8px;
+	}
+
+	.toolbar {
 		display: flex;
+		border-bottom: solid 1px var(--color-gray-300);
 	}
 
 	.toolbar li {
@@ -217,11 +222,6 @@
 	}
 
 	:global(.milkdown) {
-		border-bottom: solid 1px var(--color-gray-300);
-		border-left: solid 1px var(--color-gray-300);
-		border-right: solid 1px var(--color-gray-300);
-		border-bottom-left-radius: 8px;
-		border-bottom-right-radius: 8px;
 		min-height: calc(7.75rem + 1px);
 		padding: 0.75rem 1rem;
 	}

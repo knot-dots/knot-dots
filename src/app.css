@@ -129,6 +129,30 @@ select {
 	}
 }
 
+/* Focus styles */
+:is(a, button, input, select, summary, textarea, .focus-indicator) {
+	--outline-color: var(--focus-color, currentColor);
+	--outline-offset: -1px;
+	--outline-size: max(3px, 0.08em);
+	--outline-style: solid;
+}
+
+:is(a, button, input, select, summary, textarea):focus,
+.focus-indicator:focus-within {
+	outline: var(--outline-size) var(--outline-style) var(--outline-color);
+	outline-offset: var(--outline-offset);
+}
+
+:is(a, button, input, select, summary, textarea):focus-visible {
+	outline: var(--outline-size) var(--outline-style) var(--outline-color);
+	outline-offset: var(--outline-offset);
+}
+
+:is(a, button, input, select, summary, textarea):focus:not(:focus-visible) {
+	/* Removes the regular focus styles for browsers that support :focus-visible */
+	outline: none;
+}
+
 /* Button styles */
 button,
 .button {
@@ -168,11 +192,6 @@ button:hover,
 button.quiet:hover,
 .button.quiet:hover {
 	--hover-color: transparent;
-}
-
-button:focus,
-.button:focus {
-	outline: 3px solid var(--focus-color);
 }
 
 button:active,
