@@ -10,7 +10,7 @@
 	export let container: TaskContainer | EmptyTaskContainer;
 	export let isPartOfOptions: Container[];
 </script>
-<InternalObjectiveForm {container} {isPartOfOptions}>
+<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful on:deleteSuccessful>
   <svelte:fragment slot="extra-data">
     <label>
 			<select name="status" bind:value={container.payload.taskStatus} required>
