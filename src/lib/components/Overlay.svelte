@@ -164,9 +164,9 @@
 				<h2>{container.payload.title}</h2>
 				<div class="icons">
 					{#if $user.isAuthenticated}
-						<a href="{container.guid}/edit" class="icons-element">
+						<button class="icons-element" on:click={() => (edit = true)}>
 							<Icon solid src={Pencil} size="20" />
-						</a>
+						</button>
 					{/if}
 					<a
 						href={closeOverlay()}
