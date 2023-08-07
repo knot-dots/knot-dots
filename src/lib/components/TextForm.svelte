@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { Editor } from 'bytemd';
-	import 'bytemd/dist/index.css';
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import Editor from '$lib/components/Editor.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import type { Container, EmptyTextContainer, TextContainer } from '$lib/models';
 
@@ -12,13 +11,7 @@
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
 	<svelte:fragment slot="data">
-		<label>
-			{$_('Body')}
-			<Editor
-				value={container.payload.body ?? ''}
-				on:change={(e) => (container.payload.body = e.detail.value)}
-			/>
-		</label>
+		<Editor label={$_('body')} bind:value={container.payload.body} />
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">

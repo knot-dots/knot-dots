@@ -61,8 +61,10 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <article
 	tabindex="-1"
+	title={container.payload.title}
 	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
@@ -78,9 +80,9 @@
 	</header>
 
 	{#if 'summary' in container.payload}
-		<div class="text">
-			{@html container.payload.summary ?? ''}
-		</div>
+		<p class="text">
+			{container.payload.summary ?? ''}
+		</p>
 	{:else if 'image' in container.payload}
 		<img alt={$_('cover_image')} class="text" src={container.payload.image} />
 	{/if}
@@ -101,7 +103,11 @@
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
 		{/if}
-		<a href={relatedToURL} class="button {relatedTo === container.guid ? 'is-active' : ''}">
+		<a
+			href={relatedToURL}
+			class="button {relatedTo === container.guid ? 'is-active' : ''}"
+			title={$_('show_related_objects')}
+		>
 			<Icon src={Share} size="20" mini />
 		</a>
 	</footer>

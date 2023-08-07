@@ -129,6 +129,30 @@ select {
 	}
 }
 
+/* Focus styles */
+:is(a, button, input, select, summary, textarea, .focus-indicator) {
+	--outline-color: var(--focus-color, currentColor);
+	--outline-offset: -1px;
+	--outline-size: max(3px, 0.08em);
+	--outline-style: solid;
+}
+
+:is(a, button, input, select, summary, textarea):focus,
+.focus-indicator:focus-within {
+	outline: var(--outline-size) var(--outline-style) var(--outline-color);
+	outline-offset: var(--outline-offset);
+}
+
+:is(a, button, input, select, summary, textarea):focus-visible {
+	outline: var(--outline-size) var(--outline-style) var(--outline-color);
+	outline-offset: var(--outline-offset);
+}
+
+:is(a, button, input, select, summary, textarea):focus:not(:focus-visible) {
+	/* Removes the regular focus styles for browsers that support :focus-visible */
+	outline: none;
+}
+
 /* Button styles */
 button,
 .button {
@@ -168,11 +192,6 @@ button:hover,
 button.quiet:hover,
 .button.quiet:hover {
 	--hover-color: transparent;
-}
-
-button:focus,
-.button:focus {
-	outline: 3px solid var(--focus-color);
 }
 
 button:active,
@@ -526,21 +545,27 @@ fieldset {
 	display: inline-block;
 }
 
-/* Bytemd markdown editor */
-.markdown-body ul,
-.bytemd-body ul {
-	list-style: disc;
-	list-style-position: inside;
-}
-
+/* Markdown editor and viewer */
 .markdown-body ol,
-.bytemd-body ol {
-	list-style-type: decimal;
-	list-style-position: inside;
+.milkdown .editor ol,
+.markdown-body ul:not(.contains-task-list) {
+	list-style: revert;
+	padding-inline-start: 1.5rem;
 }
 
-.markdown-body p {
+.markdown-body p,
+.milkdown .editor > p,
+.milkdown .editor > ul,
+.milkdown .editor > ol {
 	margin: 0.875rem 0;
+}
+
+.milkdown .editor > *:first-child {
+	margin-top: 0;
+}
+
+.milkdown .editor > *:last-child {
+	margin-bottom: 0;
 }
 
 /* Fade out overflow effect */

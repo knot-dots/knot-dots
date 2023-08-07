@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { Editor } from 'bytemd';
-	import 'bytemd/dist/index.css';
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import Editor from '$lib/components/Editor.svelte';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
@@ -24,13 +23,7 @@
 			{$_('summary')}
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
 		</label>
-		<label>
-			{$_('description')}
-			<Editor
-				value={container.payload.description ?? ''}
-				on:change={(e) => (container.payload.description = e.detail.value)}
-			/>
-		</label>
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 		<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
 	</svelte:fragment>
 

@@ -10,6 +10,10 @@
 	"created_date": "Erstellungsdatum",
 	"delete": "Löschen",
 	"description": "Beschreibung",
+	"editor": {
+		"emphasis": "K",
+		"strong": "F"
+	},
 	"effects": "Wirkung",
 	"end_date": "Ende",
 	"error": {

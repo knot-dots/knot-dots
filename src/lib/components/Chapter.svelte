@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Viewer } from 'bytemd';
 	import { getContext } from 'svelte';
 	import { ArrowDown, ArrowUp, Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
@@ -7,6 +6,7 @@
 	import { page } from '$app/stores';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isModelContainer,
 		isOperationalGoalContainer,

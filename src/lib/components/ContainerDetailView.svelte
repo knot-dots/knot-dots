@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Viewer } from 'bytemd';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
 
 	import type { Container } from '$lib/models';
