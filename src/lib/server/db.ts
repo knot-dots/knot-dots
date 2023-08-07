@@ -645,7 +645,7 @@ export function getAllContainersWithIndicatorContributions() {
 	};
 }
 
-export function getAllContainersRelatedToMeasure(revision: string) {
+export function getAllContainersRelatedToMeasure(revision: number) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
