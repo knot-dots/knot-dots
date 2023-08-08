@@ -28,6 +28,7 @@
 		payloadTypes,
 		strategyTypes,
 		sustainableDevelopmentGoals,
+		taskStatus,
 		topics
 	} from '$lib/models';
 	import {
@@ -210,38 +211,40 @@
 					/>
 				</form>
 			</li>
-			<li>
-				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-					<FilterIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-					</span>
-				</button>
-				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					<li>
-						<Filters
-							label={$_('strategy_type.label')}
-							options={strategyTypes.options.map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedStrategyType}
-						/>
-					</li>
-					<li>
-						<Filters
-							label={$_('topic.label')}
-							options={topics.options.map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedTopic}
-						/>
-					</li>
-					<li>
-						<Filters
-							label={$_('category')}
-							options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedCategory}
-						/>
-					</li>
-				</ul>
-			</li>
+			{#if !$page.url.pathname.includes("internal-objectives") && !$page.url.pathname.includes("tasks")}
+				<li>
+					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+						<FilterIcon class="icon-20" />
+						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+						<span class:is-hidden={!$sidebarToggle}>
+							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+						</span>
+					</button>
+					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						<li>
+							<Filters
+								label={$_('strategy_type.label')}
+								options={strategyTypes.options.map((o) => [$_(o), o])}
+								bind:selectedOptions={selectedStrategyType}
+							/>
+						</li>
+						<li>
+							<Filters
+								label={$_('topic.label')}
+								options={topics.options.map((o) => [$_(o), o])}
+								bind:selectedOptions={selectedTopic}
+							/>
+						</li>
+						<li>
+							<Filters
+								label={$_('category')}
+								options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
+								bind:selectedOptions={selectedCategory}
+							/>
+						</li>
+					</ul>
+				</li>
+			{/if}
 			<li>
 				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
 					<SortDescendingIcon class="icon-20" />
