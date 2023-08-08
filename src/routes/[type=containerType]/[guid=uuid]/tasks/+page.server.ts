@@ -13,7 +13,11 @@ export const load = (async ({ locals, params, url }) => {
 	let overlayData;
 
   containers = await locals.pool.connect(
-    getAllContainersRelatedToMeasure(measure.revision, { type: 'internal_objective.task' })
+    getAllContainersRelatedToMeasure(
+			measure.revision,
+			{ type: 'internal_objective.task' },
+			url.searchParams.get('sort') ?? ''
+		)
   );
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';

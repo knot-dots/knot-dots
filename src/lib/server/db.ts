@@ -645,9 +645,12 @@ export function getAllContainersWithIndicatorContributions() {
 	};
 }
 
-export function getAllContainersRelatedToMeasure(revision: number, filters: {
-	type?: PayloadType;
-}) {
+export function getAllContainersRelatedToMeasure(
+	revision: number,filters: {
+		type?: PayloadType;
+	},
+	sort: string
+) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
@@ -656,6 +659,7 @@ export function getAllContainersRelatedToMeasure(revision: number, filters: {
 				AND cr.predicate = 'is-part-of-measure'
 				AND cr.object = ${revision}
 			WHERE ${prepareWhereCondition(filters)}
+			ORDER BY ${prepareOrderByExpression(sort)};
 		`);
 
 		const revisions = sql.join(
