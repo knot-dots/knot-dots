@@ -121,6 +121,9 @@
 			"input_prompt": "How much is the funding for cultural and educational institutions?",
 			"label": "Funding of cultural and educational institutions per capita"
 		},
+		"general": {
+			"input_prompt_achieved": "Current achievement"
+		},
 		"organic_farming": {
 			"description": "{contribution, number} % of the total utilized agricultural area is used for organic farming.",
 			"input_prompt": "How much of the total utilized agricultural area will be used for organic farming.",

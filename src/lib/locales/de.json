@@ -121,6 +121,9 @@
 			"input_prompt": "In welcher Höhe werden Kultur- und Bildungseinrichtungen zusätzlich gefördert?",
 			"label": "Zuschussbetrag Kultur- und Bildungseinrichtung pro Einwohner*in"
 		},
+		"general": {
+			"input_prompt_achieved": "Das haben wir bisher erreicht"
+		},
 		"organic_farming": {
 			"description": "Der Anteil ökologischer an der gesamten Landwirtschaftsfläche beträgt {contribution, number} %.",
 			"input_prompt": "Wie viel ökologische Landwirtschaftsfläche wird geschaffen?",
