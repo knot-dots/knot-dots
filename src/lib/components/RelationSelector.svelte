@@ -6,10 +6,10 @@
 	export let container: Container | EmptyContainer;
 	export let isPartOfOptions: Container[];
 
-	$: index = container.relation.findIndex(({ predicate, subject }) =>
-		predicate === predicates.enum['is-part-of'] && 'revision' in container
-			? subject == container.revision
-			: true
+	$: index = container.relation.findIndex(
+		({ predicate, subject }) =>
+			predicate === predicates.enum['is-part-of'] &&
+			('revision' in container ? subject == container.revision : true)
 	);
 
 	function onChange(event: Event) {
