@@ -17,7 +17,7 @@ export const load = (async ({ locals, params, url }) => {
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getAllContainersRelatedToMeasure(measure.revision)
+			getAllContainersRelatedToMeasure(measure.revision, {})
 		);
 	}
 	if (url.searchParams.has('container-preview')) {

@@ -645,7 +645,9 @@ export function getAllContainersWithIndicatorContributions() {
 	};
 }
 
-export function getAllContainersRelatedToMeasure(revision: number) {
+export function getAllContainersRelatedToMeasure(revision: number, filters: {
+	type?: PayloadType;
+}) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
@@ -653,7 +655,7 @@ export function getAllContainersRelatedToMeasure(revision: number) {
 			JOIN container_relation cr ON c.revision = cr.subject
 				AND cr.predicate = 'is-part-of-measure'
 				AND cr.object = ${revision}
-			WHERE c.valid_currently AND NOT c.deleted
+			WHERE ${prepareWhereCondition(filters)}
 		`);
 
 		const revisions = sql.join(
