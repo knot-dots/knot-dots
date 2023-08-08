@@ -6,7 +6,7 @@
 		EmptyInternalObjectiveContainer,
 		InternalObjectiveContainer,
 	} from '$lib/models';
-	import { Editor } from 'bytemd';
+	import Editor from '$lib/components/Editor.svelte';
 	import RelationSelector from './RelationSelector.svelte';
 
 	export let container: InternalObjectiveContainer | EmptyInternalObjectiveContainer;
@@ -19,13 +19,7 @@
 			{$_('summary')}
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
 		</label>
-		<label>
-			{$_('description')}
-			<Editor
-				value={container.payload.description ?? ''}
-				on:change={(e) => (container.payload.description = e.detail.value)}
-			/>
-		</label>
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 		<slot name="extra-data" />
 	</svelte:fragment>
 

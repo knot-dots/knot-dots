@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Viewer } from 'bytemd';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 
