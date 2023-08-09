@@ -96,13 +96,29 @@
 		} else if (detail.event.submitter?.id === 'save-and-create-measure') {
 			await goto(`/measure/new?is-part-of=${detail.result.revision}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-vision') {
-			await goto(`/internal_objective.vision/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.vision/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure${$page.url.searchParams.get('is-part-of-measure')}`
+			);
 		} else if (detail.event.submitter?.id === 'save-and-create-internal-objective-strategic-goal') {
-			await goto(`/internal_objective.strategic_goal/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.strategic_goal/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure${$page.url.searchParams.get('is-part-of-measure')}`
+			);
 		} else if (detail.event.submitter?.id === 'save-and-create-okr') {
-			await goto(`/internal_objective.okr/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.okr/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure${$page.url.searchParams.get('is-part-of-measure')}`
+			);
 		} else if (detail.event.submitter?.id === 'save-and-create-task') {
-			await goto(`/internal_objective.task/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.task/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure${$page.url.searchParams.get('is-part-of-measure')}`
+			);
 		} else {
 			await goto(`/${payloadType}/${detail.result.guid}`);
 		}

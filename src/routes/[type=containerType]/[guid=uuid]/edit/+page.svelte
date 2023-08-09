@@ -20,7 +20,8 @@
 		isStrategyContainer,
 		isTaskContainer,
 		isTextContainer,
-		isVisionContainer
+		isVisionContainer,
+		predicates
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
 	import type { PageData } from './$types';
@@ -29,6 +30,10 @@
 
 	$: container = data.container;
 	$: isPartOfOptions = data.isPartOfOptions;
+
+	$: isPartOfMeasure = container.relation
+		.filter(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+		.map(({ object }) => object);
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		if (detail.event.submitter?.id === 'save-and-create-measure') {
@@ -40,13 +45,29 @@
 		} else if (detail.event.submitter?.id === 'save-and-create-strategic-goal') {
 			await goto(`/strategic_goal/new?is-part-of=${detail.result.revision}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-vision') {
-			await goto(`/internal_objective.vision/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.vision/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure=${isPartOfMeasure.pop()}`
+			);
 		} else if (detail.event.submitter?.id === 'save-and-create-internal-objective-strategic-goal') {
-			await goto(`/internal_objective.strategic_goal/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.strategic_goal/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure=${isPartOfMeasure.pop()}`
+			);
 		} else if (detail.event.submitter?.id === 'save-and-create-okr') {
-			await goto(`/internal_objective.okr/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.okr/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure=${isPartOfMeasure.pop()}`
+			);
 		} else if (detail.event.submitter?.id === 'save-and-create-task') {
-			await goto(`/internal_objective.task/new?is-part-of=${detail.result.revision}`);
+			await goto(
+				`/internal_objective.task/new?is-part-of=${
+					detail.result.revision
+				}&is-part-of-measure=${isPartOfMeasure.pop()}`
+			);
 		} else {
 			await goto(`../${container.guid}`);
 		}
