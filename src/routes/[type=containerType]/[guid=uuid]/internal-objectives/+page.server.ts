@@ -8,16 +8,16 @@ import {
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params, url }) => {
-	const measure = await locals.pool.connect(getContainerByGuid(params.guid));
-	let containers
+	let containers;
 	let overlayData;
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
 			getAllRelatedContainers(url.searchParams.get('related-to') as string, {}, '')
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getAllContainersRelatedToMeasure(measure.revision, {}, url.searchParams.get('sort') ?? '')
+			getAllContainersRelatedToMeasure(container.revision, {}, url.searchParams.get('sort') ?? '')
 		);
 	}
 	if (url.searchParams.has('container-preview')) {
@@ -34,5 +34,5 @@ export const load = (async ({ locals, params, url }) => {
 			revisions
 		};
 	}
-	return { containers, measure, overlayData };
+	return { container, containers, overlayData };
 }) satisfies PageServerLoad;

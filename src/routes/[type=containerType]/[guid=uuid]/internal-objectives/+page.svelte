@@ -35,7 +35,10 @@
 
 <Board>
 	{#each columns as column (column.title)}
-		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.measure.revision}`}>
+		<BoardColumn
+			title={$_(column.title)}
+			addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.container.revision}`}
+		>
 			{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
 				<Card {container} relatedContainers={data.containers.filter(isPartOf)} />
 			{/each}

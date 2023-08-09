@@ -8,17 +8,15 @@ import {
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params, url }) => {
-	const measure = await locals.pool.connect(getContainerByGuid(params.guid));
-	let containers
 	let overlayData;
-
-  containers = await locals.pool.connect(
-    getAllContainersRelatedToMeasure(
-			measure.revision,
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	const containers = await locals.pool.connect(
+		getAllContainersRelatedToMeasure(
+			container.revision,
 			{ type: 'internal_objective.task' },
 			url.searchParams.get('sort') ?? ''
 		)
-  );
+	);
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
@@ -33,5 +31,5 @@ export const load = (async ({ locals, params, url }) => {
 			revisions
 		};
 	}
-	return { containers, measure, overlayData };
+	return { container, containers, overlayData };
 }) satisfies PageServerLoad;

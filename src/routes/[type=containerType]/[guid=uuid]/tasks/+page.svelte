@@ -10,10 +10,10 @@
 	export let data: PageData;
 
 	const columns = [
-    {
-      title: 'task_status.idea',
-      payloadType: payloadTypes.enum['internal_objective.task']
-    },
+		{
+			title: 'task_status.idea',
+			payloadType: payloadTypes.enum['internal_objective.task']
+		},
 		{
 			title: 'task_status.in_planning',
 			payloadType: payloadTypes.enum['internal_objective.task']
@@ -31,7 +31,10 @@
 
 <Board>
 	{#each columns as column (column.title)}
-		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.measure.revision}&task-status=${column.title}`}>
+		<BoardColumn
+			title={$_(column.title)}
+			addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.container.revision}&task-status=${column.title}`}
+		>
 			{#each data.containers.filter((c) => isTaskContainer(c) && c.payload.taskStatus === column.title) as container}
 				<Card {container} relatedContainers={data.containers.filter(isPartOf)} />
 			{/each}
