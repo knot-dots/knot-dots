@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import {
+		BuildingStorefront,
 		ChevronDown,
 		ChevronUp,
 		Icon,
 		InformationCircle,
 		MagnifyingGlass,
+		PencilSquare,
 		Share
 	} from 'svelte-hero-icons';
 	import { browser } from '$app/environment';
@@ -26,6 +28,7 @@
 		payloadTypes,
 		strategyTypes,
 		sustainableDevelopmentGoals,
+		taskStatus,
 		topics
 	} from '$lib/models';
 	import {
@@ -163,6 +166,30 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('relations')}</span>
 				</a>
 			</li>
+			{#if $page.data.container.payload.type === 'measure'}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+					>
+						<Icon src={BuildingStorefront} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
+					</a>
+				</li>
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+					>
+						<Icon src={PencilSquare} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
+					</a>
+				</li>
+			{/if}
 		</ul>
 	{/if}
 
@@ -184,38 +211,40 @@
 					/>
 				</form>
 			</li>
-			<li>
-				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-					<FilterIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-					</span>
-				</button>
-				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					<li>
-						<Filters
-							label={$_('strategy_type.label')}
-							options={strategyTypes.options.map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedStrategyType}
-						/>
-					</li>
-					<li>
-						<Filters
-							label={$_('topic.label')}
-							options={topics.options.map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedTopic}
-						/>
-					</li>
-					<li>
-						<Filters
-							label={$_('category')}
-							options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedCategory}
-						/>
-					</li>
-				</ul>
-			</li>
+			{#if !$page.url.pathname.includes("internal-objectives") && !$page.url.pathname.includes("tasks")}
+				<li>
+					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+						<FilterIcon class="icon-20" />
+						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+						<span class:is-hidden={!$sidebarToggle}>
+							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+						</span>
+					</button>
+					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						<li>
+							<Filters
+								label={$_('strategy_type.label')}
+								options={strategyTypes.options.map((o) => [$_(o), o])}
+								bind:selectedOptions={selectedStrategyType}
+							/>
+						</li>
+						<li>
+							<Filters
+								label={$_('topic.label')}
+								options={topics.options.map((o) => [$_(o), o])}
+								bind:selectedOptions={selectedTopic}
+							/>
+						</li>
+						<li>
+							<Filters
+								label={$_('category')}
+								options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
+								bind:selectedOptions={selectedCategory}
+							/>
+						</li>
+					</ul>
+				</li>
+			{/if}
 			<li>
 				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
 					<SortDescendingIcon class="icon-20" />

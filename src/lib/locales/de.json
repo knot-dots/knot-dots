@@ -32,6 +32,19 @@
 		"okr": "OKR",
 		"quantity": "Größe"
 	},
+	"internal_objective": {
+		"label": "Interne Ziele",
+		"internal_strategy": "Interne Strategie",
+		"internal_strategies": "Interne Strategien",
+		"vision": "Vision",
+		"visions": "Visionen",
+		"strategic_goal": "Strategisches Ziel",
+		"strategic_goals": "Strategische Ziele",
+		"okr": "OKR",
+		"okrs": "OKRs",
+		"task": "Aufgabe",
+		"tasks": "Aufgaben"
+	},
 	"level": {
 		"global": "Global",
 		"label": "Räumliche Ebene",
@@ -91,10 +104,13 @@
 		"unit": "Einheit"
 	},
 	"save": "Speichern",
+	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
 	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
+	"save_and_create_okr": "Speichern und neues OKR hinzufügen",
 	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
-	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
+	"save_and_create_vision": "Speichern und neue Vision hinzufügen",
+	"save_and_create_task": "Speichern und neue Aufgabe hinzufügen",
 	"sdg": {
 		"01": "Keine Armut",
 		"02": "Kein Hunger",
@@ -138,10 +154,20 @@
 	},
 	"summary": "Zusammenfassung",
 	"superordinate_chapters": "Übergeordnete Kapitel",
+	"superordinate_internal_strategies": "Übergeordnete interne Strategien",
 	"superordinate_models": "Übergeordnete Leitbilder",
+	"superordinate_okrs": "Übergeordnete OKRs",
 	"superordinate_operational_goals": "Übergeordnete operative Ziele",
 	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_strategies": "Übergeordnete Strategien",
+	"superordinate_visions": "Übergeordnete Visionen",
+	"task_status": {
+		"done": "Fertig",
+		"idea": "Idee",
+		"in_planning": "In Planung",
+		"in_progress": "In Umsetzung",
+		"label": "Status"
+	},
 	"text": "Ergänzungstext",
 	"topic": {
 		"citizen_participation": "Bürgerbeteiligung",
