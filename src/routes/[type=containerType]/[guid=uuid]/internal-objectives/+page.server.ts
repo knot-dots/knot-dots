@@ -1,9 +1,9 @@
 import {
 	getAllContainersRelatedToMeasure,
 	getAllContainerRevisionsByGuid,
-	getAllRelatedContainers,
-	maybePartOf,
-	getContainerByGuid
+	getAllRelatedInternalObjectives,
+	getContainerByGuid,
+	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -13,7 +13,7 @@ export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedContainers(url.searchParams.get('related-to') as string, {}, '')
+			getAllRelatedInternalObjectives(url.searchParams.get('related-to') as string, '')
 		);
 	} else {
 		containers = await locals.pool.connect(
@@ -26,7 +26,7 @@ export const load = (async ({ locals, params, url }) => {
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.payload.type)),
-			locals.pool.connect(getAllRelatedContainers(guid, {}, ''))
+			locals.pool.connect(getAllRelatedInternalObjectives(guid, ''))
 		]);
 		overlayData = {
 			isPartOfOptions,
