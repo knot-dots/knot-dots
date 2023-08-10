@@ -28,7 +28,6 @@
 		payloadTypes,
 		strategyTypes,
 		sustainableDevelopmentGoals,
-		taskStatus,
 		topics
 	} from '$lib/models';
 	import {
@@ -211,7 +210,7 @@
 					/>
 				</form>
 			</li>
-			{#if !$page.url.pathname.includes("internal-objectives") && !$page.url.pathname.includes("tasks")}
+			{#if !$page.url.pathname.includes('internal-objectives') && !$page.url.pathname.includes('tasks')}
 				<li>
 					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
 						<FilterIcon class="icon-20" />
