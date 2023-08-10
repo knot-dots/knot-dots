@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
@@ -9,6 +9,7 @@
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
+	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import {
@@ -18,6 +19,7 @@
 		isEmptyModelContainer,
 		isEmptyMilestoneContainer,
 		isEmptyOperationalGoalContainer,
+		isEmptyOrganizationContainer,
 		isEmptyStrategicGoalContainer,
 		isEmptyStrategyContainer,
 		isEmptyTaskContainer,
@@ -147,6 +149,10 @@
 		} else {
 			await goto(`/${payloadType}/${detail.result.guid}`);
 		}
+
+		if (detail.result.payload.type === payloadTypes.enum.organization) {
+			invalidateAll();
+		}
 	}
 </script>
 
@@ -168,6 +174,8 @@
 			</button>
 		</svelte:fragment>
 	</OperationalGoalForm>
+{:else if isEmptyOrganizationContainer(container)}
+	<OrganizationForm {container} on:submitSuccessful={afterSubmit} />}
 {:else if isEmptyStrategicGoalContainer(container)}
 	<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
