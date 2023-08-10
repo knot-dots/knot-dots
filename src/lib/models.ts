@@ -170,8 +170,8 @@ export const taskStatusIcons = new Map<TaskStatus, IconSource>([
 
 export type TaskStatus = z.infer<typeof taskStatus>;
 
-export function isTaskStatus(value: unknown): value is Status {
-	return statusValues.includes(value as Status);
+export function isTaskStatus(value: unknown): value is TaskStatus {
+	return taskStatusValues.includes(value as TaskStatus);
 }
 
 const strategyTypeValues = [
