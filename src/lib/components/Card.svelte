@@ -4,7 +4,6 @@
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import type { Container } from '$lib/models';
-	import { filtersToggle, sidebarToggle, sortToggle } from '$lib/stores';
 	import { statusColors, statusIcons } from '$lib/models';
 
 	export let container: Container;
@@ -34,12 +33,6 @@
 			query.append('related-to', container.guid);
 		}
 		relatedToURL = `?${query.toString()}`;
-	}
-
-	function closeSidebar() {
-		$sidebarToggle = false;
-		$filtersToggle = false;
-		$sortToggle = false;
 	}
 
 	let previewLink: HTMLAnchorElement;
@@ -73,7 +66,7 @@
 >
 	<header>
 		<h3>
-			<a href={containerPreviewURL} bind:this={previewLink} on:click={closeSidebar}>
+			<a href={containerPreviewURL} bind:this={previewLink}>
 				{container.payload.title}
 			</a>
 		</h3>

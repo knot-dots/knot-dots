@@ -26,7 +26,7 @@
 		isVisionContainer
 	} from '$lib/models';
 	import type { Container } from '$lib/models';
-	import { sidebarToggle, user } from '$lib/stores.js';
+	import { user } from '$lib/stores.js';
 	import InternalObjectiveForm from './InternalObjectiveForm.svelte';
 	import InternalObjectiveTaskForm from './InternalObjectiveTaskForm.svelte';
 
@@ -148,11 +148,7 @@
 							<Icon solid src={Pencil} size="20" />
 						</button>
 					{/if}
-					<a
-						href={closeOverlay()}
-						class="button icons-element"
-						on:click={() => ($sidebarToggle = true)}
-					>
+					<a href={closeOverlay()} class="button icons-element">
 						<Icon solid src={XMark} size="20" />
 					</a>
 				</div>
@@ -168,11 +164,7 @@
 							<Icon solid src={Pencil} size="20" />
 						</button>
 					{/if}
-					<a
-						href={closeOverlay()}
-						class="button icons-element"
-						on:click={() => ($sidebarToggle = true)}
-					>
+					<a href={closeOverlay()} class="button icons-element">
 						<Icon solid src={XMark} size="20" />
 					</a>
 				</div>
@@ -188,11 +180,7 @@
 							<Icon solid src={Pencil} size="20" />
 						</button>
 					{/if}
-					<a
-						href={closeOverlay()}
-						class="button icons-element"
-						on:click={() => ($sidebarToggle = true)}
-					>
+					<a href={closeOverlay()} class="button icons-element">
 						<Icon solid src={XMark} size="20" />
 					</a>
 				</div>
