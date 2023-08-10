@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import { levels, strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
 	import { page } from '$app/stores';
@@ -31,26 +32,16 @@
 				{/each}
 			</select>
 		</label>
-		<label>
-			{$_('topic.label')}
-			<select name="topic" bind:value={container.payload.topic} multiple>
-				{#each topics.options as topicOption}
-					<option value={topicOption}>
-						{$_(topicOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
-		<label>
-			{$_('category')}
-			<select name="category" bind:value={container.payload.category} multiple>
-				{#each sustainableDevelopmentGoals.options as goal}
-					<option value={goal}>
-						{$_(goal)}
-					</option>
-				{/each}
-			</select>
-		</label>
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
+		/>
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
+		/>
 		<label>
 			{$_('level.label')}
 			<select name="level" bind:value={container.payload.level} required>

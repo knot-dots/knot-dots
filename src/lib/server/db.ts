@@ -290,7 +290,10 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.terms?.trim()) {
 		conditions.push(
-			sql.fragment`plainto_tsquery('german', ${filters.terms}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+			sql.fragment`to_tsquery('german', ${sql.join(
+				filters.terms?.split(' ').map((t) => `${t}:*`),
+				sql.fragment` & `
+			)}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
 		);
 	}
 	if (filters.topics?.length) {
@@ -646,7 +649,8 @@ export function getAllContainersWithIndicatorContributions() {
 }
 
 export function getAllContainersRelatedToMeasure(
-	revision: number,filters: {
+	revision: number,
+	filters: {
 		type?: PayloadType;
 	},
 	sort: string

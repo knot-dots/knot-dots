@@ -56,9 +56,6 @@ test('sidebar can be collapsed and expanded', async ({ page, viewport }) => {
 	test.skip(!viewport || viewport?.width < 768);
 
 	await page.goto('/');
-	await expect(page.getByRole('button', { name: 'Boards' })).toBeVisible();
 	await page.getByRole('button', { name: 'Collapse sidebar' }).click();
-	await expect(page.getByRole('button', { name: 'Boards' })).toBeHidden();
 	await page.getByRole('button', { name: 'Expand sidebar' }).click();
-	await expect(page.getByRole('button', { name: 'Boards' })).toBeVisible();
 });

@@ -19,16 +19,13 @@
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import LoginIcon from '$lib/icons/LoginIcon.svelte';
 	import LogoutIcon from '$lib/icons/LogoutIcon.svelte';
-	import MapIcon from '$lib/icons/MapIcon.svelte';
 	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
-	import ViewBoardsIcon from '$lib/icons/ViewBoardsIcon.svelte';
 	import {
 		isStrategyContainer,
 		payloadTypes,
 		strategyTypes,
 		sustainableDevelopmentGoals,
-		taskStatus,
 		topics
 	} from '$lib/models';
 	import {
@@ -119,16 +116,6 @@
 
 <aside id="aside-0" class:is-expanded={$sidebarToggle} class:is-visible={$navigationToggle}>
 	<ul class="group group-controls">
-		<li class:is-hidden={!$sidebarToggle}>
-			<button title={$_('boards')}>
-				<ViewBoardsIcon class="icon-24" />
-			</button>
-		</li>
-		<li class:is-hidden={!$sidebarToggle}>
-			<button title={$_('map')}>
-				<MapIcon class="icon-24" />
-			</button>
-		</li>
 		<li>
 			{#if $sidebarToggle}
 				<button class="primary" on:click={toggleSidebar} title={$_('collapse_sidebar')}>
@@ -211,7 +198,7 @@
 					/>
 				</form>
 			</li>
-			{#if !$page.url.pathname.includes("internal-objectives") && !$page.url.pathname.includes("tasks")}
+			{#if !$page.url.pathname.includes('internal-objectives') && !$page.url.pathname.includes('tasks')}
 				<li>
 					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
 						<FilterIcon class="icon-20" />
