@@ -96,7 +96,7 @@
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relations": "Beziehungen",
-	"resources": {
+	"resource": {
 		"amount": "Menge",
 		"description": "Beschreibung",
 		"fulfillmentDate": "Erfüllungsdatum",
@@ -104,12 +104,12 @@
 		"unit": "Einheit"
 	},
 	"save": "Speichern",
-	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
 	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
-	"save_and_create_okr": "Speichern und neues OKR hinzufügen",
 	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
+	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"save_and_create_vision": "Speichern und neue Vision hinzufügen",
+	"save_and_create_okr": "Speichern und neues OKR hinzufügen",
 	"save_and_create_task": "Speichern und neue Aufgabe hinzufügen",
 	"sdg": {
 		"01": "Keine Armut",
@@ -156,11 +156,11 @@
 	"superordinate_chapters": "Übergeordnete Kapitel",
 	"superordinate_internal_strategies": "Übergeordnete interne Strategien",
 	"superordinate_models": "Übergeordnete Leitbilder",
-	"superordinate_okrs": "Übergeordnete OKRs",
 	"superordinate_operational_goals": "Übergeordnete operative Ziele",
 	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_strategies": "Übergeordnete Strategien",
 	"superordinate_visions": "Übergeordnete Visionen",
+	"superordinate_okrs": "Übergeordnete OKRs",
 	"task_status": {
 		"done": "Fertig",
 		"idea": "Idee",
