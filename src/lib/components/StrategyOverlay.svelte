@@ -164,41 +164,45 @@
 		{#if isMeasureContainer(container)}
 			<MeasureDetailView {container} {relatedContainers} {revisions}>
 				<svelte:fragment slot="header">
-					<h2>{container.payload.title}</h2>
-					<div class="icons">
-						{#if $user.isAuthenticated}
-							<button class="icons-element" on:click={() => (edit = true)}>
-								<Icon solid src={Pencil} size="20" />
-							</button>
-						{/if}
-						<a
-							href={closeOverlay()}
-							class="button icons-element"
-							on:click={() => ($sidebarToggle = true)}
-						>
-							<Icon solid src={XMark} size="20" />
-						</a>
-					</div>
+					<h2>
+						{container.payload.title}
+						<div class="icons">
+							{#if $user.isAuthenticated}
+								<button class="icons-element" on:click={() => (edit = true)}>
+									<Icon solid src={Pencil} size="20" />
+								</button>
+							{/if}
+							<a
+								href={closeOverlay()}
+								class="button icons-element"
+								on:click={() => ($sidebarToggle = true)}
+							>
+								<Icon solid src={XMark} size="20" />
+							</a>
+						</div>
+					</h2>
 				</svelte:fragment>
 			</MeasureDetailView>
 		{:else}
 			<ContainerDetailView {container} {relatedContainers} {revisions}>
 				<svelte:fragment slot="header">
-					<h2>{container.payload.title}</h2>
-					<div class="icons">
-						{#if $user.isAuthenticated}
-							<button class="icons-element" on:click={() => (edit = true)}>
-								<Icon solid src={Pencil} size="20" />
-							</button>
-						{/if}
-						<a
-							href={closeOverlay()}
-							class="button icons-element"
-							on:click={() => ($sidebarToggle = true)}
-						>
-							<Icon solid src={XMark} size="20" />
-						</a>
-					</div>
+					<h2>
+						{container.payload.title}
+						<div class="icons">
+							{#if $user.isAuthenticated}
+								<button class="icons-element" on:click={() => (edit = true)}>
+									<Icon solid src={Pencil} size="20" />
+								</button>
+							{/if}
+							<a
+								href={closeOverlay()}
+								class="button icons-element"
+								on:click={() => ($sidebarToggle = true)}
+							>
+								<Icon solid src={XMark} size="20" />
+							</a>
+						</div>
+					</h2>
 				</svelte:fragment>
 			</ContainerDetailView>
 		{/if}
