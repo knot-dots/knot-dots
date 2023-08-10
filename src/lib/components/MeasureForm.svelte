@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import { predicates, status, sustainableDevelopmentGoals, topics } from '$lib/models';
@@ -40,7 +41,7 @@
 				}
 			});
 			container.payload.indicatorContribution = indicatorContribution;
-			container.payload.indicatorContributionAchieved = {...indicatorContribution};
+			container.payload.indicatorContributionAchieved = { ...indicatorContribution };
 		}
 	}
 </script>
@@ -87,26 +88,16 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
-		<label>
-			{$_('topic.label')}
-			<select name="topic" bind:value={container.payload.topic} multiple>
-				{#each topics.options as topicOption}
-					<option value={topicOption}>
-						{$_(topicOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
-		<label>
-			{$_('category')}
-			<select name="category" bind:value={container.payload.category} multiple>
-				{#each sustainableDevelopmentGoals.options as goal}
-					<option value={goal}>
-						{$_(goal)}
-					</option>
-				{/each}
-			</select>
-		</label>
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
+		/>
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
+		/>
 		<label>
 			{$_('status.label')}
 			<select name="status" bind:value={container.payload.status} required>
