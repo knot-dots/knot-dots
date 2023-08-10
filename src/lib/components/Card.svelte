@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import type { Container } from '$lib/models';
-	import { statusColors, statusIcons } from '$lib/models';
+	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
 
 	export let container: Container;
 
@@ -92,6 +92,11 @@
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
 				<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
 				{$_(container.payload.status)}
+			</span>
+		{:else if 'taskStatus' in container.payload}
+			<span class="badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
+				<Icon src={taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb} size="16" mini />
+				{$_(container.payload.taskStatus)}
 			</span>
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
