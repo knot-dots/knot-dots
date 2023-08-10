@@ -25,6 +25,7 @@
 	"filter": "Filtern",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"information": "Information",
 	"indicator": {
 		"contribution": "Beitrag zu operativem Ziel",
 		"fulfillment_date": "Erfüllungsdatum",
@@ -33,17 +34,17 @@
 		"quantity": "Größe"
 	},
 	"internal_objective": {
-		"label": "Interne Ziele",
 		"internal_strategy": "Interne Strategie",
 		"internal_strategies": "Interne Strategien",
-		"vision": "Vision",
-		"visions": "Visionen",
-		"strategic_goal": "Strategisches Ziel",
-		"strategic_goals": "Strategische Ziele",
+		"label": "Interne Ziele",
 		"okr": "OKR",
 		"okrs": "OKRs",
+		"strategic_goal": "Strategisches Ziel",
+		"strategic_goals": "Strategische Ziele",
 		"task": "Aufgabe",
-		"tasks": "Aufgaben"
+		"tasks": "Aufgaben",
+		"vision": "Vision",
+		"visions": "Visionen"
 	},
 	"level": {
 		"global": "Global",
@@ -106,11 +107,11 @@
 	"save": "Speichern",
 	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
-	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
 	"save_and_create_okr": "Speichern und neues OKR hinzufügen",
 	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
-	"save_and_create_vision": "Speichern und neue Vision hinzufügen",
+	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
 	"save_and_create_task": "Speichern und neue Aufgabe hinzufügen",
+	"save_and_create_vision": "Speichern und neue Vision hinzufügen",
 	"sdg": {
 		"01": "Keine Armut",
 		"02": "Kein Hunger",
@@ -149,8 +150,8 @@
 		"isek": "ISEK",
 		"label": "Art",
 		"mobility": "Mobilität",
-		"sustainability": "Nachhaltigkeit",
-		"smart_city": "Smart City"
+		"smart_city": "Smart City",
+		"sustainability": "Nachhaltigkeit"
 	},
 	"summary": "Zusammenfassung",
 	"superordinate_chapters": "Übergeordnete Kapitel",
