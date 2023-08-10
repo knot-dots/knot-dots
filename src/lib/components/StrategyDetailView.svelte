@@ -25,17 +25,19 @@
 <div class="strategy">
 	<article class="details">
 		<header>
-			<h2>{container.payload.title}</h2>
-			<div class="icons">
-				{#if $user.isAuthenticated}
-					<a href="?edit={container.guid}" class="icons-element">
-						<Icon solid src={Pencil} size="20" />
-					</a>
-				{/if}
-				<button class="icons-element" type="button" on:click={() => window.history.back()}>
-					<Icon solid src={ChevronLeft} size="20" />
-				</button>
-			</div>
+			<h2>
+				{container.payload.title}
+				<div class="icons">
+					{#if $user.isAuthenticated}
+						<a href="?edit={container.guid}" class="icons-element">
+							<Icon solid src={Pencil} size="20" />
+						</a>
+					{/if}
+					<button class="icons-element" type="button" on:click={() => window.history.back()}>
+						<Icon solid src={ChevronLeft} size="20" />
+					</button>
+				</div>
+			</h2>
 		</header>
 
 		<div class="details-content">
