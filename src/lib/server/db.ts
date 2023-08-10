@@ -290,10 +290,11 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.terms?.trim()) {
 		conditions.push(
-			sql.fragment`to_tsquery('german', ${sql.join(
-				filters.terms?.split(' ').map((t) => `${t}:*`),
-				sql.fragment` & `
-			)}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+			sql.fragment`to_tsquery('german', ${filters.terms
+				.trim()
+				.split(' ')
+				.map((t) => `${t}:*`)
+				.join(' & ')}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
 		);
 	}
 	if (filters.topics?.length) {

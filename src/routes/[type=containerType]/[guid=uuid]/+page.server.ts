@@ -1,3 +1,6 @@
+import { error } from '@sveltejs/kit';
+import { NotFoundError } from 'slonik';
+import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import { payloadTypes } from '$lib/models';
 import type {
@@ -21,9 +24,19 @@ import {
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params, locals, url }) => {
+	let revisions;
 	let strategyOverlayData;
 
-	const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.guid));
+	try {
+		revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.guid));
+	} catch (e) {
+		if (e instanceof NotFoundError) {
+			throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		} else {
+			throw e;
+		}
+	}
+
 	const relatedContainers = await locals.pool.connect(getAllRelatedContainers(params.guid, {}, ''));
 
 	if (url.searchParams.has('edit')) {
