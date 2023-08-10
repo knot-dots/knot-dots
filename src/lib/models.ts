@@ -548,7 +548,7 @@ export function isInternalObjectiveContainer(
 	return (
 		isInternalStrategyContainer(container) ||
 		isVisionContainer(container) ||
-		isStrategicGoalGoalContainer(container) ||
+		isInternalObjectiveStrategicGoalContainer(container) ||
 		isOkrContainer(container) ||
 		isTaskContainer(container)
 	);
@@ -729,7 +729,7 @@ export const modifiedContainer = container
 		relation: z.array(partialRelation)
 	});
 
-	export type EmptyInternalObjectiveContainer =
+export type EmptyInternalObjectiveContainer =
 	| EmptyInternalStrategyContainer
 	| EmptyVisionContainer
 	| EmptyInternalObjectiveStrategicGoalContainer
