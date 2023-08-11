@@ -2,6 +2,7 @@ import {
 	getAllContainerRevisionsByGuid,
 	getAllContainersWithIndicatorContributions,
 	getAllRelatedContainers,
+	getAllRelatedInternalObjectives,
 	getContainerByGuid,
 	maybePartOf
 } from '$lib/server/db';
@@ -14,18 +15,22 @@ export const load = (async ({ params, locals, url }) => {
 		[
 			locals.pool.connect(getContainerByGuid(params.guid)),
 			locals.pool.connect(getAllContainersWithIndicatorContributions()),
-			locals.pool.connect(
-				getAllRelatedContainers(
-					params.guid,
-					{
-						categories: url.searchParams.getAll('category'),
-						topics: url.searchParams.getAll('topic'),
-						strategyTypes: url.searchParams.getAll('strategyType'),
-						terms: url.searchParams.get('terms') ?? ''
-					},
-					url.searchParams.get('sort') ?? ''
-				)
-			)
+			params.type.includes('internal_objective')
+				? locals.pool.connect(
+						getAllRelatedInternalObjectives(params.guid, url.searchParams.get('sort') ?? '')
+				  )
+				: locals.pool.connect(
+						getAllRelatedContainers(
+							params.guid,
+							{
+								categories: url.searchParams.getAll('category'),
+								topics: url.searchParams.getAll('topic'),
+								strategyTypes: url.searchParams.getAll('strategyType'),
+								terms: url.searchParams.get('terms') ?? ''
+							},
+							url.searchParams.get('sort') ?? ''
+						)
+				  )
 		]
 	);
 
@@ -35,7 +40,9 @@ export const load = (async ({ params, locals, url }) => {
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.payload.type)),
-			locals.pool.connect(getAllRelatedContainers(guid, {}, ''))
+			params.type.includes('internal_objective')
+				? locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ''))
+				: locals.pool.connect(getAllRelatedContainers(guid, {}, ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}

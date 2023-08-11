@@ -4,7 +4,10 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { isPartOf, isTaskContainer, payloadTypes, taskStatusColors, taskStatusIcons, type TaskStatus, type Payload } from '$lib/models';
+	import { isPartOf, isTaskContainer, payloadTypes, taskStatusColors, taskStatusIcons } from '$lib/models';
+	import type {
+		TaskStatus
+	}  from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
