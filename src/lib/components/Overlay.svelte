@@ -28,6 +28,7 @@
 	import type { Container } from '$lib/models';
 	import { user } from '$lib/stores.js';
 	import InternalObjectiveForm from './InternalObjectiveForm.svelte';
+	import InternalObjectiveTaskDetailView from './InternalObjectiveTaskDetailView.svelte';
 	import InternalObjectiveTaskForm from './InternalObjectiveTaskForm.svelte';
 
 	export let relatedContainers: Container[];
@@ -156,6 +157,24 @@
 				</h2>
 			</svelte:fragment>
 		</MeasureDetailView>
+	{:else if isTaskContainer(container)}
+		<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions}>
+			<svelte:fragment slot="header">
+				<h2>
+					{container.payload.title}
+					<div class="icons">
+						{#if $user.isAuthenticated}
+							<button class="icons-element" on:click={() => (edit = true)}>
+								<Icon solid src={Pencil} size="20" />
+							</button>
+						{/if}
+						<a href={closeOverlay()} class="button icons-element">
+							<Icon solid src={XMark} size="20" />
+						</a>
+					</div>
+				</h2>
+			</svelte:fragment>
+		</InternalObjectiveTaskDetailView>
 	{:else if isInternalObjectiveContainer(container)}
 		<InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
 			<svelte:fragment slot="header">

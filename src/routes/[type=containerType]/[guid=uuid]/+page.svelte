@@ -7,11 +7,13 @@
 	import {
 		isInternalObjectiveContainer,
 		isMeasureContainer,
-		isStrategyContainer
+		isStrategyContainer,
+		isTaskContainer
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 	import type { PageData } from './$types';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
+	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 
 	export let data: PageData;
 
@@ -43,6 +45,24 @@
 			</h2>
 		</svelte:fragment>
 	</MeasureDetailView>
+{:else if isTaskContainer(container)}
+	<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions}>
+		<svelte:fragment slot="header">
+			<h2>
+				{container.payload.title}
+				<div class="icons">
+					{#if $user.isAuthenticated}
+						<a href="{container.guid}/edit" class="icons-element">
+							<Icon solid src={Pencil} size="20" />
+						</a>
+					{/if}
+					<button class="icons-element" type="button" on:click={() => window.history.back()}>
+						<Icon solid src={ChevronLeft} size="20" />
+					</button>
+				</div>
+			</h2>
+		</svelte:fragment>
+	</InternalObjectiveTaskDetailView>
 {:else if isInternalObjectiveContainer(container)}
 	<InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
 		<svelte:fragment slot="header">
