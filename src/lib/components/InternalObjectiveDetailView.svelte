@@ -14,6 +14,16 @@
 		: relatedContainers.find(isMeasureContainer);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
+
+	function containerURL(type: string, guid: string) {
+		if (isPage) {
+			return `/${type}/${guid}`;
+		} else {
+			const query = new URLSearchParams($page.url.searchParams);
+			query.set('container-preview', guid);
+			return `?${query.toString()}`;
+		}
+	}
 </script>
 
 <article class="details" class:details--page={isPage}>
@@ -45,6 +55,16 @@
 					<h3 class="meta-key">{$_('object')}</h3>
 					<p class="meta-value">{$_(container.payload.type)}</p>
 				</div>
+				{#if measure}
+					<div class="meta">
+						<h3 class="meta-key">{$_('measure')}</h3>
+						<p class="meta-value">
+							<a href={containerURL(measure.payload.type, measure.guid)}>
+								{$_(measure.payload.title)}
+							</a>
+						</p>
+					</div>
+				{/if}
 				<div class="meta">
 					<h3 class="meta-key">{$_('created_date')}</h3>
 					<ul class="meta-value">
