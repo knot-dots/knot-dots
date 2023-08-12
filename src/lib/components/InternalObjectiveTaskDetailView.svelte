@@ -29,8 +29,8 @@
 		? container
 		: relatedContainers.find(isMeasureContainer);
 
-	function tabURL(status: TaskStatus) {
-		const query = new URLSearchParams($page.url.searchParams);
+	function tabURL(params: URLSearchParams, status: TaskStatus) {
+		const query = new URLSearchParams(params);
 		query.set('task-status', status);
 		return `?${query.toString()}`;
 	}
@@ -58,15 +58,13 @@
 					class:tab-item--active={statusOption === selectedRevision.payload.taskStatus}
 				>
 					{#if taskStatus.options.findIndex((o) => statusOption === o) <= taskStatus.options.findIndex((o) => container.payload.taskStatus === o)}
-						{#key $page.url}
-							<a
-								class="badge badge--{taskStatusColors.get(statusOption)}"
-								href={tabURL(statusOption)}
-							>
-								<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-								{$_(statusOption)}
-							</a>
-						{/key}
+						<a
+							class="badge badge--{taskStatusColors.get(statusOption)}"
+							href={tabURL($page.url.searchParams, statusOption)}
+						>
+							<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />
+							{$_(statusOption)}
+						</a>
 					{:else}
 						<span class="badge badge--{taskStatusColors.get(statusOption)}">
 							<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />

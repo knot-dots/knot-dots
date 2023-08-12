@@ -34,8 +34,8 @@
 
 	$: strategy = relatedContainers.find(isStrategyContainer);
 
-	function tabURL(status: Status) {
-		const query = new URLSearchParams($page.url.searchParams);
+	function tabURL(params: URLSearchParams, status: Status) {
+		const query = new URLSearchParams(params);
 		query.set('status', status);
 		return `?${query.toString()}`;
 	}
@@ -63,12 +63,13 @@
 					class:tab-item--active={statusOption === selectedRevision.payload.status}
 				>
 					{#if status.options.findIndex((o) => statusOption === o) <= status.options.findIndex((o) => container.payload.status === o)}
-						{#key $page.url}
-							<a class="badge badge--{statusColors.get(statusOption)}" href={tabURL(statusOption)}>
-								<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-								{$_(statusOption)}
-							</a>
-						{/key}
+						<a
+							class="badge badge--{statusColors.get(statusOption)}"
+							href={tabURL($page.url.searchParams, statusOption)}
+						>
+							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
+							{$_(statusOption)}
+						</a>
 					{:else}
 						<span class="badge badge--{statusColors.get(statusOption)}">
 							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
