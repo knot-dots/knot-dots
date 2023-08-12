@@ -17,7 +17,11 @@ export const load = (async ({ locals, params, url }) => {
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getAllContainersRelatedToMeasure(container.revision, {}, url.searchParams.get('sort') ?? '')
+			getAllContainersRelatedToMeasure(
+				container.revision,
+				{ terms: url.searchParams.get('terms') ?? '' },
+				url.searchParams.get('sort') ?? ''
+			)
 		);
 	}
 	if (url.searchParams.has('container-preview')) {

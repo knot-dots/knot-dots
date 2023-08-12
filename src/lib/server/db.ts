@@ -652,6 +652,7 @@ export function getAllContainersWithIndicatorContributions() {
 export function getAllContainersRelatedToMeasure(
 	revision: number,
 	filters: {
+		terms?: string;
 		type?: PayloadType;
 	},
 	sort: string

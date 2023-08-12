@@ -13,7 +13,7 @@ export const load = (async ({ locals, params, url }) => {
 	const containers = await locals.pool.connect(
 		getAllContainersRelatedToMeasure(
 			container.revision,
-			{ type: 'internal_objective.task' },
+			{ terms: url.searchParams.get('terms') ?? '', type: 'internal_objective.task' },
 			url.searchParams.get('sort') ?? ''
 		)
 	);
