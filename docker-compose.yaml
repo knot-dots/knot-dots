@@ -51,6 +51,8 @@ services:
     depends_on:
       - migrate
     environment:
+      - KC_SERVICE_ACCOUNT_CLIENT_ID
+      - KC_SERVICE_ACCOUNT_CLIENT_SECRET
       - KC_URL
       - PGDATABASE
       - PGHOST
@@ -74,6 +76,8 @@ services:
       db:
         condition: service_healthy
     environment:
+      - KC_SERVICE_ACCOUNT_CLIENT_ID
+      - KC_SERVICE_ACCOUNT_CLIENT_SECRET
       - KC_URL
       - PGDATABASE
       - PGHOST

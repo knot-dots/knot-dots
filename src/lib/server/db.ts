@@ -24,6 +24,7 @@ import type {
 	PayloadType,
 	Relation
 } from '$lib/models';
+import { createOrganization } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -83,7 +84,19 @@ const sql = createSqlTag({ typeAliases });
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
+			let guid;
+
+			if (container.payload.type === payloadTypes.enum.organization) {
+				guid = await createOrganization(container.payload.name);
+			}
+
+			const containerResult = guid
+				? await txConnection.one(sql.typeAlias('anyContainer')`
+            INSERT INTO container (guid, payload, realm)
+            VALUES (${guid}, ${sql.jsonb(<SerializableValue>container.payload)}, ${container.realm})
+            RETURNING *
+				`)
+				: await txConnection.one(sql.typeAlias('anyContainer')`
           INSERT INTO container (payload, realm)
           VALUES (${sql.jsonb(<SerializableValue>container.payload)}, ${container.realm})
           RETURNING *
