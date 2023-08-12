@@ -2,6 +2,7 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import Progress from '$lib/components/Progress.svelte';
 	import { isMeasureContainer, type Container } from '$lib/models';
 
 	export let container: Container;
@@ -48,15 +49,7 @@
 				{#if 'progress' in container.payload}
 					<div class="progress">
 						<h3>{$_('progress')}</h3>
-						<progress
-							value={container.payload.progress}
-							style:--color={container.payload.progress > 0.7
-								? 'var(--color-green-500)'
-								: container.payload.progress > 0.3
-								? 'var(--color-yellow-200)'
-								: 'var(--color-red-600)'}
-						/>
-						{container.payload.progress * 100} %
+						<Progress value={container.payload.progress} />
 					</div>
 				{/if}
 			</slot>
@@ -102,30 +95,3 @@
 		</footer>
 	{/if}
 </article>
-
-<style>
-	progress {
-		--height: 6px;
-
-		appearance: none;
-		background-color: var(--color-gray-200);
-		border: none;
-		border-radius: calc(var(--height) * 0.5);
-		height: var(--height);
-		margin-right: 1rem;
-		overflow: hidden;
-		vertical-align: middle;
-	}
-
-	progress::-webkit-progress-bar {
-		background-color: inherit;
-	}
-
-	progress::-webkit-progress-value {
-		background-color: var(--color, var(--color-gray-200));
-	}
-
-	progress::-moz-progress-bar {
-		background-color: var(--color, var(--color-gray-200));
-	}
-</style>
