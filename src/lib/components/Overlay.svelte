@@ -5,7 +5,11 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
+	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
+	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
+	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
+	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
@@ -18,7 +22,7 @@
 		isInternalStrategyContainer,
 		isMeasureContainer,
 		isModelContainer,
-		isOkrContainer,
+		isMilestoneContainer,
 		isOperationalGoalContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
@@ -27,8 +31,6 @@
 	} from '$lib/models';
 	import type { Container } from '$lib/models';
 	import { user } from '$lib/stores.js';
-	import InternalObjectiveForm from './InternalObjectiveForm.svelte';
-	import InternalObjectiveTaskForm from './InternalObjectiveTaskForm.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: Container[];
@@ -125,12 +127,16 @@
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveForm>
-		{:else if isOkrContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+		{:else if isMilestoneContainer(container)}
+			<InternalObjectiveMilestoneForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={afterSubmit}
+			>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
-			</InternalObjectiveForm>
+			</InternalObjectiveMilestoneForm>
 		{:else if isTaskContainer(container)}
 			<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
@@ -156,6 +162,24 @@
 				</h2>
 			</svelte:fragment>
 		</MeasureDetailView>
+	{:else if isTaskContainer(container)}
+		<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions}>
+			<svelte:fragment slot="header">
+				<h2>
+					{container.payload.title}
+					<div class="icons">
+						{#if $user.isAuthenticated}
+							<button class="icons-element" on:click={() => (edit = true)}>
+								<Icon solid src={Pencil} size="20" />
+							</button>
+						{/if}
+						<a href={closeOverlay()} class="button icons-element">
+							<Icon solid src={XMark} size="20" />
+						</a>
+					</div>
+				</h2>
+			</svelte:fragment>
+		</InternalObjectiveTaskDetailView>
 	{:else if isInternalObjectiveContainer(container)}
 		<InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
 			<svelte:fragment slot="header">

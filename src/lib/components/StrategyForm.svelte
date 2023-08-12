@@ -8,7 +8,7 @@
 
 	export let container: StrategyContainer | EmptyStrategyContainer;
 
-	let levelParam = $page.url.searchParams.get('level');
+	let levelParam = $page.url.searchParams.get('level') ?? levels.enum['level.local'];
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>

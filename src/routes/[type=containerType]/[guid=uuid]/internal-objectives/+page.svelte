@@ -23,8 +23,8 @@
 			payloadType: payloadTypes.enum['internal_objective.strategic_goal']
 		},
 		{
-			title: 'internal_objective.okrs',
-			payloadType: payloadTypes.enum['internal_objective.okr']
+			title: 'internal_objective.milestones',
+			payloadType: payloadTypes.enum['internal_objective.milestone']
 		},
 		{
 			title: 'internal_objective.tasks',

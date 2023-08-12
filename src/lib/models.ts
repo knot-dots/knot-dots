@@ -71,7 +71,7 @@ const payloadTypeValues = [
 	'internal_objective.internal_strategy',
 	'internal_objective.vision',
 	'internal_objective.strategic_goal',
-	'internal_objective.okr',
+	'internal_objective.milestone',
 	'internal_objective.task',
 	'measure',
 	'model',
@@ -170,8 +170,8 @@ export const taskStatusIcons = new Map<TaskStatus, IconSource>([
 
 export type TaskStatus = z.infer<typeof taskStatus>;
 
-export function isTaskStatus(value: unknown): value is Status {
-	return statusValues.includes(value as Status);
+export function isTaskStatus(value: unknown): value is TaskStatus {
+	return taskStatusValues.includes(value as TaskStatus);
 }
 
 const strategyTypeValues = [
@@ -289,31 +289,38 @@ const basePayload = z
 	})
 	.strict();
 
-const internalStrategyPayload = basePayload
+const internalObjectivesBasePayload = z.object({
+	description: z.string(),
+	summary: z.string().max(200).optional(),
+	title: z.string()
+});
+
+const internalStrategyPayload = internalObjectivesBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum['internal_objective.internal_strategy'])
 	})
 	.strict();
 
-const visionPayload = basePayload
+const visionPayload = internalObjectivesBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum['internal_objective.vision'])
 	})
 	.strict();
 
-const internalObjectiveStrategicGoalPayload = basePayload
+const internalObjectiveStrategicGoalPayload = internalObjectivesBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum['internal_objective.strategic_goal'])
 	})
 	.strict();
 
-const okrPayload = basePayload
+const milestonePayload = internalObjectivesBasePayload
 	.extend({
-		type: z.literal(payloadTypes.enum['internal_objective.okr'])
+		progress: z.number().nonnegative(),
+		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
 	})
 	.strict();
 
-const taskPayload = basePayload
+const taskPayload = internalObjectivesBasePayload
 	.extend({
 		taskStatus: taskStatus,
 		type: z.literal(payloadTypes.enum['internal_objective.task'])
@@ -390,7 +397,7 @@ const payload = z.discriminatedUnion('type', [
 	internalStrategyPayload,
 	visionPayload,
 	internalObjectiveStrategicGoalPayload,
-	okrPayload,
+	milestonePayload,
 	taskPayload,
 	measurePayload,
 	modelPayload,
@@ -515,14 +522,14 @@ export function isInternalObjectiveStrategicGoalContainer(
 	return container.payload.type === payloadTypes.enum['internal_objective.strategic_goal'];
 }
 
-const okrContainer = container.extend({
-	payload: okrPayload
+const milestoneContainer = container.extend({
+	payload: milestonePayload
 });
 
-export type OkrContainer = z.infer<typeof okrContainer>;
+export type MilestoneContainer = z.infer<typeof milestoneContainer>;
 
-export function isOkrContainer(container: Container): container is OkrContainer {
-	return container.payload.type === payloadTypes.enum['internal_objective.okr'];
+export function isMilestoneContainer(container: Container): container is MilestoneContainer {
+	return container.payload.type === payloadTypes.enum['internal_objective.milestone'];
 }
 
 const taskContainer = container.extend({
@@ -539,7 +546,7 @@ export type InternalObjectiveContainer =
 	| InternalStrategyContainer
 	| VisionContainer
 	| InternalObjectiveStrategicGoalContainer
-	| OkrContainer
+	| MilestoneContainer
 	| TaskContainer;
 
 export function isInternalObjectiveContainer(
@@ -549,7 +556,7 @@ export function isInternalObjectiveContainer(
 		isInternalStrategyContainer(container) ||
 		isVisionContainer(container) ||
 		isInternalObjectiveStrategicGoalContainer(container) ||
-		isOkrContainer(container) ||
+		isMilestoneContainer(container) ||
 		isTaskContainer(container)
 	);
 }
@@ -582,7 +589,7 @@ const emptyContainer = newContainer.extend({
 		internalObjectiveStrategicGoalPayload
 			.partial()
 			.merge(internalObjectiveStrategicGoalPayload.pick({ type: true })),
-		okrPayload.partial().merge(okrPayload.pick({ type: true })),
+		milestonePayload.partial().merge(milestonePayload.pick({ type: true })),
 		taskPayload.partial().merge(taskPayload.pick({ type: true }))
 	])
 });
@@ -699,14 +706,16 @@ export function isEmptyInternalObjectiveStrategicGoalContainer(
 	return container.payload.type === payloadTypes.enum['internal_objective.strategic_goal'];
 }
 
-const emptyOkrContainer = emptyContainer.extend({
-	payload: okrPayload.partial().merge(okrPayload.pick({ type: true }))
+const emptyMilestoneContainer = emptyContainer.extend({
+	payload: milestonePayload.partial().merge(milestonePayload.pick({ type: true }))
 });
 
-export type EmptyOkrContainer = z.infer<typeof emptyOkrContainer>;
+export type EmptyMilestoneContainer = z.infer<typeof emptyMilestoneContainer>;
 
-export function isEmptyOkrContainer(container: EmptyContainer): container is EmptyOkrContainer {
-	return container.payload.type === payloadTypes.enum['internal_objective.okr'];
+export function isEmptyMilestoneContainer(
+	container: EmptyContainer
+): container is EmptyMilestoneContainer {
+	return container.payload.type === payloadTypes.enum['internal_objective.milestone'];
 }
 
 const emptyTaskContainer = emptyContainer.extend({
@@ -733,7 +742,7 @@ export type EmptyInternalObjectiveContainer =
 	| EmptyInternalStrategyContainer
 	| EmptyVisionContainer
 	| EmptyInternalObjectiveStrategicGoalContainer
-	| EmptyOkrContainer
+	| EmptyMilestoneContainer
 	| EmptyTaskContainer;
 
 export function isEmptyInternalObjectiveContainer(
@@ -743,7 +752,7 @@ export function isEmptyInternalObjectiveContainer(
 		isEmptyInternalStrategyContainer(container) ||
 		isEmptyVisionContainer(container) ||
 		isEmptyStrategicGoalContainer(container) ||
-		isEmptyOkrContainer(container) ||
+		isEmptyMilestoneContainer(container) ||
 		isEmptyTaskContainer(container)
 	);
 }

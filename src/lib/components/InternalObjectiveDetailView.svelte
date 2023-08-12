@@ -2,7 +2,6 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
-
 	import { isMeasureContainer, type Container } from '$lib/models';
 
 	export let container: Container;
@@ -14,6 +13,16 @@
 		: relatedContainers.find(isMeasureContainer);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
+
+	function containerURL(type: string, guid: string) {
+		if (isPage) {
+			return `/${type}/${guid}`;
+		} else {
+			const query = new URLSearchParams($page.url.searchParams);
+			query.set('container-preview', guid);
+			return `?${query.toString()}`;
+		}
+	}
 </script>
 
 <article class="details" class:details--page={isPage}>
@@ -36,6 +45,20 @@
 						<Viewer value={container.payload.description} />
 					</div>
 				{/if}
+				{#if 'progress' in container.payload}
+					<div class="progress">
+						<h3>{$_('progress')}</h3>
+						<progress
+							value={container.payload.progress}
+							style:--color={container.payload.progress > 0.7
+								? 'var(--color-green-500)'
+								: container.payload.progress > 0.3
+								? 'var(--color-yellow-200)'
+								: 'var(--color-red-600)'}
+						/>
+						{container.payload.progress * 100} %
+					</div>
+				{/if}
 			</slot>
 		</div>
 
@@ -45,6 +68,16 @@
 					<h3 class="meta-key">{$_('object')}</h3>
 					<p class="meta-value">{$_(container.payload.type)}</p>
 				</div>
+				{#if measure}
+					<div class="meta">
+						<h3 class="meta-key">{$_('measure')}</h3>
+						<p class="meta-value">
+							<a href={containerURL(measure.payload.type, measure.guid)}>
+								{$_(measure.payload.title)}
+							</a>
+						</p>
+					</div>
+				{/if}
 				<div class="meta">
 					<h3 class="meta-key">{$_('created_date')}</h3>
 					<ul class="meta-value">
@@ -69,3 +102,23 @@
 		</footer>
 	{/if}
 </article>
+
+<style>
+	progress,
+	progress::-webkit-progress-bar {
+		--height: 6px;
+		appearance: none;
+		background-color: var(--color-gray-200);
+		border: none;
+		border-radius: calc(var(--height) * 0.5);
+		height: var(--height);
+		margin-right: 1rem;
+		overflow: hidden;
+		vertical-align: middle;
+	}
+
+	progress::-webkit-progress-value,
+	progress::-moz-progress-bar {
+		background-color: var(--color, var(--color-gray-200));
+	}
+</style>

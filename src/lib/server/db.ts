@@ -387,10 +387,10 @@ export function maybePartOf(containerType: PayloadType) {
 			candidateType = ['internal_objective.internal_strategy'];
 		} else if (containerType == 'internal_objective.strategic_goal') {
 			candidateType = ['internal_objective.vision'];
-		} else if (containerType == 'internal_objective.okr') {
+		} else if (containerType == 'internal_objective.milestone') {
 			candidateType = ['internal_objective.strategic_goal'];
 		} else if (containerType == 'internal_objective.task') {
-			candidateType = ['internal_objective.okr'];
+			candidateType = ['internal_objective.milestone'];
 		} else {
 			return [];
 		}
@@ -652,6 +652,7 @@ export function getAllContainersWithIndicatorContributions() {
 export function getAllContainersRelatedToMeasure(
 	revision: number,
 	filters: {
+		terms?: string;
 		type?: PayloadType;
 	},
 	sort: string
@@ -665,6 +666,119 @@ export function getAllContainersRelatedToMeasure(
 				AND cr.object = ${revision}
 			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
+		`);
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
+			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function getAllRelatedInternalObjectives(guid: string, sort: string) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const revision = await connection.oneFirst(sql.typeAlias('revision')`
+			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
+		`);
+
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8, s5.subject AS r9, s5.object AS r10, s6.subject AS r11, s6.object AS r12
+			FROM
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.task', 'text')
+				WHERE c.valid_currently
+			) s1
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.milestone', 'text')
+				WHERE c.valid_currently
+			) s2 ON s1.object = s2.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.strategic_goal', 'text')
+				WHERE c.valid_currently
+			) s3 ON s2.object = s3.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.vision', 'text')
+				WHERE c.valid_currently
+			) s4 ON s3.object = s4.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.internal_strategy', 'text')
+				WHERE c.valid_currently
+			) s5 ON s4.object = s5.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.predicate, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('measure', 'text')
+				WHERE c.valid_currently
+			) s6 ON s5.object = s6.subject
+			WHERE s1.subject = ${revision}
+				OR s1.object = ${revision}
+				OR s2.subject = ${revision}
+				OR s2.object = ${revision}
+				OR s3.subject = ${revision}
+				OR s3.object = ${revision}
+				OR s4.subject = ${revision}
+			  OR s4.object = ${revision}
+				OR s5.subject = ${revision}
+			  OR s5.object = ${revision}
+		`);
+
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE revision IN (${sql.join(
+				relationPathResult
+					.map((r) => Object.values(r))
+					.flat()
+					.concat([revision]),
+				sql.fragment`, `
+			)})
+			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
 		const revisions = sql.join(

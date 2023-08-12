@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
 	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
@@ -15,7 +16,7 @@
 		isEmptyInternalStrategyContainer,
 		isEmptyMeasureContainer,
 		isEmptyModelContainer,
-		isEmptyOkrContainer,
+		isEmptyMilestoneContainer,
 		isEmptyOperationalGoalContainer,
 		isEmptyStrategicGoalContainer,
 		isEmptyStrategyContainer,
@@ -37,6 +38,13 @@
 		Topic
 	} from '$lib/models';
 	import type { PageData } from './$types';
+	import type {
+		EmptyInternalObjectiveStrategicGoalContainer,
+		EmptyInternalStrategyContainer,
+		EmptyMilestoneContainer,
+		EmptyTaskContainer,
+		EmptyVisionContainer
+	} from '$lib/models.js';
 
 	export let data: PageData;
 
@@ -67,9 +75,23 @@
 		const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];
+		const progress = 0;
 		const resource: [] = [];
 		const topic: Topic[] = [];
 		switch (type) {
+			case payloadTypes.enum['internal_objective.internal_strategy']:
+				return { ...base, payload: { type } } as EmptyInternalStrategyContainer;
+			case payloadTypes.enum['internal_objective.milestone']:
+				return { ...base, payload: { progress, type } } as EmptyMilestoneContainer;
+			case payloadTypes.enum['internal_objective.strategic_goal']:
+				return {
+					...base,
+					payload: { type }
+				} as EmptyInternalObjectiveStrategicGoalContainer;
+			case payloadTypes.enum['internal_objective.task']:
+				return { ...base, payload: { type } } as EmptyTaskContainer;
+			case payloadTypes.enum['internal_objective.vision']:
+				return { ...base, payload: { type } } as EmptyVisionContainer;
 			case payloadTypes.enum.measure:
 				return { ...base, payload: { category, resource, topic, type } } as EmptyMeasureContainer;
 			case payloadTypes.enum.model:
@@ -107,9 +129,9 @@
 					detail.result.revision
 				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
 			);
-		} else if (detail.event.submitter?.id === 'save-and-create-okr') {
+		} else if (detail.event.submitter?.id === 'save-and-create-milestone') {
 			await goto(
-				`/internal_objective.okr/new?is-part-of=${
+				`/internal_objective.milestone/new?is-part-of=${
 					detail.result.revision
 				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
 			);
@@ -178,19 +200,19 @@
 {:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
 	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-okr">
-				{$_('save_and_create_okr')}
+			<button id="save-and-create-milestone">
+				{$_('save_and_create_milestone')}
 			</button>
 		</svelte:fragment>
 	</InternalObjectiveForm>
-{:else if isEmptyOkrContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+{:else if isEmptyMilestoneContainer(container)}
+	<InternalObjectiveMilestoneForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">
 				{$_('save_and_create_task')}
 			</button>
 		</svelte:fragment>
-	</InternalObjectiveForm>
+	</InternalObjectiveMilestoneForm>
 {:else if isEmptyTaskContainer(container)}
 	<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {/if}

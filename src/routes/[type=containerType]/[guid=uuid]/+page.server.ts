@@ -19,6 +19,7 @@ import type {
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
+	getAllRelatedInternalObjectives,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -37,7 +38,12 @@ export const load = (async ({ params, locals, url }) => {
 		}
 	}
 
-	const relatedContainers = await locals.pool.connect(getAllRelatedContainers(params.guid, {}, ''));
+	let relatedContainers: Container[];
+	if (params.type.includes('internal_objective')) {
+		relatedContainers = await locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ''));
+	} else {
+		relatedContainers = await locals.pool.connect(getAllRelatedContainers(params.guid, {}, ''));
+	}
 
 	if (url.searchParams.has('edit')) {
 		strategyOverlayData = {

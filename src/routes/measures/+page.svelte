@@ -14,7 +14,7 @@
 	{#each status.options as statusOption}
 		<BoardColumn
 			--bg-color="var(--color-{statusColors.get(statusOption)}-050)"
-			addItemUrl="/measure/new"
+			addItemUrl="/measure/new?status={statusOption}"
 			title={$_(statusOption)}
 			icon={statusIcons.get(statusOption)}
 		>

@@ -1,9 +1,9 @@
 import {
 	getAllContainersRelatedToMeasure,
 	getAllContainerRevisionsByGuid,
-	getAllRelatedContainers,
-	maybePartOf,
-	getContainerByGuid
+	getAllRelatedInternalObjectives,
+	getContainerByGuid,
+	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -13,7 +13,7 @@ export const load = (async ({ locals, params, url }) => {
 	const containers = await locals.pool.connect(
 		getAllContainersRelatedToMeasure(
 			container.revision,
-			{ type: 'internal_objective.task' },
+			{ terms: url.searchParams.get('terms') ?? '', type: 'internal_objective.task' },
 			url.searchParams.get('sort') ?? ''
 		)
 	);
@@ -23,7 +23,9 @@ export const load = (async ({ locals, params, url }) => {
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.payload.type)),
-			locals.pool.connect(getAllRelatedContainers(guid, {}, ''))
+			locals.pool.connect(
+				getAllRelatedInternalObjectives(params.guid, url.searchParams.get('sort') ?? '')
+			)
 		]);
 		overlayData = {
 			isPartOfOptions,
