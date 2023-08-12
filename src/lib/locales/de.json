@@ -5,9 +5,9 @@
 	"boards": "Bretter",
 	"cancel": "Abbrechen",
 	"category": "Kategorie",
-	"comment": "Kommentar",
-	"collapse_sidebar": "Seitenleiste zuklappen",
 	"close_sidebar": "Seitenleiste schließen",
+	"collapse_sidebar": "Seitenleiste zuklappen",
+	"comment": "Kommentar",
 	"created_date": "Erstellungsdatum",
 	"delete": "Löschen",
 	"description": "Beschreibung",
@@ -25,12 +25,12 @@
 	},
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
+	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
 	"information": "Information",
 	"indicator": {
 		"contribution": "Beitrag zu operativem Ziel",
-		"fulfillment_date": "Erfüllungsdatum",
 		"legend": "Indikator",
 		"okr": "OKR",
 		"quantity": "Größe"
@@ -76,25 +76,98 @@
 	"planned_duration": "Geplante Laufzeit",
 	"progress": "Fortschritt",
 	"quantity": {
+		"broadband_coverage": {
+			"description": "Die Breitbandversorgung privater Haushalte beträgt {contribution, number} %.",
+			"input_prompt": "Wie viele private Haushalte werden zusätzlich mit Breitbandanschluss versorgt?",
+			"label": "Breitbandversorgung — Private Haushalte"
+		},
+		"charging_stations": {
+			"description": "Die Ladesäuleninfrastruktur beträgt {contribution, number} Stück pro 1.000 Einwohner*innen.",
+			"input_prompt": "Wie viele E-Ladesäulen pro 1.000 Einwohner werden neu geschaffen?",
+			"label": "Ladesäuleninfrastruktur"
+		},
 		"co2": {
-			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}} ",
+			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}}",
 			"input_prompt": "Wie viele Tonnen CO₂ sollen eingespart werden?",
 			"label": "CO₂"
+		},
+		"co2_emissions_households": {
+			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr in privaten Haushalten beträgt {contribution, number} Tonnen. ",
+			"input_prompt": "Wie viel CO₂ wird durch private Haushalte zusätzlich ausgestoßen?",
+			"label": "CO₂-Ausstoß — private Haushalte"
+		},
+		"co2_emissions_industry": {
+			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr in Industrie, Gewerbe, Handel und Dienstleistungen beträgt {contribution, number} Tonnen.",
+			"input_prompt": "Wie viel CO₂ wird durch Industrie, Gewerbe, Handel und Dienstleistungen zusätzlich ausgestoßen?",
+			"label": "CO₂-Ausstoß — Industrie, Gewerbe, Handel und Dienstleistungen"
+		},
+		"co2_emissions_transport": {
+			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr im Verkehr beträgt {contribution, number} Tonnen.",
+			"input_prompt": "Wie viel CO₂ wird durch Verkehr zusätzlich ausgestoßen?",
+			"label": "CO₂-Ausstoß — Verkehr"
 		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
 			"input_prompt": "Wie viele Kilometer Radweg werden gebaut?",
 			"label": "Radweg"
 		},
+		"doctor_ratio": {
+			"description": "Die Ärzteversorgung beträgt {contribution, number} pro 100.000 Einwohner*innen.",
+			"input_prompt": "Wie viele Allgemeinärzte sind zusätzlich niedergelassen?",
+			"label": "Ärzteversorgung"
+		},
+		"funding_culture_and_education": {
+			"description": "Der Zuschussbetrag für Kultur- und Bildungseinrichtungen beträgt {contribution, number, ::currency/EUR} pro Einwohner*in.",
+			"input_prompt": "In welcher Höhe werden Kultur- und Bildungseinrichtungen zusätzlich gefördert?",
+			"label": "Zuschussbetrag Kultur- und Bildungseinrichtung pro Einwohner*in"
+		},
+		"general": {
+			"input_prompt_achieved": "Das haben wir bisher erreicht"
+		},
+		"organic_farming": {
+			"description": "Der Anteil ökologischer an der gesamten Landwirtschaftsfläche beträgt {contribution, number} %.",
+			"input_prompt": "Wie viel ökologische Landwirtschaftsfläche wird geschaffen?",
+			"label": "ökologische Landwirtschaft"
+		},
 		"parking_space": {
 			"description": "{contribution, plural, one {Es wurde # Parkplatz umgewidmet.} other {Es wurden # Parkplätze umgewidmet.}}",
 			"input_prompt": "Wie viele Parkplätze werden umgewidmet?",
 			"label": "umgewidmete Parkplätze"
 		},
+		"renewable_energy": {
+			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowatt.",
+			"input_prompt": "Wie viele Kilowatt Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
+			"label": "Strom aus erneuerbaren Quellen"
+		},
+		"social_housing": {
+			"description": "Die Anzahl öffentlich geförderter Mietwohneinheiten beträgt {contribution, number}.",
+			"input_prompt": "Wie viele öffentlich geförderte Mietwohneinheiten wurden zusätzlich geschaffen?",
+			"label": "sozialer Wohnungsbau"
+		},
 		"solar_energy": {
 			"description": "{contribution, plural, one {Es wurde # Kilowattstunde Solarenergie erzeugt.} other {Es wurden # Kilowattstunden Solarenergie erzeugt.}}",
 			"input_prompt": "Wie viele Kilowattstunden an Solarenergie sollen erzeugt werden?",
 			"label": "Solarenergie"
+		},
+		"waste_generation": {
+			"description": "Die Abfallmenge pro Einwohner*in beträgt {contribution, number} Tonnen.",
+			"input_prompt": "Wie viel Abfall entsteht durch meine Maßnahme?",
+			"label": "Abfallmenge (je Einwohner*in)"
+		},
+		"water_consumption": {
+			"description": "Der Wasserverbrauch pro Einwohner*in beträgt {contribution, number} Kubikmeter.",
+			"input_prompt": "Wie viel Kubikmeter Wasser werden verbraucht?",
+			"label": "Wasserbezug pro Einwohner*in"
+		},
+		"women_in_elective_office": {
+			"description": "Der Frauenanteil im Stadtrat beträgt {contribution, number} %.",
+			"input_prompt": "Wie viele Frauen sind im Stadtrat?",
+			"label": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag"
+		},
+		"women_in_leadership": {
+			"description": "Der Anteil von Frauen in Führungspositionen in der Verwaltung beträgt {contribution, number} %.",
+			"input_prompt": "Wie viele der Führungspositionen in der Verwaltung sind von Frauen besetzt?",
+			"label": "Anteil Frauen in Führungspositionen in der Verwaltung"
 		}
 	},
 	"read_more": "Mehr anzeigen",
@@ -189,8 +262,13 @@
 		"social_justice": "Soziale Gerechtigkeit"
 	},
 	"unit": {
+		"cubic_meter": "m³",
+		"euro": "€",
+		"kilowatt": "kW",
 		"kilowatt_hour": "kWh",
 		"kilometer": "km",
+		"percent": "%",
+		"per_100000": "pro 100.000",
 		"ton": "t"
 	}
 }
