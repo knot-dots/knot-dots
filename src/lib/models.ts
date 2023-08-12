@@ -289,31 +289,37 @@ const basePayload = z
 	})
 	.strict();
 
-const internalStrategyPayload = basePayload
+const internalObjectivesBasePayload = z.object({
+	description: z.string(),
+	summary: z.string().max(200).optional(),
+	title: z.string()
+});
+
+const internalStrategyPayload = internalObjectivesBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum['internal_objective.internal_strategy'])
 	})
 	.strict();
 
-const visionPayload = basePayload
+const visionPayload = internalObjectivesBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum['internal_objective.vision'])
 	})
 	.strict();
 
-const internalObjectiveStrategicGoalPayload = basePayload
+const internalObjectiveStrategicGoalPayload = internalObjectivesBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum['internal_objective.strategic_goal'])
 	})
 	.strict();
 
-const milestonePayload = basePayload
+const milestonePayload = internalObjectivesBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
 	})
 	.strict();
 
-const taskPayload = basePayload
+const taskPayload = internalObjectivesBasePayload
 	.extend({
 		taskStatus: taskStatus,
 		type: z.literal(payloadTypes.enum['internal_objective.task'])

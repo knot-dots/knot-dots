@@ -37,6 +37,13 @@
 		Topic
 	} from '$lib/models';
 	import type { PageData } from './$types';
+	import type {
+		EmptyInternalObjectiveStrategicGoalContainer,
+		EmptyInternalStrategyContainer,
+		EmptyMilestoneContainer,
+		EmptyTaskContainer,
+		EmptyVisionContainer
+	} from '$lib/models.js';
 
 	export let data: PageData;
 
@@ -70,6 +77,19 @@
 		const resource: [] = [];
 		const topic: Topic[] = [];
 		switch (type) {
+			case payloadTypes.enum['internal_objective.internal_strategy']:
+				return { ...base, payload: { type } } as EmptyInternalStrategyContainer;
+			case payloadTypes.enum['internal_objective.milestone']:
+				return { ...base, payload: { type } } as EmptyMilestoneContainer;
+			case payloadTypes.enum['internal_objective.strategic_goal']:
+				return {
+					...base,
+					payload: { type }
+				} as EmptyInternalObjectiveStrategicGoalContainer;
+			case payloadTypes.enum['internal_objective.task']:
+				return { ...base, payload: { type } } as EmptyTaskContainer;
+			case payloadTypes.enum['internal_objective.vision']:
+				return { ...base, payload: { type } } as EmptyVisionContainer;
 			case payloadTypes.enum.measure:
 				return { ...base, payload: { category, resource, topic, type } } as EmptyMeasureContainer;
 			case payloadTypes.enum.model:
