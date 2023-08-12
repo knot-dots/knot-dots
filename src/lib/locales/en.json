@@ -5,9 +5,9 @@
 	"boards": "Boards",
 	"cancel": "Cancel",
 	"category": "Category",
-	"comment": "Comment",
-	"collapse_sidebar": "Collapse sidebar",
 	"close_sidebar": "Close sidebar",
+	"collapse_sidebar": "Collapse sidebar",
+	"comment": "Comment",
 	"created_date": "Created at",
 	"delete": "Delete",
 	"description": "Description",
@@ -25,12 +25,12 @@
 	},
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
+	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
 	"information": "Information",
 	"indicator": {
 		"contribution": "Contribution to operative goal",
-		"fulfillment_date": "Fulfillment date",
 		"legend": "Indicator",
 		"okr": "OKR",
 		"quantity": "Quantity"
@@ -76,25 +76,98 @@
 	"planned_duration": "Planned duration",
 	"progress": "Progress",
 	"quantity": {
+		"broadband_coverage": {
+			"description": "{contribution, number} % of private households have access to broadband internet.",
+			"input_prompt": "How many private households will have access to broadband internet?",
+			"label": "broadband coverage — private households"
+		},
+		"charging_stations": {
+			"description": "There are {contribution, number} charging stations per 1.000 citizens.",
+			"input_prompt": "How many charging stations per 1.000 citizens will be there?",
+			"label": "charging stations"
+		},
 		"co2": {
 			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}} ",
 			"input_prompt": "How many tons of CO₂ will be saved?",
 			"label": "CO₂"
+		},
+		"co2_emissions_households": {
+			"description": "{contribution, number} tons of CO₂ are emitted per capita by private households.",
+			"input_prompt": "How many tons of CO₂ will be emitted per capita by private households?",
+			"label": "CO₂ emissions by private households"
+		},
+		"co2_emissions_industry": {
+			"description": "{contribution, number} tons of CO₂ are emitted per capita by industry, trade and services.",
+			"input_prompt": "How many tons of CO₂ will be emitted per capita by industry, trade and services?",
+			"label": "CO₂ emissions by industry, trade and services"
+		},
+		"co2_emissions_transport": {
+			"description": "{contribution, number} tons of CO₂ are emitted per capita by the transport sector.",
+			"input_prompt": "How many tons of CO₂ will be emitted per capita by the transport sector?",
+			"label": "CO₂ emissions by transport"
 		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {# kilometer of cycle paths will be built.} other {# kilometers of cycle paths will be built.}}",
 			"input_prompt": "How many kilometers of cycle paths will be built?",
 			"label": "cycle path"
 		},
+		"doctor_ratio": {
+			"description": "There are {contribution, number} doctors per 100,000 citizens.",
+			"input_prompt": "How much will the doctor ratio increase?",
+			"label": "doctor ratio"
+		},
+		"funding_culture_and_education": {
+			"description": "Cultural and educational institutions are funded with {contribution, number, ::currency/EUR} per citizen.",
+			"input_prompt": "How much is the funding for cultural and educational institutions?",
+			"label": "Funding of cultural and educational institutions per capita"
+		},
+		"general": {
+			"input_prompt_achieved": "Current achievement"
+		},
+		"organic_farming": {
+			"description": "{contribution, number} % of the total utilized agricultural area is used for organic farming.",
+			"input_prompt": "How much of the total utilized agricultural area will be used for organic farming.",
+			"label": "organic farming"
+		},
 		"parking_space": {
 			"description": "{contribution, plural, one {# parking spaces will be repurposed.} other {# parking spaces will be repurposed.}}",
 			"input_prompt": "How many parking spaces will be repurposed?",
 			"label": "repurposed parking spaces"
 		},
+		"renewable_energy": {
+			"description": "{contribution, number} kilowatt of renewable energy are generated per capita.",
+			"input_prompt": "How many kilowatt of renewable energy will be generated?",
+			"label": "renewable energy"
+		},
+		"social_housing": {
+			"description": "The number of social housing units is {contribution, number}.",
+			"input_prompt": "How many units of social housing will be created?",
+			"label": "social housing"
+		},
 		"solar_energy": {
 			"description": "{contribution, plural, one {# kilowatt hour  of solar energy has been generated.} other {# kilowatt hours of solar energy have been generated.}}",
 			"input_prompt": "How many kilowatt hours of solar energy will be generated?",
 			"label": "solar energy"
+		},
+		"waste_generation": {
+			"description": "{contribution, number} tons of wate are generated per capita.",
+			"input_prompt": "How much waste per capita will be generated?",
+			"label": "generation of municipal waste per capita"
+		},
+		"water_consumption": {
+			"description": "The water consumption per capita is {contribution, number} cubic meters.",
+			"input_prompt": "How many cubic meters of water will be consumed?",
+			"label": "water consumption per capita"
+		},
+		"women_in_elective_office": {
+			"description": "The proportion of women in elective office is {contribution, number} %.",
+			"input_prompt": "What is the proportion of women in elective office?",
+			"label": "proportion of women in elective office"
+		},
+		"women_in_leading_positions": {
+			"description": "The proportion of women in leading positions within the administration is {contribution, number} %.",
+			"input_prompt": "What is the proportion of women in leading positions within the administration?",
+			"label": "proportion of women in leading positions within the administration"
 		}
 	},
 	"read_more": "Read more",
@@ -189,8 +262,13 @@
 		"social_justice": "Social justice"
 	},
 	"unit": {
-		"kilowatt_hour": "kWh",
+		"cubic_meter": "m³",
+		"euro": "€",
 		"kilometer": "km",
+		"kilowatt": "kW",
+		"kilowatt_hour": "kWh",
+		"percent": "%",
+		"per_100000": "per 100,000",
 		"ton": "t"
 	}
 }

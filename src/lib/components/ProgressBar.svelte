@@ -109,11 +109,6 @@
 	{#if indicator.quantity && !compact}
 		<div class="quantity">{$_(`${indicator.quantity}.label`)}</div>
 	{/if}
-	{#if indicator.fulfillmentDate && !compact}
-		<div class="fulfillmentDate">
-			{$_('indicator.fulfillment_date')}: {new Date(indicator.fulfillmentDate).toLocaleDateString()}
-		</div>
-	{/if}
 </div>
 
 <style>
@@ -155,9 +150,5 @@
 		background-color: var(--color-blue-600);
 		display: block;
 		height: 100%;
-	}
-
-	.fulfillmentDate {
-		flex: 0 0 100%;
 	}
 </style>

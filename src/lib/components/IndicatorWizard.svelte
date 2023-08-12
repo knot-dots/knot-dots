@@ -50,7 +50,7 @@
 		{/each}
 	</select>
 	{#if indicator.length > 0 && 'quantity' in indicator[0]}
-		<span class:input-with-addon={unit}>
+		<div class:input-with-addon={unit}>
 			<input
 				type="text"
 				inputmode="numeric"
@@ -62,14 +62,7 @@
 			{#if unit}
 				<span class="addon">{$_(unit)}</span>
 			{/if}
-		</span>
-		<input
-			type="date"
-			name="indicator-fulfillmentDate"
-			bind:value={indicator[0].fulfillmentDate}
-			readonly={locked}
-			required
-		/>
+		</div>
 	{:else if indicator.length > 0}
 		<input
 			type="range"
@@ -90,8 +83,10 @@
 		width: initial;
 	}
 
-	input[type='date'] {
-		display: inline-flex;
+	select {
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	input[name='indicator-max'] {
@@ -100,7 +95,8 @@
 	}
 
 	.input-with-addon {
-		display: inline-flex;
+		display: flex;
+		margin-top: 0.875rem;
 	}
 
 	.input-with-addon input {
@@ -117,7 +113,7 @@
 		border-top-right-radius: 8px;
 		color: var(--color-gray-900);
 		display: inline-flex;
-		margin: 0.125rem 0;
+		margin: 0;
 		padding: 0 0.75rem;
 	}
 </style>

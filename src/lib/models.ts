@@ -213,10 +213,23 @@ export function isTopic(value: unknown): value is Topic {
 }
 
 const quantityValues = [
+	'quantity.broadband_coverage',
+	'quantity.charging_stations',
 	'quantity.co2',
+	'quantity.co2_emissions_households',
+	'quantity.co2_emissions_industry',
+	'quantity.co2_emissions_transport',
 	'quantity.cycle_path',
+	'quantity.organic_farming',
 	'quantity.parking_space',
-	'quantity.solar_energy'
+	'quantity.doctor_ratio',
+	'quantity.funding_culture_and_education',
+	'quantity.women_in_elective_office',
+	'quantity.women_in_leadership',
+	'quantity.renewable_energy',
+	'quantity.solar_energy',
+	'quantity.waste_generation',
+	'quantity.water_consumption'
 ] as const;
 
 export const quantities = z.enum(quantityValues);
@@ -227,7 +240,16 @@ export function isQuantity(value: unknown): value is Quantity {
 	return quantityValues.includes(value as Quantity);
 }
 
-const unitValues = ['unit.kilowatt_hour', 'unit.kilometer', 'unit.ton'] as const;
+const unitValues = [
+	'unit.cubic_meter',
+	'unit.euro',
+	'unit.kilowatt',
+	'unit.kilowatt_hour',
+	'unit.kilometer',
+	'unit.percent',
+	'unit.per_100000',
+	'unit.ton'
+] as const;
 
 export const units = z.enum(unitValues);
 
@@ -238,9 +260,21 @@ export function isUnit(value: unknown): value is Unit {
 }
 
 export const unitByQuantity = new Map<Quantity, Unit>([
+	[quantities.enum['quantity.broadband_coverage'], units.enum['unit.percent']],
 	[quantities.enum['quantity.co2'], units.enum['unit.ton']],
+	[quantities.enum['quantity.co2_emissions_households'], units.enum['unit.ton']],
+	[quantities.enum['quantity.co2_emissions_industry'], units.enum['unit.ton']],
+	[quantities.enum['quantity.co2_emissions_transport'], units.enum['unit.ton']],
 	[quantities.enum['quantity.cycle_path'], units.enum['unit.kilometer']],
-	[quantities.enum['quantity.solar_energy'], units.enum['unit.kilowatt_hour']]
+	[quantities.enum['quantity.organic_farming'], units.enum['unit.percent']],
+	[quantities.enum['quantity.doctor_ratio'], units.enum['unit.per_100000']],
+	[quantities.enum['quantity.funding_culture_and_education'], units.enum['unit.euro']],
+	[quantities.enum['quantity.women_in_elective_office'], units.enum['unit.percent']],
+	[quantities.enum['quantity.women_in_leadership'], units.enum['unit.percent']],
+	[quantities.enum['quantity.renewable_energy'], units.enum['unit.kilowatt']],
+	[quantities.enum['quantity.solar_energy'], units.enum['unit.kilowatt_hour']],
+	[quantities.enum['quantity.waste_generation'], units.enum['unit.ton']],
+	[quantities.enum['quantity.water_consumption'], units.enum['unit.cubic_meter']]
 ]);
 
 export const relation = z.object({
@@ -270,10 +304,6 @@ const indicator = z.object({
 	max: z.coerce.number().nonnegative(),
 	min: z.coerce.number().nonnegative(),
 	quantity: z.string().optional(),
-	fulfillmentDate: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional(),
 	value: z.number().nonnegative().optional()
 });
 
@@ -315,6 +345,10 @@ const internalObjectiveStrategicGoalPayload = internalObjectivesBasePayload
 
 const milestonePayload = internalObjectivesBasePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		progress: z.number().nonnegative(),
 		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
 	})
@@ -322,6 +356,10 @@ const milestonePayload = internalObjectivesBasePayload
 
 const taskPayload = internalObjectivesBasePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		taskStatus: taskStatus,
 		type: z.literal(payloadTypes.enum['internal_objective.task'])
 	})
@@ -365,6 +403,10 @@ const modelPayload = basePayload
 
 const operationalGoalPayload = basePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		indicator: z.array(indicator).max(1),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})

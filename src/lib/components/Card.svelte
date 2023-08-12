@@ -2,6 +2,7 @@
 	import { Icon, LightBulb, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import type { Container } from '$lib/models';
 	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
@@ -88,6 +89,8 @@
 				contributors={relatedContainers}
 				compact
 			/>
+		{:else if 'progress' in container.payload}
+			<Progress value={container.payload.progress} compact />
 		{:else if 'status' in container.payload}
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
 				<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
