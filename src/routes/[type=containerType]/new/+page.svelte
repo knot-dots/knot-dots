@@ -15,7 +15,7 @@
 		isEmptyInternalStrategyContainer,
 		isEmptyMeasureContainer,
 		isEmptyModelContainer,
-		isEmptyOkrContainer,
+		isEmptyMilestoneContainer,
 		isEmptyOperationalGoalContainer,
 		isEmptyStrategicGoalContainer,
 		isEmptyStrategyContainer,
@@ -107,9 +107,9 @@
 					detail.result.revision
 				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
 			);
-		} else if (detail.event.submitter?.id === 'save-and-create-okr') {
+		} else if (detail.event.submitter?.id === 'save-and-create-milestone') {
 			await goto(
-				`/internal_objective.okr/new?is-part-of=${
+				`/internal_objective.milestone/new?is-part-of=${
 					detail.result.revision
 				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
 			);
@@ -178,12 +178,12 @@
 {:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
 	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-okr">
-				{$_('save_and_create_okr')}
+			<button id="save-and-create-milestone">
+				{$_('save_and_create_milestone')}
 			</button>
 		</svelte:fragment>
 	</InternalObjectiveForm>
-{:else if isEmptyOkrContainer(container)}
+{:else if isEmptyMilestoneContainer(container)}
 	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">

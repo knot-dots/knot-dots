@@ -43,10 +43,10 @@
 				{$_('superordinate_internal_strategies')}
 			{:else if container.payload.type === payloadTypes.enum['internal_objective.strategic_goal']}
 				{$_('superordinate_visions')}
-			{:else if container.payload.type === payloadTypes.enum['internal_objective.okr']}
+			{:else if container.payload.type === payloadTypes.enum['internal_objective.milestone']}
 				{$_('superordinate_strategic_goals')}
 			{:else if container.payload.type === payloadTypes.enum['internal_objective.task']}
-				{$_('superordinate_okrs')}
+				{$_('superordinate_milestones')}
 			{/if}
 		</legend>
 		{#each isPartOfOptions as option}

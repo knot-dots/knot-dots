@@ -387,10 +387,10 @@ export function maybePartOf(containerType: PayloadType) {
 			candidateType = ['internal_objective.internal_strategy'];
 		} else if (containerType == 'internal_objective.strategic_goal') {
 			candidateType = ['internal_objective.vision'];
-		} else if (containerType == 'internal_objective.okr') {
+		} else if (containerType == 'internal_objective.milestone') {
 			candidateType = ['internal_objective.strategic_goal'];
 		} else if (containerType == 'internal_objective.task') {
-			candidateType = ['internal_objective.okr'];
+			candidateType = ['internal_objective.milestone'];
 		} else {
 			return [];
 		}
@@ -724,7 +724,7 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.okr', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.milestone', 'text')
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
 			FULL JOIN

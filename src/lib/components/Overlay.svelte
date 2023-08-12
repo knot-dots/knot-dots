@@ -18,7 +18,7 @@
 		isInternalStrategyContainer,
 		isMeasureContainer,
 		isModelContainer,
-		isOkrContainer,
+		isMilestoneContainer,
 		isOperationalGoalContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
@@ -126,7 +126,7 @@
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveForm>
-		{:else if isOkrContainer(container)}
+		{:else if isMilestoneContainer(container)}
 			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
