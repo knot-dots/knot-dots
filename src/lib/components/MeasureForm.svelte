@@ -12,9 +12,12 @@
 		MeasureContainer,
 		OperationalGoalContainer
 	} from '$lib/models';
+	import { page } from '$app/stores';
 
 	export let container: MeasureContainer | EmptyMeasureContainer;
 	export let isPartOfOptions: Container[];
+
+	let statusParam = $page.url.searchParams.get('status') ?? status.enum['status.idea'];
 
 	let relatedContainers: OperationalGoalContainer[];
 
@@ -102,7 +105,7 @@
 			{$_('status.label')}
 			<select name="status" bind:value={container.payload.status} required>
 				{#each status.options as statusOption}
-					<option value={statusOption}>
+					<option value={statusOption} selected={statusOption === statusParam}>
 						{$_(statusOption)}
 					</option>
 				{/each}
