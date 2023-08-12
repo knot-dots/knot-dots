@@ -50,7 +50,7 @@
 		{/each}
 	</select>
 	{#if indicator.length > 0 && 'quantity' in indicator[0]}
-		<span class:input-with-addon={unit}>
+		<div class:input-with-addon={unit}>
 			<input
 				type="text"
 				inputmode="numeric"
@@ -62,7 +62,7 @@
 			{#if unit}
 				<span class="addon">{$_(unit)}</span>
 			{/if}
-		</span>
+		</div>
 	{:else if indicator.length > 0}
 		<input
 			type="range"
@@ -83,13 +83,20 @@
 		width: initial;
 	}
 
+	select {
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
 	input[name='indicator-max'] {
 		text-align: right;
 		width: 6em;
 	}
 
 	.input-with-addon {
-		display: inline-flex;
+		display: flex;
+		margin-top: 0.875rem;
 	}
 
 	.input-with-addon input {
