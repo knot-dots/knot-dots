@@ -73,6 +73,7 @@
 	"operational_goals": "Operational goals",
 	"page_title": "StrategyTool",
 	"planned_duration": "Planned duration",
+	"progress": "Progress",
 	"quantity": {
 		"co2": {
 			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}} ",

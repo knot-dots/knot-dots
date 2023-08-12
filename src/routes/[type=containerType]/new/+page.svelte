@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
 	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
@@ -74,13 +75,14 @@
 		const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];
+		const progress = 0;
 		const resource: [] = [];
 		const topic: Topic[] = [];
 		switch (type) {
 			case payloadTypes.enum['internal_objective.internal_strategy']:
 				return { ...base, payload: { type } } as EmptyInternalStrategyContainer;
 			case payloadTypes.enum['internal_objective.milestone']:
-				return { ...base, payload: { type } } as EmptyMilestoneContainer;
+				return { ...base, payload: { progress, type } } as EmptyMilestoneContainer;
 			case payloadTypes.enum['internal_objective.strategic_goal']:
 				return {
 					...base,
@@ -204,13 +206,13 @@
 		</svelte:fragment>
 	</InternalObjectiveForm>
 {:else if isEmptyMilestoneContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveMilestoneForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">
 				{$_('save_and_create_task')}
 			</button>
 		</svelte:fragment>
-	</InternalObjectiveForm>
+	</InternalObjectiveMilestoneForm>
 {:else if isEmptyTaskContainer(container)}
 	<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {/if}

@@ -73,6 +73,7 @@
 	"operational_goals": "Operative Ziele",
 	"page_title": "Strategie-Werkzeug",
 	"planned_duration": "Geplante Laufzeit",
+	"progress": "Fortschritt",
 	"quantity": {
 		"co2": {
 			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}} ",

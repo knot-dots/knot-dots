@@ -315,6 +315,7 @@ const internalObjectiveStrategicGoalPayload = internalObjectivesBasePayload
 
 const milestonePayload = internalObjectivesBasePayload
 	.extend({
+		progress: z.number().nonnegative(),
 		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
 	})
 	.strict();

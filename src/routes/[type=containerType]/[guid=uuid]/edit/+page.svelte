@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
 	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
@@ -164,13 +165,13 @@
 		</svelte:fragment>
 	</InternalObjectiveForm>
 {:else if isMilestoneContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveMilestoneForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">
 				{$_('save_and_create_task')}
 			</button>
 		</svelte:fragment>
-	</InternalObjectiveForm>
+	</InternalObjectiveMilestoneForm>
 {:else if isTaskContainer(container)}
 	<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {/if}
