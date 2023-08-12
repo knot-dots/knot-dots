@@ -23,6 +23,14 @@
 			</select>
 		</label>
 	</svelte:fragment>
+
+	<svelte:fragment slot="extra-meta">
+		<label>
+			{$_('fulfillment_date')}
+			<input type="date" bind:value={container.payload.fulfillmentDate} />
+		</label>
+	</svelte:fragment>
+
 	<slot slot="extra-buttons">
 		<slot name="extra-buttons" />
 	</slot>

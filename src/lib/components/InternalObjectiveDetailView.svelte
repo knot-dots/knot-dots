@@ -71,6 +71,14 @@
 						</p>
 					</div>
 				{/if}
+				{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
+					<div class="meta">
+						<h3 class="meta-key">{$_('fulfillment_date')}</h3>
+						<p class="meta-value">
+							{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+						</p>
+					</div>
+				{/if}
 				<div class="meta">
 					<h3 class="meta-key">{$_('created_date')}</h3>
 					<ul class="meta-value">

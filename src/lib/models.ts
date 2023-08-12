@@ -345,6 +345,10 @@ const internalObjectiveStrategicGoalPayload = internalObjectivesBasePayload
 
 const milestonePayload = internalObjectivesBasePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		progress: z.number().nonnegative(),
 		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
 	})
@@ -352,6 +356,10 @@ const milestonePayload = internalObjectivesBasePayload
 
 const taskPayload = internalObjectivesBasePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		taskStatus: taskStatus,
 		type: z.literal(payloadTypes.enum['internal_objective.task'])
 	})

@@ -4,7 +4,7 @@
 	import type {
 		Container,
 		EmptyInternalObjectiveContainer,
-		InternalObjectiveContainer,
+		InternalObjectiveContainer
 	} from '$lib/models';
 	import Editor from '$lib/components/Editor.svelte';
 	import RelationSelector from './RelationSelector.svelte';
@@ -24,6 +24,7 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
+		<slot name="extra-meta" />
 		<RelationSelector {container} {isPartOfOptions} />
 	</svelte:fragment>
 
