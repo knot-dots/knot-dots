@@ -44,7 +44,7 @@
 {#key data.pathname}
 	<div in:fly={transitionIn} out:fly={transitionOut}>
 		<Sidebar />
-		<main class:board-layout={'overlayData' in $page.data}>
+		<main>
 			<slot />
 		</main>
 	</div>
