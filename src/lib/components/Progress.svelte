@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let compact = false;
 	export let value = 0;
 </script>
 
@@ -9,9 +10,12 @@
 		: value > 0.3
 		? 'var(--color-yellow-200)'
 		: 'var(--color-red-600)'}
+	class:compact
 />
 
-{value * 100} %
+{#if !compact}
+	{value * 100} %
+{/if}
 
 <style>
 	progress {
@@ -37,5 +41,9 @@
 
 	progress::-moz-progress-bar {
 		background-color: var(--color, var(--color-gray-200));
+	}
+
+	.compact {
+		width: 100%;
 	}
 </style>
