@@ -104,9 +104,9 @@
 </article>
 
 <style>
-	progress,
-	progress::-webkit-progress-bar {
+	progress {
 		--height: 6px;
+
 		appearance: none;
 		background-color: var(--color-gray-200);
 		border: none;
@@ -117,7 +117,14 @@
 		vertical-align: middle;
 	}
 
-	progress::-webkit-progress-value,
+	progress::-webkit-progress-bar {
+		background-color: inherit;
+	}
+
+	progress::-webkit-progress-value {
+		background-color: var(--color, var(--color-gray-200));
+	}
+
 	progress::-moz-progress-bar {
 		background-color: var(--color, var(--color-gray-200));
 	}
