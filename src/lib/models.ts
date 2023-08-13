@@ -414,9 +414,11 @@ const operationalGoalPayload = basePayload
 	.strict();
 
 const organizationPayload = z.object({
+	default: z.boolean(),
 	description: z.string(),
 	image: z.string().url().optional(),
 	name: z.string(),
+	slug: z.string(),
 	type: z.literal(payloadTypes.enum.organization)
 });
 
