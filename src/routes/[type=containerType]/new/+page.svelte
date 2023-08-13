@@ -75,7 +75,12 @@
 		);
 
 	$: container = ((type: PayloadType) => {
-		const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
+		const base = {
+			organization: $page.data.currentOrganization.guid,
+			realm: env.PUBLIC_KC_REALM,
+			relation: selected,
+			user: []
+		};
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];
 		const progress = 0;

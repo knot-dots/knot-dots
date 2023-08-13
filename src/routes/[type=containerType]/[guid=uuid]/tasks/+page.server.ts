@@ -13,7 +13,10 @@ export const load = (async ({ locals, params, url }) => {
 	const containers = await locals.pool.connect(
 		getAllContainersRelatedToMeasure(
 			container.revision,
-			{ terms: url.searchParams.get('terms') ?? '', type: 'internal_objective.task' },
+			{
+				terms: url.searchParams.get('terms') ?? '',
+				type: 'internal_objective.task'
+			},
 			url.searchParams.get('sort') ?? ''
 		)
 	);
@@ -22,7 +25,7 @@ export const load = (async ({ locals, params, url }) => {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(maybePartOf(container.payload.type)),
+			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
 			locals.pool.connect(
 				getAllRelatedInternalObjectives(params.guid, url.searchParams.get('sort') ?? '')
 			)

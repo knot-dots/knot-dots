@@ -6,16 +6,23 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, url }) => {
+export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	let overlayData;
+	const { currentOrganization } = await parent();
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedContainers(url.searchParams.get('related-to') as string, {}, '')
+			getAllRelatedContainers(
+				currentOrganization.payload.default ? [] : [currentOrganization.guid],
+				url.searchParams.get('related-to') as string,
+				{},
+				''
+			)
 		);
 	} else {
 		containers = await locals.pool.connect(
 			getManyContainers(
+				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
 					categories: url.searchParams.getAll('category'),
 					topics: url.searchParams.getAll('topic'),
@@ -32,8 +39,8 @@ export const load = (async ({ locals, url }) => {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(maybePartOf(container.payload.type)),
-			locals.pool.connect(getAllRelatedContainers(guid, {}, ''))
+			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
+			locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))
 		]);
 		overlayData = {
 			isPartOfOptions,

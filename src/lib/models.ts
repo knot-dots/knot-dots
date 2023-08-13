@@ -447,6 +447,7 @@ const textPayload = z
 
 export const container = z.object({
 	guid: z.string().uuid(),
+	organization: z.string().uuid(),
 	payload: z.discriminatedUnion('type', [
 		internalStrategyPayload,
 		visionPayload,

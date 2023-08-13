@@ -3,11 +3,11 @@ import { browser } from '$app/environment';
 import '$lib/i18n'; // Import to initialize. Important :)
 import type { LayoutLoad } from './$types';
 
-export const load: LayoutLoad = async ({ url }) => {
+export const load: LayoutLoad = async ({ url, data }) => {
 	if (browser) {
 		locale.set(window.navigator.language);
 	}
 	await waitLocale();
 
-	return { pathname: url.pathname };
+	return { ...data, pathname: url.pathname };
 };

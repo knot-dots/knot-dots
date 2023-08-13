@@ -58,6 +58,7 @@ services:
       - PGHOST
       - PGPASSWORD
       - PGUSER
+      - PUBLIC_BASE_URL
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
@@ -83,6 +84,7 @@ services:
       - PGHOST
       - PGPASSWORD
       - PGUSER
+      - PUBLIC_BASE_URL
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
