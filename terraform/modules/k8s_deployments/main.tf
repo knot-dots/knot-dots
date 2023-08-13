@@ -222,6 +222,16 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           env {
+            name  = "KC_SERVICE_ACCOUNT_CLIENT_ID"
+            value = var.keycloak_service_account_client_id
+          }
+
+          env {
+            name  = "KC_SERVICE_ACCOUNT_CLIENT_SECRET"
+            value = var.keycloak_service_account_client_secret
+          }
+
+          env {
             name  = "KC_URL"
             value = "https://${var.keycloak_host}"
           }
@@ -249,6 +259,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
           env {
             name  = "PGUSER"
             value = var.databases["strategytool"].db_user
+          }
+
+          env {
+            name  = "PUBLIC_KC_BASE_URL"
+            value = "https://${var.strategytool_host}"
           }
 
           env {

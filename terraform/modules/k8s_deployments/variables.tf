@@ -25,6 +25,14 @@ variable "keycloak_realm" {
   type = string
 }
 
+variable "keycloak_service_account_client_secret" {
+  type = string
+}
+
+variable "keycloak_service_account_client_id" {
+  type = string
+}
+
 variable "migrate_image" {
   type = string
 }
