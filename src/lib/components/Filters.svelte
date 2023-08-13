@@ -11,7 +11,7 @@
 	{#each options as [label, value]}
 		<li>
 			<label>
-				<input type="checkbox" name="filters" {value} bind:group={selectedOptions} />
+				<input type="checkbox" name="filters" {value} bind:group={selectedOptions} on:change />
 				{label}
 			</label>
 		</li>
