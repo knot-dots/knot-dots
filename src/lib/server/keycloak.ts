@@ -39,3 +39,66 @@ export async function createOrganization(name: string) {
 		.uuid()
 		.parse(response.headers.get('Location')?.split('/').pop());
 }
+
+const client = z.intersection(
+	z.record(z.string(), z.unknown()),
+	z.object({
+		id: z.string().uuid(),
+		redirectUris: z.array(z.string()),
+		webOrigins: z.array(z.string())
+	})
+);
+
+type Client = z.infer<typeof client>;
+
+function urlFromSlug(slug: string) {
+	const url = new URL(env.PUBLIC_BASE_URL ?? '');
+	url.hostname = `${slug}.${url.hostname}`;
+	url.pathname = '/*';
+	return url;
+}
+
+export async function updateAccessSettings(slug: string) {
+	const token = await getToken();
+
+	const getResponse = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients?clientId=${env.PUBLIC_KC_CLIENT_ID}`,
+		{
+			headers: {
+				Authorization: `Bearer ${token}`
+			}
+		}
+	);
+	if (!getResponse.ok) {
+		throw new Error(
+			`Failed to fetch representation of client ${env.PUBLIC_KC_CLIENT_ID} in realm. Keycloak responded with ${getResponse.status}`
+		);
+	}
+
+	const data: Client[] = z.array(client).parse(await getResponse.json());
+	if (data.length == 0) {
+		throw new Error(
+			`Failed to fetch representation of client ${env.PUBLIC_KC_CLIENT_ID} in realm. Wrong client id`
+		);
+	}
+
+	data[0].webOrigins.push(urlFromSlug(slug).origin);
+	data[0].redirectUris.push(urlFromSlug(slug).href);
+
+	const putResponse = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients/${data[0].id}`,
+		{
+			body: JSON.stringify(data[0]),
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},
+			method: 'PUT'
+		}
+	);
+	if (!putResponse.ok) {
+		throw new Error(
+			`Failed to update settings of client ${env.PUBLIC_KC_CLIENT_ID} in realm. Keycloak responded with ${putResponse.status}`
+		);
+	}
+}

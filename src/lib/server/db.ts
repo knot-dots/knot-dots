@@ -24,7 +24,7 @@ import type {
 	PayloadType,
 	Relation
 } from '$lib/models';
-import { createOrganization } from '$lib/server/keycloak';
+import { createOrganization, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
