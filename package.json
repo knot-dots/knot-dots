@@ -57,6 +57,7 @@
 		"roarr": "^7.15.0",
 		"serialize-error": "^11.0.0",
 		"slonik": "^34.0.1",
+		"slonik-interceptor-query-logging": "^1.4.7",
 		"unified": "^10.1.2",
 		"uuid": "^9.0.0",
 		"zod": "^3.21.4"
