@@ -1,3 +1,10 @@
+variable "cert_manager_api_key" {
+  type = object({
+    access_key = string
+    secret_key = string
+  })
+}
+
 variable "databases" {
   type = map(object({
     db_host     = string

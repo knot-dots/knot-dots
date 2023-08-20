@@ -90,6 +90,14 @@ resource "scaleway_iam_api_key" "registry_password" {
   application_id = data.scaleway_iam_application.kapsule.id
 }
 
+data "scaleway_iam_application" "cert_manager" {
+  application_id = "d6b54a86-4e7b-49ad-805f-a0d8ab2bb564"
+}
+
+resource "scaleway_iam_api_key" "cert_manager" {
+  application_id = data.scaleway_iam_application.cert_manager.id
+}
+
 resource "scaleway_iam_application" "strategytool" {
   name        = "StrategyTool"
   description = ""
@@ -130,6 +138,23 @@ resource "scaleway_domain_record" "strategytool" {
   //noinspection HILUnresolvedReference
   data = module.k8s_deployments.load_balancer_ip
   ttl  = 3600
+}
+
+resource "scaleway_domain_record" "strategytool_wildcard" {
+  count = var.with_scaleway_lb ? 1 : 0
+
+  dns_zone = scaleway_domain_zone.dev[count.index].id
+  name     = "*.strategytool"
+  type     = "CNAME"
+  //noinspection HILUnresolvedReference
+  data = "${scaleway_domain_record.strategytool[count.index].name}.${scaleway_domain_zone.dev[count.index].subdomain}.${scaleway_domain_zone.dev[count.index].domain}."
+  ttl  = 3600
+
+  lifecycle {
+    ignore_changes = [
+      ttl,
+    ]
+  }
 }
 
 resource "scaleway_domain_record" "keycloak" {
@@ -191,6 +216,7 @@ module "k8s_deployments" {
   registry_password                      = scaleway_iam_api_key.registry_password.secret_key
   registry_server                        = "rg.fr-par.scw.cloud"
   registry_username                      = "knot-dots"
+  cert_manager_api_key                   = scaleway_iam_api_key.cert_manager
   keycloak_host                          = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
   keycloak_image                         = var.keycloak_image
   keycloak_realm                         = "knot-dots"
