@@ -3,11 +3,12 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Progress from '$lib/components/Progress.svelte';
-	import { isMeasureContainer, type Container } from '$lib/models';
+	import { isMeasureContainer } from '$lib/models';
+	import type { AnyContainer, Container } from '$lib/models';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
-	export let revisions: Container[];
+	export let revisions: AnyContainer[];
 
 	$: measure = isMeasureContainer(container)
 		? container

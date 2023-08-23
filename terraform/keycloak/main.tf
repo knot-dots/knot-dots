@@ -124,3 +124,44 @@ resource "keycloak_openid_client" "strategytool" {
   ]
 }
 
+data "keycloak_openid_client" "realm_management" {
+  realm_id  = keycloak_realm.knot_dots.id
+  client_id = "realm-management"
+}
+
+data "keycloak_role" "manage_clients" {
+  realm_id  = keycloak_realm.knot_dots.id
+  client_id = data.keycloak_openid_client.realm_management.id
+  name      = "manage-clients"
+}
+
+data "keycloak_role" "manage_users" {
+  realm_id  = keycloak_realm.knot_dots.id
+  client_id = data.keycloak_openid_client.realm_management.id
+  name      = "manage-users"
+}
+
+resource "keycloak_openid_client" "strategytool_service_account" {
+  realm_id  = keycloak_realm.knot_dots.id
+  client_id = "strategytool-backend"
+  name      = "StrategyTool backend"
+  enabled   = true
+
+  access_type              = "CONFIDENTIAL"
+  standard_flow_enabled    = false
+  service_accounts_enabled = true
+}
+
+resource "keycloak_openid_client_service_account_role" "strategytool_manage_clients" {
+  realm_id                = keycloak_realm.knot_dots.id
+  service_account_user_id = keycloak_openid_client.strategytool_service_account.service_account_user_id
+  client_id               = data.keycloak_openid_client.realm_management.id
+  role                    = data.keycloak_role.manage_clients.name
+}
+
+resource "keycloak_openid_client_service_account_role" "strategytool_manage_users" {
+  realm_id                = keycloak_realm.knot_dots.id
+  service_account_user_id = keycloak_openid_client.strategytool_service_account.service_account_user_id
+  client_id               = data.keycloak_openid_client.realm_management.id
+  role                    = data.keycloak_role.manage_users.name
+}

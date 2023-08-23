@@ -1,3 +1,10 @@
+variable "cert_manager_api_key" {
+  type = object({
+    access_key = string
+    secret_key = string
+  })
+}
+
 variable "databases" {
   type = map(object({
     db_host     = string
@@ -22,6 +29,14 @@ variable "keycloak_name" {
 }
 
 variable "keycloak_realm" {
+  type = string
+}
+
+variable "keycloak_service_account_client_secret" {
+  type = string
+}
+
+variable "keycloak_service_account_client_id" {
   type = string
 }
 

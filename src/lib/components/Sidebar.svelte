@@ -10,7 +10,6 @@
 		PencilSquare,
 		Share
 	} from 'svelte-hero-icons';
-	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Filters from '$lib/components/Filters.svelte';
@@ -22,6 +21,7 @@
 	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import {
+		isContainer,
 		isStrategyContainer,
 		payloadTypes,
 		strategyTypes,
@@ -51,9 +51,7 @@
 		selectedPayloadType.length > 0;
 	$sortToggle = selectedSort != 'modified';
 
-	const hash = $page.url.hash;
-
-	$: if (browser && 'overlayData' in $page.data) {
+	function applySortAndFilters() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
 		query.delete('strategyType');
@@ -65,14 +63,14 @@
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
 		}
-		goto(`?${query.toString()}${hash}`, { keepFocus: true });
+		goto(`?${query.toString()}`, { keepFocus: true });
 	}
 
-	$: if (browser && 'container' in $page.data && isStrategyContainer($page.data.container)) {
+	function applyPayloadTypeFilter() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('payloadType');
 		selectedPayloadType.forEach((t) => query.append('payloadType', t));
-		goto(`?${query.toString()}${hash}`, { keepFocus: true, replaceState: true });
+		goto(`?${query.toString()})`, { keepFocus: true, replaceState: true });
 	}
 
 	function debouncedSearch() {
@@ -127,7 +125,7 @@
 		</li>
 	</ul>
 
-	{#if 'container' in $page.data}
+	{#if 'container' in $page.data && isContainer($page.data.container)}
 		<ul class="group group-tabs">
 			<li>
 				<a
@@ -212,6 +210,7 @@
 								label={$_('strategy_type.label')}
 								options={strategyTypes.options.map((o) => [$_(o), o])}
 								bind:selectedOptions={selectedStrategyType}
+								on:change={applySortAndFilters}
 							/>
 						</li>
 						<li>
@@ -219,6 +218,7 @@
 								label={$_('topic.label')}
 								options={topics.options.map((o) => [$_(o), o])}
 								bind:selectedOptions={selectedTopic}
+								on:change={applySortAndFilters}
 							/>
 						</li>
 						<li>
@@ -226,6 +226,7 @@
 								label={$_('category')}
 								options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
 								bind:selectedOptions={selectedCategory}
+								on:change={applySortAndFilters}
 							/>
 						</li>
 					</ul>
@@ -235,20 +236,30 @@
 				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
 					<SortDescendingIcon class="icon-20" />
 					<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
-					<span class:is-hidden={!$sidebarToggle}
-						><Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" /></span
-					>
+					<span class:is-hidden={!$sidebarToggle}>
+						<Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" />
+					</span>
 				</button>
 				<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
 					<li>
 						<label>
-							<input type="radio" value={'modified'} bind:group={selectedSort} />
+							<input
+								type="radio"
+								value={'modified'}
+								bind:group={selectedSort}
+								on:change={applySortAndFilters}
+							/>
 							{$_('sort_modified')}
 						</label>
 					</li>
 					<li>
 						<label>
-							<input type="radio" value={'alpha'} bind:group={selectedSort} />
+							<input
+								type="radio"
+								value={'alpha'}
+								bind:group={selectedSort}
+								on:change={applySortAndFilters}
+							/>
 							{$_('sort_alphabetically')}
 						</label>
 					</li>
@@ -280,6 +291,7 @@
 								.filter((o) => o !== payloadTypes.enum.strategy)
 								.map((o) => [$_(o), o])}
 							bind:selectedOptions={selectedPayloadType}
+							on:change={applyPayloadTypeFilter}
 						/>
 					</li>
 				</ul>

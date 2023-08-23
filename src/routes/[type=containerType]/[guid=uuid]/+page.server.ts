@@ -24,7 +24,7 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ params, locals, url }) => {
+export const load = (async ({ params, locals, url, parent }) => {
 	let revisions;
 	let strategyOverlayData;
 
@@ -38,16 +38,20 @@ export const load = (async ({ params, locals, url }) => {
 		}
 	}
 
+	const container = revisions[revisions.length - 1];
+
 	let relatedContainers: Container[];
 	if (params.type.includes('internal_objective')) {
 		relatedContainers = await locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ''));
 	} else {
-		relatedContainers = await locals.pool.connect(getAllRelatedContainers(params.guid, {}, ''));
+		relatedContainers = await locals.pool.connect(
+			getAllRelatedContainers([container.organization], params.guid, {}, '')
+		);
 	}
 
 	if (url.searchParams.has('edit')) {
 		strategyOverlayData = {
-			container: revisions[revisions.length - 1],
+			container,
 			isPartOfOptions: [],
 			relatedContainers,
 			revisions
@@ -58,7 +62,9 @@ export const load = (async ({ params, locals, url }) => {
 			(c) => url.searchParams.get('container-preview') == c.guid
 		) as Container;
 		const [isPartOfOptions, revisions] = await Promise.all([
-			locals.pool.connect(maybePartOf(selectedContainer.payload.type)),
+			locals.pool.connect(
+				maybePartOf(selectedContainer.organization, selectedContainer.payload.type)
+			),
 			locals.pool.connect(getAllContainerRevisionsByGuid(guid))
 		]);
 		strategyOverlayData = {
@@ -75,8 +81,14 @@ export const load = (async ({ params, locals, url }) => {
 				predicate: 'is-part-of'
 			})
 		);
+		const { currentOrganization } = await parent();
 		const newContainer = ((type: PayloadType) => {
-			const base = { realm: env.PUBLIC_KC_REALM, relation: selected, user: [] };
+			const base = {
+				organization: currentOrganization.guid,
+				realm: env.PUBLIC_KC_REALM,
+				relation: selected,
+				user: []
+			};
 			const category: SustainableDevelopmentGoal[] = [];
 			const indicator: Indicator[] = [];
 			const resource: [] = [];
@@ -98,7 +110,7 @@ export const load = (async ({ params, locals, url }) => {
 			}
 		})(url.searchParams.get('overlay-new') as PayloadType);
 		const isPartOfOptions = await locals.pool.connect(
-			maybePartOf(url.searchParams.get('overlay-new') as PayloadType)
+			maybePartOf(currentOrganization.guid, url.searchParams.get('overlay-new') as PayloadType)
 		);
 		strategyOverlayData = {
 			container: newContainer,
@@ -109,7 +121,7 @@ export const load = (async ({ params, locals, url }) => {
 	}
 
 	return {
-		container: revisions[revisions.length - 1],
+		container,
 		relatedContainers,
 		revisions,
 		...(strategyOverlayData ? { strategyOverlayData } : undefined)

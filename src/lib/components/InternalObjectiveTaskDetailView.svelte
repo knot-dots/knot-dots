@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { Icon, LightBulb } from 'svelte-hero-icons';
-	import { _, date, number } from 'svelte-i18n';
+	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, taskStatus, taskStatusColors, taskStatusIcons } from '$lib/models';
-	import type { Container, TaskContainer, TaskStatus } from '$lib/models';
+	import type { AnyContainer, Container, TaskContainer, TaskStatus } from '$lib/models';
 
 	export let container: TaskContainer;
 	export let relatedContainers: Container[];
-	export let revisions: Container[];
+	export let revisions: AnyContainer[];
 
 	let selectedRevision: TaskContainer;
 

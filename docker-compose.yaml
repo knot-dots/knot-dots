@@ -41,6 +41,11 @@ services:
     command:
       - start-dev
       - --import-realm
+    healthcheck:
+      test: [ "CMD-SHELL", "printf '' 2>>/dev/null >>/dev/tcp/localhost/8080" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import
   preview:
@@ -49,13 +54,19 @@ services:
       dockerfile: docker/strategytool/Dockerfile
       target: production
     depends_on:
-      - migrate
+      keycloak:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
+      - KC_SERVICE_ACCOUNT_CLIENT_ID
+      - KC_SERVICE_ACCOUNT_CLIENT_SECRET
       - KC_URL
       - PGDATABASE
       - PGHOST
       - PGPASSWORD
       - PGUSER
+      - PUBLIC_BASE_URL
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
@@ -74,11 +85,14 @@ services:
       db:
         condition: service_healthy
     environment:
+      - KC_SERVICE_ACCOUNT_CLIENT_ID
+      - KC_SERVICE_ACCOUNT_CLIENT_SECRET
       - KC_URL
       - PGDATABASE
       - PGHOST
       - PGPASSWORD
       - PGUSER
+      - PUBLIC_BASE_URL
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL

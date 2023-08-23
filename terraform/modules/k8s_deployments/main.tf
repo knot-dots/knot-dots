@@ -70,6 +70,27 @@ resource "helm_release" "cert_manager" {
   }
 }
 
+resource "helm_release" "cert_manager_webhook" {
+  count = var.with_scaleway_lb ? 1 : 0
+
+  name       = "scaleway-webhook"
+  namespace  = "cert-manager"
+  repository = "https://suda.github.io/charts"
+  chart      = "scaleway-webhook"
+
+  set {
+    name  = "secret.accessKey"
+    value = var.cert_manager_api_key.access_key
+  }
+
+  set {
+    name  = "secret.secretKey"
+    value = var.cert_manager_api_key.secret_key
+  }
+
+  depends_on = [helm_release.cert_manager]
+}
+
 resource "kubectl_manifest" "cluster_issuer" {
   count = var.with_scaleway_lb ? 1 : 0
 
@@ -90,12 +111,13 @@ spec:
       name: issuer-account-key
     # Add a single challenge solver, HTTP01
     solvers:
-      - http01:
-          ingress:
-            class: traefik
+      - dns01:
+          webhook:
+            groupName: acme.scaleway.com
+            solverName: scaleway
 YAML
 
-  depends_on = [helm_release.cert_manager]
+  depends_on = [helm_release.cert_manager, helm_release.cert_manager_webhook]
 }
 
 resource "kubernetes_ingress_v1" "strategytool" {
@@ -112,6 +134,24 @@ resource "kubernetes_ingress_v1" "strategytool" {
   spec {
     rule {
       host = var.strategytool_host
+      http {
+        path {
+          backend {
+            service {
+              name = "strategytool"
+              port {
+                number = 8000
+              }
+            }
+          }
+          path      = "/"
+          path_type = "Prefix"
+        }
+      }
+    }
+
+    rule {
+      host = "*.${var.strategytool_host}"
       http {
         path {
           backend {
@@ -147,7 +187,7 @@ resource "kubernetes_ingress_v1" "strategytool" {
     }
 
     tls {
-      hosts       = [var.keycloak_host, var.strategytool_host]
+      hosts       = [var.keycloak_host, var.strategytool_host, "*.${var.strategytool_host}"]
       secret_name = "strategytool-cert"
     }
   }
@@ -222,6 +262,16 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           env {
+            name  = "KC_SERVICE_ACCOUNT_CLIENT_ID"
+            value = var.keycloak_service_account_client_id
+          }
+
+          env {
+            name  = "KC_SERVICE_ACCOUNT_CLIENT_SECRET"
+            value = var.keycloak_service_account_client_secret
+          }
+
+          env {
             name  = "KC_URL"
             value = "https://${var.keycloak_host}"
           }
@@ -249,6 +299,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
           env {
             name  = "PGUSER"
             value = var.databases["strategytool"].db_user
+          }
+
+          env {
+            name  = "PUBLIC_KC_BASE_URL"
+            value = "https://${var.strategytool_host}"
           }
 
           env {

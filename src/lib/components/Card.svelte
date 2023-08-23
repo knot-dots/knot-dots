@@ -8,8 +8,8 @@
 	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
 
 	export let container: Container;
-
 	export let relatedContainers: Container[] = [];
+	export let showRelationFilter = false;
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
 	let relatedToURL: string;
@@ -104,13 +104,15 @@
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
 		{/if}
-		<a
-			href={relatedToURL}
-			class="button {relatedTo === container.guid ? 'is-active' : ''}"
-			title={$_('show_related_objects')}
-		>
-			<Icon src={Share} size="20" mini />
-		</a>
+		{#if showRelationFilter}
+			<a
+				href={relatedToURL}
+				class="button {relatedTo === container.guid ? 'is-active' : ''}"
+				title={$_('show_related_objects')}
+			>
+				<Icon src={Share} size="20" mini />
+			</a>
+		{/if}
 	</footer>
 </article>
 

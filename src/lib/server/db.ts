@@ -6,15 +6,26 @@ import type {
 	QueryResultRow,
 	SerializableValue
 } from 'slonik';
+import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging';
 import { z } from 'zod';
-import { container, relation, user } from '$lib/models';
+import {
+	anyContainer,
+	container,
+	organizationContainer,
+	payloadTypes,
+	relation,
+	user
+} from '$lib/models';
 import type {
+	AnyContainer,
 	Container,
 	ModifiedContainer,
 	NewContainer,
+	OrganizationContainer,
 	PayloadType,
 	Relation
 } from '$lib/models';
+import { createOrganization, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -49,14 +60,16 @@ let pool: DatabasePool;
 export async function getPool() {
 	if (!pool) {
 		pool = await createPool('postgres://', {
-			interceptors: [createResultParserInterceptor()]
+			interceptors: [createQueryLoggingInterceptor(), createResultParserInterceptor()]
 		});
 	}
 	return pool;
 }
 
 const typeAliases = {
+	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
+	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	relation,
 	relationPath: z.object({}).catchall(z.number().int().positive().nullable()),
 	revision: z.object({ revision: z.number().int().positive() }),
@@ -72,10 +85,32 @@ const sql = createSqlTag({ typeAliases });
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			const containerResult = await txConnection.one(sql.typeAlias('container')`
-          INSERT INTO container (payload, realm)
-          VALUES (${sql.jsonb(<SerializableValue>container.payload)}, ${container.realm})
-          RETURNING *
+			let guid;
+
+			if (container.payload.type === payloadTypes.enum.organization) {
+				guid = await createOrganization(container.payload.name);
+				await updateAccessSettings(container.payload.slug);
+			}
+
+			const containerResult = guid
+				? await txConnection.one(sql.typeAlias('anyContainer')`
+					INSERT INTO container (guid, organization, payload, realm)
+					VALUES (
+						${guid},
+						${guid},
+						${sql.jsonb(<SerializableValue>container.payload)},
+						${container.realm}
+					)
+					RETURNING *
+				`)
+				: await txConnection.one(sql.typeAlias('anyContainer')`
+          INSERT INTO container (organization, payload, realm)
+          VALUES (
+						${container.organization},
+						${sql.jsonb(<SerializableValue>container.payload)},
+						${container.realm}
+					)
+					RETURNING *
       `);
 
 			const userValues = container.user.map((u) => [u.issuer, containerResult.revision, u.subject]);
@@ -112,12 +147,13 @@ export function updateContainer(container: ModifiedContainer) {
 				WHERE guid = ${container.guid}
 			`);
 
-			const containerResult = await txConnection.one(sql.typeAlias('container')`
-				INSERT INTO container (payload, realm, guid)
+			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
+				INSERT INTO container (guid, organization, payload, realm)
 				VALUES (
+					${container.guid},
+					${container.organization},
 					${sql.jsonb(<SerializableValue>container.payload)},
-					${container.realm},
-					${container.guid}
+					${container.realm}
 				)
 				RETURNING *
       `);
@@ -157,7 +193,7 @@ export function updateContainer(container: ModifiedContainer) {
 	};
 }
 
-export function deleteContainer(container: Container) {
+export function deleteContainer(container: AnyContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			await txConnection.query(sql.typeAlias('void')`
@@ -167,8 +203,8 @@ export function deleteContainer(container: Container) {
 			`);
 
 			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
-				INSERT INTO container (payload, realm, guid, deleted)
-				SELECT payload, realm, guid, true FROM container
+				INSERT INTO container (deleted, guid, organization, payload, realm)
+				SELECT true, guid, organization, payload, realm FROM container
 				WHERE revision = ${container.revision}
 				RETURNING revision
 			`);
@@ -198,8 +234,8 @@ export function updateContainerRelationPosition(relation: Relation[]) {
 }
 
 export function getContainerByGuid(guid: string) {
-	return async (connection: DatabaseConnection): Promise<Container> => {
-		const containerResult = await connection.one(sql.typeAlias('container')`
+	return async (connection: DatabaseConnection): Promise<AnyContainer> => {
+		const containerResult = await connection.one(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
 			WHERE guid = ${guid}
@@ -228,8 +264,8 @@ export function getContainerByGuid(guid: string) {
 }
 
 export function getAllContainerRevisionsByGuid(guid: string) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const containerResult = await connection.many(sql.typeAlias('container')`
+	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
+		const containerResult = await connection.many(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
 			WHERE guid = ${guid}
@@ -271,14 +307,24 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 
 function prepareWhereCondition(filters: {
 	categories?: string[];
+	organizations?: string[];
 	strategyTypes?: string[];
 	terms?: string;
 	topics?: string[];
 	type?: PayloadType;
 }) {
-	const conditions = [sql.fragment`valid_currently`, sql.fragment`NOT deleted`];
+	const conditions = [
+		sql.fragment`valid_currently`,
+		sql.fragment`NOT deleted`,
+		sql.fragment`payload->>'type' != 'organization'`
+	];
 	if (filters.categories?.length) {
 		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
+	}
+	if (filters.organizations?.length) {
+		conditions.push(
+			sql.fragment`organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
+		);
 	}
 	if (filters.strategyTypes?.length) {
 		conditions.push(
@@ -315,6 +361,7 @@ function prepareOrderByExpression(sort: string) {
 }
 
 export function getManyContainers(
+	organizations: string[],
 	filters: {
 		categories?: string[];
 		strategyTypes?: string[];
@@ -328,7 +375,7 @@ export function getManyContainers(
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE ${prepareWhereCondition(filters)}
+			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
 
@@ -370,7 +417,45 @@ export function getManyContainers(
 	};
 }
 
-export function maybePartOf(containerType: PayloadType) {
+export function getManyOrganizationContainers(sort: string) {
+	return async (connection: DatabaseConnection): Promise<OrganizationContainer[]> => {
+		let orderBy = sql.fragment`valid_from DESC`;
+		if (sort == 'alpha') {
+			orderBy = sql.fragment`payload->>'default' DESC, payload->>'name'`;
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('organizationContainer')`
+			SELECT *
+			FROM container
+			WHERE payload->>'type' = ${payloadTypes.enum.organization}
+			ORDER BY ${orderBy};
+    `);
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: [],
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function maybePartOf(organization: string, containerType: PayloadType) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		let candidateType: PayloadType[];
 		if (containerType == 'model') {
@@ -398,7 +483,8 @@ export function maybePartOf(containerType: PayloadType) {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
+			WHERE ${prepareWhereCondition({ organizations: [organization] })}
+			  AND payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
 			  AND valid_currently
 			  AND NOT deleted
 			ORDER BY payload->>'title' DESC
@@ -427,6 +513,7 @@ export function maybePartOf(containerType: PayloadType) {
 }
 
 export function getAllRelatedContainers(
+	organizations: string[],
 	guid: string,
 	filters: {
 		categories?: string[];
@@ -491,7 +578,7 @@ export function getAllRelatedContainers(
 					.concat([revision]),
 				sql.fragment`, `
 			)})
-				AND ${prepareWhereCondition(filters)}
+				AND ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
@@ -534,12 +621,9 @@ export function getAllRelatedContainers(
 }
 
 export function getAllRelatedContainersByStrategyType(
+	organizations: string[],
 	strategyTypes: string[],
-	filters: {
-		categories?: string[];
-		terms?: string;
-		topics?: string[];
-	},
+	filters: { categories?: string[]; terms?: string; topics?: string[] },
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
@@ -586,7 +670,7 @@ export function getAllRelatedContainersByStrategyType(
 							relationPathResult.map((r) => Object.values(r)).flat(),
 							sql.fragment`, `
 						)})
-							AND ${prepareWhereCondition(filters)}
+							AND ${prepareWhereCondition({ ...filters, organizations })}
 						ORDER BY ${prepareOrderByExpression(sort)}
 		`)
 				: [];
@@ -629,12 +713,13 @@ export function getAllRelatedContainersByStrategyType(
 	};
 }
 
-export function getAllContainersWithIndicatorContributions() {
+export function getAllContainersWithIndicatorContributions(organizations: string[]) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE (
+			WHERE ${prepareWhereCondition({ organizations })}
+				AND (
 					payload->>'indicatorContribution' IS NOT NULL
 					OR payload->>'indicatorContribution' != '{}'
 				)
@@ -651,10 +736,7 @@ export function getAllContainersWithIndicatorContributions() {
 
 export function getAllContainersRelatedToMeasure(
 	revision: number,
-	filters: {
-		terms?: string;
-		type?: PayloadType;
-	},
+	filters: { terms?: string; type?: PayloadType },
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {

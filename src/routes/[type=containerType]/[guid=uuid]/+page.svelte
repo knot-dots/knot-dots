@@ -2,9 +2,12 @@
 	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
+	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
+	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import StrategyOverlay from '$lib/components/StrategyOverlay.svelte';
 	import {
+		isContainer,
 		isInternalObjectiveContainer,
 		isMeasureContainer,
 		isStrategyContainer,
@@ -12,8 +15,6 @@
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 	import type { PageData } from './$types';
-	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
-	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 
 	export let data: PageData;
 
@@ -81,7 +82,7 @@
 			</h2>
 		</svelte:fragment>
 	</InternalObjectiveDetailView>
-{:else}
+{:else if isContainer(container)}
 	<ContainerDetailView {container} {relatedContainers} {revisions}>
 		<svelte:fragment slot="header">
 			<h2>

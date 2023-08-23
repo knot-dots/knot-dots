@@ -101,3 +101,20 @@ resource "github_actions_secret" "scaleway_secret_key" {
   secret_name     = "SCW_SECRET_KEY"
   plaintext_value = scaleway_iam_api_key.github.secret_key
 }
+
+resource "scaleway_iam_application" "cert_manager" {
+  name        = "cert-manager"
+  description = ""
+}
+
+resource "scaleway_iam_policy" "cert_manager" {
+  name           = "cert-manager"
+  application_id = scaleway_iam_application.cert_manager.id
+
+  rule {
+    permission_set_names = [
+      "DomainsDNSFullAccess",
+    ]
+    project_ids = [var.scaleway_project_id]
+  }
+}

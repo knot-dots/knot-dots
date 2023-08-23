@@ -15,7 +15,8 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 		user.set({
 			familyName: kc.idTokenParsed?.family_name,
 			givenName: kc.idTokenParsed?.given_name,
-			isAuthenticated: true
+			isAuthenticated: true,
+			roles: kc.realmAccess?.roles ?? []
 		});
 		keycloak.update((v) => ({
 			...v,
@@ -38,7 +39,8 @@ export function initKeycloak(initOptions: KeycloakInitOptions) {
 		user.set({
 			familyName: '',
 			givenName: '',
-			isAuthenticated: false
+			isAuthenticated: false,
+			roles: []
 		});
 		sessionStorage.removeItem('idToken');
 		sessionStorage.removeItem('refreshToken');

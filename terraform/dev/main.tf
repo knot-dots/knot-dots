@@ -10,6 +10,11 @@ terraform {
       version = "~> 2.0"
     }
 
+    keycloak = {
+      source  = "mrparkers/keycloak"
+      version = "4.2.0"
+    }
+
     kubectl = {
       source  = "gavinbunney/kubectl"
       version = "~> 1.0"
@@ -49,6 +54,11 @@ provider "helm" {
   }
 }
 
+provider "keycloak" {
+  client_id = "terraform"
+  url       = "https://keycloak.dev.dotstory.de"
+}
+
 provider "kubectl" {
   load_config_file = false
   host             = module.k8s_cluster.kubeconfig.host
@@ -78,6 +88,14 @@ data "scaleway_iam_application" "kapsule" {
 
 resource "scaleway_iam_api_key" "registry_password" {
   application_id = data.scaleway_iam_application.kapsule.id
+}
+
+data "scaleway_iam_application" "cert_manager" {
+  application_id = "d6b54a86-4e7b-49ad-805f-a0d8ab2bb564"
+}
+
+resource "scaleway_iam_api_key" "cert_manager" {
+  application_id = data.scaleway_iam_application.cert_manager.id
 }
 
 resource "scaleway_iam_application" "strategytool" {
@@ -122,6 +140,23 @@ resource "scaleway_domain_record" "strategytool" {
   ttl  = 3600
 }
 
+resource "scaleway_domain_record" "strategytool_wildcard" {
+  count = var.with_scaleway_lb ? 1 : 0
+
+  dns_zone = scaleway_domain_zone.dev[count.index].id
+  name     = "*.strategytool"
+  type     = "CNAME"
+  //noinspection HILUnresolvedReference
+  data = "${scaleway_domain_record.strategytool[count.index].name}.${scaleway_domain_zone.dev[count.index].subdomain}.${scaleway_domain_zone.dev[count.index].domain}."
+  ttl  = 3600
+
+  lifecycle {
+    ignore_changes = [
+      ttl,
+    ]
+  }
+}
+
 resource "scaleway_domain_record" "keycloak" {
   count = var.with_scaleway_lb ? 1 : 0
 
@@ -153,6 +188,11 @@ resource "scaleway_object_bucket_acl" "upload" {
   acl    = "private"
 }
 
+data "keycloak_openid_client" "strategytool_service_account" {
+  realm_id  = "knot-dots"
+  client_id = "strategytool-backend"
+}
+
 module "rdb_databases" {
   source = "../modules/rdb_databases"
 
@@ -172,18 +212,21 @@ module "k8s_cluster" {
 module "k8s_deployments" {
   source = "../modules/k8s_deployments"
 
-  databases                = module.rdb_databases
-  registry_password        = scaleway_iam_api_key.registry_password.secret_key
-  registry_server          = "rg.fr-par.scw.cloud"
-  registry_username        = "knot-dots"
-  keycloak_host            = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
-  keycloak_image           = var.keycloak_image
-  keycloak_realm           = "knot-dots"
-  migrate_image            = var.migrate_image
-  strategytool_api_key     = scaleway_iam_api_key.strategytool
-  strategytool_bucket_name = scaleway_object_bucket.upload.name
-  strategytool_host        = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
-  strategytool_image       = var.strategytool_image
-  strategytool_region      = "fr-par"
-  with_scaleway_lb         = var.with_scaleway_lb
+  databases                              = module.rdb_databases
+  registry_password                      = scaleway_iam_api_key.registry_password.secret_key
+  registry_server                        = "rg.fr-par.scw.cloud"
+  registry_username                      = "knot-dots"
+  cert_manager_api_key                   = scaleway_iam_api_key.cert_manager
+  keycloak_host                          = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
+  keycloak_image                         = var.keycloak_image
+  keycloak_realm                         = "knot-dots"
+  keycloak_service_account_client_id     = data.keycloak_openid_client.strategytool_service_account.client_id
+  keycloak_service_account_client_secret = data.keycloak_openid_client.strategytool_service_account.client_secret
+  migrate_image                          = var.migrate_image
+  strategytool_api_key                   = scaleway_iam_api_key.strategytool
+  strategytool_bucket_name               = scaleway_object_bucket.upload.name
+  strategytool_host                      = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
+  strategytool_image                     = var.strategytool_image
+  strategytool_region                    = "fr-par"
+  with_scaleway_lb                       = var.with_scaleway_lb
 }

@@ -8,6 +8,7 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import { etag, modifiedContainer, newContainer, payloadTypes, predicates } from '$lib/models';
 	import type {
+		AnyContainer,
 		Container,
 		CustomEventMap,
 		EmptyContainer,
@@ -16,7 +17,7 @@
 	} from '$lib/models';
 	import { page } from '$app/stores';
 
-	export let container: Container | EmptyContainer;
+	export let container: AnyContainer | EmptyContainer;
 
 	let isPage =
 		'guid' in container
@@ -141,7 +142,11 @@
 	<header>
 		<label>
 			{$_(`${container.payload.type}`)}
-			<input name="title" type="text" bind:value={container.payload.title} required />
+			{#if container.payload.type === payloadTypes.enum.organization}
+				<input name="name" type="text" bind:value={container.payload.name} required />
+			{:else}
+				<input name="title" type="text" bind:value={container.payload.title} required />
+			{/if}
 		</label>
 	</header>
 

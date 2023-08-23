@@ -5,7 +5,6 @@
 	import { fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
-	import { page } from '$app/stores';
 	import { initKeycloak, key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import Navigation from '$lib/components/Navigation.svelte';

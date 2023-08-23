@@ -4,12 +4,11 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
+	import type { AnyContainer, Container } from '$lib/models';
 
-	import type { Container } from '$lib/models';
-
-	export let container: Container;
+	export let container: AnyContainer;
 	export let relatedContainers: Container[];
-	export let revisions: Container[];
+	export let revisions: AnyContainer[];
 
 	$: strategy = isStrategyContainer(container)
 		? container
