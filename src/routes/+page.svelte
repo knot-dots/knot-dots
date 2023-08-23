@@ -25,6 +25,7 @@
 				<Card
 					{container}
 					relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf(container))}
+					showRelationFilter
 				/>
 			{/each}
 		</BoardColumn>
