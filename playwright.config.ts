@@ -1,15 +1,24 @@
 import { devices } from '@playwright/test';
 import type { PlaywrightTestConfig } from '@playwright/test';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const config: PlaywrightTestConfig = {
 	projects: [
 		{
+			name: 'setup',
+			testMatch: /global\.setup\.ts/
+		},
+		{
 			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] }
+			use: { ...devices['Desktop Chrome'] },
+			dependencies: ['setup']
 		},
 		{
 			name: 'iphone8',
-			use: { ...devices['iPhone 8'] }
+			use: { ...devices['iPhone 8'] },
+			dependencies: ['setup']
 		}
 	],
 	use: {
