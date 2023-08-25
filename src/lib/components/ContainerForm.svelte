@@ -3,6 +3,7 @@
 	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
+	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
@@ -15,7 +16,7 @@
 		ModifiedContainer,
 		NewContainer
 	} from '$lib/models';
-	import { page } from '$app/stores';
+	import { ability } from '$lib/stores';
 
 	export let container: AnyContainer | EmptyContainer;
 
@@ -156,6 +157,18 @@
 		</div>
 
 		<div class="details-content-column">
+			{#if $ability.can('update', container.payload.type, 'organization')}
+				<label>
+					{$_('organization')}
+					<select bind:value={container.organization}>
+						{#each $page.data.organizations as organizationOption}
+							<option value={organizationOption.guid}>
+								{organizationOption.payload.name}
+							</option>
+						{/each}
+					</select>
+				</label>
+			{/if}
 			<slot name="meta" />
 		</div>
 	</div>
