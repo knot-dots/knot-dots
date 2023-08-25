@@ -302,6 +302,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           env {
+            name  = "PUBLIC_BASE_URL"
+            value = "https://${var.strategytool_host}"
+          }
+
+          env {
             name  = "PUBLIC_KC_BASE_URL"
             value = "https://${var.strategytool_host}"
           }
@@ -319,6 +324,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
           env {
             name  = "PUBLIC_KC_URL"
             value = "https://${var.keycloak_host}"
+          }
+
+          env {
+            name  = "ROARR_LOG"
+            value = "true"
           }
 
           resources {

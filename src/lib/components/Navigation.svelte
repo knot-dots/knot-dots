@@ -26,27 +26,29 @@
 </script>
 
 <nav>
-	<button
-		class="quiet organization-menu-toggle"
-		type="button"
-		on:click={() => (organizationToggle = !organizationToggle)}
-		aria-controls="organization-menu"
-		aria-expanded={organizationToggle}
-		aria-label={organizationToggle ? $_('close_organization_menu') : $_('open_organization_menu')}
-	>
-		<img
-			alt={$_('home')}
-			src={$page.data.currentOrganization?.payload.image
-				? $page.data.currentOrganization.payload.image
-				: logo}
-		/>
-		<span
-			>{$page.data.currentOrganization
-				? $page.data.currentOrganization.payload.name
-				: 'knotdots.net'}</span
+	<div class="organization-menu">
+		<button
+			class="quiet organization-menu-toggle"
+			type="button"
+			on:click={() => (organizationToggle = !organizationToggle)}
+			aria-controls="organization-menu"
+			aria-expanded={organizationToggle}
+			aria-label={organizationToggle ? $_('close_organization_menu') : $_('open_organization_menu')}
 		>
-		<Icon src={organizationToggle ? ChevronUp : ChevronDown} size="20" mini />
-		<ul class:is-expanded={organizationToggle} class="organization-menu" id="organization-menu">
+			<img
+				alt={$_('home')}
+				src={$page.data.currentOrganization?.payload.image
+					? $page.data.currentOrganization.payload.image
+					: logo}
+			/>
+			<span>
+				{$page.data.currentOrganization
+					? $page.data.currentOrganization.payload.name
+					: 'knotdots.net'}
+			</span>
+			<Icon src={organizationToggle ? ChevronUp : ChevronDown} size="20" mini />
+		</button>
+		<ul class:is-expanded={organizationToggle} id="organization-menu">
 			{#each $page.data.organizations ?? [] as container}
 				<li>
 					<a href={organizationURL(container)}>{container.payload.name}</a>
@@ -56,7 +58,7 @@
 				<a href="/organizations">{$_('organizations')}</a>
 			</li>
 		</ul>
-	</button>
+	</div>
 
 	<ul class="button-group button-group-boards">
 		<li>
@@ -139,12 +141,16 @@
 		margin: 0;
 	}
 
+	.organization-menu {
+		flex-shrink: 0;
+		position: relative;
+	}
+
 	.organization-menu-toggle {
 		align-items: center;
-		flex-shrink: 0;
+		display: flex;
 		gap: 0.5rem;
 		padding: 0.25rem 0.5rem 0.25rem 0.25rem;
-		position: relative;
 	}
 
 	.organization-menu-toggle:active {
@@ -160,7 +166,7 @@
 		padding-right: 0.75rem;
 	}
 
-	.organization-menu {
+	.organization-menu ul {
 		background-color: white;
 		border: 1px solid var(--color-gray-300);
 		border-radius: 0.375rem;
@@ -173,11 +179,11 @@
 		width: fit-content;
 	}
 
-	.organization-menu.is-expanded {
+	.organization-menu .is-expanded {
 		display: initial;
 	}
 
-	.organization-menu li a {
+	.organization-menu a {
 		display: block;
 		padding: 0.5rem 1rem;
 		text-align: left;

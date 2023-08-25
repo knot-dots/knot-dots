@@ -227,6 +227,7 @@
 		overflow-x: hidden;
 		padding: 0;
 		width: 100%;
+		z-index: 1;
 	}
 
 	.overlay > :global(*) {

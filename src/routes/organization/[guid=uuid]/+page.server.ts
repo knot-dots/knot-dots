@@ -1,11 +1,18 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { isOrganizationContainer, payloadTypes } from '$lib/models';
-import { getContainerByGuid, getManyContainers } from '$lib/server/db';
+import {
+	getAllContainerRevisionsByGuid,
+	getAllRelatedContainers,
+	getContainerByGuid,
+	getManyContainers,
+	maybePartOf
+} from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ params, locals }) => {
+export const load = (async ({ params, locals, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	let overlayData;
 	if (!isOrganizationContainer(container)) {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
@@ -17,5 +24,19 @@ export const load = (async ({ params, locals }) => {
 			getManyContainers([container.guid], { type: payloadTypes.enum.measure }, '')
 		)
 	]);
-	return { container, measures, strategies };
+	if (url.searchParams.has('container-preview')) {
+		const guid = url.searchParams.get('container-preview') ?? '';
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
+		const [isPartOfOptions, relatedContainers] = await Promise.all([
+			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
+			locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))
+		]);
+		overlayData = {
+			isPartOfOptions,
+			relatedContainers,
+			revisions
+		};
+	}
+	return { container, measures, overlayData, strategies };
 }) satisfies PageServerLoad;

@@ -11,5 +11,9 @@ export default (user: User) =>
 	defineAbility<MongoAbility<[Actions, Subjects]>>((can) => {
 		if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 			can('create', payloadTypes.enum.organization);
+
+			for (const payloadType of payloadTypes.options) {
+				can('update', payloadType, ['organization']);
+			}
 		}
 	});
