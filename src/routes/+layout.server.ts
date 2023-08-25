@@ -9,7 +9,10 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
 	const organizations = await locals.pool.connect(getManyOrganizationContainers('alpha'));
 
-	if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
+	if (
+		url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname ||
+		url.hostname === 'localhost'
+	) {
 		currentOrganization = organizations.find(({ payload }) => payload.default);
 	} else {
 		currentOrganization = organizations.find(({ payload }) =>
