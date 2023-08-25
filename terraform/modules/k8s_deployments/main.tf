@@ -326,6 +326,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
             value = "https://${var.keycloak_host}"
           }
 
+          env {
+            name  = "ROARR_LOG"
+            value = "true"
+          }
+
           resources {
             limits = {
               cpu    = "0.5"
