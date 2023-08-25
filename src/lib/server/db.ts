@@ -428,6 +428,8 @@ export function getManyOrganizationContainers(sort: string) {
 			SELECT *
 			FROM container
 			WHERE payload->>'type' = ${payloadTypes.enum.organization}
+				AND valid_currently
+				AND NOT deleted
 			ORDER BY ${orderBy};
     `);
 
