@@ -45,7 +45,7 @@ services:
       test: [ "CMD-SHELL", "printf '' 2>>/dev/null >>/dev/tcp/localhost/8080" ]
       interval: 3s
       timeout: 3s
-      retries: 10
+      retries: 20
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import
   preview:
