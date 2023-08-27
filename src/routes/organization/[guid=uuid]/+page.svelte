@@ -6,7 +6,11 @@
 	export let data: PageData;
 </script>
 
-<OrganizationDetailView {...data} />
+<OrganizationDetailView
+	container={data.container}
+	measures={data.measures}
+	strategies={data.strategies}
+/>
 
 {#if data.overlayData}
 	<Overlay {...data.overlayData} />
