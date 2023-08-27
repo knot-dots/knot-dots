@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
@@ -27,7 +28,9 @@
 			.replace(/-+/g, '-'); // remove consecutive hyphens
 	}
 
-	$: container.payload.slug = slugify(container.payload.name ?? '');
+	$: container.payload.slug = `${slugify($page.data.currentOrganization.payload.name)}-${slugify(
+		container.payload.name ?? ''
+	)}`;
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>

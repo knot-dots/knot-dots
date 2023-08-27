@@ -316,7 +316,7 @@ function prepareWhereCondition(filters: {
 	const conditions = [
 		sql.fragment`valid_currently`,
 		sql.fragment`NOT deleted`,
-		sql.fragment`payload->>'type' != 'organization'`
+		sql.fragment`payload->>'type' NOT IN ('organization', 'organizational_unit')`
 	];
 	if (filters.categories?.length) {
 		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);

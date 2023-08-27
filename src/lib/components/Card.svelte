@@ -4,10 +4,10 @@
 	import { page } from '$app/stores';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import type { Container } from '$lib/models';
+	import type { AnyContainer, Container } from '$lib/models';
 	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
 
-	export let container: Container;
+	export let container: AnyContainer;
 	export let relatedContainers: Container[] = [];
 	export let showRelationFilter = false;
 
@@ -58,7 +58,11 @@
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <article
 	tabindex="-1"
-	title={container.payload.title}
+	title={'title' in container.payload
+		? container.payload.title
+		: 'name' in container.payload
+		? container.payload.name
+		: undefined}
 	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
@@ -68,7 +72,11 @@
 	<header>
 		<h3>
 			<a href={containerPreviewURL} bind:this={previewLink}>
-				{container.payload.title}
+				{#if 'title' in container.payload}
+					{container.payload.title}
+				{:else if 'name' in container.payload}
+					{container.payload.name}
+				{/if}
 			</a>
 		</h3>
 	</header>

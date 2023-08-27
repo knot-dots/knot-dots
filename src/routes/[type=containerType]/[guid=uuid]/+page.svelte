@@ -8,6 +8,7 @@
 	import StrategyOverlay from '$lib/components/StrategyOverlay.svelte';
 	import {
 		isContainer,
+		isEmptyOrganizationalUnitContainer,
 		isInternalObjectiveContainer,
 		isMeasureContainer,
 		isStrategyContainer,
@@ -82,6 +83,24 @@
 			</h2>
 		</svelte:fragment>
 	</InternalObjectiveDetailView>
+{:else if isEmptyOrganizationalUnitContainer(container)}
+	<ContainerDetailView {container} {relatedContainers} {revisions}>
+		<svelte:fragment slot="header">
+			<h2>
+				{container.payload.name}
+				<div class="icons">
+					{#if $user.isAuthenticated}
+						<a href="{container.guid}/edit" class="icons-element">
+							<Icon solid src={Pencil} size="20" />
+						</a>
+					{/if}
+					<button class="icons-element" type="button" on:click={() => window.history.back()}>
+						<Icon solid src={ChevronLeft} size="20" />
+					</button>
+				</div>
+			</h2>
+		</svelte:fragment>
+	</ContainerDetailView>
 {:else if isContainer(container)}
 	<ContainerDetailView {container} {relatedContainers} {revisions}>
 		<svelte:fragment slot="header">
