@@ -458,7 +458,7 @@ export function getManyOrganizationContainers(sort: string) {
 }
 
 export function maybePartOf(organization: string, containerType: PayloadType) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
+	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
 		let candidateType: PayloadType[];
 		if (containerType == 'model') {
 			candidateType = ['strategy'];
@@ -478,17 +478,19 @@ export function maybePartOf(organization: string, containerType: PayloadType) {
 			candidateType = ['internal_objective.strategic_goal'];
 		} else if (containerType == 'internal_objective.task') {
 			candidateType = ['internal_objective.milestone'];
+		} else if (containerType == 'organizational_unit') {
+			candidateType = ['organizational_unit'];
 		} else {
 			return [];
 		}
 
-		const containerResult = await connection.any(sql.typeAlias('container')`
+		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
-			WHERE ${prepareWhereCondition({ organizations: [organization] })}
+			WHERE organization = ${organization}
 			  AND payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
 			  AND valid_currently
-			  AND NOT deleted
+				AND NOT deleted
 			ORDER BY payload->>'title' DESC
 		`);
 

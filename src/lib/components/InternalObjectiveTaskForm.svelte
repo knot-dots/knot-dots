@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import InternalObjectiveForm from './InternalObjectiveForm.svelte';
-	import { taskStatus } from '$lib/models';
-	import type { Container, EmptyTaskContainer, TaskContainer } from '$lib/models';
 	import { page } from '$app/stores';
+	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import { taskStatus } from '$lib/models';
+	import type { AnyContainer, EmptyTaskContainer, TaskContainer } from '$lib/models';
 
 	export let container: TaskContainer | EmptyTaskContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 
 	let statusParam = $page.url.searchParams.get('task-status');
 </script>

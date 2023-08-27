@@ -3,10 +3,10 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import type { Container, EmptyTextContainer, TextContainer } from '$lib/models';
+	import type { AnyContainer, EmptyTextContainer, TextContainer } from '$lib/models';
 
 	export let container: TextContainer | EmptyTextContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>

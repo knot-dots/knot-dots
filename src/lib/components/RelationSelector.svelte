@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { payloadTypes, predicates } from '$lib/models';
-	import type { Container, EmptyContainer } from '$lib/models';
+	import {
+		isOrganizationContainer,
+		isOrganizationalUnitContainer,
+		payloadTypes,
+		predicates
+	} from '$lib/models';
+	import type { AnyContainer, Container, EmptyContainer } from '$lib/models';
 
 	export let container: Container | EmptyContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 
 	$: index = container.relation.findIndex(
 		({ predicate, subject }) =>

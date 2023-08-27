@@ -7,13 +7,13 @@
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type {
-		Container,
+		AnyContainer,
 		OperationalGoalContainer,
 		EmptyOperationalGoalContainer
 	} from '$lib/models.js';
 
 	export let container: OperationalGoalContainer | EmptyOperationalGoalContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 
 	let indicatorLocked = container.payload.indicator.length > 0;
 </script>

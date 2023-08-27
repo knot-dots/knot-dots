@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Container, EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
 	import { _ } from 'svelte-i18n';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import type { AnyContainer, EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
 
 	export let container: EmptyMilestoneContainer | MilestoneContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 </script>
 
 <InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful on:deleteSuccessful>

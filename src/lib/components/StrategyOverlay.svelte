@@ -29,7 +29,7 @@
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 
 	export let container: Container | EmptyContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 

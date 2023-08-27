@@ -34,7 +34,7 @@
 	import { user } from '$lib/stores.js';
 
 	export let relatedContainers: Container[];
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 	export let revisions: AnyContainer[];
 
 	$: container = revisions[revisions.length - 1];
