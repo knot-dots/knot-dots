@@ -550,7 +550,7 @@ export function maybePartOf(organization: string, containerType: PayloadType) {
 			  AND payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
 			  AND valid_currently
 				AND NOT deleted
-			ORDER BY payload->>'title' DESC
+			ORDER BY payload->>'name' ASC, payload->>'title' ASC
 		`);
 
 		const userResult =
