@@ -78,6 +78,7 @@
 	$: container = ((type: PayloadType) => {
 		const base = {
 			organization: $page.data.currentOrganization.guid,
+			organizational_unit: $page.data.currentOrganizationalUnit?.guid ?? null,
 			realm: env.PUBLIC_KC_REALM,
 			relation: selected,
 			user: []

@@ -107,9 +107,10 @@ export function createContainer(container: NewContainer) {
 					RETURNING *
 				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
-          INSERT INTO container (organization, payload, realm)
-          VALUES (
+					INSERT INTO container (organization, organizational_unit, payload, realm)
+					VALUES (
 						${container.organization},
+						${container.organizational_unit},
 						${sql.jsonb(<SerializableValue>container.payload)},
 						${container.realm}
 					)
@@ -151,10 +152,11 @@ export function updateContainer(container: ModifiedContainer) {
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, organization, payload, realm)
+				INSERT INTO container (guid, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
 					${container.organization},
+					${container.organizational_unit},
 					${sql.jsonb(<SerializableValue>container.payload)},
 					${container.realm}
 				)
@@ -206,8 +208,8 @@ export function deleteContainer(container: AnyContainer) {
 			`);
 
 			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
-				INSERT INTO container (deleted, guid, organization, payload, realm)
-				SELECT true, guid, organization, payload, realm FROM container
+				INSERT INTO container (deleted, guid, organization, organizational_unit, payload, realm)
+				SELECT true, guid, organization, organizational_unit, payload, realm FROM container
 				WHERE revision = ${container.revision}
 				RETURNING revision
 			`);
