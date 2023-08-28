@@ -786,8 +786,6 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 					payload->>'indicatorContribution' IS NOT NULL
 					OR payload->>'indicatorContribution' != '{}'
 				)
-				AND valid_currently
-				AND NOT deleted
 		`);
 		return containerResult.map((c) => ({
 			...c,
