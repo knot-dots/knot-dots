@@ -73,11 +73,7 @@
 
 		const upload = formData.get('upload');
 
-		if (
-			upload instanceof File &&
-			upload.size > 0 &&
-			data.payload.type == payloadTypes.enum.strategy
-		) {
+		if ('image' in data.payload && upload instanceof File && upload.size > 0) {
 			const uploadResponse = await fetch('/upload', {
 				method: 'POST',
 				body: formData,
