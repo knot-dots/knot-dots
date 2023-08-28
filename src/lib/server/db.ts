@@ -11,6 +11,7 @@ import { z } from 'zod';
 import {
 	anyContainer,
 	container,
+	organizationalUnitContainer,
 	organizationContainer,
 	payloadTypes,
 	relation,
@@ -22,6 +23,7 @@ import type {
 	ModifiedContainer,
 	NewContainer,
 	OrganizationContainer,
+	OrganizationalUnitContainer,
 	PayloadType,
 	Relation
 } from '$lib/models';
@@ -70,6 +72,7 @@ const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
+	organizationalUnitContainer: organizationalUnitContainer.omit({ relation: true, user: true }),
 	relation,
 	relationPath: z.object({}).catchall(z.number().int().positive().nullable()),
 	revision: z.object({ revision: z.number().int().positive() }),
@@ -450,6 +453,60 @@ export function getManyOrganizationContainers(sort: string) {
 		return containerResult.map((c) => ({
 			...c,
 			relation: [],
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function getManyOrganizationalUnitContainers(sort: string) {
+	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+		let orderBy = sql.fragment`valid_from DESC`;
+		if (sort == 'alpha') {
+			orderBy = sql.fragment`payload->>'name'`;
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			SELECT *
+			FROM container
+			WHERE payload->>'type' = ${payloadTypes.enum.organizational_unit}
+        AND valid_currently
+        AND NOT deleted
+			ORDER BY ${orderBy};
+    `);
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
+			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
 			user: userResult
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))

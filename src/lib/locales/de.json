@@ -78,6 +78,8 @@
 	"operational_goals": "Operative Ziele",
 	"organization": "Organisation",
 	"organizational_unit": "Organisationseinheit",
+	"organizational_unit_level": "Ebene {level, number}",
+	"organizational_units": "Organisationseinheiten",
 	"organizations": "Organisationen",
 	"page_title": "Strategie-Werkzeug",
 	"planned_duration": "Geplante Laufzeit",

@@ -78,6 +78,8 @@
 	"operational_goals": "Operational goals",
 	"organization": "Organization",
 	"organizational_unit": "Organizational unit",
+	"organizational_unit_level": "Level {level, number}",
+	"organizational_units": "Organizational units",
 	"organizations": "Organizations",
 	"page_title": "StrategyTool",
 	"planned_duration": "Planned duration",
