@@ -906,7 +906,7 @@ export interface CustomEventMap {
 }
 
 export function isPartOf(container: { relation: PartialRelation[] }) {
-	return function (candidate: Container) {
+	return function (candidate: AnyContainer) {
 		return (
 			container.relation.findIndex(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.subject === candidate.revision
