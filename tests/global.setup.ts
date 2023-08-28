@@ -21,6 +21,7 @@ setup('register user and create default organization', async () => {
 	const organizationResponse = await appContext.post('/container', {
 		data: {
 			organization: '00000000-0000-0000-0000-000000000000',
+			organizational_unit: null,
 			payload: {
 				name: faker.location.city(),
 				slug: faker.internet.domainWord(),

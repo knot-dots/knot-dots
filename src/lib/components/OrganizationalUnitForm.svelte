@@ -1,10 +1,21 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models.js';
+	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import type {
+		AnyContainer,
+		EmptyOrganizationalUnitContainer,
+		OrganizationalUnitContainer
+	} from '$lib/models.js';
+	import { isOrganizationalUnitContainer } from '$lib/models.js';
 
-	export let container: OrganizationContainer | EmptyOrganizationContainer;
+	export let container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
+	export let isPartOfOptions: AnyContainer[];
+
+	$: filterByLevel = ({ payload }: OrganizationalUnitContainer) =>
+		container.payload.level === payload.level + 1;
 
 	function slugify(str: string) {
 		return String(str)
@@ -17,7 +28,9 @@
 			.replace(/-+/g, '-'); // remove consecutive hyphens
 	}
 
-	$: container.payload.slug = slugify(container.payload.name ?? '');
+	$: container.payload.slug = `${slugify($page.data.currentOrganization.payload.name)}-${slugify(
+		container.payload.name ?? ''
+	)}`;
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
@@ -31,6 +44,13 @@
 			<p class="help">{$_('image_upload_help')}</p>
 		</label>
 		<Editor label={$_('description')} bind:value={container.payload.description} />
+	</svelte:fragment>
+
+	<svelte:fragment slot="meta">
+		<RelationSelector
+			{container}
+			isPartOfOptions={isPartOfOptions.filter(isOrganizationalUnitContainer).filter(filterByLevel)}
+		/>
 	</svelte:fragment>
 
 	<slot slot="extra-buttons">

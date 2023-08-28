@@ -5,10 +5,14 @@
 	import ListBox from '$lib/components/ListBox.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
-	import type { Container, EmptyStrategicGoalContainer, StrategicGoalContainer } from '$lib/models';
+	import type {
+		AnyContainer,
+		EmptyStrategicGoalContainer,
+		StrategicGoalContainer
+	} from '$lib/models';
 
 	export let container: StrategicGoalContainer | EmptyStrategicGoalContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>

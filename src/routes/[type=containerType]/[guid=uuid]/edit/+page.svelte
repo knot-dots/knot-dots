@@ -7,6 +7,7 @@
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
+	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TextForm from '$lib/components/TextForm.svelte';
@@ -17,6 +18,7 @@
 		isModelContainer,
 		isMilestoneContainer,
 		isOperationalGoalContainer,
+		isOrganizationalUnitContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -112,6 +114,13 @@
 			</button>
 		</svelte:fragment>
 	</OperationalGoalForm>
+{:else if isOrganizationalUnitContainer(container)}
+	<OrganizationalUnitForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	/>
 {:else if isStrategicGoalGoalContainer(container)}
 	<StrategicGoalForm
 		{container}

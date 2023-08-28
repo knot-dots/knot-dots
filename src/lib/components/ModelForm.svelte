@@ -5,10 +5,10 @@
 	import ListBox from '$lib/components/ListBox.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
-	import type { Container, EmptyModelContainer, ModelContainer } from '$lib/models';
+	import type { AnyContainer, EmptyModelContainer, ModelContainer } from '$lib/models';
 
 	export let container: ModelContainer | EmptyModelContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>

@@ -10,6 +10,7 @@
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
+	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import {
@@ -20,6 +21,7 @@
 		isEmptyMilestoneContainer,
 		isEmptyOperationalGoalContainer,
 		isEmptyOrganizationContainer,
+		isEmptyOrganizationalUnitContainer,
 		isEmptyStrategicGoalContainer,
 		isEmptyStrategyContainer,
 		isEmptyTaskContainer,
@@ -28,12 +30,18 @@
 	} from '$lib/models';
 	import type {
 		CustomEventMap,
+		EmptyInternalObjectiveStrategicGoalContainer,
+		EmptyInternalStrategyContainer,
 		EmptyMeasureContainer,
+		EmptyMilestoneContainer,
 		EmptyModelContainer,
 		EmptyOperationalGoalContainer,
 		EmptyOrganizationContainer,
+		EmptyOrganizationalUnitContainer,
 		EmptyStrategicGoalContainer,
 		EmptyStrategyContainer,
+		EmptyTaskContainer,
+		EmptyVisionContainer,
 		Indicator,
 		PartialRelation,
 		PayloadType,
@@ -41,13 +49,6 @@
 		Topic
 	} from '$lib/models';
 	import type { PageData } from './$types';
-	import type {
-		EmptyInternalObjectiveStrategicGoalContainer,
-		EmptyInternalStrategyContainer,
-		EmptyMilestoneContainer,
-		EmptyTaskContainer,
-		EmptyVisionContainer
-	} from '$lib/models.js';
 
 	export let data: PageData;
 
@@ -77,12 +78,14 @@
 	$: container = ((type: PayloadType) => {
 		const base = {
 			organization: $page.data.currentOrganization.guid,
+			organizational_unit: $page.data.currentOrganizationalUnit?.guid ?? null,
 			realm: env.PUBLIC_KC_REALM,
 			relation: selected,
 			user: []
 		};
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];
+		const level = parseInt($page.url.searchParams.get('level') ?? '1');
 		const progress = 0;
 		const resource: [] = [];
 		const topic: Topic[] = [];
@@ -111,6 +114,8 @@
 				} as EmptyOperationalGoalContainer;
 			case payloadTypes.enum.organization:
 				return { ...base, payload: { default: false, type } } as EmptyOrganizationContainer;
+			case payloadTypes.enum.organizational_unit:
+				return { ...base, payload: { level, type } } as EmptyOrganizationalUnitContainer;
 			case payloadTypes.enum.strategic_goal:
 				return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
 			default:
@@ -151,11 +156,16 @@
 					detail.result.revision
 				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
 			);
+		} else if (detail.result.payload.type === payloadTypes.enum.organizational_unit) {
+			await goto(`/organization/${$page.data.currentOrganization.guid}/organizational_units`);
 		} else {
 			await goto(`/${payloadType}/${detail.result.guid}`);
 		}
 
-		if (detail.result.payload.type === payloadTypes.enum.organization) {
+		if (
+			detail.result.payload.type === payloadTypes.enum.organization ||
+			detail.result.payload.type === payloadTypes.enum.organizational_unit
+		) {
 			invalidateAll();
 		}
 	}
@@ -180,7 +190,9 @@
 		</svelte:fragment>
 	</OperationalGoalForm>
 {:else if isEmptyOrganizationContainer(container)}
-	<OrganizationForm {container} on:submitSuccessful={afterSubmit} />}
+	<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
+{:else if isEmptyOrganizationalUnitContainer(container)}
+	<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 {:else if isEmptyStrategicGoalContainer(container)}
 	<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
 		<svelte:fragment slot="extra-buttons">

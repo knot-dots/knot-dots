@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
+	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
+	import { _ } from 'svelte-i18n';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import type { OrganizationContainer } from '$lib/models.js';
 	import { sidebarToggle, user } from '$lib/stores';
-	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 
 	export let revisions: OrganizationContainer[];
 
@@ -37,7 +38,11 @@
 			{container}
 			on:deleteSuccessful={afterDelete}
 			on:submitSuccessful={afterSubmit}
-		/>
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+			</svelte:fragment>
+		</OrganizationForm>
 	{:else}
 		<ContainerDetailView {container} relatedContainers={[]} {revisions}>
 			<svelte:fragment slot="header">

@@ -77,6 +77,7 @@ const payloadTypeValues = [
 	'model',
 	'operational_goal',
 	'organization',
+	'organizational_unit',
 	'strategic_goal',
 	'strategy',
 	'text'
@@ -422,6 +423,15 @@ const organizationPayload = z.object({
 	type: z.literal(payloadTypes.enum.organization)
 });
 
+const organizationalUnitPayload = z.object({
+	description: z.string(),
+	image: z.string().url().optional(),
+	level: z.number().int().positive(),
+	name: z.string(),
+	slug: z.string(),
+	type: z.literal(payloadTypes.enum.organizational_unit)
+});
+
 const strategicGoalPayload = basePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.strategic_goal)
@@ -448,6 +458,7 @@ const textPayload = z
 export const container = z.object({
 	guid: z.string().uuid(),
 	organization: z.string().uuid(),
+	organizational_unit: z.string().uuid().nullable(),
 	payload: z.discriminatedUnion('type', [
 		internalStrategyPayload,
 		visionPayload,
@@ -482,6 +493,7 @@ export const anyContainer = container.extend({
 		modelPayload,
 		operationalGoalPayload,
 		organizationPayload,
+		organizationalUnitPayload,
 		strategicGoalPayload,
 		strategyPayload,
 		textPayload
@@ -532,6 +544,18 @@ export function isOrganizationContainer(
 	container: AnyContainer
 ): container is OrganizationContainer {
 	return container.payload.type === payloadTypes.enum.organization;
+}
+
+export const organizationalUnitContainer = container.extend({
+	payload: organizationalUnitPayload
+});
+
+export type OrganizationalUnitContainer = z.infer<typeof organizationalUnitContainer>;
+
+export function isOrganizationalUnitContainer(
+	container: AnyContainer
+): container is OrganizationalUnitContainer {
+	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
 
 const strategicGoalContainer = container.extend({
@@ -642,7 +666,10 @@ export function isInternalObjectiveContainer(
 }
 
 export function isContainer(container: AnyContainer): container is Container {
-	return container.payload.type !== payloadTypes.enum.organization;
+	return (
+		container.payload.type !== payloadTypes.enum.organization &&
+		container.payload.type !== payloadTypes.enum.organizational_unit
+	);
 }
 
 export const newContainer = anyContainer
@@ -666,6 +693,7 @@ const emptyContainer = newContainer.extend({
 			.partial()
 			.merge(operationalGoalPayload.pick({ indicator: true, type: true })),
 		organizationPayload.partial().merge(organizationPayload.pick({ type: true })),
+		organizationalUnitPayload.partial().merge(organizationalUnitPayload.pick({ type: true })),
 		strategicGoalPayload.partial().merge(strategicGoalPayload.pick({ type: true })),
 		strategyPayload.partial().merge(strategyPayload.pick({ type: true })),
 		textPayload.partial().merge(textPayload.pick({ type: true })),
@@ -727,6 +755,18 @@ export function isEmptyOrganizationContainer(
 	container: EmptyContainer
 ): container is EmptyOrganizationContainer {
 	return container.payload.type === payloadTypes.enum.organization;
+}
+
+const emptyOrganizationalUnitContainer = newContainer.extend({
+	payload: organizationalUnitPayload.partial().merge(organizationalUnitPayload.pick({ type: true }))
+});
+
+export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
+
+export function isEmptyOrganizationalUnitContainer(
+	container: EmptyContainer
+): container is EmptyOrganizationalUnitContainer {
+	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
 
 const emptyStrategicGoalContainer = emptyContainer.extend({
@@ -866,7 +906,7 @@ export interface CustomEventMap {
 }
 
 export function isPartOf(container: { relation: PartialRelation[] }) {
-	return function (candidate: Container) {
+	return function (candidate: AnyContainer) {
 		return (
 			container.relation.findIndex(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.subject === candidate.revision

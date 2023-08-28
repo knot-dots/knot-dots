@@ -25,6 +25,7 @@ export const POST = (async ({ request, locals }) => {
 		Key: uuidv4(),
 		ACL: 'public-read',
 		Body: Buffer.from(await (data.upload as Blob).arrayBuffer()),
+		ContentType: (data.upload as File).type,
 		Tagging: `uploaded-by=${locals.user.subject}`
 	});
 

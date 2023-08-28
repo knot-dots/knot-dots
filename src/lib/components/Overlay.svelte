@@ -25,6 +25,7 @@
 		isModelContainer,
 		isMilestoneContainer,
 		isOperationalGoalContainer,
+		isOrganizationalUnitContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -32,9 +33,10 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { user } from '$lib/stores.js';
+	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 
 	export let relatedContainers: Container[];
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 	export let revisions: AnyContainer[];
 
 	$: container = revisions[revisions.length - 1];
@@ -93,6 +95,17 @@
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</OperationalGoalForm>
+		{:else if isOrganizationalUnitContainer(container)}
+			<OrganizationalUnitForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={afterSubmit}
+				on:deleteSuccessful={afterDelete}
+			>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+				</svelte:fragment>
+			</OrganizationalUnitForm>
 		{:else if isStrategicGoalGoalContainer(container)}
 			<StrategicGoalForm
 				{container}
@@ -199,6 +212,24 @@
 				</h2>
 			</svelte:fragment>
 		</InternalObjectiveDetailView>
+	{:else if isOrganizationalUnitContainer(container)}
+		<ContainerDetailView {container} {relatedContainers} {revisions}>
+			<svelte:fragment slot="header">
+				<h2>
+					{container.payload.name}
+					<div class="icons">
+						{#if $user.isAuthenticated}
+							<button class="icons-element" on:click={() => (edit = true)}>
+								<Icon solid src={Pencil} size="20" />
+							</button>
+						{/if}
+						<a href={closeOverlay()} class="button icons-element">
+							<Icon solid src={XMark} size="20" />
+						</a>
+					</div>
+				</h2>
+			</svelte:fragment>
+		</ContainerDetailView>
 	{:else if isContainer(container)}
 		<ContainerDetailView {container} {relatedContainers} {revisions}>
 			<svelte:fragment slot="header">

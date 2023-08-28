@@ -3,11 +3,11 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import type { Container, OrganizationContainer } from '$lib/models';
+	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 	import Card from '$lib/components/Card.svelte';
 
-	export let container: OrganizationContainer;
+	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let measures: Container[];
 	export let strategies: Container[];
 

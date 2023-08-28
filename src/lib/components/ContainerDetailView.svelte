@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
+	import { isLevel, isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 
 	export let container: AnyContainer;
@@ -128,7 +128,7 @@
 						</ul>
 					</div>
 				{/if}
-				{#if 'level' in container.payload}
+				{#if 'level' in container.payload && isLevel(container.payload.level)}
 					<div class="meta">
 						<h3 class="meta-key">{$_('level.label')}</h3>
 						<p class="meta-value">{$_(container.payload.level)}</p>

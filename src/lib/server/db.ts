@@ -11,6 +11,7 @@ import { z } from 'zod';
 import {
 	anyContainer,
 	container,
+	organizationalUnitContainer,
 	organizationContainer,
 	payloadTypes,
 	relation,
@@ -22,6 +23,7 @@ import type {
 	ModifiedContainer,
 	NewContainer,
 	OrganizationContainer,
+	OrganizationalUnitContainer,
 	PayloadType,
 	Relation
 } from '$lib/models';
@@ -70,6 +72,7 @@ const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
+	organizationalUnitContainer: organizationalUnitContainer.omit({ relation: true, user: true }),
 	relation,
 	relationPath: z.object({}).catchall(z.number().int().positive().nullable()),
 	revision: z.object({ revision: z.number().int().positive() }),
@@ -104,9 +107,10 @@ export function createContainer(container: NewContainer) {
 					RETURNING *
 				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
-          INSERT INTO container (organization, payload, realm)
-          VALUES (
+					INSERT INTO container (organization, organizational_unit, payload, realm)
+					VALUES (
 						${container.organization},
+						${container.organizational_unit},
 						${sql.jsonb(<SerializableValue>container.payload)},
 						${container.realm}
 					)
@@ -148,10 +152,11 @@ export function updateContainer(container: ModifiedContainer) {
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, organization, payload, realm)
+				INSERT INTO container (guid, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
 					${container.organization},
+					${container.organizational_unit},
 					${sql.jsonb(<SerializableValue>container.payload)},
 					${container.realm}
 				)
@@ -203,8 +208,8 @@ export function deleteContainer(container: AnyContainer) {
 			`);
 
 			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
-				INSERT INTO container (deleted, guid, organization, payload, realm)
-				SELECT true, guid, organization, payload, realm FROM container
+				INSERT INTO container (deleted, guid, organization, organizational_unit, payload, realm)
+				SELECT true, guid, organization, organizational_unit, payload, realm FROM container
 				WHERE revision = ${container.revision}
 				RETURNING revision
 			`);
@@ -316,7 +321,7 @@ function prepareWhereCondition(filters: {
 	const conditions = [
 		sql.fragment`valid_currently`,
 		sql.fragment`NOT deleted`,
-		sql.fragment`payload->>'type' != 'organization'`
+		sql.fragment`payload->>'type' NOT IN ('organization', 'organizational_unit')`
 	];
 	if (filters.categories?.length) {
 		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
@@ -428,6 +433,8 @@ export function getManyOrganizationContainers(sort: string) {
 			SELECT *
 			FROM container
 			WHERE payload->>'type' = ${payloadTypes.enum.organization}
+				AND valid_currently
+				AND NOT deleted
 			ORDER BY ${orderBy};
     `);
 
@@ -455,8 +462,62 @@ export function getManyOrganizationContainers(sort: string) {
 	};
 }
 
+export function getManyOrganizationalUnitContainers(sort: string) {
+	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+		let orderBy = sql.fragment`valid_from DESC`;
+		if (sort == 'alpha') {
+			orderBy = sql.fragment`payload->>'name'`;
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			SELECT *
+			FROM container
+			WHERE payload->>'type' = ${payloadTypes.enum.organizational_unit}
+        AND valid_currently
+        AND NOT deleted
+			ORDER BY ${orderBy};
+    `);
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+						SELECT *
+						FROM container_user
+						WHERE revision IN (${revisions})
+					`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+						SELECT cr.*
+						FROM container_relation cr
+						JOIN container co ON cr.object = co.revision AND co.valid_currently
+						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+						WHERE object IN (${revisions}) OR subject IN (${revisions})
+						ORDER BY position
+			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
 export function maybePartOf(organization: string, containerType: PayloadType) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
+	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
 		let candidateType: PayloadType[];
 		if (containerType == 'model') {
 			candidateType = ['strategy'];
@@ -476,18 +537,20 @@ export function maybePartOf(organization: string, containerType: PayloadType) {
 			candidateType = ['internal_objective.strategic_goal'];
 		} else if (containerType == 'internal_objective.task') {
 			candidateType = ['internal_objective.milestone'];
+		} else if (containerType == 'organizational_unit') {
+			candidateType = ['organizational_unit'];
 		} else {
 			return [];
 		}
 
-		const containerResult = await connection.any(sql.typeAlias('container')`
+		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
-			WHERE ${prepareWhereCondition({ organizations: [organization] })}
+			WHERE organization = ${organization}
 			  AND payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
 			  AND valid_currently
-			  AND NOT deleted
-			ORDER BY payload->>'title' DESC
+				AND NOT deleted
+			ORDER BY payload->>'name' ASC, payload->>'title' ASC
 		`);
 
 		const userResult =
@@ -723,8 +786,6 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 					payload->>'indicatorContribution' IS NOT NULL
 					OR payload->>'indicatorContribution' != '{}'
 				)
-				AND valid_currently
-				AND NOT deleted
 		`);
 		return containerResult.map((c) => ({
 			...c,

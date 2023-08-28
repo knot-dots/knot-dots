@@ -73,11 +73,7 @@
 
 		const upload = formData.get('upload');
 
-		if (
-			upload instanceof File &&
-			upload.size > 0 &&
-			data.payload.type == payloadTypes.enum.strategy
-		) {
+		if ('image' in data.payload && upload instanceof File && upload.size > 0) {
 			const uploadResponse = await fetch('/upload', {
 				method: 'POST',
 				body: formData,
@@ -112,6 +108,9 @@
 
 		if (response.ok) {
 			dispatch('submitSuccessful', { event, result: (await response.json()) as Container });
+		} else {
+			const error = await response.json();
+			alert(error.message);
 		}
 	}
 
@@ -143,7 +142,7 @@
 	<header>
 		<label>
 			{$_(`${container.payload.type}`)}
-			{#if container.payload.type === payloadTypes.enum.organization}
+			{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
 				<input name="name" type="text" bind:value={container.payload.name} required />
 			{:else}
 				<input name="title" type="text" bind:value={container.payload.title} required />

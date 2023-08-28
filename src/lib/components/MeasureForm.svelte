@@ -7,7 +7,7 @@
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import { predicates, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type {
-		Container,
+		AnyContainer,
 		EmptyMeasureContainer,
 		MeasureContainer,
 		OperationalGoalContainer
@@ -15,7 +15,7 @@
 	import { page } from '$app/stores';
 
 	export let container: MeasureContainer | EmptyMeasureContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 
 	let statusParam = $page.url.searchParams.get('status') ?? status.enum['status.idea'];
 

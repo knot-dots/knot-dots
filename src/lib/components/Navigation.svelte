@@ -1,87 +1,41 @@
 <script lang="ts">
-	import { ChevronDown, ChevronUp, Icon } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { env } from '$env/dynamic/public';
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
-	import logo from '$lib/assets/logo.png';
-	import type { OrganizationContainer } from '$lib/models';
+	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { keycloak, navigationToggle, user } from '$lib/stores';
 
 	function toggle() {
 		navigationToggle.update((v) => !v);
 	}
-
-	let organizationToggle = false;
-
-	function organizationURL(container: OrganizationContainer) {
-		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-		if (!container.payload.default) {
-			url.hostname = `${container.payload.slug}.${url.hostname}`;
-		}
-		url.pathname = `/organization/${container.guid}`;
-		return url.toString();
-	}
 </script>
 
 <nav>
-	<div class="organization-menu">
-		<button
-			class="quiet organization-menu-toggle"
-			type="button"
-			on:click={() => (organizationToggle = !organizationToggle)}
-			aria-controls="organization-menu"
-			aria-expanded={organizationToggle}
-			aria-label={organizationToggle ? $_('close_organization_menu') : $_('open_organization_menu')}
-		>
-			<img
-				alt={$_('home')}
-				src={$page.data.currentOrganization?.payload.image
-					? $page.data.currentOrganization.payload.image
-					: logo}
-			/>
-			<span>
-				{$page.data.currentOrganization
-					? $page.data.currentOrganization.payload.name
-					: 'knotdots.net'}
-			</span>
-			<Icon src={organizationToggle ? ChevronUp : ChevronDown} size="20" mini />
-		</button>
-		<ul class:is-expanded={organizationToggle} id="organization-menu">
-			{#each $page.data.organizations ?? [] as container}
-				<li>
-					<a href={organizationURL(container)}>{container.payload.name}</a>
-				</li>
-			{/each}
-			<li>
-				<a href="/organizations">{$_('organizations')}</a>
-			</li>
-		</ul>
-	</div>
+	<OrganizationMenu />
 
 	<ul class="button-group button-group-boards">
 		<li>
 			<a
 				href="/organizations"
 				class="button"
-				class:is-active={$page.url.pathname == '/organizations'}
+				class:is-active={$page.url.pathname === '/organizations'}
 			>
 				{$_('organizations')}
 			</a>
 		</li>
 		<li>
-			<a href="/strategies" class="button" class:is-active={$page.url.pathname == '/strategies'}>
+			<a href="/strategies" class="button" class:is-active={$page.url.pathname === '/strategies'}>
 				{$_('strategies')}
 			</a>
 		</li>
 		<li>
-			<a href="/" class="button" class:is-active={$page.url.pathname == '/'}>
+			<a href="/" class="button" class:is-active={$page.url.pathname === '/'}>
 				{$_('objectives')}
 			</a>
 		</li>
 		<li>
-			<a href="/measures" class="button" class:is-active={$page.url.pathname == '/measures'}>
+			<a href="/measures" class="button" class:is-active={$page.url.pathname === '/measures'}>
 				{$_('measures')}
 			</a>
 		</li>
@@ -124,8 +78,8 @@
 	nav {
 		align-items: center;
 		box-shadow:
-			0px 4px 6px -1px rgba(0, 0, 0, 0.1),
-			0px 2px 4px -2px rgba(0, 0, 0, 0.05);
+			0 4px 6px -1px rgba(0, 0, 0, 0.1),
+			0 2px 4px -2px rgba(0, 0, 0, 0.05);
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
@@ -134,64 +88,11 @@
 		padding: 0 16px;
 		position: absolute;
 		width: 100%;
-		z-index: 1;
+		z-index: 2;
 	}
 
 	nav > * {
 		margin: 0;
-	}
-
-	.organization-menu {
-		flex-shrink: 0;
-		position: relative;
-	}
-
-	.organization-menu-toggle {
-		align-items: center;
-		display: flex;
-		gap: 0.5rem;
-		padding: 0.25rem 0.5rem 0.25rem 0.25rem;
-	}
-
-	.organization-menu-toggle:active {
-		background-color: inherit;
-	}
-
-	.organization-menu-toggle > img {
-		width: 52px;
-	}
-
-	.organization-menu-toggle span {
-		border-right: solid 1px var(--color-gray-200);
-		padding-right: 0.75rem;
-	}
-
-	.organization-menu ul {
-		background-color: white;
-		border: 1px solid var(--color-gray-300);
-		border-radius: 0.375rem;
-		box-shadow: var(--shadow-lg);
-		display: none;
-		left: 0;
-		max-width: 14rem;
-		position: absolute;
-		top: 2.75rem;
-		width: fit-content;
-	}
-
-	.organization-menu .is-expanded {
-		display: initial;
-	}
-
-	.organization-menu a {
-		display: block;
-		padding: 0.5rem 1rem;
-		text-align: left;
-		white-space: nowrap;
-	}
-
-	.organization-menu li a:hover {
-		background-color: var(--color-gray-300);
 	}
 
 	.button-group.button-group-boards {

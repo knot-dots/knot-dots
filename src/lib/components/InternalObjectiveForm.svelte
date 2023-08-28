@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import type {
-		Container,
+		AnyContainer,
 		EmptyInternalObjectiveContainer,
 		InternalObjectiveContainer
 	} from '$lib/models';
@@ -10,7 +10,7 @@
 	import RelationSelector from './RelationSelector.svelte';
 
 	export let container: InternalObjectiveContainer | EmptyInternalObjectiveContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>

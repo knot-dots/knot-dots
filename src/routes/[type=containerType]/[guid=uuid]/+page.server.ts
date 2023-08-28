@@ -81,10 +81,11 @@ export const load = (async ({ params, locals, url, parent }) => {
 				predicate: 'is-part-of'
 			})
 		);
-		const { currentOrganization } = await parent();
+		const { currentOrganization, currentOrganizationalUnit } = await parent();
 		const newContainer = ((type: PayloadType) => {
 			const base = {
 				organization: currentOrganization.guid,
+				organizational_unit: currentOrganizationalUnit?.guid ?? null,
 				realm: env.PUBLIC_KC_REALM,
 				relation: selected,
 				user: []

@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { payloadTypes, predicates } from '$lib/models';
-	import type { Container, EmptyContainer } from '$lib/models';
+	import {
+		isOrganizationContainer,
+		isOrganizationalUnitContainer,
+		payloadTypes,
+		predicates
+	} from '$lib/models';
+	import type { AnyContainer, Container, EmptyContainer } from '$lib/models';
 
 	export let container: Container | EmptyContainer;
-	export let isPartOfOptions: Container[];
+	export let isPartOfOptions: AnyContainer[];
 
 	$: index = container.relation.findIndex(
 		({ predicate, subject }) =>
@@ -26,7 +31,7 @@
 	}
 </script>
 
-{#if container.payload.type !== payloadTypes.enum.strategy && container.payload.type !== payloadTypes.enum['internal_objective.internal_strategy']}
+{#if isPartOfOptions.length > 0}
 	<fieldset>
 		<legend>
 			{#if container.payload.type === payloadTypes.enum.model}
@@ -39,6 +44,8 @@
 				{$_('superordinate_operational_goals')}
 			{:else if container.payload.type === payloadTypes.enum.text}
 				{$_('superordinate_chapters')}
+			{:else if container.payload.type === payloadTypes.enum.organizational_unit}
+				{$_('superordinate_organizational_unit')}
 			{:else if container.payload.type === payloadTypes.enum['internal_objective.vision']}
 				{$_('superordinate_internal_strategies')}
 			{:else if container.payload.type === payloadTypes.enum['internal_objective.strategic_goal']}
@@ -60,7 +67,11 @@
 					) > -1}
 					on:change={onChange}
 				/>
-				{option.payload.title}
+				{#if 'name' in option.payload}
+					{option.payload.name}
+				{:else}
+					{option.payload.title}
+				{/if}
 			</label>
 		{/each}
 	</fieldset>
