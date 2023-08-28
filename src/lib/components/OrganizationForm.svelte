@@ -32,4 +32,8 @@
 		</label>
 		<Editor label={$_('description')} bind:value={container.payload.description} />
 	</svelte:fragment>
+
+	<slot slot="extra-buttons">
+		<slot name="extra-buttons" />
+	</slot>
 </ContainerForm>
