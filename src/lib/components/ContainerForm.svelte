@@ -108,6 +108,9 @@
 
 		if (response.ok) {
 			dispatch('submitSuccessful', { event, result: (await response.json()) as Container });
+		} else {
+			const error = await response.json();
+			alert(error.message);
 		}
 	}
 
