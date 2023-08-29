@@ -90,7 +90,10 @@ export function createContainer(container: NewContainer) {
 		return connection.transaction(async (txConnection) => {
 			let guid;
 
-			if (container.payload.type === payloadTypes.enum.organization) {
+			if (
+				container.payload.type === payloadTypes.enum.organization ||
+				container.payload.type === payloadTypes.enum.organizational_unit
+			) {
 				guid = await createOrganization(container.payload.name);
 				await updateAccessSettings(container.payload.slug);
 			}
