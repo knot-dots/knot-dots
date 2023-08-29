@@ -27,7 +27,7 @@ import type {
 	PayloadType,
 	Relation
 } from '$lib/models';
-import { createOrganization, updateAccessSettings } from '$lib/server/keycloak';
+import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -94,7 +94,7 @@ export function createContainer(container: NewContainer) {
 				container.payload.type === payloadTypes.enum.organization ||
 				container.payload.type === payloadTypes.enum.organizational_unit
 			) {
-				guid = await createOrganization(container.payload.name);
+				guid = await createGroup(container.payload.name);
 				await updateAccessSettings(container.payload.slug);
 			}
 

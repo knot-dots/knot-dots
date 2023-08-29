@@ -22,7 +22,7 @@ async function getToken() {
 	return z.object({ access_token: z.string() }).parse(await response.json()).access_token;
 }
 
-export async function createOrganization(name: string) {
+export async function createGroup(name: string) {
 	const token = await getToken();
 	const response = await fetch(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups`, {
 		body: JSON.stringify({ name }),
@@ -30,9 +30,7 @@ export async function createOrganization(name: string) {
 		method: 'POST'
 	});
 	if (!response.ok) {
-		throw new Error(
-			`Failed to create organization in realm. Keycloak responded with ${response.status}`
-		);
+		throw new Error(`Failed to create group in realm. Keycloak responded with ${response.status}`);
 	}
 	return z
 		.string()
