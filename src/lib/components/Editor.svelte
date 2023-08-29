@@ -128,7 +128,9 @@
 
 		return {
 			destroy() {
-				editor.destroy();
+				if (editor) {
+					editor.destroy();
+				}
 			}
 		};
 	}
