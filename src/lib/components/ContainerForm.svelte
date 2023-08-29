@@ -142,6 +142,25 @@
 			}
 		}
 	}
+
+	function slugify(str: string) {
+		return String(str)
+			.normalize('NFKD') // split accented characters into their base characters and diacritical marks
+			.replace(/[\u0300-\u036f]/g, '') // remove all the accents, which happen to be all in the \u03xx UNICODE block.
+			.trim() // trim leading or trailing whitespace
+			.toLowerCase() // convert to lowercase
+			.replace(/[^a-z0-9 -]/g, '') // remove non-alphanumeric characters
+			.replace(/\s+/g, '-') // replace spaces with hyphens
+			.replace(/-+/g, '-'); // remove consecutive hyphens
+	}
+
+	$: if (container.payload.type === payloadTypes.enum.organizational_unit) {
+		container.payload.slug = `${$page.data.currentOrganization.payload.slug}-${slugify(
+			container.payload.name ?? ''
+		)}`;
+	} else if (container.payload.type === payloadTypes.enum.organization) {
+		container.payload.slug = slugify(container.payload.name ?? '');
+	}
 </script>
 
 <form class="details" class:details--page={isPage} on:submit|preventDefault={handleSubmit}>
