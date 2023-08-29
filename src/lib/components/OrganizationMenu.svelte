@@ -5,11 +5,11 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.png';
 	import { isPartOf } from '$lib/models';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import type { OrganizationalUnitContainer } from '$lib/models';
 
 	let organizationToggle = false;
 
-	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function organizationalUnitURL(container: OrganizationalUnitContainer) {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
 		url.hostname = `${container.payload.slug}.${url.hostname}`;
 		url.pathname = `/${container.payload.type}/${container.guid}`;
@@ -63,11 +63,11 @@
 			<ul class="organizational-units organizational-units--level-1">
 				{#each organizationalUnitContainersLevelOne as firstLevelUnit}
 					<li>
-						<a href={landingPageURL(firstLevelUnit)}>{firstLevelUnit.payload.name}</a>
+						<a href={organizationalUnitURL(firstLevelUnit)}>{firstLevelUnit.payload.name}</a>
 						<ul class="organizational-units organizational-units--level-2">
 							{#each organizationalUnitContainers.filter(isPartOf(firstLevelUnit)) as secondLevelUnit}
 								<li>
-									<a href={landingPageURL(secondLevelUnit)}>
+									<a href={organizationalUnitURL(secondLevelUnit)}>
 										{secondLevelUnit.payload.name}
 									</a>
 								</li>
@@ -86,11 +86,9 @@
 						knotdots.net
 					</a>
 				</li>
-				{#each $page.data.organizations as organization}
-					<li>
-						<a href={landingPageURL(organization)}>{organization.payload.name}</a>
-					</li>
-				{/each}
+				<li>
+					<a href="{env.PUBLIC_BASE_URL}/organizations">{$_('other_organizations')}</a>
+				</li>
 			</ul>
 		</div>
 	</div>
