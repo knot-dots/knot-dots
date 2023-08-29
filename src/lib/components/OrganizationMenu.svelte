@@ -71,6 +71,24 @@
 										{secondLevelUnit.payload.name}
 									</a>
 								</li>
+								<ul class="organizational-units organizational-units--level-3">
+									{#each organizationalUnitContainers.filter(isPartOf(secondLevelUnit)) as thirdLevelUnit}
+										<li>
+											<a href={organizationalUnitURL(thirdLevelUnit)}>
+												{thirdLevelUnit.payload.name}
+											</a>
+											<ul class="organizational-units organizational-units--level-4">
+												{#each organizationalUnitContainers.filter(isPartOf(thirdLevelUnit)) as fourthLevelUnit}
+													<li>
+														<a href={organizationalUnitURL(fourthLevelUnit)}>
+															{fourthLevelUnit.payload.name}
+														</a>
+													</li>
+												{/each}
+											</ul>
+										</li>
+									{/each}
+								</ul>
 							{/each}
 						</ul>
 					</li>
@@ -177,6 +195,7 @@
 	}
 
 	.organizational-units.organizational-units--level-1 > li > a {
+		font-weight: 600;
 		padding-left: 1rem;
 	}
 
@@ -184,8 +203,12 @@
 		padding-left: 2rem;
 	}
 
-	.organizational-units.organizational-units--level-1 > li > a {
-		font-weight: 600;
+	.organizational-units.organizational-units--level-3 > li > a {
+		padding-left: 3rem;
+	}
+
+	.organizational-units.organizational-units--level-4 > li > a {
+		padding-left: 4rem;
 	}
 
 	.organization-menu-other-organizations {
