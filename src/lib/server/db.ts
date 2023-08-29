@@ -88,27 +88,39 @@ const sql = createSqlTag({ typeAliases });
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			let guid;
+			let organizationGuid;
+			let organizationalUnitGuid;
 
-			if (
-				container.payload.type === payloadTypes.enum.organization ||
-				container.payload.type === payloadTypes.enum.organizational_unit
-			) {
-				guid = await createGroup(container.payload.name);
+			if (container.payload.type === payloadTypes.enum.organization) {
+				organizationGuid = await createGroup(container.payload.name);
+				await updateAccessSettings(container.payload.slug);
+			} else if (container.payload.type === payloadTypes.enum.organizational_unit) {
+				organizationalUnitGuid = await createGroup(container.payload.name);
 				await updateAccessSettings(container.payload.slug);
 			}
 
-			const containerResult = guid
+			const containerResult = organizationGuid
 				? await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (guid, organization, payload, realm)
 					VALUES (
-						${guid},
-						${guid},
+						${organizationGuid},
+						${organizationGuid},
 						${sql.jsonb(<SerializableValue>container.payload)},
 						${container.realm}
 					)
 					RETURNING *
 				`)
+				: organizationalUnitGuid
+				? await txConnection.one(sql.typeAlias('anyContainer')`
+              INSERT INTO container (guid, organization, payload, realm)
+              VALUES (
+                         ${organizationalUnitGuid},
+                         ${container.organization},
+                         ${sql.jsonb(<SerializableValue>container.payload)},
+                         ${container.realm}
+                     )
+              RETURNING *
+					`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (organization, organizational_unit, payload, realm)
 					VALUES (
@@ -425,8 +437,17 @@ export function getManyContainers(
 	};
 }
 
-export function getManyOrganizationContainers(sort: string) {
+export function getManyOrganizationContainers(filters: { default?: boolean }, sort: string) {
 	return async (connection: DatabaseConnection): Promise<OrganizationContainer[]> => {
+		const conditions = [
+			sql.fragment`valid_currently`,
+			sql.fragment`NOT deleted`,
+			sql.fragment`payload->>'type' = ${payloadTypes.enum.organization}`
+		];
+		if (filters.default !== undefined) {
+			conditions.push(sql.fragment`payload->>'default' = ${filters.default}`);
+		}
+
 		let orderBy = sql.fragment`valid_from DESC`;
 		if (sort == 'alpha') {
 			orderBy = sql.fragment`payload->>'default' DESC, payload->>'name'`;
@@ -435,9 +456,7 @@ export function getManyOrganizationContainers(sort: string) {
 		const containerResult = await connection.any(sql.typeAlias('organizationContainer')`
 			SELECT *
 			FROM container
-			WHERE payload->>'type' = ${payloadTypes.enum.organization}
-				AND valid_currently
-				AND NOT deleted
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
 			ORDER BY ${orderBy};
     `);
 

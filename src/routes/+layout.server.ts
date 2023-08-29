@@ -10,14 +10,11 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 
 	const [organizations, organizationalUnits] = await Promise.all([
-		locals.pool.connect(getManyOrganizationContainers('alpha')),
+		locals.pool.connect(getManyOrganizationContainers({}, 'alpha')),
 		locals.pool.connect(getManyOrganizationalUnitContainers({}, 'alpha'))
 	]);
 
-	if (
-		url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname ||
-		url.hostname === 'localhost'
-	) {
+	if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
 		currentOrganization = organizations.find(({ payload }) => payload.default);
 	} else {
 		currentOrganization = organizations.find(({ payload }) =>
