@@ -9,13 +9,17 @@
 
 	export let data: PageData;
 
-	const byLevel = new Map<number, OrganizationalUnitContainer[]>();
+	let byLevel: Map<number, OrganizationalUnitContainer[]>;
 
-	for (const level of [1, 2, 3, 4]) {
-		byLevel.set(
-			level,
-			data.containers.filter(({ payload }) => payload.level === level)
-		);
+	$: {
+		byLevel = new Map<number, OrganizationalUnitContainer[]>();
+
+		for (const level of [1, 2, 3, 4]) {
+			byLevel.set(
+				level,
+				data.containers.filter(({ payload }) => payload.level === level)
+			);
+		}
 	}
 </script>
 
