@@ -102,7 +102,8 @@
 	}
 
 	.logo {
-		width: 52px;
+		height: 30px;
+		width: auto;
 	}
 
 	.organization-menu {
@@ -115,6 +116,12 @@
 		font-size: 1rem;
 		line-height: 1;
 		margin-bottom: 1rem;
+	}
+
+	.organization-menu h2 {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
 	}
 
 	.organization-menu-toggle {
