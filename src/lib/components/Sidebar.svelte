@@ -223,7 +223,7 @@
 					/>
 				</form>
 			</li>
-			{#if !$page.url.pathname.includes('internal-objectives') && !$page.url.pathname.includes('tasks')}
+			{#if !$page.url.pathname.includes('internal-objectives') && !$page.url.pathname.includes('tasks') && !$page.url.pathname.includes('organization')}
 				<li>
 					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
 						<FilterIcon class="icon-20" />

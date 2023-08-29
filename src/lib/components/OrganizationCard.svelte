@@ -1,38 +1,34 @@
 <script lang="ts">
-	import type { OrganizationContainer } from '$lib/models';
-	import { page } from '$app/stores';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
+	import type { OrganizationContainer } from '$lib/models';
 
 	export let container: OrganizationContainer;
 
-	let containerPreviewURL: string;
-
-	$: {
-		const query = new URLSearchParams($page.url.searchParams);
-		if (query.get('container-preview') === container.guid) {
-			query.delete('container-preview');
-		} else {
-			query.set('container-preview', container.guid);
-		}
-		containerPreviewURL = `?${query.toString()}`;
-	}
-
-	let previewLink: HTMLAnchorElement;
+	let organizationLink: HTMLAnchorElement;
 
 	function handleClick(event: MouseEvent) {
-		if (previewLink == event.target) {
+		if (organizationLink == event.target) {
 			return;
 		}
 		const isTextSelected = window.getSelection()?.toString();
 		if (!isTextSelected) {
-			previewLink.click();
+			organizationLink.click();
 		}
 	}
 
 	function handleKeyUp(event: KeyboardEvent) {
 		if (event.key == 'Enter') {
-			previewLink.click();
+			organizationLink.click();
 		}
+	}
+
+	function organizationURL(container: OrganizationContainer) {
+		const url = new URL(env.PUBLIC_BASE_URL ?? '');
+		url.hostname = `${container.payload.slug}.${url.hostname}`;
+		url.pathname = `/${container.payload.type}/${container.guid}`;
+		return url.toString();
 	}
 </script>
 
@@ -48,7 +44,7 @@
 >
 	<header>
 		<h3>
-			<a href={containerPreviewURL} bind:this={previewLink}>
+			<a href={organizationURL(container)} bind:this={organizationLink}>
 				{container.payload.name}
 			</a>
 		</h3>

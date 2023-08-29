@@ -28,10 +28,6 @@
 	</ul>
 </div>
 
-{#if data.overlayData}
-	<OrganizationOverlay {...data.overlayData} />
-{/if}
-
 <style>
 	div {
 		flex: 1 1;
