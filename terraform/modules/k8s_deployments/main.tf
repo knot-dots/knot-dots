@@ -343,8 +343,7 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           liveness_probe {
-            http_get {
-              path = "/"
+            tcp_socket {
               port = 3000
             }
             initial_delay_seconds = 3
