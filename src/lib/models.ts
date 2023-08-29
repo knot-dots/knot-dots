@@ -905,11 +905,14 @@ export interface CustomEventMap {
 	};
 }
 
-export function isPartOf(container: { relation: PartialRelation[] }) {
+export function isPartOf(container: { relation: PartialRelation[]; revision: number }) {
 	return function (candidate: AnyContainer) {
 		return (
 			container.relation.findIndex(
-				(r) => r.predicate === predicates.enum['is-part-of'] && r.subject === candidate.revision
+				(r) =>
+					r.predicate === predicates.enum['is-part-of'] &&
+					r.subject === candidate.revision &&
+					candidate.revision !== container.revision
 			) > -1
 		);
 	};
