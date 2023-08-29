@@ -425,8 +425,17 @@ export function getManyContainers(
 	};
 }
 
-export function getManyOrganizationContainers(sort: string) {
+export function getManyOrganizationContainers(filters: { default?: boolean }, sort: string) {
 	return async (connection: DatabaseConnection): Promise<OrganizationContainer[]> => {
+		const conditions = [
+			sql.fragment`valid_currently`,
+			sql.fragment`NOT deleted`,
+			sql.fragment`payload->>'type' = ${payloadTypes.enum.organization}`
+		];
+		if (filters.default !== undefined) {
+			conditions.push(sql.fragment`payload->>'default' = ${filters.default}`);
+		}
+
 		let orderBy = sql.fragment`valid_from DESC`;
 		if (sort == 'alpha') {
 			orderBy = sql.fragment`payload->>'default' DESC, payload->>'name'`;
@@ -435,9 +444,7 @@ export function getManyOrganizationContainers(sort: string) {
 		const containerResult = await connection.any(sql.typeAlias('organizationContainer')`
 			SELECT *
 			FROM container
-			WHERE payload->>'type' = ${payloadTypes.enum.organization}
-				AND valid_currently
-				AND NOT deleted
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
 			ORDER BY ${orderBy};
     `);
 
