@@ -11,7 +11,10 @@ export const load = (async ({ locals, url, parent }) => {
 
 	const { currentOrganization: container } = await parent();
 	const containers = await locals.pool.connect(
-		getManyOrganizationalUnitContainers(url.searchParams.get('sort') ?? '')
+		getManyOrganizationalUnitContainers(
+			{ organization: container.guid },
+			url.searchParams.get('sort') ?? ''
+		)
 	);
 
 	if (url.searchParams.has('container-preview')) {

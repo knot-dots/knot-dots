@@ -11,7 +11,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
 	const [organizations, organizationalUnits] = await Promise.all([
 		locals.pool.connect(getManyOrganizationContainers('alpha')),
-		locals.pool.connect(getManyOrganizationalUnitContainers('alpha'))
+		locals.pool.connect(getManyOrganizationalUnitContainers({}, 'alpha'))
 	]);
 
 	if (

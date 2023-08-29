@@ -465,8 +465,20 @@ export function getManyOrganizationContainers(sort: string) {
 	};
 }
 
-export function getManyOrganizationalUnitContainers(sort: string) {
+export function getManyOrganizationalUnitContainers(
+	filters: { organization?: string },
+	sort: string
+) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+		const conditions = [
+			sql.fragment`valid_currently`,
+			sql.fragment`NOT deleted`,
+			sql.fragment`payload->>'type' = ${payloadTypes.enum.organizational_unit}`
+		];
+		if (filters.organization) {
+			conditions.push(sql.fragment`organization = ${filters.organization}`);
+		}
+
 		let orderBy = sql.fragment`valid_from DESC`;
 		if (sort == 'alpha') {
 			orderBy = sql.fragment`payload->>'name'`;
@@ -475,9 +487,7 @@ export function getManyOrganizationalUnitContainers(sort: string) {
 		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			SELECT *
 			FROM container
-			WHERE payload->>'type' = ${payloadTypes.enum.organizational_unit}
-        AND valid_currently
-        AND NOT deleted
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
 			ORDER BY ${orderBy};
     `);
 
