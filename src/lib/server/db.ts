@@ -88,27 +88,39 @@ const sql = createSqlTag({ typeAliases });
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			let guid;
+			let organizationGuid;
+			let organizationalUnitGuid;
 
-			if (
-				container.payload.type === payloadTypes.enum.organization ||
-				container.payload.type === payloadTypes.enum.organizational_unit
-			) {
-				guid = await createGroup(container.payload.name);
+			if (container.payload.type === payloadTypes.enum.organization) {
+				organizationGuid = await createGroup(container.payload.name);
+				await updateAccessSettings(container.payload.slug);
+			} else if (container.payload.type === payloadTypes.enum.organizational_unit) {
+				organizationalUnitGuid = await createGroup(container.payload.name);
 				await updateAccessSettings(container.payload.slug);
 			}
 
-			const containerResult = guid
+			const containerResult = organizationGuid
 				? await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (guid, organization, payload, realm)
 					VALUES (
-						${guid},
-						${guid},
+						${organizationGuid},
+						${organizationGuid},
 						${sql.jsonb(<SerializableValue>container.payload)},
 						${container.realm}
 					)
 					RETURNING *
 				`)
+				: organizationalUnitGuid
+				? await txConnection.one(sql.typeAlias('anyContainer')`
+              INSERT INTO container (guid, organization, payload, realm)
+              VALUES (
+                         ${organizationalUnitGuid},
+                         ${container.organization},
+                         ${sql.jsonb(<SerializableValue>container.payload)},
+                         ${container.realm}
+                     )
+              RETURNING *
+					`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (organization, organizational_unit, payload, realm)
 					VALUES (
