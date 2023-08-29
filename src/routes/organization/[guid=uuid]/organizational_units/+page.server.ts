@@ -6,9 +6,10 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, url }) => {
+export const load = (async ({ locals, url, parent }) => {
 	let overlayData;
 
+	const { currentOrganization: container } = await parent();
 	const containers = await locals.pool.connect(
 		getManyOrganizationalUnitContainers(url.searchParams.get('sort') ?? '')
 	);
@@ -28,5 +29,5 @@ export const load = (async ({ locals, url }) => {
 		};
 	}
 
-	return { containers, overlayData };
+	return { container, containers, overlayData };
 }) satisfies PageServerLoad;
