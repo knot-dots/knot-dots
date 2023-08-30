@@ -38,7 +38,9 @@ export const load = (async ({ params, locals, url }) => {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
+			locals.pool.connect(
+				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
+			),
 			params.type.includes('internal_objective')
 				? locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ''))
 				: locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))

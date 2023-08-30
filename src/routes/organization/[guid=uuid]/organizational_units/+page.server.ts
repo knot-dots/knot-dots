@@ -31,11 +31,7 @@ export const load = (async ({ locals, url, parent }) => {
 			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
 			locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))
 		]);
-		overlayData = {
-			isPartOfOptions,
-			relatedContainers,
-			revisions
-		};
+		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}
 
 	return { container, containers, overlayData };

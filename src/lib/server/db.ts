@@ -330,6 +330,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	categories?: string[];
 	organizations?: string[];
+	organizationalUnits?: string[];
 	strategyTypes?: string[];
 	terms?: string;
 	topics?: string[];
@@ -346,6 +347,14 @@ function prepareWhereCondition(filters: {
 	if (filters.organizations?.length) {
 		conditions.push(
 			sql.fragment`organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
+		);
+	}
+	if (filters.organizationalUnits?.length) {
+		conditions.push(
+			sql.fragment`organizational_unit IN (${sql.join(
+				filters.organizationalUnits,
+				sql.fragment`, `
+			)})`
 		);
 	}
 	if (filters.strategyTypes?.length) {
@@ -386,6 +395,7 @@ export function getManyContainers(
 	organizations: string[],
 	filters: {
 		categories?: string[];
+		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
@@ -634,7 +644,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 	};
 }
 
-export function maybePartOf(organization: string, containerType: PayloadType) {
+export function maybePartOf(organizationOrOrganizationalUnit: string, containerType: PayloadType) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
 		let candidateType: PayloadType[];
 		if (containerType == 'model') {
@@ -664,7 +674,7 @@ export function maybePartOf(organization: string, containerType: PayloadType) {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
-			WHERE organization = ${organization}
+			WHERE (organization = ${organizationOrOrganizationalUnit} OR organizational_unit = ${organizationOrOrganizationalUnit})
 			  AND payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
 			  AND valid_currently
 				AND NOT deleted
@@ -698,6 +708,7 @@ export function getAllRelatedContainers(
 	guid: string,
 	filters: {
 		categories?: string[];
+		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
@@ -804,7 +815,12 @@ export function getAllRelatedContainers(
 export function getAllRelatedContainersByStrategyType(
 	organizations: string[],
 	strategyTypes: string[],
-	filters: { categories?: string[]; terms?: string; topics?: string[] },
+	filters: {
+		categories?: string[];
+		organizationalUnits?: string[];
+		terms?: string;
+		topics?: string[];
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
