@@ -1,21 +1,30 @@
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
+	getAllRelatedOrganizationalUnitContainers,
 	getManyOrganizationalUnitContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url, parent }) => {
+	let containers;
 	let overlayData;
 
 	const { currentOrganization: container } = await parent();
-	const containers = await locals.pool.connect(
-		getManyOrganizationalUnitContainers(
-			{ organization: container.guid },
-			url.searchParams.get('sort') ?? ''
-		)
-	);
+
+	if (url.searchParams.has('related-to')) {
+		containers = await locals.pool.connect(
+			getAllRelatedOrganizationalUnitContainers(url.searchParams.get('related-to') as string)
+		);
+	} else {
+		containers = await locals.pool.connect(
+			getManyOrganizationalUnitContainers(
+				{ organization: container.guid },
+				url.searchParams.get('sort') ?? ''
+			)
+		);
+	}
 
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';

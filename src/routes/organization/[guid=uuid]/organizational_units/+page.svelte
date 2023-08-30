@@ -30,7 +30,7 @@
 			addItemUrl={`/organizational_unit/new?level=${level}`}
 		>
 			{#each containers as container}
-				<Card {container} />
+				<Card {container} showRelationFilter />
 			{/each}
 		</BoardColumn>
 	{/each}
