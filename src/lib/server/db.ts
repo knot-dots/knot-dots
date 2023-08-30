@@ -14,6 +14,7 @@ import {
 	organizationalUnitContainer,
 	organizationContainer,
 	payloadTypes,
+	predicates,
 	relation,
 	user
 } from '$lib/models';
@@ -535,6 +536,98 @@ export function getManyOrganizationalUnitContainers(
 						WHERE object IN (${revisions}) OR subject IN (${revisions})
 						ORDER BY position
 			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function getAllRelatedOrganizationalUnitContainers(guid: string) {
+	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+		const revision = await connection.oneFirst(sql.typeAlias('revision')`
+			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
+		`);
+
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6
+			FROM
+			(
+				SELECT cr.subject, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit} AND cr.predicate = ${predicates.enum['is-part-of']}
+				WHERE c.valid_currently
+			) s1
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit} AND cr.predicate = ${predicates.enum['is-part-of']}
+				WHERE c.valid_currently
+			) s2 ON s1.object = s2.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit} AND cr.predicate = ${predicates.enum['is-part-of']}
+				WHERE c.valid_currently
+			) s3 ON s2.object = s3.subject
+			WHERE s1.subject = ${revision}
+				OR s1.object = ${revision}
+				OR s2.subject = ${revision}
+				OR s2.object = ${revision}
+				OR s3.subject = ${revision}
+				OR s3.object = ${revision}
+		`);
+
+		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			SELECT *
+			FROM container
+			WHERE revision IN (${sql.join(
+				relationPathResult
+					.map((r) => Object.values(r))
+					.flat()
+					.concat([revision]),
+				sql.fragment`, `
+			)})
+				AND valid_currently
+			  AND NOT DELETED
+			ORDER BY payload->>'level', payload->>'name'
+		`);
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+                  SELECT *
+                  FROM container_user
+                  WHERE revision IN (${revisions})
+				`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+                  SELECT cr.*
+                  FROM container_relation cr
+                           JOIN container co
+                                ON cr.object = co.revision AND co.valid_currently
+                           JOIN container cs
+                                ON cr.subject = cs.revision AND cs.valid_currently
+                  WHERE object IN (${revisions})
+                     OR subject IN (${revisions})
+                  ORDER BY position
+				`)
 				: [];
 
 		return containerResult.map((c) => ({
