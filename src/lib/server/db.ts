@@ -201,11 +201,11 @@ export function updateContainer(container: ModifiedContainer) {
 			// Create new records for relations having this container as object.
 			await txConnection.query(sql.typeAlias('void')`
 				INSERT INTO container_relation (object, position, predicate, subject)
-				SELECT ${containerResult.revision}, cr.position, cr.predicate, cr.subject
+				SELECT DISTINCT ON (c.guid, cr.predicate, cr.subject) ${containerResult.revision}, cr.position, cr.predicate, cr.subject
 				FROM container_relation cr
 				JOIN container c ON c.revision = cr.object
 				WHERE c.guid = ${container.guid}
-				GROUP BY c.guid, cr.predicate, cr.subject, cr.position
+				ORDER BY c.guid, cr.predicate, cr.subject, cr.object DESC
       `);
 
 			return { ...containerResult, user: userResult };
