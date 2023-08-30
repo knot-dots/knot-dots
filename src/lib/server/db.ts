@@ -112,15 +112,15 @@ export function createContainer(container: NewContainer) {
 				`)
 				: organizationalUnitGuid
 				? await txConnection.one(sql.typeAlias('anyContainer')`
-              INSERT INTO container (guid, organization, payload, realm)
-              VALUES (
-                         ${organizationalUnitGuid},
-                         ${container.organization},
-                         ${sql.jsonb(<SerializableValue>container.payload)},
-                         ${container.realm}
-                     )
-              RETURNING *
-					`)
+					INSERT INTO container (guid, organization, payload, realm)
+					VALUES (
+						${organizationalUnitGuid},
+						${container.organization},
+						${sql.jsonb(<SerializableValue>container.payload)},
+						${container.realm}
+					)
+					RETURNING *
+				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (organization, organizational_unit, payload, realm)
 					VALUES (
@@ -134,10 +134,10 @@ export function createContainer(container: NewContainer) {
 
 			const userValues = container.user.map((u) => [u.issuer, containerResult.revision, u.subject]);
 			const userResult = await txConnection.many(sql.typeAlias('user')`
-          INSERT INTO container_user (issuer, revision, subject)
-          SELECT *
-          FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
-          RETURNING issuer, subject
+				INSERT INTO container_user (issuer, revision, subject)
+				SELECT *
+				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+				RETURNING issuer, subject
       `);
 
 			const relationValues = container.relation.map((r, position) => [
@@ -201,11 +201,12 @@ export function updateContainer(container: ModifiedContainer) {
 			// Create new records for relations having this container as object.
 			await txConnection.query(sql.typeAlias('void')`
 				INSERT INTO container_relation (object, position, predicate, subject)
-				SELECT ${containerResult.revision}, cr.position, cr.predicate, cr.subject
+				SELECT DISTINCT ON (o.guid, cr.predicate, cr.subject) ${containerResult.revision}, cr.position, cr.predicate, cr.subject
 				FROM container_relation cr
-				JOIN container c ON c.revision = cr.object
-				WHERE c.guid = ${container.guid}
-				GROUP BY c.guid, cr.predicate, cr.subject, cr.position
+				JOIN container o ON o.revision = cr.object
+				JOIN container s ON s.revision = cr.subject AND s.valid_currently
+				WHERE o.guid = ${container.guid}
+				ORDER BY o.guid, cr.predicate, cr.subject, cr.object DESC
       `);
 
 			return { ...containerResult, user: userResult };
