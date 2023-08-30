@@ -19,10 +19,7 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getManyOrganizationalUnitContainers(
-				{ organization: container.guid },
-				url.searchParams.get('sort') ?? ''
-			)
+			getManyOrganizationalUnitContainers({ organization: container.guid })
 		);
 	}
 

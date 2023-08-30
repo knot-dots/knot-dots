@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import {
 		BuildingLibrary,
-		BuildingOffice,
 		BuildingStorefront,
 		ChevronDown,
 		ChevronUp,
@@ -260,39 +259,41 @@
 					</ul>
 				</li>
 			{/if}
-			<li>
-				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
-					<SortDescendingIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
-					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" />
-					</span>
-				</button>
-				<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
-					<li>
-						<label>
-							<input
-								type="radio"
-								value={'modified'}
-								bind:group={selectedSort}
-								on:change={applySortAndFilters}
-							/>
-							{$_('sort_modified')}
-						</label>
-					</li>
-					<li>
-						<label>
-							<input
-								type="radio"
-								value={'alpha'}
-								bind:group={selectedSort}
-								on:change={applySortAndFilters}
-							/>
-							{$_('sort_alphabetically')}
-						</label>
-					</li>
-				</ul>
-			</li>
+			{#if !$page.url.pathname.includes('organizational_units')}
+				<li>
+					<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
+						<SortDescendingIcon class="icon-20" />
+						<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
+						<span class:is-hidden={!$sidebarToggle}>
+							<Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" />
+						</span>
+					</button>
+					<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
+						<li>
+							<label>
+								<input
+									type="radio"
+									value={'modified'}
+									bind:group={selectedSort}
+									on:change={applySortAndFilters}
+								/>
+								{$_('sort_modified')}
+							</label>
+						</li>
+						<li>
+							<label>
+								<input
+									type="radio"
+									value={'alpha'}
+									bind:group={selectedSort}
+									on:change={applySortAndFilters}
+								/>
+								{$_('sort_alphabetically')}
+							</label>
+						</li>
+					</ul>
+				</li>
+			{/if}
 		</ul>
 	{:else if 'container' in $page.data && isStrategyContainer($page.data.container)}
 		<ul class="group group-actions">

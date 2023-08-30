@@ -486,10 +486,7 @@ export function getManyOrganizationContainers(filters: { default?: boolean }, so
 	};
 }
 
-export function getManyOrganizationalUnitContainers(
-	filters: { organization?: string },
-	sort: string
-) {
+export function getManyOrganizationalUnitContainers(filters: { organization?: string }) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
 		const conditions = [
 			sql.fragment`valid_currently`,
@@ -500,16 +497,11 @@ export function getManyOrganizationalUnitContainers(
 			conditions.push(sql.fragment`organization = ${filters.organization}`);
 		}
 
-		let orderBy = sql.fragment`valid_from DESC`;
-		if (sort == 'alpha') {
-			orderBy = sql.fragment`payload->>'name'`;
-		}
-
 		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			SELECT *
 			FROM container
 			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${orderBy};
+			ORDER BY payload->>'level', payload->>'name'
     `);
 
 		const revisions = sql.join(
