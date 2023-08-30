@@ -73,7 +73,7 @@
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('payloadType');
 		selectedPayloadType.forEach((t) => query.append('payloadType', t));
-		goto(`?${query.toString()})`, { keepFocus: true, replaceState: true });
+		goto(`?${query.toString()}`, { keepFocus: true, replaceState: true });
 	}
 
 	function debouncedSearch() {
@@ -315,9 +315,13 @@
 				>
 					<li>
 						<Filters
-							options={payloadTypes.options
-								.filter((o) => o !== payloadTypes.enum.strategy)
-								.map((o) => [$_(o), o])}
+							options={[
+								payloadTypes.enum.model,
+								payloadTypes.enum.strategic_goal,
+								payloadTypes.enum.operational_goal,
+								payloadTypes.enum.measure,
+								payloadTypes.enum.text
+							].map((o) => [$_(o), o])}
 							bind:selectedOptions={selectedPayloadType}
 							on:change={applyPayloadTypeFilter}
 						/>
