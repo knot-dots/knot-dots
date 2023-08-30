@@ -112,15 +112,15 @@ export function createContainer(container: NewContainer) {
 				`)
 				: organizationalUnitGuid
 				? await txConnection.one(sql.typeAlias('anyContainer')`
-              INSERT INTO container (guid, organization, payload, realm)
-              VALUES (
-                         ${organizationalUnitGuid},
-                         ${container.organization},
-                         ${sql.jsonb(<SerializableValue>container.payload)},
-                         ${container.realm}
-                     )
-              RETURNING *
-					`)
+					INSERT INTO container (guid, organization, payload, realm)
+					VALUES (
+						${organizationalUnitGuid},
+						${container.organization},
+						${sql.jsonb(<SerializableValue>container.payload)},
+						${container.realm}
+					)
+					RETURNING *
+				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (organization, organizational_unit, payload, realm)
 					VALUES (
@@ -134,10 +134,10 @@ export function createContainer(container: NewContainer) {
 
 			const userValues = container.user.map((u) => [u.issuer, containerResult.revision, u.subject]);
 			const userResult = await txConnection.many(sql.typeAlias('user')`
-          INSERT INTO container_user (issuer, revision, subject)
-          SELECT *
-          FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
-          RETURNING issuer, subject
+				INSERT INTO container_user (issuer, revision, subject)
+				SELECT *
+				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+				RETURNING issuer, subject
       `);
 
 			const relationValues = container.relation.map((r, position) => [
