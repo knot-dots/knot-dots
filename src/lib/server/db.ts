@@ -161,6 +161,8 @@ export function createContainer(container: NewContainer) {
 export function updateContainer(container: ModifiedContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
+			const previousRevision = await getContainerByGuid(container.guid)(txConnection);
+
 			await txConnection.query(sql.typeAlias('void')`
 				UPDATE container
 				SET valid_currently = false
@@ -209,6 +211,21 @@ export function updateContainer(container: ModifiedContainer) {
 				WHERE o.guid = ${container.guid}
 				ORDER BY o.guid, cr.predicate, cr.subject, cr.object DESC
       `);
+
+			if (container.payload.type == payloadTypes.enum.strategy) {
+				if (
+					container.organizational_unit &&
+					previousRevision.organizational_unit != container.organizational_unit
+				) {
+					await bulkUpdateOrganizationalUnit(
+						previousRevision,
+						container.organizational_unit
+					)(txConnection);
+				}
+				if (previousRevision.organization != container.organization) {
+					await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
+				}
+			}
 
 			return { ...containerResult, user: userResult };
 		});
@@ -1093,5 +1110,52 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
 		}));
+	};
+}
+
+export function bulkUpdateOrganization(container: AnyContainer, organization: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const containerResult = await getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				{},
+				''
+			)(txConnection);
+			console.log(containerResult);
+			if (containerResult.length) {
+				await txConnection.query(sql.typeAlias('void')`
+        	UPDATE container
+        	SET organization = ${organization}
+        	WHERE guid IN (${sql.join(
+						containerResult.map(({ guid }) => guid),
+						sql.fragment`, `
+					)})
+				`);
+			}
+		});
+	};
+}
+
+export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizationalUnit: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const containerResult = await getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				{},
+				''
+			)(txConnection);
+			if (containerResult.length) {
+				await txConnection.query(sql.typeAlias('void')`
+					UPDATE container
+					SET organizational_unit = ${organizationalUnit}
+					WHERE guid IN (${sql.join(
+						containerResult.map(({ guid }) => guid),
+						sql.fragment`, `
+					)})
+				`);
+			}
+		});
 	};
 }
