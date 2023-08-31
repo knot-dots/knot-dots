@@ -5,9 +5,18 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.png';
 	import { isPartOf } from '$lib/models';
-	import type { OrganizationalUnitContainer } from '$lib/models';
+	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 
 	let organizationToggle = false;
+
+	function organizationURL(container: OrganizationContainer) {
+		const url = new URL(env.PUBLIC_BASE_URL ?? '');
+		if (!container.payload.default) {
+			url.hostname = `${container.payload.slug}.${url.hostname}`;
+			url.pathname = `/${container.payload.type}/${container.guid}`;
+		}
+		return url.toString();
+	}
 
 	function organizationalUnitURL(container: OrganizationalUnitContainer) {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
@@ -54,10 +63,12 @@
 	>
 		<div class="organization-menu-organizational-units">
 			<h2>
-				{#if $page.data.currentOrganization.payload.image}
-					<img alt={$_('logo')} src={$page.data.currentOrganization.payload.image} />
-				{/if}
-				{$page.data.currentOrganization.payload.name}
+				<a href={organizationURL($page.data.currentOrganization)}>
+					{#if $page.data.currentOrganization.payload.image}
+						<img alt={$_('logo')} class="logo" src={$page.data.currentOrganization.payload.image} />
+					{/if}
+					{$page.data.currentOrganization.payload.name}
+				</a>
 			</h2>
 			<h3>{$_('organizational_units')}</h3>
 			<ul class="organizational-units organizational-units--level-1">
@@ -113,10 +124,6 @@
 </div>
 
 <style>
-	a:hover {
-		background-color: var(--hover-color);
-	}
-
 	.logo {
 		height: 30px;
 		width: auto;
@@ -175,6 +182,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+	}
+
+	.organization-menu-details ul a:hover {
+		background-color: var(--hover-color);
 	}
 
 	.organization-menu-organizational-units {

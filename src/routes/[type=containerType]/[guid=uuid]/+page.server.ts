@@ -63,7 +63,10 @@ export const load = (async ({ params, locals, url, parent }) => {
 		) as Container;
 		const [isPartOfOptions, revisions] = await Promise.all([
 			locals.pool.connect(
-				maybePartOf(selectedContainer.organization, selectedContainer.payload.type)
+				maybePartOf(
+					selectedContainer.organizational_unit ?? selectedContainer.organization,
+					selectedContainer.payload.type
+				)
 			),
 			locals.pool.connect(getAllContainerRevisionsByGuid(guid))
 		]);
@@ -111,7 +114,10 @@ export const load = (async ({ params, locals, url, parent }) => {
 			}
 		})(url.searchParams.get('overlay-new') as PayloadType);
 		const isPartOfOptions = await locals.pool.connect(
-			maybePartOf(currentOrganization.guid, url.searchParams.get('overlay-new') as PayloadType)
+			maybePartOf(
+				currentOrganizationalUnit ? currentOrganizationalUnit.guid : currentOrganization.guid,
+				url.searchParams.get('overlay-new') as PayloadType
+			)
 		);
 		strategyOverlayData = {
 			container: newContainer,

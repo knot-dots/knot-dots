@@ -193,6 +193,20 @@
 					</select>
 				</label>
 			{/if}
+			{#if $ability.can('update', container.payload.type, 'organizational_unit')}
+				<label>
+					{$_('organizational_unit')}
+					<select bind:value={container.organizational_unit}>
+						{#each $page.data.organizationalUnits as organizationalUnitOption}
+							{#if organizationalUnitOption.organization === container.organization}
+								<option value={organizationalUnitOption.guid}>
+									{organizationalUnitOption.payload.name}
+								</option>
+							{/if}
+						{/each}
+					</select>
+				</label>
+			{/if}
 			<slot name="meta" />
 		</div>
 	</div>

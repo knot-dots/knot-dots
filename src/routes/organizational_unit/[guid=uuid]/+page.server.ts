@@ -13,30 +13,45 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ params, locals, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	let overlayData;
+
 	if (!isOrganizationalUnitContainer(container)) {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
+
 	const [strategies, measures] = await Promise.all([
 		locals.pool.connect(
-			getManyContainers([container.guid], { type: payloadTypes.enum.strategy }, '')
+			getManyContainers(
+				[container.organization],
+				{ organizationalUnits: [container.guid], type: payloadTypes.enum.strategy },
+				''
+			)
 		),
 		locals.pool.connect(
-			getManyContainers([container.guid], { type: payloadTypes.enum.measure }, '')
+			getManyContainers(
+				[container.organization],
+				{ organizationalUnits: [container.guid], type: payloadTypes.enum.measure },
+				''
+			)
 		)
 	]);
+
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
-			locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))
+			locals.pool.connect(maybePartOf(container.guid, container.payload.type)),
+			locals.pool.connect(
+				getAllRelatedContainers(
+					[container.organization],
+					guid,
+					{ organizationalUnits: [container.guid] },
+					''
+				)
+			)
 		]);
-		overlayData = {
-			isPartOfOptions,
-			relatedContainers,
-			revisions
-		};
+		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}
+
 	return { container, measures, overlayData, strategies };
 }) satisfies PageServerLoad;

@@ -333,7 +333,7 @@ resource "kubernetes_deployment_v1" "strategytool" {
 
           resources {
             limits = {
-              cpu    = "0.5"
+              cpu    = "500m"
               memory = "512Mi"
             }
             requests = {
@@ -451,7 +451,7 @@ resource "kubernetes_job_v1" "migrate" {
 
           resources {
             limits = {
-              cpu    = "0.5"
+              cpu    = "500m"
               memory = "512Mi"
             }
             requests = {
@@ -575,7 +575,7 @@ resource "kubernetes_deployment_v1" "keycloak" {
 
           resources {
             limits = {
-              cpu    = "0.5"
+              cpu    = "500m"
               memory = "1024Mi"
             }
             requests = {

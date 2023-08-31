@@ -14,6 +14,7 @@ import {
 	organizationalUnitContainer,
 	organizationContainer,
 	payloadTypes,
+	predicates,
 	relation,
 	user
 } from '$lib/models';
@@ -160,6 +161,8 @@ export function createContainer(container: NewContainer) {
 export function updateContainer(container: ModifiedContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
+			const previousRevision = await getContainerByGuid(container.guid)(txConnection);
+
 			await txConnection.query(sql.typeAlias('void')`
 				UPDATE container
 				SET valid_currently = false
@@ -208,6 +211,21 @@ export function updateContainer(container: ModifiedContainer) {
 				WHERE o.guid = ${container.guid}
 				ORDER BY o.guid, cr.predicate, cr.subject, cr.object DESC
       `);
+
+			if (container.payload.type == payloadTypes.enum.strategy) {
+				if (
+					container.organizational_unit &&
+					previousRevision.organizational_unit != container.organizational_unit
+				) {
+					await bulkUpdateOrganizationalUnit(
+						previousRevision,
+						container.organizational_unit
+					)(txConnection);
+				}
+				if (previousRevision.organization != container.organization) {
+					await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
+				}
+			}
 
 			return { ...containerResult, user: userResult };
 		});
@@ -329,6 +347,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	categories?: string[];
 	organizations?: string[];
+	organizationalUnits?: string[];
 	strategyTypes?: string[];
 	terms?: string;
 	topics?: string[];
@@ -345,6 +364,14 @@ function prepareWhereCondition(filters: {
 	if (filters.organizations?.length) {
 		conditions.push(
 			sql.fragment`organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
+		);
+	}
+	if (filters.organizationalUnits?.length) {
+		conditions.push(
+			sql.fragment`organizational_unit IN (${sql.join(
+				filters.organizationalUnits,
+				sql.fragment`, `
+			)})`
 		);
 	}
 	if (filters.strategyTypes?.length) {
@@ -385,6 +412,7 @@ export function getManyContainers(
 	organizations: string[],
 	filters: {
 		categories?: string[];
+		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
@@ -485,10 +513,7 @@ export function getManyOrganizationContainers(filters: { default?: boolean }, so
 	};
 }
 
-export function getManyOrganizationalUnitContainers(
-	filters: { organization?: string },
-	sort: string
-) {
+export function getManyOrganizationalUnitContainers(filters: { organization?: string }) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
 		const conditions = [
 			sql.fragment`valid_currently`,
@@ -499,16 +524,11 @@ export function getManyOrganizationalUnitContainers(
 			conditions.push(sql.fragment`organization = ${filters.organization}`);
 		}
 
-		let orderBy = sql.fragment`valid_from DESC`;
-		if (sort == 'alpha') {
-			orderBy = sql.fragment`payload->>'name'`;
-		}
-
 		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			SELECT *
 			FROM container
 			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY ${orderBy};
+			ORDER BY payload->>'level', payload->>'name'
     `);
 
 		const revisions = sql.join(
@@ -549,7 +569,99 @@ export function getManyOrganizationalUnitContainers(
 	};
 }
 
-export function maybePartOf(organization: string, containerType: PayloadType) {
+export function getAllRelatedOrganizationalUnitContainers(guid: string) {
+	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+		const revision = await connection.oneFirst(sql.typeAlias('revision')`
+			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
+		`);
+
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6
+			FROM
+			(
+				SELECT cr.subject, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit} AND cr.predicate = ${predicates.enum['is-part-of']}
+				WHERE c.valid_currently
+			) s1
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit} AND cr.predicate = ${predicates.enum['is-part-of']}
+				WHERE c.valid_currently
+			) s2 ON s1.object = s2.subject
+			FULL JOIN
+			(
+				SELECT cr.subject, cr.object
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit} AND cr.predicate = ${predicates.enum['is-part-of']}
+				WHERE c.valid_currently
+			) s3 ON s2.object = s3.subject
+			WHERE s1.subject = ${revision}
+				OR s1.object = ${revision}
+				OR s2.subject = ${revision}
+				OR s2.object = ${revision}
+				OR s3.subject = ${revision}
+				OR s3.object = ${revision}
+		`);
+
+		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			SELECT *
+			FROM container
+			WHERE revision IN (${sql.join(
+				relationPathResult
+					.map((r) => Object.values(r))
+					.flat()
+					.concat([revision]),
+				sql.fragment`, `
+			)})
+				AND valid_currently
+			  AND NOT DELETED
+			ORDER BY payload->>'level', payload->>'name'
+		`);
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+                  SELECT *
+                  FROM container_user
+                  WHERE revision IN (${revisions})
+				`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+                  SELECT cr.*
+                  FROM container_relation cr
+                           JOIN container co
+                                ON cr.object = co.revision AND co.valid_currently
+                           JOIN container cs
+                                ON cr.subject = cs.revision AND cs.valid_currently
+                  WHERE object IN (${revisions})
+                     OR subject IN (${revisions})
+                  ORDER BY position
+				`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function maybePartOf(organizationOrOrganizationalUnit: string, containerType: PayloadType) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
 		let candidateType: PayloadType[];
 		if (containerType == 'model') {
@@ -579,7 +691,7 @@ export function maybePartOf(organization: string, containerType: PayloadType) {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
-			WHERE organization = ${organization}
+			WHERE (organization = ${organizationOrOrganizationalUnit} OR organizational_unit = ${organizationOrOrganizationalUnit})
 			  AND payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
 			  AND valid_currently
 				AND NOT deleted
@@ -613,6 +725,7 @@ export function getAllRelatedContainers(
 	guid: string,
 	filters: {
 		categories?: string[];
+		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
@@ -719,7 +832,12 @@ export function getAllRelatedContainers(
 export function getAllRelatedContainersByStrategyType(
 	organizations: string[],
 	strategyTypes: string[],
-	filters: { categories?: string[]; terms?: string; topics?: string[] },
+	filters: {
+		categories?: string[];
+		organizationalUnits?: string[];
+		terms?: string;
+		topics?: string[];
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
@@ -992,5 +1110,52 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 				.filter((u) => u.revision === c.revision)
 				.map(({ issuer, subject }) => ({ issuer, subject }))
 		}));
+	};
+}
+
+export function bulkUpdateOrganization(container: AnyContainer, organization: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const containerResult = await getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				{},
+				''
+			)(txConnection);
+			console.log(containerResult);
+			if (containerResult.length) {
+				await txConnection.query(sql.typeAlias('void')`
+        	UPDATE container
+        	SET organization = ${organization}
+        	WHERE guid IN (${sql.join(
+						containerResult.map(({ guid }) => guid),
+						sql.fragment`, `
+					)})
+				`);
+			}
+		});
+	};
+}
+
+export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizationalUnit: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const containerResult = await getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				{},
+				''
+			)(txConnection);
+			if (containerResult.length) {
+				await txConnection.query(sql.typeAlias('void')`
+					UPDATE container
+					SET organizational_unit = ${organizationalUnit}
+					WHERE guid IN (${sql.join(
+						containerResult.map(({ guid }) => guid),
+						sql.fragment`, `
+					)})
+				`);
+			}
+		});
 	};
 }
