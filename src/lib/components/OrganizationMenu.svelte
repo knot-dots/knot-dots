@@ -150,7 +150,7 @@
 		margin-bottom: 1rem;
 	}
 
-	.organization-menu h2 {
+	.organization-menu h2 a {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;
