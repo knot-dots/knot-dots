@@ -23,6 +23,7 @@
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import {
 		isContainer,
+		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isStrategyContainer,
@@ -152,7 +153,7 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('relations')}</span>
 				</a>
 			</li>
-			{#if $page.data.container.payload.type === 'measure'}
+			{#if isMeasureContainer($page.data.container)}
 				<li>
 					<a
 						class="button"
