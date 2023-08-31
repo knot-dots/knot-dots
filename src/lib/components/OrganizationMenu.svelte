@@ -9,6 +9,15 @@
 
 	let organizationToggle = false;
 
+	function toggle() {
+		organizationToggle = !organizationToggle;
+		if (organizationToggle) {
+			document.body.addEventListener('click', toggle);
+		} else {
+			document.body.removeEventListener('click', toggle);
+		}
+	}
+
 	function organizationURL(container: OrganizationContainer) {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
 		if (!container.payload.default) {
@@ -41,7 +50,7 @@
 	<button
 		class="quiet organization-menu-toggle"
 		type="button"
-		on:click={() => (organizationToggle = !organizationToggle)}
+		on:click|stopPropagation={toggle}
 		aria-controls="organization-menu-details"
 		aria-expanded={organizationToggle}
 		aria-label={organizationToggle ? $_('close_organization_menu') : $_('open_organization_menu')}
