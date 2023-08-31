@@ -200,6 +200,28 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
 				</a>
 			</li>
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+				>
+					<Icon src={BuildingStorefront} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
+				</a>
+			</li>
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+				>
+					<Icon src={PencilSquare} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
+				</a>
+			</li>
 		</ul>
 	{/if}
 
