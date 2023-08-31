@@ -1,17 +1,21 @@
+import { payloadTypes } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
-	getAllRelatedContainers,
+	getAllRelatedInternalObjectives,
 	getAllRelatedOrganizationalUnitContainers,
+	getContainerByGuid,
 	getManyContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, url, parent }) => {
+export const load = (async ({ locals, params, parent, url }) => {
 	let containers;
 	let organizationalUnits: string[] = [];
 	let overlayData;
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+
+	const { currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -24,24 +28,22 @@ export const load = (async ({ locals, url, parent }) => {
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.get('related-to') as string,
-				{ organizationalUnits },
-				''
-			)
+			getAllRelatedInternalObjectives(url.searchParams.get('related-to') as string, '')
 		);
 	} else {
 		containers = await locals.pool.connect(
 			getManyContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
+				[container.organization],
 				{
-					categories: url.searchParams.getAll('category'),
 					organizationalUnits,
-					topics: url.searchParams.getAll('topic'),
-					strategyTypes: url.searchParams.getAll('strategyType'),
 					terms: url.searchParams.get('terms') ?? '',
-					type: ['strategy']
+					type: [
+						payloadTypes.enum['internal_objective.internal_strategy'],
+						payloadTypes.enum['internal_objective.milestone'],
+						payloadTypes.enum['internal_objective.strategic_goal'],
+						payloadTypes.enum['internal_objective.task'],
+						payloadTypes.enum['internal_objective.vision']
+					]
 				},
 				url.searchParams.get('sort') ?? ''
 			)
@@ -56,12 +58,10 @@ export const load = (async ({ locals, url, parent }) => {
 			locals.pool.connect(
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
-			locals.pool.connect(
-				getAllRelatedContainers([container.organization], guid, { organizationalUnits }, '')
-			)
+			locals.pool.connect(getAllRelatedInternalObjectives(guid, ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}
 
-	return { containers, overlayData };
+	return { container, containers, overlayData };
 }) satisfies PageServerLoad;

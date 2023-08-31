@@ -124,38 +124,25 @@
 	})(payloadType);
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
+		const params = new URLSearchParams($page.url.searchParams);
+		params.set('is-part-of', String(detail.result.revision));
+
 		if (detail.event.submitter?.id === 'save-and-create-model') {
-			await goto(`/model/new?is-part-of=${detail.result.revision}`);
+			await goto(`/model/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-strategic-goal') {
-			await goto(`/strategic_goal/new?is-part-of=${detail.result.revision}`);
+			await goto(`/strategic_goal/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-operational-goal') {
-			await goto(`/operational_goal/new?is-part-of=${detail.result.revision}`);
+			await goto(`/operational_goal/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-measure') {
-			await goto(`/measure/new?is-part-of=${detail.result.revision}`);
+			await goto(`/measure/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-vision') {
-			await goto(
-				`/internal_objective.vision/new?is-part-of=${
-					detail.result.revision
-				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
-			);
+			await goto(`/internal_objective.vision/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-internal-objective-strategic-goal') {
-			await goto(
-				`/internal_objective.strategic_goal/new?is-part-of=${
-					detail.result.revision
-				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
-			);
+			await goto(`/internal_objective.strategic_goal/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-milestone') {
-			await goto(
-				`/internal_objective.milestone/new?is-part-of=${
-					detail.result.revision
-				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
-			);
+			await goto(`/internal_objective.milestone/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-task') {
-			await goto(
-				`/internal_objective.task/new?is-part-of=${
-					detail.result.revision
-				}&is-part-of-measure=${$page.url.searchParams.get('is-part-of-measure')}`
-			);
+			await goto(`/internal_objective.task/new?${params}`);
 		} else if (detail.result.payload.type === payloadTypes.enum.organizational_unit) {
 			await goto(`/organization/${$page.data.currentOrganization.guid}/organizational_units`);
 		} else {

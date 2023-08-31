@@ -20,10 +20,10 @@ export const load = (async ({ params, locals, url }) => {
 
 	const [strategies, measures] = await Promise.all([
 		locals.pool.connect(
-			getManyContainers([container.guid], { type: payloadTypes.enum.strategy }, '')
+			getManyContainers([container.guid], { type: [payloadTypes.enum.strategy] }, '')
 		),
 		locals.pool.connect(
-			getManyContainers([container.guid], { type: payloadTypes.enum.measure }, '')
+			getManyContainers([container.guid], { type: [payloadTypes.enum.measure] }, '')
 		)
 	]);
 

@@ -41,7 +41,7 @@
 		<BoardColumn
 			--bg-color="var(--color-{taskStatusColors.get(column.title)}-050)"
 			title={$_(column.title)}
-			addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.container.revision}&task-status=${column.title}`}
+			addItemUrl={`/${column.payloadType}/new`}
 			icon={taskStatusIcons.get(column.title)}
 		>
 			{#each data.containers.filter((c) => isTaskContainer(c) && c.payload.taskStatus === column.title) as container}

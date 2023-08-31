@@ -351,7 +351,7 @@ function prepareWhereCondition(filters: {
 	strategyTypes?: string[];
 	terms?: string;
 	topics?: string[];
-	type?: PayloadType;
+	type?: PayloadType[];
 }) {
 	const conditions = [
 		sql.fragment`valid_currently`,
@@ -394,8 +394,10 @@ function prepareWhereCondition(filters: {
 	if (filters.topics?.length) {
 		conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
 	}
-	if (filters.type) {
-		conditions.push(sql.fragment`payload->>'type' = ${filters.type}`);
+	if (filters.type?.length) {
+		conditions.push(
+			sql.fragment`payload->>'type' IN (${sql.join(filters.type, sql.fragment`, `)})`
+		);
 	}
 	return sql.join(conditions, sql.fragment` AND `);
 }
@@ -416,7 +418,7 @@ export function getManyContainers(
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
-		type?: PayloadType;
+		type?: PayloadType[];
 	},
 	sort: string
 ) {
@@ -948,7 +950,7 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 
 export function getAllContainersRelatedToMeasure(
 	revision: number,
-	filters: { terms?: string; type?: PayloadType },
+	filters: { terms?: string; type?: PayloadType[] },
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
@@ -1007,7 +1009,7 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 		`);
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
-			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8, s5.subject AS r9, s5.object AS r10, s6.subject AS r11, s6.object AS r12
+			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8, s5.subject AS r9, s5.object AS r10
 			FROM
 			(
 				SELECT cr.subject, cr.predicate, cr.object
@@ -1043,13 +1045,6 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.internal_strategy', 'text')
 				WHERE c.valid_currently
 			) s5 ON s4.object = s5.subject
-			FULL JOIN
-			(
-				SELECT cr.subject, cr.predicate, cr.object
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('measure', 'text')
-				WHERE c.valid_currently
-			) s6 ON s5.object = s6.subject
 			WHERE s1.subject = ${revision}
 				OR s1.object = ${revision}
 				OR s2.subject = ${revision}
@@ -1057,9 +1052,7 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 				OR s3.subject = ${revision}
 				OR s3.object = ${revision}
 				OR s4.subject = ${revision}
-			  OR s4.object = ${revision}
-				OR s5.subject = ${revision}
-			  OR s5.object = ${revision}
+				OR s4.object = ${revision}
 		`);
 
 		const containerResult = await connection.any(sql.typeAlias('container')`

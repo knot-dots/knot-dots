@@ -13,8 +13,13 @@ export default (user: User) =>
 			can('create', payloadTypes.enum.organization);
 
 			for (const payloadType of payloadTypes.options) {
-				can('update', payloadType, ['organization']);
-				can('update', payloadType, ['organizational_unit']);
+				if (
+					payloadType != payloadTypes.enum.organization &&
+					payloadType != payloadTypes.enum.organizational_unit
+				) {
+					can('update', payloadType, ['organization']);
+					can('update', payloadType, ['organizational_unit']);
+				}
 			}
 		}
 

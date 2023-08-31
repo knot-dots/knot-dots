@@ -1,17 +1,19 @@
 import {
 	getAllContainerRevisionsByGuid,
-	getAllRelatedContainers,
+	getAllRelatedInternalObjectives,
 	getAllRelatedOrganizationalUnitContainers,
+	getContainerByGuid,
 	getManyContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, url, parent }) => {
-	let containers;
+export const load = (async ({ locals, params, parent, url }) => {
 	let organizationalUnits: string[] = [];
 	let overlayData;
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+
+	const { currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -22,31 +24,17 @@ export const load = (async ({ locals, url, parent }) => {
 			.map(({ guid }) => guid);
 	}
 
-	if (url.searchParams.has('related-to')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.get('related-to') as string,
-				{ organizationalUnits },
-				''
-			)
-		);
-	} else {
-		containers = await locals.pool.connect(
-			getManyContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				{
-					categories: url.searchParams.getAll('category'),
-					organizationalUnits,
-					topics: url.searchParams.getAll('topic'),
-					strategyTypes: url.searchParams.getAll('strategyType'),
-					terms: url.searchParams.get('terms') ?? '',
-					type: ['strategy']
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
-	}
+	const containers = await locals.pool.connect(
+		getManyContainers(
+			[container.organization],
+			{
+				organizationalUnits,
+				terms: url.searchParams.get('terms') ?? '',
+				type: ['internal_objective.task']
+			},
+			url.searchParams.get('sort') ?? ''
+		)
+	);
 
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';
@@ -56,12 +44,10 @@ export const load = (async ({ locals, url, parent }) => {
 			locals.pool.connect(
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
-			locals.pool.connect(
-				getAllRelatedContainers([container.organization], guid, { organizationalUnits }, '')
-			)
+			locals.pool.connect(getAllRelatedInternalObjectives(guid, url.searchParams.get('sort') ?? ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}
 
-	return { containers, overlayData };
+	return { container, containers, overlayData };
 }) satisfies PageServerLoad;
