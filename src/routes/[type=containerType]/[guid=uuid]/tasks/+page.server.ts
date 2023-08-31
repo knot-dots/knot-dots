@@ -15,7 +15,7 @@ export const load = (async ({ locals, params, url }) => {
 			container.revision,
 			{
 				terms: url.searchParams.get('terms') ?? '',
-				type: 'internal_objective.task'
+				type: ['internal_objective.task']
 			},
 			url.searchParams.get('sort') ?? ''
 		)

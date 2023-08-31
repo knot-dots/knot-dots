@@ -41,7 +41,7 @@ export const load = (async ({ locals, url, parent }) => {
 					topics: url.searchParams.getAll('topic'),
 					strategyTypes: url.searchParams.getAll('strategyType'),
 					terms: url.searchParams.get('terms') ?? '',
-					type: 'strategy'
+					type: ['strategy']
 				},
 				url.searchParams.get('sort') ?? ''
 			)

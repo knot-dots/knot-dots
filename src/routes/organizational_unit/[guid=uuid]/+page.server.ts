@@ -22,14 +22,14 @@ export const load = (async ({ params, locals, url }) => {
 		locals.pool.connect(
 			getManyContainers(
 				[container.organization],
-				{ organizationalUnits: [container.guid], type: payloadTypes.enum.strategy },
+				{ organizationalUnits: [container.guid], type: [payloadTypes.enum.strategy] },
 				''
 			)
 		),
 		locals.pool.connect(
 			getManyContainers(
 				[container.organization],
-				{ organizationalUnits: [container.guid], type: payloadTypes.enum.measure },
+				{ organizationalUnits: [container.guid], type: [payloadTypes.enum.measure] },
 				''
 			)
 		)

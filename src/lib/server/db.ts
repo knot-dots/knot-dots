@@ -351,7 +351,7 @@ function prepareWhereCondition(filters: {
 	strategyTypes?: string[];
 	terms?: string;
 	topics?: string[];
-	type?: PayloadType;
+	type?: PayloadType[];
 }) {
 	const conditions = [
 		sql.fragment`valid_currently`,
@@ -394,8 +394,10 @@ function prepareWhereCondition(filters: {
 	if (filters.topics?.length) {
 		conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
 	}
-	if (filters.type) {
-		conditions.push(sql.fragment`payload->>'type' = ${filters.type}`);
+	if (filters.type?.length) {
+		conditions.push(
+			sql.fragment`payload->>'type' IN (${sql.join(filters.type, sql.fragment`, `)})`
+		);
 	}
 	return sql.join(conditions, sql.fragment` AND `);
 }
@@ -416,7 +418,7 @@ export function getManyContainers(
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
-		type?: PayloadType;
+		type?: PayloadType[];
 	},
 	sort: string
 ) {
@@ -948,7 +950,7 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 
 export function getAllContainersRelatedToMeasure(
 	revision: number,
-	filters: { terms?: string; type?: PayloadType },
+	filters: { terms?: string; type?: PayloadType[] },
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
