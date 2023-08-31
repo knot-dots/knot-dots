@@ -14,6 +14,11 @@ export default (user: User) =>
 
 			for (const payloadType of payloadTypes.options) {
 				can('update', payloadType, ['organization']);
+				can('update', payloadType, ['organizational_unit']);
 			}
+		}
+
+		if (user.isAuthenticated && user.roles.includes('admin')) {
+			can('create', payloadTypes.enum.organizational_unit);
 		}
 	});
