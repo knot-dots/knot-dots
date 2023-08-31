@@ -23,6 +23,7 @@
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import {
 		isContainer,
+		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isStrategyContainer,
 		payloadTypes,
@@ -198,6 +199,42 @@
 				>
 					<Icon src={BuildingLibrary} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
+				</a>
+			</li>
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+				>
+					<Icon src={BuildingStorefront} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
+				</a>
+			</li>
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ==
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+				>
+					<Icon src={PencilSquare} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
+				</a>
+			</li>
+		</ul>
+	{:else if 'container' in $page.data && isOrganizationalUnitContainer($page.data.container)}
+		<ul class="group group-tabs">
+			<li>
+				<a
+					class="button"
+					class:is-active={$page.url.pathname ===
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
+				>
+					<Icon src={InformationCircle} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
 				</a>
 			</li>
 			<li>
