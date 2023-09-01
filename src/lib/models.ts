@@ -1,4 +1,4 @@
-import { Cog8Tooth, Flag, LightBulb, Pencil } from 'svelte-hero-icons';
+import { CheckCircle, Cog8Tooth, Flag, LightBulb, Pencil } from 'svelte-hero-icons';
 import type { IconSource } from 'svelte-hero-icons';
 import { z } from 'zod';
 import sdg01 from '$lib/assets/sdg/sdg-01.svg';
@@ -122,7 +122,8 @@ const statusValues = [
 	'status.idea',
 	'status.in_planning',
 	'status.in_implementation',
-	'status.in_operation'
+	'status.in_operation',
+	'status.done'
 ] as const;
 
 export const status = z.enum(statusValues);
@@ -131,14 +132,16 @@ export const statusColors = new Map<Status, string>([
 	[status.enum['status.idea'], 'red'],
 	[status.enum['status.in_planning'], 'orange'],
 	[status.enum['status.in_implementation'], 'yellow'],
-	[status.enum['status.in_operation'], 'green']
+	[status.enum['status.in_operation'], 'green'],
+	[status.enum['status.done'], 'green']
 ]);
 
 export const statusIcons = new Map<Status, IconSource>([
 	[status.enum['status.idea'], LightBulb],
 	[status.enum['status.in_planning'], Pencil],
 	[status.enum['status.in_implementation'], Cog8Tooth],
-	[status.enum['status.in_operation'], Flag]
+	[status.enum['status.in_operation'], Flag],
+	[status.enum['status.done'], CheckCircle]
 ]);
 
 export type Status = z.infer<typeof status>;

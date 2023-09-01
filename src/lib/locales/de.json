@@ -222,6 +222,7 @@
 	"sort_modified": "Zuletzt bearbeitet",
 	"start_date": "Beginn",
 	"status": {
+		"done": "Abgeschlossen",
 		"idea": "Idee",
 		"in_implementation": "In Umsetzung",
 		"in_operation": "In Betrieb",
