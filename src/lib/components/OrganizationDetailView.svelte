@@ -22,7 +22,7 @@
 					<img alt="logo" class="logo" src={container.payload.image} />
 				{/if}
 				{container.payload.name}
-				<div class="icons">
+				<span class="icons">
 					{#if $user.isAuthenticated}
 						<a href="{container.guid}/edit" class="icons-element">
 							<Icon solid src={Pencil} size="20" />
@@ -31,7 +31,7 @@
 					<button class="icons-element" type="button" on:click={() => window.history.back()}>
 						<Icon solid src={ChevronLeft} size="20" />
 					</button>
-				</div>
+				</span>
 			</h2>
 		</header>
 

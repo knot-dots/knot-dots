@@ -358,6 +358,7 @@ label:has(> input[type='checkbox'], > input[type='radio']) {
 }
 
 input + .help {
+	display: block;
 	margin-top: 0.75rem;
 }
 

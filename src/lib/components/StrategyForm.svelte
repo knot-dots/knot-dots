@@ -35,7 +35,7 @@
 			<label>
 				{$_('logo')}
 				<input type="file" name="upload" accept="image/png,image/jpeg" />
-				<p class="help">{$_('image_upload_help')}</p>
+				<span class="help">{$_('image_upload_help')}</span>
 			</label>
 		{/if}
 	</svelte:fragment>
