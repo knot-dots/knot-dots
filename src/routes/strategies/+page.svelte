@@ -11,12 +11,9 @@
 </script>
 
 <Board>
-	{#each levels.options as levelOption}
-		<BoardColumn
-			addItemUrl="/strategy/new?level={levelOption}"
-			title={$_(levelOption)}
-		>
-			{#each data.containers.filter((c) => 'level' in c.payload && c.payload.level == levelOption) as container}
+	{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
+		<BoardColumn addItemUrl="/strategy/new?level={levelOption}" title={$_(levelOption)}>
+			{#each data.containers.filter((c) => 'level' in c.payload && c.payload.level === levelOption) as container}
 				<Card {container} />
 			{/each}
 		</BoardColumn>
