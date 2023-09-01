@@ -133,11 +133,6 @@
 </div>
 
 <style>
-	.logo {
-		height: 30px;
-		width: auto;
-	}
-
 	.organization-menu {
 		flex-shrink: 0;
 		position: relative;

@@ -18,6 +18,9 @@
 	<article class="details" class:details--page={isPage}>
 		<header>
 			<h2>
+				{#if 'image' in container.payload}
+					<img alt="logo" class="logo" src={container.payload.image} />
+				{/if}
 				{container.payload.name}
 				<div class="icons">
 					{#if $user.isAuthenticated}
@@ -39,11 +42,6 @@
 						<div class="description">
 							<h3>{$_('description')}</h3>
 							<Viewer value={container.payload.description} />
-						</div>
-					{/if}
-					{#if 'image' in container.payload}
-						<div class="image">
-							<img alt={$_('cover_image')} src={container.payload.image} />
 						</div>
 					{/if}
 				</slot>
