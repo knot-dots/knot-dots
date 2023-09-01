@@ -4,8 +4,8 @@
 	import { page } from '$app/stores';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import type { AnyContainer, Container } from '$lib/models';
 	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
+	import type { AnyContainer, Container } from '$lib/models';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[] = [];
