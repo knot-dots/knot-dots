@@ -109,4 +109,14 @@
 		flex-shrink: 0;
 		width: 19.5rem;
 	}
+
+	:global(.card) {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	:global(.card footer) {
+		margin-top: auto;
+	}
 </style>
