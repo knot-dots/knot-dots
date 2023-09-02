@@ -53,7 +53,7 @@
 					<ul class="carousel">
 						{#each strategies as strategy}
 							<li>
-								<Card container={strategy} />
+								<Card --height="100%" container={strategy} />
 							</li>
 						{/each}
 					</ul>
@@ -63,7 +63,7 @@
 					<ul class="carousel">
 						{#each measures as measure}
 							<li>
-								<Card container={measure} />
+								<Card --height="100%" container={measure} />
 							</li>
 						{/each}
 					</ul>
@@ -108,15 +108,5 @@
 	.carousel > li {
 		flex-shrink: 0;
 		width: 19.5rem;
-	}
-
-	:global(.card) {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-	}
-
-	:global(.card footer) {
-		margin-top: auto;
 	}
 </style>

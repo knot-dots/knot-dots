@@ -131,6 +131,9 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		height: var(--height, auto);
 		padding: 1.25rem;
 		width: 100%;
 	}
@@ -163,6 +166,7 @@
 		flex-direction: row;
 		gap: 12px;
 		justify-content: space-between;
+		margin-top: auto;
 	}
 
 	footer :global(.progress) {

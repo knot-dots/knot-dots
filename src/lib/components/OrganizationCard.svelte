@@ -63,6 +63,7 @@
 		box-shadow: var(--shadow-md);
 		cursor: pointer;
 		padding: 1.25rem;
+		height: 100%;
 		width: 20rem;
 	}
 
