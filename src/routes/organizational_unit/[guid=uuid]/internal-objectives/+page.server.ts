@@ -1,4 +1,4 @@
-import { payloadTypes } from '$lib/models';
+import { payloadTypes, predicates } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
@@ -48,6 +48,26 @@ export const load = (async ({ locals, params, parent, url }) => {
 				url.searchParams.get('sort') ?? ''
 			)
 		);
+	}
+
+	if (url.searchParams.has('excluded')) {
+		containers = containers.filter(({ relation, organizational_unit }) => {
+			if (
+				url.searchParams.getAll('excluded').includes('is-part-of-measure') &&
+				relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+			) {
+				return false;
+			}
+
+			if (
+				url.searchParams.getAll('excluded').includes('subordinate-organizational-units') &&
+				organizational_unit != container.guid
+			) {
+				return false;
+			}
+
+			return true;
+		});
 	}
 
 	if (url.searchParams.has('container-preview')) {

@@ -24,6 +24,8 @@
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"unexpected": "Wir arbeiten daran."
 	},
+	"exclude_measures": "Ohne Maßnahmen",
+	"exclude_subordinate_organizational_units": "Ohne untere Ebenen",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
 	"fulfillment_date": "Erfüllungsdatum",
