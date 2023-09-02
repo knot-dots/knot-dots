@@ -94,10 +94,10 @@ export function createContainer(container: NewContainer) {
 
 			if (container.payload.type === payloadTypes.enum.organization) {
 				organizationGuid = await createGroup(container.payload.name);
-				await updateAccessSettings(container.payload.slug);
+				await updateAccessSettings(organizationGuid);
 			} else if (container.payload.type === payloadTypes.enum.organizational_unit) {
 				organizationalUnitGuid = await createGroup(container.payload.name);
-				await updateAccessSettings(container.payload.slug);
+				await updateAccessSettings(organizationalUnitGuid);
 			}
 
 			const containerResult = organizationGuid

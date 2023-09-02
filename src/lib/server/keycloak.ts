@@ -49,14 +49,14 @@ const client = z.intersection(
 
 type Client = z.infer<typeof client>;
 
-function urlFromSlug(slug: string) {
+function urlFromGuid(guid: string) {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
-	url.hostname = `${slug}.${url.hostname}`;
+	url.hostname = `${guid}.${url.hostname}`;
 	url.pathname = '/*';
 	return url;
 }
 
-export async function updateAccessSettings(slug: string) {
+export async function updateAccessSettings(guid: string) {
 	const token = await getToken();
 
 	const getResponse = await fetch(
@@ -80,8 +80,8 @@ export async function updateAccessSettings(slug: string) {
 		);
 	}
 
-	data[0].webOrigins.push(urlFromSlug(slug).origin);
-	data[0].redirectUris.push(urlFromSlug(slug).href);
+	data[0].webOrigins.push(urlFromGuid(guid).origin);
+	data[0].redirectUris.push(urlFromGuid(guid).href);
 
 	const putResponse = await fetch(
 		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients/${data[0].id}`,

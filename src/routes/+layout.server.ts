@@ -17,14 +17,12 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
 		currentOrganization = organizations.find(({ payload }) => payload.default);
 	} else {
-		currentOrganization = organizations.find(({ payload }) =>
-			url.hostname.startsWith(`${payload.slug}.`)
-		);
+		currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
 	}
 
 	if (!currentOrganization) {
-		currentOrganizationalUnit = organizationalUnits.find(({ payload }) =>
-			url.hostname.startsWith(`${payload.slug}.`)
+		currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
+			url.hostname.startsWith(`${guid}.`)
 		);
 
 		currentOrganization = organizations.find(
