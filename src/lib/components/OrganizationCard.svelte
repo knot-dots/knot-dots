@@ -40,7 +40,7 @@
 		}
 	}
 
-	function organizationURL(container: OrganizationContainer) {
+	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
 		url.hostname = `${container.payload.slug}.${url.hostname}`;
 		url.pathname = `/${container.payload.type}/${container.guid}`;
