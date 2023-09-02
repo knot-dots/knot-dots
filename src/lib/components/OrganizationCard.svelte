@@ -42,7 +42,7 @@
 
 	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-		url.hostname = `${container.payload.slug}.${url.hostname}`;
+		url.hostname = `${container.guid}.${url.hostname}`;
 		url.pathname = `/${container.payload.type}/${container.guid}`;
 		return url.toString();
 	}
@@ -116,5 +116,14 @@
 		font-size: 0.875rem;
 		font-weight: 500;
 		margin-bottom: 1rem;
+	}
+
+	footer button:last-child {
+		--padding-x: 0.625rem;
+		--padding-y: 0.625rem;
+
+		flex-grow: 0;
+		flex-shrink: 0;
+		margin-left: auto;
 	}
 </style>

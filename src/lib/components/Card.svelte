@@ -174,7 +174,7 @@
 		flex-grow: 1;
 	}
 
-	footer .button:last-child {
+	footer button:last-child {
 		--padding-x: 0.625rem;
 		--padding-y: 0.625rem;
 

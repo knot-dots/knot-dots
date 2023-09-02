@@ -13,7 +13,7 @@
 	$: {
 		byLevel = new Map<number, OrganizationalUnitContainer[]>();
 
-		for (let l = data.container.payload.level + 1; l <= 4; l++) {
+		for (const l of [1, 2, 3, 4]) {
 			byLevel.set(
 				l,
 				data.containers.filter(({ payload }) => payload.level === l)

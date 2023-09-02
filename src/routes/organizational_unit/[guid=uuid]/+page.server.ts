@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
+import { isOrganizationalUnitContainer, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,

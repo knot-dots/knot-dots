@@ -44,6 +44,7 @@
 	let timer: ReturnType<typeof setTimeout>;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
+	let selectedExcluded = $page.url.searchParams.getAll('excluded');
 	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
 	let selectedTopic = $page.url.searchParams.getAll('topic');
@@ -75,6 +76,13 @@
 		query.delete('payloadType');
 		selectedPayloadType.forEach((t) => query.append('payloadType', t));
 		goto(`?${query.toString()}`, { keepFocus: true, replaceState: true });
+	}
+
+	function applyInternalObjectivesFilter() {
+		const query = new URLSearchParams($page.url.searchParams);
+		query.delete('excluded');
+		selectedExcluded.forEach((t) => query.append('excluded', t));
+		goto(`?${query.toString()}`, { keepFocus: true });
 	}
 
 	function debouncedSearch() {
@@ -329,6 +337,26 @@
 						</li>
 					</ul>
 				</li>
+			{:else if $page.url.pathname.includes('organization') && ($page.url.pathname.includes('internal-objectives') || $page.url.pathname.includes('tasks'))}
+				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+					<FilterIcon class="icon-20" />
+					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+					<span class:is-hidden={!$sidebarToggle}>
+						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+					</span>
+				</button>
+				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+					<li>
+						<Filters
+							options={[
+								[$_('exclude_measures'), 'is-part-of-measure'],
+								[$_('exclude_subordinate_organizational_units'), 'subordinate-organizational-units']
+							]}
+							bind:selectedOptions={selectedExcluded}
+							on:change={applyInternalObjectivesFilter}
+						/>
+					</li>
+				</ul>
 			{/if}
 			{#if !$page.url.pathname.includes('organizational_units')}
 				<li>
