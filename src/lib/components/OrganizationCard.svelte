@@ -117,4 +117,13 @@
 		font-weight: 500;
 		margin-bottom: 1rem;
 	}
+
+	footer button:last-child {
+		--padding-x: 0.625rem;
+		--padding-y: 0.625rem;
+
+		flex-grow: 0;
+		flex-shrink: 0;
+		margin-left: auto;
+	}
 </style>
