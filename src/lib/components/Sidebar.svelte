@@ -574,6 +574,7 @@
 	.search > input {
 		background-color: var(--color-gray-050);
 		border-bottom-left-radius: 0;
+		border-color: var(--button-border-color);
 		border-left: none;
 		border-top-left-radius: 0;
 		margin: 0 0 0 -8px;
