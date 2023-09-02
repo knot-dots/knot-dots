@@ -3,11 +3,16 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import logo from '$lib/assets/logo.png';
+	import logo1 from '$lib/assets/logo-1.svg';
+	import logo2 from '$lib/assets/logo-2.svg';
+	import logo3 from '$lib/assets/logo-3.svg';
 	import { isPartOf } from '$lib/models';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 
 	let organizationToggle = false;
+
+	const logos = [logo1, logo2, logo3];
+	const randomLogo = logos[Math.floor($page.data.random * logos.length)];
 
 	function toggle() {
 		organizationToggle = !organizationToggle;
@@ -58,7 +63,7 @@
 		<img
 			alt={$_('logo')}
 			class="logo"
-			src={selectedContext?.payload.image ? selectedContext.payload.image : logo}
+			src={selectedContext?.payload.image ? selectedContext.payload.image : randomLogo}
 		/>
 		<span>
 			{selectedContext ? selectedContext.payload.name : 'knotdots.net'}
@@ -120,7 +125,7 @@
 			<ul>
 				<li>
 					<a href={env.PUBLIC_BASE_URL}>
-						<img alt={$_('home')} class="logo" src={logo} />
+						<img alt={$_('home')} class="logo" src={randomLogo} />
 						knotdots.net
 					</a>
 				</li>
@@ -133,11 +138,6 @@
 </div>
 
 <style>
-	.logo {
-		height: 30px;
-		width: auto;
-	}
-
 	.organization-menu {
 		flex-shrink: 0;
 		position: relative;

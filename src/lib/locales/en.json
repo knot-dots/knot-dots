@@ -222,6 +222,7 @@
 	"sort_modified": "Last modified",
 	"start_date": "start",
 	"status": {
+		"done": "Done",
 		"idea": "Idea",
 		"in_implementation": "In implementation",
 		"in_operation": "In operation",

@@ -358,6 +358,7 @@ label:has(> input[type='checkbox'], > input[type='radio']) {
 }
 
 input + .help {
+	display: block;
 	margin-top: 0.75rem;
 }
 
@@ -414,6 +415,12 @@ fieldset {
 	--font-size: 1rem;
 }
 
+/* Logos of organizations */
+.logo {
+	height: 30px;
+	width: auto;
+}
+
 /* Container details page and form */
 .details {
 	background-color: white;
@@ -454,7 +461,6 @@ fieldset {
 	display: flex;
 	flex-direction: row;
 	gap: 1rem;
-	justify-content: space-between;
 }
 
 .details-content {
@@ -517,6 +523,7 @@ fieldset {
 	display: flex;
 	flex-shrink: 0;
 	gap: 1rem;
+	margin-left: auto;
 }
 
 .icons-element {

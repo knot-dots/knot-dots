@@ -120,6 +120,21 @@ YAML
   depends_on = [helm_release.cert_manager, helm_release.cert_manager_webhook]
 }
 
+resource "kubectl_manifest" "compress_middleware" {
+  count = var.with_scaleway_lb ? 1 : 0
+
+  yaml_body = <<YAML
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: test-compress
+spec:
+  compress: {}
+YAML
+
+  depends_on = [helm_release.traefik_ingress]
+}
+
 resource "kubernetes_ingress_v1" "strategytool" {
   metadata {
     name      = local.ingress_name
@@ -128,6 +143,7 @@ resource "kubernetes_ingress_v1" "strategytool" {
     annotations = {
       "cert-manager.io/cluster-issuer"                   = var.with_scaleway_lb ? local.cluster_issuer_name : null
       "traefik.ingress.kubernetes.io/router.entrypoints" = var.with_scaleway_lb ? "websecure" : "web"
+      "traefik.ingress.kubernetes.io/router.middlewares" = "default-test-compress@kubernetescrd"
     }
   }
 

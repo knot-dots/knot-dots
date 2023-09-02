@@ -1014,35 +1014,35 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.task', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.task')
 				WHERE c.valid_currently
 			) s1
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.milestone', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.milestone')
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.strategic_goal', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.strategic_goal')
 				WHERE c.valid_currently
 			) s3 ON s2.object = s3.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.vision', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.vision')
 				WHERE c.valid_currently
 			) s4 ON s3.object = s4.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.internal_strategy', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.internal_strategy')
 				WHERE c.valid_currently
 			) s5 ON s4.object = s5.subject
 			WHERE s1.subject = ${revision}

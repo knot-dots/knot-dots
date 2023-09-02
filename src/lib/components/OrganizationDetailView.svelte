@@ -18,8 +18,11 @@
 	<article class="details" class:details--page={isPage}>
 		<header>
 			<h2>
+				{#if 'image' in container.payload}
+					<img alt="logo" class="logo" src={container.payload.image} />
+				{/if}
 				{container.payload.name}
-				<div class="icons">
+				<span class="icons">
 					{#if $user.isAuthenticated}
 						<a href="{container.guid}/edit" class="icons-element">
 							<Icon solid src={Pencil} size="20" />
@@ -28,7 +31,7 @@
 					<button class="icons-element" type="button" on:click={() => window.history.back()}>
 						<Icon solid src={ChevronLeft} size="20" />
 					</button>
-				</div>
+				</span>
 			</h2>
 		</header>
 
@@ -39,11 +42,6 @@
 						<div class="description">
 							<h3>{$_('description')}</h3>
 							<Viewer value={container.payload.description} />
-						</div>
-					{/if}
-					{#if 'image' in container.payload}
-						<div class="image">
-							<img alt={$_('cover_image')} src={container.payload.image} />
 						</div>
 					{/if}
 				</slot>
@@ -110,5 +108,15 @@
 	.carousel > li {
 		flex-shrink: 0;
 		width: 19.5rem;
+	}
+
+	:global(.card) {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	:global(.card footer) {
+		margin-top: auto;
 	}
 </style>

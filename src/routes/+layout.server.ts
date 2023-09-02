@@ -5,7 +5,7 @@ import { getManyOrganizationalUnitContainers, getManyOrganizationContainers } fr
 import type { LayoutServerLoad } from './$types';
 import type { OrganizationalUnitContainer } from '$lib/models';
 
-export const load: LayoutServerLoad = async ({ locals, url }) => {
+export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	let currentOrganization;
 	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 
@@ -36,10 +36,13 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 
+	const random = await fetch('/random');
+
 	return {
 		currentOrganization,
 		currentOrganizationalUnit,
 		organizations,
-		organizationalUnits
+		organizationalUnits,
+		random: await random.json()
 	};
 };
