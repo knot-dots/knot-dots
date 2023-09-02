@@ -422,7 +422,6 @@ const organizationPayload = z.object({
 	description: z.string(),
 	image: z.string().url().optional(),
 	name: z.string(),
-	slug: z.string(),
 	type: z.literal(payloadTypes.enum.organization)
 });
 
@@ -431,7 +430,6 @@ const organizationalUnitPayload = z.object({
 	image: z.string().url().optional(),
 	level: z.number().int().positive(),
 	name: z.string(),
-	slug: z.string(),
 	type: z.literal(payloadTypes.enum.organizational_unit)
 });
 
