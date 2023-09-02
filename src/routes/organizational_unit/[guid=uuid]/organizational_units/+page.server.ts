@@ -1,14 +1,13 @@
-import {
-	getAllRelatedOrganizationalUnitContainers,
-	getContainerByGuid,
-	getManyOrganizationalUnitContainers
-} from '$lib/server/db';
+import { getAllRelatedOrganizationalUnitContainers, getContainerByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
+import type { OrganizationalUnitContainer } from '$lib/models';
 
 export const load = (async ({ locals, url, params }) => {
 	let containers;
 
-	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	const container = (await locals.pool.connect(
+		getContainerByGuid(params.guid)
+	)) as OrganizationalUnitContainer;
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -16,7 +15,7 @@ export const load = (async ({ locals, url, params }) => {
 		);
 	} else {
 		containers = await locals.pool.connect(
-			getManyOrganizationalUnitContainers({ organization: container.guid })
+			getAllRelatedOrganizationalUnitContainers(container.guid)
 		);
 	}
 

@@ -241,6 +241,17 @@
 			<li>
 				<a
 					class="button"
+					class:is-active={$page.url.pathname ===
+						`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
+					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
+				>
+					<Icon src={BuildingLibrary} size="20" mini />
+					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
+				</a>
+			</li>
+			<li>
+				<a
+					class="button"
 					class:is-active={$page.url.pathname ==
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
@@ -563,6 +574,7 @@
 	.search > input {
 		background-color: var(--color-gray-050);
 		border-bottom-left-radius: 0;
+		border-color: var(--button-border-color);
 		border-left: none;
 		border-top-left-radius: 0;
 		margin: 0 0 0 -8px;

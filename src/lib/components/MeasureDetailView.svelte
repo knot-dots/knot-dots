@@ -138,7 +138,7 @@
 				<h3>{$_('comment')}</h3>
 				<Viewer value={selectedRevision.payload.comment} />
 			</div>
-		{:else if selectedRevision.payload.status === status.enum['status.in_operation']}
+		{:else if selectedRevision.payload.status === status.enum['status.in_operation'] || selectedRevision.payload.status === status.enum['status.done']}
 			<div class="result">
 				<h3>{$_('result')}</h3>
 				<Viewer value={selectedRevision.payload.result} />

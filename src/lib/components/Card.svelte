@@ -6,13 +6,25 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
+	import { goto } from '$app/navigation';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[] = [];
 	export let showRelationFilter = false;
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
-	let relatedToURL: string;
+
+	async function applyRelationFilter(params: URLSearchParams) {
+		const query = new URLSearchParams(params);
+		if (relatedTo === container.guid) {
+			query.delete('related-to');
+		} else {
+			query.delete('related-to');
+			query.append('related-to', container.guid);
+		}
+		await goto(`?${query.toString()}`);
+	}
+
 	let containerPreviewURL: string;
 
 	$: {
@@ -23,17 +35,6 @@
 			query.set('container-preview', container.guid);
 		}
 		containerPreviewURL = `?${query.toString()}`;
-	}
-
-	$: {
-		const query = new URLSearchParams($page.url.searchParams);
-		if (relatedTo === container.guid) {
-			query.delete('related-to');
-		} else {
-			query.delete('related-to');
-			query.append('related-to', container.guid);
-		}
-		relatedToURL = `?${query.toString()}`;
 	}
 
 	let previewLink: HTMLAnchorElement;
@@ -113,13 +114,13 @@
 			<span class="badge">{$_(container.payload.strategyType)}</span>
 		{/if}
 		{#if showRelationFilter}
-			<a
-				href={relatedToURL}
-				class="button {relatedTo === container.guid ? 'is-active' : ''}"
+			<button
+				class={relatedTo === container.guid ? 'is-active' : ''}
 				title={$_('show_related_objects')}
+				on:click|stopPropagation={() => applyRelationFilter($page.url.searchParams)}
 			>
 				<Icon src={Share} size="20" mini />
-			</a>
+			</button>
 		{/if}
 	</footer>
 </article>
@@ -131,6 +132,9 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		height: var(--height, auto);
 		padding: 1.25rem;
 		width: 100%;
 	}
@@ -163,6 +167,7 @@
 		flex-direction: row;
 		gap: 12px;
 		justify-content: space-between;
+		margin-top: auto;
 	}
 
 	footer :global(.progress) {
