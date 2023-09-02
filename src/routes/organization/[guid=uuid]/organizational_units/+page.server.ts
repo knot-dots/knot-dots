@@ -1,17 +1,14 @@
 import {
-	getAllContainerRevisionsByGuid,
-	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyOrganizationalUnitContainers,
-	maybePartOf
+	getContainerByGuid,
+	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, url, parent }) => {
+export const load = (async ({ locals, url, params }) => {
 	let containers;
-	let overlayData;
 
-	const { currentOrganization: container } = await parent();
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -23,16 +20,5 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	}
 
-	if (url.searchParams.has('container-preview')) {
-		const guid = url.searchParams.get('container-preview') ?? '';
-		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
-		const container = revisions[revisions.length - 1];
-		const [isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
-			locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))
-		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
-	}
-
-	return { container, containers, overlayData };
+	return { container, containers };
 }) satisfies PageServerLoad;

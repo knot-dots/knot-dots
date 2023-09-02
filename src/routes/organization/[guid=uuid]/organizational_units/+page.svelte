@@ -2,8 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import Card from '$lib/components/Card.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
+	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -30,12 +29,8 @@
 			addItemUrl={`/organizational_unit/new?level=${level}`}
 		>
 			{#each containers as container}
-				<Card {container} showRelationFilter />
+				<OrganizationCard {container} showRelationFilter />
 			{/each}
 		</BoardColumn>
 	{/each}
 </Board>
-
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
-{/if}
