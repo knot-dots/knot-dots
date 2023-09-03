@@ -19,8 +19,8 @@
 		getKeycloak: () => kc
 	});
 
-	onMount(() => {
-		kc = initKeycloak({
+	onMount(async () => {
+		kc = await initKeycloak({
 			checkLoginIframe: false,
 			enableLogging: true,
 			silentCheckSsoFallback: false
