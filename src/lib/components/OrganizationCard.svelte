@@ -118,6 +118,10 @@
 		margin-bottom: 1rem;
 	}
 
+	footer {
+		display: flex;
+	}
+
 	footer button:last-child {
 		--padding-x: 0.625rem;
 		--padding-y: 0.625rem;
