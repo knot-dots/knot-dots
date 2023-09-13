@@ -139,7 +139,12 @@
 		on:deleteSuccessful={afterDelete}
 	/>
 {:else if isInternalStrategyContainer(container)}
-	<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveForm
+		{container}
+		isPartOfOptions={[]}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-vision">
 				{$_('save_and_create_vision')}
@@ -147,7 +152,12 @@
 		</svelte:fragment>
 	</InternalObjectiveForm>
 {:else if isVisionContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-internal-objective-strategic-goal">
 				{$_('save_and_create_strategic_goal')}
@@ -155,7 +165,12 @@
 		</svelte:fragment>
 	</InternalObjectiveForm>
 {:else if isInternalObjectiveStrategicGoalContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-milestone">
 				{$_('save_and_create_milestone')}
@@ -163,7 +178,12 @@
 		</svelte:fragment>
 	</InternalObjectiveForm>
 {:else if isMilestoneContainer(container)}
-	<InternalObjectiveMilestoneForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+	<InternalObjectiveMilestoneForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	>
 		<svelte:fragment slot="extra-buttons">
 			<button id="save-and-create-task">
 				{$_('save_and_create_task')}
@@ -171,5 +191,10 @@
 		</svelte:fragment>
 	</InternalObjectiveMilestoneForm>
 {:else if isTaskContainer(container)}
-	<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+	<InternalObjectiveTaskForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	/>
 {/if}
