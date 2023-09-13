@@ -84,9 +84,7 @@
 				method: 'POST',
 				body: formData,
 				headers: {
-					...(sessionStorage.getItem('token')
-						? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-						: undefined)
+					Authorization: `Bearer ${getKeycloak().token}`
 				}
 			});
 
@@ -105,9 +103,7 @@
 			method: 'POST',
 			body: JSON.stringify(data),
 			headers: {
-				...(sessionStorage.getItem('token')
-					? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-					: undefined),
+				Authorization: `Bearer ${getKeycloak().token}`,
 				'Content-Type': 'application/json'
 			}
 		});
@@ -130,9 +126,7 @@
 			const response = await fetch(`/container/${container.guid}`, {
 				method: 'DELETE',
 				headers: {
-					...(sessionStorage.getItem('token')
-						? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-						: undefined),
+					Authorization: `Bearer ${getKeycloak().token}`,
 					'Content-Type': 'application/json',
 					'If-Match': etag(container)
 				}
