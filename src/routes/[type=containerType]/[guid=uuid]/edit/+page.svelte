@@ -61,7 +61,7 @@
 		} else if (detail.event.submitter?.id === 'save-and-create-task') {
 			await goto(`/internal_objective.task/new?${params}`);
 		} else {
-			await goto(`../${container.guid}`);
+			await goto(`../${container.guid}`, { replaceState: true });
 		}
 	}
 

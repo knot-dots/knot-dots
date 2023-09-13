@@ -24,7 +24,7 @@
 				{container.payload.name}
 				<span class="icons">
 					{#if $user.isAuthenticated}
-						<a href="{container.guid}/edit" class="icons-element">
+						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
 							<Icon solid src={Pencil} size="20" />
 						</a>
 					{/if}
