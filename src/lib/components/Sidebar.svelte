@@ -338,25 +338,30 @@
 					</ul>
 				</li>
 			{:else if $page.url.pathname.includes('organization') && ($page.url.pathname.includes('internal-objectives') || $page.url.pathname.includes('tasks'))}
-				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-					<FilterIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-					</span>
-				</button>
-				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					<li>
-						<Filters
-							options={[
-								[$_('exclude_measures'), 'is-part-of-measure'],
-								[$_('exclude_subordinate_organizational_units'), 'subordinate-organizational-units']
-							]}
-							bind:selectedOptions={selectedExcluded}
-							on:change={applyInternalObjectivesFilter}
-						/>
-					</li>
-				</ul>
+				<li>
+					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+						<FilterIcon class="icon-20" />
+						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+						<span class:is-hidden={!$sidebarToggle}>
+							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+						</span>
+					</button>
+					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						<li>
+							<Filters
+								options={[
+									[$_('exclude_measures'), 'is-part-of-measure'],
+									[
+										$_('exclude_subordinate_organizational_units'),
+										'subordinate-organizational-units'
+									]
+								]}
+								bind:selectedOptions={selectedExcluded}
+								on:change={applyInternalObjectivesFilter}
+							/>
+						</li>
+					</ul>
+				</li>
 			{/if}
 			{#if !$page.url.pathname.includes('organizational_units')}
 				<li>
