@@ -314,6 +314,13 @@ const indicator = z.object({
 
 export type Indicator = z.infer<typeof indicator>;
 
+export const taskPriority = z.object({
+	priority: z.number().int(),
+	task: z.number().positive()
+});
+
+export type TaskPriority = z.infer<typeof taskPriority>;
+
 const basePayload = z
 	.object({
 		category: z.array(sustainableDevelopmentGoals),

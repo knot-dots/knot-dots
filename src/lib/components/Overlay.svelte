@@ -124,19 +124,34 @@
 				</svelte:fragment>
 			</StrategyForm>
 		{:else if isInternalStrategyContainer(container)}
-			<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveForm
+				{container}
+				isPartOfOptions={[]}
+				on:submitSuccessful={afterSubmit}
+				on:deleteSuccessful={afterDelete}
+			>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveForm>
 		{:else if isVisionContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={afterSubmit}
+				on:deleteSuccessful={afterDelete}
+			>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveForm>
 		{:else if isInternalObjectiveStrategicGoalContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={afterSubmit}
+				on:deleteSuccessful={afterDelete}
+			>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
@@ -146,13 +161,19 @@
 				{container}
 				{isPartOfOptions}
 				on:submitSuccessful={afterSubmit}
+				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveMilestoneForm>
 		{:else if isTaskContainer(container)}
-			<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
+			<InternalObjectiveTaskForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={afterSubmit}
+				on:deleteSuccessful={afterDelete}
+			>
 				<svelte:fragment slot="extra-buttons">
 					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
 				</svelte:fragment>

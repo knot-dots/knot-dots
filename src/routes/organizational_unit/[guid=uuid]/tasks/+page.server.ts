@@ -3,7 +3,7 @@ import {
 	getAllRelatedInternalObjectives,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
-	getManyContainers,
+	getManyTaskContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -26,15 +26,7 @@ export const load = (async ({ locals, params, parent, url }) => {
 	}
 
 	let containers = await locals.pool.connect(
-		getManyContainers(
-			[container.organization],
-			{
-				organizationalUnits,
-				terms: url.searchParams.get('terms') ?? '',
-				type: ['internal_objective.task']
-			},
-			url.searchParams.get('sort') ?? ''
-		)
+		getManyTaskContainers({ organizationalUnits, terms: url.searchParams.get('terms') ?? '' })
 	);
 
 	if (url.searchParams.has('excluded')) {

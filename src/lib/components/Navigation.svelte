@@ -98,7 +98,7 @@
 	.button-group.button-group-boards {
 		display: flex;
 		margin: 0 auto;
-		overflow-y: scroll;
+		overflow-y: auto;
 	}
 
 	.button-group.button-group-boards li:nth-child(1) {

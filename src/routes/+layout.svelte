@@ -3,6 +3,7 @@
 	import { onMount, setContext } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
+	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
 	import { initKeycloak, key } from '$lib/authentication';
@@ -26,6 +27,8 @@
 			silentCheckSsoFallback: false
 		});
 	});
+
+	overrideItemIdKeyNameBeforeInitialisingDndZones('guid');
 
 	const duration = 300;
 	const delay = duration + 100;

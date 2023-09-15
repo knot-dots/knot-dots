@@ -26,7 +26,8 @@ import type {
 	OrganizationContainer,
 	OrganizationalUnitContainer,
 	PayloadType,
-	Relation
+	Relation,
+	TaskPriority
 } from '$lib/models';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -557,6 +558,104 @@ export function getManyOrganizationalUnitContainers(filters: { organization?: st
 						WHERE object IN (${revisions}) OR subject IN (${revisions})
 						ORDER BY position
 			`)
+				: [];
+
+		return containerResult.map((c) => ({
+			...c,
+			relation: relationResult.filter(
+				({ object, subject }) => object === c.revision || subject === c.revision
+			),
+			user: userResult
+				.filter((u) => u.revision === c.revision)
+				.map(({ issuer, subject }) => ({ issuer, subject }))
+		}));
+	};
+}
+
+export function getManyTaskContainers(filters: {
+	measure?: number;
+	organization?: string;
+	organizationalUnits?: string[];
+	terms?: string;
+}) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const conditions = [
+			sql.fragment`valid_currently`,
+			sql.fragment`NOT deleted`,
+			sql.fragment`payload->>'type' = ${payloadTypes.enum['internal_objective.task']}`
+		];
+
+		if (filters.organization) {
+			conditions.push(sql.fragment`organization = ${filters.organization}`);
+		}
+
+		if (filters.organizationalUnits?.length) {
+			conditions.push(
+				sql.fragment`organizational_unit IN (${sql.join(
+					filters.organizationalUnits,
+					sql.fragment`, `
+				)})`
+			);
+		}
+
+		if (filters.terms?.trim()) {
+			conditions.push(
+				sql.fragment`to_tsquery('german', ${filters.terms
+					.trim()
+					.split(' ')
+					.map((t) => `${t}:*`)
+					.join(' & ')}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+			);
+		}
+
+		let containerResult;
+
+		if (filters.measure) {
+			containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT c.*
+			FROM container c
+			JOIN container_relation cr ON c.revision = cr.subject
+				AND cr.predicate = 'is-part-of-measure'
+				AND cr.object = ${filters.measure}
+      LEFT JOIN task_priority tp ON c.revision = tp.task
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
+			ORDER BY tp.priority;
+		`);
+		} else {
+			containerResult = await connection.any(sql.typeAlias('container')`
+				SELECT *
+				FROM container c
+				LEFT JOIN task_priority tp ON c.revision = tp.task
+				WHERE ${sql.join(conditions, sql.fragment` AND `)}
+				ORDER BY tp.priority
+			`);
+		}
+
+		const revisions = sql.join(
+			containerResult.map((c) => c.revision),
+			sql.fragment`, `
+		);
+
+		const userResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('userWithRevision')`
+					SELECT *
+					FROM container_user
+					WHERE revision IN (${revisions})
+				`)
+				: [];
+
+		const relationResult =
+			containerResult.length > 0
+				? await connection.any(sql.typeAlias('relation')`
+					SELECT cr.*
+					FROM container_relation cr
+					JOIN container co ON cr.object = co.revision AND co.valid_currently
+					JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+					WHERE object IN (${revisions})
+						OR subject IN (${revisions})
+					ORDER BY position
+				`)
 				: [];
 
 		return containerResult.map((c) => ({
@@ -1149,6 +1248,24 @@ export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizati
 					)})
 				`);
 			}
+		});
+	};
+}
+
+export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
+	return async (connection: DatabaseConnection) => {
+		const taskPriorityValues = taskPriority.map(({ priority, task }) => [priority, task]);
+		const tasks = taskPriority.map(({ task }) => task);
+
+		return connection.transaction(async (txConnection) => {
+			await txConnection.query(sql.typeAlias('void')`
+				DELETE FROM task_priority WHERE task IN (${sql.join(tasks, sql.fragment`,`)})
+			`);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO task_priority (priority, task)
+				SELECT *
+				FROM ${sql.unnest(taskPriorityValues, ['int4', 'int8'])}
+			`);
 		});
 	};
 }
