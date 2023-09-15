@@ -2,7 +2,7 @@ import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
 	getContainerByGuid,
-	getManyContainers,
+	getManyTaskContainers,
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -14,14 +14,10 @@ export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	let containers = await locals.pool.connect(
-		getManyContainers(
-			[container.organization],
-			{
-				terms: url.searchParams.get('terms') ?? '',
-				type: ['internal_objective.task']
-			},
-			url.searchParams.get('sort') ?? ''
-		)
+		getManyTaskContainers({
+			organization: container.organization,
+			terms: url.searchParams.get('terms') ?? ''
+		})
 	);
 
 	if (url.searchParams.has('excluded')) {

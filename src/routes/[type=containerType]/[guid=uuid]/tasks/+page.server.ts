@@ -1,9 +1,9 @@
 import {
-	getAllContainersRelatedToMeasure,
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
 	getContainerByGuid,
-	maybePartOf
+	maybePartOf,
+	getManyTaskContainers
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -11,14 +11,10 @@ export const load = (async ({ locals, params, url }) => {
 	let overlayData;
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	const containers = await locals.pool.connect(
-		getAllContainersRelatedToMeasure(
-			container.revision,
-			{
-				terms: url.searchParams.get('terms') ?? '',
-				type: ['internal_objective.task']
-			},
-			url.searchParams.get('sort') ?? ''
-		)
+		getManyTaskContainers({
+			measure: container.revision,
+			terms: url.searchParams.get('terms') ?? ''
+		})
 	);
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';

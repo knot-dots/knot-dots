@@ -1,53 +1,64 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
-	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import {
-		isPartOf,
 		isTaskContainer,
 		payloadTypes,
+		taskStatus,
 		taskStatusColors,
 		taskStatusIcons
 	} from '$lib/models';
-	import type { TaskStatus } from '$lib/models';
+	import type { TaskContainer, TaskStatus } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	const columns: { title: TaskStatus; payloadType: string }[] = [
+	type Column = { title: TaskStatus; payloadType: string; items: TaskContainer[] };
+
+	const columns: Column[] = [
 		{
-			title: 'task_status.idea',
-			payloadType: payloadTypes.enum['internal_objective.task']
+			title: taskStatus.enum['task_status.idea'],
+			payloadType: payloadTypes.enum['internal_objective.task'],
+			items: data.containers.filter(
+				(c) => isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.idea']
+			) as TaskContainer[]
 		},
 		{
-			title: 'task_status.in_planning',
-			payloadType: payloadTypes.enum['internal_objective.task']
+			title: taskStatus.enum['task_status.in_planning'],
+			payloadType: payloadTypes.enum['internal_objective.task'],
+			items: data.containers.filter(
+				(c) =>
+					isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.in_planning']
+			) as TaskContainer[]
 		},
 		{
-			title: 'task_status.in_progress',
-			payloadType: payloadTypes.enum['internal_objective.task']
+			title: taskStatus.enum['task_status.in_progress'],
+			payloadType: payloadTypes.enum['internal_objective.task'],
+			items: data.containers.filter(
+				(c) =>
+					isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.in_progress']
+			) as TaskContainer[]
 		},
 		{
-			title: 'task_status.done',
-			payloadType: payloadTypes.enum['internal_objective.task']
+			title: taskStatus.enum['task_status.done'],
+			payloadType: payloadTypes.enum['internal_objective.task'],
+			items: data.containers.filter(
+				(c) => isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.done']
+			) as TaskContainer[]
 		}
 	];
 </script>
 
 <Board>
 	{#each columns as column (column.title)}
-		<BoardColumn
+		<TaskBoardColumn
 			--bg-color="var(--color-{taskStatusColors.get(column.title)}-050)"
-			title={$_(column.title)}
-			addItemUrl={`/${column.payloadType}/new`}
+			addItemUrl={`/${column.payloadType}/new/?task-status=${column.title}`}
 			icon={taskStatusIcons.get(column.title)}
-		>
-			{#each data.containers.filter((c) => isTaskContainer(c) && c.payload.taskStatus === column.title) as container}
-				<Card {container} relatedContainers={data.containers.filter(isPartOf)} />
-			{/each}
-		</BoardColumn>
+			items={column.items}
+			status={column.title}
+		/>
 	{/each}
 </Board>
 
