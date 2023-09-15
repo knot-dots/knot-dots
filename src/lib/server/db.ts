@@ -26,7 +26,8 @@ import type {
 	OrganizationContainer,
 	OrganizationalUnitContainer,
 	PayloadType,
-	Relation
+	Relation,
+	TaskPriority
 } from '$lib/models';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -1149,6 +1150,24 @@ export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizati
 					)})
 				`);
 			}
+		});
+	};
+}
+
+export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
+	return async (connection: DatabaseConnection) => {
+		const taskPriorityValues = taskPriority.map(({ priority, task }) => [priority, task]);
+		const tasks = taskPriority.map(({ task }) => task);
+
+		return connection.transaction(async (txConnection) => {
+			await txConnection.query(sql.typeAlias('void')`
+				DELETE FROM task_priority WHERE task IN (${sql.join(tasks, sql.fragment`,`)})
+			`);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO task_priority (priority, task)
+				SELECT *
+				FROM ${sql.unnest(taskPriorityValues, ['int4', 'int8'])}
+			`);
 		});
 	};
 }
