@@ -363,7 +363,7 @@
 					</ul>
 				</li>
 			{/if}
-			{#if !$page.url.pathname.includes('organizational_units')}
+			{#if !$page.url.pathname.includes('organizational_units') && !$page.url.pathname.includes('tasks')}
 				<li>
 					<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
 						<SortDescendingIcon class="icon-20" />
