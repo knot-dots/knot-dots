@@ -4,7 +4,13 @@
 	import { page } from '$app/stores';
 	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isMeasureContainer, taskStatus, taskStatusColors, taskStatusIcons } from '$lib/models';
+	import {
+		isMeasureContainer,
+		owners,
+		taskStatus,
+		taskStatusColors,
+		taskStatusIcons
+	} from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, TaskStatus } from '$lib/models';
 
 	export let container: TaskContainer;
@@ -114,6 +120,14 @@
 					{$_(selectedRevision.payload.taskStatus)}
 				</span>
 			</p>
+		</div>
+		<div class="meta">
+			<h3 class="meta-key">{$_('owned_by')}</h3>
+			<ul class="meta-value">
+				{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+					<li>{owner.payload.name}</li>
+				{/each}
+			</ul>
 		</div>
 		{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 			<div class="meta">

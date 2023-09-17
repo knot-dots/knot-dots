@@ -7,6 +7,7 @@
 	import {
 		isOperationalGoalContainer,
 		isStrategyContainer,
+		owners,
 		sdgIcons,
 		status,
 		statusColors,
@@ -205,6 +206,14 @@
 					{$_(selectedRevision.payload.status)}
 				</span>
 			</p>
+		</div>
+		<div class="meta">
+			<h3 class="meta-key">{$_('owned_by')}</h3>
+			<ul class="meta-value">
+				{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+					<li>{owner.payload.name}</li>
+				{/each}
+			</ul>
 		</div>
 		<div class="meta">
 			<h3 class="meta-key">{$_('planned_duration')}</h3>

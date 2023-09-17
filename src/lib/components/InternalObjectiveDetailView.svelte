@@ -3,7 +3,7 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Progress from '$lib/components/Progress.svelte';
-	import { isMeasureContainer } from '$lib/models';
+	import { isMeasureContainer, owners } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 
 	export let container: Container;
@@ -72,6 +72,14 @@
 						</p>
 					</div>
 				{/if}
+				<div class="meta">
+					<h3 class="meta-key">{$_('owned_by')}</h3>
+					<ul class="meta-value">
+						{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+							<li>{owner.payload.name}</li>
+						{/each}
+					</ul>
+				</div>
 				{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 					<div class="meta">
 						<h3 class="meta-key">{$_('fulfillment_date')}</h3>
