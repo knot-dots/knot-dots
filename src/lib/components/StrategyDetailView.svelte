@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { ChevronLeft, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
-	import { isModelContainer, predicates, sdgIcons } from '$lib/models';
+	import { isModelContainer, owners, predicates, sdgIcons } from '$lib/models';
 	import type { AnyContainer, Container, ModelContainer, StrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -80,6 +81,14 @@
 				<div class="meta">
 					<h3 class="meta-key">{$_('level.label')}</h3>
 					<p class="meta-value">{$_(container.payload.level)}</p>
+				</div>
+				<div class="meta">
+					<h3 class="meta-key">{$_('owned_by')}</h3>
+					<ul class="meta-value">
+						{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+							<li>{owner.payload.name}</li>
+						{/each}
+					</ul>
 				</div>
 				<div class="meta">
 					<h3 class="meta-key">{$_('created_date')}</h3>

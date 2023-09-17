@@ -134,6 +134,10 @@
 						<p class="meta-value">{$_(container.payload.level)}</p>
 					</div>
 				{/if}
+				<div class="meta">
+					<h3 class="meta-key">{$_('owned_by')}</h3>
+					<p class="meta-value">{$_(container.organization)}</p>
+				</div>
 				{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 					<div class="meta">
 						<h3 class="meta-key">{$_('fulfillment_date')}</h3>

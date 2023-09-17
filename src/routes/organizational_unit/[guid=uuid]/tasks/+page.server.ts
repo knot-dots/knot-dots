@@ -7,23 +7,25 @@ import {
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import { predicates } from '$lib/models';
+import { isOrganizationalUnitContainer, predicates } from '$lib/models';
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 
-export const load = (async ({ locals, params, parent, url }) => {
+export const load = (async ({ locals, params, url }) => {
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	let organizationalUnits: string[] = [];
 	let overlayData;
-	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
-	const { currentOrganizationalUnit } = await parent();
-
-	if (currentOrganizationalUnit) {
-		const relatedOrganizationalUnits = await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-		);
-		organizationalUnits = relatedOrganizationalUnits
-			.filter(({ payload }) => payload.level >= currentOrganizationalUnit.payload.level)
-			.map(({ guid }) => guid);
+	if (!isOrganizationalUnitContainer(container)) {
+		throw error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
+
+	const relatedOrganizationalUnits = await locals.pool.connect(
+		getAllRelatedOrganizationalUnitContainers(container.guid)
+	);
+	organizationalUnits = relatedOrganizationalUnits
+		.filter(({ payload }) => payload.level >= container.payload.level)
+		.map(({ guid }) => guid);
 
 	let containers = await locals.pool.connect(
 		getManyTaskContainers({ organizationalUnits, terms: url.searchParams.get('terms') ?? '' })

@@ -1,13 +1,16 @@
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { isOrganizationalUnitContainer } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getContainerByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import type { OrganizationalUnitContainer } from '$lib/models';
 
 export const load = (async ({ locals, url, params }) => {
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	let containers;
 
-	const container = (await locals.pool.connect(
-		getContainerByGuid(params.guid)
-	)) as OrganizationalUnitContainer;
+	if (!isOrganizationalUnitContainer(container)) {
+		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+	}
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(

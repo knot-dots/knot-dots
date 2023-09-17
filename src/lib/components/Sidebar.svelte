@@ -337,28 +337,62 @@
 						</li>
 					</ul>
 				</li>
-			{:else if $page.url.pathname.includes('organization') && ($page.url.pathname.includes('internal-objectives') || $page.url.pathname.includes('tasks'))}
-				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-					<FilterIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-					</span>
-				</button>
-				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					<li>
-						<Filters
-							options={[
-								[$_('exclude_measures'), 'is-part-of-measure'],
-								[$_('exclude_subordinate_organizational_units'), 'subordinate-organizational-units']
-							]}
-							bind:selectedOptions={selectedExcluded}
-							on:change={applyInternalObjectivesFilter}
-						/>
-					</li>
-				</ul>
+			{:else if $page.url.pathname.startsWith('/organizational_unit') && $page.url.pathname.includes('internal-objectives')}
+				<li>
+					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+						<FilterIcon class="icon-20" />
+						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+						<span class:is-hidden={!$sidebarToggle}>
+							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+						</span>
+					</button>
+					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						<li>
+							<Filters
+								options={[
+									[$_('exclude_measures'), 'is-part-of-measure'],
+									[
+										$_('exclude_subordinate_organizational_units'),
+										'subordinate-organizational-units'
+									],
+									[
+										$_('exclude_superordinate_organizational_units'),
+										'superordinate-organizational-units'
+									]
+								]}
+								bind:selectedOptions={selectedExcluded}
+								on:change={applyInternalObjectivesFilter}
+							/>
+						</li>
+					</ul>
+				</li>
+			{:else if $page.url.pathname.startsWith('/organization') && ($page.url.pathname.includes('internal-objectives') || $page.url.pathname.includes('tasks'))}
+				<li>
+					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+						<FilterIcon class="icon-20" />
+						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+						<span class:is-hidden={!$sidebarToggle}>
+							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+						</span>
+					</button>
+					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						<li>
+							<Filters
+								options={[
+									[$_('exclude_measures'), 'is-part-of-measure'],
+									[
+										$_('exclude_subordinate_organizational_units'),
+										'subordinate-organizational-units'
+									]
+								]}
+								bind:selectedOptions={selectedExcluded}
+								on:change={applyInternalObjectivesFilter}
+							/>
+						</li>
+					</ul>
+				</li>
 			{/if}
-			{#if !$page.url.pathname.includes('organizational_units')}
+			{#if !$page.url.pathname.includes('organizational_units') && !$page.url.pathname.includes('tasks')}
 				<li>
 					<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
 						<SortDescendingIcon class="icon-20" />
