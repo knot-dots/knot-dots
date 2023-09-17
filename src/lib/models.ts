@@ -929,3 +929,14 @@ export function isPartOf(container: { relation: PartialRelation[]; revision: num
 export function etag(container: AnyContainer) {
 	return `"${container.revision}"`;
 }
+
+export function owners<T extends OrganizationContainer | OrganizationalUnitContainer>(
+	container: Container,
+	candidates: Array<T>
+) {
+	return (
+		candidates.filter(
+			({ guid }) => container.organization == guid || container.organizational_unit == guid
+		) ?? []
+	);
+}

@@ -1,4 +1,7 @@
-import { isOrganizationalUnitContainer, payloadTypes, predicates } from '$lib/models';
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { isOrganizationalUnitContainer, owners, payloadTypes, predicates } from '$lib/models';
+import type { OrganizationalUnitContainer } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
@@ -8,25 +11,15 @@ import {
 	maybePartOf
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	let containers;
-	let organizationalUnits: string[] = [];
 	let overlayData;
 
 	if (!isOrganizationalUnitContainer(container)) {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
-
-	const relatedOrganizationalUnits = await locals.pool.connect(
-		getAllRelatedOrganizationalUnitContainers(container.guid)
-	);
-	organizationalUnits = relatedOrganizationalUnits
-		.filter(({ payload }) => payload.level >= container.payload.level)
-		.map(({ guid }) => guid);
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -37,7 +30,6 @@ export const load = (async ({ locals, params, url }) => {
 			getManyContainers(
 				[container.organization],
 				{
-					organizationalUnits,
 					terms: url.searchParams.get('terms') ?? '',
 					type: [
 						payloadTypes.enum['internal_objective.internal_strategy'],
@@ -53,17 +45,33 @@ export const load = (async ({ locals, params, url }) => {
 	}
 
 	if (url.searchParams.has('excluded')) {
-		containers = containers.filter(({ relation, organizational_unit }) => {
+		const relatedOrganizationalUnits = await locals.pool.connect(
+			getAllRelatedOrganizationalUnitContainers(container.guid)
+		);
+
+		containers = containers.filter((c) => {
 			if (
 				url.searchParams.getAll('excluded').includes('is-part-of-measure') &&
-				relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+				c.relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+			) {
+				return false;
+			}
+
+			if (
+				url.searchParams.getAll('excluded').includes('superordinate-organizational-units') &&
+				owners<OrganizationalUnitContainer>(c, relatedOrganizationalUnits).filter(
+					({ payload }) => payload.level >= container.payload.level
+				).length == 0
 			) {
 				return false;
 			}
 
 			if (
 				url.searchParams.getAll('excluded').includes('subordinate-organizational-units') &&
-				organizational_unit != container.guid
+				c.organizational_unit != null &&
+				owners<OrganizationalUnitContainer>(c, relatedOrganizationalUnits).filter(
+					({ payload }) => payload.level <= container.payload.level
+				).length == 0
 			) {
 				return false;
 			}
