@@ -3,7 +3,14 @@
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isLevel, isMeasureContainer, isStrategyContainer, sdgIcons } from '$lib/models';
+	import {
+		isContainer,
+		isLevel,
+		isMeasureContainer,
+		isStrategyContainer,
+		owners,
+		sdgIcons
+	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 
 	export let container: AnyContainer;
@@ -134,10 +141,16 @@
 						<p class="meta-value">{$_(container.payload.level)}</p>
 					</div>
 				{/if}
-				<div class="meta">
-					<h3 class="meta-key">{$_('owned_by')}</h3>
-					<p class="meta-value">{$_(container.organization)}</p>
-				</div>
+				{#if isContainer(container)}
+					<div class="meta">
+						<h3 class="meta-key">{$_('owned_by')}</h3>
+						<ul class="meta-value">
+							{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+								<li>{owner.payload.name}</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
 				{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 					<div class="meta">
 						<h3 class="meta-key">{$_('fulfillment_date')}</h3>
