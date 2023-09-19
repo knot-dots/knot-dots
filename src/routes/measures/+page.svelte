@@ -18,9 +18,11 @@
 			title={$_(statusOption)}
 			icon={statusIcons.get(statusOption)}
 		>
-			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status === statusOption) as container}
-				<Card {container} />
-			{/each}
+			<div class="vertical-scroll-wrapper masked-overflow">
+				{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status === statusOption) as container}
+					<Card {container} />
+				{/each}
+			</div>
 		</BoardColumn>
 	{/each}
 </Board>

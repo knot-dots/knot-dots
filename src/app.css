@@ -603,6 +603,16 @@ fieldset {
 	padding-bottom: var(--mask-height);
 }
 
+/* Vertical scroll wrapper */
+.vertical-scroll-wrapper {
+	--mask-height: 0.875rem;
+
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: var(--mask-height) 0;
+}
+
 /* Badges */
 .badge {
 	--bg-color: var(--color-indigo-050);

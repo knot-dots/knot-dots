@@ -21,17 +21,17 @@
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>
 		{/if}
 	</header>
-	<div class="vertical-scroll-wrapper masked-overflow">
-		<slot />
-		{#if $user.isAuthenticated}
-			<footer>
-				<a href={addItemUrl}>
-					{$_('add_item')}
-					<Icon src={PlusSmall} size="24" mini />
-				</a>
-			</footer>
-		{/if}
-	</div>
+
+	<slot />
+
+	{#if $user.isAuthenticated}
+		<footer>
+			<a href={addItemUrl}>
+				{$_('add_item')}
+				<Icon src={PlusSmall} size="24" mini />
+			</a>
+		</footer>
+	{/if}
 </section>
 
 <style>
@@ -87,14 +87,5 @@
 		padding: 10px 20px;
 		text-align: center;
 		width: 100%;
-	}
-
-	.vertical-scroll-wrapper {
-		--mask-height: 0.875rem;
-
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		padding: var(--mask-height) 0;
 	}
 </style>
