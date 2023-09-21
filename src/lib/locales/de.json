@@ -187,6 +187,13 @@
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relations": "Beziehungen",
+	"relation_overlay": {
+		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu \"{nameOrTitle}\" festlegen möchten.",
+		"is_consistent_with":  "Diese Objekte unterstützen sich gegenseitig",
+		"is_duplicate_of": "Dopplung",
+		"is_equivalent_to": "Diese Objekte entsprechen sich",
+		"is_inconsistent_with": "Diese Objekte widersprechen sich"
+	},
 	"resources": {
 		"amount": "Menge",
 		"description": "Beschreibung",
