@@ -8,10 +8,11 @@
 		isLevel,
 		isMeasureContainer,
 		isStrategyContainer,
-		owners,
-		sdgIcons
+		owners
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
+	import { user } from '$lib/stores';
+	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];

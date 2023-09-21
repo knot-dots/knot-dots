@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Icon, LightBulb, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
-	import { goto } from '$app/navigation';
+	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[] = [];

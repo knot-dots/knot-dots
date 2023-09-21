@@ -4,7 +4,8 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { status, statusColors, statusIcons } from '$lib/models';
+	import { status } from '$lib/models';
+	import { statusColors, statusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
