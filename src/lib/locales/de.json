@@ -151,7 +151,7 @@
 		"renewable_energy": {
 			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowattstunden.",
 			"input_prompt": "Wie viele Kilowattstunden Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
-			"label": "Strom aus erneuerbaren Quellen"
+			"label": "Strom aus erneuerbaren Energien"
 		},
 		"social_housing": {
 			"description": "Die Anzahl öffentlich geförderter Mietwohneinheiten beträgt {contribution, number}.",
