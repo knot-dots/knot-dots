@@ -1,4 +1,15 @@
-import { CheckCircle, Cog8Tooth, Flag, LightBulb, Pencil } from 'svelte-hero-icons';
+import {
+	Bars2,
+	CheckCircle,
+	ChevronDoubleRight,
+	Cog8Tooth,
+	Flag,
+	LightBulb,
+	Minus,
+	Pencil,
+	Plus,
+	Square2Stack
+} from 'svelte-hero-icons';
 import type { IconSource } from 'svelte-hero-icons';
 import sdg01 from '$lib/assets/sdg/sdg-01.svg';
 import sdg02 from '$lib/assets/sdg/sdg-02.svg';
@@ -17,8 +28,15 @@ import sdg14 from '$lib/assets/sdg/sdg-14.svg';
 import sdg15 from '$lib/assets/sdg/sdg-15.svg';
 import sdg16 from '$lib/assets/sdg/sdg-16.svg';
 import sdg17 from '$lib/assets/sdg/sdg-17.svg';
-import { status, sustainableDevelopmentGoals, taskStatus } from '$lib/models';
+import { predicates, status, sustainableDevelopmentGoals, taskStatus } from '$lib/models';
 import type { Status, SustainableDevelopmentGoal, TaskStatus } from '$lib/models';
+
+export const predicateIcons = new Map<string, IconSource>([
+	[predicates.enum['is-consistent-with'], Plus],
+	[predicates.enum['is-duplicate-of'], Square2Stack],
+	[predicates.enum['is-equivalent-to'], Bars2],
+	[predicates.enum['is-inconsistent-with'], Minus]
+]);
 
 export const sdgIcons = new Map<SustainableDevelopmentGoal, string>([
 	[sustainableDevelopmentGoals.enum['sdg.01'], sdg01],
