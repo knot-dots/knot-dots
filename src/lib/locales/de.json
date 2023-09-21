@@ -149,7 +149,7 @@
 			"label": "umgewidmete Parkplätze"
 		},
 		"renewable_energy": {
-			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowatt.",
+			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowattstunden.",
 			"input_prompt": "Wie viele Kilowatt Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
 			"label": "Strom aus erneuerbaren Quellen"
 		},
