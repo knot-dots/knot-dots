@@ -107,7 +107,7 @@
 		},
 		"co2_emissions_households": {
 			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr in privaten Haushalten beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viel CO₂ wird durch private Haushalte zusätzlich ausgestoßen?",
+			"input_prompt": "Wie viele Tonnen CO₂ werden durch private Haushalte zusätzlich ausgestoßen?",
 			"label": "CO₂-Ausstoß — private Haushalte"
 		},
 		"co2_emissions_industry": {
