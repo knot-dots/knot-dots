@@ -165,7 +165,7 @@
 		},
 		"waste_generation": {
 			"description": "Die Abfallmenge pro Einwohner*in beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viel Abfall entsteht durch meine Maßnahme?",
+			"input_prompt": "Wie viel Abfall entsteht durch die Maßnahme?",
 			"label": "Abfallmenge (je Einwohner*in)"
 		},
 		"water_consumption": {
