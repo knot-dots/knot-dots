@@ -171,7 +171,7 @@
 		"water_consumption": {
 			"description": "Der Wasserverbrauch pro Einwohner*in beträgt {contribution, number} Kubikmeter.",
 			"input_prompt": "Wie viel Kubikmeter Wasser werden verbraucht?",
-			"label": "Wasserbezug pro Einwohner*in"
+			"label": "Wasserverbrauch pro Einwohner*in"
 		},
 		"women_in_elective_office": {
 			"description": "Der Frauenanteil im Stadtrat beträgt {contribution, number} %.",
