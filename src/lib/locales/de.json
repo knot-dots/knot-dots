@@ -127,7 +127,7 @@
 		},
 		"doctor_ratio": {
 			"description": "Die Ärzteversorgung beträgt {contribution, number} pro 100.000 Einwohner*innen.",
-			"input_prompt": "Wie viele Allgemeinärzte sind zusätzlich niedergelassen?",
+			"input_prompt": "Wie viele Allgemeinärzte sollen sich zusätzliche niederlassen?",
 			"label": "Ärzteversorgung"
 		},
 		"funding_culture_and_education": {
