@@ -2,14 +2,14 @@
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
 	"annotation": "Anmerkungen",
-	"boards": "Boards",
+	"boards": "Bretter",
 	"cancel": "Abbrechen",
-	"category": "SDG",
-	"close_organization_menu": "Organisationen-Menü schließen",
+	"category": "Kategorie",
+	"close_organization_menu": "Organisationsmenü schließen",
 	"close_sidebar": "Seitenleiste schließen",
 	"collapse_sidebar": "Seitenleiste zuklappen",
 	"comment": "Kommentar",
-	"created_date": "Erstellt am",
+	"created_date": "Erstellungsdatum",
 	"delete": "Löschen",
 	"description": "Beschreibung",
 	"editor": {
@@ -26,13 +26,13 @@
 	},
 	"exclude_measures": "Ohne Maßnahmen",
 	"exclude_subordinate_organizational_units": "Ohne untere Ebenen",
-	"exclude_superordinate_organizational_units": "Ohne übergeordnete Ebenen",
+	"exclude_superordinate_organizational_units": "Ohne höhere Ebenen",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
-	"home": "Startseite",
-	"image_upload_help": "JPG oder PNG, maximale Dateigröße 512 kB",
+	"home": "Zur Plattform",
+	"image_upload_help": "JPG, PNG; maximal 512 kB",
 	"information": "Information",
 	"indicator": {
 		"contribution": "Beitrag zu operativem Ziel",
@@ -56,7 +56,7 @@
 	"level": {
 		"global": "Global",
 		"label": "Räumliche Ebene",
-		"local": "Kommunal",
+		"local": "Gemeinde",
 		"multi_lateral": "Multilateral",
 		"national": "National",
 		"regional": "Regional",
@@ -72,42 +72,42 @@
 	"measures": "Maßnahmen",
 	"model": "Leitbild",
 	"models": "Leitbilder",
-	"modified_date": "Geändert am",
+	"modified_date": "Änderungsdatum",
 	"object": "Objekt",
 	"objectives": "Ziele",
-	"open_organization_menu": "Organisations-Menu öffnen",
+	"open_organization_menu": "Organisationsmenü öffnen",
 	"open_sidebar": "Seitenleiste öffnen",
 	"operational_goal": "Operatives Ziel",
 	"operational_goals": "Operative Ziele",
 	"organization": "Organisation",
-	"organizational_unit": "Organisations-Ebene",
+	"organizational_unit": "Organisationseinheit",
 	"organizational_unit_level": "Ebene {level, number}",
-	"organizational_units": "Organisations-Ebenen",
+	"organizational_units": "Organisationseinheiten",
 	"organizations": "Organisationen",
 	"other_organizations": "Andere Organisationen",
-	"owned_by": "Zuständig",
+	"owned_by": "Zuständigkeit",
 	"page_title": "Strategie-Werkzeug",
 	"planned_duration": "Geplante Laufzeit",
 	"progress": "Fortschritt",
 	"quantity": {
 		"broadband_coverage": {
-			"description": "{contribution, number} % der privaten Haushalte haben Zugang zu Breitbandinternet.",
-			"input_prompt": "Wieviele private Haushalte sollen Zugang zu Breitband-Internet haben?",
-			"label": "Zugang zu Breitband-Anschluss - private Haushalte"
+			"description": "Die Breitbandversorgung privater Haushalte beträgt {contribution, number} %.",
+			"input_prompt": "Wie viele private Haushalte werden zusätzlich mit Breitbandanschluss versorgt?",
+			"label": "Breitbandversorgung — Private Haushalte"
 		},
 		"charging_stations": {
-			"description": "Es gibt {contribution, number} Ladestationen pro 1.000 Einwohner*innen.",
-			"input_prompt": "Wieviele Ladestationen sollen pro 1.000 Einwohner*innen erreicht werden?",
-			"label": "Ladestationen"
+			"description": "Die Ladesäuleninfrastruktur beträgt {contribution, number} Stück pro 1.000 Einwohner*innen.",
+			"input_prompt": "Wie viele E-Ladesäulen pro 1.000 Einwohner werden neu geschaffen?",
+			"label": "Ladesäuleninfrastruktur"
 		},
 		"co2": {
-			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}} ",
+			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}}",
 			"input_prompt": "Wie viele Tonnen CO₂ sollen eingespart werden?",
 			"label": "CO₂"
 		},
 		"co2_emissions_households": {
-			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr in privaten Haushalten beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viele Tonnen CO₂ werden durch private Haushalte zusätzlich ausgestoßen?",
+			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr in privaten Haushalten beträgt {contribution, number} Tonnen. ",
+			"input_prompt": "Wie viel CO₂ wird durch private Haushalte zusätzlich ausgestoßen?",
 			"label": "CO₂-Ausstoß — private Haushalte"
 		},
 		"co2_emissions_industry": {
@@ -122,12 +122,12 @@
 		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
-			"input_prompt": "Wie viele Kilometer Radweg sollen gebaut werden?",
+			"input_prompt": "Wie viele Kilometer Radweg werden gebaut?",
 			"label": "Radweg"
 		},
 		"doctor_ratio": {
 			"description": "Die Ärzteversorgung beträgt {contribution, number} pro 100.000 Einwohner*innen.",
-			"input_prompt": "Wie viele Allgemeinärzte sollen sich zusätzliche niederlassen?",
+			"input_prompt": "Wie viele Allgemeinärzte sind zusätzlich niedergelassen?",
 			"label": "Ärzteversorgung"
 		},
 		"funding_culture_and_education": {
@@ -144,14 +144,14 @@
 			"label": "ökologische Landwirtschaft"
 		},
 		"parking_space": {
-			"description": "{contribution, plural, one {Es wurde # Parkplatz umgewidmet.} other {Es werden # Parkplätze umgewidmet.}}",
-			"input_prompt": "Wie viele Parkplätze sollen umgewidmet werden?",
+			"description": "{contribution, plural, one {Es wurde # Parkplatz umgewidmet.} other {Es wurden # Parkplätze umgewidmet.}}",
+			"input_prompt": "Wie viele Parkplätze werden umgewidmet?",
 			"label": "umgewidmete Parkplätze"
 		},
 		"renewable_energy": {
-			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowattstunden.",
-			"input_prompt": "Wie viele Kilowattstunden Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
-			"label": "Strom aus erneuerbaren Energien"
+			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowatt.",
+			"input_prompt": "Wie viele Kilowatt Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
+			"label": "Strom aus erneuerbaren Quellen"
 		},
 		"social_housing": {
 			"description": "Die Anzahl öffentlich geförderter Mietwohneinheiten beträgt {contribution, number}.",
@@ -165,20 +165,20 @@
 		},
 		"waste_generation": {
 			"description": "Die Abfallmenge pro Einwohner*in beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viel Abfall entsteht durch die Maßnahme?",
+			"input_prompt": "Wie viel Abfall entsteht durch meine Maßnahme?",
 			"label": "Abfallmenge (je Einwohner*in)"
 		},
 		"water_consumption": {
 			"description": "Der Wasserverbrauch pro Einwohner*in beträgt {contribution, number} Kubikmeter.",
 			"input_prompt": "Wie viel Kubikmeter Wasser werden verbraucht?",
-			"label": "Wasserverbrauch pro Einwohner*in"
+			"label": "Wasserbezug pro Einwohner*in"
 		},
 		"women_in_elective_office": {
 			"description": "Der Frauenanteil im Stadtrat beträgt {contribution, number} %.",
 			"input_prompt": "Wie viele Frauen sind im Stadtrat?",
 			"label": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag"
 		},
-		"women_in_leading_positions": {
+		"women_in_leadership": {
 			"description": "Der Anteil von Frauen in Führungspositionen in der Verwaltung beträgt {contribution, number} %.",
 			"input_prompt": "Wie viele der Führungspositionen in der Verwaltung sind von Frauen besetzt?",
 			"label": "Anteil Frauen in Führungspositionen in der Verwaltung"
@@ -187,6 +187,13 @@
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relations": "Beziehungen",
+	"relation_overlay": {
+		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu \"{nameOrTitle}\" festlegen möchten.",
+		"is_consistent_with":  "Diese Objekte unterstützen sich gegenseitig",
+		"is_duplicate_of": "Dopplung",
+		"is_equivalent_to": "Diese Objekte entsprechen sich",
+		"is_inconsistent_with": "Diese Objekte widersprechen sich"
+	},
 	"resources": {
 		"amount": "Menge",
 		"description": "Beschreibung",
@@ -204,29 +211,29 @@
 	"save_and_create_vision": "Speichern und neue Vision hinzufügen",
 	"sdg": {
 		"01": "Keine Armut",
-		"02": "1 - Kein Hunger",
-		"03": "2 - Gesundheit und Wohlergehen",
-		"04": "3 - Hochwertige Bildung",
-		"05": "5 - Geschlechtergleichheit",
-		"06": "6 - Sauberes Wasser und Sanitäreinrichtungen",
-		"07": "7 - Bezahlbare und saubere Energie",
-		"08": "8 - Menschenwürdige Arbeit und Wirtschaftswachstum",
-		"09": "9 - Industrie, Innovation und Infrastruktur",
-		"10": "10 - Weniger Ungleichheiten",
-		"11": "11 - Nachhaltige Städte und Gemeinden",
-		"12": "12 - Nachhaltige/r Konsum und Produktion",
-		"13": "13 - Maßnahmen zum Klimaschutz",
-		"14": "14 - Leben unter Wasser",
-		"15": "15 - Leben an Land",
-		"16": "16 - Frieden, Gerechtigkeit und starke Institutionen",
-		"17": "17 - Partnerschaften zur Erreichung der Ziele"
+		"02": "Kein Hunger",
+		"03": "Gesundheit und Wohlergehen",
+		"04": "Hochwertige Bildung",
+		"05": "Geschlechtergleichheit",
+		"06": "Sauberes Wasser und Sanitäreinrichtungen",
+		"07": "Bezahlbare und saubere Energie",
+		"08": "Menschenwürdige Arbeit und Wirtschaftswachstum",
+		"09": "Industrie, Innovation und Infrastruktur",
+		"10": "Weniger Ungleichheiten",
+		"11": "Nachhaltige Städte und Gemeinden",
+		"12": "Nachhaltige/r Konsum und Produktion",
+		"13": "Maßnahmen zum Klimaschutz",
+		"14": "Leben unter Wasser",
+		"15": "Leben an Land",
+		"16": "Frieden, Gerechtigkeit und starke Institutionen",
+		"17": "Partnerschaften zur Erreichung der Ziele"
 	},
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",
 	"start_date": "Beginn",
 	"status": {
-		"done": "Erledigt",
+		"done": "Abgeschlossen",
 		"idea": "Idee",
 		"in_implementation": "In Umsetzung",
 		"in_operation": "In Betrieb",
@@ -239,7 +246,7 @@
 	"strategy": "Strategie",
 	"strategy_type": {
 		"isek": "ISEK",
-		"label": "Art der Strategie",
+		"label": "Art",
 		"mobility": "Mobilität",
 		"smart_city": "Smart City",
 		"sustainability": "Nachhaltigkeit"
@@ -280,11 +287,11 @@
 	"unit": {
 		"cubic_meter": "m³",
 		"euro": "€",
-		"kilometer": "km",
 		"kilowatt": "kW",
 		"kilowatt_hour": "kWh",
+		"kilometer": "km",
 		"percent": "%",
-		"per_100000": "pro 100,000",
+		"per_100000": "pro 100.000",
 		"ton": "t"
 	}
 }
