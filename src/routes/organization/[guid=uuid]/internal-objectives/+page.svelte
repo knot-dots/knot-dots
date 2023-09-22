@@ -4,6 +4,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -45,4 +46,8 @@
 
 {#if data.overlayData}
 	<Overlay {...data.overlayData} />
+{/if}
+
+{#if data.relationOverlayData}
+	<RelationOverlay {...data.relationOverlayData} />
 {/if}
