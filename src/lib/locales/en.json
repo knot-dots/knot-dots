@@ -178,7 +178,7 @@
 			"input_prompt": "What is the proportion of women in elective office?",
 			"label": "proportion of women in elective office"
 		},
-		"women_in_leading_positions": {
+		"women_in_leadership": {
 			"description": "The proportion of women in leading positions within the administration is {contribution, number} %.",
 			"input_prompt": "What is the proportion of women in leading positions within the administration?",
 			"label": "proportion of women in leading positions within the administration"
@@ -187,6 +187,13 @@
 	"read_more": "Read more",
 	"register": "Register",
 	"relations": "Relations",
+	"relation_overlay": {
+		"help":  "Please drag all cards to one of the drop zones in order to establish the specified relation with \"{nameOrTitle}\".",
+		"is_consistent_with":  "consistent with",
+		"is_duplicate_of": "duplicate",
+		"is_equivalent_to": "equivalent",
+		"is_inconsistent_with": "inconsistent with"
+	},
 	"resources": {
 		"amount": "Amount",
 		"description": "Description",

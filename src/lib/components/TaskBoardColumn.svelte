@@ -137,13 +137,4 @@
 		text-align: center;
 		width: 100%;
 	}
-
-	.vertical-scroll-wrapper {
-		--mask-height: 0.875rem;
-
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		padding: var(--mask-height) 0;
-	}
 </style>

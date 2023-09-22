@@ -8,10 +8,11 @@
 		isLevel,
 		isMeasureContainer,
 		isStrategyContainer,
-		owners,
-		sdgIcons
+		owners
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
+	import { user } from '$lib/stores';
+	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
@@ -180,6 +181,11 @@
 			<a class="button primary" href="/{container.payload.type}/{container.guid}">
 				{$_('read_more')}
 			</a>
+			{#if $user.isAuthenticated}
+				<a class="button" href="?container-relations={container.guid}">
+					{$_('relations')}
+				</a>
+			{/if}
 		</footer>
 	{/if}
 </article>

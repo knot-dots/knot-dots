@@ -4,14 +4,9 @@
 	import { page } from '$app/stores';
 	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import {
-		isMeasureContainer,
-		owners,
-		taskStatus,
-		taskStatusColors,
-		taskStatusIcons
-	} from '$lib/models';
+	import { isMeasureContainer, owners, taskStatus } from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, TaskStatus } from '$lib/models';
+	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 
 	export let container: TaskContainer;
 	export let relatedContainers: Container[];
