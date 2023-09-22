@@ -152,6 +152,7 @@ export function createContainer(container: NewContainer) {
 				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
 				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
+				ON CONFLICT DO NOTHING
       `);
 
 			return { ...containerResult, user: userResult };
@@ -200,6 +201,7 @@ export function updateContainer(container: ModifiedContainer) {
 				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
 				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
+				ON CONFLICT DO NOTHING
       `);
 
 			// Create new records for relations having this container as object.
