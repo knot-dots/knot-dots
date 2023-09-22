@@ -178,7 +178,7 @@
 			"input_prompt": "What is the proportion of women in elective office?",
 			"label": "proportion of women in elective office"
 		},
-		"women_in_leading_positions": {
+		"women_in_leadership": {
 			"description": "The proportion of women in leading positions within the administration is {contribution, number} %.",
 			"input_prompt": "What is the proportion of women in leading positions within the administration?",
 			"label": "proportion of women in leading positions within the administration"
