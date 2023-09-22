@@ -8,8 +8,11 @@
 	import { status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
+	import { setContext } from 'svelte';
 
 	export let data: PageData;
+
+	setContext('mayShowRelationButton', true);
 </script>
 
 <Board>
