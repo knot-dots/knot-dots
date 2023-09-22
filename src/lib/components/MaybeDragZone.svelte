@@ -56,7 +56,7 @@
 					{container}
 					relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
 						isPartOf(container)
-					)}
+					) ?? []}
 					showRelationFilter
 				/>
 			</div>
@@ -69,7 +69,7 @@
 				{container}
 				relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
 					isPartOf(container)
-				)}
+				) ?? []}
 				showRelationFilter
 			/>
 		{/each}
