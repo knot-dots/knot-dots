@@ -838,34 +838,34 @@ export function getAllRelatedContainers(
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
 		`);
 
-		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+		const isPartOfResult = await connection.any(sql.typeAlias('relationPath')`
 			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8
 			FROM
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('measure', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('measure', 'text') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s1
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('operational_goal', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('operational_goal', 'text') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('strategic_goal', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('strategic_goal', 'text') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s3 ON s2.object = s3.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('model', 'text')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('model', 'text') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s4 ON s3.object = s4.subject
 			WHERE s1.subject = ${revision}
@@ -878,11 +878,24 @@ export function getAllRelatedContainers(
 			  OR s4.object = ${revision}
 		`);
 
+		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT cr.subject, cr.object
+			FROM container_relation cr
+			JOIN container cs ON cs.revision = cr.subject
+				AND cs.valid_currently
+				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+			JOIN container co ON co.revision = cr.object
+				AND co.valid_currently
+				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+			WHERE cs.revision = ${revision} OR co.revision = ${revision}
+		`);
+
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
 			WHERE revision IN (${sql.join(
-				relationPathResult
+				isPartOfResult
+					.concat(otherRelationResult)
 					.map((r) => Object.values(r))
 					.flat()
 					.concat([revision]),
@@ -948,28 +961,36 @@ export function getAllRelatedContainersByStrategyType(
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'measure'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'measure' AND cr.predicate = ${
+					predicates.enum['is-part-of']
+				}
 				WHERE c.valid_currently
 			) s1
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'operational_goal'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'operational_goal' AND cr.predicate = ${
+					predicates.enum['is-part-of']
+				}
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'strategic_goal'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'strategic_goal' AND cr.predicate = ${
+					predicates.enum['is-part-of']
+				}
 				WHERE c.valid_currently
 			) s3 ON s2.object = s3.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'model'
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'model' AND cr.predicate = ${
+					predicates.enum['is-part-of']
+				}
 				WHERE c.valid_currently
 			) s4 ON s3.object = s4.subject
 			JOIN container c ON s4.object = c.revision
@@ -1113,35 +1134,35 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.task')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.task') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s1
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.milestone')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.milestone') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s2 ON s1.object = s2.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.strategic_goal')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.strategic_goal') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s3 ON s2.object = s3.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.vision')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.vision') AND cr.predicate = ${predicates.enum['is-part-of']}
 				WHERE c.valid_currently
 			) s4 ON s3.object = s4.subject
 			FULL JOIN
 			(
 				SELECT cr.subject, cr.predicate, cr.object
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.internal_strategy')
+				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' IN ('internal_objective.internal_strategy') AND cr.predicate = ${predicates.enum['is-part-of-measure']}
 				WHERE c.valid_currently
 			) s5 ON s4.object = s5.subject
 			WHERE s1.subject = ${revision}
@@ -1154,11 +1175,24 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 				OR s4.object = ${revision}
 		`);
 
+		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT cr.subject, cr.object
+			FROM container_relation cr
+			JOIN container cs ON cs.revision = cr.subject
+				AND cs.valid_currently
+				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+			JOIN container co ON co.revision = cr.object
+				AND co.valid_currently
+				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+			WHERE cs.revision = ${revision} OR co.revision = ${revision}
+		`);
+
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
 			FROM container
 			WHERE revision IN (${sql.join(
 				relationPathResult
+					.concat(otherRelationResult)
 					.map((r) => Object.values(r))
 					.flat()
 					.concat([revision]),
