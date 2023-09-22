@@ -27,6 +27,8 @@
 		selected = $page.data.relationOverlayData.object;
 	} else if (relatedTo && $page.data.containers) {
 		selected = $page.data.containers.find(({ guid }: Container) => guid == relatedTo);
+	} else if ($page.data.container) {
+		selected = $page.data.container;
 	} else {
 		selected = undefined;
 	}
