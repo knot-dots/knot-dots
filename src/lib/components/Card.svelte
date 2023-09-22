@@ -184,8 +184,10 @@
 		display: flex;
 		flex-direction: column;
 		height: var(--height, auto);
+		hyphens: auto;
 		padding: 1.25rem;
 		width: 100%;
+		word-break: break-word;
 	}
 
 	.card:hover,
