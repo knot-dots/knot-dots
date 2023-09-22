@@ -5,6 +5,7 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import { isMeasureContainer, owners } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
+	import { user } from '$lib/stores';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
@@ -109,6 +110,11 @@
 			<a class="button primary" href="/{container.payload.type}/{container.guid}">
 				{$_('read_more')}
 			</a>
+			{#if $user.isAuthenticated}
+				<a class="button" href="?container-relations={container.guid}">
+					{$_('relations')}
+				</a>
+			{/if}
 		</footer>
 	{/if}
 </article>

@@ -16,6 +16,7 @@ export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	let containers;
 	let overlayData;
+	let relationOverlayData;
 
 	if (!isOrganizationalUnitContainer(container)) {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
@@ -91,7 +92,12 @@ export const load = (async ({ locals, params, url }) => {
 			locals.pool.connect(getAllRelatedInternalObjectives(guid, ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
+	} else if (url.searchParams.has('container-relations')) {
+		const guid = url.searchParams.get('container-relations') ?? '';
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
+		relationOverlayData = { object: container };
 	}
 
-	return { container, containers, overlayData };
+	return { container, containers, overlayData, relationOverlayData };
 }) satisfies PageServerLoad;

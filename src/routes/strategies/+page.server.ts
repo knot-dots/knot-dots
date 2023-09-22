@@ -11,6 +11,7 @@ export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	let organizationalUnits: string[] = [];
 	let overlayData;
+	let relationOverlayData;
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -61,7 +62,12 @@ export const load = (async ({ locals, url, parent }) => {
 			)
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
+	} else if (url.searchParams.has('container-relations')) {
+		const guid = url.searchParams.get('container-relations') ?? '';
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
+		relationOverlayData = { object: container };
 	}
 
-	return { containers, overlayData };
+	return { containers, overlayData, relationOverlayData };
 }) satisfies PageServerLoad;

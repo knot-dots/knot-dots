@@ -12,6 +12,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, params, url }) => {
 	let containers;
 	let overlayData;
+	let relationOverlayData;
 
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
@@ -67,7 +68,12 @@ export const load = (async ({ locals, params, url }) => {
 			locals.pool.connect(getAllRelatedInternalObjectives(guid, ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
+	} else if (url.searchParams.has('container-relations')) {
+		const guid = url.searchParams.get('container-relations') ?? '';
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
+		relationOverlayData = { object: container };
 	}
 
-	return { container, containers, overlayData };
+	return { container, containers, overlayData, relationOverlayData };
 }) satisfies PageServerLoad;

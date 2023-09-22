@@ -2,8 +2,9 @@
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import Card from '$lib/components/Card.svelte';
+	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import { status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
@@ -19,15 +20,19 @@
 			title={$_(statusOption)}
 			icon={statusIcons.get(statusOption)}
 		>
-			<div class="vertical-scroll-wrapper masked-overflow">
-				{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status === statusOption) as container}
-					<Card {container} />
-				{/each}
-			</div>
+			<MaybeDragZone
+				containers={data.containers.filter(
+					(c) => 'status' in c.payload && c.payload.status === statusOption
+				)}
+			/>
 		</BoardColumn>
 	{/each}
 </Board>
 
 {#if data.overlayData}
 	<Overlay {...data.overlayData} />
+{/if}
+
+{#if data.relationOverlayData}
+	<RelationOverlay {...data.relationOverlayData} />
 {/if}
