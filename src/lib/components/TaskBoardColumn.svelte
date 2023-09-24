@@ -4,7 +4,6 @@
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
 	import Card from '$lib/components/Card.svelte';
