@@ -64,6 +64,13 @@ export const load = (async ({ locals, params, url }) => {
 		}
 
 		if (
+			c.organizational_unit != null &&
+			!relatedOrganizationalUnits.map(({ guid }) => guid).includes(c.organizational_unit)
+		) {
+			return false;
+		}
+
+		if (
 			!url.searchParams.getAll('included').includes('superordinate-organizational-units') &&
 			owners<OrganizationalUnitContainer>(c, relatedOrganizationalUnits).filter(
 				({ payload }) => payload.level >= container.payload.level
