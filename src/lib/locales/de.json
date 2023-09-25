@@ -298,7 +298,7 @@
 		"kilowatt": "kW",
 		"kilowatt_hour": "kWh",
 		"percent": "%",
-		"per_100000": "pro 100,000",
+		"per_100000": "pro 100.000",
 		"ton": "t"
 	}
 }
