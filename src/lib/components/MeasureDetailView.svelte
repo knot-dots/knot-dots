@@ -4,16 +4,9 @@
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import {
-		isOperationalGoalContainer,
-		isStrategyContainer,
-		owners,
-		sdgIcons,
-		status,
-		statusColors,
-		statusIcons
-	} from '$lib/models';
+	import { isOperationalGoalContainer, isStrategyContainer, owners, status } from '$lib/models';
 	import type { AnyContainer, Container, MeasureContainer, Status } from '$lib/models';
+	import { sdgIcons, statusColors, statusIcons } from '$lib/theme/models';
 
 	export let container: MeasureContainer;
 	export let relatedContainers: Container[];

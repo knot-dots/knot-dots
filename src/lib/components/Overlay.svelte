@@ -273,19 +273,6 @@
 </div>
 
 <style>
-	.overlay {
-		height: calc(100%);
-		margin-left: -0.375rem;
-		overflow-x: hidden;
-		padding: 0;
-		width: 100%;
-		z-index: 1;
-	}
-
-	.overlay > :global(*) {
-		min-width: 100vw;
-	}
-
 	@media (min-width: 768px) {
 		.overlay {
 			width: 80%;

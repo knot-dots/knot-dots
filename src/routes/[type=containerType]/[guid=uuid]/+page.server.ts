@@ -42,10 +42,12 @@ export const load = (async ({ params, locals, url, parent }) => {
 
 	let relatedContainers: Container[];
 	if (params.type.includes('internal_objective')) {
-		relatedContainers = await locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ''));
+		relatedContainers = await locals.pool.connect(
+			getAllRelatedInternalObjectives(params.guid, ['hierarchical'], '')
+		);
 	} else {
 		relatedContainers = await locals.pool.connect(
-			getAllRelatedContainers([container.organization], params.guid, {}, '')
+			getAllRelatedContainers([container.organization], params.guid, ['hierarchical'], {}, '')
 		);
 	}
 

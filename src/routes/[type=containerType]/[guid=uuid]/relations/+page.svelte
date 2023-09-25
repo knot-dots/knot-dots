@@ -44,12 +44,14 @@
 <Board>
 	{#each columns as column (column.title)}
 		<BoardColumn title={$_(column.title)} addItemUrl={`/${column.payloadType}/new`}>
-			{#each data.allRelatedContainers.filter((c) => c.payload.type === column.payloadType) as container}
-				<Card
-					{container}
-					relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf)}
-				/>
-			{/each}
+			<div class="vertical-scroll-wrapper masked-overflow">
+				{#each data.allRelatedContainers.filter((c) => c.payload.type === column.payloadType) as container}
+					<Card
+						{container}
+						relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf)}
+					/>
+				{/each}
+			</div>
 		</BoardColumn>
 	{/each}
 </Board>

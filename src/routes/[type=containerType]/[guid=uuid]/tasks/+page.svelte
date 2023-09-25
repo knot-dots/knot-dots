@@ -2,14 +2,9 @@
 	import Board from '$lib/components/Board.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
-	import {
-		isTaskContainer,
-		payloadTypes,
-		taskStatus,
-		taskStatusColors,
-		taskStatusIcons
-	} from '$lib/models';
+	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer, TaskStatus } from '$lib/models';
+	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;

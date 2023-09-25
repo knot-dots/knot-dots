@@ -2,12 +2,16 @@
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { isPartOf, payloadTypes } from '$lib/models';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { payloadTypes } from '$lib/models';
 	import type { PageData } from './$types';
+	import { setContext } from 'svelte';
 
 	export let data: PageData;
+
+	setContext('mayShowRelationButton', true);
 
 	const columns = [
 		{
@@ -39,13 +43,17 @@
 			title={$_(column.title)}
 			addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.container.revision}`}
 		>
-			{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
-				<Card {container} relatedContainers={data.containers.filter(isPartOf)} showRelationFilter />
-			{/each}
+			<MaybeDragZone
+				containers={data.containers.filter((c) => c.payload.type === column.payloadType)}
+			/>
 		</BoardColumn>
 	{/each}
 </Board>
 
 {#if data.overlayData}
 	<Overlay {...data.overlayData} />
+{/if}
+
+{#if data.relationOverlayData}
+	<RelationOverlay {...data.relationOverlayData} />
 {/if}

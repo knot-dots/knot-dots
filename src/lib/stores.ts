@@ -1,5 +1,6 @@
 import { derived, writable } from 'svelte/store';
 import defineAbilityFor from '$lib/authorization';
+import type { Container } from '$lib/models';
 
 export const navigationToggle = writable(false);
 
@@ -31,3 +32,5 @@ export const keycloak = writable({
 	logoutUrl: '',
 	registerUrl: ''
 });
+
+export const dragged = writable<Container | undefined>();

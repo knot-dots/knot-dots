@@ -14,6 +14,7 @@ export const load = (async ({ locals, url, parent }) => {
 	let containersWithIndicatorContributions;
 	let organizationalUnits: string[] = [];
 	let overlayData;
+	let relationOverlayData;
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -31,6 +32,9 @@ export const load = (async ({ locals, url, parent }) => {
 				getAllRelatedContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					url.searchParams.get('related-to') as string,
+					url.searchParams.getAll('relations').length == 0
+						? ['hierarchical', 'other']
+						: url.searchParams.getAll('relations'),
 					{ organizationalUnits },
 					''
 				)
@@ -94,10 +98,22 @@ export const load = (async ({ locals, url, parent }) => {
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
 			locals.pool.connect(
-				getAllRelatedContainers([container.organization], guid, { organizationalUnits }, '')
+				getAllRelatedContainers(
+					[container.organization],
+					guid,
+					['hierarchical'],
+					{ organizationalUnits },
+					''
+				)
 			)
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
+	} else if (url.searchParams.has('container-relations')) {
+		const guid = url.searchParams.get('container-relations') ?? '';
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
+		relationOverlayData = { object: container };
 	}
-	return { containers, containersWithIndicatorContributions, overlayData };
+
+	return { containers, containersWithIndicatorContributions, overlayData, relationOverlayData };
 }) satisfies PageServerLoad;

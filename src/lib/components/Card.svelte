@@ -1,18 +1,37 @@
 <script lang="ts">
 	import { Icon, LightBulb, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { statusColors, statusIcons, taskStatusColors, taskStatusIcons } from '$lib/models';
+	import { predicates } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
-	import { goto } from '$app/navigation';
+	import {
+		predicateIcons,
+		statusColors,
+		statusIcons,
+		taskStatusColors,
+		taskStatusIcons
+	} from '$lib/theme/models';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[] = [];
 	export let showRelationFilter = false;
 
+	let selected: Container | undefined;
+
 	$: relatedTo = $page.url.searchParams.get('related-to');
+
+	$: if ($page.data.relationOverlayData?.object) {
+		selected = $page.data.relationOverlayData.object;
+	} else if (relatedTo && $page.data.containers) {
+		selected = $page.data.containers.find(({ guid }: Container) => guid == relatedTo);
+	} else if ($page.data.container) {
+		selected = $page.data.container;
+	} else {
+		selected = undefined;
+	}
 
 	async function applyRelationFilter(params: URLSearchParams) {
 		const query = new URLSearchParams(params);
@@ -54,6 +73,31 @@
 			previewLink.click();
 		}
 	}
+
+	const highlightColorMap = new Map<string, string>([
+		[predicates.enum['is-consistent-with'], 'var(--color-green-600)'],
+		[predicates.enum['is-equivalent-to'], 'var(--color-blue-600)'],
+		[predicates.enum['is-inconsistent-with'], 'var(--color-red-600)'],
+		[predicates.enum['is-duplicate-of'], 'var(--color-yellow-300)']
+	]);
+
+	function highlightColor(a: AnyContainer, b: Container) {
+		return a.relation
+			.filter(
+				(r) => a.revision != b.revision && (r.object === b.revision || r.subject === b.revision)
+			)
+			.map(({ predicate }) => highlightColorMap.get(predicate))
+			.pop();
+	}
+
+	function relationIcon(a: AnyContainer, b: Container) {
+		return a.relation
+			.filter(
+				(r) => a.revision != b.revision && (r.object === b.revision || r.subject === b.revision)
+			)
+			.map(({ predicate }) => predicateIcons.get(predicate))
+			.pop();
+	}
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -67,6 +111,8 @@
 	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
+	class:is-highlighted={selected && highlightColor(container, selected)}
+	style:--highlight-color={selected && highlightColor(container, selected)}
 	on:click={handleClick}
 	on:keyup={handleKeyUp}
 >
@@ -80,6 +126,11 @@
 				{/if}
 			</a>
 		</h3>
+		{#if selected && relationIcon(container, selected)}
+			<span>
+				<Icon src={relationIcon(container, selected)} size="24" />
+			</span>
+		{/if}
 	</header>
 
 	{#if 'summary' in container.payload}
@@ -135,8 +186,10 @@
 		display: flex;
 		flex-direction: column;
 		height: var(--height, auto);
+		hyphens: auto;
 		padding: 1.25rem;
 		width: 100%;
+		word-break: break-word;
 	}
 
 	.card:hover,
@@ -145,13 +198,34 @@
 		outline: none;
 	}
 
+	.card.is-highlighted {
+		border-color: var(--highlight-color, var(--color-gray-200));
+		border-width: 3px;
+		padding: calc(1.25rem - 2px);
+	}
+
+	:global(#dnd-action-dragged-el .card) {
+		cursor: grab;
+	}
+
+	:global(#dnd-action-dragged-el .card:hover) {
+		background: #ffffff;
+	}
+
 	header {
+		align-items: center;
+		display: flex;
 		margin-bottom: 1rem;
 	}
 
 	header h3 {
 		font-size: 1rem;
 		font-weight: 700;
+	}
+
+	header span {
+		flex-shrink: 0;
+		margin-left: auto;
 	}
 
 	.text {

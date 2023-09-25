@@ -4,9 +4,10 @@
 	import { page } from '$app/stores';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
-	import { isModelContainer, owners, predicates, sdgIcons } from '$lib/models';
+	import { isModelContainer, owners, predicates } from '$lib/models';
 	import type { AnyContainer, Container, ModelContainer, StrategyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
+	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];

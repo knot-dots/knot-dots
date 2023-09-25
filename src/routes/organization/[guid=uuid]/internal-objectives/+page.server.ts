@@ -12,12 +12,19 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, params, url }) => {
 	let containers;
 	let overlayData;
+	let relationOverlayData;
 
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedInternalObjectives(url.searchParams.get('related-to') as string, '')
+			getAllRelatedInternalObjectives(
+				url.searchParams.get('related-to') as string,
+				url.searchParams.getAll('relations').length == 0
+					? ['hierarchical', 'other']
+					: url.searchParams.getAll('relations'),
+				''
+			)
 		);
 	} else {
 		containers = await locals.pool.connect(
@@ -64,10 +71,15 @@ export const load = (async ({ locals, params, url }) => {
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
-			locals.pool.connect(getAllRelatedInternalObjectives(guid, ''))
+			locals.pool.connect(getAllRelatedInternalObjectives(guid, [], ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
+	} else if (url.searchParams.has('container-relations')) {
+		const guid = url.searchParams.get('container-relations') ?? '';
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
+		relationOverlayData = { object: container };
 	}
 
-	return { container, containers, overlayData };
+	return { container, containers, overlayData, relationOverlayData };
 }) satisfies PageServerLoad;

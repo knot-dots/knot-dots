@@ -16,6 +16,7 @@ export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	let containers;
 	let overlayData;
+	let relationOverlayData;
 
 	if (!isOrganizationalUnitContainer(container)) {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
@@ -23,7 +24,13 @@ export const load = (async ({ locals, params, url }) => {
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedInternalObjectives(url.searchParams.get('related-to') as string, '')
+			getAllRelatedInternalObjectives(
+				url.searchParams.get('related-to') as string,
+				url.searchParams.getAll('relations').length == 0
+					? ['hierarchical', 'other']
+					: url.searchParams.getAll('relations'),
+				''
+			)
 		);
 	} else {
 		containers = await locals.pool.connect(
@@ -88,10 +95,15 @@ export const load = (async ({ locals, params, url }) => {
 			locals.pool.connect(
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
-			locals.pool.connect(getAllRelatedInternalObjectives(guid, ''))
+			locals.pool.connect(getAllRelatedInternalObjectives(guid, ['hierarchical'], ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
+	} else if (url.searchParams.has('container-relations')) {
+		const guid = url.searchParams.get('container-relations') ?? '';
+		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
+		const container = revisions[revisions.length - 1];
+		relationOverlayData = { object: container };
 	}
 
-	return { container, containers, overlayData };
+	return { container, containers, overlayData, relationOverlayData };
 }) satisfies PageServerLoad;

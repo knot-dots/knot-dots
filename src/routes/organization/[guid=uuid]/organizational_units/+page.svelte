@@ -28,9 +28,11 @@
 			title={$_('organizational_unit_level', { values: { level } })}
 			addItemUrl={`/organizational_unit/new?level=${level}`}
 		>
-			{#each containers as container}
-				<OrganizationCard {container} showRelationFilter />
-			{/each}
+			<div class="vertical-scroll-wrapper masked-overflow">
+				{#each containers as container}
+					<OrganizationCard {container} showRelationFilter />
+				{/each}
+			</div>
 		</BoardColumn>
 	{/each}
 </Board>

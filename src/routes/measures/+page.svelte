@@ -2,12 +2,17 @@
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import Card from '$lib/components/Card.svelte';
+	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { status, statusColors, statusIcons } from '$lib/models';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import { status } from '$lib/models';
+	import { statusColors, statusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
+	import { setContext } from 'svelte';
 
 	export let data: PageData;
+
+	setContext('mayShowRelationButton', true);
 </script>
 
 <Board>
@@ -18,13 +23,19 @@
 			title={$_(statusOption)}
 			icon={statusIcons.get(statusOption)}
 		>
-			{#each data.containers.filter((c) => 'status' in c.payload && c.payload.status === statusOption) as container}
-				<Card {container} />
-			{/each}
+			<MaybeDragZone
+				containers={data.containers.filter(
+					(c) => 'status' in c.payload && c.payload.status === statusOption
+				)}
+			/>
 		</BoardColumn>
 	{/each}
 </Board>
 
 {#if data.overlayData}
 	<Overlay {...data.overlayData} />
+{/if}
+
+{#if data.relationOverlayData}
+	<RelationOverlay {...data.relationOverlayData} />
 {/if}
