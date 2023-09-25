@@ -186,7 +186,11 @@
 	},
 	"read_more": "Read more",
 	"register": "Register",
-	"relations": "Relations",
+	"relation_filter": {
+		"hierarchical": "Hierarchical",
+		"label": "Relations",
+		"other": "Other"
+	},
 	"relation_overlay": {
 		"help":  "Please drag all cards to one of the drop zones in order to establish the specified relation with \"{nameOrTitle}\".",
 		"is_consistent_with":  "consistent with",
@@ -194,6 +198,7 @@
 		"is_equivalent_to": "equivalent",
 		"is_inconsistent_with": "inconsistent with"
 	},
+	"relations": "Relations",
 	"resources": {
 		"amount": "Amount",
 		"description": "Description",

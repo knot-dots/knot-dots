@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import {
 		BuildingLibrary,
@@ -46,11 +47,18 @@
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedExcluded = $page.url.searchParams.getAll('excluded');
 	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
+	let selectedRelations = $page.url.searchParams.getAll('relations');
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
 	let selectedTopic = $page.url.searchParams.getAll('topic');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
+
+	$: if (selectedRelations.length == 0) {
+		selectedRelations = ['hierarchical', 'other'];
+	}
+
 	$filtersToggle =
 		selectedCategory.length > 0 ||
+		selectedRelations.length > 0 ||
 		selectedStrategyType.length > 0 ||
 		selectedTopic.length > 0 ||
 		selectedPayloadType.length > 0;
@@ -59,10 +67,12 @@
 	function applySortAndFilters() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
+		query.delete('relations');
 		query.delete('strategyType');
 		query.delete('topic');
 		query.delete('sort');
 		selectedCategory.forEach((c) => query.append('category', c));
+		selectedRelations.forEach((c) => query.append('relations', c));
 		selectedStrategyType.forEach((c) => query.append('strategyType', c));
 		selectedTopic.forEach((c) => query.append('topic', c));
 		if (selectedSort != 'modified') {
@@ -311,6 +321,19 @@
 						</span>
 					</button>
 					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						{#if $page.url.searchParams.has('related-to')}
+							<li transition:slide={{ axis: 'y' }}>
+								<Filters
+									label={$_('relation_filter.label')}
+									options={[
+										[$_('relation_filter.hierarchical'), 'hierarchical'],
+										[$_('relation_filter.other'), 'other']
+									]}
+									bind:selectedOptions={selectedRelations}
+									on:change={applySortAndFilters}
+								/>
+							</li>
+						{/if}
 						<li>
 							<Filters
 								label={$_('strategy_type.label')}
@@ -347,6 +370,19 @@
 						</span>
 					</button>
 					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						{#if $page.url.searchParams.has('related-to')}
+							<li transition:slide={{ axis: 'y' }}>
+								<Filters
+									label={$_('relation_filter.label')}
+									options={[
+										[$_('relation_filter.hierarchical'), 'hierarchical'],
+										[$_('relation_filter.other'), 'other']
+									]}
+									bind:selectedOptions={selectedRelations}
+									on:change={applySortAndFilters}
+								/>
+							</li>
+						{/if}
 						<li>
 							<Filters
 								options={[
@@ -376,6 +412,19 @@
 						</span>
 					</button>
 					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						{#if $page.url.pathname.includes('internal-objectives') && $page.url.searchParams.has('related-to')}
+							<li transition:slide={{ axis: 'y' }}>
+								<Filters
+									label={$_('relation_filter.label')}
+									options={[
+										[$_('relation_filter.hierarchical'), 'hierarchical'],
+										[$_('relation_filter.other'), 'other']
+									]}
+									bind:selectedOptions={selectedRelations}
+									on:change={applySortAndFilters}
+								/>
+							</li>
+						{/if}
 						<li>
 							<Filters
 								options={[
