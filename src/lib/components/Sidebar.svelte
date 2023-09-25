@@ -45,7 +45,7 @@
 	let timer: ReturnType<typeof setTimeout>;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
-	let selectedExcluded = $page.url.searchParams.getAll('excluded');
+	let selectedIncluded = $page.url.searchParams.getAll('included');
 	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
 	let selectedRelations = $page.url.searchParams.getAll('relations');
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
@@ -90,8 +90,8 @@
 
 	function applyInternalObjectivesFilter() {
 		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('excluded');
-		selectedExcluded.forEach((t) => query.append('excluded', t));
+		query.delete('included');
+		selectedIncluded.forEach((t) => query.append('included', t));
 		goto(`?${query.toString()}`, { keepFocus: true });
 	}
 
@@ -386,17 +386,17 @@
 						<li>
 							<Filters
 								options={[
-									[$_('exclude_measures'), 'is-part-of-measure'],
+									[$_('internal_objective_filter.include_measures'), 'is-part-of-measure'],
 									[
-										$_('exclude_subordinate_organizational_units'),
+										$_('internal_objective_filter.include_subordinate_organizational_units'),
 										'subordinate-organizational-units'
 									],
 									[
-										$_('exclude_superordinate_organizational_units'),
+										$_('internal_objective_filter.include_superordinate_organizational_units'),
 										'superordinate-organizational-units'
 									]
 								]}
-								bind:selectedOptions={selectedExcluded}
+								bind:selectedOptions={selectedIncluded}
 								on:change={applyInternalObjectivesFilter}
 							/>
 						</li>
@@ -428,13 +428,13 @@
 						<li>
 							<Filters
 								options={[
-									[$_('exclude_measures'), 'is-part-of-measure'],
+									[$_('internal_objective_filter.include_measures'), 'is-part-of-measure'],
 									[
-										$_('exclude_subordinate_organizational_units'),
+										$_('internal_objective_filter.include_subordinate_organizational_units'),
 										'subordinate-organizational-units'
 									]
 								]}
-								bind:selectedOptions={selectedExcluded}
+								bind:selectedOptions={selectedIncluded}
 								on:change={applyInternalObjectivesFilter}
 							/>
 						</li>

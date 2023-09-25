@@ -51,41 +51,39 @@ export const load = (async ({ locals, params, url }) => {
 		);
 	}
 
-	if (url.searchParams.has('excluded')) {
-		const relatedOrganizationalUnits = await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(container.guid)
-		);
+	const relatedOrganizationalUnits = await locals.pool.connect(
+		getAllRelatedOrganizationalUnitContainers(container.guid)
+	);
 
-		containers = containers.filter((c) => {
-			if (
-				url.searchParams.getAll('excluded').includes('is-part-of-measure') &&
-				c.relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
-			) {
-				return false;
-			}
+	containers = containers.filter((c) => {
+		if (
+			!url.searchParams.getAll('included').includes('is-part-of-measure') &&
+			c.relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+		) {
+			return false;
+		}
 
-			if (
-				url.searchParams.getAll('excluded').includes('superordinate-organizational-units') &&
-				owners<OrganizationalUnitContainer>(c, relatedOrganizationalUnits).filter(
-					({ payload }) => payload.level >= container.payload.level
-				).length == 0
-			) {
-				return false;
-			}
+		if (
+			!url.searchParams.getAll('included').includes('superordinate-organizational-units') &&
+			owners<OrganizationalUnitContainer>(c, relatedOrganizationalUnits).filter(
+				({ payload }) => payload.level >= container.payload.level
+			).length == 0
+		) {
+			return false;
+		}
 
-			if (
-				url.searchParams.getAll('excluded').includes('subordinate-organizational-units') &&
-				c.organizational_unit != null &&
-				owners<OrganizationalUnitContainer>(c, relatedOrganizationalUnits).filter(
-					({ payload }) => payload.level <= container.payload.level
-				).length == 0
-			) {
-				return false;
-			}
+		if (
+			!url.searchParams.getAll('included').includes('subordinate-organizational-units') &&
+			c.organizational_unit != null &&
+			owners<OrganizationalUnitContainer>(c, relatedOrganizationalUnits).filter(
+				({ payload }) => payload.level <= container.payload.level
+			).length == 0
+		) {
+			return false;
+		}
 
-			return true;
-		});
-	}
+		return true;
+	});
 
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';

@@ -20,25 +20,23 @@ export const load = (async ({ locals, params, url }) => {
 		})
 	);
 
-	if (url.searchParams.has('excluded')) {
-		containers = containers.filter(({ relation, organizational_unit }) => {
-			if (
-				url.searchParams.getAll('excluded').includes('is-part-of-measure') &&
-				relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
-			) {
-				return false;
-			}
+	containers = containers.filter(({ relation, organizational_unit }) => {
+		if (
+			!url.searchParams.getAll('included').includes('is-part-of-measure') &&
+			relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+		) {
+			return false;
+		}
 
-			if (
-				url.searchParams.getAll('excluded').includes('subordinate-organizational-units') &&
-				organizational_unit
-			) {
-				return false;
-			}
+		if (
+			!url.searchParams.getAll('included').includes('subordinate-organizational-units') &&
+			organizational_unit
+		) {
+			return false;
+		}
 
-			return true;
-		});
-	}
+		return true;
+	});
 
 	if (url.searchParams.has('container-preview')) {
 		const guid = url.searchParams.get('container-preview') ?? '';

@@ -24,22 +24,19 @@
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"unexpected": "Wir arbeiten daran."
 	},
-	"exclude_measures": "Ohne Maßnahmen",
-	"exclude_subordinate_organizational_units": "Ohne untere Ebenen",
-	"exclude_superordinate_organizational_units": "Ohne höhere Ebenen",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Zur Plattform",
 	"image_upload_help": "JPG, PNG; maximal 512 kB",
-	"information": "Information",
 	"indicator": {
 		"contribution": "Beitrag zu operativem Ziel",
 		"legend": "Indikator",
 		"okr": "OKR",
 		"quantity": "Größe"
 	},
+	"information": "Information",
 	"internal_objective": {
 		"internal_strategy": "Interne Strategie",
 		"internal_strategies": "Interne Strategien",
@@ -52,6 +49,11 @@
 		"tasks": "Aufgaben",
 		"vision": "Vision",
 		"visions": "Visionen"
+	},
+	"internal_objective_filter": {
+		"include_measures": "Mit Maßnahmen",
+		"include_subordinate_organizational_units": "Mit unteren Ebenen",
+		"include_superordinate_organizational_units": "Mit höheren Ebenen"
 	},
 	"level": {
 		"global": "Global",
