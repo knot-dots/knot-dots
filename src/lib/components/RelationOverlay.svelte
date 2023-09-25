@@ -55,6 +55,7 @@
 	function closeOverlay() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('container-relations');
+		query.set('container-preview', object.guid);
 		return `?${query.toString()}`;
 	}
 
