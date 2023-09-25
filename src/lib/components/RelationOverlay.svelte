@@ -180,6 +180,7 @@
 	}
 
 	.drop-zone.drop-zone--is-active {
+		outline-style: solid;
 		outline-width: 3px;
 	}
 

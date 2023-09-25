@@ -46,7 +46,7 @@
 {#if $page.data.relationOverlayData && $user.isAuthenticated}
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
-		use:dndzone={{ items, dropFromOthersDisabled: true }}
+		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
 		on:consider={handleDndConsider}
 		on:finalize={handleDndFinalize}
 	>

@@ -204,6 +204,14 @@
 		padding: calc(1.25rem - 2px);
 	}
 
+	:global(#dnd-action-dragged-el .card) {
+		cursor: grab;
+	}
+
+	:global(#dnd-action-dragged-el .card:hover) {
+		background: #ffffff;
+	}
+
 	header {
 		align-items: center;
 		display: flex;
