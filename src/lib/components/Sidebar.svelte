@@ -169,7 +169,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					>
@@ -180,7 +180,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 					>
@@ -217,7 +217,7 @@
 			<li>
 				<a
 					class="button"
-					class:is-active={$page.url.pathname ==
+					class:is-active={$page.url.pathname ===
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 				>
@@ -228,7 +228,7 @@
 			<li>
 				<a
 					class="button"
-					class:is-active={$page.url.pathname ==
+					class:is-active={$page.url.pathname ===
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 				>
