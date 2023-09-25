@@ -56,12 +56,6 @@
 		selectedRelations = ['hierarchical', 'other'];
 	}
 
-	$filtersToggle =
-		selectedCategory.length > 0 ||
-		selectedRelations.length > 0 ||
-		selectedStrategyType.length > 0 ||
-		selectedTopic.length > 0 ||
-		selectedPayloadType.length > 0;
 	$sortToggle = selectedSort != 'modified';
 
 	function applySortAndFilters() {
