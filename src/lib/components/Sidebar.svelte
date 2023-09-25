@@ -360,7 +360,7 @@
 						</li>
 					</ul>
 				</li>
-			{:else if $page.url.pathname.startsWith('/organizational_unit') && ($page.url.pathname.includes('internal-objectives') || $page.url.pathname.includes('tasks'))}
+			{:else if $page.url.pathname.startsWith('/organizational_unit') && $page.url.pathname.includes('internal-objectives')}
 				<li>
 					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
 						<FilterIcon class="icon-20" />
