@@ -1209,6 +1209,8 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 					.concat([revision]),
 				sql.fragment`, `
 			)})
+				AND valid_currently
+				AND NOT deleted
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
