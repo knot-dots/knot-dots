@@ -136,6 +136,12 @@
 				</div>
 			</div>
 		{/each}
+		<footer>
+			<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
+			<a class="button" href={`?related-to=${object.guid}`}
+				>{$_('relation_overlay.close_and_show_relations')}</a
+			>
+		</footer>
 	</div>
 </div>
 
@@ -156,11 +162,16 @@
 		gap: 2rem;
 	}
 
+	.details > p {
+		padding: 0 1.5rem;
+	}
+
 	.drop-zone-wrapper {
 		background-color: var(--color-gray-050);
 		color: var(--color-gray-500);
 		padding: 1rem;
 		position: relative;
+		margin: 0 1.5rem;
 		stroke: var(--color-gray-500);
 		text-align: center;
 	}
