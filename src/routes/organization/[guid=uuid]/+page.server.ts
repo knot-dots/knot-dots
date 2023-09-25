@@ -33,7 +33,9 @@ export const load = (async ({ params, locals, url }) => {
 		const container = revisions[revisions.length - 1];
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
-			locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))
+			locals.pool.connect(
+				getAllRelatedContainers([container.organization], guid, ['hierarchical'], {}, '')
+			)
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}

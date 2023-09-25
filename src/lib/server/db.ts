@@ -826,6 +826,7 @@ export function maybePartOf(organizationOrOrganizationalUnit: string, containerT
 export function getAllRelatedContainers(
 	organizations: string[],
 	guid: string,
+	relations: string[],
 	filters: {
 		categories?: string[];
 		organizationalUnits?: string[];
@@ -840,7 +841,8 @@ export function getAllRelatedContainers(
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
 		`);
 
-		const isPartOfResult = await connection.any(sql.typeAlias('relationPath')`
+		const isPartOfResult = relations.includes('hierarchical')
+			? await connection.any(sql.typeAlias('relationPath')`
 			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8
 			FROM
 			(
@@ -878,9 +880,11 @@ export function getAllRelatedContainers(
 				OR s3.object = ${revision}
 				OR s4.subject = ${revision}
 			  OR s4.object = ${revision}
-		`);
+		`)
+			: [];
 
-		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
+		const otherRelationResult = relations.includes('other')
+			? await connection.any(sql.typeAlias('relationPath')`
 			SELECT cr.subject, cr.object
 			FROM container_relation cr
 			JOIN container cs ON cs.revision = cr.subject
@@ -890,7 +894,8 @@ export function getAllRelatedContainers(
 				AND co.valid_currently
 				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
 			WHERE cs.revision = ${revision} OR co.revision = ${revision}
-		`);
+		`)
+			: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
@@ -1124,13 +1129,14 @@ export function getAllContainersRelatedToMeasure(
 	};
 }
 
-export function getAllRelatedInternalObjectives(guid: string, sort: string) {
+export function getAllRelatedInternalObjectives(guid: string, relations: string[], sort: string) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
 		`);
 
-		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+		const relationPathResult = relations.includes('hierarchical')
+			? await connection.any(sql.typeAlias('relationPath')`
 			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8, s5.subject AS r9, s5.object AS r10
 			FROM
 			(
@@ -1175,9 +1181,11 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 				OR s3.object = ${revision}
 				OR s4.subject = ${revision}
 				OR s4.object = ${revision}
-		`);
+		`)
+			: [];
 
-		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
+		const otherRelationResult = relations.includes('other')
+			? await connection.any(sql.typeAlias('relationPath')`
 			SELECT cr.subject, cr.object
 			FROM container_relation cr
 			JOIN container cs ON cs.revision = cr.subject
@@ -1187,7 +1195,8 @@ export function getAllRelatedInternalObjectives(guid: string, sort: string) {
 				AND co.valid_currently
 				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
 			WHERE cs.revision = ${revision} OR co.revision = ${revision}
-		`);
+		`)
+			: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
@@ -1247,6 +1256,7 @@ export function bulkUpdateOrganization(container: AnyContainer, organization: st
 			const containerResult = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
+				['hierarchical'],
 				{},
 				''
 			)(txConnection);
@@ -1271,6 +1281,7 @@ export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizati
 			const containerResult = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
+				['hierarchical'],
 				{},
 				''
 			)(txConnection);

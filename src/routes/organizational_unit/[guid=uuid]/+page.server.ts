@@ -45,6 +45,7 @@ export const load = (async ({ params, locals, url }) => {
 				getAllRelatedContainers(
 					[container.organization],
 					guid,
+					['hierarchical'],
 					{ organizationalUnits: [container.guid] },
 					''
 				)
