@@ -1,7 +1,6 @@
 import {
 	Bars2,
 	CheckCircle,
-	ChevronDoubleRight,
 	Cog8Tooth,
 	Flag,
 	LightBulb,

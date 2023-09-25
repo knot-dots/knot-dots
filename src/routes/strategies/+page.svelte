@@ -7,8 +7,11 @@
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import { levels } from '$lib/models';
 	import type { PageData } from './$types';
+	import { setContext } from 'svelte';
 
 	export let data: PageData;
+
+	setContext('mayShowRelationButton', true);
 </script>
 
 <Board>

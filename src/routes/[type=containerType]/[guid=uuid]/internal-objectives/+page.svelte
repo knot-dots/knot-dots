@@ -7,8 +7,11 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { PageData } from './$types';
+	import { setContext } from 'svelte';
 
 	export let data: PageData;
+
+	setContext('mayShowRelationButton', true);
 
 	const columns = [
 		{

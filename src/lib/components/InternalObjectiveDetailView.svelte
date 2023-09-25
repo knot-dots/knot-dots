@@ -6,10 +6,13 @@
 	import { isMeasureContainer, owners } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { user } from '$lib/stores';
+	import { getContext } from 'svelte';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+
+	let mayShowRelationButton = getContext('mayShowRelationButton');
 
 	$: measure = isMeasureContainer(container)
 		? container
@@ -110,7 +113,7 @@
 			<a class="button primary" href="/{container.payload.type}/{container.guid}">
 				{$_('read_more')}
 			</a>
-			{#if $user.isAuthenticated}
+			{#if mayShowRelationButton && $user.isAuthenticated}
 				<a class="button" href="?container-relations={container.guid}">
 					{$_('relations')}
 				</a>

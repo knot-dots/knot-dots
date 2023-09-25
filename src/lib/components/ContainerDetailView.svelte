@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
@@ -17,6 +18,8 @@
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+
+	let mayShowRelationButton = getContext('mayShowRelationButton');
 
 	$: strategy = isStrategyContainer(container)
 		? container
@@ -181,7 +184,7 @@
 			<a class="button primary" href="/{container.payload.type}/{container.guid}">
 				{$_('read_more')}
 			</a>
-			{#if $user.isAuthenticated}
+			{#if mayShowRelationButton && $user.isAuthenticated}
 				<a class="button" href="?container-relations={container.guid}">
 					{$_('relations')}
 				</a>

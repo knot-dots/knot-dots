@@ -59,7 +59,9 @@ export const load = (async ({ locals, params, url }) => {
 			locals.pool.connect(
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
-			locals.pool.connect(getAllRelatedInternalObjectives(guid, url.searchParams.get('sort') ?? ''))
+			locals.pool.connect(
+				getAllRelatedInternalObjectives(guid, ['hierarchical'], url.searchParams.get('sort') ?? '')
+			)
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}

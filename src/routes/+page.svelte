@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
@@ -9,6 +10,8 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+
+	setContext('mayShowRelationButton', true);
 
 	const columns = [
 		{ title: 'strategies', payloadType: payloadTypes.enum.strategy },

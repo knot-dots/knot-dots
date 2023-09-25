@@ -27,6 +27,8 @@
 		selected = $page.data.relationOverlayData.object;
 	} else if (relatedTo && $page.data.containers) {
 		selected = $page.data.containers.find(({ guid }: Container) => guid == relatedTo);
+	} else if ($page.data.container) {
+		selected = $page.data.container;
 	} else {
 		selected = undefined;
 	}
@@ -200,6 +202,14 @@
 		border-color: var(--highlight-color, var(--color-gray-200));
 		border-width: 3px;
 		padding: calc(1.25rem - 2px);
+	}
+
+	:global(#dnd-action-dragged-el .card) {
+		cursor: grab;
+	}
+
+	:global(#dnd-action-dragged-el .card:hover) {
+		background: #ffffff;
 	}
 
 	header {

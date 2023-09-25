@@ -32,6 +32,9 @@ export const load = (async ({ locals, url, parent }) => {
 				getAllRelatedContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					url.searchParams.get('related-to') as string,
+					url.searchParams.getAll('relations').length == 0
+						? ['hierarchical', 'other']
+						: url.searchParams.getAll('relations'),
 					{ organizationalUnits },
 					''
 				)
@@ -95,7 +98,13 @@ export const load = (async ({ locals, url, parent }) => {
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
 			locals.pool.connect(
-				getAllRelatedContainers([container.organization], guid, { organizationalUnits }, '')
+				getAllRelatedContainers(
+					[container.organization],
+					guid,
+					['hierarchical'],
+					{ organizationalUnits },
+					''
+				)
 			)
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };

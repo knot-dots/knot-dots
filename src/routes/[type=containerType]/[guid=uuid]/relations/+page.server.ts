@@ -16,12 +16,13 @@ export const load = (async ({ params, locals, url }) => {
 		locals.pool.connect(getAllContainersWithIndicatorContributions([container.organization])),
 		params.type.includes('internal_objective')
 			? locals.pool.connect(
-					getAllRelatedInternalObjectives(params.guid, url.searchParams.get('sort') ?? '')
+					getAllRelatedInternalObjectives(params.guid, [], url.searchParams.get('sort') ?? '')
 			  )
 			: locals.pool.connect(
 					getAllRelatedContainers(
 						[container.organization],
 						params.guid,
+						['hierarchical'],
 						{
 							categories: url.searchParams.getAll('category'),
 							topics: url.searchParams.getAll('topic'),
@@ -42,8 +43,10 @@ export const load = (async ({ params, locals, url }) => {
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
 			params.type.includes('internal_objective')
-				? locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ''))
-				: locals.pool.connect(getAllRelatedContainers([container.organization], guid, {}, ''))
+				? locals.pool.connect(getAllRelatedInternalObjectives(params.guid, [], ''))
+				: locals.pool.connect(
+						getAllRelatedContainers([container.organization], guid, ['hierarchical'], {}, '')
+				  )
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	}

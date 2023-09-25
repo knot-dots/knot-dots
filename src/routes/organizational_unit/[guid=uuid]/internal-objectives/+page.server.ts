@@ -24,7 +24,13 @@ export const load = (async ({ locals, params, url }) => {
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
-			getAllRelatedInternalObjectives(url.searchParams.get('related-to') as string, '')
+			getAllRelatedInternalObjectives(
+				url.searchParams.get('related-to') as string,
+				url.searchParams.getAll('relations').length == 0
+					? ['hierarchical', 'other']
+					: url.searchParams.getAll('relations'),
+				''
+			)
 		);
 	} else {
 		containers = await locals.pool.connect(
@@ -89,7 +95,7 @@ export const load = (async ({ locals, params, url }) => {
 			locals.pool.connect(
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
-			locals.pool.connect(getAllRelatedInternalObjectives(guid, ''))
+			locals.pool.connect(getAllRelatedInternalObjectives(guid, ['hierarchical'], ''))
 		]);
 		overlayData = { isPartOfOptions, relatedContainers, revisions };
 	} else if (url.searchParams.has('container-relations')) {
