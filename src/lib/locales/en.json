@@ -194,7 +194,7 @@
 	"relation_overlay": {
 		"close": "Close",
 		"close_and_show_relations": "Close and show relations",
-		"help":  "Please drag all cards to one of the drop zones in order to establish the specified relation with \"{nameOrTitle}\".",
+		"help": "Please drag all cards to one of the drop zones in order to establish the specified relation with \"{nameOrTitle}\".",
 		"is_consistent_with":  "consistent with",
 		"is_duplicate_of": "duplicate",
 		"is_equivalent_to": "equivalent",
