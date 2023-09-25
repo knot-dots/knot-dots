@@ -150,7 +150,7 @@
 		},
 		"renewable_energy": {
 			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowatt.",
-			"input_prompt": "Wie viele Kilowattstunden Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
+			"input_prompt": "Wie viele Kilowatt Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
 			"label": "Strom aus erneuerbaren Energien"
 		},
 		"social_housing": {
