@@ -3,12 +3,9 @@ import { maybePartOf } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params, locals, parent }) => {
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const { currentOrganization } = await parent();
 	const isPartOfOptions = await locals.pool.connect(
-		maybePartOf(
-			currentOrganizationalUnit ? currentOrganizationalUnit.guid : currentOrganization.guid,
-			params.type as PayloadType
-		)
+		maybePartOf(currentOrganization.guid, params.type as PayloadType)
 	);
 	return {
 		isPartOfOptions
