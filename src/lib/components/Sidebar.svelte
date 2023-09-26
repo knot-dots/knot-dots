@@ -45,7 +45,7 @@
 	let timer: ReturnType<typeof setTimeout>;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
-	let selectedExcluded = $page.url.searchParams.getAll('excluded');
+	let selectedIncluded = $page.url.searchParams.getAll('included');
 	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
 	let selectedRelations = $page.url.searchParams.getAll('relations');
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
@@ -56,12 +56,6 @@
 		selectedRelations = ['hierarchical', 'other'];
 	}
 
-	$filtersToggle =
-		selectedCategory.length > 0 ||
-		selectedRelations.length > 0 ||
-		selectedStrategyType.length > 0 ||
-		selectedTopic.length > 0 ||
-		selectedPayloadType.length > 0;
 	$sortToggle = selectedSort != 'modified';
 
 	function applySortAndFilters() {
@@ -90,8 +84,8 @@
 
 	function applyInternalObjectivesFilter() {
 		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('excluded');
-		selectedExcluded.forEach((t) => query.append('excluded', t));
+		query.delete('included');
+		selectedIncluded.forEach((t) => query.append('included', t));
 		goto(`?${query.toString()}`, { keepFocus: true });
 	}
 
@@ -175,7 +169,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					>
@@ -186,7 +180,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 					>
@@ -223,7 +217,7 @@
 			<li>
 				<a
 					class="button"
-					class:is-active={$page.url.pathname ==
+					class:is-active={$page.url.pathname ===
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 				>
@@ -234,7 +228,7 @@
 			<li>
 				<a
 					class="button"
-					class:is-active={$page.url.pathname ==
+					class:is-active={$page.url.pathname ===
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 				>
@@ -360,7 +354,7 @@
 						</li>
 					</ul>
 				</li>
-			{:else if $page.url.pathname.startsWith('/organizational_unit') && ($page.url.pathname.includes('internal-objectives') || $page.url.pathname.includes('tasks'))}
+			{:else if $page.url.pathname.startsWith('/organizational_unit') && $page.url.pathname.includes('internal-objectives')}
 				<li>
 					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
 						<FilterIcon class="icon-20" />
@@ -386,17 +380,17 @@
 						<li>
 							<Filters
 								options={[
-									[$_('exclude_measures'), 'is-part-of-measure'],
+									[$_('internal_objective_filter.include_measures'), 'is-part-of-measure'],
 									[
-										$_('exclude_subordinate_organizational_units'),
+										$_('internal_objective_filter.include_subordinate_organizational_units'),
 										'subordinate-organizational-units'
 									],
 									[
-										$_('exclude_superordinate_organizational_units'),
+										$_('internal_objective_filter.include_superordinate_organizational_units'),
 										'superordinate-organizational-units'
 									]
 								]}
-								bind:selectedOptions={selectedExcluded}
+								bind:selectedOptions={selectedIncluded}
 								on:change={applyInternalObjectivesFilter}
 							/>
 						</li>
@@ -428,13 +422,13 @@
 						<li>
 							<Filters
 								options={[
-									[$_('exclude_measures'), 'is-part-of-measure'],
+									[$_('internal_objective_filter.include_measures'), 'is-part-of-measure'],
 									[
-										$_('exclude_subordinate_organizational_units'),
+										$_('internal_objective_filter.include_subordinate_organizational_units'),
 										'subordinate-organizational-units'
 									]
 								]}
-								bind:selectedOptions={selectedExcluded}
+								bind:selectedOptions={selectedIncluded}
 								on:change={applyInternalObjectivesFilter}
 							/>
 						</li>

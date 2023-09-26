@@ -2,7 +2,6 @@
 	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
-	import OrganizationOverlay from '$lib/components/OrganizationOverlay.svelte';
 	import { payloadTypes } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';

@@ -24,22 +24,19 @@
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"unexpected": "We are working on it."
 	},
-	"exclude_measures": "Without measures",
-	"exclude_subordinate_organizational_units": "Without subordinate units",
-	"exclude_superordinate_organizational_units": "Without superordinate units",
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
 	"image_upload_help": "JPG, PNG; max 512 kB",
-	"information": "Information",
 	"indicator": {
 		"contribution": "Contribution to operative goal",
 		"legend": "Indicator",
 		"okr": "OKR",
 		"quantity": "Quantity"
 	},
+	"information": "Information",
 	"internal_objective": {
 		"internal_strategy": "Internal strategy",
 		"internal_strategies": "Internal strategies",
@@ -52,6 +49,11 @@
 		"tasks": "Tasks",
 		"vision": "Vision",
 		"visions": "Visions"
+	},
+	"internal_objective_filter": {
+		"include_measures": "With measures",
+		"include_subordinate_organizational_units": "With subordinate units",
+		"include_superordinate_organizational_units": "With superordinate units"
 	},
 	"level": {
 		"global": "Global",
@@ -194,7 +196,7 @@
 	"relation_overlay": {
 		"close": "Close",
 		"close_and_show_relations": "Close and show relations",
-		"help":  "Please drag all cards to one of the drop zones in order to establish the specified relation with \"{nameOrTitle}\".",
+		"help": "Please drag all cards to one of the drop zones in order to establish the specified relation with \"{nameOrTitle}\".",
 		"is_consistent_with":  "consistent with",
 		"is_duplicate_of": "duplicate",
 		"is_equivalent_to": "equivalent",

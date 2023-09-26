@@ -6,7 +6,7 @@ export const navigationToggle = writable(false);
 
 export const sidebarToggle = writable(true);
 
-export const filtersToggle = writable(false);
+export const filtersToggle = writable(true);
 
 export const sortToggle = writable(false);
 
