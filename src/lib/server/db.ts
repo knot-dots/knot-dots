@@ -27,6 +27,7 @@ import type {
 	OrganizationContainer,
 	OrganizationalUnitContainer,
 	PayloadType,
+	Predicate,
 	Relation,
 	TaskPriority,
 	User
@@ -1269,6 +1270,22 @@ export function createUser(user: User) {
 			INSERT INTO "user" (display_name, realm, subject)
 			VALUES (${user.display_name}, ${user.realm}, ${user.subject})
 			RETURNING *
+		`);
+	};
+}
+
+export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.typeAlias('user')`
+			SELECT DISTINCT u.*
+			FROM "user" u
+			JOIN container_user cu ON u.subject = cu.subject AND cu.predicate IN (${sql.join(
+				predicates,
+				sql.fragment`, `
+			)})
+			JOIN container c ON cu.revision = c.revision AND c.valid_currently
+			WHERE c.guid = ${guid}
+			ORDER BY display_name
 		`);
 	};
 }
