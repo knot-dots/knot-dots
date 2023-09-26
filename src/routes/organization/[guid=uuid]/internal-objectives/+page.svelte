@@ -4,9 +4,11 @@
 	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { payloadTypes } from '$lib/models';
 	import { overlay } from '$lib/stores';
 	import type { PageData } from './$types';
@@ -39,24 +41,29 @@
 	];
 </script>
 
-<Board>
-	{#each columns as column (column.title)}
-		<BoardColumn
-			addItemUrl="#create={column.payloadType}"
-			itemType={column.payloadType}
-			title={$_(column.title)}
-		>
-			<MaybeDragZone
-				containers={data.containers.filter((c) => c.payload.type === column.payloadType)}
-			/>
-		</BoardColumn>
-	{/each}
-</Board>
+<Layout>
+	<Sidebar slot="sidebar" />
+	<svelte:fragment slot="main">
+		<Board>
+			{#each columns as column (column.title)}
+				<BoardColumn
+					addItemUrl="#create={column.payloadType}"
+					itemType={column.payloadType}
+					title={$_(column.title)}
+				>
+					<MaybeDragZone
+						containers={data.containers.filter((c) => c.payload.type === column.payloadType)}
+					/>
+				</BoardColumn>
+			{/each}
+		</Board>
 
-{#if browser && $overlay.revisions.length > 0}
-	<Overlay {...$overlay} />
-{/if}
+		{#if browser && $overlay.revisions.length > 0}
+			<Overlay {...$overlay} />
+		{/if}
 
-{#if browser && $overlay.object}
-	<RelationOverlay object={$overlay.object} />
-{/if}
+		{#if browser && $overlay.object}
+			<RelationOverlay object={$overlay.object} />
+		{/if}
+	</svelte:fragment>
+</Layout>

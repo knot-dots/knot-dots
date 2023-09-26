@@ -4,7 +4,9 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import Layout from '$lib/components/Layout.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { isInternalObjectiveContainer, isPartOf, payloadTypes } from '$lib/models';
 	import { overlay } from '$lib/stores';
 	import type { PageData } from './$types';
@@ -43,25 +45,30 @@
 		  ];
 </script>
 
-<Board>
-	{#each columns as column (column.title)}
-		<BoardColumn
-			addItemUrl={`/${column.payloadType}/new`}
-			itemType={column.payloadType}
-			title={$_(column.title)}
-		>
-			<div class="vertical-scroll-wrapper masked-overflow">
-				{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
-					<Card
-						{container}
-						relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf)}
-					/>
-				{/each}
-			</div>
-		</BoardColumn>
-	{/each}
-</Board>
+<Layout>
+	<Sidebar slot="sidebar" />
+	<svelte:fragment slot="main">
+		<Board>
+			{#each columns as column (column.title)}
+				<BoardColumn
+					addItemUrl={`/${column.payloadType}/new`}
+					itemType={column.payloadType}
+					title={$_(column.title)}
+				>
+					<div class="vertical-scroll-wrapper masked-overflow">
+						{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
+							<Card
+								{container}
+								relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf)}
+							/>
+						{/each}
+					</div>
+				</BoardColumn>
+			{/each}
+		</Board>
 
-{#if browser && $overlay.revisions.length > 0}
-	<Overlay {...$overlay} />
-{/if}
+		{#if browser && $overlay.revisions.length > 0}
+			<Overlay {...$overlay} />
+		{/if}
+	</svelte:fragment>
+</Layout>

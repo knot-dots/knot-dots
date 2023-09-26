@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
+	import Layout from '$lib/components/Layout.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
@@ -45,19 +47,24 @@
 	];
 </script>
 
-<Board>
-	{#each columns as column (column.title)}
-		<TaskBoardColumn
-			--background={taskStatusBackgrounds.get(column.title)}
-			--hover-border-color={taskStatusHoverColors.get(column.title)}
-			addItemUrl="#create={column.payloadType}&taskStatus={column.title}"
-			icon={taskStatusIcons.get(column.title)}
-			items={column.items}
-			status={column.title}
-		/>
-	{/each}
-</Board>
+<Layout>
+	<Sidebar slot="sidebar" />
+	<svelte:fragment slot="main">
+		<Board>
+			{#each columns as column (column.title)}
+				<TaskBoardColumn
+					--background={taskStatusBackgrounds.get(column.title)}
+					--hover-border-color={taskStatusHoverColors.get(column.title)}
+					addItemUrl="#create={column.payloadType}&taskStatus={column.title}"
+					icon={taskStatusIcons.get(column.title)}
+					items={column.items}
+					status={column.title}
+				/>
+			{/each}
+		</Board>
 
-{#if browser && $overlay.revisions.length > 0}
-	<Overlay {...$overlay} />
-{/if}
+		{#if browser && $overlay.revisions.length > 0}
+			<Overlay {...$overlay} />
+		{/if}
+	</svelte:fragment>
+</Layout>

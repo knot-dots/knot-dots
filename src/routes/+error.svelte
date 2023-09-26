@@ -2,13 +2,20 @@
 	import { ArrowLongRight, Icon } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import Layout from '$lib/components/Layout.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 </script>
 
-<div>
-	<h2>{$page.status}</h2>
-	<p>{$page.status === 404 ? $_('error.not_found') : $page.error?.message}</p>
-	<p><a href="/"><Icon src={ArrowLongRight} size="24" />{$_('home')}</a></p>
-</div>
+<Layout>
+	<Sidebar slot="sidebar" />
+	<svelte:fragment slot="main">
+		<div>
+			<h2>{$page.status}</h2>
+			<p>{$page.status === 404 ? $_('error.not_found') : $page.error?.message}</p>
+			<p><a href="/"><Icon src={ArrowLongRight} size="24" />{$_('home')}</a></p>
+		</div>
+	</svelte:fragment>
+</Layout>
 
 <style>
 	div {

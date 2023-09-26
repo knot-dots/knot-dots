@@ -1,34 +1,41 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import Layout from '$lib/components/Layout.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { overlay, user } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 </script>
 
-<div class="profile">
-	<div class="detail-page-content profile-inner">
-		<header class="content-header">
-			<h2 class="with-icons">
-				{$user.givenName}
-				{$user.familyName}
-			</h2>
-		</header>
-		<div class="content-details masked-overflow">
-			<ProfileView
-				containers={data.containers}
-				organizations={data.organizations}
-				organizationalUnits={data.organizationalUnits}
-			/>
+<Layout>
+	<Sidebar slot="sidebar" />
+	<svelte:fragment slot="main">
+		<div class="profile">
+			<div class="detail-page-content profile-inner">
+				<header class="content-header">
+					<h2 class="with-icons">
+						{$user.givenName}
+						{$user.familyName}
+					</h2>
+				</header>
+				<div class="content-details masked-overflow">
+					<ProfileView
+						containers={data.containers}
+						organizations={data.organizations}
+						organizationalUnits={data.organizationalUnits}
+					/>
+				</div>
+			</div>
 		</div>
-	</div>
-</div>
 
-{#if browser && $overlay.revisions.length > 0}
-	<Overlay {...$overlay} />
-{/if}
+		{#if browser && $overlay.revisions.length > 0}
+			<Overlay {...$overlay} />
+		{/if}
+	</svelte:fragment>
+</Layout>
 
 <style>
 	.profile {
