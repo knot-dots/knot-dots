@@ -55,6 +55,14 @@
 		"include_subordinate_organizational_units": "Mit unteren Ebenen",
 		"include_superordinate_organizational_units": "Mit übergeordneten Ebenen"
 	},
+	"invite": {
+		"email": "E-Mail-Adresse",
+		"failure": "Leider hat es nicht funktioniert. Wir arbeiten daran.",
+		"first_name": "Vorname",
+		"last_name": "Nachname",
+		"heading": "Mitarbeiterin einladen",
+		"submit": "Einladung abschicken"
+	},
 	"level": {
 		"global": "Global",
 		"label": "Räumliche Ebene",
@@ -210,6 +218,11 @@
 		"label": "Ressourcenbedarf",
 		"unit": "Einheit"
 	},
+	"role": {
+		"administrator": "Administrator",
+		"creator": "Autor",
+		"member": "Mitglied"
+	},
 	"save": "Speichern",
 	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
 	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
@@ -302,5 +315,9 @@
 		"percent": "%",
 		"per_100000": "pro 100.000",
 		"ton": "t"
+	},
+	"user": {
+		"display_name": "Name",
+		"remove": "Entfernen"
 	}
 }
