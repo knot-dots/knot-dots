@@ -28,7 +28,8 @@ import type {
 	OrganizationalUnitContainer,
 	PayloadType,
 	Relation,
-	TaskPriority
+	TaskPriority,
+	User
 } from '$lib/models';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -1262,6 +1263,16 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 	};
 }
 
+export function createUser(user: User) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.one(sql.typeAlias('user')`
+			INSERT INTO "user" (display_name, realm, subject)
+			VALUES (${user.display_name}, ${user.realm}, ${user.subject})
+			RETURNING *
+		`);
+	};
+}
+
 export function bulkUpdateOrganization(container: AnyContainer, organization: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
@@ -1272,7 +1283,6 @@ export function bulkUpdateOrganization(container: AnyContainer, organization: st
 				{},
 				''
 			)(txConnection);
-			console.log(containerResult);
 			if (containerResult.length) {
 				await txConnection.query(sql.typeAlias('void')`
         	UPDATE container

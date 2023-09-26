@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
+import type { NewUser } from '$lib/models';
 
 const data = new URLSearchParams([['grant_type', 'client_credentials']]);
 const credentials = btoa(
@@ -20,6 +21,27 @@ async function getToken() {
 		throw new Error('Failed to obtain token for service account.');
 	}
 	return z.object({ access_token: z.string() }).parse(await response.json()).access_token;
+}
+
+export async function createUser(user: NewUser) {
+	const token = await getToken();
+	const response = await fetch(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`, {
+		body: JSON.stringify({
+			email: user.email,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			enabled: true
+		}),
+		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+		method: 'POST'
+	});
+	if (!response.ok) {
+		throw new Error(`Failed to create user in realm. Keycloak responded with ${response.status}`);
+	}
+	return z
+		.string()
+		.uuid()
+		.parse(response.headers.get('Location')?.split('/').pop());
 }
 
 export async function createGroup(name: string) {
