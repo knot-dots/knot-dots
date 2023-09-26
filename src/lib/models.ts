@@ -70,11 +70,13 @@ export function isLevel(value: unknown): value is Level {
 }
 
 const predicateValues = [
+	'is-admin-of',
 	'is-consistent-with',
 	'is-creator-of',
 	'is-duplicate-of',
 	'is-equivalent-to',
 	'is-inconsistent-with',
+	'is-member-of',
 	'is-part-of',
 	'is-part-of-measure'
 ] as const;
