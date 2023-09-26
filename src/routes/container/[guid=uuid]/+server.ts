@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { etag } from '$lib/models';
+import { etag, predicates } from '$lib/models';
 import { deleteContainer, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -31,7 +31,12 @@ export const DELETE = (async ({ locals, params, request }) => {
 		if (etag(container) != request.headers.get('If-Match')) {
 			throw error(412, { message: unwrapFunctionStore(_)('error.precondition_failed') });
 		}
-		await locals.pool.connect(deleteContainer({ ...container, user: [locals.user] }));
+		await locals.pool.connect(
+			deleteContainer({
+				...container,
+				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }]
+			})
+		);
 		return new Response(null, { status: 204 });
 	} catch (e) {
 		if (e instanceof NotFoundError) {

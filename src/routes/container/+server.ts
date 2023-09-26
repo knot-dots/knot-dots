@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { newContainer } from '$lib/models';
+import { newContainer, predicates } from '$lib/models';
 import { createContainer } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -22,7 +22,10 @@ export const POST = (async ({ locals, request }) => {
 		throw error(422, parseResult.error);
 	} else {
 		const result = await locals.pool.connect(
-			createContainer({ ...parseResult.data, user: [locals.user] })
+			createContainer({
+				...parseResult.data,
+				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }]
+			})
 		);
 		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 	}

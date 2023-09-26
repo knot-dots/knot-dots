@@ -71,6 +71,7 @@ export function isLevel(value: unknown): value is Level {
 
 const predicateValues = [
 	'is-consistent-with',
+	'is-creator-of',
 	'is-duplicate-of',
 	'is-equivalent-to',
 	'is-inconsistent-with',
@@ -237,11 +238,17 @@ const partialRelation = z.union([
 export type PartialRelation = z.infer<typeof partialRelation>;
 
 export const user = z.object({
-	issuer: z.string().url().max(1024),
+	display_name: z.string().max(64),
+	realm: z.string().max(1024),
 	subject: z.string().uuid()
 });
 
 export type User = z.infer<typeof user>;
+
+export const userRelation = z.object({
+	predicate: z.string().max(128),
+	subject: z.string().uuid()
+});
 
 const indicator = z.object({
 	max: z.coerce.number().nonnegative(),
@@ -421,7 +428,7 @@ export const container = z.object({
 	realm: z.string().max(1024),
 	relation: z.array(relation),
 	revision: z.number().int().positive(),
-	user: z.array(user),
+	user: z.array(userRelation),
 	valid_currently: z.boolean(),
 	valid_from: z.coerce.date()
 });
