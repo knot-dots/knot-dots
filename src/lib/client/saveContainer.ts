@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { modifiedContainer, newContainer } from '$lib/models';
-import type { Container } from '$lib/models';
+import type { AnyContainer } from '$lib/models';
 import type Keycloak from 'keycloak-js';
 
-export default async function saveContainer(keycloak: Keycloak, container: Container) {
+export default async function saveContainer(keycloak: Keycloak, container: AnyContainer) {
 	let url = '/container';
 	if (container.revision) {
 		url = `/container/${container.guid}/revision`;
@@ -19,8 +19,7 @@ export default async function saveContainer(keycloak: Keycloak, container: Conta
 				predicate,
 				object,
 				position
-			})),
-		user: []
+			}))
 	});
 
 	// Ensure a fresh token will be included in the Authorization header.

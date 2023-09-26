@@ -55,8 +55,7 @@
 					predicate,
 					object,
 					position
-				})),
-			user: []
+				}))
 		});
 
 		if (parseResult.success) {
