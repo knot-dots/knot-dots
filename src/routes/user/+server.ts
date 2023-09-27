@@ -1,7 +1,9 @@
 import { error, json } from '@sveltejs/kit';
+import type { DatabaseConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { modifiedContainer, predicates } from '$lib/models';
-import { updateContainer } from '$lib/server/db';
+import { newUser } from '$lib/models';
+import { createUser as createKeycloakUser } from '$lib/server/keycloak';
+import { createUser } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
@@ -16,22 +18,20 @@ export const POST = (async ({ locals, request }) => {
 	const data = await request.json().catch((reason: SyntaxError) => {
 		throw error(400, { message: reason.message });
 	});
-	const parseResult = modifiedContainer.safeParse(data);
+	const parseResult = newUser.safeParse(data);
 
 	if (!parseResult.success) {
 		throw error(422, parseResult.error);
 	} else {
-		const result = await locals.pool.connect(
-			updateContainer({
-				...parseResult.data,
-				user: [
-					...parseResult.data.user.filter(
-						({ predicate }) => predicate != predicates.enum['is-creator-of']
-					),
-					{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }
-				]
-			})
-		);
-		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+		const result = await locals.pool.connect(async (connection: DatabaseConnection) => {
+			const subject = await createKeycloakUser(parseResult.data);
+			return createUser({
+				display_name: `${parseResult.data.firstName} ${parseResult.data.lastName}`,
+				realm: parseResult.data.realm,
+				subject
+			})(connection);
+		});
+
+		return json(result, { status: 201, headers: { location: `/user/${result.subject}` } });
 	}
 }) satisfies RequestHandler;

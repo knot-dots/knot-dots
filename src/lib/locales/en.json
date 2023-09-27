@@ -50,10 +50,19 @@
 		"vision": "Vision",
 		"visions": "Visions"
 	},
+
 	"internal_objective_filter": {
 		"include_measures": "With measures",
 		"include_subordinate_organizational_units": "With subordinate units",
 		"include_superordinate_organizational_units": "With superordinate units"
+	},
+	"invite": {
+		"email": "Email",
+		"failure": "Sorry, something went wrong. We are working on it.",
+		"first_name": "First name",
+		"heading": "Invite member",
+		"last_name": "Last name",
+		"submit": "Send invitation"
 	},
 	"level": {
 		"global": "Global",
@@ -72,6 +81,7 @@
 	"measure.description": "Intended effects",
 	"measure.summary": "Short description",
 	"measures": "Measures",
+	"members": "Members",
 	"model": "Model",
 	"models": "Models",
 	"modified_date": "Modified at",
@@ -210,6 +220,11 @@
 		"label": "Resource requirement",
 		"unit": "Unit"
 	},
+	"role": {
+		"administrator": "Administrator",
+		"creator": "Creator",
+		"member": "Member"
+	},
 	"save": "Save",
 	"save_and_create_measure": "Save and add measure",
 	"save_and_create_model": "Save and add model",
@@ -302,5 +317,9 @@
 		"percent": "%",
 		"per_100000": "per 100,000",
 		"ton": "t"
+	},
+	"user": {
+		"display_name": "Name",
+		"remove": "Remove"
 	}
 }
