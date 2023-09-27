@@ -9,9 +9,7 @@ import { getPool } from '$lib/server/db';
 
 export const handle = (async ({ event, resolve }) => {
 	const lang = event.request.headers.get('accept-language')?.split(',')[0];
-	if (lang) {
-		locale.set(lang);
-	}
+	locale.set(lang ?? 'de');
 
 	if (event.request.headers.get('Authorization')?.startsWith('Bearer ')) {
 		const token = (event.request.headers.get('Authorization') as string).substring(7);
