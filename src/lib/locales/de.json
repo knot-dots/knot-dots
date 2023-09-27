@@ -55,6 +55,14 @@
 		"include_subordinate_organizational_units": "Mit unteren Ebenen",
 		"include_superordinate_organizational_units": "Mit übergeordneten Ebenen"
 	},
+	"invite": {
+		"email": "E-Mail-Adresse",
+		"failure": "Leider hat es nicht funktioniert. Wir arbeiten daran.",
+		"first_name": "Vorname",
+		"last_name": "Nachname",
+		"heading": "Mitarbeiterin einladen",
+		"submit": "Einladung abschicken"
+	},
 	"level": {
 		"global": "Global",
 		"label": "Räumliche Ebene",
@@ -72,6 +80,7 @@
 	"measure.description": "Beabsichtigte Wirkung",
 	"measure.summary": "Kurze Projektbeschreibung",
 	"measures": "Maßnahmen",
+	"members": "Mitglieder",
 	"model": "Leitbild",
 	"models": "Leitbilder",
 	"modified_date": "Geändert am",
@@ -199,8 +208,8 @@
 		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu \"{nameOrTitle}\" festlegen möchten.",
 		"is_consistent_with":  "Diese Objekte unterstützen sich gegenseitig",
 		"is_duplicate_of": "Dopplung",
-		"is_equivalent_to": "Diese Vorhaben entsprechen sich",
-		"is_inconsistent_with": "Diese Vorhaben widersprechen sich"
+		"is_equivalent_to": "Diese Objekte entsprechen sich",
+		"is_inconsistent_with": "Diese Objekte widersprechen sich"
 	},
 	"relations": "Beziehungen",
 	"resources": {
@@ -209,6 +218,11 @@
 		"fulfillmentDate": "Erfüllungsdatum",
 		"label": "Ressourcenbedarf",
 		"unit": "Einheit"
+	},
+	"role": {
+		"administrator": "Administrator",
+		"creator": "Autor",
+		"member": "Mitglied"
 	},
 	"save": "Speichern",
 	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
@@ -302,5 +316,9 @@
 		"percent": "%",
 		"per_100000": "pro 100.000",
 		"ton": "t"
+	},
+	"user": {
+		"display_name": "Name",
+		"remove": "Entfernen"
 	}
 }
