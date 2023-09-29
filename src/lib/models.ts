@@ -257,7 +257,7 @@ export const newUser = z.object({
 export type NewUser = z.infer<typeof newUser>;
 
 export const userRelation = z.object({
-	predicate: z.string().max(128),
+	predicate: predicates,
 	subject: z.string().uuid()
 });
 
