@@ -1274,6 +1274,14 @@ export function createUser(user: User) {
 	};
 }
 
+export function getUser(subject: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.one(sql.typeAlias('user')`
+			SELECT * FROM "user" WHERE subject = ${subject}
+		`);
+	};
+}
+
 export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.any(sql.typeAlias('user')`
