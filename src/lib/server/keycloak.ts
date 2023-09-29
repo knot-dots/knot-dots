@@ -44,6 +44,28 @@ export async function createUser(user: NewUser) {
 		.parse(response.headers.get('Location')?.split('/').pop());
 }
 
+export async function findSubjectByEmail(email: string) {
+	const token = await getToken();
+	const url = new URL(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`);
+	url.searchParams.set('email', email);
+	url.searchParams.set('exact', 'true');
+
+	const response = await fetch(url.toString(), {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error(`Failed to find user in realm. Keycloak responded with ${response.status}`);
+	}
+
+	const data = await response.json();
+
+	return z
+		.array(z.object({ id: z.string().uuid() }))
+		.length(1)
+		.parse(data)[0].id;
+}
+
 export async function createGroup(name: string) {
 	const token = await getToken();
 	const response = await fetch(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups`, {
