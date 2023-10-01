@@ -79,6 +79,7 @@
 					{ subject: userResponseData.guid, predicate: predicates.enum['is-member-of'] }
 				]
 			});
+			email = '';
 			await invalidateAll();
 		} catch (error) {
 			console.log(error);
