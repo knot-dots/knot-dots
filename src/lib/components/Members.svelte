@@ -25,7 +25,7 @@
 		return (
 			container.user.findIndex(
 				({ predicate, subject }) =>
-					user.subject == subject && predicate == predicates.enum['is-admin-of']
+					user.guid == subject && predicate == predicates.enum['is-admin-of']
 			) > -1
 		);
 	}
@@ -37,7 +37,7 @@
 				...container.user.filter(({ predicate }) => predicate != predicates.enum['is-admin-of']),
 				...(isAdminOf(user, container)
 					? []
-					: [{ subject: user.subject, predicate: predicates.enum['is-admin-of'] }])
+					: [{ subject: user.guid, predicate: predicates.enum['is-admin-of'] }])
 			]
 		});
 		if (!response.ok) {
@@ -52,7 +52,7 @@
 			user: [
 				...container.user.filter(
 					({ predicate, subject }) =>
-						subject != user.subject ||
+						subject != user.guid ||
 						(predicate != predicates.enum['is-admin-of'] &&
 							predicate != predicates.enum['is-member-of'])
 				)
@@ -76,7 +76,7 @@
 				...container,
 				user: [
 					...container.user,
-					{ subject: userResponseData.subject, predicate: predicates.enum['is-member-of'] }
+					{ subject: userResponseData.guid, predicate: predicates.enum['is-member-of'] }
 				]
 			});
 			await invalidateAll();
@@ -113,7 +113,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each users as u (u.subject)}
+				{#each users as u (u.guid)}
 					<tr>
 						<td>{u.display_name}</td>
 						<td>

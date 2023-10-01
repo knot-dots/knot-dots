@@ -5,7 +5,7 @@ import { getMembers } from '$lib/server/keycloak';
 import { isOrganizationalUnitContainer, predicates } from '$lib/models';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, params, parent }) => {
+export const load = (async ({ locals, params }) => {
 	const [container, users] = await Promise.all([
 		locals.pool.connect(getContainerByGuid(params.guid)),
 		locals.pool.connect(getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']]))
@@ -21,7 +21,7 @@ export const load = (async ({ locals, params, parent }) => {
 		container,
 		users: users.map((u) => ({
 			...u,
-			display_name: members.find(({ id }) => id == u.subject)?.username ?? u.subject
+			display_name: members.find(({ id }) => id == u.guid)?.username ?? u.guid
 		}))
 	};
 }) satisfies PageServerLoad;

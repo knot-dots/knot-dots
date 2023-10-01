@@ -6,7 +6,7 @@ import { createUser, getUser } from '$lib/server/db';
 import {
 	addUserToGroup,
 	createUser as createKeycloakUser,
-	findSubjectByEmail,
+	findGuidByEmail,
 	sendVerificationEmail
 } from '$lib/server/keycloak';
 import type { RequestHandler } from './$types';
@@ -32,7 +32,7 @@ export const POST = (async ({ locals, request }) => {
 	let user: User;
 
 	try {
-		const subject = await findSubjectByEmail(parseResult.data.email);
+		const subject = await findGuidByEmail(parseResult.data.email);
 		user = await locals.pool.connect(getUser(subject));
 	} catch (error) {
 		const subject = await createKeycloakUser(parseResult.data);
@@ -40,7 +40,7 @@ export const POST = (async ({ locals, request }) => {
 			createUser({
 				display_name: '',
 				realm: parseResult.data.realm,
-				subject
+				guid: subject
 			})
 		);
 		await sendVerificationEmail(user);
@@ -48,5 +48,5 @@ export const POST = (async ({ locals, request }) => {
 
 	await addUserToGroup(user, parseResult.data.organization);
 
-	return json(user, { status: 201, headers: { location: `/user/${user.subject}` } });
+	return json(user, { status: 201, headers: { location: `/user/${user.guid}` } });
 }) satisfies RequestHandler;

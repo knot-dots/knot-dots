@@ -21,7 +21,7 @@ export const load = (async ({ locals, params }) => {
 		container,
 		users: users.map((u) => ({
 			...u,
-			display_name: members.find(({ id }) => id == u.subject)?.username ?? u.subject
+			display_name: members.find(({ id }) => id == u.guid)?.username ?? u.guid
 		}))
 	};
 }) satisfies PageServerLoad;

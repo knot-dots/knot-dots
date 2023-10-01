@@ -242,7 +242,7 @@ export type PartialRelation = z.infer<typeof partialRelation>;
 export const user = z.object({
 	display_name: z.string().max(64),
 	realm: z.string().max(1024),
-	subject: z.string().uuid()
+	guid: z.string().uuid()
 });
 
 export type User = z.infer<typeof user>;

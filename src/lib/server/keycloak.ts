@@ -45,7 +45,7 @@ export async function createUser(user: NewUser) {
 export async function addUserToGroup(user: User, group: string) {
 	const token = await getToken();
 	const response = await fetch(
-		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.subject}/groups/${group}`,
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/groups/${group}`,
 		{
 			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 			method: 'PUT'
@@ -59,7 +59,7 @@ export async function addUserToGroup(user: User, group: string) {
 export async function sendVerificationEmail(user: User) {
 	const token = await getToken();
 	const response = await fetch(
-		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.subject}/send-verify-email`,
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/send-verify-email`,
 		{
 			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 			method: 'PUT'
@@ -72,7 +72,7 @@ export async function sendVerificationEmail(user: User) {
 	}
 }
 
-export async function findSubjectByEmail(email: string) {
+export async function findGuidByEmail(email: string) {
 	const token = await getToken();
 	const url = new URL(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`);
 	url.searchParams.set('email', email);

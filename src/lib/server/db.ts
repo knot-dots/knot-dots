@@ -83,8 +83,8 @@ const typeAliases = {
 	revision: z.object({ revision: z.number().int().positive() }),
 	user,
 	userRelation,
-	userRelationWithRevision: userRelation.extend({
-		revision: z.number().int().positive()
+	userRelationWithObject: userRelation.extend({
+		object: z.number().int().positive()
 	}),
 	void: z.object({}).strict()
 };
@@ -139,14 +139,14 @@ export function createContainer(container: NewContainer) {
       `);
 
 			const userValues = container.user.map((u) => [
-				u.predicate,
 				containerResult.revision,
+				u.predicate,
 				u.subject
 			]);
 			const userResult = await txConnection.many(sql.typeAlias('userRelation')`
-				INSERT INTO container_user (predicate, revision, subject)
+				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+				FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
 				RETURNING predicate, subject
       `);
 
@@ -192,14 +192,14 @@ export function updateContainer(container: ModifiedContainer) {
       `);
 
 			const userValues = container.user.map((u) => [
-				u.predicate,
 				containerResult.revision,
+				u.predicate,
 				u.subject
 			]);
 			const userResult = await txConnection.many(sql.typeAlias('userRelation')`
-				INSERT INTO container_user (predicate, revision, subject)
+				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+				FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
 				RETURNING predicate, subject
       `);
 
@@ -263,11 +263,11 @@ export function deleteContainer(container: AnyContainer) {
 				RETURNING revision
 			`);
 
-			const userValues = container.user.map((u) => [u.predicate, deletedRevision, u.subject]);
+			const userValues = container.user.map((u) => [deletedRevision, u.predicate, u.subject]);
 			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_user (predicate, revision, subject)
+				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(userValues, ['text', 'int4', 'uuid'])}
+				FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
       `);
 		});
 	};
@@ -296,10 +296,10 @@ export function getContainerByGuid(guid: string) {
 				AND valid_currently
 				AND NOT deleted
 		`);
-		const userResult = await connection.any(sql.typeAlias('userRelationWithRevision')`
+		const userResult = await connection.any(sql.typeAlias('userRelationWithObject')`
 			SELECT *
 			FROM container_user
-			WHERE revision = ${containerResult.revision}
+			WHERE object = ${containerResult.revision}
 		`);
 		const relationResult = await connection.any(sql.typeAlias('relation')`
 			SELECT cr.*
@@ -332,10 +332,10 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			sql.fragment`, `
 		);
 
-		const userResult = await connection.any(sql.typeAlias('userRelationWithRevision')`
+		const userResult = await connection.any(sql.typeAlias('userRelationWithObject')`
 			SELECT *
 			FROM container_user
-			WHERE revision IN (${revisions})
+			WHERE object IN (${revisions})
 		`);
 
 		const relationResult = await connection.any(sql.typeAlias('relation')`
@@ -353,7 +353,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -452,10 +452,10 @@ export function getManyContainers(
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${revisions})
+						WHERE object IN (${revisions})
 					`)
 				: [];
 
@@ -477,7 +477,7 @@ export function getManyContainers(
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -513,10 +513,10 @@ export function getManyOrganizationContainers(filters: { default?: boolean }, so
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${revisions})
+						WHERE object IN (${revisions})
 					`)
 				: [];
 
@@ -524,7 +524,7 @@ export function getManyOrganizationContainers(filters: { default?: boolean }, so
 			...c,
 			relation: [],
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -555,10 +555,10 @@ export function getManyOrganizationalUnitContainers(filters: { organization?: st
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${revisions})
+						WHERE object IN (${revisions})
 					`)
 				: [];
 
@@ -580,7 +580,7 @@ export function getManyOrganizationalUnitContainers(filters: { organization?: st
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -652,10 +652,10 @@ export function getManyTaskContainers(filters: {
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 					SELECT *
 					FROM container_user
-					WHERE revision IN (${revisions})
+					WHERE object IN (${revisions})
 				`)
 				: [];
 
@@ -678,7 +678,7 @@ export function getManyTaskContainers(filters: {
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -742,10 +742,10 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
                   SELECT *
                   FROM container_user
-                  WHERE revision IN (${revisions})
+                  WHERE object IN (${revisions})
 				`)
 				: [];
 
@@ -770,7 +770,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -815,10 +815,10 @@ export function maybePartOf(organizationOrOrganizationalUnit: string, containerT
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${sql.join(
+						WHERE object IN (${sql.join(
 							containerResult.map((c) => c.revision),
 							sql.fragment`, `
 						)})
@@ -829,7 +829,7 @@ export function maybePartOf(organizationOrOrganizationalUnit: string, containerT
 			...c,
 			relation: [],
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -931,10 +931,10 @@ export function getAllRelatedContainers(
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${revisions})
+						WHERE object IN (${revisions})
 					`)
 				: [];
 
@@ -956,7 +956,7 @@ export function getAllRelatedContainers(
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -1037,10 +1037,10 @@ export function getAllRelatedContainersByStrategyType(
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${revisions})
+						WHERE object IN (${revisions})
 					`)
 				: [];
 
@@ -1062,7 +1062,7 @@ export function getAllRelatedContainersByStrategyType(
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -1110,10 +1110,10 @@ export function getAllContainersRelatedToMeasure(
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${revisions})
+						WHERE object IN (${revisions})
 					`)
 				: [];
 
@@ -1135,7 +1135,7 @@ export function getAllContainersRelatedToMeasure(
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -1233,10 +1233,10 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 
 		const userResult =
 			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithRevision')`
+				? await connection.any(sql.typeAlias('userRelationWithObject')`
 						SELECT *
 						FROM container_user
-						WHERE revision IN (${revisions})
+						WHERE object IN (${revisions})
 					`)
 				: [];
 
@@ -1258,7 +1258,7 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 				({ object, subject }) => object === c.revision || subject === c.revision
 			),
 			user: userResult
-				.filter((u) => u.revision === c.revision)
+				.filter((u) => u.object === c.revision)
 				.map(({ predicate, subject }) => ({ predicate, subject }))
 		}));
 	};
@@ -1267,8 +1267,8 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
-			INSERT INTO "user" (display_name, realm, subject)
-			VALUES (${user.display_name}, ${user.realm}, ${user.subject})
+			INSERT INTO "user" (display_name, realm, guid)
+			VALUES (${user.display_name}, ${user.realm}, ${user.guid})
 			RETURNING *
 		`);
 	};
@@ -1277,7 +1277,7 @@ export function createUser(user: User) {
 export function getUser(subject: string) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
-			SELECT * FROM "user" WHERE subject = ${subject}
+			SELECT * FROM "user" WHERE guid = ${subject}
 		`);
 	};
 }
@@ -1287,11 +1287,11 @@ export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 		return await connection.any(sql.typeAlias('user')`
 			SELECT DISTINCT u.*
 			FROM "user" u
-			JOIN container_user cu ON u.subject = cu.subject AND cu.predicate IN (${sql.join(
+			JOIN container_user cu ON u.guid = cu.subject AND cu.predicate IN (${sql.join(
 				predicates,
 				sql.fragment`, `
 			)})
-			JOIN container c ON cu.revision = c.revision AND c.valid_currently
+			JOIN container c ON cu.object = c.revision AND c.valid_currently
 			WHERE c.guid = ${guid}
 			ORDER BY display_name
 		`);
