@@ -28,8 +28,6 @@ export async function createUser(user: NewUser) {
 	const response = await fetch(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`, {
 		body: JSON.stringify({
 			email: user.email,
-			firstName: user.firstName,
-			lastName: user.lastName,
 			enabled: true
 		}),
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },

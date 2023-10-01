@@ -18,8 +18,6 @@
 
 	let dialog: HTMLDialogElement;
 	let email: string;
-	let firstName: string;
-	let lastName: string;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
@@ -70,8 +68,6 @@
 		try {
 			const userResponse = await saveUser(getKeycloak(), {
 				email,
-				firstName,
-				lastName,
 				organization: container.organization,
 				realm: env.PUBLIC_KC_REALM as string
 			});
@@ -111,7 +107,7 @@
 		<table>
 			<thead>
 				<tr>
-					<th scope="col">{$_('user.display_name')}</th>
+					<th scope="col">{$_('user.email')}</th>
 					<th scope="col">{$_('role.administrator')}</th>
 					<th></th>
 				</tr>
@@ -158,14 +154,6 @@
 			{$_('invite.email')}
 			<!-- svelte-ignore a11y-autofocus -->
 			<input type="email" bind:value={email} autofocus required />
-		</label>
-		<label>
-			{$_('invite.first_name')}
-			<input type="text" bind:value={firstName} maxlength="32" required />
-		</label>
-		<label>
-			{$_('invite.last_name')}
-			<input type="text" bind:value={lastName} maxlength="32" required />
 		</label>
 		<button class="primary" type="submit">{$_('invite.submit')}</button>
 	</form>

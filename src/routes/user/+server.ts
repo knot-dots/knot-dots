@@ -38,7 +38,7 @@ export const POST = (async ({ locals, request }) => {
 		const subject = await createKeycloakUser(parseResult.data);
 		user = await locals.pool.connect(
 			createUser({
-				display_name: `${parseResult.data.firstName} ${parseResult.data.lastName}`,
+				display_name: '',
 				realm: parseResult.data.realm,
 				subject
 			})
