@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { boolean, z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import type { NewUser, User } from '$lib/models';
@@ -110,6 +110,33 @@ export async function createGroup(name: string) {
 		.string()
 		.uuid()
 		.parse(response.headers.get('Location')?.split('/').pop());
+}
+
+export async function getMembers(group: string) {
+	const token = await getToken();
+	const response = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups/${group}/members`,
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			}
+		}
+	);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch members. Keycloak responded with ${response.status}`);
+	}
+	return z
+		.array(
+			z.object({
+				id: z.string().uuid(),
+				email: z.string().email(),
+				emailVerified: z.boolean(),
+				enabled: boolean(),
+				username: z.string()
+			})
+		)
+		.parse(await response.json());
 }
 
 const client = z.intersection(
