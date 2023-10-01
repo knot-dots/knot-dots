@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import type { NewUser } from '$lib/models';
+import type { NewUser, User } from '$lib/models';
 
 const data = new URLSearchParams([['grant_type', 'client_credentials']]);
 const credentials = btoa(
@@ -42,6 +42,22 @@ export async function createUser(user: NewUser) {
 		.string()
 		.uuid()
 		.parse(response.headers.get('Location')?.split('/').pop());
+}
+
+export async function sendVerificationEmail(user: User) {
+	const token = await getToken();
+	const response = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.subject}/send-verify-email`,
+		{
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			method: 'PUT'
+		}
+	);
+	if (!response.ok) {
+		throw new Error(
+			`Failed to send verification email. Keycloak responded with ${response.status}`
+		);
+	}
 }
 
 export async function findSubjectByEmail(email: string) {

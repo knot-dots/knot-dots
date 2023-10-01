@@ -3,7 +3,12 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { newUser } from '$lib/models';
 import type { User } from '$lib/models';
 import { createUser, getUser } from '$lib/server/db';
-import { createUser as createKeycloakUser, findSubjectByEmail } from '$lib/server/keycloak';
+import {
+	addUserToGroup,
+	createUser as createKeycloakUser,
+	findSubjectByEmail,
+	sendVerificationEmail
+} from '$lib/server/keycloak';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
@@ -38,6 +43,7 @@ export const POST = (async ({ locals, request }) => {
 				subject
 			})
 		);
+		await sendVerificationEmail(user);
 	}
 
 	return json(user, { status: 201, headers: { location: `/user/${user.subject}` } });
