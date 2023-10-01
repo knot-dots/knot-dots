@@ -1,0 +1,2 @@
+ALTER TABLE container_user DROP CONSTRAINT container_user_subject_fkey;
+ALTER TABLE container_user DROP CONSTRAINT container_user_predicate_object_subject_key;
