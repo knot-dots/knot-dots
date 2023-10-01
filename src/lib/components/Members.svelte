@@ -7,7 +7,7 @@
 	import Dialog from '$lib/components/Dialog.svelte';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import saveContainer from '$lib/client/saveContainer';
+	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
 	import { predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
@@ -33,7 +33,7 @@
 	}
 
 	async function handleToggleAdmin(user: User, container: AnyContainer) {
-		const response = await saveContainer(getKeycloak(), {
+		const response = await saveContainerUser(getKeycloak(), {
 			...container,
 			user: [
 				...container.user.filter(({ predicate }) => predicate != predicates.enum['is-admin-of']),
@@ -49,13 +49,14 @@
 	}
 
 	async function handleRemoveRelations(user: User, container: AnyContainer) {
-		const response = await saveContainer(getKeycloak(), {
+		const response = await saveContainerUser(getKeycloak(), {
 			...container,
 			user: [
 				...container.user.filter(
-					({ predicate }) =>
-						predicate != predicates.enum['is-admin-of'] &&
-						predicate != predicates.enum['is-member-of']
+					({ predicate, subject }) =>
+						subject != user.subject ||
+						(predicate != predicates.enum['is-admin-of'] &&
+							predicate != predicates.enum['is-member-of'])
 				)
 			]
 		});
@@ -66,25 +67,26 @@
 	}
 
 	async function handleInvite() {
-		const response = await saveUser(getKeycloak(), {
-			email,
-			firstName,
-			lastName,
-			realm: env.PUBLIC_KC_REALM as string
-		});
-		if (!response.ok) {
+		try {
+			const userResponse = await saveUser(getKeycloak(), {
+				email,
+				firstName,
+				lastName,
+				realm: env.PUBLIC_KC_REALM as string
+			});
+			const userResponseData = await userResponse.json();
+			await saveContainerUser(getKeycloak(), {
+				...container,
+				user: [
+					...container.user,
+					{ subject: userResponseData.subject, predicate: predicates.enum['is-member-of'] }
+				]
+			});
+			await invalidateAll();
+		} catch (error) {
+			console.log(error);
 			alert($_('invite.failure'));
-			console.log(await response.json());
 		}
-		const user = await response.json();
-		await saveContainer(getKeycloak(), {
-			...container,
-			user: [
-				...container.user,
-				{ predicate: predicates.enum['is-member-of'], subject: user.subject }
-			]
-		});
-		await invalidateAll();
 		dialog.close();
 	}
 </script>
