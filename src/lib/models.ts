@@ -251,6 +251,7 @@ export const newUser = z.object({
 	email: z.string().email(),
 	firstName: z.string().max(32),
 	lastName: z.string().max(32),
+	organization: z.string().uuid(),
 	realm: z.string().max(1024)
 });
 

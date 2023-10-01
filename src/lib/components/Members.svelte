@@ -72,6 +72,7 @@
 				email,
 				firstName,
 				lastName,
+				organization: container.organization,
 				realm: env.PUBLIC_KC_REALM as string
 			});
 			const userResponseData = await userResponse.json();

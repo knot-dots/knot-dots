@@ -44,6 +44,20 @@ export async function createUser(user: NewUser) {
 		.parse(response.headers.get('Location')?.split('/').pop());
 }
 
+export async function addUserToGroup(user: User, group: string) {
+	const token = await getToken();
+	const response = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.subject}/groups/${group}`,
+		{
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			method: 'PUT'
+		}
+	);
+	if (!response.ok) {
+		throw new Error(`Failed to add user to group. Keycloak responded with ${response.status}`);
+	}
+}
+
 export async function sendVerificationEmail(user: User) {
 	const token = await getToken();
 	const response = await fetch(

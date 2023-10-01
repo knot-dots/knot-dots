@@ -46,5 +46,7 @@ export const POST = (async ({ locals, request }) => {
 		await sendVerificationEmail(user);
 	}
 
+	await addUserToGroup(user, parseResult.data.organization);
+
 	return json(user, { status: 201, headers: { location: `/user/${user.subject}` } });
 }) satisfies RequestHandler;
