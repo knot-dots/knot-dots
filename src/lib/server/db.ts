@@ -143,7 +143,7 @@ export function createContainer(container: NewContainer) {
 				u.predicate,
 				u.subject
 			]);
-			const userResult = await txConnection.many(sql.typeAlias('userRelation')`
+			const userResult = await txConnection.any(sql.typeAlias('userRelation')`
 				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
@@ -156,14 +156,14 @@ export function createContainer(container: NewContainer) {
 				r.predicate,
 				r.subject ?? containerResult.revision
 			]);
-			await txConnection.query(sql.typeAlias('void')`
+			const relationResult = await txConnection.any(sql.typeAlias('relation')`
 				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
 				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
 				ON CONFLICT DO NOTHING
       `);
 
-			return { ...containerResult, user: userResult };
+			return { ...containerResult, relation: relationResult, user: userResult };
 		});
 	};
 }
@@ -1361,5 +1361,18 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 				FROM ${sql.unnest(taskPriorityValues, ['int4', 'int8'])}
 			`);
 		});
+	};
+}
+
+export function setUp(name: string, realm: string) {
+	return async (connection: DatabaseConnection) => {
+		return await createContainer({
+			organization: '00000000-0000-0000-0000-000000000000',
+			organizational_unit: null,
+			payload: { default: true, description: '', name, type: payloadTypes.enum.organization },
+			realm,
+			relation: [],
+			user: []
+		})(connection);
 	};
 }

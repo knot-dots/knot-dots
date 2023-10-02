@@ -1,9 +1,13 @@
 import { error } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { getManyOrganizationalUnitContainers, getManyOrganizationContainers } from '$lib/server/db';
+import {
+	getManyOrganizationalUnitContainers,
+	getManyOrganizationContainers,
+	setUp
+} from '$lib/server/db';
 import type { LayoutServerLoad } from './$types';
-import type { OrganizationalUnitContainer } from '$lib/models';
+import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 
 export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	let currentOrganization;
@@ -16,6 +20,11 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 
 	if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
 		currentOrganization = organizations.find(({ payload }) => payload.default);
+		if (!currentOrganization) {
+			currentOrganization = (await locals.pool.connect(
+				setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
+			)) as OrganizationContainer;
+		}
 	} else {
 		currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
 	}
