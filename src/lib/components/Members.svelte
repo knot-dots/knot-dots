@@ -9,7 +9,7 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
-	import { predicates } from '$lib/models';
+	import { isAdminOf, predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -20,15 +20,6 @@
 	let email: string;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
-
-	function isAdminOf(user: User, container: AnyContainer) {
-		return (
-			container.user.findIndex(
-				({ predicate, subject }) =>
-					user.guid == subject && predicate == predicates.enum['is-admin-of']
-			) > -1
-		);
-	}
 
 	async function handleToggleAdmin(user: User, container: AnyContainer) {
 		const response = await saveContainerUser(getKeycloak(), {
