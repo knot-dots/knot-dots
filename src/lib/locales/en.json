@@ -320,6 +320,7 @@
 	},
 	"user": {
 		"display_name": "Name",
+		"email": "Email",
 		"remove": "Remove"
 	}
 }

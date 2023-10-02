@@ -1,9 +1,14 @@
 import { error, json } from '@sveltejs/kit';
-import type { DatabaseConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { newUser } from '$lib/models';
-import { createUser as createKeycloakUser } from '$lib/server/keycloak';
-import { createUser } from '$lib/server/db';
+import type { User } from '$lib/models';
+import { createUser, getUser } from '$lib/server/db';
+import {
+	addUserToGroup,
+	createUser as createKeycloakUser,
+	findGuidByEmail,
+	sendVerificationEmail
+} from '$lib/server/keycloak';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
@@ -22,16 +27,26 @@ export const POST = (async ({ locals, request }) => {
 
 	if (!parseResult.success) {
 		throw error(422, parseResult.error);
-	} else {
-		const result = await locals.pool.connect(async (connection: DatabaseConnection) => {
-			const subject = await createKeycloakUser(parseResult.data);
-			return createUser({
-				display_name: `${parseResult.data.firstName} ${parseResult.data.lastName}`,
-				realm: parseResult.data.realm,
-				subject
-			})(connection);
-		});
-
-		return json(result, { status: 201, headers: { location: `/user/${result.subject}` } });
 	}
+
+	let user: User;
+
+	try {
+		const subject = await findGuidByEmail(parseResult.data.email);
+		user = await locals.pool.connect(getUser(subject));
+	} catch (error) {
+		const subject = await createKeycloakUser(parseResult.data);
+		user = await locals.pool.connect(
+			createUser({
+				display_name: '',
+				realm: parseResult.data.realm,
+				guid: subject
+			})
+		);
+		await sendVerificationEmail(user);
+	}
+
+	await addUserToGroup(user, parseResult.data.organization);
+
+	return json(user, { status: 201, headers: { location: `/user/${user.guid}` } });
 }) satisfies RequestHandler;

@@ -7,7 +7,7 @@
 	import Dialog from '$lib/components/Dialog.svelte';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import saveContainer from '$lib/client/saveContainer';
+	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
 	import { predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
@@ -18,8 +18,6 @@
 
 	let dialog: HTMLDialogElement;
 	let email: string;
-	let firstName: string;
-	let lastName: string;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
 
@@ -27,19 +25,19 @@
 		return (
 			container.user.findIndex(
 				({ predicate, subject }) =>
-					user.subject == subject && predicate == predicates.enum['is-admin-of']
+					user.guid == subject && predicate == predicates.enum['is-admin-of']
 			) > -1
 		);
 	}
 
 	async function handleToggleAdmin(user: User, container: AnyContainer) {
-		const response = await saveContainer(getKeycloak(), {
+		const response = await saveContainerUser(getKeycloak(), {
 			...container,
 			user: [
 				...container.user.filter(({ predicate }) => predicate != predicates.enum['is-admin-of']),
 				...(isAdminOf(user, container)
 					? []
-					: [{ subject: user.subject, predicate: predicates.enum['is-admin-of'] }])
+					: [{ subject: user.guid, predicate: predicates.enum['is-admin-of'] }])
 			]
 		});
 		if (!response.ok) {
@@ -49,13 +47,14 @@
 	}
 
 	async function handleRemoveRelations(user: User, container: AnyContainer) {
-		const response = await saveContainer(getKeycloak(), {
+		const response = await saveContainerUser(getKeycloak(), {
 			...container,
 			user: [
 				...container.user.filter(
-					({ predicate }) =>
-						predicate != predicates.enum['is-admin-of'] &&
-						predicate != predicates.enum['is-member-of']
+					({ predicate, subject }) =>
+						subject != user.guid ||
+						(predicate != predicates.enum['is-admin-of'] &&
+							predicate != predicates.enum['is-member-of'])
 				)
 			]
 		});
@@ -66,25 +65,26 @@
 	}
 
 	async function handleInvite() {
-		const response = await saveUser(getKeycloak(), {
-			email,
-			firstName,
-			lastName,
-			realm: env.PUBLIC_KC_REALM as string
-		});
-		if (!response.ok) {
+		try {
+			const userResponse = await saveUser(getKeycloak(), {
+				email,
+				organization: container.organization,
+				realm: env.PUBLIC_KC_REALM as string
+			});
+			const userResponseData = await userResponse.json();
+			await saveContainerUser(getKeycloak(), {
+				...container,
+				user: [
+					...container.user,
+					{ subject: userResponseData.guid, predicate: predicates.enum['is-member-of'] }
+				]
+			});
+			email = '';
+			await invalidateAll();
+		} catch (error) {
+			console.log(error);
 			alert($_('invite.failure'));
-			console.log(await response.json());
 		}
-		const user = await response.json();
-		await saveContainer(getKeycloak(), {
-			...container,
-			user: [
-				...container.user,
-				{ predicate: predicates.enum['is-member-of'], subject: user.subject }
-			]
-		});
-		await invalidateAll();
 		dialog.close();
 	}
 </script>
@@ -108,13 +108,13 @@
 		<table>
 			<thead>
 				<tr>
-					<th scope="col">{$_('user.display_name')}</th>
+					<th scope="col">{$_('user.email')}</th>
 					<th scope="col">{$_('role.administrator')}</th>
 					<th></th>
 				</tr>
 			</thead>
 			<tbody>
-				{#each users as u (u.subject)}
+				{#each users as u (u.guid)}
 					<tr>
 						<td>{u.display_name}</td>
 						<td>
@@ -155,14 +155,6 @@
 			{$_('invite.email')}
 			<!-- svelte-ignore a11y-autofocus -->
 			<input type="email" bind:value={email} autofocus required />
-		</label>
-		<label>
-			{$_('invite.first_name')}
-			<input type="text" bind:value={firstName} maxlength="32" required />
-		</label>
-		<label>
-			{$_('invite.last_name')}
-			<input type="text" bind:value={lastName} maxlength="32" required />
 		</label>
 		<button class="primary" type="submit">{$_('invite.submit')}</button>
 	</form>

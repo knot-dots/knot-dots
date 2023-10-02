@@ -319,6 +319,7 @@
 	},
 	"user": {
 		"display_name": "Name",
+		"email": "E-Mail-Adresse",
 		"remove": "Entfernen"
 	}
 }

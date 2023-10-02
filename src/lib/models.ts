@@ -242,22 +242,21 @@ export type PartialRelation = z.infer<typeof partialRelation>;
 export const user = z.object({
 	display_name: z.string().max(64),
 	realm: z.string().max(1024),
-	subject: z.string().uuid()
+	guid: z.string().uuid()
 });
 
 export type User = z.infer<typeof user>;
 
 export const newUser = z.object({
 	email: z.string().email(),
-	firstName: z.string().max(32),
-	lastName: z.string().max(32),
+	organization: z.string().uuid(),
 	realm: z.string().max(1024)
 });
 
 export type NewUser = z.infer<typeof newUser>;
 
 export const userRelation = z.object({
-	predicate: z.string().max(128),
+	predicate: predicates,
 	subject: z.string().uuid()
 });
 

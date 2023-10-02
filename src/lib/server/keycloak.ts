@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { boolean, z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import type { NewUser } from '$lib/models';
+import type { NewUser, User } from '$lib/models';
 
 const data = new URLSearchParams([['grant_type', 'client_credentials']]);
 const credentials = btoa(
@@ -28,8 +28,6 @@ export async function createUser(user: NewUser) {
 	const response = await fetch(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`, {
 		body: JSON.stringify({
 			email: user.email,
-			firstName: user.firstName,
-			lastName: user.lastName,
 			enabled: true
 		}),
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -42,6 +40,58 @@ export async function createUser(user: NewUser) {
 		.string()
 		.uuid()
 		.parse(response.headers.get('Location')?.split('/').pop());
+}
+
+export async function addUserToGroup(user: User, group: string) {
+	const token = await getToken();
+	const response = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/groups/${group}`,
+		{
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			method: 'PUT'
+		}
+	);
+	if (!response.ok) {
+		throw new Error(`Failed to add user to group. Keycloak responded with ${response.status}`);
+	}
+}
+
+export async function sendVerificationEmail(user: User) {
+	const token = await getToken();
+	const response = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/send-verify-email`,
+		{
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			method: 'PUT'
+		}
+	);
+	if (!response.ok) {
+		throw new Error(
+			`Failed to send verification email. Keycloak responded with ${response.status}`
+		);
+	}
+}
+
+export async function findGuidByEmail(email: string) {
+	const token = await getToken();
+	const url = new URL(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`);
+	url.searchParams.set('email', email);
+	url.searchParams.set('exact', 'true');
+
+	const response = await fetch(url.toString(), {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error(`Failed to find user in realm. Keycloak responded with ${response.status}`);
+	}
+
+	const data = await response.json();
+
+	return z
+		.array(z.object({ id: z.string().uuid() }))
+		.length(1)
+		.parse(data)[0].id;
 }
 
 export async function createGroup(name: string) {
@@ -58,6 +108,33 @@ export async function createGroup(name: string) {
 		.string()
 		.uuid()
 		.parse(response.headers.get('Location')?.split('/').pop());
+}
+
+export async function getMembers(group: string) {
+	const token = await getToken();
+	const response = await fetch(
+		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups/${group}/members`,
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			}
+		}
+	);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch members. Keycloak responded with ${response.status}`);
+	}
+	return z
+		.array(
+			z.object({
+				id: z.string().uuid(),
+				email: z.string().email(),
+				emailVerified: z.boolean(),
+				enabled: boolean(),
+				username: z.string()
+			})
+		)
+		.parse(await response.json());
 }
 
 const client = z.intersection(
