@@ -1,4 +1,4 @@
-import { defineAbility } from '@casl/ability';
+import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import type { MongoAbility } from '@casl/ability';
 import { payloadTypes } from '$lib/models';
 import type { AnyContainer, EmptyContainer, PayloadType } from '$lib/models';
@@ -7,28 +7,24 @@ import type { User } from '$lib/stores';
 type Actions = 'create' | 'read' | 'update' | 'delete';
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
-export default (user: User) =>
-	defineAbility<MongoAbility<[Actions, Subjects]>>(
-		(can) => {
-			if (user.isAuthenticated && user.roles.includes('sysadmin')) {
-				can('create', payloadTypes.enum.organization);
+export default function defineAbilityFor(user: User) {
+	const { can, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(createMongoAbility);
 
-				for (const payloadType of payloadTypes.options) {
-					if (
-						payloadType != payloadTypes.enum.organization &&
-						payloadType != payloadTypes.enum.organizational_unit
-					) {
-						can('update', payloadType, ['organization']);
-						can('update', payloadType, ['organizational_unit']);
-					}
-				}
-			}
+	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
+		can('create', payloadTypes.enum.organization);
 
-			if (user.isAuthenticated && user.roles.includes('admin')) {
-				can('create', payloadTypes.enum.organizational_unit);
+		for (const payloadType of payloadTypes.options) {
+			if (
+				payloadType != payloadTypes.enum.organization &&
+				payloadType != payloadTypes.enum.organizational_unit
+			) {
+				can('update', payloadType, ['organization']);
+				can('update', payloadType, ['organizational_unit']);
 			}
-		},
-		{
-			detectSubjectType: (subject) => subject.payload.type
 		}
-	);
+	}
+
+	return build({
+		detectSubjectType: (object) => object.payload.type
+	});
+}
