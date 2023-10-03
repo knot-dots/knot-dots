@@ -30,6 +30,13 @@ export const handle = (async ({ event, resolve }) => {
 		} catch (error) {
 			log.warn(serializeError(error), String(error));
 		}
+	} else {
+		event.locals.user = {
+			familyName: '',
+			givenName: '',
+			guid: '',
+			isAuthenticated: false
+		};
 	}
 
 	event.locals.pool = await getPool();

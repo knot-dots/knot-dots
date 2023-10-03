@@ -6,7 +6,7 @@ import type { RequestHandler } from './$types';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 export const POST = (async ({ request, locals }) => {
-	if (locals.user == null) {
+	if (!locals.user.isAuthenticated) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 

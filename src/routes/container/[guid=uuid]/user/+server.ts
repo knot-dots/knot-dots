@@ -20,7 +20,7 @@ export const POST = (async ({ locals, params, request }) => {
 		}
 	}
 
-	if (locals.user == null) {
+	if (!locals.user.isAuthenticated) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
