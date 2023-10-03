@@ -38,7 +38,7 @@
 
 			saveTaskPriority(
 				getKeycloak(),
-				items.map(({ revision }, index) => ({ priority: index, task: revision }))
+				items.map(({ guid }, index) => ({ priority: index, task: guid }))
 			).catch((reason) => console.log(reason));
 		}
 	}

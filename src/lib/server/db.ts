@@ -631,7 +631,7 @@ export function getManyTaskContainers(filters: {
 			JOIN container_relation cr ON c.revision = cr.subject
 				AND cr.predicate = 'is-part-of-measure'
 				AND cr.object = ${filters.measure}
-      LEFT JOIN task_priority tp ON c.revision = tp.task
+      LEFT JOIN task_priority tp ON c.guid = tp.task
 			WHERE ${sql.join(conditions, sql.fragment` AND `)}
 			ORDER BY tp.priority;
 		`);
@@ -639,7 +639,7 @@ export function getManyTaskContainers(filters: {
 			containerResult = await connection.any(sql.typeAlias('container')`
 				SELECT *
 				FROM container c
-				LEFT JOIN task_priority tp ON c.revision = tp.task
+				LEFT JOIN task_priority tp ON c.guid = tp.task
 				WHERE ${sql.join(conditions, sql.fragment` AND `)}
 				ORDER BY tp.priority
 			`);
@@ -1369,7 +1369,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			await txConnection.query(sql.typeAlias('void')`
 				INSERT INTO task_priority (priority, task)
 				SELECT *
-				FROM ${sql.unnest(taskPriorityValues, ['int4', 'int8'])}
+				FROM ${sql.unnest(taskPriorityValues, ['int4', 'uuid'])}
 			`);
 		});
 	};
