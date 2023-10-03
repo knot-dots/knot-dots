@@ -9,9 +9,8 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
-	import { predicates } from '$lib/models';
+	import { isAdminOf, predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
-	import { user } from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let users: Readonly<Array<User>>;
@@ -20,15 +19,6 @@
 	let email: string;
 
 	const { getKeycloak } = getContext<KeycloakContext>(key);
-
-	function isAdminOf(user: User, container: AnyContainer) {
-		return (
-			container.user.findIndex(
-				({ predicate, subject }) =>
-					user.guid == subject && predicate == predicates.enum['is-admin-of']
-			) > -1
-		);
-	}
 
 	async function handleToggleAdmin(user: User, container: AnyContainer) {
 		const response = await saveContainerUser(getKeycloak(), {
@@ -94,13 +84,9 @@
 		<h2>
 			{'title' in container.payload ? container.payload.title : container.payload.name}
 			<span class="icons">
-				{#if $user.isAuthenticated}
-					<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-						<button class="icons-element" type="button" on:click={() => window.history.back()}>
-							<Icon solid src={ChevronLeft} size="20" />
-						</button>
-					</a>
-				{/if}
+				<button class="icons-element" type="button" on:click={() => window.history.back()}>
+					<Icon solid src={ChevronLeft} size="20" />
+				</button>
 			</span>
 		</h2>
 	</header>

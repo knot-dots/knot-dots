@@ -35,6 +35,7 @@
 		topics
 	} from '$lib/models';
 	import {
+		ability,
 		filtersToggle,
 		keycloak,
 		navigationToggle,
@@ -250,17 +251,19 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
 				</a>
 			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ==
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-				>
-					<Icon src={UserGroup} size="20" solid />
-					<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
-				</a>
-			</li>
+			{#if $ability.can('update', $page.data.container)}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
+					>
+						<Icon src={UserGroup} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
+					</a>
+				</li>
+			{/if}
 		</ul>
 	{:else if 'container' in $page.data && isOrganizationalUnitContainer($page.data.container)}
 		<ul class="group group-tabs">
@@ -308,17 +311,19 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
 				</a>
 			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ==
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-				>
-					<Icon src={UserGroup} size="20" solid />
-					<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
-				</a>
-			</li>
+			{#if $ability.can('update', $page.data.container)}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
+					>
+						<Icon src={UserGroup} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
+					</a>
+				</li>
+			{/if}
 		</ul>
 	{/if}
 

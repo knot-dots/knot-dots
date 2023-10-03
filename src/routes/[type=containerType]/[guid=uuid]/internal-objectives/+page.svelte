@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
@@ -7,7 +8,6 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { PageData } from './$types';
-	import { setContext } from 'svelte';
 
 	export let data: PageData;
 
@@ -40,8 +40,9 @@
 <Board>
 	{#each columns as column (column.title)}
 		<BoardColumn
-			title={$_(column.title)}
 			addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.container.revision}`}
+			itemType={column.payloadType}
+			title={$_(column.title)}
 		>
 			<MaybeDragZone
 				containers={data.containers.filter((c) => c.payload.type === column.payloadType)}

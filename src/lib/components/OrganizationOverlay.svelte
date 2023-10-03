@@ -7,7 +7,7 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import type { OrganizationContainer } from '$lib/models.js';
-	import { sidebarToggle, user } from '$lib/stores';
+	import { ability, sidebarToggle } from '$lib/stores';
 
 	export let revisions: OrganizationContainer[];
 
@@ -49,7 +49,7 @@
 				<h2>
 					{container.payload.name}
 					<div class="icons">
-						{#if $user.isAuthenticated}
+						{#if $ability.can('update', container)}
 							<button class="icons-element" on:click={() => (edit = true)}>
 								<Icon solid src={Pencil} size="20" />
 							</button>

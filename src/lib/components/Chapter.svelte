@@ -14,7 +14,7 @@
 		predicates
 	} from '$lib/models';
 	import type { Container, Relation } from '$lib/models';
-	import { user } from '$lib/stores';
+	import { ability } from '$lib/stores';
 
 	export let headingTag: string;
 	export let container: Container;
@@ -79,7 +79,7 @@
 		<div class="content">
 			<svelte:element this={headingTag}>
 				{container.payload.title}
-				{#if $user.isAuthenticated}
+				{#if $ability.can('update', $page.data.container)}
 					{#if currentIndex < isPartOfRelation.length - 1}
 						<button class="icons-element" type="button" on:click={moveDown}>
 							<Icon src={ArrowDown} size="20" />
@@ -101,7 +101,7 @@
 		</div>
 		<aside>
 			<a class="button" href="?container-preview={container.guid}">{$_('read_more')}</a>
-			{#if $user.isAuthenticated}
+			{#if $ability.can('update', $page.data.container)}
 				{#if isModelContainer(container)}
 					<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />

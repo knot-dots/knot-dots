@@ -3,6 +3,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
+	import { payloadTypes } from '$lib/models';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -25,8 +26,9 @@
 <Board>
 	{#each byLevel.entries() as [level, containers]}
 		<BoardColumn
-			title={$_('organizational_unit_level', { values: { level } })}
 			addItemUrl={`/organizational_unit/new?level=${level}`}
+			itemType={payloadTypes.enum.organizational_unit}
+			title={$_('organizational_unit_level', { values: { level } })}
 		>
 			<div class="vertical-scroll-wrapper masked-overflow">
 				{#each containers as container}

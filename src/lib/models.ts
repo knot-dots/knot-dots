@@ -895,3 +895,33 @@ export function owners<T extends OrganizationContainer | OrganizationalUnitConta
 		) ?? []
 	);
 }
+
+export function isAdminOf(user: { guid: string }, container: AnyContainer) {
+	return (
+		container.user.findIndex(
+			({ predicate, subject }) =>
+				user.guid == subject && predicate == predicates.enum['is-admin-of']
+		) > -1
+	);
+}
+
+export function isMemberOf(user: { guid: string }, container: AnyContainer) {
+	return (
+		container.user.findIndex(
+			({ predicate, subject }) =>
+				user.guid == subject && predicate == predicates.enum['is-member-of']
+		) > -1
+	);
+}
+
+export function containerOfType(
+	payloadType: PayloadType,
+	organization: string,
+	organizationalUnit: string | null
+) {
+	return {
+		payload: { type: payloadType },
+		organization,
+		organizational_unit: organizationalUnit
+	} as EmptyContainer;
+}

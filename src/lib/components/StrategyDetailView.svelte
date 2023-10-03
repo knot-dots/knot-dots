@@ -6,7 +6,7 @@
 	import ModelChapter from '$lib/components/ModelChapter.svelte';
 	import { isModelContainer, owners, predicates } from '$lib/models';
 	import type { AnyContainer, Container, ModelContainer, StrategyContainer } from '$lib/models';
-	import { user } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: StrategyContainer;
@@ -30,7 +30,7 @@
 			<h2>
 				{container.payload.title}
 				<div class="icons">
-					{#if $user.isAuthenticated}
+					{#if $ability.can('update', container)}
 						<a href="?edit={container.guid}" class="icons-element">
 							<Icon solid src={Pencil} size="20" />
 						</a>
@@ -107,7 +107,7 @@
 		</div>
 
 		<footer>
-			{#if $user.isAuthenticated}
+			{#if $ability.can('update', container)}
 				<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
 					<Icon src={PlusSmall} size="24" mini />
 					{$_('text')}

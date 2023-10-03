@@ -1,18 +1,19 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { env } from '$env/dynamic/public';
 import { newUser } from '$lib/models';
 import type { User } from '$lib/models';
-import { createUser, getUser } from '$lib/server/db';
+import { createOrUpdateUser, createUser } from '$lib/server/db';
 import {
 	addUserToGroup,
 	createUser as createKeycloakUser,
-	findGuidByEmail,
+	findUserByEmail,
 	sendVerificationEmail
 } from '$lib/server/keycloak';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
-	if (locals.user == null) {
+	if (!locals.user.isAuthenticated) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
@@ -32,8 +33,14 @@ export const POST = (async ({ locals, request }) => {
 	let user: User;
 
 	try {
-		const subject = await findGuidByEmail(parseResult.data.email);
-		user = await locals.pool.connect(getUser(subject));
+		const { firstName, id, lastName } = await findUserByEmail(parseResult.data.email);
+		user = await locals.pool.connect(
+			createOrUpdateUser({
+				display_name: `${firstName} ${lastName}`.trim(),
+				guid: id,
+				realm: env.PUBLIC_KC_REALM ?? ''
+			})
+		);
 	} catch (error) {
 		const subject = await createKeycloakUser(parseResult.data);
 		user = await locals.pool.connect(

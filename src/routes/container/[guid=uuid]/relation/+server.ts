@@ -6,7 +6,7 @@ import { updateContainerRelationPosition } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
-	if (locals.user == null) {
+	if (!locals.user.isAuthenticated) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 

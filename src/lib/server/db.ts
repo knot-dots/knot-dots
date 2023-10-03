@@ -1274,6 +1274,17 @@ export function createUser(user: User) {
 	};
 }
 
+export function createOrUpdateUser(user: User) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.one(sql.typeAlias('user')`
+			INSERT INTO "user" (display_name, realm, guid)
+			VALUES (${user.display_name}, ${user.realm}, ${user.guid})
+			ON CONFLICT (guid) DO UPDATE SET display_name = ${user.display_name}
+			RETURNING *
+		`);
+	};
+}
+
 export function getUser(subject: string) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`

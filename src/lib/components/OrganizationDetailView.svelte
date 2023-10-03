@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-	import { user } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import Card from '$lib/components/Card.svelte';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
@@ -23,7 +23,7 @@
 				{/if}
 				{container.payload.name}
 				<span class="icons">
-					{#if $user.isAuthenticated}
+					{#if $ability.can('update', container)}
 						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
 							<Icon solid src={Pencil} size="20" />
 						</a>

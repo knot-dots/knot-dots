@@ -1,11 +1,12 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { env } from '$env/dynamic/public';
 import { newContainer, predicates } from '$lib/models';
-import { createContainer } from '$lib/server/db';
+import { createContainer, createOrUpdateUser } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
-	if (locals.user == null) {
+	if (!locals.user.isAuthenticated) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
@@ -21,10 +22,17 @@ export const POST = (async ({ locals, request }) => {
 	if (!parseResult.success) {
 		throw error(422, parseResult.error);
 	} else {
-		const result = await locals.pool.connect(
-			createContainer({
-				...parseResult.data,
-				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }]
+		const result = await locals.pool.connect((connection) =>
+			connection.transaction(async (txConnection) => {
+				await createOrUpdateUser({
+					display_name: `${locals.user.givenName} ${locals.user.familyName}`.trim(),
+					guid: locals.user.guid,
+					realm: env.PUBLIC_KC_REALM ?? ''
+				})(txConnection);
+				return await createContainer({
+					...parseResult.data,
+					user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
+				})(txConnection);
 			})
 		);
 		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });

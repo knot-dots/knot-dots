@@ -5,7 +5,7 @@ import { updateContainer } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ locals, request }) => {
-	if (locals.user == null) {
+	if (!locals.user.isAuthenticated) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
@@ -28,7 +28,7 @@ export const POST = (async ({ locals, request }) => {
 					...parseResult.data.user.filter(
 						({ predicate }) => predicate != predicates.enum['is-creator-of']
 					),
-					{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }
+					{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }
 				]
 			})
 		);

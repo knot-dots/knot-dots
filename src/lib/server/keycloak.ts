@@ -72,11 +72,12 @@ export async function sendVerificationEmail(user: User) {
 	}
 }
 
-export async function findGuidByEmail(email: string) {
+export async function findUserByEmail(email: string) {
 	const token = await getToken();
 	const url = new URL(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`);
 	url.searchParams.set('email', email);
 	url.searchParams.set('exact', 'true');
+	url.searchParams.set('briefRepresentation', 'true');
 
 	const response = await fetch(url.toString(), {
 		headers: { Authorization: `Bearer ${token}` }
@@ -89,9 +90,9 @@ export async function findGuidByEmail(email: string) {
 	const data = await response.json();
 
 	return z
-		.array(z.object({ id: z.string().uuid() }))
+		.array(z.object({ firstName: z.string(), id: z.string().uuid(), lastName: z.string() }))
 		.length(1)
-		.parse(data)[0].id;
+		.parse(data)[0];
 }
 
 export async function createGroup(name: string) {

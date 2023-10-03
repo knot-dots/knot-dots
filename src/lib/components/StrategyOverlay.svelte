@@ -23,7 +23,7 @@
 		isTextContainer
 	} from '$lib/models';
 	import type { AnyContainer, Container, CustomEventMap, EmptyContainer } from '$lib/models';
-	import { sidebarToggle, user } from '$lib/stores';
+	import { ability, sidebarToggle } from '$lib/stores';
 	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
@@ -167,7 +167,7 @@
 					<h2>
 						{container.payload.title}
 						<div class="icons">
-							{#if $user.isAuthenticated}
+							{#if $ability.can('update', $page.data.container)}
 								<button class="icons-element" on:click={() => (edit = true)}>
 									<Icon solid src={Pencil} size="20" />
 								</button>
@@ -189,7 +189,7 @@
 					<h2>
 						{container.payload.title}
 						<div class="icons">
-							{#if $user.isAuthenticated}
+							{#if $ability.can('update', $page.data.container)}
 								<button class="icons-element" on:click={() => (edit = true)}>
 									<Icon solid src={Pencil} size="20" />
 								</button>

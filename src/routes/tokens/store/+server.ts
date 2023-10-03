@@ -5,7 +5,7 @@ import { tokens } from '$lib/authentication';
 import type { RequestHandler } from './$types';
 
 export const POST = (async ({ cookies, locals, request }) => {
-	if (locals.user == null) {
+	if (!locals.user.isAuthenticated) {
 		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
