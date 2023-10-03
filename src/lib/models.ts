@@ -324,6 +324,7 @@ const milestonePayload = internalObjectivesBasePayload
 const taskPayload = internalObjectivesBasePayload
 	.omit({ summary: true })
 	.extend({
+		assignee: z.string().uuid().optional(),
 		fulfillmentDate: z
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))

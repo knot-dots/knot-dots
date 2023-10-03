@@ -1,16 +1,32 @@
 <script lang="ts">
+	import { getContext, onMount } from 'svelte';
 	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import InternalObjectiveDetailView from './InternalObjectiveDetailView.svelte';
+	import { key } from '$lib/authentication';
+	import type { KeycloakContext } from '$lib/authentication';
+	import fetchMembers from '$lib/client/fetchMembers';
+	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, owners, taskStatus } from '$lib/models';
-	import type { AnyContainer, Container, TaskContainer, TaskStatus } from '$lib/models';
+	import type { AnyContainer, Container, TaskContainer, TaskStatus, User } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
+	import { ability } from '$lib/stores';
 
 	export let container: TaskContainer;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+
+	const { getKeycloak } = getContext<KeycloakContext>(key);
+
+	let membersPromise: Promise<User[]> = new Promise(() => []);
+
+	onMount(() => {
+		membersPromise = fetchMembers(
+			getKeycloak(),
+			$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
+		);
+	});
 
 	let selectedRevision: TaskContainer;
 
@@ -120,6 +136,16 @@
 				{/each}
 			</ul>
 		</div>
+		{#if 'assignee' in container.payload && container.payload.assignee && $ability.can('read', container, 'assignee')}
+			{#await membersPromise then members}
+				<div class="meta">
+					<h3 class="meta-key">{$_('assignee')}</h3>
+					<p class="meta-value">
+						{members.find(({ guid }) => guid === container.payload.assignee)?.display_name}
+					</p>
+				</div>
+			{/await}
+		{/if}
 		{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 			<div class="meta">
 				<h3 class="meta-key">{$_('fulfillment_date')}</h3>

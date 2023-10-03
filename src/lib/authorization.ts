@@ -31,6 +31,7 @@ export default function defineAbilityFor(user: User) {
 		can('relate', objectiveTypes);
 		can('relate', internalObjectiveTypes);
 		can('prioritize', payloadTypes.enum['internal_objective.task']);
+		can('read', payloadTypes.enum['internal_objective.task'], ['assignee']);
 
 		for (const payloadType of payloadTypes.options) {
 			if (
@@ -62,6 +63,9 @@ export default function defineAbilityFor(user: User) {
 			organization: { $in: user.memberOf }
 		});
 		can('prioritize', payloadTypes.enum['internal_objective.task'], {
+			organizational_unit: { $in: user.memberOf }
+		});
+		can('read', payloadTypes.enum['internal_objective.task'], ['assignee'], {
 			organizational_unit: { $in: user.memberOf }
 		});
 	}

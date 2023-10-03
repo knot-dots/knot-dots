@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Viewer from '$lib/components/Viewer.svelte';
+	import { getContext } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Progress from '$lib/components/Progress.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, owners } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { ability } from '$lib/stores';
-	import { getContext } from 'svelte';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
