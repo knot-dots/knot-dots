@@ -58,7 +58,7 @@
 	"invite": {
 		"email": "E-Mail-Adresse",
 		"failure": "Leider hat es nicht funktioniert. Wir arbeiten daran.",
-		"heading": "Mitarbeiterin einladen",
+		"heading": "Mitarbeiter*in einladen",
 		"submit": "Einladung abschicken"
 	},
 	"level": {
@@ -206,8 +206,8 @@
 		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu \"{nameOrTitle}\" festlegen möchten.",
 		"is_consistent_with":  "Diese Objekte unterstützen sich gegenseitig",
 		"is_duplicate_of": "Dopplung",
-		"is_equivalent_to": "Diese Objekte entsprechen sich",
-		"is_inconsistent_with": "Diese Objekte widersprechen sich"
+		"is_equivalent_to": "Diese Vorhaben entsprechen sich",
+		"is_inconsistent_with": "Diese Vorhaben widersprechen sich"
 	},
 	"relations": "Beziehungen",
 	"resources": {
@@ -218,8 +218,8 @@
 		"unit": "Einheit"
 	},
 	"role": {
-		"administrator": "Administrator",
-		"creator": "Autor",
+		"administrator": "Administrator*in",
+		"creator": "Autor*in",
 		"member": "Mitglied"
 	},
 	"save": "Speichern",
