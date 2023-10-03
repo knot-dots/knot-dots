@@ -271,7 +271,7 @@ export type Indicator = z.infer<typeof indicator>;
 
 export const taskPriority = z.object({
 	priority: z.number().int(),
-	task: z.number().positive()
+	task: z.string().uuid()
 });
 
 export type TaskPriority = z.infer<typeof taskPriority>;
