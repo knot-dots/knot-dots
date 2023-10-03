@@ -322,6 +322,7 @@ const milestonePayload = internalObjectivesBasePayload
 	.strict();
 
 const taskPayload = internalObjectivesBasePayload
+	.omit({ summary: true })
 	.extend({
 		fulfillmentDate: z
 			.string()

@@ -78,10 +78,6 @@
 	</slot>
 
 	<svelte:fragment slot="data">
-		<div class="summary">
-			<h3>{$_('measure.summary')}</h3>
-			{selectedRevision.payload.summary ?? ''}
-		</div>
 		<div class="description">
 			<h3>{$_('description')}</h3>
 			<Viewer value={selectedRevision.payload.description} />
