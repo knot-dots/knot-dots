@@ -11,18 +11,22 @@ export const filtersToggle = writable(true);
 export const sortToggle = writable(false);
 
 export type User = {
+	adminOf: string[];
 	familyName: string;
 	givenName: string;
 	guid: string;
 	isAuthenticated: boolean;
+	memberOf: string[];
 	roles: string[];
 };
 
 export const user = writable<User>({
+	adminOf: [],
 	familyName: '',
 	givenName: '',
 	guid: '',
 	isAuthenticated: false,
+	memberOf: [],
 	roles: []
 });
 

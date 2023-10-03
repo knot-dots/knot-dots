@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { page } from '$app/stores';
 import { env } from '$env/dynamic/public';
 import { keycloak, user } from '$lib/stores';
+import { isAdminOf, isMemberOf } from '$lib/models';
 
 export const tokens = z.object({
 	idToken: z.string(),
@@ -58,10 +59,12 @@ export async function initKeycloak(initOptions: KeycloakInitOptions) {
 
 	kc.onAuthSuccess = async () => {
 		user.set({
+			adminOf: [],
 			familyName: kc.idTokenParsed?.family_name ?? '',
 			givenName: kc.idTokenParsed?.given_name ?? '',
 			guid: kc.idTokenParsed?.sub ?? '',
 			isAuthenticated: true,
+			memberOf: [],
 			roles: kc.realmAccess?.roles ?? []
 		});
 		keycloak.update((v) => ({
@@ -84,10 +87,12 @@ export async function initKeycloak(initOptions: KeycloakInitOptions) {
 
 	kc.onAuthLogout = async () => {
 		user.set({
+			adminOf: [],
 			familyName: '',
 			givenName: '',
 			guid: '',
 			isAuthenticated: false,
+			memberOf: [],
 			roles: []
 		});
 		try {
@@ -116,12 +121,35 @@ export async function initKeycloak(initOptions: KeycloakInitOptions) {
 		registerUrl: kc.createRegisterUrl()
 	}));
 
-	page.subscribe(() => {
+	page.subscribe(({ data }) => {
 		keycloak.set({
 			accountUrl: kc.createAccountUrl(),
 			loginUrl: kc.createLoginUrl(),
 			logoutUrl: kc.createLogoutUrl(),
 			registerUrl: kc.createRegisterUrl()
+		});
+		user.update((value) => {
+			const adminOf = [];
+			if (isAdminOf(value, data.currentOrganization)) {
+				adminOf.push(data.currentOrganization.guid);
+			}
+			if (data.currentOrganizationalUnit && isAdminOf(value, data.currentOrganizationalUnit)) {
+				adminOf.push(data.currentOrganizationalUnit);
+			}
+
+			const memberOf = [];
+			if (isMemberOf(value, data.currentOrganization)) {
+				memberOf.push(data.currentOrganization.guid);
+			}
+			if (data.currentOrganizationalUnit && isMemberOf(value, data.currentOrganizationalUnit)) {
+				memberOf.push(data.currentOrganizationalUnit);
+			}
+
+			return {
+				...value,
+				adminOf: Array.from(new Set([...value.adminOf, ...adminOf])),
+				memberOf: Array.from(new Set([...value.memberOf, ...memberOf]))
+			};
 		});
 	});
 
