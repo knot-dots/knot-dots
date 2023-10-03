@@ -913,3 +913,15 @@ export function isMemberOf(user: { guid: string }, container: AnyContainer) {
 		) > -1
 	);
 }
+
+export function containerOfType(
+	payloadType: PayloadType,
+	organization: string,
+	organizationalUnit: string | null
+) {
+	return {
+		payload: { type: payloadType },
+		organization,
+		organizational_unit: organizationalUnit
+	} as EmptyContainer;
+}

@@ -5,7 +5,7 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import { isMeasureContainer, owners } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
-	import { user } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import { getContext } from 'svelte';
 
 	export let container: Container;
@@ -113,7 +113,7 @@
 			<a class="button primary" href="/{container.payload.type}/{container.guid}">
 				{$_('read_more')}
 			</a>
-			{#if mayShowRelationButton && $user.isAuthenticated}
+			{#if mayShowRelationButton && $ability.can('relate', container)}
 				<a class="button" href="?container-relations={container.guid}">
 					{$_('relations')}
 				</a>

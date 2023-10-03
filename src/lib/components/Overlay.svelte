@@ -32,7 +32,7 @@
 		isVisionContainer
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
-	import { user } from '$lib/stores.js';
+	import { ability } from '$lib/stores.js';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 
 	export let relatedContainers: Container[];
@@ -185,7 +185,7 @@
 				<h2>
 					{container.payload.title}
 					<div class="icons">
-						{#if $user.isAuthenticated}
+						{#if $ability.can('update', container)}
 							<button class="icons-element" on:click={() => (edit = true)}>
 								<Icon solid src={Pencil} size="20" />
 							</button>
@@ -203,7 +203,7 @@
 				<h2>
 					{container.payload.title}
 					<div class="icons">
-						{#if $user.isAuthenticated}
+						{#if $ability.can('update', container)}
 							<button class="icons-element" on:click={() => (edit = true)}>
 								<Icon solid src={Pencil} size="20" />
 							</button>
@@ -221,7 +221,7 @@
 				<h2>
 					{container.payload.title}
 					<div class="icons">
-						{#if $user.isAuthenticated}
+						{#if $ability.can('update', container)}
 							<button class="icons-element" on:click={() => (edit = true)}>
 								<Icon solid src={Pencil} size="20" />
 							</button>
@@ -239,7 +239,7 @@
 				<h2>
 					{container.payload.name}
 					<div class="icons">
-						{#if $user.isAuthenticated}
+						{#if $ability.can('update', container)}
 							<button class="icons-element" on:click={() => (edit = true)}>
 								<Icon solid src={Pencil} size="20" />
 							</button>
@@ -257,7 +257,7 @@
 				<h2>
 					{container.payload.title}
 					<div class="icons">
-						{#if $user.isAuthenticated}
+						{#if $ability.can('update', container)}
 							<button class="icons-element" on:click={() => (edit = true)}>
 								<Icon solid src={Pencil} size="20" />
 							</button>

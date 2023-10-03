@@ -5,7 +5,7 @@
 	import { isPartOf } from '$lib/models';
 	import type { Container } from '$lib/models';
 	import Card from '$lib/components/Card.svelte';
-	import { dragged, user } from '$lib/stores';
+	import { ability, dragged } from '$lib/stores';
 
 	export let containers: Container[];
 
@@ -43,7 +43,7 @@
 	}
 </script>
 
-{#if $page.data.relationOverlayData && $user.isAuthenticated}
+{#if $page.data.relationOverlayData && $ability.can('relate', $page.data.relationOverlayData.container)}
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}

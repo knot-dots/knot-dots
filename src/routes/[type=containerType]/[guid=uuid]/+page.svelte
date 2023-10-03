@@ -14,7 +14,7 @@
 		isStrategyContainer,
 		isTaskContainer
 	} from '$lib/models';
-	import { user } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -35,7 +35,7 @@
 			<h2>
 				{container.payload.title}
 				<div class="icons">
-					{#if $user.isAuthenticated}
+					{#if $ability.can('update', container)}
 						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
 							<Icon solid src={Pencil} size="20" />
 						</a>
@@ -53,7 +53,7 @@
 			<h2>
 				{container.payload.title}
 				<div class="icons">
-					{#if $user.isAuthenticated}
+					{#if $ability.can('update', container)}
 						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
 							<Icon solid src={Pencil} size="20" />
 						</a>
@@ -71,7 +71,7 @@
 			<h2>
 				{container.payload.title}
 				<div class="icons">
-					{#if $user.isAuthenticated}
+					{#if $ability.can('update', container)}
 						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
 							<Icon solid src={Pencil} size="20" />
 						</a>
@@ -89,7 +89,7 @@
 			<h2>
 				{container.payload.name}
 				<div class="icons">
-					{#if $user.isAuthenticated}
+					{#if $ability.can('update', container)}
 						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
 							<Icon solid src={Pencil} size="20" />
 						</a>
@@ -107,7 +107,7 @@
 			<h2>
 				{container.payload.title}
 				<div class="icons">
-					{#if $user.isAuthenticated}
+					{#if $ability.can('update', container)}
 						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
 							<Icon solid src={Pencil} size="20" />
 						</a>

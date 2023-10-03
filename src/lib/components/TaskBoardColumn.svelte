@@ -1,17 +1,19 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { dndzone } from 'svelte-dnd-action';
 	import type { DndEvent } from 'svelte-dnd-action';
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
+	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import Card from '$lib/components/Card.svelte';
 	import saveContainer from '$lib/client/saveContainer';
+	import { containerOfType, payloadTypes } from '$lib/models';
 	import type { TaskContainer, TaskStatus } from '$lib/models';
-	import { user } from '$lib/stores';
-	import { getContext } from 'svelte';
-	import saveTaskPriority from '$lib/client/saveTaskPriority.js';
+	import { ability } from '$lib/stores';
 
 	export let addItemUrl: string;
 	export let icon: IconSource | undefined = undefined;
@@ -40,6 +42,14 @@
 			).catch((reason) => console.log(reason));
 		}
 	}
+
+	function containerOfTypeTask() {
+		return containerOfType(
+			payloadTypes.enum['internal_objective.task'],
+			$page.data.currentOrganization.guid,
+			$page.data.currentOrganizationalUnit?.guid ?? null
+		);
+	}
 </script>
 
 <section>
@@ -50,11 +60,11 @@
 				<Icon src={icon} size="16" mini />
 			{/if}
 		</h2>
-		{#if $user.isAuthenticated}
+		{#if $ability.can('create', containerOfTypeTask())}
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>
 		{/if}
 	</header>
-	{#if $user.isAuthenticated}
+	{#if $ability.can('prioritize', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper masked-overflow"
 			use:dndzone={{ items }}
@@ -72,7 +82,7 @@
 			{/each}
 		</div>
 	{/if}
-	{#if $user.isAuthenticated}
+	{#if $ability.can('create', containerOfTypeTask())}
 		<footer>
 			<a href={addItemUrl}>
 				{$_('add_item')}
