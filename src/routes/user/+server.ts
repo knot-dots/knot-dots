@@ -1,8 +1,9 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { env } from '$env/dynamic/public';
 import { newUser } from '$lib/models';
 import type { User } from '$lib/models';
-import { createUser, getUser } from '$lib/server/db';
+import { createOrUpdateUser, createUser } from '$lib/server/db';
 import {
 	addUserToGroup,
 	createUser as createKeycloakUser,
@@ -32,8 +33,14 @@ export const POST = (async ({ locals, request }) => {
 	let user: User;
 
 	try {
-		const { id } = await findUserByEmail(parseResult.data.email);
-		user = await locals.pool.connect(getUser(id));
+		const { firstName, id, lastName } = await findUserByEmail(parseResult.data.email);
+		user = await locals.pool.connect(
+			createOrUpdateUser({
+				display_name: `${firstName} ${lastName}`.trim(),
+				guid: id,
+				realm: env.PUBLIC_KC_REALM ?? ''
+			})
+		);
 	} catch (error) {
 		const subject = await createKeycloakUser(parseResult.data);
 		user = await locals.pool.connect(
