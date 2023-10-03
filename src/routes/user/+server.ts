@@ -6,7 +6,7 @@ import { createUser, getUser } from '$lib/server/db';
 import {
 	addUserToGroup,
 	createUser as createKeycloakUser,
-	findGuidByEmail,
+	findUserByEmail,
 	sendVerificationEmail
 } from '$lib/server/keycloak';
 import type { RequestHandler } from './$types';
@@ -32,8 +32,8 @@ export const POST = (async ({ locals, request }) => {
 	let user: User;
 
 	try {
-		const subject = await findGuidByEmail(parseResult.data.email);
-		user = await locals.pool.connect(getUser(subject));
+		const { id } = await findUserByEmail(parseResult.data.email);
+		user = await locals.pool.connect(getUser(id));
 	} catch (error) {
 		const subject = await createKeycloakUser(parseResult.data);
 		user = await locals.pool.connect(
