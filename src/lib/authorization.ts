@@ -28,6 +28,9 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update'], payloadTypes.options);
+		can('relate', objectiveTypes);
+		can('relate', internalObjectiveTypes);
+		can('prioritize', payloadTypes.enum['internal_objective.task']);
 
 		for (const payloadType of payloadTypes.options) {
 			if (
