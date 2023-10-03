@@ -1,11 +1,21 @@
-import { error } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { z } from 'zod';
-import { userRelation } from '$lib/models';
+import { predicates, userRelation } from '$lib/models';
 import type { AnyContainer } from '$lib/models';
-import { getContainerByGuid, updateContainer } from '$lib/server/db';
+import { getAllRelatedUsers, getContainerByGuid, updateContainer } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { NotFoundError } from 'slonik';
+
+export const GET = (async ({ locals, params }) => {
+	if (!locals.user.isAuthenticated) {
+		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
+	}
+
+	return json(
+		await locals.pool.connect(getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']]))
+	);
+}) satisfies RequestHandler;
 
 export const POST = (async ({ locals, params, request }) => {
 	let container: AnyContainer;
