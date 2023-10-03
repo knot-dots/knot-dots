@@ -11,6 +11,13 @@ export const handle = (async ({ event, resolve }) => {
 	const lang = event.request.headers.get('accept-language')?.split(',')[0];
 	locale.set(lang ?? 'de');
 
+	event.locals.user = {
+		familyName: '',
+		givenName: '',
+		guid: '',
+		isAuthenticated: false
+	};
+
 	if (event.request.headers.get('Authorization')?.startsWith('Bearer ')) {
 		const token = (event.request.headers.get('Authorization') as string).substring(7);
 		const jwks = jose.createRemoteJWKSet(
@@ -30,13 +37,6 @@ export const handle = (async ({ event, resolve }) => {
 		} catch (error) {
 			log.warn(serializeError(error), String(error));
 		}
-	} else {
-		event.locals.user = {
-			familyName: '',
-			givenName: '',
-			guid: '',
-			isAuthenticated: false
-		};
 	}
 
 	event.locals.pool = await getPool();
