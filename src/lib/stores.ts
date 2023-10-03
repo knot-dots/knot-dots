@@ -13,6 +13,7 @@ export const sortToggle = writable(false);
 export type User = {
 	familyName: string;
 	givenName: string;
+	guid: string;
 	isAuthenticated: boolean;
 	roles: string[];
 };
@@ -20,6 +21,7 @@ export type User = {
 export const user = writable<User>({
 	familyName: '',
 	givenName: '',
+	guid: '',
 	isAuthenticated: false,
 	roles: []
 });

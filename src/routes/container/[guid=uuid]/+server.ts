@@ -34,7 +34,7 @@ export const DELETE = (async ({ locals, params, request }) => {
 		await locals.pool.connect(
 			deleteContainer({
 				...container,
-				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }]
+				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
 			})
 		);
 		return new Response(null, { status: 204 });

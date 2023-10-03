@@ -58,8 +58,9 @@ export async function initKeycloak(initOptions: KeycloakInitOptions) {
 
 	kc.onAuthSuccess = async () => {
 		user.set({
-			familyName: kc.idTokenParsed?.family_name,
-			givenName: kc.idTokenParsed?.given_name,
+			familyName: kc.idTokenParsed?.family_name ?? '',
+			givenName: kc.idTokenParsed?.given_name ?? '',
+			guid: kc.idTokenParsed?.sub ?? '',
 			isAuthenticated: true,
 			roles: kc.realmAccess?.roles ?? []
 		});
@@ -85,6 +86,7 @@ export async function initKeycloak(initOptions: KeycloakInitOptions) {
 		user.set({
 			familyName: '',
 			givenName: '',
+			guid: '',
 			isAuthenticated: false,
 			roles: []
 		});

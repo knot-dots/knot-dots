@@ -28,7 +28,7 @@ export const POST = (async ({ locals, request }) => {
 					...parseResult.data.user.filter(
 						({ predicate }) => predicate != predicates.enum['is-creator-of']
 					),
-					{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }
+					{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }
 				]
 			})
 		);

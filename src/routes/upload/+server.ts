@@ -26,7 +26,7 @@ export const POST = (async ({ request, locals }) => {
 		ACL: 'public-read',
 		Body: Buffer.from(await (data.upload as Blob).arrayBuffer()),
 		ContentType: (data.upload as File).type,
-		Tagging: `uploaded-by=${locals.user.subject}`
+		Tagging: `uploaded-by=${locals.user.guid}`
 	});
 
 	const result = await client.send(putCommand);

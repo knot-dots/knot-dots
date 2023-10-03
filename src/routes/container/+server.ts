@@ -24,7 +24,7 @@ export const POST = (async ({ locals, request }) => {
 		const result = await locals.pool.connect(
 			createContainer({
 				...parseResult.data,
-				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.subject }]
+				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
 			})
 		);
 		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });

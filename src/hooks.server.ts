@@ -21,7 +21,12 @@ export const handle = (async ({ event, resolve }) => {
 				issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
 				requiredClaims: ['iss', 'sub']
 			});
-			event.locals.user = { issuer: payload.iss ?? '', subject: payload.sub ?? '' };
+			event.locals.user = {
+				familyName: '',
+				givenName: '',
+				guid: payload.sub ?? '',
+				isAuthenticated: true
+			};
 		} catch (error) {
 			log.warn(serializeError(error), String(error));
 		}

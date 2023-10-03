@@ -8,9 +8,11 @@ declare global {
 		interface Locals {
 			pool: DatabasePool;
 			user: {
-				issuer: string;
-				subject: string;
-			} | null;
+				familyName: string;
+				givenName: string;
+				guid: string;
+				isAuthenticated: boolean;
+			};
 		}
 		// interface PageData {}
 		// interface Platform {}
