@@ -11,7 +11,6 @@
 	import saveUser from '$lib/client/saveUser';
 	import { isAdminOf, predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
-	import { user } from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let users: Readonly<Array<User>>;
@@ -85,13 +84,9 @@
 		<h2>
 			{'title' in container.payload ? container.payload.title : container.payload.name}
 			<span class="icons">
-				{#if $user.isAuthenticated}
-					<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-						<button class="icons-element" type="button" on:click={() => window.history.back()}>
-							<Icon solid src={ChevronLeft} size="20" />
-						</button>
-					</a>
-				{/if}
+				<button class="icons-element" type="button" on:click={() => window.history.back()}>
+					<Icon solid src={ChevronLeft} size="20" />
+				</button>
 			</span>
 		</h2>
 	</header>
