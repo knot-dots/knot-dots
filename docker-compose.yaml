@@ -74,6 +74,10 @@ services:
       - "3000:3000"
     profiles:
       - qa
+  smtp:
+    image: rnwood/smtp4dev
+    ports:
+      - "8081:80"
   strategytool:
     build:
       context: .
