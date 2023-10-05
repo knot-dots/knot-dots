@@ -67,7 +67,7 @@
 		const nodes: Array<Node | undefined> = await Promise.all(
 			images.map(async (image) => {
 				try {
-					const src = await uploadAsFormData(image, sessionStorage.getItem('token') ?? '');
+					const src = await uploadAsFormData(image, getKeycloak().token ?? '');
 					const alt = image.name;
 					return schema.nodes.image.createAndFill({
 						src,

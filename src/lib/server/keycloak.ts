@@ -90,7 +90,13 @@ export async function findUserByEmail(email: string) {
 	const data = await response.json();
 
 	return z
-		.array(z.object({ firstName: z.string(), id: z.string().uuid(), lastName: z.string() }))
+		.array(
+			z.object({
+				firstName: z.string().optional(),
+				id: z.string().uuid(),
+				lastName: z.string().optional()
+			})
+		)
 		.length(1)
 		.parse(data)[0];
 }

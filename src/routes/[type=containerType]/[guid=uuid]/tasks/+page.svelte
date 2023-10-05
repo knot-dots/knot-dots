@@ -3,15 +3,13 @@
 	import Overlay from '$lib/components/Overlay.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
-	import type { TaskContainer, TaskStatus } from '$lib/models';
+	import type { TaskContainer } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	type Column = { title: TaskStatus; payloadType: string; items: TaskContainer[] };
-
-	const columns: Column[] = [
+	$: columns = [
 		{
 			title: taskStatus.enum['task_status.idea'],
 			payloadType: payloadTypes.enum['internal_objective.task'],
