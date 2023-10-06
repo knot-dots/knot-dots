@@ -15,4 +15,11 @@ declare global {
 	}
 }
 
+declare module 'jose' {
+	export interface JWTPayload {
+		family_name?: string;
+		given_name?: string;
+	}
+}
+
 export {};

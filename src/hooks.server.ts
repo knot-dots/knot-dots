@@ -21,6 +21,28 @@ export const handle = (async ({ event, resolve }) => {
 		roles: []
 	};
 
+	if (event.request.method == 'GET' && event.cookies.get('idToken')) {
+		try {
+			const idToken = event.cookies.get('idToken') as string;
+			const jwks = jose.createRemoteJWKSet(
+				new URL(`${privateEnv.KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/certs`)
+			);
+			const { payload } = await jose.jwtVerify(idToken, jwks, {
+				issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
+				requiredClaims: ['iss', 'sub']
+			});
+			event.locals.user = {
+				...event.locals.user,
+				familyName: payload.family_name ?? '',
+				givenName: payload.given_name ?? '',
+				guid: payload.sub ?? '',
+				isAuthenticated: true
+			};
+		} catch (error) {
+			log.warn(serializeError(error), String(error));
+		}
+	}
+
 	if (event.request.headers.get('Authorization')?.startsWith('Bearer ')) {
 		const token = (event.request.headers.get('Authorization') as string).substring(7);
 		const jwks = jose.createRemoteJWKSet(
