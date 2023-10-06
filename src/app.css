@@ -571,6 +571,54 @@ fieldset {
 	padding: 12px 16px;
 }
 
+/* Toggle style checkboxes */
+.toggle {
+	--width: 3em;
+	--padding: 0.125rem;
+	appearance: none;
+	border-radius: calc(var(--width) / 2);
+	background-color: var(--color-gray-200);
+	display: inline-grid;
+	margin: 0;
+	padding: var(--padding);
+	place-content: center start;
+	width: var(--width);
+}
+
+.toggle::before {
+	background-color: #ffffff;
+	border-radius: calc(var(--width) / 2);
+	content: "";
+	height: calc(var(--width) / 2);
+	transform: translateX(0);
+	transition: 120ms transform ease-in-out;
+	width: calc(var(--width) / 2);
+}
+
+.toggle:checked {
+	background-color: var(--color-primary);
+}
+
+.toggle:checked::before {
+	transform: translateX(calc(var(--width) / 2 - var(--padding) * 2));
+}
+
+.toggle:focus {
+	outline-offset: max(0.125rem, 0.15em);
+}
+
+.toggle:disabled {
+	background-color: var(--color-gray-200)
+}
+
+label:has(> input[type='checkbox'].toggle) {
+	overflow: visible;
+}
+
+label > input[type='checkbox'].toggle {
+	vertical-align: middle;
+}
+
 /* Spreadsheet style inputs */
 .spreadsheet {
 	width: auto;
