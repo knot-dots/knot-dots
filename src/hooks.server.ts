@@ -12,10 +12,13 @@ export const handle = (async ({ event, resolve }) => {
 	locale.set(lang ?? 'de');
 
 	event.locals.user = {
+		adminOf: [],
 		familyName: '',
 		givenName: '',
 		guid: '',
-		isAuthenticated: false
+		isAuthenticated: false,
+		memberOf: [],
+		roles: []
 	};
 
 	if (event.request.headers.get('Authorization')?.startsWith('Bearer ')) {
@@ -29,6 +32,7 @@ export const handle = (async ({ event, resolve }) => {
 				requiredClaims: ['iss', 'sub']
 			});
 			event.locals.user = {
+				...event.locals.user,
 				familyName: '',
 				givenName: '',
 				guid: payload.sub ?? '',

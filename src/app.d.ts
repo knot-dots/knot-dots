@@ -1,4 +1,5 @@
 import type { DatabasePool } from 'slonik';
+import type { User } from '$lib/stores';
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
@@ -7,12 +8,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			pool: DatabasePool;
-			user: {
-				familyName: string;
-				givenName: string;
-				guid: string;
-				isAuthenticated: boolean;
-			};
+			user: User;
 		}
 		// interface PageData {}
 		// interface Platform {}
