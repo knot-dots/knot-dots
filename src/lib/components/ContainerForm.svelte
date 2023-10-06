@@ -7,7 +7,14 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
-	import { etag, modifiedContainer, newContainer, payloadTypes, predicates } from '$lib/models';
+	import {
+		etag,
+		modifiedContainer,
+		newContainer,
+		payloadTypes,
+		predicates,
+		visibility
+	} from '$lib/models';
 	import type {
 		AnyContainer,
 		Container,
@@ -155,33 +162,51 @@
 		</div>
 
 		<div class="details-content-column">
-			{#if $ability.can('update', container.payload.type, 'organization')}
-				<label>
-					{$_('organization')}
-					<select bind:value={container.organization}>
-						{#each $page.data.organizations as organizationOption}
-							<option value={organizationOption.guid}>
-								{organizationOption.payload.name}
-							</option>
-						{/each}
-					</select>
-				</label>
-			{/if}
-			{#if $ability.can('update', container.payload.type, 'organizational_unit')}
-				<label>
-					{$_('organizational_unit')}
-					<select bind:value={container.organizational_unit}>
-						{#each $page.data.organizationalUnits as organizationalUnitOption}
-							{#if organizationalUnitOption.organization === container.organization}
-								<option value={organizationalUnitOption.guid}>
-									{organizationalUnitOption.payload.name}
+			{#if container.payload.type !== payloadTypes.enum.organization && container.payload.type !== payloadTypes.enum.organizational_unit}
+				{#if $ability.can('update', container.payload.type, 'organization')}
+					<label>
+						{$_('organization')}
+						<select bind:value={container.organization}>
+							{#each $page.data.organizations as organizationOption}
+								<option value={organizationOption.guid}>
+									{organizationOption.payload.name}
 								</option>
-							{/if}
-						{/each}
-					</select>
-				</label>
+							{/each}
+						</select>
+					</label>
+				{/if}
+				{#if $ability.can('update', container.payload.type, 'organizational_unit')}
+					<label>
+						{$_('organizational_unit')}
+						<select bind:value={container.organizational_unit}>
+							{#each $page.data.organizationalUnits as organizationalUnitOption}
+								{#if organizationalUnitOption.organization === container.organization}
+									<option value={organizationalUnitOption.guid}>
+										{organizationalUnitOption.payload.name}
+									</option>
+								{/if}
+							{/each}
+						</select>
+					</label>
+				{/if}
 			{/if}
 			<slot name="meta" />
+			{#if $ability.can('update', container, 'visibility')}
+				<fieldset>
+					<legend>{$_('visibility.label')}</legend>
+					{#each visibility.options as visibilityOption}
+						<label>
+							<input
+								type="radio"
+								name="visibility"
+								value={visibilityOption}
+								bind:group={container.payload.visibility}
+							/>
+							{$_(`visibility.${visibilityOption}`)}
+						</label>
+					{/each}
+				</fieldset>
+			{/if}
 		</div>
 	</div>
 

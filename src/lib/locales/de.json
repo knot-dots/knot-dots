@@ -321,5 +321,11 @@
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",
 		"remove": "Entfernen"
+	},
+	"visibility": {
+		"creator": "nur Autor*in",
+		"label": "Sichtbarkeit",
+		"members": "nur Mitglieder",
+		"public": "öffentlich"
 	}
 }

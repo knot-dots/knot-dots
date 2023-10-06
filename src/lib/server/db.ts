@@ -17,7 +17,8 @@ import {
 	predicates,
 	relation,
 	user,
-	userRelation
+	userRelation,
+	visibility
 } from '$lib/models';
 import type {
 	AnyContainer,
@@ -1380,7 +1381,13 @@ export function setUp(name: string, realm: string) {
 		return await createContainer({
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
-			payload: { default: true, description: '', name, type: payloadTypes.enum.organization },
+			payload: {
+				default: true,
+				description: '',
+				name,
+				type: payloadTypes.enum.organization,
+				visibility: visibility.enum.public
+			},
 			realm,
 			relation: [],
 			user: []
