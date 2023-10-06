@@ -9,7 +9,7 @@ export const POST = (async ({ cookies }) => {
 	}
 
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
-	const cookieOpts = { domain: url.hostname, path: '/' };
+	const cookieOpts = { domain: url.hostname, path: '/', secure: url.protocol === 'https' };
 
 	cookies.delete('idToken', cookieOpts);
 	cookies.delete('refreshToken', cookieOpts);
