@@ -1,3 +1,4 @@
+import { filterVisible } from '$lib/authorization';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
@@ -34,5 +35,5 @@ export const load = (async ({ locals, params, url }) => {
 			revisions
 		};
 	}
-	return { container, containers, overlayData };
+	return { container, containers: filterVisible(containers, locals.user), overlayData };
 }) satisfies PageServerLoad;

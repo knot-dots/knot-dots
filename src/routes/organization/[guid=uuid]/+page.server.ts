@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { filterVisible } from '$lib/authorization';
 import { isOrganizationContainer, payloadTypes } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
@@ -37,7 +38,11 @@ export const load = (async ({ params, locals, url }) => {
 				getAllRelatedContainers([container.organization], guid, ['hierarchical'], {}, '')
 			)
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	}
 
 	return { container, measures, overlayData, strategies };

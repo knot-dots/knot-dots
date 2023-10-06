@@ -1,3 +1,4 @@
+import { filterVisible } from '$lib/authorization';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
@@ -5,8 +6,8 @@ import {
 	getManyTaskContainers,
 	maybePartOf
 } from '$lib/server/db';
-import type { PageServerLoad } from './$types';
 import { predicates } from '$lib/models';
+import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params, url }) => {
 	let overlayData;
@@ -48,8 +49,16 @@ export const load = (async ({ locals, params, url }) => {
 				getAllRelatedInternalObjectives(guid, [], url.searchParams.get('sort') ?? '')
 			)
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	}
 
-	return { container, containers, overlayData };
+	return {
+		container,
+		containers: filterVisible(containers, locals.user),
+		overlayData
+	};
 }) satisfies PageServerLoad;

@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { payloadTypes } from '$lib/models';
+import { payloadTypes, visibility } from '$lib/models';
 import type {
 	Container,
 	EmptyMeasureContainer,
@@ -93,7 +93,8 @@ export const load = (async ({ params, locals, url, parent }) => {
 				organizational_unit: currentOrganizationalUnit?.guid ?? null,
 				realm: env.PUBLIC_KC_REALM,
 				relation: selected,
-				user: []
+				user: [],
+				visibility: visibility.enum.creator
 			};
 			const category: SustainableDevelopmentGoal[] = [];
 			const indicator: Indicator[] = [];

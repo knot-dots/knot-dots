@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { filterVisible } from '$lib/authorization';
 import { isOrganizationalUnitContainer } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getContainerByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -22,5 +23,5 @@ export const load = (async ({ locals, url, params }) => {
 		);
 	}
 
-	return { container, containers };
+	return { container, containers: filterVisible(containers, locals.user) };
 }) satisfies PageServerLoad;
