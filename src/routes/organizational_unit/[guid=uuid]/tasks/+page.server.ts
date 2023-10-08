@@ -72,5 +72,5 @@ export const load = (async ({ locals, params, url }) => {
 		};
 	}
 
-	return { container, containers, overlayData };
+	return { container, containers: filterVisible(containers, locals.user), overlayData };
 }) satisfies PageServerLoad;

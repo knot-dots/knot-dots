@@ -45,5 +45,10 @@ export const load = (async ({ params, locals, url }) => {
 		};
 	}
 
-	return { container, measures, overlayData, strategies };
+	return {
+		container,
+		measures: filterVisible(measures, locals.user),
+		overlayData,
+		strategies: filterVisible(strategies, locals.user)
+	};
 }) satisfies PageServerLoad;
