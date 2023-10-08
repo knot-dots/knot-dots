@@ -1310,6 +1310,19 @@ export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 	};
 }
 
+export function getAllMembershipRelationsOfUser(guid: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.type(
+			z.object({ predicate: predicates, object: z.string().uuid() })
+		)`
+			SELECT cu.predicate, c.guid AS object
+			FROM container_user cu
+			JOIN container c ON cu.object = c.revision AND c.valid_currently
+			WHERE subject = ${guid};
+		`);
+	};
+}
+
 export function bulkUpdateOrganization(container: AnyContainer, organization: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {

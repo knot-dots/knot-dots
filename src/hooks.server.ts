@@ -5,7 +5,8 @@ import { serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import { getPool } from '$lib/server/db';
+import { predicates } from '$lib/models';
+import { getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
 
 export const handle = (async ({ event, resolve }) => {
 	const lang = event.request.headers.get('accept-language')?.split(',')[0];
@@ -66,6 +67,18 @@ export const handle = (async ({ event, resolve }) => {
 	}
 
 	event.locals.pool = await getPool();
+
+	if (event.locals.user.isAuthenticated) {
+		const containerUserRelations = await event.locals.pool.connect(
+			getAllMembershipRelationsOfUser(event.locals.user.guid)
+		);
+		event.locals.user.memberOf = containerUserRelations
+			.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+			.map(({ object }) => object);
+		event.locals.user.adminOf = event.locals.user.memberOf = containerUserRelations
+			.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+			.map(({ object }) => object);
+	}
 
 	return resolve(event);
 }) satisfies Handle;
