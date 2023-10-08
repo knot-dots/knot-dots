@@ -75,7 +75,7 @@ export const handle = (async ({ event, resolve }) => {
 		event.locals.user.memberOf = containerUserRelations
 			.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
 			.map(({ object }) => object);
-		event.locals.user.adminOf = event.locals.user.memberOf = containerUserRelations
+		event.locals.user.adminOf = containerUserRelations
 			.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
 			.map(({ object }) => object);
 	}
