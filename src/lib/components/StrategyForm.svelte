@@ -21,7 +21,7 @@
 	<svelte:fragment slot="data">
 		{#if 'image' in container.payload}
 			<span class="preview">
-				<img alt={$_('image')} class="logo" src={container.payload.image} />
+				<img alt={$_('image')} src={container.payload.image} />
 				<button
 					class="quiet remove"
 					title={$_('remove_image')}
@@ -33,7 +33,7 @@
 			</span>
 		{:else}
 			<label>
-				{$_('logo')}
+				{$_('cover')}
 				<input type="file" name="upload" accept="image/png,image/jpeg" />
 				<span class="help">{$_('image_upload_help')}</span>
 			</label>
