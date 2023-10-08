@@ -1,0 +1,2 @@
+DROP INDEX container_payload_organization_category_idx;
+DROP INDEX container_payload_task_category_idx;
