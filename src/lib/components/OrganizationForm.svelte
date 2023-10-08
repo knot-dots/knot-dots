@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
+	import { organizationCategories } from '$lib/models.js';
 	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models.js';
 
 	export let container: OrganizationContainer | EmptyOrganizationContainer;
@@ -35,6 +36,17 @@
 			</label>
 		{/if}
 		<Editor label={$_('description')} bind:value={container.payload.description} />
+	</svelte:fragment>
+
+	<svelte:fragment slot="meta">
+		<label>
+			{$_('organization_category.label')}
+			<select name="organizationCategory" bind:value={container.payload.organizationCategory}>
+				{#each organizationCategories.options as organizationCategoryOption}
+					<option value={organizationCategoryOption}>{$_(organizationCategoryOption)}</option>
+				{/each}
+			</select>
+		</label>
 	</svelte:fragment>
 
 	<slot slot="extra-buttons">

@@ -90,6 +90,13 @@
 	"operational_goal": "Operational goal",
 	"operational_goals": "Operational goals",
 	"organization": "Organization",
+	"organization_category": {
+		"business": "Business",
+		"government": "Government",
+		"label": "Category",
+		"non_profit": "Non-profit",
+		"political": "Political"
+	},
 	"organizational_unit": "Organizational unit",
 	"organizational_unit_level": "Level {level, number}",
 	"organizational_units": "Organizational units",

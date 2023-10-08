@@ -145,6 +145,17 @@ export const taskCategories = z.enum(taskCategoryValues);
 
 export type TaskCategory = z.infer<typeof taskCategories>;
 
+const organizationCategoryValues = [
+	'organization_category.business',
+	'organization_category.government',
+	'organization_category.non_profit',
+	'organization_category.political'
+] as const;
+
+export const organizationCategories = z.enum(organizationCategoryValues);
+
+export type OrganizationCategory = z.infer<typeof organizationCategories>;
+
 const quantityValues = [
 	'quantity.broadband_coverage',
 	'quantity.charging_stations',
@@ -374,6 +385,7 @@ const organizationPayload = z.object({
 	description: z.string(),
 	image: z.string().url().optional(),
 	name: z.string(),
+	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
 	visibility
 });
