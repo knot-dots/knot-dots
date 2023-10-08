@@ -484,15 +484,28 @@ export function getManyContainers(
 	};
 }
 
-export function getManyOrganizationContainers(filters: { default?: boolean }, sort: string) {
+export function getManyOrganizationContainers(
+	filters: { default?: boolean; organizationCategories?: string[] },
+	sort: string
+) {
 	return async (connection: DatabaseConnection): Promise<OrganizationContainer[]> => {
 		const conditions = [
 			sql.fragment`valid_currently`,
 			sql.fragment`NOT deleted`,
 			sql.fragment`payload->>'type' = ${payloadTypes.enum.organization}`
 		];
+
 		if (filters.default !== undefined) {
 			conditions.push(sql.fragment`payload->>'default' = ${filters.default}`);
+		}
+
+		if (filters.organizationCategories?.length) {
+			conditions.push(
+				sql.fragment`payload->>'organizationCategory' IN (${sql.join(
+					filters.organizationCategories,
+					sql.fragment`, `
+				)})`
+			);
 		}
 
 		let orderBy = sql.fragment`valid_from DESC`;
