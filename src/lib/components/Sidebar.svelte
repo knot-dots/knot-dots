@@ -32,6 +32,7 @@
 		payloadTypes,
 		strategyTypes,
 		sustainableDevelopmentGoals,
+		taskCategories,
 		topics
 	} from '$lib/models';
 	import {
@@ -51,6 +52,7 @@
 	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
 	let selectedRelations = $page.url.searchParams.getAll('relations');
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
+	let selectedTaskCategory = $page.url.searchParams.getAll('taskCategory');
 	let selectedTopic = $page.url.searchParams.getAll('topic');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
 
@@ -65,11 +67,13 @@
 		query.delete('category');
 		query.delete('relations');
 		query.delete('strategyType');
+		query.delete('taskCategory');
 		query.delete('topic');
 		query.delete('sort');
 		selectedCategory.forEach((c) => query.append('category', c));
 		selectedRelations.forEach((c) => query.append('relations', c));
 		selectedStrategyType.forEach((c) => query.append('strategyType', c));
+		selectedTaskCategory.forEach((c) => query.append('taskCategory', c));
 		selectedTopic.forEach((c) => query.append('topic', c));
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
@@ -473,7 +477,26 @@
 								on:change={applyInternalObjectivesFilter}
 							/>
 						</li>
+						{#if $page.url.pathname.includes('tasks')}
+							<li>
+								<Filters
+									label={$_('task_category.label')}
+									options={taskCategories.options.map((o) => [$_(o), o])}
+									bind:selectedOptions={selectedTaskCategory}
+									on:change={applySortAndFilters}
+								/>
+							</li>
+						{/if}
 					</ul>
+				</li>
+			{:else if $page.url.pathname.startsWith('/measure') && $page.url.pathname.includes('tasks')}
+				<li>
+					<Filters
+						label={$_('task_category.label')}
+						options={taskCategories.options.map((o) => [$_(o), o])}
+						bind:selectedOptions={selectedTaskCategory}
+						on:change={applySortAndFilters}
+					/>
 				</li>
 			{/if}
 			{#if !$page.url.pathname.includes('organizational_units') && !$page.url.pathname.includes('tasks')}

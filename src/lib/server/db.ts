@@ -591,6 +591,7 @@ export function getManyTaskContainers(filters: {
 	measure?: number;
 	organization?: string;
 	organizationalUnits?: string[];
+	taskCategories?: string[];
 	terms?: string;
 }) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
@@ -608,6 +609,15 @@ export function getManyTaskContainers(filters: {
 			conditions.push(
 				sql.fragment`organizational_unit IN (${sql.join(
 					filters.organizationalUnits,
+					sql.fragment`, `
+				)})`
+			);
+		}
+
+		if (filters.taskCategories?.length) {
+			conditions.push(
+				sql.fragment`payload->>'taskCategory' IN (${sql.join(
+					filters.taskCategories,
 					sql.fragment`, `
 				)})`
 			);
