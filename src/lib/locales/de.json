@@ -284,6 +284,13 @@
 	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_strategies": "Übergeordnete Strategien",
 	"superordinate_visions": "Übergeordnete Visionen",
+	"task_category": {
+		"bugfix": "Fehler",
+		"design": "Design",
+		"function": "Funktion",
+		"label": "Kategorie",
+		"wording": "Formulierung"
+	},
 	"task_status": {
 		"done": "Fertig",
 		"idea": "Idee",

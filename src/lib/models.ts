@@ -134,6 +134,17 @@ export const topics = z.enum(topicValues);
 
 export type Topic = z.infer<typeof topics>;
 
+const taskCategoryValues = [
+	'task_category.bugfix',
+	'task_category.design',
+	'task_category.function',
+	'task_category.wording'
+] as const;
+
+export const taskCategories = z.enum(taskCategoryValues);
+
+export type TaskCategory = z.infer<typeof taskCategories>;
+
 const quantityValues = [
 	'quantity.broadband_coverage',
 	'quantity.charging_stations',
@@ -305,6 +316,7 @@ const taskPayload = internalObjectivesBasePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
+		taskCategory: taskCategories.optional(),
 		taskStatus: taskStatus,
 		type: z.literal(payloadTypes.enum['internal_objective.task'])
 	})

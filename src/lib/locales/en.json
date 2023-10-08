@@ -283,6 +283,13 @@
 	"superordinate_strategic_goals": "Superordinate strategic goals",
 	"superordinate_strategies": "Superordinate strategies",
 	"superordinate_visions": "Superordinate visions",
+	"task_category": {
+		"bugfix": "Bug fix",
+		"design": "Design",
+		"function": "Function",
+		"label": "Category",
+		"wording": "Wording"
+	},
 	"task_status": {
 		"done": "Done",
 		"idea": "Idea",
