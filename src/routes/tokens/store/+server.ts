@@ -22,7 +22,7 @@ export const POST = (async ({ cookies, locals, request }) => {
 		throw error(422, parseResult.error);
 	} else {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-		const cookieOpts = { domain: url.hostname, path: '/' };
+		const cookieOpts = { domain: url.hostname, path: '/', secure: url.protocol === 'https' };
 
 		cookies.set('idToken', parseResult.data.idToken, cookieOpts);
 		cookies.set('refreshToken', parseResult.data.refreshToken, cookieOpts);

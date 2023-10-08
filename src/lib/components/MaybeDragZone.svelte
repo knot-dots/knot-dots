@@ -43,7 +43,7 @@
 	}
 </script>
 
-{#if $page.data.relationOverlayData && $ability.can('relate', $page.data.relationOverlayData.container)}
+{#if $page.data.relationOverlayData && $ability.can('relate', $page.data.relationOverlayData.object)}
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}

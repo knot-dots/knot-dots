@@ -5,18 +5,44 @@ import { serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import { getPool } from '$lib/server/db';
+import { predicates } from '$lib/models';
+import { getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
 
 export const handle = (async ({ event, resolve }) => {
 	const lang = event.request.headers.get('accept-language')?.split(',')[0];
 	locale.set(lang ?? 'de');
 
 	event.locals.user = {
+		adminOf: [],
 		familyName: '',
 		givenName: '',
 		guid: '',
-		isAuthenticated: false
+		isAuthenticated: false,
+		memberOf: [],
+		roles: []
 	};
+
+	if (event.request.method == 'GET' && event.cookies.get('idToken')) {
+		try {
+			const idToken = event.cookies.get('idToken') as string;
+			const jwks = jose.createRemoteJWKSet(
+				new URL(`${privateEnv.KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/certs`)
+			);
+			const { payload } = await jose.jwtVerify(idToken, jwks, {
+				issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
+				requiredClaims: ['iss', 'sub']
+			});
+			event.locals.user = {
+				...event.locals.user,
+				familyName: payload.family_name ?? '',
+				givenName: payload.given_name ?? '',
+				guid: payload.sub ?? '',
+				isAuthenticated: true
+			};
+		} catch (error) {
+			log.warn(serializeError(error), String(error));
+		}
+	}
 
 	if (event.request.headers.get('Authorization')?.startsWith('Bearer ')) {
 		const token = (event.request.headers.get('Authorization') as string).substring(7);
@@ -29,6 +55,7 @@ export const handle = (async ({ event, resolve }) => {
 				requiredClaims: ['iss', 'sub']
 			});
 			event.locals.user = {
+				...event.locals.user,
 				familyName: '',
 				givenName: '',
 				guid: payload.sub ?? '',
@@ -40,6 +67,18 @@ export const handle = (async ({ event, resolve }) => {
 	}
 
 	event.locals.pool = await getPool();
+
+	if (event.locals.user.isAuthenticated) {
+		const containerUserRelations = await event.locals.pool.connect(
+			getAllMembershipRelationsOfUser(event.locals.user.guid)
+		);
+		event.locals.user.memberOf = containerUserRelations
+			.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+			.map(({ object }) => object);
+		event.locals.user.adminOf = event.locals.user.memberOf = containerUserRelations
+			.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+			.map(({ object }) => object);
+	}
 
 	return resolve(event);
 }) satisfies Handle;

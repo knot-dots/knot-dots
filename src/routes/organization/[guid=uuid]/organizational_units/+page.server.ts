@@ -1,3 +1,4 @@
+import { filterVisible } from '$lib/authorization';
 import {
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
@@ -20,5 +21,5 @@ export const load = (async ({ locals, url, params }) => {
 		);
 	}
 
-	return { container, containers };
+	return { container, containers: filterVisible(containers, locals.user) };
 }) satisfies PageServerLoad;

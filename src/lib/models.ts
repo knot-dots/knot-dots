@@ -276,20 +276,24 @@ export const taskPriority = z.object({
 
 export type TaskPriority = z.infer<typeof taskPriority>;
 
+export const visibility = z.enum(['creator', 'members', 'public']);
+
 const basePayload = z
 	.object({
 		category: z.array(sustainableDevelopmentGoals),
 		description: z.string(),
 		summary: z.string().max(200).optional(),
 		title: z.string(),
-		topic: z.array(topics)
+		topic: z.array(topics),
+		visibility
 	})
 	.strict();
 
 const internalObjectivesBasePayload = z.object({
 	description: z.string(),
 	summary: z.string().max(200).optional(),
-	title: z.string()
+	title: z.string(),
+	visibility
 });
 
 const internalStrategyPayload = internalObjectivesBasePayload
@@ -386,7 +390,8 @@ const organizationPayload = z.object({
 	description: z.string(),
 	image: z.string().url().optional(),
 	name: z.string(),
-	type: z.literal(payloadTypes.enum.organization)
+	type: z.literal(payloadTypes.enum.organization),
+	visibility
 });
 
 const organizationalUnitPayload = z.object({
@@ -394,7 +399,8 @@ const organizationalUnitPayload = z.object({
 	image: z.string().url().optional(),
 	level: z.number().int().positive(),
 	name: z.string(),
-	type: z.literal(payloadTypes.enum.organizational_unit)
+	type: z.literal(payloadTypes.enum.organizational_unit),
+	visibility
 });
 
 const strategicGoalPayload = basePayload
@@ -417,7 +423,12 @@ const strategyPayload = basePayload
 	.strict();
 
 const textPayload = z
-	.object({ body: z.string(), title: z.string(), type: z.literal(payloadTypes.enum.text) })
+	.object({
+		body: z.string(),
+		title: z.string(),
+		type: z.literal(payloadTypes.enum.text),
+		visibility
+	})
 	.strict();
 
 export const container = z.object({

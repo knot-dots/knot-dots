@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { isOrganizationalUnitContainer, payloadTypes, predicates } from '$lib/models';
+import { filterVisible } from '$lib/authorization';
+import { isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
@@ -51,7 +52,11 @@ export const load = (async ({ params, locals, url }) => {
 				)
 			)
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	}
 
 	return { container, measures, overlayData, strategies };

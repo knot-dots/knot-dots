@@ -17,7 +17,8 @@ import {
 	predicates,
 	relation,
 	user,
-	userRelation
+	userRelation,
+	visibility
 } from '$lib/models';
 import type {
 	AnyContainer,
@@ -1309,6 +1310,19 @@ export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 	};
 }
 
+export function getAllMembershipRelationsOfUser(guid: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.type(
+			z.object({ predicate: predicates, object: z.string().uuid() })
+		)`
+			SELECT cu.predicate, c.guid AS object
+			FROM container_user cu
+			JOIN container c ON cu.object = c.revision AND c.valid_currently
+			WHERE subject = ${guid};
+		`);
+	};
+}
+
 export function bulkUpdateOrganization(container: AnyContainer, organization: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
@@ -1380,7 +1394,13 @@ export function setUp(name: string, realm: string) {
 		return await createContainer({
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
-			payload: { default: true, description: '', name, type: payloadTypes.enum.organization },
+			payload: {
+				default: true,
+				description: '',
+				name,
+				type: payloadTypes.enum.organization,
+				visibility: visibility.enum.public
+			},
 			realm,
 			relation: [],
 			user: []

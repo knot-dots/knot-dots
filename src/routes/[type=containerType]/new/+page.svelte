@@ -26,7 +26,8 @@
 		isEmptyStrategyContainer,
 		isEmptyTaskContainer,
 		isEmptyVisionContainer,
-		payloadTypes
+		payloadTypes,
+		visibility
 	} from '$lib/models';
 	import type {
 		CustomEventMap,
@@ -81,7 +82,8 @@
 			organizational_unit: $page.data.currentOrganizationalUnit?.guid ?? null,
 			realm: env.PUBLIC_KC_REALM,
 			relation: selected,
-			user: []
+			user: [],
+			visibility: visibility.enum.creator
 		};
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];

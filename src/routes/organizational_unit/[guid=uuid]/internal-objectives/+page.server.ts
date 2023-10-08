@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { filterVisible } from '$lib/authorization';
 import { isOrganizationalUnitContainer, owners, payloadTypes, predicates } from '$lib/models';
 import type { OrganizationalUnitContainer } from '$lib/models';
 import {
@@ -102,7 +103,11 @@ export const load = (async ({ locals, params, url }) => {
 			),
 			locals.pool.connect(getAllRelatedInternalObjectives(guid, ['hierarchical'], ''))
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	} else if (url.searchParams.has('container-relations')) {
 		const guid = url.searchParams.get('container-relations') ?? '';
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
@@ -110,5 +115,10 @@ export const load = (async ({ locals, params, url }) => {
 		relationOverlayData = { object: container };
 	}
 
-	return { container, containers, overlayData, relationOverlayData };
+	return {
+		container,
+		containers: filterVisible(containers, locals.user),
+		overlayData,
+		relationOverlayData
+	};
 }) satisfies PageServerLoad;

@@ -205,7 +205,7 @@
 	}
 
 	:global(#dnd-action-dragged-el .card) {
-		cursor: grab;
+		cursor: inherit;
 	}
 
 	:global(#dnd-action-dragged-el .card:hover) {

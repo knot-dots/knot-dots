@@ -1,5 +1,5 @@
+import { filterVisible } from '$lib/authorization';
 import { payloadTypes, predicates } from '$lib/models';
-import type { Container } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
@@ -71,7 +71,11 @@ export const load = (async ({ locals, params, url }) => {
 			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
 			locals.pool.connect(getAllRelatedInternalObjectives(guid, [], ''))
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	} else if (url.searchParams.has('container-relations')) {
 		const guid = url.searchParams.get('container-relations') ?? '';
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
@@ -79,5 +83,10 @@ export const load = (async ({ locals, params, url }) => {
 		relationOverlayData = { object: container };
 	}
 
-	return { container, containers, overlayData, relationOverlayData };
+	return {
+		container,
+		containers: filterVisible(containers, locals.user),
+		overlayData,
+		relationOverlayData
+	};
 }) satisfies PageServerLoad;

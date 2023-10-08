@@ -10,6 +10,7 @@ import type { PageServerLoad } from './$types';
 import { isOrganizationalUnitContainer, predicates } from '$lib/models';
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { filterVisible } from '$lib/authorization';
 
 export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
@@ -28,7 +29,10 @@ export const load = (async ({ locals, params, url }) => {
 		.map(({ guid }) => guid);
 
 	let containers = await locals.pool.connect(
-		getManyTaskContainers({ organizationalUnits, terms: url.searchParams.get('terms') ?? '' })
+		getManyTaskContainers({
+			organizationalUnits,
+			terms: url.searchParams.get('terms') ?? ''
+		})
 	);
 
 	containers = containers.filter(({ relation, organizational_unit }) => {
@@ -61,7 +65,11 @@ export const load = (async ({ locals, params, url }) => {
 				getAllRelatedInternalObjectives(guid, ['hierarchical'], url.searchParams.get('sort') ?? '')
 			)
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	}
 
 	return { container, containers, overlayData };

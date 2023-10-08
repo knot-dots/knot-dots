@@ -1,3 +1,4 @@
+import { filterVisible } from '$lib/authorization';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllContainersWithIndicatorContributions,
@@ -107,7 +108,11 @@ export const load = (async ({ locals, url, parent }) => {
 				)
 			)
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	} else if (url.searchParams.has('container-relations')) {
 		const guid = url.searchParams.get('container-relations') ?? '';
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
@@ -115,5 +120,13 @@ export const load = (async ({ locals, url, parent }) => {
 		relationOverlayData = { object: container };
 	}
 
-	return { containers, containersWithIndicatorContributions, overlayData, relationOverlayData };
+	return {
+		containers: filterVisible(containers, locals.user),
+		containersWithIndicatorContributions: filterVisible(
+			containersWithIndicatorContributions,
+			locals.user
+		),
+		overlayData,
+		relationOverlayData
+	};
 }) satisfies PageServerLoad;

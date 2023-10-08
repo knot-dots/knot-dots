@@ -1,3 +1,4 @@
+import { filterVisible } from '$lib/authorization';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllContainersWithIndicatorContributions,
@@ -48,8 +49,20 @@ export const load = (async ({ params, locals, url }) => {
 						getAllRelatedContainers([container.organization], guid, ['hierarchical'], {}, '')
 				  )
 		]);
-		overlayData = { isPartOfOptions, relatedContainers, revisions };
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: filterVisible(relatedContainers, locals.user),
+			revisions
+		};
 	}
 
-	return { allRelatedContainers, container, containersWithIndicatorContributions, overlayData };
+	return {
+		allRelatedContainers: filterVisible(allRelatedContainers, locals.user),
+		container,
+		containersWithIndicatorContributions: filterVisible(
+			containersWithIndicatorContributions,
+			locals.user
+		),
+		overlayData
+	};
 }) satisfies PageServerLoad;
