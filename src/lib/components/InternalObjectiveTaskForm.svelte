@@ -6,8 +6,14 @@
 	import type { KeycloakContext } from '$lib/authentication';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
-	import { taskStatus } from '$lib/models';
-	import type { AnyContainer, EmptyTaskContainer, TaskContainer, User } from '$lib/models';
+	import { taskCategories, taskStatus } from '$lib/models';
+	import type {
+		AnyContainer,
+		EmptyTaskContainer,
+		TaskCategory,
+		TaskContainer,
+		User
+	} from '$lib/models';
 
 	export let container: TaskContainer | EmptyTaskContainer;
 	export let isPartOfOptions: AnyContainer[];
@@ -27,6 +33,9 @@
 
 	let assignee = container.payload.assignee;
 	$: container.payload.assignee = assignee == '' ? undefined : assignee;
+
+	let taskCategory: TaskCategory | '' | undefined = container.payload.taskCategory;
+	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
 <InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful on:deleteSuccessful>
@@ -54,6 +63,17 @@
 						</option>
 					{/each}
 				{/await}
+			</select>
+		</label>
+		<label>
+			{$_('task_category.label')}
+			<select name="taskCategory" bind:value={taskCategory}>
+				<option></option>
+				{#each taskCategories.options as taskCategoryOption}
+					<option value={taskCategoryOption}>
+						{$_(taskCategoryOption)}
+					</option>
+				{/each}
 			</select>
 		</label>
 		<label>

@@ -70,8 +70,13 @@
 		<img alt={$_('image')} class="text" src={container.payload.image} />
 	{/if}
 
-	{#if showRelationFilter}
-		<footer>
+	<footer>
+		{#if 'organizationCategory' in container.payload && container.payload.organizationCategory}
+			<span class="badge">
+				{$_(container.payload.organizationCategory)}
+			</span>
+		{/if}
+		{#if showRelationFilter}
 			<button
 				class={relatedTo === container.guid ? 'is-active' : ''}
 				title={$_('show_related_objects')}
@@ -80,8 +85,8 @@
 			>
 				<Icon src={Share} size="20" mini />
 			</button>
-		</footer>
-	{/if}
+		{/if}
+	</footer>
 </article>
 
 <style>

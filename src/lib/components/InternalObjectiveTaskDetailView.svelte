@@ -146,6 +146,14 @@
 				</div>
 			{/await}
 		{/if}
+		{#if container.payload.taskCategory}
+			<div class="meta">
+				<h3 class="meta-key">{$_('task_category.label')}</h3>
+				<p class="meta-value">
+					<span class="badge">{$_(container.payload.taskCategory)}</span>
+				</p>
+			</div>
+		{/if}
 		{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 			<div class="meta">
 				<h3 class="meta-key">{$_('fulfillment_date')}</h3>

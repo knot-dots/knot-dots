@@ -17,6 +17,7 @@ export const load = (async ({ locals, params, url }) => {
 	let containers = await locals.pool.connect(
 		getManyTaskContainers({
 			organization: container.organization,
+			taskCategories: url.searchParams.getAll('taskCategory'),
 			terms: url.searchParams.get('terms') ?? ''
 		})
 	);

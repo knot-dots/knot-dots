@@ -29,9 +29,11 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isStrategyContainer,
+		organizationCategories,
 		payloadTypes,
 		strategyTypes,
 		sustainableDevelopmentGoals,
+		taskCategories,
 		topics
 	} from '$lib/models';
 	import {
@@ -48,9 +50,11 @@
 	let terms = $page.url.searchParams.get('terms') ?? '';
 	let selectedCategory = $page.url.searchParams.getAll('category');
 	let selectedIncluded = $page.url.searchParams.getAll('included');
+	let selectedOrganizationCategory = $page.url.searchParams.getAll('organizationCategory');
 	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
 	let selectedRelations = $page.url.searchParams.getAll('relations');
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
+	let selectedTaskCategory = $page.url.searchParams.getAll('taskCategory');
 	let selectedTopic = $page.url.searchParams.getAll('topic');
 	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
 
@@ -63,13 +67,17 @@
 	function applySortAndFilters() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('category');
+		query.delete('organizationCategory');
 		query.delete('relations');
 		query.delete('strategyType');
+		query.delete('taskCategory');
 		query.delete('topic');
 		query.delete('sort');
 		selectedCategory.forEach((c) => query.append('category', c));
+		selectedOrganizationCategory.forEach((c) => query.append('organizationCategory', c));
 		selectedRelations.forEach((c) => query.append('relations', c));
 		selectedStrategyType.forEach((c) => query.append('strategyType', c));
+		selectedTaskCategory.forEach((c) => query.append('taskCategory', c));
 		selectedTopic.forEach((c) => query.append('topic', c));
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
@@ -473,7 +481,26 @@
 								on:change={applyInternalObjectivesFilter}
 							/>
 						</li>
+						{#if $page.url.pathname.includes('tasks')}
+							<li>
+								<Filters
+									label={$_('task_category.label')}
+									options={taskCategories.options.map((o) => [$_(o), o])}
+									bind:selectedOptions={selectedTaskCategory}
+									on:change={applySortAndFilters}
+								/>
+							</li>
+						{/if}
 					</ul>
+				</li>
+			{:else if $page.url.pathname.startsWith('/measure') && $page.url.pathname.includes('tasks')}
+				<li>
+					<Filters
+						label={$_('task_category.label')}
+						options={taskCategories.options.map((o) => [$_(o), o])}
+						bind:selectedOptions={selectedTaskCategory}
+						on:change={applySortAndFilters}
+					/>
 				</li>
 			{/if}
 			{#if !$page.url.pathname.includes('organizational_units') && !$page.url.pathname.includes('tasks')}
@@ -511,6 +538,60 @@
 					</ul>
 				</li>
 			{/if}
+		</ul>
+	{:else if $page.url.pathname === '/organizations'}
+		<ul class="group group-actions">
+			<li>
+				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+					<FilterIcon class="icon-20" />
+					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+					<span class:is-hidden={!$sidebarToggle}>
+						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+					</span>
+				</button>
+				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+					<li>
+						<Filters
+							options={organizationCategories.options.map((o) => [$_(o), o])}
+							bind:selectedOptions={selectedOrganizationCategory}
+							on:change={applySortAndFilters}
+						/>
+					</li>
+				</ul>
+			</li>
+			<li>
+				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
+					<SortDescendingIcon class="icon-20" />
+					<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
+					<span class:is-hidden={!$sidebarToggle}>
+						<Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" />
+					</span>
+				</button>
+				<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
+					<li>
+						<label>
+							<input
+								type="radio"
+								value={'modified'}
+								bind:group={selectedSort}
+								on:change={applySortAndFilters}
+							/>
+							{$_('sort_modified')}
+						</label>
+					</li>
+					<li>
+						<label>
+							<input
+								type="radio"
+								value={'alpha'}
+								bind:group={selectedSort}
+								on:change={applySortAndFilters}
+							/>
+							{$_('sort_alphabetically')}
+						</label>
+					</li>
+				</ul>
+			</li>
 		</ul>
 	{:else if 'container' in $page.data && isStrategyContainer($page.data.container)}
 		<ul class="group group-actions">
