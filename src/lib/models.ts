@@ -24,10 +24,6 @@ export const sustainableDevelopmentGoals = z.enum(sdgValues);
 
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
 
-export function isSustainableDevelopmentGoal(value: unknown): value is SustainableDevelopmentGoal {
-	return sdgValues.includes(value as SustainableDevelopmentGoal);
-}
-
 const payloadTypeValues = [
 	'internal_objective.internal_strategy',
 	'internal_objective.vision',
@@ -85,10 +81,6 @@ export const predicates = z.enum(predicateValues);
 
 export type Predicate = z.infer<typeof predicates>;
 
-export function isPredicate(value: unknown): value is Predicate {
-	return predicateValues.includes(value as Predicate);
-}
-
 const statusValues = [
 	'status.idea',
 	'status.in_planning',
@@ -101,10 +93,6 @@ export const status = z.enum(statusValues);
 
 export type Status = z.infer<typeof status>;
 
-export function isStatus(value: unknown): value is Status {
-	return statusValues.includes(value as Status);
-}
-
 const taskStatusValues = [
 	'task_status.idea',
 	'task_status.in_planning',
@@ -116,10 +104,6 @@ export const taskStatus = z.enum(taskStatusValues);
 
 export type TaskStatus = z.infer<typeof taskStatus>;
 
-export function isTaskStatus(value: unknown): value is TaskStatus {
-	return taskStatusValues.includes(value as TaskStatus);
-}
-
 const strategyTypeValues = [
 	'strategy_type.mobility',
 	'strategy_type.sustainability',
@@ -130,10 +114,6 @@ const strategyTypeValues = [
 export const strategyTypes = z.enum(strategyTypeValues);
 
 export type StrategyType = z.infer<typeof strategyTypes>;
-
-export function isStrategyType(value: unknown): value is StrategyType {
-	return strategyTypeValues.includes(value as StrategyType);
-}
 
 const topicValues = [
 	'topic.economy',
@@ -153,10 +133,6 @@ const topicValues = [
 export const topics = z.enum(topicValues);
 
 export type Topic = z.infer<typeof topics>;
-
-export function isTopic(value: unknown): value is Topic {
-	return topicValues.includes(value as Topic);
-}
 
 const quantityValues = [
 	'quantity.broadband_coverage',
@@ -200,10 +176,6 @@ const unitValues = [
 export const units = z.enum(unitValues);
 
 export type Unit = z.infer<typeof units>;
-
-export function isUnit(value: unknown): value is Unit {
-	return unitValues.includes(value as Unit);
-}
 
 export const unitByQuantity = new Map<Quantity, Unit>([
 	[quantities.enum['quantity.broadband_coverage'], units.enum['unit.percent']],
