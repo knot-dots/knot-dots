@@ -5,6 +5,7 @@ import { page } from '$app/stores';
 import { env } from '$env/dynamic/public';
 import { keycloak, user } from '$lib/stores';
 import { isAdminOf, isMemberOf } from '$lib/models';
+import { invalidateAll } from '$app/navigation';
 
 export const tokens = z.object({
 	idToken: z.string(),
@@ -81,6 +82,7 @@ export async function initKeycloak(initOptions: KeycloakInitOptions) {
 		} catch (error) {
 			console.log(error);
 		}
+		await invalidateAll();
 	};
 
 	kc.onAuthRefreshError = kc.clearToken;
@@ -100,6 +102,7 @@ export async function initKeycloak(initOptions: KeycloakInitOptions) {
 		} catch (error) {
 			console.log(error);
 		}
+		await invalidateAll();
 	};
 
 	try {
