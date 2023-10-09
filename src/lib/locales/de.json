@@ -222,7 +222,8 @@
 		"is_consistent_with":  "Diese Vorhaben unterstützen sich gegenseitig",
 		"is_duplicate_of": "Dopplung",
 		"is_equivalent_to": "Diese Vorhaben entsprechen sich",
-		"is_inconsistent_with": "Diese Vorhaben widersprechen sich"
+		"is_inconsistent_with": "Diese Vorhaben widersprechen sich",
+		"remove": "Beziehungen lösen"
 	},
 	"relations": "Beziehungen",
 	"resources": {

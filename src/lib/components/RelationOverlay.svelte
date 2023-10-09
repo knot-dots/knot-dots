@@ -118,6 +118,11 @@
 						relation.predicate != predicates.enum['is-inconsistent-with']) ||
 					(relation.object != object.revision && relation.subject != object.revision)
 			);
+			unrelateZone.active = true;
+			setTimeout(() => {
+				unrelateZone.active = false;
+				unrelateZone.considered = false;
+			}, 2000);
 			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
 			invalidateAll();
 		}
@@ -149,7 +154,7 @@
 				<Icon src={predicateIcons.get(zone.predicate)} size="24" />
 				{zone.help}
 				<div
-					class="drop-zone drop-zone--{zone.predicate} drop-zone"
+					class="drop-zone drop-zone--{zone.predicate}"
 					class:drop-zone--is-active={i === activeDropZoneIndex}
 					class:drop-zone--has-received={zone.active}
 					use:dndzone={{
@@ -171,7 +176,7 @@
 			<Icon src={Trash} size="24" />
 			{$_('relation_overlay.remove')}
 			<div
-				class="drop-zone drop-zone--remove drop-zone"
+				class="drop-zone drop-zone--remove"
 				class:drop-zone--is-active={unrelateZone.considered}
 				class:drop-zone--has-received={unrelateZone.active}
 				use:dndzone={{
