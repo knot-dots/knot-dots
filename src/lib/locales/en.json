@@ -332,8 +332,8 @@
 		"ton": "t"
 	},
 	"upload": {
-		"image.help": "JPG, PNG; max 512 kB",
-		"pdf.help": "PDF; max 512 kB"
+		"image.help": "JPG, PNG; max 100 MB",
+		"pdf.help": "PDF; max 100 MB"
 	},
 	"user": {
 		"display_name": "Name",
