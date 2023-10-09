@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent } from 'svelte-dnd-action';
-	import { Icon, XMark } from 'svelte-hero-icons';
+	import { Icon, Trash, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
+	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
-	import { predicates } from '$lib/models';
+	import { container, predicates } from '$lib/models';
 	import type { AnyContainer, Container, Predicate } from '$lib/models';
 	import { dragged } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
@@ -87,17 +88,51 @@
 			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
 		}
 	}
+
+	const unrelateZone = {
+		active: false,
+		considered: false,
+		items: [] as { guid: string; container: Container }[]
+	};
+
+	function handleUnrelateConsider(
+		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
+	) {
+		if (event.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) {
+			unrelateZone.considered = true;
+		} else if (event.detail.info.trigger === TRIGGERS.DRAGGED_LEFT) {
+			unrelateZone.considered = false;
+		}
+		unrelateZone.items = event.detail.items;
+	}
+
+	function handleUnrelateFinalize(
+		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
+	) {
+		if (event.detail.info.trigger === TRIGGERS.DROPPED_INTO_ZONE && $dragged) {
+			$dragged.relation = $dragged.relation.filter(
+				(relation) =>
+					(relation.predicate != predicates.enum['is-consistent-with'] &&
+						relation.predicate != predicates.enum['is-duplicate-of'] &&
+						relation.predicate != predicates.enum['is-equivalent-to'] &&
+						relation.predicate != predicates.enum['is-inconsistent-with']) ||
+					(relation.object != object.revision && relation.subject != object.revision)
+			);
+			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
+			invalidateAll();
+		}
+	}
 </script>
 
 <div class="overlay" transition:slide={{ axis: 'x' }}>
 	<div class="details">
 		<header>
 			<h2>
-				<div class="icons">
+				<span class="icons">
 					<a href={closeOverlay()} class="button icons-element">
 						<Icon solid src={XMark} size="20" />
 					</a>
-				</div>
+				</span>
 			</h2>
 		</header>
 		<p>
@@ -131,6 +166,28 @@
 				</div>
 			</div>
 		{/each}
+
+		<div class="drop-zone-wrapper">
+			<Icon src={Trash} size="24" />
+			{$_('relation_overlay.remove')}
+			<div
+				class="drop-zone drop-zone--remove drop-zone"
+				class:drop-zone--is-active={unrelateZone.considered}
+				class:drop-zone--has-received={unrelateZone.active}
+				use:dndzone={{
+					dropTargetStyle: {},
+					items: unrelateZone.items,
+					morphDisabled: true
+				}}
+				on:consider={handleUnrelateConsider}
+				on:finalize={handleUnrelateFinalize}
+			>
+				{#each unrelateZone.items as item (item.guid)}
+					<span>{item.guid}</span>
+				{/each}
+			</div>
+		</div>
+
 		<footer>
 			<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
 			<a class="button" href={`?related-to=${object.guid}`}
