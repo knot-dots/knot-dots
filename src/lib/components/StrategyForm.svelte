@@ -15,6 +15,11 @@
 		delete container.payload.image;
 		container.payload = container.payload;
 	}
+
+	function removePDF() {
+		delete container.payload.pdf;
+		container.payload = container.payload;
+	}
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
@@ -36,6 +41,25 @@
 				{$_('cover')}
 				<input type="file" name="image" accept="image/png,image/jpeg" />
 				<span class="help">{$_('upload.image.help')}</span>
+			</label>
+		{/if}
+		{#if 'pdf' in container.payload}
+			<span>
+				<a href={container.payload.pdf}>{$_('pdf')}</a>
+				<button
+					class="quiet remove"
+					title={$_('remove_pdf')}
+					type="button"
+					on:click|stopPropagation={removePDF}
+				>
+					<Icon src={Trash} size="20" />
+				</button>
+			</span>
+		{:else}
+			<label>
+				{$_('pdf')}
+				<input type="file" name="pdf" accept="application/pdf" />
+				<span class="help">{$_('upload.pdf.help')}</span>
 			</label>
 		{/if}
 	</svelte:fragment>

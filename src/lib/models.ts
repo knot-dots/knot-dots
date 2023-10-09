@@ -413,6 +413,7 @@ const strategyPayload = basePayload
 	.extend({
 		image: z.string().url().optional(),
 		level: levels,
+		pdf: z.string().url().optional(),
 		strategyType: strategyTypes,
 		type: z.literal(payloadTypes.enum.strategy)
 	})

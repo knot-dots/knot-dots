@@ -104,6 +104,7 @@
 	"other_organizations": "Other organizations",
 	"owned_by": "Owned by",
 	"page_title": "StrategyTool",
+	"pdf": "PDF",
 	"planned_duration": "Planned duration",
 	"progress": "Progress",
 	"quantity": {
@@ -331,7 +332,8 @@
 		"ton": "t"
 	},
 	"upload": {
-		"image.help": "JPG, PNG; max 512 kB"
+		"image.help": "JPG, PNG; max 512 kB",
+		"pdf.help": "PDF; max 512 kB"
 	},
 	"user": {
 		"display_name": "Name",

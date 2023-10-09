@@ -104,6 +104,7 @@
 	"other_organizations": "Andere Organisationen",
 	"owned_by": "Zuständig",
 	"page_title": "Strategie-Werkzeug",
+	"pdf": "PDF",
 	"planned_duration": "Geplante Laufzeit",
 	"progress": "Fortschritt",
 	"quantity": {
@@ -331,7 +332,8 @@
 		"ton": "t"
 	},
 	"upload": {
-		"image.help": "JPG oder PNG, maximale Dateigröße 512 kB"
+		"image.help": "JPG oder PNG, maximale Dateigröße 512 kB",
+		"pdf.help": "PDF, maximale Dateigröße 512 kB"
 	},
 	"user": {
 		"display_name": "Name",
