@@ -10,6 +10,7 @@
 	"close_sidebar": "Close sidebar",
 	"collapse_sidebar": "Collapse sidebar",
 	"comment": "Comment",
+	"cover": "Cover",
 	"created_date": "Created at",
 	"delete": "Delete",
 	"description": "Description",
@@ -30,7 +31,6 @@
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
-	"image_upload_help": "JPG, PNG; max 512 kB",
 	"indicator": {
 		"contribution": "Contribution to operative goal",
 		"legend": "Indicator",
@@ -104,6 +104,7 @@
 	"other_organizations": "Other organizations",
 	"owned_by": "Owned by",
 	"page_title": "StrategyTool",
+	"pdf": "PDF",
 	"planned_duration": "Planned duration",
 	"progress": "Progress",
 	"quantity": {
@@ -329,6 +330,10 @@
 		"percent": "%",
 		"per_100000": "per 100,000",
 		"ton": "t"
+	},
+	"upload": {
+		"image.help": "JPG, PNG; max 100 MB",
+		"pdf.help": "PDF; max 100 MB"
 	},
 	"user": {
 		"display_name": "Name",

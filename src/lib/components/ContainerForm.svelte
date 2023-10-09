@@ -7,6 +7,7 @@
 	import { env } from '$env/dynamic/public';
 	import { key } from '$lib/authentication';
 	import type { KeycloakContext } from '$lib/authentication';
+	import { uploadAsFormData } from '$lib/client/upload';
 	import {
 		etag,
 		modifiedContainer,
@@ -77,29 +78,18 @@
 			.updateToken(-1)
 			.catch(() => null);
 
-		const upload = formData.get('upload');
-
-		if (
-			upload instanceof File &&
-			upload.size > 0 &&
-			(data.payload.type === payloadTypes.enum.strategy ||
-				data.payload.type === payloadTypes.enum.organization ||
-				data.payload.type === payloadTypes.enum.organizational_unit)
-		) {
-			const uploadResponse = await fetch('/upload', {
-				method: 'POST',
-				body: formData,
-				headers: {
-					Authorization: `Bearer ${getKeycloak().token}`
-				}
-			});
-
-			if (uploadResponse.ok) {
-				data.payload.image = uploadResponse.headers.get('Location') as string;
-			} else {
-				return;
-			}
-		}
+		await Promise.all(
+			Array.from(formData)
+				.filter(([, value]) => value instanceof File && value.size > 0)
+				.map(async ([name, value]) => {
+					try {
+						const url = await uploadAsFormData(value as File, getKeycloak().token ?? '');
+						data.payload = { ...data.payload, [name]: url };
+					} catch (e) {
+						console.log(e);
+					}
+				})
+		);
 
 		if ('guid' in container) {
 			url = `/container/${container.guid}/revision`;

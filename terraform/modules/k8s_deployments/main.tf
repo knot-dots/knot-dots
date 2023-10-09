@@ -258,6 +258,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
           name  = "app"
 
           env {
+            name  = "BODY_SIZE_LIMIT"
+            value = "102400"
+          }
+
+          env {
             name  = "SCW_API_ACCESS_KEY"
             value = var.strategytool_api_key.access_key
           }

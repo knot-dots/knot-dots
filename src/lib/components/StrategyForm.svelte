@@ -15,13 +15,18 @@
 		delete container.payload.image;
 		container.payload = container.payload;
 	}
+
+	function removePDF() {
+		delete container.payload.pdf;
+		container.payload = container.payload;
+	}
 </script>
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
 	<svelte:fragment slot="data">
 		{#if 'image' in container.payload}
 			<span class="preview">
-				<img alt={$_('image')} class="logo" src={container.payload.image} />
+				<img alt={$_('image')} src={container.payload.image} />
 				<button
 					class="quiet remove"
 					title={$_('remove_image')}
@@ -33,9 +38,28 @@
 			</span>
 		{:else}
 			<label>
-				{$_('logo')}
-				<input type="file" name="upload" accept="image/png,image/jpeg" />
-				<span class="help">{$_('image_upload_help')}</span>
+				{$_('cover')}
+				<input type="file" name="image" accept="image/png,image/jpeg" />
+				<span class="help">{$_('upload.image.help')}</span>
+			</label>
+		{/if}
+		{#if 'pdf' in container.payload}
+			<span>
+				<a href={container.payload.pdf}>{$_('pdf')}</a>
+				<button
+					class="quiet remove"
+					title={$_('remove_pdf')}
+					type="button"
+					on:click|stopPropagation={removePDF}
+				>
+					<Icon src={Trash} size="20" />
+				</button>
+			</span>
+		{:else}
+			<label>
+				{$_('pdf')}
+				<input type="file" name="pdf" accept="application/pdf" />
+				<span class="help">{$_('upload.pdf.help')}</span>
 			</label>
 		{/if}
 	</svelte:fragment>
