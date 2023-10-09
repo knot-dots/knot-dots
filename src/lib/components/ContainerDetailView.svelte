@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { ArrowDownTray, Icon } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
@@ -160,6 +161,17 @@
 						<h3 class="meta-key">{$_('fulfillment_date')}</h3>
 						<p class="meta-value">
 							{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+						</p>
+					</div>
+				{/if}
+				{#if 'pdf' in container.payload && container.payload.pdf}
+					<div class="meta">
+						<h3 class="meta-key">{$_('pdf')}</h3>
+						<p class="meta-value">
+							<a href={container.payload.pdf}>
+								{$_('download')}
+								<Icon src={ArrowDownTray} size="20" mini />
+							</a>
 						</p>
 					</div>
 				{/if}

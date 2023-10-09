@@ -596,6 +596,11 @@ fieldset {
 	display: inline-block;
 }
 
+.meta-value svg {
+	display: inline;
+	vertical-align: top;
+}
+
 /* Markdown editor and viewer */
 .markdown-body ol,
 .milkdown .editor ol,
