@@ -29,7 +29,7 @@
 		<header>
 			<h2>
 				{container.payload.title}
-				<div class="icons">
+				<span class="icons">
 					{#if $ability.can('update', container)}
 						<a href="?edit={container.guid}" class="icons-element">
 							<Icon solid src={Pencil} size="20" />
@@ -38,7 +38,7 @@
 					<button class="icons-element" type="button" on:click={() => window.history.back()}>
 						<Icon solid src={ChevronLeft} size="20" />
 					</button>
-				</div>
+				</span>
 			</h2>
 		</header>
 
