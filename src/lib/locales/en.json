@@ -31,7 +31,6 @@
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
-	"image_upload_help": "JPG, PNG; max 512 kB",
 	"indicator": {
 		"contribution": "Contribution to operative goal",
 		"legend": "Indicator",
@@ -330,6 +329,9 @@
 		"percent": "%",
 		"per_100000": "per 100,000",
 		"ton": "t"
+	},
+	"upload": {
+		"image.help": "JPG, PNG; max 512 kB"
 	},
 	"user": {
 		"display_name": "Name",

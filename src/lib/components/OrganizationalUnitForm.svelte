@@ -21,11 +21,11 @@
 	<svelte:fragment slot="data">
 		<label>
 			{$_('logo')}
-			<input type="file" name="upload" accept="image/png,image/jpeg" />
+			<input type="file" name="image" accept="image/png,image/jpeg" />
 			{#if 'image' in container.payload}
 				<img alt={$_('image')} src={container.payload.image} />
 			{/if}
-			<span class="help">{$_('image_upload_help')}</span>
+			<span class="help">{$_('upload.image.help')}</span>
 		</label>
 		<Editor label={$_('description')} bind:value={container.payload.description} />
 	</svelte:fragment>

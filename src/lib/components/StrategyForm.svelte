@@ -34,8 +34,8 @@
 		{:else}
 			<label>
 				{$_('cover')}
-				<input type="file" name="upload" accept="image/png,image/jpeg" />
-				<span class="help">{$_('image_upload_help')}</span>
+				<input type="file" name="image" accept="image/png,image/jpeg" />
+				<span class="help">{$_('upload.image.help')}</span>
 			</label>
 		{/if}
 	</svelte:fragment>

@@ -31,7 +31,6 @@
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
-	"image_upload_help": "JPG oder PNG, maximale Dateigröße 512 kB",
 	"indicator": {
 		"contribution": "Beitrag zu operativem Ziel",
 		"legend": "Indikator",
@@ -52,7 +51,6 @@
 		"vision": "Vision",
 		"visions": "Visionen"
 	},
-
 	"internal_objective_filter": {
 		"include_measures": "Mit Maßnahmen",
 		"include_subordinate_organizational_units": "Mit unteren Ebenen",
@@ -331,6 +329,9 @@
 		"percent": "%",
 		"per_100000": "pro 100.000",
 		"ton": "t"
+	},
+	"upload": {
+		"image.help": "JPG oder PNG, maximale Dateigröße 512 kB"
 	},
 	"user": {
 		"display_name": "Name",
