@@ -8,7 +8,7 @@ import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { predicates } from '$lib/models';
-import { getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
+import { createOrUpdateUser, getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https';
@@ -30,9 +30,16 @@ const authentication = SvelteKitAuth({
 		},
 		async session({ session, token }) {
 			const pool = await getPool();
-			const containerUserRelations = await pool.connect(
-				getAllMembershipRelationsOfUser(token.sub as string)
-			);
+			const [containerUserRelations] = await Promise.all([
+				pool.connect(getAllMembershipRelationsOfUser(token.sub as string)),
+				pool.connect(
+					createOrUpdateUser({
+						display_name: `${token.givenName} ${token.familyName}`.trim(),
+						guid: token.sub as string,
+						realm: env.PUBLIC_KC_REALM ?? ''
+					})
+				)
+			]);
 			session.user.adminOf = containerUserRelations
 				.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
 				.map(({ object }) => object);
