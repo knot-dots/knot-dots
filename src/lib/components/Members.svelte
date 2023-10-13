@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { ChevronLeft, Icon, Trash, UserPlus } from 'svelte-hero-icons';
 	import { invalidateAll } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import Dialog from '$lib/components/Dialog.svelte';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
 	import { isAdminOf, predicates } from '$lib/models';
@@ -18,10 +15,8 @@
 	let dialog: HTMLDialogElement;
 	let email: string;
 
-	const { getKeycloak } = getContext<KeycloakContext>(key);
-
 	async function handleToggleAdmin(user: User, container: AnyContainer) {
-		const response = await saveContainerUser(getKeycloak(), {
+		const response = await saveContainerUser({
 			...container,
 			user: [
 				...container.user.filter(({ predicate }) => predicate != predicates.enum['is-admin-of']),
@@ -37,7 +32,7 @@
 	}
 
 	async function handleRemoveRelations(user: User, container: AnyContainer) {
-		const response = await saveContainerUser(getKeycloak(), {
+		const response = await saveContainerUser({
 			...container,
 			user: [
 				...container.user.filter(
@@ -56,13 +51,13 @@
 
 	async function handleInvite() {
 		try {
-			const userResponse = await saveUser(getKeycloak(), {
+			const userResponse = await saveUser({
 				email,
 				organization: container.organization,
 				realm: env.PUBLIC_KC_REALM as string
 			});
 			const userResponseData = await userResponse.json();
-			await saveContainerUser(getKeycloak(), {
+			await saveContainerUser({
 				...container,
 				user: [
 					...container.user,

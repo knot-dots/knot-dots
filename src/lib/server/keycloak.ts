@@ -4,13 +4,11 @@ import { env } from '$env/dynamic/public';
 import type { NewUser, User } from '$lib/models';
 
 const data = new URLSearchParams([['grant_type', 'client_credentials']]);
-const credentials = btoa(
-	`${privateEnv.KC_SERVICE_ACCOUNT_CLIENT_ID}:${privateEnv.KC_SERVICE_ACCOUNT_CLIENT_SECRET}`
-);
+const credentials = btoa(`${env.PUBLIC_KC_CLIENT_ID}:${privateEnv.KC_CLIENT_SECRET}`);
 
 async function getToken() {
 	const response = await fetch(
-		`${privateEnv.KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/token`,
+		`${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/token`,
 		{
 			body: data,
 			headers: { Authorization: `Basic ${credentials}` },
@@ -25,7 +23,7 @@ async function getToken() {
 
 export async function createUser(user: NewUser) {
 	const token = await getToken();
-	const response = await fetch(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`, {
+	const response = await fetch(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`, {
 		body: JSON.stringify({
 			email: user.email,
 			enabled: true
@@ -45,7 +43,7 @@ export async function createUser(user: NewUser) {
 export async function addUserToGroup(user: User, group: string) {
 	const token = await getToken();
 	const response = await fetch(
-		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/groups/${group}`,
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/groups/${group}`,
 		{
 			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 			method: 'PUT'
@@ -59,7 +57,7 @@ export async function addUserToGroup(user: User, group: string) {
 export async function sendVerificationEmail(user: User) {
 	const token = await getToken();
 	const response = await fetch(
-		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/send-verify-email`,
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/send-verify-email`,
 		{
 			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 			method: 'PUT'
@@ -74,7 +72,7 @@ export async function sendVerificationEmail(user: User) {
 
 export async function findUserByEmail(email: string) {
 	const token = await getToken();
-	const url = new URL(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`);
+	const url = new URL(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`);
 	url.searchParams.set('email', email);
 	url.searchParams.set('exact', 'true');
 	url.searchParams.set('briefRepresentation', 'true');
@@ -103,7 +101,7 @@ export async function findUserByEmail(email: string) {
 
 export async function createGroup(name: string) {
 	const token = await getToken();
-	const response = await fetch(`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups`, {
+	const response = await fetch(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups`, {
 		body: JSON.stringify({ name }),
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 		method: 'POST'
@@ -120,7 +118,7 @@ export async function createGroup(name: string) {
 export async function getMembers(group: string) {
 	const token = await getToken();
 	const response = await fetch(
-		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups/${group}/members`,
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups/${group}/members`,
 		{
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -166,7 +164,7 @@ export async function updateAccessSettings(guid: string) {
 	const token = await getToken();
 
 	const getResponse = await fetch(
-		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients?clientId=${env.PUBLIC_KC_CLIENT_ID}`,
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients?clientId=${env.PUBLIC_KC_CLIENT_ID}`,
 		{
 			headers: {
 				Authorization: `Bearer ${token}`
@@ -190,7 +188,7 @@ export async function updateAccessSettings(guid: string) {
 	data[0].redirectUris.push(urlFromGuid(guid).href);
 
 	const putResponse = await fetch(
-		`${privateEnv.KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients/${data[0].id}`,
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients/${data[0].id}`,
 		{
 			body: JSON.stringify(data[0]),
 			headers: {

@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { createEventDispatcher, getContext } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import {
 		etag,
@@ -32,8 +30,6 @@
 		'guid' in container
 			? $page.url.pathname == `/${container.payload.type}/${container.guid}/edit`
 			: $page.url.pathname == `/${container.payload.type}/new`;
-
-	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	$: mayDelete =
 		'guid' in container &&
@@ -73,17 +69,12 @@
 			return;
 		}
 
-		// Ensure a fresh token will be included in the Authorization header.
-		await getKeycloak()
-			.updateToken(-1)
-			.catch(() => null);
-
 		await Promise.all(
 			Array.from(formData)
 				.filter(([, value]) => value instanceof File && value.size > 0)
 				.map(async ([name, value]) => {
 					try {
-						const url = await uploadAsFormData(value as File, getKeycloak().token ?? '');
+						const url = await uploadAsFormData(value as File);
 						data.payload = { ...data.payload, [name]: url };
 					} catch (e) {
 						console.log(e);
@@ -98,8 +89,8 @@
 		const response = await fetch(url, {
 			method: 'POST',
 			body: JSON.stringify(data),
+			credentials: 'include',
 			headers: {
-				Authorization: `Bearer ${getKeycloak().token}`,
 				'Content-Type': 'application/json'
 			}
 		});
@@ -114,15 +105,10 @@
 
 	async function handleDelete(event: Event) {
 		if ('guid' in container) {
-			// Ensure a fresh token will be included in the Authorization header.
-			await getKeycloak()
-				.updateToken(-1)
-				.catch(() => null);
-
 			const response = await fetch(`/container/${container.guid}`, {
 				method: 'DELETE',
+				credentials: 'include',
 				headers: {
-					Authorization: `Bearer ${getKeycloak().token}`,
 					'Content-Type': 'application/json',
 					'If-Match': etag(container)
 				}

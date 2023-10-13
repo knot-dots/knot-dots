@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { ArrowDown, ArrowUp, Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isModelContainer,
@@ -19,8 +16,6 @@
 	export let headingTag: string;
 	export let container: Container;
 	export let isPartOf: Container;
-
-	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	let isPartOfRelation: Relation[];
 
@@ -50,20 +45,13 @@
 	}
 
 	async function updateRelation(relation: Relation[]) {
-		// Ensure a fresh token will be included in the Authorization header.
-		await getKeycloak()
-			.updateToken(-1)
-			.catch(() => null);
-
 		const url = `/container/${isPartOf.guid}/relation`;
 
 		const response = await fetch(url, {
 			method: 'POST',
 			body: JSON.stringify(relation),
+			credentials: 'include',
 			headers: {
-				...(sessionStorage.getItem('token')
-					? { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
-					: undefined),
 				'Content-Type': 'application/json'
 			}
 		});

@@ -6,8 +6,6 @@
 	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import Card from '$lib/components/Card.svelte';
 	import saveContainer from '$lib/client/saveContainer';
@@ -20,8 +18,6 @@
 	export let items: TaskContainer[] = [];
 	export let status: TaskStatus;
 
-	const { getKeycloak } = getContext<KeycloakContext>(key);
-
 	function handleDndConsider(e: CustomEvent<DndEvent<TaskContainer>>) {
 		items = e.detail.items;
 	}
@@ -33,13 +29,12 @@
 
 			if (droppedItem && droppedItem.payload.taskStatus != status) {
 				droppedItem.payload.taskStatus = status;
-				saveContainer(getKeycloak(), droppedItem).catch((reason) => console.log(reason));
+				saveContainer(droppedItem).catch((reason) => console.log(reason));
 			}
 
-			saveTaskPriority(
-				getKeycloak(),
-				items.map(({ guid }, index) => ({ priority: index, task: guid }))
-			).catch((reason) => console.log(reason));
+			saveTaskPriority(items.map(({ guid }, index) => ({ priority: index, task: guid }))).catch(
+				(reason) => console.log(reason)
+			);
 		}
 	}
 

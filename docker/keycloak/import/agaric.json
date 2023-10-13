@@ -301,7 +301,6 @@
           "attributes": {}
         }
       ],
-      "strategy-tool-backend": [],
       "security-admin-console": [],
       "admin-cli": [],
       "account-console": [],
@@ -388,11 +387,11 @@
     {
       "id": "3fcf8dcf-23fb-4424-b4a9-de7cc995db30",
       "createdTimestamp": 1691853085626,
-      "username": "service-account-strategy-tool-backend",
+      "username": "service-account-strategy-tool",
       "enabled": true,
       "totp": false,
       "emailVerified": false,
-      "serviceAccountClientId": "strategy-tool-backend",
+      "serviceAccountClientId": "strategy-tool",
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
@@ -712,60 +711,8 @@
       ]
     },
     {
-      "id": "8d7edede-8dfa-40ac-8e32-af4328b8fdb4",
-      "clientId": "strategy-tool",
-      "name": "Strategy tool",
-      "description": "",
-      "rootUrl": "",
-      "adminUrl": "",
-      "baseUrl": "",
-      "surrogateAuthRequired": false,
-      "enabled": true,
-      "alwaysDisplayInConsole": false,
-      "clientAuthenticatorType": "client-secret",
-      "redirectUris": [
-        "http://localhost:5173/*"
-      ],
-      "webOrigins": [
-        "http://localhost:5173"
-      ],
-      "notBefore": 0,
-      "bearerOnly": false,
-      "consentRequired": false,
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": false,
-      "publicClient": true,
-      "frontchannelLogout": true,
-      "protocol": "openid-connect",
-      "attributes": {
-        "oidc.ciba.grant.enabled": "false",
-        "post.logout.redirect.uris": "+",
-        "oauth2.device.authorization.grant.enabled": "false",
-        "backchannel.logout.session.required": "true",
-        "backchannel.logout.revoke.offline.tokens": "false"
-      },
-      "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
-      "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "roles",
-        "profile",
-        "email"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt"
-      ]
-    },
-    {
       "id": "094d1bda-1e52-4504-91e5-1eb48ff862fa",
-      "clientId": "strategy-tool-backend",
+      "clientId": "strategy-tool",
       "name": "",
       "description": "",
       "rootUrl": "",
@@ -777,15 +724,15 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "n9YL7PAV3vhubU2uc3MFDcSudCI52OTA",
       "redirectUris": [
-        "/*"
+        "http://localhost:5173/*"
       ],
       "webOrigins": [
-        "/*"
+        "+"
       ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
-      "standardFlowEnabled": false,
+      "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,

@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent } from 'svelte-dnd-action';
 	import { Icon, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { page } from '$app/stores';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import saveContainer from '$lib/client/saveContainer';
 	import { predicates } from '$lib/models';
 	import type { AnyContainer, Container, Predicate } from '$lib/models';
@@ -15,8 +12,6 @@
 	import { predicateIcons } from '$lib/theme/models';
 
 	export let object: AnyContainer;
-
-	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	type DropZone = {
 		active: boolean;
@@ -89,7 +84,7 @@
 				dropZones[index].active = false;
 				activeDropZoneIndex = -1;
 			}, 2000);
-			saveContainer(getKeycloak(), { ...$dragged, guid: $dragged.guid.split('_')[0] });
+			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
 		}
 	}
 </script>

@@ -15,10 +15,24 @@ declare global {
 	}
 }
 
-declare module 'jose' {
-	export interface JWTPayload {
-		family_name?: string;
-		given_name?: string;
+declare module '@auth/core/types' {
+	interface User {
+		email: string;
+		familyName: string;
+		givenName: string;
+		id: string;
+	}
+
+	interface Session {
+		user: {
+			adminOf: string[];
+			email: string;
+			familyName: string;
+			givenName: string;
+			guid: string;
+			memberOf: string[];
+			roles: string[];
+		};
 	}
 }
 

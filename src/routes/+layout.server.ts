@@ -50,6 +50,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 		currentOrganizationalUnit,
 		organizations,
 		organizationalUnits,
-		random: await random.json()
+		random: await random.json(),
+		session: await locals.getSession()
 	};
 };
