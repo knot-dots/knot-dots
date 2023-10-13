@@ -81,7 +81,7 @@
 	"measures": "Maßnahmen",
 	"members": "Mitglieder",
 	"model": "Leitbild",
-	"models": "Leitbilder",
+	"models": "Visionen",
 	"modified_date": "Geändert am",
 	"object": "Objekt",
 	"objectives": "Ziele",
@@ -95,7 +95,7 @@
 		"government": "Verwaltung",
 		"label": "Kategorie",
 		"non_profit": "Zivilgesellschaft",
-		"political": "Politik"
+		"political": "Politisch"
 	},
 	"organizational_unit": "Organisations-Ebene",
 	"organizational_unit_level": "Ebene {level, number}",
@@ -104,7 +104,7 @@
 	"other_organizations": "Andere Organisationen",
 	"owned_by": "Zuständig",
 	"page_title": "Strategie-Werkzeug",
-	"pdf": "PDF",
+	"pdf": "PDF-Dokument",
 	"planned_duration": "Geplante Laufzeit",
 	"progress": "Fortschritt",
 	"quantity": {
@@ -184,7 +184,7 @@
 		"waste_generation": {
 			"description": "Die Abfallmenge pro Einwohner*in beträgt {contribution, number} Tonnen.",
 			"input_prompt": "Wie viel Abfall entsteht durch die Maßnahme?",
-			"label": "Abfallmenge (je Einwohner*in)"
+			"label": "Abfallmenge je Einwohner*in"
 		},
 		"water_consumption": {
 			"description": "Der Wasserverbrauch pro Einwohner*in beträgt {contribution, number} Kubikmeter.",
@@ -213,7 +213,7 @@
 		"close": "Schließen",
 		"close_and_show_relations": "Schließen und Beziehungen anzeigen",
 		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu \"{nameOrTitle}\" festlegen möchten.",
-		"is_consistent_with":  "Diese Objekte unterstützen sich gegenseitig",
+		"is_consistent_with":  "Diese Vorhaben unterstützen sich gegenseitig",
 		"is_duplicate_of": "Dopplung",
 		"is_equivalent_to": "Diese Vorhaben entsprechen sich",
 		"is_inconsistent_with": "Diese Vorhaben widersprechen sich"
@@ -240,10 +240,10 @@
 	"save_and_create_task": "Speichern und neue Aufgabe hinzufügen",
 	"save_and_create_vision": "Speichern und neue Vision hinzufügen",
 	"sdg": {
-		"01": "Keine Armut",
-		"02": "1 - Kein Hunger",
-		"03": "2 - Gesundheit und Wohlergehen",
-		"04": "3 - Hochwertige Bildung",
+		"01": "1 - Keine Armut",
+		"02": "2 - Kein Hunger",
+		"03": "3 - Gesundheit und Wohlergehen",
+		"04": "4 - Hochwertige Bildung",
 		"05": "5 - Geschlechtergleichheit",
 		"06": "6 - Sauberes Wasser und Sanitäreinrichtungen",
 		"07": "7 - Bezahlbare und saubere Energie",
@@ -284,7 +284,7 @@
 	"summary": "Zusammenfassung",
 	"superordinate_chapters": "Übergeordnete Kapitel",
 	"superordinate_internal_strategies": "Übergeordnete interne Strategien",
-	"superordinate_models": "Übergeordnete Leitbilder",
+	"superordinate_models": "Übergeordnete Vision",
 	"superordinate_milestones": "Übergeordnete Meilensteine",
 	"superordinate_operational_goals": "Übergeordnete operative Ziele",
 	"superordinate_organizational_unit": "Übergeordnete Organisationseinheit",
@@ -332,8 +332,8 @@
 		"ton": "t"
 	},
 	"upload": {
-		"image.help": "JPG oder PNG, maximale Dateigröße 100 MB",
-		"pdf.help": "PDF, maximale Dateigröße 100 MB"
+		"image.help": "JPG, PNG; max 100 MB",
+		"pdf.help": "PDF; max 100 MB"
 	},
 	"user": {
 		"display_name": "Name",
@@ -341,9 +341,9 @@
 		"remove": "Entfernen"
 	},
 	"visibility": {
-		"creator": "nur Autor*in",
+		"creator": "Nur Autor*in",
 		"label": "Sichtbarkeit",
-		"members": "nur Mitglieder",
-		"public": "öffentlich"
+		"members": "Alle Mitglieder",
+		"public": "Gesamte Öffentlichkeit"
 	}
 }
