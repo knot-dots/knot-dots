@@ -47,7 +47,19 @@ export const POST = (async ({ locals, params, request }) => {
 		throw error(422, parseResult.error);
 	}
 
-	await locals.pool.connect(updateContainer({ ...container, user: parseResult.data }));
+	await locals.pool.connect(
+		updateContainer({
+			...container,
+			relation: container.relation
+				.filter((r) => ('guid' in container ? r.subject == container.revision : true))
+				.map(({ object, position, predicate }) => ({
+					predicate,
+					object,
+					position
+				})),
+			user: parseResult.data
+		})
+	);
 
 	return new Response(null, { status: 204 });
 }) satisfies RequestHandler;
