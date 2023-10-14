@@ -123,7 +123,7 @@ resource "keycloak_openid_client" "strategytool" {
   ]
 
   web_origins = [
-    "https://strategytool.dev.dotstory.de"
+    "+"
   ]
 }
 
