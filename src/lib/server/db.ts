@@ -1414,6 +1414,7 @@ export function setUp(name: string, realm: string) {
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
 			payload: {
+				boards: [],
 				default: true,
 				description: '',
 				name,

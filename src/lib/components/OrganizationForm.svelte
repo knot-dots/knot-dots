@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import { organizationCategories } from '$lib/models.js';
 	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models.js';
 
@@ -35,7 +36,9 @@
 				<span class="help">{$_('upload.image.help')}</span>
 			</label>
 		{/if}
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key container}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
@@ -47,6 +50,11 @@
 				{/each}
 			</select>
 		</label>
+		<ListBox
+			label={$_('boards')}
+			options={['board.internal_objectives', 'board.organizational_units', 'board.tasks']}
+			bind:value={container.payload.boards}
+		/>
 	</svelte:fragment>
 
 	<slot slot="extra-buttons">

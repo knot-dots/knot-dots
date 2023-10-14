@@ -85,6 +85,7 @@
 			user: [],
 			visibility: visibility.enum.creator
 		};
+		const boards: string[] = [];
 		const category: SustainableDevelopmentGoal[] = [];
 		const indicator: Indicator[] = [];
 		const level = parseInt($page.url.searchParams.get('level') ?? '1');
@@ -106,7 +107,10 @@
 			case payloadTypes.enum['internal_objective.vision']:
 				return { ...base, payload: { type } } as EmptyVisionContainer;
 			case payloadTypes.enum.measure:
-				return { ...base, payload: { category, resource, topic, type } } as EmptyMeasureContainer;
+				return {
+					...base,
+					payload: { boards, category, resource, topic, type }
+				} as EmptyMeasureContainer;
 			case payloadTypes.enum.model:
 				return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
 			case payloadTypes.enum.operational_goal:
@@ -115,9 +119,9 @@
 					payload: { category, indicator, topic, type }
 				} as EmptyOperationalGoalContainer;
 			case payloadTypes.enum.organization:
-				return { ...base, payload: { default: false, type } } as EmptyOrganizationContainer;
+				return { ...base, payload: { boards, default: false, type } } as EmptyOrganizationContainer;
 			case payloadTypes.enum.organizational_unit:
-				return { ...base, payload: { level, type } } as EmptyOrganizationalUnitContainer;
+				return { ...base, payload: { boards, level, type } } as EmptyOrganizationalUnitContainer;
 			case payloadTypes.enum.strategic_goal:
 				return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
 			default:

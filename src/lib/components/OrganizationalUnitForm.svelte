@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import type {
 		AnyContainer,
@@ -27,13 +28,20 @@
 			{/if}
 			<span class="help">{$_('upload.image.help')}</span>
 		</label>
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key container}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
 		<RelationSelector
 			{container}
 			isPartOfOptions={isPartOfOptions.filter(isOrganizationalUnitContainer).filter(filterByLevel)}
+		/>
+		<ListBox
+			label={$_('boards')}
+			options={['board.internal_objectives', 'board.tasks']}
+			bind:value={container.payload.boards}
 		/>
 	</svelte:fragment>
 

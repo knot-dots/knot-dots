@@ -55,7 +55,9 @@
 			{$_('measure.summary')}
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
 		</label>
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key container}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 		<ResourcePlanner {container} />
 		{#each relatedContainers as o}
 			{#if container.payload.indicatorContribution?.[o.guid] !== undefined}
@@ -123,6 +125,11 @@
 			</label>
 		</fieldset>
 		<RelationSelector {container} {isPartOfOptions} />
+		<ListBox
+			label={$_('boards')}
+			options={['board.internal_objectives', 'board.tasks']}
+			bind:value={container.payload.boards}
+		/>
 	</svelte:fragment>
 
 	<slot slot="extra-buttons">
