@@ -125,6 +125,10 @@ resource "keycloak_openid_client" "strategytool" {
   web_origins = [
     "+"
   ]
+
+  lifecycle {
+    ignore_changes = [valid_redirect_uris]
+  }
 }
 
 data "keycloak_openid_client" "realm_management" {
