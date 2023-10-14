@@ -176,28 +176,32 @@
 				</a>
 			</li>
 			{#if isMeasureContainer($page.data.container)}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-					>
-						<Icon src={BuildingStorefront} size="20" solid />
-						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
-					</a>
-				</li>
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-					>
-						<Icon src={PencilSquare} size="20" solid />
-						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
-					</a>
-				</li>
+				{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
+					<li>
+						<a
+							class="button"
+							class:is-active={$page.url.pathname ===
+								`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+							href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+						>
+							<Icon src={BuildingStorefront} size="20" solid />
+							<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
+						</a>
+					</li>
+				{/if}
+				{#if $page.data.container.payload.boards.includes('board.tasks')}
+					<li>
+						<a
+							class="button"
+							class:is-active={$page.url.pathname ===
+								`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+							href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+						>
+							<Icon src={PencilSquare} size="20" solid />
+							<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
+						</a>
+					</li>
+				{/if}
 			{/if}
 			{#if isMeasureContainer($page.data.container) || isStrategyContainer($page.data.container)}
 				<li>
@@ -226,39 +230,45 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
 				</a>
 			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
-				>
-					<Icon src={BuildingLibrary} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
-				</a>
-			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-				>
-					<Icon src={BuildingStorefront} size="20" solid />
-					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
-				</a>
-			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-				>
-					<Icon src={PencilSquare} size="20" solid />
-					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
-				</a>
-			</li>
+			{#if $page.data.container.payload.boards.includes('board.organizational_units')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ===
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
+					>
+						<Icon src={BuildingLibrary} size="20" mini />
+						<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
+					</a>
+				</li>
+			{/if}
+			{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ===
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+					>
+						<Icon src={BuildingStorefront} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
+					</a>
+				</li>
+			{/if}
+			{#if $page.data.container.payload.boards.includes('board.tasks')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ===
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+					>
+						<Icon src={PencilSquare} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
+					</a>
+				</li>
+			{/if}
 			{#if $ability.can('update', $page.data.container)}
 				<li>
 					<a
@@ -297,28 +307,32 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
 				</a>
 			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ==
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-				>
-					<Icon src={BuildingStorefront} size="20" solid />
-					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
-				</a>
-			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ==
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-				>
-					<Icon src={PencilSquare} size="20" solid />
-					<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
-				</a>
-			</li>
+			{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
+					>
+						<Icon src={BuildingStorefront} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
+					</a>
+				</li>
+			{/if}
+			{#if $page.data.container.payload.boards.includes('board.tasks')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ==
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
+					>
+						<Icon src={PencilSquare} size="20" solid />
+						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
+					</a>
+				</li>
+			{/if}
 			{#if $ability.can('update', $page.data.container)}
 				<li>
 					<a

@@ -272,6 +272,12 @@ export type TaskPriority = z.infer<typeof taskPriority>;
 
 export const visibility = z.enum(['creator', 'members', 'public']);
 
+export const boards = z.enum([
+	'board.internal_objectives',
+	'board.organizational_units',
+	'board.tasks'
+]);
+
 const basePayload = z
 	.object({
 		category: z.array(sustainableDevelopmentGoals),
@@ -336,6 +342,7 @@ const taskPayload = internalObjectivesBasePayload
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().optional(),
+		boards: z.array(boards).default([]),
 		comment: z.string().optional(),
 		endDate: z
 			.string()
@@ -381,6 +388,7 @@ const operationalGoalPayload = basePayload
 	.strict();
 
 const organizationPayload = z.object({
+	boards: z.array(boards).default([]),
 	default: z.boolean(),
 	description: z.string(),
 	image: z.string().url().optional(),
@@ -391,6 +399,7 @@ const organizationPayload = z.object({
 });
 
 const organizationalUnitPayload = z.object({
+	boards: z.array(boards).default([]),
 	description: z.string(),
 	image: z.string().url().optional(),
 	level: z.number().int().positive(),

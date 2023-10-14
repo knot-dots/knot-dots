@@ -3,6 +3,11 @@
 	"add_item": "Add item",
 	"annotation": "Annotation",
 	"assignee": "Assignee",
+	"board": {
+		"internal_objectives":  "Internal objectives",
+		"organizational_units":  "Organizational units",
+		"tasks": "Tasks"
+	},
 	"boards": "Boards",
 	"cancel": "Cancel",
 	"category": "Category",

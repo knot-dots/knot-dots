@@ -125,6 +125,11 @@
 			</label>
 		</fieldset>
 		<RelationSelector {container} {isPartOfOptions} />
+		<ListBox
+			label={$_('boards')}
+			options={['board.internal_objectives', 'board.tasks']}
+			bind:value={container.payload.boards}
+		/>
 	</svelte:fragment>
 
 	<slot slot="extra-buttons">

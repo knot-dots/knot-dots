@@ -3,6 +3,11 @@
 	"add_item": "Hinzufügen",
 	"annotation": "Anmerkungen",
 	"assignee": "Zugewiesen an",
+	"board": {
+		"internal_objectives":  "Interne Ziele",
+		"organizational_units":  "Organisations-Ebenen",
+		"tasks": "Aufgaben"
+	},
 	"boards": "Boards",
 	"cancel": "Abbrechen",
 	"category": "SDG",
