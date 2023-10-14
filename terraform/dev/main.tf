@@ -31,16 +31,20 @@ terraform {
     }
   }
 
-  required_version = ">= 0.13"
+  required_version = ">= 1.6"
 
   backend "s3" {
     bucket                      = "strategytool-terraform-state"
     key                         = "dev.tfstate"
     region                      = "fr-par"
-    endpoint                    = "https://s3.fr-par.scw.cloud"
     profile                     = "strategytool"
     skip_credentials_validation = true
     skip_region_validation      = true
+    skip_requesting_account_id  = true
+
+    endpoints = {
+      s3 = "https://s3.fr-par.scw.cloud"
+    }
   }
 }
 
