@@ -22,7 +22,9 @@
 				<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
 			</label>
 		{/if}
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key container}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 		<slot name="extra-data" />
 	</svelte:fragment>
 
