@@ -338,7 +338,8 @@
 	"user": {
 		"display_name": "Name",
 		"email": "Email",
-		"remove": "Remove"
+		"remove": "Remove",
+		"role": "Role"
 	},
 	"visibility": {
 		"creator": "Creator only",

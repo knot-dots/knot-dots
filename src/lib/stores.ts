@@ -1,6 +1,7 @@
 import { derived, writable } from 'svelte/store';
 import defineAbilityFor from '$lib/authorization';
 import type { Container } from '$lib/models';
+import { page } from '$app/stores';
 
 export const navigationToggle = writable(false);
 
@@ -20,23 +21,25 @@ export type User = {
 	roles: string[];
 };
 
-export const user = writable<User>({
-	adminOf: [],
-	familyName: '',
-	givenName: '',
-	guid: '',
-	isAuthenticated: false,
-	memberOf: [],
-	roles: []
+export const user = derived(page, (values) => {
+	if (values.data.session?.user) {
+		return {
+			...values.data.session?.user,
+			isAuthenticated: true
+		};
+	} else {
+		return {
+			adminOf: [],
+			familyName: '',
+			givenName: '',
+			guid: '',
+			isAuthenticated: false,
+			memberOf: [],
+			roles: []
+		};
+	}
 });
 
 export const ability = derived(user, defineAbilityFor);
-
-export const keycloak = writable({
-	accountUrl: '',
-	loginUrl: '',
-	logoutUrl: '',
-	registerUrl: ''
-});
 
 export const dragged = writable<Container | undefined>();

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import {
@@ -21,7 +22,6 @@
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import LoginIcon from '$lib/icons/LoginIcon.svelte';
 	import LogoutIcon from '$lib/icons/LogoutIcon.svelte';
-	import RegisterIcon from '$lib/icons/RegisterIcon.svelte';
 	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
 	import {
 		isContainer,
@@ -39,12 +39,12 @@
 	import {
 		ability,
 		filtersToggle,
-		keycloak,
 		navigationToggle,
 		sidebarToggle,
 		sortToggle,
 		user
 	} from '$lib/stores.js';
+	import { accountURL } from '$lib/authentication';
 
 	let timer: ReturnType<typeof setTimeout>;
 	let terms = $page.url.searchParams.get('terms') ?? '';
@@ -633,29 +633,23 @@
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
 			<li>
-				<a href={$keycloak.accountUrl}>
+				<a href={accountURL($page.url.href)}>
 					<span class="avatar avatar-m">{$user.givenName.at(0)} {$user.familyName.at(0)}</span>
 					<span class:is-hidden={!$sidebarToggle}>{$user.givenName} {$user.familyName}</span>
 				</a>
 			</li>
 			<li>
-				<a href={$keycloak.logoutUrl} class="button">
+				<button on:click={() => signOut()}>
 					<LogoutIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
 					<span class:is-hidden={!$sidebarToggle}>{$_('logout')}</span>
-				</a>
+				</button>
 			</li>
 		{:else}
 			<li>
-				<a href={$keycloak.loginUrl} class="button quiet">
+				<button class="quiet" on:click={() => signIn('keycloak')}>
 					<LoginIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
 					<span class:is-hidden={!$sidebarToggle}>{$_('login')}</span>
-				</a>
-			</li>
-			<li>
-				<a href={$keycloak.registerUrl} class="button primary">
-					<RegisterIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
-					<span class:is-hidden={!$sidebarToggle}>{$_('register')}</span>
-				</a>
+				</button>
 			</li>
 		{/if}
 	</ul>

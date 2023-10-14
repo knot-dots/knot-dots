@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { ChevronLeft, Icon, Trash, UserPlus } from 'svelte-hero-icons';
 	import { invalidateAll } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import Dialog from '$lib/components/Dialog.svelte';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
 	import { isAdminOf, predicates } from '$lib/models';
@@ -18,26 +15,38 @@
 	let dialog: HTMLDialogElement;
 	let email: string;
 
-	const { getKeycloak } = getContext<KeycloakContext>(key);
+	function handleChangeRole(user: User, container: AnyContainer) {
+		return async (event: { currentTarget: HTMLSelectElement }) => {
+			let containerUser;
+			switch (event.currentTarget.value) {
+				case 'role.member':
+					containerUser = container.user.filter(
+						({ predicate }) => predicate != predicates.enum['is-admin-of']
+					);
+					break;
+				case 'role.administrator':
+					containerUser = container.user
+						.filter(({ predicate }) => predicate != predicates.enum['is-admin-of'])
+						.concat({
+							subject: user.guid,
+							predicate: predicates.enum['is-admin-of']
+						});
+					break;
+				default:
+					containerUser = container.user;
+			}
 
-	async function handleToggleAdmin(user: User, container: AnyContainer) {
-		const response = await saveContainerUser(getKeycloak(), {
-			...container,
-			user: [
-				...container.user.filter(({ predicate }) => predicate != predicates.enum['is-admin-of']),
-				...(isAdminOf(user, container)
-					? []
-					: [{ subject: user.guid, predicate: predicates.enum['is-admin-of'] }])
-			]
-		});
-		if (!response.ok) {
-			console.log(await response.json());
-		}
-		await invalidateAll();
+			const response = await saveContainerUser({ ...container, user: containerUser });
+			if (!response.ok) {
+				console.log(await response.json());
+			}
+
+			await invalidateAll();
+		};
 	}
 
 	async function handleRemoveRelations(user: User, container: AnyContainer) {
-		const response = await saveContainerUser(getKeycloak(), {
+		const response = await saveContainerUser({
 			...container,
 			user: [
 				...container.user.filter(
@@ -56,13 +65,13 @@
 
 	async function handleInvite() {
 		try {
-			const userResponse = await saveUser(getKeycloak(), {
+			const userResponse = await saveUser({
 				email,
 				organization: container.organization,
 				realm: env.PUBLIC_KC_REALM as string
 			});
 			const userResponseData = await userResponse.json();
-			await saveContainerUser(getKeycloak(), {
+			await saveContainerUser({
 				...container,
 				user: [
 					...container.user,
@@ -95,7 +104,7 @@
 			<thead>
 				<tr>
 					<th scope="col">{$_('user.email')}</th>
-					<th scope="col">{$_('role.administrator')}</th>
+					<th scope="col">{$_('user.role')}</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -105,11 +114,14 @@
 						<td>{u.display_name}</td>
 						<td>
 							{#key container.user}
-								<input
-									type="checkbox"
-									checked={isAdminOf(u, container)}
-									on:click={() => handleToggleAdmin(u, container)}
-								/>
+								<select name="role" on:change={handleChangeRole(u, container)}>
+									<option value="role.member" selected={!isAdminOf(u, container)}>
+										{$_('role.member')}
+									</option>
+									<option value="role.administrator" selected={isAdminOf(u, container)}>
+										{$_('role.administrator')}
+									</option>
+								</select>
 							{/key}
 						</td>
 						<td>

@@ -10,16 +10,20 @@ terraform {
     }
   }
 
-  required_version = ">= 0.13"
+  required_version = ">= 1.6"
 
   backend "s3" {
     bucket                      = "strategytool-terraform-state"
     key                         = "keycloak.tfstate"
     region                      = "fr-par"
-    endpoint                    = "https://s3.fr-par.scw.cloud"
     profile                     = "strategytool"
     skip_credentials_validation = true
     skip_region_validation      = true
+    skip_requesting_account_id  = true
+
+    endpoints = {
+      s3 = "https://s3.fr-par.scw.cloud"
+    }
   }
 }
 
@@ -114,14 +118,21 @@ resource "keycloak_openid_client" "strategytool" {
   name      = "StrategyTool"
   enabled   = true
 
-  access_type           = "PUBLIC"
-  standard_flow_enabled = true
+  access_type              = "CONFIDENTIAL"
+  standard_flow_enabled    = true
+  service_accounts_enabled = true
+
   valid_redirect_uris = [
     "https://strategytool.dev.dotstory.de/*"
   ]
+
   web_origins = [
-    "https://strategytool.dev.dotstory.de"
+    "+"
   ]
+
+  lifecycle {
+    ignore_changes = [valid_redirect_uris]
+  }
 }
 
 data "keycloak_openid_client" "realm_management" {
@@ -141,27 +152,16 @@ data "keycloak_role" "manage_users" {
   name      = "manage-users"
 }
 
-resource "keycloak_openid_client" "strategytool_service_account" {
-  realm_id  = keycloak_realm.knot_dots.id
-  client_id = "strategytool-backend"
-  name      = "StrategyTool backend"
-  enabled   = true
-
-  access_type              = "CONFIDENTIAL"
-  standard_flow_enabled    = false
-  service_accounts_enabled = true
-}
-
 resource "keycloak_openid_client_service_account_role" "strategytool_manage_clients" {
   realm_id                = keycloak_realm.knot_dots.id
-  service_account_user_id = keycloak_openid_client.strategytool_service_account.service_account_user_id
+  service_account_user_id = keycloak_openid_client.strategytool.service_account_user_id
   client_id               = data.keycloak_openid_client.realm_management.id
   role                    = data.keycloak_role.manage_clients.name
 }
 
 resource "keycloak_openid_client_service_account_role" "strategytool_manage_users" {
   realm_id                = keycloak_realm.knot_dots.id
-  service_account_user_id = keycloak_openid_client.strategytool_service_account.service_account_user_id
+  service_account_user_id = keycloak_openid_client.strategytool.service_account_user_id
   client_id               = data.keycloak_openid_client.realm_management.id
   role                    = data.keycloak_role.manage_users.name
 }

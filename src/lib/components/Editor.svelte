@@ -26,11 +26,8 @@
 	import { $view as view } from '@milkdown/utils';
 	import { useNodeViewFactory, useProsemirrorAdapterProvider } from '@prosemirror-adapter/svelte';
 	import type { SvelteNodeViewComponent } from '@prosemirror-adapter/svelte';
-	import { getContext } from 'svelte';
 	import { ArrowUturnLeft, ArrowUturnRight, Icon, ListBullet } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import ListItem from '$lib/components/ListItem.svelte';
 
@@ -38,7 +35,6 @@
 	export let label = '';
 
 	const labelId = `label-${counter + 1}`;
-	const { getKeycloak } = getContext<KeycloakContext>(key);
 
 	useProsemirrorAdapterProvider();
 	const nodeViewFactory = useNodeViewFactory();
@@ -59,15 +55,10 @@
 			images.push(file);
 		}
 
-		// Ensure a fresh token will be included in the Authorization header.
-		await getKeycloak()
-			.updateToken(-1)
-			.catch(() => null);
-
 		const nodes: Array<Node | undefined> = await Promise.all(
 			images.map(async (image) => {
 				try {
-					const src = await uploadAsFormData(image, getKeycloak().token ?? '');
+					const src = await uploadAsFormData(image);
 					const alt = image.name;
 					return schema.nodes.image.createAndFill({
 						src,

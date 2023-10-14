@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
-	import { keycloak, navigationToggle, user } from '$lib/stores';
+	import { navigationToggle, user } from '$lib/stores';
+	import { accountURL } from '$lib/authentication';
 
 	function toggle() {
 		navigationToggle.update((v) => !v);
@@ -44,17 +47,16 @@
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
 		{#if $user.isAuthenticated}
 			<li>
-				<a href={$keycloak.accountUrl}>
+				<a href={accountURL($page.url.href)}>
 					<span class="avatar avatar-s">{$user.givenName.at(0)}{$user.familyName.at(0)}</span>
 				</a>
 			</li>
 			<li>
-				<a href={$keycloak.logoutUrl} class="button quiet">{$_('logout')}</a>
+				<button class="quiet" on:click={() => signOut()}>{$_('logout')}</button>
 			</li>
 		{:else}
-			<li><a href={$keycloak.loginUrl} class="button quiet">{$_('login')}</a></li>
 			<li>
-				<a href={$keycloak.registerUrl} class="button primary">{$_('register')}</a>
+				<button class="quiet" on:click={() => signIn('keycloak')}>{$_('login')}</button>
 			</li>
 		{/if}
 	</ul>

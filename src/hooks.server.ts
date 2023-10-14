@@ -1,83 +1,111 @@
+import Keycloak from '@auth/core/providers/keycloak';
+import { SvelteKitAuth } from '@auth/sveltekit';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
-import * as jose from 'jose';
+import { sequence } from '@sveltejs/kit/hooks';
 import { Roarr as log } from 'roarr';
 import { serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { predicates } from '$lib/models';
-import { getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
+import { createOrUpdateUser, getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
 
-export const handle = (async ({ event, resolve }) => {
+const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
+const useSecureCookies = baseURL.protocol === 'https';
+const authentication = SvelteKitAuth({
+	callbacks: {
+		async jwt({ token, user, account }) {
+			if (user) {
+				token.familyName = user.familyName;
+				token.givenName = user.givenName;
+			}
+			if (account?.access_token) {
+				// decode without validating
+				const { realm_access }: { realm_access: { roles: string[] } } = JSON.parse(
+					Buffer.from(account.access_token.split('.')[1], 'base64').toString()
+				);
+				token.roles = realm_access.roles;
+			}
+			return token;
+		},
+		async session({ session, token }) {
+			const pool = await getPool();
+			const [containerUserRelations] = await Promise.all([
+				pool.connect(getAllMembershipRelationsOfUser(token.sub as string)),
+				pool.connect(
+					createOrUpdateUser({
+						display_name: `${token.givenName} ${token.familyName}`.trim(),
+						guid: token.sub as string,
+						realm: env.PUBLIC_KC_REALM ?? ''
+					})
+				)
+			]);
+			session.user.adminOf = containerUserRelations
+				.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+				.map(({ object }) => object);
+			session.user.familyName = token.familyName as string;
+			session.user.givenName = token.givenName as string;
+			session.user.guid = token.sub as string;
+			session.user.memberOf = containerUserRelations
+				.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+				.map(({ object }) => object);
+			session.user.roles = token.roles as string[];
+			return session;
+		}
+	},
+	cookies: {
+		sessionToken: {
+			name: `${useSecureCookies ? '__Secure-' : ''}next-auth.session-token`,
+			options: {
+				domain: `.${baseURL.hostname}`,
+				httpOnly: true,
+				path: '/',
+				sameSite: 'lax',
+				secure: useSecureCookies
+			}
+		}
+	},
+	providers: [
+		Keycloak({
+			clientId: env.PUBLIC_KC_CLIENT_ID,
+			clientSecret: privateEnv.KC_CLIENT_SECRET,
+			issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
+			profile(profile) {
+				return {
+					email: profile.email,
+					familyName: profile.family_name,
+					givenName: profile.given_name,
+					id: profile.sub
+				};
+			}
+		})
+	],
+	secret: privateEnv.AUTH_SECRET,
+	trustHost: true
+});
+
+export const handle = sequence(authentication, async ({ event, resolve }) => {
 	const lang = event.request.headers.get('accept-language')?.split(',')[0];
 	locale.set(lang ?? 'de');
 
-	event.locals.user = {
-		adminOf: [],
-		familyName: '',
-		givenName: '',
-		guid: '',
-		isAuthenticated: false,
-		memberOf: [],
-		roles: []
-	};
-
-	if (event.request.method == 'GET' && event.cookies.get('idToken')) {
-		try {
-			const idToken = event.cookies.get('idToken') as string;
-			const jwks = jose.createRemoteJWKSet(
-				new URL(`${privateEnv.KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/certs`)
-			);
-			const { payload } = await jose.jwtVerify(idToken, jwks, {
-				issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
-				requiredClaims: ['iss', 'sub']
-			});
-			event.locals.user = {
-				...event.locals.user,
-				familyName: payload.family_name ?? '',
-				givenName: payload.given_name ?? '',
-				guid: payload.sub ?? '',
-				isAuthenticated: true
-			};
-		} catch (error) {
-			log.warn(serializeError(error), String(error));
-		}
-	}
-
-	if (event.request.headers.get('Authorization')?.startsWith('Bearer ')) {
-		const token = (event.request.headers.get('Authorization') as string).substring(7);
-		const jwks = jose.createRemoteJWKSet(
-			new URL(`${privateEnv.KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/certs`)
-		);
-		try {
-			const { payload } = await jose.jwtVerify(token, jwks, {
-				issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
-				requiredClaims: ['iss', 'sub']
-			});
-			event.locals.user = {
-				...event.locals.user,
-				familyName: '',
-				givenName: '',
-				guid: payload.sub ?? '',
-				isAuthenticated: true
-			};
-		} catch (error) {
-			log.warn(serializeError(error), String(error));
-		}
-	}
-
 	event.locals.pool = await getPool();
 
-	if (event.locals.user.isAuthenticated) {
-		const containerUserRelations = await event.locals.pool.connect(
-			getAllMembershipRelationsOfUser(event.locals.user.guid)
-		);
-		event.locals.user.memberOf = containerUserRelations
-			.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
-			.map(({ object }) => object);
-		event.locals.user.adminOf = containerUserRelations
-			.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
-			.map(({ object }) => object);
+	const session = await event.locals.getSession();
+	if (session) {
+		event.locals.user = {
+			...session.user,
+			isAuthenticated: true
+		};
+	} else {
+		event.locals.user = {
+			adminOf: [],
+			familyName: '',
+			givenName: '',
+			guid: '',
+			isAuthenticated: false,
+			memberOf: [],
+			roles: []
+		};
 	}
 
 	return resolve(event);

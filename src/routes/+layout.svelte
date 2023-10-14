@@ -1,32 +1,14 @@
 <script lang="ts">
-	import type Keycloak from 'keycloak-js';
-	import { onMount, setContext } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import '../app.css';
-	import { initKeycloak, key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import type { LayoutData } from './$types';
 
 	export let data: LayoutData;
-
-	let kc: Keycloak;
-
-	setContext<KeycloakContext>(key, {
-		getKeycloak: () => kc
-	});
-
-	onMount(async () => {
-		kc = await initKeycloak({
-			checkLoginIframe: false,
-			enableLogging: true,
-			silentCheckSsoFallback: false
-		});
-	});
 
 	overrideItemIdKeyNameBeforeInitialisingDndZones('guid');
 

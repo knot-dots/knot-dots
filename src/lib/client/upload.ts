@@ -1,11 +1,11 @@
-export async function uploadAsFormData(file: File, token: string): Promise<string> {
+export async function uploadAsFormData(file: File): Promise<string> {
 	const data = new FormData();
 	data.set('upload', file);
 
 	const uploadResponse = await fetch('/upload', {
 		method: 'POST',
 		body: data,
-		headers: { Authorization: `Bearer ${token}` }
+		credentials: 'include'
 	});
 
 	if (uploadResponse.ok) {

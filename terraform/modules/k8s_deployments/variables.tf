@@ -32,11 +32,11 @@ variable "keycloak_realm" {
   type = string
 }
 
-variable "keycloak_service_account_client_secret" {
+variable "keycloak_client_secret" {
   type = string
 }
 
-variable "keycloak_service_account_client_id" {
+variable "keycloak_client_id" {
   type = string
 }
 

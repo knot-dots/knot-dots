@@ -51,11 +51,7 @@ const createResultParserInterceptor = (): Interceptor => {
 			const validationResult = resultParser.safeParse(row);
 
 			if (!validationResult.success) {
-				throw new SchemaValidationError(
-					actualQuery,
-					row as SerializableValue,
-					validationResult.error.issues
-				);
+				throw new SchemaValidationError(actualQuery, row, validationResult.error.issues);
 			}
 
 			return validationResult.data as QueryResultRow;
@@ -147,7 +143,7 @@ export function createContainer(container: NewContainer) {
 			const userResult = await txConnection.any(sql.typeAlias('userRelation')`
 				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
+				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
 				RETURNING predicate, subject
       `);
 
@@ -160,7 +156,7 @@ export function createContainer(container: NewContainer) {
 			const relationResult = await txConnection.any(sql.typeAlias('relation')`
 				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
+				FROM ${sql.unnest(relationValues, ['int8', 'int4', 'text', 'int8'])}
 				ON CONFLICT DO NOTHING
       `);
 
@@ -200,7 +196,7 @@ export function updateContainer(container: ModifiedContainer) {
 			const userResult = await txConnection.many(sql.typeAlias('userRelation')`
 				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
+				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
 				RETURNING predicate, subject
       `);
 
@@ -213,7 +209,7 @@ export function updateContainer(container: ModifiedContainer) {
 			await txConnection.query(sql.typeAlias('void')`
 				INSERT INTO container_relation (object, position, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(relationValues, ['int4', 'int4', 'text', 'int4'])}
+				FROM ${sql.unnest(relationValues, ['int8', 'int4', 'text', 'int8'])}
 				ON CONFLICT DO NOTHING
       `);
 
@@ -268,7 +264,7 @@ export function deleteContainer(container: AnyContainer) {
 			await txConnection.query(sql.typeAlias('void')`
 				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
-				FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
+				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 		});
 	};

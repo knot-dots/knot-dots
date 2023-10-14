@@ -283,18 +283,8 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           env {
-            name  = "KC_SERVICE_ACCOUNT_CLIENT_ID"
-            value = var.keycloak_service_account_client_id
-          }
-
-          env {
-            name  = "KC_SERVICE_ACCOUNT_CLIENT_SECRET"
-            value = var.keycloak_service_account_client_secret
-          }
-
-          env {
-            name  = "KC_URL"
-            value = "https://${var.keycloak_host}"
+            name  = "KC_CLIENT_SECRET"
+            value = var.keycloak_client_secret
           }
 
           env {
@@ -328,13 +318,8 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           env {
-            name  = "PUBLIC_KC_BASE_URL"
-            value = "https://${var.strategytool_host}"
-          }
-
-          env {
             name  = "PUBLIC_KC_CLIENT_ID"
-            value = var.strategytool_name
+            value = var.keycloak_client_id
           }
 
           env {

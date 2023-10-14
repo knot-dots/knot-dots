@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { getContext, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
@@ -18,13 +16,10 @@
 	export let container: TaskContainer | EmptyTaskContainer;
 	export let isPartOfOptions: AnyContainer[];
 
-	const { getKeycloak } = getContext<KeycloakContext>(key);
-
 	let membersPromise: Promise<User[]> = new Promise(() => []);
 
 	onMount(() => {
 		membersPromise = fetchMembers(
-			getKeycloak(),
 			$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
 		);
 	});

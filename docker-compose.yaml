@@ -59,9 +59,8 @@ services:
       migrate:
         condition: service_completed_successfully
     environment:
-      - KC_SERVICE_ACCOUNT_CLIENT_ID
-      - KC_SERVICE_ACCOUNT_CLIENT_SECRET
-      - KC_URL
+      - AUTH_SECRET
+      - KC_CLIENT_SECRET
       - PGDATABASE
       - PGHOST
       - PGPASSWORD
@@ -89,9 +88,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      - KC_SERVICE_ACCOUNT_CLIENT_ID
-      - KC_SERVICE_ACCOUNT_CLIENT_SECRET
-      - KC_URL
+      - AUTH_SECRET
+      - KC_CLIENT_SECRET
       - PGDATABASE
       - PGHOST
       - PGPASSWORD

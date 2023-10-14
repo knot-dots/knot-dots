@@ -31,16 +31,20 @@ terraform {
     }
   }
 
-  required_version = ">= 0.13"
+  required_version = ">= 1.6"
 
   backend "s3" {
     bucket                      = "strategytool-terraform-state"
     key                         = "dev.tfstate"
     region                      = "fr-par"
-    endpoint                    = "https://s3.fr-par.scw.cloud"
     profile                     = "strategytool"
     skip_credentials_validation = true
     skip_region_validation      = true
+    skip_requesting_account_id  = true
+
+    endpoints = {
+      s3 = "https://s3.fr-par.scw.cloud"
+    }
   }
 }
 
@@ -188,9 +192,9 @@ resource "scaleway_object_bucket_acl" "upload" {
   acl    = "private"
 }
 
-data "keycloak_openid_client" "strategytool_service_account" {
+data "keycloak_openid_client" "strategytool" {
   realm_id  = "knot-dots"
-  client_id = "strategytool-backend"
+  client_id = "strategytool"
 }
 
 module "rdb_databases" {
@@ -212,21 +216,21 @@ module "k8s_cluster" {
 module "k8s_deployments" {
   source = "../modules/k8s_deployments"
 
-  databases                              = module.rdb_databases
-  registry_password                      = scaleway_iam_api_key.registry_password.secret_key
-  registry_server                        = "rg.fr-par.scw.cloud"
-  registry_username                      = "knot-dots"
-  cert_manager_api_key                   = scaleway_iam_api_key.cert_manager
-  keycloak_host                          = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
-  keycloak_image                         = var.keycloak_image
-  keycloak_realm                         = "knot-dots"
-  keycloak_service_account_client_id     = data.keycloak_openid_client.strategytool_service_account.client_id
-  keycloak_service_account_client_secret = data.keycloak_openid_client.strategytool_service_account.client_secret
-  migrate_image                          = var.migrate_image
-  strategytool_api_key                   = scaleway_iam_api_key.strategytool
-  strategytool_bucket_name               = scaleway_object_bucket.upload.name
-  strategytool_host                      = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
-  strategytool_image                     = var.strategytool_image
-  strategytool_region                    = "fr-par"
-  with_scaleway_lb                       = var.with_scaleway_lb
+  databases                = module.rdb_databases
+  registry_password        = scaleway_iam_api_key.registry_password.secret_key
+  registry_server          = "rg.fr-par.scw.cloud"
+  registry_username        = "knot-dots"
+  cert_manager_api_key     = scaleway_iam_api_key.cert_manager
+  keycloak_host            = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
+  keycloak_image           = var.keycloak_image
+  keycloak_realm           = "knot-dots"
+  keycloak_client_id       = data.keycloak_openid_client.strategytool.client_id
+  keycloak_client_secret   = data.keycloak_openid_client.strategytool.client_secret
+  migrate_image            = var.migrate_image
+  strategytool_api_key     = scaleway_iam_api_key.strategytool
+  strategytool_bucket_name = scaleway_object_bucket.upload.name
+  strategytool_host        = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
+  strategytool_image       = var.strategytool_image
+  strategytool_region      = "fr-par"
+  with_scaleway_lb         = var.with_scaleway_lb
 }

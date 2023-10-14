@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { getContext, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { key } from '$lib/authentication';
-	import type { KeycloakContext } from '$lib/authentication';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -17,13 +15,10 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
-	const { getKeycloak } = getContext<KeycloakContext>(key);
-
 	let membersPromise: Promise<User[]> = new Promise(() => []);
 
 	onMount(() => {
 		membersPromise = fetchMembers(
-			getKeycloak(),
 			$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
 		);
 	});
