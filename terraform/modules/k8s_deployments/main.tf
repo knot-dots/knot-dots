@@ -227,6 +227,11 @@ resource "kubernetes_service_v1" "strategytool" {
   }
 }
 
+resource "random_password" "auth_secret" {
+  length  = 32
+  special = false
+}
+
 resource "kubernetes_deployment_v1" "strategytool" {
   metadata {
     name      = var.strategytool_name
@@ -256,6 +261,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
         container {
           image = var.strategytool_image
           name  = "app"
+
+          env {
+            name = "AUTH_SECRET"
+            value = random_password.auth_secret.result
+          }
 
           env {
             name  = "BODY_SIZE_LIMIT"
