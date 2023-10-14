@@ -15,20 +15,34 @@
 	let dialog: HTMLDialogElement;
 	let email: string;
 
-	async function handleToggleAdmin(user: User, container: AnyContainer) {
-		const response = await saveContainerUser({
-			...container,
-			user: [
-				...container.user.filter(({ predicate }) => predicate != predicates.enum['is-admin-of']),
-				...(isAdminOf(user, container)
-					? []
-					: [{ subject: user.guid, predicate: predicates.enum['is-admin-of'] }])
-			]
-		});
-		if (!response.ok) {
-			console.log(await response.json());
-		}
-		await invalidateAll();
+	function handleChangeRole(user: User, container: AnyContainer) {
+		return async (event: { currentTarget: HTMLSelectElement }) => {
+			let containerUser;
+			switch (event.currentTarget.value) {
+				case 'role.member':
+					containerUser = container.user.filter(
+						({ predicate }) => predicate != predicates.enum['is-admin-of']
+					);
+					break;
+				case 'role.administrator':
+					containerUser = container.user
+						.filter(({ predicate }) => predicate != predicates.enum['is-admin-of'])
+						.concat({
+							subject: user.guid,
+							predicate: predicates.enum['is-admin-of']
+						});
+					break;
+				default:
+					containerUser = container.user;
+			}
+
+			const response = await saveContainerUser({ ...container, user: containerUser });
+			if (!response.ok) {
+				console.log(await response.json());
+			}
+
+			await invalidateAll();
+		};
 	}
 
 	async function handleRemoveRelations(user: User, container: AnyContainer) {
@@ -90,7 +104,7 @@
 			<thead>
 				<tr>
 					<th scope="col">{$_('user.email')}</th>
-					<th scope="col">{$_('role.administrator')}</th>
+					<th scope="col">{$_('user.role')}</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -100,11 +114,14 @@
 						<td>{u.display_name}</td>
 						<td>
 							{#key container.user}
-								<input
-									type="checkbox"
-									checked={isAdminOf(u, container)}
-									on:click={() => handleToggleAdmin(u, container)}
-								/>
+								<select name="role" on:change={handleChangeRole(u, container)}>
+									<option value="role.member" selected={!isAdminOf(u, container)}>
+										{$_('role.member')}
+									</option>
+									<option value="role.administrator" selected={isAdminOf(u, container)}>
+										{$_('role.administrator')}
+									</option>
+								</select>
 							{/key}
 						</td>
 						<td>
