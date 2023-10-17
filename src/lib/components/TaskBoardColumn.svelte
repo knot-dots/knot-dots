@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { dndzone } from 'svelte-dnd-action';
 	import type { DndEvent } from 'svelte-dnd-action';
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import Card from '$lib/components/Card.svelte';
 	import saveContainer from '$lib/client/saveContainer';
@@ -42,7 +42,8 @@
 		return containerOfType(
 			payloadTypes.enum['internal_objective.task'],
 			$page.data.currentOrganization.guid,
-			$page.data.currentOrganizationalUnit?.guid ?? null
+			$page.data.currentOrganizationalUnit?.guid ?? null,
+			env.PUBLIC_KC_REALM
 		);
 	}
 </script>

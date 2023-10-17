@@ -991,11 +991,13 @@ export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 export function containerOfType(
 	payloadType: PayloadType,
 	organization: string,
-	organizationalUnit: string | null
+	organizationalUnit: string | null,
+	realm: string
 ) {
-	return {
+	return emptyContainer.parse({
 		payload: { type: payloadType },
 		organization,
-		organizational_unit: organizationalUnit
-	} as EmptyContainer;
+		organizational_unit: organizationalUnit,
+		realm
+	}) as EmptyContainer;
 }
