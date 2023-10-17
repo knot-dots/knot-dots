@@ -14,6 +14,7 @@
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
+	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import {
@@ -32,8 +33,7 @@
 		isVisionContainer
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
-	import { ability } from '$lib/stores.js';
-	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
+	import { ability } from '$lib/stores';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -41,22 +41,38 @@
 
 	$: container = revisions[revisions.length - 1];
 
-	let edit = false;
+	let edit = $page.url.searchParams.has('overlay-new');
 
 	function closeOverlay() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('container-preview');
+		query.delete('is-part-of-measure');
+		query.delete('level');
+		query.delete('overlay-new');
 		query.delete('status');
+		query.delete('task-status');
 		return `?${query.toString()}`;
 	}
 
 	async function afterSubmit() {
 		await invalidateAll();
-		edit = false;
+		if ($page.url.searchParams.has('overlay-new')) {
+			await goto(closeOverlay());
+		} else {
+			edit = false;
+		}
 	}
 
 	async function afterDelete() {
 		await goto(closeOverlay(), { invalidateAll: true });
+	}
+
+	async function cancel() {
+		if ($page.url.searchParams.has('overlay-new')) {
+			await goto(closeOverlay());
+		} else {
+			edit = false;
+		}
 	}
 </script>
 
@@ -70,7 +86,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</MeasureForm>
 		{:else if isModelContainer(container)}
@@ -81,7 +97,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</ModelForm>
 		{:else if isOperationalGoalContainer(container)}
@@ -92,7 +108,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</OperationalGoalForm>
 		{:else if isOrganizationalUnitContainer(container)}
@@ -103,7 +119,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</OrganizationalUnitForm>
 		{:else if isStrategicGoalGoalContainer(container)}
@@ -114,13 +130,13 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</StrategicGoalForm>
 		{:else if isStrategyContainer(container)}
 			<StrategyForm {container} on:submitSuccessful={afterSubmit} on:deleteSuccessful={afterDelete}>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</StrategyForm>
 		{:else if isInternalStrategyContainer(container)}
@@ -131,7 +147,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveForm>
 		{:else if isVisionContainer(container)}
@@ -142,7 +158,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveForm>
 		{:else if isInternalObjectiveStrategicGoalContainer(container)}
