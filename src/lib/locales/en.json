@@ -19,6 +19,7 @@
 	"created_date": "Created at",
 	"delete": "Delete",
 	"description": "Description",
+	"download": "Download",
 	"editor": {
 		"emphasis": "I",
 		"strong": "B"
@@ -221,7 +222,8 @@
 		"is_consistent_with":  "consistent with",
 		"is_duplicate_of": "duplicate",
 		"is_equivalent_to": "equivalent",
-		"is_inconsistent_with": "inconsistent with"
+		"is_inconsistent_with": "inconsistent with",
+		"remove": "remove relations"
 	},
 	"relations": "Relations",
 	"resources": {

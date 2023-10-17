@@ -27,7 +27,7 @@
 		isEmptyTaskContainer,
 		isEmptyVisionContainer,
 		payloadTypes,
-		visibility
+		visibility as visibilities
 	} from '$lib/models';
 	import type {
 		CustomEventMap,
@@ -82,8 +82,7 @@
 			organizational_unit: $page.data.currentOrganizationalUnit?.guid ?? null,
 			realm: env.PUBLIC_KC_REALM,
 			relation: selected,
-			user: [],
-			visibility: visibility.enum.creator
+			user: []
 		};
 		const boards: string[] = [];
 		const category: SustainableDevelopmentGoal[] = [];
@@ -92,40 +91,56 @@
 		const progress = 0;
 		const resource: [] = [];
 		const topic: Topic[] = [];
+		const visibility = visibilities.enum.creator;
 		switch (type) {
 			case payloadTypes.enum['internal_objective.internal_strategy']:
-				return { ...base, payload: { type } } as EmptyInternalStrategyContainer;
+				return {
+					...base,
+					payload: { type, visibility }
+				} as EmptyInternalStrategyContainer;
 			case payloadTypes.enum['internal_objective.milestone']:
-				return { ...base, payload: { progress, type } } as EmptyMilestoneContainer;
+				return { ...base, payload: { progress, type, visibility } } as EmptyMilestoneContainer;
 			case payloadTypes.enum['internal_objective.strategic_goal']:
 				return {
 					...base,
-					payload: { type }
+					payload: { type, visibility }
 				} as EmptyInternalObjectiveStrategicGoalContainer;
 			case payloadTypes.enum['internal_objective.task']:
-				return { ...base, payload: { type } } as EmptyTaskContainer;
+				return { ...base, payload: { type, visibility } } as EmptyTaskContainer;
 			case payloadTypes.enum['internal_objective.vision']:
-				return { ...base, payload: { type } } as EmptyVisionContainer;
+				return { ...base, payload: { type, visibility } } as EmptyVisionContainer;
 			case payloadTypes.enum.measure:
 				return {
 					...base,
-					payload: { boards, category, resource, topic, type }
+					payload: { boards, resource, topic, type, visibility }
 				} as EmptyMeasureContainer;
 			case payloadTypes.enum.model:
-				return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
+				return { ...base, payload: { category, topic, type, visibility } } as EmptyModelContainer;
 			case payloadTypes.enum.operational_goal:
 				return {
 					...base,
-					payload: { category, indicator, topic, type }
+					payload: { category, indicator, topic, type, visibility }
 				} as EmptyOperationalGoalContainer;
 			case payloadTypes.enum.organization:
-				return { ...base, payload: { boards, default: false, type } } as EmptyOrganizationContainer;
+				return {
+					...base,
+					payload: { boards, default: false, type, visibility }
+				} as EmptyOrganizationContainer;
 			case payloadTypes.enum.organizational_unit:
-				return { ...base, payload: { boards, level, type } } as EmptyOrganizationalUnitContainer;
+				return {
+					...base,
+					payload: { boards, level, type, visibility }
+				} as EmptyOrganizationalUnitContainer;
 			case payloadTypes.enum.strategic_goal:
-				return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
+				return {
+					...base,
+					payload: { category, topic, type, visibility }
+				} as EmptyStrategicGoalContainer;
 			default:
-				return { ...base, payload: { category, topic, type } } as EmptyStrategyContainer;
+				return {
+					...base,
+					payload: { category, topic, type, visibility }
+				} as EmptyStrategyContainer;
 		}
 	})(payloadType);
 

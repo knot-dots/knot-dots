@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { payloadTypes, visibility } from '$lib/models';
+import { payloadTypes, visibility as visibilities } from '$lib/models';
 import type {
 	Container,
 	EmptyMeasureContainer,
@@ -93,31 +93,34 @@ export const load = (async ({ params, locals, url, parent }) => {
 				organizational_unit: currentOrganizationalUnit?.guid ?? null,
 				realm: env.PUBLIC_KC_REALM,
 				relation: selected,
-				user: [],
-				visibility: visibility.enum.creator
+				user: []
 			};
 			const boards: string[] = [];
 			const category: SustainableDevelopmentGoal[] = [];
 			const indicator: Indicator[] = [];
 			const resource: [] = [];
 			const topic: Topic[] = [];
+			const visibility = visibilities.enum.creator;
 			switch (type) {
 				case payloadTypes.enum.measure:
 					return {
 						...base,
-						payload: { boards, category, resource, topic, type }
+						payload: { boards, category, resource, topic, type, visibility }
 					} as EmptyMeasureContainer;
 				case payloadTypes.enum.model:
-					return { ...base, payload: { category, topic, type } } as EmptyModelContainer;
+					return { ...base, payload: { category, topic, type, visibility } } as EmptyModelContainer;
 				case payloadTypes.enum.operational_goal:
 					return {
 						...base,
-						payload: { category, indicator, topic, type }
+						payload: { category, indicator, topic, type, visibility }
 					} as EmptyOperationalGoalContainer;
 				case payloadTypes.enum.strategic_goal:
-					return { ...base, payload: { category, topic, type } } as EmptyStrategicGoalContainer;
+					return {
+						...base,
+						payload: { category, topic, type, visibility }
+					} as EmptyStrategicGoalContainer;
 				default:
-					return { ...base, payload: { type } } as EmptyTextContainer;
+					return { ...base, payload: { type, visibility } } as EmptyTextContainer;
 			}
 		})(url.searchParams.get('overlay-new') as PayloadType);
 		const isPartOfOptions = await locals.pool.connect(

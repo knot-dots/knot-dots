@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronLeft, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
+	import { ArrowDownTray, ChevronLeft, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Chapter from '$lib/components/Chapter.svelte';
@@ -91,6 +91,17 @@
 						{/each}
 					</ul>
 				</div>
+				{#if container.payload.pdf}
+					<div class="meta">
+						<h3 class="meta-key">{$_('pdf')}</h3>
+						<p class="meta-value meta-value-pdf">
+							<a href={container.payload.pdf}>
+								{$_('download')}
+								<Icon src={ArrowDownTray} size="20" mini />
+							</a>
+						</p>
+					</div>
+				{/if}
 				<div class="meta">
 					<h3 class="meta-key">{$_('created_date')}</h3>
 					<ul class="meta-value">
