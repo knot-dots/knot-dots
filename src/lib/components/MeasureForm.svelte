@@ -55,9 +55,7 @@
 			{$_('measure.summary')}
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
 		</label>
-		{#key container}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 		<ResourcePlanner {container} />
 		{#each relatedContainers as o}
 			{#if container.payload.indicatorContribution?.[o.guid] !== undefined}

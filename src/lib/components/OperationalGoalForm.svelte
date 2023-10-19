@@ -24,9 +24,7 @@
 			{$_('summary')}
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
 		</label>
-		{#key container}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 		<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
 	</svelte:fragment>
 

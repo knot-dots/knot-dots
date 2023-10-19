@@ -28,9 +28,7 @@
 			{/if}
 			<span class="help">{$_('upload.image.help')}</span>
 		</label>
-		{#key container}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">

@@ -11,9 +11,7 @@
 
 <ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
 	<svelte:fragment slot="data">
-		{#key container}
-			<Editor label={$_('body')} bind:value={container.payload.body} />
-		{/key}
+		<Editor label={$_('body')} bind:value={container.payload.body} />
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
