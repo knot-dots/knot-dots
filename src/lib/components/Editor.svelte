@@ -215,12 +215,12 @@
 	}
 
 	:global(.milkdown) {
-		min-height: calc(7.75rem + 1px);
 		padding: 0.75rem 1rem;
 	}
 
 	:global([contenteditable]) {
 		white-space: pre-wrap;
+		min-height: 6.25rem;
 	}
 
 	:global([contenteditable]:focus) {
