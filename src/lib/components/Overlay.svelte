@@ -181,7 +181,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveForm>
 		{:else if isMilestoneContainer(container)}
@@ -192,7 +192,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveMilestoneForm>
 		{:else if isTaskContainer(container)}
@@ -203,7 +203,7 @@
 				on:deleteSuccessful={afterDelete}
 			>
 				<svelte:fragment slot="extra-buttons">
-					<button type="button" on:click={() => (edit = false)}>{$_('cancel')}</button>
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</InternalObjectiveTaskForm>
 		{/if}
