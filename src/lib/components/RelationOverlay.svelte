@@ -7,7 +7,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
-	import { container, predicates } from '$lib/models';
+	import { predicates } from '$lib/models';
 	import type { AnyContainer, Container, Predicate } from '$lib/models';
 	import { dragged } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';

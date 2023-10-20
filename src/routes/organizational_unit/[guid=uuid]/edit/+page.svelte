@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import type { PageData } from './$types';
 

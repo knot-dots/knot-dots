@@ -2,7 +2,6 @@
 	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { env } from '$env/dynamic/public';
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
