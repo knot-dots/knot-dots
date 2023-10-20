@@ -3,7 +3,7 @@ import { NotFoundError } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import { containerOfType } from '$lib/models';
-import type { Container, PartialRelation, PayloadType } from '$lib/models';
+import type { Container, PayloadType } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
@@ -67,24 +67,13 @@ export const load = (async ({ params, locals, url, parent }) => {
 			revisions
 		};
 	} else if (url.searchParams.has('overlay-new')) {
-		const selected = url.searchParams.getAll('is-part-of').map(
-			(o): PartialRelation => ({
-				object: Number(o),
-				position: 2 ** 32 - 1,
-				predicate: 'is-part-of'
-			})
-		);
 		const { currentOrganization, currentOrganizationalUnit } = await parent();
-		const newContainer = ((type: PayloadType) => {
-			const emptyContainer = containerOfType(
-				type,
-				currentOrganization.guid,
-				currentOrganizationalUnit?.guid ?? null,
-				env.PUBLIC_KC_REALM
-			);
-			emptyContainer.relation = selected;
-			return emptyContainer;
-		})(url.searchParams.get('overlay-new') as PayloadType);
+		const newContainer = containerOfType(
+			url.searchParams.get('overlay-new') as PayloadType,
+			currentOrganization.guid,
+			currentOrganizationalUnit?.guid ?? null,
+			env.PUBLIC_KC_REALM
+		);
 		const isPartOfOptions = await locals.pool.connect(
 			maybePartOf(
 				currentOrganizationalUnit ? currentOrganizationalUnit.guid : currentOrganization.guid,
