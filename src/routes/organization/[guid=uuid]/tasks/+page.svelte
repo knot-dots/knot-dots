@@ -47,7 +47,7 @@
 	{#each columns as column (column.title)}
 		<TaskBoardColumn
 			--bg-color="var(--color-{taskStatusColors.get(column.title)}-050)"
-			addItemUrl={`/${column.payloadType}/new/?task-status=${column.title}`}
+			addItemUrl="?overlay-new={column.payloadType}&task-status={column.title}"
 			icon={taskStatusIcons.get(column.title)}
 			items={column.items}
 			status={column.title}

@@ -40,7 +40,7 @@
 <Board>
 	{#each columns as column (column.title)}
 		<BoardColumn
-			addItemUrl={`/${column.payloadType}/new/?is-part-of-measure=${data.container.revision}`}
+			addItemUrl="?overlay-new={column.payloadType}&is-part-of-measure={data.container.revision}"
 			itemType={column.payloadType}
 			title={$_(column.title)}
 		>

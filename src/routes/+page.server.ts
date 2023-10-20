@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
 import {
 	getAllContainerRevisionsByGuid,
@@ -8,6 +9,8 @@ import {
 	getManyContainers,
 	maybePartOf
 } from '$lib/server/db';
+import { containerOfType } from '$lib/models';
+import type { AnyContainer, PayloadType } from '$lib/models';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url, parent }) => {
@@ -118,6 +121,24 @@ export const load = (async ({ locals, url, parent }) => {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
 		const container = revisions[revisions.length - 1];
 		relationOverlayData = { object: container };
+	} else if (url.searchParams.has('overlay-new')) {
+		const newContainer = containerOfType(
+			url.searchParams.get('overlay-new') as PayloadType,
+			currentOrganization.guid,
+			currentOrganizationalUnit?.guid ?? null,
+			env.PUBLIC_KC_REALM
+		);
+		const isPartOfOptions = await locals.pool.connect(
+			maybePartOf(
+				newContainer.organizational_unit ?? newContainer.organization,
+				newContainer.payload.type
+			)
+		);
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: [],
+			revisions: [newContainer] as AnyContainer[]
+		};
 	}
 
 	return {

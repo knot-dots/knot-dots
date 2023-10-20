@@ -1,3 +1,6 @@
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { env } from '$env/dynamic/public';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
@@ -6,11 +9,10 @@ import {
 	getManyTaskContainers,
 	maybePartOf
 } from '$lib/server/db';
-import type { PageServerLoad } from './$types';
-import { isOrganizationalUnitContainer, predicates } from '$lib/models';
-import { error } from '@sveltejs/kit';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { containerOfType, isOrganizationalUnitContainer, predicates } from '$lib/models';
+import type { AnyContainer, PayloadType } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
+import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
@@ -70,6 +72,21 @@ export const load = (async ({ locals, params, url }) => {
 			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
 			relatedContainers: filterVisible(relatedContainers, locals.user),
 			revisions
+		};
+	} else if (url.searchParams.has('overlay-new')) {
+		const emptyContainer = containerOfType(
+			url.searchParams.get('overlay-new') as PayloadType,
+			container.organization,
+			container.guid,
+			env.PUBLIC_KC_REALM
+		);
+		const isPartOfOptions = await locals.pool.connect(
+			maybePartOf(container.guid, emptyContainer.payload.type)
+		);
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: [],
+			revisions: [emptyContainer] as AnyContainer[]
 		};
 	}
 

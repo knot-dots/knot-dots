@@ -29,7 +29,7 @@
 		payloadTypes,
 		containerOfType
 	} from '$lib/models';
-	import type { CustomEventMap, PartialRelation, PayloadType } from '$lib/models';
+	import type { CustomEventMap, PayloadType } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -38,37 +38,17 @@
 
 	$: isPartOfOptions = data.isPartOfOptions;
 
-	$: selected = $page.url.searchParams
-		.getAll('is-part-of')
-		.map(
-			(o): PartialRelation => ({
-				object: Number(o),
-				position: 2 ** 32 - 1,
-				predicate: 'is-part-of'
-			})
-		)
-		.concat(
-			$page.url.searchParams.getAll('is-part-of-measure').map(
-				(o): PartialRelation => ({
-					object: Number(o),
-					position: 2 ** 32 - 1,
-					predicate: 'is-part-of-measure'
-				})
-			)
-		);
-
 	$: container = ((type: PayloadType) => {
-		const emptyContainer = containerOfType(
+		const newContainer = containerOfType(
 			type,
 			$page.data.currentOrganization.guid,
 			$page.data.currentOrganizationalUnit?.guid ?? null,
 			env.PUBLIC_KC_REALM
 		);
-		emptyContainer.relation = selected;
-		if (emptyContainer.payload.type === payloadTypes.enum.organizational_unit) {
-			emptyContainer.payload.level = parseInt($page.url.searchParams.get('level') ?? '1');
+		if (newContainer.payload.type === payloadTypes.enum.organizational_unit) {
+			newContainer.payload.level = parseInt($page.url.searchParams.get('level') ?? '1');
 		}
-		return emptyContainer;
+		return newContainer;
 	})(payloadType);
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
