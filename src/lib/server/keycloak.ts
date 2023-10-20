@@ -27,7 +27,7 @@ export async function createUser(user: NewUser) {
 		body: JSON.stringify({
 			email: user.email,
 			enabled: true,
-			requiredActions: ['UPDATE_PASSWORD']
+			requiredActions: ['UPDATE_PASSWORD', 'UPDATE_PROFILE']
 		}),
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 		method: 'POST'
