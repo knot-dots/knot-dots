@@ -726,17 +726,15 @@ const emptyContainer = newContainer.extend({
 export type EmptyContainer = z.infer<typeof emptyContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
-	payload: measurePayload
-		.partial()
-		.merge(
-			measurePayload.pick({
-				boards: true,
-				category: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		)
+	payload: measurePayload.partial().merge(
+		measurePayload.pick({
+			boards: true,
+			category: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
 });
 
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;

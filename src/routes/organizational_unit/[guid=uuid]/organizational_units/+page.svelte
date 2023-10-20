@@ -3,6 +3,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
+	import Overlay from '$lib/components/Overlay.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import type { PageData } from './$types';
@@ -26,7 +27,7 @@
 <Board>
 	{#each byLevel.entries() as [level, containers]}
 		<BoardColumn
-			addItemUrl={`/organizational_unit/new?level=${level}`}
+			addItemUrl="?overlay-new={payloadTypes.enum.organizational_unit}&level={level}"
 			itemType={payloadTypes.enum.organizational_unit}
 			title={$_('organizational_unit_level', { values: { level } })}
 		>
@@ -38,3 +39,7 @@
 		</BoardColumn>
 	{/each}
 </Board>
+
+{#if data.overlayData}
+	<Overlay {...data.overlayData} />
+{/if}

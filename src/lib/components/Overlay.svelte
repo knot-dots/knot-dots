@@ -30,10 +30,12 @@
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
-		isVisionContainer
+		isVisionContainer,
+		isOrganizationContainer
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -111,6 +113,16 @@
 					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
 				</svelte:fragment>
 			</OperationalGoalForm>
+		{:else if isOrganizationContainer(container)}
+			<OrganizationForm
+				{container}
+				on:submitSuccessful={afterSubmit}
+				on:deleteSuccessful={afterDelete}
+			>
+				<svelte:fragment slot="extra-buttons">
+					<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
+				</svelte:fragment>
+			</OrganizationForm>
 		{:else if isOrganizationalUnitContainer(container)}
 			<OrganizationalUnitForm
 				{container}
