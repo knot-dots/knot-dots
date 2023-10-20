@@ -27,7 +27,7 @@
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
 		if (!container.payload.default) {
 			url.hostname = `${container.guid}.${url.hostname}`;
-			url.pathname = `/${container.payload.type}/${container.guid}`;
+			url.pathname = $page.url.pathname;
 		}
 		return url.toString();
 	}
@@ -35,7 +35,7 @@
 	function organizationalUnitURL(container: OrganizationalUnitContainer) {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
 		url.hostname = `${container.guid}.${url.hostname}`;
-		url.pathname = `/${container.payload.type}/${container.guid}`;
+		url.pathname = $page.url.pathname;
 		return url.toString();
 	}
 

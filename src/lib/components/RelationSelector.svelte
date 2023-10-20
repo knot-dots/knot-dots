@@ -1,15 +1,32 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import {
-		isOrganizationContainer,
-		isOrganizationalUnitContainer,
-		payloadTypes,
-		predicates
-	} from '$lib/models';
-	import type { AnyContainer, Container, EmptyContainer } from '$lib/models';
+	import { page } from '$app/stores';
+	import { payloadTypes, predicates } from '$lib/models';
+	import type { AnyContainer, Container, EmptyContainer, PartialRelation } from '$lib/models';
 
 	export let container: Container | EmptyContainer;
 	export let isPartOfOptions: AnyContainer[];
+
+	if (container.relation.length == 0) {
+		container.relation = $page.url.searchParams
+			.getAll('is-part-of')
+			.map(
+				(o): PartialRelation => ({
+					object: Number(o),
+					position: 2 ** 32 - 1,
+					predicate: 'is-part-of'
+				})
+			)
+			.concat(
+				$page.url.searchParams.getAll('is-part-of-measure').map(
+					(o): PartialRelation => ({
+						object: Number(o),
+						position: 2 ** 32 - 1,
+						predicate: 'is-part-of-measure'
+					})
+				)
+			);
+	}
 
 	$: index = container.relation.findIndex(
 		({ predicate, subject }) =>

@@ -36,6 +36,7 @@
 <InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful on:deleteSuccessful>
 	<svelte:fragment slot="extra-data">
 		<label>
+			{$_('task_status.label')}
 			<select name="status" bind:value={container.payload.taskStatus} required>
 				{#each taskStatus.options as statusOption}
 					<option value={statusOption} selected={statusOption === statusParam}>

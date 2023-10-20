@@ -280,12 +280,12 @@ export const boards = z.enum([
 
 const basePayload = z
 	.object({
-		category: z.array(sustainableDevelopmentGoals),
+		category: z.array(sustainableDevelopmentGoals).default([]),
 		description: z.string(),
 		summary: z.string().max(200).optional(),
 		title: z.string(),
-		topic: z.array(topics),
-		visibility
+		topic: z.array(topics).default([]),
+		visibility: visibility.default('creator')
 	})
 	.strict();
 
@@ -293,7 +293,7 @@ const internalObjectivesBasePayload = z.object({
 	description: z.string(),
 	summary: z.string().max(200).optional(),
 	title: z.string(),
-	visibility
+	visibility: visibility.default('creator')
 });
 
 const internalStrategyPayload = internalObjectivesBasePayload
@@ -320,7 +320,7 @@ const milestonePayload = internalObjectivesBasePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		progress: z.number().nonnegative(),
+		progress: z.number().nonnegative().default(0),
 		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
 	})
 	.strict();
@@ -352,14 +352,16 @@ const measurePayload = basePayload
 		indicatorContributionAchieved: z
 			.record(z.string().uuid(), z.coerce.number().nonnegative())
 			.optional(),
-		resource: z.array(
-			z.object({
-				description: z.string(),
-				amount: z.coerce.number(),
-				unit: z.string(),
-				fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
-			})
-		),
+		resource: z
+			.array(
+				z.object({
+					description: z.string(),
+					amount: z.coerce.number(),
+					unit: z.string(),
+					fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
+				})
+			)
+			.default([]),
 		result: z.string().optional(),
 		startDate: z
 			.string()
@@ -382,30 +384,30 @@ const operationalGoalPayload = basePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		indicator: z.array(indicator).max(1),
+		indicator: z.array(indicator).max(1).default([]),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})
 	.strict();
 
 const organizationPayload = z.object({
 	boards: z.array(boards).default([]),
-	default: z.boolean(),
+	default: z.boolean().default(false),
 	description: z.string(),
 	image: z.string().url().optional(),
 	name: z.string(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
-	visibility
+	visibility: visibility.default('creator')
 });
 
 const organizationalUnitPayload = z.object({
 	boards: z.array(boards).default([]),
 	description: z.string(),
 	image: z.string().url().optional(),
-	level: z.number().int().positive(),
+	level: z.number().int().positive().default(1),
 	name: z.string(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility
+	visibility: visibility.default('creator')
 });
 
 const strategicGoalPayload = basePayload
@@ -433,7 +435,7 @@ const textPayload = z
 		body: z.string(),
 		title: z.string(),
 		type: z.literal(payloadTypes.enum.text),
-		visibility
+		visibility: visibility.default('creator')
 	})
 	.strict();
 
@@ -455,9 +457,9 @@ export const container = z.object({
 		textPayload
 	]),
 	realm: z.string().max(1024),
-	relation: z.array(relation),
+	relation: z.array(relation).default([]),
 	revision: z.number().int().positive(),
-	user: z.array(userRelation),
+	user: z.array(userRelation).default([]),
 	valid_currently: z.boolean(),
 	valid_from: z.coerce.date()
 });
@@ -662,37 +664,77 @@ export const newContainer = anyContainer
 		valid_from: true
 	})
 	.extend({
-		relation: z.array(partialRelation)
+		relation: z.array(partialRelation).default([])
 	});
 
 export type NewContainer = z.infer<typeof newContainer>;
 
 const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
-		measurePayload.partial().merge(measurePayload.pick({ type: true })),
-		modelPayload.partial().merge(modelPayload.pick({ type: true })),
-		operationalGoalPayload
+		measurePayload.partial().merge(
+			measurePayload.pick({
+				boards: true,
+				category: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
+		modelPayload
 			.partial()
-			.merge(operationalGoalPayload.pick({ indicator: true, type: true })),
-		organizationPayload.partial().merge(organizationPayload.pick({ type: true })),
-		organizationalUnitPayload.partial().merge(organizationalUnitPayload.pick({ type: true })),
-		strategicGoalPayload.partial().merge(strategicGoalPayload.pick({ type: true })),
-		strategyPayload.partial().merge(strategyPayload.pick({ type: true })),
-		textPayload.partial().merge(textPayload.pick({ type: true })),
-		internalStrategyPayload.partial().merge(internalStrategyPayload.pick({ type: true })),
-		visionPayload.partial().merge(visionPayload.pick({ type: true })),
+			.merge(modelPayload.pick({ category: true, topic: true, type: true, visibility: true })),
+		operationalGoalPayload.partial().merge(
+			operationalGoalPayload.pick({
+				category: true,
+				indicator: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
+		organizationPayload
+			.partial()
+			.merge(
+				organizationPayload.pick({ boards: true, default: true, type: true, visibility: true })
+			),
+		organizationalUnitPayload
+			.partial()
+			.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true })),
+		strategicGoalPayload
+			.partial()
+			.merge(
+				strategicGoalPayload.pick({ category: true, topic: true, type: true, visibility: true })
+			),
+		strategyPayload
+			.partial()
+			.merge(strategyPayload.pick({ category: true, topic: true, type: true, visibility: true })),
+		textPayload.partial().merge(textPayload.pick({ type: true, visibility: true })),
+		internalStrategyPayload
+			.partial()
+			.merge(internalStrategyPayload.pick({ type: true, visibility: true })),
+		visionPayload.partial().merge(visionPayload.pick({ type: true, visibility: true })),
 		internalObjectiveStrategicGoalPayload
 			.partial()
-			.merge(internalObjectiveStrategicGoalPayload.pick({ type: true })),
-		milestonePayload.partial().merge(milestonePayload.pick({ type: true })),
-		taskPayload.partial().merge(taskPayload.pick({ type: true }))
+			.merge(internalObjectiveStrategicGoalPayload.pick({ type: true, visibility: true })),
+		milestonePayload
+			.partial()
+			.merge(milestonePayload.pick({ progress: true, type: true, visibility: true })),
+		taskPayload.partial().merge(taskPayload.pick({ type: true, visibility: true }))
 	])
 });
 
 export type EmptyContainer = z.infer<typeof emptyContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
-	payload: measurePayload.partial().merge(measurePayload.pick({ type: true }))
+	payload: measurePayload.partial().merge(
+		measurePayload.pick({
+			boards: true,
+			category: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
 });
 
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
@@ -704,7 +746,9 @@ export function isEmptyMeasureContainer(
 }
 
 const emptyModelContainer = emptyContainer.extend({
-	payload: modelPayload.partial().merge(modelPayload.pick({ type: true }))
+	payload: modelPayload
+		.partial()
+		.merge(modelPayload.pick({ category: true, topic: true, type: true, visibility: true }))
 });
 
 export type EmptyModelContainer = z.infer<typeof emptyModelContainer>;
@@ -714,9 +758,15 @@ export function isEmptyModelContainer(container: EmptyContainer): container is E
 }
 
 const emptyOperationalGoalContainer = emptyContainer.extend({
-	payload: operationalGoalPayload
-		.partial()
-		.merge(operationalGoalPayload.pick({ indicator: true, type: true }))
+	payload: operationalGoalPayload.partial().merge(
+		operationalGoalPayload.pick({
+			category: true,
+			indicator: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
 });
 
 export type EmptyOperationalGoalContainer = z.infer<typeof emptyOperationalGoalContainer>;
@@ -728,7 +778,9 @@ export function isEmptyOperationalGoalContainer(
 }
 
 const emptyOrganizationContainer = newContainer.extend({
-	payload: organizationPayload.partial().merge(organizationPayload.pick({ type: true }))
+	payload: organizationPayload
+		.partial()
+		.merge(organizationPayload.pick({ boards: true, default: true, type: true, visibility: true }))
 });
 
 export type EmptyOrganizationContainer = z.infer<typeof emptyOrganizationContainer>;
@@ -740,7 +792,9 @@ export function isEmptyOrganizationContainer(
 }
 
 const emptyOrganizationalUnitContainer = newContainer.extend({
-	payload: organizationalUnitPayload.partial().merge(organizationalUnitPayload.pick({ type: true }))
+	payload: organizationalUnitPayload
+		.partial()
+		.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true }))
 });
 
 export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
@@ -752,7 +806,9 @@ export function isEmptyOrganizationalUnitContainer(
 }
 
 const emptyStrategicGoalContainer = emptyContainer.extend({
-	payload: strategicGoalPayload.partial().merge(strategicGoalPayload.pick({ type: true }))
+	payload: strategicGoalPayload
+		.partial()
+		.merge(strategicGoalPayload.pick({ category: true, topic: true, type: true, visibility: true }))
 });
 
 export type EmptyStrategicGoalContainer = z.infer<typeof emptyStrategicGoalContainer>;
@@ -764,7 +820,9 @@ export function isEmptyStrategicGoalContainer(
 }
 
 const emptyStrategyContainer = emptyContainer.extend({
-	payload: strategyPayload.partial().merge(strategyPayload.pick({ type: true }))
+	payload: strategyPayload
+		.partial()
+		.merge(strategyPayload.pick({ category: true, topic: true, type: true, visibility: true }))
 });
 
 export type EmptyStrategyContainer = z.infer<typeof emptyStrategyContainer>;
@@ -776,7 +834,7 @@ export function isEmptyStrategyContainer(
 }
 
 const emptyTextContainer = emptyContainer.extend({
-	payload: textPayload.partial().merge(textPayload.pick({ type: true }))
+	payload: textPayload.partial().merge(textPayload.pick({ type: true, visibility: true }))
 });
 
 export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
@@ -786,7 +844,9 @@ export function isEmptyTextContainer(container: EmptyContainer): container is Em
 }
 
 const emptyInternalStrategyContainer = emptyContainer.extend({
-	payload: internalStrategyPayload.partial().merge(internalStrategyPayload.pick({ type: true }))
+	payload: internalStrategyPayload
+		.partial()
+		.merge(internalStrategyPayload.pick({ type: true, visibility: true }))
 });
 
 export type EmptyInternalStrategyContainer = z.infer<typeof emptyInternalStrategyContainer>;
@@ -798,7 +858,7 @@ export function isEmptyInternalStrategyContainer(
 }
 
 const emptyVisionContainer = emptyContainer.extend({
-	payload: visionPayload.partial().merge(visionPayload.pick({ type: true }))
+	payload: visionPayload.partial().merge(visionPayload.pick({ type: true, visibility: true }))
 });
 
 export type EmptyVisionContainer = z.infer<typeof emptyVisionContainer>;
@@ -812,7 +872,7 @@ export function isEmptyVisionContainer(
 const emptyInternalObjectiveStrategicGoalContainer = emptyContainer.extend({
 	payload: internalObjectiveStrategicGoalPayload
 		.partial()
-		.merge(internalObjectiveStrategicGoalPayload.pick({ type: true }))
+		.merge(internalObjectiveStrategicGoalPayload.pick({ type: true, visibility: true }))
 });
 
 export type EmptyInternalObjectiveStrategicGoalContainer = z.infer<
@@ -826,7 +886,9 @@ export function isEmptyInternalObjectiveStrategicGoalContainer(
 }
 
 const emptyMilestoneContainer = emptyContainer.extend({
-	payload: milestonePayload.partial().merge(milestonePayload.pick({ type: true }))
+	payload: milestonePayload
+		.partial()
+		.merge(milestonePayload.pick({ progress: true, type: true, visibility: true }))
 });
 
 export type EmptyMilestoneContainer = z.infer<typeof emptyMilestoneContainer>;
@@ -838,7 +900,7 @@ export function isEmptyMilestoneContainer(
 }
 
 const emptyTaskContainer = emptyContainer.extend({
-	payload: taskPayload.partial().merge(taskPayload.pick({ type: true }))
+	payload: taskPayload.partial().merge(taskPayload.pick({ type: true, visibility: true }))
 });
 
 export type EmptyTaskContainer = z.infer<typeof emptyTaskContainer>;
@@ -927,11 +989,13 @@ export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 export function containerOfType(
 	payloadType: PayloadType,
 	organization: string,
-	organizationalUnit: string | null
+	organizationalUnit: string | null,
+	realm: string
 ) {
-	return {
+	return emptyContainer.parse({
 		payload: { type: payloadType },
 		organization,
-		organizational_unit: organizationalUnit
-	} as EmptyContainer;
+		organizational_unit: organizationalUnit,
+		realm
+	}) as EmptyContainer;
 }

@@ -1,8 +1,15 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
-import { isOrganizationalUnitContainer, owners, payloadTypes, predicates } from '$lib/models';
-import type { OrganizationalUnitContainer } from '$lib/models';
+import {
+	containerOfType,
+	isOrganizationalUnitContainer,
+	owners,
+	payloadTypes,
+	predicates
+} from '$lib/models';
+import type { AnyContainer, OrganizationalUnitContainer, PayloadType } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
@@ -113,6 +120,21 @@ export const load = (async ({ locals, params, url }) => {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
 		const container = revisions[revisions.length - 1];
 		relationOverlayData = { object: container };
+	} else if (url.searchParams.has('overlay-new')) {
+		const newContainer = containerOfType(
+			url.searchParams.get('overlay-new') as PayloadType,
+			container.organization,
+			container.guid,
+			env.PUBLIC_KC_REALM
+		);
+		const isPartOfOptions = await locals.pool.connect(
+			maybePartOf(container.guid, newContainer.payload.type)
+		);
+		overlayData = {
+			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
+			relatedContainers: [],
+			revisions: [newContainer] as AnyContainer[]
+		};
 	}
 
 	return {

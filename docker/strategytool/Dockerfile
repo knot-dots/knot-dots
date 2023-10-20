@@ -2,6 +2,7 @@ FROM node:18-slim AS builder
 WORKDIR /srv/app
 COPY package*.json ./
 RUN npm clean-install --silent
+COPY .env .
 COPY postcss.config.js .
 COPY svelte.config.js .
 COPY tsconfig.json .

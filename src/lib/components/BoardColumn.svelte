@@ -3,6 +3,7 @@
 	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import { containerOfType } from '$lib/models';
 	import type { PayloadType } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -16,7 +17,8 @@
 		return containerOfType(
 			itemType,
 			$page.data.currentOrganization.guid,
-			$page.data.currentOrganizationalUnit?.guid ?? null
+			$page.data.currentOrganizationalUnit?.guid ?? null,
+			env.PUBLIC_KC_REALM
 		);
 	}
 </script>

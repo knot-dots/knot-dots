@@ -27,28 +27,9 @@
 		isEmptyTaskContainer,
 		isEmptyVisionContainer,
 		payloadTypes,
-		visibility as visibilities
+		containerOfType
 	} from '$lib/models';
-	import type {
-		CustomEventMap,
-		EmptyInternalObjectiveStrategicGoalContainer,
-		EmptyInternalStrategyContainer,
-		EmptyMeasureContainer,
-		EmptyMilestoneContainer,
-		EmptyModelContainer,
-		EmptyOperationalGoalContainer,
-		EmptyOrganizationContainer,
-		EmptyOrganizationalUnitContainer,
-		EmptyStrategicGoalContainer,
-		EmptyStrategyContainer,
-		EmptyTaskContainer,
-		EmptyVisionContainer,
-		Indicator,
-		PartialRelation,
-		PayloadType,
-		SustainableDevelopmentGoal,
-		Topic
-	} from '$lib/models';
+	import type { CustomEventMap, PayloadType } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -57,91 +38,17 @@
 
 	$: isPartOfOptions = data.isPartOfOptions;
 
-	$: selected = $page.url.searchParams
-		.getAll('is-part-of')
-		.map(
-			(o): PartialRelation => ({
-				object: Number(o),
-				position: 2 ** 32 - 1,
-				predicate: 'is-part-of'
-			})
-		)
-		.concat(
-			$page.url.searchParams.getAll('is-part-of-measure').map(
-				(o): PartialRelation => ({
-					object: Number(o),
-					position: 2 ** 32 - 1,
-					predicate: 'is-part-of-measure'
-				})
-			)
-		);
-
 	$: container = ((type: PayloadType) => {
-		const base = {
-			organization: $page.data.currentOrganization.guid,
-			organizational_unit: $page.data.currentOrganizationalUnit?.guid ?? null,
-			realm: env.PUBLIC_KC_REALM,
-			relation: selected,
-			user: []
-		};
-		const boards: string[] = [];
-		const category: SustainableDevelopmentGoal[] = [];
-		const indicator: Indicator[] = [];
-		const level = parseInt($page.url.searchParams.get('level') ?? '1');
-		const progress = 0;
-		const resource: [] = [];
-		const topic: Topic[] = [];
-		const visibility = visibilities.enum.creator;
-		switch (type) {
-			case payloadTypes.enum['internal_objective.internal_strategy']:
-				return {
-					...base,
-					payload: { type, visibility }
-				} as EmptyInternalStrategyContainer;
-			case payloadTypes.enum['internal_objective.milestone']:
-				return { ...base, payload: { progress, type, visibility } } as EmptyMilestoneContainer;
-			case payloadTypes.enum['internal_objective.strategic_goal']:
-				return {
-					...base,
-					payload: { type, visibility }
-				} as EmptyInternalObjectiveStrategicGoalContainer;
-			case payloadTypes.enum['internal_objective.task']:
-				return { ...base, payload: { type, visibility } } as EmptyTaskContainer;
-			case payloadTypes.enum['internal_objective.vision']:
-				return { ...base, payload: { type, visibility } } as EmptyVisionContainer;
-			case payloadTypes.enum.measure:
-				return {
-					...base,
-					payload: { boards, resource, topic, type, visibility }
-				} as EmptyMeasureContainer;
-			case payloadTypes.enum.model:
-				return { ...base, payload: { category, topic, type, visibility } } as EmptyModelContainer;
-			case payloadTypes.enum.operational_goal:
-				return {
-					...base,
-					payload: { category, indicator, topic, type, visibility }
-				} as EmptyOperationalGoalContainer;
-			case payloadTypes.enum.organization:
-				return {
-					...base,
-					payload: { boards, default: false, type, visibility }
-				} as EmptyOrganizationContainer;
-			case payloadTypes.enum.organizational_unit:
-				return {
-					...base,
-					payload: { boards, level, type, visibility }
-				} as EmptyOrganizationalUnitContainer;
-			case payloadTypes.enum.strategic_goal:
-				return {
-					...base,
-					payload: { category, topic, type, visibility }
-				} as EmptyStrategicGoalContainer;
-			default:
-				return {
-					...base,
-					payload: { category, topic, type, visibility }
-				} as EmptyStrategyContainer;
+		const newContainer = containerOfType(
+			type,
+			$page.data.currentOrganization.guid,
+			$page.data.currentOrganizationalUnit?.guid ?? null,
+			env.PUBLIC_KC_REALM
+		);
+		if (newContainer.payload.type === payloadTypes.enum.organizational_unit) {
+			newContainer.payload.level = parseInt($page.url.searchParams.get('level') ?? '1');
 		}
+		return newContainer;
 	})(payloadType);
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {

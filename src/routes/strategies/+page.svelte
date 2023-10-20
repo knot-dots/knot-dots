@@ -17,7 +17,7 @@
 <Board>
 	{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
 		<BoardColumn
-			addItemUrl="/strategy/new?level={levelOption}"
+			addItemUrl="?overlay-new=strategy&level={levelOption}"
 			itemType={payloadTypes.enum.strategy}
 			title={$_(levelOption)}
 		>

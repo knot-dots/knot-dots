@@ -2,20 +2,8 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { payloadTypes, visibility as visibilities } from '$lib/models';
-import type {
-	Container,
-	EmptyMeasureContainer,
-	EmptyModelContainer,
-	EmptyOperationalGoalContainer,
-	EmptyStrategicGoalContainer,
-	EmptyTextContainer,
-	Indicator,
-	PartialRelation,
-	PayloadType,
-	SustainableDevelopmentGoal,
-	Topic
-} from '$lib/models';
+import { containerOfType } from '$lib/models';
+import type { Container, PayloadType } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
@@ -79,50 +67,13 @@ export const load = (async ({ params, locals, url, parent }) => {
 			revisions
 		};
 	} else if (url.searchParams.has('overlay-new')) {
-		const selected = url.searchParams.getAll('is-part-of').map(
-			(o): PartialRelation => ({
-				object: Number(o),
-				position: 2 ** 32 - 1,
-				predicate: 'is-part-of'
-			})
-		);
 		const { currentOrganization, currentOrganizationalUnit } = await parent();
-		const newContainer = ((type: PayloadType) => {
-			const base = {
-				organization: currentOrganization.guid,
-				organizational_unit: currentOrganizationalUnit?.guid ?? null,
-				realm: env.PUBLIC_KC_REALM,
-				relation: selected,
-				user: []
-			};
-			const boards: string[] = [];
-			const category: SustainableDevelopmentGoal[] = [];
-			const indicator: Indicator[] = [];
-			const resource: [] = [];
-			const topic: Topic[] = [];
-			const visibility = visibilities.enum.creator;
-			switch (type) {
-				case payloadTypes.enum.measure:
-					return {
-						...base,
-						payload: { boards, category, resource, topic, type, visibility }
-					} as EmptyMeasureContainer;
-				case payloadTypes.enum.model:
-					return { ...base, payload: { category, topic, type, visibility } } as EmptyModelContainer;
-				case payloadTypes.enum.operational_goal:
-					return {
-						...base,
-						payload: { category, indicator, topic, type, visibility }
-					} as EmptyOperationalGoalContainer;
-				case payloadTypes.enum.strategic_goal:
-					return {
-						...base,
-						payload: { category, topic, type, visibility }
-					} as EmptyStrategicGoalContainer;
-				default:
-					return { ...base, payload: { type, visibility } } as EmptyTextContainer;
-			}
-		})(url.searchParams.get('overlay-new') as PayloadType);
+		const newContainer = containerOfType(
+			url.searchParams.get('overlay-new') as PayloadType,
+			currentOrganization.guid,
+			currentOrganizationalUnit?.guid ?? null,
+			env.PUBLIC_KC_REALM
+		);
 		const isPartOfOptions = await locals.pool.connect(
 			maybePartOf(
 				currentOrganizationalUnit ? currentOrganizationalUnit.guid : currentOrganization.guid,

@@ -25,7 +25,7 @@
 <Board>
 	{#each columns as column (column.title)}
 		<BoardColumn
-			addItemUrl={`/${column.payloadType}/new`}
+			addItemUrl="?overlay-new={column.payloadType}"
 			itemType={column.payloadType}
 			title={$_(column.title)}
 		>

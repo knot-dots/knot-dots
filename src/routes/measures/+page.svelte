@@ -19,7 +19,7 @@
 	{#each status.options as statusOption}
 		<BoardColumn
 			--bg-color="var(--color-{statusColors.get(statusOption)}-050)"
-			addItemUrl="/measure/new?status={statusOption}"
+			addItemUrl="?overlay-new=measure&status={statusOption}"
 			icon={statusIcons.get(statusOption)}
 			itemType={payloadTypes.enum.measure}
 			title={$_(statusOption)}

@@ -26,7 +26,8 @@ export async function createUser(user: NewUser) {
 	const response = await fetch(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`, {
 		body: JSON.stringify({
 			email: user.email,
-			enabled: true
+			enabled: true,
+			requiredActions: ['UPDATE_PASSWORD', 'UPDATE_PROFILE']
 		}),
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 		method: 'POST'
