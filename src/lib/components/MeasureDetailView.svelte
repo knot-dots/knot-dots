@@ -3,6 +3,7 @@
 	import { _, date, number } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isOperationalGoalContainer, isStrategyContainer, owners, status } from '$lib/models';
 	import type { AnyContainer, Container, MeasureContainer, Status } from '$lib/models';
@@ -28,12 +29,6 @@
 
 	$: strategy = relatedContainers.find(isStrategyContainer);
 
-	function tabURL(params: URLSearchParams, status: Status) {
-		const query = new URLSearchParams(params);
-		query.set('status', status);
-		return `?${query.toString()}`;
-	}
-
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
 	function containerURL(type: string, guid: string) {
@@ -50,29 +45,7 @@
 <ContainerDetailView {container} {relatedContainers} {revisions}>
 	<slot slot="header">
 		<slot name="header" />
-		<ul class="tabs">
-			{#each status.options as statusOption}
-				<li
-					class="tab-item"
-					class:tab-item--active={statusOption === selectedRevision.payload.status}
-				>
-					{#if status.options.findIndex((o) => statusOption === o) <= status.options.findIndex((o) => container.payload.status === o)}
-						<a
-							class="badge badge--{statusColors.get(statusOption)}"
-							href={tabURL($page.url.searchParams, statusOption)}
-						>
-							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</a>
-					{:else}
-						<span class="badge badge--{statusColors.get(statusOption)}">
-							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</span>
-					{/if}
-				</li>
-			{/each}
-		</ul>
+		<MeasureTabs {container} {revisions} />
 	</slot>
 
 	<svelte:fragment slot="data">
@@ -258,13 +231,5 @@
 
 	.resource-item > :nth-child(3) {
 		text-align: right;
-	}
-
-	.tabs > .tab-item {
-		opacity: 0.3;
-	}
-
-	.tabs > .tab-item--active {
-		opacity: 1;
 	}
 </style>

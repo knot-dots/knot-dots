@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
+	import TaskTabs from '$lib/components/TaskTabs.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, owners, taskStatus } from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, TaskStatus, User } from '$lib/models';
@@ -41,12 +42,6 @@
 		? container
 		: relatedContainers.find(isMeasureContainer);
 
-	function tabURL(params: URLSearchParams, status: TaskStatus) {
-		const query = new URLSearchParams(params);
-		query.set('task-status', status);
-		return `?${query.toString()}`;
-	}
-
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
 	function containerURL(type: string, guid: string) {
@@ -63,29 +58,7 @@
 <InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
 	<slot slot="header">
 		<slot name="header" />
-		<ul class="tabs">
-			{#each taskStatus.options as statusOption}
-				<li
-					class="tab-item"
-					class:tab-item--active={statusOption === selectedRevision.payload.taskStatus}
-				>
-					{#if taskStatus.options.findIndex((o) => statusOption === o) <= taskStatus.options.findIndex((o) => container.payload.taskStatus === o)}
-						<a
-							class="badge badge--{taskStatusColors.get(statusOption)}"
-							href={tabURL($page.url.searchParams, statusOption)}
-						>
-							<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</a>
-					{:else}
-						<span class="badge badge--{taskStatusColors.get(statusOption)}">
-							<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</span>
-					{/if}
-				</li>
-			{/each}
-		</ul>
+		<TaskTabs {container} {revisions} />
 	</slot>
 
 	<svelte:fragment slot="data">
@@ -171,13 +144,3 @@
 		</div>
 	</svelte:fragment>
 </InternalObjectiveDetailView>
-
-<style>
-	.tabs > .tab-item {
-		opacity: 0.3;
-	}
-
-	.tabs > .tab-item--active {
-		opacity: 1;
-	}
-</style>
