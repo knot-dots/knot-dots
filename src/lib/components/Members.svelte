@@ -89,7 +89,7 @@
 </script>
 
 <div class="detail-page-content">
-	<header>
+	<header class="content-header">
 		<h2>
 			{'title' in container.payload ? container.payload.title : container.payload.name}
 			<span class="icons">
@@ -99,7 +99,7 @@
 			</span>
 		</h2>
 	</header>
-	<div class="table">
+	<div class="content-details table">
 		<table>
 			<thead>
 				<tr>
@@ -185,6 +185,5 @@
 
 	.table {
 		overflow-x: auto;
-		padding: 1.5rem;
 	}
 </style>

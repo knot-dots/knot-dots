@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowDownTray, ChevronLeft, Icon, Pencil, PlusSmall } from 'svelte-hero-icons';
+	import { ArrowDownTray, Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Chapter from '$lib/components/Chapter.svelte';
@@ -25,21 +25,6 @@
 </script>
 
 <article class="details">
-	<header>
-		<h2>
-			{container.payload.title}
-			<span class="icons">
-				{#if $ability.can('update', container)}
-					<a href="?edit={container.guid}" class="icons-element">
-						<Icon solid src={Pencil} size="20" />
-					</a>
-				{/if}
-				<button class="icons-element" type="button" on:click={() => window.history.back()}>
-					<Icon solid src={ChevronLeft} size="20" />
-				</button>
-			</span>
-		</h2>
-	</header>
 	<div class="meta">
 		<h3 class="meta-key">{$_('object')}</h3>
 		<p class="meta-value">{$_(container.payload.type)}</p>
@@ -134,15 +119,6 @@
 </article>
 
 <style>
-	article {
-		padding: 1.5rem;
-	}
-
-	.details header h2 {
-		font-size: 2.125rem;
-		font-weight: 800;
-	}
-
 	.chapters {
 		border-top: solid 1px var(--color-gray-300);
 	}

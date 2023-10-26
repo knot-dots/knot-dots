@@ -3,7 +3,6 @@
 	import { _, date, number } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isOperationalGoalContainer, isStrategyContainer, owners, status } from '$lib/models';
 	import type { AnyContainer, Container, MeasureContainer, Status } from '$lib/models';
@@ -43,11 +42,6 @@
 </script>
 
 <ContainerDetailView {container} {relatedContainers} {revisions}>
-	<slot slot="header">
-		<slot name="header" />
-		<MeasureTabs {container} {revisions} />
-	</slot>
-
 	<svelte:fragment slot="data">
 		<div class="summary">
 			<h3>{$_('measure.summary')}</h3>

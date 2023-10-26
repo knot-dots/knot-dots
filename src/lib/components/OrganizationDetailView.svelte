@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-	import { ability } from '$lib/stores';
 	import Card from '$lib/components/Card.svelte';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
@@ -15,25 +13,6 @@
 </script>
 
 <article class="details">
-	<header>
-		<h2>
-			{#if 'image' in container.payload}
-				<img alt="logo" class="logo" src={container.payload.image} />
-			{/if}
-			{container.payload.name}
-			<span class="icons">
-				{#if $ability.can('update', container)}
-					<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-						<Icon solid src={Pencil} size="20" />
-					</a>
-				{/if}
-				<button class="icons-element" type="button" on:click={() => window.history.back()}>
-					<Icon solid src={ChevronLeft} size="20" />
-				</button>
-			</span>
-		</h2>
-	</header>
-
 	<slot name="data">
 		{#if 'description' in container.payload}
 			<div class="description">

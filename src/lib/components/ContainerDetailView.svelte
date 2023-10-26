@@ -40,10 +40,6 @@
 </script>
 
 <article class="details">
-	<header>
-		<slot name="header" />
-	</header>
-
 	<slot name="data">
 		{#if 'summary' in container.payload}
 			<div class="summary">
@@ -198,9 +194,3 @@
 		</footer>
 	{/if}
 </article>
-
-<style>
-	article {
-		padding: 1.5rem;
-	}
-</style>

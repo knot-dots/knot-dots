@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import type { PageData } from './$types';
@@ -17,9 +18,17 @@
 </script>
 
 <div class="detail-page-content">
-	<OrganizationForm
-		{container}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	/>
+	<header class="content-header">
+		<label>
+			{$_(`${container.payload.type}`)}
+			<input name="name" type="text" bind:value={container.payload.name} required />
+		</label>
+	</header>
+	<div class="content-details">
+		<OrganizationForm
+			{container}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		/>
+	</div>
 </div>

@@ -5,7 +5,6 @@
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
-	import TaskTabs from '$lib/components/TaskTabs.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, owners, taskStatus } from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, TaskStatus, User } from '$lib/models';
@@ -56,11 +55,6 @@
 </script>
 
 <InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
-	<slot slot="header">
-		<slot name="header" />
-		<TaskTabs {container} {revisions} />
-	</slot>
-
 	<svelte:fragment slot="data">
 		<div class="description">
 			<h3>{$_('description')}</h3>
