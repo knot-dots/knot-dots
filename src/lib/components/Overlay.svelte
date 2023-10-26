@@ -78,7 +78,7 @@
 	}
 </script>
 
-<div class="overlay" transition:slide={{ axis: 'x' }}>
+<section class="overlay" transition:slide={{ axis: 'x' }}>
 	{#if edit}
 		{#if isMeasureContainer(container)}
 			<MeasureForm
@@ -298,15 +298,24 @@
 			</svelte:fragment>
 		</ContainerDetailView>
 	{/if}
-</div>
+</section>
 
 <style>
+	.overlay {
+		background-color: white;
+		border: 1px solid var(--color-gray-200);
+		box-shadow: var(--shadow-lg);
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
 	@media (min-width: 768px) {
 		.overlay {
 			width: 80%;
 		}
 
-		.overlay > :global(*) {
+		.overlay > * {
 			min-width: calc((100vw - 18rem) * 0.8);
 		}
 	}
@@ -316,7 +325,7 @@
 			width: 65%;
 		}
 
-		.overlay > :global(*) {
+		.overlay > * {
 			min-width: calc((100vw - 18rem) * 0.65);
 		}
 	}

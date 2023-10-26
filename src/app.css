@@ -491,20 +491,16 @@ fieldset {
 }
 
 /* Container details page and form */
-.details {
+.details.details--page {
 	background-color: white;
 	border: 1px solid var(--color-gray-200);
+	border-radius: 8px;
 	box-shadow: var(--shadow-lg);
 	container-type: inline-size;
-	height: 100%;
-	overflow-y: auto;
-}
-
-.details.details--page {
-	border-radius: 8px;
 	flex: 1 1;
 	height: calc(100% - 2rem);
 	margin: 1rem;
+	overflow-y: auto;
 }
 
 @media (min-width: 768px) {

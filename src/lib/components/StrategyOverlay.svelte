@@ -60,7 +60,7 @@
 	}
 </script>
 
-<div class="overlay" transition:slide={{ axis: 'x' }}>
+<section class="overlay" transition:slide={{ axis: 'x' }}>
 	{#if edit}
 		{#if 'guid' in container}
 			{#if isMeasureContainer(container)}
@@ -207,20 +207,16 @@
 			</ContainerDetailView>
 		{/if}
 	{/if}
-</div>
+</section>
 
 <style>
 	.overlay {
-		height: calc(100%);
-		margin-left: -0.375rem;
-		overflow-x: hidden;
-		padding: 0;
-		position: relative;
-		width: 100%;
-	}
-
-	.overlay > :global(*) {
-		min-width: 100vw;
+		background-color: white;
+		border: 1px solid var(--color-gray-200);
+		box-shadow: var(--shadow-lg);
+		display: flex;
+		flex-direction: column;
+		height: 100%;
 	}
 
 	@media (min-width: 768px) {
@@ -228,7 +224,7 @@
 			width: 80%;
 		}
 
-		.overlay > :global(*) {
+		.overlay > * {
 			min-width: calc((100vw - 18rem) * 0.8);
 		}
 	}
@@ -238,7 +234,7 @@
 			width: 65%;
 		}
 
-		.overlay > :global(*) {
+		.overlay > * {
 			min-width: calc((100vw - 18rem) * 0.65);
 		}
 	}
