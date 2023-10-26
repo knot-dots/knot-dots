@@ -20,9 +20,11 @@
 	}
 </script>
 
-<OrganizationalUnitForm
-	{container}
-	{isPartOfOptions}
-	on:submitSuccessful={afterSubmit}
-	on:deleteSuccessful={afterDelete}
-/>
+<div class="detail-page-content">
+	<OrganizationalUnitForm
+		{container}
+		{isPartOfOptions}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	/>
+</div>

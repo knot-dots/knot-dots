@@ -25,98 +25,38 @@
 </script>
 
 {#if isStrategyContainer(container)}
-	<StrategyDetailView {container} {relatedContainers} {revisions} />
+	<div class="strategy">
+		<div class="detail-page-content strategy-inner">
+			<StrategyDetailView {container} {relatedContainers} {revisions} />
+		</div>
+	</div>
 	{#if data.strategyOverlayData}
 		<StrategyOverlay {...data.strategyOverlayData} />
 	{/if}
-{:else if isMeasureContainer(container)}
-	<MeasureDetailView {container} {relatedContainers} {revisions}>
-		<svelte:fragment slot="header">
-			<h2>
-				{container.payload.title}
-				<div class="icons">
-					{#if $ability.can('update', container)}
-						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-					<button class="icons-element" type="button" on:click={() => window.history.back()}>
-						<Icon solid src={ChevronLeft} size="20" />
-					</button>
-				</div>
-			</h2>
-		</svelte:fragment>
-	</MeasureDetailView>
-{:else if isTaskContainer(container)}
-	<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions}>
-		<svelte:fragment slot="header">
-			<h2>
-				{container.payload.title}
-				<div class="icons">
-					{#if $ability.can('update', container)}
-						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-					<button class="icons-element" type="button" on:click={() => window.history.back()}>
-						<Icon solid src={ChevronLeft} size="20" />
-					</button>
-				</div>
-			</h2>
-		</svelte:fragment>
-	</InternalObjectiveTaskDetailView>
-{:else if isInternalObjectiveContainer(container)}
-	<InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
-		<svelte:fragment slot="header">
-			<h2>
-				{container.payload.title}
-				<div class="icons">
-					{#if $ability.can('update', container)}
-						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-					<button class="icons-element" type="button" on:click={() => window.history.back()}>
-						<Icon solid src={ChevronLeft} size="20" />
-					</button>
-				</div>
-			</h2>
-		</svelte:fragment>
-	</InternalObjectiveDetailView>
-{:else if isEmptyOrganizationalUnitContainer(container)}
-	<ContainerDetailView {container} {relatedContainers} {revisions}>
-		<svelte:fragment slot="header">
-			<h2>
-				{container.payload.name}
-				<div class="icons">
-					{#if $ability.can('update', container)}
-						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-					<button class="icons-element" type="button" on:click={() => window.history.back()}>
-						<Icon solid src={ChevronLeft} size="20" />
-					</button>
-				</div>
-			</h2>
-		</svelte:fragment>
-	</ContainerDetailView>
-{:else if isContainer(container)}
-	<ContainerDetailView {container} {relatedContainers} {revisions}>
-		<svelte:fragment slot="header">
-			<h2>
-				{container.payload.title}
-				<div class="icons">
-					{#if $ability.can('update', container)}
-						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-					<button class="icons-element" type="button" on:click={() => window.history.back()}>
-						<Icon solid src={ChevronLeft} size="20" />
-					</button>
-				</div>
-			</h2>
-		</svelte:fragment>
-	</ContainerDetailView>
+{:else}
+	<div class="detail-page-content">
+		{#if isMeasureContainer(container)}
+			<MeasureDetailView {container} {relatedContainers} {revisions} />
+		{:else if isTaskContainer(container)}
+			<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
+		{:else if isInternalObjectiveContainer(container)}
+			<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
+		{:else if isEmptyOrganizationalUnitContainer(container)}
+			<ContainerDetailView {container} {relatedContainers} {revisions} />
+		{:else if isContainer(container)}
+			<ContainerDetailView {container} {relatedContainers} {revisions} />
+		{/if}
+	</div>
 {/if}
+
+<style>
+	.strategy {
+		flex: 1 1;
+		overflow-x: auto;
+	}
+
+	.strategy-inner {
+		min-width: calc(100vw - 20rem);
+		overflow-y: auto;
+	}
+</style>

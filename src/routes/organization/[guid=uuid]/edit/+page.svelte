@@ -16,4 +16,10 @@
 	}
 </script>
 
-<OrganizationForm {container} on:submitSuccessful={afterSubmit} on:deleteSuccessful={afterDelete} />
+<div class="detail-page-content">
+	<OrganizationForm
+		{container}
+		on:submitSuccessful={afterSubmit}
+		on:deleteSuccessful={afterDelete}
+	/>
+</div>

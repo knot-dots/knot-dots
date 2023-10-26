@@ -6,12 +6,28 @@
 	export let data: PageData;
 </script>
 
-<OrganizationDetailView
-	container={data.container}
-	measures={data.measures}
-	strategies={data.strategies}
-/>
+<div class="organization">
+	<div class="detail-page-content organization-inner">
+		<OrganizationDetailView
+			container={data.container}
+			measures={data.measures}
+			strategies={data.strategies}
+		/>
+	</div>
+</div>
 
 {#if data.overlayData}
 	<Overlay {...data.overlayData} />
 {/if}
+
+<style>
+	.organization {
+		flex: 1 1;
+		overflow-x: auto;
+	}
+
+	.organization-inner {
+		min-width: calc(100vw - 20rem);
+		overflow-y: auto;
+	}
+</style>

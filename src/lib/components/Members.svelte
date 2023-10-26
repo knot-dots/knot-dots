@@ -88,7 +88,7 @@
 	}
 </script>
 
-<div class="details details--page">
+<div class="detail-page-content">
 	<header>
 		<h2>
 			{'title' in container.payload ? container.payload.title : container.payload.name}

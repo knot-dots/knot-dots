@@ -70,131 +70,133 @@
 	}
 </script>
 
-{#if isMeasureContainer(container)}
-	<MeasureForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	/>
-{:else if isModelContainer(container)}
-	<ModelForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-strategic-goal">
-				{$_('save_and_create_strategic_goal')}
-			</button>
-		</svelte:fragment>
-	</ModelForm>
-{:else if isOperationalGoalContainer(container)}
-	<OperationalGoalForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-measure">
-				{$_('save_and_create_measure')}
-			</button>
-		</svelte:fragment>
-	</OperationalGoalForm>
-{:else if isOrganizationalUnitContainer(container)}
-	<OrganizationalUnitForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	/>
-{:else if isStrategicGoalGoalContainer(container)}
-	<StrategicGoalForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-operational-goal">
-				{$_('save_and_create_operational_goal')}
-			</button>
-		</svelte:fragment>
-	</StrategicGoalForm>
-{:else if isStrategyContainer(container)}
-	<StrategyForm {container} on:submitSuccessful={afterSubmit} on:deleteSuccessful={afterDelete}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-model">
-				{$_('save_and_create_model')}
-			</button>
-		</svelte:fragment>
-	</StrategyForm>
-{:else if isTextContainer(container)}
-	<TextForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	/>
-{:else if isInternalStrategyContainer(container)}
-	<InternalObjectiveForm
-		{container}
-		isPartOfOptions={[]}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-vision">
-				{$_('save_and_create_vision')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveForm>
-{:else if isVisionContainer(container)}
-	<InternalObjectiveForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-internal-objective-strategic-goal">
-				{$_('save_and_create_strategic_goal')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveForm>
-{:else if isInternalObjectiveStrategicGoalContainer(container)}
-	<InternalObjectiveForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-milestone">
-				{$_('save_and_create_milestone')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveForm>
-{:else if isMilestoneContainer(container)}
-	<InternalObjectiveMilestoneForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-task">
-				{$_('save_and_create_task')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveMilestoneForm>
-{:else if isTaskContainer(container)}
-	<InternalObjectiveTaskForm
-		{container}
-		{isPartOfOptions}
-		on:submitSuccessful={afterSubmit}
-		on:deleteSuccessful={afterDelete}
-	/>
-{/if}
+<div class="detail-page-content">
+	{#if isMeasureContainer(container)}
+		<MeasureForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		/>
+	{:else if isModelContainer(container)}
+		<ModelForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-strategic-goal">
+					{$_('save_and_create_strategic_goal')}
+				</button>
+			</svelte:fragment>
+		</ModelForm>
+	{:else if isOperationalGoalContainer(container)}
+		<OperationalGoalForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-measure">
+					{$_('save_and_create_measure')}
+				</button>
+			</svelte:fragment>
+		</OperationalGoalForm>
+	{:else if isOrganizationalUnitContainer(container)}
+		<OrganizationalUnitForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		/>
+	{:else if isStrategicGoalGoalContainer(container)}
+		<StrategicGoalForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-operational-goal">
+					{$_('save_and_create_operational_goal')}
+				</button>
+			</svelte:fragment>
+		</StrategicGoalForm>
+	{:else if isStrategyContainer(container)}
+		<StrategyForm {container} on:submitSuccessful={afterSubmit} on:deleteSuccessful={afterDelete}>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-model">
+					{$_('save_and_create_model')}
+				</button>
+			</svelte:fragment>
+		</StrategyForm>
+	{:else if isTextContainer(container)}
+		<TextForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		/>
+	{:else if isInternalStrategyContainer(container)}
+		<InternalObjectiveForm
+			{container}
+			isPartOfOptions={[]}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-vision">
+					{$_('save_and_create_vision')}
+				</button>
+			</svelte:fragment>
+		</InternalObjectiveForm>
+	{:else if isVisionContainer(container)}
+		<InternalObjectiveForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-internal-objective-strategic-goal">
+					{$_('save_and_create_strategic_goal')}
+				</button>
+			</svelte:fragment>
+		</InternalObjectiveForm>
+	{:else if isInternalObjectiveStrategicGoalContainer(container)}
+		<InternalObjectiveForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-milestone">
+					{$_('save_and_create_milestone')}
+				</button>
+			</svelte:fragment>
+		</InternalObjectiveForm>
+	{:else if isMilestoneContainer(container)}
+		<InternalObjectiveMilestoneForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		>
+			<svelte:fragment slot="extra-buttons">
+				<button id="save-and-create-task">
+					{$_('save_and_create_task')}
+				</button>
+			</svelte:fragment>
+		</InternalObjectiveMilestoneForm>
+	{:else if isTaskContainer(container)}
+		<InternalObjectiveTaskForm
+			{container}
+			{isPartOfOptions}
+			on:submitSuccessful={afterSubmit}
+			on:deleteSuccessful={afterDelete}
+		/>
+	{/if}
+</div>

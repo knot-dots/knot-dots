@@ -225,7 +225,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.8);
+			min-width: calc((100vw - 18rem) * 0.8 - 2px);
 		}
 	}
 
@@ -235,7 +235,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.65);
+			min-width: calc((100vw - 18rem) * 0.65 - 2px);
 		}
 	}
 </style>
