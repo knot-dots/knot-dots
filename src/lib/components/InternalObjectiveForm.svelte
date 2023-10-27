@@ -30,8 +30,4 @@
 		<slot name="extra-meta" />
 		<RelationSelector {container} {isPartOfOptions} />
 	</svelte:fragment>
-
-	<slot slot="extra-buttons">
-		<slot name="extra-buttons" />
-	</slot>
 </ContainerForm>

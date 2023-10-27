@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { Icon, Pencil, XMark } from 'svelte-hero-icons';
+	import { getContext } from 'svelte';
+	import { Icon, Pencil, Trash, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
+	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
@@ -35,6 +37,7 @@
 		isTaskContainer,
 		isVisionContainer,
 		isOrganizationContainer,
+		mayDelete,
 		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
@@ -43,6 +46,8 @@
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
 	export let revisions: AnyContainer[];
+
+	let mayShowRelationButton = getContext('mayShowRelationButton');
 
 	$: container = revisions[revisions.length - 1];
 
@@ -68,8 +73,11 @@
 		}
 	}
 
-	async function afterDelete() {
-		await goto(closeOverlay(), { invalidateAll: true });
+	async function handleDelete() {
+		const response = await deleteContainer(container);
+		if (response.ok) {
+			await goto(closeOverlay(), { invalidateAll: true });
+		}
 	}
 
 	async function cancel() {
@@ -95,137 +103,50 @@
 		</header>
 		<div class="content-details">
 			{#if isMeasureContainer(container)}
-				<MeasureForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</MeasureForm>
+				<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isModelContainer(container)}
-				<ModelForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</ModelForm>
+				<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isOperationalGoalContainer(container)}
-				<OperationalGoalForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</OperationalGoalForm>
+				<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isOrganizationContainer(container)}
-				<OrganizationForm
-					{container}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</OrganizationForm>
+				<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
 			{:else if isOrganizationalUnitContainer(container)}
-				<OrganizationalUnitForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</OrganizationalUnitForm>
+				<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isStrategicGoalGoalContainer(container)}
-				<StrategicGoalForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</StrategicGoalForm>
+				<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isStrategyContainer(container)}
-				<StrategyForm
-					{container}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</StrategyForm>
+				<StrategyForm {container} on:submitSuccessful={afterSubmit} />
 			{:else if isInternalStrategyContainer(container)}
-				<InternalObjectiveForm
-					{container}
-					isPartOfOptions={[]}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</InternalObjectiveForm>
+				<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
 			{:else if isVisionContainer(container)}
-				<InternalObjectiveForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</InternalObjectiveForm>
+				<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isInternalObjectiveStrategicGoalContainer(container)}
-				<InternalObjectiveForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</InternalObjectiveForm>
+				<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isMilestoneContainer(container)}
 				<InternalObjectiveMilestoneForm
 					{container}
 					{isPartOfOptions}
 					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</InternalObjectiveMilestoneForm>
+				/>
 			{:else if isTaskContainer(container)}
 				<InternalObjectiveTaskForm
 					{container}
 					{isPartOfOptions}
 					on:submitSuccessful={afterSubmit}
-					on:deleteSuccessful={afterDelete}
-				>
-					<svelte:fragment slot="extra-buttons">
-						<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
-					</svelte:fragment>
-				</InternalObjectiveTaskForm>
+				/>
 			{/if}
 		</div>
+		<footer class="content-footer">
+			<div class="content-actions">
+				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+				<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
+				{#if mayDelete(container)}
+					<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
+						<Icon src={Trash} size="20" />
+					</button>
+				{/if}
+			</div>
+		</footer>
 	{:else}
 		<header class="content-header">
 			<h2 class="with-icons">
@@ -264,6 +185,18 @@
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}
 		</div>
+		<footer class="content-footer">
+			<div class="content-actions">
+				<a class="button primary" href="/{container.payload.type}/{container.guid}">
+					{$_('read_more')}
+				</a>
+				{#if mayShowRelationButton && $ability.can('relate', container)}
+					<a class="button" href="?container-relations={container.guid}">
+						{$_('relations')}
+					</a>
+				{/if}
+			</div>
+		</footer>
 	{/if}
 </section>
 

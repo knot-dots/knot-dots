@@ -18,7 +18,7 @@
 		container.payload.level === payload.level + 1;
 </script>
 
-<ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
+<ContainerForm {container} on:submitSuccessful>
 	<svelte:fragment slot="data">
 		<label>
 			{$_('logo')}
@@ -42,8 +42,4 @@
 			bind:value={container.payload.boards}
 		/>
 	</svelte:fragment>
-
-	<slot slot="extra-buttons">
-		<slot name="extra-buttons" />
-	</slot>
 </ContainerForm>

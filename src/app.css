@@ -525,6 +525,20 @@ fieldset {
 	padding: 1.5rem;
 }
 
+.content-footer {
+	padding: 1.5rem;
+}
+
+.content-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.content-actions .delete {
+	color: var(--color-red-500);
+	margin-left: auto;
+}
+
 .icons {
 	display: flex;
 	flex-shrink: 0;

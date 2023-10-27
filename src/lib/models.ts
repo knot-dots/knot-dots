@@ -940,9 +940,6 @@ export function isEmptyInternalObjectiveContainer(
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export interface CustomEventMap {
-	deleteSuccessful: {
-		event: Event;
-	};
 	submitSuccessful: {
 		event: SubmitEvent;
 		result: AnyContainer;

@@ -1,19 +1,11 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import deleteContainer from '$lib/client/deleteContainer';
 	import { uploadAsFormData } from '$lib/client/upload';
-	import {
-		mayDelete,
-		modifiedContainer,
-		newContainer,
-		payloadTypes,
-		visibility
-	} from '$lib/models';
+	import { modifiedContainer, newContainer, payloadTypes, visibility } from '$lib/models';
 	import type {
 		AnyContainer,
 		Container,
@@ -26,8 +18,7 @@
 
 	export let container: AnyContainer | EmptyContainer;
 
-	const dispatch =
-		createEventDispatcher<Pick<CustomEventMap, 'submitSuccessful' | 'deleteSuccessful'>>();
+	const dispatch = createEventDispatcher<Pick<CustomEventMap, 'submitSuccessful'>>();
 
 	async function handleSubmit(event: SubmitEvent) {
 		let url = '/container';
@@ -87,18 +78,9 @@
 			alert(error.message);
 		}
 	}
-
-	async function handleDelete(event: Event) {
-		if ('guid' in container) {
-			const response = await deleteContainer(container);
-			if (response.ok) {
-				dispatch('deleteSuccessful', { event });
-			}
-		}
-	}
 </script>
 
-<form class="details" on:submit|preventDefault={handleSubmit}>
+<form class="details" id="container-form" on:submit|preventDefault={handleSubmit}>
 	<slot name="data" />
 
 	{#if container.payload.type !== payloadTypes.enum.organization && container.payload.type !== payloadTypes.enum.organizational_unit}
@@ -146,26 +128,4 @@
 			{/each}
 		</fieldset>
 	{/if}
-
-	<footer>
-		<button class="primary" type="submit">{$_('save')}</button>
-		<slot name="extra-buttons" />
-		{#if mayDelete(container)}
-			<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
-				<Icon src={Trash} size="20" />
-			</button>
-		{/if}
-	</footer>
 </form>
-
-<style>
-	footer {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.delete {
-		color: var(--color-red-500);
-		margin-left: auto;
-	}
-</style>

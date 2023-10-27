@@ -15,7 +15,7 @@
 	}
 </script>
 
-<ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
+<ContainerForm {container} on:submitSuccessful>
 	<svelte:fragment slot="data">
 		{#if 'image' in container.payload}
 			<span class="preview">
@@ -54,10 +54,6 @@
 			bind:value={container.payload.boards}
 		/>
 	</svelte:fragment>
-
-	<slot slot="extra-buttons">
-		<slot name="extra-buttons" />
-	</slot>
 </ContainerForm>
 
 <style>

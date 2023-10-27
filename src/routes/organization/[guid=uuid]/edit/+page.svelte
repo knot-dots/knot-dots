@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
+	import deleteContainer from '$lib/client/deleteContainer';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
+	import { mayDelete } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -12,8 +15,11 @@
 		await goto(`../${container.guid}`);
 	}
 
-	async function afterDelete() {
-		await goto('/organizations');
+	async function handleDelete() {
+		const response = await deleteContainer(container);
+		if (response.ok) {
+			await goto('/organizations');
+		}
 	}
 </script>
 
@@ -25,10 +31,16 @@
 		</label>
 	</header>
 	<div class="content-details">
-		<OrganizationForm
-			{container}
-			on:submitSuccessful={afterSubmit}
-			on:deleteSuccessful={afterDelete}
-		/>
+		<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
 	</div>
+	<footer class="content-footer">
+		<div class="content-actions">
+			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+			{#if mayDelete(container)}
+				<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
+					<Icon src={Trash} size="20" />
+				</button>
+			{/if}
+		</div>
+	</footer>
 </div>

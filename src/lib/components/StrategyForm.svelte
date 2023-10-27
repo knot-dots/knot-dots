@@ -96,8 +96,4 @@
 			</select>
 		</label>
 	</svelte:fragment>
-
-	<slot slot="extra-buttons">
-		<slot name="extra-buttons" />
-	</slot>
 </ContainerForm>

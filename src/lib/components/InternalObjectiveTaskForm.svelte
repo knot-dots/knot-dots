@@ -77,8 +77,4 @@
 			<input type="date" bind:value={container.payload.fulfillmentDate} />
 		</label>
 	</svelte:fragment>
-
-	<slot slot="extra-buttons">
-		<slot name="extra-buttons" />
-	</slot>
 </InternalObjectiveForm>
