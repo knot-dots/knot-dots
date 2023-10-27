@@ -704,23 +704,23 @@ fieldset {
 }
 
 .badge.badge--red {
-	--bg-color: var(--color-red-050);
-	--color: var(--color-red-600);
+	--bg-color: var(--color-red-background);
+	--color: var(--color-red);
 }
 
 .badge.badge--orange {
-	--bg-color: var(--color-orange-050);
-	--color: var(--color-orange-600);
+	--bg-color: var(--color-orange-background);
+	--color: var(--color-orange);
 }
 
 .badge.badge--yellow {
-	--bg-color: var(--color-yellow-050);
-	--color: var(--color-yellow-400);
+	--bg-color: var(--color-yellow-background);
+	--color: var(--color-yellow);
 }
 
 .badge.badge--green {
-	--bg-color: var(--color-green-050);
-	--color: var(--color-green-500);
+	--bg-color: var(--color-green-background);
+	--color: var(--color-green);
 }
 
 /* Tabs */

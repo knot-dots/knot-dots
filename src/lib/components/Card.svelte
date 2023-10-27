@@ -75,10 +75,10 @@
 	}
 
 	const highlightColorMap = new Map<string, string>([
-		[predicates.enum['is-consistent-with'], 'var(--color-green-600)'],
-		[predicates.enum['is-equivalent-to'], 'var(--color-blue-600)'],
-		[predicates.enum['is-inconsistent-with'], 'var(--color-red-600)'],
-		[predicates.enum['is-duplicate-of'], 'var(--color-yellow-300)']
+		[predicates.enum['is-consistent-with'], 'var(--color-is-consistent-with)'],
+		[predicates.enum['is-equivalent-to'], 'var(--color-is-equivalent-to)'],
+		[predicates.enum['is-inconsistent-with'], 'var(--is-inconsistent-with)'],
+		[predicates.enum['is-duplicate-of'], 'var(--color-is-duplicate-of)']
 	]);
 
 	function highlightColor(a: AnyContainer, b: Container) {
@@ -194,7 +194,7 @@
 
 	.card:hover,
 	.card.is-active {
-		background: var(--color-gray-300);
+		background: var(--hover-background, var(--gradient-hover-neutral));
 		outline: none;
 	}
 
@@ -249,11 +249,19 @@
 	}
 
 	footer button:last-child {
+		--button-border-color: var(--color-primary);
 		--padding-x: 0.625rem;
 		--padding-y: 0.625rem;
 
 		flex-grow: 0;
 		flex-shrink: 0;
 		margin-left: auto;
+
+		color: var(--color-primary);
+	}
+
+	footer button:last-child:hover {
+		background: var(--gradient-primary);
+		color: white;
 	}
 </style>

@@ -50,7 +50,6 @@
 
 <style>
 	section {
-		background-color: var(--bg-color, var(--color-indigo-050));
 		border-radius: 8px;
 		display: flex;
 		flex-basis: 20.75rem;
@@ -58,6 +57,26 @@
 		flex-grow: 0;
 		flex-shrink: 0;
 		padding: 0.625rem;
+	}
+
+	section:nth-child(1) {
+		background: var(--background, var(--gradient-first-column));
+	}
+
+	section:nth-child(2) {
+		background: var(--background, var(--gradient-second-column));
+	}
+
+	section:nth-child(3) {
+		background: var(--background, var(--gradient-third-column));
+	}
+
+	section:nth-child(4) {
+		background: var(--background, var(--gradient-fourth-column));
+	}
+
+	section:nth-child(5) {
+		background: var(--background, var(--gradient-fifth-column));
 	}
 
 	header {
@@ -90,7 +109,7 @@
 	}
 
 	footer:hover {
-		background-color: var(--color-gray-200);
+		background: var(--hover-background, var(--gradient-hover-neutral));
 	}
 
 	footer a {

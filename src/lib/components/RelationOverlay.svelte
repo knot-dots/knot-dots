@@ -242,7 +242,7 @@
 		border-radius: 8px;
 		bottom: 0;
 		left: 0;
-		outline: dashed 2px var(--color-yellow-300);
+		outline: dashed 2px var(--color-is-duplicate-of);
 		position: absolute;
 		right: 0;
 		top: 0;
@@ -258,14 +258,14 @@
 	}
 
 	.drop-zone.drop-zone--is-consistent-with {
-		outline-color: var(--color-green-600);
+		outline-color: var(--color-is-consistent-with);
 	}
 
 	.drop-zone.drop-zone--is-inconsistent-with {
-		outline-color: var(--color-red-600);
+		outline-color: var(--color-is-inconsistent-with);
 	}
 
 	.drop-zone.drop-zone--is-equivalent-to {
-		outline-color: var(--color-blue-600);
+		outline-color: var(--color-is-equivalent-to);
 	}
 </style>
