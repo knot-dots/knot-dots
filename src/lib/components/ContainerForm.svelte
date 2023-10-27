@@ -5,7 +5,8 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import { uploadAsFormData } from '$lib/client/upload';
-	import { modifiedContainer, newContainer, payloadTypes, visibility } from '$lib/models';
+	import Visibility from '$lib/components/Visibility.svelte';
+	import { modifiedContainer, newContainer, payloadTypes } from '$lib/models';
 	import type {
 		AnyContainer,
 		Container,
@@ -112,20 +113,5 @@
 		{/if}
 	{/if}
 	<slot name="meta" />
-	{#if $ability.can('update', container, 'visibility')}
-		<fieldset>
-			<legend>{$_('visibility.label')}</legend>
-			{#each visibility.options as visibilityOption}
-				<label>
-					<input
-						type="radio"
-						name="visibility"
-						value={visibilityOption}
-						bind:group={container.payload.visibility}
-					/>
-					{$_(`visibility.${visibilityOption}`)}
-				</label>
-			{/each}
-		</fieldset>
-	{/if}
+	<Visibility {container} />
 </form>
