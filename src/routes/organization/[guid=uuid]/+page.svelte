@@ -28,7 +28,7 @@
 				</span>
 			</h2>
 		</header>
-		<div class="content-details">
+		<div class="content-details masked-overflow">
 			<OrganizationDetailView
 				container={data.container}
 				measures={data.measures}

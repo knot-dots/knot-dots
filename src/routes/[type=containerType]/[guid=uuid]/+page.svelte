@@ -45,7 +45,7 @@
 					</span>
 				</h2>
 			</header>
-			<div class="content-details">
+			<div class="content-details masked-overflow">
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
 			</div>
 		</div>
@@ -79,7 +79,7 @@
 				<TaskTabs {container} {revisions} />
 			{/if}
 		</header>
-		<div class="content-details">
+		<div class="content-details masked-overflow">
 			{#if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}

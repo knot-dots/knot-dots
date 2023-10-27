@@ -35,7 +35,7 @@
 			<input name="name" type="text" bind:value={container.payload.name} required />
 		</label>
 	</header>
-	<div class="content-details">
+	<div class="content-details masked-overflow">
 		<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 	</div>
 	<footer class="content-footer">

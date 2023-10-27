@@ -89,7 +89,7 @@
 			{/if}
 		</label>
 	</header>
-	<div class="content-details">
+	<div class="content-details masked-overflow">
 		{#if isMeasureContainer(container)}
 			<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 		{:else if isModelContainer(container)}

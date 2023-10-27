@@ -99,7 +99,7 @@
 			</span>
 		</h2>
 	</header>
-	<div class="content-details table">
+	<div class="content-details masked-overflow table">
 		<table>
 			<thead>
 				<tr>

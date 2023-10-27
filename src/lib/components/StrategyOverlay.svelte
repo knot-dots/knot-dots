@@ -88,7 +88,7 @@
 				{/if}
 			</label>
 		</header>
-		<div class="content-details">
+		<div class="content-details masked-overflow">
 			{#if 'guid' in container}
 				{#if isMeasureContainer(container)}
 					<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
@@ -150,7 +150,7 @@
 				<MeasureTabs {container} {revisions} />
 			{/if}
 		</header>
-		<div class="content-details">
+		<div class="content-details masked-overflow">
 			{#if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else}
