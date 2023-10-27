@@ -17,7 +17,11 @@ export const load = (async ({ params, locals, url }) => {
 		locals.pool.connect(getAllContainersWithIndicatorContributions([container.organization])),
 		params.type.includes('internal_objective')
 			? locals.pool.connect(
-					getAllRelatedInternalObjectives(params.guid, [], url.searchParams.get('sort') ?? '')
+					getAllRelatedInternalObjectives(
+						params.guid,
+						['hierarchical'],
+						url.searchParams.get('sort') ?? ''
+					)
 			  )
 			: locals.pool.connect(
 					getAllRelatedContainers(
@@ -44,7 +48,7 @@ export const load = (async ({ params, locals, url }) => {
 				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
 			),
 			params.type.includes('internal_objective')
-				? locals.pool.connect(getAllRelatedInternalObjectives(params.guid, [], ''))
+				? locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ['hierarchical'], ''))
 				: locals.pool.connect(
 						getAllRelatedContainers([container.organization], guid, ['hierarchical'], {}, '')
 				  )

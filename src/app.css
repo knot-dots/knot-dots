@@ -29,7 +29,38 @@
 	--color-yellow-200: #fce96a;
 	--color-yellow-300: #faca15;
 	--color-yellow-400: #e3a008;
-	--color-primary: var(--color-blue-700);
+	--color-primary: #4dc3c5;
+	--color-red: #ca1d61;
+	--color-red-background: rgba(205, 37, 97, 0.15);
+	--color-orange: #f18c5f;
+	--color-orange-background: rgba(241, 140, 95, 0.15);
+	--color-yellow: #fccd6c;
+	--color-yellow-background: rgba(252, 205, 108, 0.15);
+	--color-green: #6edaa6;
+	--color-green-background: rgba(110, 218, 166, 0.15);
+	--color-blue: #21a5ed;
+	--color-blue-background: rgba(33, 165, 237, 0.15);
+	--color-is-consistent-with: #6edabe;
+	--color-is-duplicate-of: #f9e579;
+	--color-is-equivalent-to: #7ad0ff;
+	--color-is-inconsistent-with: #ca1d61;
+	--gradient-primary: linear-gradient(45deg, rgba(77, 195, 197, 1) 0%, rgba(33, 165, 237, 1) 100%);
+	--gradient-first-column: linear-gradient(90deg, rgba(70, 150, 203, 0.15) 0%, rgba(62, 185, 210, 0.15) 100%);
+	--gradient-second-column: linear-gradient(90deg, rgba(62, 182, 210, 0.15) 0%, rgba(55, 180, 217, 0.15) 100%);
+	--gradient-third-column: linear-gradient(90deg, rgba(55, 180, 217, 0.15) 0%, rgba(47, 174, 224, 0.15) 100%);
+	--gradient-fourth-column: linear-gradient(90deg, rgba(47, 174, 224, 0.15) 0%, rgba(40, 169, 231, 0.15) 100%);
+	--gradient-fifth-column: linear-gradient(90deg, rgba(40, 169, 231, 0.15) 0%, rgba(32, 164, 238, 0.15) 100%);
+	--gradient-idea: linear-gradient(90deg, rgba(218, 75, 96, 0.15) 0%, rgba(225, 95, 96, 0.15) 100%);
+	--gradient-in-planning: linear-gradient(90deg, rgba(254, 183, 97, 0.15) 0%, rgba(241, 140, 95, 0.15) 100%);
+	--gradient-in-implementation: linear-gradient(90deg, rgba(252, 205, 108, 0.15) 0%, rgba(245, 255, 134, 0.15) 100%);
+	--gradient-in-operation: linear-gradient(90deg, rgba(110, 218, 166, 0.15) 0%, rgba(168, 234, 152, 0.15) 100%);
+	--gradient-done: linear-gradient(90deg, rgba(70, 190, 203, 0.15) 40.28%, rgba(110, 218, 166, 0.15) 100%);
+	--gradient-hover-neutral: linear-gradient(22deg, #b4e1f7 0.9%, #f3fafe  97.13%);
+	--gradient-hover-idea: linear-gradient(23deg, rgba(218, 75, 96, 0.35) 0%, rgba(225, 95, 96, 0.0875) 100%);
+	--gradient-hover-in-planning: linear-gradient(23deg, rgba(241, 140, 95, 0.35) 0%, rgba(254, 183, 97, 0.0875) 100%);
+	--gradient-hover-in-implementation: linear-gradient(23deg, rgb(252, 205, 108, 0.35) 0%, rgba(245, 255, 134, 0.0875) 100%);
+	--gradient-hover-in-operation: linear-gradient(23deg, rgba(168, 234, 152, 0.35) 0%, rgba(110, 218, 166, 0.0875) 100%);
+	--gradient-hover-done: linear-gradient(23deg, rgba(110, 218, 166, 0.35) 48.61%, rgba(70, 190, 203, 0.0875) 100%);
 
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
 	--shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
@@ -673,23 +704,23 @@ fieldset {
 }
 
 .badge.badge--red {
-	--bg-color: var(--color-red-050);
-	--color: var(--color-red-600);
+	--bg-color: var(--color-red-background);
+	--color: var(--color-red);
 }
 
 .badge.badge--orange {
-	--bg-color: var(--color-orange-050);
-	--color: var(--color-orange-600);
+	--bg-color: var(--color-orange-background);
+	--color: var(--color-orange);
 }
 
 .badge.badge--yellow {
-	--bg-color: var(--color-yellow-050);
-	--color: var(--color-yellow-400);
+	--bg-color: var(--color-yellow-background);
+	--color: var(--color-yellow);
 }
 
 .badge.badge--green {
-	--bg-color: var(--color-green-050);
-	--color: var(--color-green-500);
+	--bg-color: var(--color-green-background);
+	--color: var(--color-green);
 }
 
 /* Tabs */

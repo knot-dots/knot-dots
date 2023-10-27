@@ -49,7 +49,7 @@ export const load = (async ({ locals, params, url }) => {
 		const [isPartOfOptions, relatedContainers] = await Promise.all([
 			locals.pool.connect(maybePartOf(container.organization, container.payload.type)),
 			locals.pool.connect(
-				getAllRelatedInternalObjectives(guid, [], url.searchParams.get('sort') ?? '')
+				getAllRelatedInternalObjectives(guid, ['hierarchical'], url.searchParams.get('sort') ?? '')
 			)
 		]);
 		overlayData = {

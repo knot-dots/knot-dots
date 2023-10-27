@@ -90,7 +90,7 @@
 
 <style>
 	section {
-		background-color: var(--bg-color, var(--color-indigo-050));
+		background: var(--background, var(--gradient-first-column));
 		border-radius: 8px;
 		display: flex;
 		flex-basis: 20.75rem;
@@ -130,7 +130,7 @@
 	}
 
 	footer:hover {
-		background-color: var(--color-gray-200);
+		background: var(--hover-background, var(--gradient-hover-neutral));
 	}
 
 	footer a {
