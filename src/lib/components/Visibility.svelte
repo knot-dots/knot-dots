@@ -24,3 +24,26 @@
 		{/each}
 	</fieldset>
 {/if}
+
+<style>
+	fieldset {
+		align-items: center;
+		border: none;
+		color: var(--color-gray-600);
+		display: flex;
+		font-weight: 400;
+		gap: 1.5rem;
+		padding: 0;
+	}
+
+	label {
+		font-weight: 400;
+	}
+
+	legend {
+		color: var(--color-gray-800);
+		font-weight: 500;
+		line-height: 1.5;
+		margin-bottom: 0.75rem;
+	}
+</style>
