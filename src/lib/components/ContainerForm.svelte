@@ -5,13 +5,13 @@
 	import { z } from 'zod';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import deleteContainer from '$lib/client/deleteContainer';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import {
-		etag,
+		mayDelete,
 		modifiedContainer,
 		newContainer,
 		payloadTypes,
-		predicates,
 		visibility
 	} from '$lib/models';
 	import type {
@@ -25,16 +25,6 @@
 	import { ability } from '$lib/stores';
 
 	export let container: AnyContainer | EmptyContainer;
-
-	$: mayDelete =
-		'guid' in container &&
-		container.relation.filter(
-			({ predicate, object }) =>
-				(predicate == predicates.enum['is-part-of'] ||
-					predicate == predicates.enum['is-part-of-measure']) &&
-				'revision' in container &&
-				object == container.revision
-		).length == 0;
 
 	const dispatch =
 		createEventDispatcher<Pick<CustomEventMap, 'submitSuccessful' | 'deleteSuccessful'>>();
@@ -100,14 +90,7 @@
 
 	async function handleDelete(event: Event) {
 		if ('guid' in container) {
-			const response = await fetch(`/container/${container.guid}`, {
-				method: 'DELETE',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-					'If-Match': etag(container)
-				}
-			});
+			const response = await deleteContainer(container);
 			if (response.ok) {
 				dispatch('deleteSuccessful', { event });
 			}
@@ -167,7 +150,7 @@
 	<footer>
 		<button class="primary" type="submit">{$_('save')}</button>
 		<slot name="extra-buttons" />
-		{#if mayDelete}
+		{#if mayDelete(container)}
 			<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
 				<Icon src={Trash} size="20" />
 			</button>
