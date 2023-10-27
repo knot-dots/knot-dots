@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
+	import Visibility from '$lib/components/Visibility.svelte';
 	import { mayDelete } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -34,6 +35,7 @@
 		<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
 	</div>
 	<footer class="content-footer">
+		<Visibility {container} />
 		<div class="content-actions">
 			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 			{#if mayDelete(container)}

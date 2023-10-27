@@ -13,6 +13,7 @@
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
+	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isEmptyInternalObjectiveStrategicGoalContainer,
 		isEmptyInternalStrategyContainer,
@@ -129,6 +130,7 @@
 		{/if}
 	</div>
 	<footer class="content-footer">
+		<Visibility {container} />
 		<div class="content-actions">
 			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 			{#if isEmptyModelContainer(container)}

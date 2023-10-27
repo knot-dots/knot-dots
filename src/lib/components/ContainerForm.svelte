@@ -113,5 +113,4 @@
 		{/if}
 	{/if}
 	<slot name="meta" />
-	<Visibility {container} />
 </form>

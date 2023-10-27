@@ -14,6 +14,7 @@
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TextForm from '$lib/components/TextForm.svelte';
+	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isEmptyMeasureContainer,
 		isEmptyModelContainer,
@@ -115,6 +116,7 @@
 			{/if}
 		</div>
 		<footer class="content-footer">
+			<Visibility {container} />
 			<div class="content-actions">
 				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 				<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
