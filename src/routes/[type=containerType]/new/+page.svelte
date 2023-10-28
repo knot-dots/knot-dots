@@ -170,6 +170,7 @@
 					{$_('save_and_create_task')}
 				</button>
 			{/if}
+			<button type="button" on:click={() => window.history.back()}>{$_('cancel')}</button>
 		</div>
 	</footer>
 </div>

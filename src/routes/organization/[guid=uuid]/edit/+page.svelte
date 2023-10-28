@@ -38,6 +38,7 @@
 		<Visibility {container} />
 		<div class="content-actions">
 			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+			<a class="button" href=".">{$_('cancel')}</a>
 			{#if mayDelete(container)}
 				<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
 					<Icon src={Trash} size="20" />

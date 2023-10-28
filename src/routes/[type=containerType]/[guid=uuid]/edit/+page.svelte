@@ -161,6 +161,7 @@
 					{$_('save_and_create_task')}
 				</button>
 			{/if}
+			<a class="button" href=".">{$_('cancel')}</a>
 			{#if mayDelete(container)}
 				<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
 					<Icon src={Trash} size="20" />
