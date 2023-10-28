@@ -64,7 +64,7 @@
 				{/if}
 				<span class="icons">
 					{#if $ability.can('update', container)}
-						<a href="{container.guid}/edit" class="icons-element" data-sveltekit-replacestate>
+						<a href="{container.guid}/edit" class="icons-element">
 							<Icon solid src={Pencil} size="20" />
 						</a>
 					{/if}
