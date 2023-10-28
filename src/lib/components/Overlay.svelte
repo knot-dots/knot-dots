@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { Icon, Pencil, Trash, XMark } from 'svelte-hero-icons';
+	import { ArrowsPointingOut, Icon, Pencil, Trash, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -163,6 +163,13 @@
 							<Icon solid src={Pencil} size="20" />
 						</button>
 					{/if}
+					<a
+						class="button icons-element"
+						href="/{container.payload.type}/{container.guid}"
+						title={$_('read_more')}
+					>
+						<Icon solid src={ArrowsPointingOut} size="20" />
+					</a>
 					<a href={closeOverlay()} class="button icons-element">
 						<Icon solid src={XMark} size="20" />
 					</a>
@@ -189,9 +196,6 @@
 		</div>
 		<footer class="content-footer">
 			<div class="content-actions">
-				<a class="button primary" href="/{container.payload.type}/{container.guid}">
-					{$_('read_more')}
-				</a>
 				{#if mayShowRelationButton && $ability.can('relate', container)}
 					<a class="button" href="?container-relations={container.guid}">
 						{$_('relations')}

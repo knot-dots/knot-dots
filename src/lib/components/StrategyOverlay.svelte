@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, Pencil, Trash, XMark } from 'svelte-hero-icons';
+	import { ArrowsPointingOut, Icon, Pencil, Trash, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -138,6 +138,13 @@
 						</button>
 					{/if}
 					<a
+						class="button icons-element"
+						href="/{container.payload.type}/{container.guid}"
+						title={$_('read_more')}
+					>
+						<Icon solid src={ArrowsPointingOut} size="20" />
+					</a>
+					<a
 						href={closeOverlay()}
 						class="button icons-element"
 						on:click={() => ($sidebarToggle = true)}
@@ -157,13 +164,6 @@
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}
 		</div>
-		<footer class="content-footer">
-			<div class="content-actions">
-				<a class="button primary" href="/{container.payload.type}/{container.guid}">
-					{$_('read_more')}
-				</a>
-			</div>
-		</footer>
 	{/if}
 </section>
 
