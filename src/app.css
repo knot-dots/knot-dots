@@ -628,12 +628,11 @@ fieldset {
 
 /* Fade out overflow effect */
 .masked-overflow {
-	--mask-height: 2rem;
 	--mask-image-content: linear-gradient(
 		to bottom,
 		transparent,
-		black var(--mask-height),
-		black calc(100% - var(--mask-height)),
+		black var(--mask-height, 2rem),
+		black calc(100% - var(--mask-height, 2rem)),
 		transparent
 	);
 	--mask-size-content: 100% 100%;
@@ -645,7 +644,7 @@ fieldset {
 		100% 0;
 	mask-repeat: no-repeat, no-repeat;
 	overflow-y: auto;
-	padding-bottom: var(--mask-height);
+	padding-bottom: var(--mask-height, 2rem);
 }
 
 /* Vertical scroll wrapper */
