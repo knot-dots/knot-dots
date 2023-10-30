@@ -13,6 +13,7 @@
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
+	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isEmptyInternalObjectiveStrategicGoalContainer,
 		isEmptyInternalStrategyContainer,
@@ -86,76 +87,90 @@
 	}
 </script>
 
-{#if isEmptyMeasureContainer(container)}
-	<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-{:else if isEmptyModelContainer(container)}
-	<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-strategic-goal">
-				{$_('save_and_create_strategic_goal')}
-			</button>
-		</svelte:fragment>
-	</ModelForm>
-{:else if isEmptyOperationalGoalContainer(container)}
-	<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-measure">
-				{$_('save_and_create_measure')}
-			</button>
-		</svelte:fragment>
-	</OperationalGoalForm>
-{:else if isEmptyOrganizationContainer(container)}
-	<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
-{:else if isEmptyOrganizationalUnitContainer(container)}
-	<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-{:else if isEmptyStrategicGoalContainer(container)}
-	<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-operational-goal">
-				{$_('save_and_create_operational_goal')}
-			</button>
-		</svelte:fragment>
-	</StrategicGoalForm>
-{:else if isEmptyStrategyContainer(container)}
-	<StrategyForm {container} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-model">
-				{$_('save_and_create_model')}
-			</button>
-		</svelte:fragment>
-	</StrategyForm>
-{:else if isEmptyInternalStrategyContainer(container)}
-	<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-vision">
-				{$_('save_and_create_vision')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveForm>
-{:else if isEmptyVisionContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-internal-objective-strategic-goal">
-				{$_('save_and_create_strategic_goal')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveForm>
-{:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
-	<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-milestone">
-				{$_('save_and_create_milestone')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveForm>
-{:else if isEmptyMilestoneContainer(container)}
-	<InternalObjectiveMilestoneForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit}>
-		<svelte:fragment slot="extra-buttons">
-			<button id="save-and-create-task">
-				{$_('save_and_create_task')}
-			</button>
-		</svelte:fragment>
-	</InternalObjectiveMilestoneForm>
-{:else if isEmptyTaskContainer(container)}
-	<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-{/if}
+<div class="detail-page-content">
+	<header class="content-header">
+		<label>
+			{$_(`${container.payload.type}`)}
+			{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
+				<input name="name" type="text" bind:value={container.payload.name} required />
+			{:else}
+				<input name="title" type="text" bind:value={container.payload.title} required />
+			{/if}
+		</label>
+	</header>
+	<div class="content-details masked-overflow">
+		{#if isEmptyMeasureContainer(container)}
+			<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyModelContainer(container)}
+			<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyOperationalGoalContainer(container)}
+			<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyOrganizationContainer(container)}
+			<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyOrganizationalUnitContainer(container)}
+			<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyStrategicGoalContainer(container)}
+			<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyStrategyContainer(container)}
+			<StrategyForm {container} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyInternalStrategyContainer(container)}
+			<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyVisionContainer(container)}
+			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
+			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{:else if isEmptyMilestoneContainer(container)}
+			<InternalObjectiveMilestoneForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={afterSubmit}
+			/>
+		{:else if isEmptyTaskContainer(container)}
+			<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+		{/if}
+	</div>
+	<footer class="content-footer">
+		<Visibility {container} />
+		<div class="content-actions">
+			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+			{#if isEmptyModelContainer(container)}
+				<button id="save-and-create-strategic-goal" form="container-form" type="submit">
+					{$_('save_and_create_strategic_goal')}
+				</button>
+			{:else if isEmptyOperationalGoalContainer(container)}
+				<button id="save-and-create-measure" form="container-form" type="submit">
+					{$_('save_and_create_measure')}
+				</button>
+			{:else if isEmptyStrategicGoalContainer(container)}
+				<button id="save-and-create-operational-goal" form="container-form" type="submit">
+					{$_('save_and_create_operational_goal')}
+				</button>
+			{:else if isEmptyStrategyContainer(container)}
+				<button id="save-and-create-model" form="container-form" type="submit">
+					{$_('save_and_create_model')}
+				</button>
+			{:else if isEmptyInternalStrategyContainer(container)}
+				<button id="save-and-create-vision" form="container-form" type="submit">
+					{$_('save_and_create_vision')}
+				</button>
+			{:else if isEmptyVisionContainer(container)}
+				<button
+					id="save-and-create-internal-objective-strategic-goal"
+					form="container-form"
+					type="submit"
+				>
+					{$_('save_and_create_strategic_goal')}
+				</button>
+			{:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
+				<button id="save-and-create-milestone" form="container-form" type="submit">
+					{$_('save_and_create_milestone')}
+				</button>
+			{:else if isEmptyMilestoneContainer(container)}
+				<button id="save-and-create-task" form="container-form" type="submit">
+					{$_('save_and_create_task')}
+				</button>
+			{/if}
+			<button type="button" on:click={() => window.history.back()}>{$_('cancel')}</button>
+		</div>
+	</footer>
+</div>

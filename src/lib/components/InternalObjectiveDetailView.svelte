@@ -31,7 +31,7 @@
 	}
 </script>
 
-<article class="details" class:details--page={isPage}>
+<article class="details">
 	<header>
 		<slot name="header" />
 	</header>

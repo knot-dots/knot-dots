@@ -184,7 +184,7 @@
 
 	.content {
 		flex: 1 0;
-		padding: 1.5rem 1.5rem 0;
+		padding: 1.5rem 0 0;
 	}
 
 	@media (min-width: 1440px) {
@@ -200,7 +200,7 @@
 		}
 
 		.content {
-			padding: 1.5rem;
+			padding: 1.5rem 0;
 		}
 	}
 </style>

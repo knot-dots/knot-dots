@@ -28,12 +28,6 @@
 
 	$: strategy = relatedContainers.find(isStrategyContainer);
 
-	function tabURL(params: URLSearchParams, status: Status) {
-		const query = new URLSearchParams(params);
-		query.set('status', status);
-		return `?${query.toString()}`;
-	}
-
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
 	function containerURL(type: string, guid: string) {
@@ -48,33 +42,6 @@
 </script>
 
 <ContainerDetailView {container} {relatedContainers} {revisions}>
-	<slot slot="header">
-		<slot name="header" />
-		<ul class="tabs">
-			{#each status.options as statusOption}
-				<li
-					class="tab-item"
-					class:tab-item--active={statusOption === selectedRevision.payload.status}
-				>
-					{#if status.options.findIndex((o) => statusOption === o) <= status.options.findIndex((o) => container.payload.status === o)}
-						<a
-							class="badge badge--{statusColors.get(statusOption)}"
-							href={tabURL($page.url.searchParams, statusOption)}
-						>
-							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</a>
-					{:else}
-						<span class="badge badge--{statusColors.get(statusOption)}">
-							<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
-							{$_(statusOption)}
-						</span>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	</slot>
-
 	<svelte:fragment slot="data">
 		<div class="summary">
 			<h3>{$_('measure.summary')}</h3>
@@ -258,13 +225,5 @@
 
 	.resource-item > :nth-child(3) {
 		text-align: right;
-	}
-
-	.tabs > .tab-item {
-		opacity: 0.3;
-	}
-
-	.tabs > .tab-item--active {
-		opacity: 1;
 	}
 </style>

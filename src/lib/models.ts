@@ -940,9 +940,6 @@ export function isEmptyInternalObjectiveContainer(
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export interface CustomEventMap {
-	deleteSuccessful: {
-		event: Event;
-	};
 	submitSuccessful: {
 		event: SubmitEvent;
 		result: AnyContainer;
@@ -998,4 +995,17 @@ export function containerOfType(
 		organizational_unit: organizationalUnit,
 		realm
 	}) as EmptyContainer;
+}
+
+export function mayDelete(container: AnyContainer | EmptyContainer) {
+	return (
+		'guid' in container &&
+		container.relation.filter(
+			({ predicate, object }) =>
+				(predicate == predicates.enum['is-part-of'] ||
+					predicate == predicates.enum['is-part-of-measure']) &&
+				'revision' in container &&
+				object == container.revision
+		).length == 0
+	);
 }
