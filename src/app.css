@@ -505,7 +505,7 @@ fieldset {
 
 .content-header {
 	border-bottom: solid 1px var(--color-gray-200);
-	padding: 1.5rem;
+	padding: 1.5rem 1.5rem 1.5rem 5.25rem;
 }
 
 .content-header h2,
@@ -525,13 +525,12 @@ fieldset {
 .content-details {
 	--mask-height: 1.5rem;
 
-	display: flex;
-	padding: 1.5rem 1.5rem 1.5rem 0;
+	padding: 1.5rem 1.5rem 1.5rem 5.25rem;
 }
 
 .content-footer {
 	margin-top: auto;
-	padding: 1.5rem;
+	padding: 1.5rem 1.5rem 1.5rem 5.25rem;
 }
 
 .content-actions {

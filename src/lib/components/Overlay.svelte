@@ -43,6 +43,7 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -182,6 +183,9 @@
 			{/if}
 		</header>
 		<div class="content-details masked-overflow">
+			{#if 'guid' in container}
+				<OverlaySidebar {container} />
+			{/if}
 			{#if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
