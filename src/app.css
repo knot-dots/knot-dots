@@ -625,6 +625,10 @@ fieldset {
 	margin-bottom: 0;
 }
 
+.markdown-body a, .milkdown .editor a {
+	text-decoration: underline
+}
+
 /* Fade out overflow effect */
 .masked-overflow {
 	--mask-image-content: linear-gradient(
