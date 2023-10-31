@@ -269,7 +269,7 @@ resource "kubernetes_deployment_v1" "strategytool" {
 
           env {
             name  = "BODY_SIZE_LIMIT"
-            value = "102400"
+            value = "100000000"
           }
 
           env {
