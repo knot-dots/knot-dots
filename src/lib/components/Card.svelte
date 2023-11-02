@@ -77,7 +77,7 @@
 	const highlightColorMap = new Map<string, string>([
 		[predicates.enum['is-consistent-with'], 'var(--color-is-consistent-with)'],
 		[predicates.enum['is-equivalent-to'], 'var(--color-is-equivalent-to)'],
-		[predicates.enum['is-inconsistent-with'], 'var(--is-inconsistent-with)'],
+		[predicates.enum['is-inconsistent-with'], 'var(--color-is-inconsistent-with)'],
 		[predicates.enum['is-duplicate-of'], 'var(--color-is-duplicate-of)']
 	]);
 
