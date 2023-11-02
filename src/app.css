@@ -51,16 +51,16 @@
 	--gradient-fourth-column: linear-gradient(90deg, rgba(47, 174, 224, 0.15) 0%, rgba(40, 169, 231, 0.15) 100%);
 	--gradient-fifth-column: linear-gradient(90deg, rgba(40, 169, 231, 0.15) 0%, rgba(32, 164, 238, 0.15) 100%);
 	--gradient-idea: linear-gradient(90deg, rgba(218, 75, 96, 0.15) 0%, rgba(225, 95, 96, 0.15) 100%);
-	--gradient-in-planning: linear-gradient(90deg, rgba(254, 183, 97, 0.15) 0%, rgba(241, 140, 95, 0.15) 100%);
+	--gradient-in-planning: linear-gradient(90deg, rgba(241, 140, 95, 0.15) 0%, rgb(254, 183, 97, 0.15) 100%);
 	--gradient-in-implementation: linear-gradient(90deg, rgba(252, 205, 108, 0.15) 0%, rgba(245, 255, 134, 0.15) 100%);
 	--gradient-in-operation: linear-gradient(90deg, rgba(110, 218, 166, 0.15) 0%, rgba(168, 234, 152, 0.15) 100%);
 	--gradient-done: linear-gradient(90deg, rgba(70, 190, 203, 0.15) 40.28%, rgba(110, 218, 166, 0.15) 100%);
-	--gradient-hover-neutral: linear-gradient(22deg, #b4e1f7 0.9%, #f3fafe  97.13%);
-	--gradient-hover-idea: linear-gradient(23deg, rgba(218, 75, 96, 0.35) 0%, rgba(225, 95, 96, 0.0875) 100%);
-	--gradient-hover-in-planning: linear-gradient(23deg, rgba(241, 140, 95, 0.35) 0%, rgba(254, 183, 97, 0.0875) 100%);
-	--gradient-hover-in-implementation: linear-gradient(23deg, rgb(252, 205, 108, 0.35) 0%, rgba(245, 255, 134, 0.0875) 100%);
-	--gradient-hover-in-operation: linear-gradient(23deg, rgba(168, 234, 152, 0.35) 0%, rgba(110, 218, 166, 0.0875) 100%);
-	--gradient-hover-done: linear-gradient(23deg, rgba(110, 218, 166, 0.35) 48.61%, rgba(70, 190, 203, 0.0875) 100%);
+	--color-hover-neutral: #b4e1f7;
+	--color-hover-idea: rgba(218, 75, 96, 0.35);
+	--color-hover-in-planning: rgba(241, 140, 95, 0.35);
+	--color-hover-in-implementation: rgb(252, 205, 108, 0.35);
+	--color-hover-in-operation: rgba(168, 234, 152, 0.35);
+	--color-hover-done: rgba(110, 218, 166, 0.35);
 
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
 	--shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);

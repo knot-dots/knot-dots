@@ -77,7 +77,7 @@
 	const highlightColorMap = new Map<string, string>([
 		[predicates.enum['is-consistent-with'], 'var(--color-is-consistent-with)'],
 		[predicates.enum['is-equivalent-to'], 'var(--color-is-equivalent-to)'],
-		[predicates.enum['is-inconsistent-with'], 'var(--is-inconsistent-with)'],
+		[predicates.enum['is-inconsistent-with'], 'var(--color-is-inconsistent-with)'],
 		[predicates.enum['is-duplicate-of'], 'var(--color-is-duplicate-of)']
 	]);
 
@@ -194,7 +194,7 @@
 
 	.card:hover,
 	.card.is-active {
-		background: var(--hover-background, var(--gradient-hover-neutral));
+		border-color: var(--hover-border-color, var(--color-hover-neutral));
 		outline: none;
 	}
 
@@ -202,6 +202,10 @@
 		border-color: var(--highlight-color, var(--color-gray-200));
 		border-width: 3px;
 		padding: calc(1.25rem - 2px);
+	}
+
+	.card.is-highlighted:hover {
+		border-color: var(--hover-border-color, var(--color-hover-neutral));
 	}
 
 	:global(#dnd-action-dragged-el .card) {
