@@ -195,7 +195,9 @@
 	.card:hover,
 	.card.is-active {
 		border-color: var(--hover-border-color, var(--color-hover-neutral));
+		border-width: 3px;
 		outline: none;
+		padding: calc(1.25rem - 2px);
 	}
 
 	.card.is-highlighted {
