@@ -131,8 +131,6 @@
 
 	footer:hover {
 		border-color: var(--hover-border-color, var(--color-hover-neutral));
-		border-width: 3px;
-		padding: calc(1.25rem - 2px);
 	}
 
 	footer a {
