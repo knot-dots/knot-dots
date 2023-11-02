@@ -1,7 +1,13 @@
 import { derived, writable } from 'svelte/store';
-import defineAbilityFor from '$lib/authorization';
-import type { Container } from '$lib/models';
+import { browser } from '$app/environment';
 import { page } from '$app/stores';
+import { env } from '$env/dynamic/public';
+import defineAbilityFor from '$lib/authorization';
+import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
+import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
+import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+import type { AnyContainer, Container, PayloadType } from '$lib/models';
+import { containerOfType, payloadTypes } from '$lib/models';
 
 export const navigationToggle = writable(false);
 
@@ -43,3 +49,64 @@ export const user = derived(page, (values) => {
 export const ability = derived(user, defineAbilityFor);
 
 export const dragged = writable<Container | undefined>();
+
+type Overlay = {
+	isPartOfOptions: AnyContainer[];
+	relatedContainers: Container[];
+	revisions: AnyContainer[];
+};
+
+export const overlay = writable<Overlay>({
+	isPartOfOptions: [],
+	relatedContainers: [],
+	revisions: []
+});
+
+if (browser) {
+	page.subscribe(async (values) => {
+		const hashParams = new URLSearchParams(values.url?.hash.substring(1) ?? '');
+
+		if (hashParams.has('create')) {
+			const isPartOfOptions = await fetchIsPartOfOptions(
+				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
+				hashParams.get('create') as PayloadType
+			);
+			const newContainer = containerOfType(
+				hashParams.get('create') as PayloadType,
+				values.data.currentOrganization.guid,
+				values.data.currentOrganizationalUnit?.guid ?? null,
+				env.PUBLIC_KC_REALM
+			);
+			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {
+				newContainer.payload.level = parseInt(
+					new URLSearchParams(values.url.hash.substring(1)).get('level') ?? '1'
+				);
+			}
+			overlay.set({
+				isPartOfOptions,
+				relatedContainers: [],
+				revisions: [newContainer] as AnyContainer[]
+			});
+		} else if (hashParams.has('view')) {
+			const revisions = await fetchContainerRevisions(hashParams.get('view') as string);
+			const container = revisions[revisions.length - 1];
+			const [isPartOfOptions, relatedContainers] = await Promise.all([
+				fetchIsPartOfOptions(
+					container.organizational_unit ?? container.organization,
+					container.payload.type
+				),
+				fetchRelatedContainers(container.guid, {
+					organization: [container.organization],
+					relationType: ['hierarchical']
+				})
+			]);
+			overlay.set({
+				isPartOfOptions,
+				relatedContainers,
+				revisions
+			});
+		} else {
+			overlay.set({ isPartOfOptions: [], relatedContainers: [], revisions: [] });
+		}
+	});
+}
