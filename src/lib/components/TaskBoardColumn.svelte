@@ -130,7 +130,7 @@
 	}
 
 	footer:hover {
-		background: var(--hover-background, var(--gradient-hover-neutral));
+		border-color: var(--hover-border-color, var(--color-hover-neutral));
 	}
 
 	footer a {

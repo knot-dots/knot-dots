@@ -4,11 +4,7 @@
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
-	import {
-		taskStatusBackgrounds,
-		taskStatusHoverBackgrounds,
-		taskStatusIcons
-	} from '$lib/theme/models';
+	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 	import {} from '$lib/theme/models.js';
 
@@ -52,7 +48,7 @@
 	{#each columns as column (column.title)}
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(column.title)}
-			--hover-background={taskStatusHoverBackgrounds.get(column.title)}
+			--hover-border-color={taskStatusHoverColors.get(column.title)}
 			addItemUrl="?overlay-new={column.payloadType}&is-part-of-measure={data.container
 				.revision}&task-status={column.title}"
 			icon={taskStatusIcons.get(column.title)}

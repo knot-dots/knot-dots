@@ -7,7 +7,7 @@
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import { payloadTypes, status } from '$lib/models';
-	import { statusBackgrounds, statusHoverBackgrounds, statusIcons } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors, statusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -19,7 +19,7 @@
 	{#each status.options as statusOption}
 		<BoardColumn
 			--background={statusBackgrounds.get(statusOption)}
-			--hover-background={statusHoverBackgrounds.get(statusOption)}
+			--hover-border-color={statusHoverColors.get(statusOption)}
 			addItemUrl="?overlay-new=measure&status={statusOption}"
 			icon={statusIcons.get(statusOption)}
 			itemType={payloadTypes.enum.measure}

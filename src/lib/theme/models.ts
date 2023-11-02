@@ -73,12 +73,12 @@ export const statusBackgrounds = new Map<Status, string>([
 	[status.enum['status.done'], 'var(--gradient-done)']
 ]);
 
-export const statusHoverBackgrounds = new Map<Status, string>([
-	[status.enum['status.idea'], 'var(--gradient-hover-idea)'],
-	[status.enum['status.in_planning'], 'var(--gradient-hover-in-planning)'],
-	[status.enum['status.in_implementation'], 'var(--gradient-hover-in-implementation)'],
-	[status.enum['status.in_operation'], 'var(--gradient-hover-in-operation)'],
-	[status.enum['status.done'], 'var(--gradient-hover-done)']
+export const statusHoverColors = new Map<Status, string>([
+	[status.enum['status.idea'], 'var(--color-hover-idea)'],
+	[status.enum['status.in_planning'], 'var(--color-hover-in-planning)'],
+	[status.enum['status.in_implementation'], 'var(--color-hover-in-implementation)'],
+	[status.enum['status.in_operation'], 'var(--color-hover-in-operation)'],
+	[status.enum['status.done'], 'var(--color-hover-done)']
 ]);
 
 export const statusIcons = new Map<Status, IconSource>([
@@ -103,11 +103,11 @@ export const taskStatusBackgrounds = new Map<TaskStatus, string>([
 	[taskStatus.enum['task_status.done'], 'var(--gradient-done)']
 ]);
 
-export const taskStatusHoverBackgrounds = new Map<TaskStatus, string>([
-	[taskStatus.enum['task_status.idea'], 'var(--gradient-hover-idea)'],
-	[taskStatus.enum['task_status.in_planning'], 'var(--gradient-hover-in-planning)'],
-	[taskStatus.enum['task_status.in_progress'], 'var(--gradient-hover-in-implementation)'],
-	[taskStatus.enum['task_status.done'], 'var(--gradient-hover-done)']
+export const taskStatusHoverColors = new Map<TaskStatus, string>([
+	[taskStatus.enum['task_status.idea'], 'var(--color-hover-idea)'],
+	[taskStatus.enum['task_status.in_planning'], 'var(--color-hover-in-planning)'],
+	[taskStatus.enum['task_status.in_progress'], 'var(--color-hover-in-implementation)'],
+	[taskStatus.enum['task_status.done'], 'var(--color-hover-done)']
 ]);
 
 export const taskStatusIcons = new Map<TaskStatus, IconSource>([
