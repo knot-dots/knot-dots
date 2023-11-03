@@ -55,10 +55,18 @@
 	$: container = revisions[revisions.length - 1];
 
 	$: hashParams = paramsFromURL($page.url);
-	$: edit = hashParams.has('create');
+	$: edit = hashParams.has('create') || hashParams.has('edit');
 
 	function closeOverlay() {
 		return '#';
+	}
+
+	function cancel() {
+		if (hashParams.has('create')) {
+			return closeOverlay();
+		} else {
+			return `#view=${container.guid}`;
+		}
 	}
 
 	async function afterSubmit() {
@@ -66,7 +74,7 @@
 		if (hashParams.has('create')) {
 			await goto(closeOverlay());
 		} else {
-			edit = false;
+			await goto(`#view=${container.guid}`);
 		}
 	}
 
@@ -74,14 +82,6 @@
 		const response = await deleteContainer(container);
 		if (response.ok) {
 			await goto(closeOverlay(), { invalidateAll: true });
-		}
-	}
-
-	async function cancel() {
-		if (hashParams.has('create')) {
-			await goto(closeOverlay());
-		} else {
-			edit = false;
 		}
 	}
 </script>
@@ -137,7 +137,7 @@
 			<Visibility {container} />
 			<div class="content-actions">
 				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
-				<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
+				<a class="button" href={cancel()}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
 					<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
 						<Icon src={Trash} size="20" />
@@ -155,9 +155,9 @@
 				{/if}
 				<span class="icons">
 					{#if $ability.can('update', container)}
-						<button class="icons-element" on:click={() => (edit = true)}>
+						<a class="button icons-element" href="#view={container.guid}&edit">
 							<Icon solid src={Pencil} size="20" />
-						</button>
+						</a>
 					{/if}
 					<a
 						class="button icons-element"
