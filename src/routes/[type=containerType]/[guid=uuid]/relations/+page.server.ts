@@ -1,16 +1,13 @@
 import { filterVisible } from '$lib/authorization';
 import {
-	getAllContainerRevisionsByGuid,
 	getAllContainersWithIndicatorContributions,
 	getAllRelatedContainers,
 	getAllRelatedInternalObjectives,
-	getContainerByGuid,
-	maybePartOf
+	getContainerByGuid
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params, locals, url }) => {
-	let overlayData;
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	const [containersWithIndicatorContributions, allRelatedContainers] = await Promise.all([
@@ -39,34 +36,12 @@ export const load = (async ({ params, locals, url }) => {
 			  )
 	]);
 
-	if (url.searchParams.has('container-preview')) {
-		const guid = url.searchParams.get('container-preview') ?? '';
-		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
-		const container = revisions[revisions.length - 1];
-		const [isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(
-				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
-			),
-			params.type.includes('internal_objective')
-				? locals.pool.connect(getAllRelatedInternalObjectives(params.guid, ['hierarchical'], ''))
-				: locals.pool.connect(
-						getAllRelatedContainers([container.organization], guid, ['hierarchical'], {}, '')
-				  )
-		]);
-		overlayData = {
-			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
-			relatedContainers: filterVisible(relatedContainers, locals.user),
-			revisions
-		};
-	}
-
 	return {
 		allRelatedContainers: filterVisible(allRelatedContainers, locals.user),
 		container,
 		containersWithIndicatorContributions: filterVisible(
 			containersWithIndicatorContributions,
 			locals.user
-		),
-		overlayData
+		)
 	};
 }) satisfies PageServerLoad;

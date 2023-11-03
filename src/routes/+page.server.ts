@@ -1,4 +1,3 @@
-import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
 import {
 	getAllContainerRevisionsByGuid,
@@ -6,18 +5,14 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByStrategyType,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers,
-	maybePartOf
+	getManyContainers
 } from '$lib/server/db';
-import { containerOfType } from '$lib/models';
-import type { AnyContainer, PayloadType } from '$lib/models';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	let containersWithIndicatorContributions;
 	let organizationalUnits: string[] = [];
-	let overlayData;
 	let relationOverlayData;
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
@@ -93,52 +88,11 @@ export const load = (async ({ locals, url, parent }) => {
 		]);
 	}
 
-	if (url.searchParams.has('container-preview')) {
-		const guid = url.searchParams.get('container-preview') ?? '';
-		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
-		const container = revisions[revisions.length - 1];
-		const [isPartOfOptions, relatedContainers] = await Promise.all([
-			locals.pool.connect(
-				maybePartOf(container.organizational_unit ?? container.organization, container.payload.type)
-			),
-			locals.pool.connect(
-				getAllRelatedContainers(
-					[container.organization],
-					guid,
-					['hierarchical'],
-					{ organizationalUnits },
-					''
-				)
-			)
-		]);
-		overlayData = {
-			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
-			relatedContainers: filterVisible(relatedContainers, locals.user),
-			revisions
-		};
-	} else if (url.searchParams.has('container-relations')) {
+	if (url.searchParams.has('container-relations')) {
 		const guid = url.searchParams.get('container-relations') ?? '';
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
 		const container = revisions[revisions.length - 1];
 		relationOverlayData = { object: container };
-	} else if (url.searchParams.has('overlay-new')) {
-		const newContainer = containerOfType(
-			url.searchParams.get('overlay-new') as PayloadType,
-			currentOrganization.guid,
-			currentOrganizationalUnit?.guid ?? null,
-			env.PUBLIC_KC_REALM
-		);
-		const isPartOfOptions = await locals.pool.connect(
-			maybePartOf(
-				newContainer.organizational_unit ?? newContainer.organization,
-				newContainer.payload.type
-			)
-		);
-		overlayData = {
-			isPartOfOptions: filterVisible(isPartOfOptions, locals.user),
-			relatedContainers: [],
-			revisions: [newContainer] as AnyContainer[]
-		};
 	}
 
 	return {
@@ -147,7 +101,6 @@ export const load = (async ({ locals, url, parent }) => {
 			containersWithIndicatorContributions,
 			locals.user
 		),
-		overlayData,
 		relationOverlayData
 	};
 }) satisfies PageServerLoad;

@@ -6,6 +6,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
@@ -19,6 +20,7 @@
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
+	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
@@ -43,7 +45,6 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { ability } from '$lib/stores';
-	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -53,22 +54,16 @@
 
 	$: container = revisions[revisions.length - 1];
 
-	let edit = $page.url.searchParams.has('overlay-new');
+	$: hashParams = paramsFromURL($page.url);
+	$: edit = hashParams.has('create');
 
 	function closeOverlay() {
-		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('container-preview');
-		query.delete('is-part-of-measure');
-		query.delete('level');
-		query.delete('overlay-new');
-		query.delete('status');
-		query.delete('task-status');
-		return `?${query.toString()}`;
+		return '#';
 	}
 
 	async function afterSubmit() {
 		await invalidateAll();
-		if ($page.url.searchParams.has('overlay-new')) {
+		if (hashParams.has('create')) {
 			await goto(closeOverlay());
 		} else {
 			edit = false;
@@ -83,7 +78,7 @@
 	}
 
 	async function cancel() {
-		if ($page.url.searchParams.has('overlay-new')) {
+		if (hashParams.has('create')) {
 			await goto(closeOverlay());
 		} else {
 			edit = false;

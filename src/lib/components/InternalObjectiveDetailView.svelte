@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, owners } from '$lib/models';
@@ -20,9 +21,9 @@
 		if (isPage) {
 			return `/${type}/${guid}`;
 		} else {
-			const query = new URLSearchParams($page.url.searchParams);
-			query.set('container-preview', guid);
-			return `?${query.toString()}`;
+			const query = paramsFromURL($page.url);
+			query.set('view', guid);
+			return `#${query.toString()}`;
 		}
 	}
 </script>

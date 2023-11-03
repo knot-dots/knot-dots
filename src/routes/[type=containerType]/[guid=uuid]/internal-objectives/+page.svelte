@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { payloadTypes } from '$lib/models';
+	import { overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -40,7 +42,7 @@
 <Board>
 	{#each columns as column (column.title)}
 		<BoardColumn
-			addItemUrl="?overlay-new={column.payloadType}&is-part-of-measure={data.container.revision}"
+			addItemUrl="#create={column.payloadType}&is-part-of-measure={data.container.revision}"
 			itemType={column.payloadType}
 			title={$_(column.title)}
 		>
@@ -51,8 +53,8 @@
 	{/each}
 </Board>
 
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
+{#if browser && $overlay.revisions.length > 0}
+	<Overlay {...$overlay} />
 {/if}
 
 {#if data.relationOverlayData}

@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
 	import type {
@@ -24,7 +25,7 @@
 		);
 	});
 
-	let statusParam = $page.url.searchParams.get('task-status');
+	let statusParam = paramsFromURL($page.url).get('task-status');
 
 	let assignee = container.payload.assignee;
 	$: container.payload.assignee = assignee == '' ? undefined : assignee;

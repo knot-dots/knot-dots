@@ -6,6 +6,7 @@ import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+import paramsFromURL from '$lib/client/paramsFromURL';
 import type { AnyContainer, Container, PayloadType } from '$lib/models';
 import { containerOfType, payloadTypes } from '$lib/models';
 
@@ -78,9 +79,7 @@ if (browser) {
 				env.PUBLIC_KC_REALM
 			);
 			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {
-				newContainer.payload.level = parseInt(
-					new URLSearchParams(values.url.hash.substring(1)).get('level') ?? '1'
-				);
+				newContainer.payload.level = parseInt(paramsFromURL(values.url).get('level') ?? '1');
 			}
 			overlay.set({
 				isPartOfOptions,

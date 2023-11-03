@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import { predicates } from '$lib/models';
@@ -47,13 +48,13 @@
 	let containerPreviewURL: string;
 
 	$: {
-		const query = new URLSearchParams($page.url.searchParams);
-		if (query.get('container-preview') === container.guid) {
-			query.delete('container-preview');
+		const hashParams = paramsFromURL($page.url);
+		if (hashParams.get('view') === container.guid) {
+			hashParams.delete('view');
 		} else {
-			query.set('container-preview', container.guid);
+			hashParams.set('view', container.guid);
 		}
-		containerPreviewURL = `?${query.toString()}`;
+		containerPreviewURL = `#${hashParams.toString()}`;
 	}
 
 	let previewLink: HTMLAnchorElement;
@@ -110,7 +111,7 @@
 		: undefined}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
+	class:is-active={paramsFromURL($page.url).get('view') === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	on:click={handleClick}

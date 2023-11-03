@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
@@ -17,7 +18,7 @@
 	export let container: MeasureContainer | EmptyMeasureContainer;
 	export let isPartOfOptions: AnyContainer[];
 
-	let statusParam = $page.url.searchParams.get('status') ?? status.enum['status.idea'];
+	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
 
 	let relatedContainers: OperationalGoalContainer[];
 

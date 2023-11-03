@@ -2,6 +2,7 @@
 	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { status } from '$lib/models';
 	import type { AnyContainer, MeasureContainer, Status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
@@ -12,7 +13,7 @@
 	let selectedRevision: MeasureContainer;
 
 	$: {
-		const parseResult = status.safeParse($page.url.searchParams.get('status'));
+		const parseResult = status.safeParse(paramsFromURL($page.url).get('status'));
 		if (parseResult.success) {
 			selectedRevision =
 				(revisions as MeasureContainer[]).findLast(
@@ -26,7 +27,7 @@
 	function tabURL(params: URLSearchParams, status: Status) {
 		const query = new URLSearchParams(params);
 		query.set('status', status);
-		return `?${query.toString()}`;
+		return `#${query.toString()}`;
 	}
 </script>
 
@@ -36,7 +37,7 @@
 			{#if status.options.findIndex((o) => statusOption === o) <= status.options.findIndex((o) => container.payload.status === o)}
 				<a
 					class="badge badge--{statusColors.get(statusOption)}"
-					href={tabURL($page.url.searchParams, statusOption)}
+					href={tabURL(paramsFromURL($page.url), statusOption)}
 				>
 					<Icon src={statusIcons.get(statusOption) ?? LightBulb} size="16" mini />
 					{$_(statusOption)}

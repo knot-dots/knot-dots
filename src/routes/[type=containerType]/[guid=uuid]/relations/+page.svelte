@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { isInternalObjectiveContainer, isPartOf, payloadTypes } from '$lib/models';
+	import { overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -60,6 +62,6 @@
 	{/each}
 </Board>
 
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
+{#if browser && $overlay.revisions.length > 0}
+	<Overlay {...$overlay} />
 {/if}

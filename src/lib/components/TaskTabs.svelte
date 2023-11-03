@@ -2,6 +2,7 @@
 	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { taskStatus } from '$lib/models';
 	import type { AnyContainer, TaskContainer, TaskStatus } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
@@ -12,7 +13,7 @@
 	let selectedRevision: TaskContainer;
 
 	$: {
-		const parseResult = taskStatus.safeParse($page.url.searchParams.get('task-status'));
+		const parseResult = taskStatus.safeParse(paramsFromURL($page.url).get('task-status'));
 		if (parseResult.success) {
 			selectedRevision =
 				(revisions as TaskContainer[]).findLast(
@@ -26,7 +27,7 @@
 	function tabURL(params: URLSearchParams, status: TaskStatus) {
 		const query = new URLSearchParams(params);
 		query.set('task-status', status);
-		return `?${query.toString()}`;
+		return `#${query.toString()}`;
 	}
 </script>
 
@@ -39,7 +40,7 @@
 			{#if taskStatus.options.findIndex((o) => statusOption === o) <= taskStatus.options.findIndex((o) => container.payload.taskStatus === o)}
 				<a
 					class="badge badge--{taskStatusColors.get(statusOption)}"
-					href={tabURL($page.url.searchParams, statusOption)}
+					href={tabURL(paramsFromURL($page.url), statusOption)}
 				>
 					<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />
 					{$_(statusOption)}

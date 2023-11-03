@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { OrganizationalUnitContainer } from '$lib/models';
+	import { overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -27,7 +29,7 @@
 <Board>
 	{#each byLevel.entries() as [level, containers]}
 		<BoardColumn
-			addItemUrl="?overlay-new={payloadTypes.enum.organizational_unit}&level={level}"
+			addItemUrl="#create={payloadTypes.enum.organizational_unit}&level={level}"
 			itemType={payloadTypes.enum.organizational_unit}
 			title={$_('organizational_unit_level', { values: { level } })}
 		>
@@ -40,6 +42,6 @@
 	{/each}
 </Board>
 
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
+{#if browser && $overlay.revisions.length > 0}
+	<Overlay {...$overlay} />
 {/if}
