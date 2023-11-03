@@ -1,9 +1,51 @@
-import { error } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { relation } from '$lib/models';
-import { updateContainerRelationPosition } from '$lib/server/db';
+import { isInternalObjectiveContainer, relation } from '$lib/models';
+import {
+	getAllRelatedContainers,
+	getAllRelatedInternalObjectives,
+	getContainerByGuid,
+	updateContainerRelationPosition
+} from '$lib/server/db';
 import type { RequestHandler } from './$types';
+import { filterVisible } from '$lib/authorization';
+
+export const GET = (async ({ locals, params, url }) => {
+	const expectedParams = z.object({
+		organization: z.array(z.string().uuid()),
+		organizationalUnit: z.array(z.string().uuid()),
+		relationType: z.array(z.enum(['hierarchical', 'other']))
+	});
+	const parseResult = expectedParams.safeParse(
+		Object.fromEntries(
+			Object.keys(expectedParams.shape).map((key) => [key, url.searchParams.getAll(key)])
+		)
+	);
+
+	if (!parseResult.success) {
+		throw error(400, { message: parseResult.error.message });
+	}
+
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	const containers = isInternalObjectiveContainer(container)
+		? await locals.pool.connect(
+				getAllRelatedInternalObjectives(params.guid, parseResult.data.relationType, '')
+		  )
+		: await locals.pool.connect(
+				getAllRelatedContainers(
+					parseResult.data.organization,
+					params.guid,
+					parseResult.data.relationType,
+					{
+						organizationalUnits: parseResult.data.organizationalUnit
+					},
+					''
+				)
+		  );
+
+	return json(filterVisible(containers, locals.user));
+}) satisfies RequestHandler;
 
 export const POST = (async ({ locals, request }) => {
 	if (!locals.user.isAuthenticated) {
