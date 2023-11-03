@@ -96,11 +96,11 @@
 
 	<footer>
 		{#if $ability.can('update', container)}
-			<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
+			<a class="button primary" href="#create=text&is-part-of={container.revision}">
 				<Icon src={PlusSmall} size="24" mini />
 				{$_('text')}
 			</a>
-			<a class="button primary" href="?overlay-new=model&is-part-of={container.revision}">
+			<a class="button primary" href="#create=model&is-part-of={container.revision}">
 				<Icon src={PlusSmall} size="24" mini />
 				{$_('model')}
 			</a>

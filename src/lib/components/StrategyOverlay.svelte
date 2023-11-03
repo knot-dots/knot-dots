@@ -32,31 +32,27 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container, CustomEventMap, EmptyContainer } from '$lib/models';
 	import { ability, sidebarToggle } from '$lib/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 
-	export let container: Container | EmptyContainer;
 	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
-	$: edit = $page.url.searchParams.has('overlay-new') || $page.url.searchParams.has('edit');
+	$: container = revisions[revisions.length - 1] as Container | EmptyContainer;
+
+	$: hashParams = paramsFromURL($page.url);
+	$: edit = hashParams.has('create') || hashParams.has('edit');
 
 	function closeOverlay() {
-		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('container-preview');
-		query.delete('edit');
-		query.delete('overlay-new');
-		query.delete('status');
-		query.delete('is-part-of');
-		return `?${query.toString()}`;
+		return '#';
 	}
 
 	async function afterSubmit(event: CustomEvent<CustomEventMap['submitSuccessful']>) {
+		await invalidateAll();
 		if ('guid' in container) {
-			await invalidateAll();
-			edit = false;
+			await goto(`#view=${container.guid}`);
 		} else {
-			await goto(`?container-preview=${event.detail.result.guid}`, { invalidateAll: true });
-			edit = false;
+			await goto(`#view=${event.detail.result.guid}`);
 		}
 	}
 
@@ -68,10 +64,10 @@
 	}
 
 	async function cancel() {
-		if ($page.url.searchParams.has('overlay-new')) {
-			await goto(closeOverlay());
+		if ('guid' in container) {
+			await goto(`#view=${container.guid}`);
 		} else {
-			edit = false;
+			await goto(closeOverlay());
 		}
 	}
 </script>

@@ -17,7 +17,7 @@
 		isTaskContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -35,7 +35,7 @@
 					{container.payload.title}
 					<span class="icons">
 						{#if $ability.can('update', container)}
-							<a href="?edit={container.guid}" class="icons-element">
+							<a href="#view={container.guid}&edit" class="icons-element">
 								<Icon solid src={Pencil} size="20" />
 							</a>
 						{/if}
@@ -50,8 +50,8 @@
 			</div>
 		</div>
 	</div>
-	{#if data.strategyOverlayData}
-		<StrategyOverlay {...data.strategyOverlayData} />
+	{#if $overlay.revisions[$overlay.revisions.length - 1]}
+		<StrategyOverlay {...$overlay} />
 	{/if}
 {:else}
 	<div class="detail-page-content">
