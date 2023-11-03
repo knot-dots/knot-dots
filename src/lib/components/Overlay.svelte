@@ -196,7 +196,7 @@
 		<footer class="content-footer">
 			<div class="content-actions">
 				{#if mayShowRelationButton && $ability.can('relate', container)}
-					<a class="button" href="?container-relations={container.guid}">
+					<a class="button" href="#relate={container.guid}">
 						{$_('relations')}
 					</a>
 				{/if}

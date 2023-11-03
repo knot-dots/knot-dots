@@ -1,6 +1,5 @@
 import { filterVisible } from '$lib/authorization';
 import {
-	getAllContainerRevisionsByGuid,
 	getAllContainersWithIndicatorContributions,
 	getAllRelatedContainers,
 	getAllRelatedContainersByStrategyType,
@@ -13,7 +12,6 @@ export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	let containersWithIndicatorContributions;
 	let organizationalUnits: string[] = [];
-	let relationOverlayData;
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -88,19 +86,11 @@ export const load = (async ({ locals, url, parent }) => {
 		]);
 	}
 
-	if (url.searchParams.has('container-relations')) {
-		const guid = url.searchParams.get('container-relations') ?? '';
-		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
-		const container = revisions[revisions.length - 1];
-		relationOverlayData = { object: container };
-	}
-
 	return {
 		containers: filterVisible(containers, locals.user),
 		containersWithIndicatorContributions: filterVisible(
 			containersWithIndicatorContributions,
 			locals.user
-		),
-		relationOverlayData
+		)
 	};
 }) satisfies PageServerLoad;

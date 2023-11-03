@@ -40,6 +40,6 @@
 	<Overlay {...$overlay} />
 {/if}
 
-{#if data.relationOverlayData}
-	<RelationOverlay {...data.relationOverlayData} />
+{#if browser && $overlay.object}
+	<RelationOverlay object={$overlay.object} />
 {/if}

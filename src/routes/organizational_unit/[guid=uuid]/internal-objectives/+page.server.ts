@@ -4,7 +4,6 @@ import { filterVisible } from '$lib/authorization';
 import { isOrganizationalUnitContainer, owners, payloadTypes, predicates } from '$lib/models';
 import type { OrganizationalUnitContainer } from '$lib/models';
 import {
-	getAllContainerRevisionsByGuid,
 	getAllRelatedInternalObjectives,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
@@ -15,7 +14,6 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 	let containers;
-	let relationOverlayData;
 
 	if (!isOrganizationalUnitContainer(container)) {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
@@ -91,16 +89,5 @@ export const load = (async ({ locals, params, url }) => {
 		return true;
 	});
 
-	if (url.searchParams.has('container-relations')) {
-		const guid = url.searchParams.get('container-relations') ?? '';
-		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
-		const container = revisions[revisions.length - 1];
-		relationOverlayData = { object: container };
-	}
-
-	return {
-		container,
-		containers: filterVisible(containers, locals.user),
-		relationOverlayData
-	};
+	return { container, containers: filterVisible(containers, locals.user) };
 }) satisfies PageServerLoad;

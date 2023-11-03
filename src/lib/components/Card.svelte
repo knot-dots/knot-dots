@@ -8,6 +8,7 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import { predicates } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
+	import { overlay } from '$lib/stores';
 	import {
 		predicateIcons,
 		statusColors,
@@ -24,8 +25,8 @@
 
 	$: relatedTo = $page.url.searchParams.get('related-to');
 
-	$: if ($page.data.relationOverlayData?.object) {
-		selected = $page.data.relationOverlayData.object;
+	$: if ($overlay.object) {
+		selected = $overlay.object;
 	} else if (relatedTo && $page.data.containers) {
 		selected = $page.data.containers.find(({ guid }: Container) => guid == relatedTo);
 	} else if ($page.data.container) {

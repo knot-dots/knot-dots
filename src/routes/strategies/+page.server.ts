@@ -1,6 +1,5 @@
 import { filterVisible } from '$lib/authorization';
 import {
-	getAllContainerRevisionsByGuid,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
@@ -10,7 +9,6 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	let organizationalUnits: string[] = [];
-	let relationOverlayData;
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -51,12 +49,5 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	}
 
-	if (url.searchParams.has('container-relations')) {
-		const guid = url.searchParams.get('container-relations') ?? '';
-		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(guid));
-		const container = revisions[revisions.length - 1];
-		relationOverlayData = { object: container };
-	}
-
-	return { containers: filterVisible(containers, locals.user), relationOverlayData };
+	return { containers: filterVisible(containers, locals.user) };
 }) satisfies PageServerLoad;

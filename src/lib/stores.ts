@@ -53,6 +53,7 @@ export const dragged = writable<Container | undefined>();
 
 type Overlay = {
 	isPartOfOptions: AnyContainer[];
+	object?: Container;
 	relatedContainers: Container[];
 	revisions: AnyContainer[];
 };
@@ -103,6 +104,15 @@ if (browser) {
 				isPartOfOptions,
 				relatedContainers,
 				revisions
+			});
+		} else if (hashParams.has('relate')) {
+			overlay.set({
+				isPartOfOptions: [],
+				object: values.data.containers.find(
+					({ guid }: AnyContainer) => guid == hashParams.get('relate')
+				),
+				relatedContainers: [],
+				revisions: []
 			});
 		} else {
 			overlay.set({ isPartOfOptions: [], relatedContainers: [], revisions: [] });
