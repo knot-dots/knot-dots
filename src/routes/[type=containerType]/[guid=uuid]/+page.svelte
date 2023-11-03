@@ -6,7 +6,7 @@
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
-	import StrategyOverlay from '$lib/components/StrategyOverlay.svelte';
+	import Overlay from '$lib/components/Overlay.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
 	import {
 		isContainer,
@@ -51,7 +51,7 @@
 		</div>
 	</div>
 	{#if $overlay.revisions[$overlay.revisions.length - 1]}
-		<StrategyOverlay {...$overlay} />
+		<Overlay {...$overlay} />
 	{/if}
 {:else}
 	<div class="detail-page-content">

@@ -24,6 +24,7 @@
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
+	import TextForm from '$lib/components/TextForm.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
@@ -41,9 +42,10 @@
 		isVisionContainer,
 		isOrganizationContainer,
 		mayDelete,
-		payloadTypes
+		payloadTypes,
+		isTextContainer
 	} from '$lib/models';
-	import type { AnyContainer, Container } from '$lib/models';
+	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	export let relatedContainers: Container[];
@@ -69,10 +71,10 @@
 		}
 	}
 
-	async function afterSubmit() {
+	async function afterSubmit(event: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		await invalidateAll();
 		if (hashParams.has('create')) {
-			await goto(closeOverlay());
+			await goto(`#view=${event.detail.result.guid}`);
 		} else {
 			await goto(`#view=${container.guid}`);
 		}
@@ -113,6 +115,8 @@
 				<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isStrategyContainer(container)}
 				<StrategyForm {container} on:submitSuccessful={afterSubmit} />
+			{:else if isTextContainer(container)}
+				<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isInternalStrategyContainer(container)}
 				<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
 			{:else if isVisionContainer(container)}
