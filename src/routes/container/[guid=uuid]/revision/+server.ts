@@ -1,8 +1,21 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { modifiedContainer, predicates } from '$lib/models';
-import { updateContainer } from '$lib/server/db';
+import { getAllContainerRevisionsByGuid, updateContainer } from '$lib/server/db';
 import type { RequestHandler } from './$types';
+import { NotFoundError } from 'slonik';
+
+export const GET = (async ({ locals, params }) => {
+	try {
+		return json(await locals.pool.connect(getAllContainerRevisionsByGuid(params.guid)));
+	} catch (e) {
+		if (e instanceof NotFoundError) {
+			throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		} else {
+			throw e;
+		}
+	}
+}) satisfies RequestHandler;
 
 export const POST = (async ({ locals, request }) => {
 	if (!locals.user.isAuthenticated) {
