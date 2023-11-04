@@ -3,9 +3,9 @@ name: Mirroring
 on: [push, delete]
 
 jobs:
-  to_gitlab:
+  to_opencode:
     runs-on: ubuntu-latest
-    steps:                                      
+    steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -15,3 +15,4 @@ jobs:
             git@gitlab.opencode.de:stadt-detmold/strategytool.git
           ssh_private_key:                     
             ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
+        continue-on-error: true
