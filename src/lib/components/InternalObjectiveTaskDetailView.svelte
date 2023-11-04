@@ -4,6 +4,7 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, owners, taskStatus } from '$lib/models';
@@ -26,7 +27,7 @@
 	let selectedRevision: TaskContainer;
 
 	$: {
-		const parseResult = taskStatus.safeParse($page.url.searchParams.get('task-status'));
+		const parseResult = taskStatus.safeParse(paramsFromURL($page.url).get('task-status'));
 		if (parseResult.success) {
 			selectedRevision =
 				(revisions as TaskContainer[]).findLast(
@@ -47,9 +48,9 @@
 		if (isPage) {
 			return `/${type}/${guid}`;
 		} else {
-			const query = new URLSearchParams($page.url.searchParams);
-			query.set('container-preview', guid);
-			return `?${query.toString()}`;
+			const query = paramsFromURL($page.url);
+			query.set('view', guid);
+			return `#${query.toString()}`;
 		}
 	}
 </script>

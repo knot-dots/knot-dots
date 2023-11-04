@@ -2,6 +2,7 @@
 	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _, date, number } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isOperationalGoalContainer, isStrategyContainer, owners, status } from '$lib/models';
@@ -15,7 +16,7 @@
 	let selectedRevision: MeasureContainer;
 
 	$: {
-		const parseResult = status.safeParse($page.url.searchParams.get('status'));
+		const parseResult = status.safeParse(paramsFromURL($page.url).get('status'));
 		if (parseResult.success) {
 			selectedRevision =
 				(revisions as MeasureContainer[]).findLast(
@@ -34,9 +35,9 @@
 		if (isPage) {
 			return `/${type}/${guid}`;
 		} else {
-			const query = new URLSearchParams($page.url.searchParams);
-			query.set('container-preview', guid);
-			return `?${query.toString()}`;
+			const query = paramsFromURL($page.url);
+			query.set('view', guid);
+			return `#${query.toString()}`;
 		}
 	}
 </script>

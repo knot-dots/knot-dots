@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
+	import { browser } from '$app/environment';
 	import OrganizationDetailView from '$lib/components/OrganizationDetailView.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { ability } from '$lib/stores';
+	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -38,8 +39,8 @@
 	</div>
 </div>
 
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
+{#if browser && $overlay.revisions.length > 0}
+	<Overlay {...$overlay} />
 {/if}
 
 <style>

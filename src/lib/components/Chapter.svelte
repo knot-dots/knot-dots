@@ -88,38 +88,32 @@
 			{/if}
 		</div>
 		<aside>
-			<a class="button" href="?container-preview={container.guid}">{$_('read_more')}</a>
+			<a class="button" href="#view={container.guid}">{$_('read_more')}</a>
 			{#if $ability.can('update', $page.data.container)}
 				{#if isModelContainer(container)}
-					<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
+					<a class="button primary" href="#create=text&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('text')}
 					</a>
-					<a
-						class="button primary"
-						href="?overlay-new=strategic_goal&is-part-of={container.revision}"
-					>
+					<a class="button primary" href="#create=strategic_goal&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('strategic_goal')}
 					</a>
 				{:else if isStrategicGoalGoalContainer(container)}
-					<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
+					<a class="button primary" href="#create=text&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('text')}
 					</a>
-					<a
-						class="button primary"
-						href="?overlay-new=operational_goal&is-part-of={container.revision}"
-					>
+					<a class="button primary" href="#create=operational_goal&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('operational_goal')}
 					</a>
 				{:else if isOperationalGoalContainer(container)}
-					<a class="button primary" href="?overlay-new=text&is-part-of={container.revision}">
+					<a class="button primary" href="#create=text&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('text')}
 					</a>
-					<a class="button primary" href="?overlay-new=measure&is-part-of={container.revision}">
+					<a class="button primary" href="#create=measure&is-part-of={container.revision}">
 						<Icon src={PlusSmall} size="24" mini />
 						{$_('measure')}
 					</a>

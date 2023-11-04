@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 	import { Icon, Share } from 'svelte-hero-icons';
 	import { goto } from '$app/navigation';
@@ -54,7 +55,7 @@
 	title={container.payload.name}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={$page.url.searchParams.get('container-preview') === container.guid}
+	class:is-active={paramsFromURL($page.url).get('view') === container.guid}
 	on:click={handleClick}
 	on:keyup={handleKeyUp}
 >

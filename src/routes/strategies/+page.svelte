@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import { levels, payloadTypes } from '$lib/models';
+	import { overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -17,7 +19,7 @@
 <Board>
 	{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
 		<BoardColumn
-			addItemUrl="?overlay-new=strategy&level={levelOption}"
+			addItemUrl="#create=strategy&level={levelOption}"
 			itemType={payloadTypes.enum.strategy}
 			title={$_(levelOption)}
 		>
@@ -30,10 +32,10 @@
 	{/each}
 </Board>
 
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
+{#if browser && $overlay.revisions.length > 0}
+	<Overlay {...$overlay} />
 {/if}
 
-{#if data.relationOverlayData}
-	<RelationOverlay {...data.relationOverlayData} />
+{#if browser && $overlay.object}
+	<RelationOverlay object={$overlay.object} />
 {/if}

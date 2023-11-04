@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { payloadTypes, predicates } from '$lib/models';
 	import type { AnyContainer, Container, EmptyContainer, PartialRelation } from '$lib/models';
 
@@ -8,7 +9,7 @@
 	export let isPartOfOptions: AnyContainer[];
 
 	if (container.relation.length == 0) {
-		container.relation = $page.url.searchParams
+		container.relation = paramsFromURL($page.url)
 			.getAll('is-part-of')
 			.map(
 				(o): PartialRelation => ({
@@ -18,13 +19,15 @@
 				})
 			)
 			.concat(
-				$page.url.searchParams.getAll('is-part-of-measure').map(
-					(o): PartialRelation => ({
-						object: Number(o),
-						position: 2 ** 32 - 1,
-						predicate: 'is-part-of-measure'
-					})
-				)
+				paramsFromURL($page.url)
+					.getAll('is-part-of-measure')
+					.map(
+						(o): PartialRelation => ({
+							object: Number(o),
+							position: 2 ** 32 - 1,
+							predicate: 'is-part-of-measure'
+						})
+					)
 			);
 	}
 

@@ -6,6 +6,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
@@ -19,9 +20,11 @@
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
+	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
+	import TextForm from '$lib/components/TextForm.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
@@ -39,11 +42,11 @@
 		isVisionContainer,
 		isOrganizationContainer,
 		mayDelete,
-		payloadTypes
+		payloadTypes,
+		isTextContainer
 	} from '$lib/models';
-	import type { AnyContainer, Container } from '$lib/models';
+	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
 	import { ability } from '$lib/stores';
-	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -53,25 +56,27 @@
 
 	$: container = revisions[revisions.length - 1];
 
-	let edit = $page.url.searchParams.has('overlay-new');
+	$: hashParams = paramsFromURL($page.url);
+	$: edit = hashParams.has('create') || hashParams.has('edit');
 
 	function closeOverlay() {
-		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('container-preview');
-		query.delete('is-part-of-measure');
-		query.delete('level');
-		query.delete('overlay-new');
-		query.delete('status');
-		query.delete('task-status');
-		return `?${query.toString()}`;
+		return '#';
 	}
 
-	async function afterSubmit() {
-		await invalidateAll();
-		if ($page.url.searchParams.has('overlay-new')) {
-			await goto(closeOverlay());
+	function cancel() {
+		if (hashParams.has('create')) {
+			return closeOverlay();
 		} else {
-			edit = false;
+			return `#view=${container.guid}`;
+		}
+	}
+
+	async function afterSubmit(event: CustomEvent<CustomEventMap['submitSuccessful']>) {
+		await invalidateAll();
+		if (hashParams.has('create')) {
+			await goto(`#view=${event.detail.result.guid}`);
+		} else {
+			await goto(`#view=${container.guid}`);
 		}
 	}
 
@@ -79,14 +84,6 @@
 		const response = await deleteContainer(container);
 		if (response.ok) {
 			await goto(closeOverlay(), { invalidateAll: true });
-		}
-	}
-
-	async function cancel() {
-		if ($page.url.searchParams.has('overlay-new')) {
-			await goto(closeOverlay());
-		} else {
-			edit = false;
 		}
 	}
 </script>
@@ -118,6 +115,8 @@
 				<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isStrategyContainer(container)}
 				<StrategyForm {container} on:submitSuccessful={afterSubmit} />
+			{:else if isTextContainer(container)}
+				<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			{:else if isInternalStrategyContainer(container)}
 				<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
 			{:else if isVisionContainer(container)}
@@ -142,7 +141,7 @@
 			<Visibility {container} />
 			<div class="content-actions">
 				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
-				<button type="button" on:click={() => cancel()}>{$_('cancel')}</button>
+				<a class="button" href={cancel()}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
 					<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
 						<Icon src={Trash} size="20" />
@@ -160,9 +159,9 @@
 				{/if}
 				<span class="icons">
 					{#if $ability.can('update', container)}
-						<button class="icons-element" on:click={() => (edit = true)}>
+						<a class="button icons-element" href="#view={container.guid}&edit">
 							<Icon solid src={Pencil} size="20" />
-						</button>
+						</a>
 					{/if}
 					<a
 						class="button icons-element"
@@ -201,7 +200,7 @@
 		<footer class="content-footer">
 			<div class="content-actions">
 				{#if mayShowRelationButton && $ability.can('relate', container)}
-					<a class="button" href="?container-relations={container.guid}">
+					<a class="button" href="#relate={container.guid}">
 						{$_('relations')}
 					</a>
 				{/if}
@@ -236,7 +235,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 22rem) * 0.65 - 2px);
+			min-width: calc((100vw - 18rem) * 0.65 - 2px);
 		}
 	}
 </style>

@@ -2,6 +2,7 @@
 	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import { levels, strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
@@ -9,7 +10,7 @@
 
 	export let container: StrategyContainer | EmptyStrategyContainer;
 
-	let levelParam = $page.url.searchParams.get('level') ?? levels.enum['level.local'];
+	let levelParam = paramsFromURL($page.url).get('level') ?? levels.enum['level.local'];
 
 	function removeImage() {
 		delete container.payload.image;

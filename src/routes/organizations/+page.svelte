@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -13,7 +14,7 @@
 <div>
 	{#if $ability.can('create', payloadTypes.enum.organization)}
 		<p>
-			<a class="button primary" href="?overlay-new={payloadTypes.enum.organization}">
+			<a class="button primary" href="#create={payloadTypes.enum.organization}">
 				<Icon src={Plus} size="20" mini />
 				{$_('organization')}
 			</a>
@@ -28,8 +29,8 @@
 	</ul>
 </div>
 
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
+{#if browser && $overlay.revisions.length > 0}
+	<Overlay {...$overlay} />
 {/if}
 
 <style>

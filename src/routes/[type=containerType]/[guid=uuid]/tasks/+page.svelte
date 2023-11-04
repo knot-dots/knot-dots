@@ -1,12 +1,13 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
+	import { overlay } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
-	import {} from '$lib/theme/models.js';
 
 	export let data: PageData;
 
@@ -49,7 +50,7 @@
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(column.title)}
 			--hover-border-color={taskStatusHoverColors.get(column.title)}
-			addItemUrl="?overlay-new={column.payloadType}&is-part-of-measure={data.container
+			addItemUrl="#create={column.payloadType}&is-part-of-measure={data.container
 				.revision}&task-status={column.title}"
 			icon={taskStatusIcons.get(column.title)}
 			items={column.items}
@@ -58,6 +59,6 @@
 	{/each}
 </Board>
 
-{#if data.overlayData}
-	<Overlay {...data.overlayData} />
+{#if browser && $overlay.revisions.length > 0}
+	<Overlay {...$overlay} />
 {/if}
