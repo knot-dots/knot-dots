@@ -4,7 +4,8 @@
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import Editor from '$lib/components/Editor.svelte';
+	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
 	import type {
 		AnyContainer,
@@ -34,48 +35,48 @@
 	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
-<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful on:deleteSuccessful>
-	<svelte:fragment slot="extra-data">
-		<label>
-			{$_('task_status.label')}
-			<select name="status" bind:value={container.payload.taskStatus} required>
-				{#each taskStatus.options as statusOption}
-					<option value={statusOption} selected={statusOption === statusParam}>
-						{$_(statusOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
-	</svelte:fragment>
+<Editor label={$_('description')} bind:value={container.payload.description} />
 
-	<svelte:fragment slot="extra-meta">
-		<label>
-			{$_('assignee')}
-			<select name="assignee" bind:value={assignee}>
-				<option></option>
-				{#await membersPromise then members}
-					{#each members as { display_name, guid }}
-						<option value={guid} selected={guid === assignee}>
-							{display_name}
-						</option>
-					{/each}
-				{/await}
-			</select>
-		</label>
-		<label>
-			{$_('task_category.label')}
-			<select name="taskCategory" bind:value={taskCategory}>
-				<option></option>
-				{#each taskCategories.options as taskCategoryOption}
-					<option value={taskCategoryOption}>
-						{$_(taskCategoryOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
-		<label>
-			{$_('fulfillment_date')}
-			<input type="date" bind:value={container.payload.fulfillmentDate} />
-		</label>
-	</svelte:fragment>
-</InternalObjectiveForm>
+<label>
+	{$_('task_status.label')}
+	<select name="status" bind:value={container.payload.taskStatus} required>
+		{#each taskStatus.options as statusOption}
+			<option value={statusOption} selected={statusOption === statusParam}>
+				{$_(statusOption)}
+			</option>
+		{/each}
+	</select>
+</label>
+
+<label>
+	{$_('assignee')}
+	<select name="assignee" bind:value={assignee}>
+		<option></option>
+		{#await membersPromise then members}
+			{#each members as { display_name, guid }}
+				<option value={guid} selected={guid === assignee}>
+					{display_name}
+				</option>
+			{/each}
+		{/await}
+	</select>
+</label>
+
+<label>
+	{$_('task_category.label')}
+	<select name="taskCategory" bind:value={taskCategory}>
+		<option></option>
+		{#each taskCategories.options as taskCategoryOption}
+			<option value={taskCategoryOption}>
+				{$_(taskCategoryOption)}
+			</option>
+		{/each}
+	</select>
+</label>
+
+<label>
+	{$_('fulfillment_date')}
+	<input type="date" bind:value={container.payload.fulfillmentDate} />
+</label>
+
+<RelationSelector {container} {isPartOfOptions} />

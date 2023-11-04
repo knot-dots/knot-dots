@@ -8,42 +8,22 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
-	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
-	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
-	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
-	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
-	import ModelForm from '$lib/components/ModelForm.svelte';
-	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
-	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
-	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
-	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
-	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
-	import TextForm from '$lib/components/TextForm.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
 		isInternalObjectiveContainer,
-		isInternalObjectiveStrategicGoalContainer,
-		isInternalStrategyContainer,
 		isMeasureContainer,
-		isModelContainer,
-		isMilestoneContainer,
-		isOperationalGoalContainer,
 		isOrganizationalUnitContainer,
-		isStrategicGoalGoalContainer,
-		isStrategyContainer,
 		isTaskContainer,
-		isVisionContainer,
-		isOrganizationContainer,
 		mayDelete,
-		payloadTypes,
-		isTextContainer
+		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -101,41 +81,7 @@
 			</label>
 		</header>
 		<div class="content-details masked-overflow">
-			{#if isMeasureContainer(container)}
-				<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isModelContainer(container)}
-				<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isOperationalGoalContainer(container)}
-				<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isOrganizationContainer(container)}
-				<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
-			{:else if isOrganizationalUnitContainer(container)}
-				<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isStrategicGoalGoalContainer(container)}
-				<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isStrategyContainer(container)}
-				<StrategyForm {container} on:submitSuccessful={afterSubmit} />
-			{:else if isTextContainer(container)}
-				<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isInternalStrategyContainer(container)}
-				<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
-			{:else if isVisionContainer(container)}
-				<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isInternalObjectiveStrategicGoalContainer(container)}
-				<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isMilestoneContainer(container)}
-				<InternalObjectiveMilestoneForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-				/>
-			{:else if isTaskContainer(container)}
-				<InternalObjectiveTaskForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-				/>
-			{/if}
+			<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 		</div>
 		<footer class="content-footer">
 			<Visibility {container} />

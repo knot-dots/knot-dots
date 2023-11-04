@@ -3,34 +3,21 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
-	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
-	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
-	import MeasureForm from '$lib/components/MeasureForm.svelte';
-	import ModelForm from '$lib/components/ModelForm.svelte';
-	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
-	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
-	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
-	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
-	import StrategyForm from '$lib/components/StrategyForm.svelte';
+	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isEmptyInternalObjectiveStrategicGoalContainer,
 		isEmptyInternalStrategyContainer,
-		isEmptyMeasureContainer,
 		isEmptyModelContainer,
 		isEmptyMilestoneContainer,
 		isEmptyOperationalGoalContainer,
-		isEmptyOrganizationContainer,
-		isEmptyOrganizationalUnitContainer,
 		isEmptyStrategicGoalContainer,
 		isEmptyStrategyContainer,
-		isEmptyTaskContainer,
 		isEmptyVisionContainer,
 		payloadTypes,
 		containerOfType
 	} from '$lib/models';
-	import type { CustomEventMap, PayloadType } from '$lib/models';
+	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -49,7 +36,7 @@
 		if (newContainer.payload.type === payloadTypes.enum.organizational_unit) {
 			newContainer.payload.level = parseInt($page.url.searchParams.get('level') ?? '1');
 		}
-		return newContainer;
+		return newContainer as AnyContainer;
 	})(payloadType);
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
@@ -99,35 +86,7 @@
 		</label>
 	</header>
 	<div class="content-details masked-overflow">
-		{#if isEmptyMeasureContainer(container)}
-			<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyModelContainer(container)}
-			<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyOperationalGoalContainer(container)}
-			<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyOrganizationContainer(container)}
-			<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyOrganizationalUnitContainer(container)}
-			<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyStrategicGoalContainer(container)}
-			<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyStrategyContainer(container)}
-			<StrategyForm {container} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyInternalStrategyContainer(container)}
-			<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyVisionContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isEmptyMilestoneContainer(container)}
-			<InternalObjectiveMilestoneForm
-				{container}
-				{isPartOfOptions}
-				on:submitSuccessful={afterSubmit}
-			/>
-		{:else if isEmptyTaskContainer(container)}
-			<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{/if}
+		<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 	</div>
 	<footer class="content-footer">
 		<Visibility {container} />

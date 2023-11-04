@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import type { AnyContainer, EmptyTextContainer, TextContainer } from '$lib/models';
@@ -9,12 +8,6 @@
 	export let isPartOfOptions: AnyContainer[];
 </script>
 
-<ContainerForm {container} on:submitSuccessful on:deleteSuccessful>
-	<svelte:fragment slot="data">
-		<Editor label={$_('body')} bind:value={container.payload.body} />
-	</svelte:fragment>
+<Editor label={$_('body')} bind:value={container.payload.body} />
 
-	<svelte:fragment slot="meta">
-		<RelationSelector {container} {isPartOfOptions} />
-	</svelte:fragment>
-</ContainerForm>
+<RelationSelector {container} {isPartOfOptions} />

@@ -3,29 +3,16 @@
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
-	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
-	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
-	import MeasureForm from '$lib/components/MeasureForm.svelte';
-	import ModelForm from '$lib/components/ModelForm.svelte';
-	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
-	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
-	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
-	import StrategyForm from '$lib/components/StrategyForm.svelte';
-	import TextForm from '$lib/components/TextForm.svelte';
+	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
-		isMeasureContainer,
 		isModelContainer,
 		isMilestoneContainer,
 		isOperationalGoalContainer,
-		isOrganizationalUnitContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
-		isTaskContainer,
-		isTextContainer,
 		isVisionContainer,
 		mayDelete,
 		payloadTypes,
@@ -90,35 +77,7 @@
 		</label>
 	</header>
 	<div class="content-details masked-overflow">
-		{#if isMeasureContainer(container)}
-			<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isModelContainer(container)}
-			<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isOperationalGoalContainer(container)}
-			<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isOrganizationalUnitContainer(container)}
-			<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isStrategicGoalGoalContainer(container)}
-			<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isStrategyContainer(container)}
-			<StrategyForm {container} on:submitSuccessful={afterSubmit} />
-		{:else if isTextContainer(container)}
-			<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isInternalStrategyContainer(container)}
-			<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
-		{:else if isVisionContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isInternalObjectiveStrategicGoalContainer(container)}
-			<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{:else if isMilestoneContainer(container)}
-			<InternalObjectiveMilestoneForm
-				{container}
-				{isPartOfOptions}
-				on:submitSuccessful={afterSubmit}
-			/>
-		{:else if isTaskContainer(container)}
-			<InternalObjectiveTaskForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-		{/if}
+		<ContainerForm {container} {isPartOfOptions} on:on:submitSuccessful={afterSubmit} />
 	</div>
 	<footer class="content-footer">
 		<Visibility {container} />
