@@ -14,10 +14,13 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+
+	applicationState.update((state) => ({ ...state, containerDetailView: { tabs: [] } }));
 
 	$: strategy = isStrategyContainer(container)
 		? container

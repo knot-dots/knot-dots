@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
@@ -17,7 +18,7 @@
 		isTaskContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { ability, overlay } from '$lib/stores';
+	import { ability, applicationState, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -80,6 +81,11 @@
 			{/if}
 		</header>
 		<div class="content-details masked-overflow">
+			{#if $applicationState.containerDetailView.tabs.length > 0}
+				<aside>
+					<ContainerDetailViewTabs {container} />
+				</aside>
+			{/if}
 			{#if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
@@ -96,11 +102,6 @@
 {/if}
 
 <style>
-	header {
-		border-bottom: solid 1px var(--color-gray-300);
-		padding: 1.5rem;
-	}
-
 	.strategy {
 		flex: 1 1;
 		overflow-x: auto;

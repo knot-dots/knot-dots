@@ -1,14 +1,42 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import Editor from '$lib/components/Editor.svelte';
+	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import type { AnyContainer, EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
+	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import { applicationState } from '$lib/stores';
 
 	export let container: EmptyMilestoneContainer | MilestoneContainer;
 	export let isPartOfOptions: AnyContainer[];
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
+			tabs: ['metadata', 'basic-data']
+		}
+	}));
 </script>
 
-<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful on:deleteSuccessful>
-	<svelte:fragment slot="extra-data">
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
+
+		<RelationSelector {container} {isPartOfOptions} />
+
+		<OrganizationSelector bind:container />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
+
+		<label>
+			{$_('summary')}
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+		</label>
+
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+
 		<label>
 			{$_('progress')}
 			<input
@@ -33,15 +61,13 @@
 				<option value="1"></option>
 			</datalist>
 		</label>
-	</svelte:fragment>
 
-	<svelte:fragment slot="extra-meta">
 		<label>
 			{$_('fulfillment_date')}
 			<input type="date" bind:value={container.payload.fulfillmentDate} />
 		</label>
-	</svelte:fragment>
-</InternalObjectiveForm>
+	</fieldset>
+{/if}
 
 <style>
 	input[type='range'] {

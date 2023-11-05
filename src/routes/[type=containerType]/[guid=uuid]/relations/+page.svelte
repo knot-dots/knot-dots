@@ -51,7 +51,7 @@
 			title={$_(column.title)}
 		>
 			<div class="vertical-scroll-wrapper masked-overflow">
-				{#each data.allRelatedContainers.filter((c) => c.payload.type === column.payloadType) as container}
+				{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
 					<Card
 						{container}
 						relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf)}

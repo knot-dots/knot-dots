@@ -6,10 +6,13 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, owners } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+
+	applicationState.update((state) => ({ ...state, containerDetailView: { tabs: [] } }));
 
 	$: measure = isMeasureContainer(container)
 		? container

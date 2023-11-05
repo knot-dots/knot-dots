@@ -4,7 +4,9 @@
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
+	import Editor from '$lib/components/Editor.svelte';
+	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
 	import type {
 		AnyContainer,
@@ -13,9 +15,18 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
 	export let isPartOfOptions: AnyContainer[];
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
+			tabs: ['metadata', 'basic-data']
+		}
+	}));
 
 	let membersPromise: Promise<User[]> = new Promise(() => []);
 
@@ -34,8 +45,20 @@
 	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
-<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful on:deleteSuccessful>
-	<svelte:fragment slot="extra-data">
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
+
+		<RelationSelector {container} {isPartOfOptions} />
+
+		<OrganizationSelector bind:container />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
+
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+
 		<label>
 			{$_('task_status.label')}
 			<select name="status" bind:value={container.payload.taskStatus} required>
@@ -46,9 +69,7 @@
 				{/each}
 			</select>
 		</label>
-	</svelte:fragment>
 
-	<svelte:fragment slot="extra-meta">
 		<label>
 			{$_('assignee')}
 			<select name="assignee" bind:value={assignee}>
@@ -62,6 +83,7 @@
 				{/await}
 			</select>
 		</label>
+
 		<label>
 			{$_('task_category.label')}
 			<select name="taskCategory" bind:value={taskCategory}>
@@ -73,9 +95,10 @@
 				{/each}
 			</select>
 		</label>
+
 		<label>
 			{$_('fulfillment_date')}
 			<input type="date" bind:value={container.payload.fulfillmentDate} />
 		</label>
-	</svelte:fragment>
-</InternalObjectiveForm>
+	</fieldset>
+{/if}

@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
+	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import { mayDelete } from '$lib/models';
 	import type { PageData } from './$types';
@@ -32,7 +32,7 @@
 		</label>
 	</header>
 	<div class="content-details masked-overflow">
-		<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
+		<ContainerForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
 	</div>
 	<footer class="content-footer">
 		<Visibility {container} />

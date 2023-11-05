@@ -218,6 +218,22 @@ td {
 	outline: none;
 }
 
+/* Forms and fieldsets */
+.form-tab {
+	border: none;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 0;
+}
+
+.form-tab > legend {
+	color: var(--color-gray-800, #1F2A37);
+	font-weight: 700;
+	line-height: 1.5;
+	margin-bottom: 1.5rem;
+}
+
 /* Button styles */
 button,
 .button {
@@ -525,11 +541,27 @@ fieldset {
 .content-details {
 	--mask-height: 1.5rem;
 
+	flex-grow: 1;
 	padding: 1.5rem 1.5rem 1.5rem 5.25rem;
 }
 
+.content-details aside {
+	margin-left: -5.25rem;
+	position: fixed;
+}
+
+.content-details aside > * {
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.content-details aside > *:nth-child(2) {
+	border-top: solid 1px var(--color-gray-200);
+	margin-top: 0.5rem;
+	padding-top: 0.5rem;
+}
+
 .content-footer {
-	margin-top: auto;
 	padding: 1.5rem 1.5rem 1.5rem 5.25rem;
 }
 

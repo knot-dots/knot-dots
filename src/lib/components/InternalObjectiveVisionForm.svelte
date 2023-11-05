@@ -1,18 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
-	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
-	import { sustainableDevelopmentGoals, topics } from '$lib/models';
-	import type {
-		AnyContainer,
-		EmptyStrategicGoalContainer,
-		StrategicGoalContainer
-	} from '$lib/models';
+	import type { AnyContainer, EmptyVisionContainer, VisionContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container: StrategicGoalContainer | EmptyStrategicGoalContainer;
+	export let container: VisionContainer | EmptyVisionContainer;
 	export let isPartOfOptions: AnyContainer[];
 
 	applicationState.update((state) => ({
@@ -38,21 +32,9 @@
 
 		<label>
 			{$_('summary')}
-			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
 		</label>
 
 		<Editor label={$_('description')} bind:value={container.payload.description} />
-
-		<ListBox
-			label={$_('topic.label')}
-			options={topics.options}
-			bind:value={container.payload.topic}
-		/>
-
-		<ListBox
-			label={$_('category')}
-			options={sustainableDevelopmentGoals.options}
-			bind:value={container.payload.category}
-		/>
 	</fieldset>
 {/if}

@@ -10,7 +10,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ params, locals, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
-	const [containersWithIndicatorContributions, allRelatedContainers] = await Promise.all([
+	const [containersWithIndicatorContributions, containers] = await Promise.all([
 		locals.pool.connect(getAllContainersWithIndicatorContributions([container.organization])),
 		params.type.includes('internal_objective')
 			? locals.pool.connect(
@@ -37,7 +37,7 @@ export const load = (async ({ params, locals, url }) => {
 	]);
 
 	return {
-		allRelatedContainers: filterVisible(allRelatedContainers, locals.user),
+		containers: filterVisible(containers, locals.user),
 		container,
 		containersWithIndicatorContributions: filterVisible(
 			containersWithIndicatorContributions,

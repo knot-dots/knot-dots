@@ -1,13 +1,18 @@
 <script lang="ts">
 	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
-	import { organizationCategories } from '$lib/models.js';
-	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models.js';
+	import { organizationCategories } from '$lib/models';
+	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: OrganizationContainer | EmptyOrganizationContainer;
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: { tabs: [] }
+	}));
 
 	function removeImage() {
 		delete container.payload.image;
@@ -15,46 +20,42 @@
 	}
 </script>
 
-<ContainerForm {container} on:submitSuccessful>
-	<svelte:fragment slot="data">
-		{#if 'image' in container.payload}
-			<span class="preview">
-				<img alt={$_('image')} class="logo" src={container.payload.image} />
-				<button
-					class="quiet remove"
-					title={$_('remove_image')}
-					type="button"
-					on:click|stopPropagation={removeImage}
-				>
-					<Icon src={Trash} size="20" />
-				</button>
-			</span>
-		{:else}
-			<label>
-				{$_('logo')}
-				<input type="file" name="image" accept="image/png,image/jpeg" />
-				<span class="help">{$_('upload.image.help')}</span>
-			</label>
-		{/if}
-		<Editor label={$_('description')} bind:value={container.payload.description} />
-	</svelte:fragment>
+{#if 'image' in container.payload}
+	<span class="preview">
+		<img alt={$_('image')} class="logo" src={container.payload.image} />
+		<button
+			class="quiet remove"
+			title={$_('remove_image')}
+			type="button"
+			on:click|stopPropagation={removeImage}
+		>
+			<Icon src={Trash} size="20" />
+		</button>
+	</span>
+{:else}
+	<label>
+		{$_('logo')}
+		<input type="file" name="image" accept="image/png,image/jpeg" />
+		<span class="help">{$_('upload.image.help')}</span>
+	</label>
+{/if}
 
-	<svelte:fragment slot="meta">
-		<label>
-			{$_('organization_category.label')}
-			<select name="organizationCategory" bind:value={container.payload.organizationCategory}>
-				{#each organizationCategories.options as organizationCategoryOption}
-					<option value={organizationCategoryOption}>{$_(organizationCategoryOption)}</option>
-				{/each}
-			</select>
-		</label>
-		<ListBox
-			label={$_('boards')}
-			options={['board.internal_objectives', 'board.organizational_units', 'board.tasks']}
-			bind:value={container.payload.boards}
-		/>
-	</svelte:fragment>
-</ContainerForm>
+<Editor label={$_('description')} bind:value={container.payload.description} />
+
+<label>
+	{$_('organization_category.label')}
+	<select name="organizationCategory" bind:value={container.payload.organizationCategory}>
+		{#each organizationCategories.options as organizationCategoryOption}
+			<option value={organizationCategoryOption}>{$_(organizationCategoryOption)}</option>
+		{/each}
+	</select>
+</label>
+
+<ListBox
+	label={$_('boards')}
+	options={['board.internal_objectives', 'board.organizational_units', 'board.tasks']}
+	bind:value={container.payload.boards}
+/>
 
 <style>
 	.preview {

@@ -50,7 +50,7 @@
 	}
 
 	.organization-inner {
-		min-width: calc(100vw - 24rem);
+		min-width: calc(100vw - 20rem);
 		overflow-y: auto;
 	}
 </style>

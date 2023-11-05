@@ -8,45 +8,27 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
-	import InternalObjectiveForm from '$lib/components/InternalObjectiveForm.svelte';
-	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
-	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
-	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
-	import ModelForm from '$lib/components/ModelForm.svelte';
-	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
-	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
-	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
-	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
-	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
-	import StrategyForm from '$lib/components/StrategyForm.svelte';
+	import OverlayDeepLinks from '$lib/components/OverlayDeepLinks.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
-	import TextForm from '$lib/components/TextForm.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
 		isInternalObjectiveContainer,
-		isInternalObjectiveStrategicGoalContainer,
-		isInternalStrategyContainer,
 		isMeasureContainer,
-		isModelContainer,
-		isMilestoneContainer,
-		isOperationalGoalContainer,
 		isOrganizationalUnitContainer,
-		isStrategicGoalGoalContainer,
-		isStrategyContainer,
 		isTaskContainer,
-		isVisionContainer,
-		isOrganizationContainer,
 		mayDelete,
-		payloadTypes,
-		isTextContainer
+		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -63,25 +45,28 @@
 		return '#';
 	}
 
-	function cancel() {
+	function cancel(c: AnyContainer) {
 		if (hashParams.has('create')) {
 			return closeOverlay();
 		} else {
-			return `#view=${container.guid}`;
+			return `#view=${c.guid}`;
 		}
 	}
 
-	async function afterSubmit(event: CustomEvent<CustomEventMap['submitSuccessful']>) {
+	async function afterSubmit(
+		event: CustomEvent<CustomEventMap['submitSuccessful']>,
+		c: AnyContainer
+	) {
 		await invalidateAll();
 		if (hashParams.has('create')) {
 			await goto(`#view=${event.detail.result.guid}`);
 		} else {
-			await goto(`#view=${container.guid}`);
+			await goto(`#view=${c.guid}`);
 		}
 	}
 
-	async function handleDelete() {
-		const response = await deleteContainer(container);
+	async function handleDelete(c: AnyContainer) {
+		const response = await deleteContainer(c);
 		if (response.ok) {
 			await goto(closeOverlay(), { invalidateAll: true });
 		}
@@ -101,49 +86,29 @@
 			</label>
 		</header>
 		<div class="content-details masked-overflow">
-			{#if isMeasureContainer(container)}
-				<MeasureForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isModelContainer(container)}
-				<ModelForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isOperationalGoalContainer(container)}
-				<OperationalGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isOrganizationContainer(container)}
-				<OrganizationForm {container} on:submitSuccessful={afterSubmit} />
-			{:else if isOrganizationalUnitContainer(container)}
-				<OrganizationalUnitForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isStrategicGoalGoalContainer(container)}
-				<StrategicGoalForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isStrategyContainer(container)}
-				<StrategyForm {container} on:submitSuccessful={afterSubmit} />
-			{:else if isTextContainer(container)}
-				<TextForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isInternalStrategyContainer(container)}
-				<InternalObjectiveForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
-			{:else if isVisionContainer(container)}
-				<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isInternalObjectiveStrategicGoalContainer(container)}
-				<InternalObjectiveForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-			{:else if isMilestoneContainer(container)}
-				<InternalObjectiveMilestoneForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-				/>
-			{:else if isTaskContainer(container)}
-				<InternalObjectiveTaskForm
-					{container}
-					{isPartOfOptions}
-					on:submitSuccessful={afterSubmit}
-				/>
+			{#if $applicationState.containerForm.tabs.length > 0}
+				<aside>
+					<ContainerFormTabs {container} />
+				</aside>
 			{/if}
+			<ContainerForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={(e) => afterSubmit(e, container)}
+			/>
 		</div>
 		<footer class="content-footer">
 			<Visibility {container} />
 			<div class="content-actions">
 				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
-				<a class="button" href={cancel()}>{$_('cancel')}</a>
+				<a class="button" href={cancel(container)}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
-					<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
+					<button
+						class="delete quiet"
+						title={$_('delete')}
+						type="button"
+						on:click={() => handleDelete(container)}
+					>
 						<Icon src={Trash} size="20" />
 					</button>
 				{/if}
@@ -183,7 +148,12 @@
 		</header>
 		<div class="content-details masked-overflow">
 			{#if 'guid' in container}
-				<OverlaySidebar {container} />
+				<aside>
+					{#if $applicationState.containerDetailView.tabs.length > 0}
+						<ContainerDetailViewTabs {container} />
+					{/if}
+					<OverlayDeepLinks {container} />
+				</aside>
 			{/if}
 			{#if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
