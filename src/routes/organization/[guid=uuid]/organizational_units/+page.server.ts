@@ -8,8 +8,6 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url, params }) => {
 	let containers;
-	let overlayData;
-
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (url.searchParams.has('related-to')) {
@@ -22,5 +20,5 @@ export const load = (async ({ locals, url, params }) => {
 		);
 	}
 
-	return { container, containers: filterVisible(containers, locals.user), overlayData };
+	return { container, containers: filterVisible(containers, locals.user) };
 }) satisfies PageServerLoad;
