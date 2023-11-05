@@ -45,25 +45,28 @@
 		return '#';
 	}
 
-	function cancel() {
+	function cancel(c: AnyContainer) {
 		if (hashParams.has('create')) {
 			return closeOverlay();
 		} else {
-			return `#view=${container.guid}`;
+			return `#view=${c.guid}`;
 		}
 	}
 
-	async function afterSubmit(event: CustomEvent<CustomEventMap['submitSuccessful']>) {
+	async function afterSubmit(
+		event: CustomEvent<CustomEventMap['submitSuccessful']>,
+		c: AnyContainer
+	) {
 		await invalidateAll();
 		if (hashParams.has('create')) {
 			await goto(`#view=${event.detail.result.guid}`);
 		} else {
-			await goto(`#view=${container.guid}`);
+			await goto(`#view=${c.guid}`);
 		}
 	}
 
-	async function handleDelete() {
-		const response = await deleteContainer(container);
+	async function handleDelete(c: AnyContainer) {
+		const response = await deleteContainer(c);
 		if (response.ok) {
 			await goto(closeOverlay(), { invalidateAll: true });
 		}
@@ -88,15 +91,24 @@
 					<ContainerFormTabs {container} />
 				</aside>
 			{/if}
-			<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+			<ContainerForm
+				{container}
+				{isPartOfOptions}
+				on:submitSuccessful={(e) => afterSubmit(e, container)}
+			/>
 		</div>
 		<footer class="content-footer">
 			<Visibility {container} />
 			<div class="content-actions">
 				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
-				<a class="button" href={cancel()}>{$_('cancel')}</a>
+				<a class="button" href={cancel(container)}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
-					<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
+					<button
+						class="delete quiet"
+						title={$_('delete')}
+						type="button"
+						on:click={() => handleDelete(container)}
+					>
 						<Icon src={Trash} size="20" />
 					</button>
 				{/if}
