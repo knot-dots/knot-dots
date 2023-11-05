@@ -349,7 +349,7 @@
 		</ul>
 	{/if}
 
-	{#if 'overlayData' in $page.data}
+	{#if 'containers' in $page.data}
 		<ul class="group group-actions">
 			<li>
 				<form class="search" data-sveltekit-keepfocus>
@@ -516,6 +516,25 @@
 						on:change={applySortAndFilters}
 					/>
 				</li>
+			{:else if $page.url.pathname === '/organizations'}
+				<li>
+					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+						<FilterIcon class="icon-20" />
+						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+						<span class:is-hidden={!$sidebarToggle}>
+							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+						</span>
+					</button>
+					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+						<li>
+							<Filters
+								options={organizationCategories.options.map((o) => [$_(o), o])}
+								bind:selectedOptions={selectedOrganizationCategory}
+								on:change={applySortAndFilters}
+							/>
+						</li>
+					</ul>
+				</li>
 			{/if}
 			{#if !$page.url.pathname.includes('organizational_units') && !$page.url.pathname.includes('tasks')}
 				<li>
@@ -552,60 +571,6 @@
 					</ul>
 				</li>
 			{/if}
-		</ul>
-	{:else if $page.url.pathname === '/organizations'}
-		<ul class="group group-actions">
-			<li>
-				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-					<FilterIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-					</span>
-				</button>
-				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					<li>
-						<Filters
-							options={organizationCategories.options.map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedOrganizationCategory}
-							on:change={applySortAndFilters}
-						/>
-					</li>
-				</ul>
-			</li>
-			<li>
-				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
-					<SortDescendingIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
-					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" />
-					</span>
-				</button>
-				<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
-					<li>
-						<label>
-							<input
-								type="radio"
-								value={'modified'}
-								bind:group={selectedSort}
-								on:change={applySortAndFilters}
-							/>
-							{$_('sort_modified')}
-						</label>
-					</li>
-					<li>
-						<label>
-							<input
-								type="radio"
-								value={'alpha'}
-								bind:group={selectedSort}
-								on:change={applySortAndFilters}
-							/>
-							{$_('sort_alphabetically')}
-						</label>
-					</li>
-				</ul>
-			</li>
 		</ul>
 	{:else if 'container' in $page.data && isStrategyContainer($page.data.container)}
 		<ul class="group group-actions">
