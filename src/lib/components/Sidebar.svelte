@@ -82,21 +82,21 @@
 		if (selectedSort != 'modified') {
 			query.append('sort', selectedSort);
 		}
-		goto(`?${query.toString()}`, { keepFocus: true });
+		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true });
 	}
 
 	function applyPayloadTypeFilter() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('payloadType');
 		selectedPayloadType.forEach((t) => query.append('payloadType', t));
-		goto(`?${query.toString()}`, { keepFocus: true, replaceState: true });
+		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true, replaceState: true });
 	}
 
 	function applyInternalObjectivesFilter() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete('included');
 		selectedIncluded.forEach((t) => query.append('included', t));
-		goto(`?${query.toString()}`, { keepFocus: true });
+		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true });
 	}
 
 	function debouncedSearch() {
@@ -110,7 +110,7 @@
 		if (terms) {
 			searchParams.set('terms', terms);
 		}
-		goto(`?${searchParams.toString()}`, { keepFocus: true, replaceState: true });
+		goto(`?${searchParams.toString()}${$page.url.hash}`, { keepFocus: true, replaceState: true });
 	}
 
 	function toggleSidebar() {
