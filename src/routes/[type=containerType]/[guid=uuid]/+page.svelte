@@ -102,11 +102,6 @@
 {/if}
 
 <style>
-	header {
-		border-bottom: solid 1px var(--color-gray-300);
-		padding: 1.5rem;
-	}
-
 	.strategy {
 		flex: 1 1;
 		overflow-x: auto;
