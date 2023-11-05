@@ -544,6 +544,12 @@ fieldset {
 	padding: 1.5rem 1.5rem 1.5rem 5.25rem;
 }
 
+.content-details aside {
+	margin-left: -5.25rem;
+	padding: 0 0.5rem;
+	position: fixed;
+}
+
 .content-footer {
 	margin-top: auto;
 	padding: 1.5rem 1.5rem 1.5rem 5.25rem;

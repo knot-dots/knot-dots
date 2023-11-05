@@ -8,28 +8,39 @@
 		EmptyInternalObjectiveStrategicGoalContainer,
 		InternalObjectiveStrategicGoalContainer
 	} from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container:
 		| InternalObjectiveStrategicGoalContainer
 		| EmptyInternalObjectiveStrategicGoalContainer;
 	export let isPartOfOptions: AnyContainer[];
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
+			tabs: ['metadata', 'basic-data']
+		}
+	}));
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<RelationSelector {container} {isPartOfOptions} />
+		<RelationSelector {container} {isPartOfOptions} />
 
-	<OrganizationSelector bind:container />
-</fieldset>
+		<OrganizationSelector bind:container />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
 
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
+		<label>
+			{$_('summary')}
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+		</label>
 
-	<label>
-		{$_('summary')}
-		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
-	</label>
-
-	<Editor label={$_('description')} bind:value={container.payload.description} />
-</fieldset>
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	</fieldset>
+{/if}

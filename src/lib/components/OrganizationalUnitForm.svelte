@@ -9,9 +9,15 @@
 		OrganizationalUnitContainer
 	} from '$lib/models';
 	import { isOrganizationalUnitContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
 	export let isPartOfOptions: AnyContainer[];
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: { tabs: [] }
+	}));
 
 	$: filterByLevel = ({ payload }: OrganizationalUnitContainer) =>
 		container.payload.level === payload.level + 1;

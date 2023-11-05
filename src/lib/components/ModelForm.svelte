@@ -6,38 +6,49 @@
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { AnyContainer, EmptyModelContainer, ModelContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: ModelContainer | EmptyModelContainer;
 	export let isPartOfOptions: AnyContainer[];
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
+			tabs: ['metadata', 'basic-data']
+		}
+	}));
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<RelationSelector {container} {isPartOfOptions} />
+		<RelationSelector {container} {isPartOfOptions} />
 
-	<OrganizationSelector bind:container />
-</fieldset>
+		<OrganizationSelector bind:container />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
 
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
+		<label>
+			{$_('summary')}
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
+		</label>
 
-	<label>
-		{$_('summary')}
-		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
-	</label>
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 
-	<Editor label={$_('description')} bind:value={container.payload.description} />
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
+		/>
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
-
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
-</fieldset>
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
+		/>
+	</fieldset>
+{/if}

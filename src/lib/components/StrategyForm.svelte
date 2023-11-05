@@ -7,8 +7,14 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import { levels, strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: StrategyContainer | EmptyStrategyContainer;
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: { tabs: [] }
+	}));
 
 	let levelParam = paramsFromURL($page.url).get('level') ?? levels.enum['level.local'];
 

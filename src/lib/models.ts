@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+export type ContainerFormTabKey = 'basic-data' | 'effects' | 'metadata' | 'resources';
+
+export type ApplicationState = {
+	containerForm: {
+		activeTab?: ContainerFormTabKey;
+		tabs: Array<ContainerFormTabKey>;
+	};
+};
+
 const sdgValues = [
 	'sdg.01',
 	'sdg.02',

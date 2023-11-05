@@ -11,47 +11,58 @@
 		OperationalGoalContainer,
 		EmptyOperationalGoalContainer
 	} from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: OperationalGoalContainer | EmptyOperationalGoalContainer;
 	export let isPartOfOptions: AnyContainer[];
 
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
+			tabs: ['metadata', 'basic-data']
+		}
+	}));
+
 	let indicatorLocked = container.payload.indicator.length > 0;
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<RelationSelector {container} {isPartOfOptions} />
+		<RelationSelector {container} {isPartOfOptions} />
 
-	<OrganizationSelector bind:container />
-</fieldset>
+		<OrganizationSelector bind:container />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
 
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
+		<label>
+			{$_('summary')}
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
+		</label>
 
-	<label>
-		{$_('summary')}
-		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
-	</label>
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 
-	<Editor label={$_('description')} bind:value={container.payload.description} />
+		<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
 
-	<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
+		/>
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
+		/>
 
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
-
-	<label>
-		{$_('fulfillment_date')}
-		<input type="date" bind:value={container.payload.fulfillmentDate} />
-	</label>
-</fieldset>
+		<label>
+			{$_('fulfillment_date')}
+			<input type="date" bind:value={container.payload.fulfillmentDate} />
+		</label>
+	</fieldset>
+{/if}

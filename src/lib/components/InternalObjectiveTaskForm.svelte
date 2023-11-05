@@ -15,9 +15,18 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
 	export let isPartOfOptions: AnyContainer[];
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
+			tabs: ['metadata', 'basic-data']
+		}
+	}));
 
 	let membersPromise: Promise<User[]> = new Promise(() => []);
 
@@ -36,58 +45,60 @@
 	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<RelationSelector {container} {isPartOfOptions} />
+		<RelationSelector {container} {isPartOfOptions} />
 
-	<OrganizationSelector bind:container />
-</fieldset>
+		<OrganizationSelector bind:container />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
 
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 
-	<Editor label={$_('description')} bind:value={container.payload.description} />
-
-	<label>
-		{$_('task_status.label')}
-		<select name="status" bind:value={container.payload.taskStatus} required>
-			{#each taskStatus.options as statusOption}
-				<option value={statusOption} selected={statusOption === statusParam}>
-					{$_(statusOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
-
-	<label>
-		{$_('assignee')}
-		<select name="assignee" bind:value={assignee}>
-			<option></option>
-			{#await membersPromise then members}
-				{#each members as { display_name, guid }}
-					<option value={guid} selected={guid === assignee}>
-						{display_name}
+		<label>
+			{$_('task_status.label')}
+			<select name="status" bind:value={container.payload.taskStatus} required>
+				{#each taskStatus.options as statusOption}
+					<option value={statusOption} selected={statusOption === statusParam}>
+						{$_(statusOption)}
 					</option>
 				{/each}
-			{/await}
-		</select>
-	</label>
+			</select>
+		</label>
 
-	<label>
-		{$_('task_category.label')}
-		<select name="taskCategory" bind:value={taskCategory}>
-			<option></option>
-			{#each taskCategories.options as taskCategoryOption}
-				<option value={taskCategoryOption}>
-					{$_(taskCategoryOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
+		<label>
+			{$_('assignee')}
+			<select name="assignee" bind:value={assignee}>
+				<option></option>
+				{#await membersPromise then members}
+					{#each members as { display_name, guid }}
+						<option value={guid} selected={guid === assignee}>
+							{display_name}
+						</option>
+					{/each}
+				{/await}
+			</select>
+		</label>
 
-	<label>
-		{$_('fulfillment_date')}
-		<input type="date" bind:value={container.payload.fulfillmentDate} />
-	</label>
-</fieldset>
+		<label>
+			{$_('task_category.label')}
+			<select name="taskCategory" bind:value={taskCategory}>
+				<option></option>
+				{#each taskCategories.options as taskCategoryOption}
+					<option value={taskCategoryOption}>
+						{$_(taskCategoryOption)}
+					</option>
+				{/each}
+			</select>
+		</label>
+
+		<label>
+			{$_('fulfillment_date')}
+			<input type="date" bind:value={container.payload.fulfillmentDate} />
+		</label>
+	</fieldset>
+{/if}

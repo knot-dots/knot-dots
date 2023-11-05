@@ -7,7 +7,7 @@ import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import paramsFromURL from '$lib/client/paramsFromURL';
-import type { AnyContainer, Container, PayloadType } from '$lib/models';
+import type { AnyContainer, ApplicationState, Container, PayloadType } from '$lib/models';
 import { containerOfType, payloadTypes } from '$lib/models';
 
 export const navigationToggle = writable(false);
@@ -17,6 +17,12 @@ export const sidebarToggle = writable(true);
 export const filtersToggle = writable(true);
 
 export const sortToggle = writable(false);
+
+export const applicationState = writable<ApplicationState>({
+	containerForm: {
+		tabs: []
+	}
+});
 
 export type User = {
 	adminOf: string[];

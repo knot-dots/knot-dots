@@ -3,8 +3,14 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import type { EmptyInternalStrategyContainer, InternalStrategyContainer } from '$lib/models.js';
+	import { applicationState } from '$lib/stores';
 
 	export let container: InternalStrategyContainer | EmptyInternalStrategyContainer;
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: { tabs: [] }
+	}));
 </script>
 
 <OrganizationSelector bind:container />

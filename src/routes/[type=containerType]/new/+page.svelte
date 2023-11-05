@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isEmptyInternalObjectiveStrategicGoalContainer,
@@ -18,6 +19,7 @@
 		containerOfType
 	} from '$lib/models';
 	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -86,6 +88,11 @@
 		</label>
 	</header>
 	<div class="content-details masked-overflow">
+		{#if $applicationState.containerForm.tabs.length > 0}
+			<aside>
+				<ContainerFormTabs {container} />
+			</aside>
+		{/if}
 		<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 	</div>
 	<footer class="content-footer">

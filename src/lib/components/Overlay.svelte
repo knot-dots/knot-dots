@@ -9,11 +9,12 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
-	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
+	import OverlayDeepLinks from '$lib/components/OverlayDeepLinks.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
@@ -26,7 +27,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -81,6 +82,11 @@
 			</label>
 		</header>
 		<div class="content-details masked-overflow">
+			{#if $applicationState.containerForm.tabs.length > 0}
+				<aside>
+					<ContainerFormTabs {container} />
+				</aside>
+			{/if}
 			<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 		</div>
 		<footer class="content-footer">
@@ -129,7 +135,9 @@
 		</header>
 		<div class="content-details masked-overflow">
 			{#if 'guid' in container}
-				<OverlaySidebar {container} />
+				<aside>
+					<OverlayDeepLinks {container} />
+				</aside>
 			{/if}
 			{#if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
