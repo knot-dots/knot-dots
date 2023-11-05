@@ -3,13 +3,14 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type {
 		AnyContainer,
 		OperationalGoalContainer,
 		EmptyOperationalGoalContainer
-	} from '$lib/models.js';
+	} from '$lib/models';
 
 	export let container: OperationalGoalContainer | EmptyOperationalGoalContainer;
 	export let isPartOfOptions: AnyContainer[];
@@ -17,26 +18,40 @@
 	let indicatorLocked = container.payload.indicator.length > 0;
 </script>
 
-<label>
-	{$_('summary')}
-	<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
-</label>
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
 
-<Editor label={$_('description')} bind:value={container.payload.description} />
+	<RelationSelector {container} {isPartOfOptions} />
 
-<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
+	<OrganizationSelector bind:container />
+</fieldset>
 
-<ListBox label={$_('topic.label')} options={topics.options} bind:value={container.payload.topic} />
+<fieldset class="form-tab" id="basic-data">
+	<legend>{$_('form.basic_data')}</legend>
 
-<ListBox
-	label={$_('category')}
-	options={sustainableDevelopmentGoals.options}
-	bind:value={container.payload.category}
-/>
+	<label>
+		{$_('summary')}
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
+	</label>
 
-<label>
-	{$_('fulfillment_date')}
-	<input type="date" bind:value={container.payload.fulfillmentDate} />
-</label>
+	<Editor label={$_('description')} bind:value={container.payload.description} />
 
-<RelationSelector {container} {isPartOfOptions} />
+	<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
+
+	<ListBox
+		label={$_('topic.label')}
+		options={topics.options}
+		bind:value={container.payload.topic}
+	/>
+
+	<ListBox
+		label={$_('category')}
+		options={sustainableDevelopmentGoals.options}
+		bind:value={container.payload.category}
+	/>
+
+	<label>
+		{$_('fulfillment_date')}
+		<input type="date" bind:value={container.payload.fulfillmentDate} />
+	</label>
+</fieldset>

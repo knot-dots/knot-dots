@@ -218,6 +218,22 @@ td {
 	outline: none;
 }
 
+/* Forms and fieldsets */
+.form-tab {
+	border: none;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 0;
+}
+
+.form-tab > legend {
+	color: var(--color-gray-800, #1F2A37);
+	font-weight: 700;
+	line-height: 1.5;
+	margin-bottom: 1.5rem;
+}
+
 /* Button styles */
 button,
 .button {

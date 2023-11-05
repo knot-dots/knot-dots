@@ -7,8 +7,8 @@
 		AnyContainer,
 		EmptyOrganizationalUnitContainer,
 		OrganizationalUnitContainer
-	} from '$lib/models.js';
-	import { isOrganizationalUnitContainer } from '$lib/models.js';
+	} from '$lib/models';
+	import { isOrganizationalUnitContainer } from '$lib/models';
 
 	export let container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
 	export let isPartOfOptions: AnyContainer[];

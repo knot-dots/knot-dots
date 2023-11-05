@@ -8,6 +8,10 @@
 	export let isPartOfOptions: AnyContainer[];
 </script>
 
-<Editor label={$_('body')} bind:value={container.payload.body} />
+<fieldset class="form-tab" id="metadata">
+	<RelationSelector {container} {isPartOfOptions} />
+</fieldset>
 
-<RelationSelector {container} {isPartOfOptions} />
+<fieldset class="form-tab" id="basic-data">
+	<Editor label={$_('body')} bind:value={container.payload.body} />
+</fieldset>

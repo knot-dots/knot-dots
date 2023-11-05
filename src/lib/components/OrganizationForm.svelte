@@ -3,8 +3,8 @@
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
-	import { organizationCategories } from '$lib/models.js';
-	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models.js';
+	import { organizationCategories } from '$lib/models';
+	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models';
 
 	export let container: OrganizationContainer | EmptyOrganizationContainer;
 

@@ -3,6 +3,7 @@
 	"add_item": "Hinzufügen",
 	"annotation": "Anmerkungen",
 	"assignee": "Zugewiesen an",
+	"basic_data": "Allgemeine Angaben",
 	"board": {
 		"internal_objectives":  "Interne Ziele",
 		"organizational_units":  "Organisations-Ebenen",
@@ -34,6 +35,12 @@
 	},
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
+	"form": {
+		"basic_data": "Allgemeine Angaben",
+		"effects": "Wirkungsplanung",
+		"metadata": "Angaben zum Element",
+		"resources": "Ressourcenplanung"
+	},
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",

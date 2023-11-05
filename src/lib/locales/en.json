@@ -34,6 +34,12 @@
 	},
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
+	"form": {
+		"basic_data": "Basic data",
+		"effects": "Effects",
+		"metadata": "Metadata",
+		"resources": "Resource management"
+	},
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
