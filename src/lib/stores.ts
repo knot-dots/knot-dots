@@ -19,6 +19,9 @@ export const filtersToggle = writable(true);
 export const sortToggle = writable(false);
 
 export const applicationState = writable<ApplicationState>({
+	containerDetailView: {
+		tabs: []
+	},
 	containerForm: {
 		tabs: []
 	}

@@ -28,6 +28,7 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -136,6 +137,9 @@
 		<div class="content-details masked-overflow">
 			{#if 'guid' in container}
 				<aside>
+					{#if $applicationState.containerDetailView.tabs.length > 0}
+						<ContainerDetailViewTabs {container} />
+					{/if}
 					<OverlayDeepLinks {container} />
 				</aside>
 			{/if}

@@ -546,8 +546,18 @@ fieldset {
 
 .content-details aside {
 	margin-left: -5.25rem;
-	padding: 0 0.5rem;
 	position: fixed;
+}
+
+.content-details aside > * {
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.content-details aside > *:nth-child(2) {
+	border-top: solid 1px var(--color-gray-200);
+	margin-top: 0.5rem;
+	padding-top: 0.5rem;
 }
 
 .content-footer {

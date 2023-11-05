@@ -1,8 +1,14 @@
 import { z } from 'zod';
 
-export type ContainerFormTabKey = 'basic-data' | 'effects' | 'metadata' | 'resources';
+export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources';
+
+export type ContainerFormTabKey = ContainerDetailViewTabKey | 'metadata';
 
 export type ApplicationState = {
+	containerDetailView: {
+		activeTab?: ContainerDetailViewTabKey;
+		tabs: Array<ContainerDetailViewTabKey>;
+	};
 	containerForm: {
 		activeTab?: ContainerFormTabKey;
 		tabs: Array<ContainerFormTabKey>;
