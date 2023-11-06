@@ -296,7 +296,7 @@ export const boards = z.enum([
 const basePayload = z
 	.object({
 		category: z.array(sustainableDevelopmentGoals).default([]),
-		description: z.string(),
+		description: z.string().optional(),
 		summary: z.string().max(200).optional(),
 		title: z.string(),
 		topic: z.array(topics).default([]),
@@ -305,7 +305,7 @@ const basePayload = z
 	.strict();
 
 const internalObjectivesBasePayload = z.object({
-	description: z.string(),
+	description: z.string().optional(),
 	summary: z.string().max(200).optional(),
 	title: z.string(),
 	visibility: visibility.default('creator')
@@ -407,7 +407,7 @@ const operationalGoalPayload = basePayload
 const organizationPayload = z.object({
 	boards: z.array(boards).default([]),
 	default: z.boolean().default(false),
-	description: z.string(),
+	description: z.string().optional(),
 	image: z.string().url().optional(),
 	name: z.string(),
 	organizationCategory: organizationCategories.optional(),
@@ -417,7 +417,7 @@ const organizationPayload = z.object({
 
 const organizationalUnitPayload = z.object({
 	boards: z.array(boards).default([]),
-	description: z.string(),
+	description: z.string().optional(),
 	image: z.string().url().optional(),
 	level: z.number().int().positive().default(1),
 	name: z.string(),
@@ -447,7 +447,7 @@ const strategyPayload = basePayload
 
 const textPayload = z
 	.object({
-		body: z.string(),
+		body: z.string().optional(),
 		title: z.string(),
 		type: z.literal(payloadTypes.enum.text),
 		visibility: visibility.default('creator')
