@@ -54,12 +54,23 @@
 	}
 
 	async function afterSubmit(
-		event: CustomEvent<CustomEventMap['submitSuccessful']>,
+		{ detail }: CustomEvent<CustomEventMap['submitSuccessful']>,
 		c: AnyContainer
 	) {
 		await invalidateAll();
-		if (hashParams.has('create')) {
-			await goto(`#view=${event.detail.result.guid}`);
+		if (
+			detail.event.submitter?.id === 'save-and-next' &&
+			$applicationState.containerForm.activeTab
+		) {
+			await goto(`#view=${detail.result.guid}&edit`);
+			$applicationState.containerForm.activeTab =
+				$applicationState.containerForm.tabs[
+					$applicationState.containerForm.tabs.findIndex(
+						(value) => value === $applicationState.containerForm.activeTab
+					) + 1
+				];
+		} else if (hashParams.has('create')) {
+			await goto(`#view=${detail.result.guid}`);
 		} else {
 			await goto(`#view=${c.guid}`);
 		}
@@ -100,7 +111,14 @@
 		<footer class="content-footer">
 			<Visibility {container} />
 			<div class="content-actions">
-				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+				{#if $applicationState.containerForm.activeTab !== $applicationState.containerForm.tabs[$applicationState.containerForm.tabs.length - 1]}
+					<button form="container-form" type="submit">{$_('save')}</button>
+					<button class="primary" id="save-and-next" form="container-form" type="submit">
+						{$_('save_and_next')}
+					</button>
+				{:else}
+					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+				{/if}
 				<a class="button" href={cancel(container)}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
 					<button
