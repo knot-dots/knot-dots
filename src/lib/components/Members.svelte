@@ -138,12 +138,12 @@
 				{/each}
 			</tbody>
 		</table>
+		<div class="content-actions">
+			<button class="primary" type="button" on:click={() => dialog.showModal()}>
+				<Icon src={UserPlus} size="24" />
+			</button>
+		</div>
 	</div>
-	<footer>
-		<button class="primary" type="button" on:click={() => dialog.showModal()}>
-			<Icon src={UserPlus} size="24" />
-		</button>
-	</footer>
 </div>
 
 <Dialog bind:dialog>
