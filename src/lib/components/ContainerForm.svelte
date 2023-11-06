@@ -16,6 +16,7 @@
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TextForm from '$lib/components/TextForm.svelte';
+	import UndefinedForm from '$lib/components/UndefinedForm.svelte';
 	import {
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
@@ -133,5 +134,7 @@
 		<InternalObjectiveMilestoneForm {isPartOfOptions} bind:container />
 	{:else if isTaskContainer(container)}
 		<InternalObjectiveTaskForm {isPartOfOptions} bind:container />
+	{:else}
+		<UndefinedForm bind:container />
 	{/if}
 </form>

@@ -52,7 +52,8 @@ const payloadTypeValues = [
 	'organizational_unit',
 	'strategic_goal',
 	'strategy',
-	'text'
+	'text',
+	'undefined'
 ] as const;
 
 export const payloadTypes = z.enum(payloadTypeValues);
@@ -455,6 +456,14 @@ const textPayload = z
 	})
 	.strict();
 
+const undefinedPayload = z
+	.object({
+		title: z.string(),
+		type: z.literal(payloadTypes.enum.undefined),
+		visibility: visibility.default('creator')
+	})
+	.strict();
+
 export const container = z.object({
 	guid: z.string().uuid(),
 	organization: z.string().uuid(),
@@ -496,7 +505,8 @@ export const anyContainer = container.extend({
 		organizationalUnitPayload,
 		strategicGoalPayload,
 		strategyPayload,
-		textPayload
+		textPayload,
+		undefinedPayload
 	])
 });
 
@@ -749,7 +759,8 @@ const emptyContainer = newContainer.extend({
 		milestonePayload
 			.partial()
 			.merge(milestonePayload.pick({ progress: true, type: true, visibility: true })),
-		taskPayload.partial().merge(taskPayload.pick({ type: true, visibility: true }))
+		taskPayload.partial().merge(taskPayload.pick({ type: true, visibility: true })),
+		undefinedPayload.partial().merge(undefinedPayload.pick({ type: true, visibility: true }))
 	])
 });
 
