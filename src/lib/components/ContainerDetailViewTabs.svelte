@@ -29,17 +29,19 @@
 </script>
 
 <ul>
-	<li>
-		<button
-			title={$_('form.basic_data')}
-			type="button"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
-			on:click={() => updateApplicationState('basic-data')}
-		>
-			<Icon src={InformationCircle} size="20" mini />
-		</button>
-	</li>
-	{#if isMeasureContainer(container)}
+	{#if $applicationState.containerForm.tabs.includes('metadata')}
+		<li>
+			<button
+				title={$_('form.basic_data')}
+				type="button"
+				class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
+				on:click={() => updateApplicationState('basic-data')}
+			>
+				<Icon src={InformationCircle} size="20" mini />
+			</button>
+		</li>
+	{/if}
+	{#if $applicationState.containerForm.tabs.includes('resources')}
 		<li>
 			<button
 				title={$_('form.resources')}
@@ -50,18 +52,18 @@
 				<Icon src={CurrencyEuro} size="20" mini />
 			</button>
 		</li>
-		{#if showEffectsTab}
-			<li>
-				<button
-					title={$_('form.effects')}
-					type="button"
-					class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
-					on:click={() => updateApplicationState('effects')}
-				>
-					<Icon src={Sparkles} size="20" mini />
-				</button>
-			</li>
-		{/if}
+	{/if}
+	{#if $applicationState.containerForm.tabs.includes('effects') && showEffectsTab}
+		<li>
+			<button
+				title={$_('form.effects')}
+				type="button"
+				class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
+				on:click={() => updateApplicationState('effects')}
+			>
+				<Icon src={Sparkles} size="20" mini />
+			</button>
+		</li>
 	{/if}
 </ul>
 
