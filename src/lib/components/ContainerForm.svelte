@@ -110,19 +110,19 @@
 	{#if isMeasureContainer(container)}
 		<MeasureForm {isPartOfOptions} bind:container />
 	{:else if isModelContainer(container)}
-		<ModelForm {isPartOfOptions} bind:container />
+		<ModelForm bind:container />
 	{:else if isOperationalGoalContainer(container)}
-		<OperationalGoalForm {isPartOfOptions} bind:container />
+		<OperationalGoalForm bind:container />
 	{:else if isOrganizationContainer(container)}
 		<OrganizationForm bind:container />
 	{:else if isOrganizationalUnitContainer(container)}
 		<OrganizationalUnitForm {isPartOfOptions} bind:container />
 	{:else if isStrategicGoalGoalContainer(container)}
-		<StrategicGoalForm {isPartOfOptions} bind:container />
+		<StrategicGoalForm bind:container />
 	{:else if isStrategyContainer(container)}
 		<StrategyForm bind:container />
 	{:else if isTextContainer(container)}
-		<TextForm {isPartOfOptions} bind:container />
+		<TextForm bind:container />
 	{:else if isInternalStrategyContainer(container)}
 		<InternalObjectiveStrategyForm bind:container />
 	{:else if isVisionContainer(container)}

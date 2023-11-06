@@ -89,7 +89,8 @@ const predicateValues = [
 	'is-inconsistent-with',
 	'is-member-of',
 	'is-part-of',
-	'is-part-of-measure'
+	'is-part-of-measure',
+	'is-part-of-strategy'
 ] as const;
 
 export const predicates = z.enum(predicateValues);

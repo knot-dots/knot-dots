@@ -32,10 +32,17 @@
 		.filter(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
 		.map(({ object }) => object);
 
+	$: isPartOfStrategy = container.relation
+		.filter(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+		.map(({ object }) => object);
+
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		const params = new URLSearchParams([['is-part-of', String(detail.result.revision)]]);
 		for (const revision of isPartOfMeasure) {
 			params.append('is-part-of-measure', String(revision));
+		}
+		for (const revision of isPartOfStrategy) {
+			params.append('is-part-of-strategy', String(revision));
 		}
 
 		if (detail.event.submitter?.id === 'save-and-create-measure') {
