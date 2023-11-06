@@ -1012,6 +1012,25 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 	};
 }
 
+export function getAllContainersRelatedToStrategy(
+	revision: number,
+	filters: { terms?: string; type?: PayloadType[] }
+) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT c.*
+			FROM container c
+			JOIN container_relation cr ON c.revision = cr.subject
+				AND cr.predicate = 'is-part-of-strategy'
+				AND cr.object = ${revision}
+			WHERE ${prepareWhereCondition(filters)}
+			ORDER BY cr.position;
+		`);
+
+		return withUserAndRelation<Container>(connection, containerResult);
+	};
+}
+
 export function getAllContainersRelatedToMeasure(
 	revision: number,
 	filters: { terms?: string; type?: PayloadType[] },
