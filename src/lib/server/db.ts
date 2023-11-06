@@ -147,9 +147,9 @@ export function createContainer(container: NewContainer) {
 				RETURNING predicate, subject
       `);
 
-			const relationValues = container.relation.map((r, position) => [
+			const relationValues = container.relation.map((r) => [
 				r.object ?? containerResult.revision,
-				position,
+				r.position,
 				r.predicate,
 				r.subject ?? containerResult.revision
 			]);
