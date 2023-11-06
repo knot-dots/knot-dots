@@ -103,7 +103,7 @@
 				<ContainerFormTabs {container} {isPartOfOptions} />
 			</aside>
 		{/if}
-		<ContainerForm {container} {isPartOfOptions} on:on:submitSuccessful={afterSubmit} />
+		<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 	</div>
 	<footer class="content-footer">
 		<Visibility {container} />
