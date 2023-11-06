@@ -51,11 +51,12 @@
 	$: {
 		const hashParams = paramsFromURL($page.url);
 		if (hashParams.get('view') === container.guid) {
-			hashParams.delete('view');
+			containerPreviewURL = '#';
 		} else {
 			hashParams.set('view', container.guid);
+			hashParams.delete('create');
+			containerPreviewURL = `#${hashParams.toString()}`;
 		}
-		containerPreviewURL = `#${hashParams.toString()}`;
 	}
 
 	let previewLink: HTMLAnchorElement;
