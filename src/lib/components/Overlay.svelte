@@ -79,7 +79,8 @@
 	async function handleDelete(c: AnyContainer) {
 		const response = await deleteContainer(c);
 		if (response.ok) {
-			await goto(closeOverlay(), { invalidateAll: true });
+			await invalidateAll();
+			await goto(closeOverlay());
 		}
 	}
 </script>
