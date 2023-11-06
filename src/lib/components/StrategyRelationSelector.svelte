@@ -73,7 +73,7 @@
 					.map(
 						(o): PartialRelation => ({
 							object: Number(o),
-							position: 2 ** 31 - 1,
+							position: parseInt(paramsFromURL($page.url).get('position') ?? String(2 ** 31 - 1)),
 							predicate: 'is-part-of-strategy'
 						})
 					)

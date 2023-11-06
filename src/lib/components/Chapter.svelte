@@ -80,7 +80,10 @@
 			{$_('read_more')}
 		</a>
 
-		<a class="button" href="#create=undefined&is-part-of-strategy={isPartOf.revision}">
+		<a
+			class="button"
+			href="#create=undefined&is-part-of-strategy={isPartOf.revision}&position={currentIndex + 1}"
+		>
 			<Icon src={PlusSmall} size="24" mini />
 			{$_('chapter')}
 		</a>
