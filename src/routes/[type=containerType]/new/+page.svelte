@@ -7,16 +7,16 @@
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
-		isEmptyInternalObjectiveStrategicGoalContainer,
-		isEmptyInternalStrategyContainer,
-		isEmptyModelContainer,
-		isEmptyMilestoneContainer,
-		isEmptyOperationalGoalContainer,
-		isEmptyStrategicGoalContainer,
-		isEmptyStrategyContainer,
-		isEmptyVisionContainer,
-		payloadTypes,
-		containerOfType
+		containerOfType,
+		isInternalObjectiveStrategicGoalContainer,
+		isInternalStrategyContainer,
+		isMilestoneContainer,
+		isModelContainer,
+		isOperationalGoalContainer,
+		isStrategicGoalGoalContainer,
+		isStrategyContainer,
+		isVisionContainer,
+		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -129,27 +129,27 @@
 			{:else}
 				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 			{/if}
-			{#if isEmptyModelContainer(container)}
+			{#if isModelContainer(container)}
 				<button id="save-and-create-strategic-goal" form="container-form" type="submit">
 					{$_('save_and_create_strategic_goal')}
 				</button>
-			{:else if isEmptyOperationalGoalContainer(container)}
+			{:else if isOperationalGoalContainer(container)}
 				<button id="save-and-create-measure" form="container-form" type="submit">
 					{$_('save_and_create_measure')}
 				</button>
-			{:else if isEmptyStrategicGoalContainer(container)}
+			{:else if isStrategicGoalGoalContainer(container)}
 				<button id="save-and-create-operational-goal" form="container-form" type="submit">
 					{$_('save_and_create_operational_goal')}
 				</button>
-			{:else if isEmptyStrategyContainer(container)}
+			{:else if isStrategyContainer(container)}
 				<button id="save-and-create-model" form="container-form" type="submit">
 					{$_('save_and_create_model')}
 				</button>
-			{:else if isEmptyInternalStrategyContainer(container)}
+			{:else if isInternalStrategyContainer(container)}
 				<button id="save-and-create-vision" form="container-form" type="submit">
 					{$_('save_and_create_vision')}
 				</button>
-			{:else if isEmptyVisionContainer(container)}
+			{:else if isVisionContainer(container)}
 				<button
 					id="save-and-create-internal-objective-strategic-goal"
 					form="container-form"
@@ -157,11 +157,11 @@
 				>
 					{$_('save_and_create_strategic_goal')}
 				</button>
-			{:else if isEmptyInternalObjectiveStrategicGoalContainer(container)}
+			{:else if isInternalObjectiveStrategicGoalContainer(container)}
 				<button id="save-and-create-milestone" form="container-form" type="submit">
 					{$_('save_and_create_milestone')}
 				</button>
-			{:else if isEmptyMilestoneContainer(container)}
+			{:else if isMilestoneContainer(container)}
 				<button id="save-and-create-task" form="container-form" type="submit">
 					{$_('save_and_create_task')}
 				</button>
