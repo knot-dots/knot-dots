@@ -32,7 +32,13 @@
 	<header class="content-header">
 		<label>
 			{$_(`${container.payload.type}`)}
-			<input name="name" type="text" bind:value={container.payload.name} required />
+			<input
+				form="container-form"
+				name="name"
+				type="text"
+				bind:value={container.payload.name}
+				required
+			/>
 		</label>
 	</header>
 	<div class="content-details masked-overflow">

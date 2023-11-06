@@ -90,9 +90,21 @@
 			<label>
 				{$_(`${container.payload.type}`)}
 				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-					<input name="name" type="text" bind:value={container.payload.name} required />
+					<input
+						form="container-form"
+						name="name"
+						type="text"
+						bind:value={container.payload.name}
+						required
+					/>
 				{:else}
-					<input name="title" type="text" bind:value={container.payload.title} required />
+					<input
+						form="container-form"
+						name="title"
+						type="text"
+						bind:value={container.payload.title}
+						required
+					/>
 				{/if}
 			</label>
 		</header>
