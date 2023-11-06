@@ -673,7 +673,7 @@
 	}
 
 	button[aria-expanded='true'] {
-		--bg-color: var(--color-gray-400);
+		--button-background: var(--color-gray-400);
 	}
 
 	button[aria-controls] > span:last-child {
@@ -766,7 +766,7 @@
 	}
 
 	.search > button {
-		--bg-color: var(--color-gray-050);
+		--button-background: var(--color-gray-050);
 		color: var(--color-gray-500);
 		flex: 0 0 51px;
 	}
@@ -783,6 +783,6 @@
 	}
 
 	.search > button:hover {
-		--bg-color: var(--color-gray-400);
+		--button-background: var(--color-gray-400);
 	}
 </style>
