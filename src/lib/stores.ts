@@ -7,8 +7,15 @@ import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import paramsFromURL from '$lib/client/paramsFromURL';
-import type { AnyContainer, ApplicationState, Container, PayloadType } from '$lib/models';
-import { containerOfType, payloadTypes } from '$lib/models';
+import type {
+	AnyContainer,
+	ApplicationState,
+	Container,
+	PayloadType,
+	Status,
+	TaskStatus
+} from '$lib/models';
+import { containerOfType, payloadTypes, status, taskStatus } from '$lib/models';
 
 export const navigationToggle = writable(false);
 
@@ -90,6 +97,12 @@ if (browser) {
 			);
 			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {
 				newContainer.payload.level = parseInt(paramsFromURL(values.url).get('level') ?? '1');
+			} else if (newContainer.payload.type == payloadTypes.enum.measure) {
+				newContainer.payload.status =
+					(hashParams.get('status') as Status) ?? status.enum['status.idea'];
+			} else if (newContainer.payload.type == payloadTypes.enum['internal_objective.task']) {
+				newContainer.payload.taskStatus =
+					(hashParams.get('taskStatus') as TaskStatus) ?? taskStatus.enum['task_status.idea'];
 			}
 			overlay.set({
 				isPartOfOptions,

@@ -54,12 +54,23 @@
 	}
 
 	async function afterSubmit(
-		event: CustomEvent<CustomEventMap['submitSuccessful']>,
+		{ detail }: CustomEvent<CustomEventMap['submitSuccessful']>,
 		c: AnyContainer
 	) {
 		await invalidateAll();
-		if (hashParams.has('create')) {
-			await goto(`#view=${event.detail.result.guid}`);
+		if (
+			detail.event.submitter?.id === 'save-and-next' &&
+			$applicationState.containerForm.activeTab
+		) {
+			await goto(`#view=${detail.result.guid}&edit`);
+			$applicationState.containerForm.activeTab =
+				$applicationState.containerForm.tabs[
+					$applicationState.containerForm.tabs.findIndex(
+						(value) => value === $applicationState.containerForm.activeTab
+					) + 1
+				];
+		} else if (hashParams.has('create')) {
+			await goto(`#view=${detail.result.guid}`);
 		} else {
 			await goto(`#view=${c.guid}`);
 		}
@@ -79,16 +90,28 @@
 			<label>
 				{$_(`${container.payload.type}`)}
 				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-					<input name="name" type="text" bind:value={container.payload.name} required />
+					<input
+						form="container-form"
+						name="name"
+						type="text"
+						bind:value={container.payload.name}
+						required
+					/>
 				{:else}
-					<input name="title" type="text" bind:value={container.payload.title} required />
+					<input
+						form="container-form"
+						name="title"
+						type="text"
+						bind:value={container.payload.title}
+						required
+					/>
 				{/if}
 			</label>
 		</header>
 		<div class="content-details masked-overflow">
 			{#if $applicationState.containerForm.tabs.length > 0}
 				<aside>
-					<ContainerFormTabs {container} />
+					<ContainerFormTabs {container} {isPartOfOptions} />
 				</aside>
 			{/if}
 			<ContainerForm
@@ -100,7 +123,14 @@
 		<footer class="content-footer">
 			<Visibility {container} />
 			<div class="content-actions">
-				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+				{#if $applicationState.containerForm.activeTab !== $applicationState.containerForm.tabs[$applicationState.containerForm.tabs.length - 1]}
+					<button form="container-form" type="submit">{$_('save')}</button>
+					<button class="primary" id="save-and-next" form="container-form" type="submit">
+						{$_('save_and_next')}
+					</button>
+				{:else}
+					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+				{/if}
 				<a class="button" href={cancel(container)}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
 					<button
@@ -150,7 +180,7 @@
 			{#if 'guid' in container}
 				<aside>
 					{#if $applicationState.containerDetailView.tabs.length > 0}
-						<ContainerDetailViewTabs {container} />
+						<ContainerDetailViewTabs {container} {relatedContainers} />
 					{/if}
 					<OverlayDeepLinks {container} />
 				</aside>

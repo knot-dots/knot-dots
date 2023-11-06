@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { CurrencyEuro, Icon, InformationCircle, PuzzlePiece, Sparkles } from 'svelte-hero-icons';
-	import { isMeasureContainer } from '$lib/models';
+	import { isMeasureContainer, predicates } from '$lib/models';
 	import type { AnyContainer, ContainerFormTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: AnyContainer;
+	export let isPartOfOptions: AnyContainer[];
+
+	$: showEffectsTab =
+		isMeasureContainer(container) &&
+		isPartOfOptions.find(
+			(o) =>
+				container.relation.findIndex(
+					(r) => r.predicate === predicates.enum['is-part-of'] && r.object === o.revision
+				) > -1 &&
+				'indicator' in o.payload &&
+				o.payload.indicator.length > 0 &&
+				'quantity' in o.payload.indicator[0]
+		);
 
 	function updateApplicationState(activeTab: ContainerFormTabKey) {
 		applicationState.update((state) => ({
@@ -47,16 +60,18 @@
 				<Icon src={CurrencyEuro} size="20" mini />
 			</button>
 		</li>
-		<li>
-			<button
-				title={$_('form.effects')}
-				type="button"
-				class:is-active={$applicationState.containerForm.activeTab === 'effects'}
-				on:click={() => updateApplicationState('effects')}
-			>
-				<Icon src={Sparkles} size="20" mini />
-			</button>
-		</li>
+		{#if showEffectsTab}
+			<li>
+				<button
+					title={$_('form.effects')}
+					type="button"
+					class:is-active={$applicationState.containerForm.activeTab === 'effects'}
+					on:click={() => updateApplicationState('effects')}
+				>
+					<Icon src={Sparkles} size="20" mini />
+				</button>
+			</li>
+		{/if}
 	{/if}
 </ul>
 

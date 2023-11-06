@@ -83,7 +83,7 @@
 		<div class="content-details masked-overflow">
 			{#if $applicationState.containerDetailView.tabs.length > 0}
 				<aside>
-					<ContainerDetailViewTabs {container} />
+					<ContainerDetailViewTabs {container} {relatedContainers} />
 				</aside>
 			{/if}
 			{#if isMeasureContainer(container)}

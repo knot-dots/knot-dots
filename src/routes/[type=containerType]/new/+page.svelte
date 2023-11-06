@@ -45,7 +45,18 @@
 		const params = new URLSearchParams($page.url.searchParams);
 		params.set('is-part-of', String(detail.result.revision));
 
-		if (detail.event.submitter?.id === 'save-and-create-model') {
+		if (
+			detail.event.submitter?.id === 'save-and-next' &&
+			$applicationState.containerForm.activeTab
+		) {
+			await goto(`/${payloadType}/${detail.result.guid}/edit`);
+			$applicationState.containerForm.activeTab =
+				$applicationState.containerForm.tabs[
+					$applicationState.containerForm.tabs.findIndex(
+						(value) => value === $applicationState.containerForm.activeTab
+					) + 1
+				];
+		} else if (detail.event.submitter?.id === 'save-and-create-model') {
 			await goto(`/model/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-strategic-goal') {
 			await goto(`/strategic_goal/new?${params}`);
@@ -81,16 +92,28 @@
 		<label>
 			{$_(`${container.payload.type}`)}
 			{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-				<input name="name" type="text" bind:value={container.payload.name} required />
+				<input
+					form="container-form"
+					name="name"
+					type="text"
+					bind:value={container.payload.name}
+					required
+				/>
 			{:else}
-				<input name="title" type="text" bind:value={container.payload.title} required />
+				<input
+					form="container-form"
+					name="title"
+					type="text"
+					bind:value={container.payload.title}
+					required
+				/>
 			{/if}
 		</label>
 	</header>
 	<div class="content-details masked-overflow">
 		{#if $applicationState.containerForm.tabs.length > 0}
 			<aside>
-				<ContainerFormTabs {container} />
+				<ContainerFormTabs {container} {isPartOfOptions} />
 			</aside>
 		{/if}
 		<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
@@ -98,7 +121,14 @@
 	<footer class="content-footer">
 		<Visibility {container} />
 		<div class="content-actions">
-			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+			{#if $applicationState.containerForm.activeTab !== $applicationState.containerForm.tabs[$applicationState.containerForm.tabs.length - 1]}
+				<button form="container-form" type="submit">{$_('save')}</button>
+				<button class="primary" id="save-and-next" form="container-form" type="submit">
+					{$_('save_and_next')}
+				</button>
+			{:else}
+				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+			{/if}
 			{#if isEmptyModelContainer(container)}
 				<button id="save-and-create-strategic-goal" form="container-form" type="submit">
 					{$_('save_and_create_strategic_goal')}
