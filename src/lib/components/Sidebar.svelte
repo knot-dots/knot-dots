@@ -6,6 +6,8 @@
 		BuildingLibrary,
 		BuildingStorefront,
 		ChevronDown,
+		ChevronLeft,
+		ChevronRight,
 		ChevronUp,
 		Icon,
 		InformationCircle,
@@ -17,8 +19,6 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Filters from '$lib/components/Filters.svelte';
-	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
-	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import LoginIcon from '$lib/icons/LoginIcon.svelte';
 	import LogoutIcon from '$lib/icons/LogoutIcon.svelte';
@@ -140,12 +140,12 @@
 	<ul class="group group-controls">
 		<li>
 			{#if $sidebarToggle}
-				<button class="primary" on:click={toggleSidebar} title={$_('collapse_sidebar')}>
-					<ChevronLeftIcon class="icon-24" />
+				<button on:click={toggleSidebar} title={$_('collapse_sidebar')}>
+					<Icon src={ChevronLeft} size="24" />
 				</button>
 			{:else}
-				<button class="primary" on:click={toggleSidebar} title={$_('expand_sidebar')}>
-					<ChevronRightIcon class="icon-24" />
+				<button on:click={toggleSidebar} title={$_('expand_sidebar')}>
+					<Icon src={ChevronRight} size="24" />
 				</button>
 			{/if}
 		</li>
@@ -705,8 +705,17 @@
 	}
 
 	.group.group-controls button {
+		--button-border-color: var(--color-primary);
 		--padding-x: 12px;
 		--padding-y: 12px;
+
+		color: var(--color-primary);
+	}
+
+	.group.group-controls button:hover {
+		--button-background: var(--gradient-primary);
+
+		color: white;
 	}
 
 	.group.group-actions > :first-child,
