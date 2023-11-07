@@ -97,5 +97,6 @@
 <style>
 	.chapters {
 		border-top: solid 1px var(--color-gray-300);
+		padding-top: 1.5rem;
 	}
 </style>

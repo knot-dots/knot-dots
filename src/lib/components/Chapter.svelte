@@ -92,7 +92,7 @@
 
 <style>
 	.chapter {
-		margin-top: 1.5rem;
+		margin-bottom: 1.5rem;
 	}
 
 	.chapter-title {
@@ -101,6 +101,10 @@
 		font-weight: 800;
 		justify-content: space-between;
 		margin-bottom: 0.875rem;
+	}
+
+	.chapter-title button {
+		flex: 0 0;
 	}
 
 	.chapter-title button:first-of-type {
