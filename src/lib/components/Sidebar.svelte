@@ -137,20 +137,6 @@
 </script>
 
 <aside id="aside-0" class:is-expanded={$sidebarToggle} class:is-visible={$navigationToggle}>
-	<ul class="group group-controls">
-		<li>
-			{#if $sidebarToggle}
-				<button on:click={toggleSidebar} title={$_('collapse_sidebar')}>
-					<Icon src={ChevronLeft} size="24" />
-				</button>
-			{:else}
-				<button on:click={toggleSidebar} title={$_('expand_sidebar')}>
-					<Icon src={ChevronRight} size="24" />
-				</button>
-			{/if}
-		</li>
-	</ul>
-
 	{#if 'container' in $page.data && isContainer($page.data.container)}
 		<ul class="group group-tabs">
 			<li>
@@ -632,6 +618,20 @@
 			</li>
 		{/if}
 	</ul>
+
+	<ul class="group group-controls">
+		<li>
+			{#if $sidebarToggle}
+				<button on:click={toggleSidebar} title={$_('collapse_sidebar')}>
+					<Icon src={ChevronLeft} size="24" />
+				</button>
+			{:else}
+				<button on:click={toggleSidebar} title={$_('expand_sidebar')}>
+					<Icon src={ChevronRight} size="24" />
+				</button>
+			{/if}
+		</li>
+	</ul>
 </aside>
 
 <style>
@@ -660,12 +660,7 @@
 	}
 
 	aside > ul {
-		min-height: 0;
 		padding: 1rem 0.75rem 0;
-	}
-
-	aside > ul > li {
-		min-height: 0;
 	}
 
 	aside > ul:nth-child(n + 2) {
@@ -697,7 +692,7 @@
 
 	.group.group-controls {
 		flex-direction: row;
-		flex-shrink: 0;
+		flex: 0 0;
 	}
 
 	.group.group-controls li:last-child {
@@ -718,9 +713,19 @@
 		color: white;
 	}
 
+	.group.group-actions {
+		flex: 1 0;
+		min-height: 0;
+	}
+
+	.group.group-actions li {
+		min-height: 0;
+	}
+
 	.group.group-actions > :first-child,
 	.group.group-actions > :last-child {
 		flex-shrink: 0;
+		min-height: 0;
 	}
 
 	.group.group-tabs {
@@ -728,8 +733,7 @@
 	}
 
 	.group.group-user-menu {
-		flex-shrink: 0;
-		margin-top: auto;
+		flex: 0 0;
 	}
 
 	@media (min-width: 768px) {
@@ -743,9 +747,14 @@
 		justify-content: center;
 	}
 
+	.group.group-user-menu button {
+		justify-content: center;
+	}
+
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-tabs .button,
-	aside.is-expanded .group-user-menu a {
+	aside.is-expanded .group-user-menu a,
+	aside.is-expanded .group-user-menu button {
 		--padding-x: 14px;
 		--padding-y: 12px;
 		gap: 0.5rem;
