@@ -241,7 +241,7 @@ button,
 	--padding-x: 19px;
 	--padding-y: 9px;
 
-	background-color: var(--button-background);
+	background: var(--button-background);
 	border: solid 1px var(--button-border-color);
 	border-radius: 8px;
 	display: inline-flex;
@@ -252,7 +252,7 @@ button,
 
 button.primary,
 .button.primary {
-	--button-background: var(--color-primary);
+	--button-background: var(--gradient-primary);
 	--button-border-color: var(--color-primary);
 
 	color: white;

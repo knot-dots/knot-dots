@@ -262,15 +262,15 @@
 		--padding-x: 0.625rem;
 		--padding-y: 0.625rem;
 
+		color: var(--color-primary);
 		flex-grow: 0;
 		flex-shrink: 0;
 		margin-left: auto;
-
-		color: var(--color-primary);
 	}
 
 	footer button:last-child:hover {
-		background: var(--gradient-primary);
+		--button-background: var(--gradient-primary);
+
 		color: white;
 	}
 </style>
