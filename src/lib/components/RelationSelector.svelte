@@ -14,7 +14,7 @@
 			.map(
 				(o): PartialRelation => ({
 					object: Number(o),
-					position: 2 ** 31 - 1,
+					position: 0,
 					predicate: 'is-part-of'
 				})
 			)
@@ -24,7 +24,7 @@
 					.map(
 						(o): PartialRelation => ({
 							object: Number(o),
-							position: 2 ** 31 - 1,
+							position: 0,
 							predicate: 'is-part-of-measure'
 						})
 					)
