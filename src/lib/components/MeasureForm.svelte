@@ -5,8 +5,8 @@
 	import EffectsForm from '$lib/components/EffectsForm.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
+	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { AnyContainer, EmptyMeasureContainer, MeasureContainer } from '$lib/models';
 	import { page } from '$app/stores';
@@ -30,7 +30,7 @@
 	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
-		<RelationSelector {container} {isPartOfOptions} />
+		<StrategyRelationSelector {container} />
 
 		<OrganizationSelector bind:container />
 	</fieldset>

@@ -79,7 +79,8 @@
 	async function handleDelete(c: AnyContainer) {
 		const response = await deleteContainer(c);
 		if (response.ok) {
-			await goto(closeOverlay(), { invalidateAll: true });
+			await invalidateAll();
+			await goto(closeOverlay());
 		}
 	}
 </script>
@@ -87,7 +88,11 @@
 <section class="overlay" transition:slide={{ axis: 'x' }}>
 	{#if edit}
 		<header class="content-header">
-			<label>
+			<label
+				style={container.payload.type === payloadTypes.enum.undefined
+					? 'visibility: hidden;'
+					: undefined}
+			>
 				{$_(`${container.payload.type}`)}
 				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
 					<input
@@ -115,21 +120,25 @@
 				</aside>
 			{/if}
 			<ContainerForm
-				{container}
+				bind:container
 				{isPartOfOptions}
 				on:submitSuccessful={(e) => afterSubmit(e, container)}
 			/>
 		</div>
 		<footer class="content-footer">
-			<Visibility {container} />
+			{#if container.payload.type !== payloadTypes.enum.undefined}
+				<Visibility {container} />
+			{/if}
 			<div class="content-actions">
-				{#if $applicationState.containerForm.activeTab !== $applicationState.containerForm.tabs[$applicationState.containerForm.tabs.length - 1]}
-					<button form="container-form" type="submit">{$_('save')}</button>
-					<button class="primary" id="save-and-next" form="container-form" type="submit">
-						{$_('save_and_next')}
-					</button>
-				{:else}
-					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+				{#if container.payload.type !== payloadTypes.enum.undefined}
+					{#if $applicationState.containerForm.activeTab !== $applicationState.containerForm.tabs[$applicationState.containerForm.tabs.length - 1]}
+						<button form="container-form" type="submit">{$_('save')}</button>
+						<button class="primary" id="save-and-next" form="container-form" type="submit">
+							{$_('save_and_next')}
+						</button>
+					{:else}
+						<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+					{/if}
 				{/if}
 				<a class="button" href={cancel(container)}>{$_('cancel')}</a>
 				{#if mayDelete(container)}

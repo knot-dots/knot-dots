@@ -11,9 +11,9 @@
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
 	import {
 		isContainer,
-		isEmptyOrganizationalUnitContainer,
 		isInternalObjectiveContainer,
 		isMeasureContainer,
+		isOrganizationalUnitContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		payloadTypes
@@ -92,7 +92,7 @@
 				<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
 			{:else if isInternalObjectiveContainer(container)}
 				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
-			{:else if isEmptyOrganizationalUnitContainer(container)}
+			{:else if isOrganizationalUnitContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />

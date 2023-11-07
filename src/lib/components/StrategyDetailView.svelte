@@ -3,25 +3,13 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Chapter from '$lib/components/Chapter.svelte';
-	import ModelChapter from '$lib/components/ModelChapter.svelte';
-	import { isModelContainer, owners, predicates } from '$lib/models';
-	import type { AnyContainer, Container, ModelContainer, StrategyContainer } from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { owners } from '$lib/models';
+	import type { AnyContainer, Container, StrategyContainer } from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
 	export let revisions: AnyContainer[];
-
-	$: parts = container.relation
-		.filter(
-			({ object, predicate, subject }) =>
-				predicate == predicates.enum['is-part-of'] &&
-				relatedContainers.find((r) => r.revision == subject) &&
-				'revision' in container &&
-				object == container.revision
-		)
-		.map(({ subject }) => relatedContainers.find((r) => r.revision == subject) as ModelContainer);
 </script>
 
 <article class="details">
@@ -94,26 +82,14 @@
 		</ul>
 	</div>
 
-	<footer>
-		{#if $ability.can('update', container)}
-			<a class="button primary" href="#create=text&is-part-of={container.revision}">
-				<Icon src={PlusSmall} size="24" mini />
-				{$_('text')}
-			</a>
-			<a class="button primary" href="#create=model&is-part-of={container.revision}">
-				<Icon src={PlusSmall} size="24" mini />
-				{$_('model')}
-			</a>
-		{/if}
-	</footer>
-
 	<div class="chapters">
-		{#each parts as p}
-			{#if isModelContainer(p)}
-				<ModelChapter container={p} headingTag="h3" isPartOf={container} {relatedContainers} />
-			{:else}
-				<Chapter container={p} headingTag="h3" isPartOf={container} />
-			{/if}
+		{#each relatedContainers as part}
+			<Chapter container={part} headingTag="h3" isPartOf={container} />
+		{:else}
+			<a class="button" href="#create=undefined&is-part-of-strategy={container.revision}">
+				<Icon src={PlusSmall} size="24" mini />
+				{$_('chapter')}
+			</a>
 		{/each}
 	</div>
 </article>

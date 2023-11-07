@@ -4,17 +4,12 @@
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
-	import type {
-		AnyContainer,
-		OperationalGoalContainer,
-		EmptyOperationalGoalContainer
-	} from '$lib/models';
+	import type { OperationalGoalContainer, EmptyOperationalGoalContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: OperationalGoalContainer | EmptyOperationalGoalContainer;
-	export let isPartOfOptions: AnyContainer[];
 
 	applicationState.update((state) => ({
 		...state,
@@ -31,7 +26,7 @@
 	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
-		<RelationSelector {container} {isPartOfOptions} />
+		<StrategyRelationSelector {container} />
 
 		<OrganizationSelector bind:container />
 	</fieldset>
