@@ -6,6 +6,8 @@
 		BuildingLibrary,
 		BuildingStorefront,
 		ChevronDown,
+		ChevronLeft,
+		ChevronRight,
 		ChevronUp,
 		Icon,
 		InformationCircle,
@@ -17,8 +19,6 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Filters from '$lib/components/Filters.svelte';
-	import ChevronLeftIcon from '$lib/icons/ChevronLeftIcon.svelte';
-	import ChevronRightIcon from '$lib/icons/ChevronRightIcon.svelte';
 	import FilterIcon from '$lib/icons/FilterIcon.svelte';
 	import LoginIcon from '$lib/icons/LoginIcon.svelte';
 	import LogoutIcon from '$lib/icons/LogoutIcon.svelte';
@@ -137,20 +137,6 @@
 </script>
 
 <aside id="aside-0" class:is-expanded={$sidebarToggle} class:is-visible={$navigationToggle}>
-	<ul class="group group-controls">
-		<li>
-			{#if $sidebarToggle}
-				<button class="primary" on:click={toggleSidebar} title={$_('collapse_sidebar')}>
-					<ChevronLeftIcon class="icon-24" />
-				</button>
-			{:else}
-				<button class="primary" on:click={toggleSidebar} title={$_('expand_sidebar')}>
-					<ChevronRightIcon class="icon-24" />
-				</button>
-			{/if}
-		</li>
-	</ul>
-
 	{#if 'container' in $page.data && isContainer($page.data.container)}
 		<ul class="group group-tabs">
 			<li>
@@ -207,7 +193,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 					>
@@ -273,7 +259,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 					>
@@ -311,7 +297,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					>
@@ -324,7 +310,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 					>
@@ -337,7 +323,7 @@
 				<li>
 					<a
 						class="button"
-						class:is-active={$page.url.pathname ==
+						class:is-active={$page.url.pathname ===
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 					>
@@ -632,6 +618,20 @@
 			</li>
 		{/if}
 	</ul>
+
+	<ul class="group group-controls">
+		<li>
+			{#if $sidebarToggle}
+				<button on:click={toggleSidebar} title={$_('collapse_sidebar')}>
+					<Icon src={ChevronLeft} size="24" />
+				</button>
+			{:else}
+				<button on:click={toggleSidebar} title={$_('expand_sidebar')}>
+					<Icon src={ChevronRight} size="24" />
+				</button>
+			{/if}
+		</li>
+	</ul>
 </aside>
 
 <style>
@@ -660,12 +660,7 @@
 	}
 
 	aside > ul {
-		min-height: 0;
 		padding: 1rem 0.75rem 0;
-	}
-
-	aside > ul > li {
-		min-height: 0;
 	}
 
 	aside > ul:nth-child(n + 2) {
@@ -673,7 +668,7 @@
 	}
 
 	button[aria-expanded='true'] {
-		--bg-color: var(--color-gray-400);
+		--button-background: var(--color-gray-400);
 	}
 
 	button[aria-controls] > span:last-child {
@@ -697,7 +692,7 @@
 
 	.group.group-controls {
 		flex-direction: row;
-		flex-shrink: 0;
+		flex: 0 0;
 	}
 
 	.group.group-controls li:last-child {
@@ -705,13 +700,32 @@
 	}
 
 	.group.group-controls button {
+		--button-border-color: var(--color-primary);
 		--padding-x: 12px;
 		--padding-y: 12px;
+
+		color: var(--color-primary);
+	}
+
+	.group.group-controls button:hover {
+		--button-background: var(--gradient-primary);
+
+		color: white;
+	}
+
+	.group.group-actions {
+		flex: 1 0;
+		min-height: 0;
+	}
+
+	.group.group-actions li {
+		min-height: 0;
 	}
 
 	.group.group-actions > :first-child,
 	.group.group-actions > :last-child {
 		flex-shrink: 0;
+		min-height: 0;
 	}
 
 	.group.group-tabs {
@@ -719,8 +733,7 @@
 	}
 
 	.group.group-user-menu {
-		flex-shrink: 0;
-		margin-top: auto;
+		flex: 0 0;
 	}
 
 	@media (min-width: 768px) {
@@ -734,9 +747,14 @@
 		justify-content: center;
 	}
 
+	.group.group-user-menu button {
+		justify-content: center;
+	}
+
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-tabs .button,
-	aside.is-expanded .group-user-menu a {
+	aside.is-expanded .group-user-menu a,
+	aside.is-expanded .group-user-menu button {
 		--padding-x: 14px;
 		--padding-y: 12px;
 		gap: 0.5rem;
@@ -766,7 +784,7 @@
 	}
 
 	.search > button {
-		--bg-color: var(--color-gray-050);
+		--button-background: var(--color-gray-050);
 		color: var(--color-gray-500);
 		flex: 0 0 51px;
 	}
@@ -783,6 +801,6 @@
 	}
 
 	.search > button:hover {
-		--bg-color: var(--color-gray-400);
+		--button-background: var(--color-gray-400);
 	}
 </style>

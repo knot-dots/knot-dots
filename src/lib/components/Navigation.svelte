@@ -132,7 +132,7 @@
 	}
 
 	.menu:hover {
-		--bg-color: transparent;
+		--button-background: transparent;
 	}
 
 	@media (min-width: 768px) {

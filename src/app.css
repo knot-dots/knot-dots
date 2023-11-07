@@ -237,11 +237,11 @@ td {
 /* Button styles */
 button,
 .button {
-	--bg-color: transparent;
+	--button-background: transparent;
 	--padding-x: 19px;
 	--padding-y: 9px;
 
-	background-color: var(--bg-color);
+	background: var(--button-background);
 	border: solid 1px var(--button-border-color);
 	border-radius: 8px;
 	display: inline-flex;
@@ -252,7 +252,7 @@ button,
 
 button.primary,
 .button.primary {
-	--bg-color: var(--color-primary);
+	--button-background: var(--gradient-primary);
 	--button-border-color: var(--color-primary);
 
 	color: white;
@@ -260,13 +260,13 @@ button.primary,
 
 button.quiet,
 .button.quiet {
-	--bg-color: transparent;
+	--button-background: transparent;
 	--button-border-color: transparent;
 }
 
 button:hover,
 .button:hover {
-	--bg-color: var(--hover-color);
+	--button-background: var(--hover-color);
 	--button-border-color: inherit;
 }
 
@@ -279,18 +279,18 @@ button:active,
 .button:active,
 button.is-active,
 .button.is-active {
-	--bg-color: var(--color-gray-300);
+	--button-background: var(--color-gray-300);
 }
 
 button:disabled,
 .button:disabled {
-	--bg-color: var(--color-gray-100);
+	--button-background: var(--color-gray-100);
 	--button-border-color: var(--color-gray-100);
 }
 
 button.primary:disabled,
 .button.primary:disabled {
-	--bg-color: var(--color-gray-300);
+	--button-background: var(--color-gray-300);
 	--button-border-color: var(--color-gray-300);
 }
 
@@ -591,13 +591,19 @@ fieldset {
 }
 
 .icons-element:hover {
-	--bg-color: transparent;
+	--button-background: transparent;
 
 	color: var(--color-gray-500);
 }
 
 .details {
 	color: var(--color-gray-500);
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.details-tab {
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
@@ -694,11 +700,11 @@ fieldset {
 
 /* Badges */
 .badge {
-	--bg-color: var(--color-indigo-050);
+	--button-background: var(--color-indigo-050);
 	--color: var(--color-indigo-500);
 
 	align-items: center;
-	background-color: var(--bg-color);
+	background-color: var(--button-background);
 	border-radius: 6px;
 	color: var(--color);
 	display: inline-flex;
@@ -709,22 +715,22 @@ fieldset {
 }
 
 .badge.badge--red {
-	--bg-color: var(--color-red-background);
+	--button-background: var(--color-red-background);
 	--color: var(--color-red);
 }
 
 .badge.badge--orange {
-	--bg-color: var(--color-orange-background);
+	--button-background: var(--color-orange-background);
 	--color: var(--color-orange);
 }
 
 .badge.badge--yellow {
-	--bg-color: var(--color-yellow-background);
+	--button-background: var(--color-yellow-background);
 	--color: var(--color-yellow);
 }
 
 .badge.badge--green {
-	--bg-color: var(--color-green-background);
+	--button-background: var(--color-green-background);
 	--color: var(--color-green);
 }
 
