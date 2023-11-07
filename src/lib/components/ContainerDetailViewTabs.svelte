@@ -29,7 +29,7 @@
 </script>
 
 <ul>
-	{#if $applicationState.containerForm.tabs.includes('metadata')}
+	{#if $applicationState.containerDetailView.tabs.includes('basic-data')}
 		<li>
 			<button
 				title={$_('form.basic_data')}
@@ -41,7 +41,7 @@
 			</button>
 		</li>
 	{/if}
-	{#if $applicationState.containerForm.tabs.includes('resources')}
+	{#if $applicationState.containerDetailView.tabs.includes('resources')}
 		<li>
 			<button
 				title={$_('form.resources')}
@@ -53,7 +53,7 @@
 			</button>
 		</li>
 	{/if}
-	{#if $applicationState.containerForm.tabs.includes('effects') && showEffectsTab}
+	{#if $applicationState.containerDetailView.tabs.includes('effects') && showEffectsTab}
 		<li>
 			<button
 				title={$_('form.effects')}
