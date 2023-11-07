@@ -49,7 +49,7 @@
 
 <article class="details">
 	{#if $applicationState.containerDetailView.activeTab === 'basic-data'}
-		<div id="basic-data">
+		<div class="details-tab" id="basic-data">
 			<div class="summary">
 				<h3>{$_('measure.summary')}</h3>
 				{selectedRevision.payload.summary ?? ''}
@@ -182,7 +182,7 @@
 			</div>
 		</div>
 	{:else if $applicationState.containerDetailView.activeTab === 'resources'}
-		<div id="resources">
+		<div class="details-tab" id="resources">
 			<h3>{$_('resources.label')}</h3>
 			<ul>
 				{#each selectedRevision.payload.resource as resource}
@@ -203,7 +203,7 @@
 		</div>
 	{:else if $applicationState.containerDetailView.activeTab === 'effects'}
 		{#if 'indicatorContribution' in selectedRevision.payload}
-			<div id="effects">
+			<div class="details-tab" id="effects">
 				<h3>{$_('effects')}</h3>
 				{#each relatedContainers.filter(isOperationalGoalContainer) as { guid, payload }}
 					{#if 'indicator' in payload && payload.indicator.length > 0 && 'quantity' in payload.indicator[0]}

@@ -603,6 +603,12 @@ fieldset {
 	gap: 1.5rem;
 }
 
+.details-tab {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
 .details h3 {
 	color: var(--color-gray-800);
 	font-size: inherit;
