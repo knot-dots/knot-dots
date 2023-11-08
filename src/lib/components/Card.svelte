@@ -169,11 +169,11 @@
 		{/if}
 		{#if showRelationFilter}
 			<button
-				class={relatedTo === container.guid ? 'is-active' : ''}
-				title={$_('show_related_objects')}
+				class="relation-button"
+				title={$_('show_relations')}
+				class:is-active={relatedTo === container.guid}
 				on:click|stopPropagation={() => applyRelationFilter($page.url.searchParams)}
 			>
-				<Icon src={Share} size="20" mini />
 			</button>
 		{/if}
 	</footer>
@@ -257,20 +257,30 @@
 		flex-grow: 1;
 	}
 
-	footer button:last-child {
-		--button-border-color: var(--color-primary);
-		--padding-x: 0.625rem;
-		--padding-y: 0.625rem;
+	.relation-button {
+		--padding-x: 0;
+		--padding-y: 0;
 
+		background-image: url(/src/lib/assets/relate.svg);
+		background-position: top left;
+		background-repeat: no-repeat;
+		background-size: 2.5rem 8.125rem;
+		border: none;
 		color: var(--color-primary);
-		flex-grow: 0;
-		flex-shrink: 0;
+		display: inline-block;
+		flex: 0 0 2.5rem;
+		font-size: 0;
+		height: 2.5rem;
 		margin-left: auto;
 	}
 
-	footer button:last-child:hover {
-		--button-background: var(--gradient-primary);
+	.relation-button:hover {
+		background-color: white;
+		background-position: center left;
+	}
 
-		color: white;
+	.relation-button.is-active {
+		background-color: white;
+		background-position: center bottom;
 	}
 </style>
