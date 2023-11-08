@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { ArrowDown, ArrowUp, Icon, PlusSmall } from 'svelte-hero-icons';
+	import {
+		ChevronDoubleDown,
+		ChevronDoubleUp,
+		ChevronDown,
+		ChevronUp,
+		Icon,
+		PlusSmall
+	} from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -30,9 +37,27 @@
 		updateRelation(swapCurrentPrevious(isPartOfRelation));
 	}
 
+	function moveUp10() {
+		updateRelation([
+			...isPartOfRelation.slice(0, currentIndex - 10),
+			isPartOfRelation[currentIndex],
+			...isPartOfRelation.slice(currentIndex - 9, currentIndex),
+			...isPartOfRelation.slice(currentIndex + 1)
+		]);
+	}
+
 	function moveDown() {
 		const swapCurrentNext = swap(currentIndex, currentIndex + 1);
 		updateRelation(swapCurrentNext(isPartOfRelation));
+	}
+
+	function moveDown10() {
+		updateRelation([
+			...isPartOfRelation.slice(0, currentIndex),
+			...isPartOfRelation.slice(currentIndex + 1, currentIndex + 10),
+			isPartOfRelation[currentIndex],
+			...isPartOfRelation.slice(currentIndex + 11)
+		]);
 	}
 
 	async function updateRelation(relation: Relation[]) {
@@ -59,12 +84,22 @@
 		{#if $ability.can('update', $page.data.container)}
 			{#if currentIndex < isPartOfRelation.length - 1}
 				<button class="icons-element" type="button" on:click={moveDown}>
-					<Icon src={ArrowDown} size="20" />
+					<Icon src={ChevronDown} size="20" />
+				</button>
+			{/if}
+			{#if currentIndex < isPartOfRelation.length - 9}
+				<button class="icons-element" type="button" on:click={moveDown10}>
+					<Icon src={ChevronDoubleDown} size="20" />
+				</button>
+			{/if}
+			{#if currentIndex > 8}
+				<button class="icons-element" type="button" on:click={moveUp10}>
+					<Icon src={ChevronDoubleUp} size="20" />
 				</button>
 			{/if}
 			{#if currentIndex > 0}
 				<button class="icons-element" type="button" on:click={moveUp}>
-					<Icon src={ArrowUp} size="20" />
+					<Icon src={ChevronUp} size="20" />
 				</button>
 			{/if}
 		{/if}
@@ -93,6 +128,7 @@
 <style>
 	.chapter {
 		margin-bottom: 1.5rem;
+		max-width: 50rem;
 	}
 
 	.chapter-title {
@@ -104,7 +140,7 @@
 	}
 
 	.chapter-title button {
-		flex: 0 0;
+		flex-shrink: 0;
 	}
 
 	.chapter-title button:first-of-type {
