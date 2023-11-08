@@ -128,6 +128,7 @@
 <style>
 	.chapter {
 		margin-bottom: 1.5rem;
+		max-width: 50rem;
 	}
 
 	.chapter-title {
