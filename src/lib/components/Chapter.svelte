@@ -140,7 +140,7 @@
 	}
 
 	.chapter-title button {
-		flex: 0 0;
+		flex-shrink: 0;
 	}
 
 	.chapter-title button:first-of-type {
