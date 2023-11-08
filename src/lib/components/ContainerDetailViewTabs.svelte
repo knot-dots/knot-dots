@@ -77,7 +77,5 @@
 	button {
 		--padding-x: 12px;
 		--padding-y: 12px;
-
-		width: calc(var(--padding-x) * 2 + 20px);
 	}
 </style>
