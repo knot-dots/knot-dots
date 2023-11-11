@@ -274,9 +274,9 @@ export function updateContainerRelationPosition(relation: Relation[]) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			await Promise.all(
-				relation.map(({ object, subject }, position) =>
+				relation.map(({ object, predicate, subject }, position) =>
 					txConnection.query(sql.typeAlias('void')`
-						UPDATE container_relation SET position = ${position} WHERE object = ${object} AND subject = ${subject}
+						UPDATE container_relation SET position = ${position} WHERE object = ${object} AND predicate = ${predicate} AND subject = ${subject}
 					`)
 				)
 			);
