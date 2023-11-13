@@ -9,3 +9,7 @@ output "kubeconfig" {
 output "wildcard_dns" {
   value = scaleway_k8s_cluster.this.wildcard_dns
 }
+
+output "private_network_id" {
+  value = scaleway_vpc_private_network.this.id
+}

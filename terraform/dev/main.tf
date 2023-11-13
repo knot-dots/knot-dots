@@ -181,6 +181,12 @@ resource "scaleway_rdb_instance" "dev" {
   backup_same_region        = true
   backup_schedule_frequency = 24
   backup_schedule_retention = 7
+
+  private_network {
+    pn_id = module.k8s_cluster.private_network_id
+  }
+
+  tags = ["terraform"]
 }
 
 resource "scaleway_object_bucket" "upload" {
