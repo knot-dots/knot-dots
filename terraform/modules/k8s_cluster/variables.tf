@@ -4,7 +4,7 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  default     = "1.27.6"
+  default     = "1.28.2"
   description = "The version of Kubernetes the cluster is running."
   type        = string
 }
