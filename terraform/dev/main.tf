@@ -102,27 +102,12 @@ resource "scaleway_iam_api_key" "cert_manager" {
   application_id = data.scaleway_iam_application.cert_manager.id
 }
 
-resource "scaleway_iam_application" "strategytool" {
-  name        = "StrategyTool"
-  description = ""
-}
-
-resource "scaleway_iam_policy" "strategytool" {
-  name           = "StrategyTool"
-  application_id = scaleway_iam_application.strategytool.id
-
-  rule {
-    permission_set_names = [
-      "ObjectStorageObjectsDelete",
-      "ObjectStorageObjectsRead",
-      "ObjectStorageObjectsWrite",
-    ]
-    project_ids = [var.scaleway_project_id]
-  }
+data "scaleway_iam_application" "strategytool" {
+  application_id = "fff61d3e-5eda-4feb-86fc-8e279f38f1b9"
 }
 
 resource "scaleway_iam_api_key" "strategytool" {
-  application_id     = scaleway_iam_application.strategytool.id
+  application_id     = data.scaleway_iam_application.strategytool.id
   default_project_id = var.scaleway_project_id
 }
 
