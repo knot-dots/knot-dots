@@ -13,8 +13,9 @@ resource "scaleway_rdb_database" "this" {
 }
 
 resource "random_password" "this" {
-  length  = 16
-  special = true
+  length      = 16
+  min_numeric = 1
+  special     = true
 }
 
 resource "scaleway_rdb_user" "this" {
