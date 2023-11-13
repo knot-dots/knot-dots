@@ -263,7 +263,7 @@ resource "kubernetes_deployment_v1" "strategytool" {
           name  = "app"
 
           env {
-            name = "AUTH_SECRET"
+            name  = "AUTH_SECRET"
             value = random_password.auth_secret.result
           }
 
