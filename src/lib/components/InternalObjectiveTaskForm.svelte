@@ -36,7 +36,7 @@
 		);
 	});
 
-	let statusParam = paramsFromURL($page.url).get('task-status');
+	let statusParam = paramsFromURL($page.url).get('taskStatus');
 
 	let assignee = container.payload.assignee;
 	$: container.payload.assignee = assignee == '' ? undefined : assignee;

@@ -27,7 +27,7 @@
 	let selectedRevision: TaskContainer;
 
 	$: {
-		const parseResult = taskStatus.safeParse(paramsFromURL($page.url).get('task-status'));
+		const parseResult = taskStatus.safeParse(paramsFromURL($page.url).get('taskStatus'));
 		if (parseResult.success) {
 			selectedRevision =
 				(revisions as TaskContainer[]).findLast(
