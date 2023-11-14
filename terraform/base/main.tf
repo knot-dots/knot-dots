@@ -73,10 +73,12 @@ resource "scaleway_iam_policy" "github" {
       "DomainsDNSReadOnly",
       "KubernetesFullAccess",
       "LoadBalancersReadOnly",
+      "ObjectStorageBucketsRead",
       "ObjectStorageObjectsDelete",
       "ObjectStorageObjectsRead",
       "ObjectStorageObjectsWrite",
-      "RelationalDatabasesReadOnly"
+      "PrivateNetworksFullAccess",
+      "RelationalDatabasesReadOnly",
     ]
     project_ids = [var.scaleway_project_id]
   }
