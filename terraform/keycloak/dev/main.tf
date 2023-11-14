@@ -14,7 +14,7 @@ terraform {
 
   backend "s3" {
     bucket                      = "strategytool-terraform-state"
-    key                         = "keycloak.tfstate"
+    key                         = "keycloak/dev.tfstate"
     region                      = "fr-par"
     profile                     = "strategytool"
     skip_credentials_validation = true
@@ -38,12 +38,12 @@ provider "scaleway" {
   zone       = "fr-par-1"
 }
 
-resource "scaleway_iam_application" "keycloak" {
+data "scaleway_iam_application" "keycloak" {
   application_id = "933c010b-a4c1-418a-8a10-b41f6eb02daa"
 }
 
 resource "scaleway_iam_api_key" "keycloak" {
-  application_id = scaleway_iam_application.keycloak.id
+  application_id = data.scaleway_iam_application.keycloak.id
 }
 
 resource "keycloak_realm" "knot_dots" {
