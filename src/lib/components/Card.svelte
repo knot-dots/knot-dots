@@ -113,7 +113,8 @@
 		: undefined}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromURL($page.url).get('view') === container.guid}
+	class:is-active={paramsFromURL($page.url).get('view') === container.guid ||
+		paramsFromURL($page.url).get('relate') === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	on:click={handleClick}
