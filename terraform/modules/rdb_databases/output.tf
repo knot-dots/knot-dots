@@ -1,5 +1,5 @@
 output "db_host" {
-  value = var.scaleway_rdb_instance.endpoint_ip
+  value = var.scaleway_rdb_instance.private_network[0].ip
 }
 
 output "db_name" {
@@ -11,9 +11,8 @@ output "db_password" {
 }
 
 output "db_port" {
-  value = var.scaleway_rdb_instance.endpoint_port
+  value = var.scaleway_rdb_instance.private_network[0].port
 }
-
 
 output "db_user" {
   value = scaleway_rdb_user.this.name
