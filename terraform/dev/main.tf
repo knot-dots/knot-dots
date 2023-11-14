@@ -111,6 +111,38 @@ resource "scaleway_iam_api_key" "strategytool" {
   default_project_id = var.scaleway_project_id
 }
 
+resource "scaleway_tem_domain" "this" {
+  accept_tos = true
+  name       = data.scaleway_domain_zone.root.domain
+}
+
+data "scaleway_domain_zone" "root" {
+  domain    = "dotstory.de"
+  subdomain = ""
+}
+
+resource "scaleway_domain_record" "mail" {
+  dns_zone = data.scaleway_domain_zone.root.domain
+  name     = ""
+  type     = "MX"
+  data     = "blackhole.scw-tem.cloud."
+  priority = 10
+  ttl      = 3600
+}
+
+resource "scaleway_domain_record" "spf" {
+  dns_zone = data.scaleway_domain_zone.root.domain
+  type     = "TXT"
+  data     = "v=spf1 ${scaleway_tem_domain.this.spf_config} -all"
+}
+
+resource "scaleway_domain_record" "dkim" {
+  dns_zone = data.scaleway_domain_zone.root.domain
+  name     = "${scaleway_tem_domain.this.project_id}._domainkey"
+  type     = "TXT"
+  data     = scaleway_tem_domain.this.dkim_config
+}
+
 resource "scaleway_domain_zone" "dev" {
   count = var.with_scaleway_lb ? 1 : 0
 
