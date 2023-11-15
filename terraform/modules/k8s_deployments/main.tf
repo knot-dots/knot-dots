@@ -25,6 +25,11 @@ resource "helm_release" "traefik_ingress" {
   chart      = "traefik"
 
   set {
+    name  = "additionalArguments"
+    value = "{--entrypoints.web.http.redirections.entrypoint.to=:443,--entrypoints.web.http.redirections.entrypoint.scheme=https}"
+  }
+
+  set {
     name  = "deployment.kind"
     value = "DaemonSet"
   }
