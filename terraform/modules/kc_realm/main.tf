@@ -4,65 +4,16 @@ terraform {
       source  = "mrparkers/keycloak"
       version = "4.2.0"
     }
-    scaleway = {
-      source  = "scaleway/scaleway"
-      version = "~> 2.0"
-    }
   }
 
   required_version = ">= 1.6"
-
-  backend "s3" {
-    bucket                      = "strategytool-terraform-state"
-    key                         = "keycloak.tfstate"
-    region                      = "fr-par"
-    profile                     = "strategytool"
-    skip_credentials_validation = true
-    skip_region_validation      = true
-    skip_requesting_account_id  = true
-
-    endpoints = {
-      s3 = "https://s3.fr-par.scw.cloud"
-    }
-  }
 }
 
-provider "keycloak" {
-  client_id = "terraform"
-  url       = "https://keycloak.dev.dotstory.de"
-}
-
-provider "scaleway" {
-  project_id = var.scaleway_project_id
-  region     = "fr-par"
-  zone       = "fr-par-1"
-}
-
-resource "scaleway_iam_application" "keycloak" {
-  name = "Keycloak"
-}
-
-resource "scaleway_iam_policy" "keycloak" {
-  name           = "Keycloak"
-  application_id = scaleway_iam_application.keycloak.id
-
-  rule {
-    permission_set_names = [
-      "TransactionalEmailEmailFullAccess"
-    ]
-    project_ids = [var.scaleway_project_id]
-  }
-}
-
-resource "scaleway_iam_api_key" "keycloak" {
-  application_id = scaleway_iam_application.keycloak.id
-}
-
-resource "keycloak_realm" "knot_dots" {
-  realm               = "knot-dots"
+resource "keycloak_realm" "this" {
+  realm               = var.realm.realm
   enabled             = true
-  display_name        = "knot dots"
-  display_name_html   = "<b>knot dots</b>"
+  display_name        = var.realm.display_name
+  display_name_html   = "<b>${var.realm.display_name}</b>"
   user_managed_access = true
 
   # Login settings
@@ -100,20 +51,20 @@ resource "keycloak_realm" "knot_dots" {
   }
 
   smtp_server {
-    from = "keycloak@dotstory.de"
+    from = var.realm.smtp_server_from
     host = "smtp.tem.scw.cloud"
     port = 2465
     ssl  = true
 
     auth {
-      password = scaleway_iam_api_key.keycloak.secret_key
-      username = var.scaleway_project_id
+      password = var.realm.smtp_server_auth_password
+      username = var.realm.smtp_server_auth_username
     }
   }
 }
 
 resource "keycloak_openid_client" "strategytool" {
-  realm_id  = keycloak_realm.knot_dots.id
+  realm_id  = keycloak_realm.this.id
   client_id = "strategytool"
   name      = "StrategyTool"
   enabled   = true
@@ -122,9 +73,7 @@ resource "keycloak_openid_client" "strategytool" {
   standard_flow_enabled    = true
   service_accounts_enabled = true
 
-  valid_redirect_uris = [
-    "https://strategytool.dev.dotstory.de/*"
-  ]
+  valid_redirect_uris = var.openid_client_valid_redirect_urls
 
   web_origins = [
     "+"
@@ -136,31 +85,31 @@ resource "keycloak_openid_client" "strategytool" {
 }
 
 data "keycloak_openid_client" "realm_management" {
-  realm_id  = keycloak_realm.knot_dots.id
+  realm_id  = keycloak_realm.this.id
   client_id = "realm-management"
 }
 
 data "keycloak_role" "manage_clients" {
-  realm_id  = keycloak_realm.knot_dots.id
+  realm_id  = keycloak_realm.this.id
   client_id = data.keycloak_openid_client.realm_management.id
   name      = "manage-clients"
 }
 
 data "keycloak_role" "manage_users" {
-  realm_id  = keycloak_realm.knot_dots.id
+  realm_id  = keycloak_realm.this.id
   client_id = data.keycloak_openid_client.realm_management.id
   name      = "manage-users"
 }
 
 resource "keycloak_openid_client_service_account_role" "strategytool_manage_clients" {
-  realm_id                = keycloak_realm.knot_dots.id
+  realm_id                = keycloak_realm.this.id
   service_account_user_id = keycloak_openid_client.strategytool.service_account_user_id
   client_id               = data.keycloak_openid_client.realm_management.id
   role                    = data.keycloak_role.manage_clients.name
 }
 
 resource "keycloak_openid_client_service_account_role" "strategytool_manage_users" {
-  realm_id                = keycloak_realm.knot_dots.id
+  realm_id                = keycloak_realm.this.id
   service_account_user_id = keycloak_openid_client.strategytool.service_account_user_id
   client_id               = data.keycloak_openid_client.realm_management.id
   role                    = data.keycloak_role.manage_users.name

@@ -35,7 +35,7 @@ terraform {
 
   backend "s3" {
     bucket                      = "strategytool-terraform-state"
-    key                         = "dev.tfstate"
+    key                         = "production.tfstate"
     region                      = "fr-par"
     profile                     = "strategytool"
     skip_credentials_validation = true
@@ -58,11 +58,6 @@ provider "helm" {
   }
 }
 
-provider "keycloak" {
-  client_id = "terraform"
-  url       = "https://keycloak.dev.dotstory.de"
-}
-
 provider "kubectl" {
   load_config_file = false
   host             = module.k8s_cluster.kubeconfig.host
@@ -78,6 +73,11 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(
     module.k8s_cluster.kubeconfig.cluster_ca_certificate
   )
+}
+
+provider "keycloak" {
+  client_id = "terraform"
+  url       = "https://keycloak.knotdots.org"
 }
 
 provider "scaleway" {
@@ -117,16 +117,29 @@ resource "scaleway_tem_domain" "this" {
 }
 
 data "scaleway_domain_zone" "root" {
-  domain    = "dotstory.de"
+  domain    = "knotdots.net"
+  subdomain = ""
+}
+
+data "scaleway_domain_zone" "keycloak" {
+  domain    = "knotdots.org"
   subdomain = ""
 }
 
 resource "scaleway_domain_record" "mail" {
+  for_each = {
+    "ASPMX.L.GOOGLE.COM."      = 1,
+    "ALT1.ASPMX.L.GOOGLE.COM." = 5,
+    "ALT2.ASPMX.L.GOOGLE.COM." = 5,
+    "ALT3.ASPMX.L.GOOGLE.COM." = 10,
+    "ALT4.ASPMX.L.GOOGLE.COM." = 10
+  }
+
   dns_zone = data.scaleway_domain_zone.root.domain
   name     = ""
   type     = "MX"
-  data     = "blackhole.scw-tem.cloud."
-  priority = 10
+  data     = each.key
+  priority = each.value
   ttl      = 3600
 }
 
@@ -143,18 +156,11 @@ resource "scaleway_domain_record" "dkim" {
   data     = scaleway_tem_domain.this.dkim_config
 }
 
-resource "scaleway_domain_zone" "dev" {
-  count = var.with_scaleway_lb ? 1 : 0
-
-  domain    = "dotstory.de"
-  subdomain = "dev"
-}
-
 resource "scaleway_domain_record" "strategytool" {
   count = var.with_scaleway_lb ? 1 : 0
 
-  dns_zone = scaleway_domain_zone.dev[count.index].id
-  name     = "strategytool"
+  dns_zone = data.scaleway_domain_zone.root.domain
+  name     = ""
   type     = "A"
   //noinspection HILUnresolvedReference
   data = module.k8s_deployments.load_balancer_ip
@@ -164,12 +170,11 @@ resource "scaleway_domain_record" "strategytool" {
 resource "scaleway_domain_record" "strategytool_wildcard" {
   count = var.with_scaleway_lb ? 1 : 0
 
-  dns_zone = scaleway_domain_zone.dev[count.index].id
-  name     = "*.strategytool"
+  dns_zone = data.scaleway_domain_zone.root.domain
+  name     = "*"
   type     = "CNAME"
-  //noinspection HILUnresolvedReference
-  data = "${scaleway_domain_record.strategytool[count.index].name}.${scaleway_domain_zone.dev[count.index].subdomain}.${scaleway_domain_zone.dev[count.index].domain}."
-  ttl  = 3600
+  data     = "${data.scaleway_domain_zone.root.domain}."
+  ttl      = 3600
 
   lifecycle {
     ignore_changes = [
@@ -181,7 +186,7 @@ resource "scaleway_domain_record" "strategytool_wildcard" {
 resource "scaleway_domain_record" "keycloak" {
   count = var.with_scaleway_lb ? 1 : 0
 
-  dns_zone = scaleway_domain_zone.dev[count.index].id
+  dns_zone = data.scaleway_domain_zone.keycloak.domain
   name     = "keycloak"
   type     = "A"
   //noinspection HILUnresolvedReference
@@ -189,8 +194,8 @@ resource "scaleway_domain_record" "keycloak" {
   ttl  = 3600
 }
 
-resource "scaleway_rdb_instance" "dev" {
-  name                      = "rdb-dev"
+resource "scaleway_rdb_instance" "this" {
+  name                      = "rdb-production"
   node_type                 = "DB-DEV-S"
   engine                    = "PostgreSQL-14"
   is_ha_cluster             = false
@@ -206,13 +211,8 @@ resource "scaleway_rdb_instance" "dev" {
   tags = ["terraform"]
 }
 
-resource "scaleway_object_bucket" "upload" {
+data "scaleway_object_bucket" "upload" {
   name = "strategytool-upload"
-}
-
-resource "scaleway_object_bucket_acl" "upload" {
-  bucket = scaleway_object_bucket.upload.name
-  acl    = "private"
 }
 
 data "keycloak_openid_client" "strategytool" {
@@ -226,13 +226,13 @@ module "rdb_databases" {
   for_each = toset(["keycloak", "strategytool"])
 
   name                  = each.key
-  scaleway_rdb_instance = scaleway_rdb_instance.dev
+  scaleway_rdb_instance = scaleway_rdb_instance.this
 }
 
 module "k8s_cluster" {
   source = "../modules/k8s_cluster"
 
-  cluster_name     = "k8s-dev"
+  cluster_name     = "k8s-production"
   with_scaleway_lb = var.with_scaleway_lb
 }
 
@@ -244,15 +244,15 @@ module "k8s_deployments" {
   registry_server          = "rg.fr-par.scw.cloud"
   registry_username        = "knot-dots"
   cert_manager_api_key     = scaleway_iam_api_key.cert_manager
-  keycloak_host            = var.with_scaleway_lb ? "keycloak.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
+  keycloak_host            = var.with_scaleway_lb ? "keycloak.knotdots.org" : replace(module.k8s_cluster.wildcard_dns, "*", "keycloak")
   keycloak_image           = var.keycloak_image
   keycloak_realm           = "knot-dots"
   keycloak_client_id       = data.keycloak_openid_client.strategytool.client_id
   keycloak_client_secret   = data.keycloak_openid_client.strategytool.client_secret
   migrate_image            = var.migrate_image
   strategytool_api_key     = scaleway_iam_api_key.strategytool
-  strategytool_bucket_name = scaleway_object_bucket.upload.name
-  strategytool_host        = var.with_scaleway_lb ? "strategytool.dev.dotstory.de" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
+  strategytool_bucket_name = data.scaleway_object_bucket.upload.name
+  strategytool_host        = var.with_scaleway_lb ? "knotdots.net" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
   strategytool_image       = var.strategytool_image
   strategytool_region      = "fr-par"
   with_scaleway_lb         = var.with_scaleway_lb

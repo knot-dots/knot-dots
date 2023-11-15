@@ -7,10 +7,17 @@ terraform {
   required_version = ">= 0.13"
 }
 
+resource "scaleway_vpc_private_network" "this" {
+  name = var.cluster_name
+
+  tags = ["terraform"]
+}
+
 resource "scaleway_k8s_cluster" "this" {
   cni                         = "cilium"
   name                        = var.cluster_name
   version                     = var.cluster_version
+  private_network_id          = scaleway_vpc_private_network.this.id
   delete_additional_resources = true
 
   tags = ["terraform"]
