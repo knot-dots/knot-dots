@@ -121,6 +121,13 @@
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",
 	"planned_duration": "Geplante Laufzeit",
+	"profile": {
+		"my_measures": "Meine Maßnahmen",
+		"my_organizations": "Meine Organisationsbereiche",
+		"my_strategies": "Meine Strategien",
+		"my_tasks": "Meine Aufgaben",
+		"settings": "Einstellungen"
+	},
 	"progress": "Fortschritt",
 	"quantity": {
 		"broadband_coverage": {

@@ -10,6 +10,7 @@ import {
 	getAllRelatedInternalObjectives
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
+import { filterVisible } from '$lib/authorization';
 
 export const load = (async ({ params, locals, url }) => {
 	let revisions;
@@ -43,5 +44,5 @@ export const load = (async ({ params, locals, url }) => {
 		);
 	}
 
-	return { container, relatedContainers, revisions };
+	return { container, relatedContainers: filterVisible(relatedContainers, locals.user), revisions };
 }) satisfies PageServerLoad;

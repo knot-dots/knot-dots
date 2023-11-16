@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, LightBulb, Share } from 'svelte-hero-icons';
+	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -113,7 +113,8 @@
 		: undefined}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromURL($page.url).get('view') === container.guid}
+	class:is-active={paramsFromURL($page.url).get('view') === container.guid ||
+		paramsFromURL($page.url).get('relate') === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	on:click={handleClick}
@@ -255,32 +256,5 @@
 
 	footer :global(.progress) {
 		flex-grow: 1;
-	}
-
-	.relation-button {
-		--padding-x: 0;
-		--padding-y: 0;
-
-		background-image: url(/src/lib/assets/relate.svg);
-		background-position: top left;
-		background-repeat: no-repeat;
-		background-size: 2.5rem 8.125rem;
-		border: none;
-		color: var(--color-primary);
-		display: inline-block;
-		flex: 0 0 2.5rem;
-		font-size: 0;
-		height: 2.5rem;
-		margin-left: auto;
-	}
-
-	.relation-button:hover {
-		background-color: white;
-		background-position: center left;
-	}
-
-	.relation-button.is-active {
-		background-color: white;
-		background-position: center bottom;
 	}
 </style>

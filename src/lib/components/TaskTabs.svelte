@@ -13,7 +13,7 @@
 	let selectedRevision: TaskContainer;
 
 	$: {
-		const parseResult = taskStatus.safeParse(paramsFromURL($page.url).get('task-status'));
+		const parseResult = taskStatus.safeParse(paramsFromURL($page.url).get('taskStatus'));
 		if (parseResult.success) {
 			selectedRevision =
 				(revisions as TaskContainer[]).findLast(
@@ -26,7 +26,7 @@
 
 	function tabURL(params: URLSearchParams, status: TaskStatus) {
 		const query = new URLSearchParams(params);
-		query.set('task-status', status);
+		query.set('taskStatus', status);
 		return `#${query.toString()}`;
 	}
 </script>

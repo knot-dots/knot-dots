@@ -6,7 +6,6 @@
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { navigationToggle, user } from '$lib/stores';
-	import { accountURL } from '$lib/authentication';
 
 	function toggle() {
 		navigationToggle.update((v) => !v);
@@ -46,16 +45,15 @@
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
 		{#if $user.isAuthenticated}
 			<li>
-				<a href={accountURL($page.url.href)}>
+				<a href="/profile">
 					<span class="avatar avatar-s">{$user.givenName.at(0)}{$user.familyName.at(0)}</span>
 				</a>
 			</li>
-			<li>
-				<button class="quiet" on:click={() => signOut()}>{$_('logout')}</button>
-			</li>
 		{:else}
 			<li>
-				<button class="quiet" on:click={() => signIn('keycloak')}>{$_('login')}</button>
+				<button class="quiet" type="button" on:click={() => signIn('keycloak')}>
+					{$_('login')}
+				</button>
 			</li>
 		{/if}
 	</ul>
@@ -142,11 +140,6 @@
 
 		.user-menu {
 			display: flex;
-		}
-
-		.user-menu.is-authenticated > li:first-child {
-			border-right: solid 1px var(--color-gray-200);
-			padding-right: 12px;
 		}
 
 		.user-menu.is-authenticated > li:last-child {

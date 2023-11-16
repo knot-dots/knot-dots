@@ -52,6 +52,10 @@
 		min-width: calc(100vw - (18rem + 1px + 3rem));
 	}
 
+	li {
+		width: 19.5rem;
+	}
+
 	.button {
 		align-items: center;
 		display: inline-flex;

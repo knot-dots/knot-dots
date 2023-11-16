@@ -9,6 +9,7 @@
 		ChevronLeft,
 		ChevronRight,
 		ChevronUp,
+		Cog6Tooth,
 		Icon,
 		InformationCircle,
 		MagnifyingGlass,
@@ -333,9 +334,32 @@
 				</li>
 			{/if}
 		</ul>
+	{:else if $page.url.pathname.startsWith('/profile')}
+		<ul class="group group-tabs">
+			<li>
+				<a class="button" class:is-active={$page.url.pathname === '/profile'} href="/profile">
+					<Icon src={InformationCircle} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
+				</a>
+			</li>
+			<li>
+				<a class="button" href={accountURL($page.url.href)}>
+					<Icon src={Cog6Tooth} size="20" solid />
+					<span class:is-hidden={!$sidebarToggle}>{$_('profile.settings')}</span>
+				</a>
+			</li>
+			<li>
+				<button type="button" on:click={() => signOut()}>
+					<LogoutIcon class={'icon-20'} />
+					<span class:is-hidden={!$sidebarToggle}>{$_('logout')}</span>
+				</button>
+			</li>
+		</ul>
 	{/if}
 
-	{#if 'containers' in $page.data}
+	{#if $page.url.pathname === '/profile'}
+		<ul class="group group-actions"></ul>
+	{:else if 'containers' in $page.data}
 		<ul class="group group-actions">
 			<li>
 				<form class="search" data-sveltekit-keepfocus>
@@ -753,6 +777,7 @@
 
 	aside.is-expanded .group-actions button,
 	aside.is-expanded .group-tabs .button,
+	aside.is-expanded .group-tabs button,
 	aside.is-expanded .group-user-menu a,
 	aside.is-expanded .group-user-menu button {
 		--padding-x: 14px;

@@ -126,17 +126,17 @@
 	}
 </script>
 
-<div class="overlay" transition:slide={{ axis: 'x' }}>
-	<div class="details">
-		<header>
-			<h2>
-				<span class="icons">
-					<a href={closeOverlay()} class="button icons-element">
-						<Icon solid src={XMark} size="20" />
-					</a>
-				</span>
-			</h2>
-		</header>
+<ssection class="overlay" transition:slide={{ axis: 'x' }}>
+	<header class="content-header">
+		<h2>
+			<span class="icons">
+				<a href={closeOverlay()} class="button icons-element">
+					<Icon solid src={XMark} size="20" />
+				</a>
+			</span>
+		</h2>
+	</header>
+	<div class="content-details">
 		<p>
 			{$_('relation_overlay.help', {
 				values: {
@@ -190,33 +190,50 @@
 			</div>
 		</div>
 
-		<footer>
-			<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
-			<a class="button" href={`?related-to=${object.guid}`}
-				>{$_('relation_overlay.close_and_show_relations')}</a
-			>
+		<footer class="content-footer">
+			<div class="content-actions">
+				<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
+				<a class="button" href={`?related-to=${object.guid}`}
+					>{$_('relation_overlay.close_and_show_relations')}</a
+				>
+			</div>
 		</footer>
 	</div>
-</div>
+</ssection>
 
 <style>
+	.overlay {
+		background-color: white;
+		border: 1px solid var(--color-gray-200);
+		box-shadow: var(--shadow-lg);
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.content-header,
+	.content-details,
+	.content-footer {
+		padding-left: 1.5rem;
+	}
+
 	@media (min-width: 768px) {
 		.overlay {
 			width: 50%;
 		}
 
 		.overlay > :global(*) {
-			min-width: calc((100vw - 18rem) * 0.5);
+			min-width: calc((100vw - 18rem) * 0.5 - 2px);
 		}
 	}
 
-	.details {
+	.content-details {
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
 	}
 
-	.details > p {
+	.content-details > p {
 		padding: 0 1.5rem;
 	}
 
