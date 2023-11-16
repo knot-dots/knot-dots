@@ -523,27 +523,7 @@ export function getManyOrganizationContainers(
 			ORDER BY ${orderBy};
     `);
 
-		const revisions = sql.join(
-			containerResult.map((c) => c.revision),
-			sql.fragment`, `
-		);
-
-		const userResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithObject')`
-						SELECT *
-						FROM container_user
-						WHERE object IN (${revisions})
-					`)
-				: [];
-
-		return containerResult.map((c) => ({
-			...c,
-			relation: [],
-			user: userResult
-				.filter((u) => u.object === c.revision)
-				.map(({ predicate, subject }) => ({ predicate, subject }))
-		}));
+		return await withUserAndRelation<OrganizationContainer>(connection, containerResult);
 	};
 }
 
@@ -638,42 +618,7 @@ export function getManyTaskContainers(filters: {
 			`);
 		}
 
-		const revisions = sql.join(
-			containerResult.map((c) => c.revision),
-			sql.fragment`, `
-		);
-
-		const userResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithObject')`
-					SELECT *
-					FROM container_user
-					WHERE object IN (${revisions})
-				`)
-				: [];
-
-		const relationResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('relation')`
-					SELECT cr.*
-					FROM container_relation cr
-					JOIN container co ON cr.object = co.revision AND co.valid_currently
-					JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
-					WHERE object IN (${revisions})
-						OR subject IN (${revisions})
-					ORDER BY position
-				`)
-				: [];
-
-		return containerResult.map((c) => ({
-			...c,
-			relation: relationResult.filter(
-				({ object, subject }) => object === c.revision || subject === c.revision
-			),
-			user: userResult
-				.filter((u) => u.object === c.revision)
-				.map(({ predicate, subject }) => ({ predicate, subject }))
-		}));
+		return await withUserAndRelation<Container>(connection, containerResult);
 	};
 }
 
@@ -728,44 +673,8 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			  AND NOT DELETED
 			ORDER BY payload->>'level', payload->>'name'
 		`);
-		const revisions = sql.join(
-			containerResult.map((c) => c.revision),
-			sql.fragment`, `
-		);
 
-		const userResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithObject')`
-                  SELECT *
-                  FROM container_user
-                  WHERE object IN (${revisions})
-				`)
-				: [];
-
-		const relationResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('relation')`
-                  SELECT cr.*
-                  FROM container_relation cr
-                           JOIN container co
-                                ON cr.object = co.revision AND co.valid_currently
-                           JOIN container cs
-                                ON cr.subject = cs.revision AND cs.valid_currently
-                  WHERE object IN (${revisions})
-                     OR subject IN (${revisions})
-                  ORDER BY position
-				`)
-				: [];
-
-		return containerResult.map((c) => ({
-			...c,
-			relation: relationResult.filter(
-				({ object, subject }) => object === c.revision || subject === c.revision
-			),
-			user: userResult
-				.filter((u) => u.object === c.revision)
-				.map(({ predicate, subject }) => ({ predicate, subject }))
-		}));
+		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
 	};
 }
 
