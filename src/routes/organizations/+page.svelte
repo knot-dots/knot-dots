@@ -23,7 +23,7 @@
 	<ul>
 		{#each data.containers as container}
 			<li>
-				<OrganizationCard {container} />
+				<OrganizationCard --height="100%" {container} />
 			</li>
 		{/each}
 	</ul>
