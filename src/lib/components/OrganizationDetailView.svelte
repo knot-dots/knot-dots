@@ -50,18 +50,3 @@
 		</footer>
 	{/if}
 </article>
-
-<style>
-	.carousel {
-		display: flex;
-		flex-direction: row;
-		gap: 0.75rem;
-		overflow-x: auto;
-		padding-bottom: 1rem;
-	}
-
-	.carousel > li {
-		flex-shrink: 0;
-		width: 19.5rem;
-	}
-</style>

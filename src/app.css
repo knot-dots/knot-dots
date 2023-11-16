@@ -329,6 +329,33 @@ button.primary:disabled,
 	outline: none;
 }
 
+.relation-button {
+	--padding-x: 0;
+	--padding-y: 0;
+
+	background-image: url(/src/lib/assets/relate.svg);
+	background-position: top left;
+	background-repeat: no-repeat;
+	background-size: 2.5rem 8.125rem;
+	border: none;
+	color: var(--color-primary);
+	display: inline-block;
+	flex: 0 0 2.5rem;
+	font-size: 0;
+	height: 2.5rem;
+	margin-left: auto;
+}
+
+.relation-button:hover {
+	background-color: white;
+	background-position: center left;
+}
+
+.relation-button.is-active {
+	background-color: white;
+	background-position: center bottom;
+}
+
 /* Form controls */
 label {
 	font-weight: 500;
@@ -755,6 +782,20 @@ fieldset {
 
 .overlay > :global(*) {
 	min-width: 100vw;
+}
+
+/* Carousel */
+.carousel {
+	display: flex;
+	flex-direction: row;
+	gap: 0.75rem;
+	overflow-x: auto;
+	padding-bottom: 1rem;
+}
+
+.carousel > li {
+	flex-shrink: 0;
+	width: 19.5rem;
 }
 
 /* Utility classes */

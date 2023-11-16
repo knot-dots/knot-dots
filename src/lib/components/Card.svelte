@@ -257,31 +257,4 @@
 	footer :global(.progress) {
 		flex-grow: 1;
 	}
-
-	.relation-button {
-		--padding-x: 0;
-		--padding-y: 0;
-
-		background-image: url(/src/lib/assets/relate.svg);
-		background-position: top left;
-		background-repeat: no-repeat;
-		background-size: 2.5rem 8.125rem;
-		border: none;
-		color: var(--color-primary);
-		display: inline-block;
-		flex: 0 0 2.5rem;
-		font-size: 0;
-		height: 2.5rem;
-		margin-left: auto;
-	}
-
-	.relation-button:hover {
-		background-color: white;
-		background-position: center left;
-	}
-
-	.relation-button.is-active {
-		background-color: white;
-		background-position: center bottom;
-	}
 </style>
