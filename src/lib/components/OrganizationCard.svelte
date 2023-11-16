@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-	import { Icon, Share } from 'svelte-hero-icons';
-	import { goto } from '$app/navigation';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let showRelationFilter = false;
@@ -79,12 +78,12 @@
 		{/if}
 		{#if showRelationFilter}
 			<button
-				class={relatedTo === container.guid ? 'is-active' : ''}
+				class="relation-button"
 				title={$_('show_related_objects')}
 				type="button"
+				class:is-active={relatedTo === container.guid}
 				on:click|stopPropagation={() => toggleRelatedTo($page.url.searchParams)}
 			>
-				<Icon src={Share} size="20" mini />
 			</button>
 		{/if}
 	</footer>
@@ -98,14 +97,16 @@
 		box-shadow: var(--shadow-md);
 		cursor: pointer;
 		padding: 1.25rem;
-		height: 100%;
-		width: 20rem;
+		height: var(--height, auto);
+		width: 100%;
 	}
 
 	.card:hover,
 	.card.is-active {
-		background: var(--color-gray-300);
+		border-color: var(--hover-border-color, var(--color-hover-neutral));
+		border-width: 3px;
 		outline: none;
+		padding: calc(1.25rem - 2px);
 	}
 
 	header {
@@ -126,14 +127,5 @@
 
 	footer {
 		display: flex;
-	}
-
-	footer button:last-child {
-		--padding-x: 0.625rem;
-		--padding-y: 0.625rem;
-
-		flex-grow: 0;
-		flex-shrink: 0;
-		margin-left: auto;
 	}
 </style>
