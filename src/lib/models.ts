@@ -40,6 +40,7 @@ export const sustainableDevelopmentGoals = z.enum(sdgValues);
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
 
 const payloadTypeValues = [
+	'indicator',
 	'internal_objective.internal_strategy',
 	'internal_objective.vision',
 	'internal_objective.strategic_goal',
@@ -306,6 +307,29 @@ const basePayload = z
 	})
 	.strict();
 
+const thisYear = new Date().getFullYear();
+
+const indicatorPayload = basePayload.extend({
+	extrapolatedValues: z
+		.array(z.tuple([z.number().int().positive().min(thisYear), z.number()]))
+		.default([]),
+	historicValues: z
+		.array(
+			z.tuple([
+				z
+					.number()
+					.int()
+					.positive()
+					.max(thisYear - 1),
+				z.number()
+			])
+		)
+		.default([]),
+	quantity: z.string(),
+	type: z.literal(payloadTypes.enum.indicator),
+	unit: z.string()
+});
+
 const internalObjectivesBasePayload = z.object({
 	description: z.string().optional(),
 	summary: z.string().max(200).optional(),
@@ -469,6 +493,7 @@ export const container = z.object({
 	organization: z.string().uuid(),
 	organizational_unit: z.string().uuid().nullable(),
 	payload: z.discriminatedUnion('type', [
+		indicatorPayload,
 		internalStrategyPayload,
 		visionPayload,
 		internalObjectiveStrategicGoalPayload,
@@ -493,6 +518,7 @@ export type Container = z.infer<typeof container>;
 
 export const anyContainer = container.extend({
 	payload: z.discriminatedUnion('type', [
+		indicatorPayload,
 		internalStrategyPayload,
 		visionPayload,
 		internalObjectiveStrategicGoalPayload,
@@ -511,6 +537,18 @@ export const anyContainer = container.extend({
 });
 
 export type AnyContainer = z.infer<typeof anyContainer>;
+
+const indicatorContainer = container.extend({
+	payload: indicatorPayload
+});
+
+export type IndicatorContainer = z.infer<typeof indicatorContainer>;
+
+export function isIndicatorContainer(
+	container: AnyContainer | EmptyContainer
+): container is IndicatorContainer {
+	return container.payload.type === payloadTypes.enum.indicator;
+}
 
 const measureContainer = container.extend({
 	payload: measurePayload
@@ -711,6 +749,16 @@ export type NewContainer = z.infer<typeof newContainer>;
 
 const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
+		indicatorPayload.partial().merge(
+			indicatorPayload.pick({
+				category: true,
+				extrapolatedValues: true,
+				historicValues: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
 		measurePayload.partial().merge(
 			measurePayload.pick({
 				boards: true,
@@ -765,6 +813,21 @@ const emptyContainer = newContainer.extend({
 });
 
 export type EmptyContainer = z.infer<typeof emptyContainer>;
+
+const emptyIndicatorContainer = emptyContainer.extend({
+	payload: indicatorPayload.partial().merge(
+		indicatorPayload.pick({
+			category: true,
+			extrapolatedValues: true,
+			historicValues: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
 	payload: measurePayload.partial().merge(
