@@ -8,8 +8,6 @@
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let measures: Container[];
 	export let strategies: Container[];
-
-	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 </script>
 
 <article class="details">
@@ -21,6 +19,7 @@
 			</div>
 		{/if}
 	</slot>
+
 	<div class="strategies">
 		<h3>{$_('strategies')}</h3>
 		<ul class="carousel">
@@ -31,6 +30,7 @@
 			{/each}
 		</ul>
 	</div>
+
 	<div class="measures">
 		<h3>{$_('measures')}</h3>
 		<ul class="carousel">
@@ -41,12 +41,4 @@
 			{/each}
 		</ul>
 	</div>
-
-	{#if !isPage}
-		<footer>
-			<a class="button primary" href="/{container.payload.type}/{container.guid}">
-				{$_('read_more')}
-			</a>
-		</footer>
-	{/if}
 </article>
