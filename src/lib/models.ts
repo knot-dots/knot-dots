@@ -910,6 +910,10 @@ export function isPartOf(container: { relation: PartialRelation[]; revision: num
 	};
 }
 
+export function hasMember(user: { guid: string }) {
+	return (container: AnyContainer) => container.user.find(({ subject }) => subject === user.guid);
+}
+
 export function etag(container: AnyContainer) {
 	return `"${container.revision}"`;
 }
