@@ -96,6 +96,8 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		cursor: pointer;
+		display: flex;
+		flex-direction: column;
 		padding: 1.25rem;
 		height: var(--height, auto);
 		width: 100%;
@@ -127,5 +129,6 @@
 
 	footer {
 		display: flex;
+		margin-top: auto;
 	}
 </style>
