@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { CurrencyEuro, Icon, InformationCircle, PuzzlePiece, Sparkles } from 'svelte-hero-icons';
+	import {
+		CurrencyEuro,
+		Icon,
+		InformationCircle,
+		PuzzlePiece,
+		Sparkles,
+		TableCells
+	} from 'svelte-hero-icons';
 	import { isMeasureContainer, predicates } from '$lib/models';
 	import type { AnyContainer, ContainerFormTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -74,6 +81,18 @@
 				on:click={() => updateApplicationState('effects')}
 			>
 				<Icon src={Sparkles} size="20" mini />
+			</button>
+		</li>
+	{/if}
+	{#if $applicationState.containerForm.tabs.includes('values')}
+		<li>
+			<button
+				title={$_('form.values')}
+				type="button"
+				class:is-active={$applicationState.containerForm.activeTab === 'values'}
+				on:click={() => updateApplicationState('values')}
+			>
+				<Icon src={TableCells} size="20" mini />
 			</button>
 		</li>
 	{/if}

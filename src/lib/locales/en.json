@@ -39,17 +39,20 @@
 		"basic_data": "Basic data",
 		"effects": "Effects",
 		"metadata": "Metadata",
-		"resources": "Resource management"
+		"resources": "Resource management",
+		"values": "Values"
 	},
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
-	"indicator": {
-		"contribution": "Contribution to operative goal",
-		"legend": "Indicator",
-		"okr": "OKR",
-		"quantity": "Quantity"
-	},
+	"indicator": "Indicator",
+	"indicator.contribution": "Contribution to operative goal",
+	"indicator.extrapolated_values": "Extrapolated values",
+	"indicator.historical_values": "Historical values",
+	"indicator.legend": "Indicator",
+	"indicator.okr": "OKR",
+	"indicator.quantity": "Quantity",
+	"indicator.template": "Indicator template",
 	"information": "Information",
 	"internal_objective": {
 		"internal_strategy": "Internal strategy",
@@ -74,6 +77,9 @@
 		"failure": "Sorry, something went wrong. We are working on it.",
 		"heading": "Invite member",
 		"submit": "Send invitation"
+	},
+	"label": {
+		"unit": "Unit"
 	},
 	"level": {
 		"global": "Global",

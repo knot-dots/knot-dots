@@ -40,17 +40,20 @@
 		"basic_data": "Allgemeine Angaben",
 		"effects": "Wirkungsplanung",
 		"metadata": "Angaben zum Element",
-		"resources": "Ressourcenplanung"
+		"resources": "Ressourcenplanung",
+		"values": "Historische Werte und Prognose"
 	},
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
-	"indicator": {
-		"contribution": "Beitrag zu operativem Ziel",
-		"legend": "Indikator",
-		"okr": "OKR",
-		"quantity": "Größe"
-	},
+	"indicator": "Indikator",
+	"indicator.contribution": "Beitrag zu operativem Ziel",
+	"indicator.extrapolated_values": "Prognose ohne Intervention",
+	"indicator.historical_values": "Ist-Werte",
+	"indicator.legend": "Indikator",
+	"indicator.okr": "OKR",
+	"indicator.quantity": "Größe",
+	"indicator.template": "Indikator-Vorlage",
 	"information": "Information",
 	"internal_objective": {
 		"internal_strategy": "Interne Strategie",
@@ -75,6 +78,9 @@
 		"failure": "Leider hat es nicht funktioniert. Wir arbeiten daran.",
 		"heading": "Mitarbeiter*in einladen",
 		"submit": "Einladung abschicken"
+	},
+	"label": {
+		"unit": "Einheit"
 	},
 	"level": {
 		"global": "Global",

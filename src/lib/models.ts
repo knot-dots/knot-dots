@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources';
+export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'values' | 'resources';
 
 export type ContainerFormTabKey = ContainerDetailViewTabKey | 'metadata';
 

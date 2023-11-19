@@ -89,7 +89,8 @@
 	{#if edit}
 		<header class="content-header">
 			<label
-				style={container.payload.type === payloadTypes.enum.undefined
+				style={container.payload.type === payloadTypes.enum.undefined ||
+				(container.payload.type === payloadTypes.enum.indicator && !container.payload.title)
 					? 'visibility: hidden;'
 					: undefined}
 			>
@@ -108,6 +109,7 @@
 						name="title"
 						type="text"
 						bind:value={container.payload.title}
+						readonly={container.payload.type === payloadTypes.enum.indicator}
 						required
 					/>
 				{/if}
