@@ -5,6 +5,7 @@
 	"assignee": "Zugewiesen an",
 	"basic_data": "Allgemeine Angaben",
 	"board": {
+		"indicators": "Indikatoren",
 		"internal_objectives":  "Interne Ziele",
 		"organizational_units":  "Organisations-Ebenen",
 		"tasks": "Aufgaben"

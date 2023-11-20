@@ -4,8 +4,9 @@
 	"annotation": "Annotation",
 	"assignee": "Assignee",
 	"board": {
-		"internal_objectives":  "Internal objectives",
-		"organizational_units":  "Organizational units",
+		"indicators": "Indicators",
+		"internal_objectives": "Internal objectives",
+		"organizational_units": "Organizational units",
 		"tasks": "Tasks"
 	},
 	"boards": "Boards",

@@ -291,6 +291,7 @@ export type TaskPriority = z.infer<typeof taskPriority>;
 export const visibility = z.enum(['creator', 'members', 'public']);
 
 export const boards = z.enum([
+	'board.indicators',
 	'board.internal_objectives',
 	'board.organizational_units',
 	'board.tasks'
