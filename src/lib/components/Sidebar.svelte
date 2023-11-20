@@ -5,6 +5,7 @@
 	import {
 		BuildingLibrary,
 		BuildingStorefront,
+		ChartBarSquare,
 		ChevronDown,
 		ChevronLeft,
 		ChevronRight,
@@ -217,6 +218,19 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
 				</a>
 			</li>
+			{#if $page.data.container.payload.boards.includes('board.indicators')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ===
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+					>
+						<Icon src={ChartBarSquare} size="20" mini />
+						<span class:is-hidden={!$sidebarToggle}>{$_('board.indicators')}</span>
+					</a>
+				</li>
+			{/if}
 			{#if $page.data.container.payload.boards.includes('board.organizational_units')}
 				<li>
 					<a
@@ -294,6 +308,19 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
 				</a>
 			</li>
+			{#if $page.data.container.payload.boards.includes('board.indicators')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ===
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+					>
+						<Icon src={ChartBarSquare} size="20" mini />
+						<span class:is-hidden={!$sidebarToggle}>{$_('board.indicators')}</span>
+					</a>
+				</li>
+			{/if}
 			{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
 				<li>
 					<a
