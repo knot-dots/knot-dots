@@ -209,6 +209,7 @@ const unitValues = [
 	'unit.kilowatt_hour',
 	'unit.kilometer',
 	'unit.percent',
+	'unit.per_1000',
 	'unit.per_100000',
 	'unit.ton'
 ] as const;
@@ -219,6 +220,7 @@ export type Unit = z.infer<typeof units>;
 
 export const unitByQuantity = new Map<Quantity, Unit>([
 	[quantities.enum['quantity.broadband_coverage'], units.enum['unit.percent']],
+	[quantities.enum['quantity.charging_stations'], units.enum['unit.per_1000']],
 	[quantities.enum['quantity.co2'], units.enum['unit.ton']],
 	[quantities.enum['quantity.co2_emissions_households'], units.enum['unit.ton']],
 	[quantities.enum['quantity.co2_emissions_industry'], units.enum['unit.ton']],
