@@ -36,6 +36,7 @@ export default function defineAbilityFor(user: User) {
 		can('read', payloadTypes.enum['internal_objective.task'], ['assignee']);
 		can('update', objectiveTypes, ['organization', 'organizational_unit']);
 		can('update', internalObjectiveTypes, ['organization', 'organizational_unit']);
+		can('update', internalObjectiveTypes, ['organization', 'organizational_unit']);
 	} else if (user.isAuthenticated) {
 		can('update', payloadTypes.enum.organization, { organization: { $in: user.adminOf } });
 		can(['create', 'update'], payloadTypes.enum.organizational_unit, {
@@ -44,12 +45,15 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update'], objectiveTypes, { organization: { $in: user.adminOf } });
 		can(['create', 'update'], internalObjectiveTypes, { organization: { $in: user.adminOf } });
 		can(['create', 'update'], internalObjectiveTypes, { organization: { $in: user.memberOf } });
-		can(['create', 'update'], objectiveTypes, { organizational_unit: { $in: user.adminOf } });
+		can(['create', 'update'], payloadTypes.enum.indicator, { organization: { $in: user.adminOf } });
 		can(['create', 'update'], internalObjectiveTypes, {
 			organizational_unit: { $in: user.adminOf }
 		});
 		can(['create', 'update'], internalObjectiveTypes, {
 			organizational_unit: { $in: user.memberOf }
+		});
+		can(['create', 'update'], payloadTypes.enum.indicator, {
+			organizational_unit: { $in: user.adminOf }
 		});
 		can('relate', objectiveTypes, { organization: { $in: user.memberOf } });
 		can('relate', internalObjectiveTypes, { organization: { $in: user.memberOf } });
