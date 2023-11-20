@@ -3,6 +3,7 @@
 	import { z } from 'zod';
 	import { env } from '$env/dynamic/public';
 	import { uploadAsFormData } from '$lib/client/upload';
+	import IndicatorForm from '$lib/components/IndicatorForm.svelte';
 	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
 	import InternalObjectiveStrategicGoalForm from '$lib/components/InternalObjectiveStrategicGoalForm.svelte';
 	import InternalObjectiveStrategyForm from '$lib/components/InternalObjectiveStrategyForm.svelte';
@@ -18,6 +19,7 @@
 	import TextForm from '$lib/components/TextForm.svelte';
 	import UndefinedForm from '$lib/components/UndefinedForm.svelte';
 	import {
+		isIndicatorContainer,
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
 		isMeasureContainer,
@@ -108,7 +110,9 @@
 </script>
 
 <form class="details" id="container-form" on:submit|preventDefault={handleSubmit}>
-	{#if isMeasureContainer(container)}
+	{#if isIndicatorContainer(container)}
+		<IndicatorForm bind:container />
+	{:else if isMeasureContainer(container)}
 		<MeasureForm {isPartOfOptions} bind:container />
 	{:else if isModelContainer(container)}
 		<ModelForm bind:container />

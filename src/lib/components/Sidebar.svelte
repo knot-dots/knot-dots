@@ -5,6 +5,7 @@
 	import {
 		BuildingLibrary,
 		BuildingStorefront,
+		ChartBarSquare,
 		ChevronDown,
 		ChevronLeft,
 		ChevronRight,
@@ -147,7 +148,7 @@
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 				>
-					<Icon src={InformationCircle} size="20" solid />
+					<Icon src={InformationCircle} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
 				</a>
 			</li>
@@ -158,7 +159,7 @@
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
 				>
-					<Icon src={Share} size="20" solid />
+					<Icon src={Share} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('relations')}</span>
 				</a>
 			</li>
@@ -171,7 +172,7 @@
 								`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 							href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 						>
-							<Icon src={BuildingStorefront} size="20" solid />
+							<Icon src={BuildingStorefront} size="20" mini />
 							<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
 						</a>
 					</li>
@@ -184,7 +185,7 @@
 								`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 							href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 						>
-							<Icon src={PencilSquare} size="20" solid />
+							<Icon src={PencilSquare} size="20" mini />
 							<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
 						</a>
 					</li>
@@ -198,7 +199,7 @@
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 					>
-						<Icon src={UserGroup} size="20" solid />
+						<Icon src={UserGroup} size="20" mini />
 						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
 					</a>
 				</li>
@@ -213,10 +214,23 @@
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 				>
-					<Icon src={InformationCircle} size="20" solid />
+					<Icon src={InformationCircle} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
 				</a>
 			</li>
+			{#if $page.data.container.payload.boards.includes('board.indicators')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ===
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+					>
+						<Icon src={ChartBarSquare} size="20" mini />
+						<span class:is-hidden={!$sidebarToggle}>{$_('board.indicators')}</span>
+					</a>
+				</li>
+			{/if}
 			{#if $page.data.container.payload.boards.includes('board.organizational_units')}
 				<li>
 					<a
@@ -238,7 +252,7 @@
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					>
-						<Icon src={BuildingStorefront} size="20" solid />
+						<Icon src={BuildingStorefront} size="20" mini />
 						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
 					</a>
 				</li>
@@ -251,7 +265,7 @@
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 					>
-						<Icon src={PencilSquare} size="20" solid />
+						<Icon src={PencilSquare} size="20" mini />
 						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
 					</a>
 				</li>
@@ -264,7 +278,7 @@
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 					>
-						<Icon src={UserGroup} size="20" solid />
+						<Icon src={UserGroup} size="20" mini />
 						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
 					</a>
 				</li>
@@ -279,7 +293,7 @@
 						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
 				>
-					<Icon src={InformationCircle} size="20" solid />
+					<Icon src={InformationCircle} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
 				</a>
 			</li>
@@ -294,6 +308,19 @@
 					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
 				</a>
 			</li>
+			{#if $page.data.container.payload.boards.includes('board.indicators')}
+				<li>
+					<a
+						class="button"
+						class:is-active={$page.url.pathname ===
+							`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
+					>
+						<Icon src={ChartBarSquare} size="20" mini />
+						<span class:is-hidden={!$sidebarToggle}>{$_('board.indicators')}</span>
+					</a>
+				</li>
+			{/if}
 			{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
 				<li>
 					<a
@@ -302,7 +329,7 @@
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
 					>
-						<Icon src={BuildingStorefront} size="20" solid />
+						<Icon src={BuildingStorefront} size="20" mini />
 						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
 					</a>
 				</li>
@@ -315,7 +342,7 @@
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
 					>
-						<Icon src={PencilSquare} size="20" solid />
+						<Icon src={PencilSquare} size="20" mini />
 						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
 					</a>
 				</li>
@@ -328,7 +355,7 @@
 							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
 					>
-						<Icon src={UserGroup} size="20" solid />
+						<Icon src={UserGroup} size="20" mini />
 						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
 					</a>
 				</li>
@@ -338,13 +365,13 @@
 		<ul class="group group-tabs">
 			<li>
 				<a class="button" class:is-active={$page.url.pathname === '/profile'} href="/profile">
-					<Icon src={InformationCircle} size="20" solid />
+					<Icon src={InformationCircle} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
 				</a>
 			</li>
 			<li>
 				<a class="button" href={accountURL($page.url.href)}>
-					<Icon src={Cog6Tooth} size="20" solid />
+					<Icon src={Cog6Tooth} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('profile.settings')}</span>
 				</a>
 			</li>

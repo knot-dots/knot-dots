@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources';
+export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'values' | 'resources';
 
 export type ContainerFormTabKey = ContainerDetailViewTabKey | 'metadata';
 
@@ -40,6 +40,7 @@ export const sustainableDevelopmentGoals = z.enum(sdgValues);
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
 
 const payloadTypeValues = [
+	'indicator',
 	'internal_objective.internal_strategy',
 	'internal_objective.vision',
 	'internal_objective.strategic_goal',
@@ -208,6 +209,7 @@ const unitValues = [
 	'unit.kilowatt_hour',
 	'unit.kilometer',
 	'unit.percent',
+	'unit.per_1000',
 	'unit.per_100000',
 	'unit.ton'
 ] as const;
@@ -218,6 +220,7 @@ export type Unit = z.infer<typeof units>;
 
 export const unitByQuantity = new Map<Quantity, Unit>([
 	[quantities.enum['quantity.broadband_coverage'], units.enum['unit.percent']],
+	[quantities.enum['quantity.charging_stations'], units.enum['unit.per_1000']],
 	[quantities.enum['quantity.co2'], units.enum['unit.ton']],
 	[quantities.enum['quantity.co2_emissions_households'], units.enum['unit.ton']],
 	[quantities.enum['quantity.co2_emissions_industry'], units.enum['unit.ton']],
@@ -290,6 +293,7 @@ export type TaskPriority = z.infer<typeof taskPriority>;
 export const visibility = z.enum(['creator', 'members', 'public']);
 
 export const boards = z.enum([
+	'board.indicators',
 	'board.internal_objectives',
 	'board.organizational_units',
 	'board.tasks'
@@ -305,6 +309,29 @@ const basePayload = z
 		visibility: visibility.default('creator')
 	})
 	.strict();
+
+const thisYear = new Date().getFullYear();
+
+const indicatorPayload = basePayload.extend({
+	extrapolatedValues: z
+		.array(z.tuple([z.number().int().positive().min(thisYear), z.number()]))
+		.default([]),
+	historicValues: z
+		.array(
+			z.tuple([
+				z
+					.number()
+					.int()
+					.positive()
+					.max(thisYear - 1),
+				z.number()
+			])
+		)
+		.default([]),
+	quantity: z.string(),
+	type: z.literal(payloadTypes.enum.indicator),
+	unit: z.string()
+});
 
 const internalObjectivesBasePayload = z.object({
 	description: z.string().optional(),
@@ -469,6 +496,7 @@ export const container = z.object({
 	organization: z.string().uuid(),
 	organizational_unit: z.string().uuid().nullable(),
 	payload: z.discriminatedUnion('type', [
+		indicatorPayload,
 		internalStrategyPayload,
 		visionPayload,
 		internalObjectiveStrategicGoalPayload,
@@ -493,6 +521,7 @@ export type Container = z.infer<typeof container>;
 
 export const anyContainer = container.extend({
 	payload: z.discriminatedUnion('type', [
+		indicatorPayload,
 		internalStrategyPayload,
 		visionPayload,
 		internalObjectiveStrategicGoalPayload,
@@ -511,6 +540,18 @@ export const anyContainer = container.extend({
 });
 
 export type AnyContainer = z.infer<typeof anyContainer>;
+
+const indicatorContainer = container.extend({
+	payload: indicatorPayload
+});
+
+export type IndicatorContainer = z.infer<typeof indicatorContainer>;
+
+export function isIndicatorContainer(
+	container: AnyContainer | EmptyContainer
+): container is IndicatorContainer {
+	return container.payload.type === payloadTypes.enum.indicator;
+}
 
 const measureContainer = container.extend({
 	payload: measurePayload
@@ -711,6 +752,16 @@ export type NewContainer = z.infer<typeof newContainer>;
 
 const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
+		indicatorPayload.partial().merge(
+			indicatorPayload.pick({
+				category: true,
+				extrapolatedValues: true,
+				historicValues: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
 		measurePayload.partial().merge(
 			measurePayload.pick({
 				boards: true,
@@ -765,6 +816,21 @@ const emptyContainer = newContainer.extend({
 });
 
 export type EmptyContainer = z.infer<typeof emptyContainer>;
+
+const emptyIndicatorContainer = emptyContainer.extend({
+	payload: indicatorPayload.partial().merge(
+		indicatorPayload.pick({
+			category: true,
+			extrapolatedValues: true,
+			historicValues: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
 	payload: measurePayload.partial().merge(

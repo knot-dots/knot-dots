@@ -482,6 +482,32 @@ fieldset {
 	padding: 12px 16px;
 }
 
+/* Spreadsheet style inputs */
+.spreadsheet {
+	width: auto;
+}
+
+.spreadsheet th {
+	padding: 0.25rem 0.5rem;
+}
+
+.spreadsheet td {
+	padding: 0;
+}
+
+.spreadsheet input {
+	border: none;
+	border-radius: 0;
+	padding: 0.25rem 0.5rem
+}
+
+.spreadsheet button {
+	--padding-x: 0;
+	--padding-y: 0;
+
+	width: 1.5rem;
+}
+
 /* SVG icons */
 .icon-20 {
 	--size: 20px;

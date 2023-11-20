@@ -41,6 +41,6 @@
 
 <ListBox
 	label={$_('boards')}
-	options={['board.internal_objectives', 'board.tasks']}
+	options={['board.indicators', 'board.internal_objectives', 'board.tasks']}
 	bind:value={container.payload.boards}
 />
