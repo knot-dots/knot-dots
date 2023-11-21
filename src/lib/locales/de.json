@@ -37,6 +37,7 @@
 	},
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
+	"filter.all_organizational_units": "Alle Organisations-Ebenen",
 	"form": {
 		"basic_data": "Allgemeine Angaben",
 		"effects": "Wirkungsplanung",
@@ -373,7 +374,7 @@
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",
 		"remove": "Entfernen",
-		"role": "Role"
+		"role": "Rolle"
 	},
 	"visibility": {
 		"creator": "Nur Autor*in",

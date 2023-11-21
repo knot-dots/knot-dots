@@ -6,24 +6,37 @@ import { getContainerByGuid, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params, url }) => {
+	let containers;
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)) {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	const containers = await locals.pool.connect(
+	const allIndicatorContainers = await locals.pool.connect(
 		getManyContainers(
 			[container.organization],
 			{
-				...(isOrganizationalUnitContainer(container)
-					? { organizationalUnits: [container.guid] }
-					: undefined),
 				type: [payloadTypes.enum.indicator]
 			},
 			''
 		)
 	);
 
-	return { container, containers: filterVisible(containers, locals.user) };
+	if (url.searchParams.getAll('included').includes('all-organizational-units')) {
+		containers = filterVisible(allIndicatorContainers, locals.user);
+	} else {
+		containers = filterVisible(
+			allIndicatorContainers.filter(
+				(c) =>
+					(container.payload.type == payloadTypes.enum.organizational_unit &&
+						c.organizational_unit == container.guid) ||
+					(container.payload.type == payloadTypes.enum.organization &&
+						c.organizational_unit == null)
+			),
+			locals.user
+		);
+	}
+
+	return { container, containers };
 }) satisfies PageServerLoad;

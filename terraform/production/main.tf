@@ -233,6 +233,8 @@ module "k8s_cluster" {
   source = "../modules/k8s_cluster"
 
   cluster_name     = "k8s-production"
+  pool_name        = "pool-objective-carver"
+  pool_size        = 2
   with_scaleway_lb = var.with_scaleway_lb
 }
 

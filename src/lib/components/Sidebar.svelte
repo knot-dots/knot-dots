@@ -386,6 +386,27 @@
 
 	{#if $page.url.pathname === '/profile'}
 		<ul class="group group-actions"></ul>
+	{:else if $page.url.pathname.includes('indicators')}
+		<ul class="group group-actions">
+			<li>
+				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
+					<FilterIcon class="icon-20" />
+					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+					<span class:is-hidden={!$sidebarToggle}>
+						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+					</span>
+				</button>
+				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
+					<li>
+						<Filters
+							options={[[$_('filter.all_organizational_units'), 'all-organizational-units']]}
+							bind:selectedOptions={selectedIncluded}
+							on:change={applyInternalObjectivesFilter}
+						/>
+					</li>
+				</ul>
+			</li>
+		</ul>
 	{:else if 'containers' in $page.data}
 		<ul class="group group-actions">
 			<li>
