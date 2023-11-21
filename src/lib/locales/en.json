@@ -36,6 +36,7 @@
 	},
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
+	"filter.all_organizational_units": "All organizational units",
 	"form": {
 		"basic_data": "Basic data",
 		"effects": "Effects",

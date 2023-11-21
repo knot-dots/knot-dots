@@ -37,6 +37,7 @@
 	},
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
+	"filter.all_organizational_units": "Alle Organisations-Ebenen",
 	"form": {
 		"basic_data": "Allgemeine Angaben",
 		"effects": "Wirkungsplanung",
