@@ -2,9 +2,11 @@
 	import { ArrowDownTray, Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import Chapter from '$lib/components/Chapter.svelte';
-	import { owners } from '$lib/models';
+	import { containerOfType, owners, payloadTypes } from '$lib/models';
 	import type { AnyContainer, Container, StrategyContainer } from '$lib/models';
+	import { ability } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: StrategyContainer;
@@ -86,10 +88,12 @@
 		{#each relatedContainers as part}
 			<Chapter container={part} headingTag="h3" isPartOf={container} />
 		{:else}
-			<a class="button" href="#create=undefined&is-part-of-strategy={container.revision}">
-				<Icon src={PlusSmall} size="24" mini />
-				{$_('chapter')}
-			</a>
+			{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
+				<a class="button" href="#create=undefined&is-part-of-strategy={container.revision}">
+					<Icon src={PlusSmall} size="24" mini />
+					{$_('chapter')}
+				</a>
+			{/if}
 		{/each}
 	</div>
 </article>
