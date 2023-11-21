@@ -162,6 +162,7 @@
 	<label
 		>{$_('strategy')}
 		<select name="is-part-of-strategy" on:change={onChangeIsPartOfStrategy}>
+			<option></option>
 			{#each strategyContainers as option}
 				<option
 					value={option.revision}
