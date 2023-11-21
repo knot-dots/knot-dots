@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { signIn, signOut } from '@auth/sveltekit/client';
+	import { signIn } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
