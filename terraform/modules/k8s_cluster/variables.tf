@@ -9,6 +9,12 @@ variable "cluster_version" {
   type        = string
 }
 
+variable "pool_name" {
+  default     = "default"
+  description = "The name of the pool."
+  type        = string
+}
+
 variable "pool_node_type" {
   default     = "DEV1_M"
   description = "The target node type of the pool."

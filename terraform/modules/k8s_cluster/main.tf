@@ -25,7 +25,7 @@ resource "scaleway_k8s_cluster" "this" {
 
 resource "scaleway_k8s_pool" "this" {
   cluster_id          = scaleway_k8s_cluster.this.id
-  name                = "default"
+  name                = var.pool_name
   node_type           = var.pool_node_type
   size                = var.pool_size
   autohealing         = true
