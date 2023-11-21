@@ -4,9 +4,10 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { predicates } from '$lib/models';
+	import { isIndicatorContainer, predicates } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay } from '$lib/stores';
 	import {
@@ -143,6 +144,8 @@
 		</p>
 	{:else if 'image' in container.payload}
 		<img alt={$_('cover_image')} class="text" src={container.payload.image} />
+	{:else if isIndicatorContainer(container)}
+		<IndicatorChart {container} />
 	{/if}
 
 	<footer>

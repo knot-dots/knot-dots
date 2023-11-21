@@ -3,10 +3,12 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isContainer,
+		isIndicatorContainer,
 		isLevel,
 		isMeasureContainer,
 		isStrategyContainer,
@@ -47,23 +49,27 @@
 				{container.payload.summary ?? ''}
 			</div>
 		{/if}
+
 		{#if 'description' in container.payload}
 			<div class="description">
 				<h3>{$_('description')}</h3>
 				<Viewer value={container.payload.description} />
 			</div>
 		{/if}
+
 		{#if 'body' in container.payload}
 			<div class="body">
 				<h3>{$_('Body')}</h3>
 				<Viewer value={container.payload.body} />
 			</div>
 		{/if}
+
 		{#if 'image' in container.payload}
 			<div class="image">
 				<img alt={$_('cover_image')} src={container.payload.image} />
 			</div>
 		{/if}
+
 		{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 			<div class="indicator">
 				<h3>{$_('indicator.legend')}</h3>
@@ -73,6 +79,10 @@
 					contributors={relatedContainers.filter(isMeasureContainer)}
 				/>
 			</div>
+		{/if}
+
+		{#if isIndicatorContainer(container)}
+			<IndicatorChart {container} />
 		{/if}
 	</slot>
 
