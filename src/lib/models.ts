@@ -314,24 +314,9 @@ const basePayload = z
 	})
 	.strict();
 
-const thisYear = new Date().getFullYear();
-
 const indicatorPayload = basePayload.extend({
-	extrapolatedValues: z
-		.array(z.tuple([z.number().int().positive().min(thisYear), z.number()]))
-		.default([]),
-	historicValues: z
-		.array(
-			z.tuple([
-				z
-					.number()
-					.int()
-					.positive()
-					.max(thisYear - 1),
-				z.number()
-			])
-		)
-		.default([]),
+	extrapolatedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	historicValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	quantity: z.string(),
 	type: z.literal(payloadTypes.enum.indicator),
 	unit: z.string()
