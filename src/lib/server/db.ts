@@ -921,6 +921,21 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 	};
 }
 
+export function getAllContainersRelatedToIndicator(guid: string) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT c.*
+			FROM container c
+			WHERE payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
+				AND valid_currently
+				AND NOT deleted
+			ORDER BY payload->>'title';
+		`);
+
+		return withUserAndRelation<Container>(connection, containerResult);
+	};
+}
+
 export function getAllContainersRelatedToStrategy(
 	revision: number,
 	filters: { terms?: string; type?: PayloadType[] }
