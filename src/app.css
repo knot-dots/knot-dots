@@ -487,6 +487,10 @@ fieldset {
 	width: auto;
 }
 
+.spreadsheet thead {
+	text-transform: none;
+}
+
 .spreadsheet th {
 	padding: 0.25rem 0.5rem;
 }
@@ -498,6 +502,7 @@ fieldset {
 .spreadsheet input {
 	border: none;
 	border-radius: 0;
+	line-height: 1.5;
 	padding: 0.25rem 0.5rem
 }
 
@@ -505,6 +510,8 @@ fieldset {
 	--padding-x: 0;
 	--padding-y: 0;
 
+	margin: 0.25rem;
+	vertical-align: middle;
 	width: 1.5rem;
 }
 

@@ -84,13 +84,25 @@
 			</button>
 		</li>
 	{/if}
-	{#if $applicationState.containerForm.tabs.includes('values')}
+	{#if $applicationState.containerForm.tabs.includes('historical-values')}
 		<li>
 			<button
-				title={$_('form.values')}
+				title={$_('form.historical_values')}
 				type="button"
-				class:is-active={$applicationState.containerForm.activeTab === 'values'}
-				on:click={() => updateApplicationState('values')}
+				class:is-active={$applicationState.containerForm.activeTab === 'historical-values'}
+				on:click={() => updateApplicationState('historical-values')}
+			>
+				<Icon src={TableCells} size="20" mini />
+			</button>
+		</li>
+	{/if}
+	{#if $applicationState.containerForm.tabs.includes('extrapolated-values')}
+		<li>
+			<button
+				title={$_('form.extrapolated_values')}
+				type="button"
+				class:is-active={$applicationState.containerForm.activeTab === 'extrapolated-values'}
+				on:click={() => updateApplicationState('extrapolated-values')}
 			>
 				<Icon src={TableCells} size="20" mini />
 			</button>

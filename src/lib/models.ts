@@ -1,8 +1,12 @@
 import { z } from 'zod';
 
-export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'values' | 'resources';
+export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources';
 
-export type ContainerFormTabKey = ContainerDetailViewTabKey | 'metadata';
+export type ContainerFormTabKey =
+	| ContainerDetailViewTabKey
+	| 'extrapolated-values'
+	| 'historical-values'
+	| 'metadata';
 
 export type ApplicationState = {
 	containerDetailView: {
