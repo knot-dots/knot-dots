@@ -3,6 +3,7 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import ObjectiveWizard from '$lib/components/ObjectiveWizard.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { sustainableDevelopmentGoals, topics } from '$lib/models';
@@ -40,6 +41,8 @@
 		</label>
 
 		<Editor label={$_('description')} bind:value={container.payload.description} />
+
+		<ObjectiveWizard {container} />
 
 		<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
 

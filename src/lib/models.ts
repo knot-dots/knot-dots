@@ -414,6 +414,7 @@ const measurePayload = basePayload
 
 const modelPayload = basePayload
 	.extend({
+		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.model)
 	})
 	.strict();
@@ -425,6 +426,7 @@ const operationalGoalPayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		indicator: z.array(indicator).max(1).default([]),
+		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})
 	.strict();
@@ -452,6 +454,7 @@ const organizationalUnitPayload = z.object({
 
 const strategicGoalPayload = basePayload
 	.extend({
+		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.strategic_goal)
 	})
 	.strict();
@@ -767,13 +770,20 @@ const emptyContainer = newContainer.extend({
 				visibility: true
 			})
 		),
-		modelPayload
-			.partial()
-			.merge(modelPayload.pick({ category: true, topic: true, type: true, visibility: true })),
+		modelPayload.partial().merge(
+			modelPayload.pick({
+				category: true,
+				objective: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
 		operationalGoalPayload.partial().merge(
 			operationalGoalPayload.pick({
 				category: true,
 				indicator: true,
+				objective: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -787,11 +797,15 @@ const emptyContainer = newContainer.extend({
 		organizationalUnitPayload
 			.partial()
 			.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true })),
-		strategicGoalPayload
-			.partial()
-			.merge(
-				strategicGoalPayload.pick({ category: true, topic: true, type: true, visibility: true })
-			),
+		strategicGoalPayload.partial().merge(
+			strategicGoalPayload.pick({
+				category: true,
+				objective: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
 		strategyPayload
 			.partial()
 			.merge(strategyPayload.pick({ category: true, topic: true, type: true, visibility: true })),
@@ -843,9 +857,15 @@ const emptyMeasureContainer = emptyContainer.extend({
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
 
 const emptyModelContainer = emptyContainer.extend({
-	payload: modelPayload
-		.partial()
-		.merge(modelPayload.pick({ category: true, topic: true, type: true, visibility: true }))
+	payload: modelPayload.partial().merge(
+		modelPayload.pick({
+			category: true,
+			objective: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
 });
 
 export type EmptyModelContainer = z.infer<typeof emptyModelContainer>;
@@ -855,6 +875,7 @@ const emptyOperationalGoalContainer = emptyContainer.extend({
 		operationalGoalPayload.pick({
 			category: true,
 			indicator: true,
+			objective: true,
 			topic: true,
 			type: true,
 			visibility: true
@@ -881,9 +902,15 @@ const emptyOrganizationalUnitContainer = newContainer.extend({
 export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
 
 const emptyStrategicGoalContainer = emptyContainer.extend({
-	payload: strategicGoalPayload
-		.partial()
-		.merge(strategicGoalPayload.pick({ category: true, topic: true, type: true, visibility: true }))
+	payload: strategicGoalPayload.partial().merge(
+		strategicGoalPayload.pick({
+			category: true,
+			objective: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
 });
 
 export type EmptyStrategicGoalContainer = z.infer<typeof emptyStrategicGoalContainer>;
