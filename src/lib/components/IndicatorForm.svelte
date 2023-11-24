@@ -68,6 +68,12 @@
 		container.payload.historicValues = [[year, 0], ...container.payload.historicValues];
 	}
 
+	function appendHistoricValue() {
+		const year =
+			container.payload.historicValues[container.payload.historicValues.length - 1][0] + 1;
+		container.payload.historicValues = [...container.payload.historicValues, [year, 0]];
+	}
+
 	function appendExtrapolatedValue() {
 		const year =
 			container.payload.extrapolatedValues[container.payload.extrapolatedValues.length - 1][0] + 1;
@@ -153,6 +159,18 @@
 						</td>
 					</tr>
 				{/each}
+				<tr>
+					<td colspan="2">
+						<button
+							class="quiet"
+							title={$_('add_value')}
+							type="button"
+							on:click={appendHistoricValue}
+						>
+							<Icon src={PlusSmall} size="24" />
+						</button>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 	</fieldset>
