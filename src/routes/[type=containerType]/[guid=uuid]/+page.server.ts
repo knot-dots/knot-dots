@@ -6,6 +6,7 @@ import type { Container, PayloadType } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllContainersRelatedToStrategy,
+	getAllContainersRelatedToIndicator,
 	getAllRelatedContainers,
 	getAllRelatedInternalObjectives
 } from '$lib/server/db';
@@ -37,6 +38,10 @@ export const load = (async ({ params, locals, url }) => {
 			getAllContainersRelatedToStrategy(container.revision, {
 				type: url.searchParams.getAll('payloadType') as PayloadType[]
 			})
+		);
+	} else if (params.type === payloadTypes.enum.indicator) {
+		relatedContainers = await locals.pool.connect(
+			getAllContainersRelatedToIndicator(container.guid)
 		);
 	} else {
 		relatedContainers = await locals.pool.connect(
