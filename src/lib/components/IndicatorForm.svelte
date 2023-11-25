@@ -27,7 +27,8 @@
 			tabs: [
 				...('guid' in container ? [] : ['metadata' as ContainerFormTabKey]),
 				'basic-data',
-				'values'
+				'historical-values',
+				'extrapolated-values'
 			]
 		}
 	}));
@@ -65,6 +66,12 @@
 	function prependHistoricValue() {
 		const year = container.payload.historicValues[0][0] - 1;
 		container.payload.historicValues = [[year, 0], ...container.payload.historicValues];
+	}
+
+	function appendHistoricValue() {
+		const year =
+			container.payload.historicValues[container.payload.historicValues.length - 1][0] + 1;
+		container.payload.historicValues = [...container.payload.historicValues, [year, 0]];
 	}
 
 	function appendExtrapolatedValue() {
@@ -111,33 +118,37 @@
 		options={sustainableDevelopmentGoals.options}
 		bind:value={container.payload.category}
 	/>
-{:else if $applicationState.containerForm.activeTab === 'values'}
-	<fieldset class="form-tab" id="values">
-		<legend>{$_('form.values')}</legend>
+{:else if $applicationState.containerForm.activeTab === 'historical-values'}
+	<fieldset class="form-tab" id="historic-values">
+		<legend>{$_('form.historical_values')}</legend>
 
 		<table class="spreadsheet">
-			<caption>{$_('indicator.historical_values')} ({$_(container.payload.unit ?? '')})</caption>
 			<thead>
 				<tr>
-					<th>
+					<th scope="col"></th>
+					<th scope="col">
+						{$_(`${container.payload.quantity}.label`)} ({$_(container.payload.unit ?? '')})
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td colspan="2">
 						<button
 							class="quiet"
-							title={$_('add_column')}
+							title={$_('add_value')}
 							type="button"
 							on:click={prependHistoricValue}
 						>
 							<Icon src={PlusSmall} size="24" />
 						</button>
-					</th>
-					{#each container.payload.historicValues.map(([k]) => k) as key}
-						<th>{key}</th>
-					{/each}
+					</td>
 				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td></td>
-					{#each container.payload.historicValues.map((v, i) => i) as index}
+				{#each container.payload.historicValues.map((v, i) => i) as index}
+					<tr>
+						<th scope="row">
+							{container.payload.historicValues[index][0]}
+						</th>
 						<td>
 							<input
 								type="text"
@@ -146,33 +157,39 @@
 								on:change={updateHistoricValues(index)}
 							/>
 						</td>
-					{/each}
-				</tr>
-			</tbody>
-		</table>
-
-		<table class="spreadsheet">
-			<caption>{$_('indicator.extrapolated_values')} ({$_(container.payload.unit ?? '')})</caption>
-			<thead>
+					</tr>
+				{/each}
 				<tr>
-					{#each container.payload.extrapolatedValues.map(([k]) => k) as key}
-						<th>{key}</th>
-					{/each}
-					<th>
+					<td colspan="2">
 						<button
 							class="quiet"
-							title={$_('add_column')}
+							title={$_('add_value')}
 							type="button"
-							on:click={appendExtrapolatedValue}
+							on:click={appendHistoricValue}
 						>
 							<Icon src={PlusSmall} size="24" />
 						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'extrapolated-values'}
+	<fieldset class="form-tab" id="extrapolated-values">
+		<legend>{$_('form.extrapolated_values')}</legend>
+		<table class="spreadsheet">
+			<thead>
+				<tr>
+					<th scope="col"></th>
+					<th scope="col">
+						{$_(`${container.payload.quantity}.label`)} ({$_(container.payload.unit ?? '')})
 					</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
-					{#each container.payload.extrapolatedValues.map((v, i) => i) as index}
+				{#each container.payload.extrapolatedValues.map((v, i) => i) as index}
+					<tr>
+						<th scope="row">{container.payload.extrapolatedValues[index][0]}</th>
 						<td>
 							<input
 								type="text"
@@ -181,8 +198,19 @@
 								on:change={updateExtrapolatedValues(index)}
 							/>
 						</td>
-					{/each}
-					<td></td>
+					</tr>
+				{/each}
+				<tr>
+					<td colspan="2">
+						<button
+							class="quiet"
+							title={$_('add_column')}
+							type="button"
+							on:click={appendExtrapolatedValue}
+						>
+							<Icon src={PlusSmall} size="24" />
+						</button>
+					</td>
 				</tr>
 			</tbody>
 		</table>

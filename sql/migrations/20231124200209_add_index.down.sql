@@ -1,0 +1,1 @@
+DROP INDEX container_payload_objective_idx;

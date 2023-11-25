@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
+	import Card from '$lib/components/Card.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-	import Card from '$lib/components/Card.svelte';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let measures: Container[];

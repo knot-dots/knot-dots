@@ -41,21 +41,21 @@
 	"form": {
 		"basic_data": "Allgemeine Angaben",
 		"effects": "Wirkungsplanung",
+		"extrapolated_values": "Prognose ohne Intervention",
+		"historical_values": "Ist-Werte",
 		"metadata": "Angaben zum Element",
-		"resources": "Ressourcenplanung",
-		"values": "Historische Werte und Prognose"
+		"resources": "Ressourcenplanung"
 	},
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
 	"indicator": "Indikator",
 	"indicator.contribution": "Beitrag zu operativem Ziel",
-	"indicator.extrapolated_values": "Prognose ohne Intervention",
-	"indicator.historical_values": "Ist-Werte",
 	"indicator.legend": "Indikator",
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Größe",
 	"indicator.template": "Indikator-Vorlage",
+	"indicator.wanted_values": "Zielwerte",
 	"information": "Information",
 	"internal_objective": {
 		"internal_strategy": "Interne Strategie",
