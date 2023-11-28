@@ -18,7 +18,6 @@
 		PartialRelation
 	} from '$lib/models';
 
-	// eslint-disable-next-line no-undef
 	export let container: AnyContainer | EmptyContainer;
 
 	let isPartOfOptionsRequest: Promise<AnyContainer[]> = new Promise(() => []);
