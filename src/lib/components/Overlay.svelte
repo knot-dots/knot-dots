@@ -42,7 +42,7 @@
 	$: edit = hashParams.has('create') || hashParams.has('edit');
 
 	function closeOverlay() {
-		return '#';
+		return hashParams.has('relate') ? `#relate=${hashParams.get('relate')}` : '#';
 	}
 
 	function cancel(c: AnyContainer) {
