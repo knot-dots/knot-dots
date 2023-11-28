@@ -133,7 +133,7 @@ export function createContainer(container: NewContainer) {
 						${container.realm}
 					)
 					RETURNING *
-      `);
+				`);
 
 			const userValues = container.user.map((u) => [
 				containerResult.revision,
@@ -434,21 +434,21 @@ async function withUserAndRelation<T extends AnyContainer>(
 	const userResult =
 		containerResult.length > 0
 			? await connection.any(sql.typeAlias('userRelationWithObject')`
-						SELECT *
-						FROM container_user
-						WHERE object IN (${revisions})
-					`)
+				SELECT *
+				FROM container_user
+				WHERE object IN (${revisions})
+			`)
 			: [];
 
 	const relationResult =
 		containerResult.length > 0
 			? await connection.any(sql.typeAlias('relation')`
-						SELECT cr.*
-						FROM container_relation cr
-						JOIN container co ON cr.object = co.revision AND co.valid_currently
-						JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
-						WHERE object IN (${revisions}) OR subject IN (${revisions})
-						ORDER BY position
+				SELECT cr.*
+				FROM container_relation cr
+				JOIN container co ON cr.object = co.revision AND co.valid_currently
+				JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+				WHERE object IN (${revisions}) OR subject IN (${revisions})
+				ORDER BY position
 			`)
 			: [];
 
@@ -599,15 +599,15 @@ export function getManyTaskContainers(filters: {
 
 		if (filters.measure) {
 			containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT c.*
-			FROM container c
-			JOIN container_relation cr ON c.revision = cr.subject
-				AND cr.predicate = 'is-part-of-measure'
-				AND cr.object = ${filters.measure}
-      LEFT JOIN task_priority tp ON c.guid = tp.task
-			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY tp.priority;
-		`);
+				SELECT c.*
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject
+					AND cr.predicate = 'is-part-of-measure'
+					AND cr.object = ${filters.measure}
+				LEFT JOIN task_priority tp ON c.guid = tp.task
+				WHERE ${sql.join(conditions, sql.fragment` AND `)}
+				ORDER BY tp.priority;
+			`);
 		} else {
 			containerResult = await connection.any(sql.typeAlias('container')`
 				SELECT *
@@ -708,13 +708,13 @@ export function maybePartOf(organizationOrOrganizationalUnit: string, containerT
 		const userResult =
 			containerResult.length > 0
 				? await connection.any(sql.typeAlias('userRelationWithObject')`
-						SELECT *
-						FROM container_user
-						WHERE object IN (${sql.join(
-							containerResult.map((c) => c.revision),
-							sql.fragment`, `
-						)})
-					`)
+					SELECT *
+					FROM container_user
+					WHERE object IN (${sql.join(
+						containerResult.map((c) => c.revision),
+						sql.fragment`, `
+					)})
+				`)
 				: [];
 
 		return containerResult.map((c) => ({
@@ -747,40 +747,40 @@ export function getAllRelatedContainers(
 
 		const isPartOfResult = relations.includes('hierarchical')
 			? await connection.any(sql.typeAlias('relationPath')`
-			WITH RECURSIVE is_part_of_relation(path) AS (
-				--Top level items (roots)
-				SELECT array[]::integer[] as path, c.revision as subject
-				FROM container c
-				WHERE c.valid_currently
-					AND NOT EXISTS(
-						--No relations with this as the subject.
-						SELECT *
-						FROM container_relation parent_test
-						WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
-					)
-				UNION ALL
-				SELECT array_append(r.path, c.revision), c.revision
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
-				JOIN is_part_of_relation r ON cr.object = r.subject
-				WHERE c.valid_currently
-			)
-			SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${revision} = ANY(path)
-		`)
+				WITH RECURSIVE is_part_of_relation(path) AS (
+					--Top level items (roots)
+					SELECT array[]::integer[] as path, c.revision as subject
+					FROM container c
+					WHERE c.valid_currently
+						AND NOT EXISTS(
+							--No relations with this as the subject.
+							SELECT *
+							FROM container_relation parent_test
+							WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
+						)
+					UNION ALL
+					SELECT array_append(r.path, c.revision), c.revision
+					FROM container c
+					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
+					JOIN is_part_of_relation r ON cr.object = r.subject
+					WHERE c.valid_currently
+				)
+				SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${revision} = ANY(path)
+			`)
 			: [];
 
 		const otherRelationResult = relations.includes('other')
 			? await connection.any(sql.typeAlias('relationPath')`
-			SELECT cr.subject, cr.object
-			FROM container_relation cr
-			JOIN container cs ON cs.revision = cr.subject
-				AND cs.valid_currently
-				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
-			JOIN container co ON co.revision = cr.object
-				AND co.valid_currently
-				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
-			WHERE cs.revision = ${revision} OR co.revision = ${revision}
-		`)
+				SELECT cr.subject, cr.object
+				FROM container_relation cr
+				JOIN container cs ON cs.revision = cr.subject
+					AND cs.valid_currently
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+				JOIN container co ON co.revision = cr.object
+					AND co.valid_currently
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+				WHERE cs.revision = ${revision} OR co.revision = ${revision}
+			`)
 			: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
@@ -829,15 +829,15 @@ export function getAllRelatedContainersByStrategyType(
 		const containerResult =
 			relationPathResult.length > 0
 				? await connection.any(sql.typeAlias('container')`
-						SELECT *
-						FROM container
-						WHERE revision IN (${sql.join(
-							relationPathResult.map((r) => Object.values(r)).flat(),
-							sql.fragment`, `
-						)})
-							AND ${prepareWhereCondition({ ...filters, organizations })}
-						ORDER BY ${prepareOrderByExpression(sort)}
-		`)
+					SELECT *
+					FROM container
+					WHERE revision IN (${sql.join(
+						relationPathResult.map((r) => Object.values(r)).flat(),
+						sql.fragment`, `
+					)})
+						AND ${prepareWhereCondition({ ...filters, organizations })}
+					ORDER BY ${prepareOrderByExpression(sort)}
+				`)
 				: [];
 
 		return withUserAndRelation<Container>(connection, containerResult);
@@ -925,47 +925,47 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 
 		const relationPathResult = relations.includes('hierarchical')
 			? await connection.any(sql.typeAlias('relationPath')`
-			WITH RECURSIVE is_part_of_relation(path) AS (
-				--Top level items (roots)
-				SELECT array[]::integer[] as path, c.revision as subject
-				FROM container c
-				WHERE c.valid_currently
-					AND NOT EXISTS(
-						--No relations with this as the subject.
-						SELECT *
-						FROM container_relation parent_test
-						WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
-					)
-				UNION ALL
-				SELECT array_append(r.path, c.revision), c.revision
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
-				JOIN is_part_of_relation r ON cr.object = r.subject
-				WHERE c.valid_currently
-			)
-			SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${revision} = ANY(path)
-			UNION
-			SELECT object
-			FROM container_relation cr
-			JOIN container co ON co.revision = cr.object
-				AND co.valid_currently
-				AND cr.predicate = ${predicates.enum['is-part-of-measure']}
-			WHERE cr.subject = ${revision}
-		`)
+				WITH RECURSIVE is_part_of_relation(path) AS (
+					--Top level items (roots)
+					SELECT array[]::integer[] as path, c.revision as subject
+					FROM container c
+					WHERE c.valid_currently
+						AND NOT EXISTS(
+							--No relations with this as the subject.
+							SELECT *
+							FROM container_relation parent_test
+							WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
+						)
+					UNION ALL
+					SELECT array_append(r.path, c.revision), c.revision
+					FROM container c
+					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
+					JOIN is_part_of_relation r ON cr.object = r.subject
+					WHERE c.valid_currently
+				)
+				SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${revision} = ANY(path)
+				UNION
+				SELECT object
+				FROM container_relation cr
+				JOIN container co ON co.revision = cr.object
+					AND co.valid_currently
+					AND cr.predicate = ${predicates.enum['is-part-of-measure']}
+				WHERE cr.subject = ${revision}
+			`)
 			: [];
 
 		const otherRelationResult = relations.includes('other')
 			? await connection.any(sql.typeAlias('relationPath')`
-			SELECT cr.subject, cr.object
-			FROM container_relation cr
-			JOIN container cs ON cs.revision = cr.subject
-				AND cs.valid_currently
-				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
-			JOIN container co ON co.revision = cr.object
-				AND co.valid_currently
-				AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
-			WHERE cs.revision = ${revision} OR co.revision = ${revision}
-		`)
+				SELECT cr.subject, cr.object
+				FROM container_relation cr
+				JOIN container cs ON cs.revision = cr.subject
+					AND cs.valid_currently
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+				JOIN container co ON co.revision = cr.object
+					AND co.valid_currently
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+				WHERE cs.revision = ${revision} OR co.revision = ${revision}
+			`)
 			: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
