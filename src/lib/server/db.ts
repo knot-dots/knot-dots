@@ -114,26 +114,26 @@ export function createContainer(container: NewContainer) {
 					RETURNING *
 				`)
 				: organizationalUnitGuid
-				? await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (guid, organization, payload, realm)
-					VALUES (
-						${organizationalUnitGuid},
-						${container.organization},
-						${sql.jsonb(<SerializableValue>container.payload)},
-						${container.realm}
-					)
-					RETURNING *
-				`)
-				: await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (organization, organizational_unit, payload, realm)
-					VALUES (
-						${container.organization},
-						${container.organizational_unit},
-						${sql.jsonb(<SerializableValue>container.payload)},
-						${container.realm}
-					)
-					RETURNING *
-				`);
+				  ? await txConnection.one(sql.typeAlias('anyContainer')`
+						INSERT INTO container (guid, organization, payload, realm)
+						VALUES (
+							${organizationalUnitGuid},
+							${container.organization},
+							${sql.jsonb(<SerializableValue>container.payload)},
+							${container.realm}
+						)
+						RETURNING *
+					`)
+				  : await txConnection.one(sql.typeAlias('anyContainer')`
+						INSERT INTO container (organization, organizational_unit, payload, realm)
+						VALUES (
+							${container.organization},
+							${container.organizational_unit},
+							${sql.jsonb(<SerializableValue>container.payload)},
+							${container.realm}
+						)
+						RETURNING *
+					`);
 
 			const userValues = container.user.map((u) => [
 				containerResult.revision,
