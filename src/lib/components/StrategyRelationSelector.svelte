@@ -86,13 +86,15 @@
 					('revision' in container ? subject == container.revision : true)
 			);
 
-			container.relation = [
-				...container.relation,
-				{
-					...container.relation[isPartOfStrategyIndex],
-					predicate: predicates.enum['is-part-of']
-				}
-			];
+			if (isPartOfStrategyIndex) {
+				container.relation = [
+					...container.relation,
+					{
+						...container.relation[isPartOfStrategyIndex],
+						predicate: predicates.enum['is-part-of']
+					}
+				];
+			}
 		}
 	}
 
