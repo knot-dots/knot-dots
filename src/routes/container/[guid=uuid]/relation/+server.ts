@@ -1,8 +1,9 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { isInternalObjectiveContainer, relation } from '$lib/models';
+import { isIndicatorContainer, isInternalObjectiveContainer, relation } from '$lib/models';
 import {
+	getAllContainersRelatedToIndicator,
 	getAllRelatedContainers,
 	getAllRelatedInternalObjectives,
 	getContainerByGuid,
@@ -28,22 +29,27 @@ export const GET = (async ({ locals, params, url }) => {
 	}
 
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
-	const containers = isInternalObjectiveContainer(container)
-		? await locals.pool.connect(
-				getAllRelatedInternalObjectives(params.guid, parseResult.data.relationType, '')
-		  )
-		: await locals.pool.connect(
-				getAllRelatedContainers(
-					parseResult.data.organization,
-					params.guid,
-					parseResult.data.relationType,
-					{
-						organizationalUnits: parseResult.data.organizationalUnit
-					},
-					''
-				)
-		  );
 
+	let containers;
+	if (isIndicatorContainer(container)) {
+		containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container.guid));
+	} else if (isInternalObjectiveContainer(container)) {
+		containers = await locals.pool.connect(
+			getAllRelatedInternalObjectives(params.guid, parseResult.data.relationType, '')
+		);
+	} else {
+		containers = await locals.pool.connect(
+			getAllRelatedContainers(
+				parseResult.data.organization,
+				params.guid,
+				parseResult.data.relationType,
+				{
+					organizationalUnits: parseResult.data.organizationalUnit
+				},
+				''
+			)
+		);
+	}
 	return json(filterVisible(containers, locals.user));
 }) satisfies RequestHandler;
 
