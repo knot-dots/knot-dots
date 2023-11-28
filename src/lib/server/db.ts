@@ -843,45 +843,15 @@ export function getAllRelatedContainersByStrategyType(
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
-			SELECT s1.subject AS r1, s1.object AS r2, s2.subject AS r3, s2.object AS r4, s3.subject AS r5, s3.object AS r6, s4.subject AS r7, s4.object AS r8
-			FROM
-			(
-				SELECT cr.subject, cr.predicate, cr.object
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'measure' AND cr.predicate = ${
-					predicates.enum['is-part-of']
-				}
-				WHERE c.valid_currently
-			) s1
-			FULL JOIN
-			(
-				SELECT cr.subject, cr.predicate, cr.object
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'operational_goal' AND cr.predicate = ${
-					predicates.enum['is-part-of']
-				}
-				WHERE c.valid_currently
-			) s2 ON s1.object = s2.subject
-			FULL JOIN
-			(
-				SELECT cr.subject, cr.predicate, cr.object
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'strategic_goal' AND cr.predicate = ${
-					predicates.enum['is-part-of']
-				}
-				WHERE c.valid_currently
-			) s3 ON s2.object = s3.subject
-			FULL JOIN
-			(
-				SELECT cr.subject, cr.predicate, cr.object
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND c.payload->>'type' = 'model' AND cr.predicate = ${
-					predicates.enum['is-part-of']
-				}
-				WHERE c.valid_currently
-			) s4 ON s3.object = s4.subject
-			JOIN container c ON s4.object = c.revision
-				WHERE c.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
+			SELECT co.revision, cr.subject
+			FROM container co
+			LEFT JOIN container_relation cr ON co.revision = cr.object
+				AND cr.predicate = ${predicates.enum['is-part-of-strategy']}
+				AND co.valid_currently
+			LEFT JOIN container cs ON cs.revision = cr.subject
+				AND cr.predicate = ${predicates.enum['is-part-of-strategy']}
+				AND	cs.valid_currently
+			WHERE co.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
 		`);
 
 		const containerResult =
