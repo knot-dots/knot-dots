@@ -631,7 +631,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
 			WITH RECURSIVE is_part_of_relation(path) AS (
 				--Top level items (roots)
-				SELECT array[]::integer[] as path, c.revision as subject
+				SELECT array[c.revision] as path, c.revision as subject
 				FROM container c
 				WHERE c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
 					AND c.valid_currently
@@ -749,7 +749,7 @@ export function getAllRelatedContainers(
 			? await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE is_part_of_relation(path) AS (
 					--Top level items (roots)
-					SELECT array[]::integer[] as path, c.revision as subject
+					SELECT array[c.revision] as path, c.revision as subject
 					FROM container c
 					WHERE c.valid_currently
 						AND NOT EXISTS(
@@ -927,7 +927,7 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 			? await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE is_part_of_relation(path) AS (
 					--Top level items (roots)
-					SELECT array[]::integer[] as path, c.revision as subject
+					SELECT array[c.revision] as path, c.revision as subject
 					FROM container c
 					WHERE c.valid_currently
 						AND NOT EXISTS(
