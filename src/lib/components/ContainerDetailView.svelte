@@ -82,7 +82,7 @@
 		{/if}
 
 		{#if isIndicatorContainer(container)}
-			<IndicatorChart {container} />
+			<IndicatorChart {container} {relatedContainers} />
 		{/if}
 	</slot>
 

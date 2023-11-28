@@ -31,7 +31,7 @@
 			<Viewer value={container.payload.description} />
 		</div>
 
-		<IndicatorChart {container} />
+		<IndicatorChart {container} {relatedContainers} />
 
 		<div class="objectives">
 			<h3>{$_('objectives')}</h3>
