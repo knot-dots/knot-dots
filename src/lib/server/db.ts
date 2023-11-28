@@ -865,7 +865,7 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 
 export function getAllContainersRelatedToIndicator(guid: string) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const containerResult = await connection.any(sql.typeAlias('container')`
+		const objectiveResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c
 			WHERE payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
@@ -874,7 +874,23 @@ export function getAllContainersRelatedToIndicator(guid: string) {
 			ORDER BY payload->>'title';
 		`);
 
-		return withUserAndRelation<Container>(connection, containerResult);
+		const strategyResult =
+			objectiveResult.length > 0
+				? await connection.any(sql.typeAlias('container')`
+					SELECT DISTINCT c.*
+					FROM container c
+					JOIN container_relation cr ON cr.predicate = ${predicates.enum['is-part-of-strategy']}
+						AND cr.object = c.revision
+					WHERE subject IN (${sql.join(
+						objectiveResult.map(({ revision }) => revision),
+						sql.fragment`, `
+					)})
+						AND valid_currently
+						AND NOT deleted
+				`)
+				: [];
+
+		return withUserAndRelation<Container>(connection, [...objectiveResult, ...strategyResult]);
 	};
 }
 

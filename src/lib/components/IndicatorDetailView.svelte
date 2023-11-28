@@ -8,6 +8,7 @@
 		isModelContainer,
 		isOperationalGoalContainer,
 		isStrategicGoalGoalContainer,
+		isStrategyContainer,
 		owners
 	} from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
@@ -39,6 +40,17 @@
 				{#each relatedContainers.filter((c) => isModelContainer(c) || isOperationalGoalContainer(c) || isStrategicGoalGoalContainer(c)) as objective}
 					<li>
 						<Card --height="100%" container={objective} />
+					</li>
+				{/each}
+			</ul>
+		</div>
+
+		<div class="strategies">
+			<h3>{$_('strategies')}</h3>
+			<ul class="carousel">
+				{#each relatedContainers.filter((c) => isStrategyContainer(c)) as strategy}
+					<li>
+						<Card --height="100%" container={strategy} />
 					</li>
 				{/each}
 			</ul>
