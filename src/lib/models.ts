@@ -287,6 +287,14 @@ const indicator = z.object({
 
 export type Indicator = z.infer<typeof indicator>;
 
+const indicatorEffect = z.object({
+	indicator: z.string().uuid(),
+	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
+});
+
+export type IndicatorEffect = z.infer<typeof indicatorEffect>;
+
 const indicatorObjective = z.object({
 	indicator: z.string().uuid(),
 	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
@@ -392,6 +400,7 @@ const measurePayload = basePayload
 		indicatorContributionAchieved: z
 			.record(z.string().uuid(), z.coerce.number().nonnegative())
 			.optional(),
+		effect: z.array(indicatorEffect).default([]),
 		resource: z
 			.array(
 				z.object({
@@ -773,6 +782,7 @@ const emptyContainer = newContainer.extend({
 		modelPayload.partial().merge(
 			modelPayload.pick({
 				category: true,
+				effect: true,
 				objective: true,
 				topic: true,
 				type: true,
@@ -847,6 +857,7 @@ const emptyMeasureContainer = emptyContainer.extend({
 		measurePayload.pick({
 			boards: true,
 			category: true,
+			effect: true,
 			topic: true,
 			type: true,
 			visibility: true
