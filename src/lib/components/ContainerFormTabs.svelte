@@ -8,24 +8,23 @@
 		Sparkles,
 		TableCells
 	} from 'svelte-hero-icons';
-	import { isMeasureContainer, predicates } from '$lib/models';
+	import { boards, isMeasureContainer } from '$lib/models';
 	import type { AnyContainer, ContainerFormTabKey } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, getOrganization, getOrganizationalUnit } from '$lib/stores';
 
 	export let container: AnyContainer;
-	export let isPartOfOptions: AnyContainer[];
 
-	$: showEffectsTab =
-		isMeasureContainer(container) &&
-		isPartOfOptions.find(
-			(o) =>
-				container.relation.findIndex(
-					(r) => r.predicate === predicates.enum['is-part-of'] && r.object === o.revision
-				) > -1 &&
-				'indicator' in o.payload &&
-				o.payload.indicator.length > 0 &&
-				'quantity' in o.payload.indicator[0]
-		);
+	let showEffectsTab: boolean;
+
+	$: {
+		const organizationOrOrganizationalUnit = container.organizational_unit
+			? $getOrganizationalUnit(container.organizational_unit)
+			: $getOrganization(container.organization);
+
+		showEffectsTab =
+			isMeasureContainer(container) &&
+			organizationOrOrganizationalUnit?.payload.boards.includes(boards.enum['board.indicators']);
+	}
 
 	function updateApplicationState(activeTab: ContainerFormTabKey) {
 		applicationState.update((state) => ({

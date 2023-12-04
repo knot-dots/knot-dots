@@ -76,11 +76,16 @@
 					<thead>
 						<tr>
 							<th scope="col"></th>
-							<th scope="col">
+							<th scope="col" colspan="2">
 								{$_(`${indicatorsByGuid.get(objective.indicator)?.payload.quantity}.label`)} ({$_(
 									`${indicatorsByGuid.get(objective.indicator)?.payload.unit}` ?? ''
 								)})
 							</th>
+						</tr>
+						<tr>
+							<th scope="col"></th>
+							<th scope="col">{$_('indicator.wanted_values')}</th>
+							<th scope="col">{$_('form.extrapolated_values')}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -97,10 +102,23 @@
 										on:change={updateWantedValues(objective, index)}
 									/>
 								</td>
+								<td>
+									<input
+										type="text"
+										value={indicatorsByGuid.get(objective.indicator)?.payload.extrapolatedValues[
+											index
+										]
+											? indicatorsByGuid.get(objective.indicator)?.payload.extrapolatedValues[
+													index
+											  ][1]
+											: ''}
+										readonly
+									/>
+								</td>
 							</tr>
 						{/each}
 						<tr>
-							<td colspan="2">
+							<td colspan="3">
 								<button
 									class="quiet"
 									title={$_('add_value')}

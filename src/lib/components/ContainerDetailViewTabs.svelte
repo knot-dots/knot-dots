@@ -1,24 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { CurrencyEuro, Icon, InformationCircle, Sparkles } from 'svelte-hero-icons';
-	import { isMeasureContainer, predicates } from '$lib/models';
+	import { isMeasureContainer } from '$lib/models';
 	import type { AnyContainer, ContainerDetailViewTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: AnyContainer;
-	export let relatedContainers: AnyContainer[];
 
-	$: showEffectsTab =
-		isMeasureContainer(container) &&
-		relatedContainers.find(
-			(o) =>
-				container.relation.findIndex(
-					(r) => r.predicate === predicates.enum['is-part-of'] && r.object === o.revision
-				) > -1 &&
-				'indicator' in o.payload &&
-				o.payload.indicator.length > 0 &&
-				'quantity' in o.payload.indicator[0]
-		);
+	$: showEffectsTab = isMeasureContainer(container) && container.payload.effect.length > 0;
 
 	function updateApplicationState(activeTab: ContainerDetailViewTabKey) {
 		applicationState.update((state) => ({

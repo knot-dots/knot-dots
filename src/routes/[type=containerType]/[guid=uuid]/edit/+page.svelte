@@ -100,7 +100,7 @@
 	<div class="content-details masked-overflow">
 		{#if $applicationState.containerForm.tabs.length > 0}
 			<aside>
-				<ContainerFormTabs {container} {isPartOfOptions} />
+				<ContainerFormTabs {container} />
 			</aside>
 		{/if}
 		<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />

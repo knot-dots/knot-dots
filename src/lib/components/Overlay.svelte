@@ -118,7 +118,7 @@
 		<div class="content-details masked-overflow">
 			{#if $applicationState.containerForm.tabs.length > 0}
 				<aside>
-					<ContainerFormTabs {container} {isPartOfOptions} />
+					<ContainerFormTabs {container} />
 				</aside>
 			{/if}
 			<ContainerForm
@@ -191,7 +191,7 @@
 			{#if 'guid' in container}
 				<aside>
 					{#if $applicationState.containerDetailView.tabs.length > 0}
-						<ContainerDetailViewTabs {container} {relatedContainers} />
+						<ContainerDetailViewTabs {container} />
 					{/if}
 					<OverlayDeepLinks {container} />
 				</aside>

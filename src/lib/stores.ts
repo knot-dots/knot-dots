@@ -11,6 +11,8 @@ import type {
 	AnyContainer,
 	ApplicationState,
 	Container,
+	OrganizationalUnitContainer,
+	OrganizationContainer,
 	PayloadType,
 	Status,
 	TaskStatus
@@ -66,6 +68,16 @@ export const user = derived(page, (values) => {
 export const ability = derived(user, defineAbilityFor);
 
 export const dragged = writable<Container | undefined>();
+
+export const getOrganization = derived(page, (values) => {
+	return (guid: string): OrganizationContainer =>
+		values.data.organizations.find((o: OrganizationContainer) => guid == o.guid);
+});
+
+export const getOrganizationalUnit = derived(page, (values) => {
+	return (guid: string): OrganizationalUnitContainer =>
+		values.data.organizationalUnits.find((o: OrganizationalUnitContainer) => guid == o.guid);
+});
 
 type Overlay = {
 	isPartOfOptions: AnyContainer[];
