@@ -20,6 +20,9 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
+	let showEffects = true;
+	let showObjectives = true;
+
 	applicationState.update((state) => ({
 		...state,
 		containerDetailView: { tabs: [] }
@@ -33,29 +36,50 @@
 			<Viewer value={container.payload.description} />
 		</div>
 
-		<IndicatorChart {container} {relatedContainers} />
+		<IndicatorChart {container} {relatedContainers} {showEffects} {showObjectives} />
 
-		<div class="measures">
-			<h3>{$_('measures')}</h3>
-			<ul class="carousel">
-				{#each relatedContainers.filter((c) => isMeasureContainer(c)) as measure}
-					<li>
-						<Card --height="100%" container={measure} />
-					</li>
-				{/each}
+		{#if relatedContainers.length > 0}
+			<ul class="options">
+				<li>
+					<label>
+						<input type="checkbox" bind:checked={showObjectives} />
+						{$_('objectives')}
+					</label>
+				</li>
+				<li>
+					<label>
+						<input type="checkbox" bind:checked={showEffects} />
+						{$_('measures')}
+					</label>
+				</li>
 			</ul>
-		</div>
+		{/if}
 
-		<div class="objectives">
-			<h3>{$_('objectives')}</h3>
-			<ul class="carousel">
-				{#each relatedContainers.filter((c) => isModelContainer(c) || isOperationalGoalContainer(c) || isStrategicGoalGoalContainer(c)) as objective}
-					<li>
-						<Card --height="100%" container={objective} />
-					</li>
-				{/each}
-			</ul>
-		</div>
+		{#if showEffects}
+			<div class="measures">
+				<h3>{$_('measures')}</h3>
+				<ul class="carousel">
+					{#each relatedContainers.filter((c) => isMeasureContainer(c)) as measure}
+						<li>
+							<Card --height="100%" container={measure} />
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		{#if showObjectives}
+			<div class="objectives">
+				<h3>{$_('objectives')}</h3>
+				<ul class="carousel">
+					{#each relatedContainers.filter((c) => isModelContainer(c) || isOperationalGoalContainer(c) || isStrategicGoalGoalContainer(c)) as objective}
+						<li>
+							<Card --height="100%" container={objective} />
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		<div class="strategies">
 			<h3>{$_('strategies')}</h3>
@@ -123,3 +147,10 @@
 		</div>
 	</div>
 </article>
+
+<style>
+	.options {
+		display: flex;
+		gap: 1rem;
+	}
+</style>

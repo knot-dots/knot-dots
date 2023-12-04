@@ -16,10 +16,11 @@
 
 	export let container: IndicatorContainer;
 	export let relatedContainers: Container[] = [];
+	export let showEffects = false;
+	export let showObjectives = false;
 
 	let div: HTMLElement;
-	let showEffects = true;
-	let showObjectives = true;
+
 	let effects = [] as EffectByStatus[];
 	let objectives = [] as IndicatorObjective[];
 	let effectColorByStatus = new Map<string, string>([
@@ -151,27 +152,4 @@
 
 <figure>
 	<div bind:this={div} role="img"></div>
-	{#if relatedContainers.length > 0}
-		<ul class="options">
-			<li>
-				<label>
-					<input type="checkbox" bind:checked={showObjectives} />
-					{$_('objectives')}
-				</label>
-			</li>
-			<li>
-				<label>
-					<input type="checkbox" bind:checked={showEffects} />
-					{$_('measures')}
-				</label>
-			</li>
-		</ul>
-	{/if}
 </figure>
-
-<style>
-	figure {
-		display: flex;
-		gap: 1rem;
-	}
-</style>
