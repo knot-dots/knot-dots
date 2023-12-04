@@ -1,15 +1,34 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
-	import { payloadTypes, predicates } from '$lib/models';
-	import type { Container, IndicatorContainer, IndicatorObjective } from '$lib/models';
+	import { isMeasureContainer, payloadTypes, predicates, status } from '$lib/models';
+	import type {
+		Container,
+		IndicatorContainer,
+		IndicatorObjective,
+		MeasureContainer
+	} from '$lib/models';
+
+	type EffectByStatus = {
+		indicator: string;
+		values: Array<{ Year: number; Value: number; Status: string }>;
+	};
 
 	export let container: IndicatorContainer;
 	export let relatedContainers: Container[] = [];
 
 	let div: HTMLElement;
+	let showEffects = true;
 	let showObjectives = true;
+	let effects = [] as EffectByStatus[];
 	let objectives = [] as IndicatorObjective[];
+	let effectColorByStatus = new Map<string, string>([
+		['indicator.extrapolated_values', 'transparent'],
+		[status.enum['status.idea'], 'red'],
+		[status.enum['status.in_planning'], 'orange'],
+		[status.enum['status.in_implementation'], 'yellow'],
+		[status.enum['status.done'], 'green']
+	]);
 
 	if (showObjectives) {
 		const containersWithObjectives = relatedContainers
@@ -29,6 +48,37 @@
 			.filter(({ indicator }) => indicator == container.guid);
 	}
 
+	if (showEffects) {
+		const containersWithEffects = relatedContainers.filter((c) =>
+			isMeasureContainer(c)
+		) as MeasureContainer[];
+
+		effects = containersWithEffects
+			.map(({ payload }) =>
+				payload.effect.map(({ indicator, plannedValues, achievedValues }) => ({
+					indicator,
+					values: plannedValues
+						.map(([year, value], index) => ({
+							Year: year,
+							Value:
+								payload.status == status.enum['status.in_implementation'] && achievedValues[index]
+									? value - achievedValues[index][1]
+									: value,
+							Status: payload.status as string
+						}))
+						.concat(
+							achievedValues.map(([year, value]) => ({
+								Year: year,
+								Value: value,
+								Status: status.enum['status.done'] as string
+							}))
+						)
+				}))
+			)
+			.flat()
+			.filter(({ indicator }) => indicator == container.guid);
+	}
+
 	$: {
 		let quantity = $_(`${container.payload.quantity}.label`);
 		let unit = $_(container.payload.unit);
@@ -43,18 +93,30 @@
 						),
 						{ x: 'Year', y: 'Value', fillOpacity: 0.1, curve: 'linear' }
 					),
-					Plot.lineY(
-						container.payload.extrapolatedValues.map(([key, value]) => ({
-							Year: key,
-							Value: value
-						})),
-						{
-							x: 'Year',
-							y: 'Value',
-							stroke: 'grey',
-							strokeWidth: 1
-						}
-					),
+					...(showEffects && effects.length > 0
+						? [
+								Plot.areaY(
+									container.payload.extrapolatedValues
+										.map(([year, value]) => ({
+											Year: year,
+											Value: value,
+											Status: $_('indicator.extrapolated_values')
+										}))
+										.concat(effects.map(({ values }) => values).flat()),
+									Plot.groupX(
+										{ y: 'sum' },
+										{
+											x: 'Year',
+											y: 'Value',
+											fill: (d: { Status: string }) => effectColorByStatus.get(d.Status),
+											fillOpacity: 0.2,
+											order: ['transparent', 'green', 'yellow', 'orange', 'red'],
+											tip: true
+										}
+									)
+								)
+						  ]
+						: []),
 					...(showObjectives && objectives.length > 0
 						? [
 								Plot.lineY(
@@ -94,7 +156,13 @@
 			<li>
 				<label>
 					<input type="checkbox" bind:checked={showObjectives} />
-					{$_('indicator.wanted_values')}
+					{$_('objectives')}
+				</label>
+			</li>
+			<li>
+				<label>
+					<input type="checkbox" bind:checked={showEffects} />
+					{$_('measures')}
 				</label>
 			</li>
 		</ul>
