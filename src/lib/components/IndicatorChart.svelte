@@ -63,7 +63,9 @@
 										.reduce((previousValue, currentValue) =>
 											currentValue.map(([year, value], index) => [
 												year,
-												value + previousValue[index][1]
+												value +
+													previousValue[index][1] +
+													container.payload.extrapolatedValues[index][1]
 											])
 										)
 										.map((wantedValues) => ({ Year: wantedValues[0], Value: wantedValues[1] })),
