@@ -113,7 +113,7 @@
 	{#if isIndicatorContainer(container)}
 		<IndicatorForm bind:container />
 	{:else if isMeasureContainer(container)}
-		<MeasureForm {isPartOfOptions} bind:container />
+		<MeasureForm bind:container />
 	{:else if isModelContainer(container)}
 		<ModelForm bind:container />
 	{:else if isOperationalGoalContainer(container)}

@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _, date, number } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import EffectChart from '$lib/components/EffectChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isOperationalGoalContainer, isStrategyContainer, owners, status } from '$lib/models';
-	import type { AnyContainer, Container, MeasureContainer } from '$lib/models';
+	import { isStrategyContainer, owners, payloadTypes, status } from '$lib/models';
+	import type { AnyContainer, Container, IndicatorContainer, MeasureContainer } from '$lib/models';
 	import { sdgIcons, statusColors, statusIcons } from '$lib/theme/models';
 	import { applicationState } from '$lib/stores';
 
@@ -45,6 +48,17 @@
 			return `#${query.toString()}`;
 		}
 	}
+
+	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
+
+	onMount(() => {
+		if (container.payload.effect.length > 0) {
+			indicatorsRequest = fetchContainers({
+				organization: [container.organization],
+				payloadType: [payloadTypes.enum.indicator]
+			}) as Promise<IndicatorContainer[]>;
+		}
+	});
 </script>
 
 <article class="details">
@@ -202,25 +216,15 @@
 			</ul>
 		</div>
 	{:else if $applicationState.containerDetailView.activeTab === 'effects'}
-		{#if 'indicatorContribution' in selectedRevision.payload}
-			<div class="details-tab" id="effects">
-				<h3>{$_('effects')}</h3>
-				{#each relatedContainers.filter(isOperationalGoalContainer) as { guid, payload }}
-					{#if 'indicator' in payload && payload.indicator.length > 0 && 'quantity' in payload.indicator[0]}
-						<h4>
-							<a href={containerURL(payload.type, guid)}>{payload.title}</a>
-						</h4>
-						<p>
-							{$_(`${payload.indicator[0].quantity}.description`, {
-								values: {
-									contribution: selectedRevision.payload.indicatorContribution?.[guid] ?? 0
-								}
-							})}
-						</p>
-					{/if}
-				{/each}
-			</div>
-		{/if}
+		{#await indicatorsRequest then indicators}
+			{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
+			{#each container.payload.effect as effect}
+				{@const indicator = indicatorsByGuid.get(effect.indicator)}
+				{#if indicator}
+					<EffectChart {indicator} {effect} />
+				{/if}
+			{/each}
+		{/await}
 	{/if}
 </article>
 

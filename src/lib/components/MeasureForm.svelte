@@ -1,19 +1,18 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
-	import EffectsForm from '$lib/components/EffectsForm.svelte';
+	import EffectWizard from '$lib/components/EffectWizard.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { status, sustainableDevelopmentGoals, topics } from '$lib/models';
-	import type { AnyContainer, EmptyMeasureContainer, MeasureContainer } from '$lib/models';
-	import { page } from '$app/stores';
+	import type { EmptyMeasureContainer, MeasureContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: MeasureContainer | EmptyMeasureContainer;
-	export let isPartOfOptions: AnyContainer[];
 
 	applicationState.update((state) => ({
 		...state,
@@ -104,7 +103,7 @@
 	<fieldset class="form-tab" id="effects">
 		<legend>{$_('form.effects')}</legend>
 
-		<EffectsForm {container} {isPartOfOptions} />
+		<EffectWizard {container} />
 	</fieldset>
 {/if}
 
