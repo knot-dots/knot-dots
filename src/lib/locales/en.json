@@ -40,7 +40,6 @@
 	"form": {
 		"basic_data": "Basic data",
 		"effects": "Effects",
-		"extrapolated_values": "Extrapolated values",
 		"historical_values": "Historical values",
 		"metadata": "Metadata",
 		"resources": "Resource management"
@@ -53,6 +52,7 @@
 	"indicator.effect": "Effect",
 	"indicator.effect.achieved_values": "Achieved values",
 	"indicator.effect.planned_values": "Planned values",
+	"indicator.extrapolated_values": "Extrapolated values",
 	"indicator.legend": "Indicator",
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Quantity",

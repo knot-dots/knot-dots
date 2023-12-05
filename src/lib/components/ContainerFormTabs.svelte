@@ -95,18 +95,6 @@
 			</button>
 		</li>
 	{/if}
-	{#if $applicationState.containerForm.tabs.includes('extrapolated-values')}
-		<li>
-			<button
-				title={$_('form.extrapolated_values')}
-				type="button"
-				class:is-active={$applicationState.containerForm.activeTab === 'extrapolated-values'}
-				on:click={() => updateApplicationState('extrapolated-values')}
-			>
-				<Icon src={TableCells} size="20" mini />
-			</button>
-		</li>
-	{/if}
 </ul>
 
 <style>

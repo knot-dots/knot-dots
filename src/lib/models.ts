@@ -2,11 +2,7 @@ import { z } from 'zod';
 
 export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources';
 
-export type ContainerFormTabKey =
-	| ContainerDetailViewTabKey
-	| 'extrapolated-values'
-	| 'historical-values'
-	| 'metadata';
+export type ContainerFormTabKey = ContainerDetailViewTabKey | 'historical-values' | 'metadata';
 
 export type ApplicationState = {
 	containerDetailView: {
@@ -330,7 +326,6 @@ const basePayload = z
 	.strict();
 
 const indicatorPayload = basePayload.extend({
-	extrapolatedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	historicValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	quantity: z.string(),
 	type: z.literal(payloadTypes.enum.indicator),
@@ -763,7 +758,6 @@ const emptyContainer = newContainer.extend({
 		indicatorPayload.partial().merge(
 			indicatorPayload.pick({
 				category: true,
-				extrapolatedValues: true,
 				historicValues: true,
 				topic: true,
 				type: true,
@@ -841,7 +835,6 @@ const emptyIndicatorContainer = emptyContainer.extend({
 	payload: indicatorPayload.partial().merge(
 		indicatorPayload.pick({
 			category: true,
-			extrapolatedValues: true,
 			historicValues: true,
 			topic: true,
 			type: true,
