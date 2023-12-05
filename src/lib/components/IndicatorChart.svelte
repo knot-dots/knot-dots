@@ -87,7 +87,7 @@
 			.map(({ values }) => values)
 			.flat();
 
-		effectsMinYear = Math.min(...objectives.map(({ Year }) => Year));
+		effectsMinYear = Math.min(...effects.map(({ Year }) => Year));
 	}
 
 	$: {
