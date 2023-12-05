@@ -7,8 +7,6 @@
 	export let effect: IndicatorEffect;
 
 	let div: HTMLElement;
-	let quantity = $_(`${indicator.payload.quantity}.label`);
-	let unit = $_(indicator.payload.unit);
 
 	$: {
 		div?.firstChild?.remove();
@@ -35,7 +33,9 @@
 				color: { legend: true },
 				x: { axis: null },
 				fx: { label: null, tickFormat: '' },
-				y: { label: `${quantity} (${unit})` }
+				y: { label: $_(`${indicator.payload.unit}`) },
+				height: 200,
+				width: 320
 			})
 		);
 	}
@@ -47,10 +47,12 @@
 </figure>
 
 <style>
+	figure {
+		display: inline-block;
+	}
+
 	figcaption {
-		color: var(--color-gray-800);
 		font-size: inherit;
-		font-weight: 500;
 		margin-bottom: 0.875rem;
 	}
 </style>
