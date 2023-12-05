@@ -217,7 +217,8 @@
 		</div>
 	{:else if $applicationState.containerDetailView.activeTab === 'effects'}
 		<div class="details-tab" id="effects">
-			<h3>{$_('indicator.effects')}</h3>
+			<h3>{$_('effects')}</h3>
+
 			{#await indicatorsRequest then indicators}
 				{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
 				{#each container.payload.effect as effect}
