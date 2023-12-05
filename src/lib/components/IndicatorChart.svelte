@@ -21,7 +21,9 @@
 	let objectives = [] as Array<{ Year: number; Value: number }>;
 	let objectivesMinYear = 0;
 	let maxYear =
-		container.payload.historicalValues[container.payload.historicalValues.length - 1][0];
+		container.payload.historicalValues.length > 0
+			? container.payload.historicalValues[container.payload.historicalValues.length - 1][0]
+			: 0;
 
 	let effectColorByStatus = new Map<string, string>([
 		['indicator.historical_values', 'transparent'],
