@@ -50,7 +50,17 @@
 
 	function updateHistoricalValues(index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
-			container.payload.historicalValues[index][1] = parseFloat(event.currentTarget.value);
+			if (
+				container.payload.historicalValues
+					.slice(index)
+					.every(([, value]) => value == container.payload.historicalValues[index][1])
+			) {
+				for (let i = index; i < container.payload.historicalValues.length; i++) {
+					container.payload.historicalValues[i][1] = parseFloat(event.currentTarget.value);
+				}
+			} else {
+				container.payload.historicalValues[index][1] = parseFloat(event.currentTarget.value);
+			}
 		};
 	}
 
