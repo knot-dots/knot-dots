@@ -2,14 +2,14 @@
 	import { onMount } from 'svelte';
 	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import { payloadTypes } from '$lib/models';
 	import type {
 		Container,
 		EmptyContainer,
 		IndicatorContainer,
 		IndicatorObjective
 	} from '$lib/models';
-	import fetchContainers from '$lib/client/fetchContainers';
-	import { payloadTypes } from '$lib/models';
 
 	export let container: (Container | EmptyContainer) & {
 		payload: { objective: IndicatorObjective[] };
@@ -71,70 +71,69 @@
 		<legend>{$_('objectives')}</legend>
 
 		{#each container.payload.objective ?? [] as objective, objectiveIndex}
-			<div class="objective">
-				<table class="spreadsheet">
-					<thead>
-						<tr>
-							<th scope="col"></th>
-							<th scope="col" colspan="2">
-								{$_(`${indicatorsByGuid.get(objective.indicator)?.payload.quantity}.label`)} ({$_(
-									`${indicatorsByGuid.get(objective.indicator)?.payload.unit}` ?? ''
-								)})
-							</th>
-						</tr>
-						<tr>
-							<th scope="col"></th>
-							<th scope="col">{$_('indicator.wanted_values')}</th>
-							<th scope="col">{$_('form.extrapolated_values')}</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each objective.wantedValues.map((v, i) => i) as index}
+			{@const indicator = indicatorsByGuid.get(objective.indicator)}
+			{#if indicator}
+				{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
+				<div class="objective">
+					<table class="spreadsheet">
+						<thead>
 							<tr>
-								<th scope="row">
-									{objective.wantedValues[index][0]}
+								<th scope="col"></th>
+								<th scope="col" colspan="2">
+									{$_(`${indicator.payload.quantity}.label`)} ({$_(
+										`${indicator.payload.unit}` ?? ''
+									)})
 								</th>
-								<td>
-									<input
-										type="text"
-										inputmode="decimal"
-										value={objective.wantedValues[index][1]}
-										on:change={updateWantedValues(objective, index)}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={indicatorsByGuid.get(objective.indicator)?.payload.extrapolatedValues[
-											index
-										]
-											? indicatorsByGuid.get(objective.indicator)?.payload.extrapolatedValues[
-													index
-											  ][1]
-											: ''}
-										readonly
-									/>
+							</tr>
+							<tr>
+								<th scope="col"></th>
+								<th scope="col">{$_('indicator.wanted_values')}</th>
+								<th scope="col">{$_('indicator.extrapolated_values')}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each objective.wantedValues.map((v, i) => i) as index}
+								<tr>
+									<th scope="row">
+										{objective.wantedValues[index][0]}
+									</th>
+									<td>
+										<input
+											type="text"
+											inputmode="decimal"
+											value={objective.wantedValues[index][1]}
+											on:change={updateWantedValues(objective, index)}
+										/>
+									</td>
+									<td>
+										<input
+											tabindex="-1"
+											type="text"
+											value={historicalValuesByYear.get(objective.wantedValues[index][0]) ?? ''}
+											readonly
+										/>
+									</td>
+								</tr>
+							{/each}
+							<tr>
+								<td colspan="3">
+									<button
+										class="quiet"
+										title={$_('add_value')}
+										type="button"
+										on:click={() => appendWantedValue(objectiveIndex)}
+									>
+										<Icon src={PlusSmall} size="24" />
+									</button>
 								</td>
 							</tr>
-						{/each}
-						<tr>
-							<td colspan="3">
-								<button
-									class="quiet"
-									title={$_('add_value')}
-									type="button"
-									on:click={() => appendWantedValue(objectiveIndex)}
-								>
-									<Icon src={PlusSmall} size="24" />
-								</button>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				<button type="button" on:click={remove(objectiveIndex)}>
-					<Icon src={MinusSmall} size="24" mini />
-				</button>
-			</div>
+						</tbody>
+					</table>
+					<button type="button" on:click={remove(objectiveIndex)}>
+						<Icon src={MinusSmall} size="24" mini />
+					</button>
+				</div>
+			{/if}
 		{/each}
 
 		{#if showIndicatorOptions}

@@ -9,11 +9,6 @@
 		MeasureContainer
 	} from '$lib/models';
 
-	type EffectByStatus = {
-		indicator: string;
-		values: Array<{ Year: number; Value: number; Status: string }>;
-	};
-
 	export let container: IndicatorContainer;
 	export let relatedContainers: Container[] = [];
 	export let showEffects = false;
@@ -21,10 +16,15 @@
 
 	let div: HTMLElement;
 
-	let effects = [] as EffectByStatus[];
-	let objectives = [] as IndicatorObjective[];
+	let effects = [] as Array<{ Year: number; Value: number; Status: string }>;
+	let effectsMinYear = 0;
+	let objectives = [] as Array<{ Year: number; Value: number }>;
+	let objectivesMinYear = 0;
+	let maxYear =
+		container.payload.historicalValues[container.payload.historicalValues.length - 1][0];
+
 	let effectColorByStatus = new Map<string, string>([
-		['indicator.extrapolated_values', 'transparent'],
+		['indicator.historical_values', 'transparent'],
 		[status.enum['status.idea'], 'red'],
 		[status.enum['status.in_planning'], 'orange'],
 		[status.enum['status.in_implementation'], 'yellow'],
@@ -46,7 +46,11 @@
 		objectives = containersWithObjectives
 			.map(({ payload }) => payload.objective)
 			.flat()
-			.filter(({ indicator }) => indicator == container.guid);
+			.filter(({ indicator }) => indicator == container.guid)
+			.map(({ wantedValues }) => wantedValues)
+			.flat()
+			.map(([year, value]) => ({ Year: year, Value: value }));
+		objectivesMinYear = Math.min(...objectives.map(({ Year }) => Year));
 	}
 
 	if (showEffects) {
@@ -77,7 +81,11 @@
 				}))
 			)
 			.flat()
-			.filter(({ indicator }) => indicator == container.guid);
+			.filter(({ indicator }) => indicator == container.guid)
+			.map(({ values }) => values)
+			.flat();
+
+		effectsMinYear = Math.min(...objectives.map(({ Year }) => Year));
 	}
 
 	$: {
@@ -89,21 +97,20 @@
 			Plot.plot({
 				marks: [
 					Plot.areaY(
-						[...container.payload.historicValues, ...container.payload.extrapolatedValues].map(
-							([key, value]) => ({ Year: key, Value: value })
-						),
+						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
 						{ x: 'Year', y: 'Value', fillOpacity: 0.1, curve: 'linear' }
 					),
 					...(showEffects && effects.length > 0
 						? [
 								Plot.areaY(
-									container.payload.extrapolatedValues
+									container.payload.historicalValues
+										.filter(([year]) => year >= effectsMinYear)
 										.map(([year, value]) => ({
 											Year: year,
 											Value: value,
-											Status: $_('indicator.extrapolated_values')
+											Status: $_('indicator.historical_values')
 										}))
-										.concat(effects.map(({ values }) => values).flat()),
+										.concat(effects.filter(({ Year }) => Year <= maxYear)),
 									Plot.groupX(
 										{ y: 'sum' },
 										{
@@ -111,8 +118,7 @@
 											y: 'Value',
 											fill: (d: { Status: string }) => effectColorByStatus.get(d.Status),
 											fillOpacity: 0.2,
-											order: ['transparent', 'green', 'yellow', 'orange', 'red'],
-											tip: true
+											order: ['transparent', 'green', 'yellow', 'orange', 'red']
 										}
 									)
 								)
@@ -121,23 +127,24 @@
 					...(showObjectives && objectives.length > 0
 						? [
 								Plot.lineY(
-									objectives
-										.map(({ wantedValues }) => wantedValues)
-										.reduce((previousValue, currentValue) =>
-											currentValue.map(([year, value], index) => [
-												year,
-												value +
-													previousValue[index][1] +
-													container.payload.extrapolatedValues[index][1]
-											])
-										)
-										.map((wantedValues) => ({ Year: wantedValues[0], Value: wantedValues[1] })),
-									{
-										x: 'Year',
-										y: 'Value',
-										stroke: 'red',
-										strokeWidth: 1
-									}
+									container.payload.historicalValues
+										.filter(([year]) => year >= objectivesMinYear)
+										.map(([year, value]) => ({
+											Year: year,
+											Value: value
+										}))
+										.concat(objectives.filter(({ Year }) => Year <= maxYear)),
+									Plot.groupX(
+										{
+											y: 'sum'
+										},
+										{
+											x: 'Year',
+											y: 'Value',
+											stroke: 'red',
+											strokeWidth: 1
+										}
+									)
 								)
 						  ]
 						: []),

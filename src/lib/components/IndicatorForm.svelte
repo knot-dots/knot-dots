@@ -27,8 +27,7 @@
 			tabs: [
 				...('guid' in container ? [] : ['metadata' as ContainerFormTabKey]),
 				'basic-data',
-				'historical-values',
-				'extrapolated-values'
+				'historical-values'
 			]
 		}
 	}));
@@ -41,43 +40,39 @@
 		container.payload.unit = unitByQuantity.get(quantity as Quantity);
 	}
 
-	$: if (container.payload.historicValues.length === 0) {
+	$: if (container.payload.historicalValues.length === 0) {
 		const thisYear = new Date().getFullYear();
-		container.payload.historicValues = [...Array(5)].map((_, index) => [thisYear + index - 5, 0]);
+		container.payload.historicalValues = [...Array(10)].map((_, index) => [
+			thisYear + index - 5,
+			0
+		]);
 	}
 
-	$: if (container.payload.extrapolatedValues.length === 0) {
-		const thisYear = new Date().getFullYear();
-		container.payload.extrapolatedValues = [...Array(5)].map((_, index) => [thisYear + index, 0]);
-	}
-
-	function updateHistoricValues(index: number) {
+	function updateHistoricalValues(index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
-			container.payload.historicValues[index][1] = parseFloat(event.currentTarget.value);
+			if (
+				container.payload.historicalValues
+					.slice(index)
+					.every(([, value]) => value == container.payload.historicalValues[index][1])
+			) {
+				for (let i = index; i < container.payload.historicalValues.length; i++) {
+					container.payload.historicalValues[i][1] = parseFloat(event.currentTarget.value);
+				}
+			} else {
+				container.payload.historicalValues[index][1] = parseFloat(event.currentTarget.value);
+			}
 		};
 	}
 
-	function updateExtrapolatedValues(index: number) {
-		return (event: { currentTarget: HTMLInputElement }) => {
-			container.payload.extrapolatedValues[index][1] = parseFloat(event.currentTarget.value);
-		};
+	function prependHistoricalValue() {
+		const year = container.payload.historicalValues[0][0] - 1;
+		container.payload.historicalValues = [[year, 0], ...container.payload.historicalValues];
 	}
 
-	function prependHistoricValue() {
-		const year = container.payload.historicValues[0][0] - 1;
-		container.payload.historicValues = [[year, 0], ...container.payload.historicValues];
-	}
-
-	function appendHistoricValue() {
+	function appendHistoricalValue() {
 		const year =
-			container.payload.historicValues[container.payload.historicValues.length - 1][0] + 1;
-		container.payload.historicValues = [...container.payload.historicValues, [year, 0]];
-	}
-
-	function appendExtrapolatedValue() {
-		const year =
-			container.payload.extrapolatedValues[container.payload.extrapolatedValues.length - 1][0] + 1;
-		container.payload.extrapolatedValues = [...container.payload.extrapolatedValues, [year, 0]];
+			container.payload.historicalValues[container.payload.historicalValues.length - 1][0] + 1;
+		container.payload.historicalValues = [...container.payload.historicalValues, [year, 0]];
 	}
 </script>
 
@@ -119,7 +114,7 @@
 		bind:value={container.payload.category}
 	/>
 {:else if $applicationState.containerForm.activeTab === 'historical-values'}
-	<fieldset class="form-tab" id="historic-values">
+	<fieldset class="form-tab" id="historical-values">
 		<legend>{$_('form.historical_values')}</legend>
 
 		<table class="spreadsheet">
@@ -138,23 +133,23 @@
 							class="quiet"
 							title={$_('add_value')}
 							type="button"
-							on:click={prependHistoricValue}
+							on:click={prependHistoricalValue}
 						>
 							<Icon src={PlusSmall} size="24" />
 						</button>
 					</td>
 				</tr>
-				{#each container.payload.historicValues.map((v, i) => i) as index}
+				{#each container.payload.historicalValues.map((v, i) => i) as index}
 					<tr>
 						<th scope="row">
-							{container.payload.historicValues[index][0]}
+							{container.payload.historicalValues[index][0]}
 						</th>
 						<td>
 							<input
 								type="text"
 								inputmode="decimal"
-								value={container.payload.historicValues[index][1]}
-								on:change={updateHistoricValues(index)}
+								value={container.payload.historicalValues[index][1]}
+								on:change={updateHistoricalValues(index)}
 							/>
 						</td>
 					</tr>
@@ -165,48 +160,7 @@
 							class="quiet"
 							title={$_('add_value')}
 							type="button"
-							on:click={appendHistoricValue}
-						>
-							<Icon src={PlusSmall} size="24" />
-						</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'extrapolated-values'}
-	<fieldset class="form-tab" id="extrapolated-values">
-		<legend>{$_('form.extrapolated_values')}</legend>
-		<table class="spreadsheet">
-			<thead>
-				<tr>
-					<th scope="col"></th>
-					<th scope="col">
-						{$_(`${container.payload.quantity}.label`)} ({$_(container.payload.unit ?? '')})
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each container.payload.extrapolatedValues.map((v, i) => i) as index}
-					<tr>
-						<th scope="row">{container.payload.extrapolatedValues[index][0]}</th>
-						<td>
-							<input
-								type="text"
-								inputmode="decimal"
-								value={container.payload.extrapolatedValues[index][1]}
-								on:change={updateExtrapolatedValues(index)}
-							/>
-						</td>
-					</tr>
-				{/each}
-				<tr>
-					<td colspan="2">
-						<button
-							class="quiet"
-							title={$_('add_column')}
-							type="button"
-							on:click={appendExtrapolatedValue}
+							on:click={appendHistoricalValue}
 						>
 							<Icon src={PlusSmall} size="24" />
 						</button>

@@ -41,8 +41,7 @@
 	"form": {
 		"basic_data": "Allgemeine Angaben",
 		"effects": "Wirkungsplanung",
-		"extrapolated_values": "Prognose ohne Intervention",
-		"historical_values": "Ist-Werte",
+		"historical_values": "Ist-Werte und Prognose ohne Intervention",
 		"metadata": "Angaben zum Element",
 		"resources": "Ressourcenplanung"
 	},
@@ -54,6 +53,7 @@
 	"indicator.effect": "Wirkung",
 	"indicator.effect.achieved_values": "Bereits erreicht",
 	"indicator.effect.planned_values": "Geplant",
+	"indicator.extrapolated_values": "Prognose ohne Intervention",
 	"indicator.legend": "Indikator",
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Größe",
