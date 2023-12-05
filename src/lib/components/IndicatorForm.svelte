@@ -102,6 +102,15 @@
 
 	<Editor label={$_('description')} bind:value={container.payload.description} />
 
+	<Editor
+		label={$_('indicator.historical_values_intro')}
+		bind:value={container.payload.historicalValuesIntro}
+	/>
+
+	<Editor label={$_('indicator.objectives_intro')} bind:value={container.payload.objectivesIntro} />
+
+	<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
+
 	<ListBox
 		label={$_('topic.label')}
 		options={topics.options}
