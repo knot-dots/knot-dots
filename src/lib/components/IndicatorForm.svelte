@@ -40,26 +40,29 @@
 		container.payload.unit = unitByQuantity.get(quantity as Quantity);
 	}
 
-	$: if (container.payload.historicValues.length === 0) {
+	$: if (container.payload.historicalValues.length === 0) {
 		const thisYear = new Date().getFullYear();
-		container.payload.historicValues = [...Array(10)].map((_, index) => [thisYear + index - 5, 0]);
+		container.payload.historicalValues = [...Array(10)].map((_, index) => [
+			thisYear + index - 5,
+			0
+		]);
 	}
 
-	function updateHistoricValues(index: number) {
+	function updateHistoricalValues(index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
-			container.payload.historicValues[index][1] = parseFloat(event.currentTarget.value);
+			container.payload.historicalValues[index][1] = parseFloat(event.currentTarget.value);
 		};
 	}
 
-	function prependHistoricValue() {
-		const year = container.payload.historicValues[0][0] - 1;
-		container.payload.historicValues = [[year, 0], ...container.payload.historicValues];
+	function prependHistoricalValue() {
+		const year = container.payload.historicalValues[0][0] - 1;
+		container.payload.historicalValues = [[year, 0], ...container.payload.historicalValues];
 	}
 
-	function appendHistoricValue() {
+	function appendHistoricalValue() {
 		const year =
-			container.payload.historicValues[container.payload.historicValues.length - 1][0] + 1;
-		container.payload.historicValues = [...container.payload.historicValues, [year, 0]];
+			container.payload.historicalValues[container.payload.historicalValues.length - 1][0] + 1;
+		container.payload.historicalValues = [...container.payload.historicalValues, [year, 0]];
 	}
 </script>
 
@@ -120,23 +123,23 @@
 							class="quiet"
 							title={$_('add_value')}
 							type="button"
-							on:click={prependHistoricValue}
+							on:click={prependHistoricalValue}
 						>
 							<Icon src={PlusSmall} size="24" />
 						</button>
 					</td>
 				</tr>
-				{#each container.payload.historicValues.map((v, i) => i) as index}
+				{#each container.payload.historicalValues.map((v, i) => i) as index}
 					<tr>
 						<th scope="row">
-							{container.payload.historicValues[index][0]}
+							{container.payload.historicalValues[index][0]}
 						</th>
 						<td>
 							<input
 								type="text"
 								inputmode="decimal"
-								value={container.payload.historicValues[index][1]}
-								on:change={updateHistoricValues(index)}
+								value={container.payload.historicalValues[index][1]}
+								on:change={updateHistoricalValues(index)}
 							/>
 						</td>
 					</tr>
@@ -147,7 +150,7 @@
 							class="quiet"
 							title={$_('add_value')}
 							type="button"
-							on:click={appendHistoricValue}
+							on:click={appendHistoricalValue}
 						>
 							<Icon src={PlusSmall} size="24" />
 						</button>

@@ -73,7 +73,7 @@
 		{#each container.payload.objective ?? [] as objective, objectiveIndex}
 			{@const indicator = indicatorsByGuid.get(objective.indicator)}
 			{#if indicator}
-				{@const historicValues = new Map(indicator.payload.historicValues)}
+				{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
 				<div class="objective">
 					<table class="spreadsheet">
 						<thead>
@@ -109,7 +109,7 @@
 										<input
 											tabindex="-1"
 											type="text"
-											value={historicValues.get(objective.wantedValues[index][0]) ?? ''}
+											value={historicalValuesByYear.get(objective.wantedValues[index][0]) ?? ''}
 											readonly
 										/>
 									</td>

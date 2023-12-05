@@ -24,13 +24,13 @@
 	let effects = [] as EffectByStatus[];
 	let objectives = [] as IndicatorObjective[];
 	let effectColorByStatus = new Map<string, string>([
-		['indicator.historic_values', 'transparent'],
+		['indicator.historical_values', 'transparent'],
 		[status.enum['status.idea'], 'red'],
 		[status.enum['status.in_planning'], 'orange'],
 		[status.enum['status.in_implementation'], 'yellow'],
 		[status.enum['status.done'], 'green']
 	]);
-	let historicValuesByYear = new Map<number, number>(container.payload.historicValues);
+	let historicalValuesByYear = new Map<number, number>(container.payload.historicalValues);
 
 	if (showObjectives) {
 		const containersWithObjectives = relatedContainers
@@ -90,17 +90,17 @@
 			Plot.plot({
 				marks: [
 					Plot.areaY(
-						container.payload.historicValues.map(([key, value]) => ({ Year: key, Value: value })),
+						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
 						{ x: 'Year', y: 'Value', fillOpacity: 0.1, curve: 'linear' }
 					),
 					...(showEffects && effects.length > 0
 						? [
 								Plot.areaY(
-									container.payload.historicValues
+									container.payload.historicalValues
 										.map(([year, value]) => ({
 											Year: year,
 											Value: value,
-											Status: $_('indicator.historic_values')
+											Status: $_('indicator.historical_values')
 										}))
 										.concat(effects.map(({ values }) => values).flat()),
 									Plot.groupX(
@@ -125,7 +125,7 @@
 										.reduce((previousValue, currentValue) =>
 											currentValue.map(([year, value], index) => [
 												year,
-												value + previousValue[index][1] + (historicValuesByYear.get(year) ?? 0)
+												value + previousValue[index][1] + (historicalValuesByYear.get(year) ?? 0)
 											])
 										)
 										.map((wantedValues) => ({ Year: wantedValues[0], Value: wantedValues[1] })),

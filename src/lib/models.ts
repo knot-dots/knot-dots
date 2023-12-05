@@ -326,7 +326,7 @@ const basePayload = z
 	.strict();
 
 const indicatorPayload = basePayload.extend({
-	historicValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	quantity: z.string(),
 	type: z.literal(payloadTypes.enum.indicator),
 	unit: z.string()
@@ -758,7 +758,7 @@ const emptyContainer = newContainer.extend({
 		indicatorPayload.partial().merge(
 			indicatorPayload.pick({
 				category: true,
-				historicValues: true,
+				historicalValues: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -835,7 +835,7 @@ const emptyIndicatorContainer = emptyContainer.extend({
 	payload: indicatorPayload.partial().merge(
 		indicatorPayload.pick({
 			category: true,
-			historicValues: true,
+			historicalValues: true,
 			topic: true,
 			type: true,
 			visibility: true
