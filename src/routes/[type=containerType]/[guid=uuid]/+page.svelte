@@ -3,12 +3,13 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
+	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
-	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import TaskTabs from '$lib/components/TaskTabs.svelte';
 	import {
 		isContainer,
@@ -70,7 +71,9 @@
 						</button>
 					</span>
 				</h2>
-				{#if isMeasureContainer(container)}
+				{#if isIndicatorContainer(container)}
+					<IndicatorTabs />
+				{:else if isMeasureContainer(container)}
 					<MeasureTabs {container} {revisions} />
 				{:else if isTaskContainer(container)}
 					<TaskTabs {container} {revisions} />

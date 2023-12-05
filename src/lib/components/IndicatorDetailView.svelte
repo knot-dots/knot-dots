@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
+	import { tab } from './IndicatorTabs.svelte';
+	import type { IndicatorTab } from '$lib/components/IndicatorTabs.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -20,8 +23,30 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
+	let currentTab: IndicatorTab = tab.enum.all;
 	let showEffects = true;
 	let showObjectives = true;
+
+	$: {
+		const parseResult = tab.safeParse(paramsFromURL($page.url).get('tab'));
+		if (parseResult.success) {
+			currentTab = parseResult.data;
+		}
+
+		if (currentTab == tab.enum.historical_values) {
+			showEffects = false;
+			showObjectives = false;
+		} else if (currentTab == tab.enum.objectives) {
+			showEffects = false;
+			showObjectives = true;
+		} else if (currentTab == tab.enum.measures) {
+			showEffects = true;
+			showObjectives = false;
+		} else {
+			showEffects = true;
+			showObjectives = true;
+		}
+	}
 
 	applicationState.update((state) => ({
 		...state,
@@ -31,29 +56,19 @@
 
 <article class="details">
 	<div class="details-tab" id="basic-data">
-		<div class="description">
-			<h3>{$_('description')}</h3>
-			<Viewer value={container.payload.description} />
+		<div class="intro">
+			{#if currentTab === tab.enum.historical_values}
+				<Viewer value={container.payload.historicalValuesIntro} />
+			{:else if currentTab === tab.enum.objectives}
+				<Viewer value={container.payload.objectivesIntro} />
+			{:else if currentTab === tab.enum.measures}
+				<Viewer value={container.payload.measuresIntro} />
+			{:else}
+				<Viewer value={container.payload.description} />
+			{/if}
 		</div>
 
 		<IndicatorChart {container} {relatedContainers} {showEffects} {showObjectives} />
-
-		{#if relatedContainers.length > 0}
-			<ul class="options">
-				<li>
-					<label>
-						<input type="checkbox" bind:checked={showObjectives} />
-						{$_('objectives')}
-					</label>
-				</li>
-				<li>
-					<label>
-						<input type="checkbox" bind:checked={showEffects} />
-						{$_('measures')}
-					</label>
-				</li>
-			</ul>
-		{/if}
 
 		{#if showEffects}
 			<div class="measures">
@@ -147,10 +162,3 @@
 		</div>
 	</div>
 </article>
-
-<style>
-	.options {
-		display: flex;
-		gap: 1rem;
-	}
-</style>
