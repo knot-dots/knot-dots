@@ -1,10 +1,10 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
-	import type { IndicatorContainer, IndicatorEffect } from '$lib/models';
+	import type { IndicatorContainer, IndicatorObjective } from '$lib/models';
 
 	export let indicator: IndicatorContainer;
-	export let effect: IndicatorEffect;
+	export let objective: IndicatorObjective;
 
 	let div: HTMLElement;
 
@@ -14,25 +14,15 @@
 			Plot.plot({
 				marks: [
 					Plot.barY(
-						effect.achievedValues
-							.map(([key, value]) => ({
-								Year: key,
-								Value: value,
-								Status: $_('indicator.effect.achieved_values')
-							}))
-							.concat(
-								effect.plannedValues.map(([key, value]) => ({
-									Year: key,
-									Value: value,
-									Status: $_('indicator.effect.planned_values')
-								}))
-							),
-						{ fx: 'Year', x: 'Status', y: 'Value', fill: 'Status' }
+						objective.wantedValues.map(([key, value]) => ({
+							Year: key,
+							Value: value,
+							Status: $_('indicator.wanted_values')
+						})),
+						{ x: 'Year', y: 'Value', fill: 'red' }
 					)
 				],
-				color: { legend: true },
-				x: { axis: null },
-				fx: { label: null, tickFormat: '' },
+				x: { label: null, tickFormat: '' },
 				y: { label: $_(`${indicator.payload.unit}`) },
 				height: 200,
 				width: 320

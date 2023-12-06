@@ -33,7 +33,7 @@
 		[status.enum['status.done'], 'green']
 	]);
 
-	if (showObjectives) {
+	$: if (showObjectives) {
 		const containersWithObjectives = relatedContainers
 			.filter(({ payload }) => 'objective' in payload)
 			.filter(
@@ -55,7 +55,7 @@
 		objectivesMinYear = Math.min(...objectives.map(({ Year }) => Year));
 	}
 
-	if (showEffects) {
+	$: if (showEffects) {
 		const containersWithEffects = relatedContainers.filter((c) =>
 			isMeasureContainer(c)
 		) as MeasureContainer[];
@@ -87,7 +87,7 @@
 			.map(({ values }) => values)
 			.flat();
 
-		effectsMinYear = Math.min(...objectives.map(({ Year }) => Year));
+		effectsMinYear = Math.min(...effects.map(({ Year }) => Year));
 	}
 
 	$: {

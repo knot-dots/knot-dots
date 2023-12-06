@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { ArrowDownTray, Icon } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
@@ -12,9 +15,10 @@
 		isLevel,
 		isMeasureContainer,
 		isStrategyContainer,
-		owners
+		owners,
+		payloadTypes
 	} from '$lib/models';
-	import type { AnyContainer, Container } from '$lib/models';
+	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
 	import { applicationState } from '$lib/stores';
 
@@ -39,6 +43,17 @@
 			return `#${query.toString()}`;
 		}
 	}
+
+	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
+
+	onMount(() => {
+		if ('objective' in container.payload && container.payload.objective.length > 0) {
+			indicatorsRequest = fetchContainers({
+				organization: [container.organization],
+				payloadType: [payloadTypes.enum.indicator]
+			}) as Promise<IndicatorContainer[]>;
+		}
+	});
 </script>
 
 <article class="details">
@@ -54,6 +69,21 @@
 			<div class="description">
 				<h3>{$_('description')}</h3>
 				<Viewer value={container.payload.description} />
+			</div>
+		{/if}
+
+		{#if 'objective' in container.payload}
+			<div class="objective">
+				<h3>{$_('objectives')}</h3>
+				{#await indicatorsRequest then indicators}
+					{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
+					{#each container.payload.objective as objective}
+						{@const indicator = indicatorsByGuid.get(objective.indicator)}
+						{#if indicator}
+							<ObjectiveChart {indicator} {objective} />
+						{/if}
+					{/each}
+				{/await}
 			</div>
 		{/if}
 

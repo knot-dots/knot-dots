@@ -327,6 +327,9 @@ const basePayload = z
 
 const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	historicalValuesIntro: z.string().optional(),
+	measuresIntro: z.string().optional(),
+	objectivesIntro: z.string().optional(),
 	quantity: z.string(),
 	type: z.literal(payloadTypes.enum.indicator),
 	unit: z.string()

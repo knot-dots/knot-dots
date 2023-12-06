@@ -18,7 +18,7 @@ export const load = (async ({ locals, params, url }) => {
 				url.searchParams.getAll('relations').length == 0
 					? ['hierarchical', 'other']
 					: url.searchParams.getAll('relations'),
-				''
+				url.searchParams.get('sort') ?? ''
 			)
 		);
 	} else {
