@@ -8,8 +8,11 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
+	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
+	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
@@ -19,6 +22,7 @@
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
+		isIndicatorContainer,
 		isInternalObjectiveContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
@@ -28,7 +32,6 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
@@ -181,7 +184,9 @@
 					</a>
 				</span>
 			</h2>
-			{#if isMeasureContainer(container)}
+			{#if isIndicatorContainer(container)}
+				<IndicatorTabs />
+			{:else if isMeasureContainer(container)}
 				<MeasureTabs {container} {revisions} />
 			{:else if isTaskContainer(container)}
 				<TaskTabs {container} {revisions} />
@@ -196,7 +201,9 @@
 					<OverlayDeepLinks {container} />
 				</aside>
 			{/if}
-			{#if isMeasureContainer(container)}
+			{#if isIndicatorContainer(container)}
+				<IndicatorDetailView {container} {relatedContainers} {revisions} />
+			{:else if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
 				<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
