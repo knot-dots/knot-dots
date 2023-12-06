@@ -29,7 +29,7 @@ export const load = (async ({ locals, url, parent }) => {
 					? ['hierarchical', 'other']
 					: url.searchParams.getAll('relations'),
 				{ organizationalUnits },
-				''
+				url.searchParams.get('sort') ?? ''
 			)
 		);
 	} else {
