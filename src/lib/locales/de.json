@@ -178,6 +178,9 @@
 			"input_prompt": "Wie viel CO₂ wird durch Verkehr zusätzlich ausgestoßen?",
 			"label": "CO₂-Ausstoß — Verkehr"
 		},
+		"custom": {
+			"label": "Benutzerdefinierte Größe"
+		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
 			"input_prompt": "Wie viele Kilometer Radweg sollen gebaut werden?",

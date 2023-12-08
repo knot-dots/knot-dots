@@ -28,7 +28,8 @@
 		isOrganizationalUnitContainer,
 		isTaskContainer,
 		mayDelete,
-		payloadTypes
+		payloadTypes,
+		quantities
 	} from '$lib/models';
 	import type {
 		AnyContainer,
@@ -99,7 +100,7 @@
 		<header class="content-header">
 			<label
 				style={container.payload.type === payloadTypes.enum.undefined ||
-				(container.payload.type === payloadTypes.enum.indicator && !container.payload.title)
+				(container.payload.type === payloadTypes.enum.indicator && !container.payload.quantity)
 					? 'visibility: hidden;'
 					: undefined}
 			>
@@ -118,7 +119,8 @@
 						name="title"
 						type="text"
 						bind:value={container.payload.title}
-						readonly={container.payload.type === payloadTypes.enum.indicator}
+						readonly={container.payload.type === payloadTypes.enum.indicator &&
+							container.payload.quantity !== quantities.enum['quantity.custom']}
 						required
 					/>
 				{/if}

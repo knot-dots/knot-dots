@@ -177,6 +177,9 @@
 			"input_prompt": "How many tons of CO₂ will be emitted per capita by the transport sector?",
 			"label": "CO₂ emissions by transport"
 		},
+		"custom": {
+			"label": "Custom quantity"
+		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {# kilometer of cycle paths will be built.} other {# kilometers of cycle paths will be built.}}",
 			"input_prompt": "How many kilometers of cycle paths will be built?",

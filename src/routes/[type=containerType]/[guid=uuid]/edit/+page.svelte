@@ -17,7 +17,8 @@
 		isVisionContainer,
 		mayDelete,
 		payloadTypes,
-		predicates
+		predicates,
+		quantities
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -92,6 +93,8 @@
 					name="title"
 					type="text"
 					bind:value={container.payload.title}
+					readonly={container.payload.type === payloadTypes.enum.indicator &&
+						container.payload.quantity !== quantities.enum['quantity.custom']}
 					required
 				/>
 			{/if}

@@ -175,6 +175,7 @@ export const organizationCategories = z.enum(organizationCategoryValues);
 export type OrganizationCategory = z.infer<typeof organizationCategories>;
 
 const quantityValues = [
+	'quantity.custom',
 	'quantity.broadband_coverage',
 	'quantity.charging_stations',
 	'quantity.co2',

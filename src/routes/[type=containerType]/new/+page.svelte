@@ -16,7 +16,8 @@
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
 		isVisionContainer,
-		payloadTypes
+		payloadTypes,
+		quantities
 	} from '$lib/models';
 	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -105,6 +106,8 @@
 					name="title"
 					type="text"
 					bind:value={container.payload.title}
+					readonly={container.payload.type === payloadTypes.enum.indicator &&
+						container.payload.quantity !== quantities.enum['quantity.custom']}
 					required
 				/>
 			{/if}

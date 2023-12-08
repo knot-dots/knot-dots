@@ -32,20 +32,23 @@
 		}
 	}));
 
-	let quantity: string;
-
-	$: if (quantity) {
-		container.payload.quantity = quantity;
-		container.payload.title = $_(`${quantity}.label`);
-		container.payload.unit = unitByQuantity.get(quantity as Quantity);
-	}
-
 	$: if (container.payload.historicalValues.length === 0) {
 		const thisYear = new Date().getFullYear();
 		container.payload.historicalValues = [...Array(10)].map((_, index) => [
 			thisYear + index - 5,
 			0
 		]);
+	}
+
+	function changeQuantity(event: { currentTarget: HTMLSelectElement }) {
+		container.payload.quantity = event.currentTarget.value;
+
+		if (container.payload.quantity == quantities.enum['quantity.custom']) {
+			container.payload.title = '';
+		} else {
+			container.payload.title = $_(`${container.payload.quantity}.label`);
+			container.payload.unit = unitByQuantity.get(container.payload.quantity as Quantity);
+		}
 	}
 
 	function updateHistoricalValues(index: number) {
@@ -82,24 +85,30 @@
 
 		<label>
 			{$_('indicator.template')}
-			<select bind:value={quantity} required>
+			<select on:change={changeQuantity} required>
 				<option></option>
 				{#each quantities.options as quantityOption}
 					<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
 				{/each}
 			</select>
 		</label>
+
+		{#if container.payload.quantity}
+			<label>
+				{$_('label.unit')}
+				<select
+					name="unit"
+					bind:value={container.payload.unit}
+					disabled={container.payload.quantity !== quantities.enum['quantity.custom']}
+				>
+					{#each units.options as unitOption}
+						<option value={unitOption}>{$_(unitOption)}</option>
+					{/each}
+				</select>
+			</label>
+		{/if}
 	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<label>
-		{$_('label.unit')}
-		<select name="unit" bind:value={container.payload.unit} disabled>
-			{#each units.options as unitOption}
-				<option value={unitOption}>{$_(unitOption)}</option>
-			{/each}
-		</select>
-	</label>
-
 	<Editor label={$_('description')} bind:value={container.payload.description} />
 
 	<Editor
@@ -131,7 +140,7 @@
 				<tr>
 					<th scope="col"></th>
 					<th scope="col">
-						{$_(`${container.payload.quantity}.label`)} ({$_(container.payload.unit ?? '')})
+						{$_(container.payload.unit ?? '')}
 					</th>
 				</tr>
 			</thead>
