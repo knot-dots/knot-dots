@@ -54,24 +54,36 @@ export type User = {
 	roles: string[];
 };
 
-export const user = derived(page, (values) => {
-	if (values.data.session?.user) {
-		return {
-			...values.data.session?.user,
-			isAuthenticated: true
-		};
-	} else {
-		return {
-			adminOf: [],
-			familyName: '',
-			givenName: '',
-			guid: '',
-			isAuthenticated: false,
-			memberOf: [],
-			roles: []
-		};
+export const user = derived(
+	page,
+	(values) => {
+		if (values.data.session?.user) {
+			return {
+				...values.data.session?.user,
+				isAuthenticated: true
+			};
+		} else {
+			return {
+				adminOf: [],
+				familyName: '',
+				givenName: '',
+				guid: '',
+				isAuthenticated: false,
+				memberOf: [],
+				roles: []
+			};
+		}
+	},
+	{
+		adminOf: [],
+		familyName: '',
+		givenName: '',
+		guid: '',
+		isAuthenticated: false,
+		memberOf: [],
+		roles: []
 	}
-});
+);
 
 export const ability = derived(user, defineAbilityFor);
 
