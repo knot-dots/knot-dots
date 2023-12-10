@@ -199,5 +199,15 @@
 </script>
 
 <figure>
+	{#if $$slots.caption}
+		<figcaption><slot name="caption" /></figcaption>
+	{/if}
 	<div bind:this={div} role="img"></div>
 </figure>
+
+<style>
+	figcaption {
+		font-size: inherit;
+		margin-bottom: 0.875rem;
+	}
+</style>
