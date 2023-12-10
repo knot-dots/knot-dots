@@ -52,7 +52,7 @@
 		) as MeasureContainer[];
 
 		effects = containersWithEffects
-			.map(({ payload }) =>
+			.flatMap(({ payload }) =>
 				payload.effect.map(({ indicator, plannedValues, achievedValues }) => ({
 					indicator,
 					values: plannedValues
@@ -73,10 +73,8 @@
 						)
 				}))
 			)
-			.flat()
 			.filter(({ indicator }) => indicator == container.guid)
-			.map(({ values }) => values)
-			.flat()
+			.flatMap(({ values }) => values)
 			.reduce(
 				(accumulator, currentValue) => {
 					const groupIndex = accumulator.findIndex(
