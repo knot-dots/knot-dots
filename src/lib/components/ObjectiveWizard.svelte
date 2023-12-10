@@ -3,7 +3,8 @@
 	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import { payloadTypes } from '$lib/models';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import { isContainerWithObjective, payloadTypes } from '$lib/models';
 	import type {
 		Container,
 		EmptyContainer,
@@ -58,9 +59,11 @@
 		];
 	}
 
-	function updateWantedValues(objective: IndicatorObjective, index: number) {
+	function updateWantedValues(objectiveIndex: number, index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
-			objective.wantedValues[index][1] = parseFloat(event.currentTarget.value);
+			container.payload.objective[objectiveIndex].wantedValues[index][1] = parseFloat(
+				event.currentTarget.value
+			);
 		};
 	}
 </script>
@@ -102,7 +105,7 @@
 											type="text"
 											inputmode="decimal"
 											value={objective.wantedValues[index][1]}
-											on:change={updateWantedValues(objective, index)}
+											on:change={updateWantedValues(objectiveIndex, index)}
 										/>
 									</td>
 									<td>
@@ -129,6 +132,13 @@
 							</tr>
 						</tbody>
 					</table>
+					{#if isContainerWithObjective(container)}
+						<IndicatorChart
+							container={indicator}
+							containersWithObjectives={[container]}
+							showObjectives
+						/>
+					{/if}
 					<button type="button" on:click={remove(objectiveIndex)}>
 						<Icon src={MinusSmall} size="24" mini />
 					</button>

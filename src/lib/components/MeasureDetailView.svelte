@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import EffectChart from '$lib/components/EffectChart.svelte';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isStrategyContainer, owners, payloadTypes, status } from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer, MeasureContainer } from '$lib/models';
@@ -224,7 +224,9 @@
 				{#each container.payload.effect as effect}
 					{@const indicator = indicatorsByGuid.get(effect.indicator)}
 					{#if indicator}
-						<EffectChart {indicator} {effect} />
+						<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
+							<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
+						</IndicatorChart>
 					{/if}
 				{/each}
 			{/await}

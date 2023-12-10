@@ -27,6 +27,7 @@
 	export let data: PageData;
 
 	$: container = data.container;
+	$: containersWithObjectives = data.containersWithObjectives;
 	$: relatedContainers = data.relatedContainers;
 	$: revisions = data.revisions;
 </script>
@@ -86,7 +87,12 @@
 					</aside>
 				{/if}
 				{#if isIndicatorContainer(container)}
-					<IndicatorDetailView {container} {relatedContainers} {revisions} />
+					<IndicatorDetailView
+						{container}
+						{containersWithObjectives}
+						{relatedContainers}
+						{revisions}
+					/>
 				{:else if isMeasureContainer(container)}
 					<MeasureDetailView {container} {relatedContainers} {revisions} />
 				{:else if isTaskContainer(container)}

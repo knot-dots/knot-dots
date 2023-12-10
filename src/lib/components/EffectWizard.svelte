@@ -3,6 +3,7 @@
 	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { Container, EmptyContainer, IndicatorContainer, IndicatorEffect } from '$lib/models';
 
@@ -52,15 +53,19 @@
 		container.payload.effect[effectIndex].plannedValues = [...effect.plannedValues, [year, 0]];
 	}
 
-	function updateAchievedValues(effect: IndicatorEffect, index: number) {
+	function updateAchievedValues(effectIndex: number, index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
-			effect.achievedValues[index][1] = parseFloat(event.currentTarget.value);
+			container.payload.effect[effectIndex].achievedValues[index][1] = parseFloat(
+				event.currentTarget.value
+			);
 		};
 	}
 
-	function updatePlannedValues(effect: IndicatorEffect, index: number) {
+	function updatePlannedValues(effectIndex: number, index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
-			effect.plannedValues[index][1] = parseFloat(event.currentTarget.value);
+			container.payload.effect[effectIndex].plannedValues[index][1] = parseFloat(
+				event.currentTarget.value
+			);
 		};
 	}
 
@@ -94,70 +99,76 @@
 {#await indicatorsRequest then indicators}
 	{@const indicatorsByGuid = new Map(indicators.map((container) => [container.guid, container]))}
 	{#each container.payload.effect ?? [] as effect, effectIndex}
-		<div class="effect">
-			<table class="spreadsheet">
-				<thead>
-					<tr>
-						<th scope="col"></th>
-						<th scope="col" colspan="2">
-							{$_(`${indicatorsByGuid.get(effect.indicator)?.payload.quantity}.label`)} ({$_(
-								`${indicatorsByGuid.get(effect.indicator)?.payload.unit}` ?? ''
-							)})
-						</th>
-					</tr>
-					<tr>
-						<th scope="col"></th>
-						<th scope="col">
-							{$_('indicator.effect.planned_values')}
-						</th>
-						<th scope="col">
-							{$_('indicator.effect.achieved_values')}
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each effect.achievedValues.map((v, i) => i) as index}
+		{@const indicator = indicatorsByGuid.get(effect.indicator)}
+		{#if indicator}
+			<div class="effect">
+				<table class="spreadsheet">
+					<thead>
 						<tr>
-							<th scope="row">
-								{effect.achievedValues[index][0]}
+							<th scope="col"></th>
+							<th scope="col" colspan="2">
+								{$_(`${indicator.payload.quantity}.label`)} ({$_(
+									`${indicator.payload.unit}` ?? ''
+								)})
 							</th>
-							<td>
-								<input
-									type="text"
-									inputmode="decimal"
-									value={effect.plannedValues[index][1]}
-									on:change={updatePlannedValues(effect, index)}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									inputmode="decimal"
-									value={effect.achievedValues[index][1]}
-									on:change={updateAchievedValues(effect, index)}
-								/>
+						</tr>
+						<tr>
+							<th scope="col"></th>
+							<th scope="col">
+								{$_('indicator.effect.planned_values')}
+							</th>
+							<th scope="col">
+								{$_('indicator.effect.achieved_values')}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each effect.achievedValues.map((v, i) => i) as index}
+							<tr>
+								<th scope="row">
+									{effect.achievedValues[index][0]}
+								</th>
+								<td>
+									<input
+										type="text"
+										inputmode="decimal"
+										value={effect.plannedValues[index][1]}
+										on:change={updatePlannedValues(effectIndex, index)}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										inputmode="decimal"
+										value={effect.achievedValues[index][1]}
+										on:change={updateAchievedValues(effectIndex, index)}
+									/>
+								</td>
+							</tr>
+						{/each}
+
+						<tr>
+							<td colspan="3">
+								<button
+									class="quiet"
+									title={$_('add_value')}
+									type="button"
+									on:click={() => appendYear(effectIndex)}
+								>
+									<Icon src={PlusSmall} size="24" />
+								</button>
 							</td>
 						</tr>
-					{/each}
-
-					<tr>
-						<td colspan="3">
-							<button
-								class="quiet"
-								title={$_('add_value')}
-								type="button"
-								on:click={() => appendYear(effectIndex)}
-							>
-								<Icon src={PlusSmall} size="24" />
-							</button>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-			<button type="button" on:click={remove(effectIndex)}>
-				<Icon src={MinusSmall} size="24" mini />
-			</button>
-		</div>
+					</tbody>
+				</table>
+				{#if 'guid' in container}
+					<IndicatorChart container={indicator} relatedContainers={[container]} showEffects />
+				{/if}
+				<button type="button" on:click={remove(effectIndex)}>
+					<Icon src={MinusSmall} size="24" mini />
+				</button>
+			</div>
+		{/if}
 	{/each}
 
 	{#if showIndicatorOptions}

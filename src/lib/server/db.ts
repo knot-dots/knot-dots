@@ -11,6 +11,7 @@ import { z } from 'zod';
 import {
 	anyContainer,
 	container,
+	containerWithObjective,
 	organizationalUnitContainer,
 	organizationContainer,
 	payloadTypes,
@@ -23,6 +24,8 @@ import {
 import type {
 	AnyContainer,
 	Container,
+	ContainerWithObjective,
+	IndicatorContainer,
 	ModifiedContainer,
 	NewContainer,
 	OrganizationContainer,
@@ -73,6 +76,7 @@ export async function getPool() {
 const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
+	containerWithObjective: containerWithObjective.omit({ relation: true, user: true }),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	organizationalUnitContainer: organizationalUnitContainer.omit({ relation: true, user: true }),
 	relation,
@@ -897,6 +901,57 @@ export function getAllContainersRelatedToIndicator(guid: string) {
 			...objectiveAndEffectResult,
 			...strategyResult
 		]);
+	};
+}
+
+export function getAllContainersWithParentObjectives({ guid, organization }: IndicatorContainer) {
+	return async (connection: DatabaseConnection): Promise<ContainerWithObjective[]> => {
+		const isPartOfResult = await connection.any(sql.typeAlias('revision')`
+			WITH RECURSIVE is_part_of_relation(path) AS (
+				--Top level items (roots)
+				SELECT array[c.revision] AS path, c.revision AS subject, c.payload AS payload
+				FROM container c
+				WHERE c.valid_currently
+				  AND organization = ${organization}
+					AND NOT EXISTS(
+						--No relations with this as the subject.
+						SELECT *
+						FROM container_relation parent_test
+						WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
+					)
+				UNION ALL
+				SELECT array_append(r.path, c.revision), c.revision, c.payload AS payload
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
+				JOIN is_part_of_relation r ON cr.object = r.subject
+				WHERE c.valid_currently
+				  AND c.organization = ${organization}
+					AND (
+						NOT r.payload ? 'objective'
+						OR NOT r.payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
+					)
+			)
+			SELECT DISTINCT c.revision
+			FROM is_part_of_relation r
+			JOIN container c ON r.path[array_upper(r.path, 1)] = c.revision
+			WHERE c.payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
+		`);
+
+		console.log(isPartOfResult);
+
+		const containerResult =
+			isPartOfResult.length > 0
+				? await connection.any(sql.typeAlias('containerWithObjective')`
+					SELECT *
+					FROM container
+					WHERE revision IN (${sql.join(
+						isPartOfResult.map(({ revision }) => revision),
+						sql.fragment`, `
+					)})
+				`)
+				: [];
+
+		return withUserAndRelation<ContainerWithObjective>(connection, containerResult);
 	};
 }
 

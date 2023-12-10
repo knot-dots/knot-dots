@@ -547,6 +547,26 @@ export const anyContainer = container.extend({
 
 export type AnyContainer = z.infer<typeof anyContainer>;
 
+export const containerWithObjective = container.extend({
+	payload: z.discriminatedUnion('type', [
+		modelPayload,
+		operationalGoalPayload,
+		strategicGoalPayload
+	])
+});
+
+export type ContainerWithObjective = z.infer<typeof containerWithObjective>;
+
+export function isContainerWithObjective(
+	container: AnyContainer | EmptyContainer
+): container is ContainerWithObjective {
+	return (
+		isModelContainer(container) ||
+		isOperationalGoalContainer(container) ||
+		isStrategicGoalGoalContainer(container)
+	);
+}
+
 const indicatorContainer = container.extend({
 	payload: indicatorPayload
 });

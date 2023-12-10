@@ -1,15 +1,16 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
-	import { isMeasureContainer, payloadTypes, predicates, status } from '$lib/models';
+	import { isMeasureContainer, status } from '$lib/models';
 	import type {
 		Container,
+		ContainerWithObjective,
 		IndicatorContainer,
-		IndicatorObjective,
 		MeasureContainer
 	} from '$lib/models';
 
 	export let container: IndicatorContainer;
+	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let relatedContainers: Container[] = [];
 	export let showEffects = false;
 	export let showObjectives = false;
@@ -18,6 +19,13 @@
 
 	let effects = [] as Array<{ Year: number; Value: number; Status: string }>;
 	let effectsMinYear = 0;
+	let effectColorByStatus = new Map<string, string>([
+		['offset', 'transparent'],
+		[status.enum['status.idea'], '#f7d8e3'],
+		[status.enum['status.in_planning'], '#fdeae1'],
+		[status.enum['status.in_implementation'], '#fff6e4'],
+		[status.enum['status.done'], '#e7f9ee']
+	]);
 	let objectives = [] as Array<{ Year: number; Value: number }>;
 	let objectivesMinYear = 0;
 	let maxYear =
@@ -25,26 +33,7 @@
 			? container.payload.historicalValues[container.payload.historicalValues.length - 1][0]
 			: 0;
 
-	let effectColorByStatus = new Map<string, string>([
-		['indicator.historical_values', 'transparent'],
-		[status.enum['status.idea'], 'red'],
-		[status.enum['status.in_planning'], 'orange'],
-		[status.enum['status.in_implementation'], 'yellow'],
-		[status.enum['status.done'], 'green']
-	]);
-
 	$: if (showObjectives) {
-		const containersWithObjectives = relatedContainers
-			.filter(({ payload }) => 'objective' in payload)
-			.filter(
-				({ payload, relation, revision }) =>
-					payload.type == payloadTypes.enum.model ||
-					relation.findIndex(
-						({ predicate, subject }) =>
-							predicate == predicates.enum['is-part-of'] && subject == revision
-					) == -1
-			) as Array<Container & { payload: { objective: IndicatorObjective[] } }>;
-
 		objectives = containersWithObjectives
 			.map(({ payload }) => payload.objective)
 			.flat()
@@ -85,13 +74,38 @@
 			.flat()
 			.filter(({ indicator }) => indicator == container.guid)
 			.map(({ values }) => values)
-			.flat();
+			.flat()
+			.reduce(
+				(accumulator, currentValue) => {
+					const groupIndex = accumulator.findIndex(
+						({ Status, Year }) => currentValue.Status == Status && currentValue.Year == Year
+					);
+					return groupIndex > 0
+						? [
+								...accumulator.slice(0, groupIndex),
+								{
+									Status: currentValue.Status,
+									Year: currentValue.Year,
+									Value: currentValue.Value + accumulator[groupIndex].Value
+								},
+								...accumulator.slice(groupIndex + 1)
+						  ]
+						: [
+								...accumulator,
+								{
+									Status: currentValue.Status,
+									Year: currentValue.Year,
+									Value: currentValue.Value
+								}
+						  ];
+				},
+				[] as Array<{ Year: number; Value: number; Status: string }>
+			);
 
 		effectsMinYear = Math.min(...effects.map(({ Year }) => Year));
 	}
 
 	$: {
-		let quantity = $_(`${container.payload.quantity}.label`);
 		let unit = $_(container.payload.unit);
 
 		div?.firstChild?.remove();
@@ -100,29 +114,50 @@
 				marks: [
 					Plot.areaY(
 						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
-						{ x: 'Year', y: 'Value', fillOpacity: 0.1, curve: 'linear' }
+						{ x: 'Year', y: 'Value', fill: '#21A5ED', fillOpacity: 0.15, curve: 'linear' }
 					),
 					...(showEffects && effects.length > 0
 						? [
 								Plot.areaY(
 									container.payload.historicalValues
 										.filter(([year]) => year >= effectsMinYear)
-										.map(([year, value]) => ({
-											Year: year,
-											Value: value,
-											Status: $_('indicator.historical_values')
-										}))
-										.concat(effects.filter(({ Year }) => Year <= maxYear)),
-									Plot.groupX(
-										{ y: 'sum' },
-										{
-											x: 'Year',
-											y: 'Value',
-											fill: (d: { Status: string }) => effectColorByStatus.get(d.Status),
-											fillOpacity: 0.2,
-											order: ['transparent', 'green', 'yellow', 'orange', 'red']
-										}
-									)
+										.map(([year, value]) => {
+											const effectByYear = effects.reduce((accumulator: number, currentValue) => {
+												return year == currentValue.Year
+													? accumulator + currentValue.Value
+													: accumulator;
+											}, 0);
+											return {
+												Year: year,
+												Status: 'offset',
+												Value: effects.some(({ Value }) => Value < 0) ? value + effectByYear : value
+											};
+										})
+										.concat(
+											effects
+												.filter(({ Year }) => Year <= maxYear)
+												.map((effect) => ({ ...effect, Value: Math.abs(effect.Value) }))
+										),
+									{
+										x: 'Year',
+										y: 'Value',
+										fill: (d: { Status: string }) => effectColorByStatus.get(d.Status),
+										order: effects.some(({ Value }) => Value < 0)
+											? [
+													'transparent',
+													effectColorByStatus.get(status.enum['status.idea']),
+													effectColorByStatus.get(status.enum['status.in_planning']),
+													effectColorByStatus.get(status.enum['status.in_implementation']),
+													effectColorByStatus.get(status.enum['status.done'])
+											  ]
+											: [
+													'transparent',
+													effectColorByStatus.get(status.enum['status.done']),
+													effectColorByStatus.get(status.enum['status.in_implementation']),
+													effectColorByStatus.get(status.enum['status.in_planning']),
+													effectColorByStatus.get(status.enum['status.idea'])
+											  ]
+									}
 								)
 						  ]
 						: []),
@@ -143,22 +178,36 @@
 										{
 											x: 'Year',
 											y: 'Value',
-											stroke: 'red',
+											stroke: '#21a5ed',
 											strokeWidth: 1
 										}
 									)
 								)
 						  ]
 						: []),
+					Plot.lineY(
+						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
+						{ x: 'Year', y: 'Value' }
+					),
 					Plot.ruleX([new Date().getFullYear()])
 				],
 				x: { label: null, tickFormat: '' },
-				y: { label: `${quantity} (${unit})` }
+				y: { label: $_(unit) }
 			})
 		);
 	}
 </script>
 
 <figure>
+	{#if $$slots.caption}
+		<figcaption><slot name="caption" /></figcaption>
+	{/if}
 	<div bind:this={div} role="img"></div>
 </figure>
+
+<style>
+	figcaption {
+		font-size: inherit;
+		margin-bottom: 0.875rem;
+	}
+</style>

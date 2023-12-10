@@ -6,11 +6,11 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isContainer,
+		isContainerWithObjective,
 		isIndicatorContainer,
 		isLevel,
 		isMeasureContainer,
@@ -72,7 +72,7 @@
 			</div>
 		{/if}
 
-		{#if 'objective' in container.payload}
+		{#if isContainerWithObjective(container)}
 			<div class="objective">
 				<h3>{$_('objectives')}</h3>
 				{#await indicatorsRequest then indicators}
@@ -80,7 +80,13 @@
 					{#each container.payload.objective as objective}
 						{@const indicator = indicatorsByGuid.get(objective.indicator)}
 						{#if indicator}
-							<ObjectiveChart {indicator} {objective} />
+							<IndicatorChart
+								container={indicator}
+								containersWithObjectives={[container]}
+								showObjectives
+							>
+								<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
+							</IndicatorChart>
 						{/if}
 					{/each}
 				{/await}
