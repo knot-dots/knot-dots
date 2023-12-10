@@ -4,8 +4,8 @@
 	import { isMeasureContainer, payloadTypes, predicates, status } from '$lib/models';
 	import type {
 		Container,
+		ContainerWithObjective,
 		IndicatorContainer,
-		IndicatorObjective,
 		MeasureContainer
 	} from '$lib/models';
 
@@ -43,7 +43,7 @@
 						({ predicate, subject }) =>
 							predicate == predicates.enum['is-part-of'] && subject == revision
 					) == -1
-			) as Array<Container & { payload: { objective: IndicatorObjective[] } }>;
+			) as ContainerWithObjective[];
 
 		objectives = containersWithObjectives
 			.map(({ payload }) => payload.objective)
