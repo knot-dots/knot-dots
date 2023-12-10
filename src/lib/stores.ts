@@ -5,19 +5,27 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
+import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import paramsFromURL from '$lib/client/paramsFromURL';
+import {
+	containerOfType,
+	isIndicatorContainer,
+	payloadTypes,
+	status,
+	taskStatus
+} from '$lib/models';
 import type {
 	AnyContainer,
 	ApplicationState,
 	Container,
+	ContainerWithObjective,
 	OrganizationalUnitContainer,
 	OrganizationContainer,
 	PayloadType,
 	Status,
 	TaskStatus
 } from '$lib/models';
-import { containerOfType, payloadTypes, status, taskStatus } from '$lib/models';
 
 export const navigationToggle = writable(false);
 
@@ -82,6 +90,7 @@ export const getOrganizationalUnit = derived(page, (values) => {
 type Overlay = {
 	isPartOfOptions: AnyContainer[];
 	object?: Container;
+	containersWithObjectives?: ContainerWithObjective[];
 	relatedContainers: Container[];
 	revisions: AnyContainer[];
 };
@@ -124,21 +133,42 @@ if (browser) {
 		} else if (hashParams.has('view')) {
 			const revisions = await fetchContainerRevisions(hashParams.get('view') as string);
 			const container = revisions[revisions.length - 1];
-			const [isPartOfOptions, relatedContainers] = await Promise.all([
-				fetchIsPartOfOptions(
-					container.organizational_unit ?? container.organization,
-					container.payload.type
-				),
-				fetchRelatedContainers(container.guid, {
-					organization: [container.organization],
-					relationType: ['hierarchical']
-				})
-			]);
-			overlay.set({
-				isPartOfOptions,
-				relatedContainers,
-				revisions
-			});
+
+			if (isIndicatorContainer(container)) {
+				const [isPartOfOptions, parentObjectives, relatedContainers] = await Promise.all([
+					fetchIsPartOfOptions(
+						container.organizational_unit ?? container.organization,
+						container.payload.type
+					),
+					fetchContainersWithParentObjectives(container),
+					fetchRelatedContainers(container.guid, {
+						organization: [container.organization],
+						relationType: ['hierarchical']
+					})
+				]);
+				overlay.set({
+					isPartOfOptions,
+					containersWithObjectives: parentObjectives,
+					relatedContainers,
+					revisions
+				});
+			} else {
+				const [isPartOfOptions, relatedContainers] = await Promise.all([
+					fetchIsPartOfOptions(
+						container.organizational_unit ?? container.organization,
+						container.payload.type
+					),
+					fetchRelatedContainers(container.guid, {
+						organization: [container.organization],
+						relationType: ['hierarchical']
+					})
+				]);
+				overlay.set({
+					isPartOfOptions,
+					relatedContainers,
+					revisions
+				});
+			}
 		} else if (hashParams.has('relate')) {
 			overlay.set({
 				isPartOfOptions: [],

@@ -30,11 +30,17 @@
 		mayDelete,
 		payloadTypes
 	} from '$lib/models';
-	import type { AnyContainer, Container, CustomEventMap } from '$lib/models';
+	import type {
+		AnyContainer,
+		Container,
+		ContainerWithObjective,
+		CustomEventMap
+	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	export let relatedContainers: Container[];
 	export let isPartOfOptions: AnyContainer[];
+	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let revisions: AnyContainer[];
 
 	let mayShowRelationButton = getContext('mayShowRelationButton');
@@ -202,7 +208,12 @@
 				</aside>
 			{/if}
 			{#if isIndicatorContainer(container)}
-				<IndicatorDetailView {container} {relatedContainers} {revisions} />
+				<IndicatorDetailView
+					{container}
+					{containersWithObjectives}
+					{relatedContainers}
+					{revisions}
+				/>
 			{:else if isMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}

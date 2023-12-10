@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
-	import { isMeasureContainer, payloadTypes, predicates, status } from '$lib/models';
+	import { isMeasureContainer, status } from '$lib/models';
 	import type {
 		Container,
 		ContainerWithObjective,
@@ -10,6 +10,7 @@
 	} from '$lib/models';
 
 	export let container: IndicatorContainer;
+	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let relatedContainers: Container[] = [];
 	export let showEffects = false;
 	export let showObjectives = false;
@@ -34,17 +35,6 @@
 	]);
 
 	$: if (showObjectives) {
-		const containersWithObjectives = relatedContainers
-			.filter(({ payload }) => 'objective' in payload)
-			.filter(
-				({ payload, relation, revision }) =>
-					payload.type == payloadTypes.enum.model ||
-					relation.findIndex(
-						({ predicate, subject }) =>
-							predicate == predicates.enum['is-part-of'] && subject == revision
-					) == -1
-			) as ContainerWithObjective[];
-
 		objectives = containersWithObjectives
 			.map(({ payload }) => payload.objective)
 			.flat()

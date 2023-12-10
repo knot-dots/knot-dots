@@ -1,14 +1,19 @@
 import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
-import { payloadTypes } from '$lib/models';
-import type { Container, PayloadType } from '$lib/models';
+import {
+	isIndicatorContainer,
+	isInternalObjectiveContainer,
+	isStrategyContainer
+} from '$lib/models';
+import type { Container, ContainerWithObjective, PayloadType } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getAllContainersRelatedToStrategy,
 	getAllContainersRelatedToIndicator,
 	getAllRelatedContainers,
-	getAllRelatedInternalObjectives
+	getAllRelatedInternalObjectives,
+	getAllContainersWithParentObjectives
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 import { filterVisible } from '$lib/authorization';
@@ -29,25 +34,33 @@ export const load = (async ({ params, locals, url }) => {
 	const container = revisions[revisions.length - 1];
 
 	let relatedContainers: Container[];
-	if (params.type.includes('internal_objective')) {
+	let containersWithObjectives: ContainerWithObjective[] | undefined;
+
+	if (isInternalObjectiveContainer(container)) {
 		relatedContainers = await locals.pool.connect(
 			getAllRelatedInternalObjectives(params.guid, ['hierarchical'], '')
 		);
-	} else if (params.type === payloadTypes.enum.strategy) {
+	} else if (isStrategyContainer(container)) {
 		relatedContainers = await locals.pool.connect(
 			getAllContainersRelatedToStrategy(container.revision, {
 				type: url.searchParams.getAll('payloadType') as PayloadType[]
 			})
 		);
-	} else if (params.type === payloadTypes.enum.indicator) {
-		relatedContainers = await locals.pool.connect(
-			getAllContainersRelatedToIndicator(container.guid)
-		);
+	} else if (isIndicatorContainer(container)) {
+		[relatedContainers, containersWithObjectives] = await Promise.all([
+			locals.pool.connect(getAllContainersRelatedToIndicator(container.guid)),
+			locals.pool.connect(getAllContainersWithParentObjectives(container))
+		]);
 	} else {
 		relatedContainers = await locals.pool.connect(
 			getAllRelatedContainers([container.organization], params.guid, ['hierarchical'], {}, '')
 		);
 	}
 
-	return { container, relatedContainers: filterVisible(relatedContainers, locals.user), revisions };
+	return {
+		container,
+		containersWithObjectives,
+		relatedContainers: filterVisible(relatedContainers, locals.user),
+		revisions
+	};
 }) satisfies PageServerLoad;

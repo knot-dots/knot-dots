@@ -15,11 +15,17 @@
 		isStrategyContainer,
 		owners
 	} from '$lib/models';
-	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
+	import type {
+		AnyContainer,
+		Container,
+		ContainerWithObjective,
+		IndicatorContainer
+	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: IndicatorContainer;
+	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
@@ -68,7 +74,13 @@
 			{/if}
 		</div>
 
-		<IndicatorChart {container} {relatedContainers} {showEffects} {showObjectives} />
+		<IndicatorChart
+			{container}
+			{containersWithObjectives}
+			{relatedContainers}
+			{showEffects}
+			{showObjectives}
+		/>
 
 		{#if showEffects}
 			<div class="measures">
