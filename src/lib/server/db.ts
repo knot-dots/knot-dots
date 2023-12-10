@@ -912,6 +912,7 @@ export function getAllContainersWithParentObjectives({ guid, organization }: Ind
 				SELECT array[c.revision] AS path, c.revision AS subject, c.payload AS payload
 				FROM container c
 				WHERE c.valid_currently
+				  AND NOT deleted
 				  AND organization = ${organization}
 					AND NOT EXISTS(
 						--No relations with this as the subject.
@@ -925,6 +926,7 @@ export function getAllContainersWithParentObjectives({ guid, organization }: Ind
 				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
 				JOIN is_part_of_relation r ON cr.object = r.subject
 				WHERE c.valid_currently
+				  AND NOT deleted
 				  AND c.organization = ${organization}
 					AND (
 						NOT r.payload ? 'objective'

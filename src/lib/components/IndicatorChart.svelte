@@ -33,6 +33,8 @@
 			? container.payload.historicalValues[container.payload.historicalValues.length - 1][0]
 			: 0;
 
+	const historicalValuesByYear = new Map(container.payload.historicalValues);
+
 	$: if (showObjectives) {
 		objectives = containersWithObjectives
 			.map(({ payload }) => payload.objective)
@@ -50,7 +52,7 @@
 		) as MeasureContainer[];
 
 		effects = containersWithEffects
-			.map(({ payload }) =>
+			.flatMap(({ payload }) =>
 				payload.effect.map(({ indicator, plannedValues, achievedValues }) => ({
 					indicator,
 					values: plannedValues
@@ -71,10 +73,8 @@
 						)
 				}))
 			)
-			.flat()
 			.filter(({ indicator }) => indicator == container.guid)
-			.map(({ values }) => values)
-			.flat()
+			.flatMap(({ values }) => values)
 			.reduce(
 				(accumulator, currentValue) => {
 					const groupIndex = accumulator.findIndex(
@@ -133,6 +133,33 @@
 												Value: effects.some(({ Value }) => Value < 0) ? value + effectByYear : value
 											};
 										})
+										.concat([
+											{
+												Year: effectsMinYear - 1,
+												Value: 0,
+												Status: status.enum['status.idea']
+											},
+											{
+												Year: effectsMinYear - 1,
+												Value: 0,
+												Status: status.enum['status.in_planning']
+											},
+											{
+												Year: effectsMinYear - 1,
+												Value: 0,
+												Status: status.enum['status.in_implementation']
+											},
+											{
+												Year: effectsMinYear - 1,
+												Value: 0,
+												Status: status.enum['status.done']
+											},
+											{
+												Year: effectsMinYear - 1,
+												Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0,
+												Status: 'offset'
+											}
+										])
 										.concat(
 											effects
 												.filter(({ Year }) => Year <= maxYear)
@@ -170,7 +197,13 @@
 											Year: year,
 											Value: value
 										}))
-										.concat(objectives.filter(({ Year }) => Year <= maxYear)),
+										.concat(objectives.filter(({ Year }) => Year <= maxYear))
+										.concat([
+											{
+												Year: objectivesMinYear - 1,
+												Value: historicalValuesByYear.get(objectivesMinYear - 1) ?? 0
+											}
+										]),
 									Plot.groupX(
 										{
 											y: 'sum'
