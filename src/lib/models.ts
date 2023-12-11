@@ -41,6 +41,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 
 const payloadTypeValues = [
 	'indicator',
+	'indicator_template',
 	'internal_objective.internal_strategy',
 	'internal_objective.vision',
 	'internal_objective.strategic_goal',
@@ -336,6 +337,12 @@ const indicatorPayload = basePayload.extend({
 	unit: z.string()
 });
 
+const indicatorTemplatePayload = indicatorPayload
+	.extend({
+		type: z.literal(payloadTypes.enum.indicator_template)
+	})
+	.omit({ historicalValues: true, quantity: true });
+
 const internalObjectivesBasePayload = z.object({
 	description: z.string().optional(),
 	summary: z.string().max(200).optional(),
@@ -504,6 +511,7 @@ export const container = z.object({
 	organizational_unit: z.string().uuid().nullable(),
 	payload: z.discriminatedUnion('type', [
 		indicatorPayload,
+		indicatorTemplatePayload,
 		internalStrategyPayload,
 		visionPayload,
 		internalObjectiveStrategicGoalPayload,
@@ -529,6 +537,7 @@ export type Container = z.infer<typeof container>;
 export const anyContainer = container.extend({
 	payload: z.discriminatedUnion('type', [
 		indicatorPayload,
+		indicatorTemplatePayload,
 		internalStrategyPayload,
 		visionPayload,
 		internalObjectiveStrategicGoalPayload,
@@ -578,6 +587,18 @@ export function isIndicatorContainer(
 	container: AnyContainer | EmptyContainer
 ): container is IndicatorContainer {
 	return container.payload.type === payloadTypes.enum.indicator;
+}
+
+const indicatorTemplateContainer = container.extend({
+	payload: indicatorTemplatePayload
+});
+
+export type IndicatorTemplateContainer = z.infer<typeof indicatorTemplateContainer>;
+
+export function isIndicatorTemplateContainer(
+	container: AnyContainer | EmptyContainer
+): container is IndicatorTemplateContainer {
+	return container.payload.type === payloadTypes.enum.indicator_template;
 }
 
 const measureContainer = container.extend({
@@ -783,6 +804,14 @@ const emptyContainer = newContainer.extend({
 			indicatorPayload.pick({
 				category: true,
 				historicalValues: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
+		indicatorTemplatePayload.partial().merge(
+			indicatorTemplatePayload.pick({
+				category: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1080,4 +1109,15 @@ export function mayDelete(container: AnyContainer | EmptyContainer) {
 				object == container.revision
 		).length == 0
 	);
+}
+
+export function newIndicatorTemplateFromIndicator(container: IndicatorContainer) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { historicalValues, quantity, ...copiedPayload } = container.payload;
+	return newContainer.parse({
+		payload: { ...copiedPayload, type: payloadTypes.enum.indicator_template },
+		organization: container.organization,
+		organizational_unit: container.organization,
+		realm: container.realm
+	});
 }

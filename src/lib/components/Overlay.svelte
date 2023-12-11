@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import saveContainer from '$lib/client/saveContainer';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
@@ -28,6 +29,7 @@
 		isOrganizationalUnitContainer,
 		isTaskContainer,
 		mayDelete,
+		newIndicatorTemplateFromIndicator,
 		payloadTypes,
 		quantities
 	} from '$lib/models';
@@ -35,7 +37,8 @@
 		AnyContainer,
 		Container,
 		ContainerWithObjective,
-		CustomEventMap
+		CustomEventMap,
+		IndicatorContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -92,6 +95,12 @@
 			await invalidateAll();
 			await goto(closeOverlay());
 		}
+	}
+
+	function saveIndicatorAsTemplate(c: IndicatorContainer) {
+		return async () => {
+			await saveContainer(newIndicatorTemplateFromIndicator(c));
+		};
 	}
 </script>
 
@@ -234,6 +243,11 @@
 					<a class="button" href="#relate={container.guid}">
 						{$_('relations')}
 					</a>
+				{/if}
+				{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
+					<button type="button" on:click={saveIndicatorAsTemplate(container)}>
+						{$_('indicator.save_as_template')}
+					</button>
 				{/if}
 			</div>
 		</footer>
