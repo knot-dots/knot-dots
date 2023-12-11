@@ -59,6 +59,7 @@
 	"indicator.objectives_intro": "Intro for objectives tab",
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Quantity",
+	"indicator.save_as_template": "Save as template",
 	"indicator.tab.all": "All data",
 	"indicator.tab.historical_values": "Historical values",
 	"indicator.tab.measures": "Measures",
@@ -176,6 +177,9 @@
 			"description": "{contribution, number} tons of CO₂ are emitted per capita by the transport sector.",
 			"input_prompt": "How many tons of CO₂ will be emitted per capita by the transport sector?",
 			"label": "CO₂ emissions by transport"
+		},
+		"custom": {
+			"label": "Custom quantity"
 		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {# kilometer of cycle paths will be built.} other {# kilometers of cycle paths will be built.}}",
@@ -336,9 +340,11 @@
 	"superordinate_visions": "Superordinate visions",
 	"task_category": {
 		"bugfix": "Bug fix",
+		"default": "Task",
 		"design": "Design",
 		"function": "Function",
 		"label": "Category",
+		"program_management": "Program management",
 		"wording": "Wording"
 	},
 	"task_status": {

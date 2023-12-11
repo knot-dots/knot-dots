@@ -60,6 +60,7 @@
 	"indicator.objectives_intro": "Einleitungstext für Gewünschte Entwicklung",
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Größe",
+	"indicator.save_as_template": "Als Vorlage für alle speichern",
 	"indicator.tab.all": "Alle Daten",
 	"indicator.tab.historical_values": "Ist-Daten / Ohne Intervention",
 	"indicator.tab.measures": "Aktuelle Planung",
@@ -177,6 +178,9 @@
 			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr im Verkehr beträgt {contribution, number} Tonnen.",
 			"input_prompt": "Wie viel CO₂ wird durch Verkehr zusätzlich ausgestoßen?",
 			"label": "CO₂-Ausstoß — Verkehr"
+		},
+		"custom": {
+			"label": "Benutzerdefinierte Größe"
 		},
 		"cycle_path": {
 			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
@@ -337,9 +341,11 @@
 	"superordinate_visions": "Übergeordnete Visionen",
 	"task_category": {
 		"bugfix": "Fehler",
+		"default": "Aufgabe",
 		"design": "Design",
 		"function": "Funktion",
 		"label": "Kategorie",
+		"program_management": "Programm-Management",
 		"wording": "Formulierung"
 	},
 	"task_status": {

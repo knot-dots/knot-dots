@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import saveContainer from '$lib/client/saveContainer';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
@@ -28,13 +29,16 @@
 		isOrganizationalUnitContainer,
 		isTaskContainer,
 		mayDelete,
-		payloadTypes
+		newIndicatorTemplateFromIndicator,
+		payloadTypes,
+		quantities
 	} from '$lib/models';
 	import type {
 		AnyContainer,
 		Container,
 		ContainerWithObjective,
-		CustomEventMap
+		CustomEventMap,
+		IndicatorContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -92,6 +96,12 @@
 			await goto(closeOverlay());
 		}
 	}
+
+	function saveIndicatorAsTemplate(c: IndicatorContainer) {
+		return async () => {
+			await saveContainer(newIndicatorTemplateFromIndicator(c));
+		};
+	}
 </script>
 
 <section class="overlay" transition:slide={{ axis: 'x' }}>
@@ -99,7 +109,7 @@
 		<header class="content-header">
 			<label
 				style={container.payload.type === payloadTypes.enum.undefined ||
-				(container.payload.type === payloadTypes.enum.indicator && !container.payload.title)
+				(container.payload.type === payloadTypes.enum.indicator && !container.payload.quantity)
 					? 'visibility: hidden;'
 					: undefined}
 			>
@@ -118,7 +128,8 @@
 						name="title"
 						type="text"
 						bind:value={container.payload.title}
-						readonly={container.payload.type === payloadTypes.enum.indicator}
+						readonly={container.payload.type === payloadTypes.enum.indicator &&
+							container.payload.quantity !== quantities.enum['quantity.custom']}
 						required
 					/>
 				{/if}
@@ -232,6 +243,11 @@
 					<a class="button" href="#relate={container.guid}">
 						{$_('relations')}
 					</a>
+				{/if}
+				{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
+					<button type="button" on:click={saveIndicatorAsTemplate(container)}>
+						{$_('indicator.save_as_template')}
+					</button>
 				{/if}
 			</div>
 		</footer>

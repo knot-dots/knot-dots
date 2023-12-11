@@ -1,19 +1,24 @@
 import { error } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
+import { payloadTypes } from '$lib/models';
+import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import {
+	getManyContainers,
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
 	setUp
 } from '$lib/server/db';
 import type { LayoutServerLoad } from './$types';
-import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 
 export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	let currentOrganization;
 	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 
-	const [organizations, organizationalUnits] = await Promise.all([
+	const [indicatorTemplates, organizations, organizationalUnits] = await Promise.all([
+		locals.pool.connect(
+			getManyContainers([], { type: [payloadTypes.enum.indicator_template] }, 'alpha')
+		),
 		locals.pool.connect(getManyOrganizationContainers({}, 'alpha')),
 		locals.pool.connect(getManyOrganizationalUnitContainers({}))
 	]);
@@ -48,6 +53,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	return {
 		currentOrganization,
 		currentOrganizationalUnit,
+		indicatorTemplates,
 		organizations,
 		organizationalUnits,
 		random: await random.json(),

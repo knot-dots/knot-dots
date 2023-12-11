@@ -419,9 +419,9 @@ function prepareWhereCondition(filters: {
 }
 
 function prepareOrderByExpression(sort: string) {
-	let order_by = sql.fragment`valid_from DESC`;
-	if (sort == 'alpha') {
-		order_by = sql.fragment`payload->>'title'`;
+	let order_by = sql.fragment`payload->>'title'`;
+	if (sort == 'modified') {
+		order_by = sql.fragment`valid_from DESC`;
 	}
 	return order_by;
 }
