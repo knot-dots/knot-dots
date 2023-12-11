@@ -323,7 +323,7 @@ const basePayload = z
 		summary: z.string().max(200).optional(),
 		title: z.string(),
 		topic: z.array(topics).default([]),
-		visibility: visibility.default('creator')
+		visibility: visibility.default('members')
 	})
 	.strict();
 
