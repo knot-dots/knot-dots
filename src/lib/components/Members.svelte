@@ -21,12 +21,16 @@
 			switch (event.currentTarget.value) {
 				case 'role.member':
 					containerUser = container.user.filter(
-						({ predicate }) => predicate != predicates.enum['is-admin-of']
+						({ predicate, subject }) =>
+							predicate != predicates.enum['is-admin-of'] || user.guid != subject
 					);
 					break;
 				case 'role.administrator':
 					containerUser = container.user
-						.filter(({ predicate }) => predicate != predicates.enum['is-admin-of'])
+						.filter(
+							({ predicate, subject }) =>
+								predicate != predicates.enum['is-admin-of'] || user.guid != subject
+						)
 						.concat({
 							subject: user.guid,
 							predicate: predicates.enum['is-admin-of']
