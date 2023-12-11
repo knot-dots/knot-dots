@@ -58,13 +58,13 @@
 	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
 	let selectedTaskCategory = $page.url.searchParams.getAll('taskCategory');
 	let selectedTopic = $page.url.searchParams.getAll('topic');
-	let selectedSort = $page.url.searchParams.get('sort') ?? 'modified';
+	let selectedSort = $page.url.searchParams.get('sort') ?? 'alpha';
 
 	$: if (selectedRelations.length == 0) {
 		selectedRelations = ['hierarchical', 'other'];
 	}
 
-	$sortToggle = selectedSort != 'modified';
+	$sortToggle = selectedSort != 'alpha';
 
 	function applySortAndFilters() {
 		const query = new URLSearchParams($page.url.searchParams);
@@ -81,7 +81,7 @@
 		selectedStrategyType.forEach((c) => query.append('strategyType', c));
 		selectedTaskCategory.forEach((c) => query.append('taskCategory', c));
 		selectedTopic.forEach((c) => query.append('topic', c));
-		if (selectedSort != 'modified') {
+		if (selectedSort != 'alpha') {
 			query.append('sort', selectedSort);
 		}
 		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true });
