@@ -154,6 +154,8 @@ export const topics = z.enum(topicValues);
 export type Topic = z.infer<typeof topics>;
 
 const taskCategoryValues = [
+	'task_category.default',
+	'task_category.program_management',
 	'task_category.bugfix',
 	'task_category.design',
 	'task_category.function',

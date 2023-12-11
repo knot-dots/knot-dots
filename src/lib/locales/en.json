@@ -340,9 +340,11 @@
 	"superordinate_visions": "Superordinate visions",
 	"task_category": {
 		"bugfix": "Bug fix",
+		"default": "Task",
 		"design": "Design",
 		"function": "Function",
 		"label": "Category",
+		"program_management": "Program management",
 		"wording": "Wording"
 	},
 	"task_status": {

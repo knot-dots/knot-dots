@@ -341,9 +341,11 @@
 	"superordinate_visions": "Übergeordnete Visionen",
 	"task_category": {
 		"bugfix": "Fehler",
+		"default": "Aufgabe",
 		"design": "Design",
 		"function": "Funktion",
 		"label": "Kategorie",
+		"program_management": "Programm-Management",
 		"wording": "Formulierung"
 	},
 	"task_status": {
