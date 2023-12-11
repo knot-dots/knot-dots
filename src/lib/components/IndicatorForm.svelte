@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
@@ -14,6 +15,7 @@
 		ContainerFormTabKey,
 		EmptyIndicatorContainer,
 		IndicatorContainer,
+		IndicatorTemplateContainer,
 		Quantity
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -45,9 +47,18 @@
 
 		if (container.payload.quantity == quantities.enum['quantity.custom']) {
 			container.payload.title = '';
-		} else {
+		} else if (quantities.options.includes(container.payload.quantity as Quantity)) {
 			container.payload.title = $_(`${container.payload.quantity}.label`);
 			container.payload.unit = unitByQuantity.get(container.payload.quantity as Quantity);
+		} else {
+			const indicatorTemplate = $page.data.indicatorTemplates.find(
+				({ guid }: IndicatorTemplateContainer) => guid === container.payload.quantity
+			);
+
+			if (indicatorTemplate) {
+				container.payload.title = indicatorTemplate.payload.title;
+				container.payload.unit = indicatorTemplate.payload.unit;
+			}
 		}
 	}
 
@@ -89,6 +100,9 @@
 				<option></option>
 				{#each quantities.options as quantityOption}
 					<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
+				{/each}
+				{#each $page.data.indicatorTemplates as { guid, payload }}
+					<option value={guid}>{payload.title}</option>
 				{/each}
 			</select>
 		</label>
