@@ -73,6 +73,14 @@ export default function defineAbilityFor(user: User) {
 			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }
 		});
 		can('read', payloadTypes.options, {
+			'payload.visibility': visibility.enum.creator,
+			organization: { $in: user.adminOf }
+		});
+		can('read', payloadTypes.options, {
+			'payload.visibility': visibility.enum.creator,
+			organizational_unit: { $in: user.adminOf }
+		});
+		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
 			organization: { $in: user.memberOf }
 		});
