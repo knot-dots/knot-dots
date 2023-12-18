@@ -89,6 +89,14 @@ export default function defineAbilityFor(user: User) {
 			'payload.visibility': visibility.enum.members,
 			organizational_unit: { $in: user.memberOf }
 		});
+		can('read', payloadTypes.enum.organizational_unit, {
+			'payload.visibility': visibility.enum.members,
+			guid: { $in: user.memberOf }
+		});
+		can('read', payloadTypes.enum.organizational_unit, {
+			'payload.visibility': visibility.enum.creator,
+			guid: { $in: user.adminOf }
+		});
 		can('read', payloadTypes.enum['internal_objective.task'], ['assignee'], {
 			'payload.visibility': visibility.enum.members,
 			organization: { $in: user.memberOf }
