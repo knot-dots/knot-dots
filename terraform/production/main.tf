@@ -251,11 +251,13 @@ module "k8s_deployments" {
   keycloak_realm           = "knot-dots"
   keycloak_client_id       = data.keycloak_openid_client.strategytool.client_id
   keycloak_client_secret   = data.keycloak_openid_client.strategytool.client_secret
+  keycloak_replicas        = 2
   migrate_image            = var.migrate_image
   strategytool_api_key     = scaleway_iam_api_key.strategytool
   strategytool_bucket_name = data.scaleway_object_bucket.upload.name
   strategytool_host        = var.with_scaleway_lb ? "knotdots.net" : replace(module.k8s_cluster.wildcard_dns, "*", "strategytool")
   strategytool_image       = var.strategytool_image
   strategytool_region      = "fr-par"
+  strategytool_replicas    = 2
   with_scaleway_lb         = var.with_scaleway_lb
 }
