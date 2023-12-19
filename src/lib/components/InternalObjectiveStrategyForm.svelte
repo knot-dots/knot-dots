@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import type { EmptyInternalStrategyContainer, InternalStrategyContainer } from '$lib/models.js';
+	import type {
+		EmptyInternalStrategyContainer,
+		InternalStrategyContainer,
+		PartialRelation
+	} from '$lib/models.js';
 	import { applicationState } from '$lib/stores';
 
 	export let container: InternalStrategyContainer | EmptyInternalStrategyContainer;
@@ -11,6 +17,18 @@
 		...state,
 		containerForm: { tabs: [] }
 	}));
+
+	$: if (container.relation.length == 0) {
+		container.relation = paramsFromURL($page.url)
+			.getAll('is-part-of-measure')
+			.map(
+				(o): PartialRelation => ({
+					object: Number(o),
+					position: 0,
+					predicate: 'is-part-of-measure'
+				})
+			);
+	}
 </script>
 
 <OrganizationSelector bind:container />
