@@ -40,6 +40,11 @@ variable "keycloak_client_id" {
   type = string
 }
 
+variable "keycloak_replicas" {
+  default = 1
+  type    = number
+}
+
 variable "migrate_image" {
   type = string
 }

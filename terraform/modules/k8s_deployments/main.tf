@@ -532,7 +532,7 @@ resource "kubernetes_deployment_v1" "keycloak" {
   }
 
   spec {
-    replicas = 1
+    replicas = var.keycloak_replicas
 
     selector {
       match_labels = {
