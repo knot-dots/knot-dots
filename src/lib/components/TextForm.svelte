@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
+	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import type { EmptyTextContainer, TextContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -21,6 +22,8 @@
 		<legend>{$_('form.metadata')}</legend>
 
 		<StrategyRelationSelector {container} />
+
+		<OrganizationSelector bind:container />
 	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'basic-data'}
 	<fieldset class="form-tab" id="basic-data">
