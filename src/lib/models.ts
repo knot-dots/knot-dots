@@ -212,9 +212,11 @@ const unitValues = [
 	'unit.kilowatt',
 	'unit.kilowatt_hour',
 	'unit.kilometer',
+	'unit.n',
 	'unit.percent',
 	'unit.per_1000',
 	'unit.per_100000',
+	'unit.square_meter',
 	'unit.ton'
 ] as const;
 
@@ -349,7 +351,7 @@ const internalObjectivesBasePayload = z.object({
 	description: z.string().optional(),
 	summary: z.string().max(200).optional(),
 	title: z.string(),
-	visibility: visibility.default('creator')
+	visibility: visibility.default('members')
 });
 
 const internalStrategyPayload = internalObjectivesBasePayload
@@ -456,7 +458,7 @@ const organizationPayload = z.object({
 	name: z.string(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
-	visibility: visibility.default('creator')
+	visibility: visibility.default('members')
 });
 
 const organizationalUnitPayload = z.object({
@@ -466,7 +468,7 @@ const organizationalUnitPayload = z.object({
 	level: z.number().int().positive().default(1),
 	name: z.string(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility: visibility.default('creator')
+	visibility: visibility.default('members')
 });
 
 const strategicGoalPayload = basePayload
@@ -495,7 +497,7 @@ const textPayload = z
 		body: z.string().optional(),
 		title: z.string(),
 		type: z.literal(payloadTypes.enum.text),
-		visibility: visibility.default('creator')
+		visibility: visibility.default('members')
 	})
 	.strict();
 
@@ -503,7 +505,7 @@ const undefinedPayload = z
 	.object({
 		title: z.string(),
 		type: z.literal(payloadTypes.enum.undefined),
-		visibility: visibility.default('creator')
+		visibility: visibility.default('members')
 	})
 	.strict();
 
@@ -1059,7 +1061,11 @@ export function isPartOf(container: { relation: PartialRelation[]; revision: num
 }
 
 export function hasMember(user: { guid: string }) {
-	return (container: AnyContainer) => container.user.find(({ subject }) => subject === user.guid);
+	return (container: AnyContainer) =>
+		container.user.find(
+			({ predicate, subject }) =>
+				subject === user.guid && predicate === predicates.enum['is-member-of']
+		);
 }
 
 export function etag(container: AnyContainer) {
