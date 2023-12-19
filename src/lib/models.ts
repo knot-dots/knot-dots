@@ -212,9 +212,11 @@ const unitValues = [
 	'unit.kilowatt',
 	'unit.kilowatt_hour',
 	'unit.kilometer',
+	'unit.n',
 	'unit.percent',
 	'unit.per_1000',
 	'unit.per_100000',
+	'unit.square_meter',
 	'unit.ton'
 ] as const;
 
