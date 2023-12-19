@@ -66,6 +66,12 @@
 	"indicator.tab.measures": "Aktuelle Planung",
 	"indicator.tab.objectives": "Gewünschte Entwicklung",
 	"indicator.template": "Indikator-Vorlage",
+	"indicator.tip.done": "{year} bereits umgesetzt: {value, number} {unit}",
+	"indicator.tip.historical_values": "Ist-Werte/Prognose für {year}: {value, number} {unit}",
+	"indicator.tip.idea": "Ideen für {year}: {value, number} {unit}",
+	"indicator.tip.in_implementation": "Umsetzung geplant für {year}: {value, number} {unit}",
+	"indicator.tip.in_planning": "Geplant für {year}: {value, number} {unit}",
+	"indicator.tip.objectives": "Zielwert für {year}: {value, number} {unit}",
 	"indicator.wanted_values": "Zielwerte",
 	"information": "Information",
 	"internal_objective": {

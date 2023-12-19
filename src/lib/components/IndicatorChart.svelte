@@ -19,31 +19,59 @@
 
 	let effects = [] as Array<{ Year: number; Value: number; Status: string }>;
 	let effectsMinYear = 0;
-	let effectColorByStatus = new Map<string, string>([
-		['offset', 'transparent'],
-		[status.enum['status.idea'], '#f7d8e3'],
-		[status.enum['status.in_planning'], '#fdeae1'],
-		[status.enum['status.in_implementation'], '#fff6e4'],
-		[status.enum['status.done'], '#e7f9ee']
-	]);
+	let effectsByStatus: Map<string, Array<{ Year: number; Value: number }>>;
 	let objectives = [] as Array<{ Year: number; Value: number }>;
 	let objectivesMinYear = 0;
 	let maxYear =
 		container.payload.historicalValues.length > 0
 			? container.payload.historicalValues[container.payload.historicalValues.length - 1][0]
 			: 0;
+	let ideasByYear: Map<number, number>;
+	let inPlanningByYear: Map<number, number>;
+	let inImplementationByYear: Map<number, number>;
+	let doneByYear: Map<number, number>;
 
 	const historicalValuesByYear = new Map(container.payload.historicalValues);
 
 	$: if (showObjectives) {
 		objectives = containersWithObjectives
-			.map(({ payload }) => payload.objective)
-			.flat()
+			.flatMap(({ payload }) => payload.objective)
 			.filter(({ indicator }) => indicator == container.guid)
-			.map(({ wantedValues }) => wantedValues)
-			.flat()
-			.map(([year, value]) => ({ Year: year, Value: value }));
+			.flatMap(({ wantedValues }) => wantedValues)
+			.map(([year, value]) => ({ Year: year, Value: value }))
+			.filter(({ Year }) => Year <= maxYear)
+			.reduce(
+				(accumulator, currentValue) => {
+					const groupIndex = accumulator.findIndex(({ Year }) => currentValue.Year == Year);
+					return groupIndex > -1
+						? [
+								...accumulator.slice(0, groupIndex),
+								{
+									Year: currentValue.Year,
+									Value: currentValue.Value + accumulator[groupIndex].Value
+								}
+						  ]
+						: [
+								...accumulator,
+								{
+									Year: currentValue.Year,
+									Value: currentValue.Value
+								}
+						  ];
+				},
+				[] as Array<{ Year: number; Value: number }>
+			)
+			.map(({ Year, Value }) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value }));
+
 		objectivesMinYear = Math.min(...objectives.map(({ Year }) => Year));
+
+		objectives = [
+			{
+				Year: objectivesMinYear - 1,
+				Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+			},
+			...objectives
+		];
 	}
 
 	$: if (showEffects) {
@@ -103,10 +131,120 @@
 			);
 
 		effectsMinYear = Math.min(...effects.map(({ Year }) => Year));
+
+		ideasByYear = new Map(
+			effects
+				.filter(({ Status }) => Status == status.enum['status.idea'])
+				.map(({ Year, Value }) => [Year, Value])
+		);
+
+		inPlanningByYear = new Map(
+			effects
+				.filter(({ Status }) => Status == status.enum['status.in_planning'])
+				.map(({ Year, Value }) => [Year, Value])
+		);
+
+		inImplementationByYear = new Map(
+			effects
+				.filter(({ Status }) => Status == status.enum['status.in_implementation'])
+				.map(({ Year, Value }) => [Year, Value])
+		);
+
+		doneByYear = new Map(
+			effects
+				.filter(({ Status }) => Status == status.enum['status.done'])
+				.map(({ Year, Value }) => [Year, Value])
+		);
+
+		effectsByStatus = new Map([
+			[
+				status.enum['status.idea'],
+				[
+					{
+						Year: effectsMinYear - 1,
+						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+					},
+					...container.payload.historicalValues
+						.filter(([year]) => year >= effectsMinYear)
+						.map(([year, value]) => {
+							return {
+								Year: year,
+								Value:
+									(doneByYear.get(year) ?? 0) +
+									(inImplementationByYear.get(year) ?? 0) +
+									(inPlanningByYear.get(year) ?? 0) +
+									(ideasByYear.get(year) ?? 0) +
+									value
+							};
+						})
+				]
+			],
+			[
+				status.enum['status.in_planning'],
+				[
+					{
+						Year: effectsMinYear - 1,
+						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+					},
+					...container.payload.historicalValues
+						.filter(([year]) => year >= effectsMinYear)
+						.map(([year, value]) => {
+							return {
+								Year: year,
+								Value:
+									(doneByYear.get(year) ?? 0) +
+									(inImplementationByYear.get(year) ?? 0) +
+									(inPlanningByYear.get(year) ?? 0) +
+									value
+							};
+						})
+				]
+			],
+			[
+				status.enum['status.in_implementation'],
+				[
+					{
+						Year: effectsMinYear - 1,
+						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+					},
+					...container.payload.historicalValues
+						.filter(([year]) => year >= effectsMinYear)
+						.map(([year, value]) => {
+							return {
+								Year: year,
+								Value: (doneByYear.get(year) ?? 0) + (inImplementationByYear.get(year) ?? 0) + value
+							};
+						})
+				]
+			],
+			[
+				status.enum['status.done'],
+				[
+					{
+						Year: effectsMinYear - 1,
+						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+					},
+					...container.payload.historicalValues
+						.filter(([year]) => year >= effectsMinYear)
+						.map(([year, value]) => {
+							return {
+								Year: year,
+								Value: (doneByYear.get(year) ?? 0) + value
+							};
+						})
+				]
+			]
+		]);
 	}
 
 	$: {
 		let unit = $_(container.payload.unit);
+		let effectColorByStatus = new Map<string, string>([
+			[status.enum['status.idea'], '#ca1d61'],
+			[status.enum['status.in_planning'], '#f18c5f'],
+			[status.enum['status.in_implementation'], '#fccd6c'],
+			[status.enum['status.done'], '#6edaa6']
+		]);
 
 		div?.firstChild?.remove();
 		div?.append(
@@ -117,110 +255,107 @@
 						{ x: 'Year', y: 'Value', fill: '#21A5ED', fillOpacity: 0.15, curve: 'linear' }
 					),
 					...(showEffects && effects.length > 0
-						? [
-								Plot.areaY(
-									container.payload.historicalValues
-										.filter(([year]) => year >= effectsMinYear)
-										.map(([year, value]) => {
-											const effectByYear = effects.reduce((accumulator: number, currentValue) => {
-												return year == currentValue.Year
-													? accumulator + currentValue.Value
-													: accumulator;
-											}, 0);
-											return {
-												Year: year,
-												Status: 'offset',
-												Value: effects.some(({ Value }) => Value < 0) ? value + effectByYear : value
-											};
-										})
-										.concat([
-											{
-												Year: effectsMinYear - 1,
-												Value: 0,
-												Status: status.enum['status.idea']
-											},
-											{
-												Year: effectsMinYear - 1,
-												Value: 0,
-												Status: status.enum['status.in_planning']
-											},
-											{
-												Year: effectsMinYear - 1,
-												Value: 0,
-												Status: status.enum['status.in_implementation']
-											},
-											{
-												Year: effectsMinYear - 1,
-												Value: 0,
-												Status: status.enum['status.done']
-											},
-											{
-												Year: effectsMinYear - 1,
-												Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0,
-												Status: 'offset'
+						? Array.from(effectsByStatus.entries()).flatMap(([s, d], index) => [
+								Plot.lineY(d, {
+									x: 'Year',
+									y: 'Value',
+									stroke: effectColorByStatus.get(s),
+									strokeWidth: 1
+								}),
+								Plot.dot(
+									d,
+									Plot.pointerX({ x: 'Year', y: 'Value', stroke: effectColorByStatus.get(s) })
+								),
+								Plot.text(
+									d,
+									Plot.pointerX({
+										px: 'Year',
+										py: 'Value',
+										dx: 10,
+										dy: (index + 2) * 12 - 17,
+										frameAnchor: 'top-left',
+										fill: effectColorByStatus.get(s),
+										text: (d) => {
+											switch (s) {
+												case status.enum['status.idea']:
+													return $_('indicator.tip.idea', {
+														values: { year: d.Year, value: ideasByYear.get(d.Year) ?? 0, unit }
+													});
+												case status.enum['status.in_planning']:
+													return $_('indicator.tip.in_planning', {
+														values: { year: d.Year, value: inPlanningByYear.get(d.Year) ?? 0, unit }
+													});
+												case status.enum['status.in_implementation']:
+													return $_('indicator.tip.in_implementation', {
+														values: {
+															year: d.Year,
+															value: inImplementationByYear.get(d.Year) ?? 0,
+															unit
+														}
+													});
+												case status.enum['status.done']:
+													return $_('indicator.tip.done', {
+														values: { year: d.Year, value: doneByYear.get(d.Year) ?? 0, unit }
+													});
 											}
-										])
-										.concat(
-											effects
-												.filter(({ Year }) => Year <= maxYear)
-												.map((effect) => ({ ...effect, Value: Math.abs(effect.Value) }))
-										),
-									{
-										x: 'Year',
-										y: 'Value',
-										fill: (d: { Status: string }) => effectColorByStatus.get(d.Status),
-										order: effects.some(({ Value }) => Value < 0)
-											? [
-													'transparent',
-													effectColorByStatus.get(status.enum['status.idea']),
-													effectColorByStatus.get(status.enum['status.in_planning']),
-													effectColorByStatus.get(status.enum['status.in_implementation']),
-													effectColorByStatus.get(status.enum['status.done'])
-											  ]
-											: [
-													'transparent',
-													effectColorByStatus.get(status.enum['status.done']),
-													effectColorByStatus.get(status.enum['status.in_implementation']),
-													effectColorByStatus.get(status.enum['status.in_planning']),
-													effectColorByStatus.get(status.enum['status.idea'])
-											  ]
-									}
+										}
+									})
 								)
-						  ]
+						  ])
 						: []),
 					...(showObjectives && objectives.length > 0
 						? [
-								Plot.lineY(
-									container.payload.historicalValues
-										.filter(([year]) => year >= objectivesMinYear)
-										.map(([year, value]) => ({
-											Year: year,
-											Value: value
-										}))
-										.concat(objectives.filter(({ Year }) => Year <= maxYear))
-										.concat([
-											{
-												Year: objectivesMinYear - 1,
-												Value: historicalValuesByYear.get(objectivesMinYear - 1) ?? 0
-											}
-										]),
-									Plot.groupX(
-										{
-											y: 'sum'
-										},
-										{
-											x: 'Year',
-											y: 'Value',
-											stroke: '#21a5ed',
-											strokeWidth: 1
-										}
-									)
+								Plot.lineY(objectives, {
+									x: 'Year',
+									y: 'Value',
+									stroke: '#21a5ed'
+								}),
+								Plot.dot(
+									objectives,
+									Plot.pointerX({
+										x: 'Year',
+										y: 'Value',
+										stroke: '#21a5ed'
+									})
+								),
+								Plot.text(
+									objectives,
+									Plot.pointerX({
+										px: 'Year',
+										py: 'Value',
+										dx: 10,
+										dy: -5,
+										frameAnchor: 'top-left',
+										fill: '#21a5ed',
+										text: (d) =>
+											$_('indicator.tip.objectives', {
+												values: { year: d.Year, value: d.Value, unit }
+											})
+									})
 								)
 						  ]
 						: []),
 					Plot.lineY(
 						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
 						{ x: 'Year', y: 'Value' }
+					),
+					Plot.dot(
+						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
+						Plot.pointerX({ x: 'Year', y: 'Value' })
+					),
+					Plot.text(
+						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
+						Plot.pointerX({
+							px: 'Year',
+							py: 'Value',
+							dx: 10,
+							dy: -17,
+							frameAnchor: 'top-left',
+							text: (d) =>
+								$_('indicator.tip.historical_values', {
+									values: { year: d.Year, value: d.Value, unit }
+								})
+						})
 					),
 					Plot.ruleX([new Date().getFullYear()])
 				],

@@ -65,6 +65,12 @@
 	"indicator.tab.measures": "Measures",
 	"indicator.tab.objectives": "Objectives",
 	"indicator.template": "Indicator template",
+	"indicator.tip.done": "Already achieved in {year}: {value, number} {unit}",
+	"indicator.tip.historical_values": "Actual/predicted value in {year}: {value, number} {unit}",
+	"indicator.tip.idea": "Ideas for {year}: {value, number} {unit}",
+	"indicator.tip.in_implementation": "Implementation planned for {year}: {value, number} {unit}",
+	"indicator.tip.in_planning": "Planned for {year}: {value, number} {unit}",
+	"indicator.tip.objectives": "Objective for {year}: {value, number} {unit}",
 	"indicator.wanted_values": "Wanted values",
 	"information": "Information",
 	"internal_objective": {
