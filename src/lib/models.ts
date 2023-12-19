@@ -1059,7 +1059,11 @@ export function isPartOf(container: { relation: PartialRelation[]; revision: num
 }
 
 export function hasMember(user: { guid: string }) {
-	return (container: AnyContainer) => container.user.find(({ subject }) => subject === user.guid);
+	return (container: AnyContainer) =>
+		container.user.find(
+			({ predicate, subject }) =>
+				subject === user.guid && predicate === predicates.enum['is-member-of']
+		);
 }
 
 export function etag(container: AnyContainer) {
