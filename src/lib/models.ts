@@ -52,6 +52,7 @@ const payloadTypeValues = [
 	'operational_goal',
 	'organization',
 	'organizational_unit',
+	'page',
 	'strategic_goal',
 	'strategy',
 	'text',
@@ -471,6 +472,14 @@ const organizationalUnitPayload = z.object({
 	visibility: visibility.default('members')
 });
 
+const pagePayload = z.object({
+	body: z.string(),
+	slug: z.string(),
+	title: z.string(),
+	type: z.literal(payloadTypes.enum.page),
+	visibility: visibility.default('public')
+});
+
 const strategicGoalPayload = basePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
@@ -524,6 +533,7 @@ export const container = z.object({
 		measurePayload,
 		modelPayload,
 		operationalGoalPayload,
+		pagePayload,
 		strategicGoalPayload,
 		strategyPayload,
 		textPayload
@@ -552,6 +562,7 @@ export const anyContainer = container.extend({
 		operationalGoalPayload,
 		organizationPayload,
 		organizationalUnitPayload,
+		pagePayload,
 		strategicGoalPayload,
 		strategyPayload,
 		textPayload,
@@ -663,6 +674,18 @@ export function isOrganizationalUnitContainer(
 	container: AnyContainer | EmptyContainer
 ): container is OrganizationalUnitContainer {
 	return container.payload.type === payloadTypes.enum.organizational_unit;
+}
+
+const pageContainer = container.extend({
+	payload: pagePayload
+});
+
+export type PageContainer = z.infer<typeof pageContainer>;
+
+export function isPageContainer(
+	container: AnyContainer | EmptyContainer
+): container is PageContainer {
+	return container.payload.type === payloadTypes.enum.page;
 }
 
 const strategicGoalContainer = container.extend({
@@ -858,6 +881,7 @@ const emptyContainer = newContainer.extend({
 		organizationalUnitPayload
 			.partial()
 			.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true })),
+		pagePayload.partial().merge(pagePayload.pick({ type: true, visibility: true })),
 		strategicGoalPayload.partial().merge(
 			strategicGoalPayload.pick({
 				category: true,
@@ -961,6 +985,12 @@ const emptyOrganizationalUnitContainer = newContainer.extend({
 });
 
 export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
+
+const emptyPageContainer = newContainer.extend({
+	payload: pagePayload.partial().merge(pagePayload.pick({ type: true, visibility: true }))
+});
+
+export type EmptyPageContainer = z.infer<typeof emptyPageContainer>;
 
 const emptyStrategicGoalContainer = emptyContainer.extend({
 	payload: strategicGoalPayload.partial().merge(

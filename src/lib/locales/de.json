@@ -11,6 +11,7 @@
 		"tasks": "Aufgaben"
 	},
 	"boards": "Boards",
+	"body": "Inhalt",
 	"cancel": "Abbrechen",
 	"category": "SDG",
 	"chapter": "Absatz",
@@ -142,6 +143,7 @@
 	"organizations": "Organisationen",
 	"other_organizations": "Andere Organisationen",
 	"owned_by": "Zuständig",
+	"page": "Seite",
 	"page_title": "Strategie-Werkzeug",
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",
@@ -314,6 +316,7 @@
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",
+	"slug": "Slug",
 	"start_date": "Beginn",
 	"status": {
 		"done": "Erledigt",

@@ -38,6 +38,8 @@
 		);
 		if (newContainer.payload.type === payloadTypes.enum.organizational_unit) {
 			newContainer.payload.level = parseInt($page.url.searchParams.get('level') ?? '1');
+		} else if (newContainer.payload.type === payloadTypes.enum.page) {
+			newContainer.payload.slug = $page.url.searchParams.get('slug') ?? '';
 		}
 		return newContainer as AnyContainer;
 	})(payloadType);
@@ -75,6 +77,8 @@
 			await goto(`/internal_objective.task/new?${params}`);
 		} else if (detail.result.payload.type === payloadTypes.enum.organizational_unit) {
 			await goto(`/organization/${$page.data.currentOrganization.guid}/organizational_units`);
+		} else if (detail.result.payload.type === payloadTypes.enum.page) {
+			await goto(`/${detail.result.payload.slug}`);
 		} else {
 			await goto(`/${payloadType}/${detail.result.guid}`);
 		}

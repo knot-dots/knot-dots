@@ -10,6 +10,7 @@
 		"tasks": "Tasks"
 	},
 	"boards": "Boards",
+	"body": "Body",
 	"cancel": "Cancel",
 	"category": "Category",
 	"chapter": "Chapter",
@@ -141,6 +142,7 @@
 	"organizations": "Organizations",
 	"other_organizations": "Other organizations",
 	"owned_by": "Owned by",
+	"page": "Page",
 	"page_title": "StrategyTool",
 	"payload_type": "Type of element",
 	"pdf": "PDF",
@@ -310,6 +312,7 @@
 		"17": "Partnerships for the goals"
 	},
 	"show_relations": "Show relations",
+	"slug": "Slug",
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",
 	"sort_modified": "Last modified",
