@@ -27,7 +27,7 @@
 
 	$: isPartOfOptions = data.isPartOfOptions;
 
-	$: container = ((type: PayloadType) => {
+	let container = ((type: PayloadType) => {
 		const newContainer = containerOfType(
 			type,
 			$page.data.currentOrganization.guid,
