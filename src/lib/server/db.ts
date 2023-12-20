@@ -318,6 +318,35 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
+export function getContainerBySlug(slug: string) {
+	return async (connection: DatabaseConnection): Promise<Container> => {
+		const containerResult = await connection.one(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE payload->>'slug' = ${slug} AND valid_currently AND NOT deleted
+		`);
+
+		const userResult = await connection.any(sql.typeAlias('userRelationWithObject')`
+			SELECT *
+			FROM container_user
+			WHERE object = ${containerResult.revision}
+		`);
+		const relationResult = await connection.any(sql.typeAlias('relation')`
+			SELECT cr.*
+			FROM container_relation cr
+			JOIN container co ON cr.object = co.revision AND co.valid_currently
+			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
+			WHERE subject = ${containerResult.revision} OR object = ${containerResult.revision}
+			ORDER BY position
+		`);
+		return {
+			...containerResult,
+			relation: relationResult.map((r) => r),
+			user: userResult.map(({ predicate, subject }) => ({ predicate, subject }))
+		};
+	};
+}
+
 export function getAllContainerRevisionsByGuid(guid: string) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
 		const containerResult = await connection.many(sql.typeAlias('anyContainer')`
