@@ -25,8 +25,6 @@
 
 	export let data: PageData;
 
-	$: payloadType = $page.params.type as PayloadType;
-
 	$: isPartOfOptions = data.isPartOfOptions;
 
 	$: container = ((type: PayloadType) => {
@@ -42,7 +40,7 @@
 			newContainer.payload.slug = $page.url.searchParams.get('slug') ?? '';
 		}
 		return newContainer as AnyContainer;
-	})(payloadType);
+	})($page.params.type as PayloadType);
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -52,7 +50,7 @@
 			detail.event.submitter?.id === 'save-and-next' &&
 			$applicationState.containerForm.activeTab
 		) {
-			await goto(`/${payloadType}/${detail.result.guid}/edit`);
+			await goto(`/${$page.params.type}/${detail.result.guid}/edit`);
 			$applicationState.containerForm.activeTab =
 				$applicationState.containerForm.tabs[
 					$applicationState.containerForm.tabs.findIndex(
@@ -80,7 +78,7 @@
 		} else if (detail.result.payload.type === payloadTypes.enum.page) {
 			await goto(`/${detail.result.payload.slug}`);
 		} else {
-			await goto(`/${payloadType}/${detail.result.guid}`);
+			await goto(`/${$page.params.type}/${detail.result.guid}`);
 		}
 
 		if (
