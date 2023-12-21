@@ -49,6 +49,7 @@
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
+	"imprint": "Imprint",
 	"indicator": "Indicator",
 	"indicator.contribution": "Contribution to operative goal",
 	"indicator.effect": "Effect",
@@ -148,6 +149,7 @@
 	"payload_type": "Type of element",
 	"pdf": "PDF",
 	"planned_duration": "Planned duration",
+	"privacy_policy": "Privacy policy",
 	"profile": {
 		"my_measures": "My measures",
 		"my_organizations": "My organizations",

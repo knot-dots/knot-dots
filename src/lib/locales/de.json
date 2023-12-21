@@ -50,6 +50,7 @@
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"imprint": "Impressum",
 	"indicator": "Indikator",
 	"indicator.contribution": "Beitrag zu operativem Ziel",
 	"indicator.effect": "Wirkung",
@@ -149,6 +150,7 @@
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",
 	"planned_duration": "Geplante Laufzeit",
+	"privacy_policy": "Datenschutz",
 	"profile": {
 		"my_measures": "Meine Maßnahmen",
 		"my_organizations": "Meine Organisationsbereiche",

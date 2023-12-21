@@ -11,6 +11,8 @@
 		ChevronRight,
 		ChevronUp,
 		Cog6Tooth,
+		DocumentText,
+		Eye,
 		Icon,
 		InformationCircle,
 		MagnifyingGlass,
@@ -30,6 +32,7 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPageContainer,
 		isStrategyContainer,
 		organizationCategories,
 		payloadTypes,
@@ -139,7 +142,28 @@
 </script>
 
 <aside id="aside-0" class:is-expanded={$sidebarToggle} class:is-visible={$navigationToggle}>
-	{#if 'container' in $page.data && isContainer($page.data.container)}
+	{#if 'container' in $page.data && isPageContainer($page.data.container)}
+		<ul class="group group-tabs">
+			<li>
+				<a class="button" class:is-active={$page.url.pathname === '/about'} href="/about">
+					<Icon src={InformationCircle} size="20" mini />
+					<span class:is-hidden={!$sidebarToggle}>{$_('about')}</span>
+				</a>
+			</li>
+			<li>
+				<a class="button" class:is-active={$page.url.pathname === '/imprint'} href="/imprint">
+					<Icon src={DocumentText} size="20" mini />
+					<span class:is-hidden={!$sidebarToggle}>{$_('imprint')}</span>
+				</a>
+			</li>
+			<li>
+				<a class="button" class:is-active={$page.url.pathname === '/privacy'} href="/privacy">
+					<Icon src={Eye} size="20" mini />
+					<span class:is-hidden={!$sidebarToggle}>{$_('privacy_policy')}</span>
+				</a>
+			</li>
+		</ul>
+	{:else if 'container' in $page.data && isContainer($page.data.container)}
 		<ul class="group group-tabs">
 			<li>
 				<a
