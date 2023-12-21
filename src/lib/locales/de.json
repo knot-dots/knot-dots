@@ -1,6 +1,7 @@
 {
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
+	"all_organizations": "Alle Organisationen",
 	"annotation": "Anmerkungen",
 	"assignee": "Zugewiesen an",
 	"basic_data": "Allgemeine Angaben",
@@ -11,6 +12,7 @@
 		"tasks": "Aufgaben"
 	},
 	"boards": "Boards",
+	"body": "Inhalt",
 	"cancel": "Abbrechen",
 	"category": "SDG",
 	"chapter": "Absatz",
@@ -48,6 +50,7 @@
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"imprint": "Impressum",
 	"indicator": "Indikator",
 	"indicator.contribution": "Beitrag zu operativem Ziel",
 	"indicator.effect": "Wirkung",
@@ -142,10 +145,12 @@
 	"organizations": "Organisationen",
 	"other_organizations": "Andere Organisationen",
 	"owned_by": "Zuständig",
+	"page": "Seite",
 	"page_title": "Strategie-Werkzeug",
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",
 	"planned_duration": "Geplante Laufzeit",
+	"privacy_policy": "Datenschutz",
 	"profile": {
 		"my_measures": "Meine Maßnahmen",
 		"my_organizations": "Meine Organisationsbereiche",
@@ -314,6 +319,7 @@
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",
+	"slug": "Slug",
 	"start_date": "Beginn",
 	"status": {
 		"done": "Erledigt",

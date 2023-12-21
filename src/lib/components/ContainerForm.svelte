@@ -14,6 +14,7 @@
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
+	import PageForm from '$lib/components/PageForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TextForm from '$lib/components/TextForm.svelte';
@@ -28,6 +29,7 @@
 		isOperationalGoalContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPageContainer,
 		isStrategicGoalGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -122,6 +124,8 @@
 		<OrganizationForm bind:container />
 	{:else if isOrganizationalUnitContainer(container)}
 		<OrganizationalUnitForm {isPartOfOptions} bind:container />
+	{:else if isPageContainer(container)}
+		<PageForm bind:container />
 	{:else if isStrategicGoalGoalContainer(container)}
 		<StrategicGoalForm bind:container />
 	{:else if isStrategyContainer(container)}

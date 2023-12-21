@@ -25,11 +25,9 @@
 
 	export let data: PageData;
 
-	$: payloadType = $page.params.type as PayloadType;
-
 	$: isPartOfOptions = data.isPartOfOptions;
 
-	$: container = ((type: PayloadType) => {
+	let container = ((type: PayloadType) => {
 		const newContainer = containerOfType(
 			type,
 			$page.data.currentOrganization.guid,
@@ -38,9 +36,11 @@
 		);
 		if (newContainer.payload.type === payloadTypes.enum.organizational_unit) {
 			newContainer.payload.level = parseInt($page.url.searchParams.get('level') ?? '1');
+		} else if (newContainer.payload.type === payloadTypes.enum.page) {
+			newContainer.payload.slug = $page.url.searchParams.get('slug') ?? '';
 		}
 		return newContainer as AnyContainer;
-	})(payloadType);
+	})($page.params.type as PayloadType);
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -50,7 +50,7 @@
 			detail.event.submitter?.id === 'save-and-next' &&
 			$applicationState.containerForm.activeTab
 		) {
-			await goto(`/${payloadType}/${detail.result.guid}/edit`);
+			await goto(`/${$page.params.type}/${detail.result.guid}/edit`);
 			$applicationState.containerForm.activeTab =
 				$applicationState.containerForm.tabs[
 					$applicationState.containerForm.tabs.findIndex(
@@ -75,8 +75,10 @@
 			await goto(`/internal_objective.task/new?${params}`);
 		} else if (detail.result.payload.type === payloadTypes.enum.organizational_unit) {
 			await goto(`/organization/${$page.data.currentOrganization.guid}/organizational_units`);
+		} else if (detail.result.payload.type === payloadTypes.enum.page) {
+			await goto(`/${detail.result.payload.slug}`);
 		} else {
-			await goto(`/${payloadType}/${detail.result.guid}`);
+			await goto(`/${$page.params.type}/${detail.result.guid}`);
 		}
 
 		if (

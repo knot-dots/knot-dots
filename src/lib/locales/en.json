@@ -1,6 +1,7 @@
 {
 	"about": "About us",
 	"add_item": "Add item",
+	"all_organizations": "All organizations",
 	"annotation": "Annotation",
 	"assignee": "Assignee",
 	"board": {
@@ -10,6 +11,7 @@
 		"tasks": "Tasks"
 	},
 	"boards": "Boards",
+	"body": "Body",
 	"cancel": "Cancel",
 	"category": "Category",
 	"chapter": "Chapter",
@@ -47,6 +49,7 @@
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
+	"imprint": "Imprint",
 	"indicator": "Indicator",
 	"indicator.contribution": "Contribution to operative goal",
 	"indicator.effect": "Effect",
@@ -141,10 +144,12 @@
 	"organizations": "Organizations",
 	"other_organizations": "Other organizations",
 	"owned_by": "Owned by",
+	"page": "Page",
 	"page_title": "StrategyTool",
 	"payload_type": "Type of element",
 	"pdf": "PDF",
 	"planned_duration": "Planned duration",
+	"privacy_policy": "Privacy policy",
 	"profile": {
 		"my_measures": "My measures",
 		"my_organizations": "My organizations",
@@ -310,6 +315,7 @@
 		"17": "Partnerships for the goals"
 	},
 	"show_relations": "Show relations",
+	"slug": "Slug",
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",
 	"sort_modified": "Last modified",

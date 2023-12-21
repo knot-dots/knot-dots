@@ -251,7 +251,7 @@ module "k8s_deployments" {
   keycloak_realm           = "knot-dots"
   keycloak_client_id       = data.keycloak_openid_client.strategytool.client_id
   keycloak_client_secret   = data.keycloak_openid_client.strategytool.client_secret
-  keycloak_replicas        = 2
+  keycloak_replicas        = 1
   migrate_image            = var.migrate_image
   strategytool_api_key     = scaleway_iam_api_key.strategytool
   strategytool_bucket_name = data.scaleway_object_bucket.upload.name
