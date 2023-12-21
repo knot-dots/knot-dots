@@ -60,14 +60,18 @@
 		aria-expanded={organizationToggle}
 		aria-label={organizationToggle ? $_('close_organization_menu') : $_('open_organization_menu')}
 	>
-		<img
-			alt={$_('logo')}
-			class="logo"
-			src={selectedContext?.payload.image ? selectedContext.payload.image : randomLogo}
-		/>
-		<span>
-			{selectedContext ? selectedContext.payload.name : 'knotdots.net'}
-		</span>
+		{#if selectedContext.payload.default}
+			<span>
+				{$_('all_organizations')}
+			</span>
+		{:else}
+			{#if selectedContext.payload.image}
+				<img alt={$_('logo')} class="logo" src={selectedContext.payload.image} />
+			{/if}
+			<span>
+				{selectedContext.payload.name}
+			</span>
+		{/if}
 		<Icon src={organizationToggle ? ChevronUp : ChevronDown} size="20" mini />
 	</button>
 	<div
