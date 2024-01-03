@@ -1,13 +1,16 @@
 <script lang="ts">
-	import { Icon, Trash } from 'svelte-hero-icons';
+	import { Icon, InformationCircle, Share, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Visibility from '$lib/components/Visibility.svelte';
+	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import SidebarTab from '$lib/components/SidebarTab.svelte';
+	import StrategyTabs from '$lib/components/StrategyTabs.svelte';
+	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
@@ -20,7 +23,8 @@
 		mayDelete,
 		payloadTypes,
 		predicates,
-		quantities
+		quantities,
+		isMeasureContainer
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -78,7 +82,33 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
+	<svelte:fragment slot="sidebar">
+		{#if isMeasureContainer(data.container)}
+			<Sidebar>
+				<MeasureTabs container={data.container} slot="tabs" />
+			</Sidebar>
+		{:else if isStrategyContainer(data.container)}
+			<Sidebar>
+				<StrategyTabs container={data.container} slot="tabs" />
+			</Sidebar>
+		{:else}
+			<Sidebar>
+				<svelte:fragment slot="tabs">
+					<SidebarTab
+						href="/{data.container.payload.type}/{data.container.guid}"
+						iconSource={InformationCircle}
+						text={$_('information')}
+					/>
+					<SidebarTab
+						href="/{data.container.payload.type}/{data.container.guid}/relations"
+						iconSource={Share}
+						text={$_('relations')}
+					/>
+				</svelte:fragment>
+			</Sidebar>
+		{/if}
+	</svelte:fragment>
+
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<header class="content-header">

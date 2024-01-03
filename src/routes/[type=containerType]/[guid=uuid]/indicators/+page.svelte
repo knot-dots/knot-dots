@@ -3,10 +3,17 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import Card from '$lib/components/Card.svelte';
+	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
+	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { payloadTypes } from '$lib/models';
+	import {
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
+		payloadTypes
+	} from '$lib/models';
 	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
@@ -14,7 +21,17 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
+	<Sidebar slot="sidebar">
+		<svelte:fragment slot="tabs">
+			{#if isOrganizationContainer(data.container)}
+				<OrganizationTabs container={data.container} />
+			{:else if isOrganizationalUnitContainer(data.container)}
+				<OrganizationalUnitTabs container={data.container} />
+			{/if}
+		</svelte:fragment>
+		<IndicatorsIncludedFilter slot="filters" />
+	</Sidebar>
+
 	<svelte:fragment slot="main">
 		<div class="indicators">
 			{#if $ability.can('create', payloadTypes.enum.indicator)}

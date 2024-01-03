@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationDetailView from '$lib/components/OrganizationDetailView.svelte';
+	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { ability, overlay } from '$lib/stores';
@@ -12,7 +13,10 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
+	<Sidebar slot="sidebar">
+		<OrganizationalUnitTabs container={data.container} slot="tabs" />
+	</Sidebar>
+
 	<svelte:fragment slot="main">
 		<div class="organization">
 			<div class="detail-page-content organization-inner">

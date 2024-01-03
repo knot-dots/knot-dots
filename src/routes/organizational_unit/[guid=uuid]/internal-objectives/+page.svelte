@@ -6,11 +6,15 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import OrganizationalUnitIncludedFilter from '$lib/components/OrganizationalUnitIncludedFilter.svelte';
+	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Sort from '$lib/components/Sort.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { overlay } from '$lib/stores';
+	import { overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -42,7 +46,13 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
+	<Sidebar slot="sidebar">
+		<OrganizationalUnitTabs container={data.container} slot="tabs" />
+		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<OrganizationalUnitIncludedFilter slot="filters" />
+		<Sort slot="sort" />
+	</Sidebar>
+
 	<svelte:fragment slot="main">
 		<Board>
 			{#each columns as column (column.title)}

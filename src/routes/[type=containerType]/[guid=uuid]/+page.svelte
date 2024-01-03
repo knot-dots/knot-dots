@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
+	import { ChevronLeft, Icon, InformationCircle, Pencil, Share } from 'svelte-hero-icons';
+	import { _ } from 'svelte-i18n';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
@@ -8,10 +9,14 @@
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
+	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import SidebarTab from '$lib/components/SidebarTab.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
+	import StrategyTabs from '$lib/components/StrategyTabs.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import {
 		isContainer,
@@ -35,7 +40,34 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
+	<svelte:fragment slot="sidebar">
+		{#if isMeasureContainer(data.container)}
+			<Sidebar>
+				<MeasureTabs container={data.container} slot="tabs" />
+			</Sidebar>
+		{:else if isStrategyContainer(data.container)}
+			<Sidebar>
+				<StrategyTabs container={data.container} slot="tabs" />
+				<PayloadTypeFilter slot="filters" />
+			</Sidebar>
+		{:else}
+			<Sidebar>
+				<svelte:fragment slot="tabs">
+					<SidebarTab
+						href="/{data.container.payload.type}/{data.container.guid}"
+						iconSource={InformationCircle}
+						text={$_('information')}
+					/>
+					<SidebarTab
+						href="/{data.container.payload.type}/{data.container.guid}/relations"
+						iconSource={Share}
+						text={$_('relations')}
+					/>
+				</svelte:fragment>
+			</Sidebar>
+		{/if}
+	</svelte:fragment>
+
 	<svelte:fragment slot="main">
 		<div class="overlay-support">
 			<div class="detail-page-content overlay-support-inner">

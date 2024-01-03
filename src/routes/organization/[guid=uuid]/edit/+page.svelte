@@ -5,6 +5,7 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import { mayDelete } from '$lib/models';
@@ -27,7 +28,10 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
+	<Sidebar slot="sidebar">
+		<OrganizationTabs container={data.container} />
+	</Sidebar>
+
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<header class="content-header">

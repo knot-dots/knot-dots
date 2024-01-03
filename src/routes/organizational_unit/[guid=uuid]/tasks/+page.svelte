@@ -2,13 +2,18 @@
 	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import OrganizationalUnitIncludedFilter from '$lib/components/OrganizationalUnitIncludedFilter.svelte';
+	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Sort from '$lib/components/Sort.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
+	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
-	import { overlay } from '$lib/stores';
+	import { overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -48,7 +53,16 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
+	<Sidebar slot="sidebar">
+		<OrganizationalUnitTabs container={data.container} slot="tabs" />
+		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<svelte:fragment slot="filters">
+			<OrganizationalUnitIncludedFilter />
+			<TaskCategoryFilter />
+		</svelte:fragment>
+		<Sort slot="sort" />
+	</Sidebar>
+
 	<svelte:fragment slot="main">
 		<Board>
 			{#each columns as column (column.title)}

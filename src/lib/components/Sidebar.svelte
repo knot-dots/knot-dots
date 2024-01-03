@@ -1,122 +1,20 @@
 <script lang="ts">
 	import { signIn, signOut } from '@auth/sveltekit/client';
-	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import {
-		BuildingLibrary,
-		BuildingStorefront,
-		ChartBarSquare,
+		ArrowLeftOnRectangle,
+		ArrowRightOnRectangle,
+		BarsArrowDown,
 		ChevronDown,
 		ChevronLeft,
 		ChevronRight,
 		ChevronUp,
-		Cog6Tooth,
-		DocumentText,
-		Eye,
-		Icon,
-		InformationCircle,
-		MagnifyingGlass,
-		PencilSquare,
-		Share,
-		UserGroup
+		Funnel,
+		Icon
 	} from 'svelte-hero-icons';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import Filters from '$lib/components/Filters.svelte';
-	import FilterIcon from '$lib/icons/FilterIcon.svelte';
-	import LoginIcon from '$lib/icons/LoginIcon.svelte';
-	import LogoutIcon from '$lib/icons/LogoutIcon.svelte';
-	import SortDescendingIcon from '$lib/icons/SortDescendingIcon.svelte';
-	import {
-		isContainer,
-		isMeasureContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		isPageContainer,
-		isStrategyContainer,
-		organizationCategories,
-		payloadTypes,
-		strategyTypes,
-		sustainableDevelopmentGoals,
-		taskCategories,
-		topics
-	} from '$lib/models';
-	import {
-		ability,
-		filtersToggle,
-		navigationToggle,
-		sidebarToggle,
-		sortToggle,
-		user
-	} from '$lib/stores.js';
 	import { accountURL } from '$lib/authentication';
-
-	let timer: ReturnType<typeof setTimeout>;
-	let terms = $page.url.searchParams.get('terms') ?? '';
-	let selectedCategory = $page.url.searchParams.getAll('category');
-	let selectedIncluded = $page.url.searchParams.getAll('included');
-	let selectedOrganizationCategory = $page.url.searchParams.getAll('organizationCategory');
-	let selectedPayloadType = $page.url.searchParams.getAll('payloadType');
-	let selectedRelations = $page.url.searchParams.getAll('relations');
-	let selectedStrategyType = $page.url.searchParams.getAll('strategyType');
-	let selectedTaskCategory = $page.url.searchParams.getAll('taskCategory');
-	let selectedTopic = $page.url.searchParams.getAll('topic');
-	let selectedSort = $page.url.searchParams.get('sort') ?? 'alpha';
-
-	$: if (selectedRelations.length == 0) {
-		selectedRelations = ['hierarchical', 'other'];
-	}
-
-	$sortToggle = selectedSort != 'alpha';
-
-	function applySortAndFilters() {
-		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('category');
-		query.delete('organizationCategory');
-		query.delete('relations');
-		query.delete('strategyType');
-		query.delete('taskCategory');
-		query.delete('topic');
-		query.delete('sort');
-		selectedCategory.forEach((c) => query.append('category', c));
-		selectedOrganizationCategory.forEach((c) => query.append('organizationCategory', c));
-		selectedRelations.forEach((c) => query.append('relations', c));
-		selectedStrategyType.forEach((c) => query.append('strategyType', c));
-		selectedTaskCategory.forEach((c) => query.append('taskCategory', c));
-		selectedTopic.forEach((c) => query.append('topic', c));
-		if (selectedSort != 'alpha') {
-			query.append('sort', selectedSort);
-		}
-		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true });
-	}
-
-	function applyPayloadTypeFilter() {
-		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('payloadType');
-		selectedPayloadType.forEach((t) => query.append('payloadType', t));
-		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true, replaceState: true });
-	}
-
-	function applyInternalObjectivesFilter() {
-		const query = new URLSearchParams($page.url.searchParams);
-		query.delete('included');
-		selectedIncluded.forEach((t) => query.append('included', t));
-		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true });
-	}
-
-	function debouncedSearch() {
-		clearTimeout(timer);
-		timer = setTimeout(search, 500);
-	}
-
-	function search() {
-		const searchParams = new URLSearchParams($page.url.searchParams);
-		searchParams.delete('terms');
-		if (terms) {
-			searchParams.set('terms', terms);
-		}
-		goto(`?${searchParams.toString()}${$page.url.hash}`, { keepFocus: true, replaceState: true });
-	}
+	import { filtersToggle, navigationToggle, sidebarToggle, sortToggle, user } from '$lib/stores';
 
 	function toggleSidebar() {
 		$sidebarToggle = !$sidebarToggle;
@@ -142,554 +40,47 @@
 </script>
 
 <aside id="aside-0" class:is-expanded={$sidebarToggle} class:is-visible={$navigationToggle}>
-	{#if 'container' in $page.data && isPageContainer($page.data.container)}
+	{#if $$slots.tabs}
 		<ul class="group group-tabs">
-			<li>
-				<a class="button" class:is-active={$page.url.pathname === '/about'} href="/about">
-					<Icon src={InformationCircle} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('about')}</span>
-				</a>
-			</li>
-			<li>
-				<a class="button" class:is-active={$page.url.pathname === '/imprint'} href="/imprint">
-					<Icon src={DocumentText} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('imprint')}</span>
-				</a>
-			</li>
-			<li>
-				<a class="button" class:is-active={$page.url.pathname === '/privacy'} href="/privacy">
-					<Icon src={Eye} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('privacy_policy')}</span>
-				</a>
-			</li>
-		</ul>
-	{:else if 'container' in $page.data && isContainer($page.data.container)}
-		<ul class="group group-tabs">
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
-				>
-					<Icon src={InformationCircle} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
-				</a>
-			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/relations`}
-				>
-					<Icon src={Share} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('relations')}</span>
-				</a>
-			</li>
-			{#if isMeasureContainer($page.data.container)}
-				{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
-					<li>
-						<a
-							class="button"
-							class:is-active={$page.url.pathname ===
-								`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-							href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-						>
-							<Icon src={BuildingStorefront} size="20" mini />
-							<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
-						</a>
-					</li>
-				{/if}
-				{#if $page.data.container.payload.boards.includes('board.tasks')}
-					<li>
-						<a
-							class="button"
-							class:is-active={$page.url.pathname ===
-								`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-							href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-						>
-							<Icon src={PencilSquare} size="20" mini />
-							<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
-						</a>
-					</li>
-				{/if}
-			{/if}
-			{#if isMeasureContainer($page.data.container) || isStrategyContainer($page.data.container)}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-					>
-						<Icon src={UserGroup} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
-					</a>
-				</li>
-			{/if}
-		</ul>
-	{:else if 'container' in $page.data && isOrganizationContainer($page.data.container)}
-		<ul class="group group-tabs">
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
-				>
-					<Icon src={InformationCircle} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
-				</a>
-			</li>
-			{#if $page.data.container.payload.boards.includes('board.indicators')}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
-					>
-						<Icon src={ChartBarSquare} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('board.indicators')}</span>
-					</a>
-				</li>
-			{/if}
-			{#if $page.data.container.payload.boards.includes('board.organizational_units')}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
-					>
-						<Icon src={BuildingLibrary} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
-					</a>
-				</li>
-			{/if}
-			{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-					>
-						<Icon src={BuildingStorefront} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
-					</a>
-				</li>
-			{/if}
-			{#if $page.data.container.payload.boards.includes('board.tasks')}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-					>
-						<Icon src={PencilSquare} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
-					</a>
-				</li>
-			{/if}
-			{#if $ability.can('update', $page.data.container)}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-					>
-						<Icon src={UserGroup} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
-					</a>
-				</li>
-			{/if}
-		</ul>
-	{:else if 'container' in $page.data && isOrganizationalUnitContainer($page.data.container)}
-		<ul class="group group-tabs">
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}`}
-				>
-					<Icon src={InformationCircle} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
-				</a>
-			</li>
-			<li>
-				<a
-					class="button"
-					class:is-active={$page.url.pathname ===
-						`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
-					href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/organizational_units`}
-				>
-					<Icon src={BuildingLibrary} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('organizational_units')}</span>
-				</a>
-			</li>
-			{#if $page.data.container.payload.boards.includes('board.indicators')}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/indicators`}
-					>
-						<Icon src={ChartBarSquare} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('board.indicators')}</span>
-					</a>
-				</li>
-			{/if}
-			{#if $page.data.container.payload.boards.includes('board.internal_objectives')}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/internal-objectives`}
-					>
-						<Icon src={BuildingStorefront} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.label')}</span>
-					</a>
-				</li>
-			{/if}
-			{#if $page.data.container.payload.boards.includes('board.tasks')}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/tasks`}
-					>
-						<Icon src={PencilSquare} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('internal_objective.tasks')}</span>
-					</a>
-				</li>
-			{/if}
-			{#if $ability.can('update', $page.data.container)}
-				<li>
-					<a
-						class="button"
-						class:is-active={$page.url.pathname ===
-							`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-						href={`/${$page.data.container.payload.type}/${$page.data.container.guid}/members`}
-					>
-						<Icon src={UserGroup} size="20" mini />
-						<span class:is-hidden={!$sidebarToggle}>{$_('members')}</span>
-					</a>
-				</li>
-			{/if}
-		</ul>
-	{:else if $page.url.pathname.startsWith('/profile')}
-		<ul class="group group-tabs">
-			<li>
-				<a class="button" class:is-active={$page.url.pathname === '/profile'} href="/profile">
-					<Icon src={InformationCircle} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('information')}</span>
-				</a>
-			</li>
-			<li>
-				<a class="button" href={accountURL($page.url.href)}>
-					<Icon src={Cog6Tooth} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('profile.settings')}</span>
-				</a>
-			</li>
-			<li>
-				<button type="button" on:click={() => signOut()}>
-					<LogoutIcon class={'icon-20'} />
-					<span class:is-hidden={!$sidebarToggle}>{$_('logout')}</span>
-				</button>
-			</li>
+			<slot name="tabs" />
 		</ul>
 	{/if}
 
-	{#if $page.url.pathname === '/profile'}
-		<ul class="group group-actions"></ul>
-	{:else if $page.url.pathname.includes('indicators')}
-		<ul class="group group-actions">
+	<ul class="group group-actions">
+		{#if $$slots.search}
+			<slot name="search" {toggleSidebar} />
+		{/if}
+
+		{#if $$slots.filters}
 			<li>
 				<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-					<FilterIcon class="icon-20" />
+					<Icon src={Funnel} size="20" mini />
 					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
 					<span class:is-hidden={!$sidebarToggle}>
 						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
 					</span>
 				</button>
 				<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-					<li>
-						<Filters
-							options={[[$_('filter.all_organizational_units'), 'all-organizational-units']]}
-							bind:selectedOptions={selectedIncluded}
-							on:change={applyInternalObjectivesFilter}
-						/>
-					</li>
+					<slot name="filters" />
 				</ul>
 			</li>
-		</ul>
-	{:else if 'containers' in $page.data}
-		<ul class="group group-actions">
+		{/if}
+
+		{#if $$slots.sort}
 			<li>
-				<form class="search" data-sveltekit-keepfocus>
-					<button
-						type={$sidebarToggle ? 'submit' : 'button'}
-						on:click={!$sidebarToggle ? toggleSidebar : undefined}
-					>
-						<Icon src={MagnifyingGlass} size="20" mini />
-					</button>
-					<input
-						type="search"
-						name="terms"
-						bind:value={terms}
-						on:input={debouncedSearch}
-						style:display={$sidebarToggle ? 'block' : 'none'}
-					/>
-				</form>
-			</li>
-			{#if !$page.url.pathname.includes('internal-objectives') && !$page.url.pathname.includes('tasks') && !$page.url.pathname.includes('organization')}
-				<li>
-					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-						<FilterIcon class="icon-20" />
-						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-						<span class:is-hidden={!$sidebarToggle}>
-							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-						</span>
-					</button>
-					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-						{#if $page.url.searchParams.has('related-to')}
-							<li transition:slide={{ axis: 'y' }}>
-								<Filters
-									label={$_('relation_filter.label')}
-									options={[
-										[$_('relation_filter.hierarchical'), 'hierarchical'],
-										[$_('relation_filter.other'), 'other']
-									]}
-									bind:selectedOptions={selectedRelations}
-									on:change={applySortAndFilters}
-								/>
-							</li>
-						{/if}
-						<li>
-							<Filters
-								label={$_('strategy_type.label')}
-								options={strategyTypes.options.map((o) => [$_(o), o])}
-								bind:selectedOptions={selectedStrategyType}
-								on:change={applySortAndFilters}
-							/>
-						</li>
-						<li>
-							<Filters
-								label={$_('topic.label')}
-								options={topics.options.map((o) => [$_(o), o])}
-								bind:selectedOptions={selectedTopic}
-								on:change={applySortAndFilters}
-							/>
-						</li>
-						<li>
-							<Filters
-								label={$_('category')}
-								options={sustainableDevelopmentGoals.options.map((o) => [$_(o), o])}
-								bind:selectedOptions={selectedCategory}
-								on:change={applySortAndFilters}
-							/>
-						</li>
-					</ul>
-				</li>
-			{:else if $page.url.pathname.startsWith('/organizational_unit') && $page.url.pathname.includes('internal-objectives')}
-				<li>
-					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-						<FilterIcon class="icon-20" />
-						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-						<span class:is-hidden={!$sidebarToggle}>
-							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-						</span>
-					</button>
-					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-						{#if $page.url.searchParams.has('related-to')}
-							<li transition:slide={{ axis: 'y' }}>
-								<Filters
-									label={$_('relation_filter.label')}
-									options={[
-										[$_('relation_filter.hierarchical'), 'hierarchical'],
-										[$_('relation_filter.other'), 'other']
-									]}
-									bind:selectedOptions={selectedRelations}
-									on:change={applySortAndFilters}
-								/>
-							</li>
-						{/if}
-						<li>
-							<Filters
-								options={[
-									[$_('internal_objective_filter.include_measures'), 'is-part-of-measure'],
-									[
-										$_('internal_objective_filter.include_subordinate_organizational_units'),
-										'subordinate-organizational-units'
-									],
-									[
-										$_('internal_objective_filter.include_superordinate_organizational_units'),
-										'superordinate-organizational-units'
-									]
-								]}
-								bind:selectedOptions={selectedIncluded}
-								on:change={applyInternalObjectivesFilter}
-							/>
-						</li>
-					</ul>
-				</li>
-			{:else if $page.url.pathname.startsWith('/organization') && ($page.url.pathname.includes('internal-objectives') || $page.url.pathname.includes('tasks'))}
-				<li>
-					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-						<FilterIcon class="icon-20" />
-						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-						<span class:is-hidden={!$sidebarToggle}>
-							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-						</span>
-					</button>
-					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-						{#if $page.url.pathname.includes('internal-objectives') && $page.url.searchParams.has('related-to')}
-							<li transition:slide={{ axis: 'y' }}>
-								<Filters
-									label={$_('relation_filter.label')}
-									options={[
-										[$_('relation_filter.hierarchical'), 'hierarchical'],
-										[$_('relation_filter.other'), 'other']
-									]}
-									bind:selectedOptions={selectedRelations}
-									on:change={applySortAndFilters}
-								/>
-							</li>
-						{/if}
-						<li>
-							<Filters
-								options={[
-									[$_('internal_objective_filter.include_measures'), 'is-part-of-measure'],
-									[
-										$_('internal_objective_filter.include_subordinate_organizational_units'),
-										'subordinate-organizational-units'
-									]
-								]}
-								bind:selectedOptions={selectedIncluded}
-								on:change={applyInternalObjectivesFilter}
-							/>
-						</li>
-						{#if $page.url.pathname.includes('tasks')}
-							<li>
-								<Filters
-									label={$_('task_category.label')}
-									options={taskCategories.options.map((o) => [$_(o), o])}
-									bind:selectedOptions={selectedTaskCategory}
-									on:change={applySortAndFilters}
-								/>
-							</li>
-						{/if}
-					</ul>
-				</li>
-			{:else if $page.url.pathname.startsWith('/measure') && $page.url.pathname.includes('tasks')}
-				<li>
-					<Filters
-						label={$_('task_category.label')}
-						options={taskCategories.options.map((o) => [$_(o), o])}
-						bind:selectedOptions={selectedTaskCategory}
-						on:change={applySortAndFilters}
-					/>
-				</li>
-			{:else if $page.url.pathname === '/organizations'}
-				<li>
-					<button on:click={toggleFilters} aria-controls="filters" aria-expanded={$filtersToggle}>
-						<FilterIcon class="icon-20" />
-						<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
-						<span class:is-hidden={!$sidebarToggle}>
-							<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
-						</span>
-					</button>
-					<ul id="filters" class="collapsible masked-overflow" class:is-hidden={!$filtersToggle}>
-						<li>
-							<Filters
-								options={organizationCategories.options.map((o) => [$_(o), o])}
-								bind:selectedOptions={selectedOrganizationCategory}
-								on:change={applySortAndFilters}
-							/>
-						</li>
-					</ul>
-				</li>
-			{/if}
-			{#if !$page.url.pathname.includes('organizational_units') && !$page.url.pathname.includes('tasks')}
-				<li>
-					<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
-						<SortDescendingIcon class="icon-20" />
-						<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
-						<span class:is-hidden={!$sidebarToggle}>
-							<Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" />
-						</span>
-					</button>
-					<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
-						<li>
-							<label>
-								<input
-									type="radio"
-									value={'modified'}
-									bind:group={selectedSort}
-									on:change={applySortAndFilters}
-								/>
-								{$_('sort_modified')}
-							</label>
-						</li>
-						<li>
-							<label>
-								<input
-									type="radio"
-									value={'alpha'}
-									bind:group={selectedSort}
-									on:change={applySortAndFilters}
-								/>
-								{$_('sort_alphabetically')}
-							</label>
-						</li>
-					</ul>
-				</li>
-			{/if}
-		</ul>
-	{:else if 'container' in $page.data && isStrategyContainer($page.data.container)}
-		<ul class="group group-actions">
-			<li>
-				<button
-					on:click={toggleFilters}
-					aria-controls="strategy-filters"
-					aria-expanded={$filtersToggle}
-				>
-					<FilterIcon class="icon-20" />
-					<span class:is-hidden={!$sidebarToggle}>{$_('filter')}</span>
+				<button on:click={toggleSort} aria-controls="sort" aria-expanded={$sortToggle}>
+					<Icon src={BarsArrowDown} size="20" mini />
+					<span class:is-hidden={!$sidebarToggle}>{$_('sort')}</span>
 					<span class:is-hidden={!$sidebarToggle}>
-						<Icon src={$filtersToggle ? ChevronUp : ChevronDown} size="20" />
+						<Icon src={$sortToggle ? ChevronUp : ChevronDown} size="20" />
 					</span>
 				</button>
-				<ul
-					id="strategy-filters"
-					class="collapsible masked-overflow"
-					class:is-hidden={!$filtersToggle}
-				>
-					<li>
-						<Filters
-							options={[
-								payloadTypes.enum.model,
-								payloadTypes.enum.strategic_goal,
-								payloadTypes.enum.operational_goal,
-								payloadTypes.enum.measure,
-								payloadTypes.enum.text
-							].map((o) => [$_(o), o])}
-							bind:selectedOptions={selectedPayloadType}
-							on:change={applyPayloadTypeFilter}
-						/>
-					</li>
+				<ul id="sort" class="collapsible" class:is-hidden={!$sortToggle}>
+					<slot name="sort" />
 				</ul>
 			</li>
-		</ul>
-	{/if}
+		{/if}
+	</ul>
 
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
@@ -701,14 +92,18 @@
 			</li>
 			<li>
 				<button on:click={() => signOut()}>
-					<LogoutIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
+					{#if !$sidebarToggle}
+						<Icon src={ArrowRightOnRectangle} size="20" mini />
+					{/if}
 					<span class:is-hidden={!$sidebarToggle}>{$_('logout')}</span>
 				</button>
 			</li>
 		{:else}
 			<li>
 				<button class="quiet" on:click={() => signIn('keycloak')}>
-					<LoginIcon class={$sidebarToggle ? 'is-hidden' : 'icon-20'} />
+					{#if !$sidebarToggle}
+						<Icon src={ArrowLeftOnRectangle} size="20" mini />
+					{/if}
 					<span class:is-hidden={!$sidebarToggle}>{$_('login')}</span>
 				</button>
 			</li>
@@ -777,8 +172,8 @@
 		gap: 0.5rem;
 	}
 
-	.group > li a,
-	.group > li button {
+	:global(.group > li a),
+	:global(.group > li button) {
 		--padding-x: 14px;
 		--padding-y: 14px;
 		align-items: center;
@@ -847,9 +242,9 @@
 		justify-content: center;
 	}
 
-	aside.is-expanded .group-actions button,
-	aside.is-expanded .group-tabs .button,
-	aside.is-expanded .group-tabs button,
+	:global(aside.is-expanded .group-actions button),
+	:global(aside.is-expanded .group-tabs .button),
+	:global(aside.is-expanded .group-tabs button),
 	aside.is-expanded .group-user-menu a,
 	aside.is-expanded .group-user-menu button {
 		--padding-x: 14px;
@@ -868,36 +263,11 @@
 		max-height: calc(100% - 4rem);
 	}
 
-	.collapsible > li {
+	:global(.collapsible > li) {
 		margin-bottom: 12px;
 	}
 
-	.collapsible > li:last-child {
+	:global(.collapsible > li:last-child) {
 		margin-bottom: 0;
-	}
-
-	.search {
-		display: flex;
-	}
-
-	.search > button {
-		--button-background: var(--color-gray-050);
-		color: var(--color-gray-500);
-		flex: 0 0 51px;
-	}
-
-	.search > input {
-		background-color: var(--color-gray-050);
-		border-bottom-left-radius: 0;
-		border-color: var(--button-border-color);
-		border-left: none;
-		border-top-left-radius: 0;
-		margin: 0 0 0 -8px;
-		padding: 13px 14px 13px 0;
-		width: 100%;
-	}
-
-	.search > button:hover {
-		--button-background: var(--color-gray-400);
 	}
 </style>
