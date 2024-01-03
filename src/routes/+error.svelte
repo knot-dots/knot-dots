@@ -3,11 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import Layout from '$lib/components/Layout.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
 	<svelte:fragment slot="main">
 		<div>
 			<h2>{$page.status}</h2>

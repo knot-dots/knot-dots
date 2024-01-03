@@ -6,7 +6,6 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		containerOfType,
@@ -93,7 +92,6 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<header class="content-header">
