@@ -1,4 +1,7 @@
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
+import { isMeasureContainer } from '$lib/models';
 import {
 	getAllContainersRelatedToMeasure,
 	getAllRelatedInternalObjectives,
@@ -9,6 +12,10 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, params, url }) => {
 	let containers;
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+
+	if (!isMeasureContainer(container)) {
+		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+	}
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
