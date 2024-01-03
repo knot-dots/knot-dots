@@ -8,11 +8,11 @@
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
-	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
+	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
-	import TaskTabs from '$lib/components/TaskTabs.svelte';
+	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import {
 		isContainer,
 		isIndicatorContainer,
@@ -80,9 +80,9 @@
 						{#if isIndicatorContainer(container)}
 							<IndicatorTabs />
 						{:else if isMeasureContainer(container)}
-							<MeasureTabs {container} {revisions} />
+							<MeasureStatusTabs {container} {revisions} />
 						{:else if isTaskContainer(container)}
-							<TaskTabs {container} {revisions} />
+							<TaskStatusTabs {container} {revisions} />
 						{/if}
 					</header>
 					<div class="content-details masked-overflow">
