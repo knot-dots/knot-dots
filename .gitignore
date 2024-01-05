@@ -3,3 +3,4 @@
 /build
 docker-compose.override.yaml
 node_modules
+tests/.auth/

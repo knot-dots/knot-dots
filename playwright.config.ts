@@ -7,12 +7,18 @@ dotenv.config();
 const config: PlaywrightTestConfig = {
 	projects: [
 		{
+			name: 'setup',
+			testMatch: /global.setup\.ts/
+		},
+		{
 			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] }
+			use: { ...devices['Desktop Chrome'], storageState: 'tests/.auth/user.json' },
+			dependencies: ['setup']
 		},
 		{
 			name: 'iphone8',
-			use: { ...devices['iPhone 8'] }
+			use: { ...devices['iPhone 8'], storageState: 'tests/.auth/user.json' },
+			dependencies: ['setup']
 		}
 	],
 	use: {
