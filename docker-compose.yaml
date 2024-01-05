@@ -63,6 +63,7 @@ services:
       - AUTH_SECRET
       - KC_CLIENT_SECRET
       - NODE_OPTIONS
+      - ORIGIN=http://localhost:3000
       - OTEL_NODE_ENABLED_INSTRUMENTATIONS
       - OTEL_NODE_RESOURCE_DETECTORS
       - OTEL_SERVICE_NAME
