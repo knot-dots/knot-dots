@@ -41,6 +41,7 @@ services:
     command:
       - start-dev
       - --import-realm
+      - --log-console-output=json
     healthcheck:
       test: [ "CMD-SHELL", "printf '' 2>>/dev/null >>/dev/tcp/localhost/8080" ]
       interval: 3s
