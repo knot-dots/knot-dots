@@ -182,11 +182,10 @@ if (browser) {
 				});
 			}
 		} else if (hashParams.has('relate')) {
+			const revisions = await fetchContainerRevisions(hashParams.get('relate') as string);
 			overlay.set({
 				isPartOfOptions: [],
-				object: values.data.containers.find(
-					({ guid }: AnyContainer) => guid == hashParams.get('relate')
-				),
+				object: revisions[0] as Container,
 				relatedContainers: [],
 				revisions: []
 			});

@@ -44,7 +44,7 @@
 			query.delete('related-to');
 			query.append('related-to', container.guid);
 		}
-		await goto(`?${query.toString()}`);
+		await goto(`?${query.toString()}${$page.url.hash}`);
 	}
 
 	let containerPreviewURL: string;
@@ -110,8 +110,8 @@
 	title={'title' in container.payload
 		? container.payload.title
 		: 'name' in container.payload
-		? container.payload.name
-		: undefined}
+		  ? container.payload.name
+		  : undefined}
 	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={paramsFromURL($page.url).get('view') === container.guid ||
