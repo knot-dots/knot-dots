@@ -4,7 +4,7 @@
 </script>
 
 <Filter
-	key="related-to"
+	key="relations"
 	label={$_('relation_filter.label')}
 	options={[
 		[$_('relation_filter.hierarchical'), 'hierarchical'],
