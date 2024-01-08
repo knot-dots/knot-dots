@@ -12,17 +12,21 @@ export const load = (async ({ params, locals }) => {
 		throw error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	const [strategies, measures] = await Promise.all([
+	const [strategies, measures, indicators] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers([container.guid], { type: [payloadTypes.enum.strategy] }, '')
 		),
 		locals.pool.connect(
 			getManyContainers([container.guid], { type: [payloadTypes.enum.measure] }, '')
+		),
+		locals.pool.connect(
+			getManyContainers([container.guid], { type: [payloadTypes.enum.indicator] }, '')
 		)
 	]);
 
 	return {
 		container,
+		indicators: filterVisible(indicators, locals.user),
 		measures: filterVisible(measures, locals.user),
 		strategies: filterVisible(strategies, locals.user)
 	};

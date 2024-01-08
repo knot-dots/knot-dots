@@ -76,6 +76,7 @@
 	"indicator.tip.in_planning": "Geplant für {year}: {value, number} {unit}",
 	"indicator.tip.objectives": "Zielwert für {year}: {value, number} {unit}",
 	"indicator.wanted_values": "Zielwerte",
+	"indicators": "Indikatoren",
 	"information": "Information",
 	"internal_objective": {
 		"internal_strategy": "Interne Strategie",

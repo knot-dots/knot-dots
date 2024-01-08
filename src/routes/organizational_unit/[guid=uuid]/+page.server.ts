@@ -22,7 +22,7 @@ export const load = (async ({ params, locals }) => {
 	const organizationalUnits = relatedOrganizationalUnits
 		.filter(({ payload }) => payload.level >= container.payload.level)
 		.map(({ guid }) => guid);
-	const [strategies, measures] = await Promise.all([
+	const [strategies, measures, indicators] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
 				[container.organization],
@@ -36,11 +36,19 @@ export const load = (async ({ params, locals }) => {
 				{ organizationalUnits, type: [payloadTypes.enum.measure] },
 				''
 			)
+		),
+		locals.pool.connect(
+			getManyContainers(
+				[container.organization],
+				{ organizationalUnits, type: [payloadTypes.enum.indicator] },
+				''
+			)
 		)
 	]);
 
 	return {
 		container,
+		indicators: filterVisible(indicators, locals.user),
 		measures: filterVisible(measures, locals.user),
 		strategies: filterVisible(strategies, locals.user)
 	};
