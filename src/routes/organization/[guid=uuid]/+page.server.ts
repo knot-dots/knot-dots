@@ -5,7 +5,7 @@ import { isOrganizationContainer, payloadTypes } from '$lib/models';
 import { getContainerByGuid, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ params, locals, url }) => {
+export const load = (async ({ params, locals }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isOrganizationContainer(container)) {
