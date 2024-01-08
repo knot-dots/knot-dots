@@ -1,46 +1,48 @@
 <script lang="ts">
 	import {
 		BuildingStorefront,
+		ChartBarSquare,
 		InformationCircle,
 		PencilSquare,
-		Share,
 		UserGroup
 	} from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
-	import type { MeasureContainer } from '$lib/models';
+	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
-	export let container: MeasureContainer;
+	export let container: OrganizationalUnitContainer;
 </script>
 
 <SidebarTab
-	href="/{container.payload.type}/{container.guid}"
+	href="/organizational_unit/{container.guid}"
 	iconSource={InformationCircle}
 	text={$_('information')}
 />
-<SidebarTab
-	href="/{container.payload.type}/{container.guid}/relations"
-	iconSource={Share}
-	text={$_('relations')}
-/>
+{#if container.payload.boards.includes('board.indicators')}
+	<SidebarTab
+		href="/organizational_unit/{container.guid}/indicators"
+		iconSource={ChartBarSquare}
+		text={$_('board.indicators')}
+	/>
+{/if}
 {#if container.payload.boards.includes('board.internal_objectives')}
 	<SidebarTab
-		href="/{container.payload.type}/{container.guid}/internal-objectives"
+		href="/organizational_unit/{container.guid}/internal-objectives"
 		iconSource={BuildingStorefront}
 		text={$_('board.internal_objectives')}
 	/>
 {/if}
 {#if container.payload.boards.includes('board.tasks')}
 	<SidebarTab
-		href="/{container.payload.type}/{container.guid}/tasks"
+		href="/organizational_unit/{container.guid}/tasks"
 		iconSource={PencilSquare}
 		text={$_('board.tasks')}
 	/>
 {/if}
 {#if $ability.can('update', container)}
 	<SidebarTab
-		href="/{container.payload.type}/{container.guid}/members"
+		href="/organizational_unit/{container.guid}/members"
 		iconSource={UserGroup}
 		text={$_('members')}
 	/>

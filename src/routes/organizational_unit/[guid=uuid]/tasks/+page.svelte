@@ -1,12 +1,19 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import OrganizationalUnitIncludedFilter from '$lib/components/OrganizationalUnitIncludedFilter.svelte';
+	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import Search from '$lib/components/Search.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Sort from '$lib/components/Sort.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
+	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
-	import { overlay } from '$lib/stores';
+	import { overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -45,19 +52,33 @@
 	];
 </script>
 
-<Board>
-	{#each columns as column (column.title)}
-		<TaskBoardColumn
-			--background={taskStatusBackgrounds.get(column.title)}
-			--hover-border-color={taskStatusHoverColors.get(column.title)}
-			addItemUrl="#create={column.payloadType}&taskStatus={column.title}"
-			icon={taskStatusIcons.get(column.title)}
-			items={column.items}
-			status={column.title}
-		/>
-	{/each}
-</Board>
+<Layout>
+	<Sidebar slot="sidebar">
+		<OrganizationalUnitTabs container={data.container} slot="tabs" />
+		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<svelte:fragment slot="filters">
+			<OrganizationalUnitIncludedFilter />
+			<TaskCategoryFilter />
+		</svelte:fragment>
+		<Sort slot="sort" />
+	</Sidebar>
 
-{#if browser && $overlay.revisions.length > 0}
-	<Overlay {...$overlay} />
-{/if}
+	<svelte:fragment slot="main">
+		<Board>
+			{#each columns as column (column.title)}
+				<TaskBoardColumn
+					--background={taskStatusBackgrounds.get(column.title)}
+					--hover-border-color={taskStatusHoverColors.get(column.title)}
+					addItemUrl="#create={column.payloadType}&taskStatus={column.title}"
+					icon={taskStatusIcons.get(column.title)}
+					items={column.items}
+					status={column.title}
+				/>
+			{/each}
+		</Board>
+
+		{#if browser && $overlay.revisions.length > 0}
+			<Overlay {...$overlay} />
+		{/if}
+	</svelte:fragment>
+</Layout>

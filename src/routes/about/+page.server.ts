@@ -1,10 +1,10 @@
 import { error, redirect } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import defineAbilityFor from '$lib/authorization';
 import { payloadTypes } from '$lib/models';
 import { getContainerBySlug } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import defineAbilityFor from '$lib/authorization';
 
 export const load = (async ({ locals }) => {
 	try {

@@ -1,10 +1,16 @@
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
+import { isOrganizationContainer, predicates } from '$lib/models';
 import { getContainerByGuid, getManyTaskContainers } from '$lib/server/db';
-import { predicates } from '$lib/models';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+
+	if (!isOrganizationContainer(container)) {
+		throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	}
 
 	let containers = await locals.pool.connect(
 		getManyTaskContainers({

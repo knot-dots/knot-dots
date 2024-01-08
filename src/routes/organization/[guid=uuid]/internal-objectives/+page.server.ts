@@ -1,5 +1,7 @@
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { payloadTypes, predicates } from '$lib/models';
+import { isOrganizationContainer, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedInternalObjectives,
 	getContainerByGuid,
@@ -10,6 +12,10 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, params, url }) => {
 	let containers;
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+
+	if (!isOrganizationContainer(container)) {
+		throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	}
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(

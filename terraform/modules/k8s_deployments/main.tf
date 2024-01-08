@@ -550,7 +550,7 @@ resource "kubernetes_deployment_v1" "keycloak" {
       spec {
         container {
           image = var.keycloak_image
-          args  = ["start", "--optimized"]
+          args  = ["start", "--optimized", "--log-console-output=json"]
           name  = "app"
 
           env {

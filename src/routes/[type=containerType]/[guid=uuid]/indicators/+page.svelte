@@ -3,35 +3,59 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import Card from '$lib/components/Card.svelte';
+	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
+	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { payloadTypes } from '$lib/models';
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import {
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
+		payloadTypes
+	} from '$lib/models';
 	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 </script>
 
-<div class="indicators">
-	{#if $ability.can('create', payloadTypes.enum.indicator)}
-		<p>
-			<a class="button primary" href="#create={payloadTypes.enum.indicator}">
-				<Icon src={Plus} size="20" mini />
-				{$_('indicator')}
-			</a>
-		</p>
-	{/if}
-	<ul>
-		{#each data.containers as container}
-			<li>
-				<Card --height="100%" {container} />
-			</li>
-		{/each}
-	</ul>
-</div>
+<Layout>
+	<Sidebar slot="sidebar">
+		<svelte:fragment slot="tabs">
+			{#if isOrganizationContainer(data.container)}
+				<OrganizationTabs container={data.container} />
+			{:else if isOrganizationalUnitContainer(data.container)}
+				<OrganizationalUnitTabs container={data.container} />
+			{/if}
+		</svelte:fragment>
+		<IndicatorsIncludedFilter slot="filters" />
+	</Sidebar>
 
-{#if browser && $overlay.revisions.length > 0}
-	<Overlay {...$overlay} />
-{/if}
+	<svelte:fragment slot="main">
+		<div class="indicators">
+			{#if $ability.can('create', payloadTypes.enum.indicator)}
+				<p>
+					<a class="button primary" href="#create={payloadTypes.enum.indicator}">
+						<Icon src={Plus} size="20" mini />
+						{$_('indicator')}
+					</a>
+				</p>
+			{/if}
+			<ul>
+				{#each data.containers as container}
+					<li>
+						<Card --height="100%" {container} />
+					</li>
+				{/each}
+			</ul>
+		</div>
+
+		{#if browser && $overlay.revisions.length > 0}
+			<Overlay {...$overlay} />
+		{/if}
+	</svelte:fragment>
+</Layout>
 
 <style>
 	div {

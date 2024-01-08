@@ -185,7 +185,6 @@ export async function updateAccessSettings(guid: string) {
 		);
 	}
 
-	data[0].webOrigins.push(urlFromGuid(guid).origin);
 	data[0].redirectUris.push(urlFromGuid(guid).href);
 
 	const putResponse = await fetch(

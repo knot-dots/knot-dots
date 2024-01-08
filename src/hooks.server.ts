@@ -11,7 +11,7 @@ import { predicates } from '$lib/models';
 import { createOrUpdateUser, getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
-const useSecureCookies = baseURL.protocol === 'https';
+const useSecureCookies = baseURL.protocol === 'https:';
 const authentication = SvelteKitAuth({
 	callbacks: {
 		async jwt({ token, user, account }) {

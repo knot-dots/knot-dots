@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { Icon, Trash } from 'svelte-hero-icons';
+	import { Icon, InformationCircle, Share, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import SidebarTab from '$lib/components/SidebarTab.svelte';
+	import StrategyTabs from '$lib/components/StrategyTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isInternalObjectiveStrategicGoalContainer,
@@ -18,7 +23,8 @@
 		mayDelete,
 		payloadTypes,
 		predicates,
-		quantities
+		quantities,
+		isMeasureContainer
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -75,86 +81,117 @@
 	}
 </script>
 
-<div class="detail-page-content">
-	<header class="content-header">
-		<label>
-			{$_(`${container.payload.type}`)}
-			{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-				<input
-					form="container-form"
-					name="name"
-					type="text"
-					bind:value={container.payload.name}
-					required
-				/>
-			{:else}
-				<input
-					form="container-form"
-					name="title"
-					type="text"
-					bind:value={container.payload.title}
-					readonly={container.payload.type === payloadTypes.enum.indicator &&
-						container.payload.quantity !== quantities.enum['quantity.custom']}
-					required
-				/>
-			{/if}
-		</label>
-	</header>
-	<div class="content-details masked-overflow">
-		{#if $applicationState.containerForm.tabs.length > 0}
-			<aside>
-				<ContainerFormTabs {container} />
-			</aside>
+<Layout>
+	<svelte:fragment slot="sidebar">
+		{#if isMeasureContainer(data.container)}
+			<Sidebar>
+				<MeasureTabs container={data.container} slot="tabs" />
+			</Sidebar>
+		{:else if isStrategyContainer(data.container)}
+			<Sidebar>
+				<StrategyTabs container={data.container} slot="tabs" />
+			</Sidebar>
+		{:else}
+			<Sidebar>
+				<svelte:fragment slot="tabs">
+					<SidebarTab
+						href="/{data.container.payload.type}/{data.container.guid}"
+						iconSource={InformationCircle}
+						text={$_('information')}
+					/>
+					<SidebarTab
+						href="/{data.container.payload.type}/{data.container.guid}/relations"
+						iconSource={Share}
+						text={$_('relations')}
+					/>
+				</svelte:fragment>
+			</Sidebar>
 		{/if}
-		<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
-	</div>
-	<footer class="content-footer">
-		<Visibility {container} />
-		<div class="content-actions">
-			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
-			{#if isModelContainer(container)}
-				<button id="save-and-create-strategic-goal" form="container-form" type="submit">
-					{$_('save_and_create_strategic_goal')}
-				</button>
-			{:else if isOperationalGoalContainer(container)}
-				<button id="save-and-create-measure" form="container-form" type="submit">
-					{$_('save_and_create_measure')}
-				</button>
-			{:else if isStrategicGoalGoalContainer(container)}
-				<button id="save-and-create-operational-goal" form="container-form" type="submit">
-					{$_('save_and_create_operational_goal')}
-				</button>
-			{:else if isStrategyContainer(container)}
-				<button id="save-and-create-model" form="container-form" type="submit">
-					{$_('save_and_create_model')}
-				</button>
-			{:else if isInternalStrategyContainer(container)}
-				<button id="save-and-create-vision" form="container-form" type="submit">
-					{$_('save_and_create_vision')}
-				</button>
-			{:else if isVisionContainer(container)}
-				<button
-					id="save-and-create-internal-objective-strategic-goal"
-					form="container-form"
-					type="submit"
-				>
-					{$_('save_and_create_strategic_goal')}
-				</button>
-			{:else if isInternalObjectiveStrategicGoalContainer(container)}
-				<button id="save-and-create-milestone" form="container-form" type="submit">
-					{$_('save_and_create_milestone')}
-				</button>
-			{:else if isMilestoneContainer(container)}
-				<button id="save-and-create-task" form="container-form" type="submit">
-					{$_('save_and_create_task')}
-				</button>
-			{/if}
-			<a class="button" href=".">{$_('cancel')}</a>
-			{#if mayDelete(container)}
-				<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
-					<Icon src={Trash} size="20" />
-				</button>
-			{/if}
+	</svelte:fragment>
+
+	<svelte:fragment slot="main">
+		<div class="detail-page-content">
+			<header class="content-header">
+				<label>
+					{$_(`${container.payload.type}`)}
+					{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
+						<input
+							form="container-form"
+							name="name"
+							type="text"
+							bind:value={container.payload.name}
+							required
+						/>
+					{:else}
+						<input
+							form="container-form"
+							name="title"
+							type="text"
+							bind:value={container.payload.title}
+							readonly={container.payload.type === payloadTypes.enum.indicator &&
+								container.payload.quantity !== quantities.enum['quantity.custom']}
+							required
+						/>
+					{/if}
+				</label>
+			</header>
+			<div class="content-details masked-overflow">
+				{#if $applicationState.containerForm.tabs.length > 0}
+					<aside>
+						<ContainerFormTabs {container} />
+					</aside>
+				{/if}
+				<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+			</div>
+			<footer class="content-footer">
+				<Visibility {container} />
+				<div class="content-actions">
+					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+					{#if isModelContainer(container)}
+						<button id="save-and-create-strategic-goal" form="container-form" type="submit">
+							{$_('save_and_create_strategic_goal')}
+						</button>
+					{:else if isOperationalGoalContainer(container)}
+						<button id="save-and-create-measure" form="container-form" type="submit">
+							{$_('save_and_create_measure')}
+						</button>
+					{:else if isStrategicGoalGoalContainer(container)}
+						<button id="save-and-create-operational-goal" form="container-form" type="submit">
+							{$_('save_and_create_operational_goal')}
+						</button>
+					{:else if isStrategyContainer(container)}
+						<button id="save-and-create-model" form="container-form" type="submit">
+							{$_('save_and_create_model')}
+						</button>
+					{:else if isInternalStrategyContainer(container)}
+						<button id="save-and-create-vision" form="container-form" type="submit">
+							{$_('save_and_create_vision')}
+						</button>
+					{:else if isVisionContainer(container)}
+						<button
+							id="save-and-create-internal-objective-strategic-goal"
+							form="container-form"
+							type="submit"
+						>
+							{$_('save_and_create_strategic_goal')}
+						</button>
+					{:else if isInternalObjectiveStrategicGoalContainer(container)}
+						<button id="save-and-create-milestone" form="container-form" type="submit">
+							{$_('save_and_create_milestone')}
+						</button>
+					{:else if isMilestoneContainer(container)}
+						<button id="save-and-create-task" form="container-form" type="submit">
+							{$_('save_and_create_task')}
+						</button>
+					{/if}
+					<a class="button" href=".">{$_('cancel')}</a>
+					{#if mayDelete(container)}
+						<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
+							<Icon src={Trash} size="20" />
+						</button>
+					{/if}
+				</div>
+			</footer>
 		</div>
-	</footer>
-</div>
+	</svelte:fragment>
+</Layout>

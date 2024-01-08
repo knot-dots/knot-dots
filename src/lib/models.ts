@@ -393,7 +393,7 @@ const taskPayload = internalObjectivesBasePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		taskCategory: taskCategories.optional(),
-		taskStatus: taskStatus,
+		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
 		type: z.literal(payloadTypes.enum['internal_objective.task'])
 	})
 	.strict();
@@ -427,7 +427,7 @@ const measurePayload = basePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		status: status,
+		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.measure)
 	})
 	.strict();

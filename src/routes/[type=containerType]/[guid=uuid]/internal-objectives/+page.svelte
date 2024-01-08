@@ -4,11 +4,16 @@
 	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
-	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import Search from '$lib/components/Search.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Sort from '$lib/components/Sort.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { overlay } from '$lib/stores';
+	import { overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -39,24 +44,34 @@
 	];
 </script>
 
-<Board>
-	{#each columns as column (column.title)}
-		<BoardColumn
-			addItemUrl="#create={column.payloadType}&is-part-of-measure={data.container.revision}"
-			itemType={column.payloadType}
-			title={$_(column.title)}
-		>
-			<MaybeDragZone
-				containers={data.containers.filter((c) => c.payload.type === column.payloadType)}
-			/>
-		</BoardColumn>
-	{/each}
-</Board>
+<Layout>
+	<Sidebar slot="sidebar">
+		<MeasureTabs container={data.container} slot="tabs" />
+		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Sort slot="sort" />
+	</Sidebar>
 
-{#if browser && $overlay.revisions.length > 0}
-	<Overlay {...$overlay} />
-{/if}
+	<svelte:fragment slot="main">
+		<Board>
+			{#each columns as column (column.title)}
+				<BoardColumn
+					addItemUrl="#create={column.payloadType}&is-part-of-measure={data.container.revision}"
+					itemType={column.payloadType}
+					title={$_(column.title)}
+				>
+					<MaybeDragZone
+						containers={data.containers.filter((c) => c.payload.type === column.payloadType)}
+					/>
+				</BoardColumn>
+			{/each}
+		</Board>
 
-{#if browser && $overlay.object}
-	<RelationOverlay object={$overlay.object} />
-{/if}
+		{#if browser && $overlay.revisions.length > 0}
+			<Overlay {...$overlay} />
+		{/if}
+
+		{#if browser && $overlay.object}
+			<RelationOverlay object={$overlay.object} />
+		{/if}
+	</svelte:fragment>
+</Layout>
