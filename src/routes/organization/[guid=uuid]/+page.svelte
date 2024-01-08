@@ -45,6 +45,7 @@
 				<div class="content-details masked-overflow">
 					<OrganizationDetailView
 						container={data.container}
+						indicators={data.indicators}
 						measures={data.measures}
 						strategies={data.strategies}
 					/>
