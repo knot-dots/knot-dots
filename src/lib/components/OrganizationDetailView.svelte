@@ -20,6 +20,17 @@
 		{/if}
 	</slot>
 
+	<div class="indicators">
+		<h3>{$_('indicators')}</h3>
+		<ul class="carousel">
+			{#each indicators as indicator}
+				<li>
+					<Card --height="100%" container={indicator} />
+				</li>
+			{/each}
+		</ul>
+	</div>
+
 	<div class="strategies">
 		<h3>{$_('strategies')}</h3>
 		<ul class="carousel">
@@ -37,17 +48,6 @@
 			{#each measures as measure}
 				<li>
 					<Card --height="100%" container={measure} />
-				</li>
-			{/each}
-		</ul>
-	</div>
-
-	<div class="indicators">
-		<h3>{$_('indicators')}</h3>
-		<ul class="carousel">
-			{#each indicators as indicator}
-				<li>
-					<Card --height="100%" container={indicator} />
 				</li>
 			{/each}
 		</ul>
