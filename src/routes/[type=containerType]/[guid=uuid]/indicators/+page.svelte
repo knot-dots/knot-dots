@@ -21,16 +21,18 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
-		<svelte:fragment slot="tabs">
-			{#if isOrganizationContainer(data.container)}
-				<OrganizationTabs container={data.container} />
-			{:else if isOrganizationalUnitContainer(data.container)}
-				<OrganizationalUnitTabs container={data.container} />
-			{/if}
-		</svelte:fragment>
-		<IndicatorsIncludedFilter slot="filters" />
-	</Sidebar>
+	<svelte:fragment slot="sidebar">
+		{#if isOrganizationContainer(data.container)}
+			<Sidebar>
+				<OrganizationTabs container={data.container} slot="tabs" />
+			</Sidebar>
+		{:else if isOrganizationalUnitContainer(data.container)}
+			<Sidebar>
+				<OrganizationalUnitTabs container={data.container} slot="tabs" />
+				<IndicatorsIncludedFilter slot="filters" />
+			</Sidebar>
+		{/if}
+	</svelte:fragment>
 
 	<svelte:fragment slot="main">
 		<div class="indicators">

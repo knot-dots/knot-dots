@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		BuildingLibrary,
 		BuildingStorefront,
 		ChartBarSquare,
 		InformationCircle,
@@ -26,6 +27,11 @@
 		text={$_('board.indicators')}
 	/>
 {/if}
+<SidebarTab
+	href="/organizational_unit/{container.guid}/organizational_units"
+	iconSource={BuildingLibrary}
+	text={$_('board.organizational_units')}
+/>
 {#if container.payload.boards.includes('board.internal_objectives')}
 	<SidebarTab
 		href="/organizational_unit/{container.guid}/internal-objectives"

@@ -68,7 +68,7 @@
 		objectives = [
 			{
 				Year: objectivesMinYear - 1,
-				Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+				Value: historicalValuesByYear.get(objectivesMinYear - 1) ?? 0
 			},
 			...objectives
 		];
