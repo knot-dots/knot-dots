@@ -354,12 +354,12 @@ resource "kubernetes_deployment_v1" "strategytool" {
 
           resources {
             limits = {
-              cpu    = "500m"
-              memory = "512Mi"
+              cpu    = "1000m"
+              memory = "256Mi"
             }
             requests = {
               cpu    = "250m"
-              memory = "50Mi"
+              memory = "128Mi"
             }
           }
 
