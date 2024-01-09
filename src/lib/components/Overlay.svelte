@@ -54,16 +54,19 @@
 	$: hashParams = paramsFromURL($page.url);
 	$: edit = hashParams.has('create') || hashParams.has('edit');
 
-	function closeOverlay() {
-		return hashParams.has('relate') ? `#relate=${hashParams.get('relate')}` : '#';
+	function closeURL() {
+		const newParams = new URLSearchParams(hashParams);
+		newParams.delete('create');
+		newParams.delete('edit');
+		newParams.delete('view');
+		return `#${newParams.toString()}`;
 	}
 
-	function cancel(c: AnyContainer) {
-		if (hashParams.has('create')) {
-			return closeOverlay();
-		} else {
-			return `#view=${c.guid}`;
-		}
+	function cancelURL() {
+		const newParams = new URLSearchParams(hashParams);
+		newParams.delete('create');
+		newParams.delete('edit');
+		return `#${newParams.toString()}`;
 	}
 
 	async function afterSubmit(
@@ -93,7 +96,7 @@
 		const response = await deleteContainer(c);
 		if (response.ok) {
 			await invalidateAll();
-			await goto(closeOverlay());
+			await goto(closeURL());
 		}
 	}
 
@@ -162,7 +165,7 @@
 						<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 					{/if}
 				{/if}
-				<a class="button" href={cancel(container)}>{$_('cancel')}</a>
+				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
 					<button
 						class="delete quiet"
@@ -196,7 +199,7 @@
 					>
 						<Icon solid src={ArrowsPointingOut} size="20" />
 					</a>
-					<a href={closeOverlay()} class="button icons-element">
+					<a href={closeURL()} class="button icons-element">
 						<Icon solid src={XMark} size="20" />
 					</a>
 				</span>
