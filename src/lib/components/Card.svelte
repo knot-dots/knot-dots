@@ -56,6 +56,8 @@
 		} else {
 			hashParams.set('view', container.guid);
 			hashParams.delete('create');
+			hashParams.delete('view-help');
+			hashParams.delete('edit-help');
 			containerPreviewURL = `#${hashParams.toString()}`;
 		}
 	}
