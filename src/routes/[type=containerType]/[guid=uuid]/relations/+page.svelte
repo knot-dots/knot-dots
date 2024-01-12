@@ -64,7 +64,7 @@
 <Layout>
 	<svelte:fragment slot="sidebar">
 		{#if isMeasureContainer(data.container)}
-			<Sidebar>
+			<Sidebar helpSlug="relations">
 				<MeasureTabs container={data.container} slot="tabs" />
 
 				<Search

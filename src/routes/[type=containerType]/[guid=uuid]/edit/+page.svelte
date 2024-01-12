@@ -34,14 +34,13 @@
 
 	$: container = data.container;
 	$: isPartOfOptions = data.isPartOfOptions;
-
 	$: isPartOfMeasure = container.relation
 		.filter(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
 		.map(({ object }) => object);
-
 	$: isPartOfStrategy = container.relation
 		.filter(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
 		.map(({ object }) => object);
+	$: helpSlug = `${container.payload.type.replace('_', '-')}-edit`;
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		const params = new URLSearchParams([['is-part-of', String(detail.result.revision)]]);
@@ -84,15 +83,15 @@
 <Layout>
 	<svelte:fragment slot="sidebar">
 		{#if isMeasureContainer(data.container)}
-			<Sidebar>
+			<Sidebar {helpSlug}>
 				<MeasureTabs container={data.container} slot="tabs" />
 			</Sidebar>
 		{:else if isStrategyContainer(data.container)}
-			<Sidebar>
+			<Sidebar {helpSlug}>
 				<StrategyTabs container={data.container} slot="tabs" />
 			</Sidebar>
 		{:else}
-			<Sidebar>
+			<Sidebar {helpSlug}>
 				<svelte:fragment slot="tabs">
 					<SidebarTab
 						href="/{data.container.payload.type}/{data.container.guid}"

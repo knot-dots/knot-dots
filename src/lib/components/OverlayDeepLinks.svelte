@@ -4,19 +4,28 @@
 		BuildingStorefront,
 		Icon,
 		PencilSquare,
+		QuestionMarkCircle,
 		Share,
 		UserGroup
 	} from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import {
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isStrategyContainer
 	} from '$lib/models';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyContainer, PayloadType } from '$lib/models';
 
 	export let container: AnyContainer;
+
+	function helpURL(url: URL, payloadType: PayloadType) {
+		const hashParams = paramsFromURL(url);
+		hashParams.set('view-help', `${payloadType.replace('_', '-')}-view`);
+		return `#${hashParams.toString()}`;
+	}
 </script>
 
 <ul class="overlay-deep-links">
@@ -75,6 +84,11 @@
 			</a>
 		</li>
 	{/if}
+	<li>
+		<a class="button" href={helpURL($page.url, container.payload.type)} title={$_('help')}>
+			<Icon src={QuestionMarkCircle} size="20" mini />
+		</a>
+	</li>
 </ul>
 
 <style>

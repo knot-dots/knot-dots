@@ -32,7 +32,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="organizational-unit-edit" slot="sidebar">
 		<OrganizationalUnitTabs container={data.container} slot="tabs" />
 	</Sidebar>
 

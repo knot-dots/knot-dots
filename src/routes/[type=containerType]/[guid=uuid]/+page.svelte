@@ -37,21 +37,22 @@
 	$: containersWithObjectives = data.containersWithObjectives;
 	$: relatedContainers = data.relatedContainers;
 	$: revisions = data.revisions;
+	$: helpSlug = `${container.payload.type.replace('_', '-')}-view`;
 </script>
 
 <Layout>
 	<svelte:fragment slot="sidebar">
 		{#if isMeasureContainer(data.container)}
-			<Sidebar>
+			<Sidebar {helpSlug}>
 				<MeasureTabs container={data.container} slot="tabs" />
 			</Sidebar>
 		{:else if isStrategyContainer(data.container)}
-			<Sidebar>
+			<Sidebar {helpSlug}>
 				<StrategyTabs container={data.container} slot="tabs" />
 				<PayloadTypeFilter slot="filters" />
 			</Sidebar>
 		{:else}
-			<Sidebar>
+			<Sidebar {helpSlug}>
 				<svelte:fragment slot="tabs">
 					<SidebarTab
 						href="/{data.container.payload.type}/{data.container.guid}"

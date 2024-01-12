@@ -2,13 +2,13 @@ import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { newContainer, payloadTypes, predicates } from '$lib/models';
+import { filterVisible } from '$lib/authorization';
 import {
 	createContainer,
 	getAllContainersRelatedToStrategy,
 	getManyContainers
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
-import { filterVisible } from '$lib/authorization';
 
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({

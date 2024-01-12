@@ -13,7 +13,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="organizational-unit-view" slot="sidebar">
 		<OrganizationalUnitTabs container={data.container} slot="tabs" />
 	</Sidebar>
 
