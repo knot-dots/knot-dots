@@ -6,6 +6,7 @@ import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
+import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import paramsFromURL from '$lib/client/paramsFromURL';
 import {
@@ -142,6 +143,12 @@ if (browser) {
 				relatedContainers: [],
 				revisions: [newContainer] as AnyContainer[]
 			});
+		} else if (hashParams.has('view-help')) {
+			const help = await fetchHelpBySlug(hashParams.get('view-help') as string);
+			overlay.update((previous) => ({
+				...previous,
+				revisions: [help]
+			}));
 		} else if (hashParams.has('view')) {
 			const revisions = await fetchContainerRevisions(hashParams.get('view') as string);
 			const container = revisions[revisions.length - 1];
