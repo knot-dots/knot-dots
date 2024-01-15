@@ -244,6 +244,12 @@ export const unitByQuantity = new Map<Quantity, Unit>([
 	[quantities.enum['quantity.water_consumption'], units.enum['unit.cubic_meter']]
 ]);
 
+const audienceValues = ['audience.organization', 'audience.public'] as const;
+
+export const audience = z.enum(audienceValues);
+
+export type Audience = z.infer<typeof audience>;
+
 export const relation = z.object({
 	object: z.number().int().positive(),
 	position: z.number().int().nonnegative(),
@@ -323,6 +329,7 @@ export const boards = z.enum([
 
 const basePayload = z
 	.object({
+		audience: z.array(audience).default([audience.enum['audience.public']]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		description: z.string().optional(),
 		summary: z.string().max(200).optional(),
@@ -349,6 +356,7 @@ const indicatorTemplatePayload = indicatorPayload
 	.omit({ historicalValues: true, quantity: true });
 
 const internalObjectivesBasePayload = z.object({
+	audience: z.array(audience).default([audience.enum['audience.public']]),
 	description: z.string().optional(),
 	summary: z.string().max(200).optional(),
 	title: z.string(),
@@ -385,7 +393,7 @@ const milestonePayload = internalObjectivesBasePayload
 	.strict();
 
 const taskPayload = internalObjectivesBasePayload
-	.omit({ summary: true })
+	.omit({ audience: true, summary: true })
 	.extend({
 		assignee: z.string().uuid().optional(),
 		fulfillmentDate: z
@@ -503,6 +511,7 @@ const strategyPayload = basePayload
 
 const textPayload = z
 	.object({
+		audience: z.array(audience).default([audience.enum['audience.public']]),
 		body: z.string().optional(),
 		title: z.string(),
 		type: z.literal(payloadTypes.enum.text),

@@ -3,12 +3,14 @@
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import { audience } from '$lib/models';
 	import type {
 		EmptyInternalStrategyContainer,
 		InternalStrategyContainer,
 		PartialRelation
-	} from '$lib/models.js';
+	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: InternalStrategyContainer | EmptyInternalStrategyContainer;
@@ -32,6 +34,12 @@
 </script>
 
 <OrganizationSelector bind:container />
+
+<ListBox
+	label={$_('audience')}
+	options={audience.options}
+	bind:value={container.payload.audience}
+/>
 
 <legend>{$_('form.basic_data')}</legend>
 

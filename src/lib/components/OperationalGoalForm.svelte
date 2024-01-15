@@ -6,7 +6,7 @@
 	import ObjectiveWizard from '$lib/components/ObjectiveWizard.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
-	import { sustainableDevelopmentGoals, topics } from '$lib/models';
+	import { audience, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { OperationalGoalContainer, EmptyOperationalGoalContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -30,6 +30,12 @@
 		<StrategyRelationSelector {container} />
 
 		<OrganizationSelector bind:container />
+
+		<ListBox
+			label={$_('audience')}
+			options={audience.options}
+			bind:value={container.payload.audience}
+		/>
 	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'basic-data'}
 	<fieldset class="form-tab" id="basic-data">

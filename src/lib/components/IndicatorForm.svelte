@@ -5,6 +5,7 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
+		audience,
 		quantities,
 		sustainableDevelopmentGoals,
 		topics,
@@ -121,6 +122,12 @@
 				</select>
 			</label>
 		{/if}
+
+		<ListBox
+			label={$_('audience')}
+			options={audience.options}
+			bind:value={container.payload.audience}
+		/>
 	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'basic-data'}
 	<fieldset class="form-tab" id="basic-data">

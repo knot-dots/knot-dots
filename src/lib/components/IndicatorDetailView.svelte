@@ -160,6 +160,15 @@
 		</div>
 
 		<div class="meta">
+			<h3 class="meta-key">{$_('audience')}</h3>
+			<ul class="meta-value">
+				{#each container.payload.audience as audience}
+					<li>{$_(audience)}</li>
+				{/each}
+			</ul>
+		</div>
+
+		<div class="meta">
 			<h3 class="meta-key">{$_('created_date')}</h3>
 			<ul class="meta-value">
 				<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>

@@ -5,7 +5,13 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import { levels, strategyTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
+	import {
+		audience,
+		levels,
+		strategyTypes,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
 	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -30,6 +36,12 @@
 </script>
 
 <OrganizationSelector bind:container />
+
+<ListBox
+	label={$_('audience')}
+	options={audience.options}
+	bind:value={container.payload.audience}
+/>
 
 {#if 'image' in container.payload}
 	<span class="preview">
