@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
+	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
@@ -44,6 +45,7 @@
 			<StrategyTypeFilter />
 			<TopicFilter />
 			<CategoryFilter />
+			<AudienceFilter />
 		</svelte:fragment>
 
 		<Sort slot="sort" />

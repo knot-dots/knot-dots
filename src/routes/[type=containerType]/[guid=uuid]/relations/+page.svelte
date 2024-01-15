@@ -26,6 +26,7 @@
 	import { overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 	import RelationFilter from '$lib/components/RelationFilter.svelte';
+	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 
 	export let data: PageData;
 
@@ -78,6 +79,7 @@
 					<StrategyTypeFilter />
 					<TopicFilter />
 					<CategoryFilter />
+					<AudienceFilter />
 				</svelte:fragment>
 
 				<Sort slot="sort" />

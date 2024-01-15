@@ -6,6 +6,7 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
+import { audience } from '$lib/models';
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
@@ -39,6 +40,9 @@ export const load = (async ({ locals, url, parent }) => {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.getAll('strategyType'),
 				{
+					audience: url.searchParams.has('audienceChanged')
+						? url.searchParams.getAll('audience')
+						: [audience.enum['audience.public']],
 					categories: url.searchParams.getAll('category'),
 					organizationalUnits,
 					topics: url.searchParams.getAll('topic'),
@@ -52,6 +56,9 @@ export const load = (async ({ locals, url, parent }) => {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
+					audience: url.searchParams.has('audienceChanged')
+						? url.searchParams.getAll('audience')
+						: [audience.enum['audience.public']],
 					categories: url.searchParams.getAll('category'),
 					organizationalUnits,
 					topics: url.searchParams.getAll('topic'),
