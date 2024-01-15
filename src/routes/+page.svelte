@@ -2,6 +2,7 @@
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
@@ -18,7 +19,6 @@
 	import { payloadTypes } from '$lib/models';
 	import { overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
-	import { page } from '$app/stores';
 
 	export let data: PageData;
 
@@ -34,7 +34,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="objectives" slot="sidebar">
 		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
 
 		<svelte:fragment slot="filters">

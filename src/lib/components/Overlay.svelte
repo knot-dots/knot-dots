@@ -19,6 +19,7 @@
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import OverlayDeepLinks from '$lib/components/OverlayDeepLinks.svelte';
+	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
@@ -27,6 +28,7 @@
 		isInternalObjectiveContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
+		isPageContainer,
 		isTaskContainer,
 		mayDelete,
 		newIndicatorTemplateFromIndicator,
@@ -54,16 +56,37 @@
 	$: hashParams = paramsFromURL($page.url);
 	$: edit = hashParams.has('create') || hashParams.has('edit');
 
-	function closeOverlay() {
-		return hashParams.has('relate') ? `#relate=${hashParams.get('relate')}` : '#';
+	function closeURL() {
+		const newParams = new URLSearchParams(hashParams);
+
+		if (newParams.has('view-help')) {
+			newParams.delete('view-help');
+		} else {
+			newParams.delete('create');
+			newParams.delete('edit');
+			newParams.delete('view');
+		}
+
+		return `#${newParams.toString()}`;
 	}
 
-	function cancel(c: AnyContainer) {
-		if (hashParams.has('create')) {
-			return closeOverlay();
+	function cancelURL() {
+		const newParams = new URLSearchParams(hashParams);
+
+		if (newParams.has('edit-help')) {
+			newParams.delete('edit-help');
 		} else {
-			return `#view=${c.guid}`;
+			newParams.delete('create');
+			newParams.delete('edit');
 		}
+
+		return `#${newParams.toString()}`;
+	}
+
+	function editHelpURL() {
+		const newParams = new URLSearchParams(hashParams);
+		newParams.set('edit-help', '');
+		return `#${newParams.toString()}`;
 	}
 
 	async function afterSubmit(
@@ -84,6 +107,10 @@
 				];
 		} else if (hashParams.has('create')) {
 			await goto(`#view=${detail.result.guid}`);
+		} else if (hashParams.has('edit-help')) {
+			const newParams = new URLSearchParams(hashParams);
+			newParams.delete('edit-help');
+			await goto(`#${newParams.toString()}`);
 		} else {
 			await goto(`#view=${c.guid}`);
 		}
@@ -93,7 +120,7 @@
 		const response = await deleteContainer(c);
 		if (response.ok) {
 			await invalidateAll();
-			await goto(closeOverlay());
+			await goto(closeURL());
 		}
 	}
 
@@ -105,7 +132,56 @@
 </script>
 
 <section class="overlay" transition:slide={{ axis: 'x' }}>
-	{#if edit}
+	{#if isPageContainer(container) && hashParams.has('edit-help')}
+		<header class="content-header">
+			<label>
+				{$_(`${container.payload.type}`)}
+				<input
+					form="container-form"
+					name="title"
+					type="text"
+					bind:value={container.payload.title}
+					required
+				/>
+			</label>
+		</header>
+		<div class="content-details masked-overflow">
+			<ContainerForm
+				bind:container
+				isPartOfOptions={[]}
+				on:submitSuccessful={(e) => afterSubmit(e, container)}
+			/>
+		</div>
+		<footer class="content-footer">
+			<div class="content-actions">
+				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
+			</div>
+		</footer>
+	{:else if isPageContainer(container) && hashParams.has('view-help')}
+		<header class="content-header">
+			<h2 class="with-icons">
+				{container.payload.title}
+
+				<span class="icons">
+					{#if $ability.can('update', container)}
+						<a class="button icons-element" href={editHelpURL()}>
+							<Icon solid src={Pencil} size="20" />
+						</a>
+					{/if}
+					<a href={closeURL()} class="button icons-element">
+						<Icon solid src={XMark} size="20" />
+					</a>
+				</span>
+			</h2>
+		</header>
+		<div class="content-details masked-overflow">
+			<PageDetailView {container} />
+		</div>
+		<footer class="content-footer">
+			<div class="content-actions"></div>
+		</footer>
+	{:else if edit}
 		<header class="content-header">
 			<label
 				style={container.payload.type === payloadTypes.enum.undefined ||
@@ -162,7 +238,7 @@
 						<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 					{/if}
 				{/if}
-				<a class="button" href={cancel(container)}>{$_('cancel')}</a>
+				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
 					<button
 						class="delete quiet"
@@ -196,7 +272,7 @@
 					>
 						<Icon solid src={ArrowsPointingOut} size="20" />
 					</a>
-					<a href={closeOverlay()} class="button icons-element">
+					<a href={closeURL()} class="button icons-element">
 						<Icon solid src={XMark} size="20" />
 					</a>
 				</span>

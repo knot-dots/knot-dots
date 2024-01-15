@@ -28,7 +28,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="organization-edit" slot="sidebar">
 		<OrganizationTabs container={data.container} />
 	</Sidebar>
 

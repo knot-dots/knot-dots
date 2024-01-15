@@ -53,7 +53,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="tasks" slot="sidebar">
 		<OrganizationTabs container={data.container} slot="tabs" />
 		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
 		<svelte:fragment slot="filters">

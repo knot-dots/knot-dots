@@ -676,7 +676,7 @@ export function isOrganizationalUnitContainer(
 	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
 
-const pageContainer = container.extend({
+export const pageContainer = container.extend({
 	payload: pagePayload
 });
 

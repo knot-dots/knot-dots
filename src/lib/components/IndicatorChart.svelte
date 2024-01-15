@@ -49,7 +49,8 @@
 								{
 									Year: currentValue.Year,
 									Value: currentValue.Value + accumulator[groupIndex].Value
-								}
+								},
+								...accumulator.slice(groupIndex + 1)
 						  ]
 						: [
 								...accumulator,

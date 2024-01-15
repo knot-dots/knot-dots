@@ -18,7 +18,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="members" slot="sidebar">
 		<svelte:fragment slot="tabs">
 			{#if isMeasureContainer(data.container)}
 				<MeasureTabs container={data.container} />

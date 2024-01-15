@@ -31,7 +31,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="organizational-units" slot="sidebar">
 		<OrganizationalUnitTabs container={data.container} slot="tabs" />
 		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
 	</Sidebar>

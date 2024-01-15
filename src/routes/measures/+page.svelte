@@ -27,7 +27,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="measures" slot="sidebar">
 		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
 
 		<svelte:fragment slot="filters">

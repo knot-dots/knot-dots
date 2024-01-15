@@ -5,11 +5,14 @@
 		Icon,
 		InformationCircle,
 		PuzzlePiece,
+		QuestionMarkCircle,
 		Sparkles,
 		TableCells
 	} from 'svelte-hero-icons';
+	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { boards, isMeasureContainer } from '$lib/models';
-	import type { AnyContainer, ContainerFormTabKey } from '$lib/models';
+	import type { AnyContainer, ContainerFormTabKey, PayloadType } from '$lib/models';
 	import { applicationState, getOrganization, getOrganizationalUnit } from '$lib/stores';
 
 	export let container: AnyContainer;
@@ -31,6 +34,12 @@
 			...state,
 			containerForm: { ...state.containerForm, activeTab }
 		}));
+	}
+
+	function helpURL(url: URL, payloadType: PayloadType) {
+		const hashParams = paramsFromURL(url);
+		hashParams.set('view-help', `${payloadType.replace('_', '-')}-edit`);
+		return `#${hashParams.toString()}`;
 	}
 </script>
 
@@ -95,6 +104,11 @@
 			</button>
 		</li>
 	{/if}
+	<li>
+		<a class="button" href={helpURL($page.url, container.payload.type)} title={$_('help')}>
+			<Icon src={QuestionMarkCircle} size="20" mini />
+		</a>
+	</li>
 </ul>
 
 <style>
@@ -104,7 +118,8 @@
 		gap: 0.5rem;
 	}
 
-	button {
+	button,
+	.button {
 		--padding-x: 12px;
 		--padding-y: 12px;
 	}

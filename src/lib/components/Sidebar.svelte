@@ -10,11 +10,21 @@
 		ChevronRight,
 		ChevronUp,
 		Funnel,
-		Icon
+		Icon,
+		QuestionMarkCircle
 	} from 'svelte-hero-icons';
 	import { page } from '$app/stores';
 	import { accountURL } from '$lib/authentication';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { filtersToggle, navigationToggle, sidebarToggle, sortToggle, user } from '$lib/stores';
+
+	export let helpSlug: string = '';
+
+	function helpURL(url: URL) {
+		const newParams = new URLSearchParams(paramsFromURL(url));
+		newParams.set('view-help', helpSlug);
+		return `#${newParams.toString()}`;
+	}
 
 	function toggleSidebar() {
 		$sidebarToggle = !$sidebarToggle;
@@ -81,6 +91,13 @@
 			</li>
 		{/if}
 	</ul>
+
+	{#if helpSlug}
+		<a class="help" href={helpURL($page.url)}>
+			<Icon src={QuestionMarkCircle} size="20" mini />
+			<span class:is-hidden={!$sidebarToggle}>{$_('help')}</span>
+		</a>
+	{/if}
 
 	<ul class="group group-user-menu">
 		{#if $user.isAuthenticated}
@@ -247,6 +264,22 @@
 	:global(aside.is-expanded .group-tabs button),
 	aside.is-expanded .group-user-menu a,
 	aside.is-expanded .group-user-menu button {
+		--padding-x: 14px;
+		--padding-y: 12px;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.help {
+		align-items: center;
+		border-bottom: solid 1px var(--color-gray-200);
+		border-top: solid 1px var(--color-gray-200);
+		display: flex;
+		padding: 1rem 1.625rem;
+		text-align: left;
+	}
+
+	aside.is-expanded .help {
 		--padding-x: 14px;
 		--padding-y: 12px;
 		gap: 0.5rem;

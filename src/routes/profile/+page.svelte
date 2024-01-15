@@ -17,7 +17,7 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar">
+	<Sidebar helpSlug="profile" slot="sidebar">
 		<svelte:fragment slot="tabs">
 			<SidebarTab href="/profile" iconSource={InformationCircle} text={$_('information')} />
 			<SidebarTab
