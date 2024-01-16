@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
 	import Editor from '$lib/components/Editor.svelte';
 	import type { EmptyPageContainer, PageContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';

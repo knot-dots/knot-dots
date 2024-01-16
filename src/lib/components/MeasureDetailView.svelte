@@ -166,6 +166,15 @@
 			</div>
 
 			<div class="meta">
+				<h3 class="meta-key">{$_('audience')}</h3>
+				<ul class="meta-value">
+					{#each container.payload.audience as audience}
+						<li>{$_(audience)}</li>
+					{/each}
+				</ul>
+			</div>
+
+			<div class="meta">
 				<h3 class="meta-key">{$_('planned_duration')}</h3>
 				<p class="meta-value">
 					{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}

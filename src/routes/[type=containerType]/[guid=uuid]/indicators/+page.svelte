@@ -2,6 +2,7 @@
 	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
@@ -25,11 +26,15 @@
 		{#if isOrganizationContainer(data.container)}
 			<Sidebar helpSlug="indicators">
 				<OrganizationTabs container={data.container} slot="tabs" />
+				<AudienceFilter slot="filters" />
 			</Sidebar>
 		{:else if isOrganizationalUnitContainer(data.container)}
 			<Sidebar helpSlug="indicators">
 				<OrganizationalUnitTabs container={data.container} slot="tabs" />
-				<IndicatorsIncludedFilter slot="filters" />
+				<svelte:fragment slot="filters">
+					<IndicatorsIncludedFilter />
+					<AudienceFilter />
+				</svelte:fragment>
 			</Sidebar>
 		{/if}
 	</svelte:fragment>

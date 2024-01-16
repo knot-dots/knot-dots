@@ -3,11 +3,16 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
+	export let initialValue: string[] = [];
 	export let key: string;
-	export let options: string[][];
 	export let label: string | undefined = undefined;
+	export let options: string[][];
 
-	let selected = $page.url.searchParams.getAll(key);
+	const changeKey = `${key}Changed`;
+
+	let selected = $page.url.searchParams.has(changeKey)
+		? $page.url.searchParams.getAll(key)
+		: initialValue;
 
 	function apply() {
 		const query = new URLSearchParams($page.url.searchParams);

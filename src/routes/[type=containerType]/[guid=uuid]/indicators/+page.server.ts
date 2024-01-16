@@ -1,7 +1,12 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { isOrganizationalUnitContainer, isOrganizationContainer, payloadTypes } from '$lib/models';
+import {
+	audience,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
+	payloadTypes
+} from '$lib/models';
 import {
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
@@ -36,6 +41,9 @@ export const load = (async ({ locals, params, parent, url }) => {
 			getManyContainers(
 				[container.organization],
 				{
+					audience: url.searchParams.has('audienceChanged')
+						? url.searchParams.getAll('audience')
+						: [audience.enum['audience.public']],
 					organizationalUnits,
 					type: [payloadTypes.enum.indicator]
 				},

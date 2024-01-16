@@ -4,6 +4,9 @@
 	"all_organizations": "All organizations",
 	"annotation": "Annotation",
 	"assignee": "Assignee",
+	"audience": "Audience",
+	"audience.organization": "Organization",
+	"audience.public": "Public",
 	"board": {
 		"indicators": "Indicators",
 		"internal_objectives": "Internal objectives",

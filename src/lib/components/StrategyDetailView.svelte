@@ -60,6 +60,14 @@
 			{/each}
 		</ul>
 	</div>
+	<div class="meta">
+		<h3 class="meta-key">{$_('audience')}</h3>
+		<ul class="meta-value">
+			{#each container.payload.audience as audience}
+				<li>{$_(audience)}</li>
+			{/each}
+		</ul>
+	</div>
 	{#if container.payload.pdf}
 		<div class="meta">
 			<h3 class="meta-key">{$_('pdf')}</h3>

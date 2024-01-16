@@ -390,6 +390,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 }
 
 function prepareWhereCondition(filters: {
+	audience?: string[];
 	categories?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
@@ -403,6 +404,9 @@ function prepareWhereCondition(filters: {
 		sql.fragment`NOT deleted`,
 		sql.fragment`payload->>'type' NOT IN ('organization', 'organizational_unit')`
 	];
+	if (filters.audience?.length) {
+		conditions.push(sql.fragment`payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
+	}
 	if (filters.categories?.length) {
 		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
 	}
@@ -499,6 +503,7 @@ async function withUserAndRelation<T extends AnyContainer>(
 export function getManyContainers(
 	organizations: string[],
 	filters: {
+		audience?: string[];
 		categories?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
@@ -765,6 +770,7 @@ export function getAllRelatedContainers(
 	guid: string,
 	relations: string[],
 	filters: {
+		audience?: string[];
 		categories?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
@@ -839,6 +845,7 @@ export function getAllRelatedContainersByStrategyType(
 	organizations: string[],
 	strategyTypes: string[],
 	filters: {
+		audience?: string[];
 		categories?: string[];
 		organizationalUnits?: string[];
 		terms?: string;

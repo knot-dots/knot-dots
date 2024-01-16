@@ -5,6 +5,7 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
+		audience,
 		quantities,
 		sustainableDevelopmentGoals,
 		topics,
@@ -91,7 +92,7 @@
 </script>
 
 {#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="basic-data">
+	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
 		<label>
@@ -121,30 +122,41 @@
 				</select>
 			</label>
 		{/if}
+
+		<ListBox
+			label={$_('audience')}
+			options={audience.options}
+			bind:value={container.payload.audience}
+		/>
 	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<Editor label={$_('description')} bind:value={container.payload.description} />
+	<fieldset class="form-tab" id="basic-data">
+		<Editor label={$_('description')} bind:value={container.payload.description} />
 
-	<Editor
-		label={$_('indicator.historical_values_intro')}
-		bind:value={container.payload.historicalValuesIntro}
-	/>
+		<Editor
+			label={$_('indicator.historical_values_intro')}
+			bind:value={container.payload.historicalValuesIntro}
+		/>
 
-	<Editor label={$_('indicator.objectives_intro')} bind:value={container.payload.objectivesIntro} />
+		<Editor
+			label={$_('indicator.objectives_intro')}
+			bind:value={container.payload.objectivesIntro}
+		/>
 
-	<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
+		<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
+		/>
 
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
+		/>
+	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'historical-values'}
 	<fieldset class="form-tab" id="historical-values">
 		<legend>{$_('form.historical_values')}</legend>

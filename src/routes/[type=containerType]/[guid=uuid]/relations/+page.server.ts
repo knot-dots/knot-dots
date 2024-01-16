@@ -6,6 +6,7 @@ import {
 	getContainerByGuid
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
+import { audience } from '$lib/models';
 
 export const load = (async ({ params, locals, url }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
@@ -26,6 +27,9 @@ export const load = (async ({ params, locals, url }) => {
 						params.guid,
 						['hierarchical'],
 						{
+							audience: url.searchParams.has('audienceChanged')
+								? url.searchParams.getAll('audience')
+								: [audience.enum['audience.public']],
 							categories: url.searchParams.getAll('category'),
 							topics: url.searchParams.getAll('topic'),
 							strategyTypes: url.searchParams.getAll('strategyType'),
