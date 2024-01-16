@@ -23,7 +23,7 @@
 		isStrategyContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 	import RelationFilter from '$lib/components/RelationFilter.svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
@@ -140,8 +140,9 @@
 		<Board>
 			{#each columns as column (column.title)}
 				<BoardColumn
-					addItemUrl={`/${column.payloadType}/new`}
-					itemType={column.payloadType}
+					addItemUrl={$mayCreateContainer(column.payloadType)
+						? `/${column.payloadType}/new`
+						: undefined}
 					title={$_(column.title)}
 				>
 					<div class="vertical-scroll-wrapper masked-overflow">

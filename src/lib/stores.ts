@@ -100,6 +100,18 @@ export const getOrganizationalUnit = derived(page, (values) => {
 		values.data.organizationalUnits.find((o: OrganizationalUnitContainer) => guid == o.guid);
 });
 
+export const mayCreateContainer = derived([page, ability], (values) => {
+	return (payloadType: PayloadType): boolean => {
+		const container = containerOfType(
+			payloadType,
+			values[0].data.currentOrganization.guid,
+			values[0].data.currentOrganizationalUnit?.guid ?? null,
+			''
+		);
+		return values[1].can('create', container);
+	};
+});
+
 type Overlay = {
 	isPartOfOptions: AnyContainer[];
 	object?: Container;

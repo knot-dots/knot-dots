@@ -14,7 +14,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -57,8 +57,9 @@
 		<Board>
 			{#each columns as column (column.title)}
 				<BoardColumn
-					addItemUrl={`#create=${column.payloadType}`}
-					itemType={column.payloadType}
+					addItemUrl={$mayCreateContainer(column.payloadType)
+						? `#create=${column.payloadType}`
+						: undefined}
 					title={$_(column.title)}
 				>
 					<MaybeDragZone
