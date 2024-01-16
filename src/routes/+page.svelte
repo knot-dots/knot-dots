@@ -26,11 +26,20 @@
 	setContext('mayShowRelationButton', true);
 
 	const columns = [
-		{ title: 'strategies', payloadType: payloadTypes.enum.strategy },
-		{ title: 'models', payloadType: payloadTypes.enum.model },
-		{ title: 'strategic_goals', payloadType: payloadTypes.enum.strategic_goal },
-		{ title: 'operational_goals', payloadType: payloadTypes.enum.operational_goal },
-		{ title: 'measures', payloadType: payloadTypes.enum.measure }
+		{ title: 'strategies', payloadType: [payloadTypes.enum.strategy] },
+		{
+			title: 'payload_group.long_term_goals',
+			payloadType: [payloadTypes.enum.model, payloadTypes.enum['internal_objective.vision']]
+		},
+		{ title: 'payload_group.strategic_goals', payloadType: [payloadTypes.enum.strategic_goal] },
+		{
+			title: 'payload_group.measurable_goals',
+			payloadType: [
+				payloadTypes.enum.operational_goal,
+				payloadTypes.enum['internal_objective.milestone']
+			]
+		},
+		{ title: 'payload_group.implementation', payloadType: [payloadTypes.enum.measure] }
 	];
 </script>
 
@@ -55,13 +64,17 @@
 		<Board>
 			{#each columns as column (column.title)}
 				<BoardColumn
-					addItemUrl={$mayCreateContainer(column.payloadType)
-						? `#create=${column.payloadType}`
+					addItemUrl={column.title === 'strategies' &&
+					$mayCreateContainer(payloadTypes.enum.strategy)
+						? `#create=${payloadTypes.enum.strategy}`
 						: undefined}
 					title={$_(column.title)}
 				>
 					<MaybeDragZone
-						containers={data.containers.filter((c) => c.payload.type === column.payloadType)}
+						containers={data.containers.filter(
+							(c) =>
+								column.payloadType.findIndex((payloadType) => payloadType === c.payload.type) > -1
+						)}
 					/>
 				</BoardColumn>
 			{/each}

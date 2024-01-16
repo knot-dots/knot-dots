@@ -8,13 +8,7 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
-	import type {
-		AnyContainer,
-		EmptyTaskContainer,
-		TaskCategory,
-		TaskContainer,
-		User
-	} from '$lib/models';
+	import type { EmptyTaskContainer, TaskCategory, TaskContainer, User } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;

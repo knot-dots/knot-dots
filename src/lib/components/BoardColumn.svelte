@@ -64,6 +64,10 @@
 		background: var(--background, var(--gradient-fifth-column));
 	}
 
+	section:nth-child(6) {
+		background: var(--background, var(--gradient-sixth-column));
+	}
+
 	header {
 		align-items: center;
 		color: var(--color-gray-800);

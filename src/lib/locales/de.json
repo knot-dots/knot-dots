@@ -151,6 +151,13 @@
 	"owned_by": "Zuständig",
 	"page": "Seite",
 	"page_title": "Strategie-Werkzeug",
+	"payload_group": {
+		"implementation": "Umsetzung",
+		"long_term_goals": "Langfristige Ziele",
+		"measurable_goals": "Messbare Ziele",
+		"strategic_goals": "Strategische Ziele",
+		"tasks": "Aufgaben"
+	},
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",
 	"planned_duration": "Geplante Laufzeit",
