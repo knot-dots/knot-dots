@@ -16,13 +16,7 @@
 	import StrategyTabs from '$lib/components/StrategyTabs.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import {
-		isInternalObjectiveContainer,
-		isMeasureContainer,
-		isPartOf,
-		isStrategyContainer,
-		payloadTypes
-	} from '$lib/models';
+	import { isMeasureContainer, isPartOf, isStrategyContainer, payloadTypes } from '$lib/models';
 	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 	import RelationFilter from '$lib/components/RelationFilter.svelte';

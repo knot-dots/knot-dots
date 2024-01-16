@@ -6,6 +6,20 @@
 
 	export let container: AnyContainer | EmptyContainer;
 
+	const payloadGroups = [
+		{
+			label: 'payload_group.long_term_goals',
+			items: [payloadTypes.enum.model, payloadTypes.enum['internal_objective.vision']]
+		},
+		{ label: 'payload_group.strategic_goals', items: [payloadTypes.enum.strategic_goal] },
+		{
+			label: 'payload_group.measurable_goals',
+			items: [payloadTypes.enum['internal_objective.milestone'], payloadTypes.enum.operational_goal]
+		},
+		{ label: 'payload_group.implementation', items: [payloadTypes.enum.measure] },
+		{ label: 'payload_group.tasks', items: [payloadTypes.enum['internal_objective.task']] }
+	];
+
 	async function restart(event: { currentTarget: HTMLSelectElement }) {
 		container.payload = containerOfType(
 			event.currentTarget.value as PayloadType,
@@ -31,8 +45,12 @@
 		{$_('payload_type')}
 		<select name="type" on:change={restart} required>
 			<option></option>
-			{#each [payloadTypes.enum.model, payloadTypes.enum.strategic_goal, payloadTypes.enum.operational_goal, payloadTypes.enum.measure, payloadTypes.enum.text] as payloadTypeOption}
-				<option value={payloadTypeOption}>{$_(payloadTypeOption)}</option>
+			{#each payloadGroups as { label, items }}
+				<optgroup label={$_(label)}>
+					{#each items as option}
+						<option value={option}>{$_(option)}</option>
+					{/each}
+				</optgroup>
 			{/each}
 		</select>
 	</label>
