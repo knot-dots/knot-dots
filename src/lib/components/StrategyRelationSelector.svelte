@@ -125,7 +125,7 @@
 					('revision' in container ? subject == container.revision : true)
 			);
 
-			if (isPartOfStrategyIndex) {
+			if (isPartOfStrategyIndex > -1) {
 				container.relation = [
 					...container.relation,
 					{
