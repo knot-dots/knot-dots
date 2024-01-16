@@ -17,7 +17,7 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { payloadTypes, status } from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors, statusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
@@ -50,9 +50,10 @@
 				<BoardColumn
 					--background={statusBackgrounds.get(statusOption)}
 					--hover-border-color={statusHoverColors.get(statusOption)}
-					addItemUrl="#create=measure&status={statusOption}"
+					addItemUrl={$mayCreateContainer(payloadTypes.enum.measure)
+						? `#create=measure&status={statusOption}`
+						: undefined}
 					icon={statusIcons.get(statusOption)}
-					itemType={payloadTypes.enum.measure}
 					title={$_(statusOption)}
 				>
 					<MaybeDragZone

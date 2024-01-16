@@ -150,6 +150,13 @@
 	"owned_by": "Owned by",
 	"page": "Page",
 	"page_title": "StrategyTool",
+	"payload_group": {
+		"implementation": "Implementation",
+		"long_term_goals": "Long term goals",
+		"measurable_goals": "Measurable goals",
+		"strategic_goals": "Strategic goals",
+		"tasks": "Tasks"
+	},
 	"payload_type": "Type of element",
 	"pdf": "PDF",
 	"planned_duration": "Planned duration",

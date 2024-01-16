@@ -1,12 +1,5 @@
 <script lang="ts">
-	import {
-		BuildingLibrary,
-		BuildingStorefront,
-		ChartBarSquare,
-		InformationCircle,
-		PencilSquare,
-		UserGroup
-	} from 'svelte-hero-icons';
+	import { BuildingLibrary, ChartBarSquare, InformationCircle, UserGroup } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
 	import type { OrganizationalUnitContainer } from '$lib/models';
@@ -32,20 +25,6 @@
 	iconSource={BuildingLibrary}
 	text={$_('board.organizational_units')}
 />
-{#if container.payload.boards.includes('board.internal_objectives')}
-	<SidebarTab
-		href="/organizational_unit/{container.guid}/internal-objectives"
-		iconSource={BuildingStorefront}
-		text={$_('board.internal_objectives')}
-	/>
-{/if}
-{#if container.payload.boards.includes('board.tasks')}
-	<SidebarTab
-		href="/organizational_unit/{container.guid}/tasks"
-		iconSource={PencilSquare}
-		text={$_('board.tasks')}
-	/>
-{/if}
 {#if $ability.can('update', container)}
 	<SidebarTab
 		href="/organizational_unit/{container.guid}/members"

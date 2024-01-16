@@ -17,7 +17,7 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { levels, payloadTypes } from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 
@@ -47,8 +47,9 @@
 		<Board>
 			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
 				<BoardColumn
-					addItemUrl="#create=strategy&level={levelOption}"
-					itemType={payloadTypes.enum.strategy}
+					addItemUrl={$mayCreateContainer(payloadTypes.enum.strategy)
+						? `#create=strategy&level=${levelOption}`
+						: undefined}
 					title={$_(levelOption)}
 				>
 					<MaybeDragZone

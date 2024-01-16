@@ -135,13 +135,13 @@
 	{:else if isInternalStrategyContainer(container)}
 		<InternalObjectiveStrategyForm bind:container />
 	{:else if isVisionContainer(container)}
-		<InternalObjectiveVisionForm {isPartOfOptions} bind:container />
+		<InternalObjectiveVisionForm bind:container />
 	{:else if isInternalObjectiveStrategicGoalContainer(container)}
 		<InternalObjectiveStrategicGoalForm {isPartOfOptions} bind:container />
 	{:else if isMilestoneContainer(container)}
-		<InternalObjectiveMilestoneForm {isPartOfOptions} bind:container />
+		<InternalObjectiveMilestoneForm bind:container />
 	{:else if isTaskContainer(container)}
-		<InternalObjectiveTaskForm {isPartOfOptions} bind:container />
+		<InternalObjectiveTaskForm bind:container />
 	{:else}
 		<UndefinedForm bind:container />
 	{/if}

@@ -16,50 +16,30 @@
 	import StrategyTabs from '$lib/components/StrategyTabs.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import {
-		isInternalObjectiveContainer,
-		isMeasureContainer,
-		isPartOf,
-		isStrategyContainer,
-		payloadTypes
-	} from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
+	import { isMeasureContainer, isPartOf, isStrategyContainer, payloadTypes } from '$lib/models';
+	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 	import RelationFilter from '$lib/components/RelationFilter.svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 
 	export let data: PageData;
 
-	const columns = isInternalObjectiveContainer(data.container)
-		? [
-				{
-					title: 'internal_objective.internal_strategies',
-					payloadType: payloadTypes.enum['internal_objective.internal_strategy']
-				},
-				{
-					title: 'internal_objective.visions',
-					payloadType: payloadTypes.enum['internal_objective.vision']
-				},
-				{
-					title: 'internal_objective.strategic_goals',
-					payloadType: payloadTypes.enum['internal_objective.strategic_goal']
-				},
-				{
-					title: 'internal_objective.milestones',
-					payloadType: payloadTypes.enum['internal_objective.milestone']
-				},
-				{
-					title: 'internal_objective.tasks',
-					payloadType: payloadTypes.enum['internal_objective.task']
-				}
-		  ]
-		: [
-				{ title: 'strategies', payloadType: payloadTypes.enum.strategy },
-				{ title: 'models', payloadType: payloadTypes.enum.model },
-				{ title: 'strategic_goals', payloadType: payloadTypes.enum.strategic_goal },
-				{ title: 'operational_goals', payloadType: payloadTypes.enum.operational_goal },
-				{ title: 'measures', payloadType: payloadTypes.enum.measure }
-		  ];
+	const columns = [
+		{ title: 'strategies', payloadType: [payloadTypes.enum.strategy] },
+		{
+			title: 'payload_group.long_term_goals',
+			payloadType: [payloadTypes.enum.model, payloadTypes.enum['internal_objective.vision']]
+		},
+		{ title: 'payload_group.strategic_goals', payloadType: [payloadTypes.enum.strategic_goal] },
+		{
+			title: 'payload_group.measurable_goals',
+			payloadType: [
+				payloadTypes.enum.operational_goal,
+				payloadTypes.enum['internal_objective.milestone']
+			]
+		},
+		{ title: 'payload_group.implementation', payloadType: [payloadTypes.enum.measure] }
+	];
 </script>
 
 <Layout>
@@ -140,12 +120,14 @@
 		<Board>
 			{#each columns as column (column.title)}
 				<BoardColumn
-					addItemUrl={`/${column.payloadType}/new`}
-					itemType={column.payloadType}
+					addItemUrl={column.title === 'strategies' &&
+					$mayCreateContainer(payloadTypes.enum.strategy)
+						? `#create=${column.payloadType}`
+						: undefined}
 					title={$_(column.title)}
 				>
 					<div class="vertical-scroll-wrapper masked-overflow">
-						{#each data.containers.filter((c) => c.payload.type === column.payloadType) as container}
+						{#each data.containers.filter((c) => column.payloadType.findIndex((payloadType) => payloadType === c.payload.type) > -1) as container}
 							<Card
 								{container}
 								relatedContainers={data.containersWithIndicatorContributions.filter(isPartOf)}

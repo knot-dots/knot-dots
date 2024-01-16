@@ -11,7 +11,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { OrganizationalUnitContainer } from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -40,8 +40,9 @@
 		<Board>
 			{#each byLevel.entries() as [level, containers]}
 				<BoardColumn
-					addItemUrl="#create={payloadTypes.enum.organizational_unit}&level={level}"
-					itemType={payloadTypes.enum.organizational_unit}
+					addItemUrl={$mayCreateContainer(payloadTypes.enum.organizational_unit)
+						? `#create=${payloadTypes.enum.organizational_unit}&level=${level}`
+						: undefined}
 					title={$_('organizational_unit_level', { values: { level } })}
 				>
 					<div class="vertical-scroll-wrapper masked-overflow">

@@ -2,25 +2,10 @@
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
-	import { env } from '$env/dynamic/public';
-	import { containerOfType } from '$lib/models';
-	import type { PayloadType } from '$lib/models';
-	import { ability } from '$lib/stores';
 
 	export let title: string;
 	export let icon: IconSource | undefined = undefined;
-	export let addItemUrl: string;
-	export let itemType: PayloadType;
-
-	function containerOfItemType() {
-		return containerOfType(
-			itemType,
-			$page.data.currentOrganization.guid,
-			$page.data.currentOrganizationalUnit?.guid ?? null,
-			env.PUBLIC_KC_REALM
-		);
-	}
+	export let addItemUrl: string | undefined = undefined;
 </script>
 
 <section>
@@ -31,14 +16,14 @@
 				<Icon src={icon} size="16" mini />
 			{/if}
 		</h2>
-		{#if $ability.can('create', containerOfItemType())}
+		{#if addItemUrl}
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>
 		{/if}
 	</header>
 
 	<slot />
 
-	{#if $ability.can('create', containerOfItemType())}
+	{#if addItemUrl}
 		<footer>
 			<a href={addItemUrl}>
 				{$_('add_item')}
@@ -77,6 +62,10 @@
 
 	section:nth-child(5) {
 		background: var(--background, var(--gradient-fifth-column));
+	}
+
+	section:nth-child(6) {
+		background: var(--background, var(--gradient-sixth-column));
 	}
 
 	header {

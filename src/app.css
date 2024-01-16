@@ -50,6 +50,7 @@
 	--gradient-third-column: linear-gradient(90deg, rgba(55, 180, 217, 0.15) 0%, rgba(47, 174, 224, 0.15) 100%);
 	--gradient-fourth-column: linear-gradient(90deg, rgba(47, 174, 224, 0.15) 0%, rgba(40, 169, 231, 0.15) 100%);
 	--gradient-fifth-column: linear-gradient(90deg, rgba(40, 169, 231, 0.15) 0%, rgba(32, 164, 238, 0.15) 100%);
+	--gradient-sixth-column: linear-gradient(90deg, rgba(40, 169, 231, 0.15) 0%, rgba(32, 164, 238, 0.15) 100%);
 	--gradient-idea: linear-gradient(90deg, rgba(218, 75, 96, 0.15) 0%, rgba(225, 95, 96, 0.15) 100%);
 	--gradient-in-planning: linear-gradient(90deg, rgba(241, 140, 95, 0.15) 0%, rgb(254, 183, 97, 0.15) 100%);
 	--gradient-in-implementation: linear-gradient(90deg, rgba(252, 205, 108, 0.15) 0%, rgba(245, 255, 134, 0.15) 100%);

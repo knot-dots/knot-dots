@@ -6,19 +6,12 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
-	import type {
-		AnyContainer,
-		EmptyTaskContainer,
-		TaskCategory,
-		TaskContainer,
-		User
-	} from '$lib/models';
+	import type { EmptyTaskContainer, TaskCategory, TaskContainer, User } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
-	export let isPartOfOptions: AnyContainer[];
 
 	applicationState.update((state) => ({
 		...state,
@@ -49,7 +42,7 @@
 	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
-		<RelationSelector {container} {isPartOfOptions} />
+		<StrategyRelationSelector {container} />
 
 		<OrganizationSelector bind:container />
 	</fieldset>
