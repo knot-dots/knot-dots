@@ -8,6 +8,7 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
+		isContainerWithObjective,
 		isMeasureContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
@@ -99,7 +100,7 @@
 			<div class="objectives">
 				<h3>{$_('objectives')}</h3>
 				<ul class="carousel">
-					{#each relatedContainers.filter((c) => isModelContainer(c) || isOperationalGoalContainer(c) || isStrategicGoalGoalContainer(c)) as objective}
+					{#each relatedContainers.filter(isContainerWithObjective) as objective}
 						<li>
 							<Card --height="100%" container={objective} />
 						</li>

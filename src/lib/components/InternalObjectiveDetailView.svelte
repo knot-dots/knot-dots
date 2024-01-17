@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isMeasureContainer, owners } from '$lib/models';
-	import type { AnyContainer, Container } from '$lib/models';
+	import { isContainerWithObjective, isMeasureContainer, owners, payloadTypes } from '$lib/models';
+	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: Container;
@@ -29,6 +32,17 @@
 			return `#${query.toString()}`;
 		}
 	}
+
+	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
+
+	onMount(() => {
+		if ('objective' in container.payload && container.payload.objective.length > 0) {
+			indicatorsRequest = fetchContainers({
+				organization: [container.organization],
+				payloadType: [payloadTypes.enum.indicator]
+			}) as Promise<IndicatorContainer[]>;
+		}
+	});
 </script>
 
 <article class="details">
@@ -43,6 +57,26 @@
 			<div class="description">
 				<h3>{$_('description')}</h3>
 				<Viewer value={container.payload.description} />
+			</div>
+		{/if}
+		{#if isContainerWithObjective(container)}
+			<div class="objective">
+				<h3>{$_('objectives')}</h3>
+				{#await indicatorsRequest then indicators}
+					{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
+					{#each container.payload.objective as objective}
+						{@const indicator = indicatorsByGuid.get(objective.indicator)}
+						{#if indicator}
+							<IndicatorChart
+								container={indicator}
+								containersWithObjectives={[container]}
+								showObjectives
+							>
+								<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
+							</IndicatorChart>
+						{/if}
+					{/each}
+				{/await}
 			</div>
 		{/if}
 		{#if 'progress' in container.payload}
