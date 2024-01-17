@@ -2,10 +2,11 @@
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import ObjectiveWizard from '$lib/components/ObjectiveWizard.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { audience } from '$lib/models';
-	import type { AnyContainer, EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
+	import type { EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: EmptyMilestoneContainer | MilestoneContainer;
@@ -43,6 +44,8 @@
 		</label>
 
 		<Editor label={$_('description')} bind:value={container.payload.description} />
+
+		<ObjectiveWizard bind:container />
 
 		<label>
 			{$_('progress')}
