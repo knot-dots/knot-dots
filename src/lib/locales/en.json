@@ -155,7 +155,7 @@
 		"long_term_goals": "Long term goals",
 		"measurable_goals": "Measurable goals",
 		"strategic_goals": "Strategic goals",
-		"tasks": "Tasks"
+		"misc": "Miscellaneous"
 	},
 	"payload_type": "Type of element",
 	"pdf": "PDF",

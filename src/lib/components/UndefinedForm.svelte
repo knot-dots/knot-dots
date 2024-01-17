@@ -17,7 +17,7 @@
 			items: [payloadTypes.enum['internal_objective.milestone'], payloadTypes.enum.operational_goal]
 		},
 		{ label: 'payload_group.implementation', items: [payloadTypes.enum.measure] },
-		{ label: 'payload_group.tasks', items: [payloadTypes.enum['internal_objective.task']] }
+		{ label: 'payload_group.misc', items: [payloadTypes.enum.text] }
 	];
 
 	async function restart(event: { currentTarget: HTMLSelectElement }) {
