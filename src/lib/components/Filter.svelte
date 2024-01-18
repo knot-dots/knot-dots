@@ -17,7 +17,9 @@
 	function apply() {
 		const query = new URLSearchParams($page.url.searchParams);
 		query.delete(key);
-		query.set(changeKey, '');
+		if (initialValue.length > 0) {
+			query.set(changeKey, '');
+		}
 		selected.forEach((s) => query.append(key, s));
 		goto(`?${query.toString()}${$page.url.hash}`, { keepFocus: true });
 	}
