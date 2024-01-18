@@ -9,7 +9,7 @@
 </script>
 
 <SidebarTab
-	href="/organizational/{container.guid}"
+	href="/organization/{container.guid}"
 	iconSource={InformationCircle}
 	text={$_('information')}
 />

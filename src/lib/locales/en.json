@@ -361,6 +361,7 @@
 	"superordinate_strategic_goals": "Superordinate strategic goals",
 	"superordinate_strategies": "Superordinate strategies",
 	"superordinate_visions": "Superordinate visions",
+	"task": "Task",
 	"task_category": {
 		"bugfix": "Bug fix",
 		"default": "Task",
@@ -377,6 +378,7 @@
 		"in_progress": "In progress",
 		"label": "Status"
 	},
+	"tasks": "Tasks",
 	"text": "Text",
 	"topic": {
 		"citizen_participation": "Citizen participation",
