@@ -362,6 +362,7 @@
 	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
 	"superordinate_strategies": "Übergeordnete Strategien",
 	"superordinate_visions": "Übergeordnete Visionen",
+	"task": "Aufgabe",
 	"task_category": {
 		"bugfix": "Fehler",
 		"default": "Aufgabe",
@@ -378,6 +379,7 @@
 		"in_progress": "In Umsetzung",
 		"label": "Status"
 	},
+	"tasks": "Aufgaben",
 	"text": "Ergänzungstext",
 	"topic": {
 		"citizen_participation": "Bürgerbeteiligung",

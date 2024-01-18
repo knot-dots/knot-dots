@@ -46,6 +46,13 @@
 				{$_('measures')}
 			</a>
 		</li>
+		{#if !$page.data.currentOrganization.payload.default}
+			<li>
+				<a href="/tasks" class="button" class:is-active={$page.url.pathname === '/tasks'}>
+					{$_('tasks')}
+				</a>
+			</li>
+		{/if}
 	</ul>
 
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
