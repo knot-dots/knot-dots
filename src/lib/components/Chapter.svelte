@@ -104,6 +104,11 @@
 			{/if}
 		{/if}
 	</svelte:element>
+	{#if 'summary' in container.payload}
+		<p>
+			{container.payload.summary ?? ''}
+		</p>
+	{/if}
 	{#if 'body' in container.payload}
 		<Viewer value={container.payload.body} />
 	{/if}
