@@ -9,7 +9,7 @@
 		isMilestoneContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
-		isStrategicGoalGoalContainer,
+		isStrategicGoalContainer,
 		isVisionContainer,
 		payloadTypes,
 		predicates
@@ -37,7 +37,7 @@
 		payloadTypes.enum.measure
 	];
 
-	if (isStrategicGoalGoalContainer(container)) {
+	if (isStrategicGoalContainer(container)) {
 		allowedSuperordinateTypes = [
 			payloadTypes.enum.model,
 			payloadTypes.enum['internal_objective.vision']
@@ -231,7 +231,7 @@
 			},
 			{
 				heading: $_('payload_group.strategic_goals'),
-				options: isPartOfOptions.filter(isStrategicGoalGoalContainer)
+				options: isPartOfOptions.filter(isStrategicGoalContainer)
 			},
 			{
 				heading: $_('payload_group.measurable_goals'),

@@ -12,7 +12,7 @@
 		isMeasureContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
-		isStrategicGoalGoalContainer,
+		isStrategicGoalContainer,
 		isStrategyContainer,
 		owners
 	} from '$lib/models';
