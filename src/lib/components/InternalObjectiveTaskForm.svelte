@@ -60,8 +60,6 @@
 	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
-		<StrategyRelationSelector {container} />
-
 		<OrganizationSelector bind:container />
 	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'basic-data'}
