@@ -6,6 +6,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
+	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isContainerWithObjective, isMeasureContainer, owners, payloadTypes } from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
@@ -84,6 +85,9 @@
 				<h3>{$_('progress')}</h3>
 				<Progress value={container.payload.progress} />
 			</div>
+		{/if}
+		{#if isContainerWithObjective(container)}
+			<TaskCarousel {container} />
 		{/if}
 	</slot>
 
