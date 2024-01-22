@@ -48,13 +48,13 @@
 		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
 
 		<svelte:fragment slot="filters">
+			<AudienceFilter />
 			{#if $page.url.searchParams.has('related-to')}
 				<RelationFilter />
 			{/if}
 			<StrategyTypeFilter />
 			<TopicFilter />
 			<CategoryFilter />
-			<AudienceFilter />
 		</svelte:fragment>
 
 		<Sort slot="sort" />
