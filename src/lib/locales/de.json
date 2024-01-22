@@ -6,6 +6,7 @@
 	"assignee": "Zugewiesen an",
 	"audience": "Richtet sich an",
 	"audience.organization": "Mitarbeiter",
+	"audience.project_management": "Projektmanagement",
 	"audience.public": "Gesellschaft",
 	"basic_data": "Allgemeine Angaben",
 	"board": {

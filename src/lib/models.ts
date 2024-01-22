@@ -245,7 +245,11 @@ export const unitByQuantity = new Map<Quantity, Unit>([
 	[quantities.enum['quantity.water_consumption'], units.enum['unit.cubic_meter']]
 ]);
 
-const audienceValues = ['audience.organization', 'audience.public'] as const;
+const audienceValues = [
+	'audience.public',
+	'audience.organization',
+	'audience.project_management'
+] as const;
 
 export const audience = z.enum(audienceValues);
 

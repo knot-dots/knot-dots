@@ -6,6 +6,7 @@
 	"assignee": "Assignee",
 	"audience": "Audience",
 	"audience.organization": "Organization",
+	"audience.project_management": "Project management",
 	"audience.public": "Public",
 	"board": {
 		"indicators": "Indicators",
