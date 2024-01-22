@@ -7,8 +7,7 @@ import {
 	createContainer,
 	getAllContainersRelatedToStrategy,
 	getAllImplementingContainers,
-	getManyContainers,
-	getManyTaskContainers
+	getManyContainers
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
