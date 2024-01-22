@@ -59,17 +59,13 @@
 	$: edit = hashParams.has('create') || hashParams.has('edit');
 
 	function closeURL() {
-		const newParams = new URLSearchParams(hashParams);
-
-		if (newParams.has('view-help')) {
+		if (hashParams.has('view-help')) {
+			const newParams = new URLSearchParams(hashParams);
 			newParams.delete('view-help');
+			return `#${newParams.toString()}`;
 		} else {
-			newParams.delete('create');
-			newParams.delete('edit');
-			newParams.delete('view');
+			return '#';
 		}
-
-		return `#${newParams.toString()}`;
 	}
 
 	function cancelURL() {
