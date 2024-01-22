@@ -9,6 +9,7 @@
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationFilter from '$lib/components/RelationFilter.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
@@ -48,13 +49,16 @@
 		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
 
 		<svelte:fragment slot="filters">
+			{#if !$page.data.currentOrganization.payload.default}
+				<OrganizationIncludedFilter />
+			{/if}
+			<AudienceFilter />
 			{#if $page.url.searchParams.has('related-to')}
 				<RelationFilter />
 			{/if}
 			<StrategyTypeFilter />
 			<TopicFilter />
 			<CategoryFilter />
-			<AudienceFilter />
 		</svelte:fragment>
 
 		<Sort slot="sort" />

@@ -1,4 +1,6 @@
 import { filterVisible } from '$lib/authorization';
+import { audience, type OrganizationalUnitContainer, predicates } from '$lib/models';
+import type { Container } from '$lib/models';
 import {
 	getAllContainersWithIndicatorContributions,
 	getAllRelatedContainers,
@@ -7,7 +9,33 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import { audience } from '$lib/models';
+
+function filterOrganizationalUnitsAndMeasures(
+	containers: Container[],
+	url: URL,
+	currentOrganizationalUnit?: OrganizationalUnitContainer
+) {
+	return url.searchParams.has('related-to')
+		? containers
+		: containers.filter((c) => {
+				if (
+					!url.searchParams.getAll('included').includes('is-part-of-measure') &&
+					c.relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+				) {
+					return false;
+				}
+
+				if (
+					!url.searchParams.getAll('included').includes('subordinate-organizational-units') &&
+					c.organizational_unit != null &&
+					c.organizational_unit != currentOrganizationalUnit?.guid
+				) {
+					return false;
+				}
+
+				return true;
+		  });
+}
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
@@ -94,7 +122,11 @@ export const load = (async ({ locals, url, parent }) => {
 	}
 
 	return {
-		containers: filterVisible(containers, locals.user),
+		containers: filterOrganizationalUnitsAndMeasures(
+			filterVisible(containers, locals.user),
+			url,
+			currentOrganizationalUnit
+		),
 		containersWithIndicatorContributions: filterVisible(
 			containersWithIndicatorContributions,
 			locals.user
