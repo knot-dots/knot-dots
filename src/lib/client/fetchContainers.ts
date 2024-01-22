@@ -3,12 +3,16 @@ import { anyContainer } from '$lib/models';
 import type { PayloadType } from '$lib/models';
 
 export default async function fetchContainers(filters: {
+	implements?: number[];
 	isPartOfStrategy?: number[];
 	organization?: string[];
 	organizationalUnit?: string[];
 	payloadType?: PayloadType[];
 }) {
 	const params = new URLSearchParams();
+	for (const value of filters.implements ?? []) {
+		params.append('implements', String(value));
+	}
 	for (const value of filters.isPartOfStrategy ?? []) {
 		params.append('isPartOfStrategy', String(value));
 	}
