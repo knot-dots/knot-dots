@@ -64,27 +64,31 @@
 <article class="details">
 	{#if $applicationState.containerDetailView.activeTab === 'basic-data'}
 		<div class="details-tab" id="basic-data">
-			<div class="summary">
-				<h3>{$_('measure.summary')}</h3>
-				{selectedRevision.payload.summary ?? ''}
-			</div>
+			{#if 'summary' in container.payload}
+				<div class="summary">
+					<h3>{$_('measure.summary')}</h3>
+					{selectedRevision.payload.summary ?? ''}
+				</div>
+			{/if}
 
-			<div class="description">
-				<h3>{$_('measure.description')}</h3>
-				<Viewer value={selectedRevision.payload.description} />
-			</div>
+			{#if 'description' in container.payload}
+				<div class="description">
+					<h3>{$_('measure.description')}</h3>
+					<Viewer value={selectedRevision.payload.description} />
+				</div>
+			{/if}
 
-			{#if selectedRevision.payload.status === status.enum['status.in_planning']}
+			{#if 'annotation' in container.payload && selectedRevision.payload.status === status.enum['status.in_planning']}
 				<div class="annotation">
 					<h3>{$_('annotation')}</h3>
 					<Viewer value={selectedRevision.payload.annotation} />
 				</div>
-			{:else if selectedRevision.payload.status === status.enum['status.in_implementation']}
+			{:else if 'comment' in container.payload && selectedRevision.payload.status === status.enum['status.in_implementation']}
 				<div class="comment">
 					<h3>{$_('comment')}</h3>
 					<Viewer value={selectedRevision.payload.comment} />
 				</div>
-			{:else if selectedRevision.payload.status === status.enum['status.in_operation'] || selectedRevision.payload.status === status.enum['status.done']}
+			{:else if ('result' in container.payload && selectedRevision.payload.status === status.enum['status.in_operation']) || selectedRevision.payload.status === status.enum['status.done']}
 				<div class="result">
 					<h3>{$_('result')}</h3>
 					<Viewer value={selectedRevision.payload.result} />
@@ -116,31 +120,35 @@
 				</div>
 			{/if}
 
-			<div class="meta">
-				<h3 class="meta-key">{$_('topic.label')}</h3>
-				<ul class="meta-value meta-value--topic">
-					{#each selectedRevision.payload.topic as topic}
-						<li>{$_(topic)}</li>
-					{/each}
-				</ul>
-			</div>
+			{#if 'topic' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('topic.label')}</h3>
+					<ul class="meta-value meta-value--topic">
+						{#each selectedRevision.payload.topic as topic}
+							<li>{$_(topic)}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 
-			<div class="meta">
-				<h3 class="meta-key">{$_('category')}</h3>
-				<ul class="meta-value meta-value--category">
-					{#each selectedRevision.payload.category as category}
-						<li>
-							<img
-								src={sdgIcons.get(category)}
-								alt={$_(category)}
-								title={$_(category)}
-								width="66"
-								height="66"
-							/>
-						</li>
-					{/each}
-				</ul>
-			</div>
+			{#if 'category' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('category')}</h3>
+					<ul class="meta-value meta-value--category">
+						{#each selectedRevision.payload.category as category}
+							<li>
+								<img
+									src={sdgIcons.get(category)}
+									alt={$_(category)}
+									title={$_(category)}
+									width="66"
+									height="66"
+								/>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 
 			<div class="meta">
 				<h3 class="meta-key">{$_('status.label')}</h3>
@@ -165,30 +173,34 @@
 				</ul>
 			</div>
 
-			<div class="meta">
-				<h3 class="meta-key">{$_('audience')}</h3>
-				<ul class="meta-value">
-					{#each container.payload.audience as audience}
-						<li>{$_(audience)}</li>
-					{/each}
-				</ul>
-			</div>
+			{#if 'audience' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('audience')}</h3>
+					<ul class="meta-value">
+						{#each container.payload.audience as audience}
+							<li>{$_(audience)}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 
-			<div class="meta">
-				<h3 class="meta-key">{$_('planned_duration')}</h3>
-				<p class="meta-value">
-					{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}
-						{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–{$date(
-							new Date(selectedRevision.payload.endDate),
-							{
-								format: 'short'
-							}
-						)}
-					{:else if selectedRevision.payload.startDate}
-						{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–
-					{/if}
-				</p>
-			</div>
+			{#if 'startDate' in container.payload || 'endDate' in container.payload}
+				<div class="meta">
+					<h3 class="meta-key">{$_('planned_duration')}</h3>
+					<p class="meta-value">
+						{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}
+							{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–{$date(
+								new Date(selectedRevision.payload.endDate),
+								{
+									format: 'short'
+								}
+							)}
+						{:else if selectedRevision.payload.startDate}
+							{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–
+						{/if}
+					</p>
+				</div>
+			{/if}
 
 			<div class="meta">
 				<h3 class="meta-key">{$_('created_date')}</h3>

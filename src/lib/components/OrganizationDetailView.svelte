@@ -20,16 +20,18 @@
 		{/if}
 	</slot>
 
-	<div class="indicators">
-		<h3>{$_('indicators')}</h3>
-		<ul class="carousel">
-			{#each indicators as indicator}
-				<li>
-					<Card --height="100%" container={indicator} />
-				</li>
-			{/each}
-		</ul>
-	</div>
+	{#if container.payload.boards.includes('board.indicators')}
+		<div class="indicators">
+			<h3>{$_('indicators')}</h3>
+			<ul class="carousel">
+				{#each indicators as indicator}
+					<li>
+						<Card --height="100%" container={indicator} />
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 
 	<div class="strategies">
 		<h3>{$_('strategies')}</h3>
