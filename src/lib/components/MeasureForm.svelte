@@ -45,7 +45,7 @@
 
 		<label>
 			{$_('measure.summary')}
-			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} required />
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
 		</label>
 
 		<Editor label={$_('description')} bind:value={container.payload.description} />
