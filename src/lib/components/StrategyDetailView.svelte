@@ -106,7 +106,7 @@
 	</div>
 
 	<div class="chapters">
-		{#each relatedContainers.filter(({ payload }) => payload.type !== payloadTypes.enum.strategy) as part}
+		{#each relatedContainers as part}
 			<Chapter container={part} headingTag="h3" isPartOf={container} />
 		{:else}
 			{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
