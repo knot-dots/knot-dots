@@ -80,7 +80,7 @@ export const load = (async ({ locals, url, parent }) => {
 					{
 						audience: url.searchParams.has('audienceChanged')
 							? url.searchParams.getAll('audience')
-							: [audience.enum['audience.public']],
+							: [audience.enum['audience.public'], audience.enum['audience.organization']],
 						categories: url.searchParams.getAll('category'),
 						organizationalUnits,
 						topics: url.searchParams.getAll('topic'),
@@ -103,7 +103,7 @@ export const load = (async ({ locals, url, parent }) => {
 					{
 						audience: url.searchParams.has('audienceChanged')
 							? url.searchParams.getAll('audience')
-							: [audience.enum['audience.public']],
+							: [audience.enum['audience.public'], audience.enum['audience.organization']],
 						categories: url.searchParams.getAll('category'),
 						organizationalUnits,
 						topics: url.searchParams.getAll('topic'),

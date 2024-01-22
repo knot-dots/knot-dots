@@ -73,8 +73,8 @@
 			</div>
 		{/if}
 
-		{#if isContainerWithObjective(container)}
-			<div class="objective">
+		{#if isContainerWithObjective(container) && 'objective' in container.payload}
+			<div class="indicator-objective">
 				<h3>{$_('objectives')}</h3>
 				{#await indicatorsRequest then indicators}
 					{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}

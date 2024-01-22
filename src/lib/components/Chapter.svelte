@@ -85,6 +85,15 @@
 		params.set('position', String(position));
 		return `#${params.toString()}`;
 	}
+
+	function viewInOverlayURL(url: URL) {
+		const params = paramsFromURL(url);
+		if (params.get('view') === container.guid) {
+			return '#';
+		} else {
+			return `#view=${container.guid}`;
+		}
+	}
 </script>
 
 <div class="chapter">
@@ -125,7 +134,7 @@
 		<Viewer value={container.payload.description} />
 	{/if}
 	<footer class="content-actions">
-		<a class="button" href="#view={container.guid}">
+		<a class="button" href={viewInOverlayURL($page.url)}>
 			{$_('read_more')}
 		</a>
 

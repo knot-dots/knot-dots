@@ -5,6 +5,7 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
+import fetchContainers from '$lib/client/fetchContainers';
 import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -12,6 +13,7 @@ import paramsFromURL from '$lib/client/paramsFromURL';
 import {
 	containerOfType,
 	isIndicatorContainer,
+	isStrategyContainer,
 	payloadTypes,
 	status,
 	taskStatus
@@ -180,6 +182,15 @@ if (browser) {
 				overlay.set({
 					isPartOfOptions,
 					containersWithObjectives: parentObjectives,
+					relatedContainers,
+					revisions
+				});
+			} else if (isStrategyContainer(container)) {
+				const relatedContainers = (await fetchContainers({
+					isPartOfStrategy: [container.revision]
+				})) as Container[];
+				overlay.set({
+					isPartOfOptions: [],
 					relatedContainers,
 					revisions
 				});
