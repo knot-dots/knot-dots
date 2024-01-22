@@ -125,31 +125,35 @@
 			<p class="meta-value">{$_(container.payload.type)}</p>
 		</div>
 
-		<div class="meta">
-			<h3 class="meta-key">{$_('topic.label')}</h3>
-			<ul class="meta-value meta-value--topic">
-				{#each container.payload.topic as topic}
-					<li>{$_(topic)}</li>
-				{/each}
-			</ul>
-		</div>
+		{#if 'topic' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('topic.label')}</h3>
+				<ul class="meta-value meta-value--topic">
+					{#each container.payload.topic as topic}
+						<li>{$_(topic)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
-		<div class="meta">
-			<h3 class="meta-key">{$_('category')}</h3>
-			<ul class="meta-value meta-value--category">
-				{#each container.payload.category as category}
-					<li>
-						<img
-							src={sdgIcons.get(category)}
-							alt={$_(category)}
-							title={$_(category)}
-							width="66"
-							height="66"
-						/>
-					</li>
-				{/each}
-			</ul>
-		</div>
+		{#if 'category' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('category')}</h3>
+				<ul class="meta-value meta-value--category">
+					{#each container.payload.category as category}
+						<li>
+							<img
+								src={sdgIcons.get(category)}
+								alt={$_(category)}
+								title={$_(category)}
+								width="66"
+								height="66"
+							/>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		<div class="meta">
 			<h3 class="meta-key">{$_('owned_by')}</h3>
@@ -160,14 +164,16 @@
 			</ul>
 		</div>
 
-		<div class="meta">
-			<h3 class="meta-key">{$_('audience')}</h3>
-			<ul class="meta-value">
-				{#each container.payload.audience as audience}
-					<li>{$_(audience)}</li>
-				{/each}
-			</ul>
-		</div>
+		{#if 'audience' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('audience')}</h3>
+				<ul class="meta-value">
+					{#each container.payload.audience as audience}
+						<li>{$_(audience)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		<div class="meta">
 			<h3 class="meta-key">{$_('created_date')}</h3>

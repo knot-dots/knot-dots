@@ -10,8 +10,9 @@
 	import { _ } from 'svelte-i18n';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { predicates } from '$lib/models';
+	import { payloadTypes, predicates } from '$lib/models';
 	import type { Container, Relation, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -76,6 +77,14 @@
 			await invalidateAll();
 		}
 	}
+
+	function addChapterURL(url: URL, position: number) {
+		const params = paramsFromURL(url);
+		params.set('create', payloadTypes.enum.undefined);
+		params.set('is-part-of-strategy', String(isPartOf.revision));
+		params.set('position', String(position));
+		return `#${params.toString()}`;
+	}
 </script>
 
 <div class="chapter">
@@ -104,6 +113,11 @@
 			{/if}
 		{/if}
 	</svelte:element>
+	{#if 'summary' in container.payload}
+		<p>
+			{container.payload.summary ?? ''}
+		</p>
+	{/if}
 	{#if 'body' in container.payload}
 		<Viewer value={container.payload.body} />
 	{/if}
@@ -115,10 +129,7 @@
 			{$_('read_more')}
 		</a>
 
-		<a
-			class="button"
-			href="#create=undefined&is-part-of-strategy={isPartOf.revision}&position={currentIndex + 1}"
-		>
+		<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
 			<Icon src={PlusSmall} size="24" mini />
 			{$_('chapter')}
 		</a>

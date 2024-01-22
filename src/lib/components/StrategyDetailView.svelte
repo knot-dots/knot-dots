@@ -3,6 +3,7 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import { containerOfType, owners, payloadTypes } from '$lib/models';
 	import type { AnyContainer, Container, StrategyContainer } from '$lib/models';
@@ -12,6 +13,13 @@
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
 	export let revisions: AnyContainer[];
+
+	function addChapterURL(url: URL) {
+		const params = paramsFromURL(url);
+		params.set('create', payloadTypes.enum.undefined);
+		params.set('is-part-of-strategy', String(container.revision));
+		return `#${params.toString()}`;
+	}
 </script>
 
 <article class="details">
@@ -23,31 +31,34 @@
 		<h3 class="meta-key">{$_('strategy_type.label')}</h3>
 		<p class="meta-value">{$_(container.payload.strategyType)}</p>
 	</div>
-	<div class="meta">
-		<h3 class="meta-key">{$_('topic.label')}</h3>
-		<ul class="meta-value meta-value--topic">
-			{#each container.payload.topic as topic}
-				<li>{$_(topic)}</li>
-			{/each}
-		</ul>
-	</div>
-	<div class="meta">
-		<h3 class="meta-key">{$_('category')}</h3>
-		<ul class="meta-value meta-value--category">
-			{#each container.payload.category as category}
-				<li>
-					<img
-						src={sdgIcons.get(category)}
-						alt={$_(category)}
-						title={$_(category)}
-						width="66"
-						height="66"
-					/>
-				</li>
-			{/each}
-		</ul>
-	</div>
-
+	{#if 'topic' in container.payload}
+		<div class="meta">
+			<h3 class="meta-key">{$_('topic.label')}</h3>
+			<ul class="meta-value meta-value--topic">
+				{#each container.payload.topic as topic}
+					<li>{$_(topic)}</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+	{#if 'category' in container.payload}
+		<div class="meta">
+			<h3 class="meta-key">{$_('category')}</h3>
+			<ul class="meta-value meta-value--category">
+				{#each container.payload.category as category}
+					<li>
+						<img
+							src={sdgIcons.get(category)}
+							alt={$_(category)}
+							title={$_(category)}
+							width="66"
+							height="66"
+						/>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 	<div class="meta">
 		<h3 class="meta-key">{$_('level.label')}</h3>
 		<p class="meta-value">{$_(container.payload.level)}</p>
@@ -60,14 +71,16 @@
 			{/each}
 		</ul>
 	</div>
-	<div class="meta">
-		<h3 class="meta-key">{$_('audience')}</h3>
-		<ul class="meta-value">
-			{#each container.payload.audience as audience}
-				<li>{$_(audience)}</li>
-			{/each}
-		</ul>
-	</div>
+	{#if 'audience' in container.payload}
+		<div class="meta">
+			<h3 class="meta-key">{$_('audience')}</h3>
+			<ul class="meta-value">
+				{#each container.payload.audience as audience}
+					<li>{$_(audience)}</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 	{#if container.payload.pdf}
 		<div class="meta">
 			<h3 class="meta-key">{$_('pdf')}</h3>
@@ -93,11 +106,11 @@
 	</div>
 
 	<div class="chapters">
-		{#each relatedContainers as part}
+		{#each relatedContainers.filter(({ payload }) => payload.type !== payloadTypes.enum.strategy) as part}
 			<Chapter container={part} headingTag="h3" isPartOf={container} />
 		{:else}
 			{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
-				<a class="button" href="#create=undefined&is-part-of-strategy={container.revision}">
+				<a class="button" href={addChapterURL($page.url)}>
 					<Icon src={PlusSmall} size="24" mini />
 					{$_('chapter')}
 				</a>
