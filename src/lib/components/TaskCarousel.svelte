@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
@@ -11,13 +10,9 @@
 
 	export let container: Container;
 
-	let tasksRequest: Promise<TaskContainer[]> = new Promise(() => []);
-
-	onMount(() => {
-		tasksRequest = fetchContainers({ implements: [container.revision] }) as Promise<
-			TaskContainer[]
-		>;
-	});
+	$: tasksRequest = fetchContainers({ implements: [container.revision] }) as Promise<
+		TaskContainer[]
+	>;
 
 	function addTaskURL(url: URL) {
 		const params = paramsFromURL(url);
