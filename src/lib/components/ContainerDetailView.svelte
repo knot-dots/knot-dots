@@ -7,6 +7,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isContainer,
@@ -91,6 +92,10 @@
 					{/each}
 				{/await}
 			</div>
+		{/if}
+
+		{#if isContainerWithObjective(container)}
+			<TaskCarousel {container} />
 		{/if}
 
 		{#if 'body' in container.payload}

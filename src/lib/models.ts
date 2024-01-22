@@ -85,6 +85,7 @@ export function isLevel(value: unknown): value is Level {
 }
 
 const predicateValues = [
+	'implements',
 	'is-admin-of',
 	'is-consistent-with',
 	'is-creator-of',
@@ -602,7 +603,7 @@ export function isContainerWithObjective(
 		isMilestoneContainer(container) ||
 		isModelContainer(container) ||
 		isOperationalGoalContainer(container) ||
-		isStrategicGoalGoalContainer(container) ||
+		isStrategicGoalContainer(container) ||
 		isVisionContainer(container)
 	);
 }
@@ -709,7 +710,7 @@ const strategicGoalContainer = container.extend({
 
 export type StrategicGoalContainer = z.infer<typeof strategicGoalContainer>;
 
-export function isStrategicGoalGoalContainer(
+export function isStrategicGoalContainer(
 	container: AnyContainer | EmptyContainer
 ): container is StrategicGoalContainer {
 	return container.payload.type === payloadTypes.enum.strategic_goal;

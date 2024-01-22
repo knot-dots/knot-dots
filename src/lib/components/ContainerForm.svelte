@@ -30,7 +30,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isPageContainer,
-		isStrategicGoalGoalContainer,
+		isStrategicGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		isTextContainer,
@@ -126,7 +126,7 @@
 		<OrganizationalUnitForm {isPartOfOptions} bind:container />
 	{:else if isPageContainer(container)}
 		<PageForm bind:container />
-	{:else if isStrategicGoalGoalContainer(container)}
+	{:else if isStrategicGoalContainer(container)}
 		<StrategicGoalForm bind:container />
 	{:else if isStrategyContainer(container)}
 		<StrategyForm bind:container />

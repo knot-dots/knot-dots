@@ -6,12 +6,15 @@ import { filterVisible } from '$lib/authorization';
 import {
 	createContainer,
 	getAllContainersRelatedToStrategy,
-	getManyContainers
+	getAllImplementingContainers,
+	getManyContainers,
+	getManyTaskContainers
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
+		implements: z.array(z.coerce.number().int().positive()),
 		isPartOfStrategy: z.array(z.coerce.number().int().positive()),
 		organization: z.array(z.string().uuid()),
 		organizationalUnit: z.array(z.string().uuid()),
@@ -28,22 +31,24 @@ export const GET = (async ({ locals, url }) => {
 	}
 
 	const containers =
-		parseResult.data.isPartOfStrategy.length > 0
-			? await locals.pool.connect(
-					getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
-						type: parseResult.data.payloadType
-					})
-			  )
-			: await locals.pool.connect(
-					getManyContainers(
-						parseResult.data.organization,
-						{
-							organizationalUnits: parseResult.data.organizationalUnit,
+		parseResult.data.implements.length > 0
+			? await locals.pool.connect(getAllImplementingContainers(parseResult.data.implements[0]))
+			: parseResult.data.isPartOfStrategy.length > 0
+			  ? await locals.pool.connect(
+						getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
 							type: parseResult.data.payloadType
-						},
-						''
-					)
-			  );
+						})
+			    )
+			  : await locals.pool.connect(
+						getManyContainers(
+							parseResult.data.organization,
+							{
+								organizationalUnits: parseResult.data.organizationalUnit,
+								type: parseResult.data.payloadType
+							},
+							''
+						)
+			    );
 
 	return json(filterVisible(containers, locals.user));
 }) satisfies RequestHandler;

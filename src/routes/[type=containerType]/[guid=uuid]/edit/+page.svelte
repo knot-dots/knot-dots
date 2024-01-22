@@ -17,7 +17,7 @@
 		isModelContainer,
 		isMilestoneContainer,
 		isOperationalGoalContainer,
-		isStrategicGoalGoalContainer,
+		isStrategicGoalContainer,
 		isStrategyContainer,
 		isVisionContainer,
 		mayDelete,
@@ -154,7 +154,7 @@
 						<button id="save-and-create-measure" form="container-form" type="submit">
 							{$_('save_and_create_measure')}
 						</button>
-					{:else if isStrategicGoalGoalContainer(container)}
+					{:else if isStrategicGoalContainer(container)}
 						<button id="save-and-create-operational-goal" form="container-form" type="submit">
 							{$_('save_and_create_operational_goal')}
 						</button>

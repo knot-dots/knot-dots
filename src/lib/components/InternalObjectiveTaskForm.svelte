@@ -8,7 +8,13 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
-	import type { EmptyTaskContainer, TaskCategory, TaskContainer, User } from '$lib/models';
+	import type {
+		EmptyTaskContainer,
+		PartialRelation,
+		TaskCategory,
+		TaskContainer,
+		User
+	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
@@ -30,6 +36,18 @@
 	});
 
 	let statusParam = paramsFromURL($page.url).get('taskStatus');
+
+	if (container.relation.length == 0) {
+		container.relation = paramsFromURL($page.url)
+			.getAll('implements')
+			.map(
+				(o): PartialRelation => ({
+					object: Number(o),
+					position: 0,
+					predicate: 'implements'
+				})
+			);
+	}
 
 	let assignee = container.payload.assignee;
 	$: container.payload.assignee = assignee == '' ? undefined : assignee;
