@@ -20,6 +20,7 @@
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import OverlayDeepLinks from '$lib/components/OverlayDeepLinks.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
+	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
@@ -29,6 +30,7 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isPageContainer,
+		isStrategyContainer,
 		isTaskContainer,
 		mayDelete,
 		newIndicatorTemplateFromIndicator,
@@ -307,6 +309,8 @@
 				<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
 			{:else if isInternalObjectiveContainer(container)}
 				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
+			{:else if isStrategyContainer(container)}
+				<StrategyDetailView {container} {relatedContainers} {revisions} />
 			{:else if isOrganizationalUnitContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
