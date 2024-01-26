@@ -32,18 +32,22 @@
 			</a>
 		</li>
 		<li>
-			<a href="/strategies" class="button" class:is-active={$page.url.pathname === '/strategies'}>
-				{$_('strategies')}
+			<a href="/programs" class="button" class:is-active={$page.url.pathname === '/programs'}>
+				{$_('board.programs')}
 			</a>
 		</li>
 		<li>
 			<a href="/" class="button" class:is-active={$page.url.pathname === '/'}>
-				{$_('objectives')}
+				{$_('board.elements')}
 			</a>
 		</li>
 		<li>
-			<a href="/measures" class="button" class:is-active={$page.url.pathname === '/measures'}>
-				{$_('measures')}
+			<a
+				href="/implementation"
+				class="button"
+				class:is-active={$page.url.pathname === '/implementation'}
+			>
+				{$_('board.implementation')}
 			</a>
 		</li>
 		{#if !$page.data.currentOrganization.payload.default}
