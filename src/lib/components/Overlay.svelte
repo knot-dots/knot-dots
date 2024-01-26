@@ -60,11 +60,15 @@
 
 	function closeURL() {
 		if (hashParams.has('view-help')) {
-			const newParams = new URLSearchParams(hashParams);
-			newParams.delete('view-help');
+			const newParams = new URLSearchParams(
+				[...hashParams.entries()].filter(([key]) => key != 'view-help')
+			);
 			return `#${newParams.toString()}`;
 		} else {
-			return '#';
+			const newParams = new URLSearchParams(
+				[...hashParams.entries()].filter(([key]) => key == 'relate')
+			);
+			return `#${newParams.toString()}`;
 		}
 	}
 
