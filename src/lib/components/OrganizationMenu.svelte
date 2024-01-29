@@ -75,7 +75,12 @@
 							<BoardColumn title={$_('organizational_unit_level', { values: { level } })}>
 								<div class="vertical-scroll-wrapper masked-overflow">
 									{#each containers as container}
-										<OrganizationCard {container} />
+										<OrganizationCard
+											{container}
+											linkPath={$page.url.pathname
+												.replace('/organization/', '/organizational_unit/')
+												.replace(selectedContext.guid, container.guid)}
+										/>
 									{/each}
 								</div>
 							</BoardColumn>
@@ -86,7 +91,13 @@
 					<ul class="board">
 						{#each organizations.filter(({ payload }) => !payload.default) as container}
 							<li>
-								<OrganizationCard --height="100%" {container} />
+								<OrganizationCard
+									--height="100%"
+									{container}
+									linkPath={$page.url.pathname
+										.replace('/organizational_unit/', '/organization/')
+										.replace(selectedContext.guid, container.guid)}
+								/>
 							</li>
 						{/each}
 					</ul>

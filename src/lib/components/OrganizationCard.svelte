@@ -8,6 +8,7 @@
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let showRelationFilter = false;
+	export let linkPath = `/${container.payload.type}/${container.guid}`;
 
 	let organizationLink: HTMLAnchorElement;
 
@@ -43,7 +44,7 @@
 	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
 		url.hostname = `${container.guid}.${url.hostname}`;
-		url.pathname = `/${container.payload.type}/${container.guid}`;
+		url.pathname = linkPath;
 		return url.toString();
 	}
 </script>
