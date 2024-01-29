@@ -51,9 +51,14 @@
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let revisions: AnyContainer[];
 
+	let container: AnyContainer;
 	let mayShowRelationButton = getContext('mayShowRelationButton');
+	let saveAsIndicatorTemplateDisabled = false;
 
-	$: container = revisions[revisions.length - 1];
+	$: {
+		container = revisions[revisions.length - 1];
+		saveAsIndicatorTemplateDisabled = false;
+	}
 
 	$: hashParams = paramsFromURL($page.url);
 	$: edit = hashParams.has('create') || hashParams.has('edit');
@@ -128,6 +133,7 @@
 
 	function saveIndicatorAsTemplate(c: IndicatorContainer) {
 		return async () => {
+			saveAsIndicatorTemplateDisabled = true;
 			await saveContainer(newIndicatorTemplateFromIndicator(c));
 		};
 	}
@@ -325,7 +331,11 @@
 					</a>
 				{/if}
 				{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
-					<button type="button" on:click={saveIndicatorAsTemplate(container)}>
+					<button
+						type="button"
+						on:click={saveIndicatorAsTemplate(container)}
+						disabled={saveAsIndicatorTemplateDisabled}
+					>
 						{$_('indicator.save_as_template')}
 					</button>
 				{/if}
