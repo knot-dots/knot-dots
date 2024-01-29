@@ -23,15 +23,6 @@
 
 	<ul class="button-group button-group-boards">
 		<li>
-			<a
-				href="/organizations"
-				class="button"
-				class:is-active={$page.url.pathname === '/organizations'}
-			>
-				{$_('organizations')}
-			</a>
-		</li>
-		<li>
 			<a href="/programs" class="button" class:is-active={$page.url.pathname === '/programs'}>
 				{$_('board.programs')}
 			</a>
@@ -122,10 +113,6 @@
 	}
 
 	.button-group.button-group-boards li:nth-child(1) {
-		display: none;
-	}
-
-	.button-group.button-group-boards li:nth-child(2) {
 		border-bottom-left-radius: 6px;
 		border-top-left-radius: 6px;
 	}
@@ -169,17 +156,6 @@
 
 		.menu {
 			display: none;
-		}
-	}
-
-	@media (min-width: 1440px) {
-		.button-group.button-group-boards li:nth-child(1) {
-			display: initial;
-		}
-
-		.button-group.button-group-boards li:nth-child(2) {
-			border-bottom-left-radius: 0;
-			border-top-left-radius: 0;
 		}
 	}
 </style>
