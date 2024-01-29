@@ -775,6 +775,11 @@ fieldset {
 	text-align: center;
 }
 
+.badge.badge--large {
+	font-size: larger;
+	padding: 0.25rem 0.75rem;
+}
+
 .badge.badge--red {
 	--button-background: var(--color-red-background);
 	--color: var(--color-red);
