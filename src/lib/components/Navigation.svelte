@@ -8,10 +8,13 @@
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
+	import { boards } from '$lib/models';
 	import { navigationToggle, user } from '$lib/stores';
 
 	const logos = [logo1, logo2, logo3];
 	const randomLogo = logos[Math.floor($page.data.random * logos.length)];
+
+	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 
 	function toggle() {
 		navigationToggle.update((v) => !v);
@@ -22,6 +25,13 @@
 	<OrganizationMenu />
 
 	<ul class="button-group button-group-boards">
+		{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
+			<li>
+				<a href="/indicators" class="button" class:is-active={$page.url.pathname === '/indicators'}>
+					{$_('board.indicators')}
+				</a>
+			</li>
+		{/if}
 		<li>
 			<a href="/programs" class="button" class:is-active={$page.url.pathname === '/programs'}>
 				{$_('board.programs')}
