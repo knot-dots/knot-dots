@@ -59,6 +59,10 @@
 			if (indicatorTemplate) {
 				container.payload.title = indicatorTemplate.payload.title;
 				container.payload.unit = indicatorTemplate.payload.unit;
+				container.payload.description = indicatorTemplate.payload.description;
+				container.payload.historicalValuesIntro = indicatorTemplate.payload.historicalValuesIntro;
+				container.payload.measuresIntro = indicatorTemplate.payload.measuresIntro;
+				container.payload.objectivesIntro = indicatorTemplate.payload.objectivesIntro;
 			}
 		}
 	}
