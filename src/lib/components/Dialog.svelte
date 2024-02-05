@@ -37,7 +37,7 @@
 	}
 
 	button:hover {
-		background-color: var(--hover-color);
+		background-color: var(--button-hover-background);
 		color: var(--color-gray-900);
 	}
 

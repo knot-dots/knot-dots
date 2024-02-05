@@ -69,9 +69,14 @@
 	--shadow-2xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
 
 	--focus-color: var(--color-blue-900);
-	--hover-color: var(--color-gray-400);
 	--active-color: var(--color-blue-200);
+	--button-background: transparent;
 	--button-border-color: #d1d5db;
+	--button-active-background: var(--color-gray-300);
+	--button-disabled-background: var(--color-gray-100);
+	--button-disabled-border-color: var(--color-gray-100);
+	--button-hover-background: var(--color-gray-400);
+	--button-hover-border-color: #d1d5db;
 
 	--nav-height: 65px;
 }
@@ -238,7 +243,6 @@ td {
 /* Button styles */
 button,
 .button {
-	--button-background: transparent;
 	--padding-x: 19px;
 	--padding-y: 9px;
 
@@ -267,32 +271,37 @@ button.quiet,
 
 button:hover,
 .button:hover {
-	--button-background: var(--hover-color);
-	--button-border-color: inherit;
+	background: var(--button-hover-background);
+	border-color: var(--button-hover-border-color);
 }
 
 button.quiet:hover,
 .button.quiet:hover {
-	--hover-color: transparent;
+	--button-hover-border-color: transparent;
+}
+
+button.button-nav:hover,
+.button.button-nav:hover {
+	color: var(--color-gray-300);
 }
 
 button:active,
 .button:active,
 button.is-active,
 .button.is-active {
-	--button-background: var(--color-gray-300);
+	background: var(--button-active-background);
 }
 
 button:disabled,
 .button:disabled {
-	--button-background: var(--color-gray-100);
-	--button-border-color: var(--color-gray-100);
+	background: var(--button-disabled-background);
+	border-color: var(--button-disabled-border-color);
 }
 
 button.primary:disabled,
 .button.primary:disabled {
-	--button-background: var(--color-gray-300);
-	--button-border-color: var(--color-gray-300);
+	--button-disabled-background: var(--color-gray-300);
+	--button-disabled-border-color: var(--color-gray-300);
 }
 
 /* Button group */
@@ -326,7 +335,7 @@ button.primary:disabled,
 
 .button-group button:focus,
 .button-group .button:focus {
-	background-color: var(--hover-color);
+	background-color: var(--button-hover-background);
 	outline: none;
 }
 
