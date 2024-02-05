@@ -6,10 +6,14 @@
 	import TabItem from '$lib/components/TabItem.svelte';
 	import { ChevronDown, ChevronUp, Home, Icon } from 'svelte-hero-icons';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import {
+		findAncestors,
+		type OrganizationalUnitContainer,
+		type OrganizationContainer
+	} from '$lib/models';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import { isOrganizationContainer } from '$lib/models.js';
+	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models.js';
 
 	let showDropDown = false;
 
@@ -20,6 +24,7 @@
 	let organizations: OrganizationContainer[] = [];
 	let organizationalUnitsByLevel = new Map<number, OrganizationalUnitContainer[]>();
 	let selectedContext: OrganizationContainer | OrganizationalUnitContainer;
+	let logo: string;
 
 	$: {
 		organizations = $page.data.organizations;
@@ -35,13 +40,23 @@
 		}
 
 		selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
+
+		if (selectedContext.payload.image) {
+			logo = selectedContext.payload.image;
+		} else if (isOrganizationalUnitContainer(selectedContext)) {
+			const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
+				selectedContext,
+				$page.data.organizationalUnits
+			).find(({ payload }) => payload.image);
+			logo = firstAncestorWithImage?.payload.image ?? $page.data.currentOrganization.payload.image;
+		}
 	}
 </script>
 
 <div class="organization-menu">
 	<a href="/{selectedContext.payload.type}/{selectedContext.guid}">
-		{#if selectedContext.payload.image}
-			<img alt={$_('logo')} class="logo" src={selectedContext.payload.image} />
+		{#if logo}
+			<img alt={$_('logo')} class="logo" src={logo} />
 		{:else}
 			<Icon src={Home} size="20" />
 		{/if}
