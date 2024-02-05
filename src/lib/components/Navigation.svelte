@@ -24,41 +24,46 @@
 <nav>
 	<OrganizationMenu />
 
-	<ul class="button-group button-group-boards">
-		{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
+	<div class="main-menu">
+		<a href="/" class="button" class:is-active={$page.url.pathname === '/'}>
+			{$_('board.elements')}
+		</a>
+
+		<ul class="button-group button-group-boards">
+			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
+				<li>
+					<a
+						href="/indicators"
+						class="button"
+						class:is-active={$page.url.pathname === '/indicators'}
+					>
+						{$_('board.indicators')}
+					</a>
+				</li>
+			{/if}
 			<li>
-				<a href="/indicators" class="button" class:is-active={$page.url.pathname === '/indicators'}>
-					{$_('board.indicators')}
+				<a href="/programs" class="button" class:is-active={$page.url.pathname === '/programs'}>
+					{$_('board.programs')}
 				</a>
 			</li>
-		{/if}
-		<li>
-			<a href="/programs" class="button" class:is-active={$page.url.pathname === '/programs'}>
-				{$_('board.programs')}
-			</a>
-		</li>
-		<li>
-			<a href="/" class="button" class:is-active={$page.url.pathname === '/'}>
-				{$_('board.elements')}
-			</a>
-		</li>
-		<li>
-			<a
-				href="/implementation"
-				class="button"
-				class:is-active={$page.url.pathname === '/implementation'}
-			>
-				{$_('board.implementation')}
-			</a>
-		</li>
-		{#if !$page.data.currentOrganization.payload.default}
 			<li>
-				<a href="/tasks" class="button" class:is-active={$page.url.pathname === '/tasks'}>
-					{$_('tasks')}
+				<a
+					href="/implementation"
+					class="button"
+					class:is-active={$page.url.pathname === '/implementation'}
+				>
+					{$_('board.implementation')}
 				</a>
 			</li>
-		{/if}
-	</ul>
+			{#if !$page.data.currentOrganization.payload.default}
+				<li>
+					<a href="/tasks" class="button" class:is-active={$page.url.pathname === '/tasks'}>
+						{$_('tasks')}
+					</a>
+				</li>
+			{/if}
+		</ul>
+	</div>
 
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
 		{#if $user.isAuthenticated}
@@ -116,15 +121,11 @@
 		margin: 0;
 	}
 
-	.button-group.button-group-boards {
+	.main-menu {
 		display: flex;
-		margin: 0 auto;
+		flex-grow: 1;
+		justify-content: space-evenly;
 		overflow-y: auto;
-	}
-
-	.button-group.button-group-boards li:nth-child(1) {
-		border-bottom-left-radius: 6px;
-		border-top-left-radius: 6px;
 	}
 
 	.user-menu {
