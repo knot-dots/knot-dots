@@ -25,16 +25,16 @@
 	<OrganizationMenu />
 
 	<div class="main-menu">
-		<a href="/" class="button" class:is-active={$page.url.pathname === '/'}>
+		<a href="/" class="button button-nav" class:is-active={$page.url.pathname === '/'}>
 			{$_('board.elements')}
 		</a>
 
-		<ul class="button-group button-group-boards">
+		<ul class="button-group button-group-nav">
 			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
 				<li>
 					<a
 						href="/indicators"
-						class="button"
+						class="button button-nav"
 						class:is-active={$page.url.pathname === '/indicators'}
 					>
 						{$_('board.indicators')}
@@ -42,14 +42,18 @@
 				</li>
 			{/if}
 			<li>
-				<a href="/programs" class="button" class:is-active={$page.url.pathname === '/programs'}>
+				<a
+					href="/programs"
+					class="button button-nav"
+					class:is-active={$page.url.pathname === '/programs'}
+				>
 					{$_('board.programs')}
 				</a>
 			</li>
 			<li>
 				<a
 					href="/implementation"
-					class="button"
+					class="button button-nav"
 					class:is-active={$page.url.pathname === '/implementation'}
 				>
 					{$_('board.implementation')}
@@ -57,7 +61,11 @@
 			</li>
 			{#if !$page.data.currentOrganization.payload.default}
 				<li>
-					<a href="/tasks" class="button" class:is-active={$page.url.pathname === '/tasks'}>
+					<a
+						href="/tasks"
+						class="button button-nav"
+						class:is-active={$page.url.pathname === '/tasks'}
+					>
 						{$_('tasks')}
 					</a>
 				</li>
@@ -69,7 +77,12 @@
 		{#if $user.isAuthenticated}
 			<li>
 				<a href="/profile">
-					<span class="avatar avatar-s">{$user.givenName.at(0)}{$user.familyName.at(0)}</span>
+					<span
+						class="avatar avatar-s button button-nav"
+						class:is-active={$page.url.pathname === '/profile'}
+					>
+						{$user.givenName.at(0)}{$user.familyName.at(0)}
+					</span>
 				</a>
 			</li>
 		{:else}

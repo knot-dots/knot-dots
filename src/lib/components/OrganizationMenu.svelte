@@ -62,7 +62,8 @@
 		{/if}
 	</a>
 	<button
-		class="organization-menu-toggle"
+		class="button-nav organization-menu-toggle"
+		class:is-active={showDropDown}
 		type="button"
 		on:click={toggleDropDown}
 		aria-controls="organization-menu-details"
@@ -78,7 +79,7 @@
 				{selectedContext.payload.name}
 			</span>
 		{/if}
-		<Icon src={showDropDown ? ChevronUp : ChevronDown} size="20" mini />
+		<Icon src={showDropDown ? ChevronUp : ChevronDown} size="20" />
 	</button>
 
 	{#if showDropDown}
@@ -126,6 +127,7 @@
 	.organization-menu {
 		align-items: center;
 		display: flex;
+		flex-shrink: 0;
 	}
 
 	.organization-menu > a {
@@ -138,16 +140,15 @@
 		display: flex;
 		flex-shrink: 0;
 		gap: 0.5rem;
-		padding-right: 0.5rem;
-	}
-
-	.organization-menu-toggle:active {
-		background-color: inherit;
+		padding: 0 var(--padding-y) 0 0;
+		overflow: hidden;
 	}
 
 	.organization-menu-toggle span {
-		border-right: solid 1px var(--color-gray-200);
-		padding-right: 0.75rem;
+		background: white;
+		border-right: solid 1px var(--button-border-color);
+		color: black;
+		padding: var(--padding-y);
 	}
 
 	.organization-menu-details {

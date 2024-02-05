@@ -269,6 +269,14 @@ button.quiet,
 	--button-border-color: transparent;
 }
 
+button.button-nav,
+.button.button-nav {
+	--button-border-color: var(--color-gray-900);
+	--button-active-background: var(--color-gray-900);
+	--button-hover-background: var(--button-active-background);
+	--button-hover-border-color: var(--button-border-color);
+}
+
 button:hover,
 .button:hover {
 	background: var(--button-hover-background);
@@ -290,6 +298,13 @@ button:active,
 button.is-active,
 .button.is-active {
 	background: var(--button-active-background);
+}
+
+button.button-nav:active,
+button.button-nav.is-active,
+.button.button-nav:active,
+.button.button-nav.is-active {
+	color: var(--color-gray-300);
 }
 
 button:disabled,
@@ -322,6 +337,7 @@ button.primary:disabled,
 .button-group > li {
 	border: solid 1px var(--button-border-color);
 	border-right-width: 0;
+	overflow: hidden;
 }
 
 .button-group > li:first-child {
@@ -337,6 +353,10 @@ button.primary:disabled,
 .button-group .button:focus {
 	background-color: var(--button-hover-background);
 	outline: none;
+}
+
+.button-group.button-group-nav {
+	--button-border-color: var(--color-gray-900);
 }
 
 .relation-button {
@@ -549,7 +569,6 @@ fieldset {
 
 /* Avatars */
 .avatar {
-	background-color: var(--color-blue-500);
 	border-radius: 50%;
 	display: inline-block;
 	font-size: var(--font-size);
