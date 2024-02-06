@@ -167,9 +167,10 @@
 		--margin-y: 0.75rem;
 
 		display: flex;
-		flex: 1 1;
+		flex-direction: row;
+		flex-wrap: wrap;
 		gap: var(--margin-y);
-		margin: var(--margin-y) 0.375rem;
+		margin: var(--margin-y) calc(var(--margin-y) / 2);
 		overflow: auto;
 	}
 
