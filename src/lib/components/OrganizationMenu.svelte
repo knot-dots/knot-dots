@@ -7,6 +7,7 @@
 	import { ChevronDown, ChevronUp, Home, Icon } from 'svelte-hero-icons';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import {
+		boards,
 		findAncestors,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer
@@ -85,25 +86,30 @@
 	{#if showDropDown}
 		<div class="organization-menu-details" transition:slide={{ axis: 'y', duration: 400 }}>
 			<Tabs>
-				<TabItem title={$_('organizational_units')} open>
-					<Board>
-						{#each organizationalUnitsByLevel.entries() as [level, containers]}
-							<BoardColumn title={$_('organizational_unit_level', { values: { level } })}>
-								<div class="vertical-scroll-wrapper masked-overflow">
-									{#each containers as container}
-										<OrganizationCard
-											{container}
-											linkPath={$page.url.pathname
-												.replace('/organization/', '/organizational_unit/')
-												.replace(selectedContext.guid, container.guid)}
-										/>
-									{/each}
-								</div>
-							</BoardColumn>
-						{/each}
-					</Board>
-				</TabItem>
-				<TabItem title={$_('all_organizations')}>
+				{#if selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])}
+					<TabItem title={$_('organizational_units')} open>
+						<Board>
+							{#each organizationalUnitsByLevel.entries() as [level, containers]}
+								<BoardColumn title={$_('organizational_unit_level', { values: { level } })}>
+									<div class="vertical-scroll-wrapper masked-overflow">
+										{#each containers as container}
+											<OrganizationCard
+												{container}
+												linkPath={$page.url.pathname
+													.replace('/organization/', '/organizational_unit/')
+													.replace(selectedContext.guid, container.guid)}
+											/>
+										{/each}
+									</div>
+								</BoardColumn>
+							{/each}
+						</Board>
+					</TabItem>
+				{/if}
+				<TabItem
+					title={$_('all_organizations')}
+					open={!selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])}
+				>
 					<ul class="board">
 						{#each organizations.filter(({ payload }) => !payload.default) as container}
 							<li>
