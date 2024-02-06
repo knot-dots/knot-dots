@@ -8,10 +8,13 @@
 	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
 	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
+	import { boards } from '$lib/models';
 	import { navigationToggle, user } from '$lib/stores';
 
 	const logos = [logo1, logo2, logo3];
 	const randomLogo = logos[Math.floor($page.data.random * logos.length)];
+
+	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 
 	function toggle() {
 		navigationToggle.update((v) => !v);
@@ -21,45 +24,65 @@
 <nav>
 	<OrganizationMenu />
 
-	<ul class="button-group button-group-boards">
-		<li>
-			<a
-				href="/organizations"
-				class="button"
-				class:is-active={$page.url.pathname === '/organizations'}
-			>
-				{$_('organizations')}
-			</a>
-		</li>
-		<li>
-			<a href="/strategies" class="button" class:is-active={$page.url.pathname === '/strategies'}>
-				{$_('strategies')}
-			</a>
-		</li>
-		<li>
-			<a href="/" class="button" class:is-active={$page.url.pathname === '/'}>
-				{$_('objectives')}
-			</a>
-		</li>
-		<li>
-			<a href="/measures" class="button" class:is-active={$page.url.pathname === '/measures'}>
-				{$_('measures')}
-			</a>
-		</li>
-		{#if !$page.data.currentOrganization.payload.default}
+	<div class="main-menu">
+		<a href="/" class="button button-nav" class:is-active={$page.url.pathname === '/'}>
+			{$_('board.elements')}
+		</a>
+
+		<ul class="button-group button-group-nav">
+			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
+				<li>
+					<a
+						href="/indicators"
+						class="button button-nav"
+						class:is-active={$page.url.pathname === '/indicators'}
+					>
+						{$_('board.indicators')}
+					</a>
+				</li>
+			{/if}
 			<li>
-				<a href="/tasks" class="button" class:is-active={$page.url.pathname === '/tasks'}>
-					{$_('tasks')}
+				<a
+					href="/programs"
+					class="button button-nav"
+					class:is-active={$page.url.pathname === '/programs'}
+				>
+					{$_('board.programs')}
 				</a>
 			</li>
-		{/if}
-	</ul>
+			<li>
+				<a
+					href="/implementation"
+					class="button button-nav"
+					class:is-active={$page.url.pathname === '/implementation'}
+				>
+					{$_('board.implementation')}
+				</a>
+			</li>
+			{#if !$page.data.currentOrganization.payload.default}
+				<li>
+					<a
+						href="/tasks"
+						class="button button-nav"
+						class:is-active={$page.url.pathname === '/tasks'}
+					>
+						{$_('tasks')}
+					</a>
+				</li>
+			{/if}
+		</ul>
+	</div>
 
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
 		{#if $user.isAuthenticated}
 			<li>
 				<a href="/profile">
-					<span class="avatar avatar-s">{$user.givenName.at(0)}{$user.familyName.at(0)}</span>
+					<span
+						class="avatar avatar-s button button-nav"
+						class:is-active={$page.url.pathname === '/profile'}
+					>
+						{$user.givenName.at(0)}{$user.familyName.at(0)}
+					</span>
 				</a>
 			</li>
 		{:else}
@@ -111,19 +134,11 @@
 		margin: 0;
 	}
 
-	.button-group.button-group-boards {
+	.main-menu {
 		display: flex;
-		margin: 0 auto;
+		flex-grow: 1;
+		justify-content: space-evenly;
 		overflow-y: auto;
-	}
-
-	.button-group.button-group-boards li:nth-child(1) {
-		display: none;
-	}
-
-	.button-group.button-group-boards li:nth-child(2) {
-		border-bottom-left-radius: 6px;
-		border-top-left-radius: 6px;
 	}
 
 	.user-menu {
@@ -165,17 +180,6 @@
 
 		.menu {
 			display: none;
-		}
-	}
-
-	@media (min-width: 1440px) {
-		.button-group.button-group-boards li:nth-child(1) {
-			display: initial;
-		}
-
-		.button-group.button-group-boards li:nth-child(2) {
-			border-bottom-left-radius: 0;
-			border-top-left-radius: 0;
 		}
 	}
 </style>

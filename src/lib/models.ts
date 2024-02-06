@@ -1227,3 +1227,20 @@ export function newIndicatorTemplateFromIndicator(container: IndicatorContainer)
 		realm: container.realm
 	});
 }
+
+export function findAncestors<T extends AnyContainer>(container: T, containers: T[]): T[] {
+	const parentRevision = container.relation.find(
+		({ predicate, subject }) =>
+			predicate == predicates.enum['is-part-of'] && subject == container.revision
+	)?.object;
+	if (!parentRevision) {
+		return [];
+	}
+
+	const parent = containers.find(({ revision }) => revision == parentRevision);
+	if (!parent) {
+		return [];
+	}
+
+	return [parent, ...findAncestors(parent, containers)];
+}

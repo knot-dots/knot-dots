@@ -9,9 +9,12 @@
 	"audience.project_management": "Project management",
 	"audience.public": "Public",
 	"board": {
+		"elements": "Elements",
+		"implementation": "Implementation",
 		"indicators": "Indicators",
 		"internal_objectives": "Internal objectives",
 		"organizational_units": "Organizational units",
+		"programs": "Programs",
 		"tasks": "Tasks"
 	},
 	"boards": "Boards",
@@ -169,6 +172,7 @@
 		"my_tasks": "My tasks",
 		"settings": "Settings"
 	},
+	"programs": "Programs",
 	"progress": "Progress",
 	"quantity": {
 		"broadband_coverage": {

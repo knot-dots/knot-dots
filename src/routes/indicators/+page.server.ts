@@ -1,34 +1,19 @@
-import { error } from '@sveltejs/kit';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import {
-	audience,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
-	payloadTypes
-} from '$lib/models';
-import {
-	getAllRelatedOrganizationalUnitContainers,
-	getContainerByGuid,
-	getManyContainers
-} from '$lib/server/db';
+import { audience, payloadTypes } from '$lib/models';
+import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, params, parent, url }) => {
+export const load = (async ({ locals, parent, url }) => {
 	let containers;
-	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
-	if (!isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
-	}
+	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (url.searchParams.getAll('included').includes('all-organizational-units')) {
 		containers = await locals.pool.connect(
-			getManyContainers([container.organization], { type: [payloadTypes.enum.indicator] }, '')
+			getManyContainers([currentOrganization.guid], { type: [payloadTypes.enum.indicator] }, '')
 		);
 	} else {
 		let organizationalUnits: string[] = [];
-		const { currentOrganizationalUnit } = await parent();
 		if (currentOrganizationalUnit) {
 			const relatedOrganizationalUnits = await locals.pool.connect(
 				getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
@@ -39,7 +24,7 @@ export const load = (async ({ locals, params, parent, url }) => {
 		}
 		containers = await locals.pool.connect(
 			getManyContainers(
-				[container.organization],
+				[currentOrganization.guid],
 				{
 					audience: url.searchParams.has('audienceChanged')
 						? url.searchParams.getAll('audience')
@@ -52,5 +37,8 @@ export const load = (async ({ locals, params, parent, url }) => {
 		);
 	}
 
-	return { container, containers: filterVisible(containers, locals.user) };
+	return {
+		container: currentOrganizationalUnit ?? currentOrganization,
+		containers: filterVisible(containers, locals.user)
+	};
 }) satisfies PageServerLoad;

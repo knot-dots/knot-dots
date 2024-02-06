@@ -69,9 +69,14 @@
 	--shadow-2xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
 
 	--focus-color: var(--color-blue-900);
-	--hover-color: var(--color-gray-400);
 	--active-color: var(--color-blue-200);
+	--button-background: transparent;
 	--button-border-color: #d1d5db;
+	--button-active-background: var(--color-gray-300);
+	--button-disabled-background: var(--color-gray-100);
+	--button-disabled-border-color: var(--color-gray-100);
+	--button-hover-background: var(--color-gray-400);
+	--button-hover-border-color: #d1d5db;
 
 	--nav-height: 65px;
 }
@@ -238,7 +243,6 @@ td {
 /* Button styles */
 button,
 .button {
-	--button-background: transparent;
 	--padding-x: 19px;
 	--padding-y: 9px;
 
@@ -265,34 +269,54 @@ button.quiet,
 	--button-border-color: transparent;
 }
 
+button.button-nav,
+.button.button-nav {
+	--button-border-color: var(--color-gray-900);
+	--button-active-background: var(--color-gray-900);
+	--button-hover-background: var(--button-active-background);
+	--button-hover-border-color: var(--button-border-color);
+}
+
 button:hover,
 .button:hover {
-	--button-background: var(--hover-color);
-	--button-border-color: inherit;
+	background: var(--button-hover-background);
+	border-color: var(--button-hover-border-color);
 }
 
 button.quiet:hover,
 .button.quiet:hover {
-	--hover-color: transparent;
+	--button-hover-border-color: transparent;
+}
+
+button.button-nav:hover,
+.button.button-nav:hover {
+	color: var(--color-gray-300);
 }
 
 button:active,
 .button:active,
 button.is-active,
 .button.is-active {
-	--button-background: var(--color-gray-300);
+	background: var(--button-active-background);
+}
+
+button.button-nav:active,
+button.button-nav.is-active,
+.button.button-nav:active,
+.button.button-nav.is-active {
+	color: var(--color-gray-300);
 }
 
 button:disabled,
 .button:disabled {
-	--button-background: var(--color-gray-100);
-	--button-border-color: var(--color-gray-100);
+	background: var(--button-disabled-background);
+	border-color: var(--button-disabled-border-color);
 }
 
 button.primary:disabled,
 .button.primary:disabled {
-	--button-background: var(--color-gray-300);
-	--button-border-color: var(--color-gray-300);
+	--button-disabled-background: var(--color-gray-300);
+	--button-disabled-border-color: var(--color-gray-300);
 }
 
 /* Button group */
@@ -313,6 +337,7 @@ button.primary:disabled,
 .button-group > li {
 	border: solid 1px var(--button-border-color);
 	border-right-width: 0;
+	overflow: hidden;
 }
 
 .button-group > li:first-child {
@@ -326,8 +351,12 @@ button.primary:disabled,
 
 .button-group button:focus,
 .button-group .button:focus {
-	background-color: var(--hover-color);
+	background-color: var(--button-hover-background);
 	outline: none;
+}
+
+.button-group.button-group-nav {
+	--button-border-color: var(--color-gray-900);
 }
 
 .relation-button {
@@ -540,7 +569,6 @@ fieldset {
 
 /* Avatars */
 .avatar {
-	background-color: var(--color-blue-500);
 	border-radius: 50%;
 	display: inline-block;
 	font-size: var(--font-size);
@@ -773,6 +801,11 @@ fieldset {
 	gap: 0.25rem;
 	padding: 0.125rem 0.75rem;
 	text-align: center;
+}
+
+.badge.badge--large {
+	font-size: larger;
+	padding: 0.25rem 0.75rem;
 }
 
 .badge.badge--red {

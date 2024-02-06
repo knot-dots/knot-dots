@@ -27,7 +27,7 @@
 	setContext('mayShowRelationButton', true);
 
 	const columns = [
-		{ title: 'strategies', payloadType: [payloadTypes.enum.strategy] },
+		{ title: 'programs', payloadType: [payloadTypes.enum.strategy] },
 		{
 			title: 'payload_group.long_term_goals',
 			payloadType: [payloadTypes.enum.model, payloadTypes.enum['internal_objective.vision']]
@@ -68,8 +68,7 @@
 		<Board>
 			{#each columns as column (column.title)}
 				<BoardColumn
-					addItemUrl={column.title === 'strategies' &&
-					$mayCreateContainer(payloadTypes.enum.strategy)
+					addItemUrl={column.title === 'programs' && $mayCreateContainer(payloadTypes.enum.strategy)
 						? `#create=${payloadTypes.enum.strategy}`
 						: undefined}
 					title={$_(column.title)}
