@@ -685,7 +685,7 @@ fieldset {
 }
 
 .icons-element:hover {
-	--button-background: transparent;
+	--button-hover-background: transparent;
 
 	color: var(--color-gray-500);
 }
