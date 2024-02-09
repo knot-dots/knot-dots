@@ -87,7 +87,7 @@
 			</li>
 		{:else}
 			<li>
-				<button class="quiet" type="button" on:click={() => signIn('keycloak')}>
+				<button class="button-nav fully-rounded" type="button" on:click={() => signIn('keycloak')}>
 					{$_('login')}
 				</button>
 			</li>

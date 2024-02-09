@@ -20,7 +20,10 @@ function filterOrganizationalUnitsAndMeasures(
 		: containers.filter((c) => {
 				if (
 					!url.searchParams.getAll('included').includes('is-part-of-measure') &&
-					c.relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+					c.relation.some(
+						({ predicate, subject }) =>
+							predicate == predicates.enum['is-part-of-measure'] && subject == c.revision
+					)
 				) {
 					return false;
 				}

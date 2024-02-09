@@ -6,7 +6,6 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
 	import type {
 		EmptyTaskContainer,
@@ -46,6 +45,17 @@
 					position: 0,
 					predicate: 'implements'
 				})
+			)
+			.concat(
+				paramsFromURL($page.url)
+					.getAll('is-part-of-measure')
+					.map(
+						(o): PartialRelation => ({
+							object: Number(o),
+							position: 0,
+							predicate: 'is-part-of-measure'
+						})
+					)
 			);
 	}
 
