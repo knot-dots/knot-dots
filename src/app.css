@@ -269,6 +269,11 @@ button.quiet,
 	--button-border-color: transparent;
 }
 
+button.fully-rounded,
+.button.fully-rounded {
+	border-radius: calc(1.5rem + var(--padding-y))
+}
+
 button.button-nav,
 .button.button-nav {
 	--button-border-color: var(--color-gray-900);
