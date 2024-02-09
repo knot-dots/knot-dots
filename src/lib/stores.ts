@@ -215,7 +215,7 @@ if (browser) {
 			const revisions = await fetchContainerRevisions(hashParams.get('relate') as string);
 			overlay.set({
 				isPartOfOptions: [],
-				object: revisions[0] as Container,
+				object: revisions[revisions.length - 1] as Container,
 				relatedContainers: [],
 				revisions: []
 			});
