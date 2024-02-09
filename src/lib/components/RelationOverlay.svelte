@@ -126,7 +126,7 @@
 	}
 </script>
 
-<ssection class="overlay" transition:slide={{ axis: 'x' }}>
+<section class="overlay" transition:slide={{ axis: 'x' }}>
 	<header class="content-header">
 		<h2>
 			<span class="icons">
@@ -199,7 +199,7 @@
 			</div>
 		</footer>
 	</div>
-</ssection>
+</section>
 
 <style>
 	.overlay {
