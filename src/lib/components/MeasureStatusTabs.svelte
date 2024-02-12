@@ -4,19 +4,19 @@
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { status } from '$lib/models';
-	import type { AnyContainer, MeasureContainer, Status } from '$lib/models';
+	import type { AnyContainer, ContainerWithEffect, Status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
-	export let container: MeasureContainer;
+	export let container: ContainerWithEffect;
 	export let revisions: AnyContainer[];
 
-	let selectedRevision: MeasureContainer;
+	let selectedRevision: ContainerWithEffect;
 
 	$: {
 		const parseResult = status.safeParse(paramsFromURL($page.url).get('status'));
 		if (parseResult.success) {
 			selectedRevision =
-				(revisions as MeasureContainer[]).findLast(
+				(revisions as ContainerWithEffect[]).findLast(
 					({ payload }) => payload.status == parseResult.data
 				) ?? container;
 		} else {

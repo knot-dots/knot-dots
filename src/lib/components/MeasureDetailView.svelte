@@ -6,13 +6,25 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isStrategyContainer, owners, payloadTypes, status } from '$lib/models';
-	import type { AnyContainer, Container, IndicatorContainer, MeasureContainer } from '$lib/models';
+	import {
+		isMeasureContainer,
+		isStrategyContainer,
+		owners,
+		payloadTypes,
+		status
+	} from '$lib/models';
+	import type {
+		AnyContainer,
+		Container,
+		ContainerWithEffect,
+		IndicatorContainer
+	} from '$lib/models';
 	import { sdgIcons, statusColors, statusIcons } from '$lib/theme/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container: MeasureContainer;
+	export let container: ContainerWithEffect;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
@@ -21,13 +33,13 @@
 		containerDetailView: { activeTab: 'basic-data', tabs: ['basic-data', 'resources', 'effects'] }
 	}));
 
-	let selectedRevision: MeasureContainer;
+	let selectedRevision: ContainerWithEffect;
 
 	$: {
 		const parseResult = status.safeParse(paramsFromURL($page.url).get('status'));
 		if (parseResult.success) {
 			selectedRevision =
-				(revisions as MeasureContainer[]).findLast(
+				(revisions as ContainerWithEffect[]).findLast(
 					({ payload }) => payload.status == parseResult.data
 				) ?? container;
 		} else {
@@ -64,7 +76,7 @@
 <article class="details">
 	{#if $applicationState.containerDetailView.activeTab === 'basic-data'}
 		<div class="details-tab" id="basic-data">
-			{#if 'summary' in container.payload}
+			{#if 'summary' in selectedRevision.payload}
 				<div class="summary">
 					<h3>{$_('measure.summary')}</h3>
 					{selectedRevision.payload.summary ?? ''}
@@ -73,22 +85,32 @@
 
 			{#if 'description' in container.payload}
 				<div class="description">
-					<h3>{$_('measure.description')}</h3>
+					<h3>{isMeasureContainer(container) ? $_('measure.description') : $_('description')}</h3>
 					<Viewer value={selectedRevision.payload.description} />
 				</div>
 			{/if}
 
-			{#if 'annotation' in container.payload && selectedRevision.payload.status === status.enum['status.in_planning']}
+			{#if 'annotatedProgress' in container.payload}
+				<div class="annotated-progress">
+					<h3>{$_('annotated_progress')}</h3>
+					{#each container.payload.annotatedProgress as { annotation, value }}
+						<Progress {value} />
+						<p>{annotation}</p>
+					{/each}
+				</div>
+			{/if}
+
+			{#if 'annotation' in selectedRevision.payload && selectedRevision.payload.status === status.enum['status.in_planning']}
 				<div class="annotation">
 					<h3>{$_('annotation')}</h3>
 					<Viewer value={selectedRevision.payload.annotation} />
 				</div>
-			{:else if 'comment' in container.payload && selectedRevision.payload.status === status.enum['status.in_implementation']}
+			{:else if 'comment' in selectedRevision.payload && selectedRevision.payload.status === status.enum['status.in_implementation']}
 				<div class="comment">
 					<h3>{$_('comment')}</h3>
 					<Viewer value={selectedRevision.payload.comment} />
 				</div>
-			{:else if ('result' in container.payload && selectedRevision.payload.status === status.enum['status.in_operation']) || selectedRevision.payload.status === status.enum['status.done']}
+			{:else if 'result' in selectedRevision.payload && (selectedRevision.payload.status === status.enum['status.in_operation'] || selectedRevision.payload.status === status.enum['status.done'])}
 				<div class="result">
 					<h3>{$_('result')}</h3>
 					<Viewer value={selectedRevision.payload.result} />

@@ -40,7 +40,10 @@
 				payloadTypes.enum['internal_objective.milestone']
 			]
 		},
-		{ title: 'payload_group.implementation', payloadType: [payloadTypes.enum.measure] }
+		{
+			title: 'payload_group.implementation',
+			payloadType: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
+		}
 	];
 </script>
 

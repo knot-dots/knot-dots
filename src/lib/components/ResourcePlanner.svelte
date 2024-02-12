@@ -1,9 +1,18 @@
 <script lang="ts">
 	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import type { EmptyMeasureContainer, MeasureContainer } from '$lib/models';
+	import type {
+		EmptyMeasureContainer,
+		EmptySimpleMeasureContainer,
+		MeasureContainer,
+		SimpleMeasureContainer
+	} from '$lib/models';
 
-	export let container: MeasureContainer | EmptyMeasureContainer;
+	export let container:
+		| MeasureContainer
+		| SimpleMeasureContainer
+		| EmptyMeasureContainer
+		| EmptySimpleMeasureContainer;
 
 	function add() {
 		container.payload.resource = [

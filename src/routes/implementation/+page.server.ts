@@ -1,4 +1,5 @@
 import { filterVisible } from '$lib/authorization';
+import { audience, payloadTypes } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByStrategyType,
@@ -6,7 +7,6 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import { audience } from '$lib/models';
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
@@ -64,7 +64,7 @@ export const load = (async ({ locals, url, parent }) => {
 					topics: url.searchParams.getAll('topic'),
 					strategyTypes: url.searchParams.getAll('strategyType'),
 					terms: url.searchParams.get('terms') ?? '',
-					type: ['measure']
+					type: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
 				},
 				url.searchParams.get('sort') ?? ''
 			)

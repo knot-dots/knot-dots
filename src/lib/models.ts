@@ -53,6 +53,7 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'simple_measure',
 	'strategic_goal',
 	'strategy',
 	'text',
@@ -495,6 +496,36 @@ const pagePayload = z.object({
 	visibility: visibility.default('public')
 });
 
+const simpleMeasurePayload = basePayload
+	.omit({ summary: true })
+	.extend({
+		annotatedProgress: z
+			.array(z.object({ annotation: z.string(), value: z.coerce.number().nonnegative() }))
+			.default([]),
+		endDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		effect: z.array(indicatorEffect).default([]),
+		resource: z
+			.array(
+				z.object({
+					description: z.string(),
+					amount: z.coerce.number(),
+					unit: z.string(),
+					fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
+				})
+			)
+			.default([]),
+		startDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		status: status.default(status.enum['status.idea']),
+		type: z.literal(payloadTypes.enum.simple_measure)
+	})
+	.strict();
+
 const strategicGoalPayload = basePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
@@ -550,6 +581,7 @@ export const container = z.object({
 		modelPayload,
 		operationalGoalPayload,
 		pagePayload,
+		simpleMeasurePayload,
 		strategicGoalPayload,
 		strategyPayload,
 		textPayload
@@ -579,6 +611,7 @@ export const anyContainer = container.extend({
 		organizationPayload,
 		organizationalUnitPayload,
 		pagePayload,
+		simpleMeasurePayload,
 		strategicGoalPayload,
 		strategyPayload,
 		textPayload,
@@ -610,6 +643,18 @@ export function isContainerWithObjective(
 		isStrategicGoalContainer(container) ||
 		isVisionContainer(container)
 	);
+}
+
+export const containerWithEffect = container.extend({
+	payload: z.discriminatedUnion('type', [measurePayload, simpleMeasurePayload])
+});
+
+export type ContainerWithEffect = z.infer<typeof containerWithEffect>;
+
+export function isContainerWithEffect(
+	container: AnyContainer | EmptyContainer
+): container is ContainerWithEffect {
+	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 
 const indicatorContainer = container.extend({
@@ -706,6 +751,18 @@ export function isPageContainer(
 	container: AnyContainer | EmptyContainer
 ): container is PageContainer {
 	return container.payload.type === payloadTypes.enum.page;
+}
+
+const simpleMeasureContainer = container.extend({
+	payload: simpleMeasurePayload
+});
+
+export type SimpleMeasureContainer = z.infer<typeof simpleMeasureContainer>;
+
+export function isSimpleMeasureContainer(
+	container: AnyContainer | EmptyContainer
+): container is SimpleMeasureContainer {
+	return container.payload.type === payloadTypes.enum.simple_measure;
 }
 
 const strategicGoalContainer = container.extend({
@@ -870,6 +927,7 @@ const emptyContainer = newContainer.extend({
 				audience: true,
 				boards: true,
 				category: true,
+				effect: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -879,7 +937,6 @@ const emptyContainer = newContainer.extend({
 			modelPayload.pick({
 				audience: true,
 				category: true,
-				effect: true,
 				objective: true,
 				topic: true,
 				type: true,
@@ -906,6 +963,17 @@ const emptyContainer = newContainer.extend({
 			.partial()
 			.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true })),
 		pagePayload.partial().merge(pagePayload.pick({ type: true, visibility: true })),
+		simpleMeasurePayload.partial().merge(
+			simpleMeasurePayload.pick({
+				annotatedProgress: true,
+				audience: true,
+				category: true,
+				effect: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
 		strategicGoalPayload.partial().merge(
 			strategicGoalPayload.pick({
 				audience: true,
@@ -1038,6 +1106,22 @@ const emptyPageContainer = newContainer.extend({
 });
 
 export type EmptyPageContainer = z.infer<typeof emptyPageContainer>;
+
+const emptySimpleMeasureContainer = emptyContainer.extend({
+	payload: simpleMeasurePayload.partial().merge(
+		simpleMeasurePayload.pick({
+			annotatedProgress: true,
+			audience: true,
+			category: true,
+			effect: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptySimpleMeasureContainer = z.infer<typeof emptySimpleMeasureContainer>;
 
 const emptyStrategicGoalContainer = emptyContainer.extend({
 	payload: strategicGoalPayload.partial().merge(
