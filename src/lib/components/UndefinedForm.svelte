@@ -16,7 +16,10 @@
 			label: 'payload_group.measurable_goals',
 			items: [payloadTypes.enum['internal_objective.milestone'], payloadTypes.enum.operational_goal]
 		},
-		{ label: 'payload_group.implementation', items: [payloadTypes.enum.measure] },
+		{
+			label: 'payload_group.implementation',
+			items: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
+		},
 		{ label: 'payload_group.misc', items: [payloadTypes.enum.text] }
 	];
 

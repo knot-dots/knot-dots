@@ -2,6 +2,10 @@
 	"about": "About us",
 	"add_item": "Add item",
 	"all_organizations": "All organizations",
+	"annotated_progress": "Progress indicators",
+	"annotated_progress.add_item": "Progress indicator",
+	"annotated_progress.annotation": "Annotation",
+	"annotated_progress.value": "Progress",
 	"annotation": "Annotation",
 	"assignee": "Assignee",
 	"audience": "Audience",
@@ -331,6 +335,7 @@
 		"17": "Partnerships for the goals"
 	},
 	"show_relations": "Show relations",
+	"simple_measure": "Simple measure",
 	"slug": "Slug",
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",

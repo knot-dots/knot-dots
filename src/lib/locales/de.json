@@ -2,6 +2,10 @@
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
 	"all_organizations": "Alle Organisationen",
+	"annotated_progress": "Fortschrittsanzeige",
+	"annotated_progress.add_item": "Fortschrittsanzeige",
+	"annotated_progress.annotation": "Kommentar",
+	"annotated_progress.value": "Fortschritt",
 	"annotation": "Anmerkungen",
 	"assignee": "Zugewiesen an",
 	"audience": "Richtet sich an",
@@ -332,6 +336,7 @@
 		"17": "17 - Partnerschaften zur Erreichung der Ziele"
 	},
 	"show_relations": "Beziehungen anzeigen",
+	"simple_measure": "Einfache Maßnahme",
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
 	"sort_modified": "Zuletzt bearbeitet",

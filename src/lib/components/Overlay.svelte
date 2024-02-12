@@ -25,6 +25,7 @@
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
+		isContainerWithEffect,
 		isIndicatorContainer,
 		isInternalObjectiveContainer,
 		isMeasureContainer,
@@ -287,7 +288,7 @@
 			</h2>
 			{#if isIndicatorContainer(container)}
 				<IndicatorTabs />
-			{:else if isMeasureContainer(container)}
+			{:else if isContainerWithEffect(container)}
 				<MeasureStatusTabs {container} {revisions} />
 			{:else if isTaskContainer(container)}
 				<TaskStatusTabs {container} {revisions} />
@@ -309,7 +310,7 @@
 					{relatedContainers}
 					{revisions}
 				/>
-			{:else if isMeasureContainer(container)}
+			{:else if isContainerWithEffect(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
 				<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
