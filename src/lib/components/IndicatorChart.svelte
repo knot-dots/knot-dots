@@ -31,7 +31,7 @@
 	let inImplementationByYear: Map<number, number>;
 	let doneByYear: Map<number, number>;
 
-	const historicalValuesByYear = new Map(container.payload.historicalValues);
+	$: historicalValuesByYear = new Map(container.payload.historicalValues);
 
 	$: if (showObjectives) {
 		objectives = containersWithObjectives
