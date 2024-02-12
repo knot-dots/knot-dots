@@ -870,6 +870,7 @@ const emptyContainer = newContainer.extend({
 				audience: true,
 				boards: true,
 				category: true,
+				effect: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -879,7 +880,6 @@ const emptyContainer = newContainer.extend({
 			modelPayload.pick({
 				audience: true,
 				category: true,
-				effect: true,
 				objective: true,
 				topic: true,
 				type: true,
