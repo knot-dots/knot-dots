@@ -86,7 +86,7 @@
 	{#if showDropDown}
 		<div class="organization-menu-details" transition:slide={{ axis: 'y', duration: 400 }}>
 			<Tabs>
-				{#if selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])}
+				{#if isOrganizationalUnitContainer(selectedContext) || selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])}
 					<TabItem title={$_('organizational_units')} open>
 						<Board>
 							{#each organizationalUnitsByLevel.entries() as [level, containers]}
@@ -108,7 +108,10 @@
 				{/if}
 				<TabItem
 					title={$_('all_organizations')}
-					open={!selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])}
+					open={!(
+						isOrganizationalUnitContainer(selectedContext) ||
+						selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])
+					)}
 				>
 					<ul class="board">
 						{#each organizations.filter(({ payload }) => !payload.default) as container}
