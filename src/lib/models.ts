@@ -645,6 +645,18 @@ export function isContainerWithObjective(
 	);
 }
 
+export const containerWithEffect = container.extend({
+	payload: z.discriminatedUnion('type', [measurePayload, simpleMeasurePayload])
+});
+
+export type ContainerWithEffect = z.infer<typeof containerWithEffect>;
+
+export function isContainerWithEffect(
+	container: AnyContainer | EmptyContainer
+): container is ContainerWithEffect {
+	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
+}
+
 const indicatorContainer = container.extend({
 	payload: indicatorPayload
 });
