@@ -11,7 +11,7 @@
 	} from 'svelte-hero-icons';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import { boards, isMeasureContainer } from '$lib/models';
+	import { boards, isContainerWithEffect } from '$lib/models';
 	import type { AnyContainer, ContainerFormTabKey, PayloadType } from '$lib/models';
 	import { applicationState, getOrganization, getOrganizationalUnit } from '$lib/stores';
 
@@ -25,7 +25,7 @@
 			: $getOrganization(container.organization);
 
 		showEffectsTab =
-			isMeasureContainer(container) &&
+			isContainerWithEffect(container) &&
 			organizationOrOrganizationalUnit?.payload.boards.includes(boards.enum['board.indicators']);
 	}
 

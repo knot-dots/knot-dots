@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
-	import { isMeasureContainer, status } from '$lib/models';
+	import { isContainerWithEffect, status } from '$lib/models';
 	import type {
 		Container,
 		ContainerWithObjective,
@@ -77,7 +77,7 @@
 
 	$: if (showEffects) {
 		const containersWithEffects = relatedContainers.filter((c) =>
-			isMeasureContainer(c)
+			isContainerWithEffect(c)
 		) as MeasureContainer[];
 
 		effects = containersWithEffects

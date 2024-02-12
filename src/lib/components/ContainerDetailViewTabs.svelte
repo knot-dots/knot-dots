@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { CurrencyEuro, Icon, InformationCircle, Sparkles } from 'svelte-hero-icons';
-	import { isMeasureContainer } from '$lib/models';
+	import { isContainerWithEffect } from '$lib/models';
 	import type { AnyContainer, ContainerDetailViewTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: AnyContainer;
 
-	$: showEffectsTab = isMeasureContainer(container) && container.payload.effect.length > 0;
+	$: showEffectsTab = isContainerWithEffect(container) && container.payload.effect.length > 0;
 
 	function updateApplicationState(activeTab: ContainerDetailViewTabKey) {
 		applicationState.update((state) => ({
