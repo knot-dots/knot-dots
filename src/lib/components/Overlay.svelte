@@ -187,6 +187,9 @@
 			<div class="content-actions"></div>
 		</footer>
 	{:else if edit}
+		<aside>
+			<OverlaySidebar {container} />
+		</aside>
 		<header class="content-header">
 			<label
 				style={container.payload.type === payloadTypes.enum.undefined ||
@@ -217,11 +220,6 @@
 			</label>
 		</header>
 		<div class="content-details masked-overflow">
-			{#if $applicationState.containerForm.tabs.length > 0}
-				<aside>
-					<OverlaySidebar {container} />
-				</aside>
-			{/if}
 			<ContainerForm
 				bind:container
 				{isPartOfOptions}
@@ -257,6 +255,11 @@
 			</div>
 		</footer>
 	{:else}
+		{#if 'guid' in container}
+			<aside>
+				<OverlaySidebar {container} />
+			</aside>
+		{/if}
 		<header class="content-header">
 			<h2 class="with-icons">
 				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
@@ -288,11 +291,6 @@
 			{/if}
 		</header>
 		<div class="content-details masked-overflow">
-			{#if 'guid' in container}
-				<aside>
-					<OverlaySidebar {container} />
-				</aside>
-			{/if}
 			{#if isIndicatorContainer(container)}
 				<IndicatorDetailView
 					{container}
@@ -343,6 +341,19 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
+		position: relative;
+	}
+
+	.overlay > aside {
+		min-width: 0;
+		padding: 1.5rem 0.5rem 0;
+		position: absolute;
+		top: var(--nav-height);
+		width: 3.5rem;
+	}
+
+	.overlay > aside ~ * {
+		margin-left: 3.5rem;
 	}
 
 	@media (min-width: 768px) {
@@ -351,7 +362,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.8 - 2px);
+			min-width: calc((100vw - 18rem) * 0.8 - 2px - 3.5rem);
 		}
 	}
 
@@ -361,7 +372,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.65 - 2px);
+			min-width: calc((100vw - 18rem) * 0.65 - 2px - 3.5rem);
 		}
 	}
 </style>
