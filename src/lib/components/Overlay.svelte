@@ -11,7 +11,6 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
@@ -221,7 +220,7 @@
 		<div class="content-details masked-overflow">
 			{#if $applicationState.containerForm.tabs.length > 0}
 				<aside>
-					<ContainerFormTabs {container} />
+					<OverlayDeepLinks {container} />
 				</aside>
 			{/if}
 			<ContainerForm
