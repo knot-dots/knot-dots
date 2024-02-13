@@ -499,14 +499,13 @@ const pagePayload = z.object({
 const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
 	.extend({
-		annotatedProgress: z
-			.array(z.object({ annotation: z.string(), value: z.coerce.number().nonnegative() }))
-			.default([]),
+		annotation: z.string().optional(),
 		endDate: z
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		effect: z.array(indicatorEffect).default([]),
+		progress: z.number().nonnegative().default(0),
 		resource: z
 			.array(
 				z.object({
@@ -965,10 +964,10 @@ const emptyContainer = newContainer.extend({
 		pagePayload.partial().merge(pagePayload.pick({ type: true, visibility: true })),
 		simpleMeasurePayload.partial().merge(
 			simpleMeasurePayload.pick({
-				annotatedProgress: true,
 				audience: true,
 				category: true,
 				effect: true,
+				progress: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1110,10 +1109,10 @@ export type EmptyPageContainer = z.infer<typeof emptyPageContainer>;
 const emptySimpleMeasureContainer = emptyContainer.extend({
 	payload: simpleMeasurePayload.partial().merge(
 		simpleMeasurePayload.pick({
-			annotatedProgress: true,
 			audience: true,
 			category: true,
 			effect: true,
+			progress: true,
 			topic: true,
 			type: true,
 			visibility: true

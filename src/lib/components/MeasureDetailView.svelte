@@ -10,6 +10,7 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isMeasureContainer,
+		isSimpleMeasureContainer,
 		isStrategyContainer,
 		owners,
 		payloadTypes,
@@ -90,17 +91,14 @@
 				</div>
 			{/if}
 
-			{#if 'annotatedProgress' in container.payload}
-				<div class="annotated-progress">
-					<h3>{$_('annotated_progress')}</h3>
-					{#each container.payload.annotatedProgress as { annotation, value }}
-						<Progress {value} />
-						<p>{annotation}</p>
-					{/each}
+			{#if 'progress' in container.payload}
+				<div class="progress">
+					<h3>{$_('progress')}</h3>
+					<Progress value={container.payload.progress} />
 				</div>
 			{/if}
 
-			{#if 'annotation' in selectedRevision.payload && selectedRevision.payload.status === status.enum['status.in_planning']}
+			{#if 'annotation' in selectedRevision.payload && (selectedRevision.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(selectedRevision))}
 				<div class="annotation">
 					<h3>{$_('annotation')}</h3>
 					<Viewer value={selectedRevision.payload.annotation} />

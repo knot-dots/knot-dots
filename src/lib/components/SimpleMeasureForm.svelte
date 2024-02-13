@@ -11,7 +11,6 @@
 	import { audience, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptySimpleMeasureContainer, SimpleMeasureContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
-	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 
 	export let container: SimpleMeasureContainer | EmptySimpleMeasureContainer;
 
@@ -24,24 +23,6 @@
 	}));
 
 	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
-
-	function addAnnotatedProgress() {
-		container.payload.annotatedProgress = [
-			...(container.payload.annotatedProgress ?? []),
-			{ annotation: '', value: 0 }
-		];
-	}
-
-	function removeAnnotatedProgress(i: number) {
-		return () => {
-			if (container.payload.annotatedProgress) {
-				container.payload.annotatedProgress = [
-					...container.payload.annotatedProgress.slice(0, i),
-					...container.payload.annotatedProgress.slice(i + 1)
-				];
-			}
-		};
-	}
 </script>
 
 {#if $applicationState.containerForm.activeTab === 'metadata'}
@@ -87,51 +68,32 @@
 			</select>
 		</label>
 
-		<fieldset class="annotated-progress">
-			<legend>{$_('annotated_progress')}</legend>
-			{#each container.payload.annotatedProgress as annotatedProgress, i}
-				<div class="annotated-progress-item">
-					<label>
-						{$_('annotated_progress.value')}
-						<input
-							type="range"
-							max="1"
-							min="0"
-							list="steps"
-							step="0.1"
-							bind:value={annotatedProgress.value}
-						/>
-						<datalist id="steps">
-							<option value="0"></option>
-							<option value="0.1"></option>
-							<option value="0.2"></option>
-							<option value="0.3"></option>
-							<option value="0.4"></option>
-							<option value="0.5"></option>
-							<option value="0.6"></option>
-							<option value="0.7"></option>
-							<option value="0.8"></option>
-							<option value="0.9"></option>
-							<option value="1"></option>
-						</datalist>
-					</label>
+		<label>
+			{$_('progress')}
+			<input
+				type="range"
+				max="1"
+				min="0"
+				list="steps"
+				step="0.1"
+				bind:value={container.payload.progress}
+			/>
+			<datalist id="steps">
+				<option value="0"></option>
+				<option value="0.1"></option>
+				<option value="0.2"></option>
+				<option value="0.3"></option>
+				<option value="0.4"></option>
+				<option value="0.5"></option>
+				<option value="0.6"></option>
+				<option value="0.7"></option>
+				<option value="0.8"></option>
+				<option value="0.9"></option>
+				<option value="1"></option>
+			</datalist>
+		</label>
 
-					{$_('annotated_progress.annotation')}
-					<input
-						type="text"
-						name="annotated-progress-annotation"
-						bind:value={annotatedProgress.annotation}
-					/>
-					<button type="button" on:click={removeAnnotatedProgress(i)}>
-						<Icon src={MinusSmall} size="24" mini />
-					</button>
-				</div>
-			{/each}
-			<button type="button" on:click={addAnnotatedProgress}>
-				<Icon src={PlusSmall} size="24" mini />
-				{$_('annotated_progress.add_item')}
-			</button>
-		</fieldset>
+		<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
 
 		<fieldset class="duration">
 			<legend>{$_('planned_duration')}</legend>
@@ -163,18 +125,5 @@
 	.duration {
 		display: flex;
 		gap: 1rem;
-	}
-
-	.annotated-progress-item {
-		border-bottom: solid 1px var(--color-gray-300);
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		margin-bottom: 1rem;
-		padding-bottom: 1rem;
-	}
-
-	.annotated-progress-item button {
-		margin-left: auto;
 	}
 </style>
