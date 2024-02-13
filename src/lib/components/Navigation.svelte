@@ -138,7 +138,7 @@
 		flex-grow: 0;
 		gap: 2rem;
 		margin: 0 auto;
-		overflow-y: auto;
+		overflow-x: auto;
 	}
 
 	.user-menu {
