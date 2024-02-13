@@ -9,6 +9,7 @@
 		isMilestoneContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
+		isSimpleMeasureContainer,
 		isStrategicGoalContainer,
 		isVisionContainer,
 		payloadTypes,
@@ -54,7 +55,7 @@
 			payloadTypes.enum['internal_objective.vision'],
 			payloadTypes.enum.strategic_goal
 		];
-	} else if (isMeasureContainer(container)) {
+	} else if (isMeasureContainer(container) || isSimpleMeasureContainer(container)) {
 		allowedSuperordinateTypes = [
 			payloadTypes.enum.model,
 			payloadTypes.enum['internal_objective.vision'],
