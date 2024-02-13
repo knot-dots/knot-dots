@@ -91,10 +91,10 @@
 				</div>
 			{/if}
 
-			{#if 'progress' in container.payload}
+			{#if 'progress' in selectedRevision.payload}
 				<div class="progress">
 					<h3>{$_('progress')}</h3>
-					<Progress value={container.payload.progress} />
+					<Progress value={selectedRevision.payload.progress} />
 				</div>
 			{/if}
 
