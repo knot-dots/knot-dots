@@ -123,7 +123,6 @@
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		height: var(--nav-height);
-		justify-content: space-between;
 		padding: 0 16px;
 		position: absolute;
 		width: 100%;
@@ -136,8 +135,9 @@
 
 	.main-menu {
 		display: flex;
-		flex-grow: 1;
-		justify-content: space-evenly;
+		flex-grow: 0;
+		gap: 2rem;
+		margin: 0 auto;
 		overflow-y: auto;
 	}
 
