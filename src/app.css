@@ -382,11 +382,13 @@ button.primary:disabled,
 }
 
 .relation-button:hover {
+	background-image: url(/src/lib/assets/relate.svg);
 	background-color: white;
 	background-position: center left;
 }
 
 .relation-button.is-active {
+	background-image: url(/src/lib/assets/relate.svg);
 	background-color: white;
 	background-position: center bottom;
 }
