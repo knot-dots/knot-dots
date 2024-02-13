@@ -19,6 +19,7 @@
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import OverlayDeepLinks from '$lib/components/OverlayDeepLinks.svelte';
+	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
@@ -28,7 +29,6 @@
 		isContainerWithEffect,
 		isIndicatorContainer,
 		isInternalObjectiveContainer,
-		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isPageContainer,
 		isStrategyContainer,
@@ -141,6 +141,7 @@
 </script>
 
 <section class="overlay" transition:slide={{ axis: 'x' }}>
+	<OverlayNavigation {container} />
 	{#if isPageContainer(container) && hashParams.has('edit-help')}
 		<header class="content-header">
 			<label>
