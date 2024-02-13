@@ -14,6 +14,7 @@
 	import {
 		type AnyContainer,
 		boards,
+		type ContainerDetailViewTabKey,
 		type ContainerFormTabKey,
 		isContainerWithEffect,
 		isPageContainer,
@@ -39,6 +40,13 @@
 		applicationState.update((state) => ({
 			...state,
 			containerForm: { ...state.containerForm, activeTab }
+		}));
+	}
+
+	function updateContainerDetailViewState(activeTab: ContainerDetailViewTabKey) {
+		applicationState.update((state) => ({
+			...state,
+			containerDetailView: { ...state.containerDetailView, activeTab }
 		}));
 	}
 
@@ -126,16 +134,57 @@
 				</a>
 			</li>
 		{/if}
-	{:else if !isPageContainer(container)}
-		<li>
-			<a
-				class="button"
-				href={helpURL($page.url, container.payload.type, 'view')}
-				title={$_('help')}
-			>
-				<Icon src={QuestionMarkCircle} size="20" mini />
-			</a>
-		</li>
+	{:else}
+		{#if $applicationState.containerDetailView.tabs.includes('basic-data')}
+			<li>
+				<button
+					title={$_('form.basic_data')}
+					type="button"
+					class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
+					on:click={() => updateContainerDetailViewState('basic-data')}
+				>
+					<Icon src={InformationCircle} size="20" mini />
+				</button>
+			</li>
+		{/if}
+
+		{#if $applicationState.containerDetailView.tabs.includes('resources')}
+			<li>
+				<button
+					title={$_('form.resources')}
+					type="button"
+					class:is-active={$applicationState.containerDetailView.activeTab === 'resources'}
+					on:click={() => updateContainerDetailViewState('resources')}
+				>
+					<Icon src={CurrencyEuro} size="20" mini />
+				</button>
+			</li>
+		{/if}
+
+		{#if $applicationState.containerDetailView.tabs.includes('effects') && showEffectsTab}
+			<li>
+				<button
+					title={$_('form.effects')}
+					type="button"
+					class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
+					on:click={() => updateContainerDetailViewState('effects')}
+				>
+					<Icon src={Sparkles} size="20" mini />
+				</button>
+			</li>
+		{/if}
+
+		{#if !isPageContainer(container)}
+			<li>
+				<a
+					class="button"
+					href={helpURL($page.url, container.payload.type, 'view')}
+					title={$_('help')}
+				>
+					<Icon src={QuestionMarkCircle} size="20" mini />
+				</a>
+			</li>
+		{/if}
 	{/if}
 </ul>
 

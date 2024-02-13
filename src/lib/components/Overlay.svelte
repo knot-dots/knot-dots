@@ -9,7 +9,6 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import saveContainer from '$lib/client/saveContainer';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
@@ -291,9 +290,6 @@
 		<div class="content-details masked-overflow">
 			{#if 'guid' in container}
 				<aside>
-					{#if $applicationState.containerDetailView.tabs.length > 0}
-						<ContainerDetailViewTabs {container} />
-					{/if}
 					<OverlayDeepLinks {container} />
 				</aside>
 			{/if}
