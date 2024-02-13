@@ -64,6 +64,7 @@
 				<button
 					title={$_('form.metadata')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerForm.activeTab === 'metadata'}
 					on:click={() => updateContainerFormState('metadata')}
 				>
@@ -77,6 +78,7 @@
 				<button
 					title={$_('form.basic_data')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerForm.activeTab === 'basic-data'}
 					on:click={() => updateContainerFormState('basic-data')}
 				>
@@ -90,6 +92,7 @@
 				<button
 					title={$_('form.resources')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerForm.activeTab === 'resources'}
 					on:click={() => updateContainerFormState('resources')}
 				>
@@ -103,6 +106,7 @@
 				<button
 					title={$_('form.effects')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerForm.activeTab === 'effects'}
 					on:click={() => updateContainerFormState('effects')}
 				>
@@ -116,6 +120,7 @@
 				<button
 					title={$_('form.historical_values')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerForm.activeTab === 'historical-values'}
 					on:click={() => updateContainerFormState('historical-values')}
 				>
@@ -126,7 +131,7 @@
 		{#if !isPageContainer(container)}
 			<li>
 				<a
-					class="button"
+					class="button button-nav button-square"
 					href={helpURL($page.url, container.payload.type, 'edit')}
 					title={$_('help')}
 				>
@@ -140,6 +145,7 @@
 				<button
 					title={$_('form.basic_data')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
 					on:click={() => updateContainerDetailViewState('basic-data')}
 				>
@@ -153,6 +159,7 @@
 				<button
 					title={$_('form.resources')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerDetailView.activeTab === 'resources'}
 					on:click={() => updateContainerDetailViewState('resources')}
 				>
@@ -166,6 +173,7 @@
 				<button
 					title={$_('form.effects')}
 					type="button"
+					class="button-nav button-square"
 					class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
 					on:click={() => updateContainerDetailViewState('effects')}
 				>
@@ -177,7 +185,7 @@
 		{#if !isPageContainer(container)}
 			<li>
 				<a
-					class="button"
+					class="button button-nav button-square"
 					href={helpURL($page.url, container.payload.type, 'view')}
 					title={$_('help')}
 				>
@@ -193,11 +201,5 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-	}
-
-	button,
-	.button {
-		--padding-x: 12px;
-		--padding-y: 12px;
 	}
 </style>

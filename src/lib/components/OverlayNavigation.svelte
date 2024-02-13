@@ -137,11 +137,6 @@
 		flex-shrink: 0;
 	}
 
-	.button-square {
-		--padding-x: 9px;
-		--padding-y: 9px;
-	}
-
 	.button-group {
 		flex-shrink: 1;
 		margin: 0 auto;

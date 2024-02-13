@@ -324,6 +324,12 @@ button.primary:disabled,
 	--button-disabled-border-color: var(--color-gray-300);
 }
 
+button.button-square,
+.button.button-square {
+	--padding-x: 9px;
+	--padding-y: 9px;
+}
+
 /* Button group */
 .button-group {
 	display: flex;

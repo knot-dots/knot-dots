@@ -173,7 +173,7 @@
 
 				<span class="icons">
 					{#if $ability.can('update', container)}
-						<a class="button icons-element" href={editHelpURL()}>
+						<a class="button button-nav button-square" href={editHelpURL()}>
 							<Icon solid src={Pencil} size="20" />
 						</a>
 					{/if}
@@ -266,12 +266,12 @@
 				{/if}
 				<span class="icons">
 					{#if $ability.can('update', container)}
-						<a class="button icons-element" href="#view={container.guid}&edit">
+						<a class="button button-nav button-square" href="#view={container.guid}&edit">
 							<Icon solid src={Pencil} size="20" />
 						</a>
 					{/if}
 					<a
-						class="button icons-element"
+						class="button button-nav button-square"
 						href="/{container.payload.type}/{container.guid}"
 						title={$_('read_more')}
 					>
