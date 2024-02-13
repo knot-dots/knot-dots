@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { ArrowsPointingOut, Icon, Pencil, Trash, XMark } from 'svelte-hero-icons';
+	import { ArrowsPointingOut, Icon, Pencil, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -179,9 +179,6 @@
 							<Icon solid src={Pencil} size="20" />
 						</a>
 					{/if}
-					<a href={closeURL()} class="button icons-element">
-						<Icon solid src={XMark} size="20" />
-					</a>
 				</span>
 			</h2>
 		</header>
@@ -281,9 +278,6 @@
 						title={$_('read_more')}
 					>
 						<Icon solid src={ArrowsPointingOut} size="20" />
-					</a>
-					<a href={closeURL()} class="button icons-element">
-						<Icon solid src={XMark} size="20" />
 					</a>
 				</span>
 			</h2>
