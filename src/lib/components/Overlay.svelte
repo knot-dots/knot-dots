@@ -16,8 +16,8 @@
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
-	import OverlayDeepLinks from '$lib/components/OverlayDeepLinks.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
+	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
@@ -219,7 +219,7 @@
 		<div class="content-details masked-overflow">
 			{#if $applicationState.containerForm.tabs.length > 0}
 				<aside>
-					<OverlayDeepLinks {container} />
+					<OverlaySidebar {container} />
 				</aside>
 			{/if}
 			<ContainerForm
@@ -290,7 +290,7 @@
 		<div class="content-details masked-overflow">
 			{#if 'guid' in container}
 				<aside>
-					<OverlayDeepLinks {container} />
+					<OverlaySidebar {container} />
 				</aside>
 			{/if}
 			{#if isIndicatorContainer(container)}
