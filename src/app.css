@@ -847,10 +847,6 @@ fieldset {
 	z-index: 1;
 }
 
-.overlay > :global(*) {
-	min-width: 100vw;
-}
-
 /* Carousel */
 .carousel {
 	display: flex;
