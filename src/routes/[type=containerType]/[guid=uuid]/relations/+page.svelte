@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { InformationCircle, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
@@ -17,7 +15,7 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { isMeasureContainer, isPartOf, isStrategyContainer, payloadTypes } from '$lib/models';
-	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer, sidebarToggle } from '$lib/stores';
 	import type { PageData } from './$types';
 	import RelationFilter from '$lib/components/RelationFilter.svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
@@ -140,9 +138,5 @@
 				</BoardColumn>
 			{/each}
 		</Board>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>

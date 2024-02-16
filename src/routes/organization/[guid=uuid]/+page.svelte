@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { ChevronLeft, Icon, Pencil } from 'svelte-hero-icons';
-	import { browser } from '$app/environment';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationDetailView from '$lib/components/OrganizationDetailView.svelte';
 	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { ability, overlay } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -52,10 +50,6 @@
 				</div>
 			</div>
 		</div>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
 

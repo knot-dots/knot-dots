@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { accountURL } from '$lib/authentication';
 	import Layout from '$lib/components/Layout.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
-	import { overlay, sidebarToggle, user } from '$lib/stores';
+	import { sidebarToggle, user } from '$lib/stores';
 	import type { PageData } from './$types';
 	import { ArrowRightOnRectangle, Cog6Tooth, Icon, InformationCircle } from 'svelte-hero-icons';
 	import { signOut } from '@auth/sveltekit/client';
@@ -52,10 +50,6 @@
 				</div>
 			</div>
 		</div>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
 

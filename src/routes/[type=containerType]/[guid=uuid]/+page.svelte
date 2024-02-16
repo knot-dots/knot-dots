@@ -11,7 +11,6 @@
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
@@ -28,7 +27,7 @@
 		isTaskContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { ability, applicationState, overlay } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -146,9 +145,6 @@
 				{/if}
 			</div>
 		</div>
-		{#if $overlay.revisions[$overlay.revisions.length - 1]}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
 
