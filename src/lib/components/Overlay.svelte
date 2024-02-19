@@ -336,12 +336,12 @@
 <style>
 	.overlay {
 		background-color: white;
-		border: 1px solid var(--color-gray-200);
 		box-shadow: var(--shadow-lg);
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		height: 100vh;
 		position: relative;
+		top: calc(var(--nav-height) * -1);
 	}
 
 	.overlay > aside {
@@ -362,7 +362,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.8 - 2px - 3.5rem);
+			min-width: calc((100vw - 18rem) * 0.8 - 3.5rem);
 		}
 	}
 
@@ -372,7 +372,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.65 - 2px - 3.5rem);
+			min-width: calc((100vw - 18rem) * 0.65 - 3.5rem);
 		}
 	}
 </style>
