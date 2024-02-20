@@ -36,7 +36,7 @@
 		<div class="profile">
 			<div class="detail-page-content profile-inner">
 				<header class="content-header">
-					<h2 class="with-icons">
+					<h2>
 						{$user.givenName}
 						{$user.familyName}
 					</h2>

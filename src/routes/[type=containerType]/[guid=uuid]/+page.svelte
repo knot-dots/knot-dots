@@ -92,7 +92,7 @@
 					</div>
 				{:else}
 					<header class="content-header">
-						<h2 class="with-icons">
+						<h2>
 							{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
 								{container.payload.name}
 							{:else}

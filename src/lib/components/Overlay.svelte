@@ -168,7 +168,7 @@
 		</footer>
 	{:else if isPageContainer(container) && hashParams.has('view-help')}
 		<header class="content-header">
-			<h2 class="with-icons">
+			<h2>
 				{container.payload.title}
 
 				<span class="icons">
@@ -261,7 +261,7 @@
 			</aside>
 		{/if}
 		<header class="content-header">
-			<h2 class="with-icons">
+			<h2>
 				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
 					{container.payload.name}
 				{:else}

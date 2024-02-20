@@ -30,7 +30,7 @@
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<header class="content-header">
-				<h2 class="with-icons">
+				<h2>
 					{data.container.payload.title}
 					<span class="icons">
 						{#if $ability.can('update', data.container)}

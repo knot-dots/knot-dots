@@ -19,7 +19,7 @@
 		<div class="organization">
 			<div class="detail-page-content organization-inner">
 				<header class="content-header">
-					<h2 class="with-icons">
+					<h2>
 						{#if 'image' in data.container.payload}
 							<img alt="logo" class="logo" src={data.container.payload.image} />
 						{/if}
