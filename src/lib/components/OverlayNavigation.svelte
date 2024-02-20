@@ -103,7 +103,11 @@
 		{/if}
 		{#if isMeasureContainer(container) || isStrategyContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
 			<li>
-				<a class="button button-nav" href="/{container.payload.type}/{container.guid}/members">
+				<a
+					class="button button-nav"
+					class:is-active={paramsFromURL($page.url).get(overlayKey.enum.members) === container.guid}
+					href={overlayURL($page.url, overlayKey.enum.members, container.guid)}
+				>
 					{$_('members')}
 				</a>
 			</li>

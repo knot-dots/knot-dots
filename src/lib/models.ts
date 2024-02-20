@@ -15,7 +15,15 @@ export type ApplicationState = {
 	};
 };
 
-export const overlayKey = z.enum(['create', 'edit', 'edit-help', 'relate', 'view', 'view-help']);
+export const overlayKey = z.enum([
+	'create',
+	'edit',
+	'edit-help',
+	'members',
+	'relate',
+	'view',
+	'view-help'
+]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;
 

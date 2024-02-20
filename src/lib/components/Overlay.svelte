@@ -16,6 +16,7 @@
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
+	import Members from '$lib/components/Members.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
@@ -42,7 +43,8 @@
 		Container,
 		ContainerWithObjective,
 		CustomEventMap,
-		IndicatorContainer
+		IndicatorContainer,
+		User
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -50,6 +52,7 @@
 	export let isPartOfOptions: AnyContainer[];
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let revisions: AnyContainer[];
+	export let users: User[] | undefined = undefined;
 
 	let container: AnyContainer;
 	let mayShowRelationButton = getContext('mayShowRelationButton');
@@ -255,6 +258,13 @@
 				{/if}
 			</div>
 		</footer>
+	{:else if hashParams.has(overlayKey.enum.members) && users}
+		<aside>
+			<OverlaySidebar {container} />
+		</aside>
+		<div class="content-details masked-overflow">
+			<Members {container} {users} />
+		</div>
 	{:else}
 		{#if 'guid' in container}
 			<aside>

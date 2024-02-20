@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { ChevronLeft, Icon, Trash, UserPlus } from 'svelte-hero-icons';
+	import { Icon, Trash, UserPlus } from 'svelte-hero-icons';
 	import { invalidateAll } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import Dialog from '$lib/components/Dialog.svelte';
@@ -92,62 +92,48 @@
 	}
 </script>
 
-<div class="detail-page-content">
-	<header class="content-header">
-		<h2>
-			{'title' in container.payload ? container.payload.title : container.payload.name}
-			<span class="icons">
-				<button class="icons-element" type="button" on:click={() => window.history.back()}>
-					<Icon solid src={ChevronLeft} size="20" />
-				</button>
-			</span>
-		</h2>
-	</header>
-	<div class="content-details masked-overflow table">
-		<table>
-			<thead>
-				<tr>
-					<th scope="col">{$_('user.email')}</th>
-					<th scope="col">{$_('user.role')}</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each users as u (u.guid)}
-					<tr>
-						<td>{u.display_name}</td>
-						<td>
-							{#key container.user}
-								<select name="role" on:change={handleChangeRole(u, container)}>
-									<option value="role.member" selected={!isAdminOf(u, container)}>
-										{$_('role.member')}
-									</option>
-									<option value="role.administrator" selected={isAdminOf(u, container)}>
-										{$_('role.administrator')}
-									</option>
-								</select>
-							{/key}
-						</td>
-						<td>
-							<button
-								class="quiet"
-								type="button"
-								title={$_('user.remove_relations')}
-								on:click={() => handleRemoveRelations(u, container)}
-							>
-								<Icon src={Trash} size="20" />
-							</button>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-		<div class="content-actions">
-			<button class="primary" type="button" on:click={() => dialog.showModal()}>
-				<Icon src={UserPlus} size="24" />
-			</button>
-		</div>
-	</div>
+<table>
+	<thead>
+		<tr>
+			<th scope="col">{$_('user.email')}</th>
+			<th scope="col">{$_('user.role')}</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		{#each users as u (u.guid)}
+			<tr>
+				<td>{u.display_name}</td>
+				<td>
+					{#key container.user}
+						<select name="role" on:change={handleChangeRole(u, container)}>
+							<option value="role.member" selected={!isAdminOf(u, container)}>
+								{$_('role.member')}
+							</option>
+							<option value="role.administrator" selected={isAdminOf(u, container)}>
+								{$_('role.administrator')}
+							</option>
+						</select>
+					{/key}
+				</td>
+				<td>
+					<button
+						class="quiet"
+						type="button"
+						title={$_('user.remove_relations')}
+						on:click={() => handleRemoveRelations(u, container)}
+					>
+						<Icon src={Trash} size="20" />
+					</button>
+				</td>
+			</tr>
+		{/each}
+	</tbody>
+</table>
+<div class="content-actions">
+	<button class="primary" type="button" on:click={() => dialog.showModal()}>
+		<Icon src={UserPlus} size="24" />
+	</button>
 </div>
 
 <Dialog bind:dialog>
@@ -187,7 +173,7 @@
 		width: 100%;
 	}
 
-	.table {
+	table {
 		overflow-x: auto;
 	}
 </style>

@@ -8,6 +8,7 @@ import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchContainers from '$lib/client/fetchContainers';
 import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
+import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import paramsFromURL from '$lib/client/paramsFromURL';
 import {
@@ -28,7 +29,8 @@ import type {
 	OrganizationContainer,
 	PayloadType,
 	Status,
-	TaskStatus
+	TaskStatus,
+	User as UserRecord
 } from '$lib/models';
 
 export const navigationToggle = writable(false);
@@ -117,10 +119,11 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 
 type Overlay = {
 	isPartOfOptions: AnyContainer[];
-	object?: Container;
 	containersWithObjectives?: ContainerWithObjective[];
+	object?: Container;
 	relatedContainers: Container[];
 	revisions: AnyContainer[];
+	users?: UserRecord[];
 };
 
 export const overlay = writable<Overlay>({
@@ -214,6 +217,17 @@ if (browser) {
 					revisions
 				});
 			}
+		} else if (hashParams.has(overlayKey.enum.members)) {
+			const [revisions, users] = await Promise.all([
+				fetchContainerRevisions(hashParams.get(overlayKey.enum.members) as string),
+				fetchMembers(hashParams.get(overlayKey.enum.members) as string)
+			]);
+			overlay.set({
+				isPartOfOptions: [],
+				relatedContainers: [],
+				revisions,
+				users
+			});
 		} else if (hashParams.has(overlayKey.enum.relate)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.relate) as string
