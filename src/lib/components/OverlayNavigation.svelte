@@ -67,7 +67,12 @@
 	<ul class="button-group button-group-nav">
 		{#if !(isOrganizationalUnitContainer(container) || isOrganizationContainer(container)) && container.relation.length > 0}
 			<li>
-				<a class="button button-nav" href="/{container.payload.type}/{container.guid}/relations">
+				<a
+					class="button button-nav"
+					class:is-active={paramsFromURL($page.url).get(overlayKey.enum.relations) ===
+						container.guid}
+					href={overlayURL($page.url, overlayKey.enum.relations, container.guid)}
+				>
 					{$_('relations')}
 				</a>
 			</li>

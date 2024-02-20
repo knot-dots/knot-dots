@@ -20,6 +20,7 @@
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
+	import Relations from '$lib/components/Relations.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
@@ -264,6 +265,13 @@
 		</aside>
 		<div class="content-details masked-overflow">
 			<Members {container} {users} />
+		</div>
+	{:else if hashParams.has(overlayKey.enum.relations) && relatedContainers}
+		<aside>
+			<OverlaySidebar {container} />
+		</aside>
+		<div class="content-details masked-overflow">
+			<Relations containers={relatedContainers} />
 		</div>
 	{:else}
 		{#if 'guid' in container}
