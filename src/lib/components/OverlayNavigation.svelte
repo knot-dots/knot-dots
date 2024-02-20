@@ -21,9 +21,10 @@
 		const hashParams = paramsFromURL(url);
 
 		const newParams = new URLSearchParams(
-			[...hashParams.entries(), [overlayKey.enum.view, guid]].filter(
-				([key]) => key != overlayKey.enum['view-help']
-			)
+			[
+				...Array.from(hashParams.entries()).filter(([k]) => k != overlayKey.enum.view),
+				[overlayKey.enum.view, guid]
+			].filter(([key]) => key != overlayKey.enum['view-help'])
 		);
 
 		return `#${newParams.toString()}`;
