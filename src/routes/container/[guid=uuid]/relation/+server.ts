@@ -1,7 +1,15 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { isIndicatorContainer, isInternalObjectiveContainer, relation } from '$lib/models';
+import {
+	audience,
+	isIndicatorContainer,
+	isInternalObjectiveContainer,
+	relation,
+	strategyTypes,
+	sustainableDevelopmentGoals,
+	topics
+} from '$lib/models';
 import {
 	getAllContainersRelatedToIndicator,
 	getAllRelatedContainers,
@@ -14,9 +22,14 @@ import { filterVisible } from '$lib/authorization';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
+		audience: z.array(audience),
+		category: z.array(sustainableDevelopmentGoals),
 		organization: z.array(z.string().uuid()),
 		organizationalUnit: z.array(z.string().uuid()),
-		relationType: z.array(z.enum(['hierarchical', 'other']))
+		relationType: z.array(z.enum(['hierarchical', 'other'])),
+		strategyType: z.array(strategyTypes),
+		terms: z.array(z.string()),
+		topic: z.array(topics)
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
@@ -44,7 +57,12 @@ export const GET = (async ({ locals, params, url }) => {
 				params.guid,
 				parseResult.data.relationType,
 				{
-					organizationalUnits: parseResult.data.organizationalUnit
+					audience: parseResult.data.audience,
+					categories: parseResult.data.category,
+					organizationalUnits: parseResult.data.organizationalUnit,
+					strategyTypes: parseResult.data.strategyType,
+					topics: parseResult.data.topic,
+					terms: parseResult.data.terms[0]
 				},
 				''
 			)
