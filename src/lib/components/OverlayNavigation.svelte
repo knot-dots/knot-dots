@@ -9,7 +9,9 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isOverlayKey,
 		isStrategyContainer,
+		type OverlayKey,
 		overlayKey,
 		payloadTypes
 	} from '$lib/models';
@@ -17,15 +19,13 @@
 
 	export let container: AnyContainer;
 
-	function viewURL(url: URL, guid: string) {
+	function overlayURL(url: URL, key: OverlayKey, guid: string) {
 		const hashParams = paramsFromURL(url);
 
-		const newParams = new URLSearchParams(
-			[
-				...Array.from(hashParams.entries()).filter(([k]) => k != overlayKey.enum.view),
-				[overlayKey.enum.view, guid]
-			].filter(([key]) => key != overlayKey.enum['view-help'])
-		);
+		const newParams = new URLSearchParams([
+			...Array.from(hashParams.entries()).filter(([k]) => !isOverlayKey(k)),
+			[key, guid]
+		]);
 
 		return `#${newParams.toString()}`;
 	}
@@ -55,7 +55,7 @@
 	<a
 		class="button button-nav"
 		class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid}
-		href={viewURL($page.url, container.guid)}
+		href={overlayURL($page.url, overlayKey.enum.view, container.guid)}
 	>
 		{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
 			{container.payload.name}
