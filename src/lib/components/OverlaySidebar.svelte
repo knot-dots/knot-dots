@@ -18,6 +18,7 @@
 		type ContainerFormTabKey,
 		isContainerWithEffect,
 		isPageContainer,
+		overlayKey,
 		type PayloadType
 	} from '$lib/models';
 	import { applicationState, getOrganization, getOrganizationalUnit } from '$lib/stores';
@@ -58,7 +59,7 @@
 </script>
 
 <ul class="overlay-deep-links">
-	{#if paramsFromURL($page.url).has('edit') || paramsFromURL($page.url).has('create')}
+	{#if paramsFromURL($page.url).has(overlayKey.enum.edit) || paramsFromURL($page.url).has(overlayKey.enum.create)}
 		{#if $applicationState.containerForm.tabs.includes('metadata')}
 			<li>
 				<button

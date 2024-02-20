@@ -33,6 +33,7 @@
 		isTaskContainer,
 		mayDelete,
 		newIndicatorTemplateFromIndicator,
+		overlayKey,
 		payloadTypes,
 		quantities
 	} from '$lib/models';
@@ -60,17 +61,17 @@
 	}
 
 	$: hashParams = paramsFromURL($page.url);
-	$: edit = hashParams.has('create') || hashParams.has('edit');
+	$: edit = hashParams.has(overlayKey.enum.create) || hashParams.has(overlayKey.enum.edit);
 
 	function closeURL() {
-		if (hashParams.has('view-help')) {
+		if (hashParams.has(overlayKey.enum['view-help'])) {
 			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key != 'view-help')
+				[...hashParams.entries()].filter(([key]) => key != overlayKey.enum['view-help'])
 			);
 			return `#${newParams.toString()}`;
 		} else {
 			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key == 'relate')
+				[...hashParams.entries()].filter(([key]) => key == overlayKey.enum.relate)
 			);
 			return `#${newParams.toString()}`;
 		}
@@ -79,11 +80,11 @@
 	function cancelURL() {
 		const newParams = new URLSearchParams(hashParams);
 
-		if (newParams.has('edit-help')) {
-			newParams.delete('edit-help');
+		if (newParams.has(overlayKey.enum['edit-help'])) {
+			newParams.delete(overlayKey.enum['edit-help']);
 		} else {
-			newParams.delete('create');
-			newParams.delete('edit');
+			newParams.delete(overlayKey.enum.create);
+			newParams.delete(overlayKey.enum.edit);
 		}
 
 		return `#${newParams.toString()}`;
@@ -91,7 +92,7 @@
 
 	function editHelpURL() {
 		const newParams = new URLSearchParams(hashParams);
-		newParams.set('edit-help', '');
+		newParams.set(overlayKey.enum['edit-help'], '');
 		return `#${newParams.toString()}`;
 	}
 
@@ -140,7 +141,7 @@
 
 <section class="overlay" transition:slide={{ axis: 'x' }}>
 	<OverlayNavigation {container} />
-	{#if isPageContainer(container) && hashParams.has('edit-help')}
+	{#if isPageContainer(container) && hashParams.has(overlayKey.enum['edit-help'])}
 		<header class="content-header">
 			<label>
 				{$_(`${container.payload.type}`)}
@@ -166,7 +167,7 @@
 				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
 			</div>
 		</footer>
-	{:else if isPageContainer(container) && hashParams.has('view-help')}
+	{:else if isPageContainer(container) && hashParams.has(overlayKey.enum['view-help'])}
 		<header class="content-header">
 			<h2>
 				{container.payload.title}

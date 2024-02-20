@@ -16,6 +16,7 @@
 		isLevel,
 		isMeasureContainer,
 		isStrategyContainer,
+		overlayKey,
 		owners,
 		payloadTypes
 	} from '$lib/models';
@@ -40,7 +41,7 @@
 			return `/${type}/${guid}`;
 		} else {
 			const query = paramsFromURL($page.url);
-			query.set('view', guid);
+			query.set(overlayKey.enum.view, guid);
 			return `#${query.toString()}`;
 		}
 	}

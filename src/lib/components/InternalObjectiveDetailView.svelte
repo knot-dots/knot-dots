@@ -8,7 +8,13 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isContainerWithObjective, isMeasureContainer, owners, payloadTypes } from '$lib/models';
+	import {
+		isContainerWithObjective,
+		isMeasureContainer,
+		overlayKey,
+		owners,
+		payloadTypes
+	} from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -29,7 +35,7 @@
 			return `/${type}/${guid}`;
 		} else {
 			const query = paramsFromURL($page.url);
-			query.set('view', guid);
+			query.set(overlayKey.enum.view, guid);
 			return `#${query.toString()}`;
 		}
 	}

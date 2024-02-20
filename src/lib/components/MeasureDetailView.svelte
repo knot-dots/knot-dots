@@ -12,6 +12,7 @@
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		isStrategyContainer,
+		overlayKey,
 		owners,
 		payloadTypes,
 		status
@@ -57,7 +58,7 @@
 			return `/${type}/${guid}`;
 		} else {
 			const query = paramsFromURL($page.url);
-			query.set('view', guid);
+			query.set(overlayKey.enum.view, guid);
 			return `#${query.toString()}`;
 		}
 	}

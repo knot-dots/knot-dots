@@ -15,6 +15,8 @@ export type ApplicationState = {
 	};
 };
 
+export const overlayKey = z.enum(['create', 'edit', 'edit-help', 'relate', 'view', 'view-help']);
+
 const sdgValues = [
 	'sdg.01',
 	'sdg.02',

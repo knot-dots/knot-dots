@@ -10,6 +10,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isStrategyContainer,
+		overlayKey,
 		payloadTypes
 	} from '$lib/models';
 	import { user } from '$lib/stores';
@@ -20,7 +21,9 @@
 		const hashParams = paramsFromURL(url);
 
 		const newParams = new URLSearchParams(
-			[...hashParams.entries(), ['view', guid]].filter(([key]) => key != 'view-help')
+			[...hashParams.entries(), [overlayKey.enum.view, guid]].filter(
+				([key]) => key != overlayKey.enum['view-help']
+			)
 		);
 
 		return `#${newParams.toString()}`;
@@ -29,14 +32,14 @@
 	function closeURL(url: URL) {
 		const hashParams = paramsFromURL(url);
 
-		if (hashParams.has('view-help')) {
+		if (hashParams.has(overlayKey.enum['view-help'])) {
 			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key != 'view-help')
+				[...hashParams.entries()].filter(([key]) => key != overlayKey.enum['view-help'])
 			);
 			return `#${newParams.toString()}`;
 		} else {
 			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key == 'relate')
+				[...hashParams.entries()].filter(([key]) => key == overlayKey.enum.relate)
 			);
 			return `#${newParams.toString()}`;
 		}
@@ -50,7 +53,7 @@
 
 	<a
 		class="button button-nav"
-		class:is-active={paramsFromURL($page.url).get('view') === container.guid}
+		class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid}
 		href={viewURL($page.url, container.guid)}
 	>
 		{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}

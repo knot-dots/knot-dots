@@ -14,6 +14,7 @@ import {
 	containerOfType,
 	isIndicatorContainer,
 	isStrategyContainer,
+	overlayKey,
 	payloadTypes,
 	status,
 	taskStatus
@@ -132,7 +133,7 @@ if (browser) {
 	page.subscribe(async (values) => {
 		const hashParams = new URLSearchParams(values.url?.hash.substring(1) ?? '');
 
-		if (hashParams.has('create')) {
+		if (hashParams.has(overlayKey.enum.create)) {
 			const isPartOfOptions = await fetchIsPartOfOptions(
 				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
 				hashParams.get('create') as PayloadType
@@ -157,14 +158,16 @@ if (browser) {
 				relatedContainers: [],
 				revisions: [newContainer] as AnyContainer[]
 			});
-		} else if (hashParams.has('view-help')) {
-			const help = await fetchHelpBySlug(hashParams.get('view-help') as string);
+		} else if (hashParams.has(overlayKey.enum['view-help'])) {
+			const help = await fetchHelpBySlug(hashParams.get(overlayKey.enum['view-help']) as string);
 			overlay.update((previous) => ({
 				...previous,
 				revisions: [help]
 			}));
-		} else if (hashParams.has('view')) {
-			const revisions = await fetchContainerRevisions(hashParams.get('view') as string);
+		} else if (hashParams.has(overlayKey.enum.view)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.view) as string
+			);
 			const container = revisions[revisions.length - 1];
 
 			if (isIndicatorContainer(container)) {
@@ -211,8 +214,10 @@ if (browser) {
 					revisions
 				});
 			}
-		} else if (hashParams.has('relate')) {
-			const revisions = await fetchContainerRevisions(hashParams.get('relate') as string);
+		} else if (hashParams.has(overlayKey.enum.relate)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.relate) as string
+			);
 			overlay.set({
 				isPartOfOptions: [],
 				object: revisions[revisions.length - 1] as Container,
