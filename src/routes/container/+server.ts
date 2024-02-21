@@ -29,25 +29,30 @@ export const GET = (async ({ locals, url }) => {
 		throw error(400, { message: parseResult.error.message });
 	}
 
-	const containers =
-		parseResult.data.implements.length > 0
-			? await locals.pool.connect(getAllImplementingContainers(parseResult.data.implements[0]))
-			: parseResult.data.isPartOfStrategy.length > 0
-			  ? await locals.pool.connect(
-						getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
-							type: parseResult.data.payloadType
-						})
-			    )
-			  : await locals.pool.connect(
-						getManyContainers(
-							parseResult.data.organization,
-							{
-								organizationalUnits: parseResult.data.organizationalUnit,
-								type: parseResult.data.payloadType
-							},
-							''
-						)
-			    );
+	let containers: Container[];
+
+	if (parseResult.data.implements.length > 0) {
+		containers = await locals.pool.connect(
+			getAllImplementingContainers(parseResult.data.implements[0])
+		);
+	} else if (parseResult.data.isPartOfStrategy.length > 0) {
+		containers = await locals.pool.connect(
+			getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
+				type: parseResult.data.payloadType
+			})
+		);
+	} else {
+		containers = await locals.pool.connect(
+			getManyContainers(
+				parseResult.data.organization,
+				{
+					organizationalUnits: parseResult.data.organizationalUnit,
+					type: parseResult.data.payloadType
+				},
+				''
+			)
+		);
+	}
 
 	return json(filterVisible(containers, locals.user));
 }) satisfies RequestHandler;
