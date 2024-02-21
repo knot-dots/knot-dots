@@ -23,6 +23,7 @@
 	import Relations from '$lib/components/Relations.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
+	import Tasks from '$lib/components/Tasks.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
@@ -45,14 +46,16 @@
 		ContainerWithObjective,
 		CustomEventMap,
 		IndicatorContainer,
+		TaskContainer,
 		User
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export let relatedContainers: Container[];
-	export let isPartOfOptions: AnyContainer[];
 	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let isPartOfOptions: AnyContainer[];
+	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+	export let tasks: TaskContainer[] | undefined = undefined;
 	export let users: User[] | undefined = undefined;
 
 	let container: AnyContainer;
@@ -272,6 +275,13 @@
 		</aside>
 		<div class="content-details masked-overflow">
 			<Relations containers={relatedContainers} />
+		</div>
+	{:else if hashParams.has(overlayKey.enum.tasks) && tasks}
+		<aside>
+			<OverlaySidebar {container} />
+		</aside>
+		<div class="content-details masked-overflow">
+			<Tasks {container} containers={tasks} />
 		</div>
 	{:else}
 		{#if 'guid' in container}

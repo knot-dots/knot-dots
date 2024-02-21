@@ -10,13 +10,15 @@ import {
 	predicates,
 	strategyTypes,
 	sustainableDevelopmentGoals,
+	taskCategories,
 	topics
 } from '$lib/models';
 import {
 	createContainer,
 	getAllContainersRelatedToStrategy,
 	getAllImplementingContainers,
-	getManyContainers
+	getManyContainers,
+	getManyTaskContainers
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -31,6 +33,7 @@ export const GET = (async ({ locals, url }) => {
 		organizationalUnit: z.array(z.string().uuid()),
 		payloadType: z.array(payloadTypes),
 		strategyType: z.array(strategyTypes),
+		taskCategory: z.array(taskCategories),
 		terms: z.array(z.string()),
 		topic: z.array(topics)
 	});
@@ -54,6 +57,17 @@ export const GET = (async ({ locals, url }) => {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
 				type: parseResult.data.payloadType
+			})
+		);
+	} else if (
+		parseResult.data.isPartOfMeasure.length > 0 &&
+		parseResult.data.payloadType[0] == payloadTypes.enum['internal_objective.task']
+	) {
+		containers = await locals.pool.connect(
+			getManyTaskContainers({
+				measure: parseResult.data.isPartOfMeasure[0],
+				taskCategories: parseResult.data.taskCategory,
+				terms: parseResult.data.terms[0]
 			})
 		);
 	} else {

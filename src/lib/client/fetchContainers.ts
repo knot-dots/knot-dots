@@ -12,6 +12,7 @@ export default async function fetchContainers(filters: {
 	organizationalUnit?: string[];
 	payloadType?: PayloadType[];
 	strategyType?: string[];
+	taskCategory?: string[];
 	terms?: string;
 	topic?: string[];
 }) {
@@ -42,6 +43,9 @@ export default async function fetchContainers(filters: {
 	}
 	for (const value of filters.strategyType ?? []) {
 		params.append('strategyType', value);
+	}
+	for (const value of filters.taskCategory ?? []) {
+		params.append('taskCategory', value);
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);

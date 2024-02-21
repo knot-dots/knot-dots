@@ -100,7 +100,11 @@
 			{/if}
 			{#if container.payload.boards.includes('board.tasks')}
 				<li>
-					<a class="button button-nav" href="/{container.payload.type}/{container.guid}/tasks">
+					<a
+						class="button button-nav"
+						class:is-active={paramsFromURL($page.url).get(overlayKey.enum.tasks) === container.guid}
+						href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
+					>
 						{$_('internal_objective.tasks')}
 					</a>
 				</li>

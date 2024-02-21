@@ -30,6 +30,7 @@ import type {
 	OrganizationContainer,
 	PayloadType,
 	Status,
+	TaskContainer,
 	TaskStatus,
 	User as UserRecord
 } from '$lib/models';
@@ -124,6 +125,7 @@ type Overlay = {
 	object?: Container;
 	relatedContainers: Container[];
 	revisions: AnyContainer[];
+	tasks?: TaskContainer[];
 	users?: UserRecord[];
 };
 
@@ -258,6 +260,23 @@ if (browser) {
 				isPartOfOptions: [],
 				relatedContainers,
 				revisions
+			});
+		} else if (hashParams.has(overlayKey.enum.tasks)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.tasks) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const tasks = (await fetchContainers({
+				isPartOfMeasure: [container.revision],
+				payloadType: [payloadTypes.enum['internal_objective.task']],
+				taskCategory: hashParams.getAll('taskCategory'),
+				terms: hashParams.get('terms') ?? ''
+			})) as TaskContainer[];
+			overlay.set({
+				isPartOfOptions: [],
+				relatedContainers: [],
+				revisions,
+				tasks
 			});
 		} else if (hashParams.has(overlayKey.enum.relate)) {
 			const revisions = await fetchContainerRevisions(
