@@ -3,15 +3,30 @@ import { anyContainer } from '$lib/models';
 import type { PayloadType } from '$lib/models';
 
 export default async function fetchContainers(filters: {
+	audience?: string[];
+	category?: string[];
 	implements?: number[];
+	isPartOfMeasure?: number[];
 	isPartOfStrategy?: number[];
 	organization?: string[];
 	organizationalUnit?: string[];
 	payloadType?: PayloadType[];
+	strategyType?: string[];
+	terms?: string;
+	topic?: string[];
 }) {
 	const params = new URLSearchParams();
+	for (const value of filters.audience ?? []) {
+		params.append('audience', value);
+	}
+	for (const value of filters.category ?? []) {
+		params.append('category', value);
+	}
 	for (const value of filters.implements ?? []) {
 		params.append('implements', String(value));
+	}
+	for (const value of filters.isPartOfMeasure ?? []) {
+		params.append('isPartOfMeasure', String(value));
 	}
 	for (const value of filters.isPartOfStrategy ?? []) {
 		params.append('isPartOfStrategy', String(value));
@@ -24,6 +39,15 @@ export default async function fetchContainers(filters: {
 	}
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
+	}
+	for (const value of filters.strategyType ?? []) {
+		params.append('strategyType', value);
+	}
+	if (filters.terms) {
+		params.append('terms', filters.terms);
+	}
+	for (const value of filters.topic ?? []) {
+		params.append('topic', value);
 	}
 	const response = await fetch(`/container?${params}`);
 	const data = await response.json();

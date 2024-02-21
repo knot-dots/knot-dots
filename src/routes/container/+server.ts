@@ -1,8 +1,17 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { newContainer, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
+import {
+	audience,
+	type Container,
+	newContainer,
+	payloadTypes,
+	predicates,
+	strategyTypes,
+	sustainableDevelopmentGoals,
+	topics
+} from '$lib/models';
 import {
 	createContainer,
 	getAllContainersRelatedToStrategy,
@@ -13,11 +22,17 @@ import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
+		audience: z.array(audience),
+		category: z.array(sustainableDevelopmentGoals),
 		implements: z.array(z.coerce.number().int().positive()),
+		isPartOfMeasure: z.array(z.coerce.number().int().positive()),
 		isPartOfStrategy: z.array(z.coerce.number().int().positive()),
 		organization: z.array(z.string().uuid()),
 		organizationalUnit: z.array(z.string().uuid()),
-		payloadType: z.array(payloadTypes)
+		payloadType: z.array(payloadTypes),
+		strategyType: z.array(strategyTypes),
+		terms: z.array(z.string()),
+		topic: z.array(topics)
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
@@ -46,7 +61,12 @@ export const GET = (async ({ locals, url }) => {
 			getManyContainers(
 				parseResult.data.organization,
 				{
+					audience: parseResult.data.audience,
+					categories: parseResult.data.category,
 					organizationalUnits: parseResult.data.organizationalUnit,
+					strategyTypes: parseResult.data.strategyType,
+					terms: parseResult.data.terms[0],
+					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType
 				},
 				''
