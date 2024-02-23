@@ -405,14 +405,23 @@
 	"unit": {
 		"cubic_meter": "m³",
 		"euro": "€",
+		"euro_per_capita": "€ je Einwohner*in",
+		"euro_per_square_meter":  "€/m²",
+		"kilogram_per_hectare":  "kg/ha",
 		"kilometer": "km",
 		"kilowatt": "kW",
 		"kilowatt_hour": "kWh",
+		"liter_per_capita_per_day": "l je Einwohner*in und Tag",
+		"microgram_per_cubic_meter": "µg/m³",
 		"n": "Stück",
 		"percent": "%",
 		"per_1000": "pro 1.000",
 		"per_100000": "pro 100.000",
-		"ton": "t"
+		"square_kilometer_per_capita": "km² je Einwohner*in",
+		"square_meter": "m²",
+		"ton": "t",
+		"ton_per_capita": "t je Einwohner*in",
+		"watt_per_capita": "W je Einwohner*in"
 	},
 	"upload": {
 		"image.help": "JPG, PNG; max 100 MB",
