@@ -120,6 +120,7 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 });
 
 type Overlay = {
+	internalObjectives?: Container[];
 	isPartOfOptions: AnyContainer[];
 	containersWithObjectives?: ContainerWithObjective[];
 	object?: Container;
@@ -259,6 +260,21 @@ if (browser) {
 			overlay.set({
 				isPartOfOptions: [],
 				relatedContainers,
+				revisions
+			});
+		} else if (hashParams.has(overlayKey.enum['internal-objectives'])) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum['internal-objectives']) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const internalObjectives = (await fetchContainers({
+				isPartOfMeasure: [container.revision],
+				terms: hashParams.get('terms') ?? ''
+			})) as TaskContainer[];
+			overlay.set({
+				internalObjectives,
+				isPartOfOptions: [],
+				relatedContainers: [],
 				revisions
 			});
 		} else if (hashParams.has(overlayKey.enum.tasks)) {

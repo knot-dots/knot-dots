@@ -13,6 +13,7 @@
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
+	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
@@ -52,6 +53,7 @@
 	import { ability, applicationState } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let internalObjectives: Container[] | undefined = undefined;
 	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
@@ -275,6 +277,13 @@
 		</aside>
 		<div class="content-details masked-overflow">
 			<Relations containers={relatedContainers} />
+		</div>
+	{:else if hashParams.has(overlayKey.enum['internal-objectives']) && internalObjectives}
+		<aside>
+			<OverlaySidebar {container} />
+		</aside>
+		<div class="content-details masked-overflow">
+			<InternalObjectives {container} containers={internalObjectives} />
 		</div>
 	{:else if hashParams.has(overlayKey.enum.tasks) && tasks}
 		<aside>

@@ -58,6 +58,7 @@
 			hashParams.delete('create');
 			hashParams.delete('view-help');
 			hashParams.delete('edit-help');
+			hashParams.delete('internal-objectives');
 			hashParams.delete('members');
 			hashParams.delete('relations');
 			hashParams.delete('tasks');

@@ -15,6 +15,7 @@ import {
 } from '$lib/models';
 import {
 	createContainer,
+	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToStrategy,
 	getAllImplementingContainers,
 	getManyContainers,
@@ -69,6 +70,16 @@ export const GET = (async ({ locals, url }) => {
 				taskCategories: parseResult.data.taskCategory,
 				terms: parseResult.data.terms[0]
 			})
+		);
+	} else if (parseResult.data.isPartOfMeasure.length > 0) {
+		containers = await locals.pool.connect(
+			getAllContainersRelatedToMeasure(
+				parseResult.data.isPartOfMeasure[0],
+				{
+					terms: parseResult.data.terms[0]
+				},
+				''
+			)
 		);
 	} else {
 		containers = await locals.pool.connect(

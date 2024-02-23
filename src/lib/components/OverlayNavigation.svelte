@@ -92,7 +92,10 @@
 				<li>
 					<a
 						class="button button-nav"
-						href="/{container.payload.type}/{container.guid}/internal-objectives"
+						class:is-active={paramsFromURL($page.url).get(
+							overlayKey.enum['internal-objectives']
+						) === container.guid}
+						href={overlayURL($page.url, overlayKey.enum['internal-objectives'], container.guid)}
 					>
 						{$_('internal_objective.label')}
 					</a>
