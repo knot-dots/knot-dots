@@ -21,9 +21,9 @@ export const load = (async ({ locals, params, url }) => {
 		containers = await locals.pool.connect(
 			getAllRelatedInternalObjectives(
 				url.searchParams.get('related-to') as string,
-				url.searchParams.getAll('relations').length == 0
+				url.searchParams.getAll('relationType').length == 0
 					? ['hierarchical', 'other']
-					: url.searchParams.getAll('relations'),
+					: url.searchParams.getAll('relationType'),
 				url.searchParams.get('sort') ?? ''
 			)
 		);

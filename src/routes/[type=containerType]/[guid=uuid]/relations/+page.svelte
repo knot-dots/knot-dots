@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { InformationCircle, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -9,6 +10,7 @@
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTabs from '$lib/components/StrategyTabs.svelte';
@@ -17,8 +19,6 @@
 	import { isMeasureContainer, isPartOf, isStrategyContainer, payloadTypes } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 	import type { PageData } from './$types';
-	import RelationFilter from '$lib/components/RelationFilter.svelte';
-	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 
 	export let data: PageData;
 
@@ -52,7 +52,7 @@
 				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
-					<RelationFilter />
+					<RelationTypeFilter />
 					<StrategyTypeFilter />
 					<TopicFilter />
 					<CategoryFilter />
@@ -68,7 +68,7 @@
 				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
-					<RelationFilter />
+					<RelationTypeFilter />
 					<StrategyTypeFilter />
 					<TopicFilter />
 					<CategoryFilter />
@@ -94,7 +94,7 @@
 				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
-					<RelationFilter />
+					<RelationTypeFilter />
 					<StrategyTypeFilter />
 					<TopicFilter />
 					<CategoryFilter />

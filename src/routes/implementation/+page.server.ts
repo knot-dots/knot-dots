@@ -27,9 +27,9 @@ export const load = (async ({ locals, url, parent }) => {
 			getAllRelatedContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.get('related-to') as string,
-				url.searchParams.getAll('relations').length == 0
+				url.searchParams.getAll('relationType').length == 0
 					? ['hierarchical', 'other']
-					: url.searchParams.getAll('relations'),
+					: url.searchParams.getAll('relationType'),
 				{ organizationalUnits },
 				url.searchParams.get('sort') ?? ''
 			)

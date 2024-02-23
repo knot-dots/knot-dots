@@ -17,9 +17,9 @@ export const load = (async ({ params, locals, url }) => {
 			? locals.pool.connect(
 					getAllRelatedInternalObjectives(
 						params.guid,
-						url.searchParams.getAll('relations').length == 0
+						url.searchParams.getAll('relationType').length == 0
 							? ['hierarchical', 'other']
-							: url.searchParams.getAll('relations'),
+							: url.searchParams.getAll('relationType'),
 						url.searchParams.get('sort') ?? ''
 					)
 			  )
@@ -27,9 +27,9 @@ export const load = (async ({ params, locals, url }) => {
 					getAllRelatedContainers(
 						[container.organization],
 						params.guid,
-						url.searchParams.getAll('relations').length == 0
+						url.searchParams.getAll('relationType').length == 0
 							? ['hierarchical', 'other']
-							: url.searchParams.getAll('relations'),
+							: url.searchParams.getAll('relationType'),
 						{
 							audience: url.searchParams.has('audienceChanged')
 								? url.searchParams.getAll('audience')

@@ -7,7 +7,7 @@
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import RelationFilter from '$lib/components/RelationFilter.svelte';
+	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -29,7 +29,7 @@
 
 		<svelte:fragment slot="filters">
 			{#if $page.url.searchParams.has('related-to')}
-				<RelationFilter />
+				<RelationTypeFilter />
 			{/if}
 			<StrategyTypeFilter />
 			<TopicFilter />
