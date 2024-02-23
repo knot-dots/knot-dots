@@ -35,14 +35,6 @@ import type {
 	User as UserRecord
 } from '$lib/models';
 
-export const navigationToggle = writable(false);
-
-export const sidebarToggle = writable(true);
-
-export const filtersToggle = writable(true);
-
-export const sortToggle = writable(false);
-
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
 		tabs: []

@@ -9,7 +9,6 @@
 	import TaskIncludedFilter from '$lib/components/TaskIncludedFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
-	import { sidebarToggle } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
@@ -51,7 +50,7 @@
 
 <Layout>
 	<Sidebar helpSlug="tasks" slot="sidebar">
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search slot="search" />
 		<svelte:fragment slot="filters">
 			<TaskIncludedFilter />
 			<TaskCategoryFilter />

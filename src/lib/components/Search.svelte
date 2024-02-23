@@ -2,7 +2,6 @@
 	import { Icon, MagnifyingGlass } from 'svelte-hero-icons';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { sidebarToggle } from '$lib/stores';
 
 	let timer: ReturnType<typeof setTimeout>;
 	let terms = $page.url.searchParams.get('terms') ?? '';
@@ -24,16 +23,10 @@
 
 <li>
 	<form class="search" data-sveltekit-keepfocus>
-		<button type={$sidebarToggle ? 'submit' : 'button'} on:click>
+		<button type="submit" on:click>
 			<Icon src={MagnifyingGlass} size="20" mini />
 		</button>
-		<input
-			type="search"
-			name="terms"
-			bind:value={terms}
-			on:input={debouncedSearch}
-			style:display={$sidebarToggle ? 'block' : 'none'}
-		/>
+		<input type="search" name="terms" bind:value={terms} on:input={debouncedSearch} />
 	</form>
 </li>
 
@@ -43,19 +36,17 @@
 	}
 
 	.search > button {
-		--button-background: var(--color-gray-050);
+		background: transparent;
+		border: none;
 		color: var(--color-gray-500);
-		flex: 0 0 51px;
+		padding: 0.625rem;
+		position: absolute;
 	}
 
 	.search > input {
-		background-color: var(--color-gray-050);
-		border-bottom-left-radius: 0;
-		border-color: var(--button-border-color);
-		border-left: none;
-		border-top-left-radius: 0;
-		margin: 0 0 0 -8px;
-		padding: 13px 14px 13px 0;
+		background-color: white;
+		border: solid 1px var(--color-gray-900);
+		padding: 0.5rem 1rem 0.5rem 2.5rem;
 		width: 100%;
 	}
 

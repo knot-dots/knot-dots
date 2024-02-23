@@ -18,7 +18,9 @@
 <Navigation />
 <div in:fly={transitionIn} out:fly={transitionOut}>
 	<main>
-		<slot name="sidebar" />
+		<aside>
+			<slot name="sidebar" />
+		</aside>
 		<slot name="main" />
 		{#if $overlay.revisions[$overlay.revisions.length - 1]}
 			<Overlay {...$overlay} />
@@ -43,5 +45,18 @@
 		height: 100%;
 		min-width: 0;
 		padding: 0;
+	}
+
+	main > aside {
+		font-size: 0.875rem;
+		min-width: 0;
+		padding: 1.5rem 0.5rem 0.5rem;
+		position: absolute;
+		top: var(--nav-height);
+		width: 3.5rem;
+	}
+
+	main > aside + :global(*) {
+		margin-left: 3.5rem;
 	}
 </style>

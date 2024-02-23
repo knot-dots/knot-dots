@@ -16,7 +16,7 @@
 
 <Layout>
 	<Sidebar helpSlug="organizations" slot="sidebar">
-		<Search slot="search" let:toggleSidebar on:click={toggleSidebar}></Search>
+		<Search slot="search" />
 		<svelte:fragment slot="filters">
 			<OrganizationCategoryFilter />
 		</svelte:fragment>

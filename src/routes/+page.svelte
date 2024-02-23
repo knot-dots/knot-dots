@@ -16,7 +16,7 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { mayCreateContainer, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -46,7 +46,7 @@
 
 <Layout>
 	<Sidebar helpSlug="objectives" slot="sidebar">
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search slot="search" />
 
 		<svelte:fragment slot="filters">
 			{#if !$page.data.currentOrganization.payload.default}

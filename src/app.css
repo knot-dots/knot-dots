@@ -251,8 +251,8 @@ button,
 	border-radius: 8px;
 	display: inline-flex;
 	font-weight: 500;
-	padding: var(--padding-y) var(--padding-x);
 	margin: 0;
+	padding: var(--padding-y) var(--padding-x);
 }
 
 button.primary,
@@ -620,7 +620,7 @@ fieldset {
 	flex: 1 1;
 	flex-direction: column;
 	height: calc(100% - 2rem);
-	margin: 1rem;
+	margin: 1rem 1rem 1rem 0;
 }
 
 .content-header {

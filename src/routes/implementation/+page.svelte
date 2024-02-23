@@ -14,7 +14,6 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { status } from '$lib/models';
-	import { sidebarToggle } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors, statusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
@@ -26,7 +25,7 @@
 
 <Layout>
 	<Sidebar helpSlug="measures" slot="sidebar">
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search slot="search" />
 
 		<svelte:fragment slot="filters">
 			{#if $page.url.searchParams.has('related-to')}

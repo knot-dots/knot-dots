@@ -10,7 +10,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { mayCreateContainer, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -44,7 +44,7 @@
 <Layout>
 	<Sidebar slot="sidebar">
 		<MeasureTabs container={data.container} slot="tabs" />
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search />
 		<Sort slot="sort" />
 	</Sidebar>
 

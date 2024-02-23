@@ -9,7 +9,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { OrganizationalUnitContainer } from '$lib/models';
-	import { mayCreateContainer, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -31,7 +31,7 @@
 <Layout>
 	<Sidebar helpSlug="organizational-units" slot="sidebar">
 		<OrganizationalUnitTabs container={data.container} slot="tabs" />
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search slot="search" />
 	</Sidebar>
 
 	<svelte:fragment slot="main">

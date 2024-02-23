@@ -23,12 +23,10 @@
 	<svelte:fragment slot="sidebar">
 		{#if isOrganizationContainer(data.container)}
 			<Sidebar helpSlug="indicators">
-				<OrganizationTabs container={data.container} slot="tabs" />
 				<AudienceFilter slot="filters" />
 			</Sidebar>
 		{:else if isOrganizationalUnitContainer(data.container)}
 			<Sidebar helpSlug="indicators">
-				<OrganizationalUnitTabs container={data.container} slot="tabs" />
 				<svelte:fragment slot="filters">
 					<IndicatorsIncludedFilter />
 					<AudienceFilter />

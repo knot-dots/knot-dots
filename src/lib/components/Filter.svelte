@@ -25,7 +25,7 @@
 	}
 </script>
 
-<li transition:slide={{ axis: 'y' }}>
+<li class="group" transition:slide={{ axis: 'y' }}>
 	{#if label}
 		<p>{label}</p>
 	{/if}
@@ -50,5 +50,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
+	}
+
+	.group {
+		border: solid 1px var(--color-gray-100);
+		border-radius: 8px;
+		overflow-y: auto;
+		padding: 0.25rem;
 	}
 </style>

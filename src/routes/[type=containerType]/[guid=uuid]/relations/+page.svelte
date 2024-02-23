@@ -15,7 +15,7 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { isMeasureContainer, isPartOf, isStrategyContainer, payloadTypes } from '$lib/models';
-	import { mayCreateContainer, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 	import type { PageData } from './$types';
 	import RelationFilter from '$lib/components/RelationFilter.svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
@@ -49,11 +49,7 @@
 			<Sidebar helpSlug="relations">
 				<MeasureTabs container={data.container} slot="tabs" />
 
-				<Search
-					slot="search"
-					let:toggleSidebar
-					on:click={$sidebarToggle ? undefined : toggleSidebar}
-				/>
+				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
 					<RelationFilter />
@@ -69,11 +65,7 @@
 			<Sidebar>
 				<StrategyTabs container={data.container} slot="tabs" />
 
-				<Search
-					slot="search"
-					let:toggleSidebar
-					on:click={$sidebarToggle ? undefined : toggleSidebar}
-				/>
+				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
 					<RelationFilter />
@@ -99,11 +91,7 @@
 					/>
 				</svelte:fragment>
 
-				<Search
-					slot="search"
-					let:toggleSidebar
-					on:click={$sidebarToggle ? undefined : toggleSidebar}
-				/>
+				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
 					<RelationFilter />
