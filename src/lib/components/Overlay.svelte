@@ -146,10 +146,16 @@
 			await saveContainer(newIndicatorTemplateFromIndicator(c));
 		};
 	}
+
+	let fullScreen = false;
+
+	function toggleFullscreen() {
+		fullScreen = !fullScreen;
+	}
 </script>
 
-<section class="overlay" transition:slide={{ axis: 'x' }}>
-	<OverlayNavigation {container} />
+<section class="overlay" class:overlay-fullscreen={fullScreen} transition:slide={{ axis: 'x' }}>
+	<OverlayNavigation {container} {toggleFullscreen} />
 	{#if isPageContainer(container) && hashParams.has(overlayKey.enum['edit-help'])}
 		<header class="content-header">
 			<label>
@@ -373,6 +379,11 @@
 		height: 100vh;
 		position: relative;
 		top: calc(var(--nav-height) * -1);
+	}
+
+	.overlay.overlay-fullscreen {
+		margin-left: -3.875rem;
+		width: 100vw;
 	}
 
 	.overlay > aside {

@@ -18,6 +18,7 @@
 	import { user } from '$lib/stores';
 
 	export let container: AnyContainer;
+	export let toggleFullscreen: () => void;
 
 	function overlayURL(url: URL, key: OverlayKey, guid: string) {
 		const hashParams = paramsFromURL(url);
@@ -52,13 +53,9 @@
 		<Icon src={XMark} size="20" mini />
 	</a>
 
-	<a
-		class="button button-nav button-square"
-		href="/{container.payload.type}/{container.guid}"
-		title={$_('read_more')}
-	>
+	<button class="button-nav button-square" on:click={toggleFullscreen} title={$_('full_screen')}>
 		<Icon solid src={ArrowsPointingOut} size="20" />
-	</a>
+	</button>
 
 	<a
 		class="button button-nav"
