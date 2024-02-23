@@ -624,8 +624,7 @@ fieldset {
 }
 
 .content-header {
-	border-bottom: solid 1px var(--color-gray-200);
-	padding: 1.5rem;
+	padding: 1.5rem 1.5rem 0;
 }
 
 .content-header h2,
@@ -651,7 +650,7 @@ fieldset {
 
 
 .content-footer {
-	padding: 1.5rem;
+	padding: 0 1.5rem 1.5rem;
 }
 
 .content-actions {
@@ -834,7 +833,6 @@ fieldset {
 	flex-basis: 100%;
 	gap: 1rem;
 	justify-content: flex-start;
-	margin-top: 1rem;
 }
 
 /* Overlay */
