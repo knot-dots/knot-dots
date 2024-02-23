@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { Icon, MagnifyingGlass } from 'svelte-hero-icons';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
+	let overlay = getContext('overlay');
 	let timer: ReturnType<typeof setTimeout>;
 	let terms = $page.url.searchParams.get('terms') ?? '';
 
@@ -12,12 +14,24 @@
 	}
 
 	function search() {
-		const searchParams = new URLSearchParams($page.url.searchParams);
-		searchParams.delete('terms');
-		if (terms) {
-			searchParams.set('terms', terms);
+		if (overlay) {
+			const searchParams = new URLSearchParams($page.url.hash.substring(1));
+			searchParams.delete('terms');
+			if (terms) {
+				searchParams.set('terms', terms);
+			}
+			goto(`#${searchParams.toString()}`, {
+				keepFocus: true,
+				replaceState: true
+			});
+		} else {
+			const searchParams = new URLSearchParams($page.url.searchParams);
+			searchParams.delete('terms');
+			if (terms) {
+				searchParams.set('terms', terms);
+			}
+			goto(`?${searchParams.toString()}${$page.url.hash}`, { keepFocus: true, replaceState: true });
 		}
-		goto(`?${searchParams.toString()}${$page.url.hash}`, { keepFocus: true, replaceState: true });
 	}
 </script>
 
