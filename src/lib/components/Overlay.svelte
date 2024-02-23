@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, setContext } from 'svelte';
 	import { Icon, Pencil, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
@@ -8,6 +8,8 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import saveContainer from '$lib/client/saveContainer';
+	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
+	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
@@ -22,9 +24,15 @@
 	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import Relations from '$lib/components/Relations.svelte';
+	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
+	import Search from '$lib/components/Search.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
+	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
+	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
+	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
@@ -59,6 +67,8 @@
 	export let revisions: AnyContainer[];
 	export let tasks: TaskContainer[] | undefined = undefined;
 	export let users: User[] | undefined = undefined;
+
+	setContext('overlay', true);
 
 	let container: AnyContainer;
 	let mayShowRelationButton = getContext('mayShowRelationButton');
@@ -279,25 +289,35 @@
 		</div>
 	{:else if hashParams.has(overlayKey.enum.relations) && relatedContainers}
 		<aside>
-			<OverlaySidebar {container} />
+			<Sidebar helpSlug="relations">
+				<Search slot="search" />
+				<svelte:fragment slot="filters">
+					<AudienceFilter />
+					<RelationTypeFilter />
+					<StrategyTypeFilter />
+					<TopicFilter />
+					<CategoryFilter />
+				</svelte:fragment>
+			</Sidebar>
 		</aside>
-		<div class="content-details masked-overflow">
-			<Relations containers={relatedContainers} />
-		</div>
+		<Relations containers={relatedContainers} />
 	{:else if hashParams.has(overlayKey.enum['internal-objectives']) && internalObjectives}
 		<aside>
-			<OverlaySidebar {container} />
+			<Sidebar helpSlug="internal-objectives">
+				<Search slot="search" />
+			</Sidebar>
 		</aside>
-		<div class="content-details masked-overflow">
-			<InternalObjectives {container} containers={internalObjectives} />
-		</div>
+		<InternalObjectives {container} containers={internalObjectives} />
 	{:else if hashParams.has(overlayKey.enum.tasks) && tasks}
 		<aside>
-			<OverlaySidebar {container} />
+			<Sidebar helpSlug="tasks">
+				<Search slot="search" />
+				<svelte:fragment slot="filters">
+					<TaskCategoryFilter />
+				</svelte:fragment>
+			</Sidebar>
 		</aside>
-		<div class="content-details masked-overflow">
-			<Tasks {container} containers={tasks} />
-		</div>
+		<Tasks {container} containers={tasks} />
 	{:else}
 		{#if 'guid' in container}
 			<aside>
@@ -387,6 +407,7 @@
 	}
 
 	.overlay > aside {
+		font-size: 0.875rem;
 		min-width: 0;
 		padding: 1.5rem 0.5rem 0;
 		position: absolute;
@@ -394,7 +415,7 @@
 		width: 3.5rem;
 	}
 
-	.overlay > aside ~ * {
+	.overlay > aside ~ :global(*) {
 		margin-left: 3.5rem;
 	}
 
