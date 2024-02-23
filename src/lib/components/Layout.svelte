@@ -17,8 +17,8 @@
 
 <Navigation />
 <div in:fly={transitionIn} out:fly={transitionOut}>
-	<slot name="sidebar" />
 	<main>
+		<slot name="sidebar" />
 		<slot name="main" />
 		{#if $overlay.revisions[$overlay.revisions.length - 1]}
 			<Overlay {...$overlay} />
@@ -31,7 +31,6 @@
 
 <style>
 	div {
-		display: flex;
 		height: 100vh;
 		padding-top: var(--nav-height);
 		width: 100%;
@@ -41,6 +40,7 @@
 		background-color: white;
 		display: flex;
 		flex-grow: 1;
+		height: 100%;
 		min-width: 0;
 		padding: 0;
 	}
