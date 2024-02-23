@@ -103,9 +103,7 @@
 			{$_('indicator.template')}
 			<select on:change={changeQuantity} required>
 				<option></option>
-				{#each quantities.options as quantityOption}
-					<option value={quantityOption}>{$_(`${quantityOption}.label`)}</option>
-				{/each}
+				<option value={'quantity.custom'}>{$_('quantity.custom.label')}</option>
 				{#each $page.data.indicatorTemplates as { guid, payload }}
 					<option value={guid}>{payload.title}</option>
 				{/each}
