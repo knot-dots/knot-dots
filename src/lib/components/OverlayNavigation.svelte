@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { Icon, XMark } from 'svelte-hero-icons';
+	import { ArrowsPointingOut, Icon, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -50,6 +50,14 @@
 <nav>
 	<a class="button button-nav button-square" href={closeURL($page.url)}>
 		<Icon src={XMark} size="20" mini />
+	</a>
+
+	<a
+		class="button button-nav button-square"
+		href="/{container.payload.type}/{container.guid}"
+		title={$_('read_more')}
+	>
+		<Icon solid src={ArrowsPointingOut} size="20" />
 	</a>
 
 	<a
