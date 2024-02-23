@@ -27,6 +27,7 @@
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Sort from '$lib/components/Sort.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
@@ -298,6 +299,7 @@
 					<TopicFilter />
 					<CategoryFilter />
 				</svelte:fragment>
+				<Sort slot="sort" />
 			</Sidebar>
 		</aside>
 		<Relations containers={relatedContainers} />
@@ -305,6 +307,7 @@
 		<aside>
 			<Sidebar helpSlug="internal-objectives">
 				<Search slot="search" />
+				<Sort slot="sort" />
 			</Sidebar>
 		</aside>
 		<InternalObjectives {container} containers={internalObjectives} />

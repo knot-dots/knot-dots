@@ -27,6 +27,7 @@ export const GET = (async ({ locals, params, url }) => {
 		organization: z.array(z.string().uuid()),
 		organizationalUnit: z.array(z.string().uuid()),
 		relationType: z.array(z.enum(['hierarchical', 'other'])),
+		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
 		strategyType: z.array(strategyTypes),
 		terms: z.array(z.string()),
 		topic: z.array(topics)
@@ -48,7 +49,11 @@ export const GET = (async ({ locals, params, url }) => {
 		containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container.guid));
 	} else if (isInternalObjectiveContainer(container)) {
 		containers = await locals.pool.connect(
-			getAllRelatedInternalObjectives(params.guid, parseResult.data.relationType, '')
+			getAllRelatedInternalObjectives(
+				params.guid,
+				parseResult.data.relationType,
+				parseResult.data.sort[0]
+			)
 		);
 	} else {
 		containers = await locals.pool.connect(
@@ -64,7 +69,7 @@ export const GET = (async ({ locals, params, url }) => {
 					topics: parseResult.data.topic,
 					terms: parseResult.data.terms[0]
 				},
-				''
+				parseResult.data.sort[0]
 			)
 		);
 	}

@@ -33,6 +33,7 @@ export const GET = (async ({ locals, url }) => {
 		organization: z.array(z.string().uuid()),
 		organizationalUnit: z.array(z.string().uuid()),
 		payloadType: z.array(payloadTypes),
+		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
 		strategyType: z.array(strategyTypes),
 		taskCategory: z.array(taskCategories),
 		terms: z.array(z.string()),
@@ -78,7 +79,7 @@ export const GET = (async ({ locals, url }) => {
 				{
 					terms: parseResult.data.terms[0]
 				},
-				''
+				parseResult.data.sort[0]
 			)
 		);
 	} else {

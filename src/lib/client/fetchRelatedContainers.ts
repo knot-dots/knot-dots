@@ -12,7 +12,8 @@ export default async function fetchRelatedContainers(
 		strategyType?: string[];
 		terms?: string;
 		topic?: string[];
-	}
+	},
+	sort?: string
 ) {
 	const params = new URLSearchParams();
 	for (const value of filters.audience ?? []) {
@@ -29,6 +30,9 @@ export default async function fetchRelatedContainers(
 	}
 	for (const value of filters.relationType ?? []) {
 		params.append('relationType', value);
+	}
+	if (sort) {
+		params.append('sort', sort);
 	}
 	for (const value of filters.strategyType ?? []) {
 		params.append('strategyType', value);

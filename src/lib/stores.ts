@@ -247,7 +247,8 @@ if (browser) {
 					strategyType: hashParams.getAll('strategyType'),
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
-				}
+				},
+				hashParams.get('sort') ?? 'alpha'
 			);
 			overlay.set({
 				isPartOfOptions: [],
@@ -259,10 +260,13 @@ if (browser) {
 				hashParams.get(overlayKey.enum['internal-objectives']) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const internalObjectives = (await fetchContainers({
-				isPartOfMeasure: [container.revision],
-				terms: hashParams.get('terms') ?? ''
-			})) as TaskContainer[];
+			const internalObjectives = (await fetchContainers(
+				{
+					isPartOfMeasure: [container.revision],
+					terms: hashParams.get('terms') ?? ''
+				},
+				hashParams.get('sort') ?? 'alpha'
+			)) as TaskContainer[];
 			overlay.set({
 				internalObjectives,
 				isPartOfOptions: [],

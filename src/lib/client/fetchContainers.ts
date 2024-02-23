@@ -2,20 +2,23 @@ import { z } from 'zod';
 import { anyContainer } from '$lib/models';
 import type { PayloadType } from '$lib/models';
 
-export default async function fetchContainers(filters: {
-	audience?: string[];
-	category?: string[];
-	implements?: number[];
-	isPartOfMeasure?: number[];
-	isPartOfStrategy?: number[];
-	organization?: string[];
-	organizationalUnit?: string[];
-	payloadType?: PayloadType[];
-	strategyType?: string[];
-	taskCategory?: string[];
-	terms?: string;
-	topic?: string[];
-}) {
+export default async function fetchContainers(
+	filters: {
+		audience?: string[];
+		category?: string[];
+		implements?: number[];
+		isPartOfMeasure?: number[];
+		isPartOfStrategy?: number[];
+		organization?: string[];
+		organizationalUnit?: string[];
+		payloadType?: PayloadType[];
+		strategyType?: string[];
+		taskCategory?: string[];
+		terms?: string;
+		topic?: string[];
+	},
+	sort?: string
+) {
 	const params = new URLSearchParams();
 	for (const value of filters.audience ?? []) {
 		params.append('audience', value);
@@ -40,6 +43,9 @@ export default async function fetchContainers(filters: {
 	}
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
+	}
+	if (sort) {
+		params.append('sort', sort);
 	}
 	for (const value of filters.strategyType ?? []) {
 		params.append('strategyType', value);
