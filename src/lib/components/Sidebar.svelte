@@ -13,12 +13,36 @@
 
 	export let helpSlug = '';
 
-	type ExpandableItem = 'filters' | 'search' | 'sort' | null;
+	type Item = 'filters' | 'search' | 'sort' | null;
 
-	let expandedItem: ExpandableItem = null;
+	let expandedItem: Item = null;
+	let lockedItem: Item = null;
+	let timer: ReturnType<typeof setTimeout>;
 
-	function toggleExpandedItem(item: ExpandableItem) {
-		expandedItem = expandedItem == item ? null : item;
+	function expandItem(item: Item) {
+		if (lockedItem == null || lockedItem == item) {
+			clearTimeout(timer);
+			expandedItem = item;
+		}
+	}
+
+	function lockItem(item: Item) {
+		lockedItem = item == lockedItem ? null : item;
+		if (lockedItem == item) {
+			expandItem(item);
+		} else {
+			collapseItem(item);
+		}
+	}
+
+	function collapseItem(item: Item) {
+		if (expandedItem == item && lockedItem != item) {
+			expandedItem = null;
+		}
+	}
+
+	function collapseItemDelayed(item: Item) {
+		timer = setTimeout(() => collapseItem(item), 500);
 	}
 
 	function helpURL(url: URL) {
@@ -34,14 +58,22 @@
 			<button
 				class="button-nav button-square"
 				class:is-active={expandedItem === 'search'}
-				on:click={() => toggleExpandedItem('search')}
+				on:click={() => lockItem('search')}
+				on:mouseenter={() => expandItem('search')}
+				on:mouseleave={() => collapseItemDelayed('search')}
 				title={$_('search')}
 				aria-controls="search"
 				aria-expanded={expandedItem === 'search'}
 			>
 				<Icon src={MagnifyingGlass} size="20" mini />
 			</button>
-			<div class="expandable" id="search">
+			<!--svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class="expandable"
+				id="search"
+				on:mouseenter={() => clearTimeout(timer)}
+				on:mouseleave={() => collapseItemDelayed('search')}
+			>
 				<slot name="search" />
 			</div>
 		</li>
@@ -52,14 +84,22 @@
 			<button
 				class="button-nav button-square"
 				class:is-active={expandedItem === 'filters'}
-				on:click={() => toggleExpandedItem('filters')}
+				on:click={() => lockItem('filters')}
+				on:mouseenter={() => expandItem('filters')}
+				on:mouseleave={() => collapseItemDelayed('filters')}
 				title={$_('filter')}
 				aria-controls="filters"
 				aria-expanded={expandedItem === 'filters'}
 			>
 				<Icon src={Funnel} size="20" mini />
 			</button>
-			<div class="expandable" id="filters">
+			<!--svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class="expandable"
+				id="filters"
+				on:mouseenter={() => clearTimeout(timer)}
+				on:mouseleave={() => collapseItemDelayed('filters')}
+			>
 				<span class="button button-nav is-active">{$_('filter')}</span>
 				<ul>
 					<slot name="filters" />
@@ -73,14 +113,22 @@
 			<button
 				class="button-nav button-square"
 				class:is-active={expandedItem === 'sort'}
-				on:click={() => toggleExpandedItem('sort')}
+				on:click={() => lockItem('sort')}
+				on:mouseenter={() => expandItem('sort')}
+				on:mouseleave={() => collapseItemDelayed('sort')}
 				title={$_('sort')}
 				aria-controls="sort"
 				aria-expanded={expandedItem === 'sort'}
 			>
 				<Icon src={BarsArrowDown} size="20" mini />
 			</button>
-			<div class="expandable" id="sort">
+			<!--svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class="expandable"
+				id="sort"
+				on:mouseenter={() => clearTimeout(timer)}
+				on:mouseleave={() => collapseItemDelayed('sort')}
+			>
 				<span class="button button-nav is-active">{$_('sort')}</span>
 				<ul>
 					<slot name="sort" />
