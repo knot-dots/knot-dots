@@ -43,16 +43,23 @@
 	<svelte:fragment slot="sidebar">
 		{#if isMeasureContainer(data.container)}
 			<Sidebar {helpSlug}>
-				<MeasureTabs container={data.container} slot="tabs" />
+				<svelte:fragment slot="tabs">
+					<ContainerDetailViewTabs container={data.container} />
+					<MeasureTabs container={data.container} />
+				</svelte:fragment>
 			</Sidebar>
 		{:else if isStrategyContainer(data.container)}
 			<Sidebar {helpSlug}>
-				<StrategyTabs container={data.container} slot="tabs" />
+				<svelte:fragment slot="tabs">
+					<ContainerDetailViewTabs container={data.container} />
+					<StrategyTabs container={data.container} />
+				</svelte:fragment>
 				<PayloadTypeFilter slot="filters" />
 			</Sidebar>
 		{:else}
 			<Sidebar {helpSlug}>
 				<svelte:fragment slot="tabs">
+					<ContainerDetailViewTabs container={data.container} />
 					<SidebarTab
 						href="/{data.container.payload.type}/{data.container.guid}"
 						iconSource={InformationCircle}
@@ -118,11 +125,6 @@
 						{/if}
 					</header>
 					<div class="content-details masked-overflow">
-						{#if $applicationState.containerDetailView.tabs.length > 0}
-							<aside>
-								<ContainerDetailViewTabs {container} />
-							</aside>
-						{/if}
 						{#if isIndicatorContainer(container)}
 							<IndicatorDetailView
 								{container}

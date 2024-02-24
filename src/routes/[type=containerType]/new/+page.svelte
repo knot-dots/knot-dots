@@ -6,6 +6,7 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		containerOfType,
@@ -92,6 +93,10 @@
 </script>
 
 <Layout>
+	<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`} slot="sidebar">
+		<ContainerFormTabs {container} slot="tabs" />
+	</Sidebar>
+
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<header class="content-header">
@@ -119,11 +124,6 @@
 				</label>
 			</header>
 			<div class="content-details masked-overflow">
-				{#if $applicationState.containerForm.tabs.length > 0}
-					<aside>
-						<ContainerFormTabs {container} />
-					</aside>
-				{/if}
 				<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			</div>
 			<footer class="content-footer">

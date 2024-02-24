@@ -21,7 +21,6 @@
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
-	import OverlaySidebar from '$lib/components/OverlaySidebar.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import Relations from '$lib/components/Relations.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
@@ -60,6 +59,8 @@
 		User
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let internalObjectives: Container[] | undefined = undefined;
@@ -215,7 +216,9 @@
 		</footer>
 	{:else if edit}
 		<aside>
-			<OverlaySidebar {container} />
+			<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
+				<ContainerFormTabs {container} slot="tabs" />
+			</Sidebar>
 		</aside>
 		<header class="content-header">
 			<label
@@ -283,7 +286,7 @@
 		</footer>
 	{:else if hashParams.has(overlayKey.enum.members) && users}
 		<aside>
-			<OverlaySidebar {container} />
+			<Sidebar helpSlug="members" />
 		</aside>
 		<div class="content-details masked-overflow">
 			<Members {container} {users} />
@@ -324,7 +327,9 @@
 	{:else}
 		{#if 'guid' in container}
 			<aside>
-				<OverlaySidebar {container} />
+				<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+					<ContainerDetailViewTabs {container} slot="tabs" />
+				</Sidebar>
 			</aside>
 		{/if}
 		<header class="content-header">
