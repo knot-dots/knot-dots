@@ -18,6 +18,7 @@
 		"@auth/sveltekit": "^0.3.14",
 		"@casl/ability": "^6.5.0",
 		"@faker-js/faker": "^8.3.1",
+		"@iconify-json/heroicons": "^1.1.20",
 		"@observablehq/plot": "^0.6.11",
 		"@playwright/test": "^1.40.0",
 		"@prosemirror-adapter/svelte": "^0.2.6",
@@ -41,6 +42,7 @@
 		"svelte-i18n": "3.7.3",
 		"tslib": "^2.6.2",
 		"typescript": "^5.3.2",
+		"unplugin-icons": "^0.18.5",
 		"vite": "^4.5.0",
 		"vitest": "^0.25.8"
 	},
