@@ -61,7 +61,13 @@
 		{:else}
 			<Icon src={Home} size="20" />
 		{/if}
+		{#if isOrganizationContainer(selectedContext) && selectedContext.payload.default}
+			{$_('all_organizations')}
+		{:else}
+			{selectedContext.payload.name}
+		{/if}
 	</a>
+
 	<button
 		class="button-nav organization-menu-toggle"
 		class:is-active={showDropDown}
@@ -71,15 +77,7 @@
 		aria-expanded={showDropDown}
 		aria-label={showDropDown ? $_('close_organization_menu') : $_('open_organization_menu')}
 	>
-		{#if isOrganizationContainer(selectedContext) && selectedContext.payload.default}
-			<span>
-				{$_('all_organizations')}
-			</span>
-		{:else}
-			<span>
-				{selectedContext.payload.name}
-			</span>
-		{/if}
+		<span>{$_('organizations')}</span>
 		<Icon src={showDropDown ? ChevronUp : ChevronDown} size="20" />
 	</button>
 
@@ -140,8 +138,11 @@
 	}
 
 	.organization-menu > a {
+		align-items: center;
+		display: flex;
 		padding: 0 0.625rem;
 		flex-shrink: 0;
+		gap: 0.5rem;
 	}
 
 	.organization-menu-toggle {
