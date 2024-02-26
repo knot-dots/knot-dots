@@ -3,12 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import paramsFromURL from '$lib/client/paramsFromURL';
-	import {
-		type OrganizationalUnitContainer,
-		type OrganizationContainer,
-		overlayKey
-	} from '$lib/models';
+	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let showRelationFilter = false;
@@ -59,7 +54,7 @@
 	title={container.payload.name}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid}
+	class:is-active={$page.url.hostname.split('.')[0] == container.guid}
 	on:click={handleClick}
 	on:keyup={handleKeyUp}
 >
@@ -130,6 +125,10 @@
 		font-size: 0.875rem;
 		font-weight: 500;
 		margin-bottom: 1rem;
+	}
+
+	img {
+		max-height: 7rem;
 	}
 
 	footer {

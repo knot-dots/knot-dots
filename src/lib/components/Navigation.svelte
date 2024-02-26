@@ -2,15 +2,9 @@
 	import { signIn } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import logo1 from '$lib/assets/logo-1.svg';
-	import logo2 from '$lib/assets/logo-2.svg';
-	import logo3 from '$lib/assets/logo-3.svg';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
 	import { user } from '$lib/stores';
-
-	const logos = [logo1, logo2, logo3];
-	const randomLogo = logos[Math.floor($page.data.random * logos.length)];
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
@@ -87,18 +81,11 @@
 			</li>
 		{/if}
 	</ul>
-
-	<a href="/about">
-		<img alt={$_('logo')} class="logo" src={randomLogo} />
-	</a>
 </nav>
 
 <style>
 	nav {
 		align-items: center;
-		box-shadow:
-			0 4px 6px -1px rgba(0, 0, 0, 0.1),
-			0 2px 4px -2px rgba(0, 0, 0, 0.05);
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
