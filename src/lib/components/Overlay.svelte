@@ -58,7 +58,7 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability, applicationState, overlayWidth } from '$lib/stores';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
@@ -164,9 +164,42 @@
 	function toggleFullscreen() {
 		fullScreen = !fullScreen;
 	}
+
+	let offset = 0;
+
+	function startExpand(event: MouseEvent) {
+		offset = event.offsetX;
+		window.addEventListener('mousemove', expand);
+	}
+
+	function stopExpand() {
+		window.removeEventListener('mousemove', expand);
+	}
+
+	function expand(event: MouseEvent) {
+		$overlayWidth = (window.innerWidth - event.pageX + offset) / window.innerWidth;
+
+		if ($overlayWidth * window.innerWidth < 400) {
+			stopExpand();
+			goto(closeURL());
+			setTimeout(() => ($overlayWidth += 0.01), 500);
+		} else if ($overlayWidth * window.innerWidth > window.innerWidth - 400) {
+			stopExpand();
+			fullScreen = true;
+			setTimeout(() => ($overlayWidth -= 0.01), 500);
+		}
+	}
 </script>
 
-<section class="overlay" class:overlay-fullscreen={fullScreen} transition:slide={{ axis: 'x' }}>
+<svelte:window on:mouseup={stopExpand} />
+<section
+	class="overlay"
+	class:overlay-fullscreen={fullScreen}
+	transition:slide={{ axis: 'x' }}
+	style="--width-factor: {$overlayWidth}"
+>
+	<!--svelte-ignore a11y-no-static-element-interactions -->
+	<div class="resize-handle" on:mousedown|preventDefault={startExpand} />
 	<OverlayNavigation {container} {toggleFullscreen} />
 	{#if isPageContainer(container) && hashParams.has(overlayKey.enum['edit-help'])}
 		<header class="content-header">
@@ -429,21 +462,28 @@
 
 	@media (min-width: 768px) {
 		.overlay {
-			width: 80%;
+			--width-factor: 0.65;
+
+			width: calc(100% * var(--width-factor));
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.8 - 3.5rem);
+			min-width: calc(100vw * var(--width-factor) - 3.5rem);
 		}
 	}
 
-	@media (min-width: 1440px) {
-		.overlay {
-			width: 65%;
-		}
+	.resize-handle {
+		border-left: solid 2px transparent;
+		cursor: ew-resize;
+		height: 100%;
+		min-width: 0;
+		position: absolute;
+		width: 0.5rem;
+		z-index: 1;
+	}
 
-		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.65 - 3.5rem);
-		}
+	.resize-handle:active,
+	.resize-handle:hover {
+		border-color: var(--focus-color);
 	}
 </style>

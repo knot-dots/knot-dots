@@ -58,7 +58,7 @@
 	</button>
 
 	<a
-		class="button button-nav"
+		class="button button-nav title"
 		class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid}
 		href={overlayURL($page.url, overlayKey.enum.view, container.guid)}
 	>
@@ -160,6 +160,14 @@
 
 	nav > * {
 		flex-shrink: 0;
+	}
+
+	nav > .title {
+		display: inline-block;
+		flex-shrink: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.button-group {

@@ -111,6 +111,16 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 	};
 });
 
+const storedOverlayWidth = browser ? sessionStorage.getItem('overlayWidth') : null;
+
+export const overlayWidth = writable<number>(
+	storedOverlayWidth ? parseFloat(storedOverlayWidth) : 0.65
+);
+
+if (browser) {
+	overlayWidth.subscribe((value) => sessionStorage.setItem('overlayWidth', value.toString()));
+}
+
 type Overlay = {
 	internalObjectives?: Container[];
 	isPartOfOptions: AnyContainer[];
