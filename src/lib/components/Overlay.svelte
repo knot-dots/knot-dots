@@ -165,7 +165,6 @@
 		fullScreen = !fullScreen;
 	}
 
-	let width: number | undefined;
 	let offset = 0;
 
 	function startExpand(event: MouseEvent) {
@@ -178,7 +177,7 @@
 	}
 
 	function expand(event: MouseEvent) {
-		width = (window.innerWidth - event.pageX + offset) / window.innerWidth;
+		$overlayWidth = (window.innerWidth - event.pageX + offset) / window.innerWidth;
 	}
 </script>
 
@@ -187,7 +186,7 @@
 	class="overlay"
 	class:overlay-fullscreen={fullScreen}
 	transition:slide={{ axis: 'x' }}
-	style="--width-factor: {width}"
+	style="--width-factor: {$overlayWidth}"
 >
 	<!--svelte-ignore a11y-no-static-element-interactions -->
 	<div class="resize-handle" on:mousedown|preventDefault={startExpand} />

@@ -111,6 +111,8 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 	};
 });
 
+export const overlayWidth = writable<number>(0.65);
+
 type Overlay = {
 	internalObjectives?: Container[];
 	isPartOfOptions: AnyContainer[];
