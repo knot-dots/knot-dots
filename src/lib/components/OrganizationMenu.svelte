@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
+	import { ChevronDown, ChevronUp, Home, Icon } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import logo1 from '$lib/assets/logo-1.svg';
+	import logo2 from '$lib/assets/logo-2.svg';
+	import logo3 from '$lib/assets/logo-3.svg';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import TabItem from '$lib/components/TabItem.svelte';
-	import { ChevronDown, ChevronUp, Home, Icon } from 'svelte-hero-icons';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import {
 		boards,
@@ -26,6 +29,7 @@
 	let organizationalUnitsByLevel = new Map<number, OrganizationalUnitContainer[]>();
 	let selectedContext: OrganizationContainer | OrganizationalUnitContainer;
 	let logo: string;
+	let landingPageURL: string;
 
 	$: {
 		organizations = $page.data.organizations;
@@ -42,20 +46,28 @@
 
 		selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 
-		if (selectedContext.payload.image) {
-			logo = selectedContext.payload.image;
-		} else if (isOrganizationalUnitContainer(selectedContext)) {
-			const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
-				selectedContext,
-				$page.data.organizationalUnits
-			).find(({ payload }) => payload.image);
-			logo = firstAncestorWithImage?.payload.image ?? $page.data.currentOrganization.payload.image;
+		if ('default' in selectedContext.payload && selectedContext.payload.default) {
+			landingPageURL = '/about';
+			const logos = [logo1, logo2, logo3];
+			logo = logos[Math.floor($page.data.random * logos.length)];
+		} else {
+			landingPageURL = `/${selectedContext.payload.type}/${selectedContext.guid}`;
+			if (selectedContext.payload.image) {
+				logo = selectedContext.payload.image;
+			} else if (isOrganizationalUnitContainer(selectedContext)) {
+				const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
+					selectedContext,
+					$page.data.organizationalUnits
+				).find(({ payload }) => payload.image);
+				logo =
+					firstAncestorWithImage?.payload.image ?? $page.data.currentOrganization.payload.image;
+			}
 		}
 	}
 </script>
 
 <div class="organization-menu">
-	<a href="/{selectedContext.payload.type}/{selectedContext.guid}">
+	<a href={landingPageURL}>
 		{#if logo}
 			<img alt={$_('logo')} class="logo" src={logo} />
 		{:else}
