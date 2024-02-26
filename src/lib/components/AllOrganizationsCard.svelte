@@ -89,5 +89,6 @@
 
 	img {
 		max-height: 7rem;
+		object-fit: contain;
 	}
 </style>
