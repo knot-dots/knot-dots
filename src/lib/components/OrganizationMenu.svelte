@@ -105,7 +105,11 @@
 	{#if showDropDown}
 		<div class="organization-menu-details" transition:slide={{ axis: 'y', duration: 400 }}>
 			<Board>
-				<BoardColumn title={$_('organizations')}>
+				<BoardColumn
+					--background="transparent"
+					--border="solid 1px var(--color-gray-900)"
+					title={$_('organizations')}
+				>
 					<div class="vertical-scroll-wrapper masked-overflow">
 						{#if 'default' in selectedContext.payload && selectedContext.payload.default}
 							{#each organizations.filter(({ payload }) => !payload.default) as container}
@@ -130,7 +134,11 @@
 					</div>
 				</BoardColumn>
 				{#each organizationalUnitsByLevel.entries() as [level, containers]}
-					<BoardColumn title={$_('organizational_unit_level', { values: { level } })}>
+					<BoardColumn
+						--background="transparent"
+						--border="solid 1px var(--color-gray-900)"
+						title={$_('organizational_unit_level', { values: { level } })}
+					>
 						<div class="vertical-scroll-wrapper masked-overflow">
 							{#each containers as container}
 								<OrganizationCard

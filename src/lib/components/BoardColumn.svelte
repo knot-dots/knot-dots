@@ -35,6 +35,7 @@
 
 <style>
 	section {
+		border: var(--border, none);
 		border-radius: 8px;
 		display: flex;
 		flex-basis: 20.75rem;
