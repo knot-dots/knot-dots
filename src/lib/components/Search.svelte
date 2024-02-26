@@ -35,14 +35,12 @@
 	}
 </script>
 
-<li>
-	<form class="search" data-sveltekit-keepfocus>
-		<button type="submit" on:click>
-			<Icon src={MagnifyingGlass} size="20" mini />
-		</button>
-		<input type="search" name="terms" bind:value={terms} on:input={debouncedSearch} />
-	</form>
-</li>
+<form class="search" data-sveltekit-keepfocus>
+	<button type="submit" on:click>
+		<Icon src={MagnifyingGlass} size="20" mini />
+	</button>
+	<input type="search" name="terms" bind:value={terms} on:input={debouncedSearch} />
+</form>
 
 <style>
 	.search {
