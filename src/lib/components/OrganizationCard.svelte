@@ -132,6 +132,10 @@
 		margin-bottom: 1rem;
 	}
 
+	img {
+		max-height: 7rem;
+	}
+
 	footer {
 		display: flex;
 		margin-top: auto;
