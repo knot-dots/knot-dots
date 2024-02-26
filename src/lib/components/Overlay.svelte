@@ -178,6 +178,16 @@
 
 	function expand(event: MouseEvent) {
 		$overlayWidth = (window.innerWidth - event.pageX + offset) / window.innerWidth;
+
+		if ($overlayWidth * window.innerWidth < 400) {
+			stopExpand();
+			goto(closeURL());
+			setTimeout(() => ($overlayWidth += 0.01), 500);
+		} else if ($overlayWidth * window.innerWidth > window.innerWidth - 400) {
+			stopExpand();
+			fullScreen = true;
+			setTimeout(() => ($overlayWidth -= 0.01), 500);
+		}
 	}
 </script>
 
