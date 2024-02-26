@@ -6,11 +6,9 @@
 	import logo1 from '$lib/assets/logo-1.svg';
 	import logo2 from '$lib/assets/logo-2.svg';
 	import logo3 from '$lib/assets/logo-3.svg';
-	import Tabs from '$lib/components/Tabs.svelte';
-	import TabItem from '$lib/components/TabItem.svelte';
+	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import {
-		boards,
 		findAncestors,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer
@@ -34,24 +32,25 @@
 	$: {
 		organizations = $page.data.organizations;
 
-		for (const level of [1, 2, 3, 4]) {
-			organizationalUnitsByLevel.set(
-				level,
-				$page.data.organizationalUnits.filter(
-					(c: OrganizationalUnitContainer) =>
-						c.organization == $page.data.currentOrganization.guid && c.payload.level === level
-				)
-			);
-		}
-
 		selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 
 		if ('default' in selectedContext.payload && selectedContext.payload.default) {
 			landingPageURL = '/about';
+
 			const logos = [logo1, logo2, logo3];
 			logo = logos[Math.floor($page.data.random * logos.length)];
+
+			for (const level of [1, 2, 3, 4]) {
+				organizationalUnitsByLevel.set(
+					level,
+					$page.data.organizationalUnits.filter(
+						(c: OrganizationalUnitContainer) => c.payload.level === level
+					)
+				);
+			}
 		} else {
 			landingPageURL = `/${selectedContext.payload.type}/${selectedContext.guid}`;
+
 			if (selectedContext.payload.image) {
 				logo = selectedContext.payload.image;
 			} else if (isOrganizationalUnitContainer(selectedContext)) {
@@ -61,6 +60,16 @@
 				).find(({ payload }) => payload.image);
 				logo =
 					firstAncestorWithImage?.payload.image ?? $page.data.currentOrganization.payload.image;
+			}
+
+			for (const level of [1, 2, 3, 4]) {
+				organizationalUnitsByLevel.set(
+					level,
+					$page.data.organizationalUnits.filter(
+						(c: OrganizationalUnitContainer) =>
+							c.organization == $page.data.currentOrganization.guid && c.payload.level === level
+					)
+				);
 			}
 		}
 	}
@@ -95,37 +104,11 @@
 
 	{#if showDropDown}
 		<div class="organization-menu-details" transition:slide={{ axis: 'y', duration: 400 }}>
-			<Tabs>
-				{#if isOrganizationalUnitContainer(selectedContext) || selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])}
-					<TabItem title={$_('organizational_units')} open>
-						<Board>
-							{#each organizationalUnitsByLevel.entries() as [level, containers]}
-								<BoardColumn title={$_('organizational_unit_level', { values: { level } })}>
-									<div class="vertical-scroll-wrapper masked-overflow">
-										{#each containers as container}
-											<OrganizationCard
-												{container}
-												linkPath={$page.url.pathname
-													.replace('/organization/', '/organizational_unit/')
-													.replace(selectedContext.guid, container.guid)}
-											/>
-										{/each}
-									</div>
-								</BoardColumn>
-							{/each}
-						</Board>
-					</TabItem>
-				{/if}
-				<TabItem
-					title={$_('all_organizations')}
-					open={!(
-						isOrganizationalUnitContainer(selectedContext) ||
-						selectedContext.payload.boards.includes(boards.enum['board.organizational_units'])
-					)}
-				>
-					<ul class="board">
-						{#each organizations.filter(({ payload }) => !payload.default) as container}
-							<li>
+			<Board>
+				<BoardColumn title={$_('organizations')}>
+					<div class="vertical-scroll-wrapper masked-overflow">
+						{#if 'default' in selectedContext.payload && selectedContext.payload.default}
+							{#each organizations.filter(({ payload }) => !payload.default) as container}
 								<OrganizationCard
 									--height="100%"
 									{container}
@@ -133,11 +116,34 @@
 										.replace('/organizational_unit/', '/organization/')
 										.replace(selectedContext.guid, container.guid)}
 								/>
-							</li>
-						{/each}
-					</ul>
-				</TabItem>
-			</Tabs>
+							{/each}
+						{:else}
+							<OrganizationCard
+								--height="100%"
+								container={$page.data.currentOrganization}
+								linkPath={$page.url.pathname
+									.replace('/organizational_unit/', '/organization/')
+									.replace(selectedContext.guid, $page.data.currentOrganization.guid)}
+							/>
+							<AllOrganizationsCard --height="100%" linkPath={$page.url.pathname} />
+						{/if}
+					</div>
+				</BoardColumn>
+				{#each organizationalUnitsByLevel.entries() as [level, containers]}
+					<BoardColumn title={$_('organizational_unit_level', { values: { level } })}>
+						<div class="vertical-scroll-wrapper masked-overflow">
+							{#each containers as container}
+								<OrganizationCard
+									{container}
+									linkPath={$page.url.pathname
+										.replace('/organization/', '/organizational_unit/')
+										.replace(selectedContext.guid, container.guid)}
+								/>
+							{/each}
+						</div>
+					</BoardColumn>
+				{/each}
+			</Board>
 		</div>
 	{/if}
 </div>
@@ -183,20 +189,5 @@
 		right: 0;
 		top: var(--nav-height);
 		z-index: 2;
-	}
-
-	ul {
-		--margin-y: 0.75rem;
-
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: var(--margin-y);
-		margin: var(--margin-y) calc(var(--margin-y) / 2);
-		overflow: auto;
-	}
-
-	li {
-		width: 19.5rem;
 	}
 </style>
