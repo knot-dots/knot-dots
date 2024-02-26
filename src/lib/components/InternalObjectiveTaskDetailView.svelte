@@ -7,7 +7,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isMeasureContainer, owners, taskStatus } from '$lib/models';
+	import { isMeasureContainer, overlayKey, owners, taskStatus } from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, User } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 	import { ability } from '$lib/stores';
@@ -49,7 +49,7 @@
 			return `/${type}/${guid}`;
 		} else {
 			const query = paramsFromURL($page.url);
-			query.set('view', guid);
+			query.set(overlayKey.enum.view, guid);
 			return `#${query.toString()}`;
 		}
 	}

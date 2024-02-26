@@ -1,7 +1,11 @@
 <script>
 	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
+	import { browser } from '$app/environment';
 	import Navigation from '$lib/components/Navigation.svelte';
+	import Overlay from '$lib/components/Overlay.svelte';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import { overlay } from '$lib/stores';
 
 	const duration = 300;
 	const delay = duration + 100;
@@ -13,15 +17,22 @@
 
 <Navigation />
 <div in:fly={transitionIn} out:fly={transitionOut}>
-	<slot name="sidebar" />
 	<main>
+		<aside>
+			<slot name="sidebar" />
+		</aside>
 		<slot name="main" />
+		{#if $overlay.revisions[$overlay.revisions.length - 1]}
+			<Overlay {...$overlay} />
+		{/if}
+		{#if browser && $overlay.object}
+			<RelationOverlay object={$overlay.object} />
+		{/if}
 	</main>
 </div>
 
 <style>
 	div {
-		display: flex;
 		height: 100vh;
 		padding-top: var(--nav-height);
 		width: 100%;
@@ -31,7 +42,21 @@
 		background-color: white;
 		display: flex;
 		flex-grow: 1;
+		height: 100%;
 		min-width: 0;
 		padding: 0;
+	}
+
+	main > aside {
+		font-size: 0.875rem;
+		min-width: 0;
+		padding: 1.5rem 0.5rem 0.5rem;
+		position: absolute;
+		top: var(--nav-height);
+		width: 3.5rem;
+	}
+
+	main > aside + :global(*) {
+		margin-left: 3.5rem;
 	}
 </style>

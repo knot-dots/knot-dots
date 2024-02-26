@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -11,7 +9,6 @@
 	import TaskIncludedFilter from '$lib/components/TaskIncludedFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
@@ -53,7 +50,7 @@
 
 <Layout>
 	<Sidebar helpSlug="tasks" slot="sidebar">
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search slot="search" />
 		<svelte:fragment slot="filters">
 			<TaskIncludedFilter />
 			<TaskCategoryFilter />
@@ -74,9 +71,5 @@
 				/>
 			{/each}
 		</Board>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>

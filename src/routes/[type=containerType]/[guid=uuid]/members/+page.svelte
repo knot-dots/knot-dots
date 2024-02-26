@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ChevronLeft, Icon } from 'svelte-hero-icons';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Members from '$lib/components/Members.svelte';
@@ -33,6 +34,22 @@
 	</Sidebar>
 
 	<svelte:fragment slot="main">
-		<Members container={data.container} users={data.users} />
+		<div class="detail-page-content">
+			<header class="content-header">
+				<h2>
+					{'title' in data.container.payload
+						? data.container.payload.title
+						: data.container.payload.name}
+					<span class="icons">
+						<button class="icons-element" type="button" on:click={() => window.history.back()}>
+							<Icon solid src={ChevronLeft} size="20" />
+						</button>
+					</span>
+				</h2>
+			</header>
+			<div class="content-details masked-overflow table">
+				<Members container={data.container} users={data.users} />
+			</div>
+		</div>
 	</svelte:fragment>
 </Layout>

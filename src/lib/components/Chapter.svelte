@@ -12,7 +12,7 @@
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { payloadTypes, predicates } from '$lib/models';
+	import { overlayKey, payloadTypes, predicates } from '$lib/models';
 	import type { Container, Relation, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -88,7 +88,7 @@
 
 	function viewInOverlayURL(url: URL) {
 		const params = paramsFromURL(url);
-		if (params.get('view') === container.guid) {
+		if (params.get(overlayKey.enum.view) === container.guid) {
 			return '#';
 		} else {
 			return `#view=${container.guid}`;

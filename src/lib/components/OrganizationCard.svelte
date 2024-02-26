@@ -4,7 +4,11 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import {
+		type OrganizationalUnitContainer,
+		type OrganizationContainer,
+		overlayKey
+	} from '$lib/models';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let showRelationFilter = false;
@@ -55,7 +59,7 @@
 	title={container.payload.name}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromURL($page.url).get('view') === container.guid}
+	class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid}
 	on:click={handleClick}
 	on:keyup={handleKeyUp}
 >

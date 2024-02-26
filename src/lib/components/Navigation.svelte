@@ -5,20 +5,14 @@
 	import logo1 from '$lib/assets/logo-1.svg';
 	import logo2 from '$lib/assets/logo-2.svg';
 	import logo3 from '$lib/assets/logo-3.svg';
-	import MenuCloseIcon from '$lib/icons/MenuCloseIcon.svelte';
-	import MenuOpenIcon from '$lib/icons/MenuOpenIcon.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
-	import { navigationToggle, user } from '$lib/stores';
+	import { user } from '$lib/stores';
 
 	const logos = [logo1, logo2, logo3];
 	const randomLogo = logos[Math.floor($page.data.random * logos.length)];
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
-
-	function toggle() {
-		navigationToggle.update((v) => !v);
-	}
 </script>
 
 <nav>
@@ -97,20 +91,6 @@
 	<a href="/about">
 		<img alt={$_('logo')} class="logo" src={randomLogo} />
 	</a>
-
-	<button
-		class="menu"
-		on:click={toggle}
-		aria-controls="aside-0"
-		aria-expanded={$navigationToggle}
-		aria-label={$navigationToggle ? $_('close_sidebar') : $_('open_sidebar')}
-	>
-		{#if $navigationToggle}
-			<MenuCloseIcon class="icon-32" />
-		{:else}
-			<MenuOpenIcon class="icon-32" />
-		{/if}
-	</button>
 </nav>
 
 <style>
@@ -123,11 +103,10 @@
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		height: var(--nav-height);
-		justify-content: space-between;
 		padding: 0 16px;
 		position: absolute;
 		width: 100%;
-		z-index: 2;
+		z-index: 1;
 	}
 
 	nav > * {
@@ -136,9 +115,10 @@
 
 	.main-menu {
 		display: flex;
-		flex-grow: 1;
-		justify-content: space-evenly;
-		overflow-y: auto;
+		flex-grow: 0;
+		gap: 2rem;
+		margin: 0 auto;
+		overflow-x: auto;
 	}
 
 	.user-menu {
@@ -156,15 +136,6 @@
 		display: none;
 	}
 
-	.menu {
-		border: none;
-		padding: 0;
-	}
-
-	.menu:hover {
-		--button-background: transparent;
-	}
-
 	@media (min-width: 768px) {
 		nav {
 			gap: 1.5rem;
@@ -176,10 +147,6 @@
 
 		.user-menu.is-authenticated > li:last-child {
 			display: initial;
-		}
-
-		.menu {
-			display: none;
 		}
 	}
 </style>

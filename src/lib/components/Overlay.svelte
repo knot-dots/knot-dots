@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import { ArrowsPointingOut, Icon, Pencil, Trash, XMark } from 'svelte-hero-icons';
+	import { getContext, setContext } from 'svelte';
+	import { Icon, Pencil, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -8,33 +8,44 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import saveContainer from '$lib/client/saveContainer';
+	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
+	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
+	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
-	import OverlayDeepLinks from '$lib/components/OverlayDeepLinks.svelte';
+	import Members from '$lib/components/Members.svelte';
+	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
+	import Relations from '$lib/components/Relations.svelte';
+	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
+	import Search from '$lib/components/Search.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Sort from '$lib/components/Sort.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
+	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
+	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
+	import Tasks from '$lib/components/Tasks.svelte';
+	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
 		isInternalObjectiveContainer,
-		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		mayDelete,
 		newIndicatorTemplateFromIndicator,
+		overlayKey,
 		payloadTypes,
 		quantities
 	} from '$lib/models';
@@ -43,14 +54,23 @@
 		Container,
 		ContainerWithObjective,
 		CustomEventMap,
-		IndicatorContainer
+		IndicatorContainer,
+		TaskContainer,
+		User
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
-	export let relatedContainers: Container[];
-	export let isPartOfOptions: AnyContainer[];
 	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let internalObjectives: Container[] | undefined = undefined;
+	export let isPartOfOptions: AnyContainer[];
+	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+	export let tasks: TaskContainer[] | undefined = undefined;
+	export let users: User[] | undefined = undefined;
+
+	setContext('overlay', true);
 
 	let container: AnyContainer;
 	let mayShowRelationButton = getContext('mayShowRelationButton');
@@ -62,17 +82,17 @@
 	}
 
 	$: hashParams = paramsFromURL($page.url);
-	$: edit = hashParams.has('create') || hashParams.has('edit');
+	$: edit = hashParams.has(overlayKey.enum.create) || hashParams.has(overlayKey.enum.edit);
 
 	function closeURL() {
-		if (hashParams.has('view-help')) {
+		if (hashParams.has(overlayKey.enum['view-help'])) {
 			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key != 'view-help')
+				[...hashParams.entries()].filter(([key]) => key != overlayKey.enum['view-help'])
 			);
 			return `#${newParams.toString()}`;
 		} else {
 			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key == 'relate')
+				[...hashParams.entries()].filter(([key]) => key == overlayKey.enum.relate)
 			);
 			return `#${newParams.toString()}`;
 		}
@@ -81,11 +101,11 @@
 	function cancelURL() {
 		const newParams = new URLSearchParams(hashParams);
 
-		if (newParams.has('edit-help')) {
-			newParams.delete('edit-help');
+		if (newParams.has(overlayKey.enum['edit-help'])) {
+			newParams.delete(overlayKey.enum['edit-help']);
 		} else {
-			newParams.delete('create');
-			newParams.delete('edit');
+			newParams.delete(overlayKey.enum.create);
+			newParams.delete(overlayKey.enum.edit);
 		}
 
 		return `#${newParams.toString()}`;
@@ -93,7 +113,7 @@
 
 	function editHelpURL() {
 		const newParams = new URLSearchParams(hashParams);
-		newParams.set('edit-help', '');
+		newParams.set(overlayKey.enum['edit-help'], '');
 		return `#${newParams.toString()}`;
 	}
 
@@ -138,10 +158,17 @@
 			await saveContainer(newIndicatorTemplateFromIndicator(c));
 		};
 	}
+
+	let fullScreen = false;
+
+	function toggleFullscreen() {
+		fullScreen = !fullScreen;
+	}
 </script>
 
-<section class="overlay" transition:slide={{ axis: 'x' }}>
-	{#if isPageContainer(container) && hashParams.has('edit-help')}
+<section class="overlay" class:overlay-fullscreen={fullScreen} transition:slide={{ axis: 'x' }}>
+	<OverlayNavigation {container} {toggleFullscreen} />
+	{#if isPageContainer(container) && hashParams.has(overlayKey.enum['edit-help'])}
 		<header class="content-header">
 			<label>
 				{$_(`${container.payload.type}`)}
@@ -167,20 +194,17 @@
 				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
 			</div>
 		</footer>
-	{:else if isPageContainer(container) && hashParams.has('view-help')}
+	{:else if isPageContainer(container) && hashParams.has(overlayKey.enum['view-help'])}
 		<header class="content-header">
-			<h2 class="with-icons">
+			<h2>
 				{container.payload.title}
 
 				<span class="icons">
 					{#if $ability.can('update', container)}
-						<a class="button icons-element" href={editHelpURL()}>
+						<a class="button button-nav button-square" href={editHelpURL()}>
 							<Icon solid src={Pencil} size="20" />
 						</a>
 					{/if}
-					<a href={closeURL()} class="button icons-element">
-						<Icon solid src={XMark} size="20" />
-					</a>
 				</span>
 			</h2>
 		</header>
@@ -191,6 +215,11 @@
 			<div class="content-actions"></div>
 		</footer>
 	{:else if edit}
+		<aside>
+			<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
+				<ContainerFormTabs {container} slot="tabs" />
+			</Sidebar>
+		</aside>
 		<header class="content-header">
 			<label
 				style={container.payload.type === payloadTypes.enum.undefined ||
@@ -221,11 +250,6 @@
 			</label>
 		</header>
 		<div class="content-details masked-overflow">
-			{#if $applicationState.containerForm.tabs.length > 0}
-				<aside>
-					<ContainerFormTabs {container} />
-				</aside>
-			{/if}
 			<ContainerForm
 				bind:container
 				{isPartOfOptions}
@@ -260,9 +284,56 @@
 				{/if}
 			</div>
 		</footer>
+	{:else if hashParams.has(overlayKey.enum.members) && users}
+		<aside>
+			<Sidebar helpSlug="members" />
+		</aside>
+		<div class="content-details masked-overflow">
+			<Members {container} {users} />
+		</div>
+	{:else if hashParams.has(overlayKey.enum.relations) && relatedContainers}
+		<aside>
+			<Sidebar helpSlug="relations">
+				<Search slot="search" />
+				<svelte:fragment slot="filters">
+					<AudienceFilter />
+					<RelationTypeFilter />
+					<StrategyTypeFilter />
+					<TopicFilter />
+					<CategoryFilter />
+				</svelte:fragment>
+				<Sort slot="sort" />
+			</Sidebar>
+		</aside>
+		<Relations containers={relatedContainers} />
+	{:else if hashParams.has(overlayKey.enum['internal-objectives']) && internalObjectives}
+		<aside>
+			<Sidebar helpSlug="internal-objectives">
+				<Search slot="search" />
+				<Sort slot="sort" />
+			</Sidebar>
+		</aside>
+		<InternalObjectives {container} containers={internalObjectives} />
+	{:else if hashParams.has(overlayKey.enum.tasks) && tasks}
+		<aside>
+			<Sidebar helpSlug="tasks">
+				<Search slot="search" />
+				<svelte:fragment slot="filters">
+					<TaskCategoryFilter />
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
+		<Tasks {container} containers={tasks} />
 	{:else}
+		{#if 'guid' in container}
+			<aside>
+				<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+					<ContainerDetailViewTabs {container} slot="tabs" />
+				</Sidebar>
+			</aside>
+		{/if}
 		<header class="content-header">
-			<h2 class="with-icons">
+			<h2>
 				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
 					{container.payload.name}
 				{:else}
@@ -270,20 +341,10 @@
 				{/if}
 				<span class="icons">
 					{#if $ability.can('update', container)}
-						<a class="button icons-element" href="#view={container.guid}&edit">
+						<a class="button button-nav button-square" href="#view={container.guid}&edit">
 							<Icon solid src={Pencil} size="20" />
 						</a>
 					{/if}
-					<a
-						class="button icons-element"
-						href="/{container.payload.type}/{container.guid}"
-						title={$_('read_more')}
-					>
-						<Icon solid src={ArrowsPointingOut} size="20" />
-					</a>
-					<a href={closeURL()} class="button icons-element">
-						<Icon solid src={XMark} size="20" />
-					</a>
 				</span>
 			</h2>
 			{#if isIndicatorContainer(container)}
@@ -295,14 +356,6 @@
 			{/if}
 		</header>
 		<div class="content-details masked-overflow">
-			{#if 'guid' in container}
-				<aside>
-					{#if $applicationState.containerDetailView.tabs.length > 0}
-						<ContainerDetailViewTabs {container} />
-					{/if}
-					<OverlayDeepLinks {container} />
-				</aside>
-			{/if}
 			{#if isIndicatorContainer(container)}
 				<IndicatorDetailView
 					{container}
@@ -348,11 +401,30 @@
 <style>
 	.overlay {
 		background-color: white;
-		border: 1px solid var(--color-gray-200);
 		box-shadow: var(--shadow-lg);
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		height: 100vh;
+		position: relative;
+		top: calc(var(--nav-height) * -1);
+	}
+
+	.overlay.overlay-fullscreen {
+		margin-left: -3.875rem;
+		width: 100vw;
+	}
+
+	.overlay > aside {
+		font-size: 0.875rem;
+		min-width: 0;
+		padding: 1.5rem 0.5rem 0;
+		position: absolute;
+		top: var(--nav-height);
+		width: 3.5rem;
+	}
+
+	.overlay > aside ~ :global(*) {
+		margin-left: 3.5rem;
 	}
 
 	@media (min-width: 768px) {
@@ -361,7 +433,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.8 - 2px);
+			min-width: calc((100vw - 18rem) * 0.8 - 3.5rem);
 		}
 	}
 
@@ -371,7 +443,7 @@
 		}
 
 		.overlay > * {
-			min-width: calc((100vw - 18rem) * 0.65 - 2px);
+			min-width: calc((100vw - 18rem) * 0.65 - 3.5rem);
 		}
 	}
 </style>

@@ -1,19 +1,16 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
-	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { mayCreateContainer, overlay, sidebarToggle } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -47,7 +44,7 @@
 <Layout>
 	<Sidebar slot="sidebar">
 		<MeasureTabs container={data.container} slot="tabs" />
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search />
 		<Sort slot="sort" />
 	</Sidebar>
 
@@ -66,13 +63,5 @@
 				</BoardColumn>
 			{/each}
 		</Board>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
-
-		{#if browser && $overlay.object}
-			<RelationOverlay object={$overlay.object} />
-		{/if}
 	</svelte:fragment>
 </Layout>

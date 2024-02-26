@@ -11,7 +11,6 @@
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
@@ -28,7 +27,7 @@
 		isTaskContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { ability, applicationState, overlay } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -44,16 +43,23 @@
 	<svelte:fragment slot="sidebar">
 		{#if isMeasureContainer(data.container)}
 			<Sidebar {helpSlug}>
-				<MeasureTabs container={data.container} slot="tabs" />
+				<svelte:fragment slot="tabs">
+					<ContainerDetailViewTabs container={data.container} />
+					<MeasureTabs container={data.container} />
+				</svelte:fragment>
 			</Sidebar>
 		{:else if isStrategyContainer(data.container)}
 			<Sidebar {helpSlug}>
-				<StrategyTabs container={data.container} slot="tabs" />
+				<svelte:fragment slot="tabs">
+					<ContainerDetailViewTabs container={data.container} />
+					<StrategyTabs container={data.container} />
+				</svelte:fragment>
 				<PayloadTypeFilter slot="filters" />
 			</Sidebar>
 		{:else}
 			<Sidebar {helpSlug}>
 				<svelte:fragment slot="tabs">
+					<ContainerDetailViewTabs container={data.container} />
 					<SidebarTab
 						href="/{data.container.payload.type}/{data.container.guid}"
 						iconSource={InformationCircle}
@@ -93,7 +99,7 @@
 					</div>
 				{:else}
 					<header class="content-header">
-						<h2 class="with-icons">
+						<h2>
 							{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
 								{container.payload.name}
 							{:else}
@@ -119,11 +125,6 @@
 						{/if}
 					</header>
 					<div class="content-details masked-overflow">
-						{#if $applicationState.containerDetailView.tabs.length > 0}
-							<aside>
-								<ContainerDetailViewTabs {container} />
-							</aside>
-						{/if}
 						{#if isIndicatorContainer(container)}
 							<IndicatorDetailView
 								{container}
@@ -146,9 +147,6 @@
 				{/if}
 			</div>
 		</div>
-		{#if $overlay.revisions[$overlay.revisions.length - 1]}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
 

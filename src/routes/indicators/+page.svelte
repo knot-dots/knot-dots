@@ -1,21 +1,19 @@
 <script lang="ts">
 	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/environment';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
 	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import {
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { ability, overlay } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -25,12 +23,10 @@
 	<svelte:fragment slot="sidebar">
 		{#if isOrganizationContainer(data.container)}
 			<Sidebar helpSlug="indicators">
-				<OrganizationTabs container={data.container} slot="tabs" />
 				<AudienceFilter slot="filters" />
 			</Sidebar>
 		{:else if isOrganizationalUnitContainer(data.container)}
 			<Sidebar helpSlug="indicators">
-				<OrganizationalUnitTabs container={data.container} slot="tabs" />
 				<svelte:fragment slot="filters">
 					<IndicatorsIncludedFilter />
 					<AudienceFilter />
@@ -57,10 +53,6 @@
 				{/each}
 			</ul>
 		</div>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
 

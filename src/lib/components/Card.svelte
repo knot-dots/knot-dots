@@ -7,7 +7,7 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { isIndicatorContainer, predicates } from '$lib/models';
+	import { isIndicatorContainer, overlayKey, predicates } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay } from '$lib/stores';
 	import {
@@ -51,13 +51,17 @@
 
 	$: {
 		const hashParams = paramsFromURL($page.url);
-		if (hashParams.get('view') === container.guid) {
+		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			containerPreviewURL = '#';
 		} else {
-			hashParams.set('view', container.guid);
+			hashParams.set(overlayKey.enum.view, container.guid);
 			hashParams.delete('create');
 			hashParams.delete('view-help');
 			hashParams.delete('edit-help');
+			hashParams.delete('internal-objectives');
+			hashParams.delete('members');
+			hashParams.delete('relations');
+			hashParams.delete('tasks');
 			containerPreviewURL = `#${hashParams.toString()}`;
 		}
 	}
@@ -116,8 +120,8 @@
 		  : undefined}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromURL($page.url).get('view') === container.guid ||
-		paramsFromURL($page.url).get('relate') === container.guid}
+	class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid ||
+		paramsFromURL($page.url).get(overlayKey.enum.relate) === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	on:click={handleClick}

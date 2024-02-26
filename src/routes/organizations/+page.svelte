@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/environment';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import OrganizationCategoryFilter from '$lib/components/OrganizationCategoryFilter.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import { payloadTypes } from '$lib/models';
-	import { ability, overlay } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -18,7 +16,7 @@
 
 <Layout>
 	<Sidebar helpSlug="organizations" slot="sidebar">
-		<Search slot="search" let:toggleSidebar on:click={toggleSidebar}></Search>
+		<Search slot="search" />
 		<svelte:fragment slot="filters">
 			<OrganizationCategoryFilter />
 		</svelte:fragment>
@@ -42,9 +40,6 @@
 				{/each}
 			</ul>
 		</div>
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
 

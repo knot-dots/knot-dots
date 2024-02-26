@@ -1,15 +1,12 @@
 <script lang="ts">
-	import { Icon, InformationCircle, Share, Trash } from 'svelte-hero-icons';
+	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import SidebarTab from '$lib/components/SidebarTab.svelte';
-	import StrategyTabs from '$lib/components/StrategyTabs.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isInternalObjectiveStrategicGoalContainer,
@@ -23,11 +20,9 @@
 		mayDelete,
 		payloadTypes,
 		predicates,
-		quantities,
-		isMeasureContainer
+		quantities
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -81,32 +76,9 @@
 </script>
 
 <Layout>
-	<svelte:fragment slot="sidebar">
-		{#if isMeasureContainer(data.container)}
-			<Sidebar {helpSlug}>
-				<MeasureTabs container={data.container} slot="tabs" />
-			</Sidebar>
-		{:else if isStrategyContainer(data.container)}
-			<Sidebar {helpSlug}>
-				<StrategyTabs container={data.container} slot="tabs" />
-			</Sidebar>
-		{:else}
-			<Sidebar {helpSlug}>
-				<svelte:fragment slot="tabs">
-					<SidebarTab
-						href="/{data.container.payload.type}/{data.container.guid}"
-						iconSource={InformationCircle}
-						text={$_('information')}
-					/>
-					<SidebarTab
-						href="/{data.container.payload.type}/{data.container.guid}/relations"
-						iconSource={Share}
-						text={$_('relations')}
-					/>
-				</svelte:fragment>
-			</Sidebar>
-		{/if}
-	</svelte:fragment>
+	<Sidebar {helpSlug} slot="sidebar">
+		<ContainerFormTabs {container} />
+	</Sidebar>
 
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
@@ -135,11 +107,6 @@
 				</label>
 			</header>
 			<div class="content-details masked-overflow">
-				{#if $applicationState.containerForm.tabs.length > 0}
-					<aside>
-						<ContainerFormTabs {container} />
-					</aside>
-				{/if}
 				<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			</div>
 			<footer class="content-footer">

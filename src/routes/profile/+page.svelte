@@ -1,17 +1,15 @@
 <script lang="ts">
+	import { signOut } from '@auth/sveltekit/client';
+	import { ArrowRightOnRectangle, Cog6Tooth, Icon, InformationCircle } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { accountURL } from '$lib/authentication';
 	import Layout from '$lib/components/Layout.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
-	import { overlay, sidebarToggle, user } from '$lib/stores';
+	import { user } from '$lib/stores';
 	import type { PageData } from './$types';
-	import { ArrowRightOnRectangle, Cog6Tooth, Icon, InformationCircle } from 'svelte-hero-icons';
-	import { signOut } from '@auth/sveltekit/client';
 
 	export let data: PageData;
 </script>
@@ -26,9 +24,8 @@
 				text={$_('profile.settings')}
 			/>
 			<li>
-				<button on:click={() => signOut()}>
+				<button class="button-nav button-square" title={$_('logout')} on:click={() => signOut()}>
 					<Icon src={ArrowRightOnRectangle} size="20" mini />
-					<span class:is-hidden={!$sidebarToggle}>{$_('logout')}</span>
 				</button>
 			</li>
 		</svelte:fragment>
@@ -38,7 +35,7 @@
 		<div class="profile">
 			<div class="detail-page-content profile-inner">
 				<header class="content-header">
-					<h2 class="with-icons">
+					<h2>
 						{$user.givenName}
 						{$user.familyName}
 					</h2>
@@ -52,10 +49,6 @@
 				</div>
 			</div>
 		</div>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
 

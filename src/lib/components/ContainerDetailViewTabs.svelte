@@ -17,54 +17,42 @@
 	}
 </script>
 
-<ul>
-	{#if $applicationState.containerDetailView.tabs.includes('basic-data')}
-		<li>
-			<button
-				title={$_('form.basic_data')}
-				type="button"
-				class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
-				on:click={() => updateApplicationState('basic-data')}
-			>
-				<Icon src={InformationCircle} size="20" mini />
-			</button>
-		</li>
-	{/if}
-	{#if $applicationState.containerDetailView.tabs.includes('resources')}
-		<li>
-			<button
-				title={$_('form.resources')}
-				type="button"
-				class:is-active={$applicationState.containerDetailView.activeTab === 'resources'}
-				on:click={() => updateApplicationState('resources')}
-			>
-				<Icon src={CurrencyEuro} size="20" mini />
-			</button>
-		</li>
-	{/if}
-	{#if $applicationState.containerDetailView.tabs.includes('effects') && showEffectsTab}
-		<li>
-			<button
-				title={$_('form.effects')}
-				type="button"
-				class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
-				on:click={() => updateApplicationState('effects')}
-			>
-				<Icon src={Sparkles} size="20" mini />
-			</button>
-		</li>
-	{/if}
-</ul>
-
-<style>
-	ul {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	button {
-		--padding-x: 12px;
-		--padding-y: 12px;
-	}
-</style>
+{#if $applicationState.containerDetailView.tabs.includes('basic-data')}
+	<li>
+		<button
+			title={$_('form.basic_data')}
+			type="button"
+			class="button-nav button-square"
+			class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
+			on:click={() => updateApplicationState('basic-data')}
+		>
+			<Icon src={InformationCircle} size="20" mini />
+		</button>
+	</li>
+{/if}
+{#if $applicationState.containerDetailView.tabs.includes('resources')}
+	<li>
+		<button
+			title={$_('form.resources')}
+			type="button"
+			class="button-nav button-square"
+			class:is-active={$applicationState.containerDetailView.activeTab === 'resources'}
+			on:click={() => updateApplicationState('resources')}
+		>
+			<Icon src={CurrencyEuro} size="20" mini />
+		</button>
+	</li>
+{/if}
+{#if $applicationState.containerDetailView.tabs.includes('effects') && showEffectsTab}
+	<li>
+		<button
+			title={$_('form.effects')}
+			type="button"
+			class="button-nav button-square"
+			class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
+			on:click={() => updateApplicationState('effects')}
+		>
+			<Icon src={Sparkles} size="20" mini />
+		</button>
+	</li>
+{/if}

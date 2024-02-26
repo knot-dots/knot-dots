@@ -15,6 +15,25 @@ export type ApplicationState = {
 	};
 };
 
+export const overlayKey = z.enum([
+	'create',
+	'edit',
+	'edit-help',
+	'internal-objectives',
+	'members',
+	'relate',
+	'relations',
+	'tasks',
+	'view',
+	'view-help'
+]);
+
+export type OverlayKey = z.infer<typeof overlayKey>;
+
+export function isOverlayKey(s: string): s is OverlayKey {
+	return overlayKey.safeParse(s).success;
+}
+
 const sdgValues = [
 	'sdg.01',
 	'sdg.02',

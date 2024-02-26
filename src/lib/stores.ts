@@ -8,12 +8,15 @@ import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchContainers from '$lib/client/fetchContainers';
 import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
+import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import paramsFromURL from '$lib/client/paramsFromURL';
 import {
+	audience,
 	containerOfType,
 	isIndicatorContainer,
 	isStrategyContainer,
+	overlayKey,
 	payloadTypes,
 	status,
 	taskStatus
@@ -27,16 +30,10 @@ import type {
 	OrganizationContainer,
 	PayloadType,
 	Status,
-	TaskStatus
+	TaskContainer,
+	TaskStatus,
+	User as UserRecord
 } from '$lib/models';
-
-export const navigationToggle = writable(false);
-
-export const sidebarToggle = writable(true);
-
-export const filtersToggle = writable(true);
-
-export const sortToggle = writable(false);
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
@@ -115,11 +112,14 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 });
 
 type Overlay = {
+	internalObjectives?: Container[];
 	isPartOfOptions: AnyContainer[];
-	object?: Container;
 	containersWithObjectives?: ContainerWithObjective[];
+	object?: Container;
 	relatedContainers: Container[];
 	revisions: AnyContainer[];
+	tasks?: TaskContainer[];
+	users?: UserRecord[];
 };
 
 export const overlay = writable<Overlay>({
@@ -132,7 +132,7 @@ if (browser) {
 	page.subscribe(async (values) => {
 		const hashParams = new URLSearchParams(values.url?.hash.substring(1) ?? '');
 
-		if (hashParams.has('create')) {
+		if (hashParams.has(overlayKey.enum.create)) {
 			const isPartOfOptions = await fetchIsPartOfOptions(
 				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
 				hashParams.get('create') as PayloadType
@@ -157,14 +157,16 @@ if (browser) {
 				relatedContainers: [],
 				revisions: [newContainer] as AnyContainer[]
 			});
-		} else if (hashParams.has('view-help')) {
-			const help = await fetchHelpBySlug(hashParams.get('view-help') as string);
+		} else if (hashParams.has(overlayKey.enum['view-help'])) {
+			const help = await fetchHelpBySlug(hashParams.get(overlayKey.enum['view-help']) as string);
 			overlay.update((previous) => ({
 				...previous,
 				revisions: [help]
 			}));
-		} else if (hashParams.has('view')) {
-			const revisions = await fetchContainerRevisions(hashParams.get('view') as string);
+		} else if (hashParams.has(overlayKey.enum.view)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.view) as string
+			);
 			const container = revisions[revisions.length - 1];
 
 			if (isIndicatorContainer(container)) {
@@ -211,8 +213,87 @@ if (browser) {
 					revisions
 				});
 			}
-		} else if (hashParams.has('relate')) {
-			const revisions = await fetchContainerRevisions(hashParams.get('relate') as string);
+		} else if (hashParams.has(overlayKey.enum.members)) {
+			const [revisions, users] = await Promise.all([
+				fetchContainerRevisions(hashParams.get(overlayKey.enum.members) as string),
+				fetchMembers(hashParams.get(overlayKey.enum.members) as string)
+			]);
+			overlay.set({
+				isPartOfOptions: [],
+				relatedContainers: [],
+				revisions,
+				users
+			});
+		} else if (hashParams.has(overlayKey.enum.relations)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.relations) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const relatedContainers = await fetchRelatedContainers(
+				hashParams.get(overlayKey.enum.relations) as string,
+				{
+					audience: hashParams.has('audienceChanged')
+						? hashParams.getAll('audience')
+						: [audience.enum['audience.public']],
+					category: hashParams.getAll('category'),
+					organization: [container.organization],
+					...(container.organizational_unit
+						? { organizationalUnit: [container.organizational_unit] }
+						: undefined),
+					relationType:
+						hashParams.getAll('relationType').length == 0
+							? ['hierarchical', 'other']
+							: hashParams.getAll('relationType'),
+					strategyType: hashParams.getAll('strategyType'),
+					terms: hashParams.get('terms') ?? '',
+					topic: hashParams.getAll('topic')
+				},
+				hashParams.get('sort') ?? 'alpha'
+			);
+			overlay.set({
+				isPartOfOptions: [],
+				relatedContainers,
+				revisions
+			});
+		} else if (hashParams.has(overlayKey.enum['internal-objectives'])) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum['internal-objectives']) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const internalObjectives = (await fetchContainers(
+				{
+					isPartOfMeasure: [container.revision],
+					terms: hashParams.get('terms') ?? ''
+				},
+				hashParams.get('sort') ?? 'alpha'
+			)) as TaskContainer[];
+			overlay.set({
+				internalObjectives,
+				isPartOfOptions: [],
+				relatedContainers: [],
+				revisions
+			});
+		} else if (hashParams.has(overlayKey.enum.tasks)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.tasks) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const tasks = (await fetchContainers({
+				isPartOfMeasure: [container.revision],
+				payloadType: [payloadTypes.enum['internal_objective.task']],
+				taskCategory: hashParams.getAll('taskCategory'),
+				terms: hashParams.get('terms') ?? ''
+			})) as TaskContainer[];
+			overlay.set({
+				isPartOfOptions: [],
+				relatedContainers: [],
+				revisions,
+				tasks
+			});
+		} else if (hashParams.has(overlayKey.enum.relate)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.relate) as string
+			);
 			overlay.set({
 				isPartOfOptions: [],
 				object: revisions[revisions.length - 1] as Container,

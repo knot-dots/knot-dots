@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import Board from '$lib/components/Board.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -11,7 +9,6 @@
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
-	import { overlay, sidebarToggle } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
@@ -54,7 +51,7 @@
 <Layout>
 	<Sidebar helpSlug="tasks" slot="sidebar">
 		<MeasureTabs container={data.container} slot="tabs" />
-		<Search slot="search" let:toggleSidebar on:click={$sidebarToggle ? undefined : toggleSidebar} />
+		<Search slot="search" />
 		<svelte:fragment slot="filters">
 			<TaskCategoryFilter />
 		</svelte:fragment>
@@ -75,9 +72,5 @@
 				/>
 			{/each}
 		</Board>
-
-		{#if browser && $overlay.revisions.length > 0}
-			<Overlay {...$overlay} />
-		{/if}
 	</svelte:fragment>
 </Layout>
