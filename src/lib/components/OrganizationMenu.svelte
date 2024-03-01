@@ -117,6 +117,7 @@
 									--height="100%"
 									{container}
 									linkPath={$page.url.pathname
+										.replace(/(\/about)|(\/imprint)|(\/privacy)/, `/organization/${container.guid}`)
 										.replace('/organizational_unit/', '/organization/')
 										.replace(selectedContext.guid, container.guid)}
 								/>
@@ -129,7 +130,10 @@
 									.replace('/organizational_unit/', '/organization/')
 									.replace(selectedContext.guid, $page.data.currentOrganization.guid)}
 							/>
-							<AllOrganizationsCard --height="100%" linkPath={$page.url.pathname} />
+							<AllOrganizationsCard
+								--height="100%"
+								linkPath={$page.url.pathname.replace(/\/organization(al_unit)?\/.*/, '/about')}
+							/>
 						{/if}
 					</div>
 				</BoardColumn>
@@ -144,6 +148,10 @@
 								<OrganizationCard
 									{container}
 									linkPath={$page.url.pathname
+										.replace(
+											/(\/about)|(\/imprint)|(\/privacy)/,
+											`/organizational_unit/${container.guid}`
+										)
 										.replace('/organization/', '/organizational_unit/')
 										.replace(selectedContext.guid, container.guid)}
 								/>

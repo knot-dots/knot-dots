@@ -6,7 +6,7 @@
 	import logo2 from '$lib/assets/logo-2.svg';
 	import logo3 from '$lib/assets/logo-3.svg';
 
-	export let linkPath = '/';
+	export let linkPath = '/about';
 
 	const logos = [logo1, logo2, logo3];
 	const logo = logos[Math.floor($page.data.random * logos.length)];
@@ -31,7 +31,6 @@
 
 	function url() {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-		url.hostname = `${url.hostname}`;
 		url.pathname = linkPath;
 		return url.toString();
 	}
