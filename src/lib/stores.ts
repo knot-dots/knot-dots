@@ -41,6 +41,9 @@ export const applicationState = writable<ApplicationState>({
 	},
 	containerForm: {
 		tabs: []
+	},
+	organizationMenu: {
+		showDropDown: false
 	}
 });
 
