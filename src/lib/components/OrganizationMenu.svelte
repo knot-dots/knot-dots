@@ -42,9 +42,13 @@
 		organizationalUnitsByLevel = [];
 
 		if ('default' in currentContext.payload && currentContext.payload.default) {
-			organizations = $page.data.organizations.filter(
-				(c: OrganizationContainer) => !c.payload.default
-			);
+			organizations = $page.data.organizations
+				.filter((c: OrganizationContainer) => !c.payload.default)
+				.filter((c: OrganizationContainer) =>
+					selectedContext && selectedContext.guid != currentContext.guid
+						? c.organization == selectedContext.organization
+						: true
+				);
 
 			landingPageURL = '/about';
 
