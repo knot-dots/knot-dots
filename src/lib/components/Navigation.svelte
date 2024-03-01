@@ -4,12 +4,12 @@
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
-	import { user } from '$lib/stores';
+	import { applicationState, user } from '$lib/stores';
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
 
-<nav>
+<nav class:is-elevated={$applicationState.organizationMenu.showDropDown}>
 	<OrganizationMenu />
 
 	<div class="main-menu">
@@ -86,6 +86,7 @@
 <style>
 	nav {
 		align-items: center;
+		background: white;
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
@@ -98,6 +99,10 @@
 
 	nav > * {
 		margin: 0;
+	}
+
+	.is-elevated {
+		z-index: 4;
 	}
 
 	.main-menu {

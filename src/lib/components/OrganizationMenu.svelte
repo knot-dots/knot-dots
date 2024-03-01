@@ -16,11 +16,18 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
-	let showDropDown = false;
+	$: showDropDown = $applicationState.organizationMenu.showDropDown;
 
 	function toggleDropDown() {
-		showDropDown = !showDropDown;
+		applicationState.update((state) => ({
+			...state,
+			organizationMenu: {
+				...state.organizationMenu,
+				showDropDown: !state.organizationMenu.showDropDown
+			}
+		}));
 	}
 
 	let organizations: OrganizationContainer[];

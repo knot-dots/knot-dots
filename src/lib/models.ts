@@ -13,6 +13,9 @@ export type ApplicationState = {
 		activeTab?: ContainerFormTabKey;
 		tabs: Array<ContainerFormTabKey>;
 	};
+	organizationMenu: {
+		showDropDown: boolean;
+	};
 };
 
 export const overlayKey = z.enum([
