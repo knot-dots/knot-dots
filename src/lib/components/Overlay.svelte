@@ -11,7 +11,9 @@
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
@@ -22,6 +24,7 @@
 	import Members from '$lib/components/Members.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
+	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import Relations from '$lib/components/Relations.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -59,8 +62,6 @@
 		User
 	} from '$lib/models';
 	import { ability, applicationState, overlayWidth } from '$lib/stores';
-	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
-	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let internalObjectives: Container[] | undefined = undefined;
@@ -395,27 +396,52 @@
 	{:else}
 		{#if 'guid' in container}
 			<aside>
-				<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
-					<ContainerDetailViewTabs {container} slot="tabs" />
-					<svelte:fragment slot="extra">
-						<li>
-							<button
-								class="button-nav button-square"
-								on:click={toggleFullscreen}
-								title={$_('full_screen')}
-							>
-								<Icon solid src={ArrowsPointingOut} size="20" />
-							</button>
-						</li>
-						{#if $ability.can('update', container)}
+				{#if isStrategyContainer(container)}
+					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+						<PayloadTypeFilter slot="filters" />
+						<ContainerDetailViewTabs {container} slot="tabs" />
+						<svelte:fragment slot="extra">
 							<li>
-								<a class="button button-nav button-square" href="#view={container.guid}&edit">
-									<Icon solid src={Pencil} size="20" />
-								</a>
+								<button
+									class="button-nav button-square"
+									on:click={toggleFullscreen}
+									title={$_('full_screen')}
+								>
+									<Icon solid src={ArrowsPointingOut} size="20" />
+								</button>
 							</li>
-						{/if}
-					</svelte:fragment>
-				</Sidebar>
+							{#if $ability.can('update', container)}
+								<li>
+									<a class="button button-nav button-square" href="#view={container.guid}&edit">
+										<Icon solid src={Pencil} size="20" />
+									</a>
+								</li>
+							{/if}
+						</svelte:fragment>
+					</Sidebar>
+				{:else}
+					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+						<ContainerDetailViewTabs {container} slot="tabs" />
+						<svelte:fragment slot="extra">
+							<li>
+								<button
+									class="button-nav button-square"
+									on:click={toggleFullscreen}
+									title={$_('full_screen')}
+								>
+									<Icon solid src={ArrowsPointingOut} size="20" />
+								</button>
+							</li>
+							{#if $ability.can('update', container)}
+								<li>
+									<a class="button button-nav button-square" href="#view={container.guid}&edit">
+										<Icon solid src={Pencil} size="20" />
+									</a>
+								</li>
+							{/if}
+						</svelte:fragment>
+					</Sidebar>
+				{/if}
 			</aside>
 		{/if}
 		{#if isIndicatorContainer(container)}
