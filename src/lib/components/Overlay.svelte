@@ -239,17 +239,31 @@
 			</div>
 		</footer>
 	{:else if isPageContainer(container) && hashParams.has(overlayKey.enum['view-help'])}
+		<aside>
+			<Sidebar>
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+					{#if $ability.can('update', container)}
+						<li>
+							<a class="button button-nav button-square" href={editHelpURL()}>
+								<Icon solid src={Pencil} size="20" />
+							</a>
+						</li>
+					{/if}
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
 		<header class="content-header">
 			<h2>
 				{container.payload.title}
-
-				<span class="icons">
-					{#if $ability.can('update', container)}
-						<a class="button button-nav button-square" href={editHelpURL()}>
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-				</span>
 			</h2>
 		</header>
 		<div class="content-details masked-overflow">
@@ -439,6 +453,13 @@
 								<Icon solid src={ArrowsPointingOut} size="20" />
 							</button>
 						</li>
+						{#if $ability.can('update', container)}
+							<li>
+								<a class="button button-nav button-square" href="#view={container.guid}&edit">
+									<Icon solid src={Pencil} size="20" />
+								</a>
+							</li>
+						{/if}
 					</svelte:fragment>
 				</Sidebar>
 			</aside>
@@ -450,13 +471,6 @@
 				{:else}
 					{container.payload.title}
 				{/if}
-				<span class="icons">
-					{#if $ability.can('update', container)}
-						<a class="button button-nav button-square" href="#view={container.guid}&edit">
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-				</span>
 			</h2>
 			{#if isIndicatorContainer(container)}
 				<IndicatorTabs />

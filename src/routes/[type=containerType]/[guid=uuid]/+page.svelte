@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronLeft, Icon, InformationCircle, Pencil, Share } from 'svelte-hero-icons';
+	import { Icon, InformationCircle, Pencil, Share } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
@@ -47,6 +47,15 @@
 					<ContainerDetailViewTabs container={data.container} />
 					<MeasureTabs container={data.container} />
 				</svelte:fragment>
+				<svelte:fragment slot="extra">
+					{#if $ability.can('update', container)}
+						<li>
+							<a href="#view={container.guid}&edit" class="button button-nav button-square">
+								<Icon solid src={Pencil} size="20" />
+							</a>
+						</li>
+					{/if}
+				</svelte:fragment>
 			</Sidebar>
 		{:else if isStrategyContainer(data.container)}
 			<Sidebar {helpSlug}>
@@ -55,6 +64,15 @@
 					<StrategyTabs container={data.container} />
 				</svelte:fragment>
 				<PayloadTypeFilter slot="filters" />
+				<svelte:fragment slot="extra">
+					{#if $ability.can('update', container)}
+						<li>
+							<a href="#view={container.guid}&edit" class="button button-nav button-square">
+								<Icon solid src={Pencil} size="20" />
+							</a>
+						</li>
+					{/if}
+				</svelte:fragment>
 			</Sidebar>
 		{:else}
 			<Sidebar {helpSlug}>
@@ -71,6 +89,15 @@
 						text={$_('relations')}
 					/>
 				</svelte:fragment>
+				<svelte:fragment slot="extra">
+					{#if $ability.can('update', container)}
+						<li>
+							<a href="#view={container.guid}&edit" class="button button-nav button-square">
+								<Icon solid src={Pencil} size="20" />
+							</a>
+						</li>
+					{/if}
+				</svelte:fragment>
 			</Sidebar>
 		{/if}
 	</svelte:fragment>
@@ -80,19 +107,7 @@
 			<div class="detail-page-content overlay-support-inner">
 				{#if isStrategyContainer(container)}
 					<header class="content-header">
-						<h2 class="strategy-title with-icons">
-							{container.payload.title}
-							<span class="icons">
-								{#if $ability.can('update', container)}
-									<a href="#view={container.guid}&edit" class="icons-element">
-										<Icon solid src={Pencil} size="20" />
-									</a>
-								{/if}
-								<button class="icons-element" type="button" on:click={() => window.history.back()}>
-									<Icon solid src={ChevronLeft} size="20" />
-								</button>
-							</span>
-						</h2>
+						<h2 class="strategy-title with-icons">{container.payload.title}</h2>
 					</header>
 					<div class="content-details masked-overflow">
 						<StrategyDetailView {container} {relatedContainers} {revisions} />
@@ -105,16 +120,6 @@
 							{:else}
 								{container.payload.title}
 							{/if}
-							<span class="icons">
-								{#if $ability.can('update', container)}
-									<a href="{container.guid}/edit" class="icons-element">
-										<Icon solid src={Pencil} size="20" />
-									</a>
-								{/if}
-								<button class="icons-element" type="button" on:click={() => window.history.back()}>
-									<Icon solid src={ChevronLeft} size="20" />
-								</button>
-							</span>
 						</h2>
 						{#if isIndicatorContainer(container)}
 							<IndicatorTabs />
