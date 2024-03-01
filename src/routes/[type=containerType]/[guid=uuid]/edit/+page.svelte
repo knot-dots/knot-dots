@@ -18,9 +18,7 @@
 		isStrategyContainer,
 		isVisionContainer,
 		mayDelete,
-		payloadTypes,
-		predicates,
-		quantities
+		predicates
 	} from '$lib/models';
 	import type { CustomEventMap } from '$lib/models';
 	import type { PageData } from './$types';
@@ -82,30 +80,6 @@
 
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
-			<header class="content-header">
-				<label>
-					{$_(`${container.payload.type}`)}
-					{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-						<input
-							form="container-form"
-							name="name"
-							type="text"
-							bind:value={container.payload.name}
-							required
-						/>
-					{:else}
-						<input
-							form="container-form"
-							name="title"
-							type="text"
-							bind:value={container.payload.title}
-							readonly={container.payload.type === payloadTypes.enum.indicator &&
-								container.payload.quantity !== quantities.enum['quantity.custom']}
-							required
-						/>
-					{/if}
-				</label>
-			</header>
 			<div class="content-details masked-overflow">
 				<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
 			</div>

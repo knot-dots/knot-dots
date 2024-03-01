@@ -34,18 +34,6 @@
 
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
-			<header class="content-header">
-				<label>
-					{$_(`${container.payload.type}`)}
-					<input
-						form="container-form"
-						name="name"
-						type="text"
-						bind:value={container.payload.name}
-						required
-					/>
-				</label>
-			</header>
 			<div class="content-details masked-overflow">
 				<ContainerForm {container} isPartOfOptions={[]} on:submitSuccessful={afterSubmit} />
 			</div>

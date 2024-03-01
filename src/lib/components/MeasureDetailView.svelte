@@ -76,6 +76,8 @@
 </script>
 
 <article class="details">
+	<h2 class="details-title">{container.payload.title}</h2>
+
 	{#if $applicationState.containerDetailView.activeTab === 'basic-data'}
 		<div class="details-tab" id="basic-data">
 			{#if 'summary' in selectedRevision.payload}

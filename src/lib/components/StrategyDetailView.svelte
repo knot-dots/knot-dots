@@ -23,6 +23,8 @@
 </script>
 
 <article class="details">
+	<h2 class="details-title">{container.payload.title}</h2>
+
 	<div class="meta">
 		<h3 class="meta-key">{$_('object')}</h3>
 		<p class="meta-value">{$_(container.payload.type)}</p>

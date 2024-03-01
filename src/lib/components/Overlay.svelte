@@ -213,18 +213,6 @@
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<header class="content-header">
-			<label>
-				{$_(`${container.payload.type}`)}
-				<input
-					form="container-form"
-					name="title"
-					type="text"
-					bind:value={container.payload.title}
-					required
-				/>
-			</label>
-		</header>
 		<div class="content-details masked-overflow">
 			<ContainerForm
 				bind:container
@@ -261,11 +249,6 @@
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<header class="content-header">
-			<h2>
-				{container.payload.title}
-			</h2>
-		</header>
 		<div class="content-details masked-overflow">
 			<PageDetailView {container} />
 		</div>
@@ -289,35 +272,6 @@
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<header class="content-header">
-			<label
-				style={container.payload.type === payloadTypes.enum.undefined ||
-				(container.payload.type === payloadTypes.enum.indicator && !container.payload.quantity)
-					? 'visibility: hidden;'
-					: undefined}
-			>
-				{$_(`${container.payload.type}`)}
-				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-					<input
-						form="container-form"
-						name="name"
-						type="text"
-						bind:value={container.payload.name}
-						required
-					/>
-				{:else}
-					<input
-						form="container-form"
-						name="title"
-						type="text"
-						bind:value={container.payload.title}
-						readonly={container.payload.type === payloadTypes.enum.indicator &&
-							container.payload.quantity !== quantities.enum['quantity.custom']}
-						required
-					/>
-				{/if}
-			</label>
-		</header>
 		<div class="content-details masked-overflow">
 			<ContainerForm
 				bind:container
@@ -464,22 +418,19 @@
 				</Sidebar>
 			</aside>
 		{/if}
-		<header class="content-header">
-			<h2>
-				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-					{container.payload.name}
-				{:else}
-					{container.payload.title}
-				{/if}
-			</h2>
-			{#if isIndicatorContainer(container)}
+		{#if isIndicatorContainer(container)}
+			<header class="content-header">
 				<IndicatorTabs />
-			{:else if isContainerWithEffect(container)}
+			</header>
+		{:else if isContainerWithEffect(container)}
+			<header class="content-header">
 				<MeasureStatusTabs {container} {revisions} />
-			{:else if isTaskContainer(container)}
+			</header>
+		{:else if isTaskContainer(container)}
+			<header class="content-header">
 				<TaskStatusTabs {container} {revisions} />
-			{/if}
-		</header>
+			</header>
+		{/if}
 		<div class="content-details masked-overflow">
 			{#if isIndicatorContainer(container)}
 				<IndicatorDetailView

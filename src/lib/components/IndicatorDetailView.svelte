@@ -62,6 +62,8 @@
 </script>
 
 <article class="details">
+	<h2 class="details-title">{container.payload.title}</h2>
+
 	<div class="details-tab" id="basic-data">
 		<div class="intro">
 			{#if currentTab === tab.enum.historical_values}

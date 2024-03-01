@@ -31,14 +31,6 @@
 	<svelte:fragment slot="main">
 		<div class="organization">
 			<div class="detail-page-content organization-inner">
-				<header class="content-header">
-					<h2>
-						{#if 'image' in data.container.payload}
-							<img alt="logo" class="logo" src={data.container.payload.image} />
-						{/if}
-						{data.container.payload.name}
-					</h2>
-				</header>
 				<div class="content-details masked-overflow">
 					<OrganizationDetailView
 						container={data.container}

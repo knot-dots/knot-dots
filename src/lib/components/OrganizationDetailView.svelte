@@ -11,6 +11,13 @@
 </script>
 
 <article class="details">
+	<h2 class="details-title">
+		{#if 'image' in container.payload}
+			<img alt="logo" class="logo" src={container.payload.image} />
+		{/if}
+		{container.payload.name}
+	</h2>
+
 	<slot name="data">
 		{#if 'description' in container.payload}
 			<div class="description">
