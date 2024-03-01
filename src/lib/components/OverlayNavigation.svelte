@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { ArrowsPointingOut, Icon, XMark } from 'svelte-hero-icons';
+	import { Icon, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -18,7 +18,6 @@
 	import { user } from '$lib/stores';
 
 	export let container: AnyContainer;
-	export let toggleFullscreen: () => void;
 
 	function overlayURL(url: URL, key: OverlayKey, guid: string) {
 		const hashParams = paramsFromURL(url);
@@ -52,10 +51,6 @@
 	<a class="button button-nav button-square" href={closeURL($page.url)}>
 		<Icon src={XMark} size="20" mini />
 	</a>
-
-	<button class="button-nav button-square" on:click={toggleFullscreen} title={$_('full_screen')}>
-		<Icon solid src={ArrowsPointingOut} size="20" />
-	</button>
 
 	<a
 		class="button button-nav title"

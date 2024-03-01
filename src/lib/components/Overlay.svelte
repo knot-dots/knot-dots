@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext, setContext } from 'svelte';
-	import { Icon, Pencil, Trash } from 'svelte-hero-icons';
+	import { ArrowsPointingOut, Icon, Pencil, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -196,8 +196,23 @@
 >
 	<!--svelte-ignore a11y-no-static-element-interactions -->
 	<div class="resize-handle" on:mousedown|preventDefault={startExpand} />
-	<OverlayNavigation {container} {toggleFullscreen} />
+	<OverlayNavigation {container} />
 	{#if isPageContainer(container) && hashParams.has(overlayKey.enum['edit-help'])}
+		<aside>
+			<Sidebar>
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
 		<header class="content-header">
 			<label>
 				{$_(`${container.payload.type}`)}
@@ -247,6 +262,17 @@
 		<aside>
 			<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
 				<ContainerFormTabs {container} slot="tabs" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
 		<header class="content-header">
@@ -315,7 +341,19 @@
 		</footer>
 	{:else if hashParams.has(overlayKey.enum.members) && users}
 		<aside>
-			<Sidebar helpSlug="members" />
+			<Sidebar helpSlug="members">
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
 		</aside>
 		<div class="content-details masked-overflow">
 			<Members {container} {users} />
@@ -332,6 +370,17 @@
 					<CategoryFilter />
 				</svelte:fragment>
 				<Sort slot="sort" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
 		<Relations containers={relatedContainers} />
@@ -340,6 +389,17 @@
 			<Sidebar helpSlug="internal-objectives">
 				<Search slot="search" />
 				<Sort slot="sort" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
 		<InternalObjectives {container} containers={internalObjectives} />
@@ -350,6 +410,17 @@
 				<svelte:fragment slot="filters">
 					<TaskCategoryFilter />
 				</svelte:fragment>
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
 		<Tasks {container} containers={tasks} />
@@ -358,6 +429,17 @@
 			<aside>
 				<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
 					<ContainerDetailViewTabs {container} slot="tabs" />
+					<svelte:fragment slot="extra">
+						<li>
+							<button
+								class="button-nav button-square"
+								on:click={toggleFullscreen}
+								title={$_('full_screen')}
+							>
+								<Icon solid src={ArrowsPointingOut} size="20" />
+							</button>
+						</li>
+					</svelte:fragment>
 				</Sidebar>
 			</aside>
 		{/if}
@@ -445,8 +527,9 @@
 
 	.overlay > aside {
 		font-size: 0.875rem;
+		height: calc(100vh - var(--nav-height));
 		min-width: 0;
-		padding: 1.5rem 0.5rem 0;
+		padding: 1.5rem 0.5rem 0.5rem;
 		position: absolute;
 		top: var(--nav-height);
 		width: 3.5rem;
