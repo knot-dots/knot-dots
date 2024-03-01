@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext, setContext } from 'svelte';
-	import { Icon, Pencil, Trash } from 'svelte-hero-icons';
+	import { ArrowsPointingOut, Icon, Pencil, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -11,7 +11,9 @@
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
@@ -22,6 +24,7 @@
 	import Members from '$lib/components/Members.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
+	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import Relations from '$lib/components/Relations.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -59,8 +62,6 @@
 		User
 	} from '$lib/models';
 	import { ability, applicationState, overlayWidth } from '$lib/stores';
-	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
-	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let internalObjectives: Container[] | undefined = undefined;
@@ -179,14 +180,10 @@
 	function expand(event: MouseEvent) {
 		$overlayWidth = (window.innerWidth - event.pageX + offset) / window.innerWidth;
 
-		if ($overlayWidth * window.innerWidth < 400) {
-			stopExpand();
-			goto(closeURL());
-			setTimeout(() => ($overlayWidth += 0.01), 500);
+		if ($overlayWidth * window.innerWidth < 320) {
+			$overlayWidth = 320 / window.innerWidth;
 		} else if ($overlayWidth * window.innerWidth > window.innerWidth - 400) {
-			stopExpand();
-			fullScreen = true;
-			setTimeout(() => ($overlayWidth -= 0.01), 500);
+			$overlayWidth = 1 - 400 / window.innerWidth;
 		}
 	}
 </script>
@@ -200,20 +197,23 @@
 >
 	<!--svelte-ignore a11y-no-static-element-interactions -->
 	<div class="resize-handle" on:mousedown|preventDefault={startExpand} />
-	<OverlayNavigation {container} {toggleFullscreen} />
+	<OverlayNavigation {container} />
 	{#if isPageContainer(container) && hashParams.has(overlayKey.enum['edit-help'])}
-		<header class="content-header">
-			<label>
-				{$_(`${container.payload.type}`)}
-				<input
-					form="container-form"
-					name="title"
-					type="text"
-					bind:value={container.payload.title}
-					required
-				/>
-			</label>
-		</header>
+		<aside>
+			<Sidebar>
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
 		<div class="content-details masked-overflow">
 			<ContainerForm
 				bind:container
@@ -228,19 +228,28 @@
 			</div>
 		</footer>
 	{:else if isPageContainer(container) && hashParams.has(overlayKey.enum['view-help'])}
-		<header class="content-header">
-			<h2>
-				{container.payload.title}
-
-				<span class="icons">
+		<aside>
+			<Sidebar>
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
 					{#if $ability.can('update', container)}
-						<a class="button button-nav button-square" href={editHelpURL()}>
-							<Icon solid src={Pencil} size="20" />
-						</a>
+						<li>
+							<a class="button button-nav button-square" href={editHelpURL()}>
+								<Icon solid src={Pencil} size="20" />
+							</a>
+						</li>
 					{/if}
-				</span>
-			</h2>
-		</header>
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
 		<div class="content-details masked-overflow">
 			<PageDetailView {container} />
 		</div>
@@ -251,37 +260,19 @@
 		<aside>
 			<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
 				<ContainerFormTabs {container} slot="tabs" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<header class="content-header">
-			<label
-				style={container.payload.type === payloadTypes.enum.undefined ||
-				(container.payload.type === payloadTypes.enum.indicator && !container.payload.quantity)
-					? 'visibility: hidden;'
-					: undefined}
-			>
-				{$_(`${container.payload.type}`)}
-				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-					<input
-						form="container-form"
-						name="name"
-						type="text"
-						bind:value={container.payload.name}
-						required
-					/>
-				{:else}
-					<input
-						form="container-form"
-						name="title"
-						type="text"
-						bind:value={container.payload.title}
-						readonly={container.payload.type === payloadTypes.enum.indicator &&
-							container.payload.quantity !== quantities.enum['quantity.custom']}
-						required
-					/>
-				{/if}
-			</label>
-		</header>
 		<div class="content-details masked-overflow">
 			<ContainerForm
 				bind:container
@@ -319,7 +310,19 @@
 		</footer>
 	{:else if hashParams.has(overlayKey.enum.members) && users}
 		<aside>
-			<Sidebar helpSlug="members" />
+			<Sidebar helpSlug="members">
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
 		</aside>
 		<div class="content-details masked-overflow">
 			<Members {container} {users} />
@@ -336,6 +339,17 @@
 					<CategoryFilter />
 				</svelte:fragment>
 				<Sort slot="sort" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
 		<Relations containers={relatedContainers} />
@@ -344,6 +358,17 @@
 			<Sidebar helpSlug="internal-objectives">
 				<Search slot="search" />
 				<Sort slot="sort" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
 		<InternalObjectives {container} containers={internalObjectives} />
@@ -354,40 +379,87 @@
 				<svelte:fragment slot="filters">
 					<TaskCategoryFilter />
 				</svelte:fragment>
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							<Icon solid src={ArrowsPointingOut} size="20" />
+						</button>
+					</li>
+				</svelte:fragment>
 			</Sidebar>
 		</aside>
 		<Tasks {container} containers={tasks} />
 	{:else}
 		{#if 'guid' in container}
 			<aside>
-				<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
-					<ContainerDetailViewTabs {container} slot="tabs" />
-				</Sidebar>
+				{#if isStrategyContainer(container)}
+					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+						<PayloadTypeFilter
+							options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
+							slot="filters"
+						/>
+						<ContainerDetailViewTabs {container} slot="tabs" />
+						<svelte:fragment slot="extra">
+							<li>
+								<button
+									class="button-nav button-square"
+									on:click={toggleFullscreen}
+									title={$_('full_screen')}
+								>
+									<Icon solid src={ArrowsPointingOut} size="20" />
+								</button>
+							</li>
+							{#if $ability.can('update', container)}
+								<li>
+									<a class="button button-nav button-square" href="#view={container.guid}&edit">
+										<Icon solid src={Pencil} size="20" />
+									</a>
+								</li>
+							{/if}
+						</svelte:fragment>
+					</Sidebar>
+				{:else}
+					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+						<ContainerDetailViewTabs {container} slot="tabs" />
+						<svelte:fragment slot="extra">
+							<li>
+								<button
+									class="button-nav button-square"
+									on:click={toggleFullscreen}
+									title={$_('full_screen')}
+								>
+									<Icon solid src={ArrowsPointingOut} size="20" />
+								</button>
+							</li>
+							{#if $ability.can('update', container)}
+								<li>
+									<a class="button button-nav button-square" href="#view={container.guid}&edit">
+										<Icon solid src={Pencil} size="20" />
+									</a>
+								</li>
+							{/if}
+						</svelte:fragment>
+					</Sidebar>
+				{/if}
 			</aside>
 		{/if}
-		<header class="content-header">
-			<h2>
-				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-					{container.payload.name}
-				{:else}
-					{container.payload.title}
-				{/if}
-				<span class="icons">
-					{#if $ability.can('update', container)}
-						<a class="button button-nav button-square" href="#view={container.guid}&edit">
-							<Icon solid src={Pencil} size="20" />
-						</a>
-					{/if}
-				</span>
-			</h2>
-			{#if isIndicatorContainer(container)}
+		{#if isIndicatorContainer(container)}
+			<header class="content-header">
 				<IndicatorTabs />
-			{:else if isContainerWithEffect(container)}
+			</header>
+		{:else if isContainerWithEffect(container)}
+			<header class="content-header">
 				<MeasureStatusTabs {container} {revisions} />
-			{:else if isTaskContainer(container)}
+			</header>
+		{:else if isTaskContainer(container)}
+			<header class="content-header">
 				<TaskStatusTabs {container} {revisions} />
-			{/if}
-		</header>
+			</header>
+		{/if}
 		<div class="content-details masked-overflow">
 			{#if isIndicatorContainer(container)}
 				<IndicatorDetailView
@@ -449,8 +521,9 @@
 
 	.overlay > aside {
 		font-size: 0.875rem;
+		height: calc(100vh - var(--nav-height));
 		min-width: 0;
-		padding: 1.5rem 0.5rem 0;
+		padding: 1.5rem 0.5rem 0.5rem;
 		position: absolute;
 		top: var(--nav-height);
 		width: 3.5rem;

@@ -137,9 +137,7 @@
 		</li>
 	{/if}
 
-	{#if $$slots.tabs}
-		<slot name="tabs" />
-	{/if}
+	<slot name="tabs" />
 
 	{#if helpSlug}
 		<li>
@@ -148,6 +146,11 @@
 			</a>
 		</li>
 	{/if}
+
+	{#if $$slots.extra}
+		<li class="separator"></li>
+		<slot name="extra" />
+	{/if}
 </ul>
 
 <style>
@@ -155,7 +158,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
+		height: 100%;
 		position: relative;
+	}
+
+	.separator {
+		margin-top: auto;
 	}
 
 	.expandable {

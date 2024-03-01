@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "npm"
@@ -46,12 +46,12 @@ jobs:
         image: [ "strategytool", "keycloak", "migrate"]
 
     steps:
-      - uses: docker/login-action@v2
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: nologin
           password: ${{ secrets.SCW_SECRET_KEY }}
-      - uses: docker/build-push-action@v4
+      - uses: docker/build-push-action@v5
         with:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:latest
           cache-to: type=inline
@@ -74,7 +74,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: |
           echo 'strategytool_image = "${{ env.REGISTRY }}/strategytool:${{ github.sha }}"' > ./terraform/dev/terraform.tfvars
           echo 'keycloak_image     = "${{ env.REGISTRY }}/keycloak:${{ github.sha }}"' >> ./terraform/dev/terraform.tfvars

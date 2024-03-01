@@ -53,6 +53,8 @@
 </script>
 
 <article class="details">
+	<h2 class="details-title">{container.payload.title}</h2>
+
 	<slot name="data">
 		{#if 'summary' in container.payload}
 			<div class="summary">

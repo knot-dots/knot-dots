@@ -49,6 +49,7 @@
 
 	main > aside {
 		font-size: 0.875rem;
+		height: calc(100vh - var(--nav-height));
 		min-width: 0;
 		padding: 1.5rem 0.5rem 0.5rem;
 		position: absolute;

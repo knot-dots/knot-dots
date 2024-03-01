@@ -59,6 +59,14 @@
 </script>
 
 <article class="details">
+	<h2 class="details-title">
+		{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
+			{container.payload.name}
+		{:else}
+			{container.payload.title}
+		{/if}
+	</h2>
+
 	<slot name="data">
 		{#if 'summary' in container.payload}
 			<div class="summary">

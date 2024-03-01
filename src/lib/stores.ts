@@ -199,7 +199,8 @@ if (browser) {
 				});
 			} else if (isStrategyContainer(container)) {
 				const relatedContainers = (await fetchContainers({
-					isPartOfStrategy: [container.revision]
+					isPartOfStrategy: [container.revision],
+					payloadType: hashParams.getAll('payloadType') as PayloadType[]
 				})) as Container[];
 				overlay.set({
 					isPartOfOptions: [],
