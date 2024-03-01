@@ -399,15 +399,7 @@
 				{#if isStrategyContainer(container)}
 					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
 						<PayloadTypeFilter
-							options={[
-								payloadTypes.enum.model,
-								payloadTypes.enum['internal_objective.vision'],
-								payloadTypes.enum.strategic_goal,
-								payloadTypes.enum.operational_goal,
-								payloadTypes.enum['internal_objective.milestone'],
-								payloadTypes.enum.measure,
-								payloadTypes.enum.text
-							]}
+							options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
 							slot="filters"
 						/>
 						<ContainerDetailViewTabs {container} slot="tabs" />
