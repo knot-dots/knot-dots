@@ -202,6 +202,5 @@
 		position: absolute;
 		right: 0;
 		top: var(--nav-height);
-		z-index: 2;
 	}
 </style>
