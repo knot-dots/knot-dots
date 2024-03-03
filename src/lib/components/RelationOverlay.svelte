@@ -202,29 +202,20 @@
 </section>
 
 <style>
-	.overlay {
-		background-color: white;
-		border: 1px solid var(--color-gray-200);
-		box-shadow: var(--shadow-lg);
-		display: flex;
-		flex-direction: column;
-		height: 100%;
+	@media (min-width: 768px) {
+		.overlay {
+			width: 50vw;
+		}
+
+		.overlay > :global(*) {
+			min-width: 50vw;
+		}
 	}
 
 	.content-header,
 	.content-details,
 	.content-footer {
 		padding-left: 1.5rem;
-	}
-
-	@media (min-width: 768px) {
-		.overlay {
-			width: 50%;
-		}
-
-		.overlay > :global(*) {
-			min-width: calc((100vw - 18rem) * 0.5 - 2px);
-		}
 	}
 
 	.content-details {

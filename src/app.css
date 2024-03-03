@@ -839,10 +839,15 @@ fieldset {
 
 /* Overlay */
 .overlay {
-	height: calc(100%);
+	background-color: white;
+	box-shadow: var(--shadow-lg);
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
 	margin-left: -0.375rem;
-	overflow-x: hidden;
+	position: relative;
 	padding: 0;
+	top: calc(var(--nav-height) * -1);
 	width: 100%;
 	z-index: 3;
 }

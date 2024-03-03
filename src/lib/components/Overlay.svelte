@@ -505,16 +505,6 @@
 </section>
 
 <style>
-	.overlay {
-		background-color: white;
-		box-shadow: var(--shadow-lg);
-		display: flex;
-		flex-direction: column;
-		height: 100vh;
-		position: relative;
-		top: calc(var(--nav-height) * -1);
-	}
-
 	.overlay.overlay-fullscreen {
 		margin-left: -3.875rem;
 		width: 100vw;
