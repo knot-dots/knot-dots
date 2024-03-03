@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import {
 		BarsArrowDown,
 		Funnel,
@@ -18,11 +19,16 @@
 	let expandedItem: Item = null;
 	let lockedItem: Item = null;
 	let timer: ReturnType<typeof setTimeout>;
+	let search: HTMLDivElement;
 
-	function expandItem(item: Item) {
+	async function expandItem(item: Item) {
 		if (lockedItem == null || lockedItem == item) {
 			clearTimeout(timer);
 			expandedItem = item;
+			await tick();
+			if (item == 'search') {
+				search.querySelector('input')?.focus();
+			}
 		}
 	}
 
@@ -47,7 +53,11 @@
 
 	function helpURL(url: URL) {
 		const newParams = new URLSearchParams(paramsFromURL(url));
-		newParams.set(overlayKey.enum['view-help'], helpSlug);
+		if (newParams.get(overlayKey.enum['view-help']) === helpSlug) {
+			newParams.delete(overlayKey.enum['view-help']);
+		} else {
+			newParams.set(overlayKey.enum['view-help'], helpSlug);
+		}
 		return `#${newParams.toString()}`;
 	}
 </script>
@@ -71,6 +81,7 @@
 			<div
 				class="expandable"
 				id="search"
+				bind:this={search}
 				on:mouseenter={() => clearTimeout(timer)}
 				on:mouseleave={() => collapseItemDelayed('search')}
 			>

@@ -189,6 +189,7 @@
 </script>
 
 <svelte:window on:mouseup={stopExpand} />
+
 <section
 	class="overlay"
 	class:overlay-fullscreen={fullScreen}
@@ -504,16 +505,6 @@
 </section>
 
 <style>
-	.overlay {
-		background-color: white;
-		box-shadow: var(--shadow-lg);
-		display: flex;
-		flex-direction: column;
-		height: 100vh;
-		position: relative;
-		top: calc(var(--nav-height) * -1);
-	}
-
 	.overlay.overlay-fullscreen {
 		margin-left: -3.875rem;
 		width: 100vw;
@@ -542,6 +533,10 @@
 
 		.overlay > * {
 			min-width: calc(100vw * var(--width-factor) - 3.5rem);
+		}
+
+		.overlay > :global(nav) {
+			min-width: calc(100vw * var(--width-factor));
 		}
 	}
 

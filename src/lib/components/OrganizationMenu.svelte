@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
-	import { ChevronDown, ChevronUp, Home, Icon } from 'svelte-hero-icons';
+	import { BuildingLibrary, ChevronDown, ChevronUp, Home, Icon } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import logo1 from '$lib/assets/logo-1.svg';
@@ -42,9 +42,13 @@
 		organizationalUnitsByLevel = [];
 
 		if ('default' in currentContext.payload && currentContext.payload.default) {
-			organizations = $page.data.organizations.filter(
-				(c: OrganizationContainer) => !c.payload.default
-			);
+			organizations = $page.data.organizations
+				.filter((c: OrganizationContainer) => !c.payload.default)
+				.filter((c: OrganizationContainer) =>
+					selectedContext && selectedContext.guid != currentContext.guid
+						? c.organization == selectedContext.organization
+						: true
+				);
 
 			landingPageURL = '/about';
 
@@ -106,11 +110,13 @@
 		{:else}
 			<Icon src={Home} size="20" />
 		{/if}
-		{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
-			{$_('all_organizations')}
-		{:else}
-			{currentContext.payload.name}
-		{/if}
+		<span>
+			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
+				{$_('all_organizations')}
+			{:else}
+				{currentContext.payload.name}
+			{/if}
+		</span>
 	</a>
 
 	<button
@@ -122,7 +128,7 @@
 		aria-expanded={showDropDown}
 		aria-label={showDropDown ? $_('close_organization_menu') : $_('open_organization_menu')}
 	>
-		<span>{$_('organizations')}</span>
+		<span><Icon src={BuildingLibrary} size="20" mini /></span>
 		<Icon src={showDropDown ? ChevronUp : ChevronDown} size="20" />
 	</button>
 
@@ -200,14 +206,24 @@
 		align-items: center;
 		display: flex;
 		flex-shrink: 0;
+		max-width: var(--organization-menu-max-width);
 	}
 
 	.organization-menu > a {
 		align-items: center;
 		display: flex;
 		padding: 0 0.625rem;
-		flex-shrink: 0;
 		gap: 0.5rem;
+	}
+
+	.organization-menu > a > :global(svg) {
+		flex-shrink: 0;
+	}
+
+	.organization-menu > a > span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.organization-menu-toggle {
