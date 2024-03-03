@@ -57,10 +57,14 @@
 
 <style>
 	.tabs > .tab-item {
+		align-items: center;
+		display: flex;
+		font-size: 0;
 		opacity: 0.3;
 	}
 
 	.tabs > .tab-item--active {
+		font-size: inherit;
 		opacity: 1;
 	}
 </style>
