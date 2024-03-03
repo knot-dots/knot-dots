@@ -79,6 +79,7 @@
 	--button-hover-border-color: #d1d5db;
 
 	--nav-height: 65px;
+	--organization-menu-max-width: 20rem;
 }
 
 /* Box sizing rules */
@@ -251,6 +252,7 @@ button,
 	border-radius: 8px;
 	display: inline-flex;
 	font-weight: 500;
+	gap: 0.5rem;
 	margin: 0;
 	padding: var(--padding-y) var(--padding-x);
 }

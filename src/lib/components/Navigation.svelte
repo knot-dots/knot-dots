@@ -5,6 +5,7 @@
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
 	import { applicationState, user } from '$lib/stores';
+	import { Icon, Share } from 'svelte-hero-icons';
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
@@ -14,6 +15,7 @@
 
 	<div class="main-menu">
 		<a href="/" class="button button-nav" class:is-active={$page.url.pathname === '/'}>
+			<Icon src={Share} size="20" mini />
 			{$_('board.elements')}
 		</a>
 
@@ -91,7 +93,7 @@
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		height: var(--nav-height);
-		padding: 0 16px;
+		padding: 0 1rem;
 		position: absolute;
 		width: 100%;
 		z-index: 2;
@@ -113,8 +115,11 @@
 		overflow-x: auto;
 	}
 
+	.main-menu > a {
+		flex-shrink: 0;
+	}
+
 	.user-menu {
-		display: none;
 		gap: 1rem;
 	}
 
@@ -124,21 +129,9 @@
 		gap: 0.75rem;
 	}
 
-	.user-menu.is-authenticated > li:last-child {
-		display: none;
-	}
-
-	@media (min-width: 768px) {
-		nav {
-			gap: 1.5rem;
-		}
-
-		.user-menu {
-			display: flex;
-		}
-
-		.user-menu.is-authenticated > li:last-child {
-			display: initial;
+	@media (min-width: 1024px) {
+		.main-menu {
+			margin: 0 auto 0 calc((100vw - var(--organization-menu-max-width)) * 0.1);
 		}
 	}
 </style>
