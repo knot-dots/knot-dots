@@ -189,6 +189,7 @@
 </script>
 
 <svelte:window on:mouseup={stopExpand} />
+
 <section
 	class="overlay"
 	class:overlay-fullscreen={fullScreen}
@@ -542,6 +543,10 @@
 
 		.overlay > * {
 			min-width: calc(100vw * var(--width-factor) - 3.5rem);
+		}
+
+		.overlay > :global(nav) {
+			min-width: calc(100vw * var(--width-factor));
 		}
 	}
 
