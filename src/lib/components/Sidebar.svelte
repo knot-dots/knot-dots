@@ -53,7 +53,11 @@
 
 	function helpURL(url: URL) {
 		const newParams = new URLSearchParams(paramsFromURL(url));
-		newParams.set(overlayKey.enum['view-help'], helpSlug);
+		if (newParams.get(overlayKey.enum['view-help']) === helpSlug) {
+			newParams.delete(overlayKey.enum['view-help']);
+		} else {
+			newParams.set(overlayKey.enum['view-help'], helpSlug);
+		}
 		return `#${newParams.toString()}`;
 	}
 </script>
