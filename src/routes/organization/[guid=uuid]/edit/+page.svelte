@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import Trash from '~icons/heroicons/trash';
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
@@ -44,7 +44,7 @@
 					<a class="button" href=".">{$_('cancel')}</a>
 					{#if mayDelete(container)}
 						<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
-							<Icon src={Trash} size="20" />
+							<Trash />
 						</button>
 					{/if}
 				</div>

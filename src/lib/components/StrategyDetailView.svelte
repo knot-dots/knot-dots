@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { ArrowDownTray, Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
+	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -89,7 +90,7 @@
 			<p class="meta-value meta-value-pdf">
 				<a href={container.payload.pdf}>
 					{$_('download')}
-					<Icon src={ArrowDownTray} size="20" mini />
+					<ArrowDownTray />
 				</a>
 			</p>
 		</div>
@@ -113,7 +114,7 @@
 		{:else}
 			{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
 				<a class="button" href={addChapterURL($page.url, container.revision)}>
-					<Icon src={PlusSmall} size="24" mini />
+					<PlusSmall />
 					{$_('chapter')}
 				</a>
 			{/if}

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
@@ -181,7 +181,7 @@
 							type="button"
 							on:click={prependHistoricalValue}
 						>
-							<Icon src={PlusSmall} size="24" />
+							<PlusSmall />
 						</button>
 					</td>
 				</tr>
@@ -208,7 +208,7 @@
 							type="button"
 							on:click={appendHistoricalValue}
 						>
-							<Icon src={PlusSmall} size="24" />
+							<PlusSmall />
 						</button>
 					</td>
 				</tr>

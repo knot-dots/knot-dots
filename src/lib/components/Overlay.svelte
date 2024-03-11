@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { getContext, setContext } from 'svelte';
-	import { ArrowsPointingOut, Icon, Pencil, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
+	import Pencil from '~icons/heroicons/pencil-solid';
+	import Trash from '~icons/heroicons/trash';
+	import Maximize from '~icons/knotdots/maximize';
+	import Minimize from '~icons/knotdots/minimize';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -209,7 +212,7 @@
 							on:click={toggleFullscreen}
 							title={$_('full_screen')}
 						>
-							<Icon solid src={ArrowsPointingOut} size="20" />
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
 				</svelte:fragment>
@@ -238,13 +241,13 @@
 							on:click={toggleFullscreen}
 							title={$_('full_screen')}
 						>
-							<Icon solid src={ArrowsPointingOut} size="20" />
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
 					{#if $ability.can('update', container)}
 						<li>
 							<a class="button button-nav button-square" href={editHelpURL()}>
-								<Icon solid src={Pencil} size="20" />
+								<Pencil />
 							</a>
 						</li>
 					{/if}
@@ -268,7 +271,7 @@
 							on:click={toggleFullscreen}
 							title={$_('full_screen')}
 						>
-							<Icon solid src={ArrowsPointingOut} size="20" />
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
 				</svelte:fragment>
@@ -304,7 +307,7 @@
 						type="button"
 						on:click={() => handleDelete(container)}
 					>
-						<Icon src={Trash} size="20" />
+						<Trash />
 					</button>
 				{/if}
 			</div>
@@ -319,7 +322,7 @@
 							on:click={toggleFullscreen}
 							title={$_('full_screen')}
 						>
-							<Icon solid src={ArrowsPointingOut} size="20" />
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
 				</svelte:fragment>
@@ -347,7 +350,7 @@
 							on:click={toggleFullscreen}
 							title={$_('full_screen')}
 						>
-							<Icon solid src={ArrowsPointingOut} size="20" />
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
 				</svelte:fragment>
@@ -366,7 +369,7 @@
 							on:click={toggleFullscreen}
 							title={$_('full_screen')}
 						>
-							<Icon solid src={ArrowsPointingOut} size="20" />
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
 				</svelte:fragment>
@@ -387,7 +390,7 @@
 							on:click={toggleFullscreen}
 							title={$_('full_screen')}
 						>
-							<Icon solid src={ArrowsPointingOut} size="20" />
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
 				</svelte:fragment>
@@ -411,13 +414,13 @@
 									on:click={toggleFullscreen}
 									title={$_('full_screen')}
 								>
-									<Icon solid src={ArrowsPointingOut} size="20" />
+									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 								</button>
 							</li>
 							{#if $ability.can('update', container)}
 								<li>
 									<a class="button button-nav button-square" href="#view={container.guid}&edit">
-										<Icon solid src={Pencil} size="20" />
+										<Pencil />
 									</a>
 								</li>
 							{/if}
@@ -433,13 +436,13 @@
 									on:click={toggleFullscreen}
 									title={$_('full_screen')}
 								>
-									<Icon solid src={ArrowsPointingOut} size="20" />
+									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 								</button>
 							</li>
 							{#if $ability.can('update', container)}
 								<li>
 									<a class="button button-nav button-square" href="#view={container.guid}&edit">
-										<Icon solid src={Pencil} size="20" />
+										<Pencil />
 									</a>
 								</li>
 							{/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import MinusSmall from '~icons/heroicons/minus-small-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import type {
 		EmptyMeasureContainer,
 		EmptySimpleMeasureContainer,
@@ -60,12 +61,12 @@
 				<input type="date" name="fulfillmentDate" bind:value={resource.fulfillmentDate} required />
 			</label>
 			<button type="button" on:click={remove(i)}>
-				<Icon src={MinusSmall} size="24" mini />
+				<MinusSmall />
 			</button>
 		</div>
 	{/each}
 	<button type="button" on:click={add}>
-		<Icon src={PlusSmall} size="24" mini />
+		<PlusSmall />
 		{$_('resources.label')}
 	</button>
 </fieldset>

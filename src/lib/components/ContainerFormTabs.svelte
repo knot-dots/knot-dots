@@ -1,13 +1,10 @@
 <script lang="ts">
+	import PuzzlePiece from '~icons/heroicons/puzzle-piece-20-solid';
+	import TableCells from '~icons/heroicons/table-cells-20-solid';
+	import Effects from '~icons/knotdots/effects';
+	import Info from '~icons/knotdots/info';
+	import Resources from '~icons/knotdots/resources';
 	import { _ } from 'svelte-i18n';
-	import {
-		CurrencyEuro,
-		Icon,
-		InformationCircle,
-		PuzzlePiece,
-		Sparkles,
-		TableCells
-	} from 'svelte-hero-icons';
 	import { boards, isContainerWithEffect } from '$lib/models';
 	import type { AnyContainer, ContainerFormTabKey } from '$lib/models';
 	import { applicationState, getOrganization, getOrganizationalUnit } from '$lib/stores';
@@ -43,7 +40,7 @@
 			class:is-active={$applicationState.containerForm.activeTab === 'metadata'}
 			on:click={() => updateApplicationState('metadata')}
 		>
-			<Icon src={PuzzlePiece} size="20" mini />
+			<PuzzlePiece />
 		</button>
 	</li>
 {/if}
@@ -56,7 +53,7 @@
 			class:is-active={$applicationState.containerForm.activeTab === 'basic-data'}
 			on:click={() => updateApplicationState('basic-data')}
 		>
-			<Icon src={InformationCircle} size="20" mini />
+			<Info />
 		</button>
 	</li>
 {/if}
@@ -69,7 +66,7 @@
 			class:is-active={$applicationState.containerForm.activeTab === 'resources'}
 			on:click={() => updateApplicationState('resources')}
 		>
-			<Icon src={CurrencyEuro} size="20" mini />
+			<Resources />
 		</button>
 	</li>
 {/if}
@@ -82,7 +79,7 @@
 			class:is-active={$applicationState.containerForm.activeTab === 'effects'}
 			on:click={() => updateApplicationState('effects')}
 		>
-			<Icon src={Sparkles} size="20" mini />
+			<Effects />
 		</button>
 	</li>
 {/if}
@@ -95,7 +92,7 @@
 			class:is-active={$applicationState.containerForm.activeTab === 'historical-values'}
 			on:click={() => updateApplicationState('historical-values')}
 		>
-			<Icon src={TableCells} size="20" mini />
+			<TableCells />
 		</button>
 	</li>
 {/if}

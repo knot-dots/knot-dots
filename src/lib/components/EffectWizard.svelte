@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import MinusSmall from '~icons/heroicons/minus-small-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import { payloadTypes } from '$lib/models';
@@ -155,7 +156,7 @@
 									type="button"
 									on:click={() => appendYear(effectIndex)}
 								>
-									<Icon src={PlusSmall} size="24" />
+									<PlusSmall />
 								</button>
 							</td>
 						</tr>
@@ -165,7 +166,7 @@
 					<IndicatorChart container={indicator} relatedContainers={[container]} showEffects />
 				{/if}
 				<button type="button" on:click={remove(effectIndex)}>
-					<Icon src={MinusSmall} size="24" mini />
+					<MinusSmall />
 				</button>
 			</div>
 		{/if}
@@ -185,7 +186,7 @@
 	{:else}
 		<p>
 			<button type="button" on:click={() => (showIndicatorOptions = true)}>
-				<Icon src={PlusSmall} size="24" mini />
+				<PlusSmall />
 				{$_('indicator.effect')}
 			</button>
 		</p>

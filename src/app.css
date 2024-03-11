@@ -247,6 +247,7 @@ button,
 	--padding-x: 19px;
 	--padding-y: 9px;
 
+	align-items: center;
 	background: var(--button-background);
 	border: solid 1px var(--button-border-color);
 	border-radius: 8px;
@@ -827,6 +828,11 @@ fieldset {
 .badge.badge--green {
 	--button-background: var(--color-green-background);
 	--color: var(--color-green);
+}
+
+.badge > svg {
+	height: 1rem;
+	width: 1rem;
 }
 
 /* Tabs */

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Icon, MinusSmall, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import MinusSmall from '~icons/heroicons/minus-small-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import { isContainerWithObjective, payloadTypes } from '$lib/models';
@@ -126,7 +127,7 @@
 										type="button"
 										on:click={() => appendWantedValue(objectiveIndex)}
 									>
-										<Icon src={PlusSmall} size="24" />
+										<PlusSmall />
 									</button>
 								</td>
 							</tr>
@@ -140,7 +141,7 @@
 						/>
 					{/if}
 					<button type="button" on:click={remove(objectiveIndex)}>
-						<Icon src={MinusSmall} size="24" mini />
+						<MinusSmall />
 					</button>
 				</div>
 			{/if}
@@ -159,7 +160,7 @@
 			</label>
 		{:else}
 			<button type="button" on:click={() => (showIndicatorOptions = true)}>
-				<Icon src={PlusSmall} size="24" mini />
+				<PlusSmall />
 				{$_('indicator.wanted_values')}
 			</button>
 		{/if}

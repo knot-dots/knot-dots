@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
+	import Share from '~icons/heroicons/share-20-solid';
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
 	import { applicationState, user } from '$lib/stores';
-	import { Icon, Share } from 'svelte-hero-icons';
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
@@ -15,7 +15,7 @@
 
 	<div class="main-menu">
 		<a href="/" class="button button-nav" class:is-active={$page.url.pathname === '/'}>
-			<Icon src={Share} size="20" mini />
+			<Share />
 			{$_('board.elements')}
 		</a>
 

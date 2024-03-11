@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { Icon, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import XMark from '~icons/heroicons/x-mark-20-solid';
 
 	export let dialog: HTMLDialogElement;
 </script>
 
 <dialog bind:this={dialog} on:close>
 	<button tabindex="-1" title={$_('close_modal')} type="button" on:click={() => dialog.close()}>
-		<Icon src={XMark} size="20" />
+		<XMark />
 	</button>
 	<slot />
 </dialog>

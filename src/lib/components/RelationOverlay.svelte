@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent } from 'svelte-dnd-action';
-	import { Icon, Trash, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
+	import Trash from '~icons/heroicons/trash';
+	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
@@ -131,7 +132,7 @@
 		<h2>
 			<span class="icons">
 				<a href={closeOverlay()} class="button icons-element">
-					<Icon solid src={XMark} size="20" />
+					<XMark />
 				</a>
 			</span>
 		</h2>
@@ -148,7 +149,7 @@
 
 		{#each dropZones as zone, i (zone.predicate)}
 			<div class="drop-zone-wrapper">
-				<Icon src={predicateIcons.get(zone.predicate)} size="24" />
+				<svelte:component this={predicateIcons.get(zone.predicate)} />
 				{zone.help}
 				<div
 					class="drop-zone drop-zone--{zone.predicate}"
@@ -170,7 +171,7 @@
 		{/each}
 
 		<div class="drop-zone-wrapper">
-			<Icon src={Trash} size="24" />
+			<Trash />
 			{$_('relation_overlay.remove')}
 			<div
 				class="drop-zone drop-zone--remove"

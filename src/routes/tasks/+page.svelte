@@ -65,7 +65,6 @@
 					--background={taskStatusBackgrounds.get(column.title)}
 					--hover-border-color={taskStatusHoverColors.get(column.title)}
 					addItemUrl="#create={column.payloadType}&taskStatus={column.title}"
-					icon={taskStatusIcons.get(column.title)}
 					items={column.items}
 					status={column.title}
 				/>

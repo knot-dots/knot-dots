@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { Icon, Trash, UserPlus } from 'svelte-hero-icons';
+	import Trash from '~icons/heroicons/trash';
+	import UserPlus from '~icons/heroicons/user-plus-20-solid';
 	import { invalidateAll } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import Dialog from '$lib/components/Dialog.svelte';
@@ -123,7 +124,7 @@
 						title={$_('user.remove_relations')}
 						on:click={() => handleRemoveRelations(u, container)}
 					>
-						<Icon src={Trash} size="20" />
+						<Trash />
 					</button>
 				</td>
 			</tr>
@@ -132,7 +133,7 @@
 </table>
 <div class="content-actions">
 	<button class="primary" type="button" on:click={() => dialog.showModal()}>
-		<Icon src={UserPlus} size="24" />
+		<UserPlus />
 	</button>
 </div>
 

@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import {
-		BarsArrowDown,
-		Funnel,
-		Icon,
-		MagnifyingGlass,
-		QuestionMarkCircle
-	} from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import Filter from '~icons/knotdots/filter';
+	import Help from '~icons/knotdots/help';
+	import Search from '~icons/knotdots/search';
+	import Sort from '~icons/knotdots/sort';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { overlayKey } from '$lib/models';
@@ -75,7 +72,7 @@
 				aria-controls="search"
 				aria-expanded={expandedItem === 'search'}
 			>
-				<Icon src={MagnifyingGlass} size="20" mini />
+				<Search />
 			</button>
 			<!--svelte-ignore a11y-no-static-element-interactions -->
 			<div
@@ -102,7 +99,7 @@
 				aria-controls="filters"
 				aria-expanded={expandedItem === 'filters'}
 			>
-				<Icon src={Funnel} size="20" mini />
+				<Filter />
 			</button>
 			<!--svelte-ignore a11y-no-static-element-interactions -->
 			<div
@@ -131,7 +128,7 @@
 				aria-controls="sort"
 				aria-expanded={expandedItem === 'sort'}
 			>
-				<Icon src={BarsArrowDown} size="20" mini />
+				<Sort />
 			</button>
 			<!--svelte-ignore a11y-no-static-element-interactions -->
 			<div
@@ -153,7 +150,7 @@
 	{#if helpSlug}
 		<li>
 			<a class="button button-nav button-square" href={helpURL($page.url)} title={$_('help')}>
-				<Icon src={QuestionMarkCircle} size="20" mini />
+				<Help />
 			</a>
 		</li>
 	{/if}

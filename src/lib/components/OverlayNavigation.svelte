@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { Icon, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import Share from '~icons/heroicons/share-20-solid';
+	import XMark from '~icons/heroicons/x-mark-20-solid';
+	import Members from '~icons/knotdots/members';
+	import Objectives from '~icons/knotdots/objectives';
+	import Organization from '~icons/knotdots/organization';
+	import Tasks from '~icons/knotdots/tasks';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import {
@@ -49,7 +54,7 @@
 
 <nav>
 	<a class="button button-nav button-square" href={closeURL($page.url)}>
-		<Icon src={XMark} size="20" mini />
+		<XMark />
 	</a>
 
 	<a
@@ -73,7 +78,8 @@
 						container.guid}
 					href={overlayURL($page.url, overlayKey.enum.relations, container.guid)}
 				>
-					{$_('relations')}
+					<span class="small-only"><Share /></span>
+					<span class="large-only">{$_('relations')}</span>
 				</a>
 			</li>
 		{/if}
@@ -84,7 +90,8 @@
 						class="button button-nav"
 						href="/{container.payload.type}/{container.guid}/organizational_units"
 					>
-						{$_('organizational_units')}
+						<span class="small-only"><Organization /></span>
+						<span class="large-only">{$_('organizational_units')}</span>
 					</a>
 				</li>
 			{/if}
@@ -97,7 +104,8 @@
 						) === container.guid}
 						href={overlayURL($page.url, overlayKey.enum['internal-objectives'], container.guid)}
 					>
-						{$_('internal_objective.label')}
+						<span class="small-only"><Objectives /></span>
+						<span class="large-only">{$_('internal_objective.label')}</span>
 					</a>
 				</li>
 			{/if}
@@ -108,7 +116,8 @@
 						class:is-active={paramsFromURL($page.url).get(overlayKey.enum.tasks) === container.guid}
 						href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
 					>
-						{$_('internal_objective.tasks')}
+						<span class="small-only"><Tasks /></span>
+						<span class="large-only">{$_('internal_objective.tasks')}</span>
 					</a>
 				</li>
 			{/if}
@@ -120,7 +129,8 @@
 					class:is-active={paramsFromURL($page.url).get(overlayKey.enum.members) === container.guid}
 					href={overlayURL($page.url, overlayKey.enum.members, container.guid)}
 				>
-					{$_('members')}
+					<span class="small-only"><Members /></span>
+					<span class="large-only">{$_('members')}</span>
 				</a>
 			</li>
 		{/if}
@@ -145,6 +155,7 @@
 <style>
 	nav {
 		align-items: center;
+		container-type: inline-size;
 		display: flex;
 		flex-shrink: 0;
 		font-size: 0.875rem;
@@ -175,7 +186,16 @@
 		flex-shrink: 0;
 	}
 
-	:global(.button-group svg) {
+	.large-only {
 		display: none;
+	}
+
+	@container (min-inline-size: 50rem) {
+		.large-only {
+			display: inherit;
+		}
+		.small-only {
+			display: none;
+		}
 	}
 </style>

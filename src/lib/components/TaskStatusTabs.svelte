@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { taskStatus } from '$lib/models';
@@ -42,12 +42,12 @@
 					class="badge badge--{taskStatusColors.get(statusOption)}"
 					href={tabURL(paramsFromURL($page.url), statusOption)}
 				>
-					<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />
+					<svelte:component this={taskStatusIcons.get(statusOption) ?? LightBulb} />
 					{$_(statusOption)}
 				</a>
 			{:else}
 				<span class="badge badge--{taskStatusColors.get(statusOption)}">
-					<Icon src={taskStatusIcons.get(statusOption) ?? LightBulb} size="16" mini />
+					<svelte:component this={taskStatusIcons.get(statusOption) ?? LightBulb} />
 					{$_(statusOption)}
 				</span>
 			{/if}

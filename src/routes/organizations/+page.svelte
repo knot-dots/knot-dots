@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import OrganizationCategoryFilter from '$lib/components/OrganizationCategoryFilter.svelte';
@@ -27,7 +27,7 @@
 			{#if $ability.can('create', payloadTypes.enum.organization)}
 				<p>
 					<a class="button primary" href="#create={payloadTypes.enum.organization}">
-						<Icon src={Plus} size="20" mini />
+						<PlusSmall />
 						{$_('organization')}
 					</a>
 				</p>

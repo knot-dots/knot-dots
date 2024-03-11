@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { ArrowDownTray, Icon } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
+	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -232,7 +232,7 @@
 				<p class="meta-value">
 					<a href={container.payload.pdf}>
 						{$_('download')}
-						<Icon src={ArrowDownTray} size="20" mini />
+						<ArrowDownTray />
 					</a>
 				</p>
 			</div>

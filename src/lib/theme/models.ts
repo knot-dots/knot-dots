@@ -1,15 +1,14 @@
-import {
-	Bars2,
-	CheckCircle,
-	Cog8Tooth,
-	Flag,
-	LightBulb,
-	Minus,
-	Pencil,
-	Plus,
-	Square2Stack
-} from 'svelte-hero-icons';
-import type { IconSource } from 'svelte-hero-icons';
+import type { SvelteComponent } from 'svelte';
+import type { SVGAttributes } from 'svelte/elements';
+import Bars2 from '~icons/heroicons/bars-2-solid';
+import CheckCircle from '~icons/heroicons/check-circle-16-solid';
+import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
+import Flag from '~icons/heroicons/flag-16-solid';
+import LightBulb from '~icons/heroicons/light-bulb-16-solid';
+import Minus from '~icons/heroicons/minus-solid';
+import Pencil from '~icons/heroicons/pencil-16-solid';
+import Plus from '~icons/heroicons/plus-solid';
+import Square2Stack from '~icons/heroicons/square-2-stack';
 import sdg01 from '$lib/assets/sdg/sdg-01.svg';
 import sdg02 from '$lib/assets/sdg/sdg-02.svg';
 import sdg03 from '$lib/assets/sdg/sdg-03.svg';
@@ -30,12 +29,14 @@ import sdg17 from '$lib/assets/sdg/sdg-17.svg';
 import { predicates, status, sustainableDevelopmentGoals, taskStatus } from '$lib/models';
 import type { Status, SustainableDevelopmentGoal, TaskStatus } from '$lib/models';
 
-export const predicateIcons = new Map<string, IconSource>([
-	[predicates.enum['is-consistent-with'], Plus],
-	[predicates.enum['is-duplicate-of'], Square2Stack],
-	[predicates.enum['is-equivalent-to'], Bars2],
-	[predicates.enum['is-inconsistent-with'], Minus]
-]);
+export const predicateIcons = new Map<string, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>(
+	[
+		[predicates.enum['is-consistent-with'], Plus],
+		[predicates.enum['is-duplicate-of'], Square2Stack],
+		[predicates.enum['is-equivalent-to'], Bars2],
+		[predicates.enum['is-inconsistent-with'], Minus]
+	]
+);
 
 export const sdgIcons = new Map<SustainableDevelopmentGoal, string>([
 	[sustainableDevelopmentGoals.enum['sdg.01'], sdg01],
@@ -81,7 +82,7 @@ export const statusHoverColors = new Map<Status, string>([
 	[status.enum['status.done'], 'var(--color-hover-done)']
 ]);
 
-export const statusIcons = new Map<Status, IconSource>([
+export const statusIcons = new Map<Status, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>([
 	[status.enum['status.idea'], LightBulb],
 	[status.enum['status.in_planning'], Pencil],
 	[status.enum['status.in_implementation'], Cog8Tooth],
@@ -110,7 +111,10 @@ export const taskStatusHoverColors = new Map<TaskStatus, string>([
 	[taskStatus.enum['task_status.done'], 'var(--color-hover-done)']
 ]);
 
-export const taskStatusIcons = new Map<TaskStatus, IconSource>([
+export const taskStatusIcons = new Map<
+	TaskStatus,
+	typeof SvelteComponent<SVGAttributes<SVGSVGElement>>
+>([
 	[taskStatus.enum['task_status.idea'], LightBulb],
 	[taskStatus.enum['task_status.in_planning'], Pencil],
 	[taskStatus.enum['task_status.in_progress'], Cog8Tooth],
