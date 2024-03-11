@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
-	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 
 	export let title: string;
-	export let icon: IconSource | undefined = undefined;
 	export let addItemUrl: string | undefined = undefined;
 </script>
 
@@ -12,9 +10,6 @@
 	<header>
 		<h2>
 			{title}
-			{#if icon}
-				<Icon src={icon} size="16" mini />
-			{/if}
 		</h2>
 		{#if addItemUrl}
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>

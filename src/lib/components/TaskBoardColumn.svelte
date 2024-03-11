@@ -2,7 +2,6 @@
 	import { dndzone } from 'svelte-dnd-action';
 	import type { DndEvent } from 'svelte-dnd-action';
 	import { Icon, PlusSmall } from 'svelte-hero-icons';
-	import type { IconSource } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
@@ -14,7 +13,6 @@
 	import { ability } from '$lib/stores';
 
 	export let addItemUrl: string;
-	export let icon: IconSource | undefined = undefined;
 	export let items: TaskContainer[] = [];
 	export let status: TaskStatus;
 
@@ -52,9 +50,6 @@
 	<header>
 		<h2>
 			{$_(status)}
-			{#if icon}
-				<Icon src={icon} size="16" mini />
-			{/if}
 		</h2>
 		{#if $ability.can('create', containerOfTypeTask())}
 			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>

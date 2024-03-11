@@ -46,7 +46,6 @@
 				<BoardColumn
 					--background={statusBackgrounds.get(statusOption)}
 					--hover-border-color={statusHoverColors.get(statusOption)}
-					icon={statusIcons.get(statusOption)}
 					title={$_(statusOption)}
 				>
 					<MaybeDragZone
