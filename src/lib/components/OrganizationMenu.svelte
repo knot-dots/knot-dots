@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
-	import { BuildingLibrary, ChevronDown, ChevronUp, Home, Icon } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import ChevronDown from '~icons/heroicons/chevron-down-20-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-20-solid';
+	import Home from '~icons/heroicons/home';
+	import Organization from '~icons/knotdots/organization';
 	import { page } from '$app/stores';
 	import logo1 from '$lib/assets/logo-1.svg';
 	import logo2 from '$lib/assets/logo-2.svg';
@@ -108,7 +111,7 @@
 		{#if logo}
 			<img alt={$_('logo')} class="logo" src={logo} />
 		{:else}
-			<Icon src={Home} size="20" />
+			<Home />
 		{/if}
 		<span>
 			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
@@ -128,8 +131,8 @@
 		aria-expanded={showDropDown}
 		aria-label={showDropDown ? $_('close_organization_menu') : $_('open_organization_menu')}
 	>
-		<span><Icon src={BuildingLibrary} size="20" mini /></span>
-		<Icon src={showDropDown ? ChevronUp : ChevronDown} size="20" />
+		<span><Organization /></span>
+		{#if showDropDown}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
 	{#if showDropDown}

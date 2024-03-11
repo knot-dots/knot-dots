@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { dndzone } from 'svelte-dnd-action';
 	import type { DndEvent } from 'svelte-dnd-action';
-	import { Icon, PlusSmall } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
@@ -52,7 +52,7 @@
 			{$_(status)}
 		</h2>
 		{#if $ability.can('create', containerOfTypeTask())}
-			<a href={addItemUrl} title={$_('add_item')}><Icon src={PlusSmall} size="20" /></a>
+			<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
 		{/if}
 	</header>
 	{#if $ability.can('prioritize', containerOfTypeTask())}
@@ -77,7 +77,7 @@
 		<footer>
 			<a href={addItemUrl}>
 				{$_('add_item')}
-				<Icon src={PlusSmall} size="24" mini />
+				<PlusSmall />
 			</a>
 		</footer>
 	{/if}

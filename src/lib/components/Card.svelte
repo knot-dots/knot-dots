@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -139,7 +139,7 @@
 		</h3>
 		{#if selected && relationIcon(container, selected)}
 			<span>
-				<Icon src={relationIcon(container, selected)} size="24" />
+				<svelte:component this={relationIcon(container, selected)} />
 			</span>
 		{/if}
 	</header>
@@ -166,12 +166,12 @@
 			<Progress value={container.payload.progress} compact />
 		{:else if 'status' in container.payload}
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
-				<Icon src={statusIcons.get(container.payload.status) ?? LightBulb} size="16" mini />
+				<svelte:component this={statusIcons.get(container.payload.status) ?? LightBulb} />
 				{$_(container.payload.status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
 			<span class="badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
-				<Icon src={taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb} size="16" mini />
+				<svelte:component this={taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb} />
 				{$_(container.payload.taskStatus)}
 			</span>
 		{:else if 'strategyType' in container.payload}
@@ -245,6 +245,11 @@
 	header span {
 		flex-shrink: 0;
 		margin-left: auto;
+	}
+
+	header :global(svg) {
+		height: 1.5rem;
+		width: 1.5rem;
 	}
 
 	.text {

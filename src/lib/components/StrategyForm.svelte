@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Icon, Trash } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import Trash from '~icons/heroicons/trash';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
@@ -52,7 +52,7 @@
 			type="button"
 			on:click|stopPropagation={removeImage}
 		>
-			<Icon src={Trash} size="20" />
+			<Trash />
 		</button>
 	</span>
 {:else}
@@ -72,7 +72,7 @@
 			type="button"
 			on:click|stopPropagation={removePDF}
 		>
-			<Icon src={Trash} size="20" />
+			<Trash />
 		</button>
 	</span>
 {:else}

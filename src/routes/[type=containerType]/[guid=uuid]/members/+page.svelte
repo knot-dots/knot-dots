@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronLeft, Icon } from 'svelte-hero-icons';
+	import ChevronLeft from '~icons/heroicons/chevron-left';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureTabs from '$lib/components/MeasureTabs.svelte';
 	import Members from '$lib/components/Members.svelte';
@@ -42,7 +42,7 @@
 						: data.container.payload.name}
 					<span class="icons">
 						<button class="icons-element" type="button" on:click={() => window.history.back()}>
-							<Icon solid src={ChevronLeft} size="20" />
+							<ChevronLeft />
 						</button>
 					</span>
 				</h2>

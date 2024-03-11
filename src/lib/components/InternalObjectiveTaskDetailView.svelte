@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _, date } from 'svelte-i18n';
+	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -82,10 +82,8 @@
 			<h3 class="meta-key">{$_('status.label')}</h3>
 			<p class="meta-value">
 				<span class="badge badge--{taskStatusColors.get(selectedRevision.payload.taskStatus)}">
-					<Icon
-						src={taskStatusIcons.get(selectedRevision.payload.taskStatus) ?? LightBulb}
-						size="16"
-						mini
+					<svelte:component
+						this={taskStatusIcons.get(selectedRevision.payload.taskStatus) ?? LightBulb}
 					/>
 					{$_(selectedRevision.payload.taskStatus)}
 				</span>

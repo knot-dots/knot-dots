@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { Icon, MagnifyingGlass } from 'svelte-hero-icons';
+	import Search from '~icons/knotdots/search';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
@@ -37,7 +37,7 @@
 
 <form class="search" data-sveltekit-keepfocus>
 	<button type="submit" on:click>
-		<Icon src={MagnifyingGlass} size="20" mini />
+		<Search />
 	</button>
 	<input type="search" name="terms" bind:value={terms} on:input={debouncedSearch} />
 </form>

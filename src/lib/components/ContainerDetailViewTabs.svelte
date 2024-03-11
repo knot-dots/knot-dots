@@ -1,6 +1,8 @@
 <script lang="ts">
+	import Info from '~icons/knotdots/info';
+	import Effects from '~icons/knotdots/effects';
+	import Resources from '~icons/knotdots/resources';
 	import { _ } from 'svelte-i18n';
-	import { CurrencyEuro, Icon, InformationCircle, Sparkles } from 'svelte-hero-icons';
 	import { isContainerWithEffect } from '$lib/models';
 	import type { AnyContainer, ContainerDetailViewTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -26,7 +28,7 @@
 			class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
 			on:click={() => updateApplicationState('basic-data')}
 		>
-			<Icon src={InformationCircle} size="20" mini />
+			<Info />
 		</button>
 	</li>
 {/if}
@@ -39,7 +41,7 @@
 			class:is-active={$applicationState.containerDetailView.activeTab === 'resources'}
 			on:click={() => updateApplicationState('resources')}
 		>
-			<Icon src={CurrencyEuro} size="20" mini />
+			<Resources />
 		</button>
 	</li>
 {/if}
@@ -52,7 +54,7 @@
 			class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
 			on:click={() => updateApplicationState('effects')}
 		>
-			<Icon src={Sparkles} size="20" mini />
+			<Effects />
 		</button>
 	</li>
 {/if}

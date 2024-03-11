@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon, Pencil } from 'svelte-hero-icons';
+	import Pencil from '~icons/heroicons/pencil';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationDetailView from '$lib/components/OrganizationDetailView.svelte';
 	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
@@ -21,7 +21,7 @@
 						class="button button-nav button-square"
 						data-sveltekit-replacestate
 					>
-						<Icon solid src={Pencil} size="20" />
+						<Pencil />
 					</a>
 				</li>
 			{/if}

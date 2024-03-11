@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { Icon, Plus } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
-	import OrganizationalUnitTabs from '$lib/components/OrganizationalUnitTabs.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import {
 		isOrganizationalUnitContainer,
@@ -40,7 +38,7 @@
 			{#if $ability.can('create', payloadTypes.enum.indicator)}
 				<p>
 					<a class="button primary" href="#create={payloadTypes.enum.indicator}">
-						<Icon src={Plus} size="20" mini />
+						<PlusSmall />
 						{$_('indicator')}
 					</a>
 				</p>

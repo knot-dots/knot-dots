@@ -26,8 +26,10 @@
 	import { $view as view } from '@milkdown/utils';
 	import { useNodeViewFactory, useProsemirrorAdapterProvider } from '@prosemirror-adapter/svelte';
 	import type { SvelteNodeViewComponent } from '@prosemirror-adapter/svelte';
-	import { ArrowUturnLeft, ArrowUturnRight, Icon, ListBullet } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import ArrowUturnLeft from '~icons/heroicons/arrow-uturn-left-20-solid';
+	import ArrowUturnRight from '~icons/heroicons/arrow-uturn-right-20-solid';
+	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import ListItem from '$lib/components/ListItem.svelte';
 
@@ -163,12 +165,12 @@
 		<ul class="toolbar">
 			<li>
 				<button type="button" on:click={undo} on:mousedown|preventDefault>
-					<strong><Icon src={ArrowUturnLeft} size="16" /></strong>
+					<strong><ArrowUturnLeft /></strong>
 				</button>
 			</li>
 			<li>
 				<button type="button" on:click={redo} on:mousedown|preventDefault>
-					<strong><Icon src={ArrowUturnRight} size="16" /></strong>
+					<strong><ArrowUturnRight /></strong>
 				</button>
 			</li>
 			<li>
@@ -183,7 +185,7 @@
 			</li>
 			<li>
 				<button type="button" on:click={wrapInBulletList} on:mousedown|preventDefault>
-					<Icon src={ListBullet} size="20" />
+					<ListBullet />
 				</button>
 			</li>
 		</ul>

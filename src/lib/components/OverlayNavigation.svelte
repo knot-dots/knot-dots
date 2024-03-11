@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { Icon, XMark } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import {
@@ -49,7 +49,7 @@
 
 <nav>
 	<a class="button button-nav button-square" href={closeURL($page.url)}>
-		<Icon src={XMark} size="20" mini />
+		<XMark />
 	</a>
 
 	<a

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Icon, LightBulb } from 'svelte-hero-icons';
 	import { _, date, number } from 'svelte-i18n';
+	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -177,10 +177,8 @@
 				<h3 class="meta-key">{$_('status.label')}</h3>
 				<p class="meta-value">
 					<span class="badge badge--{statusColors.get(selectedRevision.payload.status)}">
-						<Icon
-							src={statusIcons.get(selectedRevision.payload.status) ?? LightBulb}
-							size="16"
-							mini
+						<svelte:component
+							this={statusIcons.get(selectedRevision.payload.status) ?? LightBulb}
 						/>
 						{$_(selectedRevision.payload.status)}
 					</span>

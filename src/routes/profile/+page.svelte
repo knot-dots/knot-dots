@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
-	import { ArrowRightOnRectangle, Cog6Tooth, Icon, InformationCircle } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import ArrowRightOnRectangle from '~icons/heroicons/arrow-right-on-rectangle-20-solid';
+	import Cog6Tooth from '~icons/heroicons/cog-6-tooth-20-solid';
+	import Info from '~icons/knotdots/info';
 	import { page } from '$app/stores';
 	import { accountURL } from '$lib/authentication';
 	import Layout from '$lib/components/Layout.svelte';
@@ -17,7 +19,7 @@
 <Layout>
 	<Sidebar helpSlug="profile" slot="sidebar">
 		<svelte:fragment slot="tabs">
-			<SidebarTab href="/profile" iconSource={InformationCircle} text={$_('information')} />
+			<SidebarTab href="/profile" iconSource={Info} text={$_('information')} />
 			<SidebarTab
 				href={accountURL($page.url.href)}
 				iconSource={Cog6Tooth}
@@ -25,7 +27,7 @@
 			/>
 			<li>
 				<button class="button-nav button-square" title={$_('logout')} on:click={() => signOut()}>
-					<Icon src={ArrowRightOnRectangle} size="20" mini />
+					<ArrowRightOnRectangle />
 				</button>
 			</li>
 		</svelte:fragment>

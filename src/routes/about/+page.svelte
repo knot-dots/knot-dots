@@ -1,6 +1,9 @@
 <script lang="ts">
-	import { DocumentText, Eye, Icon, InformationCircle, Pencil } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import DocumentText from '~icons/heroicons/document-text-20-solid';
+	import Eye from '~icons/heroicons/eye-20-solid';
+	import Pencil from '~icons/heroicons/pencil-solid';
+	import Info from '~icons/knotdots/info';
 	import Layout from '$lib/components/Layout.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -14,7 +17,7 @@
 <Layout>
 	<Sidebar slot="sidebar">
 		<svelte:fragment slot="tabs">
-			<SidebarTab href="/about" iconSource={InformationCircle} text={$_('about')} />
+			<SidebarTab href="/about" iconSource={Info} text={$_('about')} />
 			<SidebarTab href="/imprint" iconSource={DocumentText} text={$_('imprint')} />
 			<SidebarTab href="/privacy" iconSource={Eye} text={$_('privacy')} />
 		</svelte:fragment>
@@ -22,7 +25,7 @@
 			{#if $ability.can('update', data.container)}
 				<li>
 					<a href="/page/{data.container.guid}/edit" class="button button-nav button-square">
-						<Icon solid src={Pencil} size="20" />
+						<Pencil />
 					</a>
 				</li>
 			{/if}

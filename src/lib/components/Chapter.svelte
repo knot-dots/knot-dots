@@ -1,13 +1,10 @@
 <script lang="ts">
-	import {
-		ChevronDoubleDown,
-		ChevronDoubleUp,
-		ChevronDown,
-		ChevronUp,
-		Icon,
-		PlusSmall
-	} from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import ChevronDoubleDown from '~icons/heroicons/chevron-double-down-20-solid';
+	import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-20-solid';
+	import ChevronDown from '~icons/heroicons/chevron-down-20-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-20-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -102,22 +99,22 @@
 		{#if $ability.can('update', $page.data.container)}
 			{#if currentIndex < isPartOfRelation.length - 1}
 				<button class="icons-element" type="button" on:click={moveDown}>
-					<Icon src={ChevronDown} size="20" />
+					<ChevronDown />
 				</button>
 			{/if}
 			{#if currentIndex < isPartOfRelation.length - 9}
 				<button class="icons-element" type="button" on:click={moveDown10}>
-					<Icon src={ChevronDoubleDown} size="20" />
+					<ChevronDoubleDown />
 				</button>
 			{/if}
 			{#if currentIndex > 8}
 				<button class="icons-element" type="button" on:click={moveUp10}>
-					<Icon src={ChevronDoubleUp} size="20" />
+					<ChevronDoubleUp />
 				</button>
 			{/if}
 			{#if currentIndex > 0}
 				<button class="icons-element" type="button" on:click={moveUp}>
-					<Icon src={ChevronUp} size="20" />
+					<ChevronUp />
 				</button>
 			{/if}
 		{/if}
@@ -139,7 +136,7 @@
 		</a>
 
 		<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
-			<Icon src={PlusSmall} size="24" mini />
+			<PlusSmall />
 			{$_('chapter')}
 		</a>
 	</footer>

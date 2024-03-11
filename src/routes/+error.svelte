@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { ArrowLongRight, Icon } from 'svelte-hero-icons';
 	import { _ } from 'svelte-i18n';
+	import ArrowLongRight from '~icons/heroicons/arrow-long-right';
 	import { page } from '$app/stores';
 	import Layout from '$lib/components/Layout.svelte';
 </script>
@@ -10,7 +10,7 @@
 		<div>
 			<h2>{$page.status}</h2>
 			<p>{$page.status === 404 ? $_('error.not_found') : $page.error?.message}</p>
-			<p><a href="/"><Icon src={ArrowLongRight} size="24" />{$_('home')}</a></p>
+			<p><a href="/"><ArrowLongRight />{$_('home')}</a></p>
 		</div>
 	</svelte:fragment>
 </Layout>

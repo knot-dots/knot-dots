@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { Icon, type IconSource } from 'svelte-hero-icons';
+	import type { SvelteComponent } from 'svelte';
+	import type { SVGAttributes } from 'svelte/elements';
 	import { page } from '$app/stores';
 
 	export let href: string;
-	export let iconSource: IconSource;
+	export let iconSource: typeof SvelteComponent<SVGAttributes<SVGSVGElement>>;
 	export let text: string;
 </script>
 
@@ -14,6 +15,6 @@
 		{href}
 		title={text}
 	>
-		<Icon src={iconSource} size="20" mini />
+		<svelte:component this={iconSource} />
 	</a>
 </li>
