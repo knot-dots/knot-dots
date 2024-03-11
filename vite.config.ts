@@ -22,9 +22,6 @@ export default defineConfig({
 			}
 		})
 	],
-	ssr: {
-		noExternal: ['svelte-hero-icons']
-	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	}

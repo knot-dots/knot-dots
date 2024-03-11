@@ -38,7 +38,6 @@
 		"svelte": "^4.2.7",
 		"svelte-check": "^3.6.2",
 		"svelte-dnd-action": "^0.9.33",
-		"svelte-hero-icons": "^5.0.0",
 		"svelte-i18n": "3.7.3",
 		"tslib": "^2.6.2",
 		"typescript": "^5.3.2",
