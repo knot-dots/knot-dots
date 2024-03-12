@@ -2,6 +2,10 @@
 	import { signIn } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import Share from '~icons/heroicons/share-20-solid';
+	import Effects from '~icons/knotdots/effects';
+	import Measure from '~icons/knotdots/measure';
+	import Programs from '~icons/knotdots/programs';
+	import Tasks from '~icons/knotdots/tasks';
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
@@ -14,9 +18,14 @@
 	<OrganizationMenu />
 
 	<div class="main-menu">
-		<a href="/" class="button button-nav" class:is-active={$page.url.pathname === '/'}>
+		<a
+			href="/"
+			class="button button-nav"
+			class:is-active={$page.url.pathname === '/'}
+			title={$_('board.elements')}
+		>
 			<Share />
-			{$_('board.elements')}
+			<span class="large-only">{$_('board.elements')}</span>
 		</a>
 
 		<ul class="button-group button-group-nav">
@@ -26,8 +35,10 @@
 						href="/indicators"
 						class="button button-nav"
 						class:is-active={$page.url.pathname === '/indicators'}
+						title={$_('board.indicators')}
 					>
-						{$_('board.indicators')}
+						<span class="small-only"><Effects /></span>
+						<span class="large-only">{$_('board.indicators')}</span>
 					</a>
 				</li>
 			{/if}
@@ -36,8 +47,10 @@
 					href="/programs"
 					class="button button-nav"
 					class:is-active={$page.url.pathname === '/programs'}
+					title={$_('board.programs')}
 				>
-					{$_('board.programs')}
+					<span class="small-only"><Programs /></span>
+					<span class="large-only">{$_('board.programs')}</span>
 				</a>
 			</li>
 			<li>
@@ -45,8 +58,10 @@
 					href="/implementation"
 					class="button button-nav"
 					class:is-active={$page.url.pathname === '/implementation'}
+					title={$_('board.implementation')}
 				>
-					{$_('board.implementation')}
+					<span class="small-only"><Measure /></span>
+					<span class="large-only">{$_('board.implementation')}</span>
 				</a>
 			</li>
 			{#if !$page.data.currentOrganization.payload.default}
@@ -55,8 +70,10 @@
 						href="/tasks"
 						class="button button-nav"
 						class:is-active={$page.url.pathname === '/tasks'}
+						title={$_('tasks')}
 					>
-						{$_('tasks')}
+						<span class="small-only"><Tasks /></span>
+						<span class="large-only">{$_('tasks')}</span>
 					</a>
 				</li>
 			{/if}
@@ -89,6 +106,7 @@
 	nav {
 		align-items: center;
 		background: white;
+		container-type: inline-size;
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
@@ -119,6 +137,12 @@
 		flex-shrink: 0;
 	}
 
+	.button-group {
+		flex-shrink: 1;
+		margin: 0 auto;
+		overflow-x: auto;
+	}
+
 	.user-menu {
 		gap: 1rem;
 	}
@@ -132,6 +156,20 @@
 	@media (min-width: 1024px) {
 		.main-menu {
 			margin: 0 auto 0 calc((100vw - var(--organization-menu-max-width)) * 0.1);
+		}
+	}
+
+	.large-only {
+		display: none;
+	}
+
+	@container (min-inline-size: 50rem) {
+		.large-only {
+			display: inherit;
+		}
+
+		.small-only {
+			display: none;
 		}
 	}
 </style>
