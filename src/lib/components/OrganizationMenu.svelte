@@ -10,16 +10,23 @@
 	import logo2 from '$lib/assets/logo-2.svg';
 	import logo3 from '$lib/assets/logo-3.svg';
 	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
-	import {
-		findAncestors,
-		type OrganizationalUnitContainer,
-		type OrganizationContainer
-	} from '$lib/models';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 	import OrganizationMenuCard from '$lib/components/OrganizationMenuCard.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import {
+		findAncestors,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
+		type OrganizationalUnitContainer,
+		type OrganizationContainer,
+		payloadTypes
+	} from '$lib/models';
+	import { applicationState, mayCreateContainer } from '$lib/stores';
+
+	$: if (paramsFromURL($page.url).has('create')) {
+		$applicationState.organizationMenu.showDropDown = false;
+	}
 
 	$: showDropDown = $applicationState.organizationMenu.showDropDown;
 
@@ -141,6 +148,9 @@
 				<BoardColumn
 					--background="transparent"
 					--border="solid 1px var(--color-gray-900)"
+					addItemUrl={$mayCreateContainer(payloadTypes.enum.organization)
+						? `#create=${payloadTypes.enum.organization}`
+						: undefined}
 					title={$_('organizations')}
 				>
 					<div class="vertical-scroll-wrapper masked-overflow">
@@ -180,6 +190,10 @@
 					<BoardColumn
 						--background="transparent"
 						--border="solid 1px var(--color-gray-900)"
+						addItemUrl={!$page.data.currentOrganization.payload.default &&
+						$mayCreateContainer(payloadTypes.enum.organizational_unit)
+							? `#create=${payloadTypes.enum.organizational_unit}&level=${level}`
+							: undefined}
 						title={$_('organizational_unit_level', { values: { level } })}
 					>
 						<div class="vertical-scroll-wrapper masked-overflow">
