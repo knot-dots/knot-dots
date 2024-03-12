@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import Environments from '~icons/knotdots/environments';
 	import Filter from '~icons/knotdots/filter';
 	import Help from '~icons/knotdots/help';
 	import Search from '~icons/knotdots/search';
@@ -11,7 +12,7 @@
 
 	export let helpSlug = '';
 
-	type Item = 'filters' | 'search' | 'sort' | null;
+	type Item = 'environments' | 'filters' | 'search' | 'sort' | null;
 
 	let expandedItem: Item = null;
 	let lockedItem: Item = null;
@@ -83,6 +84,34 @@
 				on:mouseleave={() => collapseItemDelayed('search')}
 			>
 				<slot name="search" />
+			</div>
+		</li>
+	{/if}
+
+	{#if $$slots.environments}
+		<li>
+			<button
+				class="button-nav button-square"
+				class:is-active={expandedItem === 'environments'}
+				on:click={() => lockItem('environments')}
+				on:mouseenter={() => expandItem('environments')}
+				on:mouseleave={() => collapseItemDelayed('environments')}
+				title={$_('environments')}
+				aria-controls="environments"
+				aria-expanded={expandedItem === 'environments'}
+			>
+				<Environments />
+			</button>
+			<!--svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class="expandable"
+				id="environments"
+				on:mouseenter={() => clearTimeout(timer)}
+				on:mouseleave={() => collapseItemDelayed('environments')}
+			>
+				<ul class="environments">
+					<slot name="environments" />
+				</ul>
 			</div>
 		</li>
 	{/if}
@@ -197,6 +226,21 @@
 		gap: 0.25rem;
 		max-height: calc(100vh - var(--nav-height) * 2 - 1.5rem);
 		padding: 0.25rem;
+	}
+
+	.expandable > ul.environments {
+		background: transparent;
+		border: none;
+		box-shadow: none;
+		padding: 0;
+		gap: 0.5rem;
+	}
+
+	.environments :global(a) {
+		--button-background: white;
+
+		height: 2.5rem;
+		width: 100%;
 	}
 
 	[aria-expanded='true'] + .expandable {
