@@ -23,5 +23,7 @@
 		<input name="slug" type="text" bind:value={container.payload.slug} readonly />
 	</label>
 
-	<Editor label={$_('body')} bind:value={container.payload.body} />
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('body')} bind:value={container.payload.body} />
+	{/key}
 </fieldset>

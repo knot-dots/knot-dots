@@ -76,7 +76,9 @@
 	<fieldset class="form-tab" id="basic-data">
 		<legend>{$_('form.basic_data')}</legend>
 
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 
 		<label>
 			{$_('task_status.label')}

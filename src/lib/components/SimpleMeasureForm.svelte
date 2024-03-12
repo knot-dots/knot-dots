@@ -93,7 +93,9 @@
 			</datalist>
 		</label>
 
-		<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
+		{/key}
 
 		<fieldset class="duration">
 			<legend>{$_('planned_duration')}</legend>

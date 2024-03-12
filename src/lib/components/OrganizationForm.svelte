@@ -40,7 +40,9 @@
 	</label>
 {/if}
 
-<Editor label={$_('description')} bind:value={container.payload.description} />
+{#key 'guid' in container ? container.guid : ''}
+	<Editor label={$_('description')} bind:value={container.payload.description} />
+{/key}
 
 <label>
 	{$_('organization_category.label')}
