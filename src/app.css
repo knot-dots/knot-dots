@@ -340,6 +340,7 @@ button.button-square,
 
 .button-group > li {
 	display: block;
+	flex-shrink: 0;
 }
 
 .button-group > li > button,

@@ -171,6 +171,7 @@
 	nav > .title {
 		display: inline-block;
 		flex-shrink: 1;
+		max-width: 25%;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -182,10 +183,6 @@
 		overflow-x: auto;
 	}
 
-	.button-group > li {
-		flex-shrink: 0;
-	}
-
 	.large-only {
 		display: none;
 	}
@@ -194,6 +191,7 @@
 		.large-only {
 			display: inherit;
 		}
+
 		.small-only {
 			display: none;
 		}
