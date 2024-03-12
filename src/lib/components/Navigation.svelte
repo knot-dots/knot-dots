@@ -28,19 +28,6 @@
 		</a>
 
 		<ul class="button-group button-group-nav">
-			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
-				<li>
-					<a
-						href="/indicators"
-						class="button button-nav"
-						class:is-active={$page.url.pathname === '/indicators'}
-						title={$_('board.indicators')}
-					>
-						<span class="small-only"><Effects /></span>
-						<span class="large-only">{$_('board.indicators')}</span>
-					</a>
-				</li>
-			{/if}
 			<li>
 				<a
 					href="/programs"
@@ -64,6 +51,19 @@
 					<span class="large-only">{$_('board.implementation')}</span>
 				</a>
 			</li>
+			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
+				<li>
+					<a
+						href="/indicators"
+						class="button button-nav"
+						class:is-active={$page.url.pathname === '/indicators'}
+						title={$_('board.indicators')}
+					>
+						<span class="small-only"><Effects /></span>
+						<span class="large-only">{$_('board.indicators')}</span>
+					</a>
+				</li>
+			{/if}
 		</ul>
 	</div>
 
