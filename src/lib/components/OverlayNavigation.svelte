@@ -171,6 +171,7 @@
 	nav > .title {
 		display: inline-block;
 		flex-shrink: 1;
+		max-width: 25%;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
