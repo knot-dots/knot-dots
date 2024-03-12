@@ -5,7 +5,6 @@
 	import Effects from '~icons/knotdots/effects';
 	import Measure from '~icons/knotdots/measure';
 	import Programs from '~icons/knotdots/programs';
-	import Tasks from '~icons/knotdots/tasks';
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
@@ -57,26 +56,14 @@
 				<a
 					href="/implementation"
 					class="button button-nav"
-					class:is-active={$page.url.pathname === '/implementation'}
+					class:is-active={$page.url.pathname === '/implementation' ||
+						$page.url.pathname === '/tasks'}
 					title={$_('board.implementation')}
 				>
 					<span class="small-only"><Measure /></span>
 					<span class="large-only">{$_('board.implementation')}</span>
 				</a>
 			</li>
-			{#if !$page.data.currentOrganization.payload.default}
-				<li>
-					<a
-						href="/tasks"
-						class="button button-nav"
-						class:is-active={$page.url.pathname === '/tasks'}
-						title={$_('tasks')}
-					>
-						<span class="small-only"><Tasks /></span>
-						<span class="large-only">{$_('tasks')}</span>
-					</a>
-				</li>
-			{/if}
 		</ul>
 	</div>
 
