@@ -544,9 +544,14 @@
 	}
 
 	.resize-handle {
-		border-left: solid 2px transparent;
+		background-image: url(/src/lib/assets/resize-handle.svg);
+		background-position: 2px center;
+		background-repeat: no-repeat;
+		background-clip: border-box;
+		border-right: solid 2px transparent;
 		cursor: ew-resize;
 		height: 100%;
+		left: -0.5rem;
 		min-width: 0;
 		position: absolute;
 		width: 0.5rem;
