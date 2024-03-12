@@ -79,8 +79,6 @@
 			<TaskIncludedFilter />
 			<TaskCategoryFilter />
 		</svelte:fragment>
-
-		<Sort slot="sort" />
 	</Sidebar>
 
 	<svelte:fragment slot="main">
