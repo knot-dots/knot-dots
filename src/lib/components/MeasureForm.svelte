@@ -49,7 +49,7 @@
 		</label>
 
 		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
+			<Editor label={$_('measure.description')} bind:value={container.payload.description} />
 
 			{#if container.payload.status === status.enum['status.in_planning']}
 				<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
