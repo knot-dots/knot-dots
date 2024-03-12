@@ -97,9 +97,11 @@
 				<option></option>
 				{#await membersPromise then members}
 					{#each members as { display_name, guid }}
-						<option value={guid} selected={guid === assignee}>
-							{display_name}
-						</option>
+						{#if display_name !== ''}
+							<option value={guid} selected={guid === assignee}>
+								{display_name}
+							</option>
+						{/if}
 					{/each}
 				{/await}
 			</select>
