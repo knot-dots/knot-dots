@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
@@ -14,9 +15,8 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { status } from '$lib/models';
-	import { statusBackgrounds, statusHoverColors, statusIcons } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import type { PageData } from './$types';
-	import { page } from '$app/stores';
 
 	export let data: PageData;
 
@@ -26,6 +26,27 @@
 <Layout>
 	<Sidebar helpSlug="measures" slot="sidebar">
 		<Search slot="search" />
+
+		<svelte:fragment slot="environments">
+			<li>
+				<a
+					class="button button-nav"
+					class:is-active={$page.url.pathname === '/implementation'}
+					href="/implementation"
+				>
+					{$_('measures')}
+				</a>
+			</li>
+			<li>
+				<a
+					class="button button-nav"
+					class:is-active={$page.url.pathname === '/tasks'}
+					href="/tasks"
+				>
+					{$_('tasks')}
+				</a>
+			</li>
+		</svelte:fragment>
 
 		<svelte:fragment slot="filters">
 			{#if $page.url.searchParams.has('related-to')}

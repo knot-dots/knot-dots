@@ -76,7 +76,9 @@
 	<fieldset class="form-tab" id="basic-data">
 		<legend>{$_('form.basic_data')}</legend>
 
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 
 		<label>
 			{$_('task_status.label')}
@@ -95,9 +97,11 @@
 				<option></option>
 				{#await membersPromise then members}
 					{#each members as { display_name, guid }}
-						<option value={guid} selected={guid === assignee}>
-							{display_name}
-						</option>
+						{#if display_name !== ''}
+							<option value={guid} selected={guid === assignee}>
+								{display_name}
+							</option>
+						{/if}
 					{/each}
 				{/await}
 			</select>

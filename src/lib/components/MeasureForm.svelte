@@ -48,15 +48,17 @@
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
 		</label>
 
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('measure.description')} bind:value={container.payload.description} />
 
-		{#if container.payload.status === status.enum['status.in_planning']}
-			<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
-		{:else if container.payload.status === status.enum['status.in_implementation']}
-			<Editor label={$_('comment')} bind:value={container.payload.comment} />
-		{:else if container.payload.status === status.enum['status.in_operation']}
-			<Editor label={$_('result')} bind:value={container.payload.result} />
-		{/if}
+			{#if container.payload.status === status.enum['status.in_planning']}
+				<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
+			{:else if container.payload.status === status.enum['status.in_implementation']}
+				<Editor label={$_('comment')} bind:value={container.payload.comment} />
+			{:else if container.payload.status === status.enum['status.in_operation']}
+				<Editor label={$_('result')} bind:value={container.payload.result} />
+			{/if}
+		{/key}
 
 		<ListBox
 			label={$_('topic.label')}

@@ -133,19 +133,21 @@
 	</fieldset>
 {:else if $applicationState.containerForm.activeTab === 'basic-data'}
 	<fieldset class="form-tab" id="basic-data">
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
 
-		<Editor
-			label={$_('indicator.historical_values_intro')}
-			bind:value={container.payload.historicalValuesIntro}
-		/>
+			<Editor
+				label={$_('indicator.historical_values_intro')}
+				bind:value={container.payload.historicalValuesIntro}
+			/>
 
-		<Editor
-			label={$_('indicator.objectives_intro')}
-			bind:value={container.payload.objectivesIntro}
-		/>
+			<Editor
+				label={$_('indicator.objectives_intro')}
+				bind:value={container.payload.objectivesIntro}
+			/>
 
-		<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
+			<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
+		{/key}
 
 		<ListBox
 			label={$_('topic.label')}

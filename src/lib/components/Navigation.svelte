@@ -5,7 +5,6 @@
 	import Effects from '~icons/knotdots/effects';
 	import Measure from '~icons/knotdots/measure';
 	import Programs from '~icons/knotdots/programs';
-	import Tasks from '~icons/knotdots/tasks';
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
@@ -29,19 +28,6 @@
 		</a>
 
 		<ul class="button-group button-group-nav">
-			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
-				<li>
-					<a
-						href="/indicators"
-						class="button button-nav"
-						class:is-active={$page.url.pathname === '/indicators'}
-						title={$_('board.indicators')}
-					>
-						<span class="small-only"><Effects /></span>
-						<span class="large-only">{$_('board.indicators')}</span>
-					</a>
-				</li>
-			{/if}
 			<li>
 				<a
 					href="/programs"
@@ -57,23 +43,24 @@
 				<a
 					href="/implementation"
 					class="button button-nav"
-					class:is-active={$page.url.pathname === '/implementation'}
+					class:is-active={$page.url.pathname === '/implementation' ||
+						$page.url.pathname === '/tasks'}
 					title={$_('board.implementation')}
 				>
 					<span class="small-only"><Measure /></span>
 					<span class="large-only">{$_('board.implementation')}</span>
 				</a>
 			</li>
-			{#if !$page.data.currentOrganization.payload.default}
+			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
 				<li>
 					<a
-						href="/tasks"
+						href="/indicators"
 						class="button button-nav"
-						class:is-active={$page.url.pathname === '/tasks'}
-						title={$_('tasks')}
+						class:is-active={$page.url.pathname === '/indicators'}
+						title={$_('board.indicators')}
 					>
-						<span class="small-only"><Tasks /></span>
-						<span class="large-only">{$_('tasks')}</span>
+						<span class="small-only"><Effects /></span>
+						<span class="large-only">{$_('board.indicators')}</span>
 					</a>
 				</li>
 			{/if}

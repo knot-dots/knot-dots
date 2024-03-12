@@ -49,6 +49,8 @@
 			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
 		</label>
 
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 	</fieldset>
 {/if}

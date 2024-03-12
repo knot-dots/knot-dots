@@ -36,6 +36,8 @@
 	<fieldset class="form-tab" id="basic-data">
 		<legend>{$_('form.basic_data')}</legend>
 
-		<Editor label={$_('body')} bind:value={container.payload.body} />
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('body')} bind:value={container.payload.body} />
+		{/key}
 	</fieldset>
 {/if}

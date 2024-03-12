@@ -32,7 +32,9 @@
 	<span class="help">{$_('upload.image.help')}</span>
 </label>
 
-<Editor label={$_('description')} bind:value={container.payload.description} />
+{#key 'guid' in container ? container.guid : ''}
+	<Editor label={$_('description')} bind:value={container.payload.description} />
+{/key}
 
 <RelationSelector
 	{container}
