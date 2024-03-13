@@ -223,13 +223,13 @@
 		align-items: center;
 		display: flex;
 		flex-shrink: 0;
+		gap: 1.5rem;
 		max-width: var(--organization-menu-max-width);
 	}
 
 	.organization-menu > a {
 		align-items: center;
 		display: flex;
-		padding: 0 0.625rem;
 		gap: 0.5rem;
 	}
 

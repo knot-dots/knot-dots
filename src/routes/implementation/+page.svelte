@@ -6,6 +6,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
+	import ImplementationEnvironments from '$lib/components/ImplementationEnvironments.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
@@ -24,42 +25,43 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug="measures" slot="sidebar">
-		<Search slot="search" />
+	<svelte:fragment slot="sidebar">
+		{#if !$page.data.currentOrganization.payload.default}
+			<Sidebar helpSlug="measures">
+				<Search slot="search" />
 
-		<svelte:fragment slot="environments">
-			<li>
-				<a
-					class="button button-nav"
-					class:is-active={$page.url.pathname === '/implementation'}
-					href="/implementation"
-				>
-					{$_('measures')}
-				</a>
-			</li>
-			<li>
-				<a
-					class="button button-nav"
-					class:is-active={$page.url.pathname === '/tasks'}
-					href="/tasks"
-				>
-					{$_('tasks')}
-				</a>
-			</li>
-		</svelte:fragment>
+				<ImplementationEnvironments slot="environments" />
 
-		<svelte:fragment slot="filters">
-			{#if $page.url.searchParams.has('related-to')}
-				<RelationTypeFilter />
-			{/if}
-			<StrategyTypeFilter />
-			<TopicFilter />
-			<CategoryFilter />
-			<AudienceFilter />
-		</svelte:fragment>
+				<svelte:fragment slot="filters">
+					{#if $page.url.searchParams.has('related-to')}
+						<RelationTypeFilter />
+					{/if}
+					<StrategyTypeFilter />
+					<TopicFilter />
+					<CategoryFilter />
+					<AudienceFilter />
+				</svelte:fragment>
 
-		<Sort slot="sort" />
-	</Sidebar>
+				<Sort slot="sort" />
+			</Sidebar>
+		{:else}
+			<Sidebar helpSlug="measures">
+				<Search slot="search" />
+
+				<svelte:fragment slot="filters">
+					{#if $page.url.searchParams.has('related-to')}
+						<RelationTypeFilter />
+					{/if}
+					<StrategyTypeFilter />
+					<TopicFilter />
+					<CategoryFilter />
+					<AudienceFilter />
+				</svelte:fragment>
+
+				<Sort slot="sort" />
+			</Sidebar>
+		{/if}
+	</svelte:fragment>
 
 	<svelte:fragment slot="main">
 		<Board>
