@@ -172,7 +172,7 @@
 	let offset = 0;
 
 	function startExpand(event: MouseEvent) {
-		offset = event.offsetX;
+		offset = event.offsetX - 12;
 		window.addEventListener('mousemove', expand);
 	}
 
@@ -551,10 +551,10 @@
 		border-right: solid 2px transparent;
 		cursor: ew-resize;
 		height: 100%;
-		left: -0.5rem;
+		left: -0.75rem;
 		min-width: 0;
 		position: absolute;
-		width: 0.5rem;
+		width: 0.75rem;
 		z-index: 1;
 	}
 
