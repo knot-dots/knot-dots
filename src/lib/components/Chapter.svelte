@@ -1,17 +1,32 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { onMount } from 'svelte';
+	import { _, date, number } from 'svelte-i18n';
 	import ChevronDoubleDown from '~icons/heroicons/chevron-double-down-20-solid';
 	import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-20-solid';
 	import ChevronDown from '~icons/heroicons/chevron-down-20-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-20-solid';
+	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { overlayKey, payloadTypes, predicates } from '$lib/models';
+	import {
+		type IndicatorContainer,
+		isContainerWithEffect,
+		isContainerWithObjective,
+		isSimpleMeasureContainer,
+		overlayKey,
+		payloadTypes,
+		predicates,
+		status
+	} from '$lib/models';
 	import type { Container, Relation, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { statusColors, statusIcons } from '$lib/theme/models';
 
 	export let headingTag: string;
 	export let container: Container;
@@ -91,6 +106,22 @@
 			return `#view=${container.guid}`;
 		}
 	}
+
+	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
+
+	onMount(() => {
+		if ('objective' in container.payload && container.payload.objective.length > 0) {
+			indicatorsRequest = fetchContainers({
+				organization: [container.organization],
+				payloadType: [payloadTypes.enum.indicator]
+			}) as Promise<IndicatorContainer[]>;
+		} else if ('effect' in container.payload && container.payload.effect.length > 0) {
+			indicatorsRequest = fetchContainers({
+				organization: [container.organization],
+				payloadType: [payloadTypes.enum.indicator]
+			}) as Promise<IndicatorContainer[]>;
+		}
+	});
 </script>
 
 <div class="chapter">
@@ -119,17 +150,104 @@
 			{/if}
 		{/if}
 	</svelte:element>
+
+	{#if 'status' in container.payload}
+		<p>
+			<span class="badge badge--{statusColors.get(container.payload.status)}">
+				<svelte:component this={statusIcons.get(container.payload.status) ?? LightBulb} />
+				{$_(container.payload.status)}
+			</span>
+		</p>
+	{/if}
+
 	{#if 'summary' in container.payload}
 		<p>
 			{container.payload.summary ?? ''}
 		</p>
 	{/if}
+
 	{#if 'body' in container.payload}
 		<Viewer value={container.payload.body} />
 	{/if}
+
 	{#if 'description' in container.payload}
 		<Viewer value={container.payload.description} />
 	{/if}
+
+	{#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
+		<h4>{$_('annotation')}</h4>
+		<Viewer value={container.payload.annotation} />
+	{:else if 'comment' in container.payload && container.payload.status === status.enum['status.in_implementation']}
+		<h4>{$_('comment')}</h4>
+		<Viewer value={container.payload.comment} />
+	{:else if 'result' in container.payload && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
+		<h4>{$_('result')}</h4>
+		<Viewer value={container.payload.result} />
+	{/if}
+
+	{#if 'resource' in container.payload && container.payload.resource.length > 0}
+		<h4>{$_('resources.label')}</h4>
+		<ul>
+			{#each container.payload.resource as resource}
+				<li class="resource-item">
+					<span>{resource.description}</span>
+					<span>{resource.unit}</span>
+					<span>{$number(resource.amount)}</span>
+					<span>
+						{$date(new Date(resource.fulfillmentDate), {
+							day: '2-digit',
+							month: '2-digit',
+							year: 'numeric'
+						})}
+					</span>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
+	{#if isContainerWithObjective(container) && container.payload.objective.length > 0}
+		<div class="indicator-objective">
+			<h4>{$_('objectives')}</h4>
+			{#await indicatorsRequest then indicators}
+				{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
+				{#each container.payload.objective as objective}
+					{@const indicator = indicatorsByGuid.get(objective.indicator)}
+					{#if indicator}
+						<IndicatorChart
+							container={indicator}
+							containersWithObjectives={[container]}
+							showObjectives
+						>
+							<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
+						</IndicatorChart>
+					{/if}
+				{/each}
+			{/await}
+		</div>
+	{/if}
+
+	{#if isContainerWithEffect(container) && container.payload.effect.length > 0}
+		<h4>{$_('effects')}</h4>
+		{#await indicatorsRequest then indicators}
+			{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
+			{#each container.payload.effect as effect}
+				{@const indicator = indicatorsByGuid.get(effect.indicator)}
+				{#if indicator}
+					<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
+						<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
+					</IndicatorChart>
+				{/if}
+			{/each}
+		{/await}
+	{/if}
+
+	{#if 'progress' in container.payload}
+		<div class="progress">
+			<h3>{$_('progress')}</h3>
+			<Progress value={container.payload.progress} />
+		</div>
+	{/if}
+
 	<footer class="content-actions">
 		<a class="button" href={viewInOverlayURL($page.url)}>
 			{$_('read_more')}
@@ -143,6 +261,11 @@
 </div>
 
 <style>
+	h4,
+	p {
+		margin: 0.875rem 0;
+	}
+
 	.chapter {
 		margin-bottom: 1.5rem;
 		max-width: 50rem;
