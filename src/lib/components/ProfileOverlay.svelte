@@ -3,15 +3,27 @@
 	import { _ } from 'svelte-i18n';
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
+	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
+	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-	import { overlayWidth } from '$lib/stores';
-	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
+	import Tasks from '$lib/components/Tasks.svelte';
+	import {
+		type Container,
+		isAssignedTo,
+		isTaskContainer,
+		type OrganizationalUnitContainer,
+		type OrganizationContainer,
+		overlayKey
+	} from '$lib/models';
+	import { overlayWidth, user } from '$lib/stores';
 
-	export let relatedContainers: Container[];
 	export let organizations: OrganizationContainer[];
 	export let organizationalUnits: OrganizationalUnitContainer[];
+	export let relatedContainers: Container[];
+
+	$: tasks = relatedContainers.filter(isTaskContainer).filter(isAssignedTo($user));
 
 	let fullScreen = false;
 
@@ -71,7 +83,11 @@
 	</aside>
 
 	<div class="content-details masked-overflow">
-		<ProfileView containers={relatedContainers} {organizations} {organizationalUnits} />
+		{#if paramsFromURL($page.url).has(overlayKey.enum['my-tasks']) && tasks}
+			<Tasks containers={tasks} />
+		{:else}
+			<ProfileView containers={relatedContainers} {organizations} {organizationalUnits} />
+		{/if}
 	</div>
 </section>
 

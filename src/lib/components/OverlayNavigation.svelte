@@ -167,6 +167,20 @@
 			<li>
 				<a
 					class="button button-nav"
+					class:is-active={paramsFromURL($page.url).has(overlayKey.enum['my-tasks'])}
+					href={`${overlayURL($page.url, overlayKey.enum.profile, $user.guid)}&${
+						overlayKey.enum['my-tasks']
+					}`}
+					title={$_('profile.my_tasks')}
+				>
+					<span class="small-only"><Tasks /></span>
+					<span class="large-only">{$_('profile.my_tasks')}</span>
+				</a>
+			</li>
+
+			<li>
+				<a
+					class="button button-nav"
 					href={accountURL($page.url.href)}
 					title={$_('profile.settings')}
 				>
@@ -174,6 +188,7 @@
 					<span class="large-only">{$_('profile.settings')}</span>
 				</a>
 			</li>
+
 			<li>
 				<button class="button-nav" title={$_('logout')} on:click={() => signOut()}>
 					<span class="small-only"><ArrowRightOnRectangle /></span>

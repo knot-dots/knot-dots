@@ -24,6 +24,7 @@ export const overlayKey = z.enum([
 	'edit-help',
 	'internal-objectives',
 	'members',
+	'my-tasks',
 	'profile',
 	'relate',
 	'relations',
@@ -1302,6 +1303,10 @@ export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 				user.guid == subject && predicate == predicates.enum['is-admin-of']
 		) > -1
 	);
+}
+
+export function isAssignedTo(user: { guid: string }) {
+	return (container: TaskContainer) => container.payload.assignee === user.guid;
 }
 
 export function containerOfType(
