@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import ImplementationWorkspaces from '$lib/components/ImplementationWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
@@ -57,6 +58,7 @@
 		<svelte:fragment slot="filters">
 			<OrganizationIncludedFilter />
 			<TaskCategoryFilter />
+			<AssigneeFilter />
 		</svelte:fragment>
 	</Sidebar>
 
