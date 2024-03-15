@@ -7,7 +7,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import { containerOfType, owners, payloadTypes } from '$lib/models';
-	import type { AnyContainer, Container, StrategyContainer } from '$lib/models';
+	import type { AnyContainer, Container, PayloadType, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
 
@@ -20,6 +20,11 @@
 		params.set('create', payloadTypes.enum.undefined);
 		params.set('is-part-of-strategy', String(strategyRevision));
 		return `#${params.toString()}`;
+	}
+
+	function byPayloadType(payloadType: PayloadType, url: URL) {
+		const params = paramsFromURL(url);
+		return !params.has('payloadType') || params.getAll('payloadType').includes(payloadType);
 	}
 </script>
 
@@ -109,7 +114,7 @@
 	</div>
 
 	<div class="chapters">
-		{#each relatedContainers as part}
+		{#each relatedContainers.filter( ({ payload }) => byPayloadType(payload.type, $page.url) ) as part}
 			<Chapter container={part} headingTag="h3" isPartOf={container} />
 		{:else}
 			{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
