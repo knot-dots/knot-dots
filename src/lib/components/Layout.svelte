@@ -4,6 +4,7 @@
 	import { browser } from '$app/environment';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import ProfileOverlay from '$lib/components/ProfileOverlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import { overlay } from '$lib/stores';
 
@@ -24,6 +25,12 @@
 		<slot name="main" />
 		{#if $overlay.revisions[$overlay.revisions.length - 1]}
 			<Overlay {...$overlay} />
+		{:else if $overlay.organizations && $overlay.organizationalUnits}
+			<ProfileOverlay
+				organizations={$overlay.organizations}
+				organizationalUnits={$overlay.organizationalUnits}
+				relatedContainers={$overlay.relatedContainers}
+			/>
 		{/if}
 		{#if browser && $overlay.object}
 			<RelationOverlay object={$overlay.object} />

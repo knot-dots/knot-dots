@@ -60,6 +60,7 @@
 			hashParams.delete('edit-help');
 			hashParams.delete('internal-objectives');
 			hashParams.delete('members');
+			hashParams.delete('profile');
 			hashParams.delete('relations');
 			hashParams.delete('tasks');
 			containerPreviewURL = `#${hashParams.toString()}`;

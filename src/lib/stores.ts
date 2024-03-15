@@ -14,6 +14,7 @@ import paramsFromURL from '$lib/client/paramsFromURL';
 import {
 	audience,
 	containerOfType,
+	hasMember,
 	isIndicatorContainer,
 	isStrategyContainer,
 	overlayKey,
@@ -129,6 +130,8 @@ type Overlay = {
 	isPartOfOptions: AnyContainer[];
 	containersWithObjectives?: ContainerWithObjective[];
 	object?: Container;
+	organizations?: OrganizationContainer[];
+	organizationalUnits?: OrganizationalUnitContainer[];
 	relatedContainers: Container[];
 	revisions: AnyContainer[];
 	tasks?: TaskContainer[];
@@ -313,6 +316,29 @@ if (browser) {
 				isPartOfOptions: [],
 				object: revisions[revisions.length - 1] as Container,
 				relatedContainers: [],
+				revisions: []
+			});
+		} else if (hashParams.has(overlayKey.enum.profile) && values.data.session) {
+			const organizations = values.data.organizations.filter(hasMember(values.data.session.user));
+			const organizationalUnits = values.data.organizationalUnits.filter(
+				hasMember(values.data.session.user)
+			);
+			const relatedContainers = (await fetchContainers({
+				organization: organizations.map(({ guid }: OrganizationContainer) => guid),
+				organizationalUnit: organizationalUnits.map(
+					({ guid }: OrganizationalUnitContainer) => guid
+				),
+				payloadType: [
+					payloadTypes.enum.measure,
+					payloadTypes.enum.strategy,
+					payloadTypes.enum['internal_objective.task']
+				]
+			})) as Container[];
+			overlay.set({
+				isPartOfOptions: [],
+				organizations,
+				organizationalUnits,
+				relatedContainers,
 				revisions: []
 			});
 		} else {

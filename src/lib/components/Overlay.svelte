@@ -61,6 +61,8 @@
 		ContainerWithObjective,
 		CustomEventMap,
 		IndicatorContainer,
+		OrganizationContainer,
+		OrganizationalUnitContainer,
 		TaskContainer,
 		User
 	} from '$lib/models';
