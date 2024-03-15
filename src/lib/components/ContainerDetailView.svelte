@@ -22,7 +22,7 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];

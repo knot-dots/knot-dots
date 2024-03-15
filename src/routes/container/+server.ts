@@ -58,6 +58,8 @@ export const GET = (async ({ locals, url }) => {
 	} else if (parseResult.data.isPartOfStrategy.length > 0) {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
+				categories: parseResult.data.category,
+				topics: parseResult.data.topic,
 				type: parseResult.data.payloadType
 			})
 		);
