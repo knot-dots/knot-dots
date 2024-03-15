@@ -60,5 +60,10 @@
 			options={sustainableDevelopmentGoals.options}
 			bind:value={container.payload.category}
 		/>
+
+		<label>
+			{$_('fulfillment_date')}
+			<input type="date" bind:value={container.payload.fulfillmentDate} />
+		</label>
 	</fieldset>
 {/if}

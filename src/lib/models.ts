@@ -559,6 +559,10 @@ const simpleMeasurePayload = basePayload
 
 const strategicGoalPayload = basePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.strategic_goal)
 	})
