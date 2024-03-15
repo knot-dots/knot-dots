@@ -70,11 +70,8 @@
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
 		{#if $user.isAuthenticated}
 			<li>
-				<a href="/profile">
-					<span
-						class="avatar avatar-s button button-nav"
-						class:is-active={$page.url.pathname === '/profile'}
-					>
+				<a href="#profile={$user.guid}">
+					<span class="avatar avatar-s button button-nav">
 						{$user.givenName.at(0)}{$user.familyName.at(0)}
 					</span>
 				</a>

@@ -2,9 +2,9 @@
 	import Board from '$lib/components/Board.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import { type AnyContainer, payloadTypes, type TaskContainer, taskStatus } from '$lib/models';
-	import { taskStatusBackgrounds, taskStatusHoverColors, taskStatusIcons } from '$lib/theme/models';
+	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 
-	export let container: AnyContainer;
+	export let container: AnyContainer | undefined = undefined;
 	export let containers: TaskContainer[];
 
 	$: columns = [
@@ -40,7 +40,9 @@
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(column.title)}
 			--hover-border-color={taskStatusHoverColors.get(column.title)}
-			addItemUrl="#create={column.payloadType}&is-part-of-measure={container.revision}&taskStatus={column.title}"
+			addItemUrl={container
+				? `#create=${column.payloadType}&is-part-of-measure=${container.revision}&taskStatus=${column.title}`
+				: undefined}
 			items={column.items}
 			status={column.title}
 		/>

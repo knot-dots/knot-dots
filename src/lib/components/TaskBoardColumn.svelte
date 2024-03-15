@@ -12,7 +12,7 @@
 	import type { TaskContainer, TaskStatus } from '$lib/models';
 	import { ability } from '$lib/stores';
 
-	export let addItemUrl: string;
+	export let addItemUrl: string | undefined = undefined;
 	export let items: TaskContainer[] = [];
 	export let status: TaskStatus;
 
@@ -51,7 +51,7 @@
 		<h2>
 			{$_(status)}
 		</h2>
-		{#if $ability.can('create', containerOfTypeTask())}
+		{#if addItemUrl && $ability.can('create', containerOfTypeTask())}
 			<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
 		{/if}
 	</header>
@@ -73,7 +73,7 @@
 			{/each}
 		</div>
 	{/if}
-	{#if $ability.can('create', containerOfTypeTask())}
+	{#if addItemUrl && $ability.can('create', containerOfTypeTask())}
 		<footer>
 			<a href={addItemUrl}>
 				{$_('add_item')}

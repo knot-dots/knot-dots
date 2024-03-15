@@ -24,6 +24,8 @@ export const overlayKey = z.enum([
 	'edit-help',
 	'internal-objectives',
 	'members',
+	'my-tasks',
+	'profile',
 	'relate',
 	'relations',
 	'tasks',
@@ -557,6 +559,10 @@ const simpleMeasurePayload = basePayload
 
 const strategicGoalPayload = basePayload
 	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
 		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.strategic_goal)
 	})
@@ -1301,6 +1307,10 @@ export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 				user.guid == subject && predicate == predicates.enum['is-admin-of']
 		) > -1
 	);
+}
+
+export function isAssignedTo(user: { guid: string }) {
+	return (container: TaskContainer) => container.payload.assignee === user.guid;
 }
 
 export function containerOfType(

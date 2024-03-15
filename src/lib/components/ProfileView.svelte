@@ -2,22 +2,19 @@
 	import { _ } from 'svelte-i18n';
 	import Card from '$lib/components/Card.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
-	import { hasMember, isMeasureContainer, isStrategyContainer, isTaskContainer } from '$lib/models';
-	import type {
-		Container,
-		OrganizationalUnitContainer,
-		OrganizationContainer,
-		TaskContainer
+	import {
+		hasMember,
+		isAssignedTo,
+		isMeasureContainer,
+		isStrategyContainer,
+		isTaskContainer
 	} from '$lib/models';
+	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 
 	export let containers: Container[];
 	export let organizations: OrganizationContainer[];
 	export let organizationalUnits: OrganizationalUnitContainer[];
-
-	function isAssignedTo(user: { guid: string }) {
-		return (container: TaskContainer) => container.payload.assignee === user.guid;
-	}
 </script>
 
 <article class="details">
