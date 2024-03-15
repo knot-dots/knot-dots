@@ -402,10 +402,13 @@
 			<aside>
 				{#if isStrategyContainer(container)}
 					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
-						<PayloadTypeFilter
-							options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
-							slot="filters"
-						/>
+						<svelte:fragment slot="filters">
+							<PayloadTypeFilter
+								options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
+							/>
+							<CategoryFilter />
+							<TopicFilter />
+						</svelte:fragment>
 						<ContainerDetailViewTabs {container} slot="tabs" />
 						<svelte:fragment slot="extra">
 							<li>

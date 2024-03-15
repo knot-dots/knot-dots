@@ -202,8 +202,10 @@ if (browser) {
 				});
 			} else if (isStrategyContainer(container)) {
 				const relatedContainers = (await fetchContainers({
+					category: hashParams.getAll('category'),
 					isPartOfStrategy: [container.revision],
-					payloadType: hashParams.getAll('payloadType') as PayloadType[]
+					payloadType: hashParams.getAll('payloadType') as PayloadType[],
+					topic: hashParams.getAll('topic')
 				})) as Container[];
 				overlay.set({
 					isPartOfOptions: [],

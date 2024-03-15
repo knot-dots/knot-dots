@@ -995,7 +995,7 @@ export function getAllContainersWithParentObjectives({ guid, organization }: Ind
 
 export function getAllContainersRelatedToStrategy(
 	revision: number,
-	filters: { terms?: string; type?: PayloadType[] }
+	filters: { categories: string[]; terms?: string; topics: string[]; type?: PayloadType[] }
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
