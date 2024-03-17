@@ -5,7 +5,6 @@
 	import Cog6Tooth from '~icons/heroicons/cog-6-tooth-20-solid';
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
-	import Info from '~icons/knotdots/info';
 	import Members from '~icons/knotdots/members';
 	import Objectives from '~icons/knotdots/objectives';
 	import Organization from '~icons/knotdots/organization';
@@ -143,12 +142,6 @@
 						<span class="small-only"><Members /></span>
 						<span class="large-only">{$_('members')}</span>
 					</a>
-				</li>
-				<li>
-					<button class="button-nav button-square" title={$_('logout')} on:click={() => signOut()}>
-						<span class="small-only"><ArrowRightOnRectangle /></span>
-						<span class="large-only">{$_('logout')}</span>
-					</button>
 				</li>
 			{/if}
 		</ul>
