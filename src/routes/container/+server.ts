@@ -110,7 +110,7 @@ export const GET = (async ({ locals, url }) => {
 					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType
 				},
-				''
+				parseResult.data.sort[0]
 			)
 		);
 	}
