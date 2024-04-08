@@ -281,6 +281,8 @@ if (browser) {
 			const internalObjectives = (await fetchContainers(
 				{
 					isPartOfMeasure: [container.revision],
+					relatedTo: hashParams.getAll('related-to'),
+					relationType: hashParams.getAll('relationType'),
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'

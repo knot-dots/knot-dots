@@ -18,6 +18,7 @@ import {
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToStrategy,
 	getAllImplementingContainers,
+	getAllRelatedInternalObjectives,
 	getManyContainers,
 	getManyTaskContainers
 } from '$lib/server/db';
@@ -33,6 +34,8 @@ export const GET = (async ({ locals, url }) => {
 		organization: z.array(z.string().uuid()),
 		organizationalUnit: z.array(z.string().uuid()),
 		payloadType: z.array(payloadTypes),
+		relatedTo: z.array(z.string().uuid()),
+		relationType: z.array(z.enum(['hierarchical', 'other'])).default(['hierarchical', 'other']),
 		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
 		strategyType: z.array(strategyTypes),
 		taskCategory: z.array(taskCategories),
@@ -75,15 +78,25 @@ export const GET = (async ({ locals, url }) => {
 			})
 		);
 	} else if (parseResult.data.isPartOfMeasure.length > 0) {
-		containers = await locals.pool.connect(
-			getAllContainersRelatedToMeasure(
-				parseResult.data.isPartOfMeasure[0],
-				{
-					terms: parseResult.data.terms[0]
-				},
-				parseResult.data.sort[0]
-			)
-		);
+		if (parseResult.data.relatedTo.length > 0) {
+			containers = await locals.pool.connect(
+				getAllRelatedInternalObjectives(
+					parseResult.data.relatedTo[0],
+					parseResult.data.relationType,
+					parseResult.data.sort[0]
+				)
+			);
+		} else {
+			containers = await locals.pool.connect(
+				getAllContainersRelatedToMeasure(
+					parseResult.data.isPartOfMeasure[0],
+					{
+						terms: parseResult.data.terms[0]
+					},
+					parseResult.data.sort[0]
+				)
+			);
+		}
 	} else {
 		containers = await locals.pool.connect(
 			getManyContainers(

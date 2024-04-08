@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
@@ -24,7 +25,11 @@
 
 	let selected: Container | undefined;
 
-	$: relatedTo = $page.url.searchParams.get('related-to');
+	let overlayContext = getContext('overlay');
+
+	$: relatedTo = overlayContext
+		? paramsFromURL($page.url).get('related-to')
+		: $page.url.searchParams.get('related-to');
 
 	$: if ($overlay.object) {
 		selected = $overlay.object;
@@ -36,15 +41,24 @@
 		selected = undefined;
 	}
 
-	async function applyRelationFilter(params: URLSearchParams) {
-		const query = new URLSearchParams(params);
-		if (relatedTo === container.guid) {
-			query.delete('related-to');
+	async function applyRelationFilter(url: URL) {
+		if (overlayContext) {
+			const params = new URLSearchParams(url.hash.substring(1));
+			if (relatedTo === container.guid) {
+				params.delete('related-to');
+			} else {
+				params.set('related-to', container.guid);
+			}
+			await goto(`#${params.toString()}`);
 		} else {
-			query.delete('related-to');
-			query.append('related-to', container.guid);
+			const params = new URLSearchParams(url.searchParams);
+			if (relatedTo === container.guid) {
+				params.delete('related-to');
+			} else {
+				params.set('related-to', container.guid);
+			}
+			await goto(`?${params.toString()}${url.hash}`);
 		}
-		await goto(`?${query.toString()}${$page.url.hash}`);
 	}
 
 	let containerPreviewURL: string;
@@ -183,7 +197,7 @@
 				class="relation-button"
 				title={$_('show_relations')}
 				class:is-active={relatedTo === container.guid}
-				on:click|stopPropagation={() => applyRelationFilter($page.url.searchParams)}
+				on:click|stopPropagation={() => applyRelationFilter($page.url)}
 			>
 			</button>
 		{/if}
