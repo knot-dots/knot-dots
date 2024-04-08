@@ -4,9 +4,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	let overlay = getContext('overlay');
 	let timer: ReturnType<typeof setTimeout>;
-	let terms = $page.url.searchParams.get('terms') ?? '';
+	let overlay = getContext('overlay');
+	let terms = overlay
+		? new URLSearchParams($page.url.hash.substring(1)).get('terms') ?? ''
+		: $page.url.searchParams.get('terms') ?? '';
 
 	function debouncedSearch() {
 		clearTimeout(timer);
