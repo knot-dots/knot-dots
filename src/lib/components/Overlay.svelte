@@ -61,8 +61,6 @@
 		ContainerWithObjective,
 		CustomEventMap,
 		IndicatorContainer,
-		OrganizationContainer,
-		OrganizationalUnitContainer,
 		TaskContainer,
 		User
 	} from '$lib/models';
@@ -403,7 +401,7 @@
 		{#if 'guid' in container}
 			<aside>
 				{#if isStrategyContainer(container)}
-					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+					<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
 						<svelte:fragment slot="filters">
 							<PayloadTypeFilter
 								options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
@@ -432,7 +430,7 @@
 						</svelte:fragment>
 					</Sidebar>
 				{:else}
-					<Sidebar helpSlug={`container.payload.type.replace('_', '-')}-view`}>
+					<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
 						<ContainerDetailViewTabs {container} slot="tabs" />
 						<svelte:fragment slot="extra">
 							<li>

@@ -12,6 +12,8 @@ export default async function fetchContainers(
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: PayloadType[];
+		relatedTo?: string[];
+		relationType?: string[];
 		strategyType?: string[];
 		taskCategory?: string[];
 		terms?: string;
@@ -43,6 +45,12 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
+	}
+	for (const value of filters.relatedTo ?? []) {
+		params.append('relatedTo', value);
+	}
+	for (const value of filters.relationType ?? []) {
+		params.append('relationType', value);
 	}
 	if (sort) {
 		params.append('sort', sort);
