@@ -16,27 +16,15 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
-		isOverlayKey,
 		isStrategyContainer,
-		type OverlayKey,
 		overlayKey,
+		overlayURL,
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
 	import { overlay, user } from '$lib/stores';
 
 	export let container: AnyContainer | undefined = undefined;
-
-	function overlayURL(url: URL, key: OverlayKey, guid: string) {
-		const hashParams = paramsFromFragment(url);
-
-		const newParams = new URLSearchParams([
-			...Array.from(hashParams.entries()).filter(([k]) => !isOverlayKey(k)),
-			[key, guid]
-		]);
-
-		return `#${newParams.toString()}`;
-	}
 
 	function closeURL(url: URL) {
 		const hashParams = paramsFromFragment(url);
