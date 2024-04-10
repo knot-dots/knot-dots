@@ -4,11 +4,13 @@
 	import Share from '~icons/heroicons/share-20-solid';
 	import Effects from '~icons/knotdots/effects';
 	import Measure from '~icons/knotdots/measure';
+	import Members from '~icons/knotdots/members';
 	import Programs from '~icons/knotdots/programs';
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
-	import { applicationState, user } from '$lib/stores';
+	import { ability, applicationState, user } from '$lib/stores';
+	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models.js';
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
@@ -67,6 +69,29 @@
 		</ul>
 	</div>
 
+	{#if 'container' in $page.data && isOrganizationContainer($page.data.container) && $ability.can('update', $page.data.container)}
+		<a
+			href="/organization/{$page.data.container.guid}/members"
+			class="button button-nav"
+			class:is-active={$page.url.pathname === `/organization/${$page.data.container.guid}/members`}
+		>
+			<span class="small-only"><Members /></span>
+			<span class="large-only">{$_('members')}</span>
+		</a>
+	{:else if 'container' in $page.data && isOrganizationalUnitContainer($page.data.container) && $ability.can('update', $page.data.container)}
+		<a
+			href="/organizational_unit/{$page.data.container.guid}/members"
+			class="button button-nav"
+			class:is-active={$page.url.pathname ===
+				`/organizational_unit/${$page.data.container.guid}/members`}
+		>
+			<span class="small-only"><Members /></span>
+			<span class="large-only">{$_('members')}</span>
+		</a>
+	{:else}
+		<span></span>
+	{/if}
+
 	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
 		{#if $user.isAuthenticated}
 			<li>
@@ -94,6 +119,7 @@
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
+		justify-content: space-between;
 		height: var(--nav-height);
 		padding: 0 1rem;
 		position: absolute;
@@ -112,8 +138,7 @@
 	.main-menu {
 		display: flex;
 		flex-grow: 0;
-		gap: 2rem;
-		margin: 0 auto;
+		gap: 0.5rem;
 		overflow-x: auto;
 	}
 
@@ -137,17 +162,15 @@
 		gap: 0.75rem;
 	}
 
-	@media (min-width: 1024px) {
-		.main-menu {
-			margin: 0 auto 0 calc((100vw - var(--organization-menu-max-width)) * 0.1);
-		}
-	}
-
 	.large-only {
 		display: none;
 	}
 
 	@container (min-inline-size: 50rem) {
+		.main-menu {
+			gap: 2rem;
+		}
+
 		.large-only {
 			display: inherit;
 		}
