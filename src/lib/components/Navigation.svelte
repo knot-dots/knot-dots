@@ -138,8 +138,7 @@
 	.main-menu {
 		display: flex;
 		flex-grow: 0;
-		gap: 2rem;
-		margin: 0 auto;
+		gap: 0.5rem;
 		overflow-x: auto;
 	}
 
@@ -163,17 +162,15 @@
 		gap: 0.75rem;
 	}
 
-	@media (min-width: 1024px) {
-		.main-menu {
-			margin: 0 auto 0 calc((100vw - var(--organization-menu-max-width)) * 0.1);
-		}
-	}
-
 	.large-only {
 		display: none;
 	}
 
 	@container (min-inline-size: 50rem) {
+		.main-menu {
+			gap: 2rem;
+		}
+
 		.large-only {
 			display: inherit;
 		}
