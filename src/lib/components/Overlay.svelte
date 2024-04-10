@@ -9,7 +9,6 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import saveContainer from '$lib/client/saveContainer';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
@@ -52,6 +51,7 @@
 		mayDelete,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
+		paramsFromFragment,
 		payloadTypes,
 		quantities
 	} from '$lib/models';
@@ -85,7 +85,7 @@
 		saveAsIndicatorTemplateDisabled = false;
 	}
 
-	$: hashParams = paramsFromURL($page.url);
+	$: hashParams = paramsFromFragment($page.url);
 	$: edit = hashParams.has(overlayKey.enum.create) || hashParams.has(overlayKey.enum.edit);
 
 	function closeURL() {

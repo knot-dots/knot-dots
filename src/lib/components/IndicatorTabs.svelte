@@ -9,6 +9,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import { paramsFromFragment } from '$lib/models';
 
 	let currentTab: IndicatorTab;
 
@@ -31,7 +32,7 @@
 <ul class="tabs">
 	{#each tab.options as tabOption}
 		<li class="tab-item" class:tab-item--active={tabOption === currentTab}>
-			<a class="badge" href={tabURL(paramsFromURL($page.url), tabOption)}>
+			<a class="badge" href={tabURL(paramsFromFragment($page.url), tabOption)}>
 				{$_(`indicator.tab.${tabOption}`)}
 			</a>
 		</li>

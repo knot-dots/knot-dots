@@ -7,8 +7,7 @@
 	import Search from '~icons/knotdots/search';
 	import Sort from '~icons/knotdots/sort';
 	import { page } from '$app/stores';
-	import paramsFromURL from '$lib/client/paramsFromURL';
-	import { overlayKey } from '$lib/models';
+	import { overlayKey, paramsFromFragment } from '$lib/models';
 
 	export let helpSlug = '';
 
@@ -50,7 +49,7 @@
 	}
 
 	function helpURL(url: URL) {
-		const newParams = new URLSearchParams(paramsFromURL(url));
+		const newParams = paramsFromFragment(url);
 		if (newParams.get(overlayKey.enum['view-help']) === helpSlug) {
 			newParams.delete(overlayKey.enum['view-help']);
 		} else {

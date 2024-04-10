@@ -11,35 +11,23 @@
 	import Tasks from '~icons/knotdots/tasks';
 	import { page } from '$app/stores';
 	import { accountURL } from '$lib/authentication';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import {
 		type AnyContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
-		isOverlayKey,
 		isStrategyContainer,
-		type OverlayKey,
 		overlayKey,
+		overlayURL,
+		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
 	import { overlay, user } from '$lib/stores';
 
 	export let container: AnyContainer | undefined = undefined;
 
-	function overlayURL(url: URL, key: OverlayKey, guid: string) {
-		const hashParams = paramsFromURL(url);
-
-		const newParams = new URLSearchParams([
-			...Array.from(hashParams.entries()).filter(([k]) => !isOverlayKey(k)),
-			[key, guid]
-		]);
-
-		return `#${newParams.toString()}`;
-	}
-
 	function closeURL(url: URL) {
-		const hashParams = paramsFromURL(url);
+		const hashParams = paramsFromFragment(url);
 
 		if (hashParams.has(overlayKey.enum['view-help'])) {
 			const newParams = new URLSearchParams(
@@ -63,7 +51,7 @@
 	{#if container}
 		<a
 			class="button button-nav title"
-			class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid}
+			class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.view) === container.guid}
 			href={overlayURL($page.url, overlayKey.enum.view, container.guid)}
 		>
 			{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
@@ -78,7 +66,7 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromURL($page.url).get(overlayKey.enum.relations) ===
+						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.relations) ===
 							container.guid}
 						href={overlayURL($page.url, overlayKey.enum.relations, container.guid)}
 					>
@@ -105,7 +93,7 @@
 					<li>
 						<a
 							class="button button-nav"
-							class:is-active={paramsFromURL($page.url).get(
+							class:is-active={paramsFromFragment($page.url).get(
 								overlayKey.enum['internal-objectives']
 							) === container.guid}
 							href={overlayURL($page.url, overlayKey.enum['internal-objectives'], container.guid)}
@@ -120,7 +108,7 @@
 					<li>
 						<a
 							class="button button-nav"
-							class:is-active={paramsFromURL($page.url).get(overlayKey.enum.tasks) ===
+							class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.tasks) ===
 								container.guid}
 							href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
 						>
@@ -135,7 +123,7 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromURL($page.url).get(overlayKey.enum.members) ===
+						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===
 							container.guid}
 						href={overlayURL($page.url, overlayKey.enum.members, container.guid)}
 					>
@@ -145,7 +133,7 @@
 				</li>
 			{/if}
 		</ul>
-	{:else if paramsFromURL($page.url).has(overlayKey.enum.profile) && $overlay.organizations && $overlay.organizationalUnits}
+	{:else if paramsFromFragment($page.url).has(overlayKey.enum.profile) && $overlay.organizations && $overlay.organizationalUnits}
 		<a
 			class="button button-nav title"
 			class:is-active={$page.url.hash ===
@@ -160,7 +148,7 @@
 			<li>
 				<a
 					class="button button-nav"
-					class:is-active={paramsFromURL($page.url).has(overlayKey.enum['my-tasks'])}
+					class:is-active={paramsFromFragment($page.url).has(overlayKey.enum['my-tasks'])}
 					href={`${overlayURL($page.url, overlayKey.enum.profile, $user.guid)}&${
 						overlayKey.enum['my-tasks']
 					}`}
@@ -192,10 +180,10 @@
 	{/if}
 
 	{#if $user.isAuthenticated}
-		<a href={closeURL($page.url)}>
+		<a href={overlayURL($page.url, 'profile', $user.guid)}>
 			<span
 				class="avatar avatar-s button button-nav"
-				class:is-active={paramsFromURL($page.url).get(overlayKey.enum.profile) === $user.guid}
+				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.profile) === $user.guid}
 			>
 				{$user.givenName.at(0)}{$user.familyName.at(0)}
 			</span>

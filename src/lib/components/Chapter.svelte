@@ -10,7 +10,6 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -20,6 +19,7 @@
 		isContainerWithObjective,
 		isSimpleMeasureContainer,
 		overlayKey,
+		paramsFromFragment,
 		payloadTypes,
 		predicates,
 		status
@@ -91,7 +91,7 @@
 	}
 
 	function addChapterURL(url: URL, position: number) {
-		const params = paramsFromURL(url);
+		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum.undefined);
 		params.set('is-part-of-strategy', String(isPartOf.revision));
 		params.set('position', String(position));
@@ -99,7 +99,7 @@
 	}
 
 	function viewInOverlayURL(url: URL) {
-		const params = paramsFromURL(url);
+		const params = paramsFromFragment(url);
 		if (params.get(overlayKey.enum.view) === container.guid) {
 			return '#';
 		} else {

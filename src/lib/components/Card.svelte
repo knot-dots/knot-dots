@@ -4,11 +4,16 @@
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { isIndicatorContainer, overlayKey, predicates } from '$lib/models';
+	import {
+		isIndicatorContainer,
+		overlayKey,
+		overlayURL,
+		paramsFromFragment,
+		predicates
+	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay } from '$lib/stores';
 	import {
@@ -28,7 +33,7 @@
 	let overlayContext = getContext('overlay');
 
 	$: relatedTo = overlayContext
-		? paramsFromURL($page.url).get('related-to')
+		? paramsFromFragment($page.url).get('related-to')
 		: $page.url.searchParams.get('related-to');
 
 	$: if ($overlay.object) {
@@ -43,7 +48,7 @@
 
 	async function applyRelationFilter(url: URL) {
 		if (overlayContext) {
-			const params = new URLSearchParams(url.hash.substring(1));
+			const params = paramsFromFragment(url);
 			if (relatedTo === container.guid) {
 				params.delete('related-to');
 			} else {
@@ -64,20 +69,11 @@
 	let containerPreviewURL: string;
 
 	$: {
-		const hashParams = paramsFromURL($page.url);
+		const hashParams = paramsFromFragment($page.url);
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			containerPreviewURL = '#';
 		} else {
-			hashParams.set(overlayKey.enum.view, container.guid);
-			hashParams.delete('create');
-			hashParams.delete('view-help');
-			hashParams.delete('edit-help');
-			hashParams.delete('internal-objectives');
-			hashParams.delete('members');
-			hashParams.delete('profile');
-			hashParams.delete('relations');
-			hashParams.delete('tasks');
-			containerPreviewURL = `#${hashParams.toString()}`;
+			containerPreviewURL = overlayURL($page.url, 'view', container.guid);
 		}
 	}
 
@@ -135,8 +131,8 @@
 		  : undefined}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromURL($page.url).get(overlayKey.enum.view) === container.guid ||
-		paramsFromURL($page.url).get(overlayKey.enum.relate) === container.guid}
+	class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.view) === container.guid ||
+		paramsFromFragment($page.url).get(overlayKey.enum.relate) === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	on:click={handleClick}

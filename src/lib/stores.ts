@@ -18,6 +18,7 @@ import {
 	isIndicatorContainer,
 	isStrategyContainer,
 	overlayKey,
+	paramsFromFragment,
 	payloadTypes,
 	status,
 	taskStatus
@@ -146,7 +147,11 @@ export const overlay = writable<Overlay>({
 
 if (browser) {
 	page.subscribe(async (values) => {
-		const hashParams = new URLSearchParams(values.url?.hash.substring(1) ?? '');
+		if (!values.url) {
+			return;
+		}
+
+		const hashParams = paramsFromFragment(values.url);
 
 		if (hashParams.has(overlayKey.enum.create)) {
 			const isPartOfOptions = await fetchIsPartOfOptions(
@@ -160,7 +165,7 @@ if (browser) {
 				env.PUBLIC_KC_REALM
 			);
 			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {
-				newContainer.payload.level = parseInt(paramsFromURL(values.url).get('level') ?? '1');
+				newContainer.payload.level = parseInt(hashParams.get('level') ?? '1');
 			} else if (newContainer.payload.type == payloadTypes.enum.measure) {
 				newContainer.payload.status =
 					(hashParams.get('status') as Status) ?? status.enum['status.idea'];

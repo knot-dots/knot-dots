@@ -1367,3 +1367,18 @@ export function findAncestors<T extends AnyContainer>(container: T, containers: 
 
 	return [parent, ...findAncestors(parent, containers)];
 }
+
+export function paramsFromFragment(url: URL) {
+	return new URLSearchParams(url.hash.substring(1) ?? '');
+}
+
+export function overlayURL(url: URL, key: OverlayKey, guid: string) {
+	const hashParams = paramsFromFragment(url);
+
+	const newParams = new URLSearchParams([
+		...Array.from(hashParams.entries()).filter(([k]) => !isOverlayKey(k)),
+		[key, guid]
+	]);
+
+	return `#${newParams.toString()}`;
+}
