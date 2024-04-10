@@ -7,7 +7,13 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
-	import { isIndicatorContainer, overlayKey, paramsFromFragment, predicates } from '$lib/models';
+	import {
+		isIndicatorContainer,
+		overlayKey,
+		overlayURL,
+		paramsFromFragment,
+		predicates
+	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay } from '$lib/stores';
 	import {
@@ -67,16 +73,7 @@
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			containerPreviewURL = '#';
 		} else {
-			hashParams.set(overlayKey.enum.view, container.guid);
-			hashParams.delete('create');
-			hashParams.delete('view-help');
-			hashParams.delete('edit-help');
-			hashParams.delete('internal-objectives');
-			hashParams.delete('members');
-			hashParams.delete('profile');
-			hashParams.delete('relations');
-			hashParams.delete('tasks');
-			containerPreviewURL = `#${hashParams.toString()}`;
+			containerPreviewURL = overlayURL($page.url, 'view', container.guid);
 		}
 	}
 
