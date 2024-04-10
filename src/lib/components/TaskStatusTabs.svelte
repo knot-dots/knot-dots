@@ -3,7 +3,7 @@
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import { taskStatus } from '$lib/models';
+	import { paramsFromFragment, taskStatus } from '$lib/models';
 	import type { AnyContainer, TaskContainer, TaskStatus } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 
@@ -40,7 +40,7 @@
 			{#if taskStatus.options.findIndex((o) => statusOption === o) <= taskStatus.options.findIndex((o) => container.payload.taskStatus === o)}
 				<a
 					class="badge badge--{taskStatusColors.get(statusOption)}"
-					href={tabURL(paramsFromURL($page.url), statusOption)}
+					href={tabURL(paramsFromFragment($page.url), statusOption)}
 				>
 					<svelte:component this={taskStatusIcons.get(statusOption) ?? LightBulb} />
 					{$_(statusOption)}

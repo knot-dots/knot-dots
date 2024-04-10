@@ -1367,3 +1367,7 @@ export function findAncestors<T extends AnyContainer>(container: T, containers: 
 
 	return [parent, ...findAncestors(parent, containers)];
 }
+
+export function paramsFromFragment(url: URL) {
+	return new URLSearchParams(url.hash.substring(1) ?? '');
+}

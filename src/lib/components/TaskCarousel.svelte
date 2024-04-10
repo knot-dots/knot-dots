@@ -2,9 +2,8 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Card from '$lib/components/Card.svelte';
-	import { payloadTypes } from '$lib/models';
+	import { paramsFromFragment, payloadTypes } from '$lib/models';
 	import type { Container, TaskContainer } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
@@ -15,7 +14,7 @@
 	>;
 
 	function addTaskURL(url: URL) {
-		const params = paramsFromURL(url);
+		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum['internal_objective.task']);
 		params.set('implements', String(container.revision));
 		return `#${params.toString()}`;

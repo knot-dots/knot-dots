@@ -4,9 +4,8 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Chapter from '$lib/components/Chapter.svelte';
-	import { containerOfType, owners, payloadTypes } from '$lib/models';
+	import { containerOfType, owners, paramsFromFragment, payloadTypes } from '$lib/models';
 	import type { AnyContainer, Container, PayloadType, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
@@ -16,14 +15,14 @@
 	export let revisions: AnyContainer[];
 
 	function addChapterURL(url: URL, strategyRevision: number) {
-		const params = paramsFromURL(url);
+		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum.undefined);
 		params.set('is-part-of-strategy', String(strategyRevision));
 		return `#${params.toString()}`;
 	}
 
 	function byPayloadType(payloadType: PayloadType, url: URL) {
-		const params = paramsFromURL(url);
+		const params = paramsFromFragment(url);
 		return !params.has('payloadType') || params.getAll('payloadType').includes(payloadType);
 	}
 </script>

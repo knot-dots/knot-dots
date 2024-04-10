@@ -4,7 +4,6 @@
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
 	import { page } from '$app/stores';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -15,7 +14,8 @@
 		isTaskContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
-		overlayKey
+		overlayKey,
+		paramsFromFragment
 	} from '$lib/models';
 	import { overlayWidth, user } from '$lib/stores';
 
@@ -83,7 +83,7 @@
 	</aside>
 
 	<div class="content-details masked-overflow">
-		{#if paramsFromURL($page.url).has(overlayKey.enum['my-tasks']) && tasks}
+		{#if paramsFromFragment($page.url).has(overlayKey.enum['my-tasks']) && tasks}
 			<Tasks containers={tasks} />
 		{:else}
 			<ProfileView containers={relatedContainers} {organizations} {organizationalUnits} />

@@ -4,7 +4,6 @@
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
@@ -18,11 +17,12 @@
 		isStrategyContainer,
 		overlayKey,
 		owners,
+		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
@@ -40,7 +40,7 @@
 		if (isPage) {
 			return `/${type}/${guid}`;
 		} else {
-			const query = paramsFromURL($page.url);
+			const query = paramsFromFragment($page.url);
 			query.set(overlayKey.enum.view, guid);
 			return `#${query.toString()}`;
 		}
