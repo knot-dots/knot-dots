@@ -180,7 +180,7 @@
 	{/if}
 
 	{#if $user.isAuthenticated}
-		<a href={closeURL($page.url)}>
+		<a href={overlayURL($page.url, 'profile', $user.guid)}>
 			<span
 				class="avatar avatar-s button button-nav"
 				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.profile) === $user.guid}
