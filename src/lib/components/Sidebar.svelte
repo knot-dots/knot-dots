@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import DocumentText from '~icons/heroicons/document-text-20-solid';
 	import Filter from '~icons/knotdots/filter';
 	import Help from '~icons/knotdots/help';
+	import Info from '~icons/knotdots/info';
 	import Search from '~icons/knotdots/search';
 	import Sort from '~icons/knotdots/sort';
 	import Workspaces from '~icons/knotdots/workspaces';
 	import { page } from '$app/stores';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
+	import SidebarTab from '$lib/components/SidebarTab.svelte';
 
 	export let helpSlug = '';
 
@@ -184,10 +187,11 @@
 		</li>
 	{/if}
 
-	{#if $$slots.extra}
-		<li class="separator"></li>
-		<slot name="extra" />
-	{/if}
+	<li class="separator"></li>
+	<slot name="extra">
+		<SidebarTab href="/about" iconSource={Info} text={$_('about')} />
+		<SidebarTab href="/imprint" iconSource={DocumentText} text={$_('imprint')} />
+	</slot>
 </ul>
 
 <style>
