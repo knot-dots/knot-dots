@@ -138,7 +138,7 @@
 		aria-expanded={showDropDown}
 		aria-label={showDropDown ? $_('close_organization_menu') : $_('open_organization_menu')}
 	>
-		<span><Organization /></span>
+		<span title={$_('organizations_and_organizational_units')}><Organization /></span>
 		{#if showDropDown}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
