@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Pencil from '~icons/heroicons/pencil-solid';
 	import Card from '$lib/components/Card.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
 	export let indicators: Container[];
@@ -16,6 +18,15 @@
 			<img alt="logo" class="logo" src={container.payload.image} />
 		{/if}
 		{container.payload.name}
+		{#if $ability.can('update', container)}
+			<a
+				href="{container.guid}/edit"
+				class="button button-square quiet"
+				data-sveltekit-replacestate
+			>
+				<Pencil />
+			</a>
+		{/if}
 	</h2>
 
 	<slot name="data">

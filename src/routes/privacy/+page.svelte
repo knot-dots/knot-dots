@@ -21,21 +21,19 @@
 			<SidebarTab href="/imprint" iconSource={DocumentText} text={$_('imprint')} />
 			<SidebarTab href="/privacy" iconSource={Eye} text={$_('privacy')} />
 		</svelte:fragment>
-		<svelte:fragment slot="extra">
-			{#if $ability.can('update', data.container)}
-				<li>
-					<a href="/page/{data.container.guid}/edit" class="button button-nav button-square">
-						<Pencil />
-					</a>
-				</li>
-			{/if}
-		</svelte:fragment>
 	</Sidebar>
 
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<header class="content-header">
-				<h2>{data.container.payload.title}</h2>
+				<h2>
+					{data.container.payload.title}
+					{#if $ability.can('update', data.container)}
+						<a href="/page/{data.container.guid}/edit" class="button button-square quiet">
+							<Pencil />
+						</a>
+					{/if}
+				</h2>
 			</header>
 			<div class="content-details masked-overflow">
 				<PageDetailView container={data.container} />

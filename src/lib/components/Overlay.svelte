@@ -234,6 +234,15 @@
 	{:else if isPageContainer(container) && hashParams.has(overlayKey.enum['view-help'])}
 		<aside>
 			<Sidebar>
+				<svelte:fragment slot="tabs">
+					{#if $ability.can('update', container)}
+						<li>
+							<a class="button button-nav button-square" href={editHelpURL()}>
+								<Pencil />
+							</a>
+						</li>
+					{/if}
+				</svelte:fragment>
 				<svelte:fragment slot="extra">
 					<li>
 						<button
@@ -244,13 +253,6 @@
 							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
-					{#if $ability.can('update', container)}
-						<li>
-							<a class="button button-nav button-square" href={editHelpURL()}>
-								<Pencil />
-							</a>
-						</li>
-					{/if}
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
@@ -420,13 +422,6 @@
 									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 								</button>
 							</li>
-							{#if $ability.can('update', container)}
-								<li>
-									<a class="button button-nav button-square" href="#view={container.guid}&edit">
-										<Pencil />
-									</a>
-								</li>
-							{/if}
 						</svelte:fragment>
 					</Sidebar>
 				{:else}
@@ -442,13 +437,6 @@
 									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 								</button>
 							</li>
-							{#if $ability.can('update', container)}
-								<li>
-									<a class="button button-nav button-square" href="#view={container.guid}&edit">
-										<Pencil />
-									</a>
-								</li>
-							{/if}
 						</svelte:fragment>
 					</Sidebar>
 				{/if}

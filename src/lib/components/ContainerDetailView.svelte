@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
+	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
@@ -22,7 +23,7 @@
 	} from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
@@ -64,6 +65,11 @@
 			{container.payload.name}
 		{:else}
 			{container.payload.title}
+		{/if}
+		{#if $ability.can('update', container)}
+			<a class="button button-square quiet" href="#view={container.guid}&edit">
+				<Pencil />
+			</a>
 		{/if}
 	</h2>
 

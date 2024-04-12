@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
+	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import { tab } from './IndicatorTabs.svelte';
@@ -10,9 +11,6 @@
 	import {
 		isContainerWithObjective,
 		isMeasureContainer,
-		isModelContainer,
-		isOperationalGoalContainer,
-		isStrategicGoalContainer,
 		isStrategyContainer,
 		owners
 	} from '$lib/models';
@@ -22,7 +20,7 @@
 		ContainerWithObjective,
 		IndicatorContainer
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: IndicatorContainer;
@@ -62,7 +60,14 @@
 </script>
 
 <article class="details">
-	<h2 class="details-title">{container.payload.title}</h2>
+	<h2 class="details-title">
+		{container.payload.title}
+		{#if $ability.can('update', container)}
+			<a class="button button-square quiet" href="#view={container.guid}&edit">
+				<Pencil />
+			</a>
+		{/if}
+	</h2>
 
 	<div class="details-tab" id="basic-data">
 		<div class="intro">
