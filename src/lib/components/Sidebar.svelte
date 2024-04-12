@@ -108,6 +108,7 @@
 				on:mouseenter={() => clearTimeout(timer)}
 				on:mouseleave={() => collapseItemDelayed('environments')}
 			>
+				<span class="button button-nav is-active">{$_('environments')}</span>
 				<ul class="environments">
 					<slot name="environments" />
 				</ul>
@@ -225,21 +226,6 @@
 		gap: 0.25rem;
 		max-height: calc(100vh - var(--nav-height) * 2 - 1.5rem);
 		padding: 0.25rem;
-	}
-
-	.expandable > ul.environments {
-		background: transparent;
-		border: none;
-		box-shadow: none;
-		padding: 0;
-		gap: 0.5rem;
-	}
-
-	.environments :global(a) {
-		--button-background: white;
-
-		height: 2.5rem;
-		width: 100%;
 	}
 
 	[aria-expanded='true'] + .expandable {

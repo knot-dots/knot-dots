@@ -1,19 +1,28 @@
 <script>
-	import { page } from '$app/stores';
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 </script>
 
 <li>
-	<a
-		class="button button-nav"
-		class:is-active={$page.url.pathname === '/implementation'}
-		href="/implementation"
-	>
+	<label>
+		<input
+			type="radio"
+			name="environments"
+			checked={$page.url.pathname === '/implementation'}
+			on:click={async () => await goto('/implementation')}
+		/>
 		{$_('measures')}
-	</a>
+	</label>
 </li>
 <li>
-	<a class="button button-nav" class:is-active={$page.url.pathname === '/tasks'} href="/tasks">
+	<label>
+		<input
+			type="radio"
+			name="environments"
+			checked={$page.url.pathname === '/tasks'}
+			on:click={async () => await goto('/tasks')}
+		/>
 		{$_('tasks')}
-	</a>
+	</label>
 </li>
