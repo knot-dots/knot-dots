@@ -44,7 +44,6 @@
 		isContainerWithEffect,
 		isIndicatorContainer,
 		isInternalObjectiveContainer,
-		isOrganizationalUnitContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -471,8 +470,6 @@
 				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
 			{:else if isStrategyContainer(container)}
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
-			{:else if isOrganizationalUnitContainer(container)}
-				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}
