@@ -10,12 +10,12 @@
 	"audience.public": "Gesellschaft",
 	"basic_data": "Allgemeine Angaben",
 	"board": {
-		"elements": "Elemente",
-		"indicators": "Wirkung",
+		"elements": "dots",
+		"indicators": "messen",
 		"internal_objectives":  "Interne Ziele",
-		"implementation": "Umsetzung",
+		"implementation": "umsetzen",
 		"organizational_units":  "Organisations-Ebenen",
-		"programs": "Programme",
+		"programs": "planen",
 		"tasks": "Aufgaben"
 	},
 	"boards": "Boards",
