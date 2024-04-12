@@ -75,8 +75,7 @@
 			class:is-active={$page.url.pathname ===
 				`/organization/${$page.data.currentOrganizationalUnit.guid}/members`}
 		>
-			<span class="small-only"><Members /></span>
-			<span class="large-only">{$_('members')}</span>
+			<Members />
 		</a>
 	{:else if !$page.data.currentOrganization.payload.default && $ability.can('update', $page.data.currentOrganization)}
 		<a
@@ -86,8 +85,7 @@
 				`/organizational_unit/${$page.data.currentOrganization.guid}/members`}
 			title={$_('members')}
 		>
-			<span class="small-only"><Members /></span>
-			<span class="large-only">{$_('members')}</span>
+			<Members />
 		</a>
 	{:else}
 		<span></span>
