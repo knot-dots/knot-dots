@@ -441,5 +441,6 @@
 		"label": "Sichtbarkeit",
 		"members": "Alle Mitglieder",
 		"public": "Gesamte Öffentlichkeit"
-	}
+	},
+	"workspaces": "Arbeitsbereiche"
 }

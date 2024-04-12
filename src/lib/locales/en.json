@@ -440,5 +440,6 @@
 		"label": "Visibility",
 		"members": "Members only",
 		"public": "Public"
-	}
+	},
+	"workspaces": "Workspaces"
 }
