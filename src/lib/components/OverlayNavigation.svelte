@@ -44,23 +44,37 @@
 </script>
 
 <nav>
-	<a class="button button-nav button-square" href={closeURL($page.url)}>
-		<XMark />
-	</a>
-
-	{#if container}
-		<a
-			class="button button-nav title"
-			class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.view) === container.guid}
-			href={overlayURL($page.url, overlayKey.enum.view, container.guid)}
-		>
-			{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-				{container.payload.name}
-			{:else}
-				{container.payload.title}
-			{/if}
+	<div>
+		<a class="button button-nav button-square" href={closeURL($page.url)}>
+			<XMark />
 		</a>
 
+		{#if container}
+			<a
+				class="button button-nav title"
+				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.view) === container.guid}
+				href={overlayURL($page.url, overlayKey.enum.view, container.guid)}
+			>
+				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
+					{container.payload.name}
+				{:else}
+					{container.payload.title}
+				{/if}
+			</a>
+		{:else if paramsFromFragment($page.url).has(overlayKey.enum.profile) && $overlay.organizations && $overlay.organizationalUnits}
+			<a
+				class="button button-nav title"
+				class:is-active={$page.url.hash ===
+					overlayURL($page.url, overlayKey.enum.profile, $user.guid)}
+				href={overlayURL($page.url, overlayKey.enum.profile, $user.guid)}
+			>
+				{$user.givenName}
+				{$user.familyName}
+			</a>
+		{/if}
+	</div>
+
+	{#if container}
 		<ul class="button-group button-group-nav">
 			{#if !(isOrganizationalUnitContainer(container) || isOrganizationContainer(container)) && container.relation.length > 0}
 				<li>
@@ -118,32 +132,20 @@
 					</li>
 				{/if}
 			{/if}
-
-			{#if isMeasureContainer(container) || isStrategyContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-				<li>
-					<a
-						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===
-							container.guid}
-						href={overlayURL($page.url, overlayKey.enum.members, container.guid)}
-					>
-						<span class="small-only"><Members /></span>
-						<span class="large-only">{$_('members')}</span>
-					</a>
-				</li>
-			{/if}
 		</ul>
-	{:else if paramsFromFragment($page.url).has(overlayKey.enum.profile) && $overlay.organizations && $overlay.organizationalUnits}
-		<a
-			class="button button-nav title"
-			class:is-active={$page.url.hash ===
-				overlayURL($page.url, overlayKey.enum.profile, $user.guid)}
-			href={overlayURL($page.url, overlayKey.enum.profile, $user.guid)}
-		>
-			{$user.givenName}
-			{$user.familyName}
-		</a>
 
+		{#if isMeasureContainer(container) || isStrategyContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+			<a
+				class="button button-nav"
+				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===
+					container.guid}
+				href={overlayURL($page.url, overlayKey.enum.members, container.guid)}
+				title={$_('members')}
+			>
+				<Members />
+			</a>
+		{/if}
+	{:else if paramsFromFragment($page.url).has(overlayKey.enum.profile) && $overlay.organizations && $overlay.organizationalUnits}
 		<ul class="button-group button-group-nav">
 			<li>
 				<a
@@ -204,6 +206,7 @@
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		height: var(--nav-height);
+		justify-content: space-between;
 		padding: 0 0.5rem;
 	}
 
@@ -211,18 +214,26 @@
 		flex-shrink: 0;
 	}
 
-	nav > .title {
+	nav > div {
+		display: flex;
+		gap: 0.5rem;
+		max-width: calc(25% + 3.5rem);
+	}
+
+	.button.button-nav.title {
 		display: inline-block;
 		flex-shrink: 1;
-		max-width: 25%;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
+	.button.button-nav {
+		flex-shrink: 0;
+	}
+
 	.button-group {
 		flex-shrink: 1;
-		margin: 0 auto;
 		overflow-x: auto;
 	}
 

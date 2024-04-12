@@ -10,7 +10,6 @@
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import { boards } from '$lib/models';
 	import { ability, applicationState, user } from '$lib/stores';
-	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models.js';
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
@@ -69,24 +68,24 @@
 		</ul>
 	</div>
 
-	{#if 'container' in $page.data && isOrganizationContainer($page.data.container) && $ability.can('update', $page.data.container)}
+	{#if $page.data.currentOrganizationalUnit && $ability.can('update', $page.data.currentOrganizationalUnit)}
 		<a
-			href="/organization/{$page.data.container.guid}/members"
-			class="button button-nav"
-			class:is-active={$page.url.pathname === `/organization/${$page.data.container.guid}/members`}
-		>
-			<span class="small-only"><Members /></span>
-			<span class="large-only">{$_('members')}</span>
-		</a>
-	{:else if 'container' in $page.data && isOrganizationalUnitContainer($page.data.container) && $ability.can('update', $page.data.container)}
-		<a
-			href="/organizational_unit/{$page.data.container.guid}/members"
+			href="/organization/{$page.data.currentOrganizationalUnit.guid}/members"
 			class="button button-nav"
 			class:is-active={$page.url.pathname ===
-				`/organizational_unit/${$page.data.container.guid}/members`}
+				`/organization/${$page.data.currentOrganizationalUnit.guid}/members`}
 		>
-			<span class="small-only"><Members /></span>
-			<span class="large-only">{$_('members')}</span>
+			<Members />
+		</a>
+	{:else if !$page.data.currentOrganization.payload.default && $ability.can('update', $page.data.currentOrganization)}
+		<a
+			href="/organizational_unit/{$page.data.currentOrganization.guid}/members"
+			class="button button-nav"
+			class:is-active={$page.url.pathname ===
+				`/organizational_unit/${$page.data.currentOrganization.guid}/members`}
+			title={$_('members')}
+		>
+			<Members />
 		</a>
 	{:else}
 		<span></span>
@@ -142,7 +141,7 @@
 		overflow-x: auto;
 	}
 
-	.main-menu > a {
+	.button.button-nav {
 		flex-shrink: 0;
 	}
 

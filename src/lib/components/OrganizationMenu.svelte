@@ -138,7 +138,7 @@
 		aria-expanded={showDropDown}
 		aria-label={showDropDown ? $_('close_organization_menu') : $_('open_organization_menu')}
 	>
-		<span><Organization /></span>
+		<span title={$_('organizations_and_organizational_units')}><Organization /></span>
 		{#if showDropDown}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
@@ -224,13 +224,13 @@
 		display: flex;
 		flex-shrink: 0;
 		gap: 1.5rem;
-		max-width: var(--organization-menu-max-width);
 	}
 
 	.organization-menu > a {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;
+		max-width: var(--organization-menu-max-width);
 	}
 
 	.organization-menu > a > :global(svg) {
