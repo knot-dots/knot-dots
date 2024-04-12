@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import Environments from '~icons/knotdots/environments';
 	import Filter from '~icons/knotdots/filter';
 	import Help from '~icons/knotdots/help';
 	import Search from '~icons/knotdots/search';
 	import Sort from '~icons/knotdots/sort';
+	import Workspaces from '~icons/knotdots/workspaces';
 	import { page } from '$app/stores';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
 
 	export let helpSlug = '';
 
-	type Item = 'environments' | 'filters' | 'search' | 'sort' | null;
+	type Item = 'workspaces' | 'filters' | 'search' | 'sort' | null;
 
 	let expandedItem: Item = null;
 	let lockedItem: Item = null;
@@ -87,30 +87,30 @@
 		</li>
 	{/if}
 
-	{#if $$slots.environments}
+	{#if $$slots.workspaces}
 		<li>
 			<button
 				class="button-nav button-square"
-				class:is-active={expandedItem === 'environments'}
-				on:click={() => lockItem('environments')}
-				on:mouseenter={() => expandItem('environments')}
-				on:mouseleave={() => collapseItemDelayed('environments')}
-				title={$_('environments')}
-				aria-controls="environments"
-				aria-expanded={expandedItem === 'environments'}
+				class:is-active={expandedItem === 'workspaces'}
+				on:click={() => lockItem('workspaces')}
+				on:mouseenter={() => expandItem('workspaces')}
+				on:mouseleave={() => collapseItemDelayed('workspaces')}
+				title={$_('workspaces')}
+				aria-controls="workspaces"
+				aria-expanded={expandedItem === 'workspaces'}
 			>
-				<Environments />
+				<Workspaces />
 			</button>
 			<!--svelte-ignore a11y-no-static-element-interactions -->
 			<div
 				class="expandable"
-				id="environments"
+				id="workspaces"
 				on:mouseenter={() => clearTimeout(timer)}
-				on:mouseleave={() => collapseItemDelayed('environments')}
+				on:mouseleave={() => collapseItemDelayed('workspaces')}
 			>
-				<span class="button button-nav is-active">{$_('environments')}</span>
-				<ul class="environments">
-					<slot name="environments" />
+				<span class="button button-nav is-active">{$_('workspaces')}</span>
+				<ul class="workspaces">
+					<slot name="workspaces" />
 				</ul>
 			</div>
 		</li>

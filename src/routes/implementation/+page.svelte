@@ -6,7 +6,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
-	import ImplementationEnvironments from '$lib/components/ImplementationEnvironments.svelte';
+	import ImplementationWorkspaces from '$lib/components/ImplementationWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
@@ -30,7 +30,7 @@
 			<Sidebar helpSlug="measures">
 				<Search slot="search" />
 
-				<ImplementationEnvironments slot="environments" />
+				<ImplementationWorkspaces slot="workspaces" />
 
 				<svelte:fragment slot="filters">
 					{#if $page.url.searchParams.has('related-to')}

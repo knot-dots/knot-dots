@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Board from '$lib/components/Board.svelte';
-	import ImplementationEnvironments from '$lib/components/ImplementationEnvironments.svelte';
+	import ImplementationWorkspaces from '$lib/components/ImplementationWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -52,7 +52,7 @@
 	<Sidebar helpSlug="tasks" slot="sidebar">
 		<Search slot="search" />
 
-		<ImplementationEnvironments slot="environments" />
+		<ImplementationWorkspaces slot="workspaces" />
 
 		<svelte:fragment slot="filters">
 			<TaskIncludedFilter />
