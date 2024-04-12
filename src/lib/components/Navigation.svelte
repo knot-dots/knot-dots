@@ -141,7 +141,7 @@
 		overflow-x: auto;
 	}
 
-	.main-menu > a {
+	.button.button-nav {
 		flex-shrink: 0;
 	}
 
