@@ -9,8 +9,8 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
+		isContainerWithEffect,
 		isContainerWithObjective,
-		isMeasureContainer,
 		isStrategyContainer,
 		owners
 	} from '$lib/models';
@@ -94,7 +94,7 @@
 			<div class="measures">
 				<h3>{$_('measures')}</h3>
 				<ul class="carousel">
-					{#each relatedContainers.filter((c) => isMeasureContainer(c)) as measure}
+					{#each relatedContainers.filter((c) => isContainerWithEffect(c)) as measure}
 						<li>
 							<Card --height="100%" container={measure} />
 						</li>
