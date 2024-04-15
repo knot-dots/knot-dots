@@ -64,7 +64,7 @@
 
 <ul class="sidebar-items">
 	{#if $$slots.workspaces}
-		<li>
+		<li class="sidebar-items-workspaces">
 			<button
 				class="button-nav button-square"
 				class:is-active={expandedItem === 'workspaces'}
@@ -181,7 +181,7 @@
 	<slot name="tabs" />
 
 	{#if helpSlug}
-		<li>
+		<li class="sidebar-items-help">
 			<a class="button button-nav button-square" href={helpURL($page.url)} title={$_('help')}>
 				<Help />
 			</a>
@@ -202,6 +202,14 @@
 		gap: 0.5rem;
 		height: 100%;
 		position: relative;
+	}
+
+	.sidebar-items-workspaces {
+		margin-bottom: 2.5rem;
+	}
+
+	.sidebar-items-help {
+		margin-top: 2.5rem;
 	}
 
 	.separator {
