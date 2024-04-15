@@ -28,10 +28,10 @@
 		<Search slot="search" />
 
 		<svelte:fragment slot="filters">
-			<AudienceFilter />
 			{#if $page.url.searchParams.has('related-to')}
 				<RelationTypeFilter />
 			{/if}
+			<AudienceFilter />
 			<CategoryFilter />
 			<TopicFilter />
 			<StrategyTypeFilter />

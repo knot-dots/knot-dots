@@ -337,8 +337,8 @@
 			<Sidebar helpSlug="relations">
 				<Search slot="search" />
 				<svelte:fragment slot="filters">
-					<AudienceFilter />
 					<RelationTypeFilter />
+					<AudienceFilter />
 					<CategoryFilter />
 					<TopicFilter />
 					<StrategyTypeFilter />
