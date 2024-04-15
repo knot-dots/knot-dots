@@ -1,10 +1,8 @@
 <script lang="ts">
-	import Pencil from '~icons/heroicons/pencil';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationDetailView from '$lib/components/OrganizationDetailView.svelte';
 	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -13,19 +11,6 @@
 <Layout>
 	<Sidebar helpSlug="organization-view" slot="sidebar">
 		<OrganizationTabs container={data.container} slot="tabs" />
-		<svelte:fragment slot="extra">
-			{#if $ability.can('update', data.container)}
-				<li>
-					<a
-						href="{data.container.guid}/edit"
-						class="button button-nav button-square"
-						data-sveltekit-replacestate
-					>
-						<Pencil />
-					</a>
-				</li>
-			{/if}
-		</svelte:fragment>
 	</Sidebar>
 
 	<svelte:fragment slot="main">

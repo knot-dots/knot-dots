@@ -44,7 +44,6 @@
 		isContainerWithEffect,
 		isIndicatorContainer,
 		isInternalObjectiveContainer,
-		isOrganizationalUnitContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -234,6 +233,15 @@
 	{:else if isPageContainer(container) && hashParams.has(overlayKey.enum['view-help'])}
 		<aside>
 			<Sidebar>
+				<svelte:fragment slot="tabs">
+					{#if $ability.can('update', container)}
+						<li>
+							<a class="button button-nav button-square" href={editHelpURL()}>
+								<Pencil />
+							</a>
+						</li>
+					{/if}
+				</svelte:fragment>
 				<svelte:fragment slot="extra">
 					<li>
 						<button
@@ -244,13 +252,6 @@
 							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 						</button>
 					</li>
-					{#if $ability.can('update', container)}
-						<li>
-							<a class="button button-nav button-square" href={editHelpURL()}>
-								<Pencil />
-							</a>
-						</li>
-					{/if}
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
@@ -336,11 +337,11 @@
 			<Sidebar helpSlug="relations">
 				<Search slot="search" />
 				<svelte:fragment slot="filters">
-					<AudienceFilter />
 					<RelationTypeFilter />
-					<StrategyTypeFilter />
-					<TopicFilter />
+					<AudienceFilter />
 					<CategoryFilter />
+					<TopicFilter />
+					<StrategyTypeFilter />
 				</svelte:fragment>
 				<Sort slot="sort" />
 				<svelte:fragment slot="extra">
@@ -420,13 +421,6 @@
 									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 								</button>
 							</li>
-							{#if $ability.can('update', container)}
-								<li>
-									<a class="button button-nav button-square" href="#view={container.guid}&edit">
-										<Pencil />
-									</a>
-								</li>
-							{/if}
 						</svelte:fragment>
 					</Sidebar>
 				{:else}
@@ -442,13 +436,6 @@
 									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
 								</button>
 							</li>
-							{#if $ability.can('update', container)}
-								<li>
-									<a class="button button-nav button-square" href="#view={container.guid}&edit">
-										<Pencil />
-									</a>
-								</li>
-							{/if}
 						</svelte:fragment>
 					</Sidebar>
 				{/if}
@@ -483,8 +470,6 @@
 				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
 			{:else if isStrategyContainer(container)}
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
-			{:else if isOrganizationalUnitContainer(container)}
-				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}

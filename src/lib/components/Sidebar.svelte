@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import Environments from '~icons/knotdots/environments';
+	import DocumentText from '~icons/heroicons/document-text-20-solid';
 	import Filter from '~icons/knotdots/filter';
 	import Help from '~icons/knotdots/help';
+	import Info from '~icons/knotdots/info';
 	import Search from '~icons/knotdots/search';
 	import Sort from '~icons/knotdots/sort';
+	import Workspaces from '~icons/knotdots/workspaces';
 	import { page } from '$app/stores';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
+	import SidebarTab from '$lib/components/SidebarTab.svelte';
 
 	export let helpSlug = '';
 
-	type Item = 'environments' | 'filters' | 'search' | 'sort' | null;
+	type Item = 'workspaces' | 'filters' | 'search' | 'sort' | null;
 
 	let expandedItem: Item = null;
 	let lockedItem: Item = null;
@@ -60,6 +63,35 @@
 </script>
 
 <ul class="sidebar-items">
+	{#if $$slots.workspaces}
+		<li class="sidebar-items-workspaces">
+			<button
+				class="button-nav button-square"
+				class:is-active={expandedItem === 'workspaces'}
+				on:click={() => lockItem('workspaces')}
+				on:mouseenter={() => expandItem('workspaces')}
+				on:mouseleave={() => collapseItemDelayed('workspaces')}
+				title={$_('workspaces')}
+				aria-controls="workspaces"
+				aria-expanded={expandedItem === 'workspaces'}
+			>
+				<Workspaces />
+			</button>
+			<!--svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class="expandable"
+				id="workspaces"
+				on:mouseenter={() => clearTimeout(timer)}
+				on:mouseleave={() => collapseItemDelayed('workspaces')}
+			>
+				<span class="button button-nav is-active">{$_('workspaces')}</span>
+				<ul class="workspaces">
+					<slot name="workspaces" />
+				</ul>
+			</div>
+		</li>
+	{/if}
+
 	{#if $$slots.search}
 		<li>
 			<button
@@ -82,35 +114,8 @@
 				on:mouseenter={() => clearTimeout(timer)}
 				on:mouseleave={() => collapseItemDelayed('search')}
 			>
+				<span class="button button-nav is-active">{$_('search')}</span>
 				<slot name="search" />
-			</div>
-		</li>
-	{/if}
-
-	{#if $$slots.environments}
-		<li>
-			<button
-				class="button-nav button-square"
-				class:is-active={expandedItem === 'environments'}
-				on:click={() => lockItem('environments')}
-				on:mouseenter={() => expandItem('environments')}
-				on:mouseleave={() => collapseItemDelayed('environments')}
-				title={$_('environments')}
-				aria-controls="environments"
-				aria-expanded={expandedItem === 'environments'}
-			>
-				<Environments />
-			</button>
-			<!--svelte-ignore a11y-no-static-element-interactions -->
-			<div
-				class="expandable"
-				id="environments"
-				on:mouseenter={() => clearTimeout(timer)}
-				on:mouseleave={() => collapseItemDelayed('environments')}
-			>
-				<ul class="environments">
-					<slot name="environments" />
-				</ul>
 			</div>
 		</li>
 	{/if}
@@ -176,17 +181,18 @@
 	<slot name="tabs" />
 
 	{#if helpSlug}
-		<li>
+		<li class="sidebar-items-help">
 			<a class="button button-nav button-square" href={helpURL($page.url)} title={$_('help')}>
 				<Help />
 			</a>
 		</li>
 	{/if}
 
-	{#if $$slots.extra}
-		<li class="separator"></li>
-		<slot name="extra" />
-	{/if}
+	<li class="separator"></li>
+	<slot name="extra">
+		<SidebarTab href="/about" iconSource={Info} text={$_('about')} />
+		<SidebarTab href="/imprint" iconSource={DocumentText} text={$_('imprint')} />
+	</slot>
 </ul>
 
 <style>
@@ -196,6 +202,14 @@
 		gap: 0.5rem;
 		height: 100%;
 		position: relative;
+	}
+
+	.sidebar-items-workspaces {
+		margin-bottom: 2.5rem;
+	}
+
+	.sidebar-items-help {
+		margin-top: 2.5rem;
 	}
 
 	.separator {
@@ -225,21 +239,6 @@
 		gap: 0.25rem;
 		max-height: calc(100vh - var(--nav-height) * 2 - 1.5rem);
 		padding: 0.25rem;
-	}
-
-	.expandable > ul.environments {
-		background: transparent;
-		border: none;
-		box-shadow: none;
-		padding: 0;
-		gap: 0.5rem;
-	}
-
-	.environments :global(a) {
-		--button-background: white;
-
-		height: 2.5rem;
-		width: 100%;
 	}
 
 	[aria-expanded='true'] + .expandable {

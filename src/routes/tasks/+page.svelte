@@ -1,14 +1,12 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
 	import Board from '$lib/components/Board.svelte';
+	import ImplementationWorkspaces from '$lib/components/ImplementationWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import Sort from '$lib/components/Sort.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
-	import TaskIncludedFilter from '$lib/components/TaskIncludedFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
@@ -54,29 +52,10 @@
 	<Sidebar helpSlug="tasks" slot="sidebar">
 		<Search slot="search" />
 
-		<svelte:fragment slot="environments">
-			<li>
-				<a
-					class="button button-nav"
-					class:is-active={$page.url.pathname === '/implementation'}
-					href="/implementation"
-				>
-					{$_('measures')}
-				</a>
-			</li>
-			<li>
-				<a
-					class="button button-nav"
-					class:is-active={$page.url.pathname === '/tasks'}
-					href="/tasks"
-				>
-					{$_('tasks')}
-				</a>
-			</li>
-		</svelte:fragment>
+		<ImplementationWorkspaces slot="workspaces" />
 
 		<svelte:fragment slot="filters">
-			<TaskIncludedFilter />
+			<OrganizationIncludedFilter />
 			<TaskCategoryFilter />
 		</svelte:fragment>
 	</Sidebar>

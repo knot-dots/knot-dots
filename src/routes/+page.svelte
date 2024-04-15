@@ -49,16 +49,16 @@
 		<Search slot="search" />
 
 		<svelte:fragment slot="filters">
-			{#if !$page.data.currentOrganization.payload.default}
-				<OrganizationIncludedFilter />
-			{/if}
-			<AudienceFilter />
 			{#if $page.url.searchParams.has('related-to')}
 				<RelationTypeFilter />
 			{/if}
-			<StrategyTypeFilter />
-			<TopicFilter />
+			<AudienceFilter />
+			{#if !$page.data.currentOrganization.payload.default}
+				<OrganizationIncludedFilter />
+			{/if}
 			<CategoryFilter />
+			<TopicFilter />
+			<StrategyTypeFilter />
 		</svelte:fragment>
 
 		<Sort slot="sort" />

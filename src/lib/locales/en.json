@@ -57,6 +57,13 @@
 	"help": "Help",
 	"home": "Home screen",
 	"imprint": "Imprint",
+	"included": {
+		"label": "Included organization levels",
+		"options": {
+			"subordinate_organizational_units": "With subordinate units",
+			"superordinate_organizational_units": "With superordinate units"
+		}
+	},
 	"indicator": "Indicator",
 	"indicator.contribution": "Contribution to operative goal",
 	"indicator.effect": "Effect",
@@ -440,5 +447,6 @@
 		"label": "Visibility",
 		"members": "Members only",
 		"public": "Public"
-	}
+	},
+	"workspaces": "Workspaces"
 }

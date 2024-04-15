@@ -1,22 +1,22 @@
 import { filterVisible } from '$lib/authorization';
+import { audience, filterOrganizationalUnits } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import { audience } from '$lib/models';
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
-	let organizationalUnits: string[] = [];
+	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
 			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
 		);
-		organizationalUnits = relatedOrganizationalUnits
+		subordinateOrganizationalUnits = relatedOrganizationalUnits
 			.filter(({ payload }) => payload.level >= currentOrganizationalUnit.payload.level)
 			.map(({ guid }) => guid);
 	}
@@ -29,7 +29,7 @@ export const load = (async ({ locals, url, parent }) => {
 				url.searchParams.getAll('relationType').length == 0
 					? ['hierarchical', 'other']
 					: url.searchParams.getAll('relationType'),
-				{ organizationalUnits },
+				{},
 				url.searchParams.get('sort') ?? ''
 			)
 		);
@@ -42,7 +42,6 @@ export const load = (async ({ locals, url, parent }) => {
 						? url.searchParams.getAll('audience')
 						: [audience.enum['audience.public']],
 					categories: url.searchParams.getAll('category'),
-					organizationalUnits,
 					topics: url.searchParams.getAll('topic'),
 					strategyTypes: url.searchParams.getAll('strategyType'),
 					terms: url.searchParams.get('terms') ?? '',
@@ -53,5 +52,12 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	}
 
-	return { containers: filterVisible(containers, locals.user) };
+	return {
+		containers: filterOrganizationalUnits(
+			filterVisible(containers, locals.user),
+			url,
+			subordinateOrganizationalUnits,
+			currentOrganizationalUnit
+		)
+	};
 }) satisfies PageServerLoad;

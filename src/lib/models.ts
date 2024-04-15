@@ -1382,3 +1382,56 @@ export function overlayURL(url: URL, key: OverlayKey, guid: string) {
 
 	return `#${newParams.toString()}`;
 }
+
+export function filterOrganizationalUnits(
+	containers: Container[],
+	url: URL,
+	subordinateOrganizationalUnits: string[],
+	currentOrganizationalUnit?: OrganizationalUnitContainer
+) {
+	return url.searchParams.has('related-to')
+		? containers
+		: containers.filter((c) => {
+				const included = url.searchParams.has('includedChanged')
+					? url.searchParams.getAll('included')
+					: ['subordinate_organizational_units'];
+
+				if (c.organizational_unit == currentOrganizationalUnit?.guid) {
+					return true;
+				}
+
+				if (
+					included.includes('subordinate_organizational_units') &&
+					subordinateOrganizationalUnits.length == 0
+				) {
+					return true;
+				}
+
+				if (
+					included.includes('subordinate_organizational_units') &&
+					c.organizational_unit != null &&
+					subordinateOrganizationalUnits.includes(c.organizational_unit)
+				) {
+					return true;
+				}
+
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit == null
+				) {
+					return true;
+				}
+
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit != null &&
+					!subordinateOrganizationalUnits
+						.filter((ou) => ou != currentOrganizationalUnit?.guid)
+						.includes(c.organizational_unit)
+				) {
+					return true;
+				}
+
+				return false;
+		  });
+}

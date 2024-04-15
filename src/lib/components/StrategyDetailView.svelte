@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
+	import Pencil from '~icons/heroicons/pencil-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
@@ -28,7 +29,14 @@
 </script>
 
 <article class="details">
-	<h2 class="details-title">{container.payload.title}</h2>
+	<h2 class="details-title">
+		{container.payload.title}
+		{#if $ability.can('update', container)}
+			<a class="button button-square quiet" href="#view={container.guid}&edit">
+				<Pencil />
+			</a>
+		{/if}
+	</h2>
 
 	<div class="meta">
 		<h3 class="meta-key">{$_('object')}</h3>

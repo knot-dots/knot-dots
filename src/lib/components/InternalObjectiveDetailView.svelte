@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { _, date } from 'svelte-i18n';
+	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -16,7 +17,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
@@ -53,7 +54,14 @@
 </script>
 
 <article class="details">
-	<h2 class="details-title">{container.payload.title}</h2>
+	<h2 class="details-title">
+		{container.payload.title}
+		{#if $ability.can('update', container)}
+			<a class="button button-square quiet" href="#view={container.guid}&edit">
+				<Pencil />
+			</a>
+		{/if}
+	</h2>
 
 	<slot name="data">
 		{#if 'summary' in container.payload}
