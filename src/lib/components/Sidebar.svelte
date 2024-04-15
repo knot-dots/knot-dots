@@ -114,6 +114,7 @@
 				on:mouseenter={() => clearTimeout(timer)}
 				on:mouseleave={() => collapseItemDelayed('search')}
 			>
+				<span class="button button-nav is-active">{$_('search')}</span>
 				<slot name="search" />
 			</div>
 		</li>
