@@ -10,11 +10,14 @@ import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWith
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-import paramsFromURL from '$lib/client/paramsFromURL';
 import {
 	audience,
 	containerOfType,
+	type ContainerWithEffect,
 	hasMember,
+	type IndicatorContainer,
+	isContainerWithEffect,
+	isContainerWithObjective,
 	isIndicatorContainer,
 	isStrategyContainer,
 	overlayKey,
@@ -127,6 +130,7 @@ if (browser) {
 }
 
 type Overlay = {
+	indicators?: IndicatorContainer[];
 	internalObjectives?: Container[];
 	isPartOfOptions: AnyContainer[];
 	containersWithObjectives?: ContainerWithObjective[];
@@ -315,6 +319,35 @@ if (browser) {
 				relatedContainers: [],
 				revisions,
 				tasks
+			});
+		} else if (hashParams.has(overlayKey.enum.indicators)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.indicators) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const [relatedContainers, indicators] = await Promise.all([
+				fetchContainers({
+					isPartOfStrategy: [container.revision]
+				}),
+				fetchContainers({
+					organization: [container.organization],
+					payloadType: [payloadTypes.enum.indicator]
+				})
+			]);
+			const indicatorsFromObjectives = (
+				relatedContainers.filter((c) => isContainerWithObjective(c)) as ContainerWithObjective[]
+			).flatMap((c) => c.payload.objective.map(({ indicator }) => indicator));
+			const indicatorsFromEffects = (
+				relatedContainers.filter((c) => isContainerWithEffect(c)) as ContainerWithEffect[]
+			).flatMap((c) => c.payload.effect.flatMap(({ indicator }) => indicator));
+
+			overlay.set({
+				indicators: indicators.filter(({ guid }) =>
+					indicatorsFromEffects.concat(indicatorsFromObjectives).includes(guid)
+				) as IndicatorContainer[],
+				isPartOfOptions: [],
+				relatedContainers: [],
+				revisions
 			});
 		} else if (hashParams.has(overlayKey.enum.relate)) {
 			const revisions = await fetchContainerRevisions(

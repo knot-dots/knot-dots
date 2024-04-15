@@ -22,6 +22,7 @@ export const overlayKey = z.enum([
 	'create',
 	'edit',
 	'edit-help',
+	'indicators',
 	'internal-objectives',
 	'members',
 	'my-tasks',

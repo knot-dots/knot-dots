@@ -5,6 +5,7 @@
 	import Cog6Tooth from '~icons/heroicons/cog-6-tooth-20-solid';
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
+	import Effects from '~icons/knotdots/effects';
 	import Members from '~icons/knotdots/members';
 	import Objectives from '~icons/knotdots/objectives';
 	import Tasks from '~icons/knotdots/tasks';
@@ -12,6 +13,7 @@
 	import { accountURL } from '$lib/authentication';
 	import {
 		type AnyContainer,
+		boards,
 		isMeasureContainer,
 		isStrategyContainer,
 		overlayKey,
@@ -116,6 +118,18 @@
 						</a>
 					</li>
 				{/if}
+			{:else if isStrategyContainer(container) && $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
+				<li>
+					<a
+						class="button button-nav"
+						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.indicators) ===
+							container.guid}
+						href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
+					>
+						<span class="small-only"><Effects /></span>
+						<span class="large-only">{$_('indicators')}</span>
+					</a>
+				</li>
 			{/if}
 		</ul>
 
