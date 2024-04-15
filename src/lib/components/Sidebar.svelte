@@ -63,33 +63,6 @@
 </script>
 
 <ul class="sidebar-items">
-	{#if $$slots.search}
-		<li>
-			<button
-				class="button-nav button-square"
-				class:is-active={expandedItem === 'search'}
-				on:click={() => lockItem('search')}
-				on:mouseenter={() => expandItem('search')}
-				on:mouseleave={() => collapseItemDelayed('search')}
-				title={$_('search')}
-				aria-controls="search"
-				aria-expanded={expandedItem === 'search'}
-			>
-				<Search />
-			</button>
-			<!--svelte-ignore a11y-no-static-element-interactions -->
-			<div
-				class="expandable"
-				id="search"
-				bind:this={search}
-				on:mouseenter={() => clearTimeout(timer)}
-				on:mouseleave={() => collapseItemDelayed('search')}
-			>
-				<slot name="search" />
-			</div>
-		</li>
-	{/if}
-
 	{#if $$slots.workspaces}
 		<li>
 			<button
@@ -115,6 +88,33 @@
 				<ul class="workspaces">
 					<slot name="workspaces" />
 				</ul>
+			</div>
+		</li>
+	{/if}
+
+	{#if $$slots.search}
+		<li>
+			<button
+				class="button-nav button-square"
+				class:is-active={expandedItem === 'search'}
+				on:click={() => lockItem('search')}
+				on:mouseenter={() => expandItem('search')}
+				on:mouseleave={() => collapseItemDelayed('search')}
+				title={$_('search')}
+				aria-controls="search"
+				aria-expanded={expandedItem === 'search'}
+			>
+				<Search />
+			</button>
+			<!--svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class="expandable"
+				id="search"
+				bind:this={search}
+				on:mouseenter={() => clearTimeout(timer)}
+				on:mouseleave={() => collapseItemDelayed('search')}
+			>
+				<slot name="search" />
 			</div>
 		</li>
 	{/if}
