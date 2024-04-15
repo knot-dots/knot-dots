@@ -10,47 +10,72 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-function filterOrganizationalUnitsAndMeasures(
+function filterOrganizationalUnits(
 	containers: Container[],
 	url: URL,
+	subordinateOrganizationalUnits: string[],
 	currentOrganizationalUnit?: OrganizationalUnitContainer
 ) {
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
-				if (
-					!url.searchParams.getAll('included').includes('is-part-of-measure') &&
-					c.relation.some(
-						({ predicate, subject }) =>
-							predicate == predicates.enum['is-part-of-measure'] && subject == c.revision
-					)
-				) {
-					return false;
+				const included = url.searchParams.has('includedChanged')
+					? url.searchParams.getAll('included')
+					: ['subordinate_organizational_units'];
+
+				console.log(containers.map(({ guid }) => guid));
+
+				if (c.organizational_unit == currentOrganizationalUnit?.guid) {
+					return true;
 				}
 
 				if (
-					!url.searchParams.getAll('included').includes('subordinate-organizational-units') &&
+					included.includes('subordinate_organizational_units') &&
+					subordinateOrganizationalUnits.length == 0
+				) {
+					return true;
+				}
+
+				if (
+					included.includes('subordinate_organizational_units') &&
 					c.organizational_unit != null &&
-					c.organizational_unit != currentOrganizationalUnit?.guid
+					subordinateOrganizationalUnits.includes(c.organizational_unit)
 				) {
-					return false;
+					return true;
 				}
 
-				return true;
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit == null
+				) {
+					return true;
+				}
+
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit != null &&
+					!subordinateOrganizationalUnits
+						.filter((ou) => ou != currentOrganizationalUnit?.guid)
+						.includes(c.organizational_unit)
+				) {
+					return true;
+				}
+
+				return false;
 		  });
 }
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	let containersWithIndicatorContributions;
-	let organizationalUnits: string[] = [];
+	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
 			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
 		);
-		organizationalUnits = relatedOrganizationalUnits
+		subordinateOrganizationalUnits = relatedOrganizationalUnits
 			.filter(({ payload }) => payload.level >= currentOrganizationalUnit.payload.level)
 			.map(({ guid }) => guid);
 	}
@@ -64,7 +89,7 @@ export const load = (async ({ locals, url, parent }) => {
 					url.searchParams.getAll('relationType').length == 0
 						? ['hierarchical', 'other']
 						: url.searchParams.getAll('relationType'),
-					{ organizationalUnits },
+					{},
 					url.searchParams.get('sort') ?? ''
 				)
 			),
@@ -85,7 +110,6 @@ export const load = (async ({ locals, url, parent }) => {
 							? url.searchParams.getAll('audience')
 							: [audience.enum['audience.public'], audience.enum['audience.organization']],
 						categories: url.searchParams.getAll('category'),
-						organizationalUnits,
 						topics: url.searchParams.getAll('topic'),
 						terms: url.searchParams.get('terms') ?? ''
 					},
@@ -108,7 +132,6 @@ export const load = (async ({ locals, url, parent }) => {
 							? url.searchParams.getAll('audience')
 							: [audience.enum['audience.public'], audience.enum['audience.organization']],
 						categories: url.searchParams.getAll('category'),
-						organizationalUnits,
 						topics: url.searchParams.getAll('topic'),
 						strategyTypes: url.searchParams.getAll('strategyType'),
 						terms: url.searchParams.get('terms') ?? ''
@@ -125,9 +148,10 @@ export const load = (async ({ locals, url, parent }) => {
 	}
 
 	return {
-		containers: filterOrganizationalUnitsAndMeasures(
+		containers: filterOrganizationalUnits(
 			filterVisible(containers, locals.user),
 			url,
+			subordinateOrganizationalUnits,
 			currentOrganizationalUnit
 		),
 		containersWithIndicatorContributions: filterVisible(

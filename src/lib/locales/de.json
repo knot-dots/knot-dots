@@ -58,6 +58,13 @@
 	"help": "Hilfe",
 	"home": "Startseite",
 	"imprint": "Impressum",
+	"included": {
+		"label": "Angezeigte Organisationsebenen",
+		"options": {
+			"subordinate_organizational_units": "Mit unteren Ebenen",
+			"superordinate_organizational_units": "Mit übergeordneten Ebenen"
+		}
+	},
 	"indicator": "Indikator",
 	"indicator.contribution": "Beitrag zu operativem Ziel",
 	"indicator.effect": "Wirkung",
@@ -97,11 +104,6 @@
 		"tasks": "Aufgaben",
 		"vision": "Vision",
 		"visions": "Visionen"
-	},
-	"internal_objective_filter": {
-		"include_measures": "Mit Maßnahmen",
-		"include_subordinate_organizational_units": "Mit unteren Ebenen",
-		"include_superordinate_organizational_units": "Mit übergeordneten Ebenen"
 	},
 	"invite": {
 		"email": "E-Mail-Adresse",
