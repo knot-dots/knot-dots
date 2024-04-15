@@ -4,6 +4,7 @@ import type { PayloadType } from '$lib/models';
 
 export default async function fetchContainers(
 	filters: {
+		assignee?: string[];
 		audience?: string[];
 		category?: string[];
 		implements?: number[];
@@ -22,6 +23,9 @@ export default async function fetchContainers(
 	sort?: string
 ) {
 	const params = new URLSearchParams();
+	for (const value of filters.assignee ?? []) {
+		params.append('assignee', value);
+	}
 	for (const value of filters.audience ?? []) {
 		params.append('audience', value);
 	}

@@ -1,9 +1,9 @@
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { filterOrganizationalUnits } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyTaskContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 export const load = (async ({ locals, parent, url }) => {
 	let subordinateOrganizationalUnits: string[] = [];
@@ -25,6 +25,7 @@ export const load = (async ({ locals, parent, url }) => {
 
 	const containers = await locals.pool.connect(
 		getManyTaskContainers({
+			assignees: url.searchParams.getAll('assignee'),
 			organization: currentOrganization.payload.default ? undefined : currentOrganization.guid,
 			taskCategories: url.searchParams.getAll('taskCategory'),
 			terms: url.searchParams.get('terms') ?? ''

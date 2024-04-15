@@ -10,6 +10,7 @@
 	import { page } from '$app/stores';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
+	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
@@ -383,6 +384,7 @@
 				<Search slot="search" />
 				<svelte:fragment slot="filters">
 					<TaskCategoryFilter />
+					<AssigneeFilter />
 				</svelte:fragment>
 				<svelte:fragment slot="extra">
 					<li>
