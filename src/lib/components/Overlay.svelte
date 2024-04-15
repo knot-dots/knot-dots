@@ -339,9 +339,9 @@
 				<svelte:fragment slot="filters">
 					<AudienceFilter />
 					<RelationTypeFilter />
-					<StrategyTypeFilter />
-					<TopicFilter />
 					<CategoryFilter />
+					<TopicFilter />
+					<StrategyTypeFilter />
 				</svelte:fragment>
 				<Sort slot="sort" />
 				<svelte:fragment slot="extra">
