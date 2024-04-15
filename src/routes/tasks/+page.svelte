@@ -2,11 +2,11 @@
 	import Board from '$lib/components/Board.svelte';
 	import ImplementationWorkspaces from '$lib/components/ImplementationWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
-	import TaskIncludedFilter from '$lib/components/TaskIncludedFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
@@ -55,7 +55,7 @@
 		<ImplementationWorkspaces slot="workspaces" />
 
 		<svelte:fragment slot="filters">
-			<TaskIncludedFilter />
+			<OrganizationIncludedFilter />
 			<TaskCategoryFilter />
 		</svelte:fragment>
 	</Sidebar>
