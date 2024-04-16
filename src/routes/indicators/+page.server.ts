@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, payloadTypes } from '$lib/models';
+import { audience, type IndicatorContainer, payloadTypes } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -39,6 +39,6 @@ export const load = (async ({ locals, parent, url }) => {
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: filterVisible(containers, locals.user)
+		containers: filterVisible(containers, locals.user) as IndicatorContainer[]
 	};
 }) satisfies PageServerLoad;
