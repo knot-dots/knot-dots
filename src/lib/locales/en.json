@@ -448,5 +448,7 @@
 		"members": "Members only",
 		"public": "Public"
 	},
-	"workspaces": "Workspaces"
+	"workspaces": "Workspaces",
+	"workspace.measures": "Measures status board",
+	"workspace.tasks": "Tasks status board"
 }

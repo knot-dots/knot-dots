@@ -12,7 +12,7 @@
 			checked={$page.url.pathname === '/implementation'}
 			on:click={async () => await goto('/implementation')}
 		/>
-		{$_('measures')}
+		{$_('workspace.measures')}
 	</label>
 </li>
 <li>
@@ -23,6 +23,6 @@
 			checked={$page.url.pathname === '/tasks'}
 			on:click={async () => await goto('/tasks')}
 		/>
-		{$_('tasks')}
+		{$_('workspace.tasks')}
 	</label>
 </li>
