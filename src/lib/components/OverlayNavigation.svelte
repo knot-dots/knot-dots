@@ -19,7 +19,7 @@
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
-	import { overlay, user } from '$lib/stores';
+	import { ability, overlay, user } from '$lib/stores';
 
 	export let container: AnyContainer | undefined = undefined;
 
@@ -119,7 +119,7 @@
 			{/if}
 		</ul>
 
-		{#if isMeasureContainer(container) || isStrategyContainer(container)}
+		{#if (isMeasureContainer(container) || isStrategyContainer(container)) && $ability.can('update', container)}
 			<a
 				class="button button-nav"
 				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===
