@@ -8,7 +8,6 @@
 	<label>
 		<input
 			type="radio"
-			name="workspaces"
 			checked={$page.url.pathname === '/implementation'}
 			on:click={async () => await goto('/implementation')}
 		/>
@@ -19,7 +18,6 @@
 	<label>
 		<input
 			type="radio"
-			name="workspaces"
 			checked={$page.url.pathname === '/tasks'}
 			on:click={async () => await goto('/tasks')}
 		/>
