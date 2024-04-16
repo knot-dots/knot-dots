@@ -16,13 +16,17 @@
 	$: container = data.container;
 
 	async function afterSubmit() {
-		await goto(`../${container.guid}`);
+		await goto(`../${container.guid}`, {
+			invalidateAll: true
+		});
 	}
 
 	async function handleDelete() {
 		const response = await deleteContainer(container);
 		if (response.ok) {
-			await goto('/organizations');
+			await goto('/organizations', {
+				invalidateAll: true
+			});
 		}
 	}
 </script>

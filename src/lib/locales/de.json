@@ -444,5 +444,7 @@
 		"members": "Alle Mitglieder",
 		"public": "Gesamte Öffentlichkeit"
 	},
-	"workspaces": "Arbeitsbereiche"
+	"workspaces": "Arbeitsbereiche",
+	"workspace.measures": "Maßnahmen Status-Board",
+	"workspace.tasks": "Aufgaben Status-Board"
 }

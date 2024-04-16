@@ -7,22 +7,19 @@
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import Members from '~icons/knotdots/members';
 	import Objectives from '~icons/knotdots/objectives';
-	import Organization from '~icons/knotdots/organization';
 	import Tasks from '~icons/knotdots/tasks';
 	import { page } from '$app/stores';
 	import { accountURL } from '$lib/authentication';
 	import {
 		type AnyContainer,
 		isMeasureContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
 		isStrategyContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
-	import { overlay, user } from '$lib/stores';
+	import { ability, overlay, user } from '$lib/stores';
 
 	export let container: AnyContainer | undefined = undefined;
 
@@ -76,7 +73,7 @@
 
 	{#if container}
 		<ul class="button-group button-group-nav">
-			{#if !(isOrganizationalUnitContainer(container) || isOrganizationContainer(container)) && container.relation.length > 0}
+			{#if container.relation.length > 0}
 				<li>
 					<a
 						class="button button-nav"
@@ -90,19 +87,7 @@
 				</li>
 			{/if}
 
-			{#if isMeasureContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-				{#if container.payload.boards.includes('board.organizational_units')}
-					<li>
-						<a
-							class="button button-nav"
-							href="/{container.payload.type}/{container.guid}/organizational_units"
-						>
-							<span class="small-only"><Organization /></span>
-							<span class="large-only">{$_('organizational_units')}</span>
-						</a>
-					</li>
-				{/if}
-
+			{#if isMeasureContainer(container)}
 				{#if container.payload.boards.includes('board.internal_objectives')}
 					<li>
 						<a
@@ -134,7 +119,7 @@
 			{/if}
 		</ul>
 
-		{#if isMeasureContainer(container) || isStrategyContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+		{#if (isMeasureContainer(container) || isStrategyContainer(container)) && $ability.can('update', container)}
 			<a
 				class="button button-nav"
 				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===

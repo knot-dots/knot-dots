@@ -22,19 +22,22 @@ import { filterVisible } from '$lib/authorization';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
-		audience: z.array(audience),
-		category: z.array(sustainableDevelopmentGoals),
-		organization: z.array(z.string().uuid()),
-		organizationalUnit: z.array(z.string().uuid()),
-		relationType: z.array(z.enum(['hierarchical', 'other'])),
+		audience: z.array(audience).default([]),
+		category: z.array(sustainableDevelopmentGoals).default([]),
+		organization: z.array(z.string().uuid()).default([]),
+		organizationalUnit: z.array(z.string().uuid()).default([]),
+		relationType: z.array(z.enum(['hierarchical', 'other'])).default(['hierarchical', 'other']),
 		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
-		strategyType: z.array(strategyTypes),
-		terms: z.array(z.string()),
-		topic: z.array(topics)
+		strategyType: z.array(strategyTypes).default([]),
+		terms: z.array(z.string()).default([]),
+		topic: z.array(topics).default([])
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
-			Object.keys(expectedParams.shape).map((key) => [key, url.searchParams.getAll(key)])
+			Object.keys(expectedParams.shape).map((key) => [
+				key,
+				url.searchParams.has(key) ? url.searchParams.getAll(key) : undefined
+			])
 		)
 	);
 

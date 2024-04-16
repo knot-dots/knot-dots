@@ -26,26 +26,29 @@ import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
-		assignee: z.array(z.string().uuid()),
-		audience: z.array(audience),
-		category: z.array(sustainableDevelopmentGoals),
-		implements: z.array(z.coerce.number().int().positive()),
-		isPartOfMeasure: z.array(z.coerce.number().int().positive()),
-		isPartOfStrategy: z.array(z.coerce.number().int().positive()),
-		organization: z.array(z.string().uuid()),
-		organizationalUnit: z.array(z.string().uuid()),
-		payloadType: z.array(payloadTypes),
-		relatedTo: z.array(z.string().uuid()),
+		assignee: z.array(z.string().uuid()).default([]),
+		audience: z.array(audience).default([]),
+		category: z.array(sustainableDevelopmentGoals).default([]),
+		implements: z.array(z.coerce.number().int().positive()).default([]),
+		isPartOfMeasure: z.array(z.coerce.number().int().positive()).default([]),
+		isPartOfStrategy: z.array(z.coerce.number().int().positive()).default([]),
+		organization: z.array(z.string().uuid()).default([]),
+		organizationalUnit: z.array(z.string().uuid()).default([]),
+		payloadType: z.array(payloadTypes).default([]),
+		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(z.enum(['hierarchical', 'other'])).default(['hierarchical', 'other']),
 		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
-		strategyType: z.array(strategyTypes),
-		taskCategory: z.array(taskCategories),
-		terms: z.array(z.string()),
-		topic: z.array(topics)
+		strategyType: z.array(strategyTypes).default([]),
+		taskCategory: z.array(taskCategories).default([]),
+		terms: z.array(z.string()).default([]),
+		topic: z.array(topics).default([])
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
-			Object.keys(expectedParams.shape).map((key) => [key, url.searchParams.getAll(key)])
+			Object.keys(expectedParams.shape).map((key) => [
+				key,
+				url.searchParams.has(key) ? url.searchParams.getAll(key) : undefined
+			])
 		)
 	);
 

@@ -208,7 +208,7 @@
 		margin-bottom: 2.5rem;
 	}
 
-	.sidebar-items-help {
+	.sidebar-items-help:nth-child(n + 2) {
 		margin-top: 2.5rem;
 	}
 
