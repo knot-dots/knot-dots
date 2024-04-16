@@ -18,7 +18,9 @@
 	$: isPartOfOptions = data.isPartOfOptions;
 
 	async function afterSubmit() {
-		await goto(`../${container.guid}`);
+		await goto(`../${container.guid}`, {
+			invalidateAll: true
+		});
 	}
 
 	async function handleDelete() {
