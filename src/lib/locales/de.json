@@ -96,6 +96,8 @@
 	"indicator.tip.in_implementation": "Umsetzung geplant für {year}: {value, number} {unit}",
 	"indicator.tip.in_planning": "Geplant für {year}: {value, number} {unit}",
 	"indicator.tip.objectives": "Zielwert für {year}: {value, number} {unit}",
+	"indicator.view_mode.chart": "Diagramm",
+	"indicator.view_mode.table": "Tabelle",
 	"indicator.wanted_values": "Zielwerte",
 	"indicators": "Indikatoren",
 	"information": "Information",

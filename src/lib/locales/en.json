@@ -95,6 +95,8 @@
 	"indicator.tip.in_implementation": "Implementation planned for {year}: {value, number} {unit}",
 	"indicator.tip.in_planning": "Planned for {year}: {value, number} {unit}",
 	"indicator.tip.objectives": "Objective for {year}: {value, number} {unit}",
+	"indicator.view_mode.chart": "Chart",
+	"indicator.view_mode.table": "Table",
 	"indicator.wanted_values": "Wanted values",
 	"indicators": "Indicators",
 	"information": "Information",
