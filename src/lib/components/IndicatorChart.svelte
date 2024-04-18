@@ -4,9 +4,9 @@
 	import { isContainerWithEffect, status } from '$lib/models';
 	import type {
 		Container,
+		ContainerWithEffect,
 		ContainerWithObjective,
-		IndicatorContainer,
-		MeasureContainer
+		IndicatorContainer
 	} from '$lib/models';
 
 	export let container: IndicatorContainer;
@@ -78,7 +78,7 @@
 	$: if (showEffects) {
 		const containersWithEffects = relatedContainers.filter((c) =>
 			isContainerWithEffect(c)
-		) as MeasureContainer[];
+		) as ContainerWithEffect[];
 
 		effects = containersWithEffects
 			.flatMap(({ payload }) =>

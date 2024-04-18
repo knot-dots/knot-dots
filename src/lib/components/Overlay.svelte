@@ -17,6 +17,7 @@
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
+	import Indicators from '$lib/components/Indicators.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
@@ -67,6 +68,7 @@
 	import { ability, applicationState, overlayWidth } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let indicators: IndicatorContainer[] | undefined = undefined;
 	export let internalObjectives: Container[] | undefined = undefined;
 	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
@@ -400,6 +402,23 @@
 			</Sidebar>
 		</aside>
 		<Tasks {container} containers={tasks} />
+	{:else if hashParams.has(overlayKey.enum.indicators) && indicators}
+		<aside>
+			<Sidebar helpSlug="tasks">
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
+		<Indicators containers={indicators} />
 	{:else}
 		{#if 'guid' in container}
 			<aside>

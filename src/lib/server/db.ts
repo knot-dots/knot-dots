@@ -982,8 +982,6 @@ export function getAllContainersWithParentObjectives({ guid, organization }: Ind
 			WHERE c.payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
 		`);
 
-		console.log(isPartOfResult);
-
 		const containerResult =
 			isPartOfResult.length > 0
 				? await connection.any(sql.typeAlias('containerWithObjective')`

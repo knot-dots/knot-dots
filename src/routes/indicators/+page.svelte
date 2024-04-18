@@ -1,17 +1,10 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
-	import Card from '$lib/components/Card.svelte';
+	import Indicators from '$lib/components/Indicators.svelte';
 	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import {
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		payloadTypes
-	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -34,52 +27,6 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="main">
-		<div class="indicators">
-			{#if $ability.can('create', payloadTypes.enum.indicator)}
-				<p>
-					<a class="button primary" href="#create={payloadTypes.enum.indicator}">
-						<PlusSmall />
-						{$_('indicator')}
-					</a>
-				</p>
-			{/if}
-			<ul>
-				{#each data.containers as container}
-					<li>
-						<Card --height="100%" {container} />
-					</li>
-				{/each}
-			</ul>
-		</div>
+		<Indicators containers={data.containers} />
 	</svelte:fragment>
 </Layout>
-
-<style>
-	div {
-		flex: 1 1;
-		overflow-x: auto;
-		padding: 1.5rem;
-	}
-
-	p {
-		margin-bottom: 1.5rem;
-	}
-
-	ul {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 1.5rem;
-		min-width: calc(100vw - 3.5rem);
-	}
-
-	li {
-		width: 19.5rem;
-	}
-
-	.button {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.5rem;
-	}
-</style>
