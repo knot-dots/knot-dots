@@ -4,10 +4,13 @@
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import {
+		type ContainerWithObjective,
 		isIndicatorContainer,
 		overlayKey,
 		overlayURL,
@@ -44,6 +47,14 @@
 		selected = $page.data.container;
 	} else {
 		selected = undefined;
+	}
+
+	let containersWithObjectivesPromise: Promise<ContainerWithObjective[]>;
+	let relatedContainersPromise: Promise<Container[]>;
+
+	if (isIndicatorContainer(container)) {
+		containersWithObjectivesPromise = fetchContainersWithParentObjectives(container);
+		relatedContainersPromise = fetchRelatedContainers(container.guid, {});
 	}
 
 	async function applyRelationFilter(url: URL) {
@@ -162,7 +173,17 @@
 	{:else if 'image' in container.payload}
 		<img alt={$_('cover_image')} class="text" src={container.payload.image} />
 	{:else if isIndicatorContainer(container)}
-		<IndicatorChart {container} />
+		{#await Promise.all([containersWithObjectivesPromise, relatedContainersPromise])}
+			<IndicatorChart {container} />
+		{:then [containersWithObjectives, relatedContainers]}
+			<IndicatorChart
+				{container}
+				{relatedContainers}
+				{containersWithObjectives}
+				showEffects
+				showObjectives
+			/>
+		{/await}
 	{/if}
 
 	<footer>
