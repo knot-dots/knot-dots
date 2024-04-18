@@ -29,7 +29,7 @@
 <style>
 	div {
 		flex: 1 1;
-		overflow-x: auto;
+		overflow-y: auto;
 		padding: 1.5rem;
 	}
 
