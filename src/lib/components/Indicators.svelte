@@ -42,7 +42,7 @@
 		flex-direction: row;
 		flex-wrap: wrap;
 		gap: 1.5rem;
-		min-width: calc(100vw - 3.5rem);
+		min-width: calc(100vw - 3.5rem - 3rem);
 	}
 
 	li {

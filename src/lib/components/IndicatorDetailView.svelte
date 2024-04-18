@@ -7,6 +7,7 @@
 	import type { IndicatorTab } from '$lib/components/IndicatorTabs.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import IndicatorTable from '$lib/components/IndicatorTable.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isContainerWithEffect,
@@ -31,6 +32,7 @@
 	let currentTab: IndicatorTab = tab.enum.all;
 	let showEffects = true;
 	let showObjectives = true;
+	let viewMode = 'chart';
 
 	$: {
 		const parseResult = tab.safeParse(paramsFromURL($page.url).get('tab'));
@@ -82,13 +84,28 @@
 			{/if}
 		</div>
 
-		<IndicatorChart
-			{container}
-			{containersWithObjectives}
-			{relatedContainers}
-			{showEffects}
-			{showObjectives}
-		/>
+		<select bind:value={viewMode}>
+			<option value="chart">{$_('indicator.view_mode.chart')}</option>
+			<option value="table">{$_('indicator.view_mode.table')}</option>
+		</select>
+
+		{#if viewMode === 'chart'}
+			<IndicatorChart
+				{container}
+				{containersWithObjectives}
+				{relatedContainers}
+				{showEffects}
+				{showObjectives}
+			/>
+		{:else if viewMode === 'table'}
+			<IndicatorTable
+				{container}
+				{containersWithObjectives}
+				{relatedContainers}
+				{showEffects}
+				{showObjectives}
+			/>
+		{/if}
 
 		{#if showEffects}
 			<div class="measures">
