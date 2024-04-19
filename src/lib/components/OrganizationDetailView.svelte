@@ -73,3 +73,15 @@
 		</ul>
 	</div>
 </article>
+
+<style>
+	.details-title {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.details-title > a {
+		margin-left: auto;
+	}
+</style>
