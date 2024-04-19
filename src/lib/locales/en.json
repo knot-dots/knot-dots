@@ -66,7 +66,6 @@
 	},
 	"indicator": "Indicator",
 	"indicator.contribution": "Contribution to operative goal",
-	"indicator.effect": "Effect",
 	"indicator.effect.achieved_values": "Achieved values",
 	"indicator.effect.planned_values": "Planned values",
 	"indicator.extrapolated_values": "Extrapolated values",

@@ -67,7 +67,6 @@
 	},
 	"indicator": "Indikator",
 	"indicator.contribution": "Beitrag zu operativem Ziel",
-	"indicator.effect": "Wirkung",
 	"indicator.effect.achieved_values": "Bereits erreicht",
 	"indicator.effect.planned_values": "Geplant",
 	"indicator.extrapolated_values": "Prognose ohne Intervention",
