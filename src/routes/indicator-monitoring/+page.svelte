@@ -2,7 +2,9 @@
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
+	import IndicatorWorkspaces from '$lib/components/IndicatorWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -17,8 +19,6 @@
 		predicates
 	} from '$lib/models';
 	import type { PageData } from './$types';
-	import Card from '$lib/components/Card.svelte';
-	import IndicatorWorkspaces from '$lib/components/IndicatorWorkspaces.svelte';
 
 	export let data: PageData;
 
