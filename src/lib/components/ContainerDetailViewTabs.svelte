@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Info from '~icons/knotdots/info';
 	import Effects from '~icons/knotdots/effects';
+	import Milestones from '~icons/knotdots/milestones';
 	import Resources from '~icons/knotdots/resources';
 	import { _ } from 'svelte-i18n';
 	import { isContainerWithEffect } from '$lib/models';
@@ -55,6 +56,19 @@
 			on:click={() => updateApplicationState('effects')}
 		>
 			<Effects />
+		</button>
+	</li>
+{/if}
+{#if $applicationState.containerDetailView.tabs.includes('milestones')}
+	<li>
+		<button
+			title={$_('milestones')}
+			type="button"
+			class="button-nav button-square"
+			class:is-active={$applicationState.containerDetailView.activeTab === 'milestones'}
+			on:click={() => updateApplicationState('milestones')}
+		>
+			<Milestones />
 		</button>
 	</li>
 {/if}

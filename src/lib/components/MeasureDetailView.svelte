@@ -7,6 +7,7 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import MilestoneCarousel from '$lib/components/MilestoneCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
@@ -30,7 +31,10 @@
 
 	applicationState.update((state) => ({
 		...state,
-		containerDetailView: { activeTab: 'basic-data', tabs: ['basic-data', 'resources', 'effects'] }
+		containerDetailView: {
+			activeTab: 'basic-data',
+			tabs: ['basic-data', 'resources', 'effects', 'milestones']
+		}
 	}));
 
 	let selectedRevision: MeasureContainer | SimpleMeasureContainer;
@@ -277,6 +281,11 @@
 					{/if}
 				{/each}
 			{/await}
+		</div>
+	{:else if $applicationState.containerDetailView.activeTab === 'milestones'}
+		<div class="details-tab" id="milestones">
+			<h3>{$_('milestones')}</h3>
+			<MilestoneCarousel {container} />
 		</div>
 	{/if}
 </article>
