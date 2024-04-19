@@ -45,7 +45,8 @@
 					href="/implementation"
 					class="button button-nav"
 					class:is-active={$page.url.pathname === '/implementation' ||
-						$page.url.pathname === '/tasks'}
+						$page.url.pathname === '/tasks' ||
+						$page.url.pathname === '/measure-monitoring'}
 					title={$_('board.implementation')}
 				>
 					<span class="small-only"><Measure /></span>
