@@ -1,8 +1,6 @@
 {
 	"about": "About us",
 	"add_item": "Add item",
-	"add_kpi": "Add KPI",
-	"add_milestone": "Add milestone",
 	"all_organizations": "All organizations",
 	"annotation": "Annotation",
 	"assignee": "Assignee",
@@ -152,7 +150,7 @@
 	"measure.summary": "Short description",
 	"measures": "Measures",
 	"members": "Members",
-	"milestones": "Milestones & KPIs",
+	"milestones": "Milestones",
 	"model": "Model",
 	"models": "Models",
 	"modified_date": "Modified at",
