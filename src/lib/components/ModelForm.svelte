@@ -20,45 +20,43 @@
 	}));
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="metadata">
-		<legend>{$_('form.metadata')}</legend>
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
 
-		<StrategyRelationSelector {container} />
+	<StrategyRelationSelector {container} />
 
-		<OrganizationSelector bind:container />
+	<OrganizationSelector bind:container />
 
-		<ListBox
-			label={$_('audience')}
-			options={audience.options}
-			bind:value={container.payload.audience}
-		/>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<fieldset class="form-tab" id="basic-data">
-		<legend>{$_('form.basic_data')}</legend>
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+</fieldset>
 
-		<label>
-			{$_('summary')}
-			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
-		</label>
+<fieldset class="form-tab" id="basic-data">
+	<legend>{$_('form.basic_data')}</legend>
 
-		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
+	<label>
+		{$_('summary')}
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+	</label>
 
-		<ObjectiveWizard bind:container />
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
 
-		<ListBox
-			label={$_('topic.label')}
-			options={topics.options}
-			bind:value={container.payload.topic}
-		/>
+	<ObjectiveWizard bind:container />
 
-		<ListBox
-			label={$_('category')}
-			options={sustainableDevelopmentGoals.options}
-			bind:value={container.payload.category}
-		/>
-	</fieldset>
-{/if}
+	<ListBox
+		label={$_('topic.label')}
+		options={topics.options}
+		bind:value={container.payload.topic}
+	/>
+
+	<ListBox
+		label={$_('category')}
+		options={sustainableDevelopmentGoals.options}
+		bind:value={container.payload.category}
+	/>
+</fieldset>

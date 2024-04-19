@@ -117,7 +117,7 @@
 	<button class="template-category" type="button" on:click={() => createCustomIndicator()}>
 		{$_('indicator_form.create_custom')}
 	</button>
-{:else if $applicationState.containerForm.activeTab === 'metadata'}
+{:else}
 	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
@@ -152,7 +152,7 @@
 			bind:value={container.payload.audience}
 		/>
 	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+
 	<fieldset class="form-tab" id="basic-data">
 		{#key 'guid' in container ? container.guid : ''}
 			<Editor label={$_('description')} bind:value={container.payload.description} />
@@ -190,7 +190,7 @@
 			bind:value={container.payload.category}
 		/>
 	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'historical-values'}
+
 	<fieldset class="form-tab" id="historical-values">
 		<legend>{$_('form.historical_values')}</legend>
 
