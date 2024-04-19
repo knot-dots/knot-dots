@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
@@ -53,6 +54,8 @@
 						milestones.map(({ revision }) => revision).includes(r.object)
 				) > -1
 		);
+
+	setContext('mayShowRelationButton', true);
 </script>
 
 <Layout>
@@ -77,7 +80,7 @@
 			<BoardColumn title={$_('indicators')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each indicators as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
@@ -85,7 +88,7 @@
 			<BoardColumn title={$_('measures')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each measures as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
@@ -93,7 +96,7 @@
 			<BoardColumn title={$_('internal_objective.milestones')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each milestones as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
@@ -101,7 +104,7 @@
 			<BoardColumn title={$_('tasks')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each tasks as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
