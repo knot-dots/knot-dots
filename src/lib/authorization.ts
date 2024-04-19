@@ -8,7 +8,6 @@ type Actions = 'create' | 'read' | 'update' | 'delete' | 'relate' | 'prioritize'
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const objectiveTypes = [
-	payloadTypes.enum.kpi,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.model,
 	payloadTypes.enum.operational_goal,
