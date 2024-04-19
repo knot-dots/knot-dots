@@ -205,6 +205,16 @@ export const organizationCategories = z.enum(organizationCategoryValues);
 
 export type OrganizationCategory = z.infer<typeof organizationCategories>;
 
+const indicatorCategoryValues = [
+	'indicator_category.kpi',
+	'indicator_category.sdg',
+	'indicator_category.custom'
+] as const;
+
+export const indicatorCategories = z.enum(indicatorCategoryValues);
+
+export type indicatorCategory = z.infer<typeof indicatorCategories>;
+
 const quantityValues = [
 	'quantity.custom',
 	'quantity.broadband_coverage',
@@ -381,6 +391,7 @@ const basePayload = z
 const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	historicalValuesIntro: z.string().optional(),
+	indicatorCategory: z.array(indicatorCategories).default([]),
 	measuresIntro: z.string().optional(),
 	objectivesIntro: z.string().optional(),
 	quantity: z.string(),

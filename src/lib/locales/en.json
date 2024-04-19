@@ -98,6 +98,10 @@
 	"indicator.view_mode.chart": "Chart",
 	"indicator.view_mode.table": "Table",
 	"indicator.wanted_values": "Wanted values",
+	"indicator_category": "Category",
+	"indicator_category.kpi": "KPI",
+	"indicator_category.sdg": "SDG",
+	"indicator_category.custom": "Custom",
 	"indicators": "Indicators",
 	"information": "Information",
 	"internal_objective": {
