@@ -12,9 +12,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-
 	import {
-		isKPIContainer,
 		isMeasureContainer,
 		isMilestoneContainer,
 		isTaskContainer,
@@ -27,7 +25,7 @@
 	$: measures = data.containers.filter(isMeasureContainer);
 
 	$: milestones = data.containers
-		.filter((c) => isMilestoneContainer(c) || isKPIContainer(c))
+		.filter(isMilestoneContainer)
 		.filter(
 			({ relation }) =>
 				relation.findIndex(

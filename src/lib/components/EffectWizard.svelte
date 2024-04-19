@@ -5,8 +5,14 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import { indicatorCategories, isKPIContainer, payloadTypes } from '$lib/models';
-	import type { Container, EmptyContainer, IndicatorContainer, IndicatorEffect } from '$lib/models';
+	import { indicatorCategories, payloadTypes } from '$lib/models';
+	import type {
+		Container,
+		EmptyContainer,
+		IndicatorCategory,
+		IndicatorContainer,
+		IndicatorEffect
+	} from '$lib/models';
 
 	export let container: (Container | EmptyContainer) & {
 		payload: { effect: IndicatorEffect[] };
@@ -16,15 +22,13 @@
 
 	onMount(() => {
 		indicatorsRequest = fetchContainers({
-			indicatorCategory: isKPIContainer(container)
-				? [indicatorCategories.enum['indicator_category.kpi']]
-				: [],
 			organization: [container.organization],
 			payloadType: [payloadTypes.enum.indicator]
 		}) as Promise<IndicatorContainer[]>;
 	});
 
 	let showIndicatorOptions = false;
+	let indicatorCategory: IndicatorCategory;
 
 	function add(event: { currentTarget: HTMLSelectElement }) {
 		showIndicatorOptions = false;
@@ -179,7 +183,9 @@
 		<label>
 			<select name="indicator" on:change={add} required>
 				<option></option>
-				{#each indicators.sort(compareIndicators) as indicatorOption}
+				{#each indicators
+					.filter(({ payload }) => payload.indicatorCategory.includes(indicatorCategory))
+					.sort(compareIndicators) as indicatorOption}
 					<option value={indicatorOption.guid}>
 						{indicatorOption.payload.title}
 					</option>
@@ -188,9 +194,25 @@
 		</label>
 	{:else}
 		<p>
-			<button type="button" on:click={() => (showIndicatorOptions = true)}>
+			<button
+				type="button"
+				on:click={() => {
+					showIndicatorOptions = true;
+					indicatorCategory = indicatorCategories.enum['indicator_category.sdg'];
+				}}
+			>
 				<PlusSmall />
-				{$_('indicator.effect')}
+				{$_('indicator_category.sdg')}
+			</button>
+			<button
+				type="button"
+				on:click={() => {
+					showIndicatorOptions = true;
+					indicatorCategory = indicatorCategories.enum['indicator_category.kpi'];
+				}}
+			>
+				<PlusSmall />
+				{$_('indicator_category.kpi')}
 			</button>
 		</p>
 	{/if}

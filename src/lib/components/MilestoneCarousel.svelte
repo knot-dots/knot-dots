@@ -5,11 +5,9 @@
 	import {
 		type Container,
 		isOverlayKey,
-		type KPIContainer,
 		type MilestoneContainer,
 		overlayKey,
 		paramsFromFragment,
-		type PayloadType,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -19,15 +17,15 @@
 	export let container: Container;
 
 	$: containerRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadTypes.enum.kpi, payloadTypes.enum['internal_objective.milestone']]
-	}) as Promise<Array<MilestoneContainer | KPIContainer>>;
+		payloadType: [payloadTypes.enum['internal_objective.milestone']]
+	}) as Promise<Array<MilestoneContainer>>;
 
-	function addItemURL(url: URL, payloadType: PayloadType) {
+	function addItemURL(url: URL) {
 		const params = paramsFromFragment(url);
 
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadType],
+			[overlayKey.enum.create, payloadTypes.enum['internal_objective.milestone']],
 			[predicates.enum['is-part-of'], String(container.revision)]
 		]);
 
@@ -36,7 +34,7 @@
 </script>
 
 {#await containerRequest then containers}
-	{#if containers.length > 0 || $mayCreateContainer(payloadTypes.enum.kpi) || $mayCreateContainer(payloadTypes.enum['internal_objective.milestone'])}
+	{#if containers.length > 0 || $mayCreateContainer(payloadTypes.enum['internal_objective.milestone'])}
 		<div>
 			{#if containers.length > 0}
 				<ul class="carousel">
@@ -47,12 +45,9 @@
 					{/each}
 				</ul>
 			{/if}
-			{#if $mayCreateContainer(payloadTypes.enum.kpi)}
-				<a class="button" href={addItemURL($page.url, payloadTypes.enum.kpi)}>{$_('add_kpi')}</a>
-			{/if}
 			{#if $mayCreateContainer(payloadTypes.enum['internal_objective.milestone'])}
-				<a class="button" href={addItemURL($page.url, payloadTypes.enum.kpi)}>
-					{$_('add_milestone')}
+				<a class="button" href={addItemURL($page.url)}>
+					{$_('add_item')}
 				</a>
 			{/if}
 		</div>

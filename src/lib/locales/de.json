@@ -1,8 +1,6 @@
 {
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
-	"add_kpi": "KPI hinzufügen",
-	"add_milestone": "Meilenstein hinzufügen",
 	"all_organizations": "Alle Organisationen",
 	"annotation": "Anmerkungen",
 	"assignee": "Zugewiesen an",
@@ -69,7 +67,6 @@
 	},
 	"indicator": "Indikator",
 	"indicator.contribution": "Beitrag zu operativem Ziel",
-	"indicator.effect": "Wirkung",
 	"indicator.effect.achieved_values": "Bereits erreicht",
 	"indicator.effect.planned_values": "Geplant",
 	"indicator.extrapolated_values": "Prognose ohne Intervention",
@@ -126,7 +123,6 @@
 		"heading": "Mitarbeiter*in einladen",
 		"submit": "Einladung abschicken"
 	},
-	"kpi": "KPI",
 	"label": {
 		"unit": "Einheit"
 	},
@@ -148,7 +144,7 @@
 	"measure.summary": "Kurze Projektbeschreibung",
 	"measures": "Maßnahmen",
 	"members": "Mitglieder",
-	"milestones": "Meilensteine & KPIs",
+	"milestones": "Meilensteine",
 	"model": "Leitbild",
 	"models": "Visionen",
 	"modified_date": "Geändert am",
