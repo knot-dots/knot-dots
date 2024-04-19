@@ -57,7 +57,8 @@
 					<a
 						href="/indicators"
 						class="button button-nav"
-						class:is-active={$page.url.pathname === '/indicators'}
+						class:is-active={$page.url.pathname === '/indicators' ||
+							$page.url.pathname === '/indicator-monitoring'}
 						title={$_('board.indicators')}
 					>
 						<span class="small-only"><Effects /></span>

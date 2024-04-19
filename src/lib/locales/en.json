@@ -457,7 +457,9 @@
 		"members": "Members only",
 		"public": "Public"
 	},
-	"workspaces": "Workspaces",
+	"workspace.indicator_monitoring": "Indicator monitoring",
+	"workspace.indicators": "Tiles",
 	"workspace.measures": "Measures status board",
-	"workspace.tasks": "Tasks status board"
+	"workspace.tasks": "Tasks status board",
+	"workspaces": "Workspaces"
 }

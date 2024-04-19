@@ -1,5 +1,6 @@
 <script lang="ts">
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
+	import IndicatorWorkspaces from '$lib/components/IndicatorWorkspaces.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
 	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
@@ -14,10 +15,14 @@
 	<svelte:fragment slot="sidebar">
 		{#if isOrganizationContainer(data.container)}
 			<Sidebar helpSlug="indicators">
+				<IndicatorWorkspaces slot="workspaces" />
+
 				<AudienceFilter slot="filters" />
 			</Sidebar>
 		{:else if isOrganizationalUnitContainer(data.container)}
 			<Sidebar helpSlug="indicators">
+				<IndicatorWorkspaces slot="workspaces" />
+
 				<svelte:fragment slot="filters">
 					<IndicatorsIncludedFilter />
 					<AudienceFilter />
