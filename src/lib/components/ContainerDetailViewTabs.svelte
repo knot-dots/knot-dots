@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import Info from '~icons/knotdots/info';
 	import Effects from '~icons/knotdots/effects';
 	import Milestones from '~icons/knotdots/milestones';
 	import Resources from '~icons/knotdots/resources';
-	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import { isContainerWithEffect } from '$lib/models';
 	import type { AnyContainer, ContainerDetailViewTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -17,6 +18,12 @@
 			...state,
 			containerDetailView: { ...state.containerDetailView, activeTab }
 		}));
+		if (browser) {
+			const element = document.getElementById(activeTab);
+			if (element) {
+				element.scrollIntoView({ behavior: 'smooth' });
+			}
+		}
 	}
 </script>
 
@@ -26,7 +33,6 @@
 			title={$_('form.basic_data')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
 			on:click={() => updateApplicationState('basic-data')}
 		>
 			<Info />
@@ -39,7 +45,6 @@
 			title={$_('form.resources')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'resources'}
 			on:click={() => updateApplicationState('resources')}
 		>
 			<Resources />
@@ -52,7 +57,6 @@
 			title={$_('form.effects')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
 			on:click={() => updateApplicationState('effects')}
 		>
 			<Effects />
@@ -65,7 +69,6 @@
 			title={$_('milestones')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'milestones'}
 			on:click={() => updateApplicationState('milestones')}
 		>
 			<Milestones />

@@ -26,31 +26,29 @@
 	}));
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="metadata">
-		<legend>{$_('form.metadata')}</legend>
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
 
-		<RelationSelector {container} {isPartOfOptions} />
+	<RelationSelector {container} {isPartOfOptions} />
 
-		<OrganizationSelector bind:container />
+	<OrganizationSelector bind:container />
 
-		<ListBox
-			label={$_('audience')}
-			options={audience.options}
-			bind:value={container.payload.audience}
-		/>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<fieldset class="form-tab" id="basic-data">
-		<legend>{$_('form.basic_data')}</legend>
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+</fieldset>
 
-		<label>
-			{$_('summary')}
-			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
-		</label>
+<fieldset class="form-tab" id="basic-data">
+	<legend>{$_('form.basic_data')}</legend>
 
-		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
-	</fieldset>
-{/if}
+	<label>
+		{$_('summary')}
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+	</label>
+
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
+</fieldset>

@@ -23,53 +23,51 @@
 	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="metadata">
-		<legend>{$_('form.metadata')}</legend>
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
 
-		<StrategyRelationSelector {container} />
+	<StrategyRelationSelector {container} />
 
-		<OrganizationSelector bind:container />
+	<OrganizationSelector bind:container />
 
-		<ListBox
-			label={$_('audience')}
-			options={audience.options}
-			bind:value={container.payload.audience}
-		/>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<fieldset class="form-tab" id="basic-data">
-		<legend>{$_('form.basic_data')}</legend>
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+</fieldset>
 
-		<label>
-			{$_('summary')}
-			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
-		</label>
+<fieldset class="form-tab" id="basic-data">
+	<legend>{$_('form.basic_data')}</legend>
 
-		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
+	<label>
+		{$_('summary')}
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+	</label>
 
-		<label>
-			{$_('status.label')}
-			<select name="status" bind:value={container.payload.status} required>
-				{#each status.options as statusOption}
-					<option value={statusOption} selected={statusOption === statusParam}>
-						{$_(statusOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
 
-		<label>
-			{$_('fulfillment_date')}
-			<input type="date" bind:value={container.payload.fulfillmentDate} />
-		</label>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'effects'}
-	<fieldset class="form-tab" id="effects">
-		<legend>{$_('form.effects')}</legend>
+	<label>
+		{$_('status.label')}
+		<select name="status" bind:value={container.payload.status} required>
+			{#each status.options as statusOption}
+				<option value={statusOption} selected={statusOption === statusParam}>
+					{$_(statusOption)}
+				</option>
+			{/each}
+		</select>
+	</label>
 
-		<EffectWizard {container} />
-	</fieldset>
-{/if}
+	<label>
+		{$_('fulfillment_date')}
+		<input type="date" bind:value={container.payload.fulfillmentDate} />
+	</label>
+</fieldset>
+
+<fieldset class="form-tab" id="effects">
+	<legend>{$_('form.effects')}</legend>
+
+	<EffectWizard {container} />
+</fieldset>
