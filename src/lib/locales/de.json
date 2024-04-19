@@ -444,7 +444,9 @@
 		"members": "Alle Mitglieder",
 		"public": "Gesamte Öffentlichkeit"
 	},
-	"workspaces": "Arbeitsbereiche",
+	"workspace.indicator_monitoring": "Indikator-Monitoring",
+	"workspace.indicators": "Kacheln",
 	"workspace.measures": "Maßnahmen Status-Board",
-	"workspace.tasks": "Aufgaben Status-Board"
+	"workspace.tasks": "Aufgaben Status-Board",
+	"workspaces": "Arbeitsbereiche"
 }
