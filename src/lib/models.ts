@@ -212,7 +212,7 @@ const indicatorCategoryValues = [
 
 export const indicatorCategories = z.enum(indicatorCategoryValues);
 
-export type indicatorCategory = z.infer<typeof indicatorCategories>;
+export type IndicatorCategory = z.infer<typeof indicatorCategories>;
 
 const quantityValues = [
 	'quantity.custom',
