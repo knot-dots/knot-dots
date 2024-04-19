@@ -20,43 +20,45 @@
 	}));
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<StrategyRelationSelector {container} />
+		<StrategyRelationSelector {container} />
 
-	<OrganizationSelector bind:container />
+		<OrganizationSelector bind:container />
 
-	<ListBox
-		label={$_('audience')}
-		options={audience.options}
-		bind:value={container.payload.audience}
-	/>
-</fieldset>
+		<ListBox
+			label={$_('audience')}
+			options={audience.options}
+			bind:value={container.payload.audience}
+		/>
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
 
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
+		<label>
+			{$_('summary')}
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+		</label>
 
-	<label>
-		{$_('summary')}
-		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
-	</label>
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 
-	{#key 'guid' in container ? container.guid : ''}
-		<Editor label={$_('description')} bind:value={container.payload.description} />
-	{/key}
+		<ObjectiveWizard bind:container />
 
-	<ObjectiveWizard bind:container />
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
+		/>
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
-
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
-</fieldset>
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
+		/>
+	</fieldset>
+{/if}

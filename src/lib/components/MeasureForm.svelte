@@ -25,93 +25,95 @@
 	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<StrategyRelationSelector {container} />
+		<StrategyRelationSelector {container} />
 
-	<OrganizationSelector bind:container />
+		<OrganizationSelector bind:container />
 
-	<ListBox
-		label={$_('audience')}
-		options={audience.options}
-		bind:value={container.payload.audience}
-	/>
-</fieldset>
-
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
-
-	<label>
-		{$_('measure.summary')}
-		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
-	</label>
-
-	{#key 'guid' in container ? container.guid : ''}
-		<Editor label={$_('measure.description')} bind:value={container.payload.description} />
-
-		{#if container.payload.status === status.enum['status.in_planning']}
-			<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
-		{:else if container.payload.status === status.enum['status.in_implementation']}
-			<Editor label={$_('comment')} bind:value={container.payload.comment} />
-		{:else if container.payload.status === status.enum['status.in_operation']}
-			<Editor label={$_('result')} bind:value={container.payload.result} />
-		{/if}
-	{/key}
-
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
-
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
-
-	<label>
-		{$_('status.label')}
-		<select name="status" bind:value={container.payload.status} required>
-			{#each status.options as statusOption}
-				<option value={statusOption} selected={statusOption === statusParam}>
-					{$_(statusOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
-
-	<fieldset class="duration">
-		<legend>{$_('planned_duration')}</legend>
-		<label>
-			{$_('start_date')}
-			<input type="date" name="startDate" bind:value={container.payload.startDate} />
-		</label>
-		<label>
-			{$_('end_date')}
-			<input type="date" name="endDate" bind:value={container.payload.endDate} />
-		</label>
+		<ListBox
+			label={$_('audience')}
+			options={audience.options}
+			bind:value={container.payload.audience}
+		/>
 	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
 
-	<ListBox
-		label={$_('boards')}
-		options={['board.internal_objectives', 'board.tasks']}
-		bind:value={container.payload.boards}
-	/>
-</fieldset>
+		<label>
+			{$_('measure.summary')}
+			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+		</label>
 
-<fieldset class="form-tab" id="resources">
-	<legend>{$_('form.resources')}</legend>
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('measure.description')} bind:value={container.payload.description} />
 
-	<ResourcePlanner {container} />
-</fieldset>
+			{#if container.payload.status === status.enum['status.in_planning']}
+				<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
+			{:else if container.payload.status === status.enum['status.in_implementation']}
+				<Editor label={$_('comment')} bind:value={container.payload.comment} />
+			{:else if container.payload.status === status.enum['status.in_operation']}
+				<Editor label={$_('result')} bind:value={container.payload.result} />
+			{/if}
+		{/key}
 
-<fieldset class="form-tab" id="effects">
-	<legend>{$_('form.effects')}</legend>
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
+		/>
 
-	<EffectWizard {container} />
-</fieldset>
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
+		/>
+
+		<label>
+			{$_('status.label')}
+			<select name="status" bind:value={container.payload.status} required>
+				{#each status.options as statusOption}
+					<option value={statusOption} selected={statusOption === statusParam}>
+						{$_(statusOption)}
+					</option>
+				{/each}
+			</select>
+		</label>
+
+		<fieldset class="duration">
+			<legend>{$_('planned_duration')}</legend>
+			<label>
+				{$_('start_date')}
+				<input type="date" name="startDate" bind:value={container.payload.startDate} />
+			</label>
+			<label>
+				{$_('end_date')}
+				<input type="date" name="endDate" bind:value={container.payload.endDate} />
+			</label>
+		</fieldset>
+
+		<ListBox
+			label={$_('boards')}
+			options={['board.internal_objectives', 'board.tasks']}
+			bind:value={container.payload.boards}
+		/>
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'resources'}
+	<fieldset class="form-tab" id="resources">
+		<legend>{$_('form.resources')}</legend>
+
+		<ResourcePlanner {container} />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'effects'}
+	<fieldset class="form-tab" id="effects">
+		<legend>{$_('form.effects')}</legend>
+
+		<EffectWizard {container} />
+	</fieldset>
+{/if}
 
 <style>
 	.duration {
