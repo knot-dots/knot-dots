@@ -98,130 +98,132 @@
 	}
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<label>
-		{$_('indicator.template')}
-		<select on:change={changeQuantity} required>
-			<option></option>
-			<option value={'quantity.custom'}>{$_('quantity.custom.label')}</option>
-			{#each $page.data.indicatorTemplates as { guid, payload }}
-				<option value={guid}>{payload.title}</option>
-			{/each}
-		</select>
-	</label>
-
-	{#if container.payload.quantity}
 		<label>
-			{$_('label.unit')}
-			<select
-				name="unit"
-				bind:value={container.payload.unit}
-				disabled={container.payload.quantity !== quantities.enum['quantity.custom']}
-			>
-				{#each units.options as unitOption}
-					<option value={unitOption}>{$_(unitOption)}</option>
+			{$_('indicator.template')}
+			<select on:change={changeQuantity} required>
+				<option></option>
+				<option value={'quantity.custom'}>{$_('quantity.custom.label')}</option>
+				{#each $page.data.indicatorTemplates as { guid, payload }}
+					<option value={guid}>{payload.title}</option>
 				{/each}
 			</select>
 		</label>
 
+		{#if container.payload.quantity}
+			<label>
+				{$_('label.unit')}
+				<select
+					name="unit"
+					bind:value={container.payload.unit}
+					disabled={container.payload.quantity !== quantities.enum['quantity.custom']}
+				>
+					{#each units.options as unitOption}
+						<option value={unitOption}>{$_(unitOption)}</option>
+					{/each}
+				</select>
+			</label>
+
+			<ListBox
+				label={$_('indicator_category')}
+				options={indicatorCategories.options}
+				bind:value={container.payload.indicatorCategory}
+			/>
+		{/if}
+
 		<ListBox
-			label={$_('indicator_category')}
-			options={indicatorCategories.options}
-			bind:value={container.payload.indicatorCategory}
+			label={$_('audience')}
+			options={audience.options}
+			bind:value={container.payload.audience}
 		/>
-	{/if}
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
 
-	<ListBox
-		label={$_('audience')}
-		options={audience.options}
-		bind:value={container.payload.audience}
-	/>
-</fieldset>
+			<Editor
+				label={$_('indicator.historical_values_intro')}
+				bind:value={container.payload.historicalValuesIntro}
+			/>
 
-<fieldset class="form-tab" id="basic-data">
-	{#key 'guid' in container ? container.guid : ''}
-		<Editor label={$_('description')} bind:value={container.payload.description} />
+			<Editor
+				label={$_('indicator.objectives_intro')}
+				bind:value={container.payload.objectivesIntro}
+			/>
 
-		<Editor
-			label={$_('indicator.historical_values_intro')}
-			bind:value={container.payload.historicalValuesIntro}
+			<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
+		{/key}
+
+		<ListBox
+			label={$_('topic.label')}
+			options={topics.options}
+			bind:value={container.payload.topic}
 		/>
 
-		<Editor
-			label={$_('indicator.objectives_intro')}
-			bind:value={container.payload.objectivesIntro}
+		<ListBox
+			label={$_('category')}
+			options={sustainableDevelopmentGoals.options}
+			bind:value={container.payload.category}
 		/>
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'historical-values'}
+	<fieldset class="form-tab" id="historical-values">
+		<legend>{$_('form.historical_values')}</legend>
 
-		<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
-	{/key}
-
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
-
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
-</fieldset>
-
-<fieldset class="form-tab" id="historical-values">
-	<legend>{$_('form.historical_values')}</legend>
-
-	<table class="spreadsheet">
-		<thead>
-			<tr>
-				<th scope="col"></th>
-				<th scope="col">
-					{$_(container.payload.unit ?? '')}
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td colspan="2">
-					<button
-						class="quiet"
-						title={$_('add_value')}
-						type="button"
-						on:click={prependHistoricalValue}
-					>
-						<PlusSmall />
-					</button>
-				</td>
-			</tr>
-			{#each container.payload.historicalValues.map((v, i) => i) as index}
+		<table class="spreadsheet">
+			<thead>
 				<tr>
-					<th scope="row">
-						{container.payload.historicalValues[index][0]}
+					<th scope="col"></th>
+					<th scope="col">
+						{$_(container.payload.unit ?? '')}
 					</th>
-					<td>
-						<input
-							type="text"
-							inputmode="decimal"
-							value={container.payload.historicalValues[index][1]}
-							on:change={updateHistoricalValues(index)}
-						/>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td colspan="2">
+						<button
+							class="quiet"
+							title={$_('add_value')}
+							type="button"
+							on:click={prependHistoricalValue}
+						>
+							<PlusSmall />
+						</button>
 					</td>
 				</tr>
-			{/each}
-			<tr>
-				<td colspan="2">
-					<button
-						class="quiet"
-						title={$_('add_value')}
-						type="button"
-						on:click={appendHistoricalValue}
-					>
-						<PlusSmall />
-					</button>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-</fieldset>
+				{#each container.payload.historicalValues.map((v, i) => i) as index}
+					<tr>
+						<th scope="row">
+							{container.payload.historicalValues[index][0]}
+						</th>
+						<td>
+							<input
+								type="text"
+								inputmode="decimal"
+								value={container.payload.historicalValues[index][1]}
+								on:change={updateHistoricalValues(index)}
+							/>
+						</td>
+					</tr>
+				{/each}
+				<tr>
+					<td colspan="2">
+						<button
+							class="quiet"
+							title={$_('add_value')}
+							type="button"
+							on:click={appendHistoricalValue}
+						>
+							<PlusSmall />
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</fieldset>
+{/if}

@@ -24,3 +24,13 @@
 		{$_('workspace.tasks')}
 	</label>
 </li>
+<li>
+	<label>
+		<input
+			type="radio"
+			checked={$page.url.pathname === '/measure-monitoring'}
+			on:click={async () => await goto('/measure-monitoring')}
+		/>
+		{$_('workspace.measure_monitoring')}
+	</label>
+</li>

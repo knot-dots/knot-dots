@@ -66,60 +66,62 @@
 	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
+{#if $applicationState.containerForm.activeTab === 'metadata'}
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
 
-	<OrganizationSelector bind:container />
-</fieldset>
+		<OrganizationSelector bind:container />
+	</fieldset>
+{:else if $applicationState.containerForm.activeTab === 'basic-data'}
+	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
 
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
+		{#key 'guid' in container ? container.guid : ''}
+			<Editor label={$_('description')} bind:value={container.payload.description} />
+		{/key}
 
-	{#key 'guid' in container ? container.guid : ''}
-		<Editor label={$_('description')} bind:value={container.payload.description} />
-	{/key}
-
-	<label>
-		{$_('task_status.label')}
-		<select name="status" bind:value={container.payload.taskStatus} required>
-			{#each taskStatus.options as statusOption}
-				<option value={statusOption} selected={statusOption === statusParam}>
-					{$_(statusOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
-
-	<label>
-		{$_('assignee')}
-		<select name="assignee" bind:value={assignee}>
-			<option></option>
-			{#await membersPromise then members}
-				{#each members as { display_name, guid }}
-					{#if display_name !== ''}
-						<option value={guid} selected={guid === assignee}>
-							{display_name}
-						</option>
-					{/if}
+		<label>
+			{$_('task_status.label')}
+			<select name="status" bind:value={container.payload.taskStatus} required>
+				{#each taskStatus.options as statusOption}
+					<option value={statusOption} selected={statusOption === statusParam}>
+						{$_(statusOption)}
+					</option>
 				{/each}
-			{/await}
-		</select>
-	</label>
+			</select>
+		</label>
 
-	<label>
-		{$_('task_category.label')}
-		<select name="taskCategory" bind:value={taskCategory}>
-			<option></option>
-			{#each taskCategories.options as taskCategoryOption}
-				<option value={taskCategoryOption}>
-					{$_(taskCategoryOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
+		<label>
+			{$_('assignee')}
+			<select name="assignee" bind:value={assignee}>
+				<option></option>
+				{#await membersPromise then members}
+					{#each members as { display_name, guid }}
+						{#if display_name !== ''}
+							<option value={guid} selected={guid === assignee}>
+								{display_name}
+							</option>
+						{/if}
+					{/each}
+				{/await}
+			</select>
+		</label>
 
-	<label>
-		{$_('fulfillment_date')}
-		<input type="date" bind:value={container.payload.fulfillmentDate} />
-	</label>
-</fieldset>
+		<label>
+			{$_('task_category.label')}
+			<select name="taskCategory" bind:value={taskCategory}>
+				<option></option>
+				{#each taskCategories.options as taskCategoryOption}
+					<option value={taskCategoryOption}>
+						{$_(taskCategoryOption)}
+					</option>
+				{/each}
+			</select>
+		</label>
+
+		<label>
+			{$_('fulfillment_date')}
+			<input type="date" bind:value={container.payload.fulfillmentDate} />
+		</label>
+	</fieldset>
+{/if}

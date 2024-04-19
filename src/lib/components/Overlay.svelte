@@ -297,7 +297,14 @@
 			{/if}
 			<div class="content-actions">
 				{#if container.payload.type !== payloadTypes.enum.undefined}
-					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+					{#if $applicationState.containerForm.activeTab !== $applicationState.containerForm.tabs[$applicationState.containerForm.tabs.length - 1]}
+						<button form="container-form" type="submit">{$_('save')}</button>
+						<button class="primary" id="save-and-next" form="container-form" type="submit">
+							{$_('save_and_next')}
+						</button>
+					{:else}
+						<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+					{/if}
 				{/if}
 				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
 				{#if mayDelete(container)}
