@@ -1,23 +1,32 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers.js';
 	import Card from '$lib/components/Card.svelte';
-	import { paramsFromFragment, payloadTypes } from '$lib/models';
+	import {
+		isOverlayKey,
+		overlayKey,
+		paramsFromFragment,
+		payloadTypes,
+		predicates
+	} from '$lib/models';
 	import type { Container, TaskContainer } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
 	export let container: Container;
 
-	$: tasksRequest = fetchContainers({ implements: [container.revision] }) as Promise<
-		TaskContainer[]
-	>;
+	$: tasksRequest = fetchRelatedContainers(container.guid, {
+		payloadType: [payloadTypes.enum['internal_objective.task']]
+	}) as Promise<TaskContainer[]>;
 
 	function addTaskURL(url: URL) {
 		const params = paramsFromFragment(url);
-		params.set('create', payloadTypes.enum['internal_objective.task']);
-		params.set('implements', String(container.revision));
-		return `#${params.toString()}`;
+		const newParams = new URLSearchParams([
+			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
+			[overlayKey.enum.create, payloadTypes.enum['internal_objective.task']],
+			[predicates.enum['is-part-of'], String(container.revision)]
+		]);
+		return `#${newParams.toString()}`;
 	}
 </script>
 

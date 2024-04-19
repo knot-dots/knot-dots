@@ -18,7 +18,6 @@ import {
 	createContainer,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToStrategy,
-	getAllImplementingContainers,
 	getAllRelatedInternalObjectives,
 	getManyContainers,
 	getManyTaskContainers
@@ -30,7 +29,6 @@ export const GET = (async ({ locals, url }) => {
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
-		implements: z.array(z.coerce.number().int().positive()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		isPartOfMeasure: z.array(z.coerce.number().int().positive()).default([]),
 		isPartOfStrategy: z.array(z.coerce.number().int().positive()).default([]),
@@ -60,11 +58,7 @@ export const GET = (async ({ locals, url }) => {
 
 	let containers: Container[];
 
-	if (parseResult.data.implements.length > 0) {
-		containers = await locals.pool.connect(
-			getAllImplementingContainers(parseResult.data.implements[0])
-		);
-	} else if (parseResult.data.isPartOfStrategy.length > 0) {
+	if (parseResult.data.isPartOfStrategy.length > 0) {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
 				categories: parseResult.data.category,

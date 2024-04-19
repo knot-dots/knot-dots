@@ -112,7 +112,6 @@ export function isLevel(value: unknown): value is Level {
 }
 
 const predicateValues = [
-	'implements',
 	'is-admin-of',
 	'is-consistent-with',
 	'is-creator-of',

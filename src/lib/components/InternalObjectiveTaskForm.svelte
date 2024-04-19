@@ -38,12 +38,12 @@
 
 	if (container.relation.length == 0) {
 		container.relation = paramsFromURL($page.url)
-			.getAll('implements')
+			.getAll('is-part-of')
 			.map(
 				(o): PartialRelation => ({
 					object: Number(o),
 					position: 0,
-					predicate: 'implements'
+					predicate: 'is-part-of'
 				})
 			)
 			.concat(

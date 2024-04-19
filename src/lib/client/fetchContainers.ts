@@ -7,7 +7,6 @@ export default async function fetchContainers(
 		assignee?: string[];
 		audience?: string[];
 		category?: string[];
-		implements?: number[];
 		indicatorCategory?: string[];
 		isPartOfMeasure?: number[];
 		isPartOfStrategy?: number[];
@@ -35,9 +34,6 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);
-	}
-	for (const value of filters.implements ?? []) {
-		params.append('implements', String(value));
 	}
 	for (const value of filters.isPartOfMeasure ?? []) {
 		params.append('isPartOfMeasure', String(value));
