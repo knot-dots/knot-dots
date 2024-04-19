@@ -5,6 +5,7 @@ import {
 	audience,
 	isIndicatorContainer,
 	isInternalObjectiveContainer,
+	payloadTypes,
 	relation,
 	strategyTypes,
 	sustainableDevelopmentGoals,
@@ -26,6 +27,7 @@ export const GET = (async ({ locals, params, url }) => {
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
+		payloadType: z.array(payloadTypes).default([]),
 		relationType: z.array(z.enum(['hierarchical', 'other'])).default(['hierarchical', 'other']),
 		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
 		strategyType: z.array(strategyTypes).default([]),
@@ -70,7 +72,8 @@ export const GET = (async ({ locals, params, url }) => {
 					organizationalUnits: parseResult.data.organizationalUnit,
 					strategyTypes: parseResult.data.strategyType,
 					topics: parseResult.data.topic,
-					terms: parseResult.data.terms[0]
+					terms: parseResult.data.terms[0],
+					type: parseResult.data.payloadType
 				},
 				parseResult.data.sort[0]
 			)

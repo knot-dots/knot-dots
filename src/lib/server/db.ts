@@ -793,6 +793,7 @@ export function getAllRelatedContainers(
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
+		type?: PayloadType[];
 	},
 	sort: string
 ) {
