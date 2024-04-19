@@ -8,6 +8,7 @@ export default async function fetchRelatedContainers(
 		category?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
+		payloadType?: string[];
 		relationType?: string[];
 		strategyType?: string[];
 		terms?: string;
@@ -27,6 +28,9 @@ export default async function fetchRelatedContainers(
 	}
 	for (const value of filters.organizationalUnit ?? []) {
 		params.append('organizationalUnit', value);
+	}
+	for (const value of filters.payloadType ?? []) {
+		params.append('payloadType', value);
 	}
 	for (const value of filters.relationType ?? []) {
 		params.append('relationType', value);

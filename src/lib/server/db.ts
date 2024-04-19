@@ -793,6 +793,7 @@ export function getAllRelatedContainers(
 		strategyTypes?: string[];
 		terms?: string;
 		topics?: string[];
+		type?: PayloadType[];
 	},
 	sort: string
 ) {
@@ -1114,20 +1115,6 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
-		return withUserAndRelation<Container>(connection, containerResult);
-	};
-}
-
-export function getAllImplementingContainers(revision: number) {
-	return async (connection: DatabaseConnection) => {
-		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT c.*
-			FROM container c
-			JOIN  container_relation cr ON c.revision = cr.subject
-				AND cr.predicate = ${predicates.enum.implements}
-				AND cr.object = ${revision}
-			WHERE c.valid_currently AND NOT c.deleted
-		`);
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }

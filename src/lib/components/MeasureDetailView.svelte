@@ -7,6 +7,7 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import MilestoneCarousel from '$lib/components/MilestoneCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
@@ -30,7 +31,10 @@
 
 	applicationState.update((state) => ({
 		...state,
-		containerDetailView: { activeTab: 'basic-data', tabs: ['basic-data', 'resources', 'effects'] }
+		containerDetailView: {
+			activeTab: 'basic-data',
+			tabs: ['basic-data', 'resources', 'effects', 'milestones']
+		}
 	}));
 
 	let selectedRevision: MeasureContainer | SimpleMeasureContainer;
@@ -74,211 +78,212 @@
 </script>
 
 <article class="details">
-	<h2 class="details-title">
-		{container.payload.title}
-		{#if $ability.can('update', container)}
-			<a class="button button-square quiet" href="#view={container.guid}&edit">
-				<Pencil />
-			</a>
-		{/if}
-	</h2>
-
-	{#if $applicationState.containerDetailView.activeTab === 'basic-data'}
-		<div class="details-tab" id="basic-data">
-			{#if 'summary' in selectedRevision.payload}
-				<div class="summary">
-					<h3>{$_('measure.summary')}</h3>
-					{selectedRevision.payload.summary ?? ''}
-				</div>
+	<div class="details-tab" id="basic-data">
+		<h2 class="details-title">
+			{container.payload.title}
+			{#if $ability.can('update', container)}
+				<a class="button button-square quiet" href="#view={container.guid}&edit">
+					<Pencil />
+				</a>
 			{/if}
+		</h2>
 
-			{#if 'description' in container.payload}
-				<div class="description">
-					<h3>{isMeasureContainer(container) ? $_('measure.description') : $_('description')}</h3>
-					<Viewer value={selectedRevision.payload.description} />
-				</div>
-			{/if}
-
-			{#if 'progress' in selectedRevision.payload}
-				<div class="progress">
-					<h3>{$_('progress')}</h3>
-					<Progress value={selectedRevision.payload.progress} />
-				</div>
-			{/if}
-
-			{#if 'annotation' in selectedRevision.payload && (selectedRevision.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(selectedRevision))}
-				<div class="annotation">
-					<h3>{$_('annotation')}</h3>
-					<Viewer value={selectedRevision.payload.annotation} />
-				</div>
-			{:else if 'comment' in selectedRevision.payload && selectedRevision.payload.status === status.enum['status.in_implementation']}
-				<div class="comment">
-					<h3>{$_('comment')}</h3>
-					<Viewer value={selectedRevision.payload.comment} />
-				</div>
-			{:else if 'result' in selectedRevision.payload && (selectedRevision.payload.status === status.enum['status.in_operation'] || selectedRevision.payload.status === status.enum['status.done'])}
-				<div class="result">
-					<h3>{$_('result')}</h3>
-					<Viewer value={selectedRevision.payload.result} />
-				</div>
-			{/if}
-
-			<div class="meta">
-				<h3 class="meta-key">{$_('object')}</h3>
-				<p class="meta-value">{$_(selectedRevision.payload.type)}</p>
+		{#if 'summary' in selectedRevision.payload}
+			<div class="summary">
+				<h3>{$_('measure.summary')}</h3>
+				{selectedRevision.payload.summary ?? ''}
 			</div>
+		{/if}
 
-			{#if strategy}
-				<div class="meta">
-					<h3 class="meta-key">{$_('strategy')}</h3>
-					<p class="meta-value">
-						{#if $page.url.pathname === `/strategy/${strategy.guid}`}
-							{$_(strategy.payload.title)}
-						{:else}
-							<a href={containerURL(strategy.payload.type, strategy.guid)}>
-								{$_(strategy.payload.title)}
-							</a>
-						{/if}
-					</p>
-				</div>
+		{#if 'description' in container.payload}
+			<div class="description">
+				<h3>{isMeasureContainer(container) ? $_('measure.description') : $_('description')}</h3>
+				<Viewer value={selectedRevision.payload.description} />
+			</div>
+		{/if}
 
-				<div class="meta">
-					<h3 class="meta-key">{$_('strategy_type.label')}</h3>
-					<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
-				</div>
-			{/if}
+		{#if 'progress' in selectedRevision.payload}
+			<div class="progress">
+				<h3>{$_('progress')}</h3>
+				<Progress value={selectedRevision.payload.progress} />
+			</div>
+		{/if}
 
-			{#if 'topic' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('topic.label')}</h3>
-					<ul class="meta-value meta-value--topic">
-						{#each selectedRevision.payload.topic as topic}
-							<li>{$_(topic)}</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
+		{#if 'annotation' in selectedRevision.payload && (selectedRevision.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(selectedRevision))}
+			<div class="annotation">
+				<h3>{$_('annotation')}</h3>
+				<Viewer value={selectedRevision.payload.annotation} />
+			</div>
+		{:else if 'comment' in selectedRevision.payload && selectedRevision.payload.status === status.enum['status.in_implementation']}
+			<div class="comment">
+				<h3>{$_('comment')}</h3>
+				<Viewer value={selectedRevision.payload.comment} />
+			</div>
+		{:else if 'result' in selectedRevision.payload && (selectedRevision.payload.status === status.enum['status.in_operation'] || selectedRevision.payload.status === status.enum['status.done'])}
+			<div class="result">
+				<h3>{$_('result')}</h3>
+				<Viewer value={selectedRevision.payload.result} />
+			</div>
+		{/if}
 
-			{#if 'category' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('category')}</h3>
-					<ul class="meta-value meta-value--category">
-						{#each selectedRevision.payload.category as category}
-							<li>
-								<img
-									src={sdgIcons.get(category)}
-									alt={$_(category)}
-									title={$_(category)}
-									width="66"
-									height="66"
-								/>
-							</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
+		<div class="meta">
+			<h3 class="meta-key">{$_('object')}</h3>
+			<p class="meta-value">{$_(selectedRevision.payload.type)}</p>
+		</div>
 
+		{#if strategy}
 			<div class="meta">
-				<h3 class="meta-key">{$_('status.label')}</h3>
+				<h3 class="meta-key">{$_('strategy')}</h3>
 				<p class="meta-value">
-					<span class="badge badge--{statusColors.get(selectedRevision.payload.status)}">
-						<svelte:component
-							this={statusIcons.get(selectedRevision.payload.status) ?? LightBulb}
-						/>
-						{$_(selectedRevision.payload.status)}
-					</span>
+					{#if $page.url.pathname === `/strategy/${strategy.guid}`}
+						{$_(strategy.payload.title)}
+					{:else}
+						<a href={containerURL(strategy.payload.type, strategy.guid)}>
+							{$_(strategy.payload.title)}
+						</a>
+					{/if}
 				</p>
 			</div>
 
 			<div class="meta">
-				<h3 class="meta-key">{$_('owned_by')}</h3>
-				<ul class="meta-value">
-					{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
-						<li>{owner.payload.name}</li>
+				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+				<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
+			</div>
+		{/if}
+
+		{#if 'topic' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('topic.label')}</h3>
+				<ul class="meta-value meta-value--topic">
+					{#each selectedRevision.payload.topic as topic}
+						<li>{$_(topic)}</li>
 					{/each}
 				</ul>
 			</div>
+		{/if}
 
-			{#if 'audience' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('audience')}</h3>
-					<ul class="meta-value">
-						{#each container.payload.audience as audience}
-							<li>{$_(audience)}</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
-
-			{#if 'startDate' in container.payload || 'endDate' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('planned_duration')}</h3>
-					<p class="meta-value">
-						{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}
-							{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–{$date(
-								new Date(selectedRevision.payload.endDate),
-								{
-									format: 'short'
-								}
-							)}
-						{:else if selectedRevision.payload.startDate}
-							{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–
-						{/if}
-					</p>
-				</div>
-			{/if}
-
+		{#if 'category' in container.payload}
 			<div class="meta">
-				<h3 class="meta-key">{$_('created_date')}</h3>
-				<ul class="meta-value">
-					<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
+				<h3 class="meta-key">{$_('category')}</h3>
+				<ul class="meta-value meta-value--category">
+					{#each selectedRevision.payload.category as category}
+						<li>
+							<img
+								src={sdgIcons.get(category)}
+								alt={$_(category)}
+								title={$_(category)}
+								width="66"
+								height="66"
+							/>
+						</li>
+					{/each}
 				</ul>
 			</div>
+		{/if}
 
-			<div class="meta">
-				<h3 class="meta-key">{$_('modified_date')}</h3>
-				<ul class="meta-value">
-					<li>{$date(selectedRevision.valid_from, { format: 'medium' })}</li>
-				</ul>
-			</div>
+		<div class="meta">
+			<h3 class="meta-key">{$_('status.label')}</h3>
+			<p class="meta-value">
+				<span class="badge badge--{statusColors.get(selectedRevision.payload.status)}">
+					<svelte:component this={statusIcons.get(selectedRevision.payload.status) ?? LightBulb} />
+					{$_(selectedRevision.payload.status)}
+				</span>
+			</p>
 		</div>
-	{:else if $applicationState.containerDetailView.activeTab === 'resources'}
-		<div class="details-tab" id="resources">
-			<h3>{$_('resources.label')}</h3>
-			<ul>
-				{#each selectedRevision.payload.resource as resource}
-					<li class="resource-item">
-						<span>{resource.description}</span>
-						<span>{resource.unit}</span>
-						<span>{$number(resource.amount)}</span>
-						<span>
-							{$date(new Date(resource.fulfillmentDate), {
-								day: '2-digit',
-								month: '2-digit',
-								year: 'numeric'
-							})}
-						</span>
-					</li>
+
+		<div class="meta">
+			<h3 class="meta-key">{$_('owned_by')}</h3>
+			<ul class="meta-value">
+				{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+					<li>{owner.payload.name}</li>
 				{/each}
 			</ul>
 		</div>
-	{:else if $applicationState.containerDetailView.activeTab === 'effects'}
-		<div class="details-tab" id="effects">
-			<h3>{$_('effects')}</h3>
 
-			{#await indicatorsRequest then indicators}
-				{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
-				{#each container.payload.effect as effect}
-					{@const indicator = indicatorsByGuid.get(effect.indicator)}
-					{#if indicator}
-						<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
-							<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
-						</IndicatorChart>
+		{#if 'audience' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('audience')}</h3>
+				<ul class="meta-value">
+					{#each container.payload.audience as audience}
+						<li>{$_(audience)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		{#if 'startDate' in container.payload || 'endDate' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('planned_duration')}</h3>
+				<p class="meta-value">
+					{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}
+						{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–{$date(
+							new Date(selectedRevision.payload.endDate),
+							{
+								format: 'short'
+							}
+						)}
+					{:else if selectedRevision.payload.startDate}
+						{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–
 					{/if}
-				{/each}
-			{/await}
+				</p>
+			</div>
+		{/if}
+
+		<div class="meta">
+			<h3 class="meta-key">{$_('created_date')}</h3>
+			<ul class="meta-value">
+				<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
+			</ul>
 		</div>
-	{/if}
+
+		<div class="meta">
+			<h3 class="meta-key">{$_('modified_date')}</h3>
+			<ul class="meta-value">
+				<li>{$date(selectedRevision.valid_from, { format: 'medium' })}</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="details-tab" id="resources">
+		<h3>{$_('resources.label')}</h3>
+		<ul>
+			{#each selectedRevision.payload.resource as resource}
+				<li class="resource-item">
+					<span>{resource.description}</span>
+					<span>{resource.unit}</span>
+					<span>{$number(resource.amount)}</span>
+					<span>
+						{$date(new Date(resource.fulfillmentDate), {
+							day: '2-digit',
+							month: '2-digit',
+							year: 'numeric'
+						})}
+					</span>
+				</li>
+			{/each}
+		</ul>
+	</div>
+
+	<div class="details-tab" id="effects">
+		<h3>{$_('effects')}</h3>
+
+		{#await indicatorsRequest then indicators}
+			{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
+			{#each container.payload.effect as effect}
+				{@const indicator = indicatorsByGuid.get(effect.indicator)}
+				{#if indicator}
+					<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
+						<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
+					</IndicatorChart>
+				{/if}
+			{/each}
+		{/await}
+	</div>
+
+	<div class="details-tab" id="milestones">
+		<h3>{$_('milestones')}</h3>
+		<MilestoneCarousel {container} />
+	</div>
 </article>
 
 <style>

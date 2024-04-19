@@ -20,66 +20,64 @@
 	}));
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="metadata">
-		<legend>{$_('form.metadata')}</legend>
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
 
-		<StrategyRelationSelector {container} />
+	<StrategyRelationSelector {container} />
 
-		<OrganizationSelector bind:container />
+	<OrganizationSelector bind:container />
 
-		<ListBox
-			label={$_('audience')}
-			options={audience.options}
-			bind:value={container.payload.audience}
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+</fieldset>
+
+<fieldset class="form-tab" id="basic-data">
+	<legend>{$_('form.basic_data')}</legend>
+
+	<label>
+		{$_('summary')}
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+	</label>
+
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
+
+	<ObjectiveWizard bind:container />
+
+	<label>
+		{$_('progress')}
+		<input
+			type="range"
+			max="1"
+			min="0"
+			list="steps"
+			step="0.1"
+			bind:value={container.payload.progress}
 		/>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<fieldset class="form-tab" id="basic-data">
-		<legend>{$_('form.basic_data')}</legend>
+		<datalist id="steps">
+			<option value="0"></option>
+			<option value="0.1"></option>
+			<option value="0.2"></option>
+			<option value="0.3"></option>
+			<option value="0.4"></option>
+			<option value="0.5"></option>
+			<option value="0.6"></option>
+			<option value="0.7"></option>
+			<option value="0.8"></option>
+			<option value="0.9"></option>
+			<option value="1"></option>
+		</datalist>
+	</label>
 
-		<label>
-			{$_('summary')}
-			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
-		</label>
-
-		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
-
-		<ObjectiveWizard bind:container />
-
-		<label>
-			{$_('progress')}
-			<input
-				type="range"
-				max="1"
-				min="0"
-				list="steps"
-				step="0.1"
-				bind:value={container.payload.progress}
-			/>
-			<datalist id="steps">
-				<option value="0"></option>
-				<option value="0.1"></option>
-				<option value="0.2"></option>
-				<option value="0.3"></option>
-				<option value="0.4"></option>
-				<option value="0.5"></option>
-				<option value="0.6"></option>
-				<option value="0.7"></option>
-				<option value="0.8"></option>
-				<option value="0.9"></option>
-				<option value="1"></option>
-			</datalist>
-		</label>
-
-		<label>
-			{$_('fulfillment_date')}
-			<input type="date" bind:value={container.payload.fulfillmentDate} />
-		</label>
-	</fieldset>
-{/if}
+	<label>
+		{$_('fulfillment_date')}
+		<input type="date" bind:value={container.payload.fulfillmentDate} />
+	</label>
+</fieldset>
 
 <style>
 	input[type='range'] {

@@ -1,6 +1,8 @@
 {
 	"about": "Über uns",
 	"add_item": "Hinzufügen",
+	"add_kpi": "KPI hinzufügen",
+	"add_milestone": "Meilenstein hinzufügen",
 	"all_organizations": "Alle Organisationen",
 	"annotation": "Anmerkungen",
 	"assignee": "Zugewiesen an",
@@ -146,6 +148,7 @@
 	"measure.summary": "Kurze Projektbeschreibung",
 	"measures": "Maßnahmen",
 	"members": "Mitglieder",
+	"milestones": "Meilensteine & KPIs",
 	"model": "Leitbild",
 	"models": "Visionen",
 	"modified_date": "Geändert am",
