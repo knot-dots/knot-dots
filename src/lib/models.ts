@@ -72,6 +72,7 @@ const payloadTypeValues = [
 	'internal_objective.strategic_goal',
 	'internal_objective.milestone',
 	'internal_objective.task',
+	'kpi',
 	'measure',
 	'model',
 	'operational_goal',
@@ -444,6 +445,16 @@ const milestonePayload = internalObjectivesBasePayload
 	})
 	.strict();
 
+const kpiPayload = internalObjectivesBasePayload.extend({
+	effect: z.array(indicatorEffect).default([]),
+	fulfillmentDate: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional(),
+	status: status.default(status.enum['status.idea']),
+	type: z.literal(payloadTypes.enum.kpi)
+});
+
 const taskPayload = internalObjectivesBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -624,6 +635,7 @@ export const container = z.object({
 		internalObjectiveStrategicGoalPayload,
 		milestonePayload,
 		taskPayload,
+		kpiPayload,
 		measurePayload,
 		modelPayload,
 		operationalGoalPayload,
@@ -652,6 +664,7 @@ export const anyContainer = container.extend({
 		internalObjectiveStrategicGoalPayload,
 		milestonePayload,
 		taskPayload,
+		kpiPayload,
 		measurePayload,
 		modelPayload,
 		operationalGoalPayload,
@@ -693,7 +706,7 @@ export function isContainerWithObjective(
 }
 
 export const containerWithEffect = container.extend({
-	payload: z.discriminatedUnion('type', [measurePayload, simpleMeasurePayload])
+	payload: z.discriminatedUnion('type', [kpiPayload, measurePayload, simpleMeasurePayload])
 });
 
 export type ContainerWithEffect = z.infer<typeof containerWithEffect>;
@@ -701,7 +714,11 @@ export type ContainerWithEffect = z.infer<typeof containerWithEffect>;
 export function isContainerWithEffect(
 	container: AnyContainer | EmptyContainer
 ): container is ContainerWithEffect {
-	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
+	return (
+		isKPIContainer(container) ||
+		isMeasureContainer(container) ||
+		isSimpleMeasureContainer(container)
+	);
 }
 
 const indicatorContainer = container.extend({
@@ -726,6 +743,18 @@ export function isIndicatorTemplateContainer(
 	container: AnyContainer | EmptyContainer
 ): container is IndicatorTemplateContainer {
 	return container.payload.type === payloadTypes.enum.indicator_template;
+}
+
+const kpiContainer = container.extend({
+	payload: kpiPayload
+});
+
+export type KPIContainer = z.infer<typeof kpiContainer>;
+
+export function isKPIContainer(
+	container: AnyContainer | EmptyContainer
+): container is KPIContainer {
+	return container.payload.type === payloadTypes.enum.kpi;
 }
 
 const measureContainer = container.extend({
@@ -969,6 +998,14 @@ const emptyContainer = newContainer.extend({
 				visibility: true
 			})
 		),
+		kpiPayload.partial().merge(
+			kpiPayload.pick({
+				audience: true,
+				effect: true,
+				type: true,
+				visibility: true
+			})
+		),
 		measurePayload.partial().merge(
 			measurePayload.pick({
 				audience: true,
@@ -1084,6 +1121,19 @@ const emptyIndicatorContainer = emptyContainer.extend({
 });
 
 export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
+
+const emptyKPIContainer = emptyContainer.extend({
+	payload: kpiPayload.partial().merge(
+		kpiPayload.pick({
+			audience: true,
+			effect: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptyKPIContainer = z.infer<typeof emptyKPIContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
 	payload: measurePayload.partial().merge(

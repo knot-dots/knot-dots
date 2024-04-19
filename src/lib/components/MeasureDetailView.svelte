@@ -13,21 +13,18 @@
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		isStrategyContainer,
+		type MeasureContainer,
 		overlayKey,
 		owners,
 		payloadTypes,
+		type SimpleMeasureContainer,
 		status
 	} from '$lib/models';
-	import type {
-		AnyContainer,
-		Container,
-		ContainerWithEffect,
-		IndicatorContainer
-	} from '$lib/models';
+	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { sdgIcons, statusColors, statusIcons } from '$lib/theme/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export let container: ContainerWithEffect;
+	export let container: MeasureContainer | SimpleMeasureContainer;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
@@ -36,13 +33,13 @@
 		containerDetailView: { activeTab: 'basic-data', tabs: ['basic-data', 'resources', 'effects'] }
 	}));
 
-	let selectedRevision: ContainerWithEffect;
+	let selectedRevision: MeasureContainer | SimpleMeasureContainer;
 
 	$: {
 		const parseResult = status.safeParse(paramsFromURL($page.url).get('status'));
 		if (parseResult.success) {
 			selectedRevision =
-				(revisions as ContainerWithEffect[]).findLast(
+				(revisions as MeasureContainer[] | SimpleMeasureContainer[]).findLast(
 					({ payload }) => payload.status == parseResult.data
 				) ?? container;
 		} else {

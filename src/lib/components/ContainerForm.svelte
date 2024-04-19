@@ -10,6 +10,7 @@
 	import InternalObjectiveStrategyForm from '$lib/components/InternalObjectiveStrategyForm.svelte';
 	import InternalObjectiveTaskForm from '$lib/components/InternalObjectiveTaskForm.svelte';
 	import InternalObjectiveVisionForm from '$lib/components/InternalObjectiveVisionForm.svelte';
+	import KPIForm from '$lib/components/KPIForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
 	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
@@ -25,6 +26,7 @@
 		isIndicatorContainer,
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
+		isKPIContainer,
 		isMeasureContainer,
 		isMilestoneContainer,
 		isModelContainer,
@@ -147,6 +149,8 @@
 	</label>
 	{#if isIndicatorContainer(container)}
 		<IndicatorForm bind:container />
+	{:else if isKPIContainer(container)}
+		<KPIForm bind:container />
 	{:else if isMeasureContainer(container)}
 		<MeasureForm bind:container />
 	{:else if isModelContainer(container)}

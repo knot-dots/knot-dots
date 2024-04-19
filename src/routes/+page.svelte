@@ -33,6 +33,7 @@
 		{
 			title: 'payload_group.measurable_goals',
 			payloadType: [
+				payloadTypes.enum.kpi,
 				payloadTypes.enum.operational_goal,
 				payloadTypes.enum['internal_objective.milestone']
 			]
