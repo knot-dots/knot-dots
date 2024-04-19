@@ -392,6 +392,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	audience?: string[];
 	categories?: string[];
+	indicatorCategories?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
 	strategyTypes?: string[];
@@ -409,6 +410,14 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.categories?.length) {
 		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
+	}
+	if (filters.indicatorCategories?.length) {
+		conditions.push(
+			sql.fragment`payload->'indicatorCategory' ?| ${sql.array(
+				filters.indicatorCategories,
+				'text'
+			)}`
+		);
 	}
 	if (filters.organizations?.length) {
 		conditions.push(
@@ -505,6 +514,7 @@ export function getManyContainers(
 	filters: {
 		audience?: string[];
 		categories?: string[];
+		indicatorCategories?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		terms?: string;

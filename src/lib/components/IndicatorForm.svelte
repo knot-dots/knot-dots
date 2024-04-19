@@ -6,6 +6,7 @@
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
 		audience,
+		indicatorCategories,
 		quantities,
 		sustainableDevelopmentGoals,
 		topics,
@@ -48,6 +49,7 @@
 
 		if (container.payload.quantity == quantities.enum['quantity.custom']) {
 			container.payload.title = '';
+			container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
 		} else if (quantities.options.includes(container.payload.quantity as Quantity)) {
 			container.payload.title = $_(`${container.payload.quantity}.label`);
 			container.payload.unit = unitByQuantity.get(container.payload.quantity as Quantity);
@@ -59,6 +61,7 @@
 			if (indicatorTemplate) {
 				container.payload.title = indicatorTemplate.payload.title;
 				container.payload.unit = indicatorTemplate.payload.unit;
+				container.payload.indicatorCategory = indicatorTemplate.payload.indicatorCategory;
 				container.payload.description = indicatorTemplate.payload.description;
 				container.payload.historicalValuesIntro = indicatorTemplate.payload.historicalValuesIntro;
 				container.payload.measuresIntro = indicatorTemplate.payload.measuresIntro;
@@ -123,6 +126,12 @@
 					{/each}
 				</select>
 			</label>
+
+			<ListBox
+				label={$_('indicator_category')}
+				options={indicatorCategories.options}
+				bind:value={container.payload.indicatorCategory}
+			/>
 		{/if}
 
 		<ListBox

@@ -72,6 +72,7 @@ const payloadTypeValues = [
 	'internal_objective.strategic_goal',
 	'internal_objective.milestone',
 	'internal_objective.task',
+	'kpi',
 	'measure',
 	'model',
 	'operational_goal',
@@ -204,6 +205,16 @@ const organizationCategoryValues = [
 export const organizationCategories = z.enum(organizationCategoryValues);
 
 export type OrganizationCategory = z.infer<typeof organizationCategories>;
+
+const indicatorCategoryValues = [
+	'indicator_category.kpi',
+	'indicator_category.sdg',
+	'indicator_category.custom'
+] as const;
+
+export const indicatorCategories = z.enum(indicatorCategoryValues);
+
+export type indicatorCategory = z.infer<typeof indicatorCategories>;
 
 const quantityValues = [
 	'quantity.custom',
@@ -381,6 +392,7 @@ const basePayload = z
 const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	historicalValuesIntro: z.string().optional(),
+	indicatorCategory: z.array(indicatorCategories).default([]),
 	measuresIntro: z.string().optional(),
 	objectivesIntro: z.string().optional(),
 	quantity: z.string(),
@@ -432,6 +444,16 @@ const milestonePayload = internalObjectivesBasePayload
 		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
 	})
 	.strict();
+
+const kpiPayload = internalObjectivesBasePayload.extend({
+	effect: z.array(indicatorEffect).default([]),
+	fulfillmentDate: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional(),
+	status: status.default(status.enum['status.idea']),
+	type: z.literal(payloadTypes.enum.kpi)
+});
 
 const taskPayload = internalObjectivesBasePayload
 	.omit({ audience: true, summary: true })
@@ -613,6 +635,7 @@ export const container = z.object({
 		internalObjectiveStrategicGoalPayload,
 		milestonePayload,
 		taskPayload,
+		kpiPayload,
 		measurePayload,
 		modelPayload,
 		operationalGoalPayload,
@@ -641,6 +664,7 @@ export const anyContainer = container.extend({
 		internalObjectiveStrategicGoalPayload,
 		milestonePayload,
 		taskPayload,
+		kpiPayload,
 		measurePayload,
 		modelPayload,
 		operationalGoalPayload,
@@ -682,7 +706,7 @@ export function isContainerWithObjective(
 }
 
 export const containerWithEffect = container.extend({
-	payload: z.discriminatedUnion('type', [measurePayload, simpleMeasurePayload])
+	payload: z.discriminatedUnion('type', [kpiPayload, measurePayload, simpleMeasurePayload])
 });
 
 export type ContainerWithEffect = z.infer<typeof containerWithEffect>;
@@ -690,7 +714,11 @@ export type ContainerWithEffect = z.infer<typeof containerWithEffect>;
 export function isContainerWithEffect(
 	container: AnyContainer | EmptyContainer
 ): container is ContainerWithEffect {
-	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
+	return (
+		isKPIContainer(container) ||
+		isMeasureContainer(container) ||
+		isSimpleMeasureContainer(container)
+	);
 }
 
 const indicatorContainer = container.extend({
@@ -715,6 +743,18 @@ export function isIndicatorTemplateContainer(
 	container: AnyContainer | EmptyContainer
 ): container is IndicatorTemplateContainer {
 	return container.payload.type === payloadTypes.enum.indicator_template;
+}
+
+const kpiContainer = container.extend({
+	payload: kpiPayload
+});
+
+export type KPIContainer = z.infer<typeof kpiContainer>;
+
+export function isKPIContainer(
+	container: AnyContainer | EmptyContainer
+): container is KPIContainer {
+	return container.payload.type === payloadTypes.enum.kpi;
 }
 
 const measureContainer = container.extend({
@@ -958,6 +998,14 @@ const emptyContainer = newContainer.extend({
 				visibility: true
 			})
 		),
+		kpiPayload.partial().merge(
+			kpiPayload.pick({
+				audience: true,
+				effect: true,
+				type: true,
+				visibility: true
+			})
+		),
 		measurePayload.partial().merge(
 			measurePayload.pick({
 				audience: true,
@@ -1073,6 +1121,19 @@ const emptyIndicatorContainer = emptyContainer.extend({
 });
 
 export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
+
+const emptyKPIContainer = emptyContainer.extend({
+	payload: kpiPayload.partial().merge(
+		kpiPayload.pick({
+			audience: true,
+			effect: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptyKPIContainer = z.infer<typeof emptyKPIContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
 	payload: measurePayload.partial().merge(

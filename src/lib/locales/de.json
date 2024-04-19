@@ -99,6 +99,10 @@
 	"indicator.view_mode.chart": "Diagramm",
 	"indicator.view_mode.table": "Tabelle",
 	"indicator.wanted_values": "Zielwerte",
+	"indicator_category": "Kategorie",
+	"indicator_category.kpi": "KPI",
+	"indicator_category.sdg": "SDG",
+	"indicator_category.custom": "Eigene",
 	"indicators": "Indikatoren",
 	"information": "Information",
 	"internal_objective": {
@@ -120,6 +124,7 @@
 		"heading": "Mitarbeiter*in einladen",
 		"submit": "Einladung abschicken"
 	},
+	"kpi": "KPI",
 	"label": {
 		"unit": "Einheit"
 	},

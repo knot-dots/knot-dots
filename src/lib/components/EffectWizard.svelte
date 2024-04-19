@@ -5,7 +5,7 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import { payloadTypes } from '$lib/models';
+	import { indicatorCategories, isKPIContainer, payloadTypes } from '$lib/models';
 	import type { Container, EmptyContainer, IndicatorContainer, IndicatorEffect } from '$lib/models';
 
 	export let container: (Container | EmptyContainer) & {
@@ -16,6 +16,9 @@
 
 	onMount(() => {
 		indicatorsRequest = fetchContainers({
+			indicatorCategory: isKPIContainer(container)
+				? [indicatorCategories.enum['indicator_category.kpi']]
+				: [],
 			organization: [container.organization],
 			payloadType: [payloadTypes.enum.indicator]
 		}) as Promise<IndicatorContainer[]>;

@@ -5,6 +5,7 @@ import { filterVisible } from '$lib/authorization';
 import {
 	audience,
 	type Container,
+	indicatorCategories,
 	newContainer,
 	payloadTypes,
 	predicates,
@@ -30,6 +31,7 @@ export const GET = (async ({ locals, url }) => {
 		audience: z.array(audience).default([]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		implements: z.array(z.coerce.number().int().positive()).default([]),
+		indicatorCategory: z.array(indicatorCategories).default([]),
 		isPartOfMeasure: z.array(z.coerce.number().int().positive()).default([]),
 		isPartOfStrategy: z.array(z.coerce.number().int().positive()).default([]),
 		organization: z.array(z.string().uuid()).default([]),
@@ -109,6 +111,7 @@ export const GET = (async ({ locals, url }) => {
 				{
 					audience: parseResult.data.audience,
 					categories: parseResult.data.category,
+					indicatorCategories: parseResult.data.indicatorCategory,
 					organizationalUnits: parseResult.data.organizationalUnit,
 					strategyTypes: parseResult.data.strategyType,
 					terms: parseResult.data.terms[0],

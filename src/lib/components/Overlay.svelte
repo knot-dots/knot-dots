@@ -23,6 +23,7 @@
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
+	import KPIDetailView from '$lib/components/KPIDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import Members from '$lib/components/Members.svelte';
@@ -43,10 +44,12 @@
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		isContainer,
-		isContainerWithEffect,
 		isIndicatorContainer,
 		isInternalObjectiveContainer,
+		isKPIContainer,
+		isMeasureContainer,
 		isPageContainer,
+		isSimpleMeasureContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		mayDelete,
@@ -466,7 +469,7 @@
 			<header class="content-header">
 				<IndicatorTabs />
 			</header>
-		{:else if isContainerWithEffect(container)}
+		{:else if isKPIContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)}
 			<header class="content-header">
 				<MeasureStatusTabs {container} {revisions} />
 			</header>
@@ -483,7 +486,9 @@
 					{relatedContainers}
 					{revisions}
 				/>
-			{:else if isContainerWithEffect(container)}
+			{:else if isKPIContainer(container)}
+				<KPIDetailView {container} {relatedContainers} {revisions} />
+			{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
 				<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
