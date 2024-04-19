@@ -7,7 +7,6 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		isMeasureContainer,
@@ -83,8 +82,6 @@
 					<Viewer value={selectedRevision.payload.description} />
 				</div>
 			{/if}
-
-			<TaskCarousel {container} />
 
 			<div class="meta">
 				<h3 class="meta-key">{$_('object')}</h3>
