@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
@@ -26,10 +27,13 @@
 
 	$: measures = data.containers
 		.filter(isContainerWithEffect)
-		.filter(({ payload }) =>
-			payload.effect
-				.map(({ indicator }) => indicator)
-				.some((indicator) => indicators.map(({ guid }) => guid).includes(indicator))
+		.filter(
+			({ relation }) =>
+				relation.findIndex(
+					(r) =>
+						r.predicate === predicates.enum['is-part-of'] &&
+						indicators.map(({ revision }) => revision).includes(r.object)
+				) > -1
 		);
 
 	$: milestones = data.containers
@@ -38,7 +42,8 @@
 			({ relation }) =>
 				relation.findIndex(
 					(r) =>
-						r.predicate === predicates.enum['is-part-of-measure'] &&
+						(r.predicate === predicates.enum['is-part-of-measure'] ||
+							r.predicate === predicates.enum['is-part-of']) &&
 						measures.map(({ revision }) => revision).includes(r.object)
 				) > -1
 		);
@@ -49,10 +54,13 @@
 			({ relation }) =>
 				relation.findIndex(
 					(r) =>
-						r.predicate === predicates.enum['is-part-of'] &&
+						(r.predicate === predicates.enum['is-part-of-measure'] ||
+							r.predicate === predicates.enum['is-part-of']) &&
 						milestones.map(({ revision }) => revision).includes(r.object)
 				) > -1
 		);
+
+	setContext('mayShowRelationButton', true);
 </script>
 
 <Layout>
@@ -77,7 +85,7 @@
 			<BoardColumn title={$_('indicators')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each indicators as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
@@ -85,7 +93,7 @@
 			<BoardColumn title={$_('measures')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each measures as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
@@ -93,7 +101,7 @@
 			<BoardColumn title={$_('internal_objective.milestones')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each milestones as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
@@ -101,7 +109,7 @@
 			<BoardColumn title={$_('tasks')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each tasks as container}
-						<Card {container}></Card>
+						<Card {container} showRelationFilter></Card>
 					{/each}
 				</div>
 			</BoardColumn>
