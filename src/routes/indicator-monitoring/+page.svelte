@@ -54,9 +54,10 @@
 			({ relation }) =>
 				relation.findIndex(
 					(r) =>
-						(r.predicate === predicates.enum['is-part-of-measure'] ||
-							r.predicate === predicates.enum['is-part-of']) &&
-						milestones.map(({ revision }) => revision).includes(r.object)
+						(r.predicate === predicates.enum['is-part-of'] &&
+							milestones.map(({ revision }) => revision).includes(r.object)) ||
+						(r.predicate === predicates.enum['is-part-of-measure'] &&
+							measures.map(({ revision }) => revision).includes(r.object))
 				) > -1
 		);
 
