@@ -813,12 +813,12 @@ export function getAllRelatedContainers(
 							--No relations with this as the subject.
 							SELECT *
 							FROM container_relation parent_test
-							WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
+							WHERE c.revision = parent_test.subject AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure')
 						)
 					UNION ALL
 					SELECT array_append(r.path, c.revision), c.revision
 					FROM container c
-					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
+					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN ('is-part-of', 'is-part-of-measure')
 					JOIN is_part_of_relation r ON cr.object = r.subject
 					WHERE c.valid_currently
 				)
