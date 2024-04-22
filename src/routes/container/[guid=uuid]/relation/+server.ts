@@ -57,6 +57,7 @@ export const GET = (async ({ locals, params, url }) => {
 			getAllRelatedInternalObjectives(
 				params.guid,
 				parseResult.data.relationType,
+				{ type: parseResult.data.payloadType },
 				parseResult.data.sort[0]
 			)
 		);

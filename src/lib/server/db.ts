@@ -1048,7 +1048,14 @@ export function getAllContainersRelatedToMeasure(
 	};
 }
 
-export function getAllRelatedInternalObjectives(guid: string, relations: string[], sort: string) {
+export function getAllRelatedInternalObjectives(
+	guid: string,
+	relations: string[],
+	filters: {
+		type?: PayloadType[];
+	},
+	sort: string
+) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const revision = await connection.oneFirst(sql.typeAlias('revision')`
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
@@ -1110,8 +1117,7 @@ export function getAllRelatedInternalObjectives(guid: string, relations: string[
 					.concat([revision]),
 				sql.fragment`, `
 			)})
-				AND valid_currently
-				AND NOT deleted
+				AND ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
