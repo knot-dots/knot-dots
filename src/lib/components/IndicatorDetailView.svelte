@@ -149,6 +149,17 @@
 			<p class="meta-value">{$_(container.payload.type)}</p>
 		</div>
 
+		{#if 'indicatorCategory' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('indicator_category')}</h3>
+				<ul class="meta-value meta-value--topic">
+					{#each container.payload.indicatorCategory as indicatorCategory}
+						<li>{$_(indicatorCategory)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
 		{#if 'topic' in container.payload}
 			<div class="meta">
 				<h3 class="meta-key">{$_('topic.label')}</h3>
