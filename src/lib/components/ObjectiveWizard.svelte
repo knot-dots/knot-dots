@@ -84,9 +84,7 @@
 							<tr>
 								<th scope="col"></th>
 								<th scope="col" colspan="2">
-									{$_(`${indicator.payload.quantity}.label`)} ({$_(
-										`${indicator.payload.unit}` ?? ''
-									)})
+									{indicator.payload.title} ({$_(`${indicator.payload.unit}` ?? '')})
 								</th>
 							</tr>
 							<tr>
