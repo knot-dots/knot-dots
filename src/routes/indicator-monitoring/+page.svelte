@@ -27,10 +27,13 @@
 
 	$: measures = data.containers
 		.filter(isContainerWithEffect)
-		.filter(({ payload }) =>
-			payload.effect
-				.map(({ indicator }) => indicator)
-				.some((indicator) => indicators.map(({ guid }) => guid).includes(indicator))
+		.filter(
+			({ relation }) =>
+				relation.findIndex(
+					(r) =>
+						r.predicate === predicates.enum['is-part-of'] &&
+						indicators.map(({ revision }) => revision).includes(r.object)
+				) > -1
 		);
 
 	$: milestones = data.containers
@@ -39,7 +42,8 @@
 			({ relation }) =>
 				relation.findIndex(
 					(r) =>
-						r.predicate === predicates.enum['is-part-of-measure'] &&
+						(r.predicate === predicates.enum['is-part-of-measure'] ||
+							r.predicate === predicates.enum['is-part-of']) &&
 						measures.map(({ revision }) => revision).includes(r.object)
 				) > -1
 		);
@@ -50,7 +54,8 @@
 			({ relation }) =>
 				relation.findIndex(
 					(r) =>
-						r.predicate === predicates.enum['is-part-of'] &&
+						(r.predicate === predicates.enum['is-part-of-measure'] ||
+							r.predicate === predicates.enum['is-part-of']) &&
 						milestones.map(({ revision }) => revision).includes(r.object)
 				) > -1
 		);
