@@ -77,7 +77,9 @@ export const POST = (async ({ locals, request }) => {
 			(r) =>
 				relationWithIndicators.findIndex(
 					({ object, predicate }) => r.object == object && r.predicate == predicate
-				) > -1
+				) > -1 ||
+				!r.object ||
+				!indicators.map(({ revision }) => revision).includes(r.object)
 		);
 		const result = await locals.pool.connect(
 			updateContainer({
