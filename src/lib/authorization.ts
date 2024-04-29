@@ -14,7 +14,8 @@ const objectiveTypes = [
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.strategic_goal,
 	payloadTypes.enum.strategy,
-	payloadTypes.enum.text
+	payloadTypes.enum.text,
+	payloadTypes.enum.undefined
 ];
 
 const internalObjectiveTypes = [

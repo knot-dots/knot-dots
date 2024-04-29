@@ -9,12 +9,13 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
-		type IndicatorContainer,
+		containerOfType,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isSimpleMeasureContainer,
@@ -24,7 +25,7 @@
 		predicates,
 		status
 	} from '$lib/models';
-	import type { Container, Relation, StrategyContainer } from '$lib/models';
+	import type { Container, IndicatorContainer, Relation, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
@@ -253,10 +254,12 @@
 			{$_('read_more')}
 		</a>
 
-		<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
-			<PlusSmall />
-			{$_('chapter')}
-		</a>
+		{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
+			<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
+				<PlusSmall />
+				{$_('chapter')}
+			</a>
+		{/if}
 	</footer>
 </div>
 
