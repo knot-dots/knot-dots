@@ -62,7 +62,7 @@
 		"remark-rehype": "^11.0.0",
 		"roarr": "^7.21.0",
 		"serialize-error": "^11.0.3",
-		"slonik": "^35.2.1",
+		"slonik": "^41.1.0",
 		"slonik-interceptor-query-logging": "^1.4.7",
 		"unified": "^11.0.4",
 		"uuid": "^9.0.1",
