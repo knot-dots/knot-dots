@@ -671,7 +671,7 @@ fieldset {
 	padding: 1.5rem 1.5rem 0;
 }
 
-.content-header a {
+.content-header a, .content-header button {
 	float: right;
 }
 
