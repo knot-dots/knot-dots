@@ -45,7 +45,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	}
 
 	if (!currentOrganization) {
-		throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 
 	const random = await fetch('/random');

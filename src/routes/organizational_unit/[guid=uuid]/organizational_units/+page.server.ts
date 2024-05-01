@@ -11,7 +11,7 @@ export const load = (async ({ locals, url, params }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isOrganizationalUnitContainer(container)) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
 	if (url.searchParams.has('related-to')) {

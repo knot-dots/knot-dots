@@ -9,7 +9,7 @@ export const load = (async ({ params, locals }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isOrganizationContainer(container)) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
 	const [strategies, measures, indicators] = await Promise.all([

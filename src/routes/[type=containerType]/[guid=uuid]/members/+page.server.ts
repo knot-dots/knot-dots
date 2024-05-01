@@ -12,7 +12,7 @@ export const load = (async ({ locals, params }) => {
 	]);
 
 	if (!isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
 	const members = await getMembers(container.organization);

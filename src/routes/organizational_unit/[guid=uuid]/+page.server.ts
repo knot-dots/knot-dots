@@ -13,7 +13,7 @@ export const load = (async ({ params, locals }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isOrganizationalUnitContainer(container)) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
 	const relatedOrganizationalUnits = await locals.pool.connect(

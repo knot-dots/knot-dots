@@ -9,7 +9,7 @@ export const GET = (async ({ locals, params }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isIndicatorContainer(container)) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
 	const containers = await locals.pool.connect(getAllContainersWithParentObjectives(container));

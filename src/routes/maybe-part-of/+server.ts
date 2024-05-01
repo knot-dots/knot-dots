@@ -11,7 +11,7 @@ export const GET = (async ({ locals, url }) => {
 		.safeParse([url.searchParams.get('organization'), url.searchParams.get('payloadType')]);
 
 	if (!parseResult.success) {
-		throw error(400, { message: parseResult.error.message });
+		error(400, { message: parseResult.error.message });
 	}
 
 	const containers = await locals.pool.connect(
