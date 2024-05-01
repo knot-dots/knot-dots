@@ -39,7 +39,7 @@
 		"svelte": "^4.2.15",
 		"svelte-check": "^3.6.2",
 		"svelte-dnd-action": "^0.9.33",
-		"svelte-i18n": "3.7.3",
+		"svelte-i18n": "^4.0.0",
 		"tslib": "^2.6.2",
 		"typescript": "^5.3.2",
 		"unplugin-icons": "^0.19.0",
