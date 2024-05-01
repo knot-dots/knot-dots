@@ -14,7 +14,7 @@
 	--color-gray-900: #111827;
 	--color-green-050: #f3faf7;
 	--color-green-500: #0e9f6e;
-	--color-green-600: #057A55;
+	--color-green-600: #057a55;
 	--color-green-700: #046c4e;
 	--color-indigo-050: #f0f5ff;
 	--color-indigo-500: #6875f5;
@@ -45,17 +45,57 @@
 	--color-is-equivalent-to: #7ad0ff;
 	--color-is-inconsistent-with: #ca1d61;
 	--gradient-primary: linear-gradient(45deg, rgba(77, 195, 197, 1) 0%, rgba(33, 165, 237, 1) 100%);
-	--gradient-first-column: linear-gradient(90deg, rgba(70, 150, 203, 0.15) 0%, rgba(62, 185, 210, 0.15) 100%);
-	--gradient-second-column: linear-gradient(90deg, rgba(62, 182, 210, 0.15) 0%, rgba(55, 180, 217, 0.15) 100%);
-	--gradient-third-column: linear-gradient(90deg, rgba(55, 180, 217, 0.15) 0%, rgba(47, 174, 224, 0.15) 100%);
-	--gradient-fourth-column: linear-gradient(90deg, rgba(47, 174, 224, 0.15) 0%, rgba(40, 169, 231, 0.15) 100%);
-	--gradient-fifth-column: linear-gradient(90deg, rgba(40, 169, 231, 0.15) 0%, rgba(32, 164, 238, 0.15) 100%);
-	--gradient-sixth-column: linear-gradient(90deg, rgba(40, 169, 231, 0.15) 0%, rgba(32, 164, 238, 0.15) 100%);
+	--gradient-first-column: linear-gradient(
+		90deg,
+		rgba(70, 150, 203, 0.15) 0%,
+		rgba(62, 185, 210, 0.15) 100%
+	);
+	--gradient-second-column: linear-gradient(
+		90deg,
+		rgba(62, 182, 210, 0.15) 0%,
+		rgba(55, 180, 217, 0.15) 100%
+	);
+	--gradient-third-column: linear-gradient(
+		90deg,
+		rgba(55, 180, 217, 0.15) 0%,
+		rgba(47, 174, 224, 0.15) 100%
+	);
+	--gradient-fourth-column: linear-gradient(
+		90deg,
+		rgba(47, 174, 224, 0.15) 0%,
+		rgba(40, 169, 231, 0.15) 100%
+	);
+	--gradient-fifth-column: linear-gradient(
+		90deg,
+		rgba(40, 169, 231, 0.15) 0%,
+		rgba(32, 164, 238, 0.15) 100%
+	);
+	--gradient-sixth-column: linear-gradient(
+		90deg,
+		rgba(40, 169, 231, 0.15) 0%,
+		rgba(32, 164, 238, 0.15) 100%
+	);
 	--gradient-idea: linear-gradient(90deg, rgba(218, 75, 96, 0.15) 0%, rgba(225, 95, 96, 0.15) 100%);
-	--gradient-in-planning: linear-gradient(90deg, rgba(241, 140, 95, 0.15) 0%, rgb(254, 183, 97, 0.15) 100%);
-	--gradient-in-implementation: linear-gradient(90deg, rgba(252, 205, 108, 0.15) 0%, rgba(245, 255, 134, 0.15) 100%);
-	--gradient-in-operation: linear-gradient(90deg, rgba(110, 218, 166, 0.15) 0%, rgba(168, 234, 152, 0.15) 100%);
-	--gradient-done: linear-gradient(90deg, rgba(70, 190, 203, 0.15) 40.28%, rgba(110, 218, 166, 0.15) 100%);
+	--gradient-in-planning: linear-gradient(
+		90deg,
+		rgba(241, 140, 95, 0.15) 0%,
+		rgb(254, 183, 97, 0.15) 100%
+	);
+	--gradient-in-implementation: linear-gradient(
+		90deg,
+		rgba(252, 205, 108, 0.15) 0%,
+		rgba(245, 255, 134, 0.15) 100%
+	);
+	--gradient-in-operation: linear-gradient(
+		90deg,
+		rgba(110, 218, 166, 0.15) 0%,
+		rgba(168, 234, 152, 0.15) 100%
+	);
+	--gradient-done: linear-gradient(
+		90deg,
+		rgba(70, 190, 203, 0.15) 40.28%,
+		rgba(110, 218, 166, 0.15) 100%
+	);
 	--color-hover-neutral: #b4e1f7;
 	--color-hover-idea: rgba(218, 75, 96, 0.35);
 	--color-hover-in-planning: rgba(241, 140, 95, 0.35);
@@ -235,7 +275,7 @@ td {
 }
 
 .form-tab > legend {
-	color: var(--color-gray-800, #1F2A37);
+	color: var(--color-gray-800, #1f2a37);
 	font-weight: 700;
 	line-height: 1.5;
 	margin-bottom: 1.5rem;
@@ -274,7 +314,7 @@ button.quiet,
 
 button.fully-rounded,
 .button.fully-rounded {
-	border-radius: calc(1.5rem + var(--padding-y))
+	border-radius: calc(1.5rem + var(--padding-y));
 }
 
 button.button-nav,
@@ -552,7 +592,7 @@ fieldset {
 	border: none;
 	border-radius: 0;
 	line-height: 1.5;
-	padding: 0.25rem 0.5rem
+	padding: 0.25rem 0.5rem;
 }
 
 .spreadsheet button {
@@ -641,7 +681,6 @@ fieldset {
 	flex-grow: 1;
 	padding: 1.5rem;
 }
-
 
 .content-footer {
 	padding: 0 1.5rem 1.5rem;
@@ -757,8 +796,9 @@ fieldset {
 	margin-bottom: 0;
 }
 
-.markdown-body a, .milkdown .editor a {
-	text-decoration: underline
+.markdown-body a,
+.milkdown .editor a {
+	text-decoration: underline;
 }
 
 /* Fade out overflow effect */

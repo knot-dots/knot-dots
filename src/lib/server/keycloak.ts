@@ -35,10 +35,7 @@ export async function createUser(user: NewUser) {
 	if (!response.ok) {
 		throw new Error(`Failed to create user in realm. Keycloak responded with ${response.status}`);
 	}
-	return z
-		.string()
-		.uuid()
-		.parse(response.headers.get('Location')?.split('/').pop());
+	return z.string().uuid().parse(response.headers.get('Location')?.split('/').pop());
 }
 
 export async function addUserToGroup(user: User, group: string) {
@@ -110,10 +107,7 @@ export async function createGroup(name: string) {
 	if (!response.ok) {
 		throw new Error(`Failed to create group in realm. Keycloak responded with ${response.status}`);
 	}
-	return z
-		.string()
-		.uuid()
-		.parse(response.headers.get('Location')?.split('/').pop());
+	return z.string().uuid().parse(response.headers.get('Location')?.split('/').pop());
 }
 
 export async function getMembers(group: string) {

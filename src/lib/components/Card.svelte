@@ -138,8 +138,8 @@
 	title={'title' in container.payload
 		? container.payload.title
 		: 'name' in container.payload
-		  ? container.payload.name
-		  : undefined}
+			? container.payload.name
+			: undefined}
 	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.view) === container.guid ||
