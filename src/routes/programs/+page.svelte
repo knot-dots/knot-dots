@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { page } from '$app/stores';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
-	import Board from '$lib/components/Board.svelte';
-	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -14,10 +14,9 @@
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import { levels, payloadTypes } from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { payloadTypes } from '$lib/models';
+	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
-	import { page } from '$app/stores';
 
 	export let data: PageData;
 
@@ -45,21 +44,52 @@
 	</Sidebar>
 
 	<svelte:fragment slot="main">
-		<Board>
-			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
-				<BoardColumn
-					addItemUrl={$mayCreateContainer(payloadTypes.enum.strategy)
-						? `#create=strategy&level=${levelOption}`
-						: undefined}
-					title={$_(levelOption)}
-				>
-					<MaybeDragZone
-						containers={data.containers.filter(
-							(c) => 'level' in c.payload && c.payload.level === levelOption
-						)}
-					/>
-				</BoardColumn>
-			{/each}
-		</Board>
+		<div>
+			{#if $ability.can('create', payloadTypes.enum.strategy)}
+				<p>
+					<a class="button primary" href="#create={payloadTypes.enum.strategy}">
+						<PlusSmall />
+						{$_('strategy')}
+					</a>
+				</p>
+			{/if}
+			<ul>
+				{#each data.containers as container}
+					<li>
+						<Card --height="100%" {container} />
+					</li>
+				{/each}
+			</ul>
+		</div>
 	</svelte:fragment>
 </Layout>
+
+<style>
+	div {
+		flex: 1 1;
+		overflow-y: auto;
+		padding: 1.5rem;
+	}
+
+	p {
+		margin-bottom: 1.5rem;
+	}
+
+	ul {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+		min-width: calc(100vw - 3.5rem - 3rem);
+	}
+
+	li {
+		width: 19.5rem;
+	}
+
+	.button {
+		align-items: center;
+		display: inline-flex;
+		gap: 0.5rem;
+	}
+</style>
