@@ -10,8 +10,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"lint": "prettier --plugin-search-dir . --check . && eslint .",
-		"format": "prettier --plugin-search-dir . --write ."
+		"lint": "prettier --check ./src && eslint ./src",
+		"format": "prettier --write ./src"
 	},
 	"devDependencies": {
 		"@auth/core": "^0.30.0",
