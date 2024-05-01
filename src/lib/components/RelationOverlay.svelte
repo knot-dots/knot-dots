@@ -5,12 +5,12 @@
 	import { slide } from 'svelte/transition';
 	import Trash from '~icons/heroicons/trash';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
 	import { predicates } from '$lib/models';
 	import type { AnyContainer, Container, Predicate } from '$lib/models';
-	import { dragged } from '$lib/stores';
+	import { dragged, overlayHistory } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
 
 	export let object: AnyContainer;
@@ -49,8 +49,14 @@
 		}
 	];
 
-	function closeOverlay() {
-		return `#view=${object.guid}`;
+	async function close() {
+		if ($overlayHistory.length > 1) {
+			$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+			const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+			await goto(`#${newParams.toString()}`);
+		} else {
+			await goto(`#`);
+		}
 	}
 
 	let activeDropZoneIndex = -1;
@@ -130,11 +136,9 @@
 <section class="overlay" transition:slide={{ axis: 'x' }}>
 	<header class="content-header">
 		<h2>
-			<span class="icons">
-				<a href={closeOverlay()} class="button icons-element">
-					<XMark />
-				</a>
-			</span>
+			<button class="quiet" on:click={() => close()}>
+				<XMark />
+			</button>
 		</h2>
 	</header>
 	<div class="content-details">
@@ -194,9 +198,9 @@
 		<footer class="content-footer">
 			<div class="content-actions">
 				<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
-				<a class="button" href={`?related-to=${object.guid}`}
-					>{$_('relation_overlay.close_and_show_relations')}</a
-				>
+				<a class="button" href={`?related-to=${object.guid}`}>
+					{$_('relation_overlay.close_and_show_relations')}
+				</a>
 			</div>
 		</footer>
 	</div>

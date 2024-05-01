@@ -10,15 +10,14 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import {
-		type ContainerWithObjective,
 		isIndicatorContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
 		predicates
 	} from '$lib/models';
-	import type { AnyContainer, Container } from '$lib/models';
-	import { overlay } from '$lib/stores';
+	import type { AnyContainer, Container, ContainerWithObjective } from '$lib/models';
+	import { overlay, overlayHistory } from '$lib/stores';
 	import {
 		predicateIcons,
 		statusColors,
@@ -106,6 +105,15 @@
 		}
 	}
 
+	function updateOverlayHistory(event: MouseEvent) {
+		const anchorHashParams = new URLSearchParams(
+			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
+		);
+		if (!overlayContext && !$overlayHistory[$overlayHistory.length - 1]?.has('relate')) {
+			$overlayHistory = [anchorHashParams];
+		}
+	}
+
 	const highlightColorMap = new Map<string, string>([
 		[predicates.enum['is-consistent-with'], 'var(--color-is-consistent-with)'],
 		[predicates.enum['is-equivalent-to'], 'var(--color-is-equivalent-to)'],
@@ -151,7 +159,7 @@
 >
 	<header>
 		<h3>
-			<a href={containerPreviewURL} bind:this={previewLink}>
+			<a href={containerPreviewURL} bind:this={previewLink} on:click={updateOverlayHistory}>
 				{#if 'title' in container.payload}
 					{container.payload.title}
 				{:else if 'name' in container.payload}

@@ -149,6 +149,8 @@ export const overlay = writable<Overlay>({
 	revisions: []
 });
 
+export const overlayHistory = writable<URLSearchParams[]>([]);
+
 if (browser) {
 	page.subscribe(async (values) => {
 		if (!values.url) {
@@ -156,6 +158,16 @@ if (browser) {
 		}
 
 		const hashParams = paramsFromFragment(values.url);
+
+		if (hashParams.size > 0) {
+			overlayHistory.update((value) =>
+				hashParams.toString() == value[value.length - 1]?.toString() ?? ''
+					? value
+					: [...value, hashParams]
+			);
+		} else {
+			overlayHistory.set([]);
+		}
 
 		if (hashParams.has(overlayKey.enum.create)) {
 			const isPartOfOptions = await fetchIsPartOfOptions(
