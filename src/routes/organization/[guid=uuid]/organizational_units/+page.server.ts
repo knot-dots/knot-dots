@@ -14,7 +14,7 @@ export const load = (async ({ locals, url, params }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isOrganizationContainer(container)) {
-		throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 
 	if (url.searchParams.has('related-to')) {

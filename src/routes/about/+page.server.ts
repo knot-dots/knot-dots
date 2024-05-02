@@ -15,9 +15,9 @@ export const load = (async ({ locals }) => {
 			e instanceof NotFoundError &&
 			defineAbilityFor(locals.user).can('create', payloadTypes.enum.page)
 		) {
-			throw redirect(302, '/page/new?slug=about');
+			redirect(302, '/page/new?slug=about');
 		} else {
-			throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 	}
 }) satisfies PageServerLoad;

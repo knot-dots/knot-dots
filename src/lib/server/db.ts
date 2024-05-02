@@ -118,7 +118,7 @@ export function createContainer(container: NewContainer) {
 					RETURNING *
 				`)
 				: organizationalUnitGuid
-				  ? await txConnection.one(sql.typeAlias('anyContainer')`
+					? await txConnection.one(sql.typeAlias('anyContainer')`
 						INSERT INTO container (guid, organization, payload, realm)
 						VALUES (
 							${organizationalUnitGuid},
@@ -128,7 +128,7 @@ export function createContainer(container: NewContainer) {
 						)
 						RETURNING *
 					`)
-				  : await txConnection.one(sql.typeAlias('anyContainer')`
+					: await txConnection.one(sql.typeAlias('anyContainer')`
 						INSERT INTO container (organization, organizational_unit, payload, realm)
 						VALUES (
 							${container.organization},

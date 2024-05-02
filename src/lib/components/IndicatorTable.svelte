@@ -52,14 +52,14 @@
 									Value: currentValue.Value + accumulator[groupIndex].Value
 								},
 								...accumulator.slice(groupIndex + 1)
-						  ]
+							]
 						: [
 								...accumulator,
 								{
 									Year: currentValue.Year,
 									Value: currentValue.Value
 								}
-						  ];
+							];
 				},
 				[] as Array<{ Year: number; Value: number }>
 			)
@@ -117,7 +117,7 @@
 									Value: currentValue.Value + accumulator[groupIndex].Value
 								},
 								...accumulator.slice(groupIndex + 1)
-						  ]
+							]
 						: [
 								...accumulator,
 								{
@@ -125,7 +125,7 @@
 									Year: currentValue.Year,
 									Value: currentValue.Value
 								}
-						  ];
+							];
 				},
 				[] as Array<{ Year: number; Value: number; Status: string }>
 			);

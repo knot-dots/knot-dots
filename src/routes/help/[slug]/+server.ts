@@ -32,7 +32,7 @@ export const GET = (async ({ locals, params }) => {
 			);
 			return json(container);
 		} else {
-			throw error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 	}
 }) satisfies RequestHandler;

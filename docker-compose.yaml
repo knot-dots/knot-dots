@@ -86,8 +86,10 @@ services:
     ports:
       - "5173:5173"
     depends_on:
-      db:
+      keycloak:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       - AUTH_SECRET
       - KC_CLIENT_SECRET

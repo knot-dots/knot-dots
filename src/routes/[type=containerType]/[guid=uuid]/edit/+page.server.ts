@@ -8,7 +8,7 @@ export const load = (async ({ params, locals }) => {
 	const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
 	if (!isPageContainer(container)) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
 	return { container };

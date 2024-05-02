@@ -9,6 +9,7 @@
 	import Members from '~icons/knotdots/members';
 	import Objectives from '~icons/knotdots/objectives';
 	import Tasks from '~icons/knotdots/tasks';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { accountURL } from '$lib/authentication';
 	import {
@@ -21,32 +22,26 @@
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
-	import { ability, overlay, user } from '$lib/stores';
+	import { ability, overlay, overlayHistory, user } from '$lib/stores';
 
 	export let container: AnyContainer | undefined = undefined;
 
-	function closeURL(url: URL) {
-		const hashParams = paramsFromFragment(url);
-
-		if (hashParams.has(overlayKey.enum['view-help'])) {
-			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key != overlayKey.enum['view-help'])
-			);
-			return `#${newParams.toString()}`;
+	async function close() {
+		if ($overlayHistory.length > 1) {
+			$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+			const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+			await goto(`#${newParams.toString()}`);
 		} else {
-			const newParams = new URLSearchParams(
-				[...hashParams.entries()].filter(([key]) => key == overlayKey.enum.relate)
-			);
-			return `#${newParams.toString()}`;
+			await goto(`#`);
 		}
 	}
 </script>
 
 <nav>
 	<div>
-		<a class="button button-nav button-square" href={closeURL($page.url)}>
+		<button class="button-nav button-square" on:click={() => close()}>
 			<XMark />
-		</a>
+		</button>
 
 		{#if container}
 			<a

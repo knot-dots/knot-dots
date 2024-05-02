@@ -8,8 +8,8 @@
 	style:--color={value > 0.7
 		? 'var(--color-green-500)'
 		: value > 0.3
-		? 'var(--color-yellow-200)'
-		: 'var(--color-red-600)'}
+			? 'var(--color-yellow-200)'
+			: 'var(--color-red-600)'}
 	class:compact
 />
 

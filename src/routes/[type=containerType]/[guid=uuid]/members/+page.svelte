@@ -29,11 +29,9 @@
 					{'title' in data.container.payload
 						? data.container.payload.title
 						: data.container.payload.name}
-					<span class="icons">
-						<button class="icons-element" type="button" on:click={() => window.history.back()}>
-							<ChevronLeft />
-						</button>
-					</span>
+					<button class="button-square quiet" type="button" on:click={() => window.history.back()}>
+						<ChevronLeft />
+					</button>
 				</h2>
 			</header>
 			<div class="content-details masked-overflow table">

@@ -7,7 +7,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 export const POST = (async ({ request, locals }) => {
 	if (!locals.user.isAuthenticated) {
-		throw error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
+		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
 	const client = new S3Client({

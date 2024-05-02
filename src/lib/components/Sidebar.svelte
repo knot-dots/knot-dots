@@ -8,9 +8,11 @@
 	import Search from '~icons/knotdots/search';
 	import Sort from '~icons/knotdots/sort';
 	import Workspaces from '~icons/knotdots/workspaces';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
+	import { overlayHistory } from '$lib/stores';
 
 	export let helpSlug = '';
 
@@ -51,14 +53,19 @@
 		timer = setTimeout(() => collapseItem(item), 500);
 	}
 
-	function helpURL(url: URL) {
-		const newParams = paramsFromFragment(url);
+	async function toggleHelp(url: URL) {
+		let newParams = paramsFromFragment(url);
 		if (newParams.get(overlayKey.enum['view-help']) === helpSlug) {
-			newParams.delete(overlayKey.enum['view-help']);
+			if ($overlayHistory.length > 1) {
+				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+				newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+			} else {
+				newParams = new URLSearchParams();
+			}
 		} else {
 			newParams.set(overlayKey.enum['view-help'], helpSlug);
 		}
-		return `#${newParams.toString()}`;
+		return await goto(`#${newParams.toString()}`);
 	}
 </script>
 
@@ -182,9 +189,13 @@
 
 	{#if helpSlug}
 		<li class="sidebar-items-help">
-			<a class="button button-nav button-square" href={helpURL($page.url)} title={$_('help')}>
+			<button
+				class="button-nav button-square"
+				title={$_('help')}
+				on:click={() => toggleHelp($page.url)}
+			>
 				<Help />
-			</a>
+			</button>
 		</li>
 	{/if}
 

@@ -1249,9 +1249,7 @@ const emptyMilestoneContainer = emptyContainer.extend({
 export type EmptyMilestoneContainer = z.infer<typeof emptyMilestoneContainer>;
 
 const emptyTaskContainer = emptyContainer.extend({
-	payload: taskPayload
-		.partial()
-		.merge(taskPayload.pick({ audience: true, type: true, visibility: true }))
+	payload: taskPayload.partial().merge(taskPayload.pick({ type: true, visibility: true }))
 });
 
 export type EmptyTaskContainer = z.infer<typeof emptyTaskContainer>;
@@ -1444,5 +1442,5 @@ export function filterOrganizationalUnits(
 				}
 
 				return false;
-		  });
+			});
 }

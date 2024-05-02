@@ -51,14 +51,14 @@
 									Value: currentValue.Value + accumulator[groupIndex].Value
 								},
 								...accumulator.slice(groupIndex + 1)
-						  ]
+							]
 						: [
 								...accumulator,
 								{
 									Year: currentValue.Year,
 									Value: currentValue.Value
 								}
-						  ];
+							];
 				},
 				[] as Array<{ Year: number; Value: number }>
 			)
@@ -118,7 +118,7 @@
 									Value: currentValue.Value + accumulator[groupIndex].Value
 								},
 								...accumulator.slice(groupIndex + 1)
-						  ]
+							]
 						: [
 								...accumulator,
 								{
@@ -126,7 +126,7 @@
 									Year: currentValue.Year,
 									Value: currentValue.Value
 								}
-						  ];
+							];
 				},
 				[] as Array<{ Year: number; Value: number; Status: string }>
 			);
@@ -302,7 +302,7 @@
 										}
 									})
 								)
-						  ])
+							])
 						: []),
 					...(showObjectives && objectives.length > 0
 						? [
@@ -334,7 +334,7 @@
 											})
 									})
 								)
-						  ]
+							]
 						: []),
 					Plot.lineY(
 						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),

@@ -11,7 +11,7 @@ export const load = (async ({ locals, parent, url }) => {
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganization.payload.default) {
-		throw error(404, unwrapFunctionStore(_)('error.not_found'));
+		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
 	if (currentOrganizationalUnit) {

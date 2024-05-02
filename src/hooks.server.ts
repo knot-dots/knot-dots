@@ -12,7 +12,7 @@ import { createOrUpdateUser, getAllMembershipRelationsOfUser, getPool } from '$l
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
-const authentication = SvelteKitAuth({
+const { handle: authentication } = SvelteKitAuth({
 	callbacks: {
 		async jwt({ token, user, account }) {
 			if (user) {
