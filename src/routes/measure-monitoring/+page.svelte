@@ -5,13 +5,13 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
-	import ImplementationWorkspaces from '$lib/components/ImplementationWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
+	import Workspaces from '$lib/components/Workspaces.svelte';
 	import {
 		isMeasureContainer,
 		isMilestoneContainer,
@@ -54,7 +54,7 @@
 <Layout>
 	<svelte:fragment slot="sidebar">
 		<Sidebar helpSlug="measures">
-			<ImplementationWorkspaces slot="workspaces" />
+			<Workspaces slot="workspaces" />
 
 			<Search slot="search" />
 
