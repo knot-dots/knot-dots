@@ -225,7 +225,7 @@
 		white-space: nowrap;
 	}
 
-	.button.button-nav {
+	.button-nav {
 		flex-shrink: 0;
 	}
 
