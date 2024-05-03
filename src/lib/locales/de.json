@@ -461,6 +461,8 @@
 	"workspace.indicators": "Kacheln",
 	"workspace.measure_monitoring": "Maßnahmen-Monitoring",
 	"workspace.measures": "Maßnahmen Status-Board",
+	"workspace.programs": "Programme",
+	"workspace.programs_by_level": "Föderales Programme-Board",
 	"workspace.tasks": "Aufgaben Status-Board",
 	"workspaces": "Arbeitsbereiche"
 }

@@ -5,6 +5,32 @@
 </script>
 
 <li class="group">
+	<p>{$_('board.programs')}</p>
+	<ul>
+		<li>
+			<label>
+				<input
+					type="radio"
+					checked={$page.url.pathname === '/programs'}
+					on:click={async () => await goto('/programs')}
+				/>
+				{$_('workspace.programs')}
+			</label>
+		</li>
+		<li>
+			<label>
+				<input
+					type="radio"
+					checked={$page.url.pathname === '/programs-by-level'}
+					on:click={async () => await goto('/programs-by-level')}
+				/>
+				{$_('workspace.programs_by_level')}
+			</label>
+		</li>
+	</ul>
+</li>
+
+<li class="group">
 	<p>{$_('board.implementation')}</p>
 	<ul>
 		<li>
