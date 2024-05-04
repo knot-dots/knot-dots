@@ -14,7 +14,10 @@
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
 
-<nav class:is-elevated={$applicationState.organizationMenu.showDropDown}>
+<nav
+	class:is-elevated={$applicationState.organizationMenu.showDropDown}
+	data-sveltekit-preload-data="hover"
+>
 	<OrganizationMenu />
 
 	<div class="main-menu">
