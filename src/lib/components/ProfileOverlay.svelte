@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import Maximize from '~icons/knotdots/maximize';
@@ -22,6 +23,8 @@
 	export let organizations: OrganizationContainer[];
 	export let organizationalUnits: OrganizationalUnitContainer[];
 	export let relatedContainers: Container[];
+
+	setContext('overlay', true);
 
 	$: tasks = relatedContainers.filter(isTaskContainer).filter(isAssignedTo($user));
 
