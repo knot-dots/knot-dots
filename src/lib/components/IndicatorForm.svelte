@@ -19,7 +19,7 @@
 		IndicatorContainer,
 		IndicatorTemplateContainer
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: IndicatorContainer | EmptyIndicatorContainer;
 
@@ -170,11 +170,13 @@
 			<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
 		{/key}
 
-		<ListBox
-			label={$_('indicator_category')}
-			options={indicatorCategories.options}
-			bind:value={container.payload.indicatorCategory}
-		/>
+		{#if $ability.can('update', container, 'indicatorCategory')}
+			<ListBox
+				label={$_('indicator_category')}
+				options={indicatorCategories.options}
+				bind:value={container.payload.indicatorCategory}
+			/>
+		{/if}
 
 		<ListBox
 			label={$_('topic.label')}
