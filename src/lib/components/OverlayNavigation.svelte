@@ -17,6 +17,7 @@
 		type AnyContainer,
 		boards,
 		isMeasureContainer,
+		isSimpleMeasureContainer,
 		isStrategyContainer,
 		overlayKey,
 		overlayURL,
@@ -131,7 +132,7 @@
 			{/if}
 		</ul>
 
-		{#if (isMeasureContainer(container) || isStrategyContainer(container)) && $ability.can('update', container)}
+		{#if (isMeasureContainer(container) || isSimpleMeasureContainer(container) || isStrategyContainer(container)) && $ability.can('update', container)}
 			<a
 				class="button button-nav"
 				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===
