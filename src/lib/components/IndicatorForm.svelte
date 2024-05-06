@@ -10,17 +10,16 @@
 		quantities,
 		sustainableDevelopmentGoals,
 		topics,
-		unitByQuantity,
 		units
 	} from '$lib/models';
 	import type {
 		ContainerFormTabKey,
 		EmptyIndicatorContainer,
+		IndicatorCategory,
 		IndicatorContainer,
-		IndicatorTemplateContainer,
-		Quantity
+		IndicatorTemplateContainer
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: IndicatorContainer | EmptyIndicatorContainer;
 
@@ -44,30 +43,32 @@
 		]);
 	}
 
-	function changeQuantity(event: { currentTarget: HTMLSelectElement }) {
+	let templateCategory: IndicatorCategory;
+
+	function changeTemplate(event: { currentTarget: HTMLSelectElement }) {
 		container.payload.quantity = event.currentTarget.value;
 
-		if (container.payload.quantity == quantities.enum['quantity.custom']) {
-			container.payload.title = '';
-			container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
-		} else if (quantities.options.includes(container.payload.quantity as Quantity)) {
-			container.payload.title = $_(`${container.payload.quantity}.label`);
-			container.payload.unit = unitByQuantity.get(container.payload.quantity as Quantity);
-		} else {
-			const indicatorTemplate = $page.data.indicatorTemplates.find(
-				({ guid }: IndicatorTemplateContainer) => guid === container.payload.quantity
-			);
+		const indicatorTemplate = $page.data.indicatorTemplates.find(
+			({ guid }: IndicatorTemplateContainer) => guid === container.payload.quantity
+		);
 
-			if (indicatorTemplate) {
-				container.payload.title = indicatorTemplate.payload.title;
-				container.payload.unit = indicatorTemplate.payload.unit;
-				container.payload.indicatorCategory = indicatorTemplate.payload.indicatorCategory;
-				container.payload.description = indicatorTemplate.payload.description;
-				container.payload.historicalValuesIntro = indicatorTemplate.payload.historicalValuesIntro;
-				container.payload.measuresIntro = indicatorTemplate.payload.measuresIntro;
-				container.payload.objectivesIntro = indicatorTemplate.payload.objectivesIntro;
-			}
+		if (indicatorTemplate) {
+			container.payload.title = indicatorTemplate.payload.title;
+			container.payload.unit = indicatorTemplate.payload.unit;
+			container.payload.indicatorCategory = indicatorTemplate.payload.indicatorCategory;
+			container.payload.description = indicatorTemplate.payload.description;
+			container.payload.historicalValuesIntro = indicatorTemplate.payload.historicalValuesIntro;
+			container.payload.measuresIntro = indicatorTemplate.payload.measuresIntro;
+			container.payload.objectivesIntro = indicatorTemplate.payload.objectivesIntro;
 		}
+	}
+
+	function createCustomIndicator() {
+		templateCategory = indicatorCategories.enum['indicator_category.custom'];
+
+		container.payload.quantity = quantities.enum['quantity.custom'];
+		container.payload.title = '';
+		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
 	}
 
 	function updateHistoricalValues(index: number) {
@@ -98,22 +99,39 @@
 	}
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
+{#if !('guid' in container) && !templateCategory}
+	<label>
+		{$_('indicator_form.select_from_presets')}
+		<select class="template-category" bind:value={templateCategory} required>
+			<option></option>
+			{#each indicatorCategories.options as indicatorCategoryOption}
+				{#if indicatorCategoryOption !== indicatorCategories.enum['indicator_category.custom']}
+					<option value={indicatorCategoryOption}>{$_(indicatorCategoryOption)}</option>
+				{/if}
+			{/each}
+		</select>
+	</label>
+
+	{$_('or')}
+
+	<button class="template-category" type="button" on:click={() => createCustomIndicator()}>
+		{$_('indicator_form.create_custom')}
+	</button>
+{:else if $applicationState.containerForm.activeTab === 'metadata'}
 	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
-		<label>
-			{$_('indicator.template')}
-			<select on:change={changeQuantity} required>
-				<option></option>
-				<option value={'quantity.custom'}>{$_('quantity.custom.label')}</option>
-				{#each $page.data.indicatorTemplates as { guid, payload }}
-					<option value={guid}>{payload.title}</option>
-				{/each}
-			</select>
-		</label>
-
-		{#if container.payload.quantity}
+		{#if !container.payload.quantity}
+			<label>
+				{$_('indicator.template')}
+				<select on:change={changeTemplate} required>
+					<option></option>
+					{#each $page.data.indicatorTemplates as { guid, payload }}
+						<option value={guid}>{payload.title}</option>
+					{/each}
+				</select>
+			</label>
+		{:else}
 			<label>
 				{$_('label.unit')}
 				<select
@@ -152,11 +170,13 @@
 			<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
 		{/key}
 
-		<ListBox
-			label={$_('indicator_category')}
-			options={indicatorCategories.options}
-			bind:value={container.payload.indicatorCategory}
-		/>
+		{#if $ability.can('update', container, 'indicatorCategory')}
+			<ListBox
+				label={$_('indicator_category')}
+				options={indicatorCategories.options}
+				bind:value={container.payload.indicatorCategory}
+			/>
+		{/if}
 
 		<ListBox
 			label={$_('topic.label')}
@@ -227,3 +247,9 @@
 		</table>
 	</fieldset>
 {/if}
+
+<style>
+	.template-category {
+		width: fit-content;
+	}
+</style>

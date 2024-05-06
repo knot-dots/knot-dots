@@ -18,13 +18,14 @@ const { handle: authentication } = SvelteKitAuth({
 			if (user) {
 				token.familyName = user.familyName;
 				token.givenName = user.givenName;
+				token.sub = user.id;
 			}
 			if (account?.access_token) {
 				// decode without validating
-				const { realm_access }: { realm_access: { roles: string[] } } = JSON.parse(
-					Buffer.from(account.access_token.split('.')[1], 'base64').toString()
-				);
+				const { realm_access, sub }: { realm_access: { roles: string[] }; sub: string } =
+					JSON.parse(Buffer.from(account.access_token.split('.')[1], 'base64').toString());
 				token.roles = realm_access.roles;
+				token.sub = sub;
 			}
 			return token;
 		},

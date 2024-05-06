@@ -27,7 +27,9 @@ const internalObjectiveTypes = [
 ];
 
 export default function defineAbilityFor(user: User) {
-	const { can, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(createMongoAbility);
+	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
+		createMongoAbility
+	);
 
 	can('read', payloadTypes.options, { 'payload.visibility': visibility.enum.public });
 
@@ -107,6 +109,7 @@ export default function defineAbilityFor(user: User) {
 			'payload.visibility': visibility.enum.members,
 			organizational_unit: { $in: user.memberOf }
 		});
+		cannot('update', payloadTypes.enum.indicator, ['indicatorCategory']);
 	}
 
 	return build({
