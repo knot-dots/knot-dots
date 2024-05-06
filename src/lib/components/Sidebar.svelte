@@ -69,7 +69,7 @@
 	}
 </script>
 
-<ul class="sidebar-items">
+<ul class="sidebar-items" data-sveltekit-preload-data="hover">
 	{#if $$slots.workspaces}
 		<li class="sidebar-items-workspaces">
 			<button

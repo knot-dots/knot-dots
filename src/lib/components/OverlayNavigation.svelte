@@ -2,6 +2,7 @@
 	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import ArrowRightOnRectangle from '~icons/heroicons/arrow-right-on-rectangle-20-solid';
+	import ChevronLeft from '~icons/heroicons/chevron-left';
 	import Cog6Tooth from '~icons/heroicons/cog-6-tooth-20-solid';
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
@@ -26,22 +27,24 @@
 
 	export let container: AnyContainer | undefined = undefined;
 
-	async function close() {
-		if ($overlayHistory.length > 1) {
-			$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-			const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-			await goto(`#${newParams.toString()}`);
-		} else {
-			await goto(`#`);
-		}
+	async function navigateBack() {
+		$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+		const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+		await goto(`#${newParams.toString()}`);
 	}
 </script>
 
 <nav>
 	<div>
-		<button class="button-nav button-square" on:click={() => close()}>
+		<a class="button button-nav button-square" href={$page.url.pathname} title={$_('close')}>
 			<XMark />
-		</button>
+		</a>
+
+		{#if $overlayHistory.length > 1}
+			<button class="button-nav button-square" on:click={() => navigateBack()}>
+				<ChevronLeft />
+			</button>
+		{/if}
 
 		{#if container}
 			<a
@@ -222,7 +225,7 @@
 		white-space: nowrap;
 	}
 
-	.button.button-nav {
+	.button-nav {
 		flex-shrink: 0;
 	}
 

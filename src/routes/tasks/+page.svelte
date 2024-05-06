@@ -1,13 +1,13 @@
 <script lang="ts">
 	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
-	import ImplementationWorkspaces from '$lib/components/ImplementationWorkspaces.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
+	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
@@ -53,7 +53,7 @@
 	<Sidebar helpSlug="tasks" slot="sidebar">
 		<Search slot="search" />
 
-		<ImplementationWorkspaces slot="workspaces" />
+		<Workspaces slot="workspaces" />
 
 		<svelte:fragment slot="filters">
 			<OrganizationIncludedFilter />

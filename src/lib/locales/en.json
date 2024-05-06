@@ -465,6 +465,8 @@
 	"workspace.indicators": "Tiles",
 	"workspace.measure_monitoring": "Measure monitoring",
 	"workspace.measures": "Measures status board",
+	"workspace.programs": "Programs",
+	"workspace.programs_by_level": "Programs by level",
 	"workspace.tasks": "Tasks status board",
 	"workspaces": "Workspaces"
 }

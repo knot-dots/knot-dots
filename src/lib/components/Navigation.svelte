@@ -14,7 +14,10 @@
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
 
-<nav class:is-elevated={$applicationState.organizationMenu.showDropDown}>
+<nav
+	class:is-elevated={$applicationState.organizationMenu.showDropDown}
+	data-sveltekit-preload-data="hover"
+>
 	<OrganizationMenu />
 
 	<div class="main-menu">
@@ -33,7 +36,8 @@
 				<a
 					href="/programs"
 					class="button button-nav"
-					class:is-active={$page.url.pathname === '/programs'}
+					class:is-active={$page.url.pathname === '/programs' ||
+						$page.url.pathname === '/programs-by-level'}
 					title={$_('board.programs')}
 				>
 					<span class="small-only"><Programs /></span>
