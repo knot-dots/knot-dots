@@ -419,49 +419,47 @@
 			</Sidebar>
 		</aside>
 		<Indicators containers={indicators} />
-	{:else}
-		{#if 'guid' in container}
-			<aside>
-				{#if isStrategyContainer(container)}
-					<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
-						<svelte:fragment slot="filters">
-							<PayloadTypeFilter
-								options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
-							/>
-							<CategoryFilter />
-							<TopicFilter />
-						</svelte:fragment>
-						<ContainerDetailViewTabs {container} slot="tabs" />
-						<svelte:fragment slot="extra">
-							<li>
-								<button
-									class="button-nav button-square"
-									on:click={toggleFullscreen}
-									title={$_('full_screen')}
-								>
-									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
-								</button>
-							</li>
-						</svelte:fragment>
-					</Sidebar>
-				{:else}
-					<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
-						<ContainerDetailViewTabs {container} slot="tabs" />
-						<svelte:fragment slot="extra">
-							<li>
-								<button
-									class="button-nav button-square"
-									on:click={toggleFullscreen}
-									title={$_('full_screen')}
-								>
-									{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
-								</button>
-							</li>
-						</svelte:fragment>
-					</Sidebar>
-				{/if}
-			</aside>
-		{/if}
+	{:else if 'guid' in container}
+		<aside>
+			{#if isStrategyContainer(container)}
+				<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
+					<svelte:fragment slot="filters">
+						<PayloadTypeFilter
+							options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
+						/>
+						<CategoryFilter />
+						<TopicFilter />
+					</svelte:fragment>
+					<ContainerDetailViewTabs {container} slot="tabs" />
+					<svelte:fragment slot="extra">
+						<li>
+							<button
+								class="button-nav button-square"
+								on:click={toggleFullscreen}
+								title={$_('full_screen')}
+							>
+								{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+							</button>
+						</li>
+					</svelte:fragment>
+				</Sidebar>
+			{:else}
+				<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
+					<ContainerDetailViewTabs {container} slot="tabs" />
+					<svelte:fragment slot="extra">
+						<li>
+							<button
+								class="button-nav button-square"
+								on:click={toggleFullscreen}
+								title={$_('full_screen')}
+							>
+								{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+							</button>
+						</li>
+					</svelte:fragment>
+				</Sidebar>
+			{/if}
+		</aside>
 		{#if isIndicatorContainer(container)}
 			<header class="content-header">
 				<IndicatorTabs />
