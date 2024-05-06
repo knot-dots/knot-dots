@@ -102,6 +102,8 @@
 	"indicator_category.kpi": "KPI",
 	"indicator_category.sdg": "SDG",
 	"indicator_category.custom": "Eigene",
+	"indicator_form.select_from_presets": "Indikator aus Vorlagen erstellen",
+	"indicator_form.create_custom": "Eigenen Indikator anlegen",
 	"indicators": "Indikatoren",
 	"information": "Information",
 	"internal_objective": {
@@ -154,6 +156,7 @@
 	"open_sidebar": "Seitenleiste öffnen",
 	"operational_goal": "Operatives Ziel",
 	"operational_goals": "Operative Ziele",
+	"or": "oder",
 	"organization": "Organisation",
 	"organization_category": {
 		"business": "Unternehmen",
