@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import Pencil from '~icons/heroicons/pencil-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Trash from '~icons/heroicons/trash';
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
@@ -54,6 +55,7 @@
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
+		predicates,
 		quantities
 	} from '$lib/models';
 	import type {
@@ -190,6 +192,32 @@
 		} else if ($overlayWidth * window.innerWidth > window.innerWidth - 400) {
 			$overlayWidth = 1 - 400 / window.innerWidth;
 		}
+	}
+
+	async function createAnother(container: AnyContainer) {
+		const isPartOfStrategyRelation = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
+		);
+		const isPartOfMeasureRelation = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+		);
+
+		const params = new URLSearchParams();
+		params.append(overlayKey.enum.create, 'undefined');
+
+		if (isPartOfStrategyRelation) {
+			params.append(
+				predicates.enum['is-part-of-strategy'],
+				String(isPartOfStrategyRelation.object)
+			);
+			params.append('position', String(isPartOfStrategyRelation.position + 1));
+		}
+
+		if (isPartOfMeasureRelation) {
+			params.append(predicates.enum['is-part-of-measure'], String(isPartOfMeasureRelation.object));
+		}
+
+		await goto(`#${params.toString()}`, { state: { derivedFrom: container } });
 	}
 </script>
 
@@ -499,6 +527,11 @@
 					<a class="button" href="#relate={container.guid}">
 						{$_('relations')}
 					</a>
+				{/if}
+				{#if $ability.can('create', payloadTypes.enum.undefined)}
+					<button class="primary" type="button" on:click={() => createAnother(container)}>
+						<PlusSmall />{$_('create_another')}
+					</button>
 				{/if}
 				{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
 					<button
