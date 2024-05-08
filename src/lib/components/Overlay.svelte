@@ -7,8 +7,9 @@
 	import Trash from '~icons/heroicons/trash';
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll, pushState } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
@@ -43,6 +44,7 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
+		hasMember,
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
@@ -67,7 +69,7 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
-	import { ability, applicationState, overlayWidth } from '$lib/stores';
+	import { ability, applicationState, overlayWidth, user } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
@@ -218,6 +220,18 @@
 		}
 
 		await goto(`#${params.toString()}`, { state: { derivedFrom: container } });
+	}
+
+	async function createCopy(
+		container: AnyContainer,
+		organizationOrOrganizationalUnit: string,
+		pathname: string
+	) {
+		const url = new URL(env.PUBLIC_BASE_URL ?? '');
+		url.hostname = `${organizationOrOrganizationalUnit}.${url.hostname}`;
+		url.pathname = pathname;
+		url.hash = `#create=${container.payload.type}&copy-of=${container.guid}`;
+		window.location.href = url.toString();
 	}
 </script>
 
@@ -531,6 +545,15 @@
 				{#if $ability.can('create', payloadTypes.enum.undefined)}
 					<button class="primary" type="button" on:click={() => createAnother(container)}>
 						<PlusSmall />{$_('create_another')}
+					</button>
+				{/if}
+				{#if !hasMember($user)($page.data.currentOrganizationalUnit ?? $page.data.currentOrganization) && $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+					<button
+						class="primary"
+						type="button"
+						on:click={() => createCopy(container, $user.adminOf[0], $page.url.pathname)}
+					>
+						<PlusSmall />{$_('copy')}
 					</button>
 				{/if}
 				{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}

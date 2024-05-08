@@ -23,6 +23,7 @@ import {
 	overlayKey,
 	paramsFromFragment,
 	payloadTypes,
+	predicates,
 	status,
 	taskStatus
 } from '$lib/models';
@@ -188,6 +189,22 @@ if (browser) {
 			} else if (newContainer.payload.type == payloadTypes.enum['internal_objective.task']) {
 				newContainer.payload.taskStatus =
 					(hashParams.get('taskStatus') as TaskStatus) ?? taskStatus.enum['task_status.idea'];
+			}
+			if (hashParams.has('copy-of')) {
+				const revisions = await fetchContainerRevisions(hashParams.get('copy-of') as string);
+				const copyFrom = revisions[revisions.length - 1];
+				if (isContainerWithObjective(copyFrom)) {
+					newContainer.payload = { ...copyFrom.payload, objective: [] };
+				} else if (isContainerWithEffect(copyFrom)) {
+					newContainer.payload = { ...copyFrom.payload, effect: [] };
+				} else {
+					newContainer.payload = copyFrom.payload;
+				}
+				newContainer.relation.push({
+					object: copyFrom.revision,
+					predicate: predicates.enum['is-copy-of'],
+					position: 0
+				});
 			}
 			overlay.set({
 				isPartOfOptions,
