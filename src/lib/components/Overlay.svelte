@@ -3,11 +3,13 @@
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
 	import Pencil from '~icons/heroicons/pencil-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Trash from '~icons/heroicons/trash';
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll, pushState } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { env } from '$env/dynamic/public';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
@@ -42,6 +44,7 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
+		hasMember,
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
@@ -54,6 +57,7 @@
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
+		predicates,
 		quantities
 	} from '$lib/models';
 	import type {
@@ -65,7 +69,7 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
-	import { ability, applicationState, overlayWidth } from '$lib/stores';
+	import { ability, applicationState, overlayWidth, user } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
@@ -190,6 +194,44 @@
 		} else if ($overlayWidth * window.innerWidth > window.innerWidth - 400) {
 			$overlayWidth = 1 - 400 / window.innerWidth;
 		}
+	}
+
+	async function createAnother(container: AnyContainer) {
+		const isPartOfStrategyRelation = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
+		);
+		const isPartOfMeasureRelation = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+		);
+
+		const params = new URLSearchParams();
+		params.append(overlayKey.enum.create, 'undefined');
+
+		if (isPartOfStrategyRelation) {
+			params.append(
+				predicates.enum['is-part-of-strategy'],
+				String(isPartOfStrategyRelation.object)
+			);
+			params.append('position', String(isPartOfStrategyRelation.position + 1));
+		}
+
+		if (isPartOfMeasureRelation) {
+			params.append(predicates.enum['is-part-of-measure'], String(isPartOfMeasureRelation.object));
+		}
+
+		await goto(`#${params.toString()}`, { state: { derivedFrom: container } });
+	}
+
+	async function createCopy(
+		container: AnyContainer,
+		organizationOrOrganizationalUnit: string,
+		pathname: string
+	) {
+		const url = new URL(env.PUBLIC_BASE_URL ?? '');
+		url.hostname = `${organizationOrOrganizationalUnit}.${url.hostname}`;
+		url.pathname = pathname;
+		url.hash = `#create=${container.payload.type}&copy-of=${container.guid}`;
+		window.location.href = url.toString();
 	}
 </script>
 
@@ -499,6 +541,20 @@
 					<a class="button" href="#relate={container.guid}">
 						{$_('relations')}
 					</a>
+				{/if}
+				{#if $ability.can('create', payloadTypes.enum.undefined)}
+					<button class="primary" type="button" on:click={() => createAnother(container)}>
+						<PlusSmall />{$_('create_another')}
+					</button>
+				{/if}
+				{#if !hasMember($user)($page.data.currentOrganizationalUnit ?? $page.data.currentOrganization) && $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+					<button
+						class="primary"
+						type="button"
+						on:click={() => createCopy(container, $user.adminOf[0], $page.url.pathname)}
+					>
+						<PlusSmall />{$_('copy')}
+					</button>
 				{/if}
 				{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
 					<button

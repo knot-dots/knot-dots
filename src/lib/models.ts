@@ -113,6 +113,7 @@ export function isLevel(value: unknown): value is Level {
 const predicateValues = [
 	'is-admin-of',
 	'is-consistent-with',
+	'is-copy-of',
 	'is-creator-of',
 	'is-duplicate-of',
 	'is-equivalent-to',

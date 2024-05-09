@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import { containerOfType, payloadTypes } from '$lib/models';
-	import type { AnyContainer, EmptyContainer, PayloadType } from '$lib/models';
+	import type { AnyContainer, Container, EmptyContainer, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: AnyContainer | EmptyContainer;
@@ -30,6 +31,32 @@
 			container.organizational_unit,
 			container.realm
 		).payload;
+
+		if ('derivedFrom' in $page.state) {
+			const derivedFrom = $page.state.derivedFrom as Container;
+
+			container.payload = {
+				...container.payload,
+				...('audience' in derivedFrom.payload && 'audience' in container.payload
+					? { audience: derivedFrom.payload.audience }
+					: undefined),
+				...('category' in derivedFrom.payload && 'category' in container.payload
+					? { category: derivedFrom.payload.category }
+					: undefined),
+				...('status' in derivedFrom.payload && 'status' in container.payload
+					? { status: derivedFrom.payload.status }
+					: undefined),
+				...('taskStatus' in derivedFrom.payload && 'taskStatus' in container.payload
+					? { taskStatus: derivedFrom.payload.taskStatus }
+					: undefined),
+				...('topic' in derivedFrom.payload && 'topic' in container.payload
+					? { topic: derivedFrom.payload.topic }
+					: undefined),
+				...('visibility' in derivedFrom.payload && 'visibility' in container.payload
+					? { visibility: derivedFrom.payload.visibility }
+					: undefined)
+			};
+		}
 	}
 
 	applicationState.update((state) => ({
