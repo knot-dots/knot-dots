@@ -456,6 +456,7 @@
 		"remove": "Entfernen",
 		"role": "Rolle"
 	},
+	"visible_for": "Sichtbar für",
 	"visibility": {
 		"creator": "Nur Autor*in",
 		"label": "Sichtbarkeit",

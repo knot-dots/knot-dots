@@ -460,6 +460,7 @@
 		"remove": "Remove",
 		"role": "Role"
 	},
+	"visible_for": "Visible for",
 	"visibility": {
 		"creator": "Creator only",
 		"label": "Visibility",
