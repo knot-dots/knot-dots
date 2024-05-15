@@ -47,6 +47,7 @@
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"unexpected": "Wir arbeiten daran."
 	},
+	"establish_relations": "Beziehungen festlegen",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"filter": "Filtern",
 	"filter.all_organizational_units": "Alle Organisations-Ebenen",
@@ -312,7 +313,6 @@
 		"is_inconsistent_with": "Diese Vorhaben widersprechen sich",
 		"remove": "Beziehungen lösen"
 	},
-	"relations": "Beziehungen",
 	"resources": {
 		"amount": "Menge",
 		"description": "Beschreibung",
