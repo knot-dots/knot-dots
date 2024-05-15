@@ -5,8 +5,16 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import fetchMembers from '$lib/client/fetchMembers';
 	import Chapter from '$lib/components/Chapter.svelte';
-	import { containerOfType, owners, paramsFromFragment, payloadTypes } from '$lib/models';
+	import {
+		containerOfType,
+		getCreator,
+		owners,
+		paramsFromFragment,
+		payloadTypes,
+		type User
+	} from '$lib/models';
 	import type { AnyContainer, Container, PayloadType, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
@@ -26,6 +34,10 @@
 		const params = paramsFromFragment(url);
 		return !params.has('payloadType') || params.getAll('payloadType').includes(payloadType);
 	}
+
+	let organizationMembersRequest: Promise<User[]> = new Promise(() => []);
+
+	$: organizationMembersRequest = fetchMembers(container.organization);
 </script>
 
 <article class="details">
@@ -107,18 +119,45 @@
 			</p>
 		</div>
 	{/if}
-	<div class="meta">
-		<h3 class="meta-key">{$_('created_date')}</h3>
-		<ul class="meta-value">
-			<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
-		</ul>
-	</div>
-	<div class="meta">
-		<h3 class="meta-key">{$_('modified_date')}</h3>
-		<ul class="meta-value">
-			<li>{$date(container.valid_from, { format: 'medium' })}</li>
-		</ul>
-	</div>
+	{#await organizationMembersRequest then organizationMembers}
+		{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
+		<div class="meta">
+			<h3 class="meta-key">{$_('created_date')}</h3>
+			<ul class="meta-value">
+				<li>
+					{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
+						? $_('created_by', {
+								values: {
+									date: revisions[0].valid_from,
+									creator: getCreator(revisions[0])
+										.filter((guid) => organizationMembersByGuid.has(guid))
+										.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+										.join(', ')
+								}
+							})
+						: $date(revisions[0].valid_from, { format: 'long' })}
+				</li>
+			</ul>
+		</div>
+		<div class="meta">
+			<h3 class="meta-key">{$_('modified_date')}</h3>
+			<ul class="meta-value">
+				<li>
+					{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
+						? $_('created_by', {
+								values: {
+									date: container.valid_from,
+									creator: getCreator(container)
+										.filter((guid) => organizationMembersByGuid.has(guid))
+										.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+										.join(', ')
+								}
+							})
+						: $date(container.valid_from, { format: 'long' })}
+				</li>
+			</ul>
+		</div>
+	{/await}
 
 	<div class="chapters">
 		{#each relatedContainers.filter( ({ payload }) => byPayloadType(payload.type, $page.url) ) as part}

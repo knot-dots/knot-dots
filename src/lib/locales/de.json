@@ -30,6 +30,7 @@
 	"copy": "Kopieren",
 	"cover": "Titelbild",
 	"create_another": "Weiteres Objekt",
+	"created_by": "{date, date, long} von {creator}",
 	"created_date": "Erstellt am",
 	"delete": "Löschen",
 	"description": "Beschreibung",

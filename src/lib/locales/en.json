@@ -29,6 +29,7 @@
 	"copy": "Copy",
 	"cover": "Cover",
 	"create_another": "Create another element",
+	"created_by": "{date, date, long} by {creator}",
 	"created_date": "Created at",
 	"delete": "Delete",
 	"description": "Description",
