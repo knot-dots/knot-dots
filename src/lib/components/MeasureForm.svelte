@@ -8,9 +8,15 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
-	import { audience, status, sustainableDevelopmentGoals, topics } from '$lib/models';
+	import { inview } from '$lib/inview';
+	import { audience, boards, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyMeasureContainer, MeasureContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import {
+		applicationState,
+		getOrganization,
+		getOrganizationalUnit,
+		setContainerFormActiveTab
+	} from '$lib/stores';
 
 	export let container: MeasureContainer | EmptyMeasureContainer;
 
@@ -23,92 +29,116 @@
 	}));
 
 	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
+
+	const organizationOrOrganizationalUnit = container.organizational_unit
+		? $getOrganizationalUnit(container.organizational_unit)
+		: $getOrganization(container.organization);
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="metadata">
-		<legend>{$_('form.metadata')}</legend>
+<fieldset
+	class="form-tab"
+	id="metadata"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('metadata')}
+>
+	<legend>{$_('form.metadata')}</legend>
 
-		<StrategyRelationSelector {container} />
+	<StrategyRelationSelector {container} />
 
-		<OrganizationSelector bind:container />
+	<OrganizationSelector bind:container />
 
-		<ListBox
-			label={$_('audience')}
-			options={audience.options}
-			bind:value={container.payload.audience}
-		/>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<fieldset class="form-tab" id="basic-data">
-		<legend>{$_('form.basic_data')}</legend>
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+</fieldset>
 
+<fieldset
+	class="form-tab"
+	id="basic-data"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('basic-data')}
+>
+	<legend>{$_('form.basic_data')}</legend>
+
+	<label>
+		{$_('measure.summary')}
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+	</label>
+
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('measure.description')} bind:value={container.payload.description} />
+
+		{#if container.payload.status === status.enum['status.in_planning']}
+			<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
+		{:else if container.payload.status === status.enum['status.in_implementation']}
+			<Editor label={$_('comment')} bind:value={container.payload.comment} />
+		{:else if container.payload.status === status.enum['status.in_operation']}
+			<Editor label={$_('result')} bind:value={container.payload.result} />
+		{/if}
+	{/key}
+
+	<ListBox
+		label={$_('topic.label')}
+		options={topics.options}
+		bind:value={container.payload.topic}
+	/>
+
+	<ListBox
+		label={$_('category')}
+		options={sustainableDevelopmentGoals.options}
+		bind:value={container.payload.category}
+	/>
+
+	<label>
+		{$_('status.label')}
+		<select name="status" bind:value={container.payload.status} required>
+			{#each status.options as statusOption}
+				<option value={statusOption} selected={statusOption === statusParam}>
+					{$_(statusOption)}
+				</option>
+			{/each}
+		</select>
+	</label>
+
+	<fieldset class="duration">
+		<legend>{$_('planned_duration')}</legend>
 		<label>
-			{$_('measure.summary')}
-			<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+			{$_('start_date')}
+			<input type="date" name="startDate" bind:value={container.payload.startDate} />
 		</label>
-
-		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('measure.description')} bind:value={container.payload.description} />
-
-			{#if container.payload.status === status.enum['status.in_planning']}
-				<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
-			{:else if container.payload.status === status.enum['status.in_implementation']}
-				<Editor label={$_('comment')} bind:value={container.payload.comment} />
-			{:else if container.payload.status === status.enum['status.in_operation']}
-				<Editor label={$_('result')} bind:value={container.payload.result} />
-			{/if}
-		{/key}
-
-		<ListBox
-			label={$_('topic.label')}
-			options={topics.options}
-			bind:value={container.payload.topic}
-		/>
-
-		<ListBox
-			label={$_('category')}
-			options={sustainableDevelopmentGoals.options}
-			bind:value={container.payload.category}
-		/>
-
 		<label>
-			{$_('status.label')}
-			<select name="status" bind:value={container.payload.status} required>
-				{#each status.options as statusOption}
-					<option value={statusOption} selected={statusOption === statusParam}>
-						{$_(statusOption)}
-					</option>
-				{/each}
-			</select>
+			{$_('end_date')}
+			<input type="date" name="endDate" bind:value={container.payload.endDate} />
 		</label>
-
-		<fieldset class="duration">
-			<legend>{$_('planned_duration')}</legend>
-			<label>
-				{$_('start_date')}
-				<input type="date" name="startDate" bind:value={container.payload.startDate} />
-			</label>
-			<label>
-				{$_('end_date')}
-				<input type="date" name="endDate" bind:value={container.payload.endDate} />
-			</label>
-		</fieldset>
-
-		<ListBox
-			label={$_('boards')}
-			options={['board.internal_objectives', 'board.tasks']}
-			bind:value={container.payload.boards}
-		/>
 	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'resources'}
-	<fieldset class="form-tab" id="resources">
-		<legend>{$_('form.resources')}</legend>
 
-		<ResourcePlanner {container} />
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'effects'}
-	<fieldset class="form-tab" id="effects">
+	<ListBox
+		label={$_('boards')}
+		options={['board.internal_objectives', 'board.tasks']}
+		bind:value={container.payload.boards}
+	/>
+</fieldset>
+
+<fieldset
+	class="form-tab"
+	id="resources"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('resources')}
+>
+	<legend>{$_('form.resources')}</legend>
+
+	<ResourcePlanner {container} />
+</fieldset>
+
+{#if organizationOrOrganizationalUnit.payload.boards.includes(boards.enum['board.indicators'])}
+	<fieldset
+		class="form-tab"
+		id="effects"
+		use:inview
+		on:inview_enter={() => setContainerFormActiveTab('effects')}
+	>
 		<legend>{$_('form.effects')}</legend>
 
 		<EffectWizard {container} />

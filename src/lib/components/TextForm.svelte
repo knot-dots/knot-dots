@@ -4,8 +4,9 @@
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
+	import { inview } from '$lib/inview';
 	import { audience, type EmptyTextContainer, type TextContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, setContainerFormActiveTab } from '$lib/stores';
 
 	export let container: TextContainer | EmptyTextContainer;
 
@@ -18,26 +19,34 @@
 	}));
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="metadata">
-		<legend>{$_('form.metadata')}</legend>
+<fieldset
+	class="form-tab"
+	id="metadata"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('metadata')}
+>
+	<legend>{$_('form.metadata')}</legend>
 
-		<StrategyRelationSelector {container} />
+	<StrategyRelationSelector {container} />
 
-		<OrganizationSelector bind:container />
+	<OrganizationSelector bind:container />
 
-		<ListBox
-			label={$_('audience')}
-			options={audience.options}
-			bind:value={container.payload.audience}
-		/>
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<fieldset class="form-tab" id="basic-data">
-		<legend>{$_('form.basic_data')}</legend>
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+</fieldset>
 
-		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('body')} bind:value={container.payload.body} />
-		{/key}
-	</fieldset>
-{/if}
+<fieldset
+	class="form-tab"
+	id="basic-data"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('basic-data')}
+>
+	<legend>{$_('form.basic_data')}</legend>
+
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('body')} bind:value={container.payload.body} />
+	{/key}
+</fieldset>

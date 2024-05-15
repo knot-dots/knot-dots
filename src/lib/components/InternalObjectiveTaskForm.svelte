@@ -6,6 +6,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import { inview } from '$lib/inview';
 	import { taskCategories, taskStatus } from '$lib/models';
 	import type {
 		EmptyTaskContainer,
@@ -14,7 +15,7 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, setContainerFormActiveTab } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
 
@@ -66,62 +67,70 @@
 	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
-{#if $applicationState.containerForm.activeTab === 'metadata'}
-	<fieldset class="form-tab" id="metadata">
-		<legend>{$_('form.metadata')}</legend>
+<fieldset
+	class="form-tab"
+	id="metadata"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('metadata')}
+>
+	<legend>{$_('form.metadata')}</legend>
 
-		<OrganizationSelector bind:container />
-	</fieldset>
-{:else if $applicationState.containerForm.activeTab === 'basic-data'}
-	<fieldset class="form-tab" id="basic-data">
-		<legend>{$_('form.basic_data')}</legend>
+	<OrganizationSelector bind:container />
+</fieldset>
 
-		{#key 'guid' in container ? container.guid : ''}
-			<Editor label={$_('description')} bind:value={container.payload.description} />
-		{/key}
+<fieldset
+	class="form-tab"
+	id="basic-data"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('basic-data')}
+>
+	<legend>{$_('form.basic_data')}</legend>
 
-		<label>
-			{$_('task_status.label')}
-			<select name="status" bind:value={container.payload.taskStatus} required>
-				{#each taskStatus.options as statusOption}
-					<option value={statusOption} selected={statusOption === statusParam}>
-						{$_(statusOption)}
-					</option>
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
+
+	<label>
+		{$_('task_status.label')}
+		<select name="status" bind:value={container.payload.taskStatus} required>
+			{#each taskStatus.options as statusOption}
+				<option value={statusOption} selected={statusOption === statusParam}>
+					{$_(statusOption)}
+				</option>
+			{/each}
+		</select>
+	</label>
+
+	<label>
+		{$_('assignee')}
+		<select name="assignee" bind:value={assignee}>
+			<option></option>
+			{#await membersPromise then members}
+				{#each members as { display_name, guid }}
+					{#if display_name !== ''}
+						<option value={guid} selected={guid === assignee}>
+							{display_name}
+						</option>
+					{/if}
 				{/each}
-			</select>
-		</label>
+			{/await}
+		</select>
+	</label>
 
-		<label>
-			{$_('assignee')}
-			<select name="assignee" bind:value={assignee}>
-				<option></option>
-				{#await membersPromise then members}
-					{#each members as { display_name, guid }}
-						{#if display_name !== ''}
-							<option value={guid} selected={guid === assignee}>
-								{display_name}
-							</option>
-						{/if}
-					{/each}
-				{/await}
-			</select>
-		</label>
+	<label>
+		{$_('task_category.label')}
+		<select name="taskCategory" bind:value={taskCategory}>
+			<option></option>
+			{#each taskCategories.options as taskCategoryOption}
+				<option value={taskCategoryOption}>
+					{$_(taskCategoryOption)}
+				</option>
+			{/each}
+		</select>
+	</label>
 
-		<label>
-			{$_('task_category.label')}
-			<select name="taskCategory" bind:value={taskCategory}>
-				<option></option>
-				{#each taskCategories.options as taskCategoryOption}
-					<option value={taskCategoryOption}>
-						{$_(taskCategoryOption)}
-					</option>
-				{/each}
-			</select>
-		</label>
-
-		<label>
-			{$_('fulfillment_date')}
-			<input type="date" bind:value={container.payload.fulfillmentDate} />
-		</label>
-	</fieldset>
-{/if}
+	<label>
+		{$_('fulfillment_date')}
+		<input type="date" bind:value={container.payload.fulfillmentDate} />
+	</label>
+</fieldset>

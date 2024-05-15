@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import Info from '~icons/knotdots/info';
 	import Effects from '~icons/knotdots/effects';
 	import Milestones from '~icons/knotdots/milestones';
 	import Resources from '~icons/knotdots/resources';
-	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import { isContainerWithEffect } from '$lib/models';
 	import type { AnyContainer, ContainerDetailViewTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -12,11 +13,19 @@
 
 	$: showEffectsTab = isContainerWithEffect(container) && container.payload.effect.length > 0;
 
+	$: showResourcesTab = 'resource' in container.payload && container.payload.resource.length > 0;
+
 	function updateApplicationState(activeTab: ContainerDetailViewTabKey) {
 		applicationState.update((state) => ({
 			...state,
 			containerDetailView: { ...state.containerDetailView, activeTab }
 		}));
+		if (browser) {
+			const element = document.getElementById(activeTab);
+			if (element) {
+				element.scrollIntoView({ behavior: 'smooth' });
+			}
+		}
 	}
 </script>
 
@@ -33,7 +42,7 @@
 		</button>
 	</li>
 {/if}
-{#if $applicationState.containerDetailView.tabs.includes('resources')}
+{#if $applicationState.containerDetailView.tabs.includes('resources') && showResourcesTab}
 	<li>
 		<button
 			title={$_('form.resources')}
