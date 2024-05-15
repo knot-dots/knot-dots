@@ -13,6 +13,8 @@
 
 	$: showEffectsTab = isContainerWithEffect(container) && container.payload.effect.length > 0;
 
+	$: showResourcesTab = 'resource' in container.payload && container.payload.resource.length > 0;
+
 	function updateApplicationState(activeTab: ContainerDetailViewTabKey) {
 		applicationState.update((state) => ({
 			...state,
@@ -40,7 +42,7 @@
 		</button>
 	</li>
 {/if}
-{#if $applicationState.containerDetailView.tabs.includes('resources')}
+{#if $applicationState.containerDetailView.tabs.includes('resources') && showResourcesTab}
 	<li>
 		<button
 			title={$_('form.resources')}

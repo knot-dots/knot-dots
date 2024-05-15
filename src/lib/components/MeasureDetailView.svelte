@@ -253,51 +253,55 @@
 		</div>
 	</div>
 
-	<div
-		class="details-tab"
-		id="resources"
-		use:inview
-		on:inview_enter={() => setContainerDetailViewActiveTab('resources')}
-	>
-		<h3>{$_('resources.label')}</h3>
-		<ul>
-			{#each selectedRevision.payload.resource as resource}
-				<li class="resource-item">
-					<span>{resource.description}</span>
-					<span>{resource.unit}</span>
-					<span>{$number(resource.amount)}</span>
-					<span>
-						{$date(new Date(resource.fulfillmentDate), {
-							day: '2-digit',
-							month: '2-digit',
-							year: 'numeric'
-						})}
-					</span>
-				</li>
-			{/each}
-		</ul>
-	</div>
+	{#if selectedRevision.payload.resource.length > 0}
+		<div
+			class="details-tab"
+			id="resources"
+			use:inview
+			on:inview_enter={() => setContainerDetailViewActiveTab('resources')}
+		>
+			<h3>{$_('resources.label')}</h3>
+			<ul>
+				{#each selectedRevision.payload.resource as resource}
+					<li class="resource-item">
+						<span>{resource.description}</span>
+						<span>{resource.unit}</span>
+						<span>{$number(resource.amount)}</span>
+						<span>
+							{$date(new Date(resource.fulfillmentDate), {
+								day: '2-digit',
+								month: '2-digit',
+								year: 'numeric'
+							})}
+						</span>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 
-	<div
-		class="details-tab"
-		id="effects"
-		use:inview
-		on:inview_enter={() => setContainerDetailViewActiveTab('effects')}
-	>
-		<h3>{$_('effects')}</h3>
+	{#if selectedRevision.payload.effect.length > 0}
+		<div
+			class="details-tab"
+			id="effects"
+			use:inview
+			on:inview_enter={() => setContainerDetailViewActiveTab('effects')}
+		>
+			<h3>{$_('effects')}</h3>
 
-		{#await indicatorsRequest then indicators}
-			{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
-			{#each container.payload.effect as effect}
-				{@const indicator = indicatorsByGuid.get(effect.indicator)}
-				{#if indicator}
-					<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
-						<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
-					</IndicatorChart>
-				{/if}
-			{/each}
-		{/await}
-	</div>
+			{#await indicatorsRequest then indicators}
+				{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
+				{#each container.payload.effect as effect}
+					{@const indicator = indicatorsByGuid.get(effect.indicator)}
+					{#if indicator}
+						<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
+							<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
+						</IndicatorChart>
+					{/if}
+				{/each}
+			{/await}
+		</div>
+	{/if}
 
 	<div
 		class="details-tab"
