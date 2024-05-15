@@ -29,6 +29,7 @@
 	"copy": "Copy",
 	"cover": "Cover",
 	"create_another": "Create another element",
+	"created_by": "{date, date, long} by {creator}",
 	"created_date": "Created at",
 	"delete": "Delete",
 	"description": "Description",
@@ -45,6 +46,7 @@
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"unexpected": "We are working on it."
 	},
+	"establish_relations": "Establish relations",
 	"expand_sidebar": "Expand sidebar",
 	"filter": "Filter",
 	"filter.all_organizational_units": "All organizational units",
@@ -315,7 +317,6 @@
 		"is_inconsistent_with": "inconsistent with",
 		"remove": "remove relations"
 	},
-	"relations": "Relations",
 	"resources": {
 		"amount": "Amount",
 		"description": "Description",
@@ -460,6 +461,7 @@
 		"remove": "Remove",
 		"role": "Role"
 	},
+	"visible_for": "Visible for",
 	"visibility": {
 		"creator": "Creator only",
 		"label": "Visibility",

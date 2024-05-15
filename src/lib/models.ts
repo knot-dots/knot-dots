@@ -1445,3 +1445,9 @@ export function filterOrganizationalUnits(
 				return false;
 			});
 }
+
+export function getCreator(revision: AnyContainer) {
+	return revision.user
+		.filter(({ predicate }) => predicate == predicates.enum['is-creator-of'])
+		.map(({ subject }) => subject);
+}

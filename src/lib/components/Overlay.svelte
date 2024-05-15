@@ -532,7 +532,7 @@
 			<div class="content-actions">
 				{#if mayShowRelationButton && $ability.can('relate', container)}
 					<a class="button" href="#relate={container.guid}">
-						{$_('relations')}
+						{$_('establish_relations')}
 					</a>
 				{/if}
 				{#if $ability.can('create', payloadTypes.enum.undefined)}
