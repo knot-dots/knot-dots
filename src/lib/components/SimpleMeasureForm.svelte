@@ -8,9 +8,10 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
+	import { inview } from '$lib/inview';
 	import { audience, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptySimpleMeasureContainer, SimpleMeasureContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, setContainerFormActiveTab } from '$lib/stores';
 
 	export let container: SimpleMeasureContainer | EmptySimpleMeasureContainer;
 
@@ -25,7 +26,12 @@
 	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
 </script>
 
-<fieldset class="form-tab" id="metadata">
+<fieldset
+	class="form-tab"
+	id="metadata"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('metadata')}
+>
 	<legend>{$_('form.metadata')}</legend>
 
 	<StrategyRelationSelector {container} />
@@ -39,7 +45,12 @@
 	/>
 </fieldset>
 
-<fieldset class="form-tab" id="basic-data">
+<fieldset
+	class="form-tab"
+	id="basic-data"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('basic-data')}
+>
 	<legend>{$_('form.basic_data')}</legend>
 
 	<Editor label={$_('description')} bind:value={container.payload.description} />
@@ -109,13 +120,23 @@
 	</fieldset>
 </fieldset>
 
-<fieldset class="form-tab" id="resources">
+<fieldset
+	class="form-tab"
+	id="resources"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('resources')}
+>
 	<legend>{$_('form.resources')}</legend>
 
 	<ResourcePlanner {container} />
 </fieldset>
 
-<fieldset class="form-tab" id="effects">
+<fieldset
+	class="form-tab"
+	id="effects"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('effects')}
+>
 	<legend>{$_('form.effects')}</legend>
 
 	<EffectWizard {container} />

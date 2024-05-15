@@ -44,6 +44,7 @@
 			title={$_('form.metadata')}
 			type="button"
 			class="button-nav button-square"
+			class:is-active={$applicationState.containerForm.activeTab === 'metadata'}
 			on:click={() => updateApplicationState('metadata')}
 		>
 			<PuzzlePiece />
@@ -56,6 +57,7 @@
 			title={$_('form.basic_data')}
 			type="button"
 			class="button-nav button-square"
+			class:is-active={$applicationState.containerForm.activeTab === 'basic-data'}
 			on:click={() => updateApplicationState('basic-data')}
 		>
 			<Info />
@@ -68,6 +70,7 @@
 			title={$_('form.resources')}
 			type="button"
 			class="button-nav button-square"
+			class:is-active={$applicationState.containerForm.activeTab === 'resources'}
 			on:click={() => updateApplicationState('resources')}
 		>
 			<Resources />
@@ -80,6 +83,7 @@
 			title={$_('form.effects')}
 			type="button"
 			class="button-nav button-square"
+			class:is-active={$applicationState.containerForm.activeTab === 'effects'}
 			on:click={() => updateApplicationState('effects')}
 		>
 			<Effects />

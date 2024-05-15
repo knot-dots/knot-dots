@@ -10,6 +10,7 @@
 	import MilestoneCarousel from '$lib/components/MilestoneCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
+	import { inview } from '$lib/inview';
 	import {
 		isMeasureContainer,
 		isSimpleMeasureContainer,
@@ -26,7 +27,7 @@
 		IndicatorContainer
 	} from '$lib/models';
 	import { sdgIcons, statusColors, statusIcons } from '$lib/theme/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability, applicationState, setContainerDetailViewActiveTab } from '$lib/stores';
 
 	export let container: ContainerWithEffect;
 	export let relatedContainers: Container[];
@@ -81,7 +82,12 @@
 </script>
 
 <article class="details">
-	<div class="details-tab" id="basic-data">
+	<div
+		class="details-tab"
+		id="basic-data"
+		use:inview
+		on:inview_enter={() => setContainerDetailViewActiveTab('basic-data')}
+	>
 		<h2 class="details-title">
 			{container.payload.title}
 			{#if $ability.can('update', container)}
@@ -247,7 +253,12 @@
 		</div>
 	</div>
 
-	<div class="details-tab" id="resources">
+	<div
+		class="details-tab"
+		id="resources"
+		use:inview
+		on:inview_enter={() => setContainerDetailViewActiveTab('resources')}
+	>
 		<h3>{$_('resources.label')}</h3>
 		<ul>
 			{#each selectedRevision.payload.resource as resource}
@@ -267,7 +278,12 @@
 		</ul>
 	</div>
 
-	<div class="details-tab" id="effects">
+	<div
+		class="details-tab"
+		id="effects"
+		use:inview
+		on:inview_enter={() => setContainerDetailViewActiveTab('effects')}
+	>
 		<h3>{$_('effects')}</h3>
 
 		{#await indicatorsRequest then indicators}
@@ -283,7 +299,12 @@
 		{/await}
 	</div>
 
-	<div class="details-tab" id="milestones">
+	<div
+		class="details-tab"
+		id="milestones"
+		use:inview
+		on:inview_enter={() => setContainerDetailViewActiveTab('milestones')}
+	>
 		<h3>{$_('milestones')}</h3>
 		<MilestoneCarousel {container} />
 	</div>

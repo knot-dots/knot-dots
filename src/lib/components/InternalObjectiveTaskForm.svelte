@@ -6,6 +6,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import { inview } from '$lib/inview';
 	import { taskCategories, taskStatus } from '$lib/models';
 	import type {
 		EmptyTaskContainer,
@@ -14,7 +15,7 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, setContainerFormActiveTab } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
 
@@ -66,13 +67,23 @@
 	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
-<fieldset class="form-tab" id="metadata">
+<fieldset
+	class="form-tab"
+	id="metadata"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('metadata')}
+>
 	<legend>{$_('form.metadata')}</legend>
 
 	<OrganizationSelector bind:container />
 </fieldset>
 
-<fieldset class="form-tab" id="basic-data">
+<fieldset
+	class="form-tab"
+	id="basic-data"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('basic-data')}
+>
 	<legend>{$_('form.basic_data')}</legend>
 
 	{#key 'guid' in container ? container.guid : ''}

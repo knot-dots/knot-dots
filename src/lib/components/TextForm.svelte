@@ -4,8 +4,9 @@
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
+	import { inview } from '$lib/inview';
 	import { audience, type EmptyTextContainer, type TextContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, setContainerFormActiveTab } from '$lib/stores';
 
 	export let container: TextContainer | EmptyTextContainer;
 
@@ -18,7 +19,12 @@
 	}));
 </script>
 
-<fieldset class="form-tab" id="metadata">
+<fieldset
+	class="form-tab"
+	id="metadata"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('metadata')}
+>
 	<legend>{$_('form.metadata')}</legend>
 
 	<StrategyRelationSelector {container} />
@@ -32,7 +38,12 @@
 	/>
 </fieldset>
 
-<fieldset class="form-tab" id="basic-data">
+<fieldset
+	class="form-tab"
+	id="basic-data"
+	use:inview
+	on:inview_enter={() => setContainerFormActiveTab('basic-data')}
+>
 	<legend>{$_('form.basic_data')}</legend>
 
 	{#key 'guid' in container ? container.guid : ''}

@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import { inview } from '$lib/inview';
 	import {
 		audience,
 		indicatorCategories,
@@ -19,7 +20,7 @@
 		IndicatorContainer,
 		IndicatorTemplateContainer
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability, applicationState, setContainerFormActiveTab } from '$lib/stores';
 
 	export let container: IndicatorContainer | EmptyIndicatorContainer;
 
@@ -118,7 +119,12 @@
 		{$_('indicator_form.create_custom')}
 	</button>
 {:else}
-	<fieldset class="form-tab" id="metadata">
+	<fieldset
+		class="form-tab"
+		id="metadata"
+		use:inview
+		on:inview_enter={() => setContainerFormActiveTab('metadata')}
+	>
 		<legend>{$_('form.metadata')}</legend>
 
 		{#if !container.payload.quantity}
@@ -153,7 +159,12 @@
 		/>
 	</fieldset>
 
-	<fieldset class="form-tab" id="basic-data">
+	<fieldset
+		class="form-tab"
+		id="basic-data"
+		use:inview
+		on:inview_enter={() => setContainerFormActiveTab('basic-data')}
+	>
 		{#key 'guid' in container ? container.guid : ''}
 			<Editor label={$_('description')} bind:value={container.payload.description} />
 
@@ -191,7 +202,12 @@
 		/>
 	</fieldset>
 
-	<fieldset class="form-tab" id="historical-values">
+	<fieldset
+		class="form-tab"
+		id="historical-values"
+		use:inview
+		on:inview_enter={() => setContainerFormActiveTab('historical-values')}
+	>
 		<legend>{$_('form.historical_values')}</legend>
 
 		<table class="spreadsheet">
