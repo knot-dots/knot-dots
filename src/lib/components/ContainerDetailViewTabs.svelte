@@ -35,7 +35,6 @@
 			title={$_('form.basic_data')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'basic-data'}
 			on:click={() => updateApplicationState('basic-data')}
 		>
 			<Info />
@@ -48,7 +47,6 @@
 			title={$_('form.resources')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'resources'}
 			on:click={() => updateApplicationState('resources')}
 		>
 			<Resources />
@@ -61,7 +59,6 @@
 			title={$_('form.effects')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'effects'}
 			on:click={() => updateApplicationState('effects')}
 		>
 			<Effects />
@@ -74,7 +71,6 @@
 			title={$_('milestones')}
 			type="button"
 			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.activeTab === 'milestones'}
 			on:click={() => updateApplicationState('milestones')}
 		>
 			<Milestones />
