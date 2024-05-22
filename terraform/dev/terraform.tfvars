@@ -1,3 +1,3 @@
-strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:d4175d9651beae8d633dcb27cacab111037b5721"
-keycloak_image     = "rg.fr-par.scw.cloud/knot-dots/keycloak:d4175d9651beae8d633dcb27cacab111037b5721"
-migrate_image      = "rg.fr-par.scw.cloud/knot-dots/migrate:d4175d9651beae8d633dcb27cacab111037b5721"
+strategytool_image = "rg.fr-par.scw.cloud/knot-dots/strategytool:aae39ce8d50475e62310ce3d26d67a47693eb47c"
+keycloak_image     = "rg.fr-par.scw.cloud/knot-dots/keycloak:aae39ce8d50475e62310ce3d26d67a47693eb47c"
+migrate_image      = "rg.fr-par.scw.cloud/knot-dots/migrate:aae39ce8d50475e62310ce3d26d67a47693eb47c"
