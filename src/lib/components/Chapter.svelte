@@ -128,7 +128,7 @@
 <div class="chapter">
 	<svelte:element this={headingTag} class="chapter-title">
 		{container.payload.title}
-		{#if $ability.can('update', $page.data.container)}
+		{#if $ability.can('update', isPartOf)}
 			{#if currentIndex < isPartOfRelation.length - 1}
 				<button class="icons-element" type="button" on:click={moveDown}>
 					<ChevronDown />
