@@ -5,6 +5,7 @@
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import MilestoneCarousel from '$lib/components/MilestoneCarousel.svelte';
@@ -12,6 +13,7 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { inview } from '$lib/inview';
 	import {
+		getCreator,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		isStrategyContainer,
@@ -79,6 +81,8 @@
 			}) as Promise<IndicatorContainer[]>;
 		}
 	});
+
+	$: organizationMembersRequest = fetchMembers(container.organization);
 </script>
 
 <article class="details">
@@ -238,19 +242,55 @@
 			</div>
 		{/if}
 
-		<div class="meta">
-			<h3 class="meta-key">{$_('created_date')}</h3>
-			<ul class="meta-value">
-				<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
-			</ul>
-		</div>
+		{#await organizationMembersRequest then organizationMembers}
+			{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
+			<div class="meta">
+				<h3 class="meta-key">{$_('created_date')}</h3>
+				<ul class="meta-value">
+					<li>
+						{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
+							? $_('created_by', {
+									values: {
+										date: revisions[0].valid_from,
+										creator: getCreator(revisions[0])
+											.filter((guid) => organizationMembersByGuid.has(guid))
+											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.join(', ')
+									}
+								})
+							: $date(revisions[0].valid_from, { format: 'long' })}
+					</li>
+				</ul>
+			</div>
 
-		<div class="meta">
-			<h3 class="meta-key">{$_('modified_date')}</h3>
-			<ul class="meta-value">
-				<li>{$date(selectedRevision.valid_from, { format: 'medium' })}</li>
-			</ul>
-		</div>
+			<div class="meta">
+				<h3 class="meta-key">{$_('modified_date')}</h3>
+				<ul class="meta-value">
+					<li>
+						{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
+							? $_('created_by', {
+									values: {
+										date: container.valid_from,
+										creator: getCreator(container)
+											.filter((guid) => organizationMembersByGuid.has(guid))
+											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.join(', ')
+									}
+								})
+							: $date(container.valid_from, { format: 'long' })}
+					</li>
+				</ul>
+			</div>
+		{/await}
+
+		{#if $ability.can('read', container, 'visibility')}
+			<div class="meta">
+				<h3 class="meta-key">{$_('visible_for')}</h3>
+				<ul class="meta-value">
+					<li>{$_(`visibility.${container.payload.visibility}`)}</li>
+				</ul>
+			</div>
+		{/if}
 	</div>
 
 	{#if selectedRevision.payload.resource.length > 0}
