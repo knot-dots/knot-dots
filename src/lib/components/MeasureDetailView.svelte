@@ -282,6 +282,15 @@
 				</ul>
 			</div>
 		{/await}
+
+		{#if $ability.can('read', container, 'visibility')}
+			<div class="meta">
+				<h3 class="meta-key">{$_('visible_for')}</h3>
+				<ul class="meta-value">
+					<li>{$_(`visibility.${container.payload.visibility}`)}</li>
+				</ul>
+			</div>
+		{/if}
 	</div>
 
 	{#if selectedRevision.payload.resource.length > 0}
