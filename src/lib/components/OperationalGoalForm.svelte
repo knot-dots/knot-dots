@@ -6,10 +6,9 @@
 	import ObjectiveWizard from '$lib/components/ObjectiveWizard.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
-	import { inview } from '$lib/inview';
 	import { audience, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { OperationalGoalContainer, EmptyOperationalGoalContainer } from '$lib/models';
-	import { applicationState, setContainerFormActiveTab } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 
 	export let container: OperationalGoalContainer | EmptyOperationalGoalContainer;
 
@@ -24,12 +23,7 @@
 	let indicatorLocked = container.payload.indicator.length > 0;
 </script>
 
-<fieldset
-	class="form-tab"
-	id="metadata"
-	use:inview
-	on:inview_enter={() => setContainerFormActiveTab('metadata')}
->
+<fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
 	<StrategyRelationSelector {container} />
@@ -43,12 +37,7 @@
 	/>
 </fieldset>
 
-<fieldset
-	class="form-tab"
-	id="basic-data"
-	use:inview
-	on:inview_enter={() => setContainerFormActiveTab('basic-data')}
->
+<fieldset class="form-tab" id="basic-data">
 	<legend>{$_('form.basic_data')}</legend>
 
 	<label>

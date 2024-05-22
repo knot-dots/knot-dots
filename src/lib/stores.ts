@@ -12,8 +12,6 @@ import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
 	audience,
-	type ContainerDetailViewTabKey,
-	type ContainerFormTabKey,
 	containerOfType,
 	type ContainerWithEffect,
 	hasMember,
@@ -54,26 +52,6 @@ export const applicationState = writable<ApplicationState>({
 		showDropDown: false
 	}
 });
-
-export function setContainerFormActiveTab(activeTab: ContainerFormTabKey) {
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			...state.containerForm,
-			activeTab
-		}
-	}));
-}
-
-export function setContainerDetailViewActiveTab(activeTab: ContainerDetailViewTabKey) {
-	applicationState.update((state) => ({
-		...state,
-		containerDetailView: {
-			...state.containerDetailView,
-			activeTab
-		}
-	}));
-}
 
 export type User = {
 	adminOf: string[];
