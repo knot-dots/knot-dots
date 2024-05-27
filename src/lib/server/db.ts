@@ -162,7 +162,21 @@ export function createContainer(container: NewContainer) {
 				SELECT *
 				FROM ${sql.unnest(relationValues, ['int8', 'int4', 'text', 'int8'])}
 				ON CONFLICT DO NOTHING
+				RETURNING *
       `);
+
+			const isPartOfStrategyRelation = relationResult.find(
+				({ predicate }) => predicate == predicates.enum['is-part-of-strategy']
+			);
+			if (isPartOfStrategyRelation) {
+				await txConnection.any(sql.typeAlias(`void`)`
+					UPDATE container_relation SET position = position + 1
+					WHERE predicate = ${predicates.enum['is-part-of-strategy']}
+						AND object = ${isPartOfStrategyRelation.object}
+						AND subject != ${containerResult.revision}
+						AND position >= ${isPartOfStrategyRelation.position}
+				`);
+			}
 
 			return { ...containerResult, relation: relationResult, user: userResult };
 		});
