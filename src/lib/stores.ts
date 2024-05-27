@@ -161,11 +161,13 @@ if (browser) {
 		const hashParams = paramsFromFragment(values.url);
 
 		if (hashParams.size > 0) {
-			overlayHistory.update((value) =>
-				hashParams.toString() == value[value.length - 1]?.toString() ?? ''
-					? value
-					: [...value, hashParams]
-			);
+			if (!hashParams.has(overlayKey.enum.edit)) {
+				overlayHistory.update((value) =>
+					hashParams.toString() == value[value.length - 1]?.toString() ?? ''
+						? value
+						: [...value, hashParams]
+				);
+			}
 		} else {
 			overlayHistory.set([]);
 		}
