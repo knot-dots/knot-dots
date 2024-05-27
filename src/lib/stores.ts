@@ -130,6 +130,18 @@ if (browser) {
 	overlayWidth.subscribe((value) => sessionStorage.setItem('overlayWidth', value.toString()));
 }
 
+const storedRelationOverlayWidth = browser ? sessionStorage.getItem('relationOverlayWidth') : null;
+
+export const relationOverlayWidth = writable<number>(
+	storedRelationOverlayWidth ? parseFloat(storedRelationOverlayWidth) : 0.5
+);
+
+if (browser) {
+	relationOverlayWidth.subscribe((value) =>
+		sessionStorage.setItem('relationOverlayWidth', value.toString())
+	);
+}
+
 type Overlay = {
 	indicators?: IndicatorContainer[];
 	internalObjectives?: Container[];
