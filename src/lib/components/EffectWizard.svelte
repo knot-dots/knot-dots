@@ -212,6 +212,16 @@
 				<PlusSmall />
 				{$_('indicator_category.kpi')}
 			</button>
+			<button
+				type="button"
+				on:click={() => {
+					showIndicatorOptions = true;
+					indicatorCategory = indicatorCategories.enum['indicator_category.mpsc'];
+				}}
+			>
+				<PlusSmall />
+				{$_('indicator_category.mpsc')}
+			</button>
 		</p>
 	{/if}
 {/await}
