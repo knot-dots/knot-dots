@@ -317,6 +317,7 @@
 		"is_inconsistent_with": "inconsistent with",
 		"remove": "remove relations"
 	},
+	"relations": "Relations",
 	"resources": {
 		"amount": "Amount",
 		"description": "Description",
