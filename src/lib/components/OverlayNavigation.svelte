@@ -33,11 +33,17 @@
 		const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
 		await goto(`#${newParams.toString()}`);
 	}
+
+	function closeURL(url: URL) {
+		const closeURL = new URL(url);
+		closeURL.hash = '';
+		return closeURL.toString();
+	}
 </script>
 
 <nav>
 	<div>
-		<a class="button button-nav button-square" href={$page.url.pathname} title={$_('close')}>
+		<a class="button button-nav button-square" href={closeURL($page.url)} title={$_('close')}>
 			<XMark />
 		</a>
 

@@ -313,6 +313,7 @@
 		"is_inconsistent_with": "Diese Vorhaben widersprechen sich",
 		"remove": "Beziehungen lösen"
 	},
+	"relations": "Beziehungen",
 	"resources": {
 		"amount": "Menge",
 		"description": "Beschreibung",
