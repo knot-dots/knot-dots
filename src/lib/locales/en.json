@@ -8,6 +8,7 @@
 	"audience.organization": "Organization",
 	"audience.project_management": "Project management",
 	"audience.public": "Public",
+	"basic_data": "Basic data",
 	"board": {
 		"elements": "Elements",
 		"implementation": "Implementation",
@@ -122,11 +123,6 @@
 		"tasks": "Tasks",
 		"vision": "Vision",
 		"visions": "Visions"
-	},
-	"internal_objective_filter": {
-		"include_measures": "With measures",
-		"include_subordinate_organizational_units": "With subordinate units",
-		"include_superordinate_organizational_units": "With superordinate units"
 	},
 	"invite": {
 		"email": "Email",
