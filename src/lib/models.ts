@@ -163,18 +163,31 @@ export const strategyTypes = z.enum(strategyTypeValues);
 export type StrategyType = z.infer<typeof strategyTypes>;
 
 const topicValues = [
-	'topic.economy',
-	'topic.health',
-	'topic.mobility',
-	'topic.living',
-	'topic.environment',
-	'topic.education_and_culture',
-	'topic.social_justice',
-	'topic.digital_municipality',
-	'topic.demographics',
-	'topic.cityscape',
 	'topic.citizen_participation',
-	'topic.security'
+	'topic.cityscape',
+	'topic.civil_protection',
+	'topic.climate_change_mitigation_and_adaptation',
+	'topic.construction_and_housing',
+	'topic.culture',
+	'topic.demographics',
+	'topic.digital_municipality',
+	'topic.digital_urban_planning',
+	'topic.economy',
+	'topic.education',
+	'topic.energy',
+	'topic.environment',
+	'topic.health',
+	'topic.labor_and_social_affairs',
+	'topic.leisure',
+	'topic.living',
+	'topic.mobility',
+	'topic.quality_of_life',
+	'topic.resilience',
+	'topic.security',
+	'topic.social_justice',
+	'topic.tourism',
+	'topic.waste_and_emissions',
+	'topic.water'
 ] as const;
 
 export const topics = z.enum(topicValues);
