@@ -162,19 +162,52 @@ export const strategyTypes = z.enum(strategyTypeValues);
 
 export type StrategyType = z.infer<typeof strategyTypes>;
 
+const measureTypeValues = [
+	'measure_type.app',
+	'measure_type.artificial_intelligence',
+	'measure_type.cyber_security',
+	'measure_type.data_visualization',
+	'measure_type.digital_platform',
+	'measure_type.digital_twin',
+	'measure_type.management_tools',
+	'measure_type.network_infrastructure',
+	'measure_type.planning',
+	'measure_type.sensory',
+	'measure_type.smart_grid',
+	'measure_type.user_participation',
+	'measure_type.virtual_reality'
+] as const;
+
+export const measureTypes = z.enum(measureTypeValues);
+
+export type MeasureType = z.infer<typeof measureTypes>;
+
 const topicValues = [
-	'topic.economy',
-	'topic.health',
-	'topic.mobility',
-	'topic.living',
-	'topic.environment',
-	'topic.education_and_culture',
-	'topic.social_justice',
-	'topic.digital_municipality',
-	'topic.demographics',
-	'topic.cityscape',
 	'topic.citizen_participation',
-	'topic.security'
+	'topic.cityscape',
+	'topic.civil_protection',
+	'topic.climate_change_mitigation_and_adaptation',
+	'topic.construction_and_housing',
+	'topic.culture',
+	'topic.demographics',
+	'topic.digital_municipality',
+	'topic.digital_urban_planning',
+	'topic.economy',
+	'topic.education',
+	'topic.energy',
+	'topic.environment',
+	'topic.health',
+	'topic.labor_and_social_affairs',
+	'topic.leisure',
+	'topic.living',
+	'topic.mobility',
+	'topic.quality_of_life',
+	'topic.resilience',
+	'topic.security',
+	'topic.social_justice',
+	'topic.tourism',
+	'topic.waste_and_emissions',
+	'topic.water'
 ] as const;
 
 export const topics = z.enum(topicValues);
@@ -393,6 +426,7 @@ const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	historicalValuesIntro: z.string().optional(),
 	indicatorCategory: z.array(indicatorCategories).default([]),
+	measureType: z.array(measureTypes).default([]),
 	measuresIntro: z.string().optional(),
 	objectivesIntro: z.string().optional(),
 	quantity: z.string(),
@@ -473,6 +507,7 @@ const measurePayload = basePayload
 			.record(z.string().uuid(), z.coerce.number().nonnegative())
 			.optional(),
 		effect: z.array(indicatorEffect).default([]),
+		measureType: z.array(measureTypes).default([]),
 		resource: z
 			.array(
 				z.object({
@@ -550,6 +585,7 @@ const simpleMeasurePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		effect: z.array(indicatorEffect).default([]),
+		measureType: z.array(measureTypes).default([]),
 		progress: z.number().nonnegative().default(0),
 		resource: z
 			.array(

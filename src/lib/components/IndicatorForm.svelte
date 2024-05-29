@@ -7,6 +7,7 @@
 	import {
 		audience,
 		indicatorCategories,
+		measureTypes,
 		quantities,
 		sustainableDevelopmentGoals,
 		topics,
@@ -177,6 +178,12 @@
 				bind:value={container.payload.indicatorCategory}
 			/>
 		{/if}
+
+		<ListBox
+			label={$_('measure_type')}
+			options={measureTypes.options}
+			bind:value={container.payload.measureType}
+		/>
 
 		<ListBox
 			label={$_('topic.label')}

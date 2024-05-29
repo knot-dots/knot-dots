@@ -8,7 +8,7 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
-	import { audience, status, sustainableDevelopmentGoals, topics } from '$lib/models';
+	import { audience, measureTypes, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyMeasureContainer, MeasureContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -58,6 +58,12 @@
 			<Editor label={$_('result')} bind:value={container.payload.result} />
 		{/if}
 	{/key}
+
+	<ListBox
+		label={$_('measure_type')}
+		options={measureTypes.options}
+		bind:value={container.payload.measureType}
+	/>
 
 	<ListBox
 		label={$_('topic.label')}
