@@ -993,6 +993,7 @@ const emptyContainer = newContainer.extend({
 				audience: true,
 				category: true,
 				historicalValues: true,
+				measureType: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1001,6 +1002,7 @@ const emptyContainer = newContainer.extend({
 		indicatorTemplatePayload.partial().merge(
 			indicatorTemplatePayload.pick({
 				category: true,
+				measureType: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1012,6 +1014,7 @@ const emptyContainer = newContainer.extend({
 				boards: true,
 				category: true,
 				effect: true,
+				measureType: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1052,6 +1055,7 @@ const emptyContainer = newContainer.extend({
 				audience: true,
 				category: true,
 				effect: true,
+				measureType: true,
 				progress: true,
 				topic: true,
 				type: true,
@@ -1113,6 +1117,7 @@ const emptyIndicatorContainer = emptyContainer.extend({
 			audience: true,
 			category: true,
 			historicalValues: true,
+			measureType: true,
 			topic: true,
 			type: true,
 			visibility: true
@@ -1129,6 +1134,7 @@ const emptyMeasureContainer = emptyContainer.extend({
 			boards: true,
 			category: true,
 			effect: true,
+			measureType: true,
 			topic: true,
 			type: true,
 			visibility: true
@@ -1197,6 +1203,7 @@ const emptySimpleMeasureContainer = emptyContainer.extend({
 			audience: true,
 			category: true,
 			effect: true,
+			measureType: true,
 			progress: true,
 			topic: true,
 			type: true,
