@@ -158,6 +158,17 @@
 			</div>
 		{/if}
 
+		{#if 'measureType' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('measure_type')}</h3>
+				<ul class="meta-value">
+					{#each container.payload.measureType as measureType}
+						<li>{$_(measureType)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
 		{#if 'topic' in container.payload}
 			<div class="meta">
 				<h3 class="meta-key">{$_('topic.label')}</h3>
