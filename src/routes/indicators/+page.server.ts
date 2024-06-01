@@ -29,8 +29,10 @@ export const load = (async ({ locals, parent, url }) => {
 					audience: url.searchParams.has('audienceChanged')
 						? url.searchParams.getAll('audience')
 						: [audience.enum['audience.public'], audience.enum['audience.organization']],
+					categories: url.searchParams.getAll('category'),
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					organizationalUnits,
+					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]
 				},
 				''
