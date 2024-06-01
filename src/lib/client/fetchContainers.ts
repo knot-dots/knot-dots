@@ -10,6 +10,7 @@ export default async function fetchContainers(
 		indicatorCategory?: string[];
 		isPartOfMeasure?: number[];
 		isPartOfStrategy?: number[];
+		measureType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: PayloadType[];
@@ -40,6 +41,9 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.isPartOfStrategy ?? []) {
 		params.append('isPartOfStrategy', String(value));
+	}
+	for (const value of filters.measureType ?? []) {
+		params.append('measureType', String(value));
 	}
 	for (const value of filters.organization ?? []) {
 		params.append('organization', value);

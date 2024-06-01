@@ -107,9 +107,9 @@
 	"indicator_category.kpi": "KPI",
 	"indicator_category.mpsc": "MPSC",
 	"indicator_category.sdg": "SDG",
-	"indicator_form.select_from_presets": "Select indicator from presets",
 	"indicator_form.create_custom": "Create a custom indicator",
 	"indicator_template": "Indicator template",
+	"indicator_template.select": "Select this template",
 	"indicators": "Indicators",
 	"information": "Information",
 	"internal_objective": {
@@ -176,7 +176,6 @@
 	"open_sidebar": "Open sidebar",
 	"operational_goal": "Operational goal",
 	"operational_goals": "Operational goals",
-	"or": "or",
 	"organization": "Organization",
 	"organization_category": {
 		"business": "Business",

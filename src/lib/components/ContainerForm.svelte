@@ -123,7 +123,7 @@
 		class="details-title"
 		style={container.payload.type === payloadTypes.enum.undefined ||
 		(container.payload.type === payloadTypes.enum.indicator && !container.payload.quantity)
-			? 'visibility: hidden;'
+			? 'display: none;'
 			: undefined}
 	>
 		{$_(`${container.payload.type}`)}
