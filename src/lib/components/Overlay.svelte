@@ -71,7 +71,7 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
-	import { ability, applicationState, overlayWidth, user } from '$lib/stores';
+	import { ability, addEffectState, overlayWidth, user } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
@@ -134,7 +134,10 @@
 		c: AnyContainer
 	) {
 		await invalidateAll();
-		if (hashParams.has('create')) {
+		if (hashParams.has('create') && isIndicatorContainer(detail.result) && $addEffectState) {
+			$addEffectState.effect = detail.result.guid;
+			await goto(`#view=${$addEffectState.target}&edit`);
+		} else if (hashParams.has('create')) {
 			await goto(`#view=${detail.result.guid}`);
 		} else if (hashParams.has('edit-help')) {
 			const newParams = new URLSearchParams(hashParams);

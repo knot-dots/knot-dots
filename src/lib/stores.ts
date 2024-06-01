@@ -142,6 +142,13 @@ if (browser) {
 	);
 }
 
+type AddEffectState = {
+	target?: string;
+	effect?: string;
+};
+
+export const addEffectState = writable<AddEffectState>({});
+
 type Overlay = {
 	indicators?: IndicatorContainer[];
 	internalObjectives?: Container[];

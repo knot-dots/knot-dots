@@ -3,44 +3,83 @@
 	import { _ } from 'svelte-i18n';
 	import MinusSmall from '~icons/heroicons/minus-small-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { goto } from '$app/navigation';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import { indicatorCategories, payloadTypes } from '$lib/models';
-	import type {
-		Container,
-		EmptyContainer,
-		IndicatorCategory,
-		IndicatorContainer,
-		IndicatorEffect
+	import {
+		type Container,
+		type EmptyContainer,
+		type IndicatorContainer,
+		type IndicatorEffect,
+		type MeasureType,
+		overlayKey,
+		payloadTypes,
+		type SustainableDevelopmentGoal,
+		type Topic
 	} from '$lib/models';
+	import { addEffectState } from '$lib/stores';
+	import type { Action } from 'svelte/action';
 
 	export let container: (Container | EmptyContainer) & {
-		payload: { effect: IndicatorEffect[] };
+		payload: {
+			category: SustainableDevelopmentGoal[];
+			effect: IndicatorEffect[];
+			measureType: MeasureType[];
+			topic: Topic[];
+		};
+	};
+
+	let scrollToEffects = false;
+
+	const scroll: Action<HTMLParagraphElement> = () => {
+		if (scrollToEffects) {
+			document.getElementById('effects')?.scrollIntoView({ behavior: 'instant', block: 'end' });
+		}
 	};
 
 	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
 
 	onMount(() => {
+		if ('guid' in container && $addEffectState.target == container.guid && $addEffectState.effect) {
+			const thisYear = new Date().getFullYear();
+			container.payload.effect = [
+				...container.payload.effect,
+				{
+					indicator: $addEffectState.effect,
+					achievedValues: [...Array(5)].map((_, index) => [thisYear + index, 0]),
+					plannedValues: [...Array(5)].map((_, index) => [thisYear + index, 0])
+				}
+			];
+
+			scrollToEffects = true;
+		}
+
+		$addEffectState = {};
+
 		indicatorsRequest = fetchContainers({
 			organization: [container.organization],
 			payloadType: [payloadTypes.enum.indicator]
 		}) as Promise<IndicatorContainer[]>;
 	});
 
-	let showIndicatorOptions = false;
-	let indicatorCategory: IndicatorCategory;
+	async function add(target: string) {
+		const params = new URLSearchParams([[overlayKey.enum.create, payloadTypes.enum.indicator]]);
 
-	function add(event: { currentTarget: HTMLSelectElement }) {
-		showIndicatorOptions = false;
-		const thisYear = new Date().getFullYear();
-		container.payload.effect = [
-			...(container.payload.effect ?? []),
-			{
-				indicator: event.currentTarget.value,
-				achievedValues: [...Array(5)].map((_, index) => [thisYear + index, 0]),
-				plannedValues: [...Array(5)].map((_, index) => [thisYear + index, 0])
-			}
-		];
+		for (const category of container.payload.category) {
+			params.append('category', category);
+		}
+
+		for (const topic of container.payload.topic) {
+			params.append('topic', topic);
+		}
+
+		for (const measureType of container.payload.measureType) {
+			params.append('measureType', measureType);
+		}
+
+		$addEffectState = { target };
+
+		await goto(`#${params.toString()}`);
 	}
 
 	function remove(i: number) {
@@ -76,155 +115,92 @@
 			);
 		};
 	}
-
-	function compareIndicators(a: IndicatorContainer, b: IndicatorContainer) {
-		if (container.organizational_unit == null) {
-			if (a.organizational_unit != null && b.organizational_unit == null) {
-				return 1;
-			} else if (a.organizational_unit == null && b.organizational_unit != null) {
-				return -1;
-			} else {
-				return a.payload.title.localeCompare(b.payload.title);
-			}
-		} else {
-			if (
-				a.organizational_unit == container.organizational_unit &&
-				b.organizational_unit != container.organizational_unit
-			) {
-				return 1;
-			} else if (
-				a.organizational_unit != container.organizational_unit &&
-				b.organizational_unit == container.organizational_unit
-			) {
-				return -1;
-			} else {
-				return a.payload.title.localeCompare(b.payload.title);
-			}
-		}
-	}
 </script>
 
-{#await indicatorsRequest then indicators}
-	{@const indicatorsByGuid = new Map(indicators.map((container) => [container.guid, container]))}
-	{#each container.payload.effect ?? [] as effect, effectIndex}
-		{@const indicator = indicatorsByGuid.get(effect.indicator)}
-		{#if indicator}
-			<div class="effect">
-				<table class="spreadsheet">
-					<thead>
-						<tr>
-							<th scope="col"></th>
-							<th scope="col" colspan="2">
-								{indicator.payload.title} ({$_(`${indicator.payload.unit}` ?? '')})
-							</th>
-						</tr>
-						<tr>
-							<th scope="col"></th>
-							<th scope="col">
-								{$_('indicator.effect.planned_values')}
-							</th>
-							<th scope="col">
-								{$_('indicator.effect.achieved_values')}
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each effect.achievedValues.map((v, i) => i) as index}
+<fieldset>
+	{#await indicatorsRequest then indicators}
+		{@const indicatorsByGuid = new Map(indicators.map((container) => [container.guid, container]))}
+
+		{#each container.payload.effect ?? [] as effect, effectIndex}
+			{@const indicator = indicatorsByGuid.get(effect.indicator)}
+			{#if indicator}
+				<div class="effect">
+					<table class="spreadsheet">
+						<thead>
 							<tr>
-								<th scope="row">
-									{effect.achievedValues[index][0]}
+								<th scope="col"></th>
+								<th scope="col" colspan="2">
+									{indicator.payload.title} ({$_(`${indicator.payload.unit}` ?? '')})
 								</th>
-								<td>
-									<input
-										type="text"
-										inputmode="decimal"
-										value={effect.plannedValues[index][1]}
-										on:change={updatePlannedValues(effectIndex, index)}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										inputmode="decimal"
-										value={effect.achievedValues[index][1]}
-										on:change={updateAchievedValues(effectIndex, index)}
-									/>
+							</tr>
+							<tr>
+								<th scope="col"></th>
+								<th scope="col">
+									{$_('indicator.effect.planned_values')}
+								</th>
+								<th scope="col">
+									{$_('indicator.effect.achieved_values')}
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each effect.achievedValues.map((v, i) => i) as index}
+								<tr>
+									<th scope="row">
+										{effect.achievedValues[index][0]}
+									</th>
+									<td>
+										<input
+											type="text"
+											inputmode="decimal"
+											value={effect.plannedValues[index][1]}
+											on:change={updatePlannedValues(effectIndex, index)}
+										/>
+									</td>
+									<td>
+										<input
+											type="text"
+											inputmode="decimal"
+											value={effect.achievedValues[index][1]}
+											on:change={updateAchievedValues(effectIndex, index)}
+										/>
+									</td>
+								</tr>
+							{/each}
+
+							<tr>
+								<td colspan="3">
+									<button
+										class="quiet"
+										title={$_('add_value')}
+										type="button"
+										on:click={() => appendYear(effectIndex)}
+									>
+										<PlusSmall />
+									</button>
 								</td>
 							</tr>
-						{/each}
-
-						<tr>
-							<td colspan="3">
-								<button
-									class="quiet"
-									title={$_('add_value')}
-									type="button"
-									on:click={() => appendYear(effectIndex)}
-								>
-									<PlusSmall />
-								</button>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				{#if 'guid' in container}
-					<IndicatorChart container={indicator} relatedContainers={[container]} showEffects />
-				{/if}
-				<button type="button" on:click={remove(effectIndex)}>
-					<MinusSmall />
+						</tbody>
+					</table>
+					{#if 'guid' in container}
+						<IndicatorChart container={indicator} relatedContainers={[container]} showEffects />
+					{/if}
+					<button type="button" on:click={remove(effectIndex)}>
+						<MinusSmall />
+					</button>
+				</div>
+			{/if}
+		{/each}
+		{#if 'guid' in container}
+			<p use:scroll>
+				<button type="button" on:click={() => add(container.guid)}>
+					<PlusSmall />
+					{$_('effect')}
 				</button>
-			</div>
+			</p>
 		{/if}
-	{/each}
-
-	{#if showIndicatorOptions}
-		<label>
-			<select name="indicator" on:change={add} required>
-				<option></option>
-				{#each indicators
-					.filter(({ payload }) => payload.indicatorCategory.includes(indicatorCategory))
-					.sort(compareIndicators) as indicatorOption}
-					<option value={indicatorOption.guid}>
-						{indicatorOption.payload.title}
-					</option>
-				{/each}
-			</select>
-		</label>
-	{:else}
-		<p>
-			<button
-				type="button"
-				on:click={() => {
-					showIndicatorOptions = true;
-					indicatorCategory = indicatorCategories.enum['indicator_category.sdg'];
-				}}
-			>
-				<PlusSmall />
-				{$_('indicator_category.sdg')}
-			</button>
-			<button
-				type="button"
-				on:click={() => {
-					showIndicatorOptions = true;
-					indicatorCategory = indicatorCategories.enum['indicator_category.kpi'];
-				}}
-			>
-				<PlusSmall />
-				{$_('indicator_category.kpi')}
-			</button>
-			<button
-				type="button"
-				on:click={() => {
-					showIndicatorOptions = true;
-					indicatorCategory = indicatorCategories.enum['indicator_category.mpsc'];
-				}}
-			>
-				<PlusSmall />
-				{$_('indicator_category.mpsc')}
-			</button>
-		</p>
-	{/if}
-{/await}
+	{/await}
+</fieldset>
 
 <style>
 	.effect {
