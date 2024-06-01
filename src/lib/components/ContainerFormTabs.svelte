@@ -6,13 +6,19 @@
 	import Info from '~icons/knotdots/info';
 	import Resources from '~icons/knotdots/resources';
 	import { browser } from '$app/environment';
-	import { boards, isContainerWithEffect } from '$lib/models';
+	import {
+		boards,
+		isContainerWithEffect,
+		isIndicatorContainer,
+		hasHistoricalValues
+	} from '$lib/models';
 	import type { AnyContainer, ContainerFormTabKey } from '$lib/models';
 	import { applicationState, getOrganization, getOrganizationalUnit } from '$lib/stores';
 
 	export let container: AnyContainer;
 
 	let showEffectsTab: boolean;
+	let showHistoricalValuesTab: boolean;
 
 	$: {
 		const organizationOrOrganizationalUnit = container.organizational_unit
@@ -22,6 +28,8 @@
 		showEffectsTab =
 			isContainerWithEffect(container) &&
 			organizationOrOrganizationalUnit?.payload.boards.includes(boards.enum['board.indicators']);
+
+		showHistoricalValuesTab = isIndicatorContainer(container) && hasHistoricalValues(container);
 	}
 
 	function updateApplicationState(activeTab: ContainerFormTabKey) {
@@ -86,7 +94,7 @@
 		</button>
 	</li>
 {/if}
-{#if $applicationState.containerForm.tabs.includes('historical-values')}
+{#if $applicationState.containerForm.tabs.includes('historical-values') && showHistoricalValuesTab}
 	<li>
 		<button
 			title={$_('form.historical_values')}

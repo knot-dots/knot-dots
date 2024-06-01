@@ -6,6 +6,7 @@
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
 		audience,
+		hasHistoricalValues,
 		indicatorCategories,
 		measureTypes,
 		quantities,
@@ -35,12 +36,16 @@
 		}
 	}));
 
-	$: if (container.payload.historicalValues.length === 0) {
+	let withHistoricalValues = false;
+
+	$: if (withHistoricalValues && !hasHistoricalValues(container)) {
 		const thisYear = new Date().getFullYear();
 		container.payload.historicalValues = [...Array(10)].map((_, index) => [
 			thisYear + index - 5,
 			0
 		]);
+	} else if (!withHistoricalValues && hasHistoricalValues(container)) {
+		container.payload.historicalValues = [];
 	}
 
 	let indicatorTemplate: IndicatorTemplateContainer;
@@ -164,61 +169,63 @@
 		/>
 	</fieldset>
 
-	<fieldset class="form-tab" id="historical-values">
-		<legend>{$_('form.historical_values')}</legend>
+	{#if withHistoricalValues}
+		<fieldset class="form-tab" id="historical-values">
+			<legend>{$_('form.historical_values')}</legend>
 
-		<table class="spreadsheet">
-			<thead>
-				<tr>
-					<th scope="col"></th>
-					<th scope="col">
-						{$_(container.payload.unit ?? '')}
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td colspan="2">
-						<button
-							class="quiet"
-							title={$_('add_value')}
-							type="button"
-							on:click={prependHistoricalValue}
-						>
-							<PlusSmall />
-						</button>
-					</td>
-				</tr>
-				{#each container.payload.historicalValues.map((v, i) => i) as index}
+			<table class="spreadsheet">
+				<thead>
 					<tr>
-						<th scope="row">
-							{container.payload.historicalValues[index][0]}
+						<th scope="col"></th>
+						<th scope="col">
+							{$_(container.payload.unit ?? '')}
 						</th>
-						<td>
-							<input
-								type="text"
-								inputmode="decimal"
-								value={container.payload.historicalValues[index][1]}
-								on:change={updateHistoricalValues(index)}
-							/>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="2">
+							<button
+								class="quiet"
+								title={$_('add_value')}
+								type="button"
+								on:click={prependHistoricalValue}
+							>
+								<PlusSmall />
+							</button>
 						</td>
 					</tr>
-				{/each}
-				<tr>
-					<td colspan="2">
-						<button
-							class="quiet"
-							title={$_('add_value')}
-							type="button"
-							on:click={appendHistoricalValue}
-						>
-							<PlusSmall />
-						</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</fieldset>
+					{#each container.payload.historicalValues.map((v, i) => i) as index}
+						<tr>
+							<th scope="row">
+								{container.payload.historicalValues[index][0]}
+							</th>
+							<td>
+								<input
+									type="text"
+									inputmode="decimal"
+									value={container.payload.historicalValues[index][1]}
+									on:change={updateHistoricalValues(index)}
+								/>
+							</td>
+						</tr>
+					{/each}
+					<tr>
+						<td colspan="2">
+							<button
+								class="quiet"
+								title={$_('add_value')}
+								type="button"
+								on:click={appendHistoricalValue}
+							>
+								<PlusSmall />
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</fieldset>
+	{/if}
 {/if}
 
 <style>

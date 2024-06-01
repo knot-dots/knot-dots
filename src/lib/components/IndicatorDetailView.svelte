@@ -84,7 +84,7 @@
 			{/if}
 		</div>
 
-		<select bind:value={viewMode}>
+		<select class="view-mode" bind:value={viewMode}>
 			<option value="chart">{$_('indicator.view_mode.chart')}</option>
 			<option value="table">{$_('indicator.view_mode.table')}</option>
 		</select>
@@ -225,3 +225,9 @@
 		</div>
 	</div>
 </article>
+
+<style>
+	.view-mode {
+		width: fit-content;
+	}
+</style>

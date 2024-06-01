@@ -521,7 +521,7 @@
 		</aside>
 		{#if isIndicatorContainer(container)}
 			<header class="content-header">
-				<IndicatorTabs />
+				<IndicatorTabs {container} />
 			</header>
 		{:else if isContainerWithEffect(container)}
 			<header class="content-header">

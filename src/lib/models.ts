@@ -1495,3 +1495,7 @@ export function getCreator(revision: AnyContainer) {
 		.filter(({ predicate }) => predicate == predicates.enum['is-creator-of'])
 		.map(({ subject }) => subject);
 }
+
+export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicatorContainer) {
+	return container.payload.historicalValues.length > 0;
+}
