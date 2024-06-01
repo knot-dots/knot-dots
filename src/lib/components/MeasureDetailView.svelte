@@ -1,13 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { _, date, number } from 'svelte-i18n';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
-	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import EffectsCarousel from '$lib/components/EffectsCarousel.svelte';
 	import MilestoneCarousel from '$lib/components/MilestoneCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -18,15 +16,9 @@
 		isStrategyContainer,
 		overlayKey,
 		owners,
-		payloadTypes,
 		status
 	} from '$lib/models';
-	import type {
-		AnyContainer,
-		Container,
-		ContainerWithEffect,
-		IndicatorContainer
-	} from '$lib/models';
+	import type { AnyContainer, Container, ContainerWithEffect } from '$lib/models';
 	import { sdgIcons, statusColors, statusIcons } from '$lib/theme/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -69,17 +61,6 @@
 			return `#${query.toString()}`;
 		}
 	}
-
-	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
-
-	onMount(() => {
-		if (container.payload.effect.length > 0) {
-			indicatorsRequest = fetchContainers({
-				organization: [container.organization],
-				payloadType: [payloadTypes.enum.indicator]
-			}) as Promise<IndicatorContainer[]>;
-		}
-	});
 
 	$: organizationMembersRequest = fetchMembers(container.organization);
 </script>
@@ -323,18 +304,7 @@
 	{#if selectedRevision.payload.effect.length > 0}
 		<div class="details-tab" id="effects">
 			<h3>{$_('effects')}</h3>
-
-			{#await indicatorsRequest then indicators}
-				{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
-				{#each container.payload.effect as effect}
-					{@const indicator = indicatorsByGuid.get(effect.indicator)}
-					{#if indicator}
-						<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
-							<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
-						</IndicatorChart>
-					{/if}
-				{/each}
-			{/await}
+			<EffectsCarousel {container} />
 		</div>
 	{/if}
 

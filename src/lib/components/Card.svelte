@@ -53,7 +53,11 @@
 
 	if (isIndicatorContainer(container)) {
 		containersWithObjectivesPromise = fetchContainersWithParentObjectives(container);
-		relatedContainersPromise = fetchRelatedContainers(container.guid, {});
+		if (relatedContainers.length == 0) {
+			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
+		} else {
+			relatedContainersPromise = new Promise((resolve) => resolve(relatedContainers));
+		}
 	}
 
 	async function applyRelationFilter(url: URL) {
