@@ -109,6 +109,7 @@
 	"indicator_category.sdg": "SDG",
 	"indicator_form.select_from_presets": "Select indicator from presets",
 	"indicator_form.create_custom": "Create a custom indicator",
+	"indicator_template": "Indicator template",
 	"indicators": "Indicators",
 	"information": "Information",
 	"internal_objective": {
