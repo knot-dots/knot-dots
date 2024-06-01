@@ -134,18 +134,7 @@
 		c: AnyContainer
 	) {
 		await invalidateAll();
-		if (
-			detail.event.submitter?.id === 'save-and-next' &&
-			$applicationState.containerForm.activeTab
-		) {
-			await goto(`#view=${detail.result.guid}&edit`);
-			$applicationState.containerForm.activeTab =
-				$applicationState.containerForm.tabs[
-					$applicationState.containerForm.tabs.findIndex(
-						(value) => value === $applicationState.containerForm.activeTab
-					) + 1
-				];
-		} else if (hashParams.has('create')) {
+		if (hashParams.has('create')) {
 			await goto(`#view=${detail.result.guid}`);
 		} else if (hashParams.has('edit-help')) {
 			const newParams = new URLSearchParams(hashParams);
