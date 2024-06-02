@@ -839,12 +839,12 @@ export function getAllRelatedContainers(
 							--No relations with this as the subject.
 							SELECT *
 							FROM container_relation parent_test
-							WHERE c.revision = parent_test.subject AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure')
+							WHERE c.revision = parent_test.subject AND parent_test.predicate = ${predicates.enum['is-part-of']}
 						)
 					UNION ALL
 					SELECT array_append(r.path, c.revision), c.revision
 					FROM container c
-					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN ('is-part-of', 'is-part-of-measure')
+					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = ${predicates.enum['is-part-of']}
 					JOIN is_part_of_relation r ON cr.object = r.subject
 					WHERE c.valid_currently
 				)
@@ -858,10 +858,10 @@ export function getAllRelatedContainers(
 				FROM container_relation cr
 				JOIN container cs ON cs.revision = cr.subject
 					AND cs.valid_currently
-					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+					AND cr.predicate != ${predicates.enum['is-part-of']}
 				JOIN container co ON co.revision = cr.object
 					AND co.valid_currently
-					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']})
+					AND cr.predicate != ${predicates.enum['is-part-of']}
 				WHERE cs.revision = ${revision} OR co.revision = ${revision}
 			`)
 			: [];
