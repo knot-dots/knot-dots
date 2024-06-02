@@ -26,7 +26,6 @@
 	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
-	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
@@ -42,6 +41,7 @@
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
+	import TaskDetailView from '$lib/components/TaskDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
@@ -538,12 +538,12 @@
 				/>
 			{:else if isContainerWithEffect(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
-			{:else if isTaskContainer(container)}
-				<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
-			{:else if isInternalObjectiveContainer(container)}
-				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
 			{:else if isStrategyContainer(container)}
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
+			{:else if isTaskContainer(container)}
+				<TaskDetailView {container} {relatedContainers} {revisions} />
+			{:else if isInternalObjectiveContainer(container)}
+				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}

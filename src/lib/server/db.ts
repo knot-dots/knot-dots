@@ -637,7 +637,7 @@ export function getManyTaskContainers(filters: {
 		const conditions = [
 			sql.fragment`valid_currently`,
 			sql.fragment`NOT deleted`,
-			sql.fragment`payload->>'type' = ${payloadTypes.enum['internal_objective.task']}`
+			sql.fragment`payload->>'type' = ${payloadTypes.enum.task}`
 		];
 
 		if (filters.assignees?.length) {
@@ -764,14 +764,14 @@ export function maybePartOf(organizationOrOrganizationalUnit: string, containerT
 			candidateType = ['operational_goal'];
 		} else if (containerType == 'text') {
 			candidateType = ['model', 'operational_goal', 'strategic_goal', 'strategy'];
-		} else if (containerType == 'internal_objective.vision') {
+		} else if (containerType == 'vision') {
 			candidateType = ['internal_objective.internal_strategy'];
-		} else if (containerType == 'internal_objective.strategic_goal') {
-			candidateType = ['internal_objective.vision'];
-		} else if (containerType == 'internal_objective.milestone') {
-			candidateType = ['internal_objective.strategic_goal'];
-		} else if (containerType == 'internal_objective.task') {
-			candidateType = ['internal_objective.milestone'];
+		} else if (containerType == 'measure_result') {
+			candidateType = ['vision'];
+		} else if (containerType == 'milestone') {
+			candidateType = ['measure_result'];
+		} else if (containerType == 'task') {
+			candidateType = ['milestone'];
 		} else if (containerType == 'organizational_unit') {
 			candidateType = ['organizational_unit'];
 		} else {

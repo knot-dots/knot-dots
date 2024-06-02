@@ -16,14 +16,14 @@
 	export let container: Container;
 
 	$: tasksRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadTypes.enum['internal_objective.task']]
+		payloadType: [payloadTypes.enum.task]
 	}) as Promise<TaskContainer[]>;
 
 	function addTaskURL(url: URL) {
 		const params = paramsFromFragment(url);
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadTypes.enum['internal_objective.task']],
+			[overlayKey.enum.create, payloadTypes.enum.task],
 			[predicates.enum['is-part-of'], String(container.revision)]
 		]);
 		return `#${newParams.toString()}`;
@@ -31,7 +31,7 @@
 </script>
 
 {#await tasksRequest then tasks}
-	{#if tasks.length > 0 || $mayCreateContainer(payloadTypes.enum['internal_objective.task'])}
+	{#if tasks.length > 0 || $mayCreateContainer(payloadTypes.enum.task)}
 		<div class="tasks">
 			<h3>{$_('tasks')}</h3>
 			{#if tasks.length > 0}
@@ -43,7 +43,7 @@
 					{/each}
 				</ul>
 			{/if}
-			{#if $mayCreateContainer(payloadTypes.enum['internal_objective.task'])}
+			{#if $mayCreateContainer(payloadTypes.enum.task)}
 				<a class="button" href={addTaskURL($page.url)}>{$_('add_item')}</a>
 			{/if}
 		</div>

@@ -121,15 +121,7 @@
 	"internal_objective": {
 		"internal_strategy": "Interne Strategie",
 		"internal_strategies": "Interne Strategien",
-		"label": "Interne Ziele",
-		"milestone": "Meilenstein",
-		"milestones": "Meilensteine",
-		"strategic_goal": "Strategisches Ziel",
-		"strategic_goals": "Strategische Ziele",
-		"task": "Aufgabe",
-		"tasks": "Aufgaben",
-		"vision": "Vision",
-		"visions": "Visionen"
+		"label": "Interne Ziele"
 	},
 	"invite": {
 		"email": "E-Mail-Adresse",
@@ -156,6 +148,8 @@
 	"measure": "Maßnahme",
 	"measure.description": "Beabsichtigte Wirkung",
 	"measure.summary": "Kurze Projektbeschreibung",
+	"measure_result": "Maßnahmenergebnis",
+	"measure_results": "Maßnahmenergebnisse",
 	"measure_type": "Art der Maßnahme",
 	"measure_type.app": "App",
 	"measure_type.artificial_intelligence": "Künstliche Intelligenz",
@@ -172,6 +166,7 @@
 	"measure_type.virtual_reality": "Virtual Reality, Augmented Reality, Gamification",
 	"measures": "Maßnahmen",
 	"members": "Mitglieder",
+	"milestone": "Meilenstein",
 	"milestones": "Meilensteine",
 	"model": "Leitbild",
 	"models": "Visionen",
@@ -431,6 +426,7 @@
 		"in_progress": "In Umsetzung",
 		"label": "Status"
 	},
+	"task": "Aufgabe",
 	"tasks": "Aufgaben",
 	"text": "Ergänzungstext",
 	"topic": {
@@ -499,6 +495,8 @@
 		"members": "Alle Mitglieder",
 		"public": "Gesamte Öffentlichkeit"
 	},
+	"vision": "Vision",
+	"visions": "Visionen",
 	"workspace.indicator_monitoring": "Indikator-Monitoring",
 	"workspace.indicators": "Kacheln",
 	"workspace.measure_monitoring": "Maßnahmen-Monitoring",

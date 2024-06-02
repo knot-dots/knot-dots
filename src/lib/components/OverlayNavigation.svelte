@@ -119,7 +119,7 @@
 							href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
 						>
 							<span class="small-only"><Tasks /></span>
-							<span class="large-only">{$_('internal_objective.tasks')}</span>
+							<span class="large-only">{$_('tasks')}</span>
 						</a>
 					</li>
 				{/if}

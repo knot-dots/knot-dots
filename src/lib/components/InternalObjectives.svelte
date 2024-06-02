@@ -18,20 +18,20 @@
 			payloadType: payloadTypes.enum['internal_objective.internal_strategy']
 		},
 		{
-			title: 'internal_objective.visions',
-			payloadType: payloadTypes.enum['internal_objective.vision']
+			title: 'visions',
+			payloadType: payloadTypes.enum.vision
 		},
 		{
-			title: 'internal_objective.strategic_goals',
-			payloadType: payloadTypes.enum['internal_objective.strategic_goal']
+			title: 'measure_results',
+			payloadType: payloadTypes.enum.measure_result
 		},
 		{
-			title: 'internal_objective.milestones',
-			payloadType: payloadTypes.enum['internal_objective.milestone']
+			title: 'milestones',
+			payloadType: payloadTypes.enum.milestone
 		},
 		{
-			title: 'internal_objective.tasks',
-			payloadType: payloadTypes.enum['internal_objective.task']
+			title: 'tasks',
+			payloadType: payloadTypes.enum.task
 		}
 	];
 </script>

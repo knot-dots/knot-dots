@@ -44,8 +44,8 @@ export const load = (async ({ locals, url, parent }) => {
 					type: [
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
-						payloadTypes.enum['internal_objective.milestone'],
-						payloadTypes.enum['internal_objective.task']
+						payloadTypes.enum.milestone,
+						payloadTypes.enum.task
 					]
 				},
 				url.searchParams.get('sort') ?? ''

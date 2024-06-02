@@ -72,7 +72,7 @@ export const GET = (async ({ locals, url }) => {
 		);
 	} else if (
 		parseResult.data.isPartOfMeasure.length > 0 &&
-		parseResult.data.payloadType[0] == payloadTypes.enum['internal_objective.task']
+		parseResult.data.payloadType[0] == payloadTypes.enum.task
 	) {
 		containers = await locals.pool.connect(
 			getManyTaskContainers({

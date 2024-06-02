@@ -18,14 +18,14 @@
 	$: columns = [
 		{
 			title: taskStatus.enum['task_status.idea'],
-			payloadType: payloadTypes.enum['internal_objective.task'],
+			payloadType: payloadTypes.enum.task,
 			items: data.containers.filter(
 				(c) => isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.idea']
 			) as TaskContainer[]
 		},
 		{
 			title: taskStatus.enum['task_status.in_planning'],
-			payloadType: payloadTypes.enum['internal_objective.task'],
+			payloadType: payloadTypes.enum.task,
 			items: data.containers.filter(
 				(c) =>
 					isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.in_planning']
@@ -33,7 +33,7 @@
 		},
 		{
 			title: taskStatus.enum['task_status.in_progress'],
-			payloadType: payloadTypes.enum['internal_objective.task'],
+			payloadType: payloadTypes.enum.task,
 			items: data.containers.filter(
 				(c) =>
 					isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.in_progress']
@@ -41,7 +41,7 @@
 		},
 		{
 			title: taskStatus.enum['task_status.done'],
-			payloadType: payloadTypes.enum['internal_objective.task'],
+			payloadType: payloadTypes.enum.task,
 			items: data.containers.filter(
 				(c) => isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.done']
 			) as TaskContainer[]

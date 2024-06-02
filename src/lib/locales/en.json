@@ -121,15 +121,7 @@
 	"internal_objective": {
 		"internal_strategy": "Internal strategy",
 		"internal_strategies": "Internal strategies",
-		"label": "Internal objectives",
-		"milestone": "Milestone",
-		"milestones": "Milestones",
-		"strategic_goal": "Strategic goal",
-		"strategic_goals": "Strategic goals",
-		"task": "Task",
-		"tasks": "Tasks",
-		"vision": "Vision",
-		"visions": "Visions"
+		"label": "Internal objectives"
 	},
 	"invite": {
 		"email": "Email",
@@ -156,6 +148,8 @@
 	"measure": "Measure",
 	"measure.description": "Intended effects",
 	"measure.summary": "Short description",
+	"measure_result": "Measure result",
+	"measure_results": "Measure results",
 	"measure_type": "Measure type",
 	"measure_type.app": "App",
 	"measure_type.artificial_intelligence": "Artificial intelligence",
@@ -172,6 +166,7 @@
 	"measure_type.virtual_reality": "Virtual reality / Augmented reality / Gamification",
 	"measures": "Measures",
 	"members": "Members",
+	"milestone": "Milestone",
 	"milestones": "Milestones",
 	"model": "Model",
 	"models": "Models",
@@ -415,6 +410,7 @@
 	"superordinate_strategies": "Superordinate strategies",
 	"superordinate_visions": "Superordinate visions",
 	"task": "Task",
+	"tasks": "Tasks",
 	"task_category": {
 		"bugfix": "Bug fix",
 		"default": "Task",
@@ -499,6 +495,8 @@
 		"members": "Members only",
 		"public": "Public"
 	},
+	"vision": "Vision",
+	"visions": "Visions",
 	"workspace.indicator_monitoring": "Indicator monitoring",
 	"workspace.indicators": "Tiles",
 	"workspace.measure_monitoring": "Measure monitoring",

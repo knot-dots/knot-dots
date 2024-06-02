@@ -7,14 +7,12 @@
 	import { audience } from '$lib/models';
 	import type {
 		AnyContainer,
-		EmptyInternalObjectiveStrategicGoalContainer,
-		InternalObjectiveStrategicGoalContainer
+		EmptyMeasureResultContainer,
+		MeasureResultContainer
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container:
-		| InternalObjectiveStrategicGoalContainer
-		| EmptyInternalObjectiveStrategicGoalContainer;
+	export let container: MeasureResultContainer | EmptyMeasureResultContainer;
 	export let isPartOfOptions: AnyContainer[];
 
 	applicationState.update((state) => ({

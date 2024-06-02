@@ -207,7 +207,7 @@ if (browser) {
 			} else if (newContainer.payload.type == payloadTypes.enum.measure) {
 				newContainer.payload.status =
 					(hashParams.get('status') as Status) ?? status.enum['status.idea'];
-			} else if (newContainer.payload.type == payloadTypes.enum['internal_objective.task']) {
+			} else if (newContainer.payload.type == payloadTypes.enum.task) {
 				newContainer.payload.taskStatus =
 					(hashParams.get('taskStatus') as TaskStatus) ?? taskStatus.enum['task_status.idea'];
 			}
@@ -360,7 +360,7 @@ if (browser) {
 			const tasks = (await fetchContainers({
 				assignee: hashParams.getAll('assignee'),
 				isPartOfMeasure: [container.revision],
-				payloadType: [payloadTypes.enum['internal_objective.task']],
+				payloadType: [payloadTypes.enum.task],
 				taskCategory: hashParams.getAll('taskCategory'),
 				terms: hashParams.get('terms') ?? ''
 			})) as TaskContainer[];
@@ -419,11 +419,7 @@ if (browser) {
 				organizationalUnit: organizationalUnits.map(
 					({ guid }: OrganizationalUnitContainer) => guid
 				),
-				payloadType: [
-					payloadTypes.enum.measure,
-					payloadTypes.enum.strategy,
-					payloadTypes.enum['internal_objective.task']
-				]
+				payloadType: [payloadTypes.enum.measure, payloadTypes.enum.strategy, payloadTypes.enum.task]
 			})) as Container[];
 			overlay.set({
 				isPartOfOptions: [],
