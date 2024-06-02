@@ -338,17 +338,24 @@ if (browser) {
 				hashParams.get(overlayKey.enum['measure-monitoring']) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const measureElements = (await fetchContainers(
-				{
-					isPartOfMeasure: [container.revision],
+			const [measureElements, indicators] = (await Promise.all([
+				fetchContainers(
+					{
+						isPartOfMeasure: [container.revision],
+						organization: [container.organization],
+						relatedTo: hashParams.getAll('related-to'),
+						relationType: hashParams.getAll('relationType'),
+						terms: hashParams.get('terms') ?? ''
+					},
+					hashParams.get('sort') ?? 'alpha'
+				),
+				fetchContainers({
 					organization: [container.organization],
-					relatedTo: hashParams.getAll('related-to'),
-					relationType: hashParams.getAll('relationType'),
-					terms: hashParams.get('terms') ?? ''
-				},
-				hashParams.get('sort') ?? 'alpha'
-			)) as MeasureMonitoringContainer[];
+					payloadType: [payloadTypes.enum.indicator]
+				})
+			])) as [MeasureMonitoringContainer[], IndicatorContainer[]];
 			overlay.set({
+				indicators,
 				isPartOfOptions: [],
 				measureElements,
 				relatedContainers: [],

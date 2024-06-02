@@ -14,6 +14,7 @@
 		"implementation": "umsetzen",
 		"indicators": "messen",
 		"measure_monitoring": "Monitoring",
+		"measure_monitoring.column.effects": "Wirkung der Maßnahme",
 		"organizational_units": "Organisations-Ebenen",
 		"programs": "planen",
 		"tasks": "Aufgaben"
