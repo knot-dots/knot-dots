@@ -24,7 +24,6 @@
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
-	import MeasureMonitoringDetailView from '$lib/components/MeasureMonitoringDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
@@ -50,7 +49,6 @@
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
-		isMeasureMonitoringContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -542,8 +540,6 @@
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
 				<TaskDetailView {container} {relatedContainers} {revisions} />
-			{:else if isMeasureMonitoringContainer(container)}
-				<MeasureMonitoringDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}

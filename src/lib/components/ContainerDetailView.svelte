@@ -7,6 +7,7 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -115,6 +116,13 @@
 						{/if}
 					{/each}
 				{/await}
+			</div>
+		{/if}
+
+		{#if 'progress' in container.payload}
+			<div class="progress">
+				<h3>{$_('progress')}</h3>
+				<Progress value={container.payload.progress} />
 			</div>
 		{/if}
 
