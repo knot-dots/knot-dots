@@ -20,7 +20,7 @@ import {
 	createContainer,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToStrategy,
-	getAllRelatedInternalObjectives,
+	getAllRelatedContainers,
 	getManyContainers,
 	getManyTaskContainers
 } from '$lib/server/db';
@@ -85,7 +85,8 @@ export const GET = (async ({ locals, url }) => {
 	} else if (parseResult.data.isPartOfMeasure.length > 0) {
 		if (parseResult.data.relatedTo.length > 0) {
 			containers = await locals.pool.connect(
-				getAllRelatedInternalObjectives(
+				getAllRelatedContainers(
+					parseResult.data.organization,
 					parseResult.data.relatedTo[0],
 					parseResult.data.relationType,
 					{ type: parseResult.data.payloadType },

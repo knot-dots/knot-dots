@@ -340,6 +340,7 @@ if (browser) {
 			const measureElements = (await fetchContainers(
 				{
 					isPartOfMeasure: [container.revision],
+					organization: [container.organization],
 					relatedTo: hashParams.getAll('related-to'),
 					relationType: hashParams.getAll('relationType'),
 					terms: hashParams.get('terms') ?? ''
