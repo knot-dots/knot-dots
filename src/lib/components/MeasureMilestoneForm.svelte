@@ -2,8 +2,8 @@
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import {
 		audience,
 		type EmptyMeasureMilestoneContainer,
@@ -25,7 +25,7 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<StrategyRelationSelector {container} />
+	<MeasureRelationSelector {container} />
 
 	<OrganizationSelector bind:container />
 

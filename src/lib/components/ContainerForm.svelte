@@ -156,7 +156,7 @@
 	{:else if isMeasureMilestoneContainer(container)}
 		<MeasureMilestoneForm bind:container />
 	{:else if isMeasureResultContainer(container)}
-		<MeasureResultForm {isPartOfOptions} bind:container />
+		<MeasureResultForm bind:container />
 	{:else if isMilestoneContainer(container)}
 		<MilestoneForm bind:container />
 	{:else if isModelContainer(container)}

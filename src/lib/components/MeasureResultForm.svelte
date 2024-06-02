@@ -2,18 +2,13 @@
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import RelationSelector from '$lib/components/RelationSelector.svelte';
 	import { audience } from '$lib/models';
-	import type {
-		AnyContainer,
-		EmptyMeasureResultContainer,
-		MeasureResultContainer
-	} from '$lib/models';
+	import type { EmptyMeasureResultContainer, MeasureResultContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: MeasureResultContainer | EmptyMeasureResultContainer;
-	export let isPartOfOptions: AnyContainer[];
 
 	applicationState.update((state) => ({
 		...state,
@@ -27,7 +22,7 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<RelationSelector {container} {isPartOfOptions} />
+	<MeasureRelationSelector {container} />
 
 	<OrganizationSelector bind:container />
 
