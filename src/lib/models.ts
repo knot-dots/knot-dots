@@ -465,13 +465,24 @@ const visionPayload = basePayload
 	})
 	.strict();
 
+const measureMilestonePayload = measureMonitoringBasePayload
+	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		progress: z.number().nonnegative().default(0),
+		type: z.literal(payloadTypes.enum.measure_milestone)
+	})
+	.strict();
+
 const measureResultPayload = measureMonitoringBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.measure_result)
 	})
 	.strict();
 
-const milestonePayload = measureMonitoringBasePayload
+const milestonePayload = basePayload
 	.extend({
 		fulfillmentDate: z
 			.string()
@@ -1086,8 +1097,10 @@ const emptyContainer = newContainer.extend({
 		milestonePayload.partial().merge(
 			milestonePayload.pick({
 				audience: true,
+				category: true,
 				objective: true,
 				progress: true,
+				topic: true,
 				type: true,
 				visibility: true
 			})
@@ -1269,8 +1282,10 @@ const emptyMilestoneContainer = emptyContainer.extend({
 	payload: milestonePayload.partial().merge(
 		milestonePayload.pick({
 			audience: true,
+			category: true,
 			objective: true,
 			progress: true,
+			topic: true,
 			type: true,
 			visibility: true
 		})

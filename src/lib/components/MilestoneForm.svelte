@@ -5,7 +5,7 @@
 	import ObjectiveWizard from '$lib/components/ObjectiveWizard.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
-	import { audience } from '$lib/models';
+	import { audience, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -72,6 +72,18 @@
 			<option value="1"></option>
 		</datalist>
 	</label>
+
+	<ListBox
+		label={$_('topic.label')}
+		options={topics.options}
+		bind:value={container.payload.topic}
+	/>
+
+	<ListBox
+		label={$_('category')}
+		options={sustainableDevelopmentGoals.options}
+		bind:value={container.payload.category}
+	/>
 
 	<label>
 		{$_('fulfillment_date')}
