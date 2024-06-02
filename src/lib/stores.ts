@@ -152,7 +152,7 @@ export const addEffectState = writable<AddEffectState>({});
 
 type Overlay = {
 	indicators?: IndicatorContainer[];
-	measureElements?: Container[];
+	measureElements?: MeasureMonitoringContainer[];
 	isPartOfOptions: AnyContainer[];
 	containersWithObjectives?: ContainerWithObjective[];
 	object?: Container;

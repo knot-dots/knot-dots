@@ -49,6 +49,7 @@
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
+		isMeasureContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -66,6 +67,7 @@
 		ContainerWithObjective,
 		CustomEventMap,
 		IndicatorContainer,
+		MeasureMonitoringContainer,
 		TaskContainer,
 		User
 	} from '$lib/models';
@@ -73,7 +75,7 @@
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
-	export let measureElements: Container[] | undefined = undefined;
+	export let measureElements: MeasureMonitoringContainer[] | undefined = undefined;
 	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
@@ -414,7 +416,7 @@
 			</Sidebar>
 		</aside>
 		<Relations containers={relatedContainers} />
-	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && measureElements}
+	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && isMeasureContainer(container) && measureElements}
 		<aside>
 			<Sidebar helpSlug="internal-objectives">
 				<Search slot="search" />

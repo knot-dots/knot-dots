@@ -4,11 +4,15 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { type AnyContainer, type Container, payloadTypes } from '$lib/models';
+	import {
+		type MeasureContainer,
+		type MeasureMonitoringContainer,
+		payloadTypes
+	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
-	export let container: AnyContainer;
-	export let containers: Container[];
+	export let container: MeasureContainer;
+	export let containers: MeasureMonitoringContainer[];
 
 	setContext('mayShowRelationButton', true);
 
