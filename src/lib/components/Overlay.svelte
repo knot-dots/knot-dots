@@ -47,7 +47,6 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
-		hasMember,
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
@@ -561,7 +560,7 @@
 						<PlusSmall />{$_('create_another')}
 					</button>
 				{/if}
-				{#if !hasMember($user)($page.data.currentOrganizationalUnit ?? $page.data.currentOrganization) && $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+				{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
 					<button
 						class="primary"
 						type="button"
