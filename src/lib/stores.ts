@@ -20,6 +20,7 @@ import {
 	isContainerWithObjective,
 	isIndicatorContainer,
 	isStrategyContainer,
+	type MeasureMonitoringContainer,
 	overlayKey,
 	paramsFromFragment,
 	payloadTypes,
@@ -346,7 +347,7 @@ if (browser) {
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
-			)) as TaskContainer[];
+			)) as MeasureMonitoringContainer[];
 			overlay.set({
 				isPartOfOptions: [],
 				measureElements,
