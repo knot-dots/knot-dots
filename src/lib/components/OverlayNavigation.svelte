@@ -95,17 +95,17 @@
 			{/if}
 
 			{#if isMeasureContainer(container)}
-				{#if container.payload.boards.includes('board.internal_objectives')}
+				{#if container.payload.boards.includes('board.measure_monitoring')}
 					<li>
 						<a
 							class="button button-nav"
 							class:is-active={paramsFromFragment($page.url).get(
-								overlayKey.enum['internal-objectives']
+								overlayKey.enum['measure-monitoring']
 							) === container.guid}
-							href={overlayURL($page.url, overlayKey.enum['internal-objectives'], container.guid)}
+							href={overlayURL($page.url, overlayKey.enum['measure-monitoring'], container.guid)}
 						>
 							<span class="small-only"><Objectives /></span>
-							<span class="large-only">{$_('internal_objective.label')}</span>
+							<span class="large-only">{$_('board.measure_monitoring')}</span>
 						</a>
 					</li>
 				{/if}

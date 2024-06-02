@@ -24,9 +24,9 @@
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
-	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
-	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
+	import MeasureMonitoringDetailView from '$lib/components/MeasureMonitoringDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
+	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import Members from '$lib/components/Members.svelte';
@@ -50,7 +50,7 @@
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
-		isInternalObjectiveContainer,
+		isMeasureMonitoringContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -75,7 +75,7 @@
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
-	export let internalObjectives: Container[] | undefined = undefined;
+	export let measureElements: Container[] | undefined = undefined;
 	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
@@ -416,7 +416,7 @@
 			</Sidebar>
 		</aside>
 		<Relations containers={relatedContainers} />
-	{:else if hashParams.has(overlayKey.enum['internal-objectives']) && internalObjectives}
+	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && measureElements}
 		<aside>
 			<Sidebar helpSlug="internal-objectives">
 				<Search slot="search" />
@@ -434,7 +434,7 @@
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<InternalObjectives {container} containers={internalObjectives} />
+		<MeasureMonitoring {container} containers={measureElements} />
 	{:else if hashParams.has(overlayKey.enum.tasks) && tasks}
 		<aside>
 			<Sidebar helpSlug="tasks">
@@ -542,8 +542,8 @@
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
 				<TaskDetailView {container} {relatedContainers} {revisions} />
-			{:else if isInternalObjectiveContainer(container)}
-				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
+			{:else if isMeasureMonitoringContainer(container)}
+				<MeasureMonitoringDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}

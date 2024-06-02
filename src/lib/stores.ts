@@ -151,7 +151,7 @@ export const addEffectState = writable<AddEffectState>({});
 
 type Overlay = {
 	indicators?: IndicatorContainer[];
-	internalObjectives?: Container[];
+	measureElements?: Container[];
 	isPartOfOptions: AnyContainer[];
 	containersWithObjectives?: ContainerWithObjective[];
 	object?: Container;
@@ -332,12 +332,12 @@ if (browser) {
 				relatedContainers,
 				revisions
 			});
-		} else if (hashParams.has(overlayKey.enum['internal-objectives'])) {
+		} else if (hashParams.has(overlayKey.enum['measure-monitoring'])) {
 			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum['internal-objectives']) as string
+				hashParams.get(overlayKey.enum['measure-monitoring']) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const internalObjectives = (await fetchContainers(
+			const measureElements = (await fetchContainers(
 				{
 					isPartOfMeasure: [container.revision],
 					relatedTo: hashParams.getAll('related-to'),
@@ -347,8 +347,8 @@ if (browser) {
 				hashParams.get('sort') ?? 'alpha'
 			)) as TaskContainer[];
 			overlay.set({
-				internalObjectives,
 				isPartOfOptions: [],
+				measureElements,
 				relatedContainers: [],
 				revisions
 			});

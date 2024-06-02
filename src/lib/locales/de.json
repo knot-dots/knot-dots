@@ -11,9 +11,9 @@
 	"basic_data": "Allgemeine Angaben",
 	"board": {
 		"elements": "dots",
-		"indicators": "messen",
-		"internal_objectives": "Interne Ziele",
 		"implementation": "umsetzen",
+		"indicators": "messen",
+		"measure_monitoring": "Monitoring",
 		"organizational_units": "Organisations-Ebenen",
 		"programs": "planen",
 		"tasks": "Aufgaben"
@@ -118,9 +118,6 @@
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
 	"information": "Information",
-	"internal_objective": {
-		"label": "Interne Ziele"
-	},
 	"invite": {
 		"email": "E-Mail-Adresse",
 		"failure": "Leider hat es nicht funktioniert. Wir arbeiten daran.",

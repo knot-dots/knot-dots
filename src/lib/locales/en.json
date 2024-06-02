@@ -13,7 +13,7 @@
 		"elements": "Elements",
 		"implementation": "Implementation",
 		"indicators": "Indicators",
-		"internal_objectives": "Internal objectives",
+		"measure_monitoring": "Monitoring",
 		"organizational_units": "Organizational units",
 		"programs": "Programs",
 		"tasks": "Tasks"
@@ -118,9 +118,6 @@
 	"indicator_type.performance": "Performance indicator",
 	"indicators": "Indicators",
 	"information": "Information",
-	"internal_objective": {
-		"label": "Internal objectives"
-	},
 	"invite": {
 		"email": "Email",
 		"failure": "Sorry, something went wrong. We are working on it.",

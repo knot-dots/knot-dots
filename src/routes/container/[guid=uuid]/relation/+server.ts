@@ -4,7 +4,7 @@ import { z } from 'zod';
 import {
 	audience,
 	isIndicatorContainer,
-	isInternalObjectiveContainer,
+	isMeasureMonitoringContainer,
 	payloadTypes,
 	relation,
 	strategyTypes,
@@ -52,7 +52,7 @@ export const GET = (async ({ locals, params, url }) => {
 	let containers;
 	if (isIndicatorContainer(container)) {
 		containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container.guid));
-	} else if (isInternalObjectiveContainer(container)) {
+	} else if (isMeasureMonitoringContainer(container)) {
 		containers = await locals.pool.connect(
 			getAllRelatedInternalObjectives(
 				params.guid,

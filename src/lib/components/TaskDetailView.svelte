@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
+	import MeasureMonitoringDetailView from '$lib/components/MeasureMonitoringDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { isMeasureContainer, overlayKey, owners, taskStatus } from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, User } from '$lib/models';
@@ -55,7 +55,7 @@
 	}
 </script>
 
-<InternalObjectiveDetailView {container} {relatedContainers} {revisions}>
+<MeasureMonitoringDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<div class="description">
 			<h3>{$_('description')}</h3>
@@ -136,4 +136,4 @@
 			</ul>
 		</div>
 	</svelte:fragment>
-</InternalObjectiveDetailView>
+</MeasureMonitoringDetailView>

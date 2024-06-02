@@ -102,7 +102,7 @@
 
 	<ListBox
 		label={$_('boards')}
-		options={['board.internal_objectives', 'board.tasks']}
+		options={['board.measure_monitoring', 'board.tasks']}
 		bind:value={container.payload.boards}
 	/>
 </fieldset>

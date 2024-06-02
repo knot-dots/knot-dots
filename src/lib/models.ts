@@ -23,7 +23,7 @@ export const overlayKey = z.enum([
 	'edit',
 	'edit-help',
 	'indicators',
-	'internal-objectives',
+	'measure-monitoring',
 	'members',
 	'my-tasks',
 	'profile',
@@ -414,7 +414,7 @@ export const visibility = z.enum(['creator', 'members', 'public']);
 
 export const boards = z.enum([
 	'board.indicators',
-	'board.internal_objectives',
+	'board.measure_monitoring',
 	'board.organizational_units',
 	'board.tasks'
 ]);
@@ -450,7 +450,7 @@ const indicatorTemplatePayload = indicatorPayload
 	})
 	.omit({ historicalValues: true, quantity: true });
 
-const internalObjectivesBasePayload = z.object({
+const measureMonitoringBasePayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.public']]),
 	description: z.string().optional(),
 	summary: z.string().max(200).optional(),
@@ -458,20 +458,20 @@ const internalObjectivesBasePayload = z.object({
 	visibility: visibility.default('members')
 });
 
-const visionPayload = internalObjectivesBasePayload
+const visionPayload = measureMonitoringBasePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.vision)
 	})
 	.strict();
 
-const measureResultPayload = internalObjectivesBasePayload
+const measureResultPayload = measureMonitoringBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.measure_result)
 	})
 	.strict();
 
-const milestonePayload = internalObjectivesBasePayload
+const milestonePayload = measureMonitoringBasePayload
 	.extend({
 		fulfillmentDate: z
 			.string()
@@ -483,7 +483,7 @@ const milestonePayload = internalObjectivesBasePayload
 	})
 	.strict();
 
-const taskPayload = internalObjectivesBasePayload
+const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
 		assignee: z.string().uuid().optional(),
@@ -935,15 +935,15 @@ export function isTaskContainer(
 	return container.payload.type === payloadTypes.enum.task;
 }
 
-export type InternalObjectiveContainer =
+export type MeasureMonitoringContainer =
 	| VisionContainer
 	| MeasureResultContainer
 	| MilestoneContainer
 	| TaskContainer;
 
-export function isInternalObjectiveContainer(
+export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
-): container is InternalObjectiveContainer {
+): container is MeasureMonitoringContainer {
 	return (
 		isVisionContainer(container) ||
 		isMeasureResultContainer(container) ||
