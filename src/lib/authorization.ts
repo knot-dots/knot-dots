@@ -15,14 +15,14 @@ const objectiveTypes = [
 	payloadTypes.enum.strategic_goal,
 	payloadTypes.enum.strategy,
 	payloadTypes.enum.text,
-	payloadTypes.enum.undefined
+	payloadTypes.enum.undefined,
+	payloadTypes.enum.vision
 ];
 
 const measureMonitoringTypes = [
 	payloadTypes.enum.measure_result,
 	payloadTypes.enum.milestone,
-	payloadTypes.enum.task,
-	payloadTypes.enum.vision
+	payloadTypes.enum.task
 ];
 
 export default function defineAbilityFor(user: User) {

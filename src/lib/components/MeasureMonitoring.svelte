@@ -14,10 +14,6 @@
 
 	const columns = [
 		{
-			title: 'visions',
-			payloadType: payloadTypes.enum.vision
-		},
-		{
 			title: 'measure_results',
 			payloadType: payloadTypes.enum.measure_result
 		},

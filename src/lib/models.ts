@@ -936,7 +936,6 @@ export function isTaskContainer(
 }
 
 export type MeasureMonitoringContainer =
-	| VisionContainer
 	| MeasureResultContainer
 	| MilestoneContainer
 	| TaskContainer;
@@ -945,7 +944,6 @@ export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureMonitoringContainer {
 	return (
-		isVisionContainer(container) ||
 		isMeasureResultContainer(container) ||
 		isMilestoneContainer(container) ||
 		isTaskContainer(container)
