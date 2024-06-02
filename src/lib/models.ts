@@ -458,7 +458,7 @@ const measureMonitoringBasePayload = z.object({
 	visibility: visibility.default('members')
 });
 
-const visionPayload = measureMonitoringBasePayload
+const visionPayload = basePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.vision)
@@ -1068,9 +1068,16 @@ const emptyContainer = newContainer.extend({
 			})
 		),
 		textPayload.partial().merge(textPayload.pick({ type: true, visibility: true })),
-		visionPayload
-			.partial()
-			.merge(visionPayload.pick({ audience: true, objective: true, type: true, visibility: true })),
+		visionPayload.partial().merge(
+			visionPayload.pick({
+				audience: true,
+				category: true,
+				objective: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
 		measureResultPayload.partial().merge(
 			measureResultPayload.pick({
 				audience: true,
@@ -1234,9 +1241,16 @@ const emptyTextContainer = emptyContainer.extend({
 export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
 
 const emptyVisionContainer = emptyContainer.extend({
-	payload: visionPayload
-		.partial()
-		.merge(visionPayload.pick({ audience: true, objective: true, type: true, visibility: true }))
+	payload: visionPayload.partial().merge(
+		visionPayload.pick({
+			audience: true,
+			category: true,
+			objective: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
 });
 
 export type EmptyVisionContainer = z.infer<typeof emptyVisionContainer>;
