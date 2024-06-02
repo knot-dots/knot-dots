@@ -11,7 +11,6 @@
 	import {
 		containerOfType,
 		isMeasureResultContainer,
-		isInternalStrategyContainer,
 		isMilestoneContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
@@ -127,10 +126,6 @@
 					{:else if isStrategyContainer(container)}
 						<button id="save-and-create-model" form="container-form" type="submit">
 							{$_('save_and_create_model')}
-						</button>
-					{:else if isInternalStrategyContainer(container)}
-						<button id="save-and-create-vision" form="container-form" type="submit">
-							{$_('save_and_create_vision')}
 						</button>
 					{:else if isVisionContainer(container)}
 						<button

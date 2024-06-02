@@ -19,7 +19,6 @@ const objectiveTypes = [
 ];
 
 const internalObjectiveTypes = [
-	payloadTypes.enum['internal_objective.internal_strategy'],
 	payloadTypes.enum.milestone,
 	payloadTypes.enum.measure_result,
 	payloadTypes.enum.task,

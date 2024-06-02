@@ -6,7 +6,6 @@
 	import { uploadAsFormData } from '$lib/client/upload';
 	import IndicatorForm from '$lib/components/IndicatorForm.svelte';
 	import IndicatorTemplateForm from '$lib/components/IndicatorTemplateForm.svelte';
-	import InternalObjectiveStrategyForm from '$lib/components/InternalObjectiveStrategyForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import MeasureResultForm from '$lib/components/MeasureResultForm.svelte';
 	import MilestoneForm from '$lib/components/MilestoneForm.svelte';
@@ -25,7 +24,6 @@
 	import {
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
-		isInternalStrategyContainer,
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
@@ -177,8 +175,6 @@
 		<TaskForm bind:container />
 	{:else if isTextContainer(container)}
 		<TextForm bind:container />
-	{:else if isInternalStrategyContainer(container)}
-		<InternalObjectiveStrategyForm bind:container />
 	{:else if isVisionContainer(container)}
 		<VisionForm bind:container />
 	{:else}

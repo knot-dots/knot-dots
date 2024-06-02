@@ -119,8 +119,6 @@
 	"indicators": "Indicators",
 	"information": "Information",
 	"internal_objective": {
-		"internal_strategy": "Internal strategy",
-		"internal_strategies": "Internal strategies",
 		"label": "Internal objectives"
 	},
 	"invite": {

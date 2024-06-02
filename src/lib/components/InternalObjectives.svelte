@@ -14,10 +14,6 @@
 
 	const columns = [
 		{
-			title: 'internal_objective.internal_strategies',
-			payloadType: payloadTypes.enum['internal_objective.internal_strategy']
-		},
-		{
 			title: 'visions',
 			payloadType: payloadTypes.enum.vision
 		},

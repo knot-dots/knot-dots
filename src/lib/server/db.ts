@@ -764,8 +764,6 @@ export function maybePartOf(organizationOrOrganizationalUnit: string, containerT
 			candidateType = ['operational_goal'];
 		} else if (containerType == 'text') {
 			candidateType = ['model', 'operational_goal', 'strategic_goal', 'strategy'];
-		} else if (containerType == 'vision') {
-			candidateType = ['internal_objective.internal_strategy'];
 		} else if (containerType == 'measure_result') {
 			candidateType = ['vision'];
 		} else if (containerType == 'milestone') {

@@ -28,7 +28,6 @@
 	let isPartOfStrategyOptionsRequest: Promise<StrategyContainer[]> = new Promise(() => []);
 
 	let allowedSuperordinateTypes = [
-		payloadTypes.enum['internal_objective.internal_strategy'],
 		payloadTypes.enum.model,
 		payloadTypes.enum.vision,
 		payloadTypes.enum.strategic_goal,
