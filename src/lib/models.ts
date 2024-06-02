@@ -937,7 +937,6 @@ export function isTaskContainer(
 
 export type MeasureMonitoringContainer =
 	| MeasureResultContainer
-	| MilestoneContainer
 	| TaskContainer;
 
 export function isMeasureMonitoringContainer(
@@ -945,7 +944,6 @@ export function isMeasureMonitoringContainer(
 ): container is MeasureMonitoringContainer {
 	return (
 		isMeasureResultContainer(container) ||
-		isMilestoneContainer(container) ||
 		isTaskContainer(container)
 	);
 }

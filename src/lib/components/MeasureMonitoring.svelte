@@ -18,10 +18,6 @@
 			payloadType: payloadTypes.enum.measure_result
 		},
 		{
-			title: 'milestones',
-			payloadType: payloadTypes.enum.milestone
-		},
-		{
 			title: 'tasks',
 			payloadType: payloadTypes.enum.task
 		}
