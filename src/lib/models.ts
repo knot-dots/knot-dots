@@ -69,6 +69,7 @@ const payloadTypeValues = [
 	'indicator_template',
 	'milestone',
 	'measure',
+	'measure_milestone',
 	'measure_result',
 	'model',
 	'operational_goal',
@@ -672,6 +673,7 @@ export const container = z.object({
 		indicatorPayload,
 		indicatorTemplatePayload,
 		measurePayload,
+		measureMilestonePayload,
 		measureResultPayload,
 		milestonePayload,
 		modelPayload,
@@ -699,6 +701,7 @@ export const anyContainer = container.extend({
 		indicatorPayload,
 		indicatorTemplatePayload,
 		measurePayload,
+		measureMilestonePayload,
 		measureResultPayload,
 		milestonePayload,
 		modelPayload,
@@ -788,6 +791,18 @@ export function isMeasureContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureContainer {
 	return container.payload.type === payloadTypes.enum.measure;
+}
+
+const measureMilestoneContainer = container.extend({
+	payload: measureMilestonePayload
+});
+
+export type MeasureMilestoneContainer = z.infer<typeof measureMilestoneContainer>;
+
+export function isMeasureMilestoneContainer(
+	container: AnyContainer | EmptyContainer
+): container is MeasureMilestoneContainer {
+	return container.payload.type === payloadTypes.enum.measure_milestone;
 }
 
 const modelContainer = container.extend({
@@ -947,6 +962,7 @@ export function isTaskContainer(
 }
 
 export type MeasureMonitoringContainer =
+	| MeasureMilestoneContainer
 	| MeasureResultContainer
 	| TaskContainer;
 
@@ -954,6 +970,7 @@ export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureMonitoringContainer {
 	return (
+		isMeasureMilestoneContainer(container) ||
 		isMeasureResultContainer(container) ||
 		isTaskContainer(container)
 	);
@@ -1011,6 +1028,14 @@ const emptyContainer = newContainer.extend({
 				effect: true,
 				measureType: true,
 				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
+		measureMilestonePayload.partial().merge(
+			measureMilestonePayload.pick({
+				audience: true,
+				progress: true,
 				type: true,
 				visibility: true
 			})
@@ -1145,6 +1170,19 @@ const emptyMeasureContainer = emptyContainer.extend({
 });
 
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
+
+const emptyMeasureMilestoneContainer = emptyContainer.extend({
+	payload: measureMilestonePayload.partial().merge(
+		measureMilestonePayload.pick({
+			audience: true,
+			progress: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptyMeasureMilestoneContainer = z.infer<typeof emptyMeasureMilestoneContainer>;
 
 const emptyModelContainer = emptyContainer.extend({
 	payload: modelPayload.partial().merge(

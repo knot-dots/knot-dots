@@ -21,6 +21,7 @@ const objectiveTypes = [
 ];
 
 const measureMonitoringTypes = [
+	payloadTypes.enum.measure_milestone,
 	payloadTypes.enum.measure_result,
 	payloadTypes.enum.task
 ];

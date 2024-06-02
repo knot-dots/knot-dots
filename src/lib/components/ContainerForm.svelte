@@ -7,6 +7,7 @@
 	import IndicatorForm from '$lib/components/IndicatorForm.svelte';
 	import IndicatorTemplateForm from '$lib/components/IndicatorTemplateForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
+	import MeasureMilestoneForm from '$lib/components/MeasureMilestoneForm.svelte';
 	import MeasureResultForm from '$lib/components/MeasureResultForm.svelte';
 	import MilestoneForm from '$lib/components/MilestoneForm.svelte';
 	import ModelForm from '$lib/components/ModelForm.svelte';
@@ -25,6 +26,7 @@
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
+		isMeasureMilestoneContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
 		isModelContainer,
@@ -151,6 +153,8 @@
 		<IndicatorTemplateForm bind:container />
 	{:else if isMeasureContainer(container)}
 		<MeasureForm bind:container />
+	{:else if isMeasureMilestoneContainer(container)}
+		<MeasureMilestoneForm bind:container />
 	{:else if isMeasureResultContainer(container)}
 		<MeasureResultForm {isPartOfOptions} bind:container />
 	{:else if isMilestoneContainer(container)}
