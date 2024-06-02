@@ -41,6 +41,10 @@
 		? container
 		: relatedContainers.find(isStrategyContainer);
 
+	$: measure = isMeasureContainer(container)
+		? container
+		: relatedContainers.find(isMeasureContainer);
+
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
 	function containerURL(type: string, guid: string) {
@@ -185,6 +189,16 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
 				<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
+			</div>
+		{/if}
+		{#if measure}
+			<div class="meta">
+				<h3 class="meta-key">{$_('measure')}</h3>
+				<p class="meta-value">
+					<a href={containerURL(measure.payload.type, measure.guid)}>
+						{$_(measure.payload.title)}
+					</a>
+				</p>
 			</div>
 		{/if}
 		{#if 'measureType' in container.payload}
