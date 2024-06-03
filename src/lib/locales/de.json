@@ -113,6 +113,7 @@
 	"indicator_template.select": "Vorlage benutzen",
 	"indicator_type": "Art des Indikators",
 	"indicator_type.impact": "Wirkungsindikator",
+	"indicator_type.key": "Schlüsselindikator",
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
 	"information": "Information",

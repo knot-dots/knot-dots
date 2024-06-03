@@ -5,6 +5,7 @@
 	import {
 		audience,
 		indicatorCategories,
+		indicatorTypes,
 		measureTypes,
 		sustainableDevelopmentGoals,
 		topics,
@@ -26,6 +27,12 @@
 
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
+
+	<ListBox
+		label={$_('indicator_type')}
+		options={indicatorTypes.options}
+		bind:value={container.payload.indicatorType}
+	/>
 
 	<label>
 		{$_('label.unit')}

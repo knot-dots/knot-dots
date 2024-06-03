@@ -113,6 +113,7 @@
 	"indicator_template.select": "Select this template",
 	"indicator_type": "Type of indicator",
 	"indicator_type.impact": "Impact indicator",
+	"indicator_type.key": "Key indicator",
 	"indicator_type.performance": "Performance indicator",
 	"indicators": "Indicators",
 	"information": "Information",

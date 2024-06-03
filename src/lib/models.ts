@@ -182,6 +182,16 @@ export const measureTypes = z.enum(measureTypeValues);
 
 export type MeasureType = z.infer<typeof measureTypes>;
 
+const indicatorTypeValues = [
+	'indicator_type.impact',
+	'indicator_type.key',
+	'indicator_type.performance'
+] as const;
+
+export const indicatorTypes = z.enum(indicatorTypeValues);
+
+export type IndicatorType = z.infer<typeof indicatorTypes>;
+
 const topicValues = [
 	'topic.citizen_participation',
 	'topic.cityscape',
@@ -426,6 +436,7 @@ const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	historicalValuesIntro: z.string().optional(),
 	indicatorCategory: z.array(indicatorCategories).default([]),
+	indicatorType: z.array(indicatorTypes).default([]),
 	measureType: z.array(measureTypes).default([]),
 	measuresIntro: z.string().optional(),
 	objectivesIntro: z.string().optional(),
@@ -993,6 +1004,7 @@ const emptyContainer = newContainer.extend({
 				audience: true,
 				category: true,
 				historicalValues: true,
+				indicatorType: true,
 				measureType: true,
 				topic: true,
 				type: true,
@@ -1002,6 +1014,7 @@ const emptyContainer = newContainer.extend({
 		indicatorTemplatePayload.partial().merge(
 			indicatorTemplatePayload.pick({
 				category: true,
+				indicatorType: true,
 				measureType: true,
 				topic: true,
 				type: true,
@@ -1117,6 +1130,7 @@ const emptyIndicatorContainer = emptyContainer.extend({
 			audience: true,
 			category: true,
 			historicalValues: true,
+			indicatorType: true,
 			measureType: true,
 			topic: true,
 			type: true,
