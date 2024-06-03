@@ -407,6 +407,8 @@ function prepareWhereCondition(filters: {
 	audience?: string[];
 	categories?: string[];
 	indicatorCategories?: string[];
+	indicatorTypes?: string[];
+	measureTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
 	strategyTypes?: string[];
@@ -431,6 +433,16 @@ function prepareWhereCondition(filters: {
 				filters.indicatorCategories,
 				'text'
 			)}`
+		);
+	}
+	if (filters.indicatorTypes?.length) {
+		conditions.push(
+			sql.fragment`payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
+		);
+	}
+	if (filters.measureTypes?.length) {
+		conditions.push(
+			sql.fragment`payload->'measureType' ?| ${sql.array(filters.measureTypes, 'text')}`
 		);
 	}
 	if (filters.organizations?.length) {
@@ -529,6 +541,8 @@ export function getManyContainers(
 		audience?: string[];
 		categories?: string[];
 		indicatorCategories?: string[];
+		measureTypes?: string[];
+		indicatorTypes?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		terms?: string;
@@ -879,6 +893,7 @@ export function getAllRelatedContainersByStrategyType(
 	filters: {
 		audience?: string[];
 		categories?: string[];
+		measureTypes?: string[];
 		organizationalUnits?: string[];
 		terms?: string;
 		topics?: string[];

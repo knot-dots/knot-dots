@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { page } from '$app/stores';
 	import Editor from '$lib/components/Editor.svelte';
+	import IndicatorTemplates from '$lib/components/IndicatorTemplates.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
 		audience,
+		hasHistoricalValues,
 		indicatorCategories,
+		indicatorTypes,
 		measureTypes,
 		quantities,
 		sustainableDevelopmentGoals,
@@ -16,7 +18,6 @@
 	import type {
 		ContainerFormTabKey,
 		EmptyIndicatorContainer,
-		IndicatorCategory,
 		IndicatorContainer,
 		IndicatorTemplateContainer
 	} from '$lib/models';
@@ -36,37 +37,30 @@
 		}
 	}));
 
-	$: if (container.payload.historicalValues.length === 0) {
+	let withHistoricalValues = false;
+
+	$: if (withHistoricalValues && !hasHistoricalValues(container)) {
 		const thisYear = new Date().getFullYear();
 		container.payload.historicalValues = [...Array(10)].map((_, index) => [
 			thisYear + index - 5,
 			0
 		]);
+	} else if (!withHistoricalValues && hasHistoricalValues(container)) {
+		container.payload.historicalValues = [];
 	}
 
-	let templateCategory: IndicatorCategory;
+	let indicatorTemplate: IndicatorTemplateContainer;
 
-	function changeTemplate(event: { currentTarget: HTMLSelectElement }) {
-		container.payload.quantity = event.currentTarget.value;
-
-		const indicatorTemplate = $page.data.indicatorTemplates.find(
-			({ guid }: IndicatorTemplateContainer) => guid === container.payload.quantity
-		);
-
-		if (indicatorTemplate) {
-			container.payload.title = indicatorTemplate.payload.title;
-			container.payload.unit = indicatorTemplate.payload.unit;
-			container.payload.indicatorCategory = indicatorTemplate.payload.indicatorCategory;
-			container.payload.description = indicatorTemplate.payload.description;
-			container.payload.historicalValuesIntro = indicatorTemplate.payload.historicalValuesIntro;
-			container.payload.measuresIntro = indicatorTemplate.payload.measuresIntro;
-			container.payload.objectivesIntro = indicatorTemplate.payload.objectivesIntro;
-		}
+	$: if (indicatorTemplate) {
+		container.payload = {
+			...indicatorTemplate.payload,
+			historicalValues: container.payload.historicalValues,
+			quantity: indicatorTemplate.guid,
+			type: container.payload.type
+		};
 	}
 
 	function createCustomIndicator() {
-		templateCategory = indicatorCategories.enum['indicator_category.custom'];
-
 		container.payload.quantity = quantities.enum['quantity.custom'];
 		container.payload.title = '';
 		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
@@ -100,52 +94,34 @@
 	}
 </script>
 
-{#if !('guid' in container) && !templateCategory}
-	<label>
-		{$_('indicator_form.select_from_presets')}
-		<select class="template-category" bind:value={templateCategory} required>
-			<option></option>
-			{#each indicatorCategories.options as indicatorCategoryOption}
-				{#if indicatorCategoryOption !== indicatorCategories.enum['indicator_category.custom']}
-					<option value={indicatorCategoryOption}>{$_(indicatorCategoryOption)}</option>
-				{/if}
-			{/each}
-		</select>
-	</label>
-
-	{$_('or')}
-
+{#if !container.payload.quantity}
 	<button class="template-category" type="button" on:click={() => createCustomIndicator()}>
+		<PlusSmall />
 		{$_('indicator_form.create_custom')}
 	</button>
+	<IndicatorTemplates bind:value={indicatorTemplate} />
 {:else}
 	<fieldset class="form-tab" id="metadata">
 		<legend>{$_('form.metadata')}</legend>
 
-		{#if !container.payload.quantity}
-			<label>
-				{$_('indicator.template')}
-				<select on:change={changeTemplate} required>
-					<option></option>
-					{#each $page.data.indicatorTemplates as { guid, payload }}
-						<option value={guid}>{payload.title}</option>
-					{/each}
-				</select>
-			</label>
-		{:else}
-			<label>
-				{$_('label.unit')}
-				<select
-					name="unit"
-					bind:value={container.payload.unit}
-					disabled={container.payload.quantity !== quantities.enum['quantity.custom']}
-				>
-					{#each units.options as unitOption}
-						<option value={unitOption}>{$_(unitOption)}</option>
-					{/each}
-				</select>
-			</label>
-		{/if}
+		<ListBox
+			label={$_('indicator_type')}
+			options={indicatorTypes.options}
+			bind:value={container.payload.indicatorType}
+		/>
+
+		<label>
+			{$_('label.unit')}
+			<select
+				name="unit"
+				bind:value={container.payload.unit}
+				disabled={container.payload.quantity !== quantities.enum['quantity.custom']}
+			>
+				{#each units.options as unitOption}
+					<option value={unitOption}>{$_(unitOption)}</option>
+				{/each}
+			</select>
+		</label>
 
 		<ListBox
 			label={$_('audience')}
@@ -155,6 +131,8 @@
 	</fieldset>
 
 	<fieldset class="form-tab" id="basic-data">
+		<legend>{$_('form.basic_data')}</legend>
+
 		{#key 'guid' in container ? container.guid : ''}
 			<Editor label={$_('description')} bind:value={container.payload.description} />
 
@@ -198,61 +176,63 @@
 		/>
 	</fieldset>
 
-	<fieldset class="form-tab" id="historical-values">
-		<legend>{$_('form.historical_values')}</legend>
+	{#if withHistoricalValues}
+		<fieldset class="form-tab" id="historical-values">
+			<legend>{$_('form.historical_values')}</legend>
 
-		<table class="spreadsheet">
-			<thead>
-				<tr>
-					<th scope="col"></th>
-					<th scope="col">
-						{$_(container.payload.unit ?? '')}
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td colspan="2">
-						<button
-							class="quiet"
-							title={$_('add_value')}
-							type="button"
-							on:click={prependHistoricalValue}
-						>
-							<PlusSmall />
-						</button>
-					</td>
-				</tr>
-				{#each container.payload.historicalValues.map((v, i) => i) as index}
+			<table class="spreadsheet">
+				<thead>
 					<tr>
-						<th scope="row">
-							{container.payload.historicalValues[index][0]}
+						<th scope="col"></th>
+						<th scope="col">
+							{$_(container.payload.unit ?? '')}
 						</th>
-						<td>
-							<input
-								type="text"
-								inputmode="decimal"
-								value={container.payload.historicalValues[index][1]}
-								on:change={updateHistoricalValues(index)}
-							/>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="2">
+							<button
+								class="quiet"
+								title={$_('add_value')}
+								type="button"
+								on:click={prependHistoricalValue}
+							>
+								<PlusSmall />
+							</button>
 						</td>
 					</tr>
-				{/each}
-				<tr>
-					<td colspan="2">
-						<button
-							class="quiet"
-							title={$_('add_value')}
-							type="button"
-							on:click={appendHistoricalValue}
-						>
-							<PlusSmall />
-						</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</fieldset>
+					{#each container.payload.historicalValues.map((v, i) => i) as index}
+						<tr>
+							<th scope="row">
+								{container.payload.historicalValues[index][0]}
+							</th>
+							<td>
+								<input
+									type="text"
+									inputmode="decimal"
+									value={container.payload.historicalValues[index][1]}
+									on:change={updateHistoricalValues(index)}
+								/>
+							</td>
+						</tr>
+					{/each}
+					<tr>
+						<td colspan="2">
+							<button
+								class="quiet"
+								title={$_('add_value')}
+								type="button"
+								on:click={appendHistoricalValue}
+							>
+								<PlusSmall />
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</fieldset>
+	{/if}
 {/if}
 
 <style>

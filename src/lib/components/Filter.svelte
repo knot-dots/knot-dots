@@ -40,7 +40,7 @@
 	}
 </script>
 
-<li class="group" class:group-small={options.length <= 3} transition:slide={{ axis: 'y' }}>
+<li class="group" class:group-small={options.length <= 4} transition:slide={{ axis: 'y' }}>
 	{#if label}
 		<p>{label}</p>
 	{/if}

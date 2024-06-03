@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
-	import { isContainerWithEffect, status } from '$lib/models';
+	import { isContainerWithEffect, hasHistoricalValues, status } from '$lib/models';
 	import type {
 		Container,
 		ContainerWithEffect,
@@ -157,6 +157,10 @@
 				.map(({ Year, Value }) => [Year, Value])
 		);
 
+		const baseline = hasHistoricalValues(container)
+			? container.payload.historicalValues
+			: Array.from(new Map(effects.map(({ Year }) => [Year, 0])).entries());
+
 		effectsByStatus = new Map([
 			[
 				status.enum['status.idea'],
@@ -165,7 +169,7 @@
 						Year: effectsMinYear - 1,
 						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
 					},
-					...container.payload.historicalValues
+					...baseline
 						.filter(([year]) => year >= effectsMinYear)
 						.map(([year, value]) => {
 							return {
@@ -187,7 +191,7 @@
 						Year: effectsMinYear - 1,
 						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
 					},
-					...container.payload.historicalValues
+					...baseline
 						.filter(([year]) => year >= effectsMinYear)
 						.map(([year, value]) => {
 							return {
@@ -208,7 +212,7 @@
 						Year: effectsMinYear - 1,
 						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
 					},
-					...container.payload.historicalValues
+					...baseline
 						.filter(([year]) => year >= effectsMinYear)
 						.map(([year, value]) => {
 							return {
@@ -225,7 +229,7 @@
 						Year: effectsMinYear - 1,
 						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
 					},
-					...container.payload.historicalValues
+					...baseline
 						.filter(([year]) => year >= effectsMinYear)
 						.map(([year, value]) => {
 							return {

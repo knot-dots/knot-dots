@@ -5,6 +5,7 @@
 	import { env } from '$env/dynamic/public';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import IndicatorForm from '$lib/components/IndicatorForm.svelte';
+	import IndicatorTemplateForm from '$lib/components/IndicatorTemplateForm.svelte';
 	import InternalObjectiveMilestoneForm from '$lib/components/InternalObjectiveMilestoneForm.svelte';
 	import InternalObjectiveStrategicGoalForm from '$lib/components/InternalObjectiveStrategicGoalForm.svelte';
 	import InternalObjectiveStrategyForm from '$lib/components/InternalObjectiveStrategyForm.svelte';
@@ -23,6 +24,7 @@
 	import UndefinedForm from '$lib/components/UndefinedForm.svelte';
 	import {
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isInternalObjectiveStrategicGoalContainer,
 		isInternalStrategyContainer,
 		isMeasureContainer,
@@ -121,7 +123,7 @@
 		class="details-title"
 		style={container.payload.type === payloadTypes.enum.undefined ||
 		(container.payload.type === payloadTypes.enum.indicator && !container.payload.quantity)
-			? 'visibility: hidden;'
+			? 'display: none;'
 			: undefined}
 	>
 		{$_(`${container.payload.type}`)}
@@ -147,6 +149,8 @@
 	</label>
 	{#if isIndicatorContainer(container)}
 		<IndicatorForm bind:container />
+	{:else if isIndicatorTemplateContainer(container)}
+		<IndicatorTemplateForm bind:container />
 	{:else if isMeasureContainer(container)}
 		<MeasureForm bind:container />
 	{:else if isModelContainer(container)}

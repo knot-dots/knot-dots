@@ -7,7 +7,7 @@
 	import Trash from '~icons/heroicons/trash';
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
-	import { goto, invalidateAll, pushState } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -20,13 +20,16 @@
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
+	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
+	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
+	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
@@ -69,7 +72,7 @@
 		TaskContainer,
 		User
 	} from '$lib/models';
-	import { ability, applicationState, overlayWidth, user } from '$lib/stores';
+	import { ability, addEffectState, overlayWidth, user } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
@@ -131,26 +134,21 @@
 		{ detail }: CustomEvent<CustomEventMap['submitSuccessful']>,
 		c: AnyContainer
 	) {
-		await invalidateAll();
 		if (
-			detail.event.submitter?.id === 'save-and-next' &&
-			$applicationState.containerForm.activeTab
+			hashParams.has(overlayKey.enum.create) &&
+			isIndicatorContainer(detail.result) &&
+			$addEffectState
 		) {
-			await goto(`#view=${detail.result.guid}&edit`);
-			$applicationState.containerForm.activeTab =
-				$applicationState.containerForm.tabs[
-					$applicationState.containerForm.tabs.findIndex(
-						(value) => value === $applicationState.containerForm.activeTab
-					) + 1
-				];
+			$addEffectState.effect = detail.result.guid;
+			await goto(`#view=${$addEffectState.target}&edit`, { invalidateAll: true });
 		} else if (hashParams.has('create')) {
-			await goto(`#view=${detail.result.guid}`);
+			await goto(`#view=${detail.result.guid}`, { invalidateAll: true });
 		} else if (hashParams.has('edit-help')) {
 			const newParams = new URLSearchParams(hashParams);
 			newParams.delete('edit-help');
-			await goto(`#${newParams.toString()}`);
+			await goto(`#${newParams.toString()}`, { invalidateAll: true });
 		} else {
-			await goto(`#view=${c.guid}`);
+			await goto(`#view=${c.guid}`, { invalidateAll: true });
 		}
 	}
 
@@ -308,20 +306,43 @@
 		</footer>
 	{:else if edit}
 		<aside>
-			<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
-				<ContainerFormTabs {container} slot="tabs" />
-				<svelte:fragment slot="extra">
-					<li>
-						<button
-							class="button-nav button-square"
-							on:click={toggleFullscreen}
-							title={$_('full_screen')}
-						>
-							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
-						</button>
-					</li>
-				</svelte:fragment>
-			</Sidebar>
+			{#if isIndicatorContainer(container) && !container.payload.quantity}
+				<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
+					<svelte:fragment slot="filters">
+						<IndicatorCategoryFilter />
+						<MeasureTypeFilter />
+						<CategoryFilter />
+						<TopicFilter />
+						<IndicatorTypeFilter initialValue={[]} />
+					</svelte:fragment>
+					<svelte:fragment slot="extra">
+						<li>
+							<button
+								class="button-nav button-square"
+								on:click={toggleFullscreen}
+								title={$_('full_screen')}
+							>
+								{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+							</button>
+						</li>
+					</svelte:fragment>
+				</Sidebar>
+			{:else}
+				<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
+					<ContainerFormTabs {container} slot="tabs" />
+					<svelte:fragment slot="extra">
+						<li>
+							<button
+								class="button-nav button-square"
+								on:click={toggleFullscreen}
+								title={$_('full_screen')}
+							>
+								{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+							</button>
+						</li>
+					</svelte:fragment>
+				</Sidebar>
+			{/if}
 		</aside>
 		<div class="content-details masked-overflow">
 			<ContainerForm
@@ -497,7 +518,7 @@
 		</aside>
 		{#if isIndicatorContainer(container)}
 			<header class="content-header">
-				<IndicatorTabs />
+				<IndicatorTabs {container} />
 			</header>
 		{:else if isContainerWithEffect(container)}
 			<header class="content-header">

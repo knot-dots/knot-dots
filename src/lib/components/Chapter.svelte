@@ -12,6 +12,7 @@
 	import { env } from '$env/dynamic/public';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import EffectsCarousel from '$lib/components/EffectsCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
@@ -112,11 +113,6 @@
 
 	onMount(() => {
 		if ('objective' in container.payload && container.payload.objective.length > 0) {
-			indicatorsRequest = fetchContainers({
-				organization: [container.organization],
-				payloadType: [payloadTypes.enum.indicator]
-			}) as Promise<IndicatorContainer[]>;
-		} else if ('effect' in container.payload && container.payload.effect.length > 0) {
 			indicatorsRequest = fetchContainers({
 				organization: [container.organization],
 				payloadType: [payloadTypes.enum.indicator]
@@ -229,17 +225,7 @@
 
 	{#if isContainerWithEffect(container) && container.payload.effect.length > 0}
 		<h4>{$_('effects')}</h4>
-		{#await indicatorsRequest then indicators}
-			{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
-			{#each container.payload.effect as effect}
-				{@const indicator = indicatorsByGuid.get(effect.indicator)}
-				{#if indicator}
-					<IndicatorChart container={indicator} relatedContainers={[container]} showEffects>
-						<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
-					</IndicatorChart>
-				{/if}
-			{/each}
-		{/await}
+		<EffectsCarousel {container} />
 	{/if}
 
 	{#if 'progress' in container.payload}

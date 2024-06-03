@@ -84,7 +84,7 @@
 			{/if}
 		</div>
 
-		<select bind:value={viewMode}>
+		<select class="view-mode" bind:value={viewMode}>
 			<option value="chart">{$_('indicator.view_mode.chart')}</option>
 			<option value="table">{$_('indicator.view_mode.table')}</option>
 		</select>
@@ -148,6 +148,17 @@
 			<h3 class="meta-key">{$_('object')}</h3>
 			<p class="meta-value">{$_(container.payload.type)}</p>
 		</div>
+
+		{#if 'indicatorType' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('indicator_type')}</h3>
+				<ul class="meta-value">
+					{#each container.payload.indicatorType as indicatorType}
+						<li>{$_(indicatorType)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		{#if 'indicatorCategory' in container.payload}
 			<div class="meta">
@@ -225,3 +236,9 @@
 		</div>
 	</div>
 </article>
+
+<style>
+	.view-mode {
+		width: fit-content;
+	}
+</style>
