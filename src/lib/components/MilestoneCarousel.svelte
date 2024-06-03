@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
@@ -12,12 +13,11 @@
 		predicates
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers.js';
 
 	export let container: Container;
 
 	$: containerRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadTypes.enum.milestone]
+		payloadType: [payloadTypes.enum.milestone, payloadTypes.enum.measure_milestone]
 	}) as Promise<Array<MilestoneContainer>>;
 
 	function addItemURL(url: URL) {
@@ -25,8 +25,9 @@
 
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadTypes.enum.milestone],
-			[predicates.enum['is-part-of'], String(container.revision)]
+			[overlayKey.enum.create, payloadTypes.enum.measure_milestone],
+			[predicates.enum['is-part-of'], String(container.revision)],
+			[predicates.enum['is-part-of-measure'], String(container.revision)]
 		]);
 
 		return `#${newParams.toString()}`;
@@ -34,7 +35,7 @@
 </script>
 
 {#await containerRequest then containers}
-	{#if containers.length > 0 || $mayCreateContainer(payloadTypes.enum.milestone)}
+	{#if containers.length > 0 || $mayCreateContainer(payloadTypes.enum.measure_milestone)}
 		<div>
 			{#if containers.length > 0}
 				<ul class="carousel">
@@ -45,7 +46,7 @@
 					{/each}
 				</ul>
 			{/if}
-			{#if $mayCreateContainer(payloadTypes.enum.milestone)}
+			{#if $mayCreateContainer(payloadTypes.enum.measure_milestone)}
 				<a class="button" href={addItemURL($page.url)}>
 					{$_('add_item')}
 				</a>
