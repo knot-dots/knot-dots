@@ -3,7 +3,7 @@
 	import Filter from '$lib/components/Filter.svelte';
 	import { indicatorTypes } from '$lib/models';
 
-	export let initialValue = [indicatorTypes.enum['indicator_type.performance']];
+	export let initialValue = [indicatorTypes.enum['indicator_type.key']];
 </script>
 
 <Filter

@@ -33,7 +33,7 @@ export const load = (async ({ locals, parent, url }) => {
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.has('indicatorTypeChanged')
 						? url.searchParams.getAll('indicatorType')
-						: [indicatorTypes.enum['indicator_type.performance']],
+						: [indicatorTypes.enum['indicator_type.key']],
 					organizationalUnits,
 					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]
