@@ -133,18 +133,21 @@
 		{ detail }: CustomEvent<CustomEventMap['submitSuccessful']>,
 		c: AnyContainer
 	) {
-		await invalidateAll();
-		if (hashParams.has('create') && isIndicatorContainer(detail.result) && $addEffectState) {
+		if (
+			hashParams.has(overlayKey.enum.create) &&
+			isIndicatorContainer(detail.result) &&
+			$addEffectState
+		) {
 			$addEffectState.effect = detail.result.guid;
-			await goto(`#view=${$addEffectState.target}&edit`);
+			await goto(`#view=${$addEffectState.target}&edit`, { invalidateAll: true });
 		} else if (hashParams.has('create')) {
-			await goto(`#view=${detail.result.guid}`);
+			await goto(`#view=${detail.result.guid}`, { invalidateAll: true });
 		} else if (hashParams.has('edit-help')) {
 			const newParams = new URLSearchParams(hashParams);
 			newParams.delete('edit-help');
-			await goto(`#${newParams.toString()}`);
+			await goto(`#${newParams.toString()}`, { invalidateAll: true });
 		} else {
-			await goto(`#view=${c.guid}`);
+			await goto(`#view=${c.guid}`, { invalidateAll: true });
 		}
 	}
 
