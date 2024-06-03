@@ -37,7 +37,7 @@
 		}
 	}));
 
-	let withHistoricalValues = false;
+	let withHistoricalValues = 'guid' in container ? hasHistoricalValues(container) : false;
 
 	$: if (withHistoricalValues && !hasHistoricalValues(container)) {
 		const thisYear = new Date().getFullYear();
@@ -109,6 +109,16 @@
 			options={indicatorTypes.options}
 			bind:value={container.payload.indicatorType}
 		/>
+
+		<label>
+			<input
+				class="toggle"
+				type="checkbox"
+				bind:checked={withHistoricalValues}
+				disabled={'guid' in container}
+			/>
+			{$_('indicator_form.with_historical_values')}
+		</label>
 
 		<label>
 			{$_('label.unit')}

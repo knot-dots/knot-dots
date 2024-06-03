@@ -109,6 +109,7 @@
 	"indicator_category.mpsc": "MPSC",
 	"indicator_category.sdg": "SDG",
 	"indicator_form.create_custom": "Eigenen Indikator anlegen",
+	"indicator_form.with_historical_values": "Mit Ist-Werten und Prognose ohne Intervention",
 	"indicator_template": "Indikator-Vorlage",
 	"indicator_template.select": "Vorlage benutzen",
 	"indicator_type": "Art des Indikators",

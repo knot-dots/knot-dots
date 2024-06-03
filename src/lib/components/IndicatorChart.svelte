@@ -159,7 +159,14 @@
 
 		const baseline = hasHistoricalValues(container)
 			? container.payload.historicalValues
-			: Array.from(new Map(effects.map(({ Year }) => [Year, 0])).entries());
+			: Array.from(
+					new Map(
+						effects
+							.map(({ Year }) => Year)
+							.sort()
+							.map((year) => [year, 0])
+					).entries()
+				);
 
 		effectsByStatus = new Map([
 			[
