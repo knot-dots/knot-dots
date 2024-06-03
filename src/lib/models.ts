@@ -512,7 +512,6 @@ const taskPayload = measureMonitoringBasePayload
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().optional(),
-		boards: z.array(boards).default([]),
 		comment: z.string().optional(),
 		endDate: z
 			.string()
@@ -1023,7 +1022,6 @@ const emptyContainer = newContainer.extend({
 		measurePayload.partial().merge(
 			measurePayload.pick({
 				audience: true,
-				boards: true,
 				category: true,
 				effect: true,
 				measureType: true,
@@ -1158,7 +1156,6 @@ const emptyMeasureContainer = emptyContainer.extend({
 	payload: measurePayload.partial().merge(
 		measurePayload.pick({
 			audience: true,
-			boards: true,
 			category: true,
 			effect: true,
 			measureType: true,

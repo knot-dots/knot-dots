@@ -99,12 +99,6 @@
 			<input type="date" name="endDate" bind:value={container.payload.endDate} />
 		</label>
 	</fieldset>
-
-	<ListBox
-		label={$_('boards')}
-		options={['board.measure_monitoring', 'board.tasks']}
-		bind:value={container.payload.boards}
-	/>
 </fieldset>
 
 <fieldset class="form-tab" id="resources">
