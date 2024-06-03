@@ -24,6 +24,7 @@
 		indicatorTemplatesRequest = fetchContainers({
 			category: params.getAll('category'),
 			indicatorCategory: params.getAll('indicatorCategory'),
+			indicatorType: params.getAll('indicatorType'),
 			measureType: params.getAll('measureType'),
 			organization: [$page.data.currentOrganization.guid],
 			payloadType: [payloadTypes.enum.indicator_template],

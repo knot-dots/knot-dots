@@ -407,6 +407,7 @@ function prepareWhereCondition(filters: {
 	audience?: string[];
 	categories?: string[];
 	indicatorCategories?: string[];
+	indicatorTypes?: string[];
 	measureTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
@@ -432,6 +433,11 @@ function prepareWhereCondition(filters: {
 				filters.indicatorCategories,
 				'text'
 			)}`
+		);
+	}
+	if (filters.indicatorTypes?.length) {
+		conditions.push(
+			sql.fragment`payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
 		);
 	}
 	if (filters.measureTypes?.length) {
@@ -536,6 +542,7 @@ export function getManyContainers(
 		categories?: string[];
 		indicatorCategories?: string[];
 		measureTypes?: string[];
+		indicatorTypes?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		terms?: string;

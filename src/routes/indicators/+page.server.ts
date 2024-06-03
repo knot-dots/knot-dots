@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, type IndicatorContainer, payloadTypes } from '$lib/models';
+import { audience, type IndicatorContainer, indicatorTypes, payloadTypes } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -31,6 +31,9 @@ export const load = (async ({ locals, parent, url }) => {
 						: [audience.enum['audience.public'], audience.enum['audience.organization']],
 					categories: url.searchParams.getAll('category'),
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
+					indicatorTypes: url.searchParams.has('indicatorTypeChanged')
+						? url.searchParams.getAll('indicatorType')
+						: [indicatorTypes.enum['indicator_type.performance']],
 					organizationalUnits,
 					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]

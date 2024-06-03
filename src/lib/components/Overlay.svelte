@@ -23,6 +23,7 @@
 	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
+	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
 	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
 	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
 	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
@@ -312,6 +313,7 @@
 						<MeasureTypeFilter />
 						<CategoryFilter />
 						<TopicFilter />
+						<IndicatorTypeFilter initialValue={[]} />
 					</svelte:fragment>
 					<svelte:fragment slot="extra">
 						<li>
