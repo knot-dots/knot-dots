@@ -51,8 +51,6 @@
 
 	<ObjectiveWizard {container} />
 
-	<ObjectiveWizard bind:container />
-
 	<label>
 		{$_('progress')}
 		<input
