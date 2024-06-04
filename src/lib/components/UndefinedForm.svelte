@@ -10,12 +10,12 @@
 	const payloadGroups = [
 		{
 			label: 'payload_group.long_term_goals',
-			items: [payloadTypes.enum.model, payloadTypes.enum['internal_objective.vision']]
+			items: [payloadTypes.enum.model, payloadTypes.enum.vision]
 		},
 		{ label: 'payload_group.strategic_goals', items: [payloadTypes.enum.strategic_goal] },
 		{
 			label: 'payload_group.measurable_goals',
-			items: [payloadTypes.enum['internal_objective.milestone'], payloadTypes.enum.operational_goal]
+			items: [payloadTypes.enum.milestone, payloadTypes.enum.operational_goal]
 		},
 		{
 			label: 'payload_group.implementation',

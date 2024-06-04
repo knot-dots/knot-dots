@@ -2,14 +2,13 @@
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
-	import ObjectiveWizard from '$lib/components/ObjectiveWizard.svelte';
+	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { audience } from '$lib/models';
-	import type { EmptyVisionContainer, VisionContainer } from '$lib/models';
+	import type { EmptyMeasureResultContainer, MeasureResultContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container: VisionContainer | EmptyVisionContainer;
+	export let container: MeasureResultContainer | EmptyMeasureResultContainer;
 
 	applicationState.update((state) => ({
 		...state,
@@ -23,7 +22,7 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<StrategyRelationSelector {container} />
+	<MeasureRelationSelector {container} />
 
 	<OrganizationSelector bind:container />
 
@@ -45,6 +44,4 @@
 	{#key 'guid' in container ? container.guid : ''}
 		<Editor label={$_('description')} bind:value={container.payload.description} />
 	{/key}
-
-	<ObjectiveWizard bind:container />
 </fieldset>

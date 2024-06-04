@@ -26,7 +26,6 @@
 			indicatorCategory: params.getAll('indicatorCategory'),
 			indicatorType: params.getAll('indicatorType'),
 			measureType: params.getAll('measureType'),
-			organization: [$page.data.currentOrganization.guid],
 			payloadType: [payloadTypes.enum.indicator_template],
 			topic: params.getAll('topic')
 		}) as Promise<IndicatorTemplateContainer[]>;

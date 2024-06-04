@@ -41,11 +41,7 @@ export const load = (async ({ locals, url, parent }) => {
 					categories: url.searchParams.getAll('category'),
 					topics: url.searchParams.getAll('topic'),
 					terms: url.searchParams.get('terms') ?? '',
-					type: [
-						payloadTypes.enum.measure,
-						payloadTypes.enum['internal_objective.milestone'],
-						payloadTypes.enum['internal_objective.task']
-					]
+					type: [payloadTypes.enum.measure, payloadTypes.enum.milestone, payloadTypes.enum.task]
 				},
 				url.searchParams.get('sort') ?? ''
 			)

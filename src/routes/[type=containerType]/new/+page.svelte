@@ -10,8 +10,7 @@
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		containerOfType,
-		isInternalObjectiveStrategicGoalContainer,
-		isInternalStrategyContainer,
+		isMeasureResultContainer,
 		isMilestoneContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
@@ -67,13 +66,13 @@
 		} else if (detail.event.submitter?.id === 'save-and-create-measure') {
 			await goto(`/measure/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-vision') {
-			await goto(`/internal_objective.vision/new?${params}`);
+			await goto(`/vision/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-internal-objective-strategic-goal') {
-			await goto(`/internal_objective.strategic_goal/new?${params}`);
+			await goto(`/measure_result/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-milestone') {
-			await goto(`/internal_objective.milestone/new?${params}`);
+			await goto(`/milestone/new?${params}`);
 		} else if (detail.event.submitter?.id === 'save-and-create-task') {
-			await goto(`/internal_objective.task/new?${params}`);
+			await goto(`/task/new?${params}`);
 		} else if (detail.result.payload.type === payloadTypes.enum.organizational_unit) {
 			await goto(`/organization/${$page.data.currentOrganization.guid}/organizational_units`);
 		} else if (detail.result.payload.type === payloadTypes.enum.page) {
@@ -128,10 +127,6 @@
 						<button id="save-and-create-model" form="container-form" type="submit">
 							{$_('save_and_create_model')}
 						</button>
-					{:else if isInternalStrategyContainer(container)}
-						<button id="save-and-create-vision" form="container-form" type="submit">
-							{$_('save_and_create_vision')}
-						</button>
 					{:else if isVisionContainer(container)}
 						<button
 							id="save-and-create-internal-objective-strategic-goal"
@@ -140,7 +135,7 @@
 						>
 							{$_('save_and_create_strategic_goal')}
 						</button>
-					{:else if isInternalObjectiveStrategicGoalContainer(container)}
+					{:else if isMeasureResultContainer(container)}
 						<button id="save-and-create-milestone" form="container-form" type="submit">
 							{$_('save_and_create_milestone')}
 						</button>

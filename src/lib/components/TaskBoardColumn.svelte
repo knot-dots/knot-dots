@@ -38,7 +38,7 @@
 
 	function containerOfTypeTask() {
 		return containerOfType(
-			payloadTypes.enum['internal_objective.task'],
+			payloadTypes.enum.task,
 			$page.data.currentOrganization.guid,
 			$page.data.currentOrganizationalUnit?.guid ?? null,
 			env.PUBLIC_KC_REALM

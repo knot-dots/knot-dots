@@ -28,40 +28,36 @@
 	let isPartOfStrategyOptionsRequest: Promise<StrategyContainer[]> = new Promise(() => []);
 
 	let allowedSuperordinateTypes = [
-		payloadTypes.enum['internal_objective.internal_strategy'],
 		payloadTypes.enum.model,
-		payloadTypes.enum['internal_objective.vision'],
+		payloadTypes.enum.vision,
 		payloadTypes.enum.strategic_goal,
-		payloadTypes.enum['internal_objective.strategic_goal'],
+		payloadTypes.enum.measure_result,
 		payloadTypes.enum.operational_goal,
-		payloadTypes.enum['internal_objective.milestone'],
+		payloadTypes.enum.milestone,
 		payloadTypes.enum.measure
 	];
 
 	if (isStrategicGoalContainer(container)) {
-		allowedSuperordinateTypes = [
-			payloadTypes.enum.model,
-			payloadTypes.enum['internal_objective.vision']
-		];
+		allowedSuperordinateTypes = [payloadTypes.enum.model, payloadTypes.enum.vision];
 	} else if (isOperationalGoalContainer(container)) {
 		allowedSuperordinateTypes = [
 			payloadTypes.enum.model,
-			payloadTypes.enum['internal_objective.vision'],
+			payloadTypes.enum.vision,
 			payloadTypes.enum.strategic_goal
 		];
 	} else if (isMilestoneContainer(container)) {
 		allowedSuperordinateTypes = [
 			payloadTypes.enum.model,
-			payloadTypes.enum['internal_objective.vision'],
+			payloadTypes.enum.vision,
 			payloadTypes.enum.strategic_goal
 		];
 	} else if (isMeasureContainer(container) || isSimpleMeasureContainer(container)) {
 		allowedSuperordinateTypes = [
 			payloadTypes.enum.model,
-			payloadTypes.enum['internal_objective.vision'],
+			payloadTypes.enum.vision,
 			payloadTypes.enum.strategic_goal,
 			payloadTypes.enum.operational_goal,
-			payloadTypes.enum['internal_objective.milestone']
+			payloadTypes.enum.milestone
 		];
 	}
 
@@ -158,7 +154,7 @@
 
 		if (
 			container.payload.type === payloadTypes.enum.model ||
-			container.payload.type === payloadTypes.enum['internal_objective.vision']
+			container.payload.type === payloadTypes.enum.vision
 		) {
 			const isPartOfIndex = container.relation.findIndex(
 				({ predicate, subject }) =>

@@ -11,9 +11,10 @@
 	"basic_data": "Allgemeine Angaben",
 	"board": {
 		"elements": "dots",
-		"indicators": "messen",
-		"internal_objectives": "Interne Ziele",
 		"implementation": "umsetzen",
+		"indicators": "messen",
+		"measure_monitoring": "Monitoring",
+		"measure_monitoring.column.effects": "Wirkung der Maßnahme",
 		"organizational_units": "Organisations-Ebenen",
 		"programs": "planen",
 		"tasks": "Aufgaben"
@@ -118,19 +119,6 @@
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
 	"information": "Information",
-	"internal_objective": {
-		"internal_strategy": "Interne Strategie",
-		"internal_strategies": "Interne Strategien",
-		"label": "Interne Ziele",
-		"milestone": "Meilenstein",
-		"milestones": "Meilensteine",
-		"strategic_goal": "Strategisches Ziel",
-		"strategic_goals": "Strategische Ziele",
-		"task": "Aufgabe",
-		"tasks": "Aufgaben",
-		"vision": "Vision",
-		"visions": "Visionen"
-	},
 	"invite": {
 		"email": "E-Mail-Adresse",
 		"failure": "Leider hat es nicht funktioniert. Wir arbeiten daran.",
@@ -156,6 +144,10 @@
 	"measure": "Maßnahme",
 	"measure.description": "Beabsichtigte Wirkung",
 	"measure.summary": "Kurze Projektbeschreibung",
+	"measure_milestone": "Meilenstein",
+	"measure_milestones": "Meilensteine",
+	"measure_result": "Maßnahmenergebnis",
+	"measure_results": "Maßnahmenergebnisse",
 	"measure_type": "Art der Maßnahme",
 	"measure_type.app": "App",
 	"measure_type.artificial_intelligence": "Künstliche Intelligenz",
@@ -172,6 +164,7 @@
 	"measure_type.virtual_reality": "Virtual Reality, Augmented Reality, Gamification",
 	"measures": "Maßnahmen",
 	"members": "Mitglieder",
+	"milestone": "Meilenstein",
 	"milestones": "Meilensteine",
 	"model": "Leitbild",
 	"models": "Visionen",
@@ -431,6 +424,7 @@
 		"in_progress": "In Umsetzung",
 		"label": "Status"
 	},
+	"task": "Aufgabe",
 	"tasks": "Aufgaben",
 	"text": "Ergänzungstext",
 	"topic": {
@@ -499,6 +493,8 @@
 		"members": "Alle Mitglieder",
 		"public": "Gesamte Öffentlichkeit"
 	},
+	"vision": "Vision",
+	"visions": "Visionen",
 	"workspace.indicator_monitoring": "Indikator-Monitoring",
 	"workspace.indicators": "Kacheln",
 	"workspace.measure_monitoring": "Maßnahmen-Monitoring",

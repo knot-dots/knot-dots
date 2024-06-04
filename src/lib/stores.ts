@@ -20,6 +20,7 @@ import {
 	isContainerWithObjective,
 	isIndicatorContainer,
 	isStrategyContainer,
+	type MeasureMonitoringContainer,
 	overlayKey,
 	paramsFromFragment,
 	payloadTypes,
@@ -151,7 +152,7 @@ export const addEffectState = writable<AddEffectState>({});
 
 type Overlay = {
 	indicators?: IndicatorContainer[];
-	internalObjectives?: Container[];
+	measureElements?: MeasureMonitoringContainer[];
 	isPartOfOptions: AnyContainer[];
 	containersWithObjectives?: ContainerWithObjective[];
 	object?: Container;
@@ -207,7 +208,7 @@ if (browser) {
 			} else if (newContainer.payload.type == payloadTypes.enum.measure) {
 				newContainer.payload.status =
 					(hashParams.get('status') as Status) ?? status.enum['status.idea'];
-			} else if (newContainer.payload.type == payloadTypes.enum['internal_objective.task']) {
+			} else if (newContainer.payload.type == payloadTypes.enum.task) {
 				newContainer.payload.taskStatus =
 					(hashParams.get('taskStatus') as TaskStatus) ?? taskStatus.enum['task_status.idea'];
 			}
@@ -332,23 +333,31 @@ if (browser) {
 				relatedContainers,
 				revisions
 			});
-		} else if (hashParams.has(overlayKey.enum['internal-objectives'])) {
+		} else if (hashParams.has(overlayKey.enum['measure-monitoring'])) {
 			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum['internal-objectives']) as string
+				hashParams.get(overlayKey.enum['measure-monitoring']) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const internalObjectives = (await fetchContainers(
-				{
-					isPartOfMeasure: [container.revision],
-					relatedTo: hashParams.getAll('related-to'),
-					relationType: hashParams.getAll('relationType'),
-					terms: hashParams.get('terms') ?? ''
-				},
-				hashParams.get('sort') ?? 'alpha'
-			)) as TaskContainer[];
+			const [measureElements, indicators] = (await Promise.all([
+				fetchContainers(
+					{
+						isPartOfMeasure: [container.revision],
+						organization: [container.organization],
+						relatedTo: hashParams.getAll('related-to'),
+						relationType: hashParams.getAll('relationType'),
+						terms: hashParams.get('terms') ?? ''
+					},
+					hashParams.get('sort') ?? 'alpha'
+				),
+				fetchContainers({
+					organization: [container.organization],
+					payloadType: [payloadTypes.enum.indicator]
+				})
+			])) as [MeasureMonitoringContainer[], IndicatorContainer[]];
 			overlay.set({
-				internalObjectives,
+				indicators,
 				isPartOfOptions: [],
+				measureElements,
 				relatedContainers: [],
 				revisions
 			});
@@ -360,7 +369,7 @@ if (browser) {
 			const tasks = (await fetchContainers({
 				assignee: hashParams.getAll('assignee'),
 				isPartOfMeasure: [container.revision],
-				payloadType: [payloadTypes.enum['internal_objective.task']],
+				payloadType: [payloadTypes.enum.task],
 				taskCategory: hashParams.getAll('taskCategory'),
 				terms: hashParams.get('terms') ?? ''
 			})) as TaskContainer[];
@@ -419,11 +428,7 @@ if (browser) {
 				organizationalUnit: organizationalUnits.map(
 					({ guid }: OrganizationalUnitContainer) => guid
 				),
-				payloadType: [
-					payloadTypes.enum.measure,
-					payloadTypes.enum.strategy,
-					payloadTypes.enum['internal_objective.task']
-				]
+				payloadType: [payloadTypes.enum.measure, payloadTypes.enum.strategy, payloadTypes.enum.task]
 			})) as Container[];
 			overlay.set({
 				isPartOfOptions: [],

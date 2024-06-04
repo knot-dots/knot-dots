@@ -66,13 +66,13 @@
 				{$_('superordinate_chapters')}
 			{:else if container.payload.type === payloadTypes.enum.organizational_unit}
 				{$_('superordinate_organizational_unit')}
-			{:else if container.payload.type === payloadTypes.enum['internal_objective.vision']}
+			{:else if container.payload.type === payloadTypes.enum.vision}
 				{$_('superordinate_internal_strategies')}
-			{:else if container.payload.type === payloadTypes.enum['internal_objective.strategic_goal']}
+			{:else if container.payload.type === payloadTypes.enum.measure_result}
 				{$_('superordinate_visions')}
-			{:else if container.payload.type === payloadTypes.enum['internal_objective.milestone']}
+			{:else if container.payload.type === payloadTypes.enum.milestone}
 				{$_('superordinate_strategic_goals')}
-			{:else if container.payload.type === payloadTypes.enum['internal_objective.task']}
+			{:else if container.payload.type === payloadTypes.enum.task}
 				{$_('superordinate_milestones')}
 			{/if}
 		</legend>

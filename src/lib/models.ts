@@ -23,7 +23,7 @@ export const overlayKey = z.enum([
 	'edit',
 	'edit-help',
 	'indicators',
-	'internal-objectives',
+	'measure-monitoring',
 	'members',
 	'my-tasks',
 	'profile',
@@ -67,12 +67,10 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'indicator',
 	'indicator_template',
-	'internal_objective.internal_strategy',
-	'internal_objective.vision',
-	'internal_objective.strategic_goal',
-	'internal_objective.milestone',
-	'internal_objective.task',
+	'milestone',
 	'measure',
+	'measure_milestone',
+	'measure_result',
 	'model',
 	'operational_goal',
 	'organization',
@@ -81,8 +79,10 @@ const payloadTypeValues = [
 	'simple_measure',
 	'strategic_goal',
 	'strategy',
+	'task',
 	'text',
-	'undefined'
+	'undefined',
+	'vision'
 ] as const;
 
 export const payloadTypes = z.enum(payloadTypeValues);
@@ -415,7 +415,7 @@ export const visibility = z.enum(['creator', 'members', 'public']);
 
 export const boards = z.enum([
 	'board.indicators',
-	'board.internal_objectives',
+	'board.measure_monitoring',
 	'board.organizational_units',
 	'board.tasks'
 ]);
@@ -451,7 +451,7 @@ const indicatorTemplatePayload = indicatorPayload
 	})
 	.omit({ historicalValues: true, quantity: true });
 
-const internalObjectivesBasePayload = z.object({
+const measureMonitoringBasePayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.public']]),
 	description: z.string().optional(),
 	summary: z.string().max(200).optional(),
@@ -459,26 +459,31 @@ const internalObjectivesBasePayload = z.object({
 	visibility: visibility.default('members')
 });
 
-const internalStrategyPayload = internalObjectivesBasePayload
-	.extend({
-		type: z.literal(payloadTypes.enum['internal_objective.internal_strategy'])
-	})
-	.strict();
-
-const visionPayload = internalObjectivesBasePayload
+const visionPayload = basePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
-		type: z.literal(payloadTypes.enum['internal_objective.vision'])
+		type: z.literal(payloadTypes.enum.vision)
 	})
 	.strict();
 
-const internalObjectiveStrategicGoalPayload = internalObjectivesBasePayload
+const measureMilestonePayload = measureMonitoringBasePayload
 	.extend({
-		type: z.literal(payloadTypes.enum['internal_objective.strategic_goal'])
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		progress: z.number().nonnegative().default(0),
+		type: z.literal(payloadTypes.enum.measure_milestone)
 	})
 	.strict();
 
-const milestonePayload = internalObjectivesBasePayload
+const measureResultPayload = measureMonitoringBasePayload
+	.extend({
+		type: z.literal(payloadTypes.enum.measure_result)
+	})
+	.strict();
+
+const milestonePayload = basePayload
 	.extend({
 		fulfillmentDate: z
 			.string()
@@ -486,11 +491,11 @@ const milestonePayload = internalObjectivesBasePayload
 			.optional(),
 		objective: z.array(indicatorObjective).default([]),
 		progress: z.number().nonnegative().default(0),
-		type: z.literal(payloadTypes.enum['internal_objective.milestone'])
+		type: z.literal(payloadTypes.enum.milestone)
 	})
 	.strict();
 
-const taskPayload = internalObjectivesBasePayload
+const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
 		assignee: z.string().uuid().optional(),
@@ -500,14 +505,13 @@ const taskPayload = internalObjectivesBasePayload
 			.optional(),
 		taskCategory: taskCategories.optional(),
 		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
-		type: z.literal(payloadTypes.enum['internal_objective.task'])
+		type: z.literal(payloadTypes.enum.task)
 	})
 	.strict();
 
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().optional(),
-		boards: z.array(boards).default([]),
 		comment: z.string().optional(),
 		endDate: z
 			.string()
@@ -667,19 +671,19 @@ export const container = z.object({
 	payload: z.discriminatedUnion('type', [
 		indicatorPayload,
 		indicatorTemplatePayload,
-		internalStrategyPayload,
-		visionPayload,
-		internalObjectiveStrategicGoalPayload,
-		milestonePayload,
-		taskPayload,
 		measurePayload,
+		measureMilestonePayload,
+		measureResultPayload,
+		milestonePayload,
 		modelPayload,
 		operationalGoalPayload,
 		pagePayload,
 		simpleMeasurePayload,
 		strategicGoalPayload,
 		strategyPayload,
-		textPayload
+		taskPayload,
+		textPayload,
+		visionPayload
 	]),
 	realm: z.string().max(1024),
 	relation: z.array(relation).default([]),
@@ -695,12 +699,10 @@ export const anyContainer = container.extend({
 	payload: z.discriminatedUnion('type', [
 		indicatorPayload,
 		indicatorTemplatePayload,
-		internalStrategyPayload,
-		visionPayload,
-		internalObjectiveStrategicGoalPayload,
-		milestonePayload,
-		taskPayload,
 		measurePayload,
+		measureMilestonePayload,
+		measureResultPayload,
+		milestonePayload,
 		modelPayload,
 		operationalGoalPayload,
 		organizationPayload,
@@ -709,8 +711,10 @@ export const anyContainer = container.extend({
 		simpleMeasurePayload,
 		strategicGoalPayload,
 		strategyPayload,
+		taskPayload,
 		textPayload,
-		undefinedPayload
+		undefinedPayload,
+		visionPayload
 	])
 });
 
@@ -786,6 +790,18 @@ export function isMeasureContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureContainer {
 	return container.payload.type === payloadTypes.enum.measure;
+}
+
+const measureMilestoneContainer = container.extend({
+	payload: measureMilestonePayload
+});
+
+export type MeasureMilestoneContainer = z.infer<typeof measureMilestoneContainer>;
+
+export function isMeasureMilestoneContainer(
+	container: AnyContainer | EmptyContainer
+): container is MeasureMilestoneContainer {
+	return container.payload.type === payloadTypes.enum.measure_milestone;
 }
 
 const modelContainer = container.extend({
@@ -896,18 +912,6 @@ export function isTextContainer(
 	return container.payload.type === payloadTypes.enum.text;
 }
 
-const internalStrategyContainer = container.extend({
-	payload: internalStrategyPayload
-});
-
-export type InternalStrategyContainer = z.infer<typeof internalStrategyContainer>;
-
-export function isInternalStrategyContainer(
-	container: AnyContainer | EmptyContainer
-): container is InternalStrategyContainer {
-	return container.payload.type === payloadTypes.enum['internal_objective.internal_strategy'];
-}
-
 const visionContainer = container.extend({
 	payload: visionPayload
 });
@@ -917,21 +921,19 @@ export type VisionContainer = z.infer<typeof visionContainer>;
 export function isVisionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is VisionContainer {
-	return container.payload.type === payloadTypes.enum['internal_objective.vision'];
+	return container.payload.type === payloadTypes.enum.vision;
 }
 
-const internalObjectiveStrategicGoalContainer = container.extend({
-	payload: internalObjectiveStrategicGoalPayload
+const measureResultContainer = container.extend({
+	payload: measureResultPayload
 });
 
-export type InternalObjectiveStrategicGoalContainer = z.infer<
-	typeof internalObjectiveStrategicGoalContainer
->;
+export type MeasureResultContainer = z.infer<typeof measureResultContainer>;
 
-export function isInternalObjectiveStrategicGoalContainer(
+export function isMeasureResultContainer(
 	container: AnyContainer | EmptyContainer
-): container is InternalObjectiveStrategicGoalContainer {
-	return container.payload.type === payloadTypes.enum['internal_objective.strategic_goal'];
+): container is MeasureResultContainer {
+	return container.payload.type === payloadTypes.enum.measure_result;
 }
 
 const milestoneContainer = container.extend({
@@ -943,7 +945,7 @@ export type MilestoneContainer = z.infer<typeof milestoneContainer>;
 export function isMilestoneContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MilestoneContainer {
-	return container.payload.type === payloadTypes.enum['internal_objective.milestone'];
+	return container.payload.type === payloadTypes.enum.milestone;
 }
 
 const taskContainer = container.extend({
@@ -955,24 +957,20 @@ export type TaskContainer = z.infer<typeof taskContainer>;
 export function isTaskContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TaskContainer {
-	return container.payload.type === payloadTypes.enum['internal_objective.task'];
+	return container.payload.type === payloadTypes.enum.task;
 }
 
-export type InternalObjectiveContainer =
-	| InternalStrategyContainer
-	| VisionContainer
-	| InternalObjectiveStrategicGoalContainer
-	| MilestoneContainer
+export type MeasureMonitoringContainer =
+	| MeasureMilestoneContainer
+	| MeasureResultContainer
 	| TaskContainer;
 
-export function isInternalObjectiveContainer(
+export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
-): container is InternalObjectiveContainer {
+): container is MeasureMonitoringContainer {
 	return (
-		isInternalStrategyContainer(container) ||
-		isVisionContainer(container) ||
-		isInternalObjectiveStrategicGoalContainer(container) ||
-		isMilestoneContainer(container) ||
+		isMeasureMilestoneContainer(container) ||
+		isMeasureResultContainer(container) ||
 		isTaskContainer(container)
 	);
 }
@@ -1024,11 +1022,18 @@ const emptyContainer = newContainer.extend({
 		measurePayload.partial().merge(
 			measurePayload.pick({
 				audience: true,
-				boards: true,
 				category: true,
 				effect: true,
 				measureType: true,
 				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
+		measureMilestonePayload.partial().merge(
+			measureMilestonePayload.pick({
+				audience: true,
+				progress: true,
 				type: true,
 				visibility: true
 			})
@@ -1095,14 +1100,18 @@ const emptyContainer = newContainer.extend({
 			})
 		),
 		textPayload.partial().merge(textPayload.pick({ type: true, visibility: true })),
-		internalStrategyPayload
-			.partial()
-			.merge(internalStrategyPayload.pick({ audience: true, type: true, visibility: true })),
-		visionPayload
-			.partial()
-			.merge(visionPayload.pick({ audience: true, objective: true, type: true, visibility: true })),
-		internalObjectiveStrategicGoalPayload.partial().merge(
-			internalObjectiveStrategicGoalPayload.pick({
+		visionPayload.partial().merge(
+			visionPayload.pick({
+				audience: true,
+				category: true,
+				objective: true,
+				topic: true,
+				type: true,
+				visibility: true
+			})
+		),
+		measureResultPayload.partial().merge(
+			measureResultPayload.pick({
 				audience: true,
 				type: true,
 				visibility: true
@@ -1111,8 +1120,10 @@ const emptyContainer = newContainer.extend({
 		milestonePayload.partial().merge(
 			milestonePayload.pick({
 				audience: true,
+				category: true,
 				objective: true,
 				progress: true,
+				topic: true,
 				type: true,
 				visibility: true
 			})
@@ -1145,7 +1156,6 @@ const emptyMeasureContainer = emptyContainer.extend({
 	payload: measurePayload.partial().merge(
 		measurePayload.pick({
 			audience: true,
-			boards: true,
 			category: true,
 			effect: true,
 			measureType: true,
@@ -1157,6 +1167,19 @@ const emptyMeasureContainer = emptyContainer.extend({
 });
 
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
+
+const emptyMeasureMilestoneContainer = emptyContainer.extend({
+	payload: measureMilestonePayload.partial().merge(
+		measureMilestonePayload.pick({
+			audience: true,
+			progress: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptyMeasureMilestoneContainer = z.infer<typeof emptyMeasureMilestoneContainer>;
 
 const emptyModelContainer = emptyContainer.extend({
 	payload: modelPayload.partial().merge(
@@ -1263,25 +1286,24 @@ const emptyTextContainer = emptyContainer.extend({
 
 export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
 
-const emptyInternalStrategyContainer = emptyContainer.extend({
-	payload: internalStrategyPayload
-		.partial()
-		.merge(internalStrategyPayload.pick({ audience: true, type: true, visibility: true }))
-});
-
-export type EmptyInternalStrategyContainer = z.infer<typeof emptyInternalStrategyContainer>;
-
 const emptyVisionContainer = emptyContainer.extend({
-	payload: visionPayload
-		.partial()
-		.merge(visionPayload.pick({ audience: true, objective: true, type: true, visibility: true }))
+	payload: visionPayload.partial().merge(
+		visionPayload.pick({
+			audience: true,
+			category: true,
+			objective: true,
+			topic: true,
+			type: true,
+			visibility: true
+		})
+	)
 });
 
 export type EmptyVisionContainer = z.infer<typeof emptyVisionContainer>;
 
-const emptyInternalObjectiveStrategicGoalContainer = emptyContainer.extend({
-	payload: internalObjectiveStrategicGoalPayload.partial().merge(
-		internalObjectiveStrategicGoalPayload.pick({
+const emptyMeasureResultContainer = emptyContainer.extend({
+	payload: measureResultPayload.partial().merge(
+		measureResultPayload.pick({
 			audience: true,
 			type: true,
 			visibility: true
@@ -1289,16 +1311,16 @@ const emptyInternalObjectiveStrategicGoalContainer = emptyContainer.extend({
 	)
 });
 
-export type EmptyInternalObjectiveStrategicGoalContainer = z.infer<
-	typeof emptyInternalObjectiveStrategicGoalContainer
->;
+export type EmptyMeasureResultContainer = z.infer<typeof emptyMeasureResultContainer>;
 
 const emptyMilestoneContainer = emptyContainer.extend({
 	payload: milestonePayload.partial().merge(
 		milestonePayload.pick({
 			audience: true,
+			category: true,
 			objective: true,
 			progress: true,
+			topic: true,
 			type: true,
 			visibility: true
 		})

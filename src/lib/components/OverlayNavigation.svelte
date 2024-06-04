@@ -95,34 +95,30 @@
 			{/if}
 
 			{#if isMeasureContainer(container)}
-				{#if container.payload.boards.includes('board.internal_objectives')}
-					<li>
-						<a
-							class="button button-nav"
-							class:is-active={paramsFromFragment($page.url).get(
-								overlayKey.enum['internal-objectives']
-							) === container.guid}
-							href={overlayURL($page.url, overlayKey.enum['internal-objectives'], container.guid)}
-						>
-							<span class="small-only"><Objectives /></span>
-							<span class="large-only">{$_('internal_objective.label')}</span>
-						</a>
-					</li>
-				{/if}
+				<li>
+					<a
+						class="button button-nav"
+						class:is-active={paramsFromFragment($page.url).get(
+							overlayKey.enum['measure-monitoring']
+						) === container.guid}
+						href={overlayURL($page.url, overlayKey.enum['measure-monitoring'], container.guid)}
+					>
+						<span class="small-only"><Objectives /></span>
+						<span class="large-only">{$_('board.measure_monitoring')}</span>
+					</a>
+				</li>
 
-				{#if container.payload.boards.includes('board.tasks')}
-					<li>
-						<a
-							class="button button-nav"
-							class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.tasks) ===
-								container.guid}
-							href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
-						>
-							<span class="small-only"><Tasks /></span>
-							<span class="large-only">{$_('internal_objective.tasks')}</span>
-						</a>
-					</li>
-				{/if}
+				<li>
+					<a
+						class="button button-nav"
+						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.tasks) ===
+							container.guid}
+						href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
+					>
+						<span class="small-only"><Tasks /></span>
+						<span class="large-only">{$_('tasks')}</span>
+					</a>
+				</li>
 			{:else if isStrategyContainer(container) && $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
 				<li>
 					<a

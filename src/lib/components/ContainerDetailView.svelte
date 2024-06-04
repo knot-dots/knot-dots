@@ -7,6 +7,7 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -20,6 +21,8 @@
 		isIndicatorContainer,
 		isLevel,
 		isMeasureContainer,
+		isMeasureMilestoneContainer,
+		isMeasureResultContainer,
 		isStrategyContainer,
 		overlayKey,
 		owners,
@@ -39,6 +42,10 @@
 	$: strategy = isStrategyContainer(container)
 		? container
 		: relatedContainers.find(isStrategyContainer);
+
+	$: measure = isMeasureContainer(container)
+		? container
+		: relatedContainers.find(isMeasureContainer);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
@@ -118,7 +125,14 @@
 			</div>
 		{/if}
 
-		{#if isContainerWithObjective(container)}
+		{#if 'progress' in container.payload}
+			<div class="progress">
+				<h3>{$_('progress')}</h3>
+				<Progress value={container.payload.progress} />
+			</div>
+		{/if}
+
+		{#if isContainerWithObjective(container) || isMeasureMilestoneContainer(container) || isMeasureResultContainer(container)}
 			<TaskCarousel {container} />
 		{/if}
 
@@ -177,6 +191,16 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
 				<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
+			</div>
+		{/if}
+		{#if measure}
+			<div class="meta">
+				<h3 class="meta-key">{$_('measure')}</h3>
+				<p class="meta-value">
+					<a href={containerURL(measure.payload.type, measure.guid)}>
+						{$_(measure.payload.title)}
+					</a>
+				</p>
 			</div>
 		{/if}
 		{#if 'measureType' in container.payload}

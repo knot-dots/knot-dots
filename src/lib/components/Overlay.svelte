@@ -24,10 +24,8 @@
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
-	import InternalObjectiveDetailView from '$lib/components/InternalObjectiveDetailView.svelte';
-	import InternalObjectives from '$lib/components/InternalObjectives.svelte';
-	import InternalObjectiveTaskDetailView from '$lib/components/InternalObjectiveTaskDetailView.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
+	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import Members from '$lib/components/Members.svelte';
@@ -42,16 +40,16 @@
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
+	import TaskDetailView from '$lib/components/TaskDetailView.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
-		hasMember,
 		isContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
-		isInternalObjectiveContainer,
+		isMeasureContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -69,6 +67,7 @@
 		ContainerWithObjective,
 		CustomEventMap,
 		IndicatorContainer,
+		MeasureMonitoringContainer,
 		TaskContainer,
 		User
 	} from '$lib/models';
@@ -76,7 +75,7 @@
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
-	export let internalObjectives: Container[] | undefined = undefined;
+	export let measureElements: MeasureMonitoringContainer[] | undefined = undefined;
 	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
@@ -417,7 +416,7 @@
 			</Sidebar>
 		</aside>
 		<Relations containers={relatedContainers} />
-	{:else if hashParams.has(overlayKey.enum['internal-objectives']) && internalObjectives}
+	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && isMeasureContainer(container) && measureElements && indicators}
 		<aside>
 			<Sidebar helpSlug="internal-objectives">
 				<Search slot="search" />
@@ -435,7 +434,7 @@
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<InternalObjectives {container} containers={internalObjectives} />
+		<MeasureMonitoring {container} containers={measureElements} {indicators} />
 	{:else if hashParams.has(overlayKey.enum.tasks) && tasks}
 		<aside>
 			<Sidebar helpSlug="tasks">
@@ -539,12 +538,10 @@
 				/>
 			{:else if isContainerWithEffect(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
-			{:else if isTaskContainer(container)}
-				<InternalObjectiveTaskDetailView {container} {relatedContainers} {revisions} />
-			{:else if isInternalObjectiveContainer(container)}
-				<InternalObjectiveDetailView {container} {relatedContainers} {revisions} />
 			{:else if isStrategyContainer(container)}
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
+			{:else if isTaskContainer(container)}
+				<TaskDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainer(container)}
 				<ContainerDetailView {container} {relatedContainers} {revisions} />
 			{/if}
@@ -561,7 +558,7 @@
 						<PlusSmall />{$_('create_another')}
 					</button>
 				{/if}
-				{#if !hasMember($user)($page.data.currentOrganizationalUnit ?? $page.data.currentOrganization) && $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+				{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
 					<button
 						class="primary"
 						type="button"

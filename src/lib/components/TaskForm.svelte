@@ -5,6 +5,7 @@
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
+	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
 	import type {
@@ -70,6 +71,8 @@
 	<legend>{$_('form.metadata')}</legend>
 
 	<OrganizationSelector bind:container />
+
+	<MeasureRelationSelector bind:container />
 </fieldset>
 
 <fieldset class="form-tab" id="basic-data">

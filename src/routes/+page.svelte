@@ -27,15 +27,12 @@
 		{ title: 'programs', payloadType: [payloadTypes.enum.strategy] },
 		{
 			title: 'payload_group.long_term_goals',
-			payloadType: [payloadTypes.enum.model, payloadTypes.enum['internal_objective.vision']]
+			payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
 		},
 		{ title: 'payload_group.strategic_goals', payloadType: [payloadTypes.enum.strategic_goal] },
 		{
 			title: 'payload_group.measurable_goals',
-			payloadType: [
-				payloadTypes.enum.operational_goal,
-				payloadTypes.enum['internal_objective.milestone']
-			]
+			payloadType: [payloadTypes.enum.operational_goal, payloadTypes.enum.milestone]
 		},
 		{
 			title: 'payload_group.implementation',

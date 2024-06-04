@@ -99,7 +99,7 @@
 				</div>
 			</BoardColumn>
 
-			<BoardColumn title={$_('internal_objective.milestones')}>
+			<BoardColumn title={$_('milestones')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each milestones as container}
 						<Card {container} showRelationFilter></Card>
