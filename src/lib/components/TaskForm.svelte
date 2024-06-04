@@ -59,12 +59,6 @@
 					)
 			);
 	}
-
-	let assignee = container.payload.assignee;
-	$: container.payload.assignee = assignee == '' ? undefined : assignee;
-
-	let taskCategory: TaskCategory | '' | undefined = container.payload.taskCategory;
-	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
 <fieldset class="form-tab" id="metadata">
@@ -95,12 +89,12 @@
 
 	<label>
 		{$_('assignee')}
-		<select name="assignee" bind:value={assignee}>
-			<option></option>
+		<select name="assignee" bind:value={container.payload.assignee}>
+			<option value={undefined}></option>
 			{#await membersPromise then members}
 				{#each members as { display_name, guid }}
 					{#if display_name !== ''}
-						<option value={guid} selected={guid === assignee}>
+						<option value={guid}>
 							{display_name}
 						</option>
 					{/if}
@@ -111,8 +105,8 @@
 
 	<label>
 		{$_('task_category.label')}
-		<select name="taskCategory" bind:value={taskCategory}>
-			<option></option>
+		<select name="taskCategory" bind:value={container.payload.taskCategory}>
+			<option value={undefined}></option>
 			{#each taskCategories.options as taskCategoryOption}
 				<option value={taskCategoryOption}>
 					{$_(taskCategoryOption)}
