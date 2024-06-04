@@ -67,14 +67,17 @@
 		</h3>
 	</header>
 
-	<p class="text">
-		{container.payload.description ?? ''}
-	</p>
+	<p>
+		{#each container.payload.indicatorType as indicatorType}
+			<span class="badge">{$_(indicatorType)}</span>
+		{/each}
 
-	<footer>
 		{#each container.payload.indicatorCategory as indicatorCategory}
 			<span class="badge">{$_(indicatorCategory)}</span>
 		{/each}
+	</p>
+
+	<footer>
 		<slot name="button"></slot>
 	</footer>
 </article>
@@ -114,10 +117,11 @@
 		font-weight: 700;
 	}
 
-	.text {
-		color: var(--color-gray-500);
-		font-size: 0.875rem;
-		font-weight: 500;
+	p {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 0.75rem;
 		margin-bottom: 1rem;
 	}
 
@@ -125,8 +129,8 @@
 		align-items: flex-end;
 		display: flex;
 		flex-direction: row;
-		gap: 12px;
-		justify-content: space-between;
+		gap: 0.75rem;
+		justify-content: flex-end;
 		margin-top: auto;
 	}
 </style>
