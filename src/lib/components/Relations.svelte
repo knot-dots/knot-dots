@@ -18,7 +18,7 @@
 		{ title: 'payload_group.strategic_goals', payloadType: [payloadTypes.enum.strategic_goal] },
 		{
 			title: 'payload_group.measurable_goals',
-			payloadType: [payloadTypes.enum.operational_goal, payloadTypes.enum.milestone]
+			payloadType: [payloadTypes.enum.operational_goal]
 		},
 		{
 			title: 'payload_group.implementation',
