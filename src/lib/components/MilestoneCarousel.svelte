@@ -17,7 +17,7 @@
 	export let container: Container;
 
 	$: containerRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadTypes.enum.milestone, payloadTypes.enum.measure_milestone]
+		payloadType: [payloadTypes.enum.milestone]
 	}) as Promise<Array<MilestoneContainer>>;
 
 	function addItemURL(url: URL) {
@@ -25,7 +25,7 @@
 
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadTypes.enum.measure_milestone],
+			[overlayKey.enum.create, payloadTypes.enum.milestone],
 			[predicates.enum['is-part-of'], String(container.revision)],
 			[predicates.enum['is-part-of-measure'], String(container.revision)]
 		]);
@@ -35,7 +35,7 @@
 </script>
 
 {#await containerRequest then containers}
-	{#if containers.length > 0 || $mayCreateContainer(payloadTypes.enum.measure_milestone)}
+	{#if containers.length > 0 || $mayCreateContainer(payloadTypes.enum.milestone)}
 		<div>
 			{#if containers.length > 0}
 				<ul class="carousel">
@@ -46,7 +46,7 @@
 					{/each}
 				</ul>
 			{/if}
-			{#if $mayCreateContainer(payloadTypes.enum.measure_milestone)}
+			{#if $mayCreateContainer(payloadTypes.enum.milestone)}
 				<a class="button" href={addItemURL($page.url)}>
 					{$_('add_item')}
 				</a>

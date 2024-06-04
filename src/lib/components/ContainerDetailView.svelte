@@ -21,8 +21,8 @@
 		isIndicatorContainer,
 		isLevel,
 		isMeasureContainer,
-		isMeasureMilestoneContainer,
 		isMeasureResultContainer,
+		isMilestoneContainer,
 		isStrategyContainer,
 		overlayKey,
 		owners,
@@ -132,7 +132,7 @@
 			</div>
 		{/if}
 
-		{#if isContainerWithObjective(container) || isMeasureMilestoneContainer(container) || isMeasureResultContainer(container)}
+		{#if isContainerWithObjective(container) || isMilestoneContainer(container) || isMeasureResultContainer(container)}
 			<TaskCarousel {container} />
 		{/if}
 
