@@ -5,6 +5,7 @@
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Trash from '~icons/heroicons/trash';
+	import CopyCat from '~icons/knotdots/copycat';
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -561,11 +562,12 @@
 				{/if}
 				{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
 					<button
-						class="primary"
+						class="button-copycat"
+						title={$_('copy')}
 						type="button"
 						on:click={() => createCopy(container, $user.adminOf[0], $page.url.pathname)}
 					>
-						<PlusSmall />{$_('copy')}
+						<CopyCat />
 					</button>
 				{/if}
 				{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
