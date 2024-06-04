@@ -67,10 +67,9 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'indicator',
 	'indicator_template',
-	'milestone',
 	'measure',
-	'measure_milestone',
 	'measure_result',
+	'milestone',
 	'model',
 	'operational_goal',
 	'organization',
@@ -466,17 +465,6 @@ const visionPayload = basePayload
 	})
 	.strict();
 
-const measureMilestonePayload = measureMonitoringBasePayload
-	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		progress: z.number().nonnegative().default(0),
-		type: z.literal(payloadTypes.enum.measure_milestone)
-	})
-	.strict();
-
 const measureResultPayload = measureMonitoringBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.measure_result)
@@ -489,7 +477,6 @@ const milestonePayload = basePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		objective: z.array(indicatorObjective).default([]),
 		progress: z.number().nonnegative().default(0),
 		type: z.literal(payloadTypes.enum.milestone)
 	})
@@ -558,6 +545,7 @@ const operationalGoalPayload = basePayload
 			.optional(),
 		indicator: z.array(indicator).max(1).default([]),
 		objective: z.array(indicatorObjective).default([]),
+		progress: z.number().nonnegative().default(0),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})
 	.strict();
@@ -672,7 +660,6 @@ export const container = z.object({
 		indicatorPayload,
 		indicatorTemplatePayload,
 		measurePayload,
-		measureMilestonePayload,
 		measureResultPayload,
 		milestonePayload,
 		modelPayload,
@@ -700,7 +687,6 @@ export const anyContainer = container.extend({
 		indicatorPayload,
 		indicatorTemplatePayload,
 		measurePayload,
-		measureMilestonePayload,
 		measureResultPayload,
 		milestonePayload,
 		modelPayload,
@@ -722,7 +708,6 @@ export type AnyContainer = z.infer<typeof anyContainer>;
 
 export const containerWithObjective = container.extend({
 	payload: z.discriminatedUnion('type', [
-		milestonePayload,
 		modelPayload,
 		operationalGoalPayload,
 		strategicGoalPayload,
@@ -736,7 +721,6 @@ export function isContainerWithObjective(
 	container: AnyContainer | EmptyContainer
 ): container is ContainerWithObjective {
 	return (
-		isMilestoneContainer(container) ||
 		isModelContainer(container) ||
 		isOperationalGoalContainer(container) ||
 		isStrategicGoalContainer(container) ||
@@ -790,18 +774,6 @@ export function isMeasureContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureContainer {
 	return container.payload.type === payloadTypes.enum.measure;
-}
-
-const measureMilestoneContainer = container.extend({
-	payload: measureMilestonePayload
-});
-
-export type MeasureMilestoneContainer = z.infer<typeof measureMilestoneContainer>;
-
-export function isMeasureMilestoneContainer(
-	container: AnyContainer | EmptyContainer
-): container is MeasureMilestoneContainer {
-	return container.payload.type === payloadTypes.enum.measure_milestone;
 }
 
 const modelContainer = container.extend({
@@ -961,16 +933,16 @@ export function isTaskContainer(
 }
 
 export type MeasureMonitoringContainer =
-	| MeasureMilestoneContainer
 	| MeasureResultContainer
+	| MilestoneContainer
 	| TaskContainer;
 
 export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureMonitoringContainer {
 	return (
-		isMeasureMilestoneContainer(container) ||
 		isMeasureResultContainer(container) ||
+		isMilestoneContainer(container) ||
 		isTaskContainer(container)
 	);
 }
@@ -1030,14 +1002,6 @@ const emptyContainer = newContainer.extend({
 				visibility: true
 			})
 		),
-		measureMilestonePayload.partial().merge(
-			measureMilestonePayload.pick({
-				audience: true,
-				progress: true,
-				type: true,
-				visibility: true
-			})
-		),
 		modelPayload.partial().merge(
 			modelPayload.pick({
 				audience: true,
@@ -1054,6 +1018,7 @@ const emptyContainer = newContainer.extend({
 				category: true,
 				indicator: true,
 				objective: true,
+				progress: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1121,7 +1086,6 @@ const emptyContainer = newContainer.extend({
 			milestonePayload.pick({
 				audience: true,
 				category: true,
-				objective: true,
 				progress: true,
 				topic: true,
 				type: true,
@@ -1168,19 +1132,6 @@ const emptyMeasureContainer = emptyContainer.extend({
 
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
 
-const emptyMeasureMilestoneContainer = emptyContainer.extend({
-	payload: measureMilestonePayload.partial().merge(
-		measureMilestonePayload.pick({
-			audience: true,
-			progress: true,
-			type: true,
-			visibility: true
-		})
-	)
-});
-
-export type EmptyMeasureMilestoneContainer = z.infer<typeof emptyMeasureMilestoneContainer>;
-
 const emptyModelContainer = emptyContainer.extend({
 	payload: modelPayload.partial().merge(
 		modelPayload.pick({
@@ -1203,6 +1154,7 @@ const emptyOperationalGoalContainer = emptyContainer.extend({
 			category: true,
 			indicator: true,
 			objective: true,
+			progress: true,
 			topic: true,
 			type: true,
 			visibility: true
@@ -1318,7 +1270,6 @@ const emptyMilestoneContainer = emptyContainer.extend({
 		milestonePayload.pick({
 			audience: true,
 			category: true,
-			objective: true,
 			progress: true,
 			topic: true,
 			type: true,

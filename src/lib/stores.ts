@@ -344,7 +344,7 @@ if (browser) {
 						isPartOfMeasure: [container.revision],
 						organization: [container.organization],
 						relatedTo: hashParams.getAll('related-to'),
-						relationType: hashParams.getAll('relationType'),
+						relationType: ['hierarchical'],
 						terms: hashParams.get('terms') ?? ''
 					},
 					hashParams.get('sort') ?? 'alpha'

@@ -8,23 +8,20 @@
 		type AnyContainer,
 		type EmptyContainer,
 		isMeasureResultContainer,
+		isMilestoneContainer,
 		isTaskContainer,
 		type MeasureContainer,
 		type PartialRelation,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { isMeasureMilestoneContainer } from '$lib/models.js';
 
 	export let container: AnyContainer | EmptyContainer;
 
 	let isPartOfOptionsRequest: Promise<AnyContainer[]> = new Promise(() => []);
 	let isPartOfMeasureOptionsRequest: Promise<MeasureContainer[]> = new Promise(() => []);
 
-	let allowedSuperordinateTypes = [
-		payloadTypes.enum.measure_milestone,
-		payloadTypes.enum.measure_result
-	];
+	let allowedSuperordinateTypes = [payloadTypes.enum.measure_result, payloadTypes.enum.milestone];
 
 	onMount(() => {
 		isPartOfMeasureOptionsRequest = fetchContainers({
@@ -158,8 +155,8 @@
 					options: isPartOfOptions.filter(isMeasureResultContainer)
 				},
 				{
-					heading: $_('measure_milestones'),
-					options: isPartOfOptions.filter(isMeasureMilestoneContainer)
+					heading: $_('milestones'),
+					options: isPartOfOptions.filter(isMilestoneContainer)
 				}
 			]}
 			<fieldset>

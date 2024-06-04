@@ -33,7 +33,6 @@
 		payloadTypes.enum.strategic_goal,
 		payloadTypes.enum.measure_result,
 		payloadTypes.enum.operational_goal,
-		payloadTypes.enum.milestone,
 		payloadTypes.enum.measure
 	];
 
@@ -56,8 +55,7 @@
 			payloadTypes.enum.model,
 			payloadTypes.enum.vision,
 			payloadTypes.enum.strategic_goal,
-			payloadTypes.enum.operational_goal,
-			payloadTypes.enum.milestone
+			payloadTypes.enum.operational_goal
 		];
 	}
 
