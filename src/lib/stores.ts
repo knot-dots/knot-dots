@@ -20,6 +20,7 @@ import {
 	isContainerWithObjective,
 	isIndicatorContainer,
 	isStrategyContainer,
+	isTaskContainer,
 	type MeasureMonitoringContainer,
 	overlayKey,
 	paramsFromFragment,
@@ -219,6 +220,8 @@ if (browser) {
 					newContainer.payload = { ...copyFrom.payload, objective: [] };
 				} else if (isContainerWithEffect(copyFrom)) {
 					newContainer.payload = { ...copyFrom.payload, effect: [] };
+				} else if (isTaskContainer(copyFrom)) {
+					newContainer.payload = { ...copyFrom.payload, assignee: undefined };
 				} else {
 					newContainer.payload = copyFrom.payload;
 				}
