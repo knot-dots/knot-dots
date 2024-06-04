@@ -471,7 +471,7 @@ const measureResultPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
-const milestonePayload = basePayload
+const milestonePayload = measureMonitoringBasePayload
 	.extend({
 		fulfillmentDate: z
 			.string()
@@ -1085,9 +1085,7 @@ const emptyContainer = newContainer.extend({
 		milestonePayload.partial().merge(
 			milestonePayload.pick({
 				audience: true,
-				category: true,
 				progress: true,
-				topic: true,
 				type: true,
 				visibility: true
 			})
@@ -1269,9 +1267,7 @@ const emptyMilestoneContainer = emptyContainer.extend({
 	payload: milestonePayload.partial().merge(
 		milestonePayload.pick({
 			audience: true,
-			category: true,
 			progress: true,
-			topic: true,
 			type: true,
 			visibility: true
 		})

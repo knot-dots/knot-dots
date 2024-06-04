@@ -70,18 +70,6 @@
 		</datalist>
 	</label>
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
-
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
-
 	<label>
 		{$_('fulfillment_date')}
 		<input type="date" bind:value={container.payload.fulfillmentDate} />
