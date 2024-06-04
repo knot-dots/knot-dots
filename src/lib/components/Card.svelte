@@ -51,7 +51,7 @@
 	let containersWithObjectivesPromise: Promise<ContainerWithObjective[]>;
 	let relatedContainersPromise: Promise<Container[]>;
 
-	if (isIndicatorContainer(container)) {
+	$: if (isIndicatorContainer(container)) {
 		containersWithObjectivesPromise = fetchContainersWithParentObjectives(container);
 		if (relatedContainers.length == 0) {
 			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
