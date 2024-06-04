@@ -373,6 +373,19 @@ button.button-square,
 	--padding-y: 9px;
 }
 
+button.button-copycat,
+.button.button-copycat {
+	--padding-y: 0.5rem;
+
+	background: linear-gradient(135deg, rgba(253, 226, 157, 1) 0%, rgba(100, 183, 254, 1) 100%);
+	color: white;
+}
+
+button.button-copycat:hover,
+.button.button-copycat:hover {
+	background: linear-gradient(45deg, rgba(254, 246, 174, 1) 0%, rgba(253, 70, 150, 1) 100%);
+}
+
 /* Button group */
 .button-group {
 	display: flex;
