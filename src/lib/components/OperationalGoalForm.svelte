@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
-	import IndicatorWizard from '$lib/components/IndicatorWizard.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import ObjectiveWizard from '$lib/components/ObjectiveWizard.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
@@ -19,8 +18,6 @@
 			tabs: ['metadata', 'basic-data']
 		}
 	}));
-
-	let indicatorLocked = container.payload.indicator.length > 0;
 </script>
 
 <fieldset class="form-tab" id="metadata">
@@ -75,8 +72,6 @@
 			<option value="1"></option>
 		</datalist>
 	</label>
-
-	<IndicatorWizard bind:indicator={container.payload.indicator} locked={indicatorLocked} />
 
 	<ListBox
 		label={$_('topic.label')}
