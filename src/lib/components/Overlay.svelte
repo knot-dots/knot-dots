@@ -136,7 +136,8 @@
 		if (
 			hashParams.has(overlayKey.enum.create) &&
 			isIndicatorContainer(detail.result) &&
-			$addEffectState
+			$addEffectState.target &&
+			$addEffectState.effect
 		) {
 			$addEffectState.effect = detail.result.guid;
 			await goto(`#view=${$addEffectState.target}&edit`, { invalidateAll: true });

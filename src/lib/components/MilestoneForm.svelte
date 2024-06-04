@@ -2,8 +2,8 @@
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { audience, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -22,7 +22,7 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<StrategyRelationSelector {container} />
+	<MeasureRelationSelector {container} />
 
 	<OrganizationSelector bind:container />
 
@@ -69,18 +69,6 @@
 			<option value="1"></option>
 		</datalist>
 	</label>
-
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
-
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
 
 	<label>
 		{$_('fulfillment_date')}
