@@ -545,7 +545,7 @@ const operationalGoalPayload = basePayload
 			.optional(),
 		indicator: z.array(indicator).max(1).default([]),
 		objective: z.array(indicatorObjective).default([]),
-		progress: z.number().nonnegative().default(0),
+		progress: z.number().nonnegative().optional(),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})
 	.strict();

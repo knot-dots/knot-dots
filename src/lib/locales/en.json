@@ -58,7 +58,8 @@
 		"effects": "Effects",
 		"historical_values": "Historical values",
 		"metadata": "Metadata",
-		"resources": "Resource management"
+		"resources": "Resource management",
+		"with_progress": "Use progress bar"
 	},
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",

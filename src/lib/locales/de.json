@@ -58,7 +58,8 @@
 		"effects": "Wirkungsplanung",
 		"historical_values": "Ist-Werte und Prognose ohne Intervention",
 		"metadata": "Angaben zum Element",
-		"resources": "Ressourcenplanung"
+		"resources": "Ressourcenplanung",
+		"with_progress": "Mit Fortschrittsanzeige"
 	},
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
