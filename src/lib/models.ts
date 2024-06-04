@@ -558,6 +558,7 @@ const operationalGoalPayload = basePayload
 			.optional(),
 		indicator: z.array(indicator).max(1).default([]),
 		objective: z.array(indicatorObjective).default([]),
+		progress: z.number().nonnegative().default(0),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})
 	.strict();
@@ -1054,6 +1055,7 @@ const emptyContainer = newContainer.extend({
 				category: true,
 				indicator: true,
 				objective: true,
+				progress: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1203,6 +1205,7 @@ const emptyOperationalGoalContainer = emptyContainer.extend({
 			category: true,
 			indicator: true,
 			objective: true,
+			progress: true,
 			topic: true,
 			type: true,
 			visibility: true
