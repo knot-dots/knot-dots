@@ -18,6 +18,8 @@
 			tabs: ['metadata', 'basic-data']
 		}
 	}));
+
+	let withProgress = 'progress' in container.payload;
 </script>
 
 <fieldset class="form-tab" id="metadata">
@@ -49,29 +51,41 @@
 	<ObjectiveWizard {container} />
 
 	<label>
-		{$_('progress')}
 		<input
-			type="range"
-			max="1"
-			min="0"
-			list="steps"
-			step="0.1"
-			bind:value={container.payload.progress}
+			class="toggle"
+			type="checkbox"
+			bind:checked={withProgress}
+			disabled={'guid' in container && 'progress' in container.payload}
 		/>
-		<datalist id="steps">
-			<option value="0"></option>
-			<option value="0.1"></option>
-			<option value="0.2"></option>
-			<option value="0.3"></option>
-			<option value="0.4"></option>
-			<option value="0.5"></option>
-			<option value="0.6"></option>
-			<option value="0.7"></option>
-			<option value="0.8"></option>
-			<option value="0.9"></option>
-			<option value="1"></option>
-		</datalist>
+		{$_('form.with_progress')}
 	</label>
+
+	{#if withProgress}
+		<label>
+			{$_('progress')}
+			<input
+				type="range"
+				max="1"
+				min="0"
+				list="steps"
+				step="0.1"
+				bind:value={container.payload.progress}
+			/>
+			<datalist id="steps">
+				<option value="0"></option>
+				<option value="0.1"></option>
+				<option value="0.2"></option>
+				<option value="0.3"></option>
+				<option value="0.4"></option>
+				<option value="0.5"></option>
+				<option value="0.6"></option>
+				<option value="0.7"></option>
+				<option value="0.8"></option>
+				<option value="0.9"></option>
+				<option value="1"></option>
+			</datalist>
+		</label>
+	{/if}
 
 	<ListBox
 		label={$_('topic.label')}
