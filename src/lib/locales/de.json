@@ -104,7 +104,7 @@
 	"indicator.view_mode.chart": "Diagramm",
 	"indicator.view_mode.table": "Tabelle",
 	"indicator.wanted_values": "Zielwerte",
-	"indicator_category": "Kategorie",
+	"indicator_category": "Indikatoren-Set",
 	"indicator_category.custom": "Eigene",
 	"indicator_category.kpi": "KPI",
 	"indicator_category.mpsc": "MPSC",
