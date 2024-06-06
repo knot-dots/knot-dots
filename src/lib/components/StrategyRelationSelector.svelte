@@ -6,7 +6,6 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import {
 		isMeasureContainer,
-		isMilestoneContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
 		isSimpleMeasureContainer,
@@ -39,12 +38,6 @@
 	if (isStrategicGoalContainer(container)) {
 		allowedSuperordinateTypes = [payloadTypes.enum.model, payloadTypes.enum.vision];
 	} else if (isOperationalGoalContainer(container)) {
-		allowedSuperordinateTypes = [
-			payloadTypes.enum.model,
-			payloadTypes.enum.vision,
-			payloadTypes.enum.strategic_goal
-		];
-	} else if (isMilestoneContainer(container)) {
 		allowedSuperordinateTypes = [
 			payloadTypes.enum.model,
 			payloadTypes.enum.vision,
@@ -230,9 +223,7 @@
 			},
 			{
 				heading: $_('payload_group.measurable_goals'),
-				options: isPartOfOptions.filter(
-					(c) => isOperationalGoalContainer(c) || isMilestoneContainer(c)
-				)
+				options: isPartOfOptions.filter((c) => isOperationalGoalContainer(c))
 			},
 			{
 				heading: $_('payload_group.implementation'),
