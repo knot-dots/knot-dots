@@ -115,7 +115,7 @@
 				class="toggle"
 				type="checkbox"
 				bind:checked={withHistoricalValues}
-				disabled={'guid' in container}
+				disabled={'guid' in container && hasHistoricalValues(container)}
 			/>
 			{$_('indicator_form.with_historical_values')}
 		</label>
