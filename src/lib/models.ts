@@ -1484,3 +1484,41 @@ export function getCreator(revision: AnyContainer) {
 export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicatorContainer) {
 	return container.payload.historicalValues.length > 0;
 }
+
+export function createCopyOf(container: Container) {
+	const copy = containerOfType(
+		container.payload.type,
+		container.organization,
+		container.organizational_unit,
+		container.realm
+	);
+
+	if (isContainerWithObjective(container)) {
+		copy.payload = { ...container.payload, objective: [] };
+	} else if (isContainerWithEffect(container)) {
+		copy.payload = { ...container.payload, effect: [] };
+	} else if (isTaskContainer(container)) {
+		copy.payload = {
+			...container.payload,
+			assignee: undefined,
+			taskStatus: taskStatus.enum['task_status.idea']
+		};
+	} else {
+		copy.payload = {
+			...container.payload
+		};
+	}
+
+	copy.payload = {
+		...copy.payload,
+		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
+	};
+
+	copy.relation.push({
+		object: container.revision,
+		predicate: predicates.enum['is-copy-of'],
+		position: 0
+	});
+
+	return copy;
+}

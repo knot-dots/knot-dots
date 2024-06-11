@@ -1,13 +1,23 @@
 import { error, json } from '@sveltejs/kit';
+import type { DatabaseConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
 	audience,
 	type Container,
+	createCopyOf,
 	indicatorCategories,
 	indicatorTypes,
+	isMeasureContainer,
+	isMeasureResultContainer,
+	isMilestoneContainer,
+	isTaskContainer,
+	type MeasureContainer,
+	type MeasureResultContainer,
 	measureTypes,
+	type MilestoneContainer,
+	type NewContainer,
 	newContainer,
 	payloadTypes,
 	predicates,
@@ -145,12 +155,102 @@ export const POST = (async ({ locals, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
-		const result = await locals.pool.connect(
-			createContainer({
-				...parseResult.data,
-				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
+		const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
+			connection.transaction(async (txConnection) => {
+				const createdContainer = await createContainer({
+					...parseResult.data,
+					user: [
+						{
+							predicate: predicates.enum['is-creator-of'],
+							subject: locals.user.guid
+						}
+					]
+				})(txConnection);
+
+				const isCopyOfRelation = parseResult.data.relation.find(
+					({ object, predicate }) =>
+						predicate === predicates.enum['is-copy-of'] && object !== undefined
+				);
+				if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
+					const containersRelatedToOriginal = filterVisible(
+						await getAllContainersRelatedToMeasure(
+							isCopyOfRelation.object as number,
+							{},
+							''
+						)(txConnection),
+						locals.user
+					);
+
+					const taskParents: Array<MeasureContainer | MeasureResultContainer | MilestoneContainer> =
+						[createdContainer];
+
+					for (const copyFrom of containersRelatedToOriginal.filter(
+						(c) => isMeasureResultContainer(c) || isMilestoneContainer(c)
+					)) {
+						const copyContainer = createCopyOf(copyFrom);
+
+						copyContainer.relation.push({
+							object: createdContainer.revision,
+							predicate: predicates.enum['is-part-of'],
+							position: 0
+						});
+						copyContainer.relation.push({
+							object: createdContainer.revision,
+							predicate: predicates.enum['is-part-of-measure'],
+							position: 0
+						});
+						copyContainer.user.push({
+							predicate: predicates.enum['is-creator-of'],
+							subject: locals.user.guid
+						});
+
+						taskParents.push(
+							(await createContainer(copyContainer as NewContainer)(txConnection)) as
+								| MeasureResultContainer
+								| MilestoneContainer
+						);
+					}
+
+					for (const copyFrom of containersRelatedToOriginal.filter((c) => isTaskContainer(c))) {
+						const copyContainer = createCopyOf(copyFrom);
+
+						copyContainer.relation.push({
+							object: createdContainer.revision,
+							predicate: predicates.enum['is-part-of-measure'],
+							position: 0
+						});
+						copyContainer.relation.push(
+							...copyFrom.relation
+								.filter(
+									({ predicate, subject }) =>
+										predicate == predicates.enum['is-part-of'] && subject == copyFrom.revision
+								)
+								.map(({ position, predicate, object: originalIsPartOfObject }) => ({
+									position,
+									predicate,
+									object: taskParents.find(({ relation }) =>
+										relation.find(
+											({ predicate, object }) =>
+												predicate == predicates.enum['is-copy-of'] &&
+												originalIsPartOfObject == object
+										)
+									)?.revision as number
+								}))
+						);
+
+						copyContainer.user.push({
+							predicate: predicates.enum['is-creator-of'],
+							subject: locals.user.guid
+						});
+
+						await createContainer(copyContainer as NewContainer)(txConnection);
+					}
+				}
+
+				return createdContainer;
 			})
 		);
+
 		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 	}
 }) satisfies RequestHandler;

@@ -178,7 +178,7 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			return { ...containerResult, relation: relationResult, user: userResult };
+			return { ...containerResult, relation: [...relationResult], user: [...userResult] };
 		});
 	};
 }
