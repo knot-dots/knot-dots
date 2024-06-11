@@ -8,13 +8,7 @@
 	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
-	import type {
-		EmptyTaskContainer,
-		PartialRelation,
-		TaskCategory,
-		TaskContainer,
-		User
-	} from '$lib/models';
+	import type { EmptyTaskContainer, TaskContainer, User } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
@@ -36,35 +30,6 @@
 	});
 
 	let statusParam = paramsFromURL($page.url).get('taskStatus');
-
-	if (container.relation.length == 0) {
-		container.relation = paramsFromURL($page.url)
-			.getAll('is-part-of')
-			.map(
-				(o): PartialRelation => ({
-					object: Number(o),
-					position: 0,
-					predicate: 'is-part-of'
-				})
-			)
-			.concat(
-				paramsFromURL($page.url)
-					.getAll('is-part-of-measure')
-					.map(
-						(o): PartialRelation => ({
-							object: Number(o),
-							position: 0,
-							predicate: 'is-part-of-measure'
-						})
-					)
-			);
-	}
-
-	let assignee = container.payload.assignee;
-	$: container.payload.assignee = assignee == '' ? undefined : assignee;
-
-	let taskCategory: TaskCategory | '' | undefined = container.payload.taskCategory;
-	$: container.payload.taskCategory = taskCategory == '' ? undefined : taskCategory;
 </script>
 
 <fieldset class="form-tab" id="metadata">
@@ -95,12 +60,12 @@
 
 	<label>
 		{$_('assignee')}
-		<select name="assignee" bind:value={assignee}>
-			<option></option>
+		<select name="assignee" bind:value={container.payload.assignee}>
+			<option value={undefined}></option>
 			{#await membersPromise then members}
 				{#each members as { display_name, guid }}
 					{#if display_name !== ''}
-						<option value={guid} selected={guid === assignee}>
+						<option value={guid}>
 							{display_name}
 						</option>
 					{/if}
@@ -111,8 +76,8 @@
 
 	<label>
 		{$_('task_category.label')}
-		<select name="taskCategory" bind:value={taskCategory}>
-			<option></option>
+		<select name="taskCategory" bind:value={container.payload.taskCategory}>
+			<option value={undefined}></option>
 			{#each taskCategories.options as taskCategoryOption}
 				<option value={taskCategoryOption}>
 					{$_(taskCategoryOption)}
