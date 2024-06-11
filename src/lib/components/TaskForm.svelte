@@ -8,13 +8,7 @@
 	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
-	import type {
-		EmptyTaskContainer,
-		PartialRelation,
-		TaskCategory,
-		TaskContainer,
-		User
-	} from '$lib/models';
+	import type { EmptyTaskContainer, TaskContainer, User } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: TaskContainer | EmptyTaskContainer;
@@ -36,29 +30,6 @@
 	});
 
 	let statusParam = paramsFromURL($page.url).get('taskStatus');
-
-	if (container.relation.length == 0) {
-		container.relation = paramsFromURL($page.url)
-			.getAll('is-part-of')
-			.map(
-				(o): PartialRelation => ({
-					object: Number(o),
-					position: 0,
-					predicate: 'is-part-of'
-				})
-			)
-			.concat(
-				paramsFromURL($page.url)
-					.getAll('is-part-of-measure')
-					.map(
-						(o): PartialRelation => ({
-							object: Number(o),
-							position: 0,
-							predicate: 'is-part-of-measure'
-						})
-					)
-			);
-	}
 </script>
 
 <fieldset class="form-tab" id="metadata">
