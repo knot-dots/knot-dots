@@ -8,56 +8,84 @@
 	import {
 		type IndicatorContainer,
 		type IndicatorTemplateContainer,
+		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
 	import { addEffectState } from '$lib/stores';
+	import Card from '$lib/components/Card.svelte';
 
-	export let value: IndicatorTemplateContainer;
+	export let value: IndicatorContainer | IndicatorTemplateContainer;
 
-	let indicatorTemplatesRequest: Promise<IndicatorTemplateContainer[]>;
-	let indicatorsRequest: Promise<IndicatorContainer[]>;
+	let indicatorsAndTemplatesRequest: Promise<
+		Array<IndicatorContainer | IndicatorTemplateContainer>
+	>;
 	let params: URLSearchParams;
 
 	$: {
 		params = paramsFromFragment($page.url);
-		indicatorTemplatesRequest = fetchContainers({
+		indicatorsAndTemplatesRequest = fetchContainers({
 			category: params.getAll('category'),
 			indicatorCategory: params.getAll('indicatorCategory'),
 			indicatorType: params.getAll('indicatorType'),
 			measureType: params.getAll('measureType'),
-			payloadType: [payloadTypes.enum.indicator_template],
+			payloadType: [payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
 			topic: params.getAll('topic')
 		}) as Promise<IndicatorTemplateContainer[]>;
-		indicatorsRequest = fetchContainers({
-			organization: [$page.data.currentOrganization.guid],
-			payloadType: [payloadTypes.enum.indicator]
-		}) as Promise<IndicatorContainer[]>;
 	}
 
-	function select(template: IndicatorTemplateContainer, indicators: IndicatorContainer[]) {
-		const indicator = indicators.find(({ payload }) => payload.quantity == template.guid);
-		if (indicator) {
+	function select(container: IndicatorContainer | IndicatorTemplateContainer) {
+		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
-				$addEffectState.effect = indicator.guid;
+				$addEffectState.effect = container.guid;
 				goto(`#view=${$addEffectState.target}&edit`);
+			} else {
+				goto(`#view=${container.guid}&edit`);
 			}
 		} else {
-			value = template;
+			value = container;
 		}
+	}
+
+	function alreadyInUse(
+		indicatorTemplate: IndicatorTemplateContainer,
+		indicators: IndicatorContainer[]
+	) {
+		return indicators.findIndex((ic) => ic.payload.quantity == indicatorTemplate.guid) > -1;
 	}
 </script>
 
-{#await Promise.all([indicatorTemplatesRequest, indicatorsRequest]) then [templates, indicators]}
+{#await indicatorsAndTemplatesRequest then containers}
+	{@const indicators = containers.filter(isIndicatorContainer)}
 	<ul>
-		{#each templates as template}
+		{#each containers
+			.filter(isIndicatorContainer)
+			.filter(() => params.has('alreadyInUse')) as indicator}
+			<li>
+				<Card --height="100%" container={indicator}>
+					<button
+						class="button-square"
+						title={$_('indicator_template.select')}
+						type="button"
+						on:click|stopPropagation={() => select(indicator)}
+						slot="button"
+					>
+						<PlusSmall />
+					</button>
+				</Card>
+			</li>
+		{/each}
+		{#each containers
+			.filter(isIndicatorTemplateContainer)
+			.filter((c) => !alreadyInUse(c, indicators)) as template}
 			<li>
 				<IndicatorTemplateCard --height="100%" container={template}>
 					<button
 						class="button-square"
 						title={$_('indicator_template.select')}
 						type="button"
-						on:click|stopPropagation={() => select(template, indicators)}
+						on:click|stopPropagation={() => select(template)}
 						slot="button"
 					>
 						<PlusSmall />

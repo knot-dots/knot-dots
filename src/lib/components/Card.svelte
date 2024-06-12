@@ -229,16 +229,20 @@
 			</span>
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
+		{:else if 'indicatorType' in container.payload}
+			<span></span>
 		{/if}
-		{#if showRelationFilter}
-			<button
-				class="relation-button"
-				title={$_('show_relations')}
-				class:is-active={relatedTo === container.guid}
-				on:click|stopPropagation={() => applyRelationFilter($page.url)}
-			>
-			</button>
-		{/if}
+		<slot name="button">
+			{#if showRelationFilter}
+				<button
+					class="relation-button"
+					title={$_('show_relations')}
+					class:is-active={relatedTo === container.guid}
+					on:click|stopPropagation={() => applyRelationFilter($page.url)}
+				>
+				</button>
+			{/if}
+		</slot>
 	</footer>
 </article>
 

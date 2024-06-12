@@ -63,7 +63,10 @@
 	});
 
 	async function add(target: string) {
-		const params = new URLSearchParams([[overlayKey.enum.create, payloadTypes.enum.indicator]]);
+		const params = new URLSearchParams([
+			[overlayKey.enum.create, payloadTypes.enum.indicator],
+			['alreadyInUse', '']
+		]);
 
 		for (const category of container.payload.category) {
 			params.append('category', category);
