@@ -48,7 +48,7 @@
 		</a>
 
 		{#if $overlayHistory.length > 1}
-			<button class="button-nav button-square" on:click={() => navigateBack()}>
+			<button class="button-nav button-square" title={$_('back')} on:click={() => navigateBack()}>
 				<ChevronLeft />
 			</button>
 		{/if}
@@ -87,6 +87,7 @@
 						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.relations) ===
 							container.guid}
 						href={overlayURL($page.url, overlayKey.enum.relations, container.guid)}
+						title={$_('relations')}
 					>
 						<span class="small-only"><Share /></span>
 						<span class="large-only">{$_('relations')}</span>
@@ -102,6 +103,7 @@
 							overlayKey.enum['measure-monitoring']
 						) === container.guid}
 						href={overlayURL($page.url, overlayKey.enum['measure-monitoring'], container.guid)}
+						title={$_('board.measure_monitoring')}
 					>
 						<span class="small-only"><Objectives /></span>
 						<span class="large-only">{$_('board.measure_monitoring')}</span>
@@ -114,6 +116,7 @@
 						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.tasks) ===
 							container.guid}
 						href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
+						title={$_('tasks')}
 					>
 						<span class="small-only"><Tasks /></span>
 						<span class="large-only">{$_('tasks')}</span>
@@ -126,6 +129,7 @@
 						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.indicators) ===
 							container.guid}
 						href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
+						title={$_('indicators')}
 					>
 						<span class="small-only"><Effects /></span>
 						<span class="large-only">{$_('indicators')}</span>
