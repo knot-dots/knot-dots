@@ -121,7 +121,8 @@
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
-		gap: 0.75rem;
+		font-size: 0.875rem;
+		gap: 0.25rem;
 		margin-bottom: 1rem;
 	}
 

@@ -196,6 +196,15 @@
 				showObjectives
 			/>
 		{/await}
+		<p class="badges">
+			{#each container.payload.indicatorType as indicatorType}
+				<span class="badge">{$_(indicatorType)}</span>
+			{/each}
+
+			{#each container.payload.indicatorCategory as indicatorCategory}
+				<span class="badge">{$_(indicatorCategory)}</span>
+			{/each}
+		</p>
 	{/if}
 
 	<footer>
@@ -300,6 +309,15 @@
 		color: var(--color-gray-500);
 		font-size: 0.875rem;
 		font-weight: 500;
+		margin-bottom: 1rem;
+	}
+
+	.badges {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		font-size: 0.875rem;
+		gap: 0.25rem;
 		margin-bottom: 1rem;
 	}
 
