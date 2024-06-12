@@ -65,6 +65,7 @@
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
+	"implementation_planning": "Implementation planning",
 	"imprint": "Imprint",
 	"included": {
 		"label": "Included organization levels",
@@ -408,7 +409,6 @@
 	"superordinate_strategies": "Superordinate strategies",
 	"superordinate_visions": "Superordinate visions",
 	"task": "Task",
-	"tasks": "Tasks",
 	"task_category": {
 		"bugfix": "Bug fix",
 		"default": "Task",

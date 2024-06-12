@@ -309,7 +309,7 @@
 	{/if}
 
 	<div class="details-tab" id="milestones">
-		<h3>{$_('milestones')}</h3>
+		<h3>{$_('implementation_planning')}</h3>
 		<MilestoneCarousel {container} />
 	</div>
 </article>

@@ -65,6 +65,7 @@
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"implementation_planning": "Umsetzungsplanung",
 	"imprint": "Impressum",
 	"included": {
 		"label": "Angezeigte Organisationsebenen",
@@ -424,7 +425,6 @@
 		"in_progress": "In Umsetzung",
 		"label": "Status"
 	},
-	"task": "Aufgabe",
 	"tasks": "Aufgaben",
 	"text": "Ergänzungstext",
 	"topic": {
