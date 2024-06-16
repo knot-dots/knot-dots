@@ -120,6 +120,7 @@ const predicateValues = [
 	'is-duplicate-of',
 	'is-equivalent-to',
 	'is-inconsistent-with',
+	'is-measured-by',
 	'is-member-of',
 	'is-part-of',
 	'is-part-of-measure',
