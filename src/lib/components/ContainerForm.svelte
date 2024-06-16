@@ -4,6 +4,7 @@
 	import { z } from 'zod';
 	import { env } from '$env/dynamic/public';
 	import { uploadAsFormData } from '$lib/client/upload';
+	import EffectForm from '$lib/components/EffectForm.svelte';
 	import IndicatorForm from '$lib/components/IndicatorForm.svelte';
 	import IndicatorTemplateForm from '$lib/components/IndicatorTemplateForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
@@ -22,6 +23,7 @@
 	import UndefinedForm from '$lib/components/UndefinedForm.svelte';
 	import VisionForm from '$lib/components/VisionForm.svelte';
 	import {
+		isEffectContainer,
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
@@ -145,7 +147,9 @@
 			/>
 		{/if}
 	</label>
-	{#if isIndicatorContainer(container)}
+	{#if isEffectContainer(container)}
+		<EffectForm bind:container />
+	{:else if isIndicatorContainer(container)}
 		<IndicatorForm bind:container />
 	{:else if isIndicatorTemplateContainer(container)}
 		<IndicatorTemplateForm bind:container />
