@@ -4,11 +4,11 @@ import { z } from 'zod';
 import {
 	audience,
 	isIndicatorContainer,
-	isMeasureMonitoringContainer,
 	payloadTypes,
 	relation,
 	strategyTypes,
 	sustainableDevelopmentGoals,
+	taskCategories,
 	topics
 } from '$lib/models';
 import {
@@ -22,14 +22,16 @@ import { filterVisible } from '$lib/authorization';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
+		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
 		relationType: z.array(z.enum(['hierarchical', 'other'])).default(['hierarchical', 'other']),
-		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
+		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		strategyType: z.array(strategyTypes).default([]),
+		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
 		topic: z.array(topics).default([])
 	});
@@ -58,12 +60,14 @@ export const GET = (async ({ locals, params, url }) => {
 				params.guid,
 				parseResult.data.relationType,
 				{
+					assignees: parseResult.data.assignee,
 					audience: parseResult.data.audience,
 					categories: parseResult.data.category,
 					organizationalUnits: parseResult.data.organizationalUnit,
 					strategyTypes: parseResult.data.strategyType,
-					topics: parseResult.data.topic,
+					taskCategories: parseResult.data.taskCategory,
 					terms: parseResult.data.terms[0],
+					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType
 				},
 				parseResult.data.sort[0]
