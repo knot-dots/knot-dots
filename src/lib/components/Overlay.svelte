@@ -16,6 +16,7 @@
 	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
+	import Chapters from '$lib/components/Chapters.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
@@ -29,6 +30,7 @@
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
+	import Measures from '$lib/components/Measures.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
@@ -55,6 +57,7 @@
 		isStrategyContainer,
 		isTaskContainer,
 		mayDelete,
+		type MeasureContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
 		paramsFromFragment,
@@ -76,6 +79,7 @@
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
+	export let measures: MeasureContainer[] | undefined = undefined;
 	export let measureElements: MeasureMonitoringContainer[] | undefined = undefined;
 	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
@@ -392,6 +396,30 @@
 		<div class="content-details masked-overflow">
 			<Members {container} {users} />
 		</div>
+	{:else if hashParams.has(overlayKey.enum.chapters) && isStrategyContainer(container) && relatedContainers}
+		<aside>
+			<Sidebar helpSlug="chapters">
+				<Search slot="search" />
+				<svelte:fragment slot="filters">
+					<AudienceFilter />
+					<CategoryFilter />
+					<TopicFilter />
+				</svelte:fragment>
+				<Sort slot="sort" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
+		<Chapters containers={relatedContainers} />
 	{:else if hashParams.has(overlayKey.enum.relations) && relatedContainers}
 		<aside>
 			<Sidebar helpSlug="relations">
@@ -418,6 +446,30 @@
 			</Sidebar>
 		</aside>
 		<Relations containers={relatedContainers} />
+	{:else if hashParams.has(overlayKey.enum['measures']) && isStrategyContainer(container) && measures}
+		<aside>
+			<Sidebar helpSlug="measures">
+				<svelte:fragment slot="filters">
+					<AudienceFilter />
+					<CategoryFilter />
+					<TopicFilter />
+					<MeasureTypeFilter />
+				</svelte:fragment>
+				<Sort slot="sort" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
+		<Measures containers={measures} />
 	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && isMeasureContainer(container) && measureElements && indicators}
 		<aside>
 			<Sidebar helpSlug="internal-objectives">

@@ -59,6 +59,7 @@
 					{/if}
 					<AudienceFilter />
 					<CategoryFilter />
+					<MeasureTypeFilter />
 					<TopicFilter />
 					<StrategyTypeFilter />
 				</svelte:fragment>

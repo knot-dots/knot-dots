@@ -7,6 +7,7 @@
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import Effects from '~icons/knotdots/effects';
+	import Measure from '~icons/knotdots/measure';
 	import Members from '~icons/knotdots/members';
 	import Objectives from '~icons/knotdots/objectives';
 	import Tasks from '~icons/knotdots/tasks';
@@ -80,7 +81,7 @@
 
 	{#if container}
 		<ul class="button-group button-group-nav">
-			{#if container.relation.length > 0}
+			{#if !isStrategyContainer(container) && container.relation.length > 0}
 				<li>
 					<a
 						class="button button-nav"
@@ -93,6 +94,44 @@
 						<span class="large-only">{$_('relations')}</span>
 					</a>
 				</li>
+			{:else if isStrategyContainer(container) && container.relation.length > 0}
+				<li>
+					<a
+						class="button button-nav"
+						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.chapters) ===
+							container.guid}
+						href={overlayURL($page.url, overlayKey.enum.chapters, container.guid)}
+						title={$_('board.strategy')}
+					>
+						<span class="small-only"><Share /></span>
+						<span class="large-only">{$_('board.strategy')}</span>
+					</a>
+				</li>
+				<li>
+					<a
+						class="button button-nav"
+						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.measures) ===
+							container.guid}
+						href={overlayURL($page.url, overlayKey.enum.measures, container.guid)}
+						title={$_('measures')}
+					>
+						<span class="small-only"><Measure /></span>
+						<span class="large-only">{$_('measures')}</span>
+					</a>
+				</li>
+				{#if $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
+					<li>
+						<a
+							class="button button-nav"
+							class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.indicators) ===
+								container.guid}
+							href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
+						>
+							<span class="small-only"><Effects /></span>
+							<span class="large-only">{$_('indicators')}</span>
+						</a>
+					</li>
+				{/if}
 			{/if}
 
 			{#if isMeasureContainer(container)}
@@ -120,19 +159,6 @@
 					>
 						<span class="small-only"><Tasks /></span>
 						<span class="large-only">{$_('tasks')}</span>
-					</a>
-				</li>
-			{:else if isStrategyContainer(container) && $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
-				<li>
-					<a
-						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.indicators) ===
-							container.guid}
-						href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
-						title={$_('indicators')}
-					>
-						<span class="small-only"><Effects /></span>
-						<span class="large-only">{$_('indicators')}</span>
 					</a>
 				</li>
 			{/if}

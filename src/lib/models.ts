@@ -19,11 +19,13 @@ export type ApplicationState = {
 };
 
 export const overlayKey = z.enum([
+	'chapters',
 	'create',
 	'edit',
 	'edit-help',
 	'indicators',
 	'measure-monitoring',
+	'measures',
 	'members',
 	'my-tasks',
 	'profile',
