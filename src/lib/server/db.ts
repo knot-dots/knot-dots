@@ -799,10 +799,10 @@ export function getAllRelatedContainers(
 				FROM container_relation cr
 				JOIN container cs ON cs.revision = cr.subject
 					AND cs.valid_currently
-					AND cr.predicate != ${predicates.enum['is-part-of']}
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-copy-of']})
 				JOIN container co ON co.revision = cr.object
 					AND co.valid_currently
-					AND cr.predicate != ${predicates.enum['is-part-of']}
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-copy-of']})
 				WHERE cs.revision = ${revision} OR co.revision = ${revision}
 			`)
 			: [];
