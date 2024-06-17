@@ -1,11 +1,21 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
+	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
-	import { type AnyContainer, payloadTypes, type TaskContainer, taskStatus } from '$lib/models';
+	import {
+		type AnyContainer,
+		type Container,
+		payloadTypes,
+		type TaskContainer,
+		taskStatus
+	} from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 
 	export let container: AnyContainer | undefined = undefined;
 	export let containers: TaskContainer[];
+	export let relatedContainers: Container[] = [];
 
 	$: columns = [
 		{
@@ -36,6 +46,19 @@
 </script>
 
 <Board>
+	{#if relatedContainers.length}
+		<BoardColumn
+			--background="white"
+			--border="solid 1px var(--color-gray-900)"
+			title={$_('implementation_planning')}
+		>
+			<div class="vertical-scroll-wrapper masked-overflow">
+				{#each relatedContainers as container}
+					<Card {container} showRelationFilter />
+				{/each}
+			</div>
+		</BoardColumn>
+	{/if}
 	{#each columns as column (column.title)}
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(column.title)}

@@ -369,21 +369,25 @@ if (browser) {
 				hashParams.get(overlayKey.enum.tasks) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const tasks = (await fetchRelatedContainers(
-				container.guid,
+			const containers = await fetchRelatedContainers(
+				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					assignee: hashParams.getAll('assignee'),
-					payloadType: [payloadTypes.enum.task],
+					payloadType: [
+						payloadTypes.enum.measure_result,
+						payloadTypes.enum.milestone,
+						payloadTypes.enum.task
+					],
 					taskCategory: hashParams.getAll('taskCategory'),
 					terms: hashParams.get('terms') ?? ''
 				},
 				'priority'
-			)) as TaskContainer[];
+			);
 			overlay.set({
 				isPartOfOptions: [],
-				relatedContainers: [],
+				relatedContainers: containers.filter((c) => !isTaskContainer(c)),
 				revisions,
-				tasks
+				tasks: containers.filter(isTaskContainer)
 			});
 		} else if (hashParams.has(overlayKey.enum.indicators)) {
 			const revisions = await fetchContainerRevisions(
