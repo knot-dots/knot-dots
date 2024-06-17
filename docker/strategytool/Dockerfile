@@ -21,5 +21,6 @@ WORKDIR /srv/app
 COPY --from=builder /srv/app/package.json .
 COPY --from=builder /srv/app/node_modules ./node_modules
 COPY --from=builder /srv/app/build ./build
+COPY instrumentation.js .
 EXPOSE 3000
-CMD ["node", "build"]
+CMD ["node", "--import", "./instrumentation.js", "build"]
