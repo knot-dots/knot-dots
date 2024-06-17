@@ -7,6 +7,7 @@ export default async function fetchRelatedContainers(
 		assignee?: string[];
 		audience?: string[];
 		category?: string[];
+		measureType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
@@ -27,6 +28,9 @@ export default async function fetchRelatedContainers(
 	}
 	for (const value of filters.category ?? []) {
 		params.append('category', value);
+	}
+	for (const value of filters.measureType ?? []) {
+		params.append('measureType', String(value));
 	}
 	for (const value of filters.organization ?? []) {
 		params.append('organization', value);

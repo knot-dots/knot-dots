@@ -7,6 +7,7 @@
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import Effects from '~icons/knotdots/effects';
+	import Measure from '~icons/knotdots/measure';
 	import Members from '~icons/knotdots/members';
 	import Objectives from '~icons/knotdots/objectives';
 	import Tasks from '~icons/knotdots/tasks';
@@ -122,19 +123,32 @@
 						<span class="large-only">{$_('tasks')}</span>
 					</a>
 				</li>
-			{:else if isStrategyContainer(container) && $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
+			{:else if isStrategyContainer(container)}
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.indicators) ===
+						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.measures) ===
 							container.guid}
-						href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
-						title={$_('indicators')}
+						href={overlayURL($page.url, overlayKey.enum.measures, container.guid)}
+						title={$_('measures')}
 					>
-						<span class="small-only"><Effects /></span>
-						<span class="large-only">{$_('indicators')}</span>
+						<span class="small-only"><Measure /></span>
+						<span class="large-only">{$_('measures')}</span>
 					</a>
 				</li>
+				{#if $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
+					<li>
+						<a
+							class="button button-nav"
+							class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.indicators) ===
+								container.guid}
+							href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
+						>
+							<span class="small-only"><Effects /></span>
+							<span class="large-only">{$_('indicators')}</span>
+						</a>
+					</li>
+				{/if}
 			{/if}
 		</ul>
 
