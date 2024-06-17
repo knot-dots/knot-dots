@@ -11,6 +11,7 @@
 	"back": "Back",
 	"basic_data": "Basic data",
 	"board": {
+		"chapters": "Chapters",
 		"elements": "Elements",
 		"implementation": "Implementation",
 		"indicators": "Indicators",

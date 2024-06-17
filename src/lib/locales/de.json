@@ -11,6 +11,7 @@
 	"back": "Zurück",
 	"basic_data": "Allgemeine Angaben",
 	"board": {
+		"chapters": "Strategie-Board",
 		"elements": "dots",
 		"implementation": "umsetzen",
 		"indicators": "messen",
