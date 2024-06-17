@@ -16,6 +16,7 @@
 	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
+	import Chapters from '$lib/components/Chapters.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
@@ -395,6 +396,30 @@
 		<div class="content-details masked-overflow">
 			<Members {container} {users} />
 		</div>
+	{:else if hashParams.has(overlayKey.enum.chapters) && isStrategyContainer(container) && relatedContainers}
+		<aside>
+			<Sidebar helpSlug="chapters">
+				<Search slot="search" />
+				<svelte:fragment slot="filters">
+					<AudienceFilter />
+					<CategoryFilter />
+					<TopicFilter />
+				</svelte:fragment>
+				<Sort slot="sort" />
+				<svelte:fragment slot="extra">
+					<li>
+						<button
+							class="button-nav button-square"
+							on:click={toggleFullscreen}
+							title={$_('full_screen')}
+						>
+							{#if fullScreen}<Minimize />{:else}<Maximize />{/if}
+						</button>
+					</li>
+				</svelte:fragment>
+			</Sidebar>
+		</aside>
+		<Chapters containers={relatedContainers} />
 	{:else if hashParams.has(overlayKey.enum.relations) && relatedContainers}
 		<aside>
 			<Sidebar helpSlug="relations">

@@ -338,6 +338,32 @@ if (browser) {
 				relatedContainers,
 				revisions
 			});
+		} else if (hashParams.has(overlayKey.enum.chapters)) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.chapters) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const relatedContainers = await fetchRelatedContainers(
+				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+				{
+					audience: hashParams.has('audienceChanged')
+						? hashParams.getAll('audience')
+						: [audience.enum['audience.public']],
+					category: hashParams.getAll('category'),
+					organization: [container.organization],
+					...(container.organizational_unit
+						? { organizationalUnit: [container.organizational_unit] }
+						: undefined),
+					terms: hashParams.get('terms') ?? '',
+					topic: hashParams.getAll('topic')
+				},
+				hashParams.get('sort') ?? 'alpha'
+			);
+			overlay.set({
+				isPartOfOptions: [],
+				relatedContainers,
+				revisions
+			});
 		} else if (hashParams.has(overlayKey.enum.measures)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum['measures']) as string
