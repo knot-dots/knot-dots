@@ -437,7 +437,7 @@
 			</Sidebar>
 		</aside>
 		<MeasureMonitoring {container} containers={measureElements} {indicators} />
-	{:else if hashParams.has(overlayKey.enum.tasks) && tasks}
+	{:else if hashParams.has(overlayKey.enum.tasks) && tasks && relatedContainers}
 		<aside>
 			<Sidebar helpSlug="tasks">
 				<Search slot="search" />
@@ -458,7 +458,7 @@
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<Tasks {container} containers={tasks} />
+		<Tasks {container} containers={tasks} {relatedContainers} />
 	{:else if hashParams.has(overlayKey.enum.indicators) && indicators}
 		<aside>
 			<Sidebar helpSlug="tasks">

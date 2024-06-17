@@ -4,6 +4,7 @@ import { container } from '$lib/models';
 export default async function fetchRelatedContainers(
 	guid: string,
 	filters: {
+		assignee?: string[];
 		audience?: string[];
 		category?: string[];
 		organization?: string[];
@@ -11,12 +12,16 @@ export default async function fetchRelatedContainers(
 		payloadType?: string[];
 		relationType?: string[];
 		strategyType?: string[];
+		taskCategory?: string[];
 		terms?: string;
 		topic?: string[];
 	},
 	sort?: string
 ) {
 	const params = new URLSearchParams();
+	for (const value of filters.assignee ?? []) {
+		params.append('assignee', value);
+	}
 	for (const value of filters.audience ?? []) {
 		params.append('audience', value);
 	}
@@ -40,6 +45,9 @@ export default async function fetchRelatedContainers(
 	}
 	for (const value of filters.strategyType ?? []) {
 		params.append('strategyType', value);
+	}
+	for (const value of filters.taskCategory ?? []) {
+		params.append('taskCategory', value);
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);

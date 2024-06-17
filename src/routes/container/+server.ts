@@ -31,8 +31,7 @@ import {
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToStrategy,
 	getAllRelatedContainers,
-	getManyContainers,
-	getManyTaskContainers
+	getManyContainers
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -51,7 +50,7 @@ export const GET = (async ({ locals, url }) => {
 		payloadType: z.array(payloadTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(z.enum(['hierarchical', 'other'])).default(['hierarchical', 'other']),
-		sort: z.array(z.enum(['alpha', 'modified'])).default(['alpha']),
+		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		strategyType: z.array(strategyTypes).default([]),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
@@ -78,18 +77,6 @@ export const GET = (async ({ locals, url }) => {
 				categories: parseResult.data.category,
 				topics: parseResult.data.topic,
 				type: parseResult.data.payloadType
-			})
-		);
-	} else if (
-		parseResult.data.isPartOfMeasure.length > 0 &&
-		parseResult.data.payloadType[0] == payloadTypes.enum.task
-	) {
-		containers = await locals.pool.connect(
-			getManyTaskContainers({
-				assignees: parseResult.data.assignee,
-				measure: parseResult.data.isPartOfMeasure[0],
-				taskCategories: parseResult.data.taskCategory,
-				terms: parseResult.data.terms[0]
 			})
 		);
 	} else if (parseResult.data.isPartOfMeasure.length > 0) {

@@ -404,6 +404,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 }
 
 function prepareWhereCondition(filters: {
+	assignees?: string[];
 	audience?: string[];
 	categories?: string[];
 	indicatorCategories?: string[];
@@ -412,6 +413,7 @@ function prepareWhereCondition(filters: {
 	organizations?: string[];
 	organizationalUnits?: string[];
 	strategyTypes?: string[];
+	taskCategories?: string[];
 	terms?: string;
 	topics?: string[];
 	type?: PayloadType[];
@@ -421,6 +423,11 @@ function prepareWhereCondition(filters: {
 		sql.fragment`NOT deleted`,
 		sql.fragment`payload->>'type' NOT IN ('organization', 'organizational_unit')`
 	];
+	if (filters.assignees?.length) {
+		conditions.push(
+			sql.fragment`payload->>'assignee' IN (${sql.join(filters.assignees, sql.fragment`, `)})`
+		);
+	}
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
@@ -466,6 +473,14 @@ function prepareWhereCondition(filters: {
 			)})`
 		);
 	}
+	if (filters.taskCategories?.length) {
+		conditions.push(
+			sql.fragment`payload->>'taskCategory' IN (${sql.join(
+				filters.taskCategories,
+				sql.fragment`, `
+			)})`
+		);
+	}
 	if (filters.terms?.trim()) {
 		conditions.push(
 			sql.fragment`to_tsquery('german', ${filters.terms
@@ -490,6 +505,8 @@ function prepareOrderByExpression(sort: string) {
 	let order_by = sql.fragment`payload->>'title'`;
 	if (sort == 'modified') {
 		order_by = sql.fragment`valid_from DESC`;
+	} else if (sort == 'priority') {
+		order_by = sql.fragment`priority`;
 	}
 	return order_by;
 }
@@ -538,6 +555,7 @@ async function withUserAndRelation<T extends AnyContainer>(
 export function getManyContainers(
 	organizations: string[],
 	filters: {
+		assignees?: string[];
 		audience?: string[];
 		categories?: string[];
 		indicatorCategories?: string[];
@@ -545,6 +563,7 @@ export function getManyContainers(
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
+		taskCategories?: string[];
 		terms?: string;
 		topics?: string[];
 		type?: PayloadType[];
@@ -554,7 +573,7 @@ export function getManyContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
-			FROM container
+			FROM container ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
@@ -622,86 +641,6 @@ export function getManyOrganizationalUnitContainers(filters: { organization?: st
     `);
 
 		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
-	};
-}
-
-export function getManyTaskContainers(filters: {
-	assignees?: string[];
-	measure?: number;
-	organization?: string;
-	organizationalUnits?: string[];
-	taskCategories?: string[];
-	terms?: string;
-}) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const conditions = [
-			sql.fragment`valid_currently`,
-			sql.fragment`NOT deleted`,
-			sql.fragment`payload->>'type' = ${payloadTypes.enum.task}`
-		];
-
-		if (filters.assignees?.length) {
-			conditions.push(
-				sql.fragment`payload->>'assignee' IN (${sql.join(filters.assignees, sql.fragment`, `)})`
-			);
-		}
-
-		if (filters.organization) {
-			conditions.push(sql.fragment`organization = ${filters.organization}`);
-		}
-
-		if (filters.organizationalUnits?.length) {
-			conditions.push(
-				sql.fragment`organizational_unit IN (${sql.join(
-					filters.organizationalUnits,
-					sql.fragment`, `
-				)})`
-			);
-		}
-
-		if (filters.taskCategories?.length) {
-			conditions.push(
-				sql.fragment`payload->>'taskCategory' IN (${sql.join(
-					filters.taskCategories,
-					sql.fragment`, `
-				)})`
-			);
-		}
-
-		if (filters.terms?.trim()) {
-			conditions.push(
-				sql.fragment`to_tsquery('german', ${filters.terms
-					.trim()
-					.split(' ')
-					.map((t) => `${t}:*`)
-					.join(' & ')}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
-			);
-		}
-
-		let containerResult;
-
-		if (filters.measure) {
-			containerResult = await connection.any(sql.typeAlias('container')`
-				SELECT c.*
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject
-					AND cr.predicate = 'is-part-of-measure'
-					AND cr.object = ${filters.measure}
-				LEFT JOIN task_priority tp ON c.guid = tp.task
-				WHERE ${sql.join(conditions, sql.fragment` AND `)}
-				ORDER BY tp.priority;
-			`);
-		} else {
-			containerResult = await connection.any(sql.typeAlias('container')`
-				SELECT *
-				FROM container c
-				LEFT JOIN task_priority tp ON c.guid = tp.task
-				WHERE ${sql.join(conditions, sql.fragment` AND `)}
-				ORDER BY tp.priority
-			`);
-		}
-
-		return await withUserAndRelation<Container>(connection, containerResult);
 	};
 }
 
@@ -813,10 +752,12 @@ export function getAllRelatedContainers(
 	guid: string,
 	relations: string[],
 	filters: {
+		assignees?: string[];
 		audience?: string[];
 		categories?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
+		taskCategories?: string[];
 		terms?: string;
 		topics?: string[];
 		type?: PayloadType[];
@@ -858,17 +799,17 @@ export function getAllRelatedContainers(
 				FROM container_relation cr
 				JOIN container cs ON cs.revision = cr.subject
 					AND cs.valid_currently
-					AND cr.predicate != ${predicates.enum['is-part-of']}
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-copy-of']})
 				JOIN container co ON co.revision = cr.object
 					AND co.valid_currently
-					AND cr.predicate != ${predicates.enum['is-part-of']}
+					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-copy-of']})
 				WHERE cs.revision = ${revision} OR co.revision = ${revision}
 			`)
 			: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT *
-			FROM container
+			FROM container ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 			WHERE revision IN (${sql.join(
 				isPartOfResult
 					.concat(otherRelationResult)

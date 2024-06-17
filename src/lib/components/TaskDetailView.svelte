@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { page } from '$app/stores';
@@ -7,7 +6,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isMeasureContainer, overlayKey, owners, taskStatus } from '$lib/models';
+	import { getCreator, isMeasureContainer, overlayKey, owners, taskStatus } from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, User } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 	import { ability } from '$lib/stores';
@@ -16,13 +15,9 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
-	let membersPromise: Promise<User[]> = new Promise(() => []);
+	let organizationMembersRequest: Promise<User[]> = new Promise(() => []);
 
-	onMount(() => {
-		membersPromise = fetchMembers(
-			$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
-		);
-	});
+	$: organizationMembersRequest = fetchMembers(container.organization);
 
 	let selectedRevision: TaskContainer;
 
@@ -98,11 +93,12 @@
 			</ul>
 		</div>
 		{#if 'assignee' in container.payload && container.payload.assignee && $ability.can('read', container, 'assignee')}
-			{#await membersPromise then members}
+			{#await organizationMembersRequest then organizationMembers}
 				<div class="meta">
 					<h3 class="meta-key">{$_('assignee')}</h3>
 					<p class="meta-value">
-						{members.find(({ guid }) => guid === container.payload.assignee)?.display_name}
+						{organizationMembers.find(({ guid }) => guid === container.payload.assignee)
+							?.display_name}
 					</p>
 				</div>
 			{/await}
@@ -123,17 +119,44 @@
 				</p>
 			</div>
 		{/if}
-		<div class="meta">
-			<h3 class="meta-key">{$_('created_date')}</h3>
-			<ul class="meta-value">
-				<li>{$date(revisions[0].valid_from, { format: 'medium' })}</li>
-			</ul>
-		</div>
-		<div class="meta">
-			<h3 class="meta-key">{$_('modified_date')}</h3>
-			<ul class="meta-value">
-				<li>{$date(selectedRevision.valid_from, { format: 'medium' })}</li>
-			</ul>
-		</div>
+		{#await organizationMembersRequest then organizationMembers}
+			{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
+			<div class="meta">
+				<h3 class="meta-key">{$_('created_date')}</h3>
+				<ul class="meta-value">
+					<li>
+						{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
+							? $_('created_by', {
+									values: {
+										date: revisions[0].valid_from,
+										creator: getCreator(revisions[0])
+											.filter((guid) => organizationMembersByGuid.has(guid))
+											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.join(', ')
+									}
+								})
+							: $date(revisions[0].valid_from, { format: 'long' })}
+					</li>
+				</ul>
+			</div>
+			<div class="meta">
+				<h3 class="meta-key">{$_('modified_date')}</h3>
+				<ul class="meta-value">
+					<li>
+						{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
+							? $_('created_by', {
+									values: {
+										date: container.valid_from,
+										creator: getCreator(container)
+											.filter((guid) => organizationMembersByGuid.has(guid))
+											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.join(', ')
+									}
+								})
+							: $date(container.valid_from, { format: 'long' })}
+					</li>
+				</ul>
+			</div>
+		{/await}
 	</svelte:fragment>
 </ContainerDetailView>
