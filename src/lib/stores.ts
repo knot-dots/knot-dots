@@ -354,6 +354,7 @@ if (browser) {
 					...(container.organizational_unit
 						? { organizationalUnit: [container.organizational_unit] }
 						: undefined),
+					relationType: hashParams.has('related-to') ? ['hierarchical'] : ['other'],
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				},

@@ -101,10 +101,10 @@
 						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.chapters) ===
 							container.guid}
 						href={overlayURL($page.url, overlayKey.enum.chapters, container.guid)}
-						title={$_('board.strategy')}
+						title={$_('board.chapters')}
 					>
 						<span class="small-only"><Share /></span>
-						<span class="large-only">{$_('board.strategy')}</span>
+						<span class="large-only">{$_('board.chapters')}</span>
 					</a>
 				</li>
 				<li>
