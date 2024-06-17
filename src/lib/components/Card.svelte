@@ -196,6 +196,15 @@
 				showObjectives
 			/>
 		{/await}
+		<p class="badges">
+			{#each container.payload.indicatorType as indicatorType}
+				<span class="badge">{$_(indicatorType)}</span>
+			{/each}
+
+			{#each container.payload.indicatorCategory as indicatorCategory}
+				<span class="badge">{$_(indicatorCategory)}</span>
+			{/each}
+		</p>
 	{/if}
 
 	<footer>
@@ -220,16 +229,20 @@
 			</span>
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
+		{:else if 'indicatorType' in container.payload}
+			<span></span>
 		{/if}
-		{#if showRelationFilter}
-			<button
-				class="relation-button"
-				title={$_('show_relations')}
-				class:is-active={relatedTo === container.guid}
-				on:click|stopPropagation={() => applyRelationFilter($page.url)}
-			>
-			</button>
-		{/if}
+		<slot name="button">
+			{#if showRelationFilter}
+				<button
+					class="relation-button"
+					title={$_('show_relations')}
+					class:is-active={relatedTo === container.guid}
+					on:click|stopPropagation={() => applyRelationFilter($page.url)}
+				>
+				</button>
+			{/if}
+		</slot>
 	</footer>
 </article>
 
@@ -284,6 +297,7 @@
 	header h3 {
 		font-size: 1rem;
 		font-weight: 700;
+		margin-bottom: 0;
 	}
 
 	header span {
@@ -300,6 +314,15 @@
 		color: var(--color-gray-500);
 		font-size: 0.875rem;
 		font-weight: 500;
+		margin-bottom: 1rem;
+	}
+
+	.badges {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		font-size: 0.875rem;
+		gap: 0.25rem;
 		margin-bottom: 1rem;
 	}
 

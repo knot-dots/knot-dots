@@ -8,6 +8,7 @@
 	"audience.organization": "Organisationskultur",
 	"audience.project_management": "Projektmanagement",
 	"audience.public": "Gesellschaft",
+	"back": "Zurück",
 	"basic_data": "Allgemeine Angaben",
 	"board": {
 		"elements": "dots",
@@ -64,6 +65,7 @@
 	"fulfillment_date": "Erfüllungsdatum",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"implementation_planning": "Umsetzungsplanung",
 	"imprint": "Impressum",
 	"included": {
 		"label": "Angezeigte Organisationsebenen",
@@ -423,7 +425,6 @@
 		"in_progress": "In Umsetzung",
 		"label": "Status"
 	},
-	"task": "Aufgabe",
 	"tasks": "Aufgaben",
 	"text": "Ergänzungstext",
 	"topic": {

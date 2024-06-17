@@ -1,4 +1,12 @@
 <script lang="ts">
+	import { unified } from 'unified';
+	import remarkParse from 'remark-parse';
+	import remarkGfm from 'remark-gfm';
+	import remarkRehype from 'remark-rehype';
+	import rehypeExtractExcerpt from 'rehype-extract-excerpt';
+	import rehypeSanitize from 'rehype-sanitize';
+	import rehypeStringify from 'rehype-stringify';
+	import stripMarkdown from 'strip-markdown';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
@@ -67,7 +75,19 @@
 		</h3>
 	</header>
 
-	<p>
+	{#await unified()
+		.use(remarkParse)
+		.use(remarkGfm)
+		.use(stripMarkdown)
+		.use(remarkRehype)
+		.use(rehypeSanitize)
+		.use(rehypeExtractExcerpt)
+		.use(rehypeStringify)
+		.process(container.payload.description) then content}
+		<div class="text">{@html content.data.excerpt}</div>
+	{/await}
+
+	<p class="badges">
 		{#each container.payload.indicatorType as indicatorType}
 			<span class="badge">{$_(indicatorType)}</span>
 		{/each}
@@ -115,13 +135,22 @@
 	header h3 {
 		font-size: 1rem;
 		font-weight: 700;
+		margin-bottom: 0;
 	}
 
-	p {
+	.badges {
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
-		gap: 0.75rem;
+		font-size: 0.875rem;
+		gap: 0.25rem;
+		margin-bottom: 1rem;
+	}
+
+	.text {
+		color: var(--color-gray-500);
+		font-size: 0.875rem;
+		font-weight: 500;
 		margin-bottom: 1rem;
 	}
 
