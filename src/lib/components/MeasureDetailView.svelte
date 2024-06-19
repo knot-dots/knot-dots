@@ -6,6 +6,7 @@
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import EffectsCarousel from '$lib/components/EffectsCarousel.svelte';
+	import MeasureResultCarousel from '$lib/components/MeasureResultCarousel.svelte';
 	import MilestoneCarousel from '$lib/components/MilestoneCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -307,6 +308,11 @@
 			<EffectsCarousel {container} />
 		</div>
 	{/if}
+
+	<div class="details-tab" id="measure-results">
+		<h3>{$_('measure_results')}</h3>
+		<MeasureResultCarousel {container} />
+	</div>
 
 	<div class="details-tab" id="milestones">
 		<h3>{$_('implementation_planning')}</h3>
