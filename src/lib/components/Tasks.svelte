@@ -46,7 +46,7 @@
 </script>
 
 <Board>
-	{#if relatedContainers.length}
+	{#if relatedContainers.length > 0}
 		<BoardColumn
 			--background="white"
 			--border="solid 1px var(--color-gray-900)"
@@ -68,6 +68,9 @@
 				: undefined}
 			items={column.items}
 			status={column.title}
-		/>
+			let:container
+		>
+			<Card {container} showRelationFilter={relatedContainers.length > 0} />
+		</TaskBoardColumn>
 	{/each}
 </Board>

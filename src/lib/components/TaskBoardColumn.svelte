@@ -63,13 +63,17 @@
 			on:finalize={handleDndFinalize}
 		>
 			{#each items as container (container.guid)}
-				<Card {container} />
+				<slot {container}>
+					<Card {container} />
+				</slot>
 			{/each}
 		</div>
 	{:else}
 		<div class="vertical-scroll-wrapper masked-overflow">
 			{#each items as container (container.guid)}
-				<Card {container} />
+				<slot {container}>
+					<Card {container} />
+				</slot>
 			{/each}
 		</div>
 	{/if}
