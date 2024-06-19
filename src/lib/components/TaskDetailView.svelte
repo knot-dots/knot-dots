@@ -6,7 +6,15 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { getCreator, isMeasureContainer, overlayKey, owners, taskStatus } from '$lib/models';
+	import {
+		getCreator,
+		isMeasureContainer,
+		isMeasureResultContainer,
+		isMilestoneContainer,
+		overlayKey,
+		owners,
+		taskStatus
+	} from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, User } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 	import { ability } from '$lib/stores';
@@ -36,6 +44,10 @@
 	$: measure = isMeasureContainer(container)
 		? container
 		: relatedContainers.find(isMeasureContainer);
+
+	$: measureResult = relatedContainers.find(isMeasureResultContainer);
+
+	$: milestone = relatedContainers.find(isMilestoneContainer);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
@@ -70,6 +82,16 @@
 					<a href={containerURL(measure.payload.type, measure.guid)}>
 						{$_(measure.payload.title)}
 					</a>
+					{#if measureResult}
+						/ <a href={containerURL(measureResult.payload.type, measureResult.guid)}>
+							{$_(measureResult.payload.title)}
+						</a>
+					{/if}
+					{#if milestone}
+						/ <a href={containerURL(milestone.payload.type, milestone.guid)}>
+							{$_(milestone.payload.title)}
+						</a>
+					{/if}
 				</p>
 			</div>
 		{/if}
