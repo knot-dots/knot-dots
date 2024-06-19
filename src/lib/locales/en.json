@@ -66,7 +66,6 @@
 	"fulfillment_date": "Fulfillment date",
 	"help": "Help",
 	"home": "Home screen",
-	"implementation_planning": "Implementation planning",
 	"imprint": "Imprint",
 	"included": {
 		"label": "Included organization levels",
@@ -150,6 +149,7 @@
 	"measure.summary": "Short description",
 	"measure_result": "Measure result",
 	"measure_results": "Measure results",
+	"measure_results_and_milestones": "Results and milestones",
 	"measure_type": "Measure type",
 	"measure_type.app": "App",
 	"measure_type.artificial_intelligence": "Artificial intelligence",
