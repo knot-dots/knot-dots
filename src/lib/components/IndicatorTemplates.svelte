@@ -38,8 +38,8 @@
 	function select(container: IndicatorContainer | IndicatorTemplateContainer) {
 		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
-				$addEffectState.effect = container.guid;
-				goto(`#view=${$addEffectState.target}&edit`);
+				$addEffectState.effect = container;
+				goto(`#view=${$addEffectState.target.guid}&edit`);
 			} else {
 				goto(`#view=${container.guid}&edit`);
 			}

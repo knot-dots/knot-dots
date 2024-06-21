@@ -144,8 +144,8 @@ if (browser) {
 }
 
 type AddEffectState = {
-	target?: string;
-	effect?: string;
+	target?: Container;
+	effect?: IndicatorContainer;
 };
 
 export const addEffectState = writable<AddEffectState>({});

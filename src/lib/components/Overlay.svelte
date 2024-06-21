@@ -144,8 +144,8 @@
 			$addEffectState.target &&
 			$addEffectState.effect
 		) {
-			$addEffectState.effect = detail.result.guid;
-			await goto(`#view=${$addEffectState.target}&edit`, { invalidateAll: true });
+			$addEffectState.effect = detail.result;
+			await goto(`#view=${$addEffectState.target.guid}&edit`, { invalidateAll: true });
 		} else if (hashParams.has('create')) {
 			await goto(`#view=${detail.result.guid}`, { invalidateAll: true });
 		} else if (hashParams.has('edit-help')) {

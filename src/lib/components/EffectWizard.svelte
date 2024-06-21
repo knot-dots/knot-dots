@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { Action } from 'svelte/action';
 	import { _ } from 'svelte-i18n';
 	import MinusSmall from '~icons/heroicons/minus-small-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
@@ -18,7 +19,6 @@
 		type Topic
 	} from '$lib/models';
 	import { addEffectState } from '$lib/stores';
-	import type { Action } from 'svelte/action';
 
 	export let container: (Container | EmptyContainer) & {
 		payload: {
@@ -40,12 +40,16 @@
 	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
 
 	onMount(() => {
-		if ('guid' in container && $addEffectState.target == container.guid && $addEffectState.effect) {
+		if (
+			'guid' in container &&
+			$addEffectState.target?.guid == container.guid &&
+			$addEffectState.effect
+		) {
 			const thisYear = new Date().getFullYear();
 			container.payload.effect = [
 				...container.payload.effect,
 				{
-					indicator: $addEffectState.effect,
+					indicator: $addEffectState.effect.guid,
 					achievedValues: [...Array(5)].map((_, index) => [thisYear + index, 0]),
 					plannedValues: [...Array(5)].map((_, index) => [thisYear + index, 0])
 				}
@@ -62,7 +66,7 @@
 		}) as Promise<IndicatorContainer[]>;
 	});
 
-	async function add(target: string) {
+	async function add(target: Container) {
 		const params = new URLSearchParams([
 			[overlayKey.enum.create, payloadTypes.enum.indicator],
 			['alreadyInUse', '']
@@ -196,7 +200,7 @@
 		{/each}
 		{#if 'guid' in container}
 			<p use:scroll>
-				<button type="button" on:click={() => add(container.guid)}>
+				<button type="button" on:click={() => add(container)}>
 					<PlusSmall />
 					{$_('effect')}
 				</button>
