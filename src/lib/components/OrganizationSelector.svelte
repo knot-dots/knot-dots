@@ -24,7 +24,10 @@
 	<label>
 		{$_('organizational_unit')}
 		<select bind:value={container.organizational_unit}>
-			<option value={null}></option>
+			<option value={null}>
+				{$page.data.organizations.find(({ guid }) => guid == container.organization)?.payload
+					.name ?? ''}
+			</option>
 			{#each $page.data.organizationalUnits as organizationalUnitOption}
 				{#if organizationalUnitOption.organization === container.organization}
 					<option value={organizationalUnitOption.guid}>
