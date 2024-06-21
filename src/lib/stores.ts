@@ -257,7 +257,7 @@ if (browser) {
 					fetchContainersWithParentObjectives(container),
 					fetchRelatedContainers(container.guid, {
 						organization: [container.organization],
-						relationType: ['hierarchical']
+						relationType: ['hierarchical', 'other']
 					})
 				]);
 				overlay.set({
@@ -285,7 +285,7 @@ if (browser) {
 					),
 					fetchRelatedContainers(container.guid, {
 						organization: [container.organization],
-						relationType: ['hierarchical']
+						relationType: ['hierarchical', 'other']
 					})
 				]);
 				overlay.set({
