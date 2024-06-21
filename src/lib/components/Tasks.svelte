@@ -46,11 +46,11 @@
 </script>
 
 <Board>
-	{#if relatedContainers.length}
+	{#if relatedContainers.length > 0}
 		<BoardColumn
 			--background="white"
 			--border="solid 1px var(--color-gray-900)"
-			title={$_('implementation_planning')}
+			title={$_('measure_results_and_milestones')}
 		>
 			<div class="vertical-scroll-wrapper masked-overflow">
 				{#each relatedContainers as container}
@@ -68,6 +68,9 @@
 				: undefined}
 			items={column.items}
 			status={column.title}
-		/>
+			let:container
+		>
+			<Card {container} showRelationFilter={relatedContainers.length > 0} />
+		</TaskBoardColumn>
 	{/each}
 </Board>
