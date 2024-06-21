@@ -95,7 +95,8 @@ export const GET = (async ({ locals, url }) => {
 				getAllContainersRelatedToMeasure(
 					parseResult.data.isPartOfMeasure[0],
 					{
-						terms: parseResult.data.terms[0]
+						terms: parseResult.data.terms[0],
+						type: parseResult.data.payloadType
 					},
 					parseResult.data.sort[0]
 				)
