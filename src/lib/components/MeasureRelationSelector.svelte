@@ -21,8 +21,6 @@
 	let isPartOfOptionsRequest: Promise<AnyContainer[]> = new Promise(() => []);
 	let isPartOfMeasureOptionsRequest: Promise<MeasureContainer[]> = new Promise(() => []);
 
-	let allowedSuperordinateTypes = [payloadTypes.enum.measure_result, payloadTypes.enum.milestone];
-
 	onMount(() => {
 		isPartOfMeasureOptionsRequest = fetchContainers({
 			organization: [container.organization],
@@ -32,15 +30,22 @@
 			payloadType: [payloadTypes.enum.measure]
 		}) as Promise<MeasureContainer[]>;
 
-		if (isTaskContainer(container)) {
-			const measureRevision = container.relation.find(
-				({ predicate }) => predicate === predicates.enum['is-part-of-measure']
-			)?.object;
+		const measureRevision = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+		)?.object;
 
+		if (isMilestoneContainer(container)) {
 			if (measureRevision) {
 				isPartOfOptionsRequest = fetchContainers({
 					isPartOfMeasure: [measureRevision],
-					payloadType: allowedSuperordinateTypes
+					payloadType: [payloadTypes.enum.measure_result]
+				});
+			}
+		} else if (isTaskContainer(container)) {
+			if (measureRevision) {
+				isPartOfOptionsRequest = fetchContainers({
+					isPartOfMeasure: [measureRevision],
+					payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.milestone]
 				});
 			}
 		}
@@ -146,7 +151,7 @@
 	</label>
 {/await}
 
-{#if isTaskContainer(container)}
+{#if isTaskContainer(container) || isMilestoneContainer(container)}
 	{#await isPartOfOptionsRequest then isPartOfOptions}
 		{#if isPartOfOptions.length > 0}
 			{@const optionGroups = [
