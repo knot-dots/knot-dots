@@ -156,6 +156,13 @@ resource "scaleway_domain_record" "dkim" {
   data     = scaleway_tem_domain.this.dkim_config
 }
 
+resource "scaleway_domain_record" "dmarc" {
+  dns_zone = data.scaleway_domain_zone.root.domain
+  name     = scaleway_tem_domain.this.dmarc_name
+  type     = "TXT"
+  data     = scaleway_tem_domain.this.dmarc_config
+}
+
 resource "scaleway_domain_record" "strategytool" {
   count = var.with_scaleway_lb ? 1 : 0
 
