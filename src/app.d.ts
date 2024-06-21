@@ -1,4 +1,5 @@
 import type { DatabasePool } from 'slonik';
+import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import type { User } from '$lib/stores';
 
 // See https://kit.svelte.dev/docs/types#app
@@ -10,7 +11,12 @@ declare global {
 			pool: DatabasePool;
 			user: User;
 		}
-		// interface PageData {}
+		interface PageData {
+			currentOrganization: OrganizationContainer;
+			currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+			organizations: OrganizationContainer[];
+			organizationalUnits: OrganizationalUnitContainer[];
+		}
 		// interface Platform {}
 	}
 }

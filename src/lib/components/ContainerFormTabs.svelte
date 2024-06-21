@@ -10,7 +10,9 @@
 		boards,
 		isContainerWithEffect,
 		isIndicatorContainer,
-		hasHistoricalValues
+		hasHistoricalValues,
+		type OrganizationalUnitContainer,
+		type OrganizationContainer
 	} from '$lib/models';
 	import type { AnyContainer, ContainerFormTabKey } from '$lib/models';
 	import { applicationState, getOrganization, getOrganizationalUnit } from '$lib/stores';
@@ -22,12 +24,12 @@
 
 	$: {
 		const organizationOrOrganizationalUnit = container.organizational_unit
-			? $getOrganizationalUnit(container.organizational_unit)
-			: $getOrganization(container.organization);
+			? ($getOrganizationalUnit(container.organizational_unit) as OrganizationalUnitContainer)
+			: ($getOrganization(container.organization) as OrganizationContainer);
 
 		showEffectsTab =
 			isContainerWithEffect(container) &&
-			organizationOrOrganizationalUnit?.payload.boards.includes(boards.enum['board.indicators']);
+			organizationOrOrganizationalUnit.payload.boards.includes(boards.enum['board.indicators']);
 
 		showHistoricalValuesTab = isIndicatorContainer(container) && hasHistoricalValues(container);
 	}

@@ -102,13 +102,11 @@ export const ability = derived(user, defineAbilityFor);
 export const dragged = writable<Container | undefined>();
 
 export const getOrganization = derived(page, (values) => {
-	return (guid: string): OrganizationContainer =>
-		values.data.organizations.find((o: OrganizationContainer) => guid == o.guid);
+	return (guid: string) => values.data.organizations.find((o) => guid == o.guid);
 });
 
 export const getOrganizationalUnit = derived(page, (values) => {
-	return (guid: string): OrganizationalUnitContainer =>
-		values.data.organizationalUnits.find((o: OrganizationalUnitContainer) => guid == o.guid);
+	return (guid: string) => values.data.organizationalUnits.find((o) => guid == o.guid);
 });
 
 export const mayCreateContainer = derived([page, ability], (values) => {

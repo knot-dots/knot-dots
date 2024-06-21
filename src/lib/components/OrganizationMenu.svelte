@@ -95,8 +95,11 @@
 					currentContext,
 					$page.data.organizationalUnits
 				).find(({ payload }) => payload.image);
-				logo =
-					firstAncestorWithImage?.payload.image ?? $page.data.currentOrganization.payload.image;
+				if (firstAncestorWithImage?.payload.image) {
+					logo = firstAncestorWithImage?.payload.image;
+				} else if ($page.data.currentOrganization.payload.image) {
+					logo = $page.data.currentOrganization.payload.image;
+				}
 			}
 
 			for (const level of [1, 2, 3, 4]) {
