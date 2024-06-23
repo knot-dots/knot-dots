@@ -78,6 +78,7 @@ resource "scaleway_iam_policy" "github" {
       "ObjectStorageObjectsWrite",
       "PrivateNetworksFullAccess",
       "RelationalDatabasesReadOnly",
+      "TransactionalEmailDomainReadOnly"
     ]
     project_ids = [var.scaleway_project_id]
   }
