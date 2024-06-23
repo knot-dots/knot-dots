@@ -6,7 +6,6 @@ import type {
 	QueryResultRow,
 	SerializableValue
 } from 'slonik';
-import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging';
 import { z } from 'zod';
 import {
 	anyContainer,
@@ -67,7 +66,7 @@ let pool: DatabasePool;
 export async function getPool() {
 	if (!pool) {
 		pool = await createPool('postgres://', {
-			interceptors: [createQueryLoggingInterceptor(), createResultParserInterceptor()]
+			interceptors: [createResultParserInterceptor()]
 		});
 	}
 	return pool;

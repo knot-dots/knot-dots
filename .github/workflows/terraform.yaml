@@ -30,8 +30,8 @@ jobs:
       SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: hashicorp/setup-terraform@v2
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
       - run: terraform fmt -check -recursive
         working-directory: ./terraform
         id: fmt
@@ -43,7 +43,7 @@ jobs:
         run: terraform plan -no-color -input=false
         id: plan
       - if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         env:
           PLAN: "${{ steps.plan.outputs.stdout }}"
         with:

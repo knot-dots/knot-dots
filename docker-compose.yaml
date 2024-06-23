@@ -1,6 +1,5 @@
 services:
   db:
-    image: postgres:14
     environment:
       POSTGRES_USER: ${PGUSER}
       POSTGRES_PASSWORD: ${PGPASSWORD}
@@ -9,6 +8,7 @@ services:
       interval: 3s
       timeout: 3s
       retries: 3
+    image: postgres:14
   migrate:
     build:
       context: .
@@ -32,21 +32,21 @@ services:
       - ./sql/migrations:/srv/migrations
     working_dir: /srv/migrations
   keycloak:
-    image: quay.io/keycloak/keycloak:21.0.1
-    ports:
-      - "8080:8080"
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
     command:
       - start-dev
       - --import-realm
       - --log-console-output=json
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     healthcheck:
       test: [ "CMD-SHELL", "printf '' 2>>/dev/null >>/dev/tcp/localhost/8080" ]
       interval: 3s
       timeout: 3s
       retries: 20
+    image: quay.io/keycloak/keycloak:21.0.1
+    ports:
+      - "8080:8080"
     volumes:
       - ./docker/keycloak/import:/opt/keycloak/data/import
   preview:
@@ -83,8 +83,6 @@ services:
       context: .
       dockerfile: docker/strategytool/Dockerfile
       target: dev
-    ports:
-      - "5173:5173"
     depends_on:
       keycloak:
         condition: service_healthy
@@ -101,5 +99,7 @@ services:
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
+    ports:
+      - "5173:5173"
     volumes:
       - ./src:/srv/app/src

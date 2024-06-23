@@ -37,7 +37,6 @@ terraform {
     bucket                      = "strategytool-terraform-state"
     key                         = "production.tfstate"
     region                      = "fr-par"
-    profile                     = "strategytool"
     skip_credentials_validation = true
     skip_region_validation      = true
     skip_requesting_account_id  = true

@@ -44,3 +44,13 @@ resource "null_resource" "kubeconfig" {
 
   depends_on = [scaleway_k8s_pool.this]
 }
+
+resource "scaleway_cockpit_token" "grafana_alloy" {
+  name = "token-${var.cluster_name}"
+
+  scopes {
+    write_logs    = true
+    write_metrics = true
+    write_traces  = true
+  }
+}

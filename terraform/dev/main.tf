@@ -37,7 +37,6 @@ terraform {
     bucket                      = "strategytool-terraform-state"
     key                         = "dev.tfstate"
     region                      = "fr-par"
-    profile                     = "strategytool"
     skip_credentials_validation = true
     skip_region_validation      = true
     skip_requesting_account_id  = true
@@ -246,6 +245,7 @@ module "k8s_cluster" {
 module "k8s_deployments" {
   source = "../modules/k8s_deployments"
 
+  cockpit_token            = module.k8s_cluster.cockpit_token
   databases                = module.rdb_databases
   registry_password        = scaleway_iam_api_key.registry_password.secret_key
   registry_server          = "rg.fr-par.scw.cloud"
