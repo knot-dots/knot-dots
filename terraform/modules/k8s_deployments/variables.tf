@@ -1,3 +1,7 @@
+variable "cockpit_token" {
+  type = string
+}
+
 variable "cert_manager_api_key" {
   type = object({
     access_key = string

@@ -13,3 +13,7 @@ output "wildcard_dns" {
 output "private_network_id" {
   value = scaleway_vpc_private_network.this.id
 }
+
+output "cockpit_token" {
+  value = scaleway_cockpit_token.grafana_alloy.secret_key
+}

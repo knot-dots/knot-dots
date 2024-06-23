@@ -96,6 +96,73 @@ resource "helm_release" "cert_manager_webhook" {
   depends_on = [helm_release.cert_manager]
 }
 
+resource "helm_release" "grafana_alloy" {
+  name       = "grafana-alloy"
+  namespace  = "default"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "alloy"
+
+  set {
+    name  = "alloy.configMap.create"
+    value = false
+  }
+
+  set {
+    name  = "alloy.configMap.name"
+    value = "grafana-alloy"
+  }
+
+  set {
+    name  = "alloy.configMap.key"
+    value = "config.alloy"
+  }
+
+  set {
+    name  = "alloy.extraEnv[0].name"
+    value = "SCW_COCKPIT_TOKEN"
+  }
+
+  set {
+    name  = "alloy.extraEnv[0].valueFrom.secretKeyRef.name"
+    value = "scw-cockpit-token"
+  }
+
+  set {
+    name  = "alloy.extraEnv[0].valueFrom.secretKeyRef.key"
+    value = "SCW_COCKPIT_TOKEN"
+  }
+
+  set {
+    name  = "alloy.extraPorts[0].name"
+    value = "grpc"
+  }
+
+  set {
+    name  = "alloy.extraPorts[0].port"
+    value = "4317"
+  }
+
+  set {
+    name  = "alloy.extraPorts[0].targetPort"
+    value = "4317"
+  }
+
+  set {
+    name  = "alloy.extraPorts[1].name"
+    value = "http"
+  }
+
+  set {
+    name  = "alloy.extraPorts[1].port"
+    value = "4318"
+  }
+
+  set {
+    name  = "alloy.extraPorts[1].targetPort"
+    value = "4318"
+  }
+}
+
 resource "kubectl_manifest" "cluster_issuer" {
   count = var.with_scaleway_lb ? 1 : 0
 
@@ -275,6 +342,16 @@ resource "kubernetes_deployment_v1" "strategytool" {
           env {
             name  = "BODY_SIZE_LIMIT"
             value = "100000000"
+          }
+
+          env {
+            name  = "OTEL_EXPORTER_OTLP_ENDPOINT"
+            value = "http://${helm_release.grafana_alloy.name}.${helm_release.grafana_alloy.namespace}.svc.cluster.local:4318"
+          }
+
+          env {
+            name  = "OTEL_SERVICE_NAME"
+            value = var.strategytool_name
           }
 
           env {
@@ -638,6 +715,28 @@ resource "kubernetes_secret_v1" "image_pull_secret" {
         }
       }
     })
+  }
+}
+
+resource "kubernetes_secret_v1" "scw_cockpit_token" {
+  metadata {
+    name      = "scw-cockpit-token"
+    namespace = "default"
+  }
+
+  data = {
+    SCW_COCKPIT_TOKEN = var.cockpit_token
+  }
+}
+
+resource "kubernetes_config_map" "grafana_alloy" {
+  metadata {
+    name      = "grafana-alloy"
+    namespace = "default"
+  }
+
+  data = {
+    "config.alloy" = file("${path.module}/config.alloy")
   }
 }
 
