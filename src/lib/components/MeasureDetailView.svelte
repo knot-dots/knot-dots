@@ -5,7 +5,6 @@
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import EffectsCarousel from '$lib/components/EffectsCarousel.svelte';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -302,12 +301,10 @@
 		</div>
 	{/if}
 
-	{#if selectedRevision.payload.effect.length > 0}
-		<div class="details-tab" id="effects">
-			<h3>{$_('effects')}</h3>
-			<EffectsCarousel {container} />
-		</div>
-	{/if}
+	<div class="details-tab" id="effects">
+		<h3>{$_('effects')}</h3>
+		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
+	</div>
 
 	<div class="details-tab" id="measure-results">
 		<h3>{$_('measure_results')}</h3>

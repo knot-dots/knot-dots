@@ -3,7 +3,6 @@
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
-	import EffectWizard from '$lib/components/EffectWizard.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
@@ -18,7 +17,7 @@
 		...state,
 		containerForm: {
 			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
-			tabs: ['metadata', 'basic-data', 'resources', 'effects']
+			tabs: ['metadata', 'basic-data', 'resources']
 		}
 	}));
 
@@ -119,12 +118,6 @@
 	<legend>{$_('form.resources')}</legend>
 
 	<ResourcePlanner {container} />
-</fieldset>
-
-<fieldset class="form-tab" id="effects">
-	<legend>{$_('form.effects')}</legend>
-
-	<EffectWizard {container} />
 </fieldset>
 
 <style>

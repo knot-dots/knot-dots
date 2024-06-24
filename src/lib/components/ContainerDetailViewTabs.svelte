@@ -11,7 +11,7 @@
 
 	export let container: AnyContainer;
 
-	$: showEffectsTab = isContainerWithEffect(container) && container.payload.effect.length > 0;
+	$: showEffectsTab = isContainerWithEffect(container);
 
 	$: showResourcesTab = 'resource' in container.payload && container.payload.resource.length > 0;
 

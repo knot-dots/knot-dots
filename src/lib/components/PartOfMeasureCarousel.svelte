@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Card from '$lib/components/Card.svelte';
@@ -9,9 +10,10 @@
 		overlayKey,
 		paramsFromFragment,
 		type PayloadType,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { addEffectState, mayCreateContainer } from '$lib/stores';
 
 	export let container: ContainerWithEffect;
 	export let payloadType: PayloadType;
@@ -32,6 +34,29 @@
 
 		return `#${newParams.toString()}`;
 	}
+
+	async function addEffect(target: ContainerWithEffect) {
+		const params = new URLSearchParams([
+			[overlayKey.enum.create, payloadTypes.enum.indicator],
+			['alreadyInUse', '']
+		]);
+
+		for (const category of container.payload.category) {
+			params.append('category', category);
+		}
+
+		for (const topic of container.payload.topic) {
+			params.append('topic', topic);
+		}
+
+		for (const measureType of container.payload.measureType) {
+			params.append('measureType', measureType);
+		}
+
+		$addEffectState = { target };
+
+		await goto(`#${params.toString()}`);
+	}
 </script>
 
 {#await containerRequest then containers}
@@ -47,7 +72,13 @@
 				</ul>
 			{/if}
 			{#if $mayCreateContainer(payloadType)}
-				<a class="button" href={addItemURL($page.url)}>
+				<a
+					class="button"
+					href={addItemURL($page.url)}
+					on:click|preventDefault={payloadType == payloadTypes.enum.effect
+						? () => addEffect(container)
+						: undefined}
+				>
 					{$_('add_item')}
 				</a>
 			{/if}

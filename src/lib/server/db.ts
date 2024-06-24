@@ -888,19 +888,41 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 	};
 }
 
-export function getAllContainersRelatedToIndicator(guid: string) {
+export function getAllContainersRelatedToIndicator(container: IndicatorContainer) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const objectiveAndEffectResult = await connection.any(sql.typeAlias('container')`
+		const effectResult = await connection.any(sql.typeAlias('container')`
+			SELECT cs.*
+			FROM container cs
+			LEFT JOIN container_relation cr ON cs.revision = cr.subject
+				AND cr.predicate = ${predicates.enum['is-measured-by']}
+				AND cs.valid_currently
+			WHERE cr.object = ${container.revision}
+		`);
+
+		const measureResult = effectResult.length
+			? await connection.any(sql.typeAlias('container')`
+			SELECT co.*
+			FROM container co
+			LEFT JOIN container_relation cr ON co.revision = cr.object
+				AND cr.predicate = ${predicates.enum['is-part-of']}
+				AND co.valid_currently
+			WHERE cr.subject IN (${sql.join(
+				effectResult.map(({ revision }) => revision),
+				sql.fragment`, `
+			)})
+		`)
+			: [];
+
+		const objectiveResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c
-			WHERE (
-					payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
-					OR payload->'effect' @> ${sql.jsonb([{ indicator: guid }])}
-				)
+			WHERE payload->'objective' @> ${sql.jsonb([{ indicator: container.guid }])}
 				AND valid_currently
 				AND NOT deleted
 			ORDER BY payload->>'title';
 		`);
+
+		const objectiveAndEffectResult = [...measureResult, ...objectiveResult];
 
 		const strategyResult =
 			objectiveAndEffectResult.length > 0
@@ -919,7 +941,9 @@ export function getAllContainersRelatedToIndicator(guid: string) {
 				: [];
 
 		return withUserAndRelation<Container>(connection, [
-			...objectiveAndEffectResult,
+			...effectResult,
+			...measureResult,
+			...objectiveResult,
 			...strategyResult
 		]);
 	};
@@ -981,13 +1005,40 @@ export function getAllContainersRelatedToStrategy(
 	filters: { categories: string[]; terms?: string; topics: string[]; type?: PayloadType[] }
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const predicate = [predicates.enum['is-part-of'], predicates.enum['is-part-of-strategy']];
+
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+				WITH RECURSIVE relation(path) AS (
+					--Top level items (roots)
+					SELECT array[c.revision] as path, c.revision as subject
+					FROM container c
+					WHERE c.valid_currently
+						AND NOT EXISTS(
+							--No relations with this as the subject.
+							SELECT *
+							FROM container_relation parent_test
+							WHERE c.revision = parent_test.subject AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+						)
+					UNION ALL
+					SELECT array_append(r.path, c.revision), c.revision
+					FROM container c
+					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+					JOIN relation r ON cr.object = r.subject
+					WHERE c.valid_currently
+				)
+				SELECT DISTINCT unnest(path) FROM relation r WHERE ${revision} = ANY(path)
+			`);
+
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c
-			JOIN container_relation cr ON c.revision = cr.subject
+			LEFT JOIN container_relation cr ON c.revision = cr.subject
 				AND cr.predicate = 'is-part-of-strategy'
-				AND cr.object = ${revision}
-			WHERE ${prepareWhereCondition(filters)}
+			WHERE revision IN (${sql.join(
+				relationPathResult.flatMap((r) => Object.values(r)),
+				sql.fragment`, `
+			)})
+				AND ${prepareWhereCondition(filters)}
 			ORDER BY cr.position;
 		`);
 

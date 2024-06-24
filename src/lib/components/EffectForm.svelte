@@ -115,7 +115,11 @@
 			{@const indicator = containers.find(isIndicatorContainer)}
 			{@const measure = containers.find(isMeasureContainer)}
 			{#if indicator && measure}
-				<IndicatorChart container={indicator} relatedContainers={[measure]} showEffects />
+				<IndicatorChart
+					container={indicator}
+					relatedContainers={[container, measure]}
+					showEffects
+				/>
 			{/if}
 		{/await}
 	</div>

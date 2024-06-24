@@ -3,7 +3,9 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import createEffect from '$lib/client/createEffect';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import Card from '$lib/components/Card.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
 	import {
 		type IndicatorContainer,
@@ -14,7 +16,6 @@
 		payloadTypes
 	} from '$lib/models';
 	import { addEffectState } from '$lib/stores';
-	import Card from '$lib/components/Card.svelte';
 
 	export let value: IndicatorContainer | IndicatorTemplateContainer;
 
@@ -35,13 +36,14 @@
 		}) as Promise<IndicatorTemplateContainer[]>;
 	}
 
-	function select(container: IndicatorContainer | IndicatorTemplateContainer) {
+	async function select(container: IndicatorContainer | IndicatorTemplateContainer) {
 		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
-				$addEffectState.effect = container;
-				goto(`#view=${$addEffectState.target.guid}&edit`);
+				const effect = await createEffect($addEffectState.target, container);
+				$addEffectState = {};
+				await goto(`#view=${effect.guid}&edit`);
 			} else {
-				goto(`#view=${container.guid}&edit`);
+				await goto(`#view=${container.guid}&edit`);
 			}
 		} else {
 			value = container;

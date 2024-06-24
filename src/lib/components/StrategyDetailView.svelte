@@ -13,6 +13,7 @@
 		owners,
 		paramsFromFragment,
 		payloadTypes,
+		predicates,
 		type User
 	} from '$lib/models';
 	import type { AnyContainer, Container, PayloadType, StrategyContainer } from '$lib/models';
@@ -168,7 +169,9 @@
 	{/await}
 
 	<div class="chapters">
-		{#each relatedContainers.filter( ({ payload }) => byPayloadType(payload.type, $page.url) ) as part}
+		{#each relatedContainers
+			.filter( ({ relation }) => relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-strategy']) )
+			.filter(({ payload }) => byPayloadType(payload.type, $page.url)) as part}
 			<Chapter container={part} headingTag="h3" isPartOf={container} />
 		{:else}
 			{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
