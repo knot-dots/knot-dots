@@ -24,7 +24,7 @@
 
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadTypes.enum.milestone],
+			[overlayKey.enum.create, payloadTypes.enum.measure_result],
 			[predicates.enum['is-part-of'], String(container.revision)],
 			[predicates.enum['is-part-of-measure'], String(container.revision)]
 		]);
