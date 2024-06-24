@@ -4,28 +4,28 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		type Container,
+		type ContainerWithEffect,
 		isOverlayKey,
-		type MilestoneContainer,
 		overlayKey,
 		paramsFromFragment,
-		payloadTypes,
+		type PayloadType,
 		predicates
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
-	export let container: Container;
+	export let container: ContainerWithEffect;
+	export let payloadType: PayloadType;
 
 	$: containerRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadTypes.enum.milestone]
-	}) as Promise<Array<MilestoneContainer>>;
+		payloadType: [payloadType]
+	});
 
 	function addItemURL(url: URL) {
 		const params = paramsFromFragment(url);
 
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadTypes.enum.milestone],
+			[overlayKey.enum.create, payloadType],
 			[predicates.enum['is-part-of'], String(container.revision)],
 			[predicates.enum['is-part-of-measure'], String(container.revision)]
 		]);
@@ -35,7 +35,7 @@
 </script>
 
 {#await containerRequest then containers}
-	{#if containers.length > 0 || $mayCreateContainer(payloadTypes.enum.milestone)}
+	{#if containers.length > 0 || $mayCreateContainer(payloadType)}
 		<div>
 			{#if containers.length > 0}
 				<ul class="carousel">
@@ -46,7 +46,7 @@
 					{/each}
 				</ul>
 			{/if}
-			{#if $mayCreateContainer(payloadTypes.enum.milestone)}
+			{#if $mayCreateContainer(payloadType)}
 				<a class="button" href={addItemURL($page.url)}>
 					{$_('add_item')}
 				</a>
