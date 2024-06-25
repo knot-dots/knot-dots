@@ -21,6 +21,7 @@
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
+	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
 	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
@@ -58,6 +59,7 @@
 		type IndicatorContainer,
 		isContainer,
 		isContainerWithEffect,
+		isEffectContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
 		isPageContainer,
@@ -619,7 +621,9 @@
 			</header>
 		{/if}
 		<div class="content-details masked-overflow">
-			{#if isIndicatorContainer(container)}
+			{#if isEffectContainer(container)}
+				<EffectDetailView {container} {relatedContainers} {revisions} />
+			{:else if isIndicatorContainer(container)}
 				<IndicatorDetailView
 					{container}
 					{containersWithObjectives}
