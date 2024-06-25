@@ -10,6 +10,7 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import {
+		isEffectContainer,
 		isIndicatorContainer,
 		overlayKey,
 		overlayURL,
@@ -53,6 +54,12 @@
 
 	$: if (isIndicatorContainer(container)) {
 		containersWithObjectivesPromise = fetchContainersWithParentObjectives(container);
+		if (relatedContainers.length == 0) {
+			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
+		} else {
+			relatedContainersPromise = new Promise((resolve) => resolve(relatedContainers));
+		}
+	} else if (isEffectContainer(container)) {
 		if (relatedContainers.length == 0) {
 			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
 		} else {
@@ -205,6 +212,13 @@
 				<span class="badge">{$_(indicatorCategory)}</span>
 			{/each}
 		</p>
+	{:else if isEffectContainer(container)}
+		{#await relatedContainersPromise then relatedContainers}
+			{@const indicator = relatedContainers.find(isIndicatorContainer)}
+			{#if indicator}
+				<IndicatorChart container={indicator} {relatedContainers} showEffects />
+			{/if}
+		{/await}
 	{/if}
 
 	<footer>
