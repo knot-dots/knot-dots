@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { type EffectContainer, isIndicatorContainer, isMeasureContainer } from '$lib/models';
+	import {
+		type EffectContainer,
+		isIndicatorContainer,
+		isMeasureContainer,
+		predicates
+	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -56,7 +61,15 @@
 					<th scope="col"></th>
 					<th scope="col" colspan="2">
 						{#await relatedContainerRequest then containers}
-							{@const indicator = containers.find(isIndicatorContainer)}
+							{@const indicator = containers
+								.filter(isIndicatorContainer)
+								.find(
+									({ revision }) =>
+										container.relation.findIndex(
+											({ object, predicate }) =>
+												predicate == predicates.enum['is-measured-by'] && object == revision
+										) > -1
+								)}
 							{#if indicator}
 								{indicator.payload.title} ({$_(`${indicator.payload.unit}` ?? '')})
 							{/if}
