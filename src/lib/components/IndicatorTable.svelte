@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { isContainerWithEffect, status } from '$lib/models';
-	import type {
-		Container,
-		ContainerWithEffect,
-		ContainerWithObjective,
-		IndicatorContainer
+	import {
+		type ContainerWithEffect,
+		type EffectContainer,
+		isContainerWithEffect,
+		isEffectContainer,
+		predicates,
+		status
 	} from '$lib/models';
+	import type { Container, ContainerWithObjective, IndicatorContainer } from '$lib/models';
 
 	export let container: IndicatorContainer;
 	export let containersWithObjectives: ContainerWithObjective[] = [];
@@ -28,9 +30,8 @@
 	let inImplementationByYear: Map<number, number>;
 	let doneByYear: Map<number, number>;
 
-	const containersWithEffects = relatedContainers.filter((c) =>
-		isContainerWithEffect(c)
-	) as ContainerWithEffect[];
+	let effectContainers = [] as EffectContainer[];
+	let measureContainers = [] as ContainerWithEffect[];
 
 	$: historicalValuesByYear = new Map(container.payload.historicalValues);
 
@@ -79,28 +80,38 @@
 	}
 
 	$: {
-		effects = containersWithEffects
-			.flatMap(({ payload }) =>
-				payload.effect.map(({ indicator, plannedValues, achievedValues }) => ({
-					indicator,
-					values: plannedValues
+		effectContainers = relatedContainers.filter(isEffectContainer);
+		measureContainers = relatedContainers.filter(isContainerWithEffect);
+
+		effects = effectContainers
+			.map(({ payload, revision }) => {
+				const measure = measureContainers.find(({ relation }) =>
+					relation.find(
+						({ predicate, subject }) =>
+							predicate == predicates.enum['is-part-of'] && subject == revision
+					)
+				);
+				return {
+					indicator: container.guid,
+					values: payload.plannedValues
 						.map(([year, value], index) => ({
 							Year: year,
 							Value:
-								payload.status == status.enum['status.in_implementation'] && achievedValues[index]
-									? value - achievedValues[index][1]
+								measure?.payload.status == status.enum['status.in_implementation'] &&
+								payload.achievedValues[index]
+									? value - payload.achievedValues[index][1]
 									: value,
-							Status: payload.status as string
+							Status: measure?.payload.status as string
 						}))
 						.concat(
-							achievedValues.map(([year, value]) => ({
+							payload.achievedValues.map(([year, value]) => ({
 								Year: year,
 								Value: value,
 								Status: status.enum['status.done'] as string
 							}))
 						)
-				}))
-			)
+				};
+			})
 			.filter(({ indicator }) => indicator == container.guid)
 			.flatMap(({ values }) => values)
 			.reduce(
@@ -218,14 +229,20 @@
 					{/each}
 				</tr>
 
-				{#each containersWithEffects.filter(({ payload }) => payload.status === status.enum['status.done']) as containerWithEffect}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.done']) as measure}
 					{@const valuesByYear = new Map(
-						containerWithEffect.payload.effect
-							.filter(({ indicator }) => indicator == container.guid)
-							.flatMap(({ achievedValues }) => achievedValues)
+						effectContainers
+							.filter(
+								({ relation }) =>
+									relation.findIndex(
+										({ object, predicate }) =>
+											predicate == predicates.enum['is-part-of'] && object == measure.revision
+									) > -1
+							)
+							.flatMap(({ payload }) => payload.achievedValues)
 					)}
 					<tr class="done">
-						<th scope="row">{containerWithEffect.payload.title}</th>
+						<th scope="row">{measure.payload.title}</th>
 						{#each years as year}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
@@ -238,14 +255,20 @@
 						<td>{inImplementationByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each containersWithEffects.filter(({ payload }) => payload.status === status.enum['status.in_implementation']) as containerWithEffect}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_implementation']) as measure}
 					{@const valuesByYear = new Map(
-						containerWithEffect.payload.effect
-							.filter(({ indicator }) => indicator == container.guid)
-							.flatMap(({ plannedValues }) => plannedValues)
+						effectContainers
+							.filter(
+								({ relation }) =>
+									relation.findIndex(
+										({ object, predicate }) =>
+											predicate == predicates.enum['is-part-of'] && object == measure.revision
+									) > -1
+							)
+							.flatMap(({ payload }) => payload.plannedValues)
 					)}
 					<tr class="in-progress">
-						<th scope="row">{containerWithEffect.payload.title}</th>
+						<th scope="row">{measure.payload.title}</th>
 						{#each years as year}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
@@ -258,14 +281,20 @@
 						<td>{inPlanningByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each containersWithEffects.filter(({ payload }) => payload.status === status.enum['status.in_planning']) as containerWithEffect}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_planning']) as measure}
 					{@const valuesByYear = new Map(
-						containerWithEffect.payload.effect
-							.filter(({ indicator }) => indicator == container.guid)
-							.flatMap(({ plannedValues }) => plannedValues)
+						effectContainers
+							.filter(
+								({ relation }) =>
+									relation.findIndex(
+										({ object, predicate }) =>
+											predicate == predicates.enum['is-part-of'] && object == measure.revision
+									) > -1
+							)
+							.flatMap(({ payload }) => payload.plannedValues)
 					)}
 					<tr class="in-planning">
-						<th scope="row">{containerWithEffect.payload.title}</th>
+						<th scope="row">{measure.payload.title}</th>
 						{#each years as year}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
@@ -278,14 +307,20 @@
 						<td>{ideasByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each containersWithEffects.filter(({ payload }) => payload.status === status.enum['status.idea']) as containerWithEffect}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.idea']) as measure}
 					{@const valuesByYear = new Map(
-						containerWithEffect.payload.effect
-							.filter(({ indicator }) => indicator == container.guid)
-							.flatMap(({ plannedValues }) => plannedValues)
+						effectContainers
+							.filter(
+								({ relation }) =>
+									relation.findIndex(
+										({ object, predicate }) =>
+											predicate == predicates.enum['is-part-of'] && object == measure.revision
+									) > -1
+							)
+							.flatMap(({ payload }) => payload.plannedValues)
 					)}
 					<tr class="idea">
-						<th scope="row">{containerWithEffect.payload.title}</th>
+						<th scope="row">{measure.payload.title}</th>
 						{#each years as year}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}

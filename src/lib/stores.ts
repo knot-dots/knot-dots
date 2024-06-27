@@ -13,11 +13,11 @@ import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
 	audience,
 	containerOfType,
-	type ContainerWithEffect,
 	hasMember,
 	type IndicatorContainer,
 	isContainerWithEffect,
 	isContainerWithObjective,
+	isEffectContainer,
 	isIndicatorContainer,
 	isStrategyContainer,
 	isTaskContainer,
@@ -144,8 +144,8 @@ if (browser) {
 }
 
 type AddEffectState = {
-	target?: string;
-	effect?: string;
+	target?: Container;
+	effect?: IndicatorContainer;
 };
 
 export const addEffectState = writable<AddEffectState>({});
@@ -459,13 +459,15 @@ if (browser) {
 			const indicatorsFromObjectives = (
 				relatedContainers.filter((c) => isContainerWithObjective(c)) as ContainerWithObjective[]
 			).flatMap((c) => c.payload.objective.map(({ indicator }) => indicator));
-			const indicatorsFromEffects = (
-				relatedContainers.filter((c) => isContainerWithEffect(c)) as ContainerWithEffect[]
-			).flatMap((c) => c.payload.effect.flatMap(({ indicator }) => indicator));
-
+			const indicatorsFromEffects = relatedContainers
+				.filter(isEffectContainer)
+				.flatMap(({ relation }) => relation)
+				.filter(({ predicate }) => predicate == predicates.enum['is-measured-by'])
+				.map(({ object }) => object);
 			overlay.set({
-				indicators: indicators.filter(({ guid }) =>
-					indicatorsFromEffects.concat(indicatorsFromObjectives).includes(guid)
+				indicators: indicators.filter(
+					({ guid, revision }) =>
+						indicatorsFromObjectives.includes(guid) || indicatorsFromEffects.includes(revision)
 				) as IndicatorContainer[],
 				isPartOfOptions: [],
 				relatedContainers: [],

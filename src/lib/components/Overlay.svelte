@@ -21,6 +21,7 @@
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
+	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
 	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
@@ -49,8 +50,16 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
+		type AnyContainer,
+		type Container,
+		containerOfType,
+		type ContainerWithObjective,
+		type CustomEventMap,
+		type EmptyEffectContainer,
+		type IndicatorContainer,
 		isContainer,
 		isContainerWithEffect,
+		isEffectContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
 		isPageContainer,
@@ -58,22 +67,15 @@
 		isTaskContainer,
 		mayDelete,
 		type MeasureContainer,
+		type MeasureMonitoringContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
-		quantities
-	} from '$lib/models';
-	import type {
-		AnyContainer,
-		Container,
-		ContainerWithObjective,
-		CustomEventMap,
-		IndicatorContainer,
-		MeasureMonitoringContainer,
-		TaskContainer,
-		User
+		quantities,
+		type TaskContainer,
+		type User
 	} from '$lib/models';
 	import { ability, addEffectState, overlayWidth, user } from '$lib/stores';
 
@@ -134,6 +136,32 @@
 		return `#${newParams.toString()}`;
 	}
 
+	async function createEffect(target: Container, indicator: IndicatorContainer) {
+		const newEffect = containerOfType(
+			payloadTypes.enum.effect,
+			target.organization,
+			target.organizational_unit,
+			env.PUBLIC_KC_REALM
+		) as EmptyEffectContainer;
+		const response = await saveContainer({
+			...newEffect,
+			payload: { ...newEffect.payload, title: indicator.payload.title },
+			relation: [
+				{
+					object: indicator.revision,
+					position: 0,
+					predicate: predicates.enum['is-measured-by']
+				},
+				{
+					object: target.revision,
+					position: 0,
+					predicate: predicates.enum['is-part-of']
+				}
+			]
+		});
+		return await response.json();
+	}
+
 	async function afterSubmit(
 		{ detail }: CustomEvent<CustomEventMap['submitSuccessful']>,
 		c: AnyContainer
@@ -141,11 +169,11 @@
 		if (
 			hashParams.has(overlayKey.enum.create) &&
 			isIndicatorContainer(detail.result) &&
-			$addEffectState.target &&
-			$addEffectState.effect
+			$addEffectState.target
 		) {
-			$addEffectState.effect = detail.result.guid;
-			await goto(`#view=${$addEffectState.target}&edit`, { invalidateAll: true });
+			const effect = await createEffect($addEffectState.target, detail.result);
+			$addEffectState = {};
+			await goto(`#view=${effect.guid}&edit`, { invalidateAll: true });
 		} else if (hashParams.has('create')) {
 			await goto(`#view=${detail.result.guid}`, { invalidateAll: true });
 		} else if (hashParams.has('edit-help')) {
@@ -534,7 +562,17 @@
 				<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
 					<svelte:fragment slot="filters">
 						<PayloadTypeFilter
-							options={Array.from(new Set(relatedContainers.map(({ payload }) => payload.type)))}
+							options={Array.from(
+								new Set(
+									relatedContainers
+										.filter(({ relation }) =>
+											relation.some(
+												({ predicate }) => predicate == predicates.enum['is-part-of-strategy']
+											)
+										)
+										.map(({ payload }) => payload.type)
+								)
+							)}
 						/>
 						<CategoryFilter />
 						<TopicFilter />
@@ -583,7 +621,9 @@
 			</header>
 		{/if}
 		<div class="content-details masked-overflow">
-			{#if isIndicatorContainer(container)}
+			{#if isEffectContainer(container)}
+				<EffectDetailView {container} {relatedContainers} {revisions} />
+			{:else if isIndicatorContainer(container)}
 				<IndicatorDetailView
 					{container}
 					{containersWithObjectives}

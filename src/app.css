@@ -601,7 +601,7 @@ fieldset {
 .toggle::before {
 	background-color: #ffffff;
 	border-radius: calc(var(--width) / 2);
-	content: "";
+	content: '';
 	height: calc(var(--width) / 2);
 	transform: translateX(0);
 	transition: 120ms transform ease-in-out;
@@ -621,7 +621,7 @@ fieldset {
 }
 
 .toggle:disabled {
-	background-color: var(--color-gray-200)
+	background-color: var(--color-gray-200);
 }
 
 label:has(> input[type='checkbox'].toggle) {
@@ -732,7 +732,8 @@ label > input[type='checkbox'].toggle {
 	padding: 1.5rem 1.5rem 0;
 }
 
-.content-header a, .content-header button {
+.content-header a,
+.content-header button {
 	float: right;
 }
 

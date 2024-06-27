@@ -1,13 +1,14 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
-	import { isContainerWithEffect, hasHistoricalValues, status } from '$lib/models';
-	import type {
-		Container,
-		ContainerWithEffect,
-		ContainerWithObjective,
-		IndicatorContainer
+	import {
+		isContainerWithEffect,
+		hasHistoricalValues,
+		status,
+		isEffectContainer,
+		predicates
 	} from '$lib/models';
+	import type { Container, ContainerWithObjective, IndicatorContainer } from '$lib/models';
 
 	export let container: IndicatorContainer;
 	export let containersWithObjectives: ContainerWithObjective[] = [];
@@ -75,178 +76,188 @@
 		];
 	}
 
-	$: if (showEffects) {
-		const containersWithEffects = relatedContainers.filter((c) =>
-			isContainerWithEffect(c)
-		) as ContainerWithEffect[];
+	$: {
+		if (showEffects) {
+			const effectContainers = relatedContainers.filter(isEffectContainer);
+			const measureContainers = relatedContainers.filter(isContainerWithEffect);
 
-		effects = containersWithEffects
-			.flatMap(({ payload }) =>
-				payload.effect.map(({ indicator, plannedValues, achievedValues }) => ({
-					indicator,
-					values: plannedValues
-						.map(([year, value], index) => ({
-							Year: year,
-							Value:
-								payload.status == status.enum['status.in_implementation'] && achievedValues[index]
-									? value - achievedValues[index][1]
-									: value,
-							Status: payload.status as string
-						}))
-						.concat(
-							achievedValues.map(([year, value]) => ({
-								Year: year,
-								Value: value,
-								Status: status.enum['status.done'] as string
-							}))
-						)
-				}))
-			)
-			.filter(({ indicator }) => indicator == container.guid)
-			.flatMap(({ values }) => values)
-			.reduce(
-				(accumulator, currentValue) => {
-					const groupIndex = accumulator.findIndex(
-						({ Status, Year }) => currentValue.Status == Status && currentValue.Year == Year
+			effects = effectContainers
+				.map(({ payload, revision }) => {
+					const measure = measureContainers.find(
+						({ relation }) =>
+							relation.findIndex(
+								({ predicate, subject }) =>
+									predicate == predicates.enum['is-part-of'] && subject == revision
+							) > -1
 					);
-					return groupIndex > 0
-						? [
-								...accumulator.slice(0, groupIndex),
-								{
-									Status: currentValue.Status,
-									Year: currentValue.Year,
-									Value: currentValue.Value + accumulator[groupIndex].Value
-								},
-								...accumulator.slice(groupIndex + 1)
-							]
-						: [
-								...accumulator,
-								{
-									Status: currentValue.Status,
-									Year: currentValue.Year,
-									Value: currentValue.Value
-								}
-							];
-				},
-				[] as Array<{ Year: number; Value: number; Status: string }>
-			);
-
-		effectsMinYear = Math.min(...effects.map(({ Year }) => Year));
-
-		ideasByYear = new Map(
-			effects
-				.filter(({ Status }) => Status == status.enum['status.idea'])
-				.map(({ Year, Value }) => [Year, Value])
-		);
-
-		inPlanningByYear = new Map(
-			effects
-				.filter(({ Status }) => Status == status.enum['status.in_planning'])
-				.map(({ Year, Value }) => [Year, Value])
-		);
-
-		inImplementationByYear = new Map(
-			effects
-				.filter(({ Status }) => Status == status.enum['status.in_implementation'])
-				.map(({ Year, Value }) => [Year, Value])
-		);
-
-		doneByYear = new Map(
-			effects
-				.filter(({ Status }) => Status == status.enum['status.done'])
-				.map(({ Year, Value }) => [Year, Value])
-		);
-
-		const baseline = hasHistoricalValues(container)
-			? container.payload.historicalValues
-			: Array.from(
-					new Map(
-						effects
-							.map(({ Year }) => Year)
-							.sort()
-							.map((year) => [year, 0])
-					).entries()
+					return {
+						indicator: container.guid,
+						values: payload.plannedValues
+							.map(([year, value], index) => ({
+								Year: year,
+								Value:
+									measure?.payload.status == status.enum['status.in_implementation'] &&
+									payload.achievedValues[index]
+										? value - payload.achievedValues[index][1]
+										: value,
+								Status: measure?.payload.status as string
+							}))
+							.concat(
+								payload.achievedValues.map(([year, value]) => ({
+									Year: year,
+									Value: value,
+									Status: status.enum['status.done'] as string
+								}))
+							)
+					};
+				})
+				.filter(({ indicator }) => indicator == container.guid)
+				.flatMap(({ values }) => values)
+				.reduce(
+					(accumulator, currentValue) => {
+						const groupIndex = accumulator.findIndex(
+							({ Status, Year }) => currentValue.Status == Status && currentValue.Year == Year
+						);
+						return groupIndex > 0
+							? [
+									...accumulator.slice(0, groupIndex),
+									{
+										Status: currentValue.Status,
+										Year: currentValue.Year,
+										Value: currentValue.Value + accumulator[groupIndex].Value
+									},
+									...accumulator.slice(groupIndex + 1)
+								]
+							: [
+									...accumulator,
+									{
+										Status: currentValue.Status,
+										Year: currentValue.Year,
+										Value: currentValue.Value
+									}
+								];
+					},
+					[] as Array<{ Year: number; Value: number; Status: string }>
 				);
 
-		effectsByStatus = new Map([
-			[
-				status.enum['status.idea'],
+			effectsMinYear = Math.min(...effects.map(({ Year }) => Year));
+
+			ideasByYear = new Map(
+				effects
+					.filter(({ Status }) => Status == status.enum['status.idea'])
+					.map(({ Year, Value }) => [Year, Value])
+			);
+
+			inPlanningByYear = new Map(
+				effects
+					.filter(({ Status }) => Status == status.enum['status.in_planning'])
+					.map(({ Year, Value }) => [Year, Value])
+			);
+
+			inImplementationByYear = new Map(
+				effects
+					.filter(({ Status }) => Status == status.enum['status.in_implementation'])
+					.map(({ Year, Value }) => [Year, Value])
+			);
+
+			doneByYear = new Map(
+				effects
+					.filter(({ Status }) => Status == status.enum['status.done'])
+					.map(({ Year, Value }) => [Year, Value])
+			);
+
+			const baseline = hasHistoricalValues(container)
+				? container.payload.historicalValues
+				: Array.from(
+						new Map(
+							effects
+								.map(({ Year }) => Year)
+								.sort()
+								.map((year) => [year, 0])
+						).entries()
+					);
+
+			effectsByStatus = new Map([
 				[
-					{
-						Year: effectsMinYear - 1,
-						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
-					},
-					...baseline
-						.filter(([year]) => year >= effectsMinYear)
-						.map(([year, value]) => {
-							return {
-								Year: year,
-								Value:
-									(doneByYear.get(year) ?? 0) +
-									(inImplementationByYear.get(year) ?? 0) +
-									(inPlanningByYear.get(year) ?? 0) +
-									(ideasByYear.get(year) ?? 0) +
-									value
-							};
-						})
-				]
-			],
-			[
-				status.enum['status.in_planning'],
+					status.enum['status.idea'],
+					[
+						{
+							Year: effectsMinYear - 1,
+							Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+						},
+						...baseline
+							.filter(([year]) => year >= effectsMinYear)
+							.map(([year, value]) => {
+								return {
+									Year: year,
+									Value:
+										(doneByYear.get(year) ?? 0) +
+										(inImplementationByYear.get(year) ?? 0) +
+										(inPlanningByYear.get(year) ?? 0) +
+										(ideasByYear.get(year) ?? 0) +
+										value
+								};
+							})
+					]
+				],
 				[
-					{
-						Year: effectsMinYear - 1,
-						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
-					},
-					...baseline
-						.filter(([year]) => year >= effectsMinYear)
-						.map(([year, value]) => {
-							return {
-								Year: year,
-								Value:
-									(doneByYear.get(year) ?? 0) +
-									(inImplementationByYear.get(year) ?? 0) +
-									(inPlanningByYear.get(year) ?? 0) +
-									value
-							};
-						})
-				]
-			],
-			[
-				status.enum['status.in_implementation'],
+					status.enum['status.in_planning'],
+					[
+						{
+							Year: effectsMinYear - 1,
+							Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+						},
+						...baseline
+							.filter(([year]) => year >= effectsMinYear)
+							.map(([year, value]) => {
+								return {
+									Year: year,
+									Value:
+										(doneByYear.get(year) ?? 0) +
+										(inImplementationByYear.get(year) ?? 0) +
+										(inPlanningByYear.get(year) ?? 0) +
+										value
+								};
+							})
+					]
+				],
 				[
-					{
-						Year: effectsMinYear - 1,
-						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
-					},
-					...baseline
-						.filter(([year]) => year >= effectsMinYear)
-						.map(([year, value]) => {
-							return {
-								Year: year,
-								Value: (doneByYear.get(year) ?? 0) + (inImplementationByYear.get(year) ?? 0) + value
-							};
-						})
-				]
-			],
-			[
-				status.enum['status.done'],
+					status.enum['status.in_implementation'],
+					[
+						{
+							Year: effectsMinYear - 1,
+							Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+						},
+						...baseline
+							.filter(([year]) => year >= effectsMinYear)
+							.map(([year, value]) => {
+								return {
+									Year: year,
+									Value:
+										(doneByYear.get(year) ?? 0) + (inImplementationByYear.get(year) ?? 0) + value
+								};
+							})
+					]
+				],
 				[
-					{
-						Year: effectsMinYear - 1,
-						Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
-					},
-					...baseline
-						.filter(([year]) => year >= effectsMinYear)
-						.map(([year, value]) => {
-							return {
-								Year: year,
-								Value: (doneByYear.get(year) ?? 0) + value
-							};
-						})
+					status.enum['status.done'],
+					[
+						{
+							Year: effectsMinYear - 1,
+							Value: historicalValuesByYear.get(effectsMinYear - 1) ?? 0
+						},
+						...baseline
+							.filter(([year]) => year >= effectsMinYear)
+							.map(([year, value]) => {
+								return {
+									Year: year,
+									Value: (doneByYear.get(year) ?? 0) + value
+								};
+							})
+					]
 				]
-			]
-		]);
+			]);
+		}
 	}
 
 	$: {

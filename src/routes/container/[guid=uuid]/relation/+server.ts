@@ -52,7 +52,7 @@ export const GET = (async ({ locals, params, url }) => {
 
 	let containers;
 	if (isIndicatorContainer(container)) {
-		containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container.guid));
+		containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container));
 	} else {
 		containers = await locals.pool.connect(
 			getAllRelatedContainers(

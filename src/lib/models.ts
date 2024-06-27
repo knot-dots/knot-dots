@@ -67,6 +67,7 @@ export const sustainableDevelopmentGoals = z.enum(sdgValues);
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
 
 const payloadTypeValues = [
+	'effect',
 	'indicator',
 	'indicator_template',
 	'measure',
@@ -119,6 +120,7 @@ const predicateValues = [
 	'is-duplicate-of',
 	'is-equivalent-to',
 	'is-inconsistent-with',
+	'is-measured-by',
 	'is-member-of',
 	'is-part-of',
 	'is-part-of-measure',
@@ -460,6 +462,13 @@ const measureMonitoringBasePayload = z.object({
 	visibility: visibility.default('members')
 });
 
+const effectPayload = measureMonitoringBasePayload.extend({
+	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	description: z.string().optional(),
+	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	type: z.literal(payloadTypes.enum.effect)
+});
+
 const visionPayload = basePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
@@ -659,6 +668,7 @@ export const container = z.object({
 	organization: z.string().uuid(),
 	organizational_unit: z.string().uuid().nullable(),
 	payload: z.discriminatedUnion('type', [
+		effectPayload,
 		indicatorPayload,
 		indicatorTemplatePayload,
 		measurePayload,
@@ -686,6 +696,7 @@ export type Container = z.infer<typeof container>;
 
 export const anyContainer = container.extend({
 	payload: z.discriminatedUnion('type', [
+		effectPayload,
 		indicatorPayload,
 		indicatorTemplatePayload,
 		measurePayload,
@@ -740,6 +751,18 @@ export function isContainerWithEffect(
 	container: AnyContainer | EmptyContainer
 ): container is ContainerWithEffect {
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
+}
+
+const effectContainer = container.extend({
+	payload: effectPayload
+});
+
+export type EffectContainer = z.infer<typeof effectContainer>;
+
+export function isEffectContainer(
+	container: AnyContainer | EmptyContainer
+): container is EffectContainer {
+	return container.payload.type === payloadTypes.enum.effect;
 }
 
 const indicatorContainer = container.extend({
@@ -971,6 +994,15 @@ export type NewContainer = z.infer<typeof newContainer>;
 
 const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
+		effectPayload.partial().merge(
+			effectPayload.pick({
+				achievedValues: true,
+				audience: true,
+				plannedValues: true,
+				type: true,
+				visibility: true
+			})
+		),
 		indicatorPayload.partial().merge(
 			indicatorPayload.pick({
 				audience: true,
@@ -1099,6 +1131,20 @@ const emptyContainer = newContainer.extend({
 });
 
 export type EmptyContainer = z.infer<typeof emptyContainer>;
+
+const emptyEffectContainer = emptyContainer.extend({
+	payload: effectPayload.partial().merge(
+		effectPayload.pick({
+			achievedValues: true,
+			audience: true,
+			plannedValues: true,
+			type: true,
+			visibility: true
+		})
+	)
+});
+
+export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
 
 const emptyIndicatorContainer = emptyContainer.extend({
 	payload: indicatorPayload.partial().merge(

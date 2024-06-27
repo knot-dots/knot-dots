@@ -12,7 +12,7 @@
 	import { env } from '$env/dynamic/public';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import EffectsCarousel from '$lib/components/EffectsCarousel.svelte';
+	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
@@ -223,9 +223,9 @@
 		</div>
 	{/if}
 
-	{#if isContainerWithEffect(container) && container.payload.effect.length > 0}
+	{#if isContainerWithEffect(container)}
 		<h4>{$_('effects')}</h4>
-		<EffectsCarousel {container} />
+		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
 	{/if}
 
 	{#if 'progress' in container.payload}

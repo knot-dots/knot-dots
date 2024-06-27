@@ -1,7 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { payloadTypes } from '$lib/models';
+import { filterVisible } from '$lib/authorization';
+import { type AnyContainer, payloadTypes } from '$lib/models';
 import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import {
 	getManyContainers,
@@ -15,12 +16,19 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	let currentOrganization;
 	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 
+	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
+		const containers = await promise;
+		return filterVisible(containers, locals.user);
+	}
+
 	const [indicatorTemplates, organizations, organizationalUnits] = await Promise.all([
-		locals.pool.connect(
-			getManyContainers([], { type: [payloadTypes.enum.indicator_template] }, 'alpha')
+		filterVisibleAsync(
+			locals.pool.connect(
+				getManyContainers([], { type: [payloadTypes.enum.indicator_template] }, 'alpha')
+			)
 		),
-		locals.pool.connect(getManyOrganizationContainers({}, 'alpha')),
-		locals.pool.connect(getManyOrganizationalUnitContainers({}))
+		filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
+		filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
 	]);
 
 	if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {

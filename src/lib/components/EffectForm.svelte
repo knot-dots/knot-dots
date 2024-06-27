@@ -1,0 +1,139 @@
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { type EffectContainer, isIndicatorContainer, isMeasureContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import Editor from '$lib/components/Editor.svelte';
+
+	export let container: EffectContainer;
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'basic-data',
+			tabs: ['basic-data']
+		}
+	}));
+
+	$: if (container.payload.achievedValues.length == 0) {
+		const thisYear = new Date().getFullYear();
+		container.payload = {
+			...container.payload,
+			achievedValues: [...Array(5)].map((_, index) => [thisYear + index, 0]),
+			plannedValues: [...Array(5)].map((_, index) => [thisYear + index, 0])
+		};
+	}
+
+	$: relatedContainerRequest = fetchRelatedContainers(container.guid, {}, '');
+
+	function appendYear() {
+		const year =
+			container.payload.achievedValues[container.payload.achievedValues.length - 1][0] + 1;
+		container.payload.achievedValues = [...container.payload.achievedValues, [year, 0]];
+		container.payload.plannedValues = [...container.payload.plannedValues, [year, 0]];
+	}
+
+	function updateAchievedValues(index: number) {
+		return (event: { currentTarget: HTMLInputElement }) => {
+			container.payload.achievedValues[index][1] = parseFloat(event.currentTarget.value);
+		};
+	}
+
+	function updatePlannedValues(index: number) {
+		return (event: { currentTarget: HTMLInputElement }) => {
+			container.payload.plannedValues[index][1] = parseFloat(event.currentTarget.value);
+		};
+	}
+</script>
+
+<fieldset class="form-tab" id="basic-data">
+	<div class="values">
+		<table class="spreadsheet">
+			<thead>
+				<tr>
+					<th scope="col"></th>
+					<th scope="col" colspan="2">
+						{#await relatedContainerRequest then containers}
+							{@const indicator = containers.find(isIndicatorContainer)}
+							{#if indicator}
+								{indicator.payload.title} ({$_(`${indicator.payload.unit}` ?? '')})
+							{/if}
+						{/await}
+					</th>
+				</tr>
+				<tr>
+					<th scope="col"></th>
+					<th scope="col">
+						{$_('indicator.effect.planned_values')}
+					</th>
+					<th scope="col">
+						{$_('indicator.effect.achieved_values')}
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each container.payload.achievedValues.map((v, i) => i) as index}
+					<tr>
+						<th scope="row">
+							{container.payload.achievedValues[index][0]}
+						</th>
+						<td>
+							<input
+								type="text"
+								inputmode="decimal"
+								value={container.payload.plannedValues[index][1]}
+								on:change={updatePlannedValues(index)}
+							/>
+						</td>
+						<td>
+							<input
+								type="text"
+								inputmode="decimal"
+								value={container.payload.achievedValues[index][1]}
+								on:change={updateAchievedValues(index)}
+							/>
+						</td>
+					</tr>
+				{/each}
+				<tr>
+					<td colspan="3">
+						<button
+							class="quiet"
+							title={$_('add_value')}
+							type="button"
+							on:click={() => appendYear()}
+						>
+							<PlusSmall />
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		{#await relatedContainerRequest then containers}
+			{@const indicator = containers.find(isIndicatorContainer)}
+			{@const measure = containers.find(isMeasureContainer)}
+			{#if indicator && measure}
+				<IndicatorChart
+					container={indicator}
+					relatedContainers={[container, measure]}
+					showEffects
+				/>
+			{/if}
+		{/await}
+	</div>
+
+	{#key container.guid}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
+</fieldset>
+
+<style>
+	.values {
+		align-items: center;
+		display: flex;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+</style>

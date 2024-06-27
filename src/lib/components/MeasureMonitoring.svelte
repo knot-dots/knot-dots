@@ -7,9 +7,11 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
 		type IndicatorContainer,
+		isEffectContainer,
 		type MeasureContainer,
 		type MeasureMonitoringContainer,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
@@ -34,16 +36,19 @@
 		}
 	];
 
-	$: indicatorsByGuid = new Map(indicators.map((i) => [i.guid, i]));
+	$: indicatorsByRevision = new Map(indicators.map((i) => [i.revision, i]));
 </script>
 
 <Board>
 	<BoardColumn title={$_('board.measure_monitoring.column.effects')}>
 		<div class="vertical-scroll-wrapper masked-overflow">
-			{#each container.payload.effect as effect}
-				{@const indicator = indicatorsByGuid.get(effect.indicator)}
+			{#each containers.filter(isEffectContainer) as effect}
+				{@const indicator = indicatorsByRevision.get(
+					effect.relation.find(({ predicate }) => predicate == predicates.enum['is-measured-by'])
+						?.object ?? 0
+				)}
 				{#if indicator}
-					<Card container={indicator} relatedContainers={[container]} />
+					<Card container={effect} relatedContainers={[container, indicator]} />
 				{/if}
 			{/each}
 		</div>
