@@ -1056,7 +1056,7 @@ export function getAllContainersRelatedToMeasure(
 			SELECT c.*
 			FROM container c
 			JOIN container_relation cr ON c.revision = cr.subject
-				AND cr.predicate = 'is-part-of-measure'
+				AND cr.predicate IN ('is-part-of-measure', 'is-part-of')
 				AND cr.object = ${revision}
 			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
