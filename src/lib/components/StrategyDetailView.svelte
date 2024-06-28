@@ -174,7 +174,7 @@
 
 	<div class="chapters">
 		{#each relatedContainers
-			.filter( ({ relation }) => relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-strategy']) )
+			.filter( ({ guid, relation }) => relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-strategy'] && guid != container.guid) )
 			.filter(({ payload }) => byPayloadType(payload.type, $page.url)) as part}
 			<Chapter container={part} headingTag="h3" isPartOf={container} />
 		{:else}
