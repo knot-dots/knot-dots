@@ -394,12 +394,12 @@ if (browser) {
 				hashParams.get(overlayKey.enum['measure-monitoring']) as string
 			);
 			const container = revisions[revisions.length - 1];
+
 			const [measureElements, indicators] = (await Promise.all([
-				fetchContainers(
+				fetchRelatedContainers(
+					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 					{
-						isPartOfMeasure: [container.revision],
 						organization: [container.organization],
-						relatedTo: hashParams.getAll('related-to'),
 						relationType: ['hierarchical'],
 						terms: hashParams.get('terms') ?? ''
 					},

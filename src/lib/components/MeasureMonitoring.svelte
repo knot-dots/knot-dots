@@ -44,11 +44,11 @@
 		<div class="vertical-scroll-wrapper masked-overflow">
 			{#each containers.filter(isEffectContainer) as effect}
 				{@const indicator = indicatorsByRevision.get(
-					effect.relation.find(({ predicate }) => predicate == predicates.enum['is-measured-by'])
+					effect.relation.find(({ predicate }) => predicate === predicates.enum['is-measured-by'])
 						?.object ?? 0
 				)}
 				{#if indicator}
-					<Card container={effect} relatedContainers={[container, indicator]} />
+					<Card container={effect} relatedContainers={[container, indicator, effect]} />
 				{/if}
 			{/each}
 		</div>

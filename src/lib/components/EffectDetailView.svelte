@@ -9,7 +9,8 @@
 		isIndicatorContainer,
 		overlayKey,
 		overlayURL,
-		owners
+		owners,
+		predicates
 	} from '$lib/models';
 	import type { AnyContainer, Container, EffectContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -18,7 +19,15 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
-	$: indicator = relatedContainers.find(isIndicatorContainer);
+	$: indicator = relatedContainers
+		.filter(isIndicatorContainer)
+		.find(
+			({ revision }) =>
+				container.relation.findIndex(
+					({ object, predicate }) =>
+						predicate == predicates.enum['is-measured-by'] && object == revision
+				) > -1
+		);
 	$: measure = relatedContainers.find(isContainerWithEffect);
 
 	applicationState.update((state) => ({
