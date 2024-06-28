@@ -229,8 +229,6 @@
 				contributors={relatedContainers}
 				compact
 			/>
-		{:else if 'progress' in container.payload}
-			<Progress value={container.payload.progress} compact />
 		{:else if 'status' in container.payload}
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
 				<svelte:component this={statusIcons.get(container.payload.status) ?? LightBulb} />
@@ -241,6 +239,8 @@
 				<svelte:component this={taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb} />
 				{$_(container.payload.taskStatus)}
 			</span>
+		{:else if 'progress' in container.payload}
+			<Progress value={container.payload.progress} compact />
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
 		{:else if 'indicatorType' in container.payload}
