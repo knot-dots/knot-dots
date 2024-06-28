@@ -346,7 +346,7 @@
 						<MeasureTypeFilter />
 						<CategoryFilter />
 						<TopicFilter />
-						<IndicatorTypeFilter initialValue={[]} />
+						<IndicatorTypeFilter />
 					</svelte:fragment>
 					<svelte:fragment slot="extra">
 						<li>

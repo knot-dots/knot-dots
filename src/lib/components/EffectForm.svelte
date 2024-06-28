@@ -31,7 +31,8 @@
 		};
 	}
 
-	$: relatedContainerRequest = fetchRelatedContainers(container.guid, {}, '');
+	$: guid = container.guid;
+	$: relatedContainerRequest = fetchRelatedContainers(guid, {}, '');
 
 	function appendYear() {
 		const year =
