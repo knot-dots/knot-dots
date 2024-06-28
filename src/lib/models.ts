@@ -599,6 +599,7 @@ const simpleMeasurePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		effect: z.array(indicatorEffect).default([]),
+		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		measureType: z.array(measureTypes).default([]),
 		progress: z.number().nonnegative().default(0),
 		resource: z
@@ -1073,6 +1074,7 @@ const emptyContainer = newContainer.extend({
 				audience: true,
 				category: true,
 				effect: true,
+				file: true,
 				measureType: true,
 				progress: true,
 				topic: true,
@@ -1241,6 +1243,7 @@ const emptySimpleMeasureContainer = emptyContainer.extend({
 			audience: true,
 			category: true,
 			effect: true,
+			file: true,
 			measureType: true,
 			progress: true,
 			topic: true,

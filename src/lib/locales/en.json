@@ -53,6 +53,7 @@
 	},
 	"establish_relations": "Establish relations",
 	"expand_sidebar": "Expand sidebar",
+	"files": "Files",
 	"filter": "Filter",
 	"filter.all_organizational_units": "All organizational units",
 	"form": {
@@ -479,6 +480,7 @@
 	},
 	"upload": {
 		"image.help": "JPG, PNG; max 100 MB",
+		"file.help": "PDF, Word, Excel; max 100 MB",
 		"pdf.help": "PDF; max 100 MB"
 	},
 	"user": {
