@@ -22,11 +22,11 @@
 				<Workspaces slot="workspaces" />
 
 				<svelte:fragment slot="filters">
+					<IndicatorTypeFilter />
 					<AudienceFilter />
 					<IndicatorCategoryFilter />
 					<CategoryFilter />
 					<TopicFilter />
-					<IndicatorTypeFilter />
 				</svelte:fragment>
 			</Sidebar>
 		{:else if isOrganizationalUnitContainer(data.container)}
@@ -34,6 +34,7 @@
 				<Workspaces slot="workspaces" />
 
 				<svelte:fragment slot="filters">
+					<IndicatorTypeFilter />
 					<AudienceFilter />
 					<IndicatorsIncludedFilter />
 					<IndicatorCategoryFilter />
