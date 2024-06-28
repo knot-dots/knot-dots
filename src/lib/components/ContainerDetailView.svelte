@@ -9,6 +9,7 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import Summary from '$lib/components/Summary.svelte';
 	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
@@ -90,10 +91,10 @@
 	</h2>
 
 	<slot name="data">
-		{#if 'summary' in container.payload}
+		{#if 'summary' in container.payload || 'description' in container.payload}
 			<div class="summary">
 				<h3>{$_('summary')}</h3>
-				{container.payload.summary ?? ''}
+				<Summary {container} />
 			</div>
 		{/if}
 
@@ -275,15 +276,19 @@
 				</p>
 			</div>
 		{/if}
-		{#if 'pdf' in container.payload && container.payload.pdf}
+		{#if 'pdf' in container.payload && container.payload.pdf.length > 0}
 			<div class="meta">
 				<h3 class="meta-key">{$_('pdf')}</h3>
-				<p class="meta-value">
-					<a href={container.payload.pdf}>
-						{$_('download')}
-						<ArrowDownTray />
-					</a>
-				</p>
+				<ul class="meta-value">
+					{#each container.payload.pdf as pdf}
+						<li>
+							<a href={pdf[0]}>
+								{pdf[1]}
+								<ArrowDownTray />
+							</a>
+						</li>
+					{/each}
+				</ul>
 			</div>
 		{/if}
 		{#await organizationMembersRequest then organizationMembers}

@@ -14,6 +14,7 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
+	import Summary from '$lib/components/Summary.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		containerOfType,
@@ -157,10 +158,11 @@
 		</p>
 	{/if}
 
-	{#if 'summary' in container.payload}
-		<p>
-			{container.payload.summary ?? ''}
-		</p>
+	{#if 'summary' in container.payload || 'description' in container.payload}
+		<div class="summary">
+			<h3>{$_('summary')}</h3>
+			<Summary {container} />
+		</div>
 	{/if}
 
 	{#if 'body' in container.payload}

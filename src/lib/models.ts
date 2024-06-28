@@ -599,6 +599,7 @@ const simpleMeasurePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		effect: z.array(indicatorEffect).default([]),
+		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		measureType: z.array(measureTypes).default([]),
 		progress: z.number().nonnegative().default(0),
 		resource: z
@@ -639,7 +640,7 @@ const strategyPayload = basePayload
 	.extend({
 		image: z.string().url().optional(),
 		level: levels,
-		pdf: z.string().url().optional(),
+		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		strategyType: strategyTypes,
 		type: z.literal(payloadTypes.enum.strategy)
 	})
@@ -1073,6 +1074,7 @@ const emptyContainer = newContainer.extend({
 				audience: true,
 				category: true,
 				effect: true,
+				file: true,
 				measureType: true,
 				progress: true,
 				topic: true,
@@ -1094,6 +1096,7 @@ const emptyContainer = newContainer.extend({
 			strategyPayload.pick({
 				audience: true,
 				category: true,
+				pdf: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1240,6 +1243,7 @@ const emptySimpleMeasureContainer = emptyContainer.extend({
 			audience: true,
 			category: true,
 			effect: true,
+			file: true,
 			measureType: true,
 			progress: true,
 			topic: true,
@@ -1271,6 +1275,7 @@ const emptyStrategyContainer = emptyContainer.extend({
 		strategyPayload.pick({
 			audience: true,
 			category: true,
+			pdf: true,
 			topic: true,
 			type: true,
 			visibility: true

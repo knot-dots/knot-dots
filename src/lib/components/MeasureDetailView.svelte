@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _, date, number } from 'svelte-i18n';
+	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
@@ -7,6 +8,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
+	import Summary from '$lib/components/Summary.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		getCreator,
@@ -76,10 +78,10 @@
 			{/if}
 		</h2>
 
-		{#if 'summary' in selectedRevision.payload}
+		{#if 'summary' in container.payload || 'description' in container.payload}
 			<div class="summary">
-				<h3>{$_('measure.summary')}</h3>
-				{selectedRevision.payload.summary ?? ''}
+				<h3>{$_('summary')}</h3>
+				<Summary container={selectedRevision} />
 			</div>
 		{/if}
 
@@ -111,6 +113,22 @@
 			<div class="result">
 				<h3>{$_('result')}</h3>
 				<Viewer value={selectedRevision.payload.result} />
+			</div>
+		{/if}
+
+		{#if 'file' in container.payload && container.payload.file.length > 0}
+			<div class="meta">
+				<h3 class="meta-key">{$_('files')}</h3>
+				<ul class="meta-value">
+					{#each container.payload.file as file}
+						<li>
+							<a href={file[0]}>
+								{file[1]}
+								<ArrowDownTray />
+							</a>
+						</li>
+					{/each}
+				</ul>
 			</div>
 		{/if}
 

@@ -9,6 +9,7 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import Summary from '$lib/components/Summary.svelte';
 	import {
 		isEffectContainer,
 		isIndicatorContainer,
@@ -185,41 +186,41 @@
 		{/if}
 	</header>
 
-	{#if 'summary' in container.payload}
-		<p class="text">
-			{container.payload.summary ?? ''}
-		</p>
-	{:else if 'image' in container.payload}
-		<img alt={$_('cover_image')} class="text" src={container.payload.image} />
-	{:else if isIndicatorContainer(container)}
-		{#await Promise.all([containersWithObjectivesPromise, relatedContainersPromise])}
-			<IndicatorChart {container} />
-		{:then [containersWithObjectives, relatedContainers]}
-			<IndicatorChart
-				{container}
-				{relatedContainers}
-				{containersWithObjectives}
-				showEffects
-				showObjectives
-			/>
-		{/await}
-		<p class="badges">
-			{#each container.payload.indicatorType as indicatorType}
-				<span class="badge">{$_(indicatorType)}</span>
-			{/each}
+	<div class="content">
+		{#if 'summary' in container.payload || 'description' in container.payload}
+			<Summary {container} />
+		{:else if 'image' in container.payload}
+			<img alt={$_('cover_image')} src={container.payload.image} />
+		{:else if isIndicatorContainer(container)}
+			{#await Promise.all([containersWithObjectivesPromise, relatedContainersPromise])}
+				<IndicatorChart {container} />
+			{:then [containersWithObjectives, relatedContainers]}
+				<IndicatorChart
+					{container}
+					{relatedContainers}
+					{containersWithObjectives}
+					showEffects
+					showObjectives
+				/>
+			{/await}
+			<p class="badges">
+				{#each container.payload.indicatorType as indicatorType}
+					<span class="badge">{$_(indicatorType)}</span>
+				{/each}
 
-			{#each container.payload.indicatorCategory as indicatorCategory}
-				<span class="badge">{$_(indicatorCategory)}</span>
-			{/each}
-		</p>
-	{:else if isEffectContainer(container)}
-		{#await relatedContainersPromise then relatedContainers}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
-			{#if indicator}
-				<IndicatorChart container={indicator} {relatedContainers} showEffects />
-			{/if}
-		{/await}
-	{/if}
+				{#each container.payload.indicatorCategory as indicatorCategory}
+					<span class="badge">{$_(indicatorCategory)}</span>
+				{/each}
+			</p>
+		{:else if isEffectContainer(container)}
+			{#await relatedContainersPromise then relatedContainers}
+				{@const indicator = relatedContainers.find(isIndicatorContainer)}
+				{#if indicator}
+					<IndicatorChart container={indicator} {relatedContainers} showEffects />
+				{/if}
+			{/await}
+		{/if}
+	</div>
 
 	<footer>
 		{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
@@ -229,8 +230,6 @@
 				contributors={relatedContainers}
 				compact
 			/>
-		{:else if 'progress' in container.payload}
-			<Progress value={container.payload.progress} compact />
 		{:else if 'status' in container.payload}
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
 				<svelte:component this={statusIcons.get(container.payload.status) ?? LightBulb} />
@@ -241,6 +240,8 @@
 				<svelte:component this={taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb} />
 				{$_(container.payload.taskStatus)}
 			</span>
+		{:else if 'progress' in container.payload}
+			<Progress value={container.payload.progress} compact />
 		{:else if 'strategyType' in container.payload}
 			<span class="badge">{$_(container.payload.strategyType)}</span>
 		{:else if 'indicatorType' in container.payload}
@@ -324,7 +325,7 @@
 		width: 1.5rem;
 	}
 
-	.text {
+	.content {
 		color: var(--color-gray-500);
 		font-size: 0.875rem;
 		font-weight: 500;
@@ -335,9 +336,7 @@
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
-		font-size: 0.875rem;
 		gap: 0.25rem;
-		margin-bottom: 1rem;
 	}
 
 	footer {

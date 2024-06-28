@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Trash from '~icons/heroicons/trash';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
@@ -22,6 +23,13 @@
 	}));
 
 	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
+
+	function removeFile(index: number) {
+		container.payload.file = [
+			...container.payload.file.slice(0, index),
+			...container.payload.file.slice(index + 1)
+		];
+	}
 </script>
 
 <fieldset class="form-tab" id="metadata">
@@ -100,6 +108,34 @@
 	{#key 'guid' in container ? container.guid : ''}
 		<Editor label={$_('annotation')} bind:value={container.payload.annotation} />
 	{/key}
+
+	{#if container.payload.file.length > 0}
+		<ul>
+			{#each container.payload.file as file, i}
+				<li>
+					<a href={file[0]}>{file[1]}</a>
+					<button
+						class="quiet remove"
+						title={$_('remove_file')}
+						type="button"
+						on:click|stopPropagation={() => removeFile(i)}
+					>
+						<Trash />
+					</button>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+	<label>
+		{$_('files')}
+		<input
+			type="file"
+			name="file"
+			accept="application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+			multiple
+		/>
+		<span class="help">{$_('upload.file.help')}</span>
+	</label>
 
 	<fieldset class="duration">
 		<legend>{$_('planned_duration')}</legend>
