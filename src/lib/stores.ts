@@ -315,7 +315,7 @@ if (browser) {
 				{
 					audience: hashParams.has('audienceChanged')
 						? hashParams.getAll('audience')
-						: [audience.enum['audience.public']],
+						: [audience.enum['audience.public'], audience.enum['audience.organization']],
 					category: hashParams.getAll('category'),
 					organization: [container.organization],
 					...(container.organizational_unit
@@ -346,7 +346,7 @@ if (browser) {
 				{
 					audience: hashParams.has('audienceChanged')
 						? hashParams.getAll('audience')
-						: [audience.enum['audience.public']],
+						: [audience.enum['audience.public'], audience.enum['audience.organization']],
 					category: hashParams.getAll('category'),
 					organization: [container.organization],
 					...(container.organizational_unit
@@ -373,7 +373,7 @@ if (browser) {
 				{
 					audience: hashParams.has('audienceChanged')
 						? hashParams.getAll('audience')
-						: [audience.enum['audience.public']],
+						: [audience.enum['audience.public'], audience.enum['audience.organization']],
 					category: hashParams.getAll('category'),
 					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
