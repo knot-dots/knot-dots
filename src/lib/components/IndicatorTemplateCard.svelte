@@ -1,15 +1,8 @@
 <script lang="ts">
-	import { unified } from 'unified';
-	import remarkParse from 'remark-parse';
-	import remarkGfm from 'remark-gfm';
-	import remarkRehype from 'remark-rehype';
-	import rehypeExtractExcerpt from 'rehype-extract-excerpt';
-	import rehypeSanitize from 'rehype-sanitize';
-	import rehypeStringify from 'rehype-stringify';
-	import stripMarkdown from 'strip-markdown';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import Summary from '$lib/components/Summary.svelte';
 	import { overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 	import type { IndicatorTemplateContainer } from '$lib/models';
 	import { overlayHistory } from '$lib/stores';
@@ -75,17 +68,7 @@
 		</h3>
 	</header>
 
-	{#await unified()
-		.use(remarkParse)
-		.use(remarkGfm)
-		.use(stripMarkdown)
-		.use(remarkRehype)
-		.use(rehypeSanitize)
-		.use(rehypeExtractExcerpt)
-		.use(rehypeStringify)
-		.process(container.payload.description) then content}
-		<div class="text">{@html content.data.excerpt}</div>
-	{/await}
+	<div class="content"><Summary {container} /></div>
 
 	<p class="badges">
 		{#each container.payload.indicatorType as indicatorType}
@@ -138,20 +121,18 @@
 		margin-bottom: 0;
 	}
 
-	.badges {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		font-size: 0.875rem;
-		gap: 0.25rem;
-		margin-bottom: 1rem;
-	}
-
-	.text {
+	.content {
 		color: var(--color-gray-500);
 		font-size: 0.875rem;
 		font-weight: 500;
 		margin-bottom: 1rem;
+	}
+
+	.badges {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 0.25rem;
 	}
 
 	footer {
