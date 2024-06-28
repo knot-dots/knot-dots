@@ -8,6 +8,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
+	import Summary from '$lib/components/Summary.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		getCreator,
@@ -77,10 +78,10 @@
 			{/if}
 		</h2>
 
-		{#if 'summary' in selectedRevision.payload}
+		{#if 'summary' in container.payload || 'description' in container.payload}
 			<div class="summary">
-				<h3>{$_('measure.summary')}</h3>
-				{selectedRevision.payload.summary ?? ''}
+				<h3>{$_('summary')}</h3>
+				<Summary container={selectedRevision} />
 			</div>
 		{/if}
 
