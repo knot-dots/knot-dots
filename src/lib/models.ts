@@ -639,7 +639,7 @@ const strategyPayload = basePayload
 	.extend({
 		image: z.string().url().optional(),
 		level: levels,
-		pdf: z.string().url().optional(),
+		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		strategyType: strategyTypes,
 		type: z.literal(payloadTypes.enum.strategy)
 	})
@@ -1094,6 +1094,7 @@ const emptyContainer = newContainer.extend({
 			strategyPayload.pick({
 				audience: true,
 				category: true,
+				pdf: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1271,6 +1272,7 @@ const emptyStrategyContainer = emptyContainer.extend({
 		strategyPayload.pick({
 			audience: true,
 			category: true,
+			pdf: true,
 			topic: true,
 			type: true,
 			visibility: true

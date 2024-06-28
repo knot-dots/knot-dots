@@ -109,15 +109,19 @@
 			</ul>
 		</div>
 	{/if}
-	{#if container.payload.pdf}
+	{#if container.payload.pdf.length > 0}
 		<div class="meta">
 			<h3 class="meta-key">{$_('pdf')}</h3>
-			<p class="meta-value meta-value-pdf">
-				<a href={container.payload.pdf}>
-					{$_('download')}
-					<ArrowDownTray />
-				</a>
-			</p>
+			<ul class="meta-value">
+				{#each container.payload.pdf as pdf}
+					<li>
+						<a href={pdf[0]}>
+							{pdf[1]}
+							<ArrowDownTray />
+						</a>
+					</li>
+				{/each}
+			</ul>
 		</div>
 	{/if}
 	{#await organizationMembersRequest then organizationMembers}

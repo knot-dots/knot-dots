@@ -29,9 +29,11 @@
 		container.payload = container.payload;
 	}
 
-	function removePDF() {
-		delete container.payload.pdf;
-		container.payload = container.payload;
+	function removePDF(index: number) {
+		container.payload.pdf = [
+			...container.payload.pdf.slice(0, index),
+			...container.payload.pdf.slice(index + 1)
+		];
 	}
 </script>
 
@@ -63,25 +65,28 @@
 	</label>
 {/if}
 
-{#if 'pdf' in container.payload}
-	<span>
-		<a href={container.payload.pdf}>{$_('pdf')}</a>
-		<button
-			class="quiet remove"
-			title={$_('remove_pdf')}
-			type="button"
-			on:click|stopPropagation={removePDF}
-		>
-			<Trash />
-		</button>
-	</span>
-{:else}
-	<label>
-		{$_('pdf')}
-		<input type="file" name="pdf" accept="application/pdf" />
-		<span class="help">{$_('upload.pdf.help')}</span>
-	</label>
+{#if container.payload.pdf.length > 0}
+	<ul>
+		{#each container.payload.pdf as pdf, i}
+			<li>
+				<a href={pdf[0]}>{pdf[1]}</a>
+				<button
+					class="quiet remove"
+					title={$_('remove_pdf')}
+					type="button"
+					on:click|stopPropagation={() => removePDF(i)}
+				>
+					<Trash />
+				</button>
+			</li>
+		{/each}
+	</ul>
 {/if}
+<label>
+	{$_('pdf')}
+	<input type="file" name="pdf" accept="application/pdf" multiple />
+	<span class="help">{$_('upload.pdf.help')}</span>
+</label>
 
 <label>
 	{$_('strategy_type.label')}
