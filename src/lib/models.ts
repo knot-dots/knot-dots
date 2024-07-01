@@ -1562,6 +1562,10 @@ export function createCopyOf(
 			assignee: undefined,
 			taskStatus: taskStatus.enum['task_status.idea']
 		};
+	} else if (isIndicatorContainer(container)) {
+		copy.payload = { ...container.payload, historicalValues: [] };
+	} else if (isEffectContainer(container)) {
+		copy.payload = { ...container.payload, achievedValues: [], plannedValues: [] };
 	} else {
 		copy.payload = {
 			...container.payload

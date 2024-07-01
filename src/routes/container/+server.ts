@@ -8,7 +8,10 @@ import {
 	type Container,
 	createCopyOf,
 	indicatorCategories,
+	type IndicatorContainer,
 	indicatorTypes,
+	isEffectContainer,
+	isIndicatorContainer,
 	isMeasureContainer,
 	isMeasureResultContainer,
 	isMilestoneContainer,
@@ -175,7 +178,11 @@ export const POST = (async ({ locals, request }) => {
 					for (const copyFrom of containersRelatedToOriginal.filter(
 						(c) => isMeasureResultContainer(c) || isMilestoneContainer(c)
 					)) {
-						const copyContainer = createCopyOf(copyFrom);
+						const copyContainer = createCopyOf(
+							copyFrom,
+							createdContainer.organization,
+							createdContainer.organizational_unit
+						);
 
 						copyContainer.relation.push({
 							object: createdContainer.revision,
@@ -199,8 +206,12 @@ export const POST = (async ({ locals, request }) => {
 						);
 					}
 
-					for (const copyFrom of containersRelatedToOriginal.filter((c) => isTaskContainer(c))) {
-						const copyContainer = createCopyOf(copyFrom);
+					for (const copyFrom of containersRelatedToOriginal.filter(isTaskContainer)) {
+						const copyContainer = createCopyOf(
+							copyFrom,
+							createdContainer.organization,
+							createdContainer.organizational_unit
+						);
 
 						copyContainer.relation.push({
 							object: createdContainer.revision,
@@ -221,6 +232,86 @@ export const POST = (async ({ locals, request }) => {
 											({ predicate, object }) =>
 												predicate == predicates.enum['is-copy-of'] &&
 												originalIsPartOfObject == object
+										)
+									)?.revision as number
+								}))
+						);
+
+						copyContainer.user.push({
+							predicate: predicates.enum['is-creator-of'],
+							subject: locals.user.guid
+						});
+
+						await createContainer(copyContainer as NewContainer)(txConnection);
+					}
+
+					const measuredByObjects = [] as IndicatorContainer[];
+
+					const organizationIndicators = (await getManyContainers(
+						[createdContainer.organization],
+						{ type: [payloadTypes.enum.indicator] },
+						''
+					)(txConnection)) as IndicatorContainer[];
+
+					console.log(containersRelatedToOriginal, organizationIndicators);
+
+					for (const copyFrom of containersRelatedToOriginal.filter(isIndicatorContainer)) {
+						const match = organizationIndicators.find(
+							({ payload }) => payload.quantity == copyFrom.payload.quantity
+						);
+						if (match) {
+							measuredByObjects.push({
+								...match,
+								relation: [
+									...match.relation,
+									{
+										object: copyFrom.revision,
+										position: 0,
+										predicate: predicates.enum['is-copy-of'],
+										subject: match.revision
+									}
+								]
+							});
+						} else {
+							const copyContainer = createCopyOf(copyFrom, createdContainer.organization, null);
+							copyContainer.user.push({
+								predicate: predicates.enum['is-creator-of'],
+								subject: locals.user.guid
+							});
+							measuredByObjects.push(
+								(await createContainer(copyContainer as NewContainer)(
+									txConnection
+								)) as IndicatorContainer
+							);
+						}
+					}
+
+					for (const copyFrom of containersRelatedToOriginal.filter(isEffectContainer)) {
+						const copyContainer = createCopyOf(
+							copyFrom,
+							createdContainer.organization,
+							createdContainer.organizational_unit
+						);
+
+						copyContainer.relation.push({
+							object: createdContainer.revision,
+							predicate: predicates.enum['is-part-of'],
+							position: 0
+						});
+						copyContainer.relation.push(
+							...copyFrom.relation
+								.filter(
+									({ predicate, subject }) =>
+										predicate == predicates.enum['is-measured-by'] && subject == copyFrom.revision
+								)
+								.map(({ position, predicate, object: originalIsMeasuredByObject }) => ({
+									position,
+									predicate,
+									object: measuredByObjects.find(({ relation }) =>
+										relation.find(
+											({ predicate, object }) =>
+												predicate == predicates.enum['is-copy-of'] &&
+												originalIsMeasuredByObject == object
 										)
 									)?.revision as number
 								}))
