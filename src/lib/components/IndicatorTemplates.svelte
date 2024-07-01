@@ -11,7 +11,6 @@
 		type IndicatorContainer,
 		type IndicatorTemplateContainer,
 		isIndicatorContainer,
-		isIndicatorTemplateContainer,
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
@@ -19,21 +18,29 @@
 
 	export let value: IndicatorContainer | IndicatorTemplateContainer;
 
-	let indicatorsAndTemplatesRequest: Promise<
-		Array<IndicatorContainer | IndicatorTemplateContainer>
-	>;
+	let indicatorTemplatesRequest: Promise<Array<IndicatorTemplateContainer>>;
+	let indicatorsRequest: Promise<Array<IndicatorContainer>>;
 	let params: URLSearchParams;
 
 	$: {
 		params = paramsFromFragment($page.url);
-		indicatorsAndTemplatesRequest = fetchContainers({
+		indicatorTemplatesRequest = fetchContainers({
 			category: params.getAll('category'),
 			indicatorCategory: params.getAll('indicatorCategory'),
 			indicatorType: params.getAll('indicatorType'),
 			measureType: params.getAll('measureType'),
-			payloadType: [payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
+			payloadType: [payloadTypes.enum.indicator_template],
 			topic: params.getAll('topic')
 		}) as Promise<IndicatorTemplateContainer[]>;
+		indicatorsRequest = fetchContainers({
+			category: params.getAll('category'),
+			indicatorCategory: params.getAll('indicatorCategory'),
+			indicatorType: params.getAll('indicatorType'),
+			measureType: params.getAll('measureType'),
+			organization: [$page.data.currentOrganization.guid],
+			payloadType: [payloadTypes.enum.indicator],
+			topic: params.getAll('topic')
+		}) as Promise<IndicatorContainer[]>;
 	}
 
 	async function select(container: IndicatorContainer | IndicatorTemplateContainer) {
@@ -58,12 +65,9 @@
 	}
 </script>
 
-{#await indicatorsAndTemplatesRequest then containers}
-	{@const indicators = containers.filter(isIndicatorContainer)}
+{#await Promise.all( [indicatorTemplatesRequest, indicatorsRequest] ) then [indicatortTemplates, indicators]}
 	<ul>
-		{#each containers
-			.filter(isIndicatorContainer)
-			.filter(() => params.has('alreadyInUse')) as indicator}
+		{#each indicators.filter(() => params.has('alreadyInUse')) as indicator}
 			<li>
 				<Card --height="100%" container={indicator}>
 					<button
@@ -78,9 +82,7 @@
 				</Card>
 			</li>
 		{/each}
-		{#each containers
-			.filter(isIndicatorTemplateContainer)
-			.filter((c) => !alreadyInUse(c, indicators)) as template}
+		{#each indicatortTemplates.filter((c) => !alreadyInUse(c, indicators)) as template}
 			<li>
 				<IndicatorTemplateCard --height="100%" container={template}>
 					<button
