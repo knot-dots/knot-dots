@@ -1540,11 +1540,15 @@ export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicat
 	return container.payload.historicalValues.length > 0;
 }
 
-export function createCopyOf(container: Container) {
+export function createCopyOf(
+	container: Container,
+	organization: string,
+	organizationalUnit: string | null
+) {
 	const copy = containerOfType(
 		container.payload.type,
-		container.organization,
-		container.organizational_unit,
+		organization,
+		organizationalUnit,
 		container.realm
 	);
 
