@@ -959,6 +959,7 @@ export function isTaskContainer(
 }
 
 export type MeasureMonitoringContainer =
+	| EffectContainer
 	| MeasureResultContainer
 	| MilestoneContainer
 	| TaskContainer;
@@ -967,6 +968,7 @@ export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureMonitoringContainer {
 	return (
+		isEffectContainer(container) ||
 		isMeasureResultContainer(container) ||
 		isMilestoneContainer(container) ||
 		isTaskContainer(container)
