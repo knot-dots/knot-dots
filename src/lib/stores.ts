@@ -19,6 +19,7 @@ import {
 	isContainerWithObjective,
 	isEffectContainer,
 	isIndicatorContainer,
+	isMeasureMonitoringContainer,
 	isStrategyContainer,
 	isTaskContainer,
 	type MeasureContainer,
@@ -395,25 +396,19 @@ if (browser) {
 			);
 			const container = revisions[revisions.length - 1];
 
-			const [measureElements, indicators] = (await Promise.all([
-				fetchRelatedContainers(
-					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
-					{
-						organization: [container.organization],
-						relationType: ['hierarchical'],
-						terms: hashParams.get('terms') ?? ''
-					},
-					hashParams.get('sort') ?? 'alpha'
-				),
-				fetchContainers({
+			const relatedContainers = (await fetchRelatedContainers(
+				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+				{
 					organization: [container.organization],
-					payloadType: [payloadTypes.enum.indicator]
-				})
-			])) as [MeasureMonitoringContainer[], IndicatorContainer[]];
+					relationType: ['hierarchical'],
+					terms: hashParams.get('terms') ?? ''
+				},
+				hashParams.get('sort') ?? 'alpha'
+			)) as Array<MeasureMonitoringContainer | IndicatorContainer>;
 			overlay.set({
-				indicators,
+				indicators: relatedContainers.filter(isIndicatorContainer),
 				isPartOfOptions: [],
-				measureElements,
+				measureElements: relatedContainers.filter(isMeasureMonitoringContainer),
 				relatedContainers: [],
 				revisions
 			});

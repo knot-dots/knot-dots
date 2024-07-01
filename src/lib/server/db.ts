@@ -1056,13 +1056,34 @@ export function getAllContainersRelatedToMeasure(
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 			JOIN container_relation cr ON c.revision = cr.subject
-				AND cr.predicate IN ('is-part-of-measure', 'is-part-of')
+				AND cr.predicate IN (${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of']})
 				AND cr.object = ${revision}
 			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
 		`);
 
-		return withUserAndRelation<Container>(connection, containerResult);
+		const includeIndicators =
+			filters.type == undefined ||
+			filters.type.length == 0 ||
+			filters.type.includes(payloadTypes.enum.indicator);
+
+		const indicatorResult =
+			containerResult.length > 0 && includeIndicators
+				? await connection.any(sql.typeAlias('container')`
+				SELECT c.*
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.object
+					AND cr.predicate = ${predicates.enum['is-measured-by']}
+					AND cr.subject IN (${sql.join(
+						containerResult
+							.filter(({ payload }) => payload.type == payloadTypes.enum.effect)
+							.map(({ revision }) => revision),
+						sql.fragment`, `
+					)})
+			`)
+				: [];
+
+		return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
 	};
 }
 
