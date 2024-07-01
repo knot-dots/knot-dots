@@ -959,6 +959,7 @@ export function isTaskContainer(
 }
 
 export type MeasureMonitoringContainer =
+	| EffectContainer
 	| MeasureResultContainer
 	| MilestoneContainer
 	| TaskContainer;
@@ -967,6 +968,7 @@ export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureMonitoringContainer {
 	return (
+		isEffectContainer(container) ||
 		isMeasureResultContainer(container) ||
 		isMilestoneContainer(container) ||
 		isTaskContainer(container)
@@ -1538,11 +1540,15 @@ export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicat
 	return container.payload.historicalValues.length > 0;
 }
 
-export function createCopyOf(container: Container) {
+export function createCopyOf(
+	container: Container,
+	organization: string,
+	organizationalUnit: string | null
+) {
 	const copy = containerOfType(
 		container.payload.type,
-		container.organization,
-		container.organizational_unit,
+		organization,
+		organizationalUnit,
 		container.realm
 	);
 
@@ -1556,6 +1562,10 @@ export function createCopyOf(container: Container) {
 			assignee: undefined,
 			taskStatus: taskStatus.enum['task_status.idea']
 		};
+	} else if (isIndicatorContainer(container)) {
+		copy.payload = { ...container.payload, historicalValues: [] };
+	} else if (isEffectContainer(container)) {
+		copy.payload = { ...container.payload, achievedValues: [], plannedValues: [] };
 	} else {
 		copy.payload = {
 			...container.payload

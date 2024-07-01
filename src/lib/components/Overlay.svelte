@@ -565,9 +565,11 @@
 							options={Array.from(
 								new Set(
 									relatedContainers
-										.filter(({ relation }) =>
+										.filter(({ guid, relation }) =>
 											relation.some(
-												({ predicate }) => predicate == predicates.enum['is-part-of-strategy']
+												({ predicate }) =>
+													predicate == predicates.enum['is-part-of-strategy'] &&
+													guid != container.guid
 											)
 										)
 										.map(({ payload }) => payload.type)

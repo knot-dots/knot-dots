@@ -187,11 +187,7 @@
 	</header>
 
 	<div class="content">
-		{#if 'summary' in container.payload || 'description' in container.payload}
-			<Summary {container} />
-		{:else if 'image' in container.payload}
-			<img alt={$_('cover_image')} src={container.payload.image} />
-		{:else if isIndicatorContainer(container)}
+		{#if isIndicatorContainer(container)}
 			{#await Promise.all([containersWithObjectivesPromise, relatedContainersPromise])}
 				<IndicatorChart {container} />
 			{:then [containersWithObjectives, relatedContainers]}
@@ -219,6 +215,10 @@
 					<IndicatorChart container={indicator} {relatedContainers} showEffects />
 				{/if}
 			{/await}
+		{:else if 'image' in container.payload}
+			<img alt={$_('cover_image')} src={container.payload.image} />}
+		{:else if 'summary' in container.payload || 'description' in container.payload}
+			<Summary {container} />
 		{/if}
 	</div>
 
