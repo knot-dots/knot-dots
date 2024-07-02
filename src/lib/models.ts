@@ -1565,7 +1565,7 @@ export function createCopyOf(
 	} else if (isIndicatorContainer(container)) {
 		copy.payload = { ...container.payload, historicalValues: [] };
 	} else if (isEffectContainer(container)) {
-		copy.payload = { ...container.payload, achievedValues: [], plannedValues: [] };
+		copy.payload = { ...container.payload, achievedValues: [] };
 	} else {
 		copy.payload = {
 			...container.payload
