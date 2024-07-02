@@ -75,8 +75,11 @@
 				<a
 					class="button"
 					href={addItemURL($page.url)}
-					on:click|preventDefault={payloadType == payloadTypes.enum.effect
-						? () => addEffect(container)
+					on:click={payloadType == payloadTypes.enum.effect
+						? (event) => {
+								event.preventDefault();
+								addEffect(container);
+							}
 						: undefined}
 				>
 					{$_('add_item')}
