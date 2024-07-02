@@ -134,12 +134,16 @@
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfStrategyIndex),
-			{
-				object: parseInt(event.currentTarget.value),
-				position: 0,
-				predicate: predicates.enum['is-part-of-strategy'],
-				...('revision' in container ? { subject: container.revision } : undefined)
-			},
+			...(event.currentTarget.value
+				? [
+						{
+							object: parseInt(event.currentTarget.value),
+							position: 0,
+							predicate: predicates.enum['is-part-of-strategy'],
+							...('revision' in container ? { subject: container.revision } : undefined)
+						}
+					]
+				: []),
 			...container.relation.slice(isPartOfStrategyIndex + 1)
 		];
 
