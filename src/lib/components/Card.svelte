@@ -13,6 +13,8 @@
 	import {
 		isEffectContainer,
 		isIndicatorContainer,
+		isSimpleMeasureContainer,
+		isTaskContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
@@ -215,9 +217,11 @@
 					<IndicatorChart container={indicator} {relatedContainers} showEffects />
 				{/if}
 			{/await}
+		{:else if isSimpleMeasureContainer(container)}
+			<Progress value={container.payload.progress} compact />
 		{:else if 'image' in container.payload}
 			<img alt={$_('cover_image')} src={container.payload.image} />}
-		{:else if 'summary' in container.payload || 'description' in container.payload}
+		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}
 	</div>

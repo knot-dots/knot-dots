@@ -158,7 +158,7 @@
 		</p>
 	{/if}
 
-	{#if 'summary' in container.payload || 'description' in container.payload}
+	{#if 'summary' in container.payload || ('description' in container.payload && !isSimpleMeasureContainer(container))}
 		<div class="summary">
 			<h3>{$_('summary')}</h3>
 			<Summary {container} />
@@ -171,6 +171,13 @@
 
 	{#if 'description' in container.payload}
 		<Viewer value={container.payload.description} />
+	{/if}
+
+	{#if 'progress' in container.payload}
+		<div class="progress">
+			<h4>{$_('progress')}</h4>
+			<Progress value={container.payload.progress} />
+		</div>
 	{/if}
 
 	{#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
@@ -228,13 +235,6 @@
 	{#if isContainerWithEffect(container)}
 		<h4>{$_('effects')}</h4>
 		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
-	{/if}
-
-	{#if 'progress' in container.payload}
-		<div class="progress">
-			<h3>{$_('progress')}</h3>
-			<Progress value={container.payload.progress} />
-		</div>
 	{/if}
 
 	<footer class="content-actions">
