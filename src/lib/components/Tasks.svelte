@@ -43,6 +43,18 @@
 			items: containers.filter((c) => c.payload.taskStatus === taskStatus.enum['task_status.done'])
 		}
 	];
+
+	function sortByTitle(a: Container, b: Container) {
+		const titleA = a.payload.title.toUpperCase();
+		const titleB = b.payload.title.toUpperCase();
+		if (titleA < titleB) {
+			return -1;
+		}
+		if (titleA > titleB) {
+			return 1;
+		}
+		return 0;
+	}
 </script>
 
 <Board>
@@ -53,7 +65,7 @@
 			title={$_('measure_results_and_milestones')}
 		>
 			<div class="vertical-scroll-wrapper masked-overflow">
-				{#each relatedContainers as container}
+				{#each relatedContainers.sort(sortByTitle) as container}
 					<Card {container} showRelationFilter />
 				{/each}
 			</div>
