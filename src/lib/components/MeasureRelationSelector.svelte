@@ -83,12 +83,16 @@
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfMeasureIndex),
-			{
-				object: parseInt(event.currentTarget.value),
-				position: 0,
-				predicate: predicates.enum['is-part-of-measure'],
-				...('revision' in container ? { subject: container.revision } : undefined)
-			},
+			...(event.currentTarget.value
+				? [
+						{
+							object: parseInt(event.currentTarget.value),
+							position: 0,
+							predicate: predicates.enum['is-part-of-measure'],
+							...('revision' in container ? { subject: container.revision } : undefined)
+						}
+					]
+				: []),
 			...container.relation.slice(isPartOfMeasureIndex + 1)
 		];
 
