@@ -1053,11 +1053,13 @@ export function getAllContainersRelatedToMeasure(
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT c.*
-			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
-			JOIN container_relation cr ON c.revision = cr.subject
-				AND cr.predicate IN (${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of']})
-				AND cr.object = ${revision}
+			SELECT * FROM (
+				SELECT DISTINCT ON (c.guid) c.*
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.subject
+					AND cr.predicate IN (${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of']})
+					AND cr.object = ${revision}) AS containers
+			${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
 		`);
