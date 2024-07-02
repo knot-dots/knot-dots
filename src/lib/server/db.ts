@@ -1064,24 +1064,23 @@ export function getAllContainersRelatedToMeasure(
 			ORDER BY ${prepareOrderByExpression(sort)};
 		`);
 
+		const effects = containerResult
+			.filter(({ payload }) => payload.type == payloadTypes.enum.effect)
+			.map(({ revision }) => revision);
+
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
 			filters.type.includes(payloadTypes.enum.indicator);
 
 		const indicatorResult =
-			containerResult.length > 0 && includeIndicators
+			effects.length > 0 && includeIndicators
 				? await connection.any(sql.typeAlias('container')`
 				SELECT c.*
 				FROM container c
 				JOIN container_relation cr ON c.revision = cr.object
 					AND cr.predicate = ${predicates.enum['is-measured-by']}
-					AND cr.subject IN (${sql.join(
-						containerResult
-							.filter(({ payload }) => payload.type == payloadTypes.enum.effect)
-							.map(({ revision }) => revision),
-						sql.fragment`, `
-					)})
+					AND cr.subject IN (${sql.join(effects, sql.fragment`, `)})
 			`)
 				: [];
 
