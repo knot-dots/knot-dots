@@ -253,8 +253,6 @@ export const POST = (async ({ locals, request }) => {
 						''
 					)(txConnection)) as IndicatorContainer[];
 
-					console.log(containersRelatedToOriginal, organizationIndicators);
-
 					for (const copyFrom of containersRelatedToOriginal.filter(isIndicatorContainer)) {
 						const match = organizationIndicators.find(
 							({ payload }) => payload.quantity == copyFrom.payload.quantity
