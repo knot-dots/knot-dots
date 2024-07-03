@@ -1048,7 +1048,14 @@ export function getAllContainersRelatedToStrategy(
 
 export function getAllContainersRelatedToMeasure(
 	revision: number,
-	filters: { terms?: string; type?: PayloadType[] },
+	filters: {
+		assignees?: string[];
+		categories?: string[];
+		taskCategories?: string[];
+		terms?: string;
+		topic?: string[];
+		type?: PayloadType[];
+	},
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
