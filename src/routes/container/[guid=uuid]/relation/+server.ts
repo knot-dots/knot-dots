@@ -60,7 +60,11 @@ export const GET = (async ({ locals, params, url }) => {
 			getAllContainersRelatedToMeasure(
 				container.revision,
 				{
+					assignees: parseResult.data.assignee,
+					categories: parseResult.data.category,
+					taskCategories: parseResult.data.taskCategory,
 					terms: parseResult.data.terms[0],
+					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType
 				},
 				parseResult.data.sort[0]
