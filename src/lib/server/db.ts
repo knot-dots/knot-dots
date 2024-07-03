@@ -1053,7 +1053,7 @@ export function getAllContainersRelatedToMeasure(
 		categories?: string[];
 		taskCategories?: string[];
 		terms?: string;
-		topic?: string[];
+		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string
