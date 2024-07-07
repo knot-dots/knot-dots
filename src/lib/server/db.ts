@@ -287,6 +287,24 @@ export function deleteContainer(container: AnyContainer) {
 	};
 }
 
+export function deleteContainerRecursively(container: AnyContainer) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const parts = await getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				['hierarchical'],
+				{},
+				''
+			)(txConnection);
+
+			for (const part of parts) {
+				await deleteContainer({ ...part, user: container.user })(txConnection);
+			}
+		});
+	};
+}
+
 export function updateContainerRelationPosition(relation: Relation[]) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
