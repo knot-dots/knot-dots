@@ -1,3 +1,11 @@
+variable "cockpit_sources" {
+  type = object({
+    logs_url    = string
+    metrics_url = string
+    traces_url  = string
+  })
+}
+
 variable "cockpit_token" {
   type = string
 }

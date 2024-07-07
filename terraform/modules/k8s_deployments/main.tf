@@ -746,7 +746,7 @@ resource "kubernetes_config_map" "grafana_alloy" {
   }
 
   data = {
-    "config.alloy" = file("${path.module}/config.alloy")
+    "config.alloy" = templatefile("${path.module}/config.alloy", var.cockpit_sources)
   }
 }
 
