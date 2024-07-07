@@ -27,7 +27,7 @@ otelcol.processor.batch "this" {
 
 otelcol.exporter.otlphttp "cockpit" {
   client {
-    endpoint = "https://traces.cockpit.fr-par.scw.cloud/otlp"
+    endpoint = "${traces_url}"
     headers  = {
       "X-Token" = env("SCW_COCKPIT_TOKEN"),
     }
@@ -40,7 +40,7 @@ otelcol.exporter.prometheus "cockpit" {
 
 prometheus.remote_write "cockpit" {
     endpoint {
-        url     = "https://metrics.cockpit.fr-par.scw.cloud/api/v1/push"
+        url     = "${metrics_url}"
         headers = {
           "X-Token" = env("SCW_COCKPIT_TOKEN"),
         }
@@ -49,10 +49,6 @@ prometheus.remote_write "cockpit" {
 
 discovery.kubernetes "pods" {
   role = "pod"
-
-  namespaces {
-    names = ["default"]
-  }
 }
 
 loki.source.kubernetes "pods" {
@@ -63,6 +59,6 @@ loki.source.kubernetes "pods" {
 loki.write "cockpit" {
   endpoint {
     tenant_id = env("SCW_COCKPIT_TOKEN")
-    url       = "https://logs.cockpit.fr-par.scw.cloud/loki/api/v1/push"
+    url       = "${logs_url}"
   }
 }

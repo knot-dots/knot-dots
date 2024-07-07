@@ -54,3 +54,18 @@ resource "scaleway_cockpit_token" "grafana_alloy" {
     write_traces  = true
   }
 }
+
+resource "scaleway_cockpit_source" "logs" {
+  name = "ds-${var.cluster_name}-logs"
+  type = "logs"
+}
+
+resource "scaleway_cockpit_source" "metrics" {
+  name = "ds-${var.cluster_name}-metrics"
+  type = "metrics"
+}
+
+resource "scaleway_cockpit_source" "traces" {
+  name = "ds-${var.cluster_name}-traces"
+  type = "traces"
+}

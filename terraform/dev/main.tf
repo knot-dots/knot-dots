@@ -245,6 +245,7 @@ module "k8s_cluster" {
 module "k8s_deployments" {
   source = "../modules/k8s_deployments"
 
+  cockpit_sources          = module.k8s_cluster.cockpit_sources
   cockpit_token            = module.k8s_cluster.cockpit_token
   databases                = module.rdb_databases
   registry_password        = scaleway_iam_api_key.registry_password.secret_key
