@@ -350,6 +350,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           env {
+            name  = "OTEL_NODE_ENABLED_INSTRUMENTATIONS"
+            value = "express,http,net,pg"
+          }
+
+          env {
             name  = "OTEL_EXPORTER_OTLP_ENDPOINT"
             value = "http://${helm_release.grafana_alloy.name}.${helm_release.grafana_alloy.namespace}.svc.cluster.local:4318"
           }
