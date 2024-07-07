@@ -81,6 +81,17 @@ services:
       - "3000:3000"
     profiles:
       - qa
+  preview-proxy:
+    depends_on:
+      preview:
+        condition: service_started
+    image: nginx:stable-alpine
+    ports:
+      - "3128:80"
+    profiles:
+      - qa
+    volumes:
+      - ./docker/strategytool/proxy.conf:/etc/nginx/conf.d/default.conf:ro
   smtp:
     image: rnwood/smtp4dev
     ports:

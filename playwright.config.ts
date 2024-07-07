@@ -16,10 +16,13 @@ const config: PlaywrightTestConfig = {
 		}
 	],
 	use: {
+		proxy: {
+			server: 'http://localhost:3128'
+		},
 		trace: 'on-first-retry'
 	},
 	webServer: {
-		command: 'docker compose up --build preview',
+		command: 'docker compose up --build preview-proxy',
 		port: 3000,
 		reuseExistingServer: !process.env.CI,
 		timeout: 180 * 1000
