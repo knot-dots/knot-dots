@@ -49,10 +49,6 @@ prometheus.remote_write "cockpit" {
 
 discovery.kubernetes "pods" {
   role = "pod"
-
-  namespaces {
-    names = ["default"]
-  }
 }
 
 loki.source.kubernetes "pods" {
