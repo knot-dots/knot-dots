@@ -76,6 +76,7 @@ resource "scaleway_iam_policy" "github" {
       "ObjectStorageObjectsDelete",
       "ObjectStorageObjectsRead",
       "ObjectStorageObjectsWrite",
+      "ObservabilityReadOnly",
       "PrivateNetworksFullAccess",
       "RelationalDatabasesReadOnly",
       "TransactionalEmailDomainReadOnly"
