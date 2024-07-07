@@ -62,6 +62,9 @@ services:
     environment:
       - AUTH_SECRET
       - KC_CLIENT_SECRET
+      - NODE_OPTIONS
+      - OTEL_SERVICE_NAME
+      - OTEL_TRACES_EXPORTER
       - PGDATABASE
       - PGHOST
       - PGPASSWORD
@@ -91,6 +94,9 @@ services:
     environment:
       - AUTH_SECRET
       - KC_CLIENT_SECRET
+      - NODE_OPTIONS
+      - OTEL_SERVICE_NAME
+      - OTEL_TRACES_EXPORTER
       - PGDATABASE
       - PGHOST
       - PGPASSWORD

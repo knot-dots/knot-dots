@@ -345,6 +345,11 @@ resource "kubernetes_deployment_v1" "strategytool" {
           }
 
           env {
+            name  = "NODE_OPTIONS"
+            value = "--require=@opentelemetry/auto-instrumentations-node/register"
+          }
+
+          env {
             name  = "OTEL_EXPORTER_OTLP_ENDPOINT"
             value = "http://${helm_release.grafana_alloy.name}.${helm_release.grafana_alloy.namespace}.svc.cluster.local:4318"
           }
