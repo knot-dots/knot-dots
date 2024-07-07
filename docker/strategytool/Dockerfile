@@ -22,6 +22,5 @@ COPY --from=builder /srv/app/package.json .
 COPY --from=builder /srv/app/node_modules ./node_modules
 COPY --from=builder /srv/app/build ./build
 COPY index.js .
-COPY instrumentation.js .
 EXPOSE 3000
-CMD ["node", "--import", "./instrumentation.js", "."]
+CMD ["node", "."]
