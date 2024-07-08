@@ -65,7 +65,6 @@
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
-		mayDelete,
 		type MeasureContainer,
 		type MeasureMonitoringContainer,
 		newIndicatorTemplateFromIndicator,
@@ -77,7 +76,7 @@
 		type TaskContainer,
 		type User
 	} from '$lib/models';
-	import { ability, addEffectState, overlayWidth, user } from '$lib/stores';
+	import { ability, addEffectState, mayDeleteContainer, overlayWidth, user } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
@@ -393,7 +392,7 @@
 					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 				{/if}
 				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
-				{#if mayDelete(container, $ability)}
+				{#if $mayDeleteContainer(container)}
 					<button
 						class="delete quiet"
 						title={$_('delete')}
