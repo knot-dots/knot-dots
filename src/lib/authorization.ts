@@ -16,7 +16,6 @@ type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const objectiveTypes = [
 	payloadTypes.enum.measure,
-	payloadTypes.enum.milestone,
 	payloadTypes.enum.model,
 	payloadTypes.enum.operational_goal,
 	payloadTypes.enum.simple_measure,
