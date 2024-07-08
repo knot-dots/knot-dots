@@ -1,4 +1,5 @@
 import { error, json } from '@sveltejs/kit';
+import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import {
@@ -50,48 +51,57 @@ export const GET = (async ({ locals, params, url }) => {
 		error(400, { message: parseResult.error.message });
 	}
 
-	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+	try {
+		const container = await locals.pool.connect(getContainerByGuid(params.guid));
 
-	let containers;
-	if (isIndicatorContainer(container)) {
-		containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container));
-	} else if (isMeasureContainer(container)) {
-		containers = await locals.pool.connect(
-			getAllContainersRelatedToMeasure(
-				container.revision,
-				{
-					assignees: parseResult.data.assignee,
-					categories: parseResult.data.category,
-					taskCategories: parseResult.data.taskCategory,
-					terms: parseResult.data.terms[0],
-					topics: parseResult.data.topic,
-					type: parseResult.data.payloadType
-				},
-				parseResult.data.sort[0]
-			)
-		);
-	} else {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				parseResult.data.organization,
-				params.guid,
-				parseResult.data.relationType,
-				{
-					assignees: parseResult.data.assignee,
-					audience: parseResult.data.audience,
-					categories: parseResult.data.category,
-					organizationalUnits: parseResult.data.organizationalUnit,
-					strategyTypes: parseResult.data.strategyType,
-					taskCategories: parseResult.data.taskCategory,
-					terms: parseResult.data.terms[0],
-					topics: parseResult.data.topic,
-					type: parseResult.data.payloadType
-				},
-				parseResult.data.sort[0]
-			)
-		);
+		let containers;
+
+		if (isIndicatorContainer(container)) {
+			containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container));
+		} else if (isMeasureContainer(container)) {
+			containers = await locals.pool.connect(
+				getAllContainersRelatedToMeasure(
+					container.revision,
+					{
+						assignees: parseResult.data.assignee,
+						categories: parseResult.data.category,
+						taskCategories: parseResult.data.taskCategory,
+						terms: parseResult.data.terms[0],
+						topics: parseResult.data.topic,
+						type: parseResult.data.payloadType
+					},
+					parseResult.data.sort[0]
+				)
+			);
+		} else {
+			containers = await locals.pool.connect(
+				getAllRelatedContainers(
+					parseResult.data.organization,
+					params.guid,
+					parseResult.data.relationType,
+					{
+						assignees: parseResult.data.assignee,
+						audience: parseResult.data.audience,
+						categories: parseResult.data.category,
+						organizationalUnits: parseResult.data.organizationalUnit,
+						strategyTypes: parseResult.data.strategyType,
+						taskCategories: parseResult.data.taskCategory,
+						terms: parseResult.data.terms[0],
+						topics: parseResult.data.topic,
+						type: parseResult.data.payloadType
+					},
+					parseResult.data.sort[0]
+				)
+			);
+		}
+		return json(filterVisible(containers, locals.user));
+	} catch (e) {
+		if (e instanceof NotFoundError) {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		} else {
+			throw e;
+		}
 	}
-	return json(filterVisible(containers, locals.user));
 }) satisfies RequestHandler;
 
 export const POST = (async ({ locals, request }) => {
