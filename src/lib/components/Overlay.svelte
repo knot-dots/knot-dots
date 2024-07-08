@@ -17,6 +17,7 @@
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Chapters from '$lib/components/Chapters.svelte';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
@@ -65,7 +66,6 @@
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
-		mayDelete,
 		type MeasureContainer,
 		type MeasureMonitoringContainer,
 		newIndicatorTemplateFromIndicator,
@@ -77,7 +77,7 @@
 		type TaskContainer,
 		type User
 	} from '$lib/models';
-	import { ability, addEffectState, overlayWidth, user } from '$lib/stores';
+	import { ability, addEffectState, mayDeleteContainer, overlayWidth, user } from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
@@ -94,6 +94,7 @@
 	let container: AnyContainer;
 	let mayShowRelationButton = getContext('mayShowRelationButton');
 	let saveAsIndicatorTemplateDisabled = false;
+	let confirmDeleteDialog: HTMLDialogElement;
 
 	$: {
 		container = revisions[revisions.length - 1];
@@ -393,12 +394,12 @@
 					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 				{/if}
 				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
-				{#if mayDelete(container)}
+				{#if $mayDeleteContainer(container)}
 					<button
 						class="delete quiet"
 						title={$_('delete')}
 						type="button"
-						on:click={() => handleDelete(container)}
+						on:click={() => confirmDeleteDialog.showModal()}
 					>
 						<Trash />
 					</button>
@@ -677,6 +678,13 @@
 		</footer>
 	{/if}
 </section>
+
+<ConfirmDeleteDialog
+	bind:dialog={confirmDeleteDialog}
+	handleSubmit={() => handleDelete(container)}
+	{container}
+	{relatedContainers}
+/>
 
 <style>
 	.overlay.overlay-fullscreen {

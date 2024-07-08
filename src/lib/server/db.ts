@@ -287,6 +287,24 @@ export function deleteContainer(container: AnyContainer) {
 	};
 }
 
+export function deleteContainerRecursively(container: AnyContainer) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const parts = await getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				['hierarchical'],
+				{},
+				''
+			)(txConnection);
+
+			for (const part of parts) {
+				await deleteContainer({ ...part, user: container.user })(txConnection);
+			}
+		});
+	};
+}
+
 export function updateContainerRelationPosition(relation: Relation[]) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
@@ -1065,7 +1083,8 @@ export function getAllContainersRelatedToMeasure(
 				FROM container c
 				JOIN container_relation cr ON c.revision = cr.subject
 					AND cr.predicate IN (${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of']})
-					AND cr.object = ${revision}) AS containers
+					AND cr.object = ${revision}
+				WHERE c.valid_currently) AS containers
 			${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};

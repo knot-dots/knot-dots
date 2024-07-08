@@ -22,6 +22,7 @@ import {
 	isMeasureMonitoringContainer,
 	isStrategyContainer,
 	isTaskContainer,
+	mayDelete,
 	type MeasureContainer,
 	type MeasureMonitoringContainer,
 	overlayKey,
@@ -119,6 +120,12 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 			''
 		);
 		return values[1].can('create', container);
+	};
+});
+
+export const mayDeleteContainer = derived(ability, (values) => {
+	return (container: AnyContainer): boolean => {
+		return mayDelete(container, values) || values.can('delete-recursively', container);
 	};
 });
 

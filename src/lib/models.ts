@@ -1,3 +1,4 @@
+import type { MongoAbility } from '@casl/ability';
 import { z } from 'zod';
 
 export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources' | 'milestones';
@@ -1421,7 +1422,7 @@ export function containerOfType(
 	}) as EmptyContainer;
 }
 
-export function mayDelete(container: AnyContainer | EmptyContainer) {
+export function mayDelete(container: AnyContainer | EmptyContainer, ability: MongoAbility) {
 	return (
 		'guid' in container &&
 		container.relation.filter(
@@ -1430,7 +1431,8 @@ export function mayDelete(container: AnyContainer | EmptyContainer) {
 					predicate == predicates.enum['is-part-of-measure']) &&
 				'revision' in container &&
 				object == container.revision
-		).length == 0
+		).length == 0 &&
+		ability.can('delete', container)
 	);
 }
 
@@ -1460,6 +1462,26 @@ export function findAncestors<T extends AnyContainer>(container: T, containers: 
 	}
 
 	return [parent, ...findAncestors(parent, containers)];
+}
+
+export function findDescendants<T extends AnyContainer>(container: T, containers: T[]): T[] {
+	const children = containers.filter(
+		({ relation, revision }) =>
+			relation.findIndex(
+				({ object, predicate }) =>
+					predicate == predicates.enum['is-part-of'] &&
+					object == container.revision &&
+					object != revision
+			) > -1
+	);
+
+	const descendants = children;
+
+	for (const child of children) {
+		descendants.push(...findDescendants(child, containers));
+	}
+
+	return descendants;
 }
 
 export function paramsFromFragment(url: URL) {
