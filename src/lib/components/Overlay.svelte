@@ -17,6 +17,7 @@
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Chapters from '$lib/components/Chapters.svelte';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
@@ -93,6 +94,7 @@
 	let container: AnyContainer;
 	let mayShowRelationButton = getContext('mayShowRelationButton');
 	let saveAsIndicatorTemplateDisabled = false;
+	let confirmDeleteDialog: HTMLDialogElement;
 
 	$: {
 		container = revisions[revisions.length - 1];
@@ -397,7 +399,7 @@
 						class="delete quiet"
 						title={$_('delete')}
 						type="button"
-						on:click={() => handleDelete(container)}
+						on:click={() => confirmDeleteDialog.showModal()}
 					>
 						<Trash />
 					</button>
@@ -676,6 +678,13 @@
 		</footer>
 	{/if}
 </section>
+
+<ConfirmDeleteDialog
+	bind:dialog={confirmDeleteDialog}
+	handleSubmit={() => handleDelete(container)}
+	{container}
+	{relatedContainers}
+/>
 
 <style>
 	.overlay.overlay-fullscreen {
