@@ -48,7 +48,6 @@ export default function defineAbilityFor(user: User) {
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can('update', objectiveTypes, ['organization', 'organizational_unit']);
 		can('update', measureMonitoringTypes, ['organization', 'organizational_unit']);
-		can('update', measureMonitoringTypes, ['organization', 'organizational_unit']);
 	} else if (user.isAuthenticated) {
 		can('update', payloadTypes.enum.organization, { organization: { $in: user.adminOf } });
 		can(['create', 'update'], payloadTypes.enum.organizational_unit, {
