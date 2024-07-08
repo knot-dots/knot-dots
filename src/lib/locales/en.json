@@ -46,6 +46,7 @@
 	"effects": "Effects",
 	"end_date": "End",
 	"error": {
+		"unauthorized": "Sorry, you are not allowed to do this.",
 		"not_found": "Sorry, there is nothing to show here.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",

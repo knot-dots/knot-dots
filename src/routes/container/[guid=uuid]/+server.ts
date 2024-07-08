@@ -1,8 +1,9 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import defineAbilityFor from '$lib/authorization';
 import { etag, predicates } from '$lib/models';
-import { deleteContainer, getContainerByGuid } from '$lib/server/db';
+import { deleteContainer, deleteContainerRecursively, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -31,13 +32,26 @@ export const DELETE = (async ({ locals, params, request }) => {
 		if (etag(container) != request.headers.get('If-Match')) {
 			error(412, { message: unwrapFunctionStore(_)('error.precondition_failed') });
 		}
-		await locals.pool.connect(
-			deleteContainer({
-				...container,
-				user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
-			})
-		);
-		return new Response(null, { status: 204 });
+		const ability = defineAbilityFor(locals.user);
+		if (ability.can('delete-recursively', container)) {
+			await locals.pool.connect(
+				deleteContainerRecursively({
+					...container,
+					user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
+				})
+			);
+			return new Response(null, { status: 204 });
+		} else if (ability.can('delete', container)) {
+			await locals.pool.connect(
+				deleteContainer({
+					...container,
+					user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
+				})
+			);
+			return new Response(null, { status: 204 });
+		} else {
+			error(403, { message: unwrapFunctionStore(_)('error.unauthorized') });
+		}
 	} catch (e) {
 		if (e instanceof NotFoundError) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });

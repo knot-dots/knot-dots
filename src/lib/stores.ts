@@ -125,7 +125,7 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 
 export const mayDeleteContainer = derived(ability, (values) => {
 	return (container: AnyContainer): boolean => {
-		return mayDelete(container, values);
+		return mayDelete(container, values) || values.can('delete-recursively', container);
 	};
 });
 

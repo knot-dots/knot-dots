@@ -4,7 +4,14 @@ import { payloadTypes, predicates, visibility } from '$lib/models';
 import type { AnyContainer, EmptyContainer, PayloadType } from '$lib/models';
 import type { User } from '$lib/stores';
 
-type Actions = 'create' | 'read' | 'update' | 'delete' | 'relate' | 'prioritize';
+type Actions =
+	| 'create'
+	| 'read'
+	| 'update'
+	| 'delete'
+	| 'delete-recursively'
+	| 'relate'
+	| 'prioritize';
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const objectiveTypes = [
@@ -37,7 +44,7 @@ export default function defineAbilityFor(user: User) {
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
 		can('relate', objectiveTypes);
-		can('relate', measureMonitoringTypes);
+		can(['delete-recursively', 'relate'], measureMonitoringTypes);
 		can('prioritize', payloadTypes.enum.task);
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can('update', objectiveTypes, ['organization', 'organizational_unit']);

@@ -46,6 +46,7 @@
 	"effects": "Wirkung",
 	"end_date": "Ende",
 	"error": {
+		"unauthorized": "Leider ist das nicht erlaubt.",
 		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
