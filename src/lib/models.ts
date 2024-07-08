@@ -502,7 +502,7 @@ const taskPayload = measureMonitoringBasePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		taskCategory: taskCategories.optional(),
+		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
 		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
 		type: z.literal(payloadTypes.enum.task)
 	})
@@ -1131,7 +1131,9 @@ const emptyContainer = newContainer.extend({
 				visibility: true
 			})
 		),
-		taskPayload.partial().merge(taskPayload.pick({ type: true, visibility: true })),
+		taskPayload
+			.partial()
+			.merge(taskPayload.pick({ taskCategory: true, type: true, visibility: true })),
 		undefinedPayload.partial().merge(undefinedPayload.pick({ type: true, visibility: true }))
 	])
 });
@@ -1335,7 +1337,9 @@ const emptyMilestoneContainer = emptyContainer.extend({
 export type EmptyMilestoneContainer = z.infer<typeof emptyMilestoneContainer>;
 
 const emptyTaskContainer = emptyContainer.extend({
-	payload: taskPayload.partial().merge(taskPayload.pick({ type: true, visibility: true }))
+	payload: taskPayload
+		.partial()
+		.merge(taskPayload.pick({ taskCategory: true, type: true, visibility: true }))
 });
 
 export type EmptyTaskContainer = z.infer<typeof emptyTaskContainer>;
