@@ -1464,6 +1464,26 @@ export function findAncestors<T extends AnyContainer>(container: T, containers: 
 	return [parent, ...findAncestors(parent, containers)];
 }
 
+export function findDescendants<T extends AnyContainer>(container: T, containers: T[]): T[] {
+	const children = containers.filter(
+		({ relation, revision }) =>
+			relation.findIndex(
+				({ object, predicate }) =>
+					predicate == predicates.enum['is-part-of'] &&
+					object == container.revision &&
+					object != revision
+			) > -1
+	);
+
+	const descendants = children;
+
+	for (const child of children) {
+		descendants.push(...findDescendants(child, containers));
+	}
+
+	return descendants;
+}
+
 export function paramsFromFragment(url: URL) {
 	return new URLSearchParams(url.hash.substring(1) ?? '');
 }
