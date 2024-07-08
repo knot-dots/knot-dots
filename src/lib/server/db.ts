@@ -1083,7 +1083,8 @@ export function getAllContainersRelatedToMeasure(
 				FROM container c
 				JOIN container_relation cr ON c.revision = cr.subject
 					AND cr.predicate IN (${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of']})
-					AND cr.object = ${revision}) AS containers
+					AND cr.object = ${revision}
+				WHERE c.valid_currently) AS containers
 			${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
