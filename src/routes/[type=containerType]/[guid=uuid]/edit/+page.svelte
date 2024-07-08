@@ -8,7 +8,8 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
-	import { mayDelete, type CustomEventMap, payloadTypes } from '$lib/models';
+	import { type CustomEventMap, mayDelete, payloadTypes } from '$lib/models';
+	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -44,7 +45,7 @@
 				<div class="content-actions">
 					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 					<a class="button" href="/{container.payload.slug}">{$_('cancel')}</a>
-					{#if mayDelete(container)}
+					{#if mayDelete(container, $ability)}
 						<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
 							<Trash />
 						</button>

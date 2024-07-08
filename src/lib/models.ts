@@ -1,3 +1,4 @@
+import type { MongoAbility } from '@casl/ability';
 import { z } from 'zod';
 
 export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources' | 'milestones';
@@ -1421,7 +1422,7 @@ export function containerOfType(
 	}) as EmptyContainer;
 }
 
-export function mayDelete(container: AnyContainer | EmptyContainer) {
+export function mayDelete(container: AnyContainer | EmptyContainer, ability: MongoAbility) {
 	return (
 		'guid' in container &&
 		container.relation.filter(
@@ -1430,7 +1431,8 @@ export function mayDelete(container: AnyContainer | EmptyContainer) {
 					predicate == predicates.enum['is-part-of-measure']) &&
 				'revision' in container &&
 				object == container.revision
-		).length == 0
+		).length == 0 &&
+		ability.can('delete', container)
 	);
 }
 

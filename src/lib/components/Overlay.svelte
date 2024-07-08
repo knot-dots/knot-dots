@@ -393,7 +393,7 @@
 					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 				{/if}
 				<a class="button" href={cancelURL()}>{$_('cancel')}</a>
-				{#if mayDelete(container)}
+				{#if mayDelete(container, $ability)}
 					<button
 						class="delete quiet"
 						title={$_('delete')}
