@@ -11,6 +11,7 @@ import {
 	anyContainer,
 	container,
 	containerWithObjective,
+	findDescendants,
 	organizationalUnitContainer,
 	organizationContainer,
 	payloadTypes,
@@ -298,7 +299,7 @@ export function deleteContainerRecursively(container: AnyContainer) {
 				''
 			)(txConnection);
 
-			for (const part of parts) {
+			for (const part of findDescendants(container, parts)) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}
 		});
