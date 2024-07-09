@@ -172,12 +172,11 @@ export const POST = (async ({ locals, request }) => {
 						locals.user
 					);
 
-					const taskParents: Array<MeasureContainer | MeasureResultContainer | MilestoneContainer> =
-						[createdContainer];
+					const isPartOfObjects: Array<
+						MeasureContainer | MeasureResultContainer | MilestoneContainer
+					> = [createdContainer];
 
-					for (const copyFrom of containersRelatedToOriginal.filter(
-						(c) => isMeasureResultContainer(c) || isMilestoneContainer(c)
-					)) {
+					for (const copyFrom of containersRelatedToOriginal.filter(isMeasureResultContainer)) {
 						const copyContainer = createCopyOf(
 							copyFrom,
 							createdContainer.organization,
@@ -199,10 +198,53 @@ export const POST = (async ({ locals, request }) => {
 							subject: locals.user.guid
 						});
 
-						taskParents.push(
-							(await createContainer(copyContainer as NewContainer)(txConnection)) as
-								| MeasureResultContainer
-								| MilestoneContainer
+						isPartOfObjects.push(
+							(await createContainer(copyContainer as NewContainer)(
+								txConnection
+							)) as MeasureResultContainer
+						);
+					}
+
+					for (const copyFrom of containersRelatedToOriginal.filter(isMilestoneContainer)) {
+						const copyContainer = createCopyOf(
+							copyFrom,
+							createdContainer.organization,
+							createdContainer.organizational_unit
+						);
+
+						copyContainer.relation.push({
+							object: createdContainer.revision,
+							predicate: predicates.enum['is-part-of-measure'],
+							position: 0
+						});
+						copyContainer.relation.push(
+							...copyFrom.relation
+								.filter(
+									({ predicate, subject }) =>
+										predicate == predicates.enum['is-part-of'] && subject == copyFrom.revision
+								)
+								.map(({ position, predicate, object: originalIsPartOfObject }) => ({
+									position,
+									predicate,
+									object: isPartOfObjects.find(({ relation }) =>
+										relation.find(
+											({ predicate, object }) =>
+												predicate == predicates.enum['is-copy-of'] &&
+												originalIsPartOfObject == object
+										)
+									)?.revision as number
+								}))
+						);
+
+						copyContainer.user.push({
+							predicate: predicates.enum['is-creator-of'],
+							subject: locals.user.guid
+						});
+
+						isPartOfObjects.push(
+							(await createContainer(copyContainer as NewContainer)(
+								txConnection
+							)) as MilestoneContainer
 						);
 					}
 
@@ -227,7 +269,7 @@ export const POST = (async ({ locals, request }) => {
 								.map(({ position, predicate, object: originalIsPartOfObject }) => ({
 									position,
 									predicate,
-									object: taskParents.find(({ relation }) =>
+									object: isPartOfObjects.find(({ relation }) =>
 										relation.find(
 											({ predicate, object }) =>
 												predicate == predicates.enum['is-copy-of'] &&

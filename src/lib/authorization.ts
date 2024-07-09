@@ -44,6 +44,7 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
 		can('relate', objectiveTypes);
 		can(['delete-recursively', 'relate'], measureMonitoringTypes);
+		can('delete-recursively', payloadTypes.enum.measure);
 		can('prioritize', payloadTypes.enum.task);
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can('update', objectiveTypes, ['organization', 'organizational_unit']);
