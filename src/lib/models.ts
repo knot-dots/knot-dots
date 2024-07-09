@@ -538,6 +538,7 @@ const measurePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		status: status.default(status.enum['status.idea']),
+		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
 	})
 	.strict();
@@ -1036,6 +1037,7 @@ const emptyContainer = newContainer.extend({
 				category: true,
 				effect: true,
 				measureType: true,
+				template: true,
 				topic: true,
 				type: true,
 				visibility: true
@@ -1179,6 +1181,7 @@ const emptyMeasureContainer = emptyContainer.extend({
 			category: true,
 			effect: true,
 			measureType: true,
+			template: true,
 			topic: true,
 			type: true,
 			visibility: true

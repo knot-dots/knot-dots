@@ -36,6 +36,16 @@
 		options={audience.options}
 		bind:value={container.payload.audience}
 	/>
+
+	<label>
+		<input
+			class="toggle"
+			type="checkbox"
+			name="template"
+			bind:checked={container.payload.template}
+		/>
+		{$_('template')}
+	</label>
 </fieldset>
 
 <fieldset class="form-tab" id="basic-data">
