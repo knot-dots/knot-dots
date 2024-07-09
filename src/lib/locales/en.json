@@ -506,6 +506,7 @@
 	"workspace.indicator_monitoring": "Indicator monitoring",
 	"workspace.indicators": "Tiles",
 	"workspace.measure_monitoring": "Measure monitoring",
+	"workspace.measure_templates": "Measure templates",
 	"workspace.measures": "Measures status board",
 	"workspace.programs": "Programs",
 	"workspace.programs_by_level": "Programs by level",

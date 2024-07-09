@@ -431,6 +431,7 @@ function prepareWhereCondition(filters: {
 	organizationalUnits?: string[];
 	strategyTypes?: string[];
 	taskCategories?: string[];
+	template?: boolean;
 	terms?: string;
 	topics?: string[];
 	type?: PayloadType[];
@@ -496,6 +497,13 @@ function prepareWhereCondition(filters: {
 				filters.taskCategories,
 				sql.fragment`, `
 			)})`
+		);
+	}
+	if (filters.template) {
+		conditions.push(sql.fragment`(payload->'template')::boolean`);
+	} else {
+		conditions.push(
+			sql.fragment`(NOT (payload->'template')::boolean OR payload->'template' IS NULL)`
 		);
 	}
 	if (filters.terms?.trim()) {
@@ -581,6 +589,7 @@ export function getManyContainers(
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		taskCategories?: string[];
+		template?: boolean;
 		terms?: string;
 		topics?: string[];
 		type?: PayloadType[];

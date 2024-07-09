@@ -55,7 +55,7 @@
 
 <Layout>
 	<svelte:fragment slot="sidebar">
-		<Sidebar helpSlug="measures">
+		<Sidebar helpSlug="measure-monitoring">
 			<Workspaces slot="workspaces" />
 
 			<Search slot="search" />
