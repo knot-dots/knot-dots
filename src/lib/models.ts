@@ -1584,7 +1584,11 @@ export function createCopyOf(
 	if (isContainerWithObjective(container)) {
 		copy.payload = { ...container.payload, objective: [] };
 	} else if (isContainerWithEffect(container)) {
-		copy.payload = { ...container.payload, effect: [] };
+		copy.payload = {
+			...container.payload,
+			effect: [],
+			...(isMeasureContainer(container) ? { template: false } : undefined)
+		};
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
 			...container.payload,
