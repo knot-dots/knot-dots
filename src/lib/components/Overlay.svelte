@@ -8,7 +8,7 @@
 	import CopyCat from '~icons/knotdots/copycat';
 	import Maximize from '~icons/knotdots/maximize';
 	import Minimize from '~icons/knotdots/minimize';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -267,16 +267,8 @@
 		await goto(`#${params.toString()}`, { state: { derivedFrom: container } });
 	}
 
-	async function createCopy(
-		container: AnyContainer,
-		organizationOrOrganizationalUnit: string,
-		pathname: string
-	) {
-		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-		url.hostname = `${organizationOrOrganizationalUnit}.${url.hostname}`;
-		url.pathname = pathname;
-		url.hash = `#create=${container.payload.type}&copy-of=${container.guid}`;
-		window.location.href = url.toString();
+	async function createCopy(container: AnyContainer) {
+		await goto(`#create=${container.payload.type}&copy-of=${container.guid}`);
 	}
 </script>
 
@@ -673,7 +665,7 @@
 						class="button-copycat"
 						title={$_('copy')}
 						type="button"
-						on:click={() => createCopy(container, $user.adminOf[0], $page.url.pathname)}
+						on:click={() => createCopy(container)}
 					>
 						<CopyCat />
 					</button>

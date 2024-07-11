@@ -223,10 +223,21 @@ if (browser) {
 			}
 			if (hashParams.has('copy-of')) {
 				const revisions = await fetchContainerRevisions(hashParams.get('copy-of') as string);
+				const organizationalUnit = values.data.organizationalUnits.find(
+					(o) => values.data.session?.user.adminOf[0] == o.guid
+				);
+				let organization;
+				if (organizationalUnit) {
+					organization = organizationalUnit.organization;
+				} else {
+					organization = values.data.organizations.find(
+						(o) => values.data.session?.user.adminOf[0] == o.guid
+					)?.guid as string;
+				}
 				newContainer = createCopyOf(
-					revisions[revisions.length - 1],
-					values.data.currentOrganization.guid,
-					values.data.currentOrganizationalUnit?.guid ?? null
+					revisions[revisions.length - 1] as Container,
+					organization,
+					organizationalUnit?.guid ?? null
 				);
 			}
 			overlay.set({
