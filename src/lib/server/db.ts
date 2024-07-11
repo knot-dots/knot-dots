@@ -299,6 +299,8 @@ export function deleteContainerRecursively(container: AnyContainer) {
 				''
 			)(txConnection);
 
+			await deleteContainer(container)(txConnection);
+
 			for (const part of findDescendants(container, parts)) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}

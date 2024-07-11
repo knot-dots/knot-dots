@@ -16,7 +16,6 @@
 	dialog {
 		border: none;
 		padding: 1.5rem;
-		position: relative;
 		width: 100%;
 	}
 
