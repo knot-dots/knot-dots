@@ -77,7 +77,14 @@
 		type TaskContainer,
 		type User
 	} from '$lib/models';
-	import { ability, addEffectState, mayDeleteContainer, overlayWidth, user } from '$lib/stores';
+	import {
+		ability,
+		addEffectState,
+		mayDeleteContainer,
+		overlayHistory,
+		overlayWidth,
+		user
+	} from '$lib/stores';
 
 	export let containersWithObjectives: ContainerWithObjective[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
@@ -189,9 +196,15 @@
 	async function handleDelete(c: AnyContainer) {
 		const response = await deleteContainer(c);
 		if (response.ok) {
-			await invalidateAll();
-			await goto(closeURL());
+			if ($overlayHistory.length > 1) {
+				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+				const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+				await goto(`#${newParams.toString()}`, { invalidateAll: true });
+			} else {
+				await goto(closeURL(), { invalidateAll: true });
+			}
 		}
+		confirmDeleteDialog.close();
 	}
 
 	function saveIndicatorAsTemplate(c: IndicatorContainer) {
