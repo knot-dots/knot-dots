@@ -13,9 +13,9 @@ import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
 	audience,
 	containerOfType,
+	createCopyOf,
 	hasMember,
 	type IndicatorContainer,
-	isContainerWithEffect,
 	isContainerWithObjective,
 	isEffectContainer,
 	isIndicatorContainer,
@@ -206,7 +206,7 @@ if (browser) {
 				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
 				hashParams.get('create') as PayloadType
 			);
-			const newContainer = containerOfType(
+			let newContainer = containerOfType(
 				hashParams.get('create') as PayloadType,
 				values.data.currentOrganization.guid,
 				values.data.currentOrganizationalUnit?.guid ?? null,
@@ -223,21 +223,11 @@ if (browser) {
 			}
 			if (hashParams.has('copy-of')) {
 				const revisions = await fetchContainerRevisions(hashParams.get('copy-of') as string);
-				const copyFrom = revisions[revisions.length - 1];
-				if (isContainerWithObjective(copyFrom)) {
-					newContainer.payload = { ...copyFrom.payload, objective: [] };
-				} else if (isContainerWithEffect(copyFrom)) {
-					newContainer.payload = { ...copyFrom.payload, effect: [] };
-				} else if (isTaskContainer(copyFrom)) {
-					newContainer.payload = { ...copyFrom.payload, assignee: undefined };
-				} else {
-					newContainer.payload = copyFrom.payload;
-				}
-				newContainer.relation.push({
-					object: copyFrom.revision,
-					predicate: predicates.enum['is-copy-of'],
-					position: 0
-				});
+				newContainer = createCopyOf(
+					revisions[revisions.length - 1],
+					values.data.currentOrganization.guid,
+					values.data.currentOrganizationalUnit?.guid ?? null
+				);
 			}
 			overlay.set({
 				isPartOfOptions,
