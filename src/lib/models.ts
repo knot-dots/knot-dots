@@ -1523,10 +1523,7 @@ export function filterOrganizationalUnits(
 					return true;
 				}
 
-				if (
-					included.includes('subordinate_organizational_units') &&
-					subordinateOrganizationalUnits.length == 0
-				) {
+				if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
 					return true;
 				}
 
@@ -1584,7 +1581,11 @@ export function createCopyOf(
 	if (isContainerWithObjective(container)) {
 		copy.payload = { ...container.payload, objective: [] };
 	} else if (isContainerWithEffect(container)) {
-		copy.payload = { ...container.payload, effect: [] };
+		copy.payload = {
+			...container.payload,
+			effect: [],
+			...(isMeasureContainer(container) ? { template: false } : undefined)
+		};
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
 			...container.payload,

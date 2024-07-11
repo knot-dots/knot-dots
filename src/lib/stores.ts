@@ -13,9 +13,9 @@ import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
 	audience,
 	containerOfType,
+	createCopyOf,
 	hasMember,
 	type IndicatorContainer,
-	isContainerWithEffect,
 	isContainerWithObjective,
 	isEffectContainer,
 	isIndicatorContainer,
@@ -206,7 +206,7 @@ if (browser) {
 				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
 				hashParams.get('create') as PayloadType
 			);
-			const newContainer = containerOfType(
+			let newContainer = containerOfType(
 				hashParams.get('create') as PayloadType,
 				values.data.currentOrganization.guid,
 				values.data.currentOrganizationalUnit?.guid ?? null,
@@ -223,21 +223,22 @@ if (browser) {
 			}
 			if (hashParams.has('copy-of')) {
 				const revisions = await fetchContainerRevisions(hashParams.get('copy-of') as string);
-				const copyFrom = revisions[revisions.length - 1];
-				if (isContainerWithObjective(copyFrom)) {
-					newContainer.payload = { ...copyFrom.payload, objective: [] };
-				} else if (isContainerWithEffect(copyFrom)) {
-					newContainer.payload = { ...copyFrom.payload, effect: [] };
-				} else if (isTaskContainer(copyFrom)) {
-					newContainer.payload = { ...copyFrom.payload, assignee: undefined };
+				const organizationalUnit = values.data.organizationalUnits.find(
+					(o) => values.data.session?.user.adminOf[0] == o.guid
+				);
+				let organization;
+				if (organizationalUnit) {
+					organization = organizationalUnit.organization;
 				} else {
-					newContainer.payload = copyFrom.payload;
+					organization = values.data.organizations.find(
+						(o) => values.data.session?.user.adminOf[0] == o.guid
+					)?.guid as string;
 				}
-				newContainer.relation.push({
-					object: copyFrom.revision,
-					predicate: predicates.enum['is-copy-of'],
-					position: 0
-				});
+				newContainer = createCopyOf(
+					revisions[revisions.length - 1] as Container,
+					organization,
+					organizationalUnit?.guid ?? null
+				);
 			}
 			overlay.set({
 				isPartOfOptions,

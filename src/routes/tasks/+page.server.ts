@@ -19,7 +19,7 @@ export const load = (async ({ locals, parent, url }) => {
 			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
 		);
 		subordinateOrganizationalUnits = relatedOrganizationalUnits
-			.filter(({ payload }) => payload.level >= currentOrganizationalUnit.payload.level)
+			.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
 			.map(({ guid }) => guid);
 	}
 
