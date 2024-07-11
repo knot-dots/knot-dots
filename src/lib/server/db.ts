@@ -703,7 +703,9 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${revision} = ANY(path)
 		`);
 
-		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
+		const containerResult =
+			relationPathResult.length > 0
+				? await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			SELECT *
 			FROM container
 			WHERE revision IN (${sql.join(
@@ -713,7 +715,8 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				AND valid_currently
 			  AND NOT DELETED
 			ORDER BY payload->>'level', payload->>'name'
-		`);
+		`)
+				: [];
 
 		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
 	};
