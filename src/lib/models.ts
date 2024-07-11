@@ -1523,10 +1523,7 @@ export function filterOrganizationalUnits(
 					return true;
 				}
 
-				if (
-					included.includes('subordinate_organizational_units') &&
-					subordinateOrganizationalUnits.length == 0
-				) {
+				if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
 					return true;
 				}
 
