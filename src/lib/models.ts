@@ -520,7 +520,6 @@ const measurePayload = basePayload
 		indicatorContributionAchieved: z
 			.record(z.string().uuid(), z.coerce.number().nonnegative())
 			.optional(),
-		effect: z.array(indicatorEffect).default([]),
 		measureType: z.array(measureTypes).default([]),
 		resource: z
 			.array(
@@ -600,7 +599,6 @@ const simpleMeasurePayload = basePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		effect: z.array(indicatorEffect).default([]),
 		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		measureType: z.array(measureTypes).default([]),
 		progress: z.number().nonnegative().default(0),
@@ -1035,7 +1033,6 @@ const emptyContainer = newContainer.extend({
 			measurePayload.pick({
 				audience: true,
 				category: true,
-				effect: true,
 				measureType: true,
 				template: true,
 				topic: true,
@@ -1078,7 +1075,6 @@ const emptyContainer = newContainer.extend({
 			simpleMeasurePayload.pick({
 				audience: true,
 				category: true,
-				effect: true,
 				file: true,
 				measureType: true,
 				progress: true,
@@ -1179,7 +1175,6 @@ const emptyMeasureContainer = emptyContainer.extend({
 		measurePayload.pick({
 			audience: true,
 			category: true,
-			effect: true,
 			measureType: true,
 			template: true,
 			topic: true,
@@ -1250,7 +1245,6 @@ const emptySimpleMeasureContainer = emptyContainer.extend({
 		simpleMeasurePayload.pick({
 			audience: true,
 			category: true,
-			effect: true,
 			file: true,
 			measureType: true,
 			progress: true,
@@ -1580,12 +1574,8 @@ export function createCopyOf(
 
 	if (isContainerWithObjective(container)) {
 		copy.payload = { ...container.payload, objective: [] };
-	} else if (isContainerWithEffect(container)) {
-		copy.payload = {
-			...container.payload,
-			effect: [],
-			...(isMeasureContainer(container) ? { template: false } : undefined)
-		};
+	} else if (isMeasureContainer(container)) {
+		copy.payload = { ...container.payload, template: false };
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
 			...container.payload,
