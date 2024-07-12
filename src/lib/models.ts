@@ -449,11 +449,36 @@ const indicatorPayload = basePayload.extend({
 	unit: z.string()
 });
 
+const initialIndicatorPayload = indicatorPayload.partial().merge(
+	indicatorPayload.pick({
+		audience: true,
+		category: true,
+		historicalValues: true,
+		indicatorCategory: true,
+		indicatorType: true,
+		measureType: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
+
 const indicatorTemplatePayload = indicatorPayload
 	.extend({
 		type: z.literal(payloadTypes.enum.indicator_template)
 	})
 	.omit({ historicalValues: true, quantity: true });
+
+const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial().merge(
+	indicatorTemplatePayload.pick({
+		category: true,
+		indicatorType: true,
+		measureType: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
 
 const measureMonitoringBasePayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.public']]),
@@ -470,6 +495,16 @@ const effectPayload = measureMonitoringBasePayload.extend({
 	type: z.literal(payloadTypes.enum.effect)
 });
 
+const initialEffectPayload = effectPayload.partial({}).merge(
+	effectPayload.pick({
+		achievedValues: true,
+		audience: true,
+		plannedValues: true,
+		type: true,
+		visibility: true
+	})
+);
+
 const visionPayload = basePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
@@ -477,11 +512,30 @@ const visionPayload = basePayload
 	})
 	.strict();
 
+const initialVisionPayload = visionPayload.partial().merge(
+	visionPayload.pick({
+		audience: true,
+		category: true,
+		objective: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
+
 const measureResultPayload = measureMonitoringBasePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.measure_result)
 	})
 	.strict();
+
+const initialMeasureResultPayload = measureResultPayload.partial().merge(
+	measureResultPayload.pick({
+		audience: true,
+		type: true,
+		visibility: true
+	})
+);
 
 const milestonePayload = measureMonitoringBasePayload
 	.extend({
@@ -493,6 +547,15 @@ const milestonePayload = measureMonitoringBasePayload
 		type: z.literal(payloadTypes.enum.milestone)
 	})
 	.strict();
+
+const initialMilestonePayload = milestonePayload.partial().merge(
+	milestonePayload.pick({
+		audience: true,
+		progress: true,
+		type: true,
+		visibility: true
+	})
+);
 
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
@@ -507,6 +570,10 @@ const taskPayload = measureMonitoringBasePayload
 		type: z.literal(payloadTypes.enum.task)
 	})
 	.strict();
+
+const initialTaskPayload = taskPayload
+	.partial()
+	.merge(taskPayload.pick({ taskCategory: true, type: true, visibility: true }));
 
 const measurePayload = basePayload
 	.extend({
@@ -542,12 +609,35 @@ const measurePayload = basePayload
 	})
 	.strict();
 
+const initialMeasurePayload = measurePayload.partial().merge(
+	measurePayload.pick({
+		audience: true,
+		category: true,
+		measureType: true,
+		template: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
+
 const modelPayload = basePayload
 	.extend({
 		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.model)
 	})
 	.strict();
+
+const initialModelPayload = modelPayload.partial().merge(
+	modelPayload.pick({
+		audience: true,
+		category: true,
+		objective: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
 
 const operationalGoalPayload = basePayload
 	.extend({
@@ -562,6 +652,19 @@ const operationalGoalPayload = basePayload
 	})
 	.strict();
 
+const initialOperationalGoalPayload = operationalGoalPayload.partial().merge(
+	operationalGoalPayload.pick({
+		audience: true,
+		category: true,
+		indicator: true,
+		objective: true,
+		progress: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
+
 const organizationPayload = z.object({
 	boards: z.array(boards).default([]),
 	default: z.boolean().default(false),
@@ -573,6 +676,10 @@ const organizationPayload = z.object({
 	visibility: visibility.default('members')
 });
 
+const initialOrganizationPayload = organizationPayload
+	.partial()
+	.merge(organizationPayload.pick({ boards: true, default: true, type: true, visibility: true }));
+
 const organizationalUnitPayload = z.object({
 	boards: z.array(boards).default([]),
 	description: z.string().trim().optional(),
@@ -583,6 +690,10 @@ const organizationalUnitPayload = z.object({
 	visibility: visibility.default('members')
 });
 
+const initialOrganizationalUnitPayload = organizationalUnitPayload
+	.partial()
+	.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true }));
+
 const pagePayload = z.object({
 	body: z.string().trim(),
 	slug: z.string(),
@@ -590,6 +701,10 @@ const pagePayload = z.object({
 	type: z.literal(payloadTypes.enum.page),
 	visibility: visibility.default('public')
 });
+
+const initialPagePayload = pagePayload
+	.partial()
+	.merge(pagePayload.pick({ type: true, visibility: true }));
 
 const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
@@ -621,6 +736,19 @@ const simpleMeasurePayload = basePayload
 	})
 	.strict();
 
+const initialSimpleMeasurePayload = simpleMeasurePayload.partial().merge(
+	simpleMeasurePayload.pick({
+		audience: true,
+		category: true,
+		file: true,
+		measureType: true,
+		progress: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
+
 const strategicGoalPayload = basePayload
 	.extend({
 		fulfillmentDate: z
@@ -631,6 +759,17 @@ const strategicGoalPayload = basePayload
 		type: z.literal(payloadTypes.enum.strategic_goal)
 	})
 	.strict();
+
+const initialStrategicGoalPayload = strategicGoalPayload.partial().merge(
+	strategicGoalPayload.pick({
+		audience: true,
+		category: true,
+		objective: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
 
 const strategyPayload = basePayload
 	.omit({
@@ -646,6 +785,17 @@ const strategyPayload = basePayload
 	})
 	.strict();
 
+const initialStrategyPayload = strategyPayload.partial().merge(
+	strategyPayload.pick({
+		audience: true,
+		category: true,
+		pdf: true,
+		topic: true,
+		type: true,
+		visibility: true
+	})
+);
+
 const textPayload = z
 	.object({
 		audience: z.array(audience).default([audience.enum['audience.public']]),
@@ -656,6 +806,10 @@ const textPayload = z
 	})
 	.strict();
 
+const initialTextPayload = textPayload
+	.partial()
+	.merge(textPayload.pick({ type: true, visibility: true }));
+
 const undefinedPayload = z
 	.object({
 		title: z.string().trim(),
@@ -663,6 +817,10 @@ const undefinedPayload = z
 		visibility: visibility.default('members')
 	})
 	.strict();
+
+const initialUndefinedPayload = undefinedPayload
+	.partial()
+	.merge(undefinedPayload.pick({ type: true, visibility: true }));
 
 export const container = z.object({
 	guid: z.string().uuid(),
@@ -997,142 +1155,24 @@ export type NewContainer = z.infer<typeof newContainer>;
 
 const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
-		effectPayload.partial().merge(
-			effectPayload.pick({
-				achievedValues: true,
-				audience: true,
-				plannedValues: true,
-				type: true,
-				visibility: true
-			})
-		),
-		indicatorPayload.partial().merge(
-			indicatorPayload.pick({
-				audience: true,
-				category: true,
-				historicalValues: true,
-				indicatorCategory: true,
-				indicatorType: true,
-				measureType: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		indicatorTemplatePayload.partial().merge(
-			indicatorTemplatePayload.pick({
-				category: true,
-				indicatorType: true,
-				measureType: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		measurePayload.partial().merge(
-			measurePayload.pick({
-				audience: true,
-				category: true,
-				measureType: true,
-				template: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		modelPayload.partial().merge(
-			modelPayload.pick({
-				audience: true,
-				category: true,
-				objective: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		operationalGoalPayload.partial().merge(
-			operationalGoalPayload.pick({
-				audience: true,
-				category: true,
-				indicator: true,
-				objective: true,
-				progress: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		organizationPayload
-			.partial()
-			.merge(
-				organizationPayload.pick({ boards: true, default: true, type: true, visibility: true })
-			),
-		organizationalUnitPayload
-			.partial()
-			.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true })),
-		pagePayload.partial().merge(pagePayload.pick({ type: true, visibility: true })),
-		simpleMeasurePayload.partial().merge(
-			simpleMeasurePayload.pick({
-				audience: true,
-				category: true,
-				file: true,
-				measureType: true,
-				progress: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		strategicGoalPayload.partial().merge(
-			strategicGoalPayload.pick({
-				audience: true,
-				category: true,
-				objective: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		strategyPayload.partial().merge(
-			strategyPayload.pick({
-				audience: true,
-				category: true,
-				pdf: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		textPayload.partial().merge(textPayload.pick({ type: true, visibility: true })),
-		visionPayload.partial().merge(
-			visionPayload.pick({
-				audience: true,
-				category: true,
-				objective: true,
-				topic: true,
-				type: true,
-				visibility: true
-			})
-		),
-		measureResultPayload.partial().merge(
-			measureResultPayload.pick({
-				audience: true,
-				type: true,
-				visibility: true
-			})
-		),
-		milestonePayload.partial().merge(
-			milestonePayload.pick({
-				audience: true,
-				progress: true,
-				type: true,
-				visibility: true
-			})
-		),
-		taskPayload
-			.partial()
-			.merge(taskPayload.pick({ taskCategory: true, type: true, visibility: true })),
-		undefinedPayload.partial().merge(undefinedPayload.pick({ type: true, visibility: true }))
+		initialEffectPayload,
+		initialIndicatorPayload,
+		initialIndicatorTemplatePayload,
+		initialMeasurePayload,
+		initialModelPayload,
+		initialOperationalGoalPayload,
+		initialOrganizationPayload,
+		initialOrganizationalUnitPayload,
+		initialPagePayload,
+		initialSimpleMeasurePayload,
+		initialStrategicGoalPayload,
+		initialStrategyPayload,
+		initialTextPayload,
+		initialVisionPayload,
+		initialMeasureResultPayload,
+		initialMilestonePayload,
+		initialTaskPayload,
+		initialUndefinedPayload
 	])
 });
 
@@ -1153,190 +1193,91 @@ const emptyEffectContainer = emptyContainer.extend({
 export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
 
 const emptyIndicatorContainer = emptyContainer.extend({
-	payload: indicatorPayload.partial().merge(
-		indicatorPayload.pick({
-			audience: true,
-			category: true,
-			historicalValues: true,
-			indicatorCategory: true,
-			indicatorType: true,
-			measureType: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialIndicatorPayload
 });
 
 export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
-	payload: measurePayload.partial().merge(
-		measurePayload.pick({
-			audience: true,
-			category: true,
-			measureType: true,
-			template: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialMeasurePayload
 });
 
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
 
 const emptyModelContainer = emptyContainer.extend({
-	payload: modelPayload.partial().merge(
-		modelPayload.pick({
-			audience: true,
-			category: true,
-			objective: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialModelPayload
 });
 
 export type EmptyModelContainer = z.infer<typeof emptyModelContainer>;
 
 const emptyOperationalGoalContainer = emptyContainer.extend({
-	payload: operationalGoalPayload.partial().merge(
-		operationalGoalPayload.pick({
-			audience: true,
-			category: true,
-			indicator: true,
-			objective: true,
-			progress: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialOperationalGoalPayload
 });
 
 export type EmptyOperationalGoalContainer = z.infer<typeof emptyOperationalGoalContainer>;
 
 const emptyOrganizationContainer = newContainer.extend({
-	payload: organizationPayload
-		.partial()
-		.merge(organizationPayload.pick({ boards: true, default: true, type: true, visibility: true }))
+	payload: initialOrganizationPayload
 });
 
 export type EmptyOrganizationContainer = z.infer<typeof emptyOrganizationContainer>;
 
 const emptyOrganizationalUnitContainer = newContainer.extend({
-	payload: organizationalUnitPayload
-		.partial()
-		.merge(organizationalUnitPayload.pick({ boards: true, type: true, visibility: true }))
+	payload: initialOrganizationalUnitPayload
 });
 
 export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
 
 const emptyPageContainer = newContainer.extend({
-	payload: pagePayload.partial().merge(pagePayload.pick({ type: true, visibility: true }))
+	payload: initialPagePayload
 });
 
 export type EmptyPageContainer = z.infer<typeof emptyPageContainer>;
 
 const emptySimpleMeasureContainer = emptyContainer.extend({
-	payload: simpleMeasurePayload.partial().merge(
-		simpleMeasurePayload.pick({
-			audience: true,
-			category: true,
-			file: true,
-			measureType: true,
-			progress: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialSimpleMeasurePayload
 });
 
 export type EmptySimpleMeasureContainer = z.infer<typeof emptySimpleMeasureContainer>;
 
 const emptyStrategicGoalContainer = emptyContainer.extend({
-	payload: strategicGoalPayload.partial().merge(
-		strategicGoalPayload.pick({
-			audience: true,
-			category: true,
-			objective: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialStrategicGoalPayload
 });
 
 export type EmptyStrategicGoalContainer = z.infer<typeof emptyStrategicGoalContainer>;
 
 const emptyStrategyContainer = emptyContainer.extend({
-	payload: strategyPayload.partial().merge(
-		strategyPayload.pick({
-			audience: true,
-			category: true,
-			pdf: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialStrategyPayload
 });
 
 export type EmptyStrategyContainer = z.infer<typeof emptyStrategyContainer>;
 
 const emptyTextContainer = emptyContainer.extend({
-	payload: textPayload.partial().merge(textPayload.pick({ type: true, visibility: true }))
+	payload: initialTextPayload
 });
 
 export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
 
 const emptyVisionContainer = emptyContainer.extend({
-	payload: visionPayload.partial().merge(
-		visionPayload.pick({
-			audience: true,
-			category: true,
-			objective: true,
-			topic: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialVisionPayload
 });
 
 export type EmptyVisionContainer = z.infer<typeof emptyVisionContainer>;
 
 const emptyMeasureResultContainer = emptyContainer.extend({
-	payload: measureResultPayload.partial().merge(
-		measureResultPayload.pick({
-			audience: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialMeasureResultPayload
 });
 
 export type EmptyMeasureResultContainer = z.infer<typeof emptyMeasureResultContainer>;
 
 const emptyMilestoneContainer = emptyContainer.extend({
-	payload: milestonePayload.partial().merge(
-		milestonePayload.pick({
-			audience: true,
-			progress: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialMilestonePayload
 });
 
 export type EmptyMilestoneContainer = z.infer<typeof emptyMilestoneContainer>;
 
 const emptyTaskContainer = emptyContainer.extend({
-	payload: taskPayload
-		.partial()
-		.merge(taskPayload.pick({ taskCategory: true, type: true, visibility: true }))
+	payload: initialTaskPayload
 });
 
 export type EmptyTaskContainer = z.infer<typeof emptyTaskContainer>;
