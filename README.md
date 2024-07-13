@@ -39,20 +39,3 @@ npx playwright install --with-deps
 npx playwright test
 ```
 
-## Deployment
-
-The infrastructure is hosted by [Scaleway](https://www.scaleway.com) and managed with [Terraform](https://wwww.terraform.io).
-Follow the instructions for [authenticating the Scaleway provider](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs#authentication) and add a section to your `~/.aws/credentials` file using the same credentials:
-
-```
-[strategytool]
-aws_access_key_id = <SCW_ACCESS_KEY>
-aws_secret_access_key = <SCW_SECRET_KEY>
-```
-
-Now you are ready to modify the infrastructure and deployments with Terraform:
-
-```bash
-cd terraform/dev
-terraform plan
-```
