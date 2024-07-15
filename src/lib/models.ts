@@ -75,6 +75,7 @@ const payloadTypeValues = [
 	'measure_result',
 	'milestone',
 	'model',
+	'objective',
 	'operational_goal',
 	'organization',
 	'organizational_unit',
@@ -511,6 +512,15 @@ const modelPayload = basePayload
 
 const initialModelPayload = modelPayload.partial({ title: true });
 
+const objectivePayload = basePayload
+	.omit({ category: true, description: true, summary: true, topic: true })
+	.extend({
+		type: z.literal(payloadTypes.enum.objective),
+		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
+	});
+
+const initialObjectivePayload = objectivePayload.partial({ title: true });
+
 const operationalGoalPayload = basePayload
 	.extend({
 		fulfillmentDate: z
@@ -723,6 +733,7 @@ export const container = z.object({
 		measureResultPayload,
 		milestonePayload,
 		modelPayload,
+		objectivePayload,
 		operationalGoalPayload,
 		pagePayload,
 		simpleMeasurePayload,
@@ -751,6 +762,7 @@ export const anyContainer = container.extend({
 		measureResultPayload,
 		milestonePayload,
 		modelPayload,
+		objectivePayload,
 		operationalGoalPayload,
 		organizationPayload,
 		organizationalUnitPayload,
@@ -859,6 +871,18 @@ export function isModelContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ModelContainer {
 	return container.payload.type === payloadTypes.enum.model;
+}
+
+const objectiveContainer = container.extend({
+	payload: objectivePayload
+});
+
+export type ObjectiveContainer = z.infer<typeof objectiveContainer>;
+
+export function isObjectiveContainer(
+	container: AnyContainer | EmptyContainer
+): container is ObjectiveContainer {
+	return container.payload.type === payloadTypes.enum.objective;
 }
 
 const operationalGoalContainer = container.extend({
@@ -1049,6 +1073,7 @@ const emptyContainer = newContainer.extend({
 		initialIndicatorTemplatePayload,
 		initialMeasurePayload,
 		initialModelPayload,
+		initialObjectivePayload,
 		initialOperationalGoalPayload,
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
@@ -1098,6 +1123,12 @@ const emptyModelContainer = emptyContainer.extend({
 });
 
 export type EmptyModelContainer = z.infer<typeof emptyModelContainer>;
+
+const emptyObjectiveContainer = emptyContainer.extend({
+	payload: initialObjectivePayload
+});
+
+export type EmptyObjectiveContainer = z.infer<typeof emptyObjectiveContainer>;
 
 const emptyOperationalGoalContainer = emptyContainer.extend({
 	payload: initialOperationalGoalPayload
