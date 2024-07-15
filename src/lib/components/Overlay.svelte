@@ -34,6 +34,7 @@
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import Members from '$lib/components/Members.svelte';
+	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
@@ -63,6 +64,7 @@
 		isEffectContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
+		isObjectiveContainer,
 		isPageContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -640,6 +642,8 @@
 				/>
 			{:else if isContainerWithEffect(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
+			{:else if isObjectiveContainer(container)}
+				<ObjectiveDetailView {container} {relatedContainers} {revisions} />
 			{:else if isStrategyContainer(container)}
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}
