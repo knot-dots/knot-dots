@@ -124,6 +124,7 @@ const predicateValues = [
 	'is-inconsistent-with',
 	'is-measured-by',
 	'is-member-of',
+	'is-objective-for',
 	'is-part-of',
 	'is-part-of-measure',
 	'is-part-of-strategy'
