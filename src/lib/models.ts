@@ -466,69 +466,6 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	unit: true
 });
 
-const measureMonitoringBasePayload = z.object({
-	audience: z.array(audience).default([audience.enum['audience.public']]),
-	description: z.string().trim().optional(),
-	summary: z.string().trim().max(200).optional(),
-	title: z.string(),
-	visibility: visibility.default('members')
-});
-
-const effectPayload = measureMonitoringBasePayload.extend({
-	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	description: z.string().trim().optional(),
-	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	type: z.literal(payloadTypes.enum.effect)
-});
-
-const initialEffectPayload = effectPayload.partial({ title: true });
-
-const visionPayload = basePayload
-	.extend({
-		objective: z.array(indicatorObjective).default([]),
-		type: z.literal(payloadTypes.enum.vision)
-	})
-	.strict();
-
-const initialVisionPayload = visionPayload.partial({ title: true });
-
-const measureResultPayload = measureMonitoringBasePayload
-	.extend({
-		type: z.literal(payloadTypes.enum.measure_result)
-	})
-	.strict();
-
-const initialMeasureResultPayload = measureResultPayload.partial({ title: true });
-
-const milestonePayload = measureMonitoringBasePayload
-	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		progress: z.number().nonnegative().default(0),
-		type: z.literal(payloadTypes.enum.milestone)
-	})
-	.strict();
-
-const initialMilestonePayload = milestonePayload.partial({ title: true });
-
-const taskPayload = measureMonitoringBasePayload
-	.omit({ audience: true, summary: true })
-	.extend({
-		assignee: z.string().uuid().optional(),
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
-		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
-		type: z.literal(payloadTypes.enum.task)
-	})
-	.strict();
-
-const initialTaskPayload = taskPayload.partial({ title: true });
-
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().trim().optional(),
@@ -588,41 +525,6 @@ const operationalGoalPayload = basePayload
 	.strict();
 
 const initialOperationalGoalPayload = operationalGoalPayload.partial({ title: true });
-
-const organizationPayload = z.object({
-	boards: z.array(boards).default([]),
-	default: z.boolean().default(false),
-	description: z.string().trim().optional(),
-	image: z.string().url().optional(),
-	name: z.string().trim(),
-	organizationCategory: organizationCategories.optional(),
-	type: z.literal(payloadTypes.enum.organization),
-	visibility: visibility.default('members')
-});
-
-const initialOrganizationPayload = organizationPayload.partial({ name: true });
-
-const organizationalUnitPayload = z.object({
-	boards: z.array(boards).default([]),
-	description: z.string().trim().optional(),
-	image: z.string().url().optional(),
-	level: z.number().int().positive().default(1),
-	name: z.string().trim(),
-	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility: visibility.default('members')
-});
-
-const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
-
-const pagePayload = z.object({
-	body: z.string().trim(),
-	slug: z.string(),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.page),
-	visibility: visibility.default('public')
-});
-
-const initialPagePayload = pagePayload.partial({ body: true, slug: true, title: true });
 
 const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
@@ -688,6 +590,104 @@ const initialStrategyPayload = strategyPayload.partial({
 	strategyType: true,
 	title: true
 });
+
+const visionPayload = basePayload
+	.extend({
+		objective: z.array(indicatorObjective).default([]),
+		type: z.literal(payloadTypes.enum.vision)
+	})
+	.strict();
+
+const initialVisionPayload = visionPayload.partial({ title: true });
+
+const measureMonitoringBasePayload = z.object({
+	audience: z.array(audience).default([audience.enum['audience.public']]),
+	description: z.string().trim().optional(),
+	summary: z.string().trim().max(200).optional(),
+	title: z.string(),
+	visibility: visibility.default('members')
+});
+
+const effectPayload = measureMonitoringBasePayload.extend({
+	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	description: z.string().trim().optional(),
+	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	type: z.literal(payloadTypes.enum.effect)
+});
+
+const initialEffectPayload = effectPayload.partial({ title: true });
+
+const measureResultPayload = measureMonitoringBasePayload
+	.extend({
+		type: z.literal(payloadTypes.enum.measure_result)
+	})
+	.strict();
+
+const initialMeasureResultPayload = measureResultPayload.partial({ title: true });
+
+const milestonePayload = measureMonitoringBasePayload
+	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		progress: z.number().nonnegative().default(0),
+		type: z.literal(payloadTypes.enum.milestone)
+	})
+	.strict();
+
+const initialMilestonePayload = milestonePayload.partial({ title: true });
+
+const taskPayload = measureMonitoringBasePayload
+	.omit({ audience: true, summary: true })
+	.extend({
+		assignee: z.string().uuid().optional(),
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
+		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
+		type: z.literal(payloadTypes.enum.task)
+	})
+	.strict();
+
+const initialTaskPayload = taskPayload.partial({ title: true });
+
+const organizationPayload = z.object({
+	boards: z.array(boards).default([]),
+	default: z.boolean().default(false),
+	description: z.string().trim().optional(),
+	image: z.string().url().optional(),
+	name: z.string().trim(),
+	organizationCategory: organizationCategories.optional(),
+	type: z.literal(payloadTypes.enum.organization),
+	visibility: visibility.default('members')
+});
+
+const initialOrganizationPayload = organizationPayload.partial({ name: true });
+
+const organizationalUnitPayload = z.object({
+	boards: z.array(boards).default([]),
+	description: z.string().trim().optional(),
+	image: z.string().url().optional(),
+	level: z.number().int().positive().default(1),
+	name: z.string().trim(),
+	type: z.literal(payloadTypes.enum.organizational_unit),
+	visibility: visibility.default('members')
+});
+
+const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
+
+const pagePayload = z.object({
+	body: z.string().trim(),
+	slug: z.string(),
+	title: z.string().trim(),
+	type: z.literal(payloadTypes.enum.page),
+	visibility: visibility.default('public')
+});
+
+const initialPagePayload = pagePayload.partial({ body: true, slug: true, title: true });
 
 const textPayload = z
 	.object({
