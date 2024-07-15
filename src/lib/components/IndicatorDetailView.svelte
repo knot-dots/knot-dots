@@ -15,17 +15,12 @@
 		isStrategyContainer,
 		owners
 	} from '$lib/models';
-	import type {
-		AnyContainer,
-		Container,
-		ContainerWithObjective,
-		IndicatorContainer
-	} from '$lib/models';
+	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: IndicatorContainer;
-	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let containersWithObjectives: Container[] = [];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
@@ -121,8 +116,8 @@
 		{/if}
 
 		{#if showObjectives}
-			<div class="objectives">
-				<h3>{$_('objectives')}</h3>
+			<div class="goals">
+				<h3>{$_('goals')}</h3>
 				<ul class="carousel">
 					{#each relatedContainers.filter(isContainerWithObjective) as objective}
 						<li>

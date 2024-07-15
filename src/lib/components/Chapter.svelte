@@ -11,7 +11,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import ObjectiveCarousel from '$lib/components/ObjectiveCarousel.svelte';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
@@ -211,25 +211,9 @@
 		</ul>
 	{/if}
 
-	{#if isContainerWithObjective(container) && container.payload.objective.length > 0}
-		<div class="indicator-objective">
-			<h4>{$_('objectives')}</h4>
-			{#await indicatorsRequest then indicators}
-				{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
-				{#each container.payload.objective as objective}
-					{@const indicator = indicatorsByGuid.get(objective.indicator)}
-					{#if indicator}
-						<IndicatorChart
-							container={indicator}
-							containersWithObjectives={[container]}
-							showObjectives
-						>
-							<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
-						</IndicatorChart>
-					{/if}
-				{/each}
-			{/await}
-		</div>
+	{#if isContainerWithObjective(container)}
+		<h4>{$_('objectives')}</h4>
+		<ObjectiveCarousel {container} />
 	{/if}
 
 	{#if isContainerWithEffect(container)}

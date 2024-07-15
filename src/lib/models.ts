@@ -1339,6 +1339,32 @@ export function findDescendants<T extends AnyContainer>(container: T, containers
 	return descendants;
 }
 
+export function findParentObjectives(containers: Container[]): ObjectiveContainer[] {
+	const roots = new Set<Container>();
+	const parentObjectives = [] as ObjectiveContainer[];
+
+	for (const container of containers) {
+		const ancestors = findAncestors(container, containers);
+
+		if (ancestors.length > 0) {
+			roots.add(ancestors[ancestors.length - 1]);
+		}
+	}
+
+	for (const container of roots) {
+		const descendants = findDescendants(container, containers);
+		const objectives = descendants.filter(isPartOf(container)).filter(isObjectiveContainer);
+
+		if (objectives.length > 0) {
+			parentObjectives.push(...objectives);
+		} else {
+			parentObjectives.push(...findParentObjectives(descendants));
+		}
+	}
+
+	return Array.from(parentObjectives);
+}
+
 export function paramsFromFragment(url: URL) {
 	return new URLSearchParams(url.hash.substring(1) ?? '');
 }

@@ -55,9 +55,9 @@
 		type AnyContainer,
 		type Container,
 		containerOfType,
-		type ContainerWithObjective,
 		type CustomEventMap,
 		type EmptyEffectContainer,
+		type EmptyObjectiveContainer,
 		type IndicatorContainer,
 		isContainer,
 		isContainerWithEffect,
@@ -82,13 +82,14 @@
 	import {
 		ability,
 		addEffectState,
+		addObjectiveState,
 		mayDeleteContainer,
 		overlayHistory,
 		overlayWidth,
 		user
 	} from '$lib/stores';
 
-	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let containersWithObjectives: Container[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
 	export let measures: MeasureContainer[] | undefined = undefined;
 	export let measureElements: MeasureMonitoringContainer[] | undefined = undefined;
@@ -172,6 +173,32 @@
 		return await response.json();
 	}
 
+	async function createObjective(target: Container, indicator: IndicatorContainer) {
+		const newObjective = containerOfType(
+			payloadTypes.enum.objective,
+			target.organization,
+			target.organizational_unit,
+			env.PUBLIC_KC_REALM
+		) as EmptyObjectiveContainer;
+		const response = await saveContainer({
+			...newObjective,
+			payload: { ...newObjective.payload, title: indicator.payload.title },
+			relation: [
+				{
+					object: indicator.revision,
+					position: 0,
+					predicate: predicates.enum['is-objective-for']
+				},
+				{
+					object: target.revision,
+					position: 0,
+					predicate: predicates.enum['is-part-of']
+				}
+			]
+		});
+		return await response.json();
+	}
+
 	async function afterSubmit(
 		{ detail }: CustomEvent<CustomEventMap['submitSuccessful']>,
 		c: AnyContainer
@@ -184,6 +211,14 @@
 			const effect = await createEffect($addEffectState.target, detail.result);
 			$addEffectState = {};
 			await goto(`#view=${effect.guid}&edit`, { invalidateAll: true });
+		} else if (
+			hashParams.has(overlayKey.enum.create) &&
+			isIndicatorContainer(detail.result) &&
+			$addObjectiveState.target
+		) {
+			const objective = await createObjective($addObjectiveState.target, detail.result);
+			$addObjectiveState = {};
+			await goto(`#view=${objective.guid}&edit`, { invalidateAll: true });
 		} else if (hashParams.has('create')) {
 			await goto(`#view=${detail.result.guid}`, { invalidateAll: true });
 		} else if (hashParams.has('edit-help')) {

@@ -69,6 +69,7 @@
 		"with_progress": "Mit Fortschrittsanzeige"
 	},
 	"fulfillment_date": "Erfüllungsdatum",
+	"goals": "Ziele",
 	"help": "Hilfe",
 	"home": "Startseite",
 	"imprint": "Impressum",
@@ -177,8 +178,8 @@
 	"models": "Visionen",
 	"modified_date": "Geändert am",
 	"object": "Objekt",
-	"objective": "Ziel",
-	"objectives": "Ziele",
+	"objective": "Gewünschte Entwicklung",
+	"objectives": "Gewünschte Entwicklung",
 	"open_organization_menu": "Organisations-Menu öffnen",
 	"open_sidebar": "Seitenleiste öffnen",
 	"operational_goal": "Operatives Ziel",

@@ -42,7 +42,12 @@
 
 	<div class="details-tab" id="basic-data">
 		{#if indicator}
-			<IndicatorChart container={indicator} {relatedContainers} showObjectives />
+			<IndicatorChart
+				container={indicator}
+				{relatedContainers}
+				containersWithObjectives={[container]}
+				showObjectives
+			/>
 		{/if}
 
 		<div class="meta">

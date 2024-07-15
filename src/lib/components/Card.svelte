@@ -13,6 +13,7 @@
 	import {
 		isEffectContainer,
 		isIndicatorContainer,
+		isObjectiveContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
 		overlayKey,
@@ -20,7 +21,7 @@
 		paramsFromFragment,
 		predicates
 	} from '$lib/models';
-	import type { AnyContainer, Container, ContainerWithObjective } from '$lib/models';
+	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
 	import {
 		predicateIcons,
@@ -52,7 +53,7 @@
 		selected = undefined;
 	}
 
-	let containersWithObjectivesPromise: Promise<ContainerWithObjective[]>;
+	let containersWithObjectivesPromise: Promise<Container[]>;
 	let relatedContainersPromise: Promise<Container[]>;
 
 	$: if (isIndicatorContainer(container)) {
@@ -62,7 +63,7 @@
 		} else {
 			relatedContainersPromise = new Promise((resolve) => resolve(relatedContainers));
 		}
-	} else if (isEffectContainer(container)) {
+	} else if (isEffectContainer(container) || isObjectiveContainer(container)) {
 		if (relatedContainers.length == 0) {
 			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
 		} else {
@@ -215,6 +216,18 @@
 				{@const indicator = relatedContainers.find(isIndicatorContainer)}
 				{#if indicator}
 					<IndicatorChart container={indicator} {relatedContainers} showEffects />
+				{/if}
+			{/await}
+		{:else if isObjectiveContainer(container)}
+			{#await relatedContainersPromise then relatedContainers}
+				{@const indicator = relatedContainers.find(isIndicatorContainer)}
+				{#if indicator}
+					<IndicatorChart
+						container={indicator}
+						{relatedContainers}
+						containersWithObjectives={[container]}
+						showObjectives
+					/>
 				{/if}
 			{/await}
 		{:else if isSimpleMeasureContainer(container)}

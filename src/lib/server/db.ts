@@ -10,7 +10,6 @@ import { z } from 'zod';
 import {
 	anyContainer,
 	container,
-	containerWithObjective,
 	findDescendants,
 	organizationalUnitContainer,
 	organizationContainer,
@@ -24,7 +23,6 @@ import {
 import type {
 	AnyContainer,
 	Container,
-	ContainerWithObjective,
 	IndicatorContainer,
 	ModifiedContainer,
 	NewContainer,
@@ -76,7 +74,6 @@ export async function getPool() {
 const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
-	containerWithObjective: containerWithObjective.omit({ relation: true, user: true }),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	organizationalUnitContainer: organizationalUnitContainer.omit({ relation: true, user: true }),
 	relation,
@@ -923,75 +920,86 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 
 export function getAllContainersRelatedToIndicator(container: IndicatorContainer) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const effectResult = await connection.any(sql.typeAlias('container')`
-			SELECT cs.*
-			FROM container cs
-			LEFT JOIN container_relation cr ON cs.revision = cr.subject
-				AND cr.predicate = ${predicates.enum['is-measured-by']}
-				AND cs.valid_currently
-			WHERE cr.object = ${container.revision}
-		`);
-
-		const measureResult = effectResult.length
-			? await connection.any(sql.typeAlias('container')`
-			SELECT co.*
-			FROM container co
-			LEFT JOIN container_relation cr ON co.revision = cr.object
-				AND cr.predicate = ${predicates.enum['is-part-of']}
-				AND co.valid_currently
-			WHERE cr.subject IN (${sql.join(
-				effectResult.map(({ revision }) => revision),
-				sql.fragment`, `
-			)})
-		`)
-			: [];
-
-		const objectiveResult = await connection.any(sql.typeAlias('container')`
-			SELECT c.*
+		const objectiveAndEffectResult = await connection.any(sql.typeAlias('revision')`
+			SELECT c.revision
 			FROM container c
-			WHERE payload->'objective' @> ${sql.jsonb([{ indicator: container.guid }])}
-				AND valid_currently
-				AND NOT deleted
-			ORDER BY payload->>'title';
+			JOIN container_relation cr ON c.revision = cr.subject
+				AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
+			WHERE cr.object = ${container.revision}
+        AND c.valid_currently
+				AND NOT c.deleted
 		`);
 
-		const objectiveAndEffectResult = [...measureResult, ...objectiveResult];
-
-		const strategyResult =
+		const isPartOfResult =
 			objectiveAndEffectResult.length > 0
-				? await connection.any(sql.typeAlias('container')`
-					SELECT DISTINCT c.*
-					FROM container c
-					JOIN container_relation cr ON cr.predicate = ${predicates.enum['is-part-of-strategy']}
-						AND cr.object = c.revision
-					WHERE subject IN (${sql.join(
+				? await connection.any(sql.typeAlias('revision')`
+					WITH RECURSIVE is_part_of_relation(path) AS (
+						--Top level items (roots)
+						SELECT array[c.revision] AS path, c.revision, c.payload
+						FROM container c
+						WHERE c.valid_currently
+							AND NOT deleted
+							AND NOT EXISTS(
+								--No relations with this as the subject.
+								SELECT *
+								FROM container_relation parent_test
+								WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
+							)
+							UNION ALL
+							SELECT array_append(r.path, c.revision), c.revision, c.payload
+							FROM container c
+							JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
+							JOIN is_part_of_relation r ON cr.object = r.revision
+							WHERE c.valid_currently
+								AND NOT c.deleted
+							)
+					SELECT DISTINCT unnest(r.path) AS revision
+					FROM is_part_of_relation r
+					JOIN container c ON r.path[array_upper(r.path, 1)] = c.revision
+					WHERE c.revision IN (${sql.join(
 						objectiveAndEffectResult.map(({ revision }) => revision),
 						sql.fragment`, `
 					)})
-						AND valid_currently
-						AND NOT deleted
 				`)
 				: [];
 
-		return withUserAndRelation<Container>(connection, [
-			...effectResult,
-			...measureResult,
-			...objectiveResult,
-			...strategyResult
-		]);
+		const containerResult =
+			isPartOfResult.length > 0
+				? await connection.any(sql.typeAlias('container')`
+					SELECT c.*
+					FROM container c
+					WHERE c.revision IN (${sql.join(
+						isPartOfResult.map(({ revision }) => revision),
+						sql.fragment`, `
+					)})
+				`)
+				: [];
+
+		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }
 
-export function getAllContainersWithParentObjectives({ guid, organization }: IndicatorContainer) {
-	return async (connection: DatabaseConnection): Promise<ContainerWithObjective[]> => {
-		const isPartOfResult = await connection.any(sql.typeAlias('revision')`
+export function getAllContainersWithParentObjectives({ revision }: IndicatorContainer) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const objectiveResult = await connection.any(sql.typeAlias('revision')`
+			SELECT c.revision
+			FROM container c
+			JOIN container_relation cr ON cr.predicate = ${predicates.enum['is-objective-for']}
+				AND cr.subject = c.revision
+			WHERE cr.object = ${revision}
+				AND c.valid_currently
+				AND NOT c.deleted
+		`);
+
+		const isPartOfResult =
+			objectiveResult.length > 0
+				? await connection.any(sql.typeAlias('revision')`
 			WITH RECURSIVE is_part_of_relation(path) AS (
 				--Top level items (roots)
-				SELECT array[c.revision] AS path, c.revision AS subject, c.payload AS payload
+				SELECT array[c.revision] AS path, c.revision, c.payload
 				FROM container c
 				WHERE c.valid_currently
 				  AND NOT deleted
-				  AND organization = ${organization}
 					AND NOT EXISTS(
 						--No relations with this as the subject.
 						SELECT *
@@ -1002,24 +1010,23 @@ export function getAllContainersWithParentObjectives({ guid, organization }: Ind
 				SELECT array_append(r.path, c.revision), c.revision, c.payload AS payload
 				FROM container c
 				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
-				JOIN is_part_of_relation r ON cr.object = r.subject
+				JOIN is_part_of_relation r ON cr.object = r.revision
 				WHERE c.valid_currently
 				  AND NOT deleted
-				  AND c.organization = ${organization}
-					AND (
-						NOT r.payload ? 'objective'
-						OR NOT r.payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
-					)
 			)
-			SELECT DISTINCT c.revision
+			SELECT DISTINCT unnest(r.path) AS revision
 			FROM is_part_of_relation r
 			JOIN container c ON r.path[array_upper(r.path, 1)] = c.revision
-			WHERE c.payload->'objective' @> ${sql.jsonb([{ indicator: guid }])}
-		`);
+      WHERE c.revision IN (${sql.join(
+				objectiveResult.map(({ revision }) => revision),
+				sql.fragment`, `
+			)})
+		`)
+				: [];
 
 		const containerResult =
 			isPartOfResult.length > 0
-				? await connection.any(sql.typeAlias('containerWithObjective')`
+				? await connection.any(sql.typeAlias('container')`
 					SELECT *
 					FROM container
 					WHERE revision IN (${sql.join(
@@ -1029,7 +1036,7 @@ export function getAllContainersWithParentObjectives({ guid, organization }: Ind
 				`)
 				: [];
 
-		return withUserAndRelation<ContainerWithObjective>(connection, containerResult);
+		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }
 

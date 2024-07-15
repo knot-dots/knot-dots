@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { isIndicatorContainer } from '$lib/models';
+import { findParentObjectives, isIndicatorContainer } from '$lib/models';
 import { getAllContainersWithParentObjectives, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -14,5 +14,5 @@ export const GET = (async ({ locals, params }) => {
 
 	const containers = await locals.pool.connect(getAllContainersWithParentObjectives(container));
 
-	return json(filterVisible(containers, locals.user));
+	return json(filterVisible(findParentObjectives(containers), locals.user));
 }) satisfies RequestHandler;

@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import createEffect from '$lib/client/createEffect';
+	import createObjective from '$lib/client/createObjective';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
@@ -14,7 +15,7 @@
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
-	import { addEffectState } from '$lib/stores';
+	import { addEffectState, addObjectiveState } from '$lib/stores';
 
 	export let value: IndicatorContainer | IndicatorTemplateContainer;
 
@@ -49,6 +50,10 @@
 				const effect = await createEffect($addEffectState.target, container);
 				$addEffectState = {};
 				await goto(`#view=${effect.guid}&edit`);
+			} else if ($addObjectiveState.target) {
+				const objective = await createObjective($addObjectiveState.target, container);
+				$addEffectState = {};
+				await goto(`#view=${objective.guid}&edit`);
 			} else {
 				await goto(`#view=${container.guid}&edit`);
 			}

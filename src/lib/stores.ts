@@ -16,10 +16,10 @@ import {
 	createCopyOf,
 	hasMember,
 	type IndicatorContainer,
-	isContainerWithObjective,
 	isEffectContainer,
 	isIndicatorContainer,
 	isMeasureMonitoringContainer,
+	isObjectiveContainer,
 	isStrategyContainer,
 	isTaskContainer,
 	mayDelete,
@@ -158,11 +158,18 @@ type AddEffectState = {
 
 export const addEffectState = writable<AddEffectState>({});
 
+type AddObjectiveState = {
+	target?: Container;
+	indicator?: IndicatorContainer;
+};
+
+export const addObjectiveState = writable<AddObjectiveState>({});
+
 type Overlay = {
 	indicators?: IndicatorContainer[];
 	measureElements?: MeasureMonitoringContainer[];
 	isPartOfOptions: AnyContainer[];
-	containersWithObjectives?: ContainerWithObjective[];
+	containersWithObjectives?: Container[];
 	measures?: MeasureContainer[];
 	object?: Container;
 	organizations?: OrganizationContainer[];
@@ -459,9 +466,11 @@ if (browser) {
 					payloadType: [payloadTypes.enum.indicator]
 				})
 			]);
-			const indicatorsFromObjectives = (
-				relatedContainers.filter((c) => isContainerWithObjective(c)) as ContainerWithObjective[]
-			).flatMap((c) => c.payload.objective.map(({ indicator }) => indicator));
+			const indicatorsFromObjectives = relatedContainers
+				.filter(isObjectiveContainer)
+				.flatMap(({ relation }) => relation)
+				.filter(({ predicate }) => predicate == predicates.enum['is-objective-for'])
+				.map(({ object }) => object);
 			const indicatorsFromEffects = relatedContainers
 				.filter(isEffectContainer)
 				.flatMap(({ relation }) => relation)
@@ -469,8 +478,8 @@ if (browser) {
 				.map(({ object }) => object);
 			overlay.set({
 				indicators: indicators.filter(
-					({ guid, revision }) =>
-						indicatorsFromObjectives.includes(guid) || indicatorsFromEffects.includes(revision)
+					({ revision }) =>
+						indicatorsFromObjectives.includes(revision) || indicatorsFromEffects.includes(revision)
 				) as IndicatorContainer[],
 				isPartOfOptions: [],
 				relatedContainers: [],

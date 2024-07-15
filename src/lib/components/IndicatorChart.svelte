@@ -2,16 +2,17 @@
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
 	import {
-		isContainerWithEffect,
 		hasHistoricalValues,
-		status,
+		isContainerWithEffect,
 		isEffectContainer,
-		predicates
+		isObjectiveContainer,
+		predicates,
+		status
 	} from '$lib/models';
-	import type { Container, ContainerWithObjective, IndicatorContainer } from '$lib/models';
+	import type { Container, IndicatorContainer } from '$lib/models';
 
 	export let container: IndicatorContainer;
-	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let containersWithObjectives: Container[] = [];
 	export let relatedContainers: Container[] = [];
 	export let showEffects = false;
 	export let showObjectives = false;
@@ -36,9 +37,8 @@
 
 	$: if (showObjectives) {
 		objectives = containersWithObjectives
-			.flatMap(({ payload }) => payload.objective)
-			.filter(({ indicator }) => indicator == container.guid)
-			.flatMap(({ wantedValues }) => wantedValues)
+			.filter(isObjectiveContainer)
+			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
 			.filter(({ Year }) => Year <= maxYear)
 			.reduce(

@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
-	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import ObjectiveCarousel from '$lib/components/ObjectiveCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Summary from '$lib/components/Summary.svelte';
@@ -16,7 +15,6 @@
 		type AnyContainer,
 		type Container,
 		getCreator,
-		type IndicatorContainer,
 		isContainer,
 		isContainerWithObjective,
 		isIndicatorContainer,
@@ -60,17 +58,6 @@
 		}
 	}
 
-	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
-
-	onMount(() => {
-		if ('objective' in container.payload && container.payload.objective.length > 0) {
-			indicatorsRequest = fetchContainers({
-				organization: [container.organization],
-				payloadType: [payloadTypes.enum.indicator]
-			}) as Promise<IndicatorContainer[]>;
-		}
-	});
-
 	let organizationMembersRequest: Promise<User[]> = new Promise(() => []);
 
 	$: organizationMembersRequest = fetchMembers(container.organization);
@@ -105,24 +92,10 @@
 			</div>
 		{/if}
 
-		{#if isContainerWithObjective(container) && 'objective' in container.payload}
+		{#if isContainerWithObjective(container)}
 			<div class="indicator-objective">
 				<h3>{$_('objectives')}</h3>
-				{#await indicatorsRequest then indicators}
-					{@const indicatorsByGuid = new Map(indicators.map((ic) => [ic.guid, ic]))}
-					{#each container.payload.objective as objective}
-						{@const indicator = indicatorsByGuid.get(objective.indicator)}
-						{#if indicator}
-							<IndicatorChart
-								container={indicator}
-								containersWithObjectives={[container]}
-								showObjectives
-							>
-								<a href="/indicator/{indicator.guid}" slot="caption">{indicator.payload.title}</a>
-							</IndicatorChart>
-						{/if}
-					{/each}
-				{/await}
+				<ObjectiveCarousel {container} />
 			</div>
 		{/if}
 

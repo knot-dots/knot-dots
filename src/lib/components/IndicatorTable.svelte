@@ -1,17 +1,19 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import {
+		type Container,
 		type ContainerWithEffect,
 		type EffectContainer,
+		type IndicatorContainer,
 		isContainerWithEffect,
 		isEffectContainer,
+		isObjectiveContainer,
 		predicates,
 		status
 	} from '$lib/models';
-	import type { Container, ContainerWithObjective, IndicatorContainer } from '$lib/models';
 
 	export let container: IndicatorContainer;
-	export let containersWithObjectives: ContainerWithObjective[] = [];
+	export let containersWithObjectives: Container[] = [];
 	export let relatedContainers: Container[] = [];
 	export let showEffects = false;
 	export let showObjectives = false;
@@ -37,9 +39,8 @@
 
 	$: {
 		objectives = containersWithObjectives
-			.flatMap(({ payload }) => payload.objective)
-			.filter(({ indicator }) => indicator == container.guid)
-			.flatMap(({ wantedValues }) => wantedValues)
+			.filter(isObjectiveContainer)
+			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
 			.filter(({ Year }) => Year <= maxYear)
 			.reduce(
@@ -200,12 +201,8 @@
 						<td>{objectivesByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each containersWithObjectives as containerWithObjective}
-					{@const valuesByYear = new Map(
-						containerWithObjective.payload.objective
-							.filter(({ indicator }) => indicator == container.guid)
-							.flatMap(({ wantedValues }) => wantedValues)
-					)}
+				{#each containersWithObjectives.filter(isObjectiveContainer) as containerWithObjective}
+					{@const valuesByYear = new Map(containerWithObjective.payload.wantedValues)}
 					<tr class="objective">
 						<th scope="row">{container.payload.title}</th>
 						{#each years as year}
