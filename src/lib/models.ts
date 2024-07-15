@@ -1093,15 +1093,7 @@ const emptyContainer = newContainer.extend({
 export type EmptyContainer = z.infer<typeof emptyContainer>;
 
 const emptyEffectContainer = emptyContainer.extend({
-	payload: effectPayload.partial().merge(
-		effectPayload.pick({
-			achievedValues: true,
-			audience: true,
-			plannedValues: true,
-			type: true,
-			visibility: true
-		})
-	)
+	payload: initialEffectPayload
 });
 
 export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
