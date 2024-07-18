@@ -23,10 +23,6 @@
 	let effectsByStatus: Map<string, Array<{ Year: number; Value: number }>>;
 	let objectives = [] as Array<{ Year: number; Value: number }>;
 	let objectivesMinYear = 0;
-	let maxYear =
-		container.payload.historicalValues.length > 0
-			? container.payload.historicalValues[container.payload.historicalValues.length - 1][0]
-			: 0;
 	let ideasByYear: Map<number, number>;
 	let inPlanningByYear: Map<number, number>;
 	let inImplementationByYear: Map<number, number>;
@@ -38,7 +34,6 @@
 		objectives = findParentObjectives(relatedContainers)
 			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
-			.filter(({ Year }) => Year <= maxYear)
 			.reduce(
 				(accumulator, currentValue) => {
 					const groupIndex = accumulator.findIndex(({ Year }) => currentValue.Year == Year);
