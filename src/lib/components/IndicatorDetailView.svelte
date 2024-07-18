@@ -20,7 +20,6 @@
 	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: IndicatorContainer;
-	export let containersWithObjectives: Container[] = [];
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
@@ -85,21 +84,9 @@
 		</select>
 
 		{#if viewMode === 'chart'}
-			<IndicatorChart
-				{container}
-				{containersWithObjectives}
-				{relatedContainers}
-				{showEffects}
-				{showObjectives}
-			/>
+			<IndicatorChart {container} {relatedContainers} {showEffects} {showObjectives} />
 		{:else if viewMode === 'table'}
-			<IndicatorTable
-				{container}
-				{containersWithObjectives}
-				{relatedContainers}
-				{showEffects}
-				{showObjectives}
-			/>
+			<IndicatorTable {container} {relatedContainers} {showEffects} {showObjectives} />
 		{/if}
 
 		{#if showEffects}

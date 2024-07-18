@@ -89,7 +89,6 @@
 		user
 	} from '$lib/stores';
 
-	export let containersWithObjectives: Container[] = [];
 	export let indicators: IndicatorContainer[] | undefined = undefined;
 	export let measures: MeasureContainer[] | undefined = undefined;
 	export let measureElements: MeasureMonitoringContainer[] | undefined = undefined;
@@ -669,12 +668,7 @@
 			{#if isEffectContainer(container)}
 				<EffectDetailView {container} {relatedContainers} {revisions} />
 			{:else if isIndicatorContainer(container)}
-				<IndicatorDetailView
-					{container}
-					{containersWithObjectives}
-					{relatedContainers}
-					{revisions}
-				/>
+				<IndicatorDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainerWithEffect(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isObjectiveContainer(container)}

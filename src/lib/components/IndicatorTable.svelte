@@ -5,6 +5,7 @@
 		type ContainerWithEffect,
 		type EffectContainer,
 		type IndicatorContainer,
+		findParentObjectives,
 		isContainerWithEffect,
 		isEffectContainer,
 		isObjectiveContainer,
@@ -13,7 +14,6 @@
 	} from '$lib/models';
 
 	export let container: IndicatorContainer;
-	export let containersWithObjectives: Container[] = [];
 	export let relatedContainers: Container[] = [];
 	export let showEffects = false;
 	export let showObjectives = false;
@@ -38,8 +38,7 @@
 	$: historicalValuesByYear = new Map(container.payload.historicalValues);
 
 	$: {
-		objectives = containersWithObjectives
-			.filter(isObjectiveContainer)
+		objectives = findParentObjectives(relatedContainers)
 			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
 			.filter(({ Year }) => Year <= maxYear)
@@ -201,7 +200,7 @@
 						<td>{objectivesByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each containersWithObjectives.filter(isObjectiveContainer) as containerWithObjective}
+				{#each relatedContainers.filter(isObjectiveContainer) as containerWithObjective}
 					{@const valuesByYear = new Map(containerWithObjective.payload.wantedValues)}
 					<tr class="objective">
 						<th scope="row">{container.payload.title}</th>

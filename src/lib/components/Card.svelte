@@ -4,7 +4,6 @@
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
@@ -53,17 +52,13 @@
 		selected = undefined;
 	}
 
-	let containersWithObjectivesPromise: Promise<Container[]>;
 	let relatedContainersPromise: Promise<Container[]>;
 
-	$: if (isIndicatorContainer(container)) {
-		containersWithObjectivesPromise = fetchContainersWithParentObjectives(container);
-		if (relatedContainers.length == 0) {
-			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
-		} else {
-			relatedContainersPromise = new Promise((resolve) => resolve(relatedContainers));
-		}
-	} else if (isEffectContainer(container) || isObjectiveContainer(container)) {
+	$: if (
+		isIndicatorContainer(container) ||
+		isEffectContainer(container) ||
+		isObjectiveContainer(container)
+	) {
 		if (relatedContainers.length == 0) {
 			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
 		} else {
@@ -191,16 +186,10 @@
 
 	<div class="content">
 		{#if isIndicatorContainer(container)}
-			{#await Promise.all([containersWithObjectivesPromise, relatedContainersPromise])}
+			{#await relatedContainersPromise}
 				<IndicatorChart {container} />
-			{:then [containersWithObjectives, relatedContainers]}
-				<IndicatorChart
-					{container}
-					{relatedContainers}
-					{containersWithObjectives}
-					showEffects
-					showObjectives
-				/>
+			{:then relatedContainers}
+				<IndicatorChart {container} {relatedContainers} showEffects showObjectives />
 			{/await}
 			<p class="badges">
 				{#each container.payload.indicatorType as indicatorType}
@@ -222,12 +211,7 @@
 			{#await relatedContainersPromise then relatedContainers}
 				{@const indicator = relatedContainers.find(isIndicatorContainer)}
 				{#if indicator}
-					<IndicatorChart
-						container={indicator}
-						{relatedContainers}
-						containersWithObjectives={[container]}
-						showObjectives
-					/>
+					<IndicatorChart container={indicator} {relatedContainers} showObjectives />
 				{/if}
 			{/await}
 		{:else if isSimpleMeasureContainer(container)}

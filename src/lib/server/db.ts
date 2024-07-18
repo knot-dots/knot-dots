@@ -979,67 +979,6 @@ export function getAllContainersRelatedToIndicator(container: IndicatorContainer
 	};
 }
 
-export function getAllContainersWithParentObjectives({ revision }: IndicatorContainer) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const objectiveResult = await connection.any(sql.typeAlias('revision')`
-			SELECT c.revision
-			FROM container c
-			JOIN container_relation cr ON cr.predicate = ${predicates.enum['is-objective-for']}
-				AND cr.subject = c.revision
-			WHERE cr.object = ${revision}
-				AND c.valid_currently
-				AND NOT c.deleted
-		`);
-
-		const isPartOfResult =
-			objectiveResult.length > 0
-				? await connection.any(sql.typeAlias('revision')`
-			WITH RECURSIVE is_part_of_relation(path) AS (
-				--Top level items (roots)
-				SELECT array[c.revision] AS path, c.revision, c.payload
-				FROM container c
-				WHERE c.valid_currently
-				  AND NOT deleted
-					AND NOT EXISTS(
-						--No relations with this as the subject.
-						SELECT *
-						FROM container_relation parent_test
-						WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
-					)
-				UNION ALL
-				SELECT array_append(r.path, c.revision), c.revision, c.payload AS payload
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
-				JOIN is_part_of_relation r ON cr.object = r.revision
-				WHERE c.valid_currently
-				  AND NOT deleted
-			)
-			SELECT DISTINCT unnest(r.path) AS revision
-			FROM is_part_of_relation r
-			JOIN container c ON r.path[array_upper(r.path, 1)] = c.revision
-      WHERE c.revision IN (${sql.join(
-				objectiveResult.map(({ revision }) => revision),
-				sql.fragment`, `
-			)})
-		`)
-				: [];
-
-		const containerResult =
-			isPartOfResult.length > 0
-				? await connection.any(sql.typeAlias('container')`
-					SELECT *
-					FROM container
-					WHERE revision IN (${sql.join(
-						isPartOfResult.map(({ revision }) => revision),
-						sql.fragment`, `
-					)})
-				`)
-				: [];
-
-		return withUserAndRelation<Container>(connection, containerResult);
-	};
-}
-
 export function getAllContainersRelatedToStrategy(
 	revision: number,
 	filters: { categories: string[]; terms?: string; topics: string[]; type?: PayloadType[] }

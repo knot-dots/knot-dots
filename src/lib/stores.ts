@@ -6,7 +6,6 @@ import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchContainers from '$lib/client/fetchContainers';
-import fetchContainersWithParentObjectives from '$lib/client/fetchContainersWithParentObjectives';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -169,7 +168,6 @@ type Overlay = {
 	indicators?: IndicatorContainer[];
 	measureElements?: MeasureMonitoringContainer[];
 	isPartOfOptions: AnyContainer[];
-	containersWithObjectives?: Container[];
 	measures?: MeasureContainer[];
 	object?: Container;
 	organizations?: OrganizationContainer[];
@@ -265,12 +263,11 @@ if (browser) {
 			const container = revisions[revisions.length - 1];
 
 			if (isIndicatorContainer(container)) {
-				const [isPartOfOptions, parentObjectives, relatedContainers] = await Promise.all([
+				const [isPartOfOptions, relatedContainers] = await Promise.all([
 					fetchIsPartOfOptions(
 						container.organizational_unit ?? container.organization,
 						container.payload.type
 					),
-					fetchContainersWithParentObjectives(container),
 					fetchRelatedContainers(container.guid, {
 						organization: [container.organization],
 						relationType: ['hierarchical', 'other']
@@ -278,7 +275,6 @@ if (browser) {
 				]);
 				overlay.set({
 					isPartOfOptions,
-					containersWithObjectives: parentObjectives,
 					relatedContainers,
 					revisions
 				});
