@@ -2,6 +2,7 @@
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
 	import {
+		findOverallObjective,
 		findParentObjectives,
 		hasHistoricalValues,
 		isContainerWithEffect,
@@ -21,6 +22,8 @@
 	let effects = [] as Array<{ Year: number; Value: number; Status: string }>;
 	let effectsMinYear = 0;
 	let effectsByStatus: Map<string, Array<{ Year: number; Value: number }>>;
+	let overallObjective = [] as Array<{ Year: number; Value: number }>;
+	let overallObjectiveMinYear = 0;
 	let objectives = [] as Array<{ Year: number; Value: number }>;
 	let objectivesMinYear = 0;
 	let ideasByYear: Map<number, number>;
@@ -31,6 +34,19 @@
 	$: historicalValuesByYear = new Map(container.payload.historicalValues);
 
 	$: if (showObjectives) {
+		overallObjective =
+			findOverallObjective(container, relatedContainers)?.payload.wantedValues.map(
+				([Year, Value]) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value })
+			) ?? [];
+		overallObjectiveMinYear = Math.min(...overallObjective.map(({ Year }) => Year));
+		overallObjective = [
+			{
+				Year: overallObjectiveMinYear - 1,
+				Value: historicalValuesByYear.get(overallObjectiveMinYear - 1) ?? 0
+			},
+			...overallObjective
+		];
+
 		objectives = findParentObjectives(relatedContainers)
 			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
@@ -350,6 +366,9 @@
 									})
 								)
 							]
+						: []),
+					...(showObjectives && overallObjective.length > 0
+						? [Plot.lineY(overallObjective, { x: 'Year', y: 'Value', stroke: '#1f2a37' })]
 						: []),
 					Plot.lineY(
 						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
