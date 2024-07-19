@@ -10,12 +10,16 @@
 	import IndicatorTable from '$lib/components/IndicatorTable.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
+		type AnyContainer,
+		type Container,
+		findOverallObjective,
+		type IndicatorContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isStrategyContainer,
+		type ObjectiveContainer,
 		owners
 	} from '$lib/models';
-	import type { AnyContainer, Container, IndicatorContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { sdgIcons } from '$lib/theme/models';
 
@@ -27,6 +31,7 @@
 	let showEffects = true;
 	let showObjectives = true;
 	let viewMode = 'chart';
+	let overallObjective: ObjectiveContainer | undefined;
 
 	$: {
 		const parseResult = tab.safeParse(paramsFromURL($page.url).get('tab'));
@@ -47,6 +52,10 @@
 			showEffects = true;
 			showObjectives = true;
 		}
+	}
+
+	$: {
+		overallObjective = findOverallObjective(container, relatedContainers);
 	}
 
 	applicationState.update((state) => ({
@@ -106,6 +115,9 @@
 			<div class="goals">
 				<h3>{$_('goals')}</h3>
 				<ul class="carousel">
+					{#if overallObjective}
+						<li><Card --height="100%" container={overallObjective} /></li>
+					{/if}
 					{#each relatedContainers.filter(isContainerWithObjective) as objective}
 						<li>
 							<Card --height="100%" container={objective} />
@@ -118,7 +130,7 @@
 		<div class="strategies">
 			<h3>{$_('strategies')}</h3>
 			<ul class="carousel">
-				{#each relatedContainers.filter((c) => isStrategyContainer(c)) as strategy}
+				{#each relatedContainers.filter(isStrategyContainer) as strategy}
 					<li>
 						<Card --height="100%" container={strategy} />
 					</li>
