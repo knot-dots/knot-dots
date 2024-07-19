@@ -1330,7 +1330,7 @@ export function findDescendants<T extends AnyContainer>(container: T, containers
 			) > -1
 	);
 
-	const descendants = children;
+	const descendants = [...children];
 
 	for (const child of children) {
 		descendants.push(...findDescendants(child, containers));
