@@ -304,7 +304,7 @@
 										px: 'Year',
 										py: 'Value',
 										dx: 10,
-										dy: (index + 2) * 12 - 17,
+										dy: (index + 3) * 12 - 17,
 										frameAnchor: 'top-left',
 										fill: effectColorByStatus.get(s),
 										text: (d) => {
@@ -356,7 +356,7 @@
 										px: 'Year',
 										py: 'Value',
 										dx: 10,
-										dy: -5,
+										dy: 7,
 										frameAnchor: 'top-left',
 										fill: '#21a5ed',
 										text: (d) =>
@@ -368,7 +368,32 @@
 							]
 						: []),
 					...(showObjectives && overallObjective.length > 0
-						? [Plot.lineY(overallObjective, { x: 'Year', y: 'Value', stroke: '#1f2a37' })]
+						? [
+								Plot.lineY(overallObjective, { x: 'Year', y: 'Value', stroke: '#1f2a37' }),
+								Plot.dot(
+									overallObjective,
+									Plot.pointerX({
+										x: 'Year',
+										y: 'Value',
+										stroke: '#1f2a37'
+									})
+								),
+								Plot.text(
+									overallObjective,
+									Plot.pointerX({
+										px: 'Year',
+										py: 'Value',
+										dx: 10,
+										dy: -5,
+										frameAnchor: 'top-left',
+										fill: '#1f2a37',
+										text: (d) =>
+											$_('indicator.tip.overall_objective', {
+												values: { year: d.Year, value: d.Value, unit }
+											})
+									})
+								)
+							]
 						: []),
 					Plot.lineY(
 						container.payload.historicalValues.map(([key, value]) => ({ Year: key, Value: value })),
