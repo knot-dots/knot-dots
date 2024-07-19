@@ -513,12 +513,10 @@ const modelPayload = basePayload
 
 const initialModelPayload = modelPayload.partial({ title: true });
 
-const objectivePayload = basePayload
-	.omit({ category: true, description: true, summary: true, topic: true })
-	.extend({
-		type: z.literal(payloadTypes.enum.objective),
-		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
-	});
+const objectivePayload = basePayload.omit({ category: true, summary: true, topic: true }).extend({
+	type: z.literal(payloadTypes.enum.objective),
+	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
+});
 
 const initialObjectivePayload = objectivePayload.partial({ title: true });
 

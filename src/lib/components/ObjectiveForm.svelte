@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { isIndicatorContainer, predicates } from '$lib/models';
-	import type { ObjectiveContainer } from '$lib/models';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import Editor from '$lib/components/Editor.svelte';
+	import { isIndicatorContainer, type ObjectiveContainer, predicates } from '$lib/models';
 
 	export let container: ObjectiveContainer;
 
@@ -101,6 +101,10 @@
 			{/if}
 		{/await}
 	</div>
+
+	{#key container.guid}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
 </fieldset>
 
 <style>
