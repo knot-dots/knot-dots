@@ -1363,6 +1363,18 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 	return Array.from(parentObjectives);
 }
 
+export function findOverallObjective(container: IndicatorContainer, containers: Container[]) {
+	return containers
+		.filter(isObjectiveContainer)
+		.find(
+			({ relation }) =>
+				relation.some(
+					({ object, predicate }) =>
+						predicate == predicates.enum['is-objective-for'] && object == container.revision
+				) && relation.findIndex(({ predicate }) => predicate == predicates.enum['is-part-of']) == -1
+		);
+}
+
 export function paramsFromFragment(url: URL) {
 	return new URLSearchParams(url.hash.substring(1) ?? '');
 }

@@ -198,6 +198,8 @@
 	"organizations": "Organizations",
 	"organizations_and_organizational_units": "Organizations and organizational units",
 	"other_organizations": "Other organizations",
+	"overall_objective": "Overall objective",
+	"overall_objective_title": "Overall objective for {indicator}",
 	"owned_by": "Owned by",
 	"page": "Page",
 	"page_title": "StrategyTool",

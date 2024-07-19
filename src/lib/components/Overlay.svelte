@@ -58,6 +58,7 @@
 		type CustomEventMap,
 		type EmptyEffectContainer,
 		type EmptyObjectiveContainer,
+		findOverallObjective,
 		type IndicatorContainer,
 		isContainer,
 		isContainerWithEffect,
@@ -173,6 +174,7 @@
 	}
 
 	async function createObjective(target: Container, indicator: IndicatorContainer) {
+		const isOverallObjective = target.guid == indicator.guid;
 		const newObjective = containerOfType(
 			payloadTypes.enum.objective,
 			target.organization,
@@ -181,18 +183,27 @@
 		) as EmptyObjectiveContainer;
 		const response = await saveContainer({
 			...newObjective,
-			payload: { ...newObjective.payload, title: indicator.payload.title },
+			payload: {
+				...newObjective.payload,
+				title: isOverallObjective
+					? $_('overall_objective_title', { values: { indicator: indicator.payload.title } })
+					: indicator.payload.title
+			},
 			relation: [
 				{
 					object: indicator.revision,
 					position: 0,
 					predicate: predicates.enum['is-objective-for']
 				},
-				{
-					object: target.revision,
-					position: 0,
-					predicate: predicates.enum['is-part-of']
-				}
+				...(isOverallObjective
+					? []
+					: [
+							{
+								object: target.revision,
+								position: 0,
+								predicate: predicates.enum['is-part-of']
+							}
+						])
 			]
 		});
 		return await response.json();
@@ -247,6 +258,13 @@
 		return async () => {
 			saveAsIndicatorTemplateDisabled = true;
 			await saveContainer(newIndicatorTemplateFromIndicator(c));
+		};
+	}
+
+	function createOverallObjective(c: IndicatorContainer) {
+		return async () => {
+			const objective = await createObjective(c, c);
+			await goto(`#view=${objective.guid}&edit`, { invalidateAll: true });
 		};
 	}
 
@@ -683,6 +701,11 @@
 		</div>
 		<footer class="content-footer">
 			<div class="content-actions">
+				{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
+					<button type="button" on:click={createOverallObjective(container)}>
+						<PlusSmall />{$_('overall_objective')}
+					</button>
+				{/if}
 				{#if mayShowRelationButton && $ability.can('relate', container)}
 					<a class="button" href="#relate={container.guid}">
 						{$_('establish_relations')}
