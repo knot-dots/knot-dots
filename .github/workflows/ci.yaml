@@ -55,7 +55,7 @@ jobs:
           cache-to: type=inline
           file: docker/${{ matrix.image }}/Dockerfile
           target: production
-          push: false
+          push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.REGISTRY }}/${{ matrix.image }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ matrix.image }}:latest
