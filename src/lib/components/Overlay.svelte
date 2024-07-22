@@ -333,6 +333,7 @@
 <section
 	class="overlay"
 	class:overlay-fullscreen={fullScreen}
+	data-testid="overlay"
 	transition:slide={{ axis: 'x' }}
 	style="--width-factor: {$overlayWidth}"
 >

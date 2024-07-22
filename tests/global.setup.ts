@@ -1,4 +1,4 @@
-import { test as setup, expect } from '@playwright/test';
+import { test as setup, expect } from './fixtures';
 
 const authFile = 'tests/.auth/user.json';
 
@@ -51,4 +51,21 @@ setup('create user and log in', async ({ page, playwright }) => {
 	await expect(page.getByRole('link', { name: 'WS', exact: true })).toBeVisible();
 
 	await page.context().storageState({ path: authFile });
+});
+
+setup.describe(() => {
+	setup.use({ storageState: authFile });
+
+	setup('create an organization', async ({ page, overlay }) => {
+		await page.goto('/');
+		await page.getByRole('button', { name: 'Open organization menu' }).click();
+		await page.getByRole('navigation').getByText('Add item').click();
+		await overlay.organizationForm.nameInput.fill('Musterhausen');
+		await overlay.organizationForm.categorySelect.selectOption('Government');
+		await overlay.organizationForm.boardsListbox.getByLabel('Indicators').click();
+		await overlay.organizationForm.boardsListbox.getByLabel('Organizational units').click();
+		await overlay.organizationForm.save();
+
+		await expect(page.getByRole('link', { name: 'Musterhausen' })).toBeVisible();
+	});
 });
