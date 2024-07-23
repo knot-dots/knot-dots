@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { _, date, number } from 'svelte-i18n';
 	import ChevronDoubleDown from '~icons/heroicons/chevron-double-down-20-solid';
 	import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-20-solid';
@@ -10,7 +9,6 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import fetchContainers from '$lib/client/fetchContainers';
 	import ObjectiveCarousel from '$lib/components/ObjectiveCarousel.svelte';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
@@ -27,7 +25,7 @@
 		predicates,
 		status
 	} from '$lib/models';
-	import type { Container, IndicatorContainer, Relation, StrategyContainer } from '$lib/models';
+	import type { Container, Relation, StrategyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
@@ -109,17 +107,6 @@
 			return `#view=${container.guid}`;
 		}
 	}
-
-	let indicatorsRequest: Promise<IndicatorContainer[]> = new Promise(() => []);
-
-	onMount(() => {
-		if ('objective' in container.payload && container.payload.objective.length > 0) {
-			indicatorsRequest = fetchContainers({
-				organization: [container.organization],
-				payloadType: [payloadTypes.enum.indicator]
-			}) as Promise<IndicatorContainer[]>;
-		}
-	});
 </script>
 
 <div class="chapter">

@@ -506,7 +506,6 @@ const initialMeasurePayload = measurePayload.partial({ title: true });
 
 const modelPayload = basePayload
 	.extend({
-		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.model)
 	})
 	.strict();
@@ -527,7 +526,6 @@ const operationalGoalPayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		indicator: z.array(indicator).max(1).default([]),
-		objective: z.array(indicatorObjective).default([]),
 		progress: z.number().nonnegative().optional(),
 		type: z.literal(payloadTypes.enum.operational_goal)
 	})
@@ -573,7 +571,6 @@ const strategicGoalPayload = basePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.strategic_goal)
 	})
 	.strict();
@@ -602,7 +599,6 @@ const initialStrategyPayload = strategyPayload.partial({
 
 const visionPayload = basePayload
 	.extend({
-		objective: z.array(indicatorObjective).default([]),
 		type: z.literal(payloadTypes.enum.vision)
 	})
 	.strict();
@@ -1462,9 +1458,7 @@ export function createCopyOf(
 		container.realm
 	);
 
-	if (isContainerWithObjective(container)) {
-		copy.payload = { ...container.payload, objective: [] };
-	} else if (isMeasureContainer(container)) {
+	if (isMeasureContainer(container)) {
 		copy.payload = { ...container.payload, template: false };
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
@@ -1477,9 +1471,7 @@ export function createCopyOf(
 	} else if (isEffectContainer(container)) {
 		copy.payload = { ...container.payload, achievedValues: [] };
 	} else {
-		copy.payload = {
-			...container.payload
-		};
+		copy.payload = { ...container.payload };
 	}
 
 	copy.payload = {
