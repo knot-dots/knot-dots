@@ -1,4 +1,4 @@
-FROM node:18-slim AS builder
+FROM node:20-slim AS builder
 WORKDIR /srv/app
 COPY package*.json ./
 RUN npm clean-install --silent
@@ -16,7 +16,7 @@ FROM builder AS dev
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
-FROM node:18-slim AS production
+FROM node:20-slim AS production
 WORKDIR /srv/app
 COPY --from=builder /srv/app/package.json .
 COPY --from=builder /srv/app/node_modules ./node_modules
