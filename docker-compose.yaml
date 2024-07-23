@@ -63,7 +63,6 @@ services:
       - AUTH_SECRET
       - KC_CLIENT_SECRET
       - NODE_OPTIONS
-      - ORIGIN=http://localhost:3000
       - OTEL_NODE_ENABLED_INSTRUMENTATIONS
       - OTEL_NODE_RESOURCE_DETECTORS
       - OTEL_SERVICE_NAME
@@ -72,6 +71,7 @@ services:
       - PGHOST
       - PGPASSWORD
       - PGUSER
+      - PROTOCOL_HEADER=X-Forwarded-Proto
       - PUBLIC_BASE_URL=http://knotdots.test:3000
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
