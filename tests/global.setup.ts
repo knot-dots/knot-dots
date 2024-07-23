@@ -21,7 +21,7 @@ setup('create user and log in', async ({ page, playwright }) => {
 	const userResponse = await apiContext.post('/admin/realms/agaric/users', {
 		data: {
 			credentials: [{ type: 'password', value: 'p455w0rd' }],
-			email: 'playwright@knotdots.net',
+			email: 'playwright@knotdots.test',
 			emailVerified: true,
 			enabled: true,
 			firstName: 'William',
@@ -45,7 +45,7 @@ setup('create user and log in', async ({ page, playwright }) => {
 
 	await page.goto('/');
 	await page.getByRole('button', { name: 'Log in' }).click();
-	await page.getByLabel('Email').fill('playwright@knotdots.net');
+	await page.getByLabel('Email').fill('playwright@knotdots.test');
 	await page.getByLabel('Password').fill('p455w0rd');
 	await page.getByRole('button', { name: 'Sign In' }).click();
 	await expect(page.getByRole('link', { name: 'WS', exact: true })).toBeVisible();
