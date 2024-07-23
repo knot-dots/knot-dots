@@ -22,6 +22,7 @@ const config: PlaywrightTestConfig = {
 		}
 	],
 	use: {
+		baseURL: 'http://knotdots.test:3000',
 		proxy: {
 			server: 'http://localhost:3128'
 		},
