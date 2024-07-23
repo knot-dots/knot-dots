@@ -66,6 +66,8 @@ setup.describe(() => {
 		await overlay.organizationForm.boardsListbox.getByLabel('Organizational units').click();
 		await overlay.organizationForm.save();
 
+		await page.goto('/');
+		await page.getByRole('button', { name: 'Open organization menu' }).click();
 		await expect(page.getByRole('link', { name: 'Musterhausen' })).toBeVisible();
 	});
 });
