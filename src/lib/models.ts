@@ -395,21 +395,6 @@ const indicator = z.object({
 
 export type Indicator = z.infer<typeof indicator>;
 
-const indicatorEffect = z.object({
-	indicator: z.string().uuid(),
-	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
-});
-
-export type IndicatorEffect = z.infer<typeof indicatorEffect>;
-
-const indicatorObjective = z.object({
-	indicator: z.string().uuid(),
-	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
-});
-
-export type IndicatorObjective = z.infer<typeof indicatorObjective>;
-
 export const taskPriority = z.object({
 	priority: z.number().int(),
 	task: z.string().uuid()
