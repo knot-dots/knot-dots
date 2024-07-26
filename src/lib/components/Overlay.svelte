@@ -40,6 +40,7 @@
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import Relations from '$lib/components/Relations.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
+	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -67,6 +68,7 @@
 		isMeasureContainer,
 		isObjectiveContainer,
 		isPageContainer,
+		isResourceContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		type MeasureContainer,
@@ -691,6 +693,8 @@
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isObjectiveContainer(container)}
 				<ObjectiveDetailView {container} {relatedContainers} {revisions} />
+			{:else if isResourceContainer(container)}
+				<ResourceDetailView {container} {relatedContainers} {revisions} />
 			{:else if isStrategyContainer(container)}
 				<StrategyDetailView {container} {relatedContainers} {revisions} />
 			{:else if isTaskContainer(container)}

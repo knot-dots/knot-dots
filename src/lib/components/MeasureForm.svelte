@@ -5,7 +5,6 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import ResourcePlanner from '$lib/components/ResourcePlanner.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { audience, measureTypes, status, sustainableDevelopmentGoals, topics } from '$lib/models';
 	import type { EmptyMeasureContainer, MeasureContainer } from '$lib/models';
@@ -108,12 +107,6 @@
 			<input type="date" name="endDate" bind:value={container.payload.endDate} />
 		</label>
 	</fieldset>
-</fieldset>
-
-<fieldset class="form-tab" id="resources">
-	<legend>{$_('form.resources')}</legend>
-
-	<ResourcePlanner {container} />
 </fieldset>
 
 <style>

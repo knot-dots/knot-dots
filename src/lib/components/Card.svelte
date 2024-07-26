@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { _ } from 'svelte-i18n';
+	import { _, date } from 'svelte-i18n';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -13,6 +13,7 @@
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
+		isResourceContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
 		overlayKey,
@@ -216,6 +217,13 @@
 			{/await}
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} compact />
+		{:else if isResourceContainer(container)}
+			<Summary {container} />
+			<p>
+				{container.payload.amount}
+				{container.payload.unit},
+				{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+			</p>
 		{:else if 'image' in container.payload}
 			<img alt={$_('cover_image')} src={container.payload.image} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}

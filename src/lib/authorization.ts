@@ -31,6 +31,7 @@ const measureMonitoringTypes = [
 	payloadTypes.enum.effect,
 	payloadTypes.enum.measure_result,
 	payloadTypes.enum.milestone,
+	payloadTypes.enum.resource,
 	payloadTypes.enum.task
 ];
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _, date, number } from 'svelte-i18n';
+	import { _, date } from 'svelte-i18n';
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import Pencil from '~icons/heroicons/pencil-solid';
@@ -297,27 +297,10 @@
 		{/if}
 	</div>
 
-	{#if selectedRevision.payload.resource.length > 0}
-		<div class="details-tab" id="resources">
-			<h3>{$_('resources.label')}</h3>
-			<ul>
-				{#each selectedRevision.payload.resource as resource}
-					<li class="resource-item">
-						<span>{resource.description}</span>
-						<span>{resource.unit}</span>
-						<span>{$number(resource.amount)}</span>
-						<span>
-							{$date(new Date(resource.fulfillmentDate), {
-								day: '2-digit',
-								month: '2-digit',
-								year: 'numeric'
-							})}
-						</span>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
+	<div class="details-tab" id="resources">
+		<h3>{$_('resources')}</h3>
+		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
+	</div>
 
 	<div class="details-tab" id="effects">
 		<h3>{$_('effects')}</h3>
@@ -334,26 +317,3 @@
 		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.milestone} />
 	</div>
 </article>
-
-<style>
-	.resource-item {
-		border-bottom: solid 1px var(--color-gray-300);
-		column-gap: 1rem;
-		display: flex;
-		flex-wrap: wrap;
-		margin-bottom: 0.5rem;
-		padding-bottom: 0.5rem;
-	}
-
-	.resource-item > * {
-		flex: 0 1 0;
-	}
-
-	.resource-item > :nth-child(1) {
-		flex: 1 0 100%;
-	}
-
-	.resource-item > :nth-child(3) {
-		text-align: right;
-	}
-</style>
