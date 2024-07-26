@@ -80,6 +80,7 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'resource',
 	'simple_measure',
 	'strategic_goal',
 	'strategy',
@@ -628,6 +629,23 @@ const milestonePayload = measureMonitoringBasePayload
 
 const initialMilestonePayload = milestonePayload.partial({ title: true });
 
+const resourcePayload = measureMonitoringBasePayload
+	.omit({ summary: true })
+	.extend({
+		amount: z.coerce.number(),
+		fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v)),
+		type: z.literal(payloadTypes.enum.resource),
+		unit: z.string()
+	})
+	.strict();
+
+const initialResourcePayload = resourcePayload.partial({
+	amount: true,
+	fulfillmentDate: true,
+	title: true,
+	unit: true
+});
+
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -716,6 +734,7 @@ export const container = z.object({
 		objectivePayload,
 		operationalGoalPayload,
 		pagePayload,
+		resourcePayload,
 		simpleMeasurePayload,
 		strategicGoalPayload,
 		strategyPayload,
@@ -747,6 +766,7 @@ export const anyContainer = container.extend({
 		organizationPayload,
 		organizationalUnitPayload,
 		pagePayload,
+		resourcePayload,
 		simpleMeasurePayload,
 		strategicGoalPayload,
 		strategyPayload,
@@ -913,6 +933,18 @@ export function isPageContainer(
 	return container.payload.type === payloadTypes.enum.page;
 }
 
+const resourceContainer = container.extend({
+	payload: resourcePayload
+});
+
+export type ResourceContainer = z.infer<typeof resourceContainer>;
+
+export function isResourceContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceContainer {
+	return container.payload.type === payloadTypes.enum.resource;
+}
+
 const simpleMeasureContainer = container.extend({
 	payload: simpleMeasurePayload
 });
@@ -1058,6 +1090,7 @@ const emptyContainer = newContainer.extend({
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
+		initialResourcePayload,
 		initialSimpleMeasurePayload,
 		initialStrategicGoalPayload,
 		initialStrategyPayload,
@@ -1129,6 +1162,12 @@ export type EmptyPageContainer = z.infer<typeof emptyPageContainer>;
 const emptySimpleMeasureContainer = emptyContainer.extend({
 	payload: initialSimpleMeasurePayload
 });
+
+const emptyResourceContainer = emptyContainer.extend({
+	payload: initialResourcePayload
+});
+
+export type EmptyResourceContainer = z.infer<typeof emptyResourceContainer>;
 
 export type EmptySimpleMeasureContainer = z.infer<typeof emptySimpleMeasureContainer>;
 
