@@ -599,9 +599,8 @@ const measureMonitoringBasePayload = z.object({
 	visibility: visibility.default('members')
 });
 
-const effectPayload = measureMonitoringBasePayload.extend({
+const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).extend({
 	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	description: z.string().trim().optional(),
 	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	type: z.literal(payloadTypes.enum.effect)
 });
