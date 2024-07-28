@@ -62,7 +62,8 @@
 			)
 			.map(({ Year, Value }) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value }));
 
-		objectivesMinYear = Math.min(...objectives.map(({ Year }) => Year));
+		objectivesMinYear =
+			objectives.length == 0 ? 0 : Math.min(...objectives.map(({ Year }) => Year));
 
 		objectives = [
 			{
@@ -137,7 +138,7 @@
 				[] as Array<{ Year: number; Value: number; Status: string }>
 			);
 
-		effectsMinYear = Math.min(...effects.map(({ Year }) => Year));
+		effectsMinYear = effects.length == 0 ? 0 : Math.min(...effects.map(({ Year }) => Year));
 
 		ideasByYear = new Map(
 			effects
@@ -171,8 +172,8 @@
 	);
 
 	$: years = Array.from(
-		{ length: maxYear - Math.min(effectsMinYear, objectivesMinYear) + 2 },
-		(value, index) => Math.min(effectsMinYear, objectivesMinYear) - 1 + index
+		{ length: maxYear - Math.max(effectsMinYear, objectivesMinYear) + 2 },
+		(value, index) => Math.max(effectsMinYear, objectivesMinYear) - 1 + index
 	);
 </script>
 
