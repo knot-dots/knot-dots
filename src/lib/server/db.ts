@@ -865,6 +865,7 @@ export function getAllRelatedContainersByStrategyType(
 		organizationalUnits?: string[];
 		terms?: string;
 		topics?: string[];
+		type?: PayloadType[];
 	},
 	sort: string
 ) {
