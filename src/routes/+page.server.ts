@@ -28,7 +28,17 @@ export const load = (async ({ locals, url, parent }) => {
 					url.searchParams.getAll('relationType').length == 0
 						? ['hierarchical', 'other']
 						: url.searchParams.getAll('relationType'),
-					{},
+					{
+						type: [
+							'strategy',
+							'model',
+							'vision',
+							'strategic_goal',
+							'operational_goal',
+							'measure',
+							'simple_measure'
+						]
+					},
 					url.searchParams.get('sort') ?? ''
 				)
 			),
@@ -50,7 +60,16 @@ export const load = (async ({ locals, url, parent }) => {
 							: [audience.enum['audience.public'], audience.enum['audience.organization']],
 						categories: url.searchParams.getAll('category'),
 						topics: url.searchParams.getAll('topic'),
-						terms: url.searchParams.get('terms') ?? ''
+						terms: url.searchParams.get('terms') ?? '',
+						type: [
+							'strategy',
+							'model',
+							'vision',
+							'strategic_goal',
+							'operational_goal',
+							'measure',
+							'simple_measure'
+						]
 					},
 					url.searchParams.get('sort') ?? ''
 				)
@@ -73,7 +92,16 @@ export const load = (async ({ locals, url, parent }) => {
 						categories: url.searchParams.getAll('category'),
 						topics: url.searchParams.getAll('topic'),
 						strategyTypes: url.searchParams.getAll('strategyType'),
-						terms: url.searchParams.get('terms') ?? ''
+						terms: url.searchParams.get('terms') ?? '',
+						type: [
+							'strategy',
+							'model',
+							'vision',
+							'strategic_goal',
+							'operational_goal',
+							'measure',
+							'simple_measure'
+						]
 					},
 					url.searchParams.get('sort') ?? ''
 				)
