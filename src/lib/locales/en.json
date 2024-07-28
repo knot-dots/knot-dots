@@ -103,6 +103,7 @@
 	"indicator.table.in_planning": "In planning total",
 	"indicator.table.in_progress": "In progress total",
 	"indicator.table.objectives": "Objectives total",
+	"indicator.table.overall_objective": "Overall objective",
 	"indicator.template": "Indicator template",
 	"indicator.tip.done": "Already achieved in {year}: {value, number} {unit}",
 	"indicator.tip.historical_values": "Actual/predicted value in {year}: {value, number} {unit}",

@@ -10,7 +10,8 @@
 		isEffectContainer,
 		isObjectiveContainer,
 		predicates,
-		status
+		status,
+		findOverallObjective
 	} from '$lib/models';
 
 	export let container: IndicatorContainer;
@@ -22,6 +23,9 @@
 	let effectsMinYear = 0;
 	let objectives = [] as Array<{ Year: number; Value: number }>;
 	let objectivesMinYear = 0;
+	let overallObjective = [] as Array<{ Year: number; Value: number }>;
+	let overallObjectiveByYear: Map<number, number>;
+	let overallObjectiveMinYear = 0;
 	let maxYear = 0;
 	let objectivesByYear: Map<number, number>;
 	let ideasByYear: Map<number, number>;
@@ -35,6 +39,21 @@
 	$: historicalValuesByYear = new Map(container.payload.historicalValues);
 
 	$: {
+		overallObjective =
+			findOverallObjective(container, relatedContainers)?.payload.wantedValues.map(
+				([Year, Value]) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value })
+			) ?? [];
+		overallObjectiveMinYear = Math.min(...overallObjective.map(({ Year }) => Year));
+		overallObjectiveByYear = new Map(
+			[
+				{
+					Year: overallObjectiveMinYear - 1,
+					Value: historicalValuesByYear.get(overallObjectiveMinYear - 1) ?? 0
+				},
+				...overallObjective
+			].map(({ Year, Value }) => [Year, Value])
+		);
+
 		objectives = findParentObjectives(relatedContainers)
 			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
@@ -167,13 +186,15 @@
 
 	$: maxYear = Math.max(
 		...historicalValuesByYear.keys(),
+		...overallObjectiveByYear.keys(),
 		...objectivesByYear.keys(),
 		...effects.map(({ Year }) => Year)
 	);
 
 	$: years = Array.from(
-		{ length: maxYear - Math.max(effectsMinYear, objectivesMinYear) + 2 },
-		(value, index) => Math.max(effectsMinYear, objectivesMinYear) - 1 + index
+		{ length: maxYear - Math.max(effectsMinYear, objectivesMinYear, overallObjectiveMinYear) + 2 },
+		(value, index) =>
+			Math.max(effectsMinYear, objectivesMinYear, overallObjectiveMinYear) - 1 + index
 	);
 </script>
 
@@ -197,6 +218,12 @@
 
 		{#if showObjectives}
 			<tbody>
+				<tr class="overall-objective">
+					<th scope="row">{$_('indicator.table.overall_objective')}</th>
+					{#each years as year}
+						<td>{overallObjectiveByYear.get(year) ?? 0}</td>
+					{/each}
+				</tr>
 				<tr class="objective-total">
 					<th scope="row">{$_('indicator.table.objectives')}</th>
 					{#each years as year}
@@ -394,5 +421,10 @@
 
 	.objective {
 		background-color: var(--color-blue-background);
+	}
+
+	.overall-objective {
+		background-color: var(--color-gray-800);
+		color: var(--color-gray-050);
 	}
 </style>
