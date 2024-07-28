@@ -43,7 +43,9 @@
 			findOverallObjective(container, relatedContainers)?.payload.wantedValues.map(
 				([Year, Value]) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value })
 			) ?? [];
-		overallObjectiveMinYear = Math.min(...overallObjective.map(({ Year }) => Year));
+		overallObjectiveMinYear = overallObjectiveMinYear
+			? Math.min(...overallObjective.map(({ Year }) => Year))
+			: 0;
 		overallObjectiveByYear = new Map(
 			[
 				{
