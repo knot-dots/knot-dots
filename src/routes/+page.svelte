@@ -70,12 +70,14 @@
 						: undefined}
 					title={$_(column.title)}
 				>
-					<MaybeDragZone
-						containers={data.containers.filter(
-							(c) =>
-								column.payloadType.findIndex((payloadType) => payloadType === c.payload.type) > -1
-						)}
-					/>
+					{#await data.containers then containers}
+						<MaybeDragZone
+							containers={containers.filter(
+								(c) =>
+									column.payloadType.findIndex((payloadType) => payloadType === c.payload.type) > -1
+							)}
+						/>
+					{/await}
 				</BoardColumn>
 			{/each}
 		</Board>
