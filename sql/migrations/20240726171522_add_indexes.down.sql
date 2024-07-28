@@ -1,0 +1,3 @@
+DROP INDEX container_relation_object_idx;
+DROP INDEX container_relation_subject_idx;
+DROP index container_user_object_idx;
