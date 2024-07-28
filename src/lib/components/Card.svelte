@@ -217,7 +217,7 @@
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} compact />
 		{:else if 'image' in container.payload}
-			<img alt={$_('cover_image')} src={container.payload.image} />}
+			<img alt={$_('cover_image')} src={container.payload.image} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}
