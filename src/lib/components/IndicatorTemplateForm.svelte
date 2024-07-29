@@ -25,15 +25,7 @@
 	}));
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
-
-	<ListBox
-		label={$_('indicator_type')}
-		options={indicatorTypes.options}
-		bind:value={container.payload.indicatorType}
-	/>
-
+<fieldset class="form-tab" id="basic-data">
 	<label>
 		{$_('label.unit')}
 		<select name="unit" bind:value={container.payload.unit}>
@@ -42,16 +34,6 @@
 			{/each}
 		</select>
 	</label>
-
-	<ListBox
-		label={$_('audience')}
-		options={audience.options}
-		bind:value={container.payload.audience}
-	/>
-</fieldset>
-
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
 
 	{#key 'guid' in container ? container.guid : ''}
 		<Editor label={$_('description')} bind:value={container.payload.description} />
@@ -68,6 +50,16 @@
 
 		<Editor label={$_('indicator.measures_intro')} bind:value={container.payload.measuresIntro} />
 	{/key}
+</fieldset>
+
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
+
+	<ListBox
+		label={$_('indicator_type')}
+		options={indicatorTypes.options}
+		bind:value={container.payload.indicatorType}
+	/>
 
 	{#if $ability.can('update', container, 'indicatorCategory')}
 		<ListBox
@@ -93,5 +85,11 @@
 		label={$_('category')}
 		options={sustainableDevelopmentGoals.options}
 		bind:value={container.payload.category}
+	/>
+
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
 	/>
 </fieldset>

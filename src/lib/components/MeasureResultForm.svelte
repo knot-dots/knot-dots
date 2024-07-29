@@ -19,23 +19,7 @@
 	}));
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
-
-	<MeasureRelationSelector {container} />
-
-	<OrganizationSelector bind:container />
-
-	<ListBox
-		label={$_('audience')}
-		options={audience.options}
-		bind:value={container.payload.audience}
-	/>
-</fieldset>
-
 <fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
-
 	<label>
 		{$_('summary')}
 		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
@@ -44,4 +28,18 @@
 	{#key 'guid' in container ? container.guid : ''}
 		<Editor label={$_('description')} bind:value={container.payload.description} />
 	{/key}
+</fieldset>
+
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
+
+	<MeasureRelationSelector {container} />
+
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+
+	<OrganizationSelector bind:container />
 </fieldset>

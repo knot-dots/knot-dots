@@ -30,13 +30,13 @@
 <ContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="meta">
 		<div class="meta">
-			<h3 class="meta-key">{$_('strategy_type.label')}</h3>
-			<p class="meta-value">{$_(container.payload.strategyType)}</p>
+			<h3 class="meta-key">{$_('level.label')}</h3>
+			<p class="meta-value">{$_(container.payload.level)}</p>
 		</div>
 
 		<div class="meta">
-			<h3 class="meta-key">{$_('level.label')}</h3>
-			<p class="meta-value">{$_(container.payload.level)}</p>
+			<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+			<p class="meta-value">{$_(container.payload.strategyType)}</p>
 		</div>
 
 		{#if container.payload.pdf.length > 0}

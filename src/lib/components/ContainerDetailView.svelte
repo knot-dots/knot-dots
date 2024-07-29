@@ -123,6 +123,15 @@
 		</slot>
 
 		<slot name="meta">
+			{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
+				<div class="meta">
+					<h3 class="meta-key">{$_('fulfillment_date')}</h3>
+					<p class="meta-value">
+						{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+					</p>
+				</div>
+			{/if}
+
 			{#if strategy}
 				<div class="meta">
 					<h3 class="meta-key">{$_('strategy')}</h3>
@@ -149,15 +158,6 @@
 						<a href={containerURL(measure.payload.type, measure.guid)}>
 							{$_(measure.payload.title)}
 						</a>
-					</p>
-				</div>
-			{/if}
-
-			{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
-				<div class="meta">
-					<h3 class="meta-key">{$_('fulfillment_date')}</h3>
-					<p class="meta-value">
-						{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
 					</p>
 				</div>
 			{/if}

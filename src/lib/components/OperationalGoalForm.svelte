@@ -21,23 +21,7 @@
 	let withProgress = 'progress' in container.payload;
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
-
-	<StrategyRelationSelector {container} />
-
-	<OrganizationSelector bind:container />
-
-	<ListBox
-		label={$_('audience')}
-		options={audience.options}
-		bind:value={container.payload.audience}
-	/>
-</fieldset>
-
 <fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
-
 	<label>
 		{$_('summary')}
 		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
@@ -83,6 +67,17 @@
 			</datalist>
 		</label>
 	{/if}
+</fieldset>
+
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
+
+	<label>
+		{$_('fulfillment_date')}
+		<input type="date" bind:value={container.payload.fulfillmentDate} />
+	</label>
+
+	<StrategyRelationSelector {container} />
 
 	<ListBox
 		label={$_('topic.label')}
@@ -96,8 +91,11 @@
 		bind:value={container.payload.category}
 	/>
 
-	<label>
-		{$_('fulfillment_date')}
-		<input type="date" bind:value={container.payload.fulfillmentDate} />
-	</label>
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+
+	<OrganizationSelector bind:container />
 </fieldset>

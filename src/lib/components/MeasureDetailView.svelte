@@ -62,7 +62,7 @@
 	<svelte:fragment slot="data">
 		{#if 'summary' in container.payload || ('description' in container.payload && !isSimpleMeasureContainer(container))}
 			<div class="summary">
-				<h3>{$_('summary')}</h3>
+				<h3>{$_('measure.summary')}</h3>
 				<Summary container={selectedRevision} />
 			</div>
 		{/if}
@@ -116,26 +116,6 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
-		{#if strategy}
-			<div class="meta">
-				<h3 class="meta-key">{$_('strategy')}</h3>
-				<p class="meta-value">
-					{#if $page.url.pathname === `/strategy/${strategy.guid}`}
-						{$_(strategy.payload.title)}
-					{:else}
-						<a href={containerURL(strategy.payload.type, strategy.guid)}>
-							{$_(strategy.payload.title)}
-						</a>
-					{/if}
-				</p>
-			</div>
-
-			<div class="meta">
-				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
-				<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
-			</div>
-		{/if}
-
 		{#if 'measureType' in selectedRevision.payload}
 			<div class="meta">
 				<h3 class="meta-key">{$_('measure_type')}</h3>
@@ -172,6 +152,26 @@
 						{$date(new Date(selectedRevision.payload.startDate), { format: 'short' })}–
 					{/if}
 				</p>
+			</div>
+		{/if}
+
+		{#if strategy}
+			<div class="meta">
+				<h3 class="meta-key">{$_('strategy')}</h3>
+				<p class="meta-value">
+					{#if $page.url.pathname === `/strategy/${strategy.guid}`}
+						{$_(strategy.payload.title)}
+					{:else}
+						<a href={containerURL(strategy.payload.type, strategy.guid)}>
+							{$_(strategy.payload.title)}
+						</a>
+					{/if}
+				</p>
+			</div>
+
+			<div class="meta">
+				<h3 class="meta-key">{$_('strategy_type.label')}</h3>
+				<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
 			</div>
 		{/if}
 	</svelte:fragment>

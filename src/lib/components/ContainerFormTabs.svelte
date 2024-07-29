@@ -48,18 +48,6 @@
 	}
 </script>
 
-{#if $applicationState.containerForm.tabs.includes('metadata')}
-	<li>
-		<button
-			title={$_('form.metadata')}
-			type="button"
-			class="button-nav button-square"
-			on:click={() => updateApplicationState('metadata')}
-		>
-			<PuzzlePiece />
-		</button>
-	</li>
-{/if}
 {#if $applicationState.containerForm.tabs.includes('basic-data')}
 	<li>
 		<button
@@ -105,6 +93,18 @@
 			on:click={() => updateApplicationState('historical-values')}
 		>
 			<TableCells />
+		</button>
+	</li>
+{/if}
+{#if $applicationState.containerForm.tabs.includes('metadata')}
+	<li>
+		<button
+			title={$_('form.metadata')}
+			type="button"
+			class="button-nav button-square"
+			on:click={() => updateApplicationState('metadata')}
+		>
+			<PuzzlePiece />
 		</button>
 	</li>
 {/if}

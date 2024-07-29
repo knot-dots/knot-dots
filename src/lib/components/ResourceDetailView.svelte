@@ -29,6 +29,13 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
+		<div class="meta">
+			<h3 class="meta-key">{$_('fulfillment_date')}</h3>
+			<p class="meta-value">
+				{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+			</p>
+		</div>
+
 		{#if measure}
 			<div class="meta">
 				<h3 class="meta-key">{$_('measure')}</h3>
@@ -39,12 +46,5 @@
 				</p>
 			</div>
 		{/if}
-
-		<div class="meta">
-			<h3 class="meta-key">{$_('fulfillment_date')}</h3>
-			<p class="meta-value">
-				{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
-			</p>
-		</div>
 	</svelte:fragment>
 </ContainerDetailView>

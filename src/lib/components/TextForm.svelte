@@ -18,24 +18,22 @@
 	}));
 </script>
 
+<fieldset class="form-tab" id="basic-data">
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('body')} bind:value={container.payload.body} />
+	{/key}
+</fieldset>
+
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
 	<StrategyRelationSelector {container} />
-
-	<OrganizationSelector bind:container />
 
 	<ListBox
 		label={$_('audience')}
 		options={audience.options}
 		bind:value={container.payload.audience}
 	/>
-</fieldset>
 
-<fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
-
-	{#key 'guid' in container ? container.guid : ''}
-		<Editor label={$_('body')} bind:value={container.payload.body} />
-	{/key}
+	<OrganizationSelector bind:container />
 </fieldset>

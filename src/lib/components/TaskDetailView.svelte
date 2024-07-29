@@ -70,6 +70,48 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
+		<div class="meta">
+			<h3 class="meta-key">{$_('status.label')}</h3>
+			<p class="meta-value">
+				<span class="badge badge--{taskStatusColors.get(selectedRevision.payload.taskStatus)}">
+					<svelte:component
+						this={taskStatusIcons.get(selectedRevision.payload.taskStatus) ?? LightBulb}
+					/>
+					{$_(selectedRevision.payload.taskStatus)}
+				</span>
+			</p>
+		</div>
+
+		{#if 'assignee' in selectedRevision.payload && selectedRevision.payload.assignee && $ability.can('read', selectedRevision, 'assignee')}
+			{#await organizationMembersRequest then organizationMembers}
+				<div class="meta">
+					<h3 class="meta-key">{$_('assignee')}</h3>
+					<p class="meta-value">
+						{organizationMembers.find(({ guid }) => guid === selectedRevision.payload.assignee)
+							?.display_name}
+					</p>
+				</div>
+			{/await}
+		{/if}
+
+		{#if selectedRevision.payload.taskCategory}
+			<div class="meta">
+				<h3 class="meta-key">{$_('task_category.label')}</h3>
+				<p class="meta-value">
+					<span class="badge">{$_(selectedRevision.payload.taskCategory)}</span>
+				</p>
+			</div>
+		{/if}
+
+		{#if 'fulfillmentDate' in selectedRevision.payload && selectedRevision.payload.fulfillmentDate}
+			<div class="meta">
+				<h3 class="meta-key">{$_('fulfillment_date')}</h3>
+				<p class="meta-value">
+					{$date(new Date(selectedRevision.payload.fulfillmentDate), { format: 'medium' })}
+				</p>
+			</div>
+		{/if}
+
 		{#if measure}
 			<div class="meta">
 				<h3 class="meta-key">{$_('measure')}</h3>
@@ -87,44 +129,6 @@
 							{$_(milestone.payload.title)}
 						</a>
 					{/if}
-				</p>
-			</div>
-		{/if}
-		<div class="meta">
-			<h3 class="meta-key">{$_('status.label')}</h3>
-			<p class="meta-value">
-				<span class="badge badge--{taskStatusColors.get(selectedRevision.payload.taskStatus)}">
-					<svelte:component
-						this={taskStatusIcons.get(selectedRevision.payload.taskStatus) ?? LightBulb}
-					/>
-					{$_(selectedRevision.payload.taskStatus)}
-				</span>
-			</p>
-		</div>
-		{#if 'assignee' in selectedRevision.payload && selectedRevision.payload.assignee && $ability.can('read', selectedRevision, 'assignee')}
-			{#await organizationMembersRequest then organizationMembers}
-				<div class="meta">
-					<h3 class="meta-key">{$_('assignee')}</h3>
-					<p class="meta-value">
-						{organizationMembers.find(({ guid }) => guid === selectedRevision.payload.assignee)
-							?.display_name}
-					</p>
-				</div>
-			{/await}
-		{/if}
-		{#if selectedRevision.payload.taskCategory}
-			<div class="meta">
-				<h3 class="meta-key">{$_('task_category.label')}</h3>
-				<p class="meta-value">
-					<span class="badge">{$_(selectedRevision.payload.taskCategory)}</span>
-				</p>
-			</div>
-		{/if}
-		{#if 'fulfillmentDate' in selectedRevision.payload && selectedRevision.payload.fulfillmentDate}
-			<div class="meta">
-				<h3 class="meta-key">{$_('fulfillment_date')}</h3>
-				<p class="meta-value">
-					{$date(new Date(selectedRevision.payload.fulfillmentDate), { format: 'medium' })}
 				</p>
 			</div>
 		{/if}

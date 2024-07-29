@@ -31,53 +31,8 @@
 	}
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
-
-	<StrategyRelationSelector {container} />
-
-	<OrganizationSelector bind:container />
-
-	<ListBox
-		label={$_('audience')}
-		options={audience.options}
-		bind:value={container.payload.audience}
-	/>
-</fieldset>
-
 <fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
-
 	<Editor label={$_('description')} bind:value={container.payload.description} />
-
-	<ListBox
-		label={$_('measure_type')}
-		options={measureTypes.options}
-		bind:value={container.payload.measureType}
-	/>
-
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options}
-		bind:value={container.payload.topic}
-	/>
-
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
-		bind:value={container.payload.category}
-	/>
-
-	<label>
-		{$_('status.label')}
-		<select name="status" bind:value={container.payload.status} required>
-			{#each status.options as statusOption}
-				<option value={statusOption} selected={statusOption === statusParam}>
-					{$_(statusOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
 
 	<label>
 		{$_('progress')}
@@ -147,6 +102,49 @@
 			<input type="date" name="endDate" bind:value={container.payload.endDate} />
 		</label>
 	</fieldset>
+</fieldset>
+
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
+
+	<label>
+		{$_('status.label')}
+		<select name="status" bind:value={container.payload.status} required>
+			{#each status.options as statusOption}
+				<option value={statusOption} selected={statusOption === statusParam}>
+					{$_(statusOption)}
+				</option>
+			{/each}
+		</select>
+	</label>
+
+	<ListBox
+		label={$_('measure_type')}
+		options={measureTypes.options}
+		bind:value={container.payload.measureType}
+	/>
+
+	<StrategyRelationSelector {container} />
+
+	<ListBox
+		label={$_('topic.label')}
+		options={topics.options}
+		bind:value={container.payload.topic}
+	/>
+
+	<ListBox
+		label={$_('category')}
+		options={sustainableDevelopmentGoals.options}
+		bind:value={container.payload.category}
+	/>
+
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+
+	<OrganizationSelector bind:container />
 </fieldset>
 
 <style>

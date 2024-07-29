@@ -16,8 +16,6 @@
 </script>
 
 <fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
-
 	<label>
 		{$_('slug')}
 		<input name="slug" type="text" bind:value={container.payload.slug} readonly />

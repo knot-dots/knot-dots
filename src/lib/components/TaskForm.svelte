@@ -32,20 +32,14 @@
 	let statusParam = paramsFromURL($page.url).get('taskStatus');
 </script>
 
-<fieldset class="form-tab" id="metadata">
-	<legend>{$_('form.metadata')}</legend>
-
-	<OrganizationSelector bind:container />
-
-	<MeasureRelationSelector bind:container />
-</fieldset>
-
 <fieldset class="form-tab" id="basic-data">
-	<legend>{$_('form.basic_data')}</legend>
-
 	{#key 'guid' in container ? container.guid : ''}
 		<Editor label={$_('description')} bind:value={container.payload.description} />
 	{/key}
+</fieldset>
+
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
 
 	<label>
 		{$_('task_status.label')}
@@ -90,4 +84,8 @@
 		{$_('fulfillment_date')}
 		<input type="date" bind:value={container.payload.fulfillmentDate} />
 	</label>
+
+	<MeasureRelationSelector bind:container />
+
+	<OrganizationSelector bind:container />
 </fieldset>

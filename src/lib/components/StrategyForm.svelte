@@ -37,13 +37,27 @@
 	}
 </script>
 
-<OrganizationSelector bind:container />
+<label>
+	{$_('level.label')}
+	<select name="level" bind:value={container.payload.level} required>
+		{#each levels.options as levelOption}
+			<option value={levelOption} selected={levelOption === levelParam}>
+				{$_(levelOption)}
+			</option>
+		{/each}
+	</select>
+</label>
 
-<ListBox
-	label={$_('audience')}
-	options={audience.options}
-	bind:value={container.payload.audience}
-/>
+<label>
+	{$_('strategy_type.label')}
+	<select name="strategy-type" bind:value={container.payload.strategyType} required>
+		{#each strategyTypes.options as strategyTypeOption}
+			<option value={strategyTypeOption}>
+				{$_(strategyTypeOption)}
+			</option>
+		{/each}
+	</select>
+</label>
 
 {#if 'image' in container.payload}
 	<span class="preview">
@@ -82,21 +96,11 @@
 		{/each}
 	</ul>
 {/if}
+
 <label>
 	{$_('pdf')}
 	<input type="file" name="pdf" accept="application/pdf" multiple />
 	<span class="help">{$_('upload.pdf.help')}</span>
-</label>
-
-<label>
-	{$_('strategy_type.label')}
-	<select name="strategy-type" bind:value={container.payload.strategyType} required>
-		{#each strategyTypes.options as strategyTypeOption}
-			<option value={strategyTypeOption}>
-				{$_(strategyTypeOption)}
-			</option>
-		{/each}
-	</select>
 </label>
 
 <ListBox label={$_('topic.label')} options={topics.options} bind:value={container.payload.topic} />
@@ -107,13 +111,10 @@
 	bind:value={container.payload.category}
 />
 
-<label>
-	{$_('level.label')}
-	<select name="level" bind:value={container.payload.level} required>
-		{#each levels.options as levelOption}
-			<option value={levelOption} selected={levelOption === levelParam}>
-				{$_(levelOption)}
-			</option>
-		{/each}
-	</select>
-</label>
+<ListBox
+	label={$_('audience')}
+	options={audience.options}
+	bind:value={container.payload.audience}
+/>
+
+<OrganizationSelector bind:container />
