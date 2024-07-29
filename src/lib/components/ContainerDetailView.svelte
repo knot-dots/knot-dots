@@ -14,6 +14,7 @@
 	import {
 		type AnyContainer,
 		type Container,
+		type ContainerDetailViewTabKey,
 		getCreator,
 		isContainerWithObjective,
 		isIndicatorContainer,
@@ -33,8 +34,9 @@
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
+	export let tabs: ContainerDetailViewTabKey[] = [];
 
-	applicationState.update((state) => ({ ...state, containerDetailView: { tabs: [] } }));
+	applicationState.update((state) => ({ ...state, containerDetailView: { tabs } }));
 
 	$: strategy = isStrategyContainer(container)
 		? container
