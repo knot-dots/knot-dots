@@ -62,7 +62,7 @@
 	}
 </script>
 
-<ContainerDetailView {container} {relatedContainers} {revisions}>
+<ContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<div class="description">
 			<h3>{$_('description')}</h3>
@@ -114,30 +114,30 @@
 				{/each}
 			</ul>
 		</div>
-		{#if 'assignee' in container.payload && container.payload.assignee && $ability.can('read', container, 'assignee')}
+		{#if 'assignee' in selectedRevision.payload && selectedRevision.payload.assignee && $ability.can('read', selectedRevision, 'assignee')}
 			{#await organizationMembersRequest then organizationMembers}
 				<div class="meta">
 					<h3 class="meta-key">{$_('assignee')}</h3>
 					<p class="meta-value">
-						{organizationMembers.find(({ guid }) => guid === container.payload.assignee)
+						{organizationMembers.find(({ guid }) => guid === selectedRevision.payload.assignee)
 							?.display_name}
 					</p>
 				</div>
 			{/await}
 		{/if}
-		{#if container.payload.taskCategory}
+		{#if selectedRevision.payload.taskCategory}
 			<div class="meta">
 				<h3 class="meta-key">{$_('task_category.label')}</h3>
 				<p class="meta-value">
-					<span class="badge">{$_(container.payload.taskCategory)}</span>
+					<span class="badge">{$_(selectedRevision.payload.taskCategory)}</span>
 				</p>
 			</div>
 		{/if}
-		{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
+		{#if 'fulfillmentDate' in selectedRevision.payload && selectedRevision.payload.fulfillmentDate}
 			<div class="meta">
 				<h3 class="meta-key">{$_('fulfillment_date')}</h3>
 				<p class="meta-value">
-					{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+					{$date(new Date(selectedRevision.payload.fulfillmentDate), { format: 'medium' })}
 				</p>
 			</div>
 		{/if}
@@ -165,17 +165,17 @@
 				<h3 class="meta-key">{$_('modified_date')}</h3>
 				<ul class="meta-value">
 					<li>
-						{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
+						{getCreator(selectedRevision).some((guid) => organizationMembersByGuid.has(guid))
 							? $_('created_by', {
 									values: {
-										date: container.valid_from,
-										creator: getCreator(container)
+										date: selectedRevision.valid_from,
+										creator: getCreator(selectedRevision)
 											.filter((guid) => organizationMembersByGuid.has(guid))
 											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
 											.join(', ')
 									}
 								})
-							: $date(container.valid_from, { format: 'long' })}
+							: $date(selectedRevision.valid_from, { format: 'long' })}
 					</li>
 				</ul>
 			</div>

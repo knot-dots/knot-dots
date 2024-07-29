@@ -157,11 +157,11 @@
 			</div>
 		{/if}
 
-		{#if 'measureType' in container.payload}
+		{#if 'measureType' in selectedRevision.payload}
 			<div class="meta">
 				<h3 class="meta-key">{$_('measure_type')}</h3>
 				<ul class="meta-value">
-					{#each container.payload.measureType as measureType}
+					{#each selectedRevision.payload.measureType as measureType}
 						<li>{$_(measureType)}</li>
 					{/each}
 				</ul>
@@ -211,7 +211,7 @@
 		<div class="meta">
 			<h3 class="meta-key">{$_('owned_by')}</h3>
 			<ul class="meta-value">
-				{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+				{#each owners( selectedRevision, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
 					<li>{owner.payload.name}</li>
 				{/each}
 			</ul>
@@ -221,14 +221,14 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('audience')}</h3>
 				<ul class="meta-value">
-					{#each container.payload.audience as audience}
+					{#each selectedRevision.payload.audience as audience}
 						<li>{$_(audience)}</li>
 					{/each}
 				</ul>
 			</div>
 		{/if}
 
-		{#if 'startDate' in container.payload || 'endDate' in container.payload}
+		{#if 'startDate' in selectedRevision.payload || 'endDate' in selectedRevision.payload}
 			<div class="meta">
 				<h3 class="meta-key">{$_('planned_duration')}</h3>
 				<p class="meta-value">
@@ -271,17 +271,17 @@
 				<h3 class="meta-key">{$_('modified_date')}</h3>
 				<ul class="meta-value">
 					<li>
-						{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
+						{getCreator(selectedRevision).some((guid) => organizationMembersByGuid.has(guid))
 							? $_('created_by', {
 									values: {
-										date: container.valid_from,
-										creator: getCreator(container)
+										date: selectedRevision.valid_from,
+										creator: getCreator(selectedRevision)
 											.filter((guid) => organizationMembersByGuid.has(guid))
 											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
 											.join(', ')
 									}
 								})
-							: $date(container.valid_from, { format: 'long' })}
+							: $date(selectedRevision.valid_from, { format: 'long' })}
 					</li>
 				</ul>
 			</div>
@@ -291,7 +291,7 @@
 			<div class="meta">
 				<h3 class="meta-key">{$_('visible_for')}</h3>
 				<ul class="meta-value">
-					<li>{$_(`visibility.${container.payload.visibility}`)}</li>
+					<li>{$_(`visibility.${selectedRevision.payload.visibility}`)}</li>
 				</ul>
 			</div>
 		{/if}
