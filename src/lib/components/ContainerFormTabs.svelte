@@ -60,18 +60,6 @@
 		</button>
 	</li>
 {/if}
-{#if $applicationState.containerForm.tabs.includes('resources')}
-	<li>
-		<button
-			title={$_('form.resources')}
-			type="button"
-			class="button-nav button-square"
-			on:click={() => updateApplicationState('resources')}
-		>
-			<Resources />
-		</button>
-	</li>
-{/if}
 {#if $applicationState.containerForm.tabs.includes('effects') && showEffectsTab}
 	<li>
 		<button

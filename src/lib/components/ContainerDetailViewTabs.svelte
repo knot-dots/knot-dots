@@ -13,7 +13,7 @@
 
 	$: showEffectsTab = isContainerWithEffect(container);
 
-	$: showResourcesTab = 'resource' in container.payload && container.payload.resource.length > 0;
+	$: showResourcesTab = isContainerWithEffect(container);
 
 	function updateApplicationState(activeTab: ContainerDetailViewTabKey) {
 		applicationState.update((state) => ({
