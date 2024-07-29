@@ -629,7 +629,7 @@ const milestonePayload = measureMonitoringBasePayload
 const initialMilestonePayload = milestonePayload.partial({ title: true });
 
 const resourcePayload = measureMonitoringBasePayload
-	.omit({ summary: true })
+	.omit({ description: true, summary: true })
 	.extend({
 		amount: z.coerce.number(),
 		fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v)),

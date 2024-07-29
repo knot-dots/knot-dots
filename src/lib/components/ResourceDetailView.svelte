@@ -2,7 +2,6 @@
 	import { _, date, number } from 'svelte-i18n';
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
-	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		type AnyContainer,
 		getCreator,
@@ -42,13 +41,6 @@
 	</h2>
 
 	<div class="details-tab" id="basic-data">
-		{#if container.payload.description}
-			<div class="description">
-				<h3>{$_('description')}</h3>
-				<Viewer value={container.payload.description} />
-			</div>
-		{/if}
-
 		<div class="amount">
 			<h3>{$_('amount')}</h3>
 			<p>{container.payload.amount} {container.payload.unit}</p>

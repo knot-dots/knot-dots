@@ -21,18 +21,10 @@
 
 <fieldset class="form-tab" id="basic-data">
 	<label>
-		{$_('description')}
-		<textarea
-			name="description"
-			maxlength="200"
-			bind:value={container.payload.description}
-			required
-		/>
-	</label>
-	<label>
 		{$_('unit')}
 		<input type="text" name="unit" bind:value={container.payload.unit} required />
 	</label>
+
 	<label>
 		{$_('amount')}
 		<input
@@ -43,6 +35,7 @@
 			required
 		/>
 	</label>
+
 	<label>
 		{$_('fulfillment_date')}
 		<input
