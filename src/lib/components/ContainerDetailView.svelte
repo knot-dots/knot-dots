@@ -137,10 +137,6 @@
 		</slot>
 
 		<slot name="meta">
-			<div class="meta">
-				<h3 class="meta-key">{$_('object')}</h3>
-				<p class="meta-value">{$_(container.payload.type)}</p>
-			</div>
 			{#if 'strategyType' in container.payload}
 				<div class="meta">
 					<h3 class="meta-key">{$_('strategy_type.label')}</h3>
@@ -184,56 +180,11 @@
 					</ul>
 				</div>
 			{/if}
-			{#if 'topic' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('topic.label')}</h3>
-					<ul class="meta-value meta-value--topic">
-						{#each container.payload.topic as topic}
-							<li>{$_(topic)}</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
-			{#if 'category' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('category')}</h3>
-					<ul class="meta-value meta-value--category">
-						{#each container.payload.category as category}
-							<li>
-								<img
-									src={sdgIcons.get(category)}
-									alt={$_(category)}
-									title={$_(category)}
-									width="66"
-									height="66"
-								/>
-							</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
+
 			{#if 'level' in container.payload && isLevel(container.payload.level)}
 				<div class="meta">
 					<h3 class="meta-key">{$_('level.label')}</h3>
 					<p class="meta-value">{$_(container.payload.level)}</p>
-				</div>
-			{/if}
-			<div class="meta">
-				<h3 class="meta-key">{$_('owned_by')}</h3>
-				<ul class="meta-value">
-					{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
-						<li>{owner.payload.name}</li>
-					{/each}
-				</ul>
-			</div>
-			{#if 'audience' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('audience')}</h3>
-					<ul class="meta-value">
-						{#each container.payload.audience as audience}
-							<li>{$_(audience)}</li>
-						{/each}
-					</ul>
 				</div>
 			{/if}
 			{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
@@ -259,54 +210,111 @@
 					</ul>
 				</div>
 			{/if}
-			{#await organizationMembersRequest then organizationMembers}
-				{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
-				<div class="meta">
-					<h3 class="meta-key">{$_('created_date')}</h3>
-					<ul class="meta-value">
-						<li>
-							{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
-								? $_('created_by', {
-										values: {
-											date: revisions[0].valid_from,
-											creator: getCreator(revisions[0])
-												.filter((guid) => organizationMembersByGuid.has(guid))
-												.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
-												.join(', ')
-										}
-									})
-								: $date(revisions[0].valid_from, { format: 'long' })}
-						</li>
-					</ul>
-				</div>
-				<div class="meta">
-					<h3 class="meta-key">{$_('modified_date')}</h3>
-					<ul class="meta-value">
-						<li>
-							{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
-								? $_('created_by', {
-										values: {
-											date: container.valid_from,
-											creator: getCreator(container)
-												.filter((guid) => organizationMembersByGuid.has(guid))
-												.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
-												.join(', ')
-										}
-									})
-								: $date(container.valid_from, { format: 'long' })}
-						</li>
-					</ul>
-				</div>
-			{/await}
-			{#if $ability.can('read', container, 'visibility')}
-				<div class="meta">
-					<h3 class="meta-key">{$_('visible_for')}</h3>
-					<ul class="meta-value">
-						<li>{$_(`visibility.${container.payload.visibility}`)}</li>
-					</ul>
-				</div>
-			{/if}
 		</slot>
+
+		<div class="meta">
+			<h3 class="meta-key">{$_('object')}</h3>
+			<p class="meta-value">{$_(container.payload.type)}</p>
+		</div>
+
+		{#if 'topic' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('topic.label')}</h3>
+				<ul class="meta-value meta-value--topic">
+					{#each container.payload.topic as topic}
+						<li>{$_(topic)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		{#if 'category' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('category')}</h3>
+				<ul class="meta-value meta-value--category">
+					{#each container.payload.category as category}
+						<li>
+							<img
+								src={sdgIcons.get(category)}
+								alt={$_(category)}
+								title={$_(category)}
+								width="66"
+								height="66"
+							/>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		{#if 'audience' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('audience')}</h3>
+				<ul class="meta-value">
+					{#each container.payload.audience as audience}
+						<li>{$_(audience)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		<div class="meta">
+			<h3 class="meta-key">{$_('owned_by')}</h3>
+			<ul class="meta-value">
+				{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+					<li>{owner.payload.name}</li>
+				{/each}
+			</ul>
+		</div>
+
+		{#await organizationMembersRequest then organizationMembers}
+			{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
+			<div class="meta">
+				<h3 class="meta-key">{$_('created_date')}</h3>
+				<ul class="meta-value">
+					<li>
+						{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
+							? $_('created_by', {
+									values: {
+										date: revisions[0].valid_from,
+										creator: getCreator(revisions[0])
+											.filter((guid) => organizationMembersByGuid.has(guid))
+											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.join(', ')
+									}
+								})
+							: $date(revisions[0].valid_from, { format: 'long' })}
+					</li>
+				</ul>
+			</div>
+			<div class="meta">
+				<h3 class="meta-key">{$_('modified_date')}</h3>
+				<ul class="meta-value">
+					<li>
+						{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
+							? $_('created_by', {
+									values: {
+										date: container.valid_from,
+										creator: getCreator(container)
+											.filter((guid) => organizationMembersByGuid.has(guid))
+											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.join(', ')
+									}
+								})
+							: $date(container.valid_from, { format: 'long' })}
+					</li>
+				</ul>
+			</div>
+		{/await}
+
+		{#if $ability.can('read', container, 'visibility')}
+			<div class="meta">
+				<h3 class="meta-key">{$_('visible_for')}</h3>
+				<ul class="meta-value">
+					<li>{$_(`visibility.${container.payload.visibility}`)}</li>
+				</ul>
+			</div>
+		{/if}
 	</div>
 
 	<slot name="extra" />
