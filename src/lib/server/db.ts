@@ -1069,6 +1069,8 @@ export function getAllContainersRelatedToMeasure(
 				JOIN container_relation cr ON c.revision = cr.object
 					AND cr.predicate = ${predicates.enum['is-measured-by']}
 					AND cr.subject IN (${sql.join(effects, sql.fragment`, `)})
+				WHERE c.valid_currently
+					AND NOT c.deleted
 			`)
 				: [];
 
