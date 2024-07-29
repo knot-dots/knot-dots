@@ -308,4 +308,6 @@
 			{/if}
 		</slot>
 	</div>
+
+	<slot name="extra" />
 </article>
