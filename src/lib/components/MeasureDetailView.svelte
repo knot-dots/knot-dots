@@ -113,6 +113,26 @@
 				</ul>
 			</div>
 		{/if}
+
+		<div id="resources">
+			<h3>{$_('resources')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
+		</div>
+
+		<div id="effects">
+			<h3>{$_('effects')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
+		</div>
+
+		<div id="measure-results">
+			<h3>{$_('measure_results')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.measure_result} />
+		</div>
+
+		<div id="milestones">
+			<h3>{$_('milestones')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.milestone} />
+		</div>
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
@@ -176,25 +196,5 @@
 		{/if}
 	</svelte:fragment>
 
-	<svelte:fragment slot="extra">
-		<div class="details-tab" id="resources">
-			<h3>{$_('resources')}</h3>
-			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
-		</div>
-
-		<div class="details-tab" id="effects">
-			<h3>{$_('effects')}</h3>
-			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
-		</div>
-
-		<div class="details-tab" id="measure-results">
-			<h3>{$_('measure_results')}</h3>
-			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.measure_result} />
-		</div>
-
-		<div class="details-tab" id="milestones">
-			<h3>{$_('milestones')}</h3>
-			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.milestone} />
-		</div>
-	</svelte:fragment>
+	<svelte:fragment slot="extra"></svelte:fragment>
 </ContainerDetailView>
