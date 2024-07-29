@@ -15,7 +15,6 @@
 		type AnyContainer,
 		type Container,
 		getCreator,
-		isContainer,
 		isContainerWithObjective,
 		isIndicatorContainer,
 		isLevel,
@@ -26,13 +25,12 @@
 		overlayKey,
 		owners,
 		paramsFromFragment,
-		payloadTypes,
 		type User
 	} from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export let container: AnyContainer;
+	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
@@ -65,11 +63,7 @@
 
 <article class="details">
 	<h2 class="details-title">
-		{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
-			{container.payload.name}
-		{:else}
-			{container.payload.title}
-		{/if}
+		{container.payload.title}
 		{#if $ability.can('update', container)}
 			<a class="button button-square quiet" href="#view={container.guid}&edit">
 				<Pencil />
@@ -221,16 +215,14 @@
 				<p class="meta-value">{$_(container.payload.level)}</p>
 			</div>
 		{/if}
-		{#if isContainer(container)}
-			<div class="meta">
-				<h3 class="meta-key">{$_('owned_by')}</h3>
-				<ul class="meta-value">
-					{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
-						<li>{owner.payload.name}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
+		<div class="meta">
+			<h3 class="meta-key">{$_('owned_by')}</h3>
+			<ul class="meta-value">
+				{#each owners( container, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
+					<li>{owner.payload.name}</li>
+				{/each}
+			</ul>
+		</div>
 		{#if 'audience' in container.payload}
 			<div class="meta">
 				<h3 class="meta-key">{$_('audience')}</h3>
