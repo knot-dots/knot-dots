@@ -2,39 +2,27 @@
 	import { _, date } from 'svelte-i18n';
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
-	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
-	import fetchMembers from '$lib/client/fetchMembers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
-		getCreator,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		isStrategyContainer,
 		overlayKey,
-		owners,
 		payloadTypes,
 		status
 	} from '$lib/models';
 	import type { AnyContainer, Container, ContainerWithEffect } from '$lib/models';
-	import { sdgIcons, statusColors, statusIcons } from '$lib/theme/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { statusColors, statusIcons } from '$lib/theme/models';
 
 	export let container: ContainerWithEffect;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
-
-	applicationState.update((state) => ({
-		...state,
-		containerDetailView: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'resources', 'effects', 'milestones']
-		}
-	}));
 
 	let selectedRevision: ContainerWithEffect;
 
@@ -63,21 +51,15 @@
 			return `#${query.toString()}`;
 		}
 	}
-
-	$: organizationMembersRequest = fetchMembers(container.organization);
 </script>
 
-<article class="details">
-	<div class="details-tab" id="basic-data">
-		<h2 class="details-title">
-			{container.payload.title}
-			{#if $ability.can('update', container)}
-				<a class="button button-square quiet" href="#view={container.guid}&edit">
-					<Pencil />
-				</a>
-			{/if}
-		</h2>
-
+<ContainerDetailView
+	container={selectedRevision}
+	{relatedContainers}
+	{revisions}
+	tabs={['basic-data', 'resources', 'effects', 'milestones']}
+>
+	<svelte:fragment slot="data">
 		{#if 'summary' in container.payload || ('description' in container.payload && !isSimpleMeasureContainer(container))}
 			<div class="summary">
 				<h3>{$_('summary')}</h3>
@@ -131,12 +113,9 @@
 				</ul>
 			</div>
 		{/if}
+	</svelte:fragment>
 
-		<div class="meta">
-			<h3 class="meta-key">{$_('object')}</h3>
-			<p class="meta-value">{$_(selectedRevision.payload.type)}</p>
-		</div>
-
+	<svelte:fragment slot="meta">
 		{#if strategy}
 			<div class="meta">
 				<h3 class="meta-key">{$_('strategy')}</h3>
@@ -168,36 +147,6 @@
 			</div>
 		{/if}
 
-		{#if 'topic' in container.payload}
-			<div class="meta">
-				<h3 class="meta-key">{$_('topic.label')}</h3>
-				<ul class="meta-value meta-value--topic">
-					{#each selectedRevision.payload.topic as topic}
-						<li>{$_(topic)}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
-
-		{#if 'category' in container.payload}
-			<div class="meta">
-				<h3 class="meta-key">{$_('category')}</h3>
-				<ul class="meta-value meta-value--category">
-					{#each selectedRevision.payload.category as category}
-						<li>
-							<img
-								src={sdgIcons.get(category)}
-								alt={$_(category)}
-								title={$_(category)}
-								width="66"
-								height="66"
-							/>
-						</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
-
 		<div class="meta">
 			<h3 class="meta-key">{$_('status.label')}</h3>
 			<p class="meta-value">
@@ -207,26 +156,6 @@
 				</span>
 			</p>
 		</div>
-
-		<div class="meta">
-			<h3 class="meta-key">{$_('owned_by')}</h3>
-			<ul class="meta-value">
-				{#each owners( selectedRevision, [...$page.data.organizations, ...$page.data.organizationalUnits] ) as owner}
-					<li>{owner.payload.name}</li>
-				{/each}
-			</ul>
-		</div>
-
-		{#if 'audience' in container.payload}
-			<div class="meta">
-				<h3 class="meta-key">{$_('audience')}</h3>
-				<ul class="meta-value">
-					{#each selectedRevision.payload.audience as audience}
-						<li>{$_(audience)}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
 
 		{#if 'startDate' in selectedRevision.payload || 'endDate' in selectedRevision.payload}
 			<div class="meta">
@@ -245,75 +174,27 @@
 				</p>
 			</div>
 		{/if}
+	</svelte:fragment>
 
-		{#await organizationMembersRequest then organizationMembers}
-			{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
-			<div class="meta">
-				<h3 class="meta-key">{$_('created_date')}</h3>
-				<ul class="meta-value">
-					<li>
-						{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
-							? $_('created_by', {
-									values: {
-										date: revisions[0].valid_from,
-										creator: getCreator(revisions[0])
-											.filter((guid) => organizationMembersByGuid.has(guid))
-											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
-											.join(', ')
-									}
-								})
-							: $date(revisions[0].valid_from, { format: 'long' })}
-					</li>
-				</ul>
-			</div>
+	<svelte:fragment slot="extra">
+		<div class="details-tab" id="resources">
+			<h3>{$_('resources')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
+		</div>
 
-			<div class="meta">
-				<h3 class="meta-key">{$_('modified_date')}</h3>
-				<ul class="meta-value">
-					<li>
-						{getCreator(selectedRevision).some((guid) => organizationMembersByGuid.has(guid))
-							? $_('created_by', {
-									values: {
-										date: selectedRevision.valid_from,
-										creator: getCreator(selectedRevision)
-											.filter((guid) => organizationMembersByGuid.has(guid))
-											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
-											.join(', ')
-									}
-								})
-							: $date(selectedRevision.valid_from, { format: 'long' })}
-					</li>
-				</ul>
-			</div>
-		{/await}
+		<div class="details-tab" id="effects">
+			<h3>{$_('effects')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
+		</div>
 
-		{#if $ability.can('read', container, 'visibility')}
-			<div class="meta">
-				<h3 class="meta-key">{$_('visible_for')}</h3>
-				<ul class="meta-value">
-					<li>{$_(`visibility.${selectedRevision.payload.visibility}`)}</li>
-				</ul>
-			</div>
-		{/if}
-	</div>
+		<div class="details-tab" id="measure-results">
+			<h3>{$_('measure_results')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.measure_result} />
+		</div>
 
-	<div class="details-tab" id="resources">
-		<h3>{$_('resources')}</h3>
-		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
-	</div>
-
-	<div class="details-tab" id="effects">
-		<h3>{$_('effects')}</h3>
-		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
-	</div>
-
-	<div class="details-tab" id="measure-results">
-		<h3>{$_('measure_results')}</h3>
-		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.measure_result} />
-	</div>
-
-	<div class="details-tab" id="milestones">
-		<h3>{$_('milestones')}</h3>
-		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.milestone} />
-	</div>
-</article>
+		<div class="details-tab" id="milestones">
+			<h3>{$_('milestones')}</h3>
+			<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.milestone} />
+		</div>
+	</svelte:fragment>
+</ContainerDetailView>

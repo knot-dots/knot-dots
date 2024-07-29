@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
-	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ObjectiveCarousel from '$lib/components/ObjectiveCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
@@ -17,8 +15,6 @@
 		type ContainerDetailViewTabKey,
 		getCreator,
 		isContainerWithObjective,
-		isIndicatorContainer,
-		isLevel,
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
@@ -114,12 +110,6 @@
 				</div>
 			{/if}
 
-			{#if 'image' in container.payload}
-				<div class="image">
-					<img alt={$_('cover_image')} src={container.payload.image} />
-				</div>
-			{/if}
-
 			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
 				<div class="indicator">
 					<h3>{$_('indicator.legend')}</h3>
@@ -130,19 +120,10 @@
 					/>
 				</div>
 			{/if}
-
-			{#if isIndicatorContainer(container)}
-				<IndicatorChart {container} {relatedContainers} />
-			{/if}
 		</slot>
 
 		<slot name="meta">
-			{#if 'strategyType' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('strategy_type.label')}</h3>
-					<p class="meta-value">{$_(container.payload.strategyType)}</p>
-				</div>
-			{:else if strategy}
+			{#if strategy}
 				<div class="meta">
 					<h3 class="meta-key">{$_('strategy')}</h3>
 					<p class="meta-value">
@@ -160,6 +141,7 @@
 					<p class="meta-value">{$_(strategy.payload.strategyType)}</p>
 				</div>
 			{/if}
+
 			{#if measure}
 				<div class="meta">
 					<h3 class="meta-key">{$_('measure')}</h3>
@@ -170,44 +152,13 @@
 					</p>
 				</div>
 			{/if}
-			{#if 'measureType' in container.payload}
-				<div class="meta">
-					<h3 class="meta-key">{$_('measure_type')}</h3>
-					<ul class="meta-value">
-						{#each container.payload.measureType as measureType}
-							<li>{$_(measureType)}</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
 
-			{#if 'level' in container.payload && isLevel(container.payload.level)}
-				<div class="meta">
-					<h3 class="meta-key">{$_('level.label')}</h3>
-					<p class="meta-value">{$_(container.payload.level)}</p>
-				</div>
-			{/if}
 			{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 				<div class="meta">
 					<h3 class="meta-key">{$_('fulfillment_date')}</h3>
 					<p class="meta-value">
 						{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
 					</p>
-				</div>
-			{/if}
-			{#if 'pdf' in container.payload && container.payload.pdf.length > 0}
-				<div class="meta">
-					<h3 class="meta-key">{$_('pdf')}</h3>
-					<ul class="meta-value">
-						{#each container.payload.pdf as pdf}
-							<li>
-								<a href={pdf[0]}>
-									{pdf[1]}
-									<ArrowDownTray />
-								</a>
-							</li>
-						{/each}
-					</ul>
 				</div>
 			{/if}
 		</slot>
