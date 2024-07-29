@@ -43,7 +43,7 @@
 	<div class="details-tab" id="basic-data">
 		<div class="amount">
 			<h3>{$_('amount')}</h3>
-			<p>{container.payload.amount} {container.payload.unit}</p>
+			<p>{$number(container.payload.amount)} {container.payload.unit}</p>
 		</div>
 
 		<div class="meta">
