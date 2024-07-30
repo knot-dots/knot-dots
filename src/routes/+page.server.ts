@@ -142,7 +142,9 @@ export const load = (async ({ locals, url, parent }) => {
 	}
 
 	return {
-		containers: filterOrganizationalUnitsAsync(filterVisibleAsync(containersPromise)),
+		containers: url.searchParams.has('related-to')
+			? await filterOrganizationalUnitsAsync(filterVisibleAsync(containersPromise))
+			: filterOrganizationalUnitsAsync(filterVisibleAsync(containersPromise)),
 		containersWithIndicatorContributions: await filterVisibleAsync(
 			containersWithIndicatorContributionsPromise
 		)
