@@ -97,7 +97,7 @@
 						const url = await uploadAsFormData(value as File);
 						data.payload = {
 							...data.payload,
-							[name]: Array.isArray(data.payload[name])
+							[name]: Array.isArray(data.payload[name as K])
 								? [...data.payload[name as K], [url, (value as File).name.replace(/\.[^/.]+$/, '')]]
 								: url
 						};
