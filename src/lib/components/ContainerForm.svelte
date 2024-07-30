@@ -89,7 +89,7 @@
 
 		await Promise.all(
 			Array.from(formData)
-				.filter(([name, value]) => value instanceof File && value.size > 0 && name in data.payload)
+				.filter(([, value]) => value instanceof File && value.size > 0)
 				.map(async ([name, value]) => {
 					type K = keyof typeof data.payload;
 
@@ -97,10 +97,9 @@
 						const url = await uploadAsFormData(value as File);
 						data.payload = {
 							...data.payload,
-							[name]: [
-								...data.payload[name as K],
-								[url, (value as File).name.replace(/\.[^/.]+$/, '')]
-							]
+							[name]: Array.isArray(data.payload[name])
+								? [...data.payload[name as K], [url, (value as File).name.replace(/\.[^/.]+$/, '')]]
+								: url
 						};
 					} catch (e) {
 						console.log(e);
