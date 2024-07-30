@@ -89,16 +89,6 @@
 				{$_('workspace.indicators')}
 			</label>
 		</li>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/indicator-monitoring'}
-					on:click={async () => await goto('/indicator-monitoring')}
-				/>
-				{$_('workspace.indicator_monitoring')}
-			</label>
-		</li>
 	</ul>
 </li>
 
