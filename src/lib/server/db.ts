@@ -1040,16 +1040,39 @@ export function getAllContainersRelatedToMeasure(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const predicate = [predicates.enum['is-part-of'], predicates.enum['is-part-of-measure']];
+
+		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+				WITH RECURSIVE relation(path) AS (
+					--Top level items (roots)
+					SELECT array[c.revision] as path, c.revision as subject
+					FROM container c
+					WHERE c.valid_currently
+						AND NOT EXISTS(
+							--No relations with this as the subject.
+							SELECT *
+							FROM container_relation parent_test
+							WHERE c.revision = parent_test.subject AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+						)
+					UNION ALL
+					SELECT array_append(r.path, c.revision), c.revision
+					FROM container c
+					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+					JOIN relation r ON cr.object = r.subject
+					WHERE c.valid_currently
+				)
+				SELECT DISTINCT unnest(path) FROM relation r WHERE ${revision} = ANY(path)
+			`);
+
 		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT * FROM (
-				SELECT DISTINCT ON (c.guid) c.*
-				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject
-					AND cr.predicate IN (${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of']})
-					AND cr.object = ${revision}
-				WHERE c.valid_currently) AS containers
+			SELECT c.*
+			FROM container c
 			${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
-			WHERE ${prepareWhereCondition(filters)}
+			WHERE c.revision IN (${sql.join(
+				relationPathResult.flatMap((r) => Object.values(r)),
+				sql.fragment`, `
+			)})
+				AND ${prepareWhereCondition(filters)}
 			ORDER BY ${prepareOrderByExpression(sort)};
 		`);
 
