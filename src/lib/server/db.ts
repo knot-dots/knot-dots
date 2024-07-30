@@ -1014,7 +1014,8 @@ export function getAllContainersRelatedToStrategy(
 			FROM container c
 			LEFT JOIN container_relation cr ON c.revision = cr.subject
 				AND cr.predicate = 'is-part-of-strategy'
-			WHERE revision IN (${sql.join(
+				AND cr.object = ${revision}
+			WHERE c.revision IN (${sql.join(
 				relationPathResult.flatMap((r) => Object.values(r)),
 				sql.fragment`, `
 			)})
