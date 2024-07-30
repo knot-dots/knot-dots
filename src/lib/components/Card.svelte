@@ -45,9 +45,9 @@
 
 	$: if ($overlay.object) {
 		selected = $overlay.object;
-	} else if (relatedTo && $page.data.containers) {
+	} else if (!overlayContext && relatedTo && $page.data.containers) {
 		selected = $page.data.containers.find(({ guid }: Container) => guid == relatedTo);
-	} else if ($page.data.container) {
+	} else if (!overlayContext && $page.data.container) {
 		selected = $page.data.container;
 	} else {
 		selected = undefined;
