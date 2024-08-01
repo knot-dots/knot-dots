@@ -52,15 +52,17 @@ export async function addUserToGroup(user: User, group: string) {
 	}
 }
 
-export async function sendVerificationEmail(user: User) {
+export async function sendVerificationEmail(user: User, redirectURI: string) {
 	const token = await getToken();
-	const response = await fetch(
-		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/send-verify-email`,
-		{
-			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-			method: 'PUT'
-		}
+	const url = new URL(
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/send-verify-email`
 	);
+	url.searchParams.set('client_id', env.PUBLIC_KC_CLIENT_ID ?? '');
+	url.searchParams.set('redirect_uri', redirectURI);
+	const response = await fetch(url, {
+		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+		method: 'PUT'
+	});
 	if (!response.ok) {
 		throw new Error(
 			`Failed to send verification email. Keycloak responded with ${response.status}`

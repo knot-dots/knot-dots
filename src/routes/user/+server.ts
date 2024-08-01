@@ -50,7 +50,9 @@ export const POST = (async ({ locals, request }) => {
 				guid: subject
 			})
 		);
-		await sendVerificationEmail(user);
+		const redirectURL = new URL(env.PUBLIC_BASE_URL ?? '');
+		redirectURL.hostname = `${parseResult.data.organization}.${redirectURL.hostname}`;
+		await sendVerificationEmail(user, redirectURL.toString());
 	}
 
 	await addUserToGroup(user, parseResult.data.organization);
