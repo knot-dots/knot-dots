@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
