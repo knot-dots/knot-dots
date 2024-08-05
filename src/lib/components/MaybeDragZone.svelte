@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent, Item } from 'svelte-dnd-action';
+	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { isPartOf } from '$lib/models';
 	import type { Container } from '$lib/models';
@@ -43,7 +44,7 @@
 	}
 </script>
 
-{#if !matchMedia('pointer: coarse').matches && $overlay.object && $ability.can('relate', $overlay.object)}
+{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay.object && $ability.can('relate', $overlay.object)}
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}

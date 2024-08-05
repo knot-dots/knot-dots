@@ -3,6 +3,7 @@
 	import type { DndEvent } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
@@ -55,7 +56,7 @@
 			<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
 		{/if}
 	</header>
-	{#if !matchMedia('pointer: coarse').matches && $ability.can('prioritize', containerOfTypeTask())}
+	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper masked-overflow"
 			use:dndzone={{ items }}
