@@ -186,7 +186,11 @@
 
 	{#if isContainerWithEffect(container)}
 		<h4>{$_('resources')}</h4>
-		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
+		<PartOfMeasureCarousel
+			{container}
+			payloadType={payloadTypes.enum.resource}
+			{relatedContainers}
+		/>
 
 		<h4>{$_('effects')}</h4>
 		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} {relatedContainers} />
