@@ -178,32 +178,15 @@
 		<Viewer value={container.payload.result} />
 	{/if}
 
-	{#if 'resource' in container.payload && container.payload.resource.length > 0}
-		<h4>{$_('resources.label')}</h4>
-		<ul>
-			{#each container.payload.resource as resource}
-				<li class="resource-item">
-					<span>{resource.description}</span>
-					<span>{resource.unit}</span>
-					<span>{$number(resource.amount)}</span>
-					<span>
-						{$date(new Date(resource.fulfillmentDate), {
-							day: '2-digit',
-							month: '2-digit',
-							year: 'numeric'
-						})}
-					</span>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-
 	{#if isContainerWithObjective(container)}
 		<h4>{$_('objectives')}</h4>
 		<ObjectiveCarousel {container} />
 	{/if}
 
 	{#if isContainerWithEffect(container)}
+		<h4>{$_('resources')}</h4>
+		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
+
 		<h4>{$_('effects')}</h4>
 		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
 	{/if}
