@@ -55,7 +55,7 @@
 			<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
 		{/if}
 	</header>
-	{#if !matchMedia('pointer: coarse').matches && ability.can('prioritize', containerOfTypeTask())}
+	{#if !matchMedia('pointer: coarse').matches && $ability.can('prioritize', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper masked-overflow"
 			use:dndzone={{ items }}
