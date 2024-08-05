@@ -43,7 +43,7 @@
 	}
 </script>
 
-{#if $overlay.object && $ability.can('relate', $overlay.object)}
+{#if !matchMedia('pointer: coarse').matches && $overlay.object && $ability.can('relate', $overlay.object)}
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
