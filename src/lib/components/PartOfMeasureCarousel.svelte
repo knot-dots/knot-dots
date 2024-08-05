@@ -5,6 +5,7 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Card from '$lib/components/Card.svelte';
 	import {
+		type Container,
 		type ContainerWithEffect,
 		isOverlayKey,
 		overlayKey,
@@ -16,11 +17,8 @@
 	import { addEffectState, mayCreateContainer } from '$lib/stores';
 
 	export let container: ContainerWithEffect;
+	export let relatedContainers: Container[];
 	export let payloadType: PayloadType;
-
-	$: containerRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadType]
-	});
 
 	function addItemURL(url: URL) {
 		const params = paramsFromFragment(url);
@@ -59,32 +57,38 @@
 	}
 </script>
 
-{#await containerRequest then containers}
-	{#if containers.length > 0 || $mayCreateContainer(payloadType)}
-		<div>
-			{#if containers.length > 0}
-				<ul class="carousel">
-					{#each containers as container}
-						<li>
-							<Card --height="100%" {container} />
-						</li>
-					{/each}
-				</ul>
-			{/if}
-			{#if $mayCreateContainer(payloadType)}
-				<a
-					class="button"
-					href={addItemURL($page.url)}
-					on:click={payloadType == payloadTypes.enum.effect
-						? (event) => {
-								event.preventDefault();
-								addEffect(container);
-							}
-						: undefined}
-				>
-					{$_('add_item')}
-				</a>
-			{/if}
-		</div>
-	{/if}
-{/await}
+{#if relatedContainers.length > 0 || $mayCreateContainer(payloadType)}
+	<div>
+		{#if relatedContainers.length > 0}
+			<ul class="carousel">
+				{#each relatedContainers.filter((c) => c.payload.type == payloadType) as container}
+					<li>
+						<Card
+							--height="100%"
+							{container}
+							relatedContainers={relatedContainers.filter(({ relation }) =>
+								relation.some(({ object, subject }) =>
+									[object, subject].includes(container.revision)
+								)
+							)}
+						/>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+		{#if $mayCreateContainer(payloadType)}
+			<a
+				class="button"
+				href={addItemURL($page.url)}
+				on:click={payloadType == payloadTypes.enum.effect
+					? (event) => {
+							event.preventDefault();
+							addEffect(container);
+						}
+					: undefined}
+			>
+				{$_('add_item')}
+			</a>
+		{/if}
+	</div>
+{/if}

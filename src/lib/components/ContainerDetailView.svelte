@@ -88,7 +88,7 @@
 			{#if isContainerWithObjective(container)}
 				<div class="indicator-objective">
 					<h3>{$_('objectives')}</h3>
-					<ObjectiveCarousel {container} />
+					<ObjectiveCarousel {container} {relatedContainers} />
 				</div>
 			{/if}
 

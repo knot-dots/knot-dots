@@ -32,6 +32,7 @@
 	export let headingTag: string;
 	export let container: Container;
 	export let isPartOf: StrategyContainer;
+	export let relatedContainers: Container[];
 
 	let isPartOfRelation: Relation[];
 
@@ -180,7 +181,7 @@
 
 	{#if isContainerWithObjective(container)}
 		<h4>{$_('objectives')}</h4>
-		<ObjectiveCarousel {container} />
+		<ObjectiveCarousel {container} {relatedContainers} />
 	{/if}
 
 	{#if isContainerWithEffect(container)}
@@ -188,7 +189,7 @@
 		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.resource} />
 
 		<h4>{$_('effects')}</h4>
-		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} />
+		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} {relatedContainers} />
 	{/if}
 
 	<footer class="content-actions">

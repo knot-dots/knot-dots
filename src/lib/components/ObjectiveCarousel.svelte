@@ -6,6 +6,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
+		isObjectiveContainer,
 		isOverlayKey,
 		isPartOf,
 		overlayKey,
@@ -16,10 +17,9 @@
 	import { addObjectiveState, mayCreateContainer } from '$lib/stores';
 
 	export let container: Container;
+	export let relatedContainers: Container[];
 
-	$: containerRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadTypes.enum.objective]
-	});
+	$: parts = relatedContainers.filter(isObjectiveContainer).filter(isPartOf(container));
 
 	function addItemURL(url: URL) {
 		const params = paramsFromFragment(url);
@@ -58,31 +58,36 @@
 	}
 </script>
 
-{#await containerRequest then containers}
-	{@const parts = containers.filter(isPartOf(container))}
-	{#if parts.length > 0 || $mayCreateContainer(payloadTypes.enum.objective)}
-		<div>
-			{#if parts.length > 0}
-				<ul class="carousel">
-					{#each parts as container}
-						<li>
-							<Card --height="100%" {container} />
-						</li>
-					{/each}
-				</ul>
-			{/if}
-			{#if $mayCreateContainer(payloadTypes.enum.objective)}
-				<a
-					class="button"
-					href={addItemURL($page.url)}
-					on:click={(event) => {
-						event.preventDefault();
-						addObjective(container);
-					}}
-				>
-					{$_('add_item')}
-				</a>
-			{/if}
-		</div>
-	{/if}
-{/await}
+{#if parts.length > 0 || $mayCreateContainer(payloadTypes.enum.objective)}
+	<div>
+		{#if parts.length > 0}
+			<ul class="carousel">
+				{#each parts as container}
+					<li>
+						<Card
+							--height="100%"
+							{container}
+							relatedContainers={relatedContainers.filter(({ relation }) =>
+								relation.some(({ object, subject }) =>
+									[object, subject].includes(container.revision)
+								)
+							)}
+						/>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+		{#if $mayCreateContainer(payloadTypes.enum.objective)}
+			<a
+				class="button"
+				href={addItemURL($page.url)}
+				on:click={(event) => {
+					event.preventDefault();
+					addObjective(container);
+				}}
+			>
+				{$_('add_item')}
+			</a>
+		{/if}
+	</div>
+{/if}
