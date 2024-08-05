@@ -197,7 +197,7 @@ if (browser) {
 		if (hashParams.size > 0) {
 			if (!hashParams.has(overlayKey.enum.edit)) {
 				overlayHistory.update((value) =>
-					hashParams.toString() == value[value.length - 1]?.toString() ?? ''
+					(hashParams.toString() == value[value.length - 1]?.toString() ?? '')
 						? value
 						: [...value, hashParams]
 				);
