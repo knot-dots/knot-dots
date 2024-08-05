@@ -215,7 +215,7 @@ if (browser) {
 				hashParams.get('create') as PayloadType,
 				values.data.currentOrganization.guid,
 				values.data.currentOrganizationalUnit?.guid ?? null,
-				env.PUBLIC_KC_REALM
+				env.PUBLIC_KC_REALM as string
 			);
 			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {
 				newContainer.payload.level = parseInt(hashParams.get('level') ?? '1');
