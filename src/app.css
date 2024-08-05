@@ -190,6 +190,7 @@ input,
 button,
 textarea,
 select {
+	color: inherit;
 	font: inherit;
 }
 
