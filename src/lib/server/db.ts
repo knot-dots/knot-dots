@@ -851,7 +851,32 @@ export function getAllRelatedContainers(
 			ORDER BY ${prepareOrderByExpression(sort)}
 		`);
 
-		return withUserAndRelation<Container>(connection, containerResult);
+		const objectivesAndEffects = containerResult
+			.filter(
+				({ payload }) =>
+					payload.type == payloadTypes.enum.effect || payload.type == payloadTypes.enum.objective
+			)
+			.map(({ revision }) => revision);
+
+		const includeIndicators =
+			filters.type == undefined ||
+			filters.type.length == 0 ||
+			filters.type.includes(payloadTypes.enum.indicator);
+
+		const indicatorResult =
+			objectivesAndEffects.length > 0 && includeIndicators
+				? await connection.any(sql.typeAlias('container')`
+				SELECT c.*
+				FROM container c
+				JOIN container_relation cr ON c.revision = cr.object
+					AND cr.predicate = ${predicates.enum['is-objective-for']}
+					AND cr.subject IN (${sql.join(objectivesAndEffects, sql.fragment`, `)})
+				WHERE c.valid_currently
+					AND NOT c.deleted
+			`)
+				: [];
+
+		return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
 	};
 }
 
