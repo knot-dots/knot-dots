@@ -8,6 +8,7 @@
 		type Container,
 		type ContainerWithEffect,
 		isOverlayKey,
+		isPartOf,
 		overlayKey,
 		paramsFromFragment,
 		type PayloadType,
@@ -19,6 +20,10 @@
 	export let container: ContainerWithEffect;
 	export let relatedContainers: Container[];
 	export let payloadType: PayloadType;
+
+	$: parts = relatedContainers
+		.filter(({ payload }) => payload.type == payloadType)
+		.filter(isPartOf(container));
 
 	function addItemURL(url: URL) {
 		const params = paramsFromFragment(url);
@@ -61,7 +66,7 @@
 	<div>
 		{#if relatedContainers.length > 0}
 			<ul class="carousel">
-				{#each relatedContainers.filter((c) => c.payload.type == payloadType) as container}
+				{#each parts as container}
 					<li>
 						<Card
 							--height="100%"
