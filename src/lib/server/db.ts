@@ -1041,7 +1041,7 @@ export function getAllContainersRelatedToStrategy(
 				SELECT c.*
 				FROM container c
 				JOIN container_relation cr ON c.revision = cr.object
-					AND cr.predicate = ${predicates.enum['is-measured-by']}
+					AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
 					AND cr.subject IN (${sql.join(objectivesAndEffects, sql.fragment`, `)})
 				WHERE c.valid_currently
 					AND NOT c.deleted
