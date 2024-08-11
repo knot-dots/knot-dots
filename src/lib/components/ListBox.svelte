@@ -1,126 +1,150 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
+	import { createListbox } from 'svelte-headlessui';
+	import { createPopperActions } from 'svelte-popperjs';
 	import { _ } from 'svelte-i18n';
+	import Check from '~icons/heroicons/check-20-solid';
+	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
+	import XMark from '~icons/heroicons/x-mark-20-solid';
 
 	export let label: string;
 	export let options: string[] = [];
 	export let required = false;
 	export let value: string[] = [];
 
-	let listBoxRef: HTMLUListElement;
+	const listbox = createListbox({
+		label,
+		selected: value
+	});
 
-	function onFocus() {
-		if (listBoxRef.querySelector('[aria-selected=true]') === null) {
-			let firstChild = listBoxRef.querySelector('[role=option]') as HTMLLIElement;
-			firstChild.setAttribute('aria-selected', 'true');
-			firstChild.focus();
-		} else {
-			let selectedElement = listBoxRef.querySelector('[aria-selected=true]') as HTMLLIElement;
-			selectedElement.focus();
-		}
-	}
+	const [popperRef, popperContent] = createPopperActions({
+		placement: 'bottom',
+		strategy: 'absolute'
+	});
 
-	function onKeyDown(event: KeyboardEvent) {
-		const currentItem = listBoxRef.querySelector('[aria-selected=true]');
-		if (currentItem === null) {
-			return;
-		}
+	const extraOpts = {
+		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+	};
 
-		switch (event.key) {
-			case 'ArrowUp':
-				if (currentItem.previousElementSibling !== null) {
-					currentItem.setAttribute('aria-selected', 'false');
-					currentItem.previousElementSibling.setAttribute('aria-selected', 'true');
-					(currentItem.previousElementSibling as HTMLLIElement).focus();
-				}
-				event.preventDefault();
-				break;
-			case 'ArrowDown':
-				if (currentItem.nextElementSibling !== null) {
-					currentItem.setAttribute('aria-selected', 'false');
-					currentItem.nextElementSibling.setAttribute('aria-selected', 'true');
-					(currentItem.nextElementSibling as HTMLLIElement).focus();
-				}
-				event.preventDefault();
-				break;
-			case ' ':
-				if (currentItem.getAttribute('aria-checked') === 'true') {
-					value = value.filter(
-						(v) =>
-							v !== (currentItem.querySelector('input[type=checkbox]') as HTMLInputElement).value
-					);
-				} else {
-					value = value.concat(
-						(currentItem.querySelector('input[type=checkbox]') as HTMLInputElement).value
-					);
-				}
-				event.preventDefault();
-				break;
-		}
-	}
-
-	function onMouseDown(this: HTMLLIElement) {
-		listBoxRef.querySelector('[aria-selected=true]')?.setAttribute('aria-selected', 'false');
-		this.setAttribute('aria-selected', 'true');
-		this.focus();
-	}
+	$: value = $listbox.selected;
 </script>
 
 <div>
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions a11y-click-events-have-key-events -->
-	<p id="label-{label}" on:click={() => listBoxRef.focus()}>{$_(label)}</p>
-	<ul
-		class="focus-indicator"
-		class:invalid={required && value.length == 0}
+	<p>{$_(label)}</p>
+
+	<button
+		class:invalid={required && value.length === 0}
 		class:valid={!required || value.length > 0}
-		role="listbox"
-		tabindex="0"
-		aria-labelledby="label-{label}"
-		bind:this={listBoxRef}
-		on:focus={onFocus}
-		on:keydown={onKeyDown}
+		use:listbox.button
+		use:popperRef
 	>
-		{#each options as option}
-			<li
-				tabindex="-1"
-				role="option"
-				aria-checked={value.includes(option)}
-				aria-selected="false"
-				on:blur={() => listBoxRef.setAttribute('tabindex', '0')}
-				on:focus={() => listBoxRef.setAttribute('tabindex', '-1')}
-				on:mousedown|preventDefault={onMouseDown}
-			>
-				<label>
-					<input
-						tabindex="-1"
-						type="checkbox"
-						value={option}
-						bind:group={value}
-						on:click|stopPropagation
-					/>
+		<ul class="selected">
+			{#each $listbox.selected as selected (selected)}
+				<li>
+					<span>{$_(selected)}</span>
+					<span use:listbox.deselect={selected}>
+						<XMark />
+					</span>
+				</li>
+			{/each}
+		</ul>
+		<ChevronUpDown />
+	</button>
+
+	{#if $listbox.expanded}
+		<ul
+			class="focus-indicator options"
+			out:fade={{ duration: 100, easing: cubicOut }}
+			use:listbox.items
+			use:popperContent={extraOpts}
+		>
+			{#each options as option (option)}
+				{@const active = $listbox.active === option}
+				{@const selected = $listbox.selected.includes(option)}
+				<li class:active use:listbox.item={{ value: option }}>
 					{$_(option)}
-				</label>
-			</li>
-		{/each}
-	</ul>
+					{#if selected}
+						<Check />
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </div>
 
 <style>
-	[role='listbox'] {
-		background-color: var(--color-gray-050);
-		border: solid 1px var(--color-gray-300);
+	div {
+		position: relative;
+	}
+
+	button {
+		--button-active-background: var(--color-gray-050);
+		--button-border-color: var(--color-gray-300);
+		--button-background: var(--color-gray-050);
+		--button-hover-background: var(--color-gray-050);
+
+		display: flex;
+		justify-content: space-between;
+		min-height: calc(2 * 0.75rem + 1.2rem + 2px);
+		padding: 0.5rem 0.625rem;
+		width: 100%;
+	}
+
+	button :global(> :last-child) {
+		flex-shrink: 0;
+	}
+
+	.selected {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		overflow: hidden;
+	}
+
+	.selected > li {
+		align-items: center;
+		border: solid 1px;
+		border-radius: 0.375rem;
+		display: inline-flex;
+		justify-content: center;
+		gap: 0.25rem;
+		overflow: hidden;
+		padding: 0 0.25rem 0 0.5rem;
+		text-align: center;
+	}
+
+	.selected > li > :first-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.selected > li > :last-child {
+		flex-shrink: 0;
+	}
+
+	.options {
+		background-color: white;
+		border: solid 1px var(--color-gray-900);
 		border-radius: 8px;
-		color: var(--color-gray-500);
-		max-height: 8.625rem;
+		cursor: default;
+		max-height: 17.125rem;
 		overflow-y: auto;
 		padding: 0.5rem;
+		width: 100%;
+		z-index: 1;
 	}
 
-	[role='option'] {
+	.options > li {
+		align-items: center;
+		border-radius: 0.5rem;
+		display: flex;
+		justify-content: space-between;
 		padding: 0.375rem 0.5rem;
-		border-radius: 8px;
 	}
 
-	[role='option']:focus {
+	.options > li.active {
 		background-color: var(--focus-color);
 		color: white;
 		outline: none;
