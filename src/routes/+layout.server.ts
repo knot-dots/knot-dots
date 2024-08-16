@@ -1,19 +1,23 @@
 import { error } from '@sveltejs/kit';
+import { Roarr as log } from 'roarr';
+import { serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
-import { type AnyContainer, payloadTypes } from '$lib/models';
+import { type AnyContainer, type KeycloakUser } from '$lib/models';
 import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import {
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
 	setUp
 } from '$lib/server/db';
+import { findUserById } from '$lib/server/keycloak';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	let currentOrganization;
 	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+	let user: KeycloakUser | undefined = undefined;
 
 	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
 		const containers = await promise;
@@ -50,6 +54,17 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 
+	if (url.searchParams.has('signup')) {
+		try {
+			const foundUser = await findUserById(url.searchParams.get('signup') as string);
+			if (!foundUser.emailVerified) {
+				user = foundUser;
+			}
+		} catch (error) {
+			log.warn(serializeError(error), String(error));
+		}
+	}
+
 	const random = await fetch('/random');
 
 	return {
@@ -58,6 +73,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 		organizations,
 		organizationalUnits,
 		random: await random.json(),
-		session: await locals.auth()
+		session: await locals.auth(),
+		user
 	};
 };

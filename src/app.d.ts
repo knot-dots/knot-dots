@@ -1,6 +1,10 @@
 import type { Session } from '@auth/core/types';
 import type { DatabasePool } from 'slonik';
-import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+import type {
+	KeycloakUser,
+	OrganizationalUnitContainer,
+	OrganizationContainer
+} from '$lib/models';
 import type { User } from '$lib/stores';
 
 // See https://kit.svelte.dev/docs/types#app
@@ -20,6 +24,7 @@ declare global {
 			organizationalUnits: OrganizationalUnitContainer[];
 			random: number;
 			session: Session;
+			user?: KeycloakUser;
 		}
 		// interface Platform {}
 	}

@@ -368,11 +368,22 @@ export type PartialRelation = z.infer<typeof partialRelation>;
 
 export const user = z.object({
 	display_name: z.string().max(64),
-	realm: z.string().max(1024),
-	guid: z.string().uuid()
+	guid: z.string().uuid(),
+	realm: z.string().max(1024)
 });
 
 export type User = z.infer<typeof user>;
+
+export const keycloakUser = z.object({
+	email: z.string().email(),
+	emailVerified: z.boolean(),
+	enabled: z.boolean(),
+	firstName: z.string().optional(),
+	id: z.string().uuid(),
+	lastName: z.string().optional(),
+})
+
+export type KeycloakUser = z.infer<typeof keycloakUser>;
 
 export const newUser = z.object({
 	email: z.string().email(),

@@ -1,9 +1,10 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { newUser } from '$lib/models';
+import { newUser, overlayKey, overlayURL } from '$lib/models';
 import type { User } from '$lib/models';
 import { createOrUpdateUser, createUser } from '$lib/server/db';
+import { sendVerificationEmail as sendVerificationEmailNewWorkflow } from '$lib/server/email';
 import {
 	addUserToGroup,
 	createUser as createKeycloakUser,
@@ -50,9 +51,15 @@ export const POST = (async ({ locals, request }) => {
 				guid: subject
 			})
 		);
-		const redirectURL = new URL(env.PUBLIC_BASE_URL ?? '');
-		redirectURL.hostname = `${parseResult.data.organization}.${redirectURL.hostname}`;
-		await sendVerificationEmail(user, redirectURL.toString());
+
+		if (locals.featureDecisions.useNewOnboardingWorkflow()) {
+			const signupURL = `${env.PUBLIC_BASE_URL}?signup=${user.guid}`;
+			await sendVerificationEmailNewWorkflow(parseResult.data.email, signupURL);
+		} else {
+			const redirectURL = new URL(env.PUBLIC_BASE_URL ?? '');
+			redirectURL.hostname = `${parseResult.data.organization}.${redirectURL.hostname}`;
+			await sendVerificationEmail(user, redirectURL.toString());
+		}
 	}
 
 	await addUserToGroup(user, parseResult.data.organization);

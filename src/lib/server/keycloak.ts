@@ -1,7 +1,8 @@
+import { serializeError } from 'serialize-error';
 import { boolean, z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import type { NewUser, User } from '$lib/models';
+import { keycloakUser, type NewUser, type User } from '$lib/models';
 
 const data = new URLSearchParams([['grant_type', 'client_credentials']]);
 const credentials = btoa(`${env.PUBLIC_KC_CLIENT_ID}:${privateEnv.KC_CLIENT_SECRET}`);
@@ -38,6 +39,25 @@ export async function createUser(user: NewUser) {
 	return z.string().uuid().parse(response.headers.get('Location')?.split('/').pop());
 }
 
+export async function confirmUser(id: string, givenName: string, familyName: string, password: string) {
+	const token = await getToken();
+	const response = await fetch(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${id}`, {
+		body: JSON.stringify({
+			credentials: [{ "type": "password", "temporary": false, "value": password }],
+			emailVerified: true,
+			firstName: givenName,
+			lastName: familyName,
+			requiredActions: []
+		}),
+		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+		method: 'PUT'
+	});
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(`Failed to update user in realm. Keycloak responded with ${response.status}: ${serializeError(error)}`);
+	}
+}
+
 export async function addUserToGroup(user: User, group: string) {
 	const token = await getToken();
 	const response = await fetch(
@@ -70,6 +90,20 @@ export async function sendVerificationEmail(user: User, redirectURI: string) {
 	}
 }
 
+export async function findUserById(id: string) {
+	const token = await getToken();
+	const url = new URL(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${id}`);
+	const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+
+	if (!response.ok) {
+		throw new Error(`Failed to find user in realm. Keycloak responded with ${response.status}`);
+	}
+
+	const data = await response.json();
+
+	return keycloakUser.parse(data)
+}
+
 export async function findUserByEmail(email: string) {
 	const token = await getToken();
 	const url = new URL(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`);
@@ -88,13 +122,7 @@ export async function findUserByEmail(email: string) {
 	const data = await response.json();
 
 	return z
-		.array(
-			z.object({
-				firstName: z.string().optional(),
-				id: z.string().uuid(),
-				lastName: z.string().optional()
-			})
-		)
+		.array(keycloakUser)
 		.length(1)
 		.parse(data)[0];
 }
