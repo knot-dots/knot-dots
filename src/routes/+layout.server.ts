@@ -5,7 +5,6 @@ import { filterVisible } from '$lib/authorization';
 import { type AnyContainer, payloadTypes } from '$lib/models';
 import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import {
-	getManyContainers,
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
 	setUp
@@ -21,12 +20,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 		return filterVisible(containers, locals.user);
 	}
 
-	const [indicatorTemplates, organizations, organizationalUnits] = await Promise.all([
-		filterVisibleAsync(
-			locals.pool.connect(
-				getManyContainers([], { type: [payloadTypes.enum.indicator_template] }, 'alpha')
-			)
-		),
+	const [organizations, organizationalUnits] = await Promise.all([
 		filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
 		filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
 	]);
@@ -61,7 +55,6 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	return {
 		currentOrganization,
 		currentOrganizationalUnit,
-		indicatorTemplates,
 		organizations,
 		organizationalUnits,
 		random: await random.json(),
