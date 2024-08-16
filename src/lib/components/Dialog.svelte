@@ -15,6 +15,8 @@
 <style>
 	dialog {
 		border: none;
+		margin: 0;
+		overflow-y: auto;
 		padding: 1.5rem;
 		width: 100%;
 	}
@@ -43,6 +45,7 @@
 	@media (min-width: 768px) {
 		dialog {
 			border-radius: 8px;
+			margin: auto;
 			max-width: 28rem;
 		}
 	}
