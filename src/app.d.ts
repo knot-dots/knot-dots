@@ -1,3 +1,4 @@
+import type { Session } from '@auth/core/types';
 import type { DatabasePool } from 'slonik';
 import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import type { User } from '$lib/stores';
@@ -16,6 +17,8 @@ declare global {
 			currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 			organizations: OrganizationContainer[];
 			organizationalUnits: OrganizationalUnitContainer[];
+			random: number;
+			session: Session;
 		}
 		// interface Platform {}
 	}
