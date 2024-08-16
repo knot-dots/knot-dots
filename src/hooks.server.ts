@@ -91,7 +91,7 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 
 	event.locals.pool = await getPool();
 
-	const session = await event.locals.getSession();
+	const session = await event.locals.auth();
 	if (session) {
 		event.locals.user = {
 			...session.user,
