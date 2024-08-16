@@ -7,6 +7,7 @@ import { serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
+import { createFeatureDecisions } from '$lib/features';
 import { predicates } from '$lib/models';
 import { createOrUpdateUser, getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
 
@@ -108,6 +109,12 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 			roles: []
 		};
 	}
+
+	const features = [];
+	if (event.locals.user.roles.includes('sysadmin')) {
+		features.push('NewOnboardingWorkflow')
+	}
+	event.locals.featureDecisions = createFeatureDecisions(features)
 
 	return resolve(event);
 }) satisfies Handle;
