@@ -46,7 +46,7 @@ setup('create user and log in', async ({ page, playwright }) => {
 	await page.goto('/');
 	await page.getByRole('button', { name: 'Log in' }).click();
 	await page.getByLabel('Email').fill('playwright@knotdots.test');
-	await page.getByLabel('Password').fill('p455w0rd');
+	await page.getByLabel('Password', { exact: true }).fill('p455w0rd');
 	await page.getByRole('button', { name: 'Sign In' }).click();
 	await expect(page.getByRole('link', { name: 'WS', exact: true })).toBeVisible();
 
