@@ -3,10 +3,9 @@
 	import Trash from '~icons/heroicons/trash';
 	import UserPlus from '~icons/heroicons/user-plus-20-solid';
 	import { invalidateAll } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
-	import Dialog from '$lib/components/Dialog.svelte';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
+	import Dialog from '$lib/components/Dialog.svelte';
 	import { displayName, isAdminOf, predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
 
@@ -70,18 +69,7 @@
 
 	async function handleInvite(container: AnyContainer) {
 		try {
-			const userResponse = await saveUser({
-				email,
-				container
-			});
-			const userResponseData = await userResponse.json();
-			await saveContainerUser({
-				...container,
-				user: [
-					...container.user,
-					{ subject: userResponseData.guid, predicate: predicates.enum['is-member-of'] }
-				]
-			});
+			await saveUser({ email, container });
 			email = '';
 			await invalidateAll();
 		} catch (error) {

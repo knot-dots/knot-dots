@@ -2,8 +2,13 @@ import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import type { User } from '$lib/models';
-import { newUser } from '$lib/models';
-import { createOrUpdateUser, createUser } from '$lib/server/db';
+import { newUser, predicates } from '$lib/models';
+import {
+	createOrUpdateUser,
+	createUser,
+	getContainerByGuid,
+	updateContainer
+} from '$lib/server/db';
 import { sendVerificationEmail as sendVerificationEmailNewWorkflow } from '$lib/server/email';
 import {
 	addUserToGroup,
@@ -63,6 +68,24 @@ export const POST = (async ({ locals, request }) => {
 			await sendVerificationEmail(user, redirectURL.toString());
 		}
 	}
+
+	await locals.pool.transaction(async (txConnection) => {
+		const container = await getContainerByGuid(parseResult.data.container.guid)(txConnection);
+		await updateContainer({
+			...container,
+			relation: container.relation
+				.filter((r) => ('guid' in container ? r.subject == container.revision : true))
+				.map(({ object, position, predicate }) => ({
+					predicate,
+					object,
+					position
+				})),
+			user: [
+				...parseResult.data.container.user,
+				{ subject: user.guid, predicate: predicates.enum['is-member-of'] }
+			]
+		})(txConnection);
+	});
 
 	await addUserToGroup(user, parseResult.data.container.organization);
 
