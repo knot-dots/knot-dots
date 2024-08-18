@@ -6,14 +6,25 @@ import type { AnyContainer } from '$lib/models';
 import { getAllRelatedUsers, getContainerByGuid, updateContainer } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { NotFoundError } from 'slonik';
+import { getMembers } from '$lib/server/keycloak';
 
 export const GET = (async ({ locals, params }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
+	const [container, users] = await Promise.all([
+		locals.pool.connect(getContainerByGuid(params.guid)),
+		locals.pool.connect(getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']]))
+	]);
+
+	const members = await getMembers(container.organization);
+
 	return json(
-		await locals.pool.connect(getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']]))
+		users.map((u) => ({
+		...u,
+		display_name: members.find(({ id }) => id == u.guid)?.username ?? u.guid
+	}))
 	);
 }) satisfies RequestHandler;
 
