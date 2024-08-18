@@ -68,12 +68,11 @@
 		await invalidateAll();
 	}
 
-	async function handleInvite() {
+	async function handleInvite(container: AnyContainer) {
 		try {
 			const userResponse = await saveUser({
 				email,
-				organization: container.organization,
-				realm: env.PUBLIC_KC_REALM as string
+				container
 			});
 			const userResponseData = await userResponse.json();
 			await saveContainerUser({
@@ -138,7 +137,7 @@
 </div>
 
 <Dialog bind:dialog>
-	<form on:submit|preventDefault={handleInvite}>
+	<form on:submit|preventDefault={() => handleInvite(container)}>
 		<h3>{$_('invite.heading')}</h3>
 		<label>
 			{$_('invite.email')}

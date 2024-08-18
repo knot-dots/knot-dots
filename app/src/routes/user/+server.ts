@@ -1,8 +1,8 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { newUser, overlayKey, overlayURL } from '$lib/models';
 import type { User } from '$lib/models';
+import { newUser } from '$lib/models';
 import { createOrUpdateUser, createUser } from '$lib/server/db';
 import { sendVerificationEmail as sendVerificationEmailNewWorkflow } from '$lib/server/email';
 import {
@@ -49,8 +49,8 @@ export const POST = (async ({ locals, request }) => {
 			createUser({
 				family_name: '',
 				given_name: '',
-				realm: parseResult.data.realm,
-				guid: subject
+				guid: subject,
+				realm: env.PUBLIC_KC_REALM ?? ''
 			})
 		);
 
@@ -59,12 +59,15 @@ export const POST = (async ({ locals, request }) => {
 			await sendVerificationEmailNewWorkflow(parseResult.data.email, signupURL);
 		} else {
 			const redirectURL = new URL(env.PUBLIC_BASE_URL ?? '');
-			redirectURL.hostname = `${parseResult.data.organization}.${redirectURL.hostname}`;
+			redirectURL.hostname = `${parseResult.data.container.organization}.${redirectURL.hostname}`;
 			await sendVerificationEmail(user, redirectURL.toString());
 		}
 	}
 
-	await addUserToGroup(user, parseResult.data.organization);
+	await addUserToGroup(user, parseResult.data.container.organization);
 
-	return json(user, { status: 201, headers: { location: `/user/${user.guid}` } });
+	return json(user, {
+		status: 201,
+		headers: { location: `/user/${user.guid}` }
+	});
 }) satisfies RequestHandler;

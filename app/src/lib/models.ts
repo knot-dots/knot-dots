@@ -395,38 +395,6 @@ const partialRelation = z.union([
 
 export type PartialRelation = z.infer<typeof partialRelation>;
 
-export const user = z.object({
-	family_name: z.string().max(32).default(''),
-	given_name: z.string().max(32).default(''),
-	guid: z.string().uuid(),
-	realm: z.string().max(1024)
-});
-
-export type User = z.infer<typeof user>;
-
-export function displayName(user: User) {
-	return `${user.given_name} ${user.family_name}`;
-}
-
-export const keycloakUser = z.object({
-	email: z.string().email(),
-	emailVerified: z.boolean(),
-	enabled: z.boolean(),
-	firstName: z.string().optional(),
-	id: z.string().uuid(),
-	lastName: z.string().optional()
-});
-
-export type KeycloakUser = z.infer<typeof keycloakUser>;
-
-export const newUser = z.object({
-	email: z.string().email(),
-	organization: z.string().uuid(),
-	realm: z.string().max(1024)
-});
-
-export type NewUser = z.infer<typeof newUser>;
-
 export const userRelation = z.object({
 	predicate: predicates,
 	subject: z.string().uuid()
@@ -1325,6 +1293,37 @@ export function isPartOf(container: { relation: PartialRelation[]; revision: num
 		);
 	};
 }
+
+export const user = z.object({
+	family_name: z.string().max(32).default(''),
+	given_name: z.string().max(32).default(''),
+	guid: z.string().uuid(),
+	realm: z.string().max(1024)
+});
+
+export type User = z.infer<typeof user>;
+
+export function displayName(user: User) {
+	return `${user.given_name} ${user.family_name}`;
+}
+
+export const keycloakUser = z.object({
+	email: z.string().email(),
+	emailVerified: z.boolean(),
+	enabled: z.boolean(),
+	firstName: z.string().optional(),
+	id: z.string().uuid(),
+	lastName: z.string().optional()
+});
+
+export type KeycloakUser = z.infer<typeof keycloakUser>;
+
+export const newUser = z.object({
+	email: z.string().email(),
+	container: anyContainer
+});
+
+export type NewUser = z.infer<typeof newUser>;
 
 export function isPartOfMeasure(container: { relation: PartialRelation[]; revision: number }) {
 	return function (candidate: AnyContainer) {
