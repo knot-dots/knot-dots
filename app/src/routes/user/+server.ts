@@ -25,8 +25,8 @@ export const POST = (async ({ locals, request }) => {
 	const data = await request.json().catch((reason: SyntaxError) => {
 		error(400, { message: reason.message });
 	});
-	const parseResult = newUser.safeParse(data);
 
+	const parseResult = newUser.safeParse(data);
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	}
@@ -44,7 +44,7 @@ export const POST = (async ({ locals, request }) => {
 			})
 		);
 	} catch (error) {
-		const subject = await createKeycloakUser(parseResult.data);
+		const subject = await createKeycloakUser(parseResult.data.email);
 		user = await locals.pool.connect(
 			createUser({
 				family_name: '',

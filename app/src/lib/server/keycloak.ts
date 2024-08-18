@@ -21,11 +21,11 @@ async function getToken() {
 	return z.object({ access_token: z.string() }).parse(await response.json()).access_token;
 }
 
-export async function createUser(user: NewUser) {
+export async function createUser(email: string) {
 	const token = await getToken();
 	const response = await fetch(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users`, {
 		body: JSON.stringify({
-			email: user.email,
+			email: email,
 			enabled: true,
 			requiredActions: ['UPDATE_PASSWORD', 'UPDATE_PROFILE']
 		}),
