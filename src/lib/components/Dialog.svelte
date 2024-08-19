@@ -48,5 +48,10 @@
 			margin: auto;
 			max-width: 28rem;
 		}
+
+		dialog::backdrop {
+			background: hsla(0, 0%, 50%, 0.3);
+			backdrop-filter: blur(0.125rem);
+		}
 	}
 </style>
