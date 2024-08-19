@@ -29,7 +29,7 @@
 <Layout>
 	<svelte:fragment slot="sidebar">
 		{#if !$page.data.currentOrganization.payload.default}
-			<Sidebar helpSlug="measures">
+			<Sidebar helpSlug="resolutions">
 				<Search slot="search" />
 
 				<Workspaces slot="workspaces" />
@@ -48,7 +48,7 @@
 				<Sort slot="sort" />
 			</Sidebar>
 		{:else}
-			<Sidebar helpSlug="measures">
+			<Sidebar helpSlug="resolutions">
 				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
