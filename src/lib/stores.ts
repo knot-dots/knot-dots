@@ -10,7 +10,10 @@ import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
+	type AnyContainer,
+	type ApplicationState,
 	audience,
+	type Container,
 	containerOfType,
 	createCopyOf,
 	hasMember,
@@ -24,25 +27,21 @@ import {
 	mayDelete,
 	type MeasureContainer,
 	type MeasureMonitoringContainer,
+	type OrganizationalUnitContainer,
+	type OrganizationContainer,
 	overlayKey,
 	paramsFromFragment,
+	type PayloadType,
 	payloadTypes,
 	predicates,
+	resolutionStatus,
+	type ResolutionStatus,
+	type Status,
 	status,
-	taskStatus
-} from '$lib/models';
-import type {
-	AnyContainer,
-	ApplicationState,
-	Container,
-	ContainerWithObjective,
-	OrganizationalUnitContainer,
-	OrganizationContainer,
-	PayloadType,
-	Status,
-	TaskContainer,
-	TaskStatus,
-	User as UserRecord
+	type TaskContainer,
+	type TaskStatus,
+	taskStatus,
+	type User as UserRecord
 } from '$lib/models';
 
 export const applicationState = writable<ApplicationState>({
@@ -222,6 +221,10 @@ if (browser) {
 			} else if (newContainer.payload.type == payloadTypes.enum.measure) {
 				newContainer.payload.status =
 					(hashParams.get('status') as Status) ?? status.enum['status.idea'];
+			} else if (newContainer.payload.type == payloadTypes.enum.resolution) {
+				newContainer.payload.resolutionStatus =
+					(hashParams.get('resolutionStatus') as ResolutionStatus) ??
+					resolutionStatus.enum['resolution_status.draft'];
 			} else if (newContainer.payload.type == payloadTypes.enum.task) {
 				newContainer.payload.taskStatus =
 					(hashParams.get('taskStatus') as TaskStatus) ?? taskStatus.enum['task_status.idea'];
