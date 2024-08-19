@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _, date } from 'svelte-i18n';
+	import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -25,6 +26,8 @@
 	import { overlay, overlayHistory } from '$lib/stores';
 	import {
 		predicateIcons,
+		resolutionStatusColors,
+		resolutionStatusIcons,
 		statusColors,
 		statusIcons,
 		taskStatusColors,
@@ -239,6 +242,13 @@
 				contributors={relatedContainers}
 				compact
 			/>
+		{:else if 'resolutionStatus' in container.payload}
+			<span class="badge badge--{resolutionStatusColors.get(container.payload.resolutionStatus)}">
+				<svelte:component
+					this={resolutionStatusIcons.get(container.payload.resolutionStatus) ?? Cog8Tooth}
+				/>
+				{$_(container.payload.resolutionStatus)}
+			</span>
 		{:else if 'status' in container.payload}
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
 				<svelte:component this={statusIcons.get(container.payload.status) ?? LightBulb} />
