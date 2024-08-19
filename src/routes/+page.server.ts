@@ -100,6 +100,7 @@ export const load = (async ({ locals, url, parent }) => {
 							'strategic_goal',
 							'operational_goal',
 							'measure',
+							'resolution',
 							'simple_measure'
 						]
 					},

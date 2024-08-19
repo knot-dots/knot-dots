@@ -20,7 +20,11 @@
 		},
 		{
 			title: 'payload_group.implementation',
-			payloadType: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
+			payloadType: [
+				payloadTypes.enum.measure,
+				payloadTypes.enum.simple_measure,
+				payloadTypes.enum.resolution
+			]
 		}
 	];
 </script>
