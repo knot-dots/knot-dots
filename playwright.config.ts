@@ -7,19 +7,29 @@ dotenv.config();
 const config: PlaywrightTestConfig = {
 	projects: [
 		{
+			name: 'setup',
+			testMatch: /global.setup\.ts/
+		},
+		{
 			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] }
+			use: { ...devices['Desktop Chrome'], storageState: 'tests/.auth/user.json' },
+			dependencies: ['setup']
 		},
 		{
 			name: 'iphone8',
-			use: { ...devices['iPhone 8'] }
+			use: { ...devices['iPhone 8'], storageState: 'tests/.auth/user.json' },
+			dependencies: ['setup']
 		}
 	],
 	use: {
+		baseURL: 'http://knotdots.test:3000',
+		proxy: {
+			server: 'http://localhost:3128'
+		},
 		trace: 'on-first-retry'
 	},
 	webServer: {
-		command: 'docker compose up --build preview',
+		command: 'docker compose up --build preview-proxy',
 		port: 3000,
 		reuseExistingServer: !process.env.CI,
 		timeout: 180 * 1000

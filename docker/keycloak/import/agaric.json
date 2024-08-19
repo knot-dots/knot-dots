@@ -724,7 +724,8 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "n9YL7PAV3vhubU2uc3MFDcSudCI52OTA",
       "redirectUris": [
-        "http://localhost:5173/*"
+        "http://knotdots.test:3000/*",
+        "http://knotdots.test:5173/*"
       ],
       "webOrigins": [
         "+"
