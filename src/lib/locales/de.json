@@ -344,6 +344,10 @@
 		"remove": "Beziehungen lösen"
 	},
 	"relations": "Beziehungen",
+	"resolution_status": "Status",
+	"resolution_status.draft": "In Ausarbeitung",
+	"resolution_status.in_force": "Gültig",
+	"resolution_status.invalid": "Ungültig",
 	"resource": "Ressource",
 	"resources": "Ressourcen",
 	"role": {

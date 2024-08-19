@@ -80,6 +80,7 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'resolution',
 	'resource',
 	'simple_measure',
 	'strategic_goal',
@@ -146,6 +147,16 @@ const statusValues = [
 export const status = z.enum(statusValues);
 
 export type Status = z.infer<typeof status>;
+
+const resolutionStatusValues = [
+	'resolution_status.draft',
+	'resolution_status.in_force',
+	'resolution_status.invalid'
+] as const;
+
+export const resolutionStatus = z.enum(resolutionStatusValues);
+
+export type ResolutionStatus = z.infer<typeof resolutionStatus>;
 
 const taskStatusValues = [
 	'task_status.idea',
@@ -530,6 +541,21 @@ const operationalGoalPayload = basePayload
 
 const initialOperationalGoalPayload = operationalGoalPayload.partial({ title: true });
 
+const resolutionPayload = basePayload.extend({
+	resolutionStatus: resolutionStatus.default(resolutionStatus.enum['resolution_status.draft']),
+	type: z.literal(payloadTypes.enum.resolution),
+	validFrom: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional(),
+	validUntil: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional()
+});
+
+const initialResolutionPayload = resolutionPayload.partial({ title: true });
+
 const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
 	.extend({
@@ -744,6 +770,7 @@ export const container = z.object({
 		objectivePayload,
 		operationalGoalPayload,
 		pagePayload,
+		resolutionPayload,
 		resourcePayload,
 		simpleMeasurePayload,
 		strategicGoalPayload,
@@ -776,6 +803,7 @@ export const anyContainer = container.extend({
 		organizationPayload,
 		organizationalUnitPayload,
 		pagePayload,
+		resolutionPayload,
 		resourcePayload,
 		simpleMeasurePayload,
 		strategicGoalPayload,
@@ -943,6 +971,18 @@ export function isPageContainer(
 	return container.payload.type === payloadTypes.enum.page;
 }
 
+const resolutionContainer = container.extend({
+	payload: resolutionPayload
+});
+
+export type ResolutionContainer = z.infer<typeof resolutionContainer>;
+
+export function isResolutionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResolutionContainer {
+	return container.payload.type === payloadTypes.enum.resolution;
+}
+
 const resourceContainer = container.extend({
 	payload: resourcePayload
 });
@@ -1100,6 +1140,7 @@ const emptyContainer = newContainer.extend({
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
+		initialResolutionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,
 		initialStrategicGoalPayload,
@@ -1169,15 +1210,21 @@ const emptyPageContainer = newContainer.extend({
 
 export type EmptyPageContainer = z.infer<typeof emptyPageContainer>;
 
-const emptySimpleMeasureContainer = emptyContainer.extend({
-	payload: initialSimpleMeasurePayload
+const emptyResolutionContainer = emptyContainer.extend({
+	payload: initialResolutionPayload
 });
+
+export type EmptyResolutionContainer = z.infer<typeof emptyResolutionContainer>;
 
 const emptyResourceContainer = emptyContainer.extend({
 	payload: initialResourcePayload
 });
 
 export type EmptyResourceContainer = z.infer<typeof emptyResourceContainer>;
+
+const emptySimpleMeasureContainer = emptyContainer.extend({
+	payload: initialSimpleMeasurePayload
+});
 
 export type EmptySimpleMeasureContainer = z.infer<typeof emptySimpleMeasureContainer>;
 

@@ -343,6 +343,10 @@
 		"remove": "remove relations"
 	},
 	"relations": "Relations",
+	"resolution_status": "Status",
+	"resolution_status.draft": "Draft",
+	"resolution_status.in_force": "In force",
+	"resolution_status.invalid": "Invalid",
 	"resource": "Resource",
 	"resources": "Resources",
 	"role": {
