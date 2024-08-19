@@ -1,0 +1,90 @@
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
+	import Editor from '$lib/components/Editor.svelte';
+	import ListBox from '$lib/components/ListBox.svelte';
+	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
+	import { audience, resolutionStatus, sustainableDevelopmentGoals, topics } from '$lib/models';
+	import type { EmptyResolutionContainer, ResolutionContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
+
+	export let container: ResolutionContainer | EmptyResolutionContainer;
+
+	applicationState.update((state) => ({
+		...state,
+		containerForm: {
+			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
+			tabs: ['metadata', 'basic-data']
+		}
+	}));
+</script>
+
+<fieldset class="form-tab" id="basic-data">
+	<label>
+		{$_('summary')}
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+	</label>
+
+	{#key 'guid' in container ? container.guid : ''}
+		<Editor label={$_('description')} bind:value={container.payload.description} />
+	{/key}
+
+	<fieldset class="duration">
+		<label>
+			{$_('valid_from')}
+			<input type="date" name="validFrom" bind:value={container.payload.validFrom} />
+		</label>
+		{#if container.payload.resolutionStatus == resolutionStatus.enum['resolution_status.invalid']}
+			<label>
+				{$_('valid_until')}
+				<input type="date" name="validUntil" bind:value={container.payload.validUntil} />
+			</label>
+		{/if}
+	</fieldset>
+</fieldset>
+
+<fieldset class="form-tab" id="metadata">
+	<legend>{$_('form.metadata')}</legend>
+
+	<label>
+		{$_('resolution_status')}
+		<select name="resolutionStatus" bind:value={container.payload.resolutionStatus} required>
+			{#each resolutionStatus.options as statusOption}
+				<option value={statusOption}>
+					{$_(statusOption)}
+				</option>
+			{/each}
+		</select>
+	</label>
+
+	<StrategyRelationSelector {container} />
+
+	<ListBox
+		label={$_('topic.label')}
+		options={topics.options}
+		bind:value={container.payload.topic}
+	/>
+
+	<ListBox
+		label={$_('category')}
+		options={sustainableDevelopmentGoals.options}
+		bind:value={container.payload.category}
+	/>
+
+	<ListBox
+		label={$_('audience')}
+		options={audience.options}
+		bind:value={container.payload.audience}
+	/>
+
+	<OrganizationSelector bind:container />
+</fieldset>
+
+<style>
+	.duration {
+		display: flex;
+		gap: 1rem;
+	}
+</style>

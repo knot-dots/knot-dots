@@ -16,6 +16,7 @@
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import PageForm from '$lib/components/PageForm.svelte';
+	import ResolutionForm from '$lib/components/ResolutionForm.svelte';
 	import ResourceForm from '$lib/components/ResourceForm.svelte';
 	import SimpleMeasureForm from '$lib/components/SimpleMeasureForm.svelte';
 	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
@@ -37,6 +38,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isPageContainer,
+		isResolutionContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
 		isStrategicGoalContainer,
@@ -182,6 +184,8 @@
 		<OrganizationalUnitForm {isPartOfOptions} bind:container />
 	{:else if isPageContainer(container)}
 		<PageForm bind:container />
+	{:else if isResolutionContainer(container)}
+		<ResolutionForm bind:container />
 	{:else if isResourceContainer(container)}
 		<ResourceForm bind:container />
 	{:else if isSimpleMeasureContainer(container)}

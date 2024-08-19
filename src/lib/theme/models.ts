@@ -9,6 +9,7 @@ import Minus from '~icons/heroicons/minus-solid';
 import Pencil from '~icons/heroicons/pencil-16-solid';
 import Plus from '~icons/heroicons/plus-solid';
 import Square2Stack from '~icons/heroicons/square-2-stack';
+import XCircle from '~icons/heroicons/x-circle-16-solid';
 import sdg01 from '$lib/assets/sdg/sdg-01.svg';
 import sdg02 from '$lib/assets/sdg/sdg-02.svg';
 import sdg03 from '$lib/assets/sdg/sdg-03.svg';
@@ -26,8 +27,17 @@ import sdg14 from '$lib/assets/sdg/sdg-14.svg';
 import sdg15 from '$lib/assets/sdg/sdg-15.svg';
 import sdg16 from '$lib/assets/sdg/sdg-16.svg';
 import sdg17 from '$lib/assets/sdg/sdg-17.svg';
-import { predicates, status, sustainableDevelopmentGoals, taskStatus } from '$lib/models';
-import type { Status, SustainableDevelopmentGoal, TaskStatus } from '$lib/models';
+import {
+	predicates,
+	type ResolutionStatus,
+	resolutionStatus,
+	type Status,
+	status,
+	type SustainableDevelopmentGoal,
+	sustainableDevelopmentGoals,
+	type TaskStatus,
+	taskStatus
+} from '$lib/models';
 
 export const predicateIcons = new Map<string, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>(
 	[
@@ -119,4 +129,31 @@ export const taskStatusIcons = new Map<
 	[taskStatus.enum['task_status.in_planning'], Pencil],
 	[taskStatus.enum['task_status.in_progress'], Cog8Tooth],
 	[taskStatus.enum['task_status.done'], Flag]
+]);
+
+export const resolutionStatusColors = new Map<ResolutionStatus, string>([
+	[resolutionStatus.enum['resolution_status.draft'], 'yellow'],
+	[resolutionStatus.enum['resolution_status.in_force'], 'green'],
+	[resolutionStatus.enum['resolution_status.invalid'], 'red']
+]);
+
+export const resolutionStatusBackgrounds = new Map<ResolutionStatus, string>([
+	[resolutionStatus.enum['resolution_status.draft'], 'var(--gradient-in-implementation)'],
+	[resolutionStatus.enum['resolution_status.in_force'], 'var(--gradient-done)'],
+	[resolutionStatus.enum['resolution_status.invalid'], 'var(--gradient-idea)']
+]);
+
+export const resolutionStatusHoverColors = new Map<ResolutionStatus, string>([
+	[resolutionStatus.enum['resolution_status.draft'], 'var(--color-hover-in-implementation)'],
+	[resolutionStatus.enum['resolution_status.in_force'], 'var(--color-hover-done)'],
+	[resolutionStatus.enum['resolution_status.invalid'], 'var(--color-hover-idea)']
+]);
+
+export const resolutionStatusIcons = new Map<
+	ResolutionStatus,
+	typeof SvelteComponent<SVGAttributes<SVGSVGElement>>
+>([
+	[resolutionStatus.enum['resolution_status.draft'], Cog8Tooth],
+	[resolutionStatus.enum['resolution_status.in_force'], Flag],
+	[resolutionStatus.enum['resolution_status.invalid'], XCircle]
 ]);

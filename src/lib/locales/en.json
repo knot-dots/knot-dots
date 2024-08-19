@@ -343,6 +343,7 @@
 		"remove": "remove relations"
 	},
 	"relations": "Relations",
+	"resolution": "Resolution",
 	"resolution_status": "Status",
 	"resolution_status.draft": "Draft",
 	"resolution_status.in_force": "In force",
@@ -510,6 +511,8 @@
 		"remove": "Remove",
 		"role": "Role"
 	},
+	"valid_from": "Valid from",
+	"valid_until": "Valid until",
 	"visible_for": "Visible for",
 	"visibility": {
 		"creator": "Creator only",

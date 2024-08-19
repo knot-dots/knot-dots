@@ -19,7 +19,11 @@
 		},
 		{
 			label: 'payload_group.implementation',
-			items: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
+			items: [
+				payloadTypes.enum.measure,
+				payloadTypes.enum.simple_measure,
+				payloadTypes.enum.resolution
+			]
 		},
 		{ label: 'payload_group.misc', items: [payloadTypes.enum.text] }
 	];
@@ -42,6 +46,9 @@
 					: undefined),
 				...('category' in derivedFrom.payload && 'category' in container.payload
 					? { category: derivedFrom.payload.category }
+					: undefined),
+				...('resolutionStatus' in derivedFrom.payload && 'resolutionStatus' in container.payload
+					? { resolutionStatus: derivedFrom.payload.resolutionStatus }
 					: undefined),
 				...('status' in derivedFrom.payload && 'status' in container.payload
 					? { status: derivedFrom.payload.status }

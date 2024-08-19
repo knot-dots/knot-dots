@@ -344,6 +344,7 @@
 		"remove": "Beziehungen lösen"
 	},
 	"relations": "Beziehungen",
+	"resolution": "Beschluss",
 	"resolution_status": "Status",
 	"resolution_status.draft": "In Ausarbeitung",
 	"resolution_status.in_force": "Gültig",
@@ -518,6 +519,8 @@
 		"members": "Alle Mitglieder",
 		"public": "Gesamte Öffentlichkeit"
 	},
+	"valid_from": "Gültig ab",
+	"valid_until": "Gültig bis",
 	"vision": "Vision",
 	"visions": "Visionen",
 	"workspace.indicators": "Kacheln",

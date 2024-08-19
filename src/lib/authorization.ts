@@ -19,6 +19,7 @@ const objectiveTypes = [
 	payloadTypes.enum.model,
 	payloadTypes.enum.objective,
 	payloadTypes.enum.operational_goal,
+	payloadTypes.enum.resolution,
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.strategic_goal,
 	payloadTypes.enum.strategy,

@@ -40,6 +40,8 @@
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import Relations from '$lib/components/Relations.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
+	import ResolutionDetailView from '$lib/components/ResolutionDetailView.svelte';
+	import ResolutionStatusTabs from '$lib/components/ResolutionStatusTabs.svelte';
 	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -68,6 +70,7 @@
 		isMeasureContainer,
 		isObjectiveContainer,
 		isPageContainer,
+		isResolutionContainer,
 		isResourceContainer,
 		isStrategyContainer,
 		isTaskContainer,
@@ -679,6 +682,10 @@
 			<header class="content-header">
 				<MeasureStatusTabs {container} {revisions} />
 			</header>
+		{:else if isResolutionContainer(container)}
+			<header class="content-header">
+				<ResolutionStatusTabs {container} {revisions} />
+			</header>
 		{:else if isTaskContainer(container)}
 			<header class="content-header">
 				<TaskStatusTabs {container} {revisions} />
@@ -693,6 +700,8 @@
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
 			{:else if isObjectiveContainer(container)}
 				<ObjectiveDetailView {container} {relatedContainers} {revisions} />
+			{:else if isResolutionContainer(container)}
+				<ResolutionDetailView {container} {relatedContainers} {revisions} />
 			{:else if isResourceContainer(container)}
 				<ResourceDetailView {container} {relatedContainers} {revisions} />
 			{:else if isStrategyContainer(container)}
