@@ -10,10 +10,10 @@ export async function sendVerificationEmail(email: string, profileURL: string) {
 			user: privateEnv.SMTP_AUTH_USERNAME,
 			pass: privateEnv.SMTP_AUTH_PASSWORD
 		},
-		host: env.PUBLIC_SMTP_HOST,
+		host: privateEnv.SMTP_HOST,
 		logger: true,
-		port: parseInt(env.PUBLIC_SMTP_PORT),
-		secure: Boolean(env.PUBLIC_SMTP_SECURE)
+		port: parseInt(privateEnv.SMTP_PORT ?? '25'),
+		secure: Boolean(privateEnv.SMTP_SECURE)
 	} as SMTPTransport.Options);
 
 	return await transport.sendMail({

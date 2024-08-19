@@ -75,10 +75,10 @@ services:
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
-      - PUBLIC_SMTP_HOST
-      - PUBLIC_SMTP_PORT
       - SMTP_AUTH_PASSWORD
       - SMTP_AUTH_USERNAME
+      - SMTP_HOST
+      - SMTP_PORT
     ports:
       - "3000:3000"
     profiles:
@@ -116,10 +116,10 @@ services:
       - PUBLIC_KC_CLIENT_ID
       - PUBLIC_KC_REALM
       - PUBLIC_KC_URL
-      - PUBLIC_SMTP_HOST
-      - PUBLIC_SMTP_PORT
       - SMTP_AUTH_PASSWORD
       - SMTP_AUTH_USERNAME
+      - SMTP_HOST
+      - SMTP_PORT
     ports:
       - "5173:5173"
     volumes:
