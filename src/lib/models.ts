@@ -380,8 +380,8 @@ export const keycloakUser = z.object({
 	enabled: z.boolean(),
 	firstName: z.string().optional(),
 	id: z.string().uuid(),
-	lastName: z.string().optional(),
-})
+	lastName: z.string().optional()
+});
 
 export type KeycloakUser = z.infer<typeof keycloakUser>;
 

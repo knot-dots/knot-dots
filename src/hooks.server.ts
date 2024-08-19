@@ -112,9 +112,9 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 
 	const features = [];
 	if (event.locals.user.roles.includes('sysadmin')) {
-		features.push('NewOnboardingWorkflow')
+		features.push('NewOnboardingWorkflow');
 	}
-	event.locals.featureDecisions = createFeatureDecisions(features)
+	event.locals.featureDecisions = createFeatureDecisions(features);
 
 	return resolve(event);
 }) satisfies Handle;

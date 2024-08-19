@@ -7,8 +7,8 @@
 	let timer: ReturnType<typeof setTimeout>;
 	let overlay = getContext('overlay');
 	let terms = overlay
-		? new URLSearchParams($page.url.hash.substring(1)).get('terms') ?? ''
-		: $page.url.searchParams.get('terms') ?? '';
+		? (new URLSearchParams($page.url.hash.substring(1)).get('terms') ?? '')
+		: ($page.url.searchParams.get('terms') ?? '');
 
 	function debouncedSearch() {
 		clearTimeout(timer);

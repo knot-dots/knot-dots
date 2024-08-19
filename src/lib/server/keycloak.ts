@@ -39,22 +39,32 @@ export async function createUser(user: NewUser) {
 	return z.string().uuid().parse(response.headers.get('Location')?.split('/').pop());
 }
 
-export async function confirmUser(id: string, givenName: string, familyName: string, password: string) {
+export async function confirmUser(
+	id: string,
+	givenName: string,
+	familyName: string,
+	password: string
+) {
 	const token = await getToken();
-	const response = await fetch(`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${id}`, {
-		body: JSON.stringify({
-			credentials: [{ "type": "password", "temporary": false, "value": password }],
-			emailVerified: true,
-			firstName: givenName,
-			lastName: familyName,
-			requiredActions: []
-		}),
-		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-		method: 'PUT'
-	});
+	const response = await fetch(
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${id}`,
+		{
+			body: JSON.stringify({
+				credentials: [{ type: 'password', temporary: false, value: password }],
+				emailVerified: true,
+				firstName: givenName,
+				lastName: familyName,
+				requiredActions: []
+			}),
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			method: 'PUT'
+		}
+	);
 	if (!response.ok) {
 		const error = await response.json();
-		throw new Error(`Failed to update user in realm. Keycloak responded with ${response.status}: ${serializeError(error)}`);
+		throw new Error(
+			`Failed to update user in realm. Keycloak responded with ${response.status}: ${serializeError(error)}`
+		);
 	}
 }
 
@@ -101,7 +111,7 @@ export async function findUserById(id: string) {
 
 	const data = await response.json();
 
-	return keycloakUser.parse(data)
+	return keycloakUser.parse(data);
 }
 
 export async function findUserByEmail(email: string) {
@@ -121,10 +131,7 @@ export async function findUserByEmail(email: string) {
 
 	const data = await response.json();
 
-	return z
-		.array(keycloakUser)
-		.length(1)
-		.parse(data)[0];
+	return z.array(keycloakUser).length(1).parse(data)[0];
 }
 
 export async function createGroup(name: string) {

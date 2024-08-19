@@ -3,5 +3,5 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useNewOnboardingWorkflow() {
 			return features.includes('NewOnboardingWorkflow');
 		}
-	}
+	};
 }

@@ -16,7 +16,7 @@
 		if (data.user) {
 			dialog.showModal();
 		}
-	})
+	});
 </script>
 
 <svelte:head>
@@ -25,4 +25,4 @@
 
 <slot />
 
-<SignupDialog bind:dialog/>
+<SignupDialog bind:dialog />

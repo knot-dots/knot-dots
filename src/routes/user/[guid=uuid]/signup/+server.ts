@@ -6,7 +6,7 @@ import { getUser } from '$lib/server/db';
 import { confirmUser } from '$lib/server/keycloak';
 import type { RequestHandler } from './$types';
 
-export const POST = (async ({ locals, params, request}) => {
+export const POST = (async ({ locals, params, request }) => {
 	if (request.headers.get('Content-Type') != 'application/json') {
 		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
 	}
@@ -18,7 +18,7 @@ export const POST = (async ({ locals, params, request}) => {
 	let user: User;
 
 	try {
-		user = await locals.pool.connect(getUser(params.guid))
+		user = await locals.pool.connect(getUser(params.guid));
 	} catch (e) {
 		if (e instanceof NotFoundError) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
@@ -28,5 +28,5 @@ export const POST = (async ({ locals, params, request}) => {
 	}
 
 	await confirmUser(user.guid, givenName, familyName, password);
-	return new Response(null, { status: 204 })
+	return new Response(null, { status: 204 });
 }) satisfies RequestHandler;
