@@ -2,7 +2,6 @@ import nodemailer from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
-import { env } from '$env/dynamic/public';
 
 export async function sendVerificationEmail(email: string, profileURL: string) {
 	const transport = nodemailer.createTransport({
@@ -17,7 +16,7 @@ export async function sendVerificationEmail(email: string, profileURL: string) {
 	} as SMTPTransport.Options);
 
 	return await transport.sendMail({
-		from: 'knot dots <no-reply@knotdots.net>',
+		from: privateEnv.SMTP_FROM,
 		subject: unwrapFunctionStore(_)('invite.email_subject'),
 		text: unwrapFunctionStore(_)('invite.email_text', { values: { link: profileURL } }),
 		to: email
