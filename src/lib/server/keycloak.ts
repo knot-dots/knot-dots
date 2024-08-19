@@ -1,4 +1,3 @@
-import { serializeError } from 'serialize-error';
 import { boolean, z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
@@ -61,9 +60,9 @@ export async function confirmUser(
 		}
 	);
 	if (!response.ok) {
-		const error = await response.json();
+		const error = await response.text();
 		throw new Error(
-			`Failed to update user in realm. Keycloak responded with ${response.status}: ${serializeError(error)}`
+			`Failed to update user in realm. Keycloak responded with ${response.status}: ${error}`
 		);
 	}
 }
