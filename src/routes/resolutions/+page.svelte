@@ -35,9 +35,6 @@
 				<Workspaces slot="workspaces" />
 
 				<svelte:fragment slot="filters">
-					{#if $page.url.searchParams.has('related-to')}
-						<RelationTypeFilter />
-					{/if}
 					<AudienceFilter />
 					<OrganizationIncludedFilter />
 					<CategoryFilter />
@@ -52,9 +49,6 @@
 				<Search slot="search" />
 
 				<svelte:fragment slot="filters">
-					{#if $page.url.searchParams.has('related-to')}
-						<RelationTypeFilter />
-					{/if}
 					<AudienceFilter />
 					<CategoryFilter />
 					<TopicFilter />
