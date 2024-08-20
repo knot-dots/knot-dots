@@ -300,7 +300,7 @@
 		}
 	}
 
-	function mayDeriveFrom(container: Container) {
+	function mayDeriveFrom(container: AnyContainer) {
 		return container.relation.some(
 			({ predicate }) =>
 				predicate === predicates.enum['is-part-of-strategy'] ||
