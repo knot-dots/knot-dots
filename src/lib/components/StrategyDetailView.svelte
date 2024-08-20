@@ -18,6 +18,9 @@
 		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum.undefined);
 		params.set('is-part-of-strategy', String(strategyRevision));
+		for (const payloadType of container.payload.chapterType) {
+			params.append('payloadType', payloadType);
+		}
 		return `#${params.toString()}`;
 	}
 

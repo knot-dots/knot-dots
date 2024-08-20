@@ -1090,7 +1090,11 @@ export function getAllContainersRelatedToMeasure(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const predicate = [predicates.enum['is-part-of'], predicates.enum['is-part-of-measure']];
+		const predicate = [
+			predicates.enum['is-part-of'],
+			predicates.enum['is-part-of-measure'],
+			predicates.enum['is-part-of-strategy']
+		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE relation(path) AS (

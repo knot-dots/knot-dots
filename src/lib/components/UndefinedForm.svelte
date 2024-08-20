@@ -1,21 +1,31 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { containerOfType, payloadTypes } from '$lib/models';
+	import { containerOfType, paramsFromFragment, payloadTypes } from '$lib/models';
 	import type { AnyContainer, Container, EmptyContainer, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
+	import paramsFromURL from '$lib/client/paramsFromURL';
 
 	export let container: AnyContainer | EmptyContainer;
 
 	const payloadGroups = [
 		{
 			label: 'payload_group.long_term_goals',
-			items: [payloadTypes.enum.model, payloadTypes.enum.vision]
+			items: [payloadTypes.enum.model, payloadTypes.enum.vision].filter((i) =>
+				paramsFromFragment($page.url).has('payloadType', i)
+			)
 		},
-		{ label: 'payload_group.strategic_goals', items: [payloadTypes.enum.strategic_goal] },
+		{
+			label: 'payload_group.strategic_goals',
+			items: [payloadTypes.enum.strategic_goal].filter((i) =>
+				paramsFromFragment($page.url).has('payloadType', i)
+			)
+		},
 		{
 			label: 'payload_group.measurable_goals',
-			items: [payloadTypes.enum.operational_goal]
+			items: [payloadTypes.enum.operational_goal].filter((i) =>
+				paramsFromFragment($page.url).has('payloadType', i)
+			)
 		},
 		{
 			label: 'payload_group.implementation',
@@ -23,9 +33,14 @@
 				payloadTypes.enum.measure,
 				payloadTypes.enum.simple_measure,
 				payloadTypes.enum.resolution
-			]
+			].filter((i) => paramsFromFragment($page.url).has('payloadType', i))
 		},
-		{ label: 'payload_group.misc', items: [payloadTypes.enum.text] }
+		{
+			label: 'payload_group.misc',
+			items: [payloadTypes.enum.text].filter((i) =>
+				paramsFromFragment($page.url).has('payloadType', i)
+			)
+		}
 	];
 
 	async function restart(event: { currentTarget: HTMLSelectElement }) {

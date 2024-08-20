@@ -99,6 +99,17 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
+export const chapterTypeOptions = [
+	payloadTypes.enum.measure,
+	payloadTypes.enum.model,
+	payloadTypes.enum.operational_goal,
+	payloadTypes.enum.resolution,
+	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.strategic_goal,
+	payloadTypes.enum.text,
+	payloadTypes.enum.vision
+];
+
 const levelValues = [
 	'level.global',
 	'level.multi_lateral',
@@ -606,6 +617,7 @@ const strategyPayload = basePayload
 		summary: true
 	})
 	.extend({
+		chapterType: z.array(payloadTypes).default(chapterTypeOptions),
 		image: z.string().url().optional(),
 		level: levels,
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),

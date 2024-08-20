@@ -312,11 +312,23 @@
 		params.append(overlayKey.enum.create, 'undefined');
 
 		if (isPartOfStrategyRelation) {
+			const strategy = relatedContainers
+				.filter(isStrategyContainer)
+				.find(({ relation }) =>
+					relation.some(
+						({ predicate, object }) =>
+							object == isPartOfStrategyRelation.object &&
+							predicate == isPartOfStrategyRelation.predicate
+					)
+				);
 			params.append(
 				predicates.enum['is-part-of-strategy'],
 				String(isPartOfStrategyRelation.object)
 			);
 			params.append('position', String(isPartOfStrategyRelation.position + 1));
+			for (const payloadType of strategy?.payload.chapterType ?? []) {
+				params.append('payloadType', payloadType);
+			}
 		}
 
 		if (isPartOfMeasureRelation) {

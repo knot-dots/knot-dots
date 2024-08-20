@@ -7,6 +7,7 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import {
 		audience,
+		chapterTypeOptions,
 		levels,
 		strategyTypes,
 		sustainableDevelopmentGoals,
@@ -102,6 +103,12 @@
 	<input type="file" name="pdf" accept="application/pdf" multiple />
 	<span class="help">{$_('upload.pdf.help')}</span>
 </label>
+
+<ListBox
+	label={$_('chapter_type')}
+	options={chapterTypeOptions}
+	bind:value={container.payload.chapterType}
+/>
 
 <ListBox label={$_('topic.label')} options={topics.options} bind:value={container.payload.topic} />
 
