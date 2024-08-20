@@ -82,13 +82,19 @@
 		{$_('payload_type')}
 		<select name="type" on:change={restart} required>
 			<option></option>
-			{#each payloadGroups as { label, items }}
-				<optgroup label={$_(label)}>
-					{#each items as option}
-						<option value={option}>{$_(option)}</option>
-					{/each}
-				</optgroup>
-			{/each}
+			{#if paramsFromFragment($page.url).has('is-part-of-strategy')}
+				{#each payloadGroups as { label, items }}
+					<optgroup label={$_(label)}>
+						{#each items as option}
+							<option value={option}>{$_(option)}</option>
+						{/each}
+					</optgroup>
+				{/each}
+			{:else}
+				{#each paramsFromFragment($page.url).getAll('payloadType') as option}
+					<option value={option}>{$_(option)}</option>
+				{/each}
+			{/if}
 		</select>
 	</label>
 </fieldset>
