@@ -333,7 +333,6 @@
 
 		if (isPartOfMeasureRelation) {
 			params.append(predicates.enum['is-part-of-measure'], String(isPartOfMeasureRelation.object));
-			params.append('payloadType', payloadTypes.enum.effect);
 			params.append('payloadType', payloadTypes.enum.measure_result);
 			params.append('payloadType', payloadTypes.enum.milestone);
 			params.append('payloadType', payloadTypes.enum.task);
