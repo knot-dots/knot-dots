@@ -300,6 +300,14 @@
 		}
 	}
 
+	function mayDeriveFrom(container: Container) {
+		return container.relation.some(
+			({ predicate }) =>
+				predicate === predicates.enum['is-part-of-strategy'] ||
+				predicate === predicates.enum['is-part-of-measure']
+		);
+	}
+
 	async function createAnother(container: AnyContainer) {
 		const isPartOfStrategyRelation = container.relation.find(
 			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
@@ -739,7 +747,7 @@
 						{$_('establish_relations')}
 					</a>
 				{/if}
-				{#if $ability.can('create', payloadTypes.enum.undefined)}
+				{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
 					<button class="primary" type="button" on:click={() => createAnother(container)}>
 						<PlusSmall />{$_('create_another')}
 					</button>
