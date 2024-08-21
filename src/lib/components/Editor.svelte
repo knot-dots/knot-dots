@@ -217,12 +217,13 @@
 	}
 
 	:global(.milkdown) {
+		background-color: var(--color-gray-050);
 		padding: 0.75rem 1rem;
 	}
 
 	:global([contenteditable]) {
-		white-space: pre-wrap;
 		min-height: 6.25rem;
+		white-space: pre-wrap;
 	}
 
 	:global([contenteditable]:focus) {
