@@ -551,17 +551,6 @@ textarea:invalid {
 	color: var(--color-red-700);
 }
 
-input[type='date']:valid,
-input[type='email']:valid,
-input[type='password']:valid,
-input[type='text']:valid,
-select:valid,
-textarea:valid {
-	background-color: var(--color-green-050);
-	border-color: var(--color-green-500);
-	color: var(--color-green-700);
-}
-
 label > input[type='checkbox'],
 label > input[type='radio'] {
 	margin-right: 8px;

@@ -155,10 +155,4 @@
 		border-color: var(--color-red-500);
 		color: var(--color-red-700);
 	}
-
-	.valid {
-		background-color: var(--color-green-050);
-		border-color: var(--color-green-500);
-		color: var(--color-green-700);
-	}
 </style>
