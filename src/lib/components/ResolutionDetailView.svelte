@@ -39,12 +39,7 @@
 	$: strategy = relatedContainers.find(isStrategyContainer);
 </script>
 
-<ContainerDetailView
-	container={selectedRevision}
-	{relatedContainers}
-	{revisions}
-	tabs={['basic-data']}
->
+<ContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		{#if 'summary' in container.payload || ('description' in container.payload && !isSimpleMeasureContainer(container))}
 			<div class="summary">

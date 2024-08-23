@@ -16,8 +16,8 @@
 	applicationState.update((state) => ({
 		...state,
 		containerForm: {
-			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
-			tabs: ['metadata', 'basic-data', 'resources']
+			activeTab: 'basic-data',
+			tabs: ['basic-data', 'metadata']
 		}
 	}));
 

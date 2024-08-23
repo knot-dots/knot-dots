@@ -17,8 +17,7 @@
 	applicationState.update((state) => ({
 		...state,
 		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data']
+			tabs: []
 		}
 	}));
 

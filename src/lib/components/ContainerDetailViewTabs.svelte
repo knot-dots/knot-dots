@@ -3,6 +3,7 @@
 	import Info from '~icons/knotdots/info';
 	import Effects from '~icons/knotdots/effects';
 	import Milestones from '~icons/knotdots/milestones';
+	import PuzzlePiece from '~icons/heroicons/puzzle-piece-20-solid';
 	import Resources from '~icons/knotdots/resources';
 	import { browser } from '$app/environment';
 	import { isContainerWithEffect } from '$lib/models';
@@ -74,6 +75,18 @@
 			on:click={() => updateApplicationState('milestones')}
 		>
 			<Milestones />
+		</button>
+	</li>
+{/if}
+{#if $applicationState.containerDetailView.tabs.includes('metadata')}
+	<li>
+		<button
+			title={$_('form.metadata')}
+			type="button"
+			class="button-nav button-square"
+			on:click={() => updateApplicationState('metadata')}
+		>
+			<PuzzlePiece />
 		</button>
 	</li>
 {/if}

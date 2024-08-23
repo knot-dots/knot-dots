@@ -4,7 +4,6 @@
 	import TableCells from '~icons/heroicons/table-cells-20-solid';
 	import Effects from '~icons/knotdots/effects';
 	import Info from '~icons/knotdots/info';
-	import Resources from '~icons/knotdots/resources';
 	import { browser } from '$app/environment';
 	import {
 		boards,

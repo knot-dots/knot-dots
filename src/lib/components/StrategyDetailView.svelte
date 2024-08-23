@@ -30,7 +30,7 @@
 	}
 </script>
 
-<ContainerDetailView {container} {relatedContainers} {revisions}>
+<ContainerDetailView {container} {relatedContainers} {revisions} tabs={[]}>
 	<svelte:fragment slot="meta">
 		<div class="meta">
 			<h3 class="meta-key">{$_('level.label')}</h3>

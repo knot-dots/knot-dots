@@ -28,12 +28,8 @@
 	applicationState.update((state) => ({
 		...state,
 		containerForm: {
-			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
-			tabs: [
-				...('guid' in container ? [] : ['metadata' as ContainerFormTabKey]),
-				'basic-data',
-				'historical-values'
-			]
+			activeTab: 'basic-data',
+			tabs: ['basic-data', 'historical-values', 'metadata']
 		}
 	}));
 

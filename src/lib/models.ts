@@ -1,9 +1,15 @@
 import type { MongoAbility } from '@casl/ability';
 import { z } from 'zod';
 
-export type ContainerDetailViewTabKey = 'basic-data' | 'effects' | 'resources' | 'milestones';
+export type ContainerDetailViewTabKey =
+	| 'basic-data'
+	| 'effects'
+	| 'historical-values'
+	| 'metadata'
+	| 'milestones'
+	| 'resources';
 
-export type ContainerFormTabKey = ContainerDetailViewTabKey | 'historical-values' | 'metadata';
+export type ContainerFormTabKey = ContainerDetailViewTabKey;
 
 export type ApplicationState = {
 	containerDetailView: {

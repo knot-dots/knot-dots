@@ -30,7 +30,7 @@
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
-	export let tabs: ContainerDetailViewTabKey[] = [];
+	export let tabs: ContainerDetailViewTabKey[] = ['basic-data', 'metadata'];
 
 	applicationState.update((state) => ({ ...state, containerDetailView: { tabs } }));
 
@@ -121,7 +121,9 @@
 				</div>
 			{/if}
 		</slot>
+	</div>
 
+	<div class="details-tab" id="metadata">
 		<slot name="meta">
 			{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 				<div class="meta">
