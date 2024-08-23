@@ -1,0 +1,55 @@
+{
+  "cookies": [
+    {
+      "name": "AUTH_SESSION_ID_LEGACY",
+      "value": "874b96e7-82fe-4dac-9410-f29f7744db0b",
+      "domain": "keycloak",
+      "path": "/realms/agaric/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "KEYCLOAK_IDENTITY_LEGACY",
+      "value": "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5MDBkMTU4Mi03ZjIzLTQxOTMtYjEyNC01ZjE3OTU4YjRkNDIifQ.eyJleHAiOjE3MjM4NzUwNDksImlhdCI6MTcyMzgzOTA0OSwianRpIjoiYTUxMzFiOGUtNGZhOS00MDQzLWIzYjUtODMzMzRmZTk5NDdiIiwiaXNzIjoiaHR0cDovL2tleWNsb2FrOjgwODAvcmVhbG1zL2FnYXJpYyIsInN1YiI6IjkyNTNlZmE1LTliOWYtNDdjYy1iZGVlLWM4YzE3OWU3OWJkMyIsInR5cCI6IlNlcmlhbGl6ZWQtSUQiLCJzaWQiOiI4NzRiOTZlNy04MmZlLTRkYWMtOTQxMC1mMjlmNzc0NGRiMGIiLCJzdGF0ZV9jaGVja2VyIjoiSUhqQUQ3N1V1MmlRdXpxUVk2eHB0dGhib3FOd19CeHlpc0lkY0NCNXdEWSJ9.op6JsG54QETGXWaZBqUtGa0FVhLkQ3yNWUd4KSj6EumvVD_lYUtEha4Ul7GGSfTZ-RfBHvC8rPlhX3Dz0PFskg",
+      "domain": "keycloak",
+      "path": "/realms/agaric/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "KEYCLOAK_SESSION_LEGACY",
+      "value": "\"agaric/9253efa5-9b9f-47cc-bdee-c8c179e79bd3/874b96e7-82fe-4dac-9410-f29f7744db0b\"",
+      "domain": "keycloak",
+      "path": "/realms/agaric/",
+      "expires": 1723875049.060384,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.callback-url",
+      "value": "http%3A%2F%2Fknotdots.test%3A3000%2F",
+      "domain": "knotdots.test",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "next-auth.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiSjdKZUR4TVREaVlzT2pQeWZUSkdTLU1Yc19sQlZhRlItVnc2R0txUHVfeE5VMktvY1pkYnBhd25LMzZXSjU4Z3liRjVzUW1kU0hrdkFIX0U2YkR0dWcifQ..efYuEUyL-yk8d47OtrseCQ.8S5f80887IpcMWZBFEGGtjfBfR-dVWQ5l0IMPjIKga9MoXMlZQSyCGp9dq207vPOdWGfbqQdOIGOvZtCSBvBvrXOMYHmQgmoCnfjakrGyHjlc67cJOhsYTqAUyWJphs8aAN1jSwgn7XK_di4Scw1GvE5sRwUHXmAwCLqbCpDp5yY1uWpnhoBo-ZAB1081BQl8Qn7dQXcyiX7g4fRJ7RBsrQ6V3bmWgeWgtDS91-AQxz0ofF-U6xSr8B-i2KuVt7uDXPPv6zj1ZdBaByDdpTzZKwVIe_NY_G2fw-Nx5niX4ZkQS7dJq4MrTs5OZmYDt4l8GYcRM85mnOrnnG7OXDnm9IH7trpGM_C-hjUWZ8RLJ4eg-lgl6joio13kg3nrKjuNxhJx43mtRczHvvkFe-xzQ.loZpvthCFroU6rryNQo45Ti8ZqC8BM7lbmeqrKh7waA",
+      "domain": ".knotdots.test",
+      "path": "/",
+      "expires": 1726431049.148038,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

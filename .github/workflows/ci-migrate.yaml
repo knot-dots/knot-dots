@@ -1,0 +1,41 @@
+name: CI (migrate)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'migrate/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'migrate/**'
+
+env:
+  REGISTRY: rg.fr-par.scw.cloud/knot-dots
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: migrate
+
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+      - uses: docker/build-push-action@v6
+        with:
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/migrate:latest
+          cache-to: type=inline
+          context: "{{defaultContext}}:migrate"
+          target: production
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.REGISTRY }}/migrate:${{ github.sha }}
+            ${{ env.REGISTRY }}/migrate:latest

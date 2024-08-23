@@ -1,4 +1,4 @@
-# knot-dots [![CI](https://github.com/knot-dots/knot-dots/actions/workflows/ci.yaml/badge.svg)](https://github.com/knot-dots/knot-dots/actions/workflows/ci.yaml) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+# knot-dots [![CI (app)](https://github.com/knot-dots/knot-dots/actions/workflows/ci-app.yaml/badge.svg)](https://github.com/knot-dots/knot-dots/actions/workflows/ci-app.yaml) [![CI (migrate)](https://github.com/knot-dots/knot-dots/actions/workflows/ci-migrate.yaml/badge.svg)](https://github.com/knot-dots/knot-dots/actions/workflows/ci-migrate.yaml) [![CI (keycloak)](https://github.com/knot-dots/knot-dots/actions/workflows/ci-keycloak.yaml/badge.svg)](https://github.com/knot-dots/knot-dots/actions/workflows/ci-keycloak.yaml) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
 A [SvelteKit](https://kit.svelte.dev) web application for tracing administrative measures in sustainable communities
 

@@ -1,8 +1,22 @@
 services:
+  app:
+    build:
+      context: app
+      target: dev
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - ./app/.env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./app/src:/srv/app/src
   db:
-    environment:
-      POSTGRES_USER: ${PGUSER}
-      POSTGRES_PASSWORD: ${PGPASSWORD}
+    env_file:
+      - ./app/.env
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U dev" ]
       interval: 3s
@@ -11,8 +25,7 @@ services:
     image: postgres:14
   migrate:
     build:
-      context: .
-      dockerfile: docker/migrate/Dockerfile
+      context: migrate
     command:
       - -database
       - postgres:///
@@ -22,15 +35,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      - PGDATABASE
-      - PGHOST
-      - PGPASSWORD
-      - PGSSLMODE=disable
-      - PGUSER
+    env_file:
+      - ./app/.env
     volumes:
-      - ./sql/migrations:/srv/migrations
-    working_dir: /srv/migrations
+      - ./migrate/sql:/srv/migrations
   keycloak:
     command:
       - start-dev
@@ -48,38 +56,20 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./docker/keycloak/import:/opt/keycloak/data/import
+      - ./keycloak/import:/opt/keycloak/data/import
   preview:
     build:
-      context: .
-      dockerfile: docker/strategytool/Dockerfile
+      context: app
       target: production
     depends_on:
       keycloak:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    env_file:
+      - ./app/.env
     environment:
-      - AUTH_SECRET
-      - KC_CLIENT_SECRET
-      - NODE_OPTIONS
-      - OTEL_NODE_ENABLED_INSTRUMENTATIONS
-      - OTEL_NODE_RESOURCE_DETECTORS
-      - OTEL_SERVICE_NAME
-      - OTEL_TRACES_EXPORTER
-      - PGDATABASE
-      - PGHOST
-      - PGPASSWORD
-      - PGUSER
       - PUBLIC_BASE_URL=http://localhost:3000
-      - PUBLIC_KC_CLIENT_ID
-      - PUBLIC_KC_REALM
-      - PUBLIC_KC_URL
-      - SMTP_AUTH_PASSWORD
-      - SMTP_AUTH_USERNAME
-      - SMTP_FROM
-      - SMTP_HOST
-      - SMTP_PORT
     ports:
       - "3000:3000"
     profiles:
@@ -91,38 +81,3 @@ services:
     image: rnwood/smtp4dev
     ports:
       - "8081:80"
-  strategytool:
-    build:
-      context: .
-      dockerfile: docker/strategytool/Dockerfile
-      target: dev
-    depends_on:
-      keycloak:
-        condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
-    environment:
-      - AUTH_SECRET
-      - KC_CLIENT_SECRET
-      - NODE_OPTIONS
-      - OTEL_NODE_ENABLED_INSTRUMENTATIONS
-      - OTEL_NODE_RESOURCE_DETECTORS
-      - OTEL_SERVICE_NAME
-      - OTEL_TRACES_EXPORTER
-      - PGDATABASE
-      - PGHOST
-      - PGPASSWORD
-      - PGUSER
-      - PUBLIC_BASE_URL
-      - PUBLIC_KC_CLIENT_ID
-      - PUBLIC_KC_REALM
-      - PUBLIC_KC_URL
-      - SMTP_AUTH_PASSWORD
-      - SMTP_AUTH_USERNAME
-      - SMTP_FROM
-      - SMTP_HOST
-      - SMTP_PORT
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./src:/srv/app/src
