@@ -115,7 +115,7 @@
 		}
 	}
 
-	function onChangeIsPartOf(event: { currentTarget: HTMLInputElement }) {
+	function onChangeIsPartOf(event: { currentTarget: HTMLSelectElement }) {
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
@@ -168,63 +168,32 @@
 					options: isPartOfOptions.filter(isMilestoneContainer)
 				}
 			]}
-			<fieldset>
-				<legend>{$_('superordinate_element')}</legend>
-				<ul class="superordinate-element-options masked-overflow">
+			<label>
+				{$_('superordinate_element')}
+				<select name="isParOf" on:change={onChangeIsPartOf}>
 					{#each optionGroups as group}
 						{#if group.options.length > 0}
-							<li>
-								<p>{group.heading}</p>
-								<ul>
-									{#each group.options as option}
-										<li>
-											<label>
-												<input
-													type="radio"
-													name="is-part-of"
-													value={option.revision}
-													checked={container.relation.findIndex(
-														(r) =>
-															r.predicate === predicates.enum['is-part-of'] &&
-															r.object === option.revision
-													) > -1}
-													on:change={onChangeIsPartOf}
-												/>
-												{#if 'name' in option.payload}
-													{option.payload.name}
-												{:else}
-													{option.payload.title}
-												{/if}
-											</label>
-										</li>
-									{/each}
-								</ul>
-							</li>
+							<optgroup label={group.heading}>
+								{#each group.options as option}
+									<option
+										selected={container.relation.findIndex(
+											(r) =>
+												r.predicate === predicates.enum['is-part-of'] &&
+												r.object === option.revision
+										) > -1}
+									>
+										{#if 'name' in option.payload}
+											{option.payload.name}
+										{:else}
+											{option.payload.title}
+										{/if}
+									</option>
+								{/each}
+							</optgroup>
 						{/if}
 					{/each}
-				</ul>
-			</fieldset>
+				</select>
+			</label>
 		{/if}
 	{/await}
 {/if}
-
-<style>
-	fieldset {
-		padding: 0 1rem;
-	}
-
-	.superordinate-element-options {
-		--mask-height: 0.5rem;
-
-		max-height: 8.5rem;
-		padding: 0.5rem 0;
-	}
-
-	.superordinate-element-options p {
-		margin-bottom: 0.25rem;
-	}
-
-	.superordinate-element-options ul li {
-		margin: 0.25rem 0;
-	}
-</style>
