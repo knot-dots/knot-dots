@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { containerOfType, paramsFromFragment, payloadTypes } from '$lib/models';
+	import { containerOfType, isTaskContainer, paramsFromFragment, payloadTypes } from '$lib/models';
 	import type { AnyContainer, Container, EmptyContainer, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 
 	export let container: AnyContainer | EmptyContainer;
 
@@ -56,6 +55,9 @@
 
 			container.payload = {
 				...container.payload,
+				...('assignee' in derivedFrom.payload && isTaskContainer(container)
+					? { assignee: derivedFrom.payload.assignee }
+					: undefined),
 				...('audience' in derivedFrom.payload && 'audience' in container.payload
 					? { audience: derivedFrom.payload.audience }
 					: undefined),
@@ -67,6 +69,9 @@
 					: undefined),
 				...('status' in derivedFrom.payload && 'status' in container.payload
 					? { status: derivedFrom.payload.status }
+					: undefined),
+				...('taskCategory' in derivedFrom.payload && 'taskCategory' in container.payload
+					? { taskCategory: derivedFrom.payload.taskCategory }
 					: undefined),
 				...('taskStatus' in derivedFrom.payload && 'taskStatus' in container.payload
 					? { taskStatus: derivedFrom.payload.taskStatus }
