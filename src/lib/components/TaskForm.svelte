@@ -41,9 +41,9 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label>
-		{$_('task_status.label')}
-		<select name="status" bind:value={container.payload.taskStatus} required>
+	<label class="meta">
+		<span class="meta-key">{$_('task_status.label')}</span>
+		<select class="meta-value" name="status" bind:value={container.payload.taskStatus} required>
 			{#each taskStatus.options as statusOption}
 				<option value={statusOption} selected={statusOption === statusParam}>
 					{$_(statusOption)}
@@ -52,9 +52,9 @@
 		</select>
 	</label>
 
-	<label>
-		{$_('assignee')}
-		<select name="assignee" bind:value={container.payload.assignee}>
+	<label class="meta">
+		<span class="meta-key">{$_('assignee')}</span>
+		<select class="meta-value" name="assignee" bind:value={container.payload.assignee}>
 			<option value={undefined}></option>
 			{#await membersPromise then members}
 				{#each members as { display_name, guid }}
@@ -68,9 +68,9 @@
 		</select>
 	</label>
 
-	<label>
-		{$_('task_category.label')}
-		<select name="taskCategory" bind:value={container.payload.taskCategory}>
+	<label class="meta">
+		<span class="meta-key">{$_('task_category.label')}</span>
+		<select class="meta-value" name="taskCategory" bind:value={container.payload.taskCategory}>
 			<option value={undefined}></option>
 			{#each taskCategories.options as taskCategoryOption}
 				<option value={taskCategoryOption}>
@@ -80,9 +80,9 @@
 		</select>
 	</label>
 
-	<label>
-		{$_('fulfillment_date')}
-		<input type="date" bind:value={container.payload.fulfillmentDate} />
+	<label class="meta">
+		<span class="meta-key">{$_('fulfillment_date')}</span>
+		<input class="meta-value" type="date" bind:value={container.payload.fulfillmentDate} />
 	</label>
 
 	<MeasureRelationSelector bind:container />

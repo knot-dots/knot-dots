@@ -824,7 +824,7 @@ label > input[type='checkbox'].toggle {
 	display: inline-block;
 }
 
-.meta-value svg {
+.meta-value > svg {
 	display: inline;
 	vertical-align: top;
 }

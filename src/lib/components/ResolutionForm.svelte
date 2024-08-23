@@ -48,9 +48,14 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label>
-		{$_('resolution_status')}
-		<select name="resolutionStatus" bind:value={container.payload.resolutionStatus} required>
+	<label class="meta">
+		<span class="meta-value">{$_('resolution_status')}</span>
+		<select
+			class="meta-key"
+			name="resolutionStatus"
+			bind:value={container.payload.resolutionStatus}
+			required
+		>
 			{#each resolutionStatus.options as statusOption}
 				<option value={statusOption}>
 					{$_(statusOption)}

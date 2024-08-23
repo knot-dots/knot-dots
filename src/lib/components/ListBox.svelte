@@ -30,47 +30,48 @@
 	$: value = $listbox.selected;
 </script>
 
-<div>
-	<p>{$_(label)}</p>
-
-	<button
-		class:invalid={required && value.length === 0}
-		class:valid={!required || value.length > 0}
-		use:listbox.button
-		use:popperRef
-	>
-		<ul class="selected">
-			{#each $listbox.selected as selected (selected)}
-				<li>
-					<span>{$_(selected)}</span>
-					<span use:listbox.deselect={selected}>
-						<XMark />
-					</span>
-				</li>
-			{/each}
-		</ul>
-		<ChevronUpDown />
-	</button>
-
-	{#if $listbox.expanded}
-		<ul
-			class="focus-indicator options"
-			out:fade={{ duration: 100, easing: cubicOut }}
-			use:listbox.items
-			use:popperContent={extraOpts}
+<div class="meta">
+	<span class="meta-key">{$_(label)}</span>
+	<div class="meta-value">
+		<button
+			class:invalid={required && value.length === 0}
+			class:valid={!required || value.length > 0}
+			use:listbox.button
+			use:popperRef
 		>
-			{#each options as option (option)}
-				{@const active = $listbox.active === option}
-				{@const selected = $listbox.selected.includes(option)}
-				<li class:active use:listbox.item={{ value: option }}>
-					{$_(option)}
-					{#if selected}
-						<Check />
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
+			<ul class="selected">
+				{#each $listbox.selected as selected (selected)}
+					<li>
+						<span>{$_(selected)}</span>
+						<span use:listbox.deselect={selected}>
+							<XMark />
+						</span>
+					</li>
+				{/each}
+			</ul>
+			<ChevronUpDown />
+		</button>
+
+		{#if $listbox.expanded}
+			<ul
+				class="focus-indicator options"
+				out:fade={{ duration: 100, easing: cubicOut }}
+				use:listbox.items
+				use:popperContent={extraOpts}
+			>
+				{#each options as option (option)}
+					{@const active = $listbox.active === option}
+					{@const selected = $listbox.selected.includes(option)}
+					<li class:active use:listbox.item={{ value: option }}>
+						{$_(option)}
+						{#if selected}
+							<Check />
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</div>
 </div>
 
 <style>

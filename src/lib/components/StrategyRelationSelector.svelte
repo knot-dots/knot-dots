@@ -195,9 +195,9 @@
 </script>
 
 {#await isPartOfStrategyOptionsRequest then strategyContainers}
-	<label
-		>{$_('strategy')}
-		<select name="is-part-of-strategy" on:change={onChangeIsPartOfStrategy}>
+	<label class="meta">
+		<span class="meta-key">{$_('strategy')}</span>
+		<select class="meta-value" name="is-part-of-strategy" on:change={onChangeIsPartOfStrategy}>
 			<option></option>
 			{#each strategyContainers as option}
 				<option
@@ -234,9 +234,9 @@
 				options: isPartOfOptions.filter(isMeasureContainer)
 			}
 		]}
-		<label>
-			{$_('superordinate_element')}
-			<select name="isParOf" on:change={onChangeIsPartOf}>
+		<label class="meta">
+			<span class="meta-key">{$_('superordinate_element')}</span>
+			<select class="meta-value" name="isParOf" on:change={onChangeIsPartOf}>
 				{#each optionGroups as group}
 					{#if group.options.length > 0}
 						<optgroup label={group.heading}>

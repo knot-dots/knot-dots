@@ -38,9 +38,9 @@
 	}
 </script>
 
-<label>
-	{$_('level.label')}
-	<select name="level" bind:value={container.payload.level} required>
+<label class="meta">
+	<span class="meta-key">{$_('level.label')}</span>
+	<select class="meta-value" name="level" bind:value={container.payload.level} required>
 		{#each levels.options as levelOption}
 			<option value={levelOption} selected={levelOption === levelParam}>
 				{$_(levelOption)}
@@ -49,9 +49,14 @@
 	</select>
 </label>
 
-<label>
-	{$_('strategy_type.label')}
-	<select name="strategy-type" bind:value={container.payload.strategyType} required>
+<label class="meta">
+	<span class="meta-key">{$_('strategy_type.label')}</span>
+	<select
+		class="meta-value"
+		name="strategy-type"
+		bind:value={container.payload.strategyType}
+		required
+	>
 		{#each strategyTypes.options as strategyTypeOption}
 			<option value={strategyTypeOption}>
 				{$_(strategyTypeOption)}
@@ -61,47 +66,53 @@
 </label>
 
 {#if 'image' in container.payload}
-	<span class="preview">
-		<img alt={$_('image')} src={container.payload.image} />
-		<button
-			class="quiet remove"
-			title={$_('remove_image')}
-			type="button"
-			on:click|stopPropagation={removeImage}
-		>
-			<Trash />
-		</button>
-	</span>
+	<div class="meta">
+		<span class="meta-key">{$_('cover')}</span>
+		<span class="meta-value preview">
+			<img alt={$_('image')} src={container.payload.image} />
+			<button
+				class="quiet remove"
+				title={$_('remove_image')}
+				type="button"
+				on:click|stopPropagation={removeImage}
+			>
+				<Trash />
+			</button>
+		</span>
+	</div>
 {:else}
-	<label>
-		{$_('cover')}
-		<input type="file" name="image" accept="image/png,image/jpeg" />
-		<span class="help">{$_('upload.image.help')}</span>
+	<label class="meta">
+		<span class="meta-key"></span>
+		<p class="meta-value">
+			<input type="file" name="image" accept="image/png,image/jpeg" />
+			<span class="help">{$_('upload.image.help')}</span>
+		</p>
 	</label>
 {/if}
 
-{#if container.payload.pdf.length > 0}
-	<ul>
-		{#each container.payload.pdf as pdf, i}
-			<li>
-				<a href={pdf[0]}>{pdf[1]}</a>
-				<button
-					class="quiet remove"
-					title={$_('remove_pdf')}
-					type="button"
-					on:click|stopPropagation={() => removePDF(i)}
-				>
-					<Trash />
-				</button>
-			</li>
-		{/each}
-	</ul>
-{/if}
-
-<label>
-	{$_('pdf')}
-	<input type="file" name="pdf" accept="application/pdf" multiple />
-	<span class="help">{$_('upload.pdf.help')}</span>
+<label class="meta">
+	<span class="meta-key">{$_('pdf')}</span>
+	<div class="meta-value">
+		{#if container.payload.pdf.length > 0}
+			<ul>
+				{#each container.payload.pdf as pdf, i}
+					<li>
+						<a href={pdf[0]}>{pdf[1]}</a>
+						<button
+							class="quiet remove"
+							title={$_('remove_pdf')}
+							type="button"
+							on:click|stopPropagation={() => removePDF(i)}
+						>
+							<Trash />
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+		<input type="file" name="pdf" accept="application/pdf" multiple />
+		<span class="help">{$_('upload.pdf.help')}</span>
+	</div>
 </label>
 
 <ListBox

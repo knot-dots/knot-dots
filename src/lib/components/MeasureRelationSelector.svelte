@@ -136,9 +136,9 @@
 </script>
 
 {#await isPartOfMeasureOptionsRequest then measureContainers}
-	<label
-		>{$_('measure')}
-		<select name="isPartOfMeasure" on:change={onChangeIsPartOfMeasure}>
+	<label class="meta">
+		<span class="meta-key">{$_('measure')}</span>
+		<select class="meta-value" name="isPartOfMeasure" on:change={onChangeIsPartOfMeasure}>
 			<option></option>
 			{#each measureContainers as option}
 				<option
@@ -168,9 +168,9 @@
 					options: isPartOfOptions.filter(isMilestoneContainer)
 				}
 			]}
-			<label>
-				{$_('superordinate_element')}
-				<select name="isParOf" on:change={onChangeIsPartOf}>
+			<label class="meta">
+				<span class="meta-key">{$_('superordinate_element')}</span>
+				<select class="meta-value" name="isParOf" on:change={onChangeIsPartOf}>
 					{#each optionGroups as group}
 						{#if group.options.length > 0}
 							<optgroup label={group.heading}>

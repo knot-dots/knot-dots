@@ -8,9 +8,9 @@
 </script>
 
 {#if $ability.can('update', container.payload.type, 'organization')}
-	<label>
-		{$_('organization')}
-		<select bind:value={container.organization}>
+	<label class="meta">
+		<span class="meta-key">{$_('organization')}</span>
+		<select class="meta-value" bind:value={container.organization}>
 			{#each $page.data.organizations as organizationOption}
 				<option value={organizationOption.guid}>
 					{organizationOption.payload.name}
@@ -21,9 +21,9 @@
 {/if}
 
 {#if $ability.can('update', container.payload.type, 'organizational_unit')}
-	<label>
-		{$_('organizational_unit')}
-		<select bind:value={container.organizational_unit}>
+	<label class="meta">
+		<span class="meta-key">{$_('organizational_unit')}</span>
+		<select class="meta-value" bind:value={container.organizational_unit}>
 			<option value={null}>
 				{$page.data.organizations.find(({ guid }) => guid == container.organization)?.payload
 					.name ?? ''}

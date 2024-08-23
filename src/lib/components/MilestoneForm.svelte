@@ -58,9 +58,9 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label>
-		{$_('fulfillment_date')}
-		<input type="date" bind:value={container.payload.fulfillmentDate} />
+	<label class="meta">
+		<span class="meta-key">{$_('fulfillment_date')}</span>
+		<input class="meta-value" type="date" bind:value={container.payload.fulfillmentDate} />
 	</label>
 
 	<MeasureRelationSelector {container} />

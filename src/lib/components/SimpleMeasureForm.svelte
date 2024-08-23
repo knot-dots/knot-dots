@@ -107,9 +107,9 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label>
-		{$_('status.label')}
-		<select name="status" bind:value={container.payload.status} required>
+	<label class="meta">
+		<span class="meta-key">{$_('status.label')}</span>
+		<select class="meta-value" name="status" bind:value={container.payload.status} required>
 			{#each status.options as statusOption}
 				<option value={statusOption} selected={statusOption === statusParam}>
 					{$_(statusOption)}
