@@ -809,15 +809,15 @@ label > input[type='checkbox'].toggle {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	gap: 48px;
 }
 
 .meta-key {
-	flex: 0 0 140px;
+	flex: 0 1 calc(40rem * 999 - 100% * 999);
+	min-width: 10rem;
 }
 
 .meta-value {
-	flex: 1;
+	flex: 1 1 calc(40rem * 999 - 100% * 999);
 }
 
 .meta-value--category li {
