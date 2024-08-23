@@ -56,12 +56,7 @@
 	}
 </script>
 
-<ContainerDetailView
-	{container}
-	{relatedContainers}
-	{revisions}
-	tabs={['basic-data', 'historical-values', 'metadata']}
->
+<ContainerDetailView {container} {relatedContainers} {revisions} tabs={['basic-data', 'metadata']}>
 	<svelte:fragment slot="data">
 		<div class="intro">
 			{#if currentTab === tab.enum.historical_values}
