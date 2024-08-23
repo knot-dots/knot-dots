@@ -26,11 +26,12 @@ The tool provides a command for creating new migrations:
 docker compose run --rm migrate create -ext sql NAME
 ```
 
-This will produce two empty files in the sql/migrations folder, one for upgrading the schema and one for restoring the current state.
+This will produce two empty files in the migrate/sql folder,
+one for upgrading the schema and one for restoring the current state.
 
 ## Tests
 
-For end-to-end tests we use [Playwright](https://playwright.dev/).
+For end-to-end tests, we use [Playwright](https://playwright.dev/).
 The tests are run automatically as part of the continuous integration workflow.
 To execute the tests locally run:
 
