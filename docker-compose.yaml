@@ -57,6 +57,7 @@ services:
       - "8080:8080"
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import
+      - ./keycloak/themes:/opt/keycloak/themes
   preview:
     build:
       context: app

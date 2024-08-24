@@ -7,3 +7,4 @@ RUN /opt/keycloak/bin/kc.sh build
 
 FROM quay.io/keycloak/keycloak:25.0.2 AS production
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
+COPY ./themes /opt/keycloak/themes

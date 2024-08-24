@@ -1,0 +1,266 @@
+:root {
+    --color-blue-200: #c3ddfd;
+    --color-blue-600: #1c64f2;
+    --color-blue-900: #233876;
+    --color-gray-050: #f9fafb;
+    --color-gray-300: #e2e2ea;
+    --color-gray-400: #d5d5dc;
+    --color-gray-500: #6b7280;
+    --color-gray-800: #1f2a37;
+    --color-red-050: #fdf2f2;
+    --color-red-500: #f05252;
+    --color-red-700: #c81e1e;
+
+    --color-primary: #4dc3c5;
+    --gradient-primary: linear-gradient(45deg, rgba(77, 195, 197, 1) 0%, rgba(33, 165, 237, 1) 100%);
+
+    --focus-color: var(--color-blue-900);
+    --active-color: var(--color-blue-200);
+    --button-background: transparent;
+    --button-border-color: #d1d5db;
+    --button-active-background: var(--color-gray-300);
+    --button-disabled-background: var(--color-gray-100);
+    --button-disabled-border-color: var(--color-gray-100);
+    --button-hover-background: var(--color-gray-400);
+    --button-hover-border-color: #d1d5db;
+}
+
+
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+ul,
+ol,
+dl,
+dd {
+    margin: 0;
+}
+
+
+/* Set core body defaults */
+body {
+    color: var(--color-gray-800);
+    font-family: 'Inter', sans-serif;
+    font-size: 100%;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.5;
+    min-height: 100vh;
+    text-rendering: optimizeSpeed;
+}
+
+/* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+ul,
+ol {
+    list-style: none;
+    padding-left: 0;
+}
+
+input,
+button {
+    color: inherit;
+    font: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Focus styles */
+:is(a, button, input, select) {
+    --outline-color: var(--focus-color, currentColor);
+    --outline-offset: -1px;
+    --outline-size: max(3px, 0.08em);
+    --outline-style: solid;
+}
+
+:is(a, button, input, select):focus,
+.focus-indicator:focus-within {
+    outline: var(--outline-size) var(--outline-style) var(--outline-color);
+    outline-offset: var(--outline-offset);
+}
+
+:is(a, button, input, select):focus-visible {
+    outline: var(--outline-size) var(--outline-style) var(--outline-color);
+    outline-offset: var(--outline-offset);
+}
+
+:is(a, button, input):focus:not(:focus-visible) {
+    /* Removes the regular focus styles for browsers that support :focus-visible */
+    outline: none;
+}
+
+/* Button styles */
+button,
+.button {
+    --padding-x: 19px;
+    --padding-y: 9px;
+
+    align-items: center;
+    background: var(--button-background);
+    border: solid 1px var(--button-border-color);
+    border-radius: 0.5rem;
+    font-weight: 500;
+    gap: 0.5rem;
+    margin: 0;
+    padding: var(--padding-y) var(--padding-x);
+}
+
+button.primary,
+.button.primary {
+    --button-background: var(--gradient-primary);
+    --button-border-color: var(--color-primary);
+
+    color: white;
+    text-align: center;
+    width: 100%;
+}
+
+button:hover,
+.button:hover {
+    background: var(--button-hover-background);
+    border-color: var(--button-hover-border-color);
+}
+
+button:active,
+.button:active {
+    background: var(--button-active-background);
+}
+
+input[type='email'],
+input[type='password'],
+input[type='text'] {
+    appearance: none;
+    background-color: var(--color-gray-050);
+    border: solid 1px var(--color-gray-300);
+    border-radius: 8px;
+    color: var(--color-gray-500);
+    display: block;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.2;
+    padding: 12px 16px;
+    width: 100%;
+}
+
+input[type='email']:active,
+input[type='password']:active,
+input[type='text']:active {
+    border-color: var(--color-blue-600);
+}
+
+input[type='email']:invalid,
+input[type='password']:invalid,
+input[type='text']:invalid {
+    background-color: var(--color-red-050);
+    border-color: var(--color-red-500);
+    color: var(--color-red-700);
+}
+
+label {
+    font-weight: 500;
+}
+
+label > input[type='checkbox'],
+label > input[type='radio'] {
+    margin-right: 8px;
+    vertical-align: top;
+}
+
+label:has(> input[type='checkbox'], > input[type='radio']) {
+    display: block;
+    line-height: 1.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 0 1.5rem;
+    text-align: center;
+}
+
+.main {
+    padding: 3rem 0;
+}
+
+form {
+    color: var(--color-gray-500);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    padding: 1.5rem;
+}
+
+@media (min-width: 28rem) {
+    .main {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        justify-content: center;
+        margin: auto;
+        max-width: 28rem;
+    }
+
+    form {
+        border: solid 1px var(--color-gray-300);
+        border-radius: 0.5rem;
+    }
+}
+
+#kc-header {
+    display: none;
+}
+
+#kc-locale {
+    display: none;
+}
+
+.subtitle {
+    display: none;
+}
+
+[aria-controls="password"], [aria-controls="password-confirm"] {
+    display: none;
+}
+
+.form-group input[aria-invalid="true"] + span {
+    color: var(--color-red-700);
+}
+
+.form-options {
+    margin-bottom: 1.5rem;
+}
+
+.form-setting {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    justify-content: space-between;
+}
+
+.info {
+    color: var(--color-gray-500);
+    margin-top: 2.5rem;
+    text-align: center;
+}
