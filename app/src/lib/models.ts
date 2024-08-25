@@ -671,7 +671,11 @@ const binaryIndicatorPayload = basePayload
 	})
 	.strict();
 
+export type BinaryIndicatorPayload = z.infer<typeof binaryIndicatorPayload>;
+
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
+
+export type InitialBinaryIndicatorPayload = z.infer<typeof initialBinaryIndicatorPayload>;
 
 const unrefinedCategoryPayload = z.object({
 	description: z.string().trim().optional(),
@@ -691,7 +695,11 @@ const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
 	}
 });
 
+export type CategoryPayload = z.infer<typeof categoryPayload>;
+
 const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
+
+export type InitialCategoryPayload = z.infer<typeof initialCategoryPayload>;
 
 const unrefinedTermPayload = z
 	.object({
@@ -711,7 +719,11 @@ const termPayload = unrefinedTermPayload.superRefine((payload) => {
 	}
 });
 
+export type TermPayload = z.infer<typeof termPayload>;
+
 const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
+
+export type InitialTermPayload = z.infer<typeof initialTermPayload>;
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
@@ -724,7 +736,11 @@ const actualDataPayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
+export type ActualDataPayload = z.infer<typeof actualDataPayload>;
+
 const initialActualDataPayload = actualDataPayload.partial({ indicator: true, title: true });
+
+export type InitialActualDataPayload = z.infer<typeof initialActualDataPayload>;
 
 const administrativeAreaBasicDataPayload = z.object({
 	title: z
@@ -735,7 +751,13 @@ const administrativeAreaBasicDataPayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
+export type AdministrativeAreaBasicDataPayload = z.infer<typeof administrativeAreaBasicDataPayload>;
+
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
+
+export type InitialAdministrativeAreaBasicDataPayload = z.infer<
+	typeof initialAdministrativeAreaBasicDataPayload
+>;
 
 const chapterPayload = basePayload
 	.extend({
@@ -748,7 +770,11 @@ const chapterPayload = basePayload
 		summary: true
 	});
 
+export type ChapterPayload = z.infer<typeof chapterPayload>;
+
 const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
+
+export type InitialChapterPayload = z.infer<typeof initialChapterPayload>;
 
 const customCollectionPayload = z
 	.object({
@@ -780,7 +806,11 @@ const customCollectionPayload = z
 	})
 	.strict();
 
+export type CustomCollectionPayload = z.infer<typeof customCollectionPayload>;
+
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
+
+export type InitialCustomCollectionPayload = z.infer<typeof initialCustomCollectionPayload>;
 
 const fileCollectionPayload = z
 	.object({
@@ -803,26 +833,32 @@ const fileCollectionPayload = z
 	})
 	.strict();
 
+export type FileCollectionPayload = z.infer<typeof fileCollectionPayload>;
+
 const initialFileCollectionPayload = fileCollectionPayload;
 
-const goalPayload = basePayload
-	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
-		goalType: goalType.optional(),
-		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-		progress: z.number().nonnegative().optional(),
-		type: z.literal(payloadTypes.enum.goal)
-	})
-	.strict();
+export type InitialFileCollectionPayload = z.infer<typeof initialFileCollectionPayload>;
+
+const goalPayload = basePayload.extend({
+	fulfillmentDate: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional(),
+	goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
+	goalType: goalType.optional(),
+	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
+	progress: z.number().nonnegative().optional(),
+	type: z.literal(payloadTypes.enum.goal)
+});
+
+export type GoalPayload = z.infer<typeof goalPayload>;
 
 const initialGoalPayload = goalPayload.partial({
 	goalType: true,
 	title: true
 });
+
+export type InitialGoalPayload = z.infer<typeof initialGoalPayload>;
 
 const goalCollectionPayload = z
 	.object({
@@ -835,6 +871,12 @@ const goalCollectionPayload = z
 	})
 	.strict();
 
+export type GoalCollectionPayload = z.infer<typeof goalCollectionPayload>;
+
+const initialGoalCollectionPayload = goalCollectionPayload;
+
+export type InitialGoalCollectionPayload = z.infer<typeof initialGoalCollectionPayload>;
+
 const helpPayload = z.object({
 	body: z.string().trim().default(''),
 	slug: z.string().default(''),
@@ -843,9 +885,11 @@ const helpPayload = z.object({
 	visibility: visibility.default(visibility.enum['public'])
 });
 
+export type HelpPayload = z.infer<typeof helpPayload>;
+
 const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: true });
 
-const initialGoalCollectionPayload = goalCollectionPayload;
+export type InitialHelpPayload = z.infer<typeof initialHelpPayload>;
 
 const indicatorPayload = basePayload.extend({
 	externalReference: z.string().url().optional(),
@@ -857,11 +901,15 @@ const indicatorPayload = basePayload.extend({
 	unit: z.string()
 });
 
+export type IndicatorPayload = z.infer<typeof indicatorPayload>;
+
 const initialIndicatorPayload = indicatorPayload.partial({
 	quantity: true,
 	title: true,
 	unit: true
 });
+
+export type InitialIndicatorPayload = z.infer<typeof initialIndicatorPayload>;
 
 const indicatorCollectionPayload = z
 	.object({
@@ -874,7 +922,11 @@ const indicatorCollectionPayload = z
 	})
 	.strict();
 
+export type IndicatorCollectionPayload = z.infer<typeof indicatorCollectionPayload>;
+
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
+
+export type InitialIndicatorCollectionPayload = z.infer<typeof initialIndicatorCollectionPayload>;
 
 const indicatorTemplatePayload = indicatorPayload
 	.extend({
@@ -882,16 +934,24 @@ const indicatorTemplatePayload = indicatorPayload
 	})
 	.omit({ historicalValues: true, quantity: true });
 
+export type IndicatorTemplatePayload = z.infer<typeof indicatorTemplatePayload>;
+
 const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	title: true,
 	unit: true
 });
 
-export const knowledgePayload = basePayload
+export type InitialIndicatorTemplatePayload = z.infer<typeof initialIndicatorTemplatePayload>;
+
+const knowledgePayload = basePayload
 	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
 	.strict();
 
+export type KnowledgePayload = z.infer<typeof knowledgePayload>;
+
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
+
+export type InitialKnowledgePayload = z.infer<typeof initialKnowledgePayload>;
 
 const mapPayload = z
 	.object({
@@ -905,7 +965,11 @@ const mapPayload = z
 	})
 	.strict();
 
+export type MapPayload = z.infer<typeof mapPayload>;
+
 const initialMapPayload = mapPayload;
+
+export type InitialMapPayload = z.infer<typeof initialMapPayload>;
 
 const measurePayload = basePayload
 	.extend({
@@ -923,7 +987,11 @@ const measurePayload = basePayload
 	})
 	.strict();
 
+export type MeasurePayload = z.infer<typeof measurePayload>;
+
 const initialMeasurePayload = measurePayload.partial({ title: true });
+
+export type InitialMeasurePayload = z.infer<typeof initialMeasurePayload>;
 
 const measureCollectionPayload = z
 	.object({
@@ -936,7 +1004,11 @@ const measureCollectionPayload = z
 	})
 	.strict();
 
+export type MeasureCollectionPayload = z.infer<typeof measureCollectionPayload>;
+
 const initialMeasureCollectionPayload = measureCollectionPayload;
+
+export type InitialMeasureCollectionPayload = z.infer<typeof initialMeasureCollectionPayload>;
 
 const objectivePayload = basePayload
 	.omit({ category: true, summary: true, topic: true })
@@ -951,7 +1023,11 @@ const objectivePayload = basePayload
 	})
 	.strict();
 
+export type ObjectivePayload = z.infer<typeof objectivePayload>;
+
 const initialObjectivePayload = objectivePayload.partial({ title: true });
+
+export type InitialObjectivePayload = z.infer<typeof initialObjectivePayload>;
 
 const objectiveCollectionPayload = z
 	.object({
@@ -964,18 +1040,11 @@ const objectiveCollectionPayload = z
 	})
 	.strict();
 
+export type ObjectiveCollectionPayload = z.infer<typeof objectiveCollectionPayload>;
+
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
-const pagePayload = z.object({
-	body: z.string().trim(),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.page),
-	visibility: visibility.default(visibility.enum['organization'])
-});
-
-const initialPagePayload = pagePayload.partial({ body: true, title: true });
+export type InitialObjectiveCollectionPayload = z.infer<typeof initialObjectiveCollectionPayload>;
 
 const progressPayload = z.object({
 	title: z
@@ -986,7 +1055,11 @@ const progressPayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
+export type ProgressPayload = z.infer<typeof progressPayload>;
+
 const initialProgressPayload = progressPayload;
+
+export type InitialProgressPayload = z.infer<typeof initialProgressPayload>;
 
 const rulePayload = basePayload
 	.extend({
@@ -1003,7 +1076,11 @@ const rulePayload = basePayload
 	})
 	.strict();
 
+export type RulePayload = z.infer<typeof rulePayload>;
+
 const initialRulePayload = rulePayload.partial({ title: true });
+
+export type InitialRulePayload = z.infer<typeof initialRulePayload>;
 
 const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
@@ -1022,7 +1099,11 @@ const simpleMeasurePayload = basePayload
 	})
 	.strict();
 
+export type SimpleMeasurePayload = z.infer<typeof simpleMeasurePayload>;
+
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
+
+export type InitialSimpleMeasurePayload = z.infer<typeof initialSimpleMeasurePayload>;
 
 const summaryPayload = z.object({
 	title: z
@@ -1033,7 +1114,11 @@ const summaryPayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
+export type SummaryPayload = z.infer<typeof summaryPayload>;
+
 const initialSummaryPayload = summaryPayload;
+
+export type InitialSummaryPayload = z.infer<typeof initialSummaryPayload>;
 
 const programPayload = basePayload
 	.omit({
@@ -1051,9 +1136,13 @@ const programPayload = basePayload
 	})
 	.strict();
 
+export type ProgramPayload = z.infer<typeof programPayload>;
+
 const initialProgramPayload = programPayload.partial({
 	title: true
 });
+
+export type InitialProgramPayload = z.infer<typeof initialProgramPayload>;
 
 const programCollectionPayload = z
 	.object({
@@ -1066,7 +1155,11 @@ const programCollectionPayload = z
 	})
 	.strict();
 
+export type ProgramCollectionPayload = z.infer<typeof programCollectionPayload>;
+
 const initialProgramCollectionPayload = programCollectionPayload;
+
+export type InitialProgramCollectionPayload = z.infer<typeof initialProgramCollectionPayload>;
 
 const measureMonitoringBasePayload = z.object({
 	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
@@ -1085,7 +1178,11 @@ const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).exten
 	type: z.literal(payloadTypes.enum.effect)
 });
 
+export type EffectPayload = z.infer<typeof effectPayload>;
+
 const initialEffectPayload = effectPayload.partial({ title: true });
+
+export type InitialEffectPayload = z.infer<typeof initialEffectPayload>;
 
 const effectCollectionPayload = z
 	.object({
@@ -1098,7 +1195,11 @@ const effectCollectionPayload = z
 	})
 	.strict();
 
+export type EffectCollectionPayload = z.infer<typeof effectCollectionPayload>;
+
 const initialEffectCollectionPayload = effectCollectionPayload;
+
+export type InitialEffectCollectionPayload = z.infer<typeof initialEffectCollectionPayload>;
 
 const reportPayload = basePayload
 	.extend({
@@ -1106,7 +1207,11 @@ const reportPayload = basePayload
 	})
 	.strict();
 
+export type ReportPayload = z.infer<typeof reportPayload>;
+
 const initialReportPayload = reportPayload.partial({ title: true });
+
+export type InitialReportPayload = z.infer<typeof initialReportPayload>;
 
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
@@ -1118,12 +1223,16 @@ const resourcePayload = measureMonitoringBasePayload
 	})
 	.strict();
 
+export type ResourcePayload = z.infer<typeof resourcePayload>;
+
 const initialResourcePayload = resourcePayload.partial({
 	amount: true,
 	fulfillmentDate: true,
 	title: true,
 	unit: true
 });
+
+export type InitialResourcePayload = z.infer<typeof initialResourcePayload>;
 
 const resourceCollectionPayload = z
 	.object({
@@ -1136,7 +1245,11 @@ const resourceCollectionPayload = z
 	})
 	.strict();
 
+export type ResourceCollectionPayload = z.infer<typeof resourceCollectionPayload>;
+
 const initialResourceCollectionPayload = resourceCollectionPayload;
+
+export type InitialResourceCollectionPayload = z.infer<typeof initialResourceCollectionPayload>;
 
 const resourceV2Payload = basePayload
 	.omit({ audience: true, category: true, summary: true, topic: true })
@@ -1150,9 +1263,12 @@ const resourceV2Payload = basePayload
 	})
 	.strict();
 
+export type ResourceV2Payload = z.infer<typeof resourceV2Payload>;
+
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
-// Resource Data Payload
+export type InitialResourceV2Payload = z.infer<typeof initialResourceV2Payload>;
+
 const resourceDataPayload = z
 	.object({
 		description: z.string().trim().optional(),
@@ -1172,11 +1288,15 @@ const resourceDataPayload = z
 	})
 	.strict();
 
+export type ResourceDataPayload = z.infer<typeof resourceDataPayload>;
+
 const initialResourceDataPayload = resourceDataPayload.partial({
 	resource: true,
 	resourceDataType: true,
 	title: true
 });
+
+export type InitialResourceDataPayload = z.infer<typeof initialResourceDataPayload>;
 
 const resourceDataCollectionPayload = z
 	.object({
@@ -1190,9 +1310,15 @@ const resourceDataCollectionPayload = z
 	})
 	.strict();
 
+export type ResourceDataCollectionPayload = z.infer<typeof resourceDataCollectionPayload>;
+
 const initialResourceDataCollectionPayload = resourceDataCollectionPayload.partial({
 	resourceDataType: true
 });
+
+export type InitialResourceDataCollectionPayload = z.infer<
+	typeof initialResourceDataCollectionPayload
+>;
 
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
@@ -1207,6 +1333,12 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
+export type TaskPayload = z.infer<typeof taskPayload>;
+
+const initialTaskPayload = taskPayload.partial({ title: true });
+
+export type InitialTaskPayload = z.infer<typeof initialTaskPayload>;
+
 const imagePayload = z
 	.object({
 		body: z.string().trim().optional(),
@@ -1218,9 +1350,12 @@ const imagePayload = z
 	})
 	.strict();
 
+export type ImagePayload = z.infer<typeof imagePayload>;
+
 const initialImagePayload = imagePayload.partial({ body: true, title: true });
 
-// Add teaser payload schema here:
+export type InitialImagePayload = z.infer<typeof initialImagePayload>;
+
 const teaserPayload = z
 	.object({
 		audience: z
@@ -1254,12 +1389,14 @@ const teaserPayload = z
 		style: z.string().optional().default('default'),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict(); // means no extra fields allowed
+	.strict();
 
-// For creating new empty teasers (title optional during creation)
+export type TeaserPayload = z.infer<typeof teaserPayload>;
+
 const initialTeaserPayload = teaserPayload.partial({ title: true });
 
-// Add info payload schema here:
+export type InitialTeaserPayload = z.infer<typeof initialTeaserPayload>;
+
 const infoBoxPayload = teaserPayload
 	.extend({
 		colSize: teaserColSizes.default('100-0'),
@@ -1275,8 +1412,11 @@ const infoBoxPayload = teaserPayload
 	})
 	.strict();
 
-// For creating new empty info teasers (title optional during creation)
+export type InfoBoxPayload = z.infer<typeof infoBoxPayload>;
+
 const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
+
+export type InitialInfoBoxPayload = z.infer<typeof initialInfoBoxPayload>;
 
 const teaserHighlightPayload = teaserPayload
 	.extend({
@@ -1293,8 +1433,11 @@ const teaserHighlightPayload = teaserPayload
 	})
 	.strict();
 
-// For creating new empty teasers (title optional during creation)
+export type TeaserHighlightPayload = z.infer<typeof teaserHighlightPayload>;
+
 const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
+
+export type InitialTeaserHighlightPayload = z.infer<typeof initialTeaserHighlightPayload>;
 
 const quotePayload = teaserPayload
 	.extend({
@@ -1311,8 +1454,11 @@ const quotePayload = teaserPayload
 	})
 	.strict();
 
-// For creating new empty teasers (title optional during creation)
+export type QuotePayload = z.infer<typeof quotePayload>;
+
 const initialQuotePayload = quotePayload.partial({ title: true });
+
+export type InitialQuotePayload = z.infer<typeof initialQuotePayload>;
 
 const colContentPayload = teaserPayload
 	.extend({
@@ -1329,8 +1475,11 @@ const colContentPayload = teaserPayload
 	})
 	.strict();
 
-// For creating new empty teasers (title optional during creation)
+export type ColContentPayload = z.infer<typeof colContentPayload>;
+
 const initialColContentPayload = colContentPayload.partial({ title: true });
+
+export type InitialColContentPayload = z.infer<typeof initialColContentPayload>;
 
 const contentPartnerPayload = basePayload
 	.extend({
@@ -1341,7 +1490,11 @@ const contentPartnerPayload = basePayload
 	})
 	.strict();
 
+export type ContentPartnerPayload = z.infer<typeof contentPartnerPayload>;
+
 const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
+
+export type InitialContentPartnerPayload = z.infer<typeof initialContentPartnerPayload>;
 
 const contentPartnerCollectionPayload = z
 	.object({
@@ -1352,7 +1505,13 @@ const contentPartnerCollectionPayload = z
 	})
 	.strict();
 
+export type ContentPartnerCollectionPayload = z.infer<typeof contentPartnerCollectionPayload>;
+
 const initialContentPartnerCollectionPayload = contentPartnerCollectionPayload;
+
+export type InitialContentPartnerCollectionPayload = z.infer<
+	typeof initialContentPartnerCollectionPayload
+>;
 
 const teaserCollectionPayload = z
 	.object({
@@ -1366,9 +1525,11 @@ const teaserCollectionPayload = z
 	})
 	.strict();
 
+export type TeaserCollectionPayload = z.infer<typeof teaserCollectionPayload>;
+
 const initialTeaserCollectionPayload = teaserCollectionPayload;
 
-const initialTaskPayload = taskPayload.partial({ title: true });
+export type InitialTeaserCollectionPayload = z.infer<typeof initialTeaserCollectionPayload>;
 
 const taskCollectionPayload = z
 	.object({
@@ -1381,7 +1542,11 @@ const taskCollectionPayload = z
 	})
 	.strict();
 
+export type TaskCollectionPayload = z.infer<typeof taskCollectionPayload>;
+
 const initialTaskCollectionPayload = taskCollectionPayload;
+
+export type InitialTaskCollectionPayload = z.infer<typeof initialTaskCollectionPayload>;
 
 const organizationPayload = z.object({
 	boards: z.array(boards).transform(deduplicate).default([]),
@@ -1405,7 +1570,11 @@ const organizationPayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
+export type OrganizationPayload = z.infer<typeof organizationPayload>;
+
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
+
+export type InitialOrganizationPayload = z.infer<typeof initialOrganizationPayload>;
 
 const organizationalUnitPayload = z.object({
 	administrativeType: administrativeTypes.optional(),
@@ -1437,7 +1606,26 @@ const organizationalUnitPayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
+export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
+
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
+
+export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizationalUnitPayload>;
+
+const pagePayload = z.object({
+	body: z.string().trim(),
+	color: backgroundColor.optional(),
+	cover: z.url().optional(),
+	title: z.string().trim(),
+	type: z.literal(payloadTypes.enum.page),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type PagePayload = z.infer<typeof pagePayload>;
+
+const initialPagePayload = pagePayload.partial({ body: true, title: true });
+
+export type InitialPagePayload = z.infer<typeof initialPagePayload>;
 
 const textPayload = z
 	.object({
@@ -1452,7 +1640,11 @@ const textPayload = z
 	})
 	.strict();
 
+export type TextPayload = z.infer<typeof textPayload>;
+
 const initialTextPayload = textPayload.partial({ body: true, title: true });
+
+export type InitialTextPayload = z.infer<typeof initialTextPayload>;
 
 const undefinedPayload = z
 	.object({
@@ -1462,7 +1654,11 @@ const undefinedPayload = z
 	})
 	.strict();
 
+export type UndefinedPayload = z.infer<typeof undefinedPayload>;
+
 const initialUndefinedPayload = undefinedPayload.partial({ title: true });
+
+export type InitialUndefinedPayload = z.infer<typeof initialUndefinedPayload>;
 
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
@@ -1516,23 +1712,7 @@ const payload = z.discriminatedUnion('type', [
 
 export type Payload = z.infer<typeof payload>;
 
-export const container = z.object({
-	guid: z.string().uuid(),
-	managed_by: z.string().uuid(),
-	organization: z.string().uuid(),
-	organizational_unit: z.string().uuid().nullable(),
-	payload: payload,
-	realm: z.string().max(1024),
-	relation: z.array(relation).default([]),
-	revision: z.number().int().positive(),
-	user: z.array(userRelation).default([]),
-	valid_currently: z.boolean(),
-	valid_from: z.coerce.date()
-});
-
-export type Container = z.infer<typeof container>;
-
-const anyPayload = z.discriminatedUnion('type', [
+export const anyPayload = z.discriminatedUnion('type', [
 	...payload.options,
 	organizationPayload,
 	organizationalUnitPayload,
@@ -1541,23 +1721,162 @@ const anyPayload = z.discriminatedUnion('type', [
 
 export type AnyPayload = z.infer<typeof anyPayload>;
 
-function hasProperty(payload: AnyPayload, key: PropertyKey): key is keyof AnyPayload {
-	return (
-		key in (anyPayload.options.map((o) => o.shape).find((s) => s.type.value == payload.type) ?? {})
-	);
+const initialPayload = z.discriminatedUnion('type', [
+	initialActualDataPayload,
+	initialAdministrativeAreaBasicDataPayload,
+	initialBinaryIndicatorPayload,
+	initialCategoryPayload,
+	initialChapterPayload,
+	initialColContentPayload,
+	initialContentPartnerCollectionPayload,
+	initialContentPartnerPayload,
+	initialCustomCollectionPayload,
+	initialEffectCollectionPayload,
+	initialEffectPayload,
+	initialFileCollectionPayload,
+	initialGoalCollectionPayload,
+	initialGoalPayload,
+	initialHelpPayload,
+	initialImagePayload,
+	initialIndicatorCollectionPayload,
+	initialIndicatorPayload,
+	initialIndicatorTemplatePayload,
+	initialInfoBoxPayload,
+	initialKnowledgePayload,
+	initialMapPayload,
+	initialMeasureCollectionPayload,
+	initialMeasurePayload,
+	initialObjectiveCollectionPayload,
+	initialObjectivePayload,
+	initialPagePayload,
+	initialProgramCollectionPayload,
+	initialProgramPayload,
+	initialProgressPayload,
+	initialQuotePayload,
+	initialRulePayload,
+	initialReportPayload,
+	initialResourceCollectionPayload,
+	initialResourceDataPayload,
+	initialResourceDataCollectionPayload,
+	initialResourcePayload,
+	initialResourceV2Payload,
+	initialSimpleMeasurePayload,
+	initialSummaryPayload,
+	initialTaskCollectionPayload,
+	initialTaskPayload,
+	initialTeaserCollectionPayload,
+	initialTeaserHighlightPayload,
+	initialTeaserPayload,
+	initialTermPayload,
+	initialTextPayload,
+	initialUndefinedPayload
+]);
+
+export type InitialPayload = z.infer<typeof initialPayload>;
+
+export const anyInitialPayload = z.discriminatedUnion('type', [
+	...initialPayload.options,
+	initialOrganizationPayload,
+	initialOrganizationalUnitPayload
+]);
+
+export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
+
+function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
+	return z.object({
+		guid: z.string().uuid(),
+		managed_by: z.string().uuid(),
+		organization: z.string().uuid(),
+		organizational_unit: z.string().uuid().nullable(),
+		payload: payloadSchema,
+		realm: z.string().max(1024),
+		relation: z.array(relation).default([]),
+		revision: z.number().int().positive(),
+		user: z.array(userRelation).default([]),
+		valid_currently: z.boolean(),
+		valid_from: z.coerce.date()
+	});
 }
 
-export const anyContainer = container.extend({
-	payload: anyPayload
-});
+export const container = createContainerSchema(payload);
 
-export type AnyContainer = z.infer<typeof anyContainer>;
+export const anyContainer = createContainerSchema(anyPayload);
 
-export const containerWithObjective = container.extend({
-	payload: z.discriminatedUnion('type', [goalPayload])
-});
+export const actualDataContainer = createContainerSchema(actualDataPayload);
 
-export type ContainerWithObjective = z.infer<typeof containerWithObjective>;
+export const helpContainer = createContainerSchema(helpPayload);
+
+export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
+
+export const organizationContainer = createContainerSchema(organizationPayload);
+
+export const organizationalUnitContainer = createContainerSchema(organizationalUnitPayload);
+
+export type Container<P = Payload> = z.infer<
+	ReturnType<typeof createContainerSchema<z.ZodType<P>>>
+>;
+
+export type AnyContainer = Container<AnyPayload>;
+
+export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
+	return z.object({
+		managed_by: z.string().uuid(),
+		organization: z.string().uuid(),
+		organizational_unit: z.string().uuid().nullable(),
+		payload: payloadSchema,
+		realm: z.string().max(1024),
+		relation: z.array(partialRelation).default([]),
+		user: z.array(userRelation).default([])
+	});
+}
+
+export const newContainer = createNewContainerSchema(anyInitialPayload);
+
+export type NewContainer<P extends AnyInitialPayload = AnyInitialPayload> = z.infer<
+	ReturnType<typeof createNewContainerSchema<z.ZodType<P>>>
+>;
+
+export type EmptyContainer = NewContainer;
+
+export type EmptyEffectContainer = NewContainer<InitialEffectPayload>;
+
+export type EmptyIndicatorContainer = NewContainer<InitialIndicatorPayload>;
+
+export type EmptyObjectiveContainer = NewContainer<InitialObjectivePayload>;
+
+export type EmptyOrganizationalUnitContainer = NewContainer<InitialOrganizationalUnitPayload>;
+
+export type EmptyRuleContainer = NewContainer<InitialRulePayload>;
+
+function createModifiedContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
+	return z.object({
+		guid: z.string().uuid(),
+		managed_by: z.string().uuid(),
+		organization: z.string().uuid(),
+		organizational_unit: z.string().uuid().nullable(),
+		payload: payloadSchema,
+		realm: z.string().max(1024),
+		relation: z.array(partialRelation).default([]),
+		user: z.array(userRelation).default([]),
+		valid_currently: z.boolean(),
+		valid_from: z.coerce.date()
+	});
+}
+
+export const modifiedContainer = createModifiedContainerSchema(anyPayload);
+
+export type ModifiedContainer<P extends AnyPayload = AnyPayload> = z.infer<
+	ReturnType<typeof createModifiedContainerSchema<z.ZodType<P>>>
+>;
+
+export function isContainerWithPayloadType<T extends PayloadType>(
+	payloadType: T,
+	container: Container<AnyPayload> | NewContainer
+): container is Container<Extract<AnyPayload, { type: T }>> {
+	return container.payload.type == payloadType;
+}
+
+export type ContainerWithObjective = GoalContainer;
 
 export function isContainerWithObjective(
 	container: AnyContainer | EmptyContainer
@@ -1565,11 +1884,7 @@ export function isContainerWithObjective(
 	return isGoalContainer(container);
 }
 
-export const containerWithEffect = container.extend({
-	payload: z.discriminatedUnion('type', [measurePayload, simpleMeasurePayload])
-});
-
-export type ContainerWithEffect = z.infer<typeof containerWithEffect>;
+export type ContainerWithEffect = Container<MeasurePayload | SimpleMeasurePayload>;
 
 export function isContainerWithEffect(
 	container: AnyContainer | EmptyContainer
@@ -1577,36 +1892,23 @@ export function isContainerWithEffect(
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 
-export const actualDataContainer = container.extend({
-	payload: actualDataPayload
-});
-
-export type ActualDataContainer = z.infer<typeof actualDataContainer>;
+export type ActualDataContainer = Container<ActualDataPayload>;
 
 export function isActualDataContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ActualDataContainer {
-	return container.payload.type === payloadTypes.enum.actual_data;
+	return isContainerWithPayloadType(payloadTypes.enum.actual_data, container);
 }
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-const administrativeAreaBasicDataContainer = container.extend({
-	payload: administrativeAreaBasicDataPayload
-});
-
-export type AdministrativeAreaBasicDataContainer = z.infer<
-	typeof administrativeAreaBasicDataContainer
->;
+export type AdministrativeAreaBasicDataContainer = Container<AdministrativeAreaBasicDataPayload>;
 
 export function isAdministrativeAreaBasicDataContainer(
 	container: AnyContainer | EmptyContainer
 ): container is AdministrativeAreaBasicDataContainer {
-	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
+	return isContainerWithPayloadType(payloadTypes.enum.administrative_area_basic_data, container);
 }
 
-const binaryIndicatorContainer = container.extend({ payload: binaryIndicatorPayload });
-
-export type BinaryIndicatorContainer = z.infer<typeof binaryIndicatorContainer>;
+export type BinaryIndicatorContainer = Container<BinaryIndicatorPayload>;
 
 export function isBinaryIndicatorContainer(
 	container: AnyContainer | EmptyContainer
@@ -1614,23 +1916,15 @@ export function isBinaryIndicatorContainer(
 	return container.payload.type === payloadTypes.enum.binary_indicator;
 }
 
-const chapterContainer = container.extend({
-	payload: chapterPayload
-});
-
-export type ChapterContainer = z.infer<typeof chapterContainer>;
+export type ChapterContainer = Container<ChapterPayload>;
 
 export function isChapterContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ChapterContainer {
-	return container.payload.type === payloadTypes.enum.chapter;
+	return isContainerWithPayloadType(payloadTypes.enum.chapter, container);
 }
 
-const categoryContainer = container.extend({
-	payload: categoryPayload
-});
-
-export type CategoryContainer = z.infer<typeof categoryContainer>;
+export type CategoryContainer = Container<CategoryPayload>;
 
 export function isCategoryContainer(
 	container: AnyContainer | EmptyContainer
@@ -1638,83 +1932,55 @@ export function isCategoryContainer(
 	return container.payload.type === payloadTypes.enum.category;
 }
 
-const customCollectionContainer = container.extend({
-	payload: customCollectionPayload
-});
-
-export type CustomCollectionContainer = z.infer<typeof customCollectionContainer>;
+export type CustomCollectionContainer = Container<CustomCollectionPayload>;
 
 export function isCustomCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is CustomCollectionContainer {
-	return container.payload.type === payloadTypes.enum.custom_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.custom_collection, container);
 }
 
-const effectContainer = container.extend({
-	payload: effectPayload
-});
-
-export type EffectContainer = z.infer<typeof effectContainer>;
+export type EffectContainer = Container<EffectPayload>;
 
 export function isEffectContainer(
 	container: AnyContainer | EmptyContainer
 ): container is EffectContainer {
-	return container.payload.type === payloadTypes.enum.effect;
+	return isContainerWithPayloadType(payloadTypes.enum.effect, container);
 }
 
-const effectCollectionContainer = container.extend({
-	payload: effectCollectionPayload
-});
-
-export type EffectCollectionContainer = z.infer<typeof effectCollectionContainer>;
+export type EffectCollectionContainer = Container<EffectCollectionPayload>;
 
 export function isEffectCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is EffectCollectionContainer {
-	return container.payload.type === payloadTypes.enum.effect_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.effect_collection, container);
 }
 
-const fileCollectionContainer = container.extend({
-	payload: fileCollectionPayload
-});
-
-export type FileCollectionContainer = z.infer<typeof fileCollectionContainer>;
+export type FileCollectionContainer = Container<FileCollectionPayload>;
 
 export function isFileCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is FileCollectionContainer {
-	return container.payload.type === payloadTypes.enum.file_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.file_collection, container);
 }
 
-const goalContainer = container.extend({
-	payload: goalPayload
-});
-
-export type GoalContainer = z.infer<typeof goalContainer>;
+export type GoalContainer = Container<GoalPayload>;
 
 export function isGoalContainer(
 	container: AnyContainer | EmptyContainer
 ): container is GoalContainer {
-	return container.payload.type === payloadTypes.enum.goal;
+	return isContainerWithPayloadType(payloadTypes.enum.goal, container);
 }
 
-const goalCollectionContainer = container.extend({
-	payload: goalCollectionPayload
-});
-
-export type GoalCollectionContainer = z.infer<typeof goalCollectionContainer>;
+export type GoalCollectionContainer = Container<GoalCollectionPayload>;
 
 export function isGoalCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is GoalCollectionContainer {
-	return container.payload.type === payloadTypes.enum.goal_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.goal_collection, container);
 }
 
-export const helpContainer = container.extend({
-	payload: helpPayload
-});
-
-export type HelpContainer = z.infer<typeof helpContainer>;
+export type HelpContainer = Container<HelpPayload>;
 
 export function isHelpContainer(
 	container: AnyContainer | EmptyContainer
@@ -1722,213 +1988,143 @@ export function isHelpContainer(
 	return container.payload.type === payloadTypes.enum.help;
 }
 
-const indicatorContainer = container.extend({
-	payload: indicatorPayload
-});
-
-export type IndicatorContainer = z.infer<typeof indicatorContainer>;
+export type IndicatorContainer = Container<IndicatorPayload>;
 
 export function isIndicatorContainer(
 	container: AnyContainer | EmptyContainer
 ): container is IndicatorContainer {
-	return container.payload.type === payloadTypes.enum.indicator;
+	return isContainerWithPayloadType(payloadTypes.enum.indicator, container);
 }
 
-const indicatorCollectionContainer = container.extend({
-	payload: indicatorCollectionPayload
-});
-
-export type IndicatorCollectionContainer = z.infer<typeof indicatorCollectionContainer>;
+export type IndicatorCollectionContainer = Container<IndicatorCollectionPayload>;
 
 export function isIndicatorCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is IndicatorCollectionContainer {
-	return container.payload.type === payloadTypes.enum.indicator_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.indicator_collection, container);
 }
 
-export const indicatorTemplateContainer = container.extend({
-	payload: indicatorTemplatePayload
-});
-
-export type IndicatorTemplateContainer = z.infer<typeof indicatorTemplateContainer>;
+export type IndicatorTemplateContainer = Container<IndicatorTemplatePayload>;
 
 export function isIndicatorTemplateContainer(
 	container: AnyContainer | EmptyContainer
 ): container is IndicatorTemplateContainer {
-	return container.payload.type === payloadTypes.enum.indicator_template;
+	return isContainerWithPayloadType(payloadTypes.enum.indicator_template, container);
 }
 
-const knowledgeContainer = container.extend({
-	payload: knowledgePayload
-});
-
-export type KnowledgeContainer = z.infer<typeof knowledgeContainer>;
+export type KnowledgeContainer = Container<KnowledgePayload>;
 
 export function isKnowledgeContainer(
 	container: AnyContainer | EmptyContainer
 ): container is KnowledgeContainer {
-	return container.payload.type === payloadTypes.enum.knowledge;
+	return isContainerWithPayloadType(payloadTypes.enum.knowledge, container);
 }
 
-const mapContainer = container.extend({
-	payload: mapPayload
-});
-
-export type MapContainer = z.infer<typeof mapContainer>;
+export type MapContainer = Container<MapPayload>;
 
 export function isMapContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MapContainer {
-	return container.payload.type === payloadTypes.enum.map;
+	return isContainerWithPayloadType(payloadTypes.enum.map, container);
 }
 
-const measureContainer = container.extend({
-	payload: measurePayload
-});
-
-export type MeasureContainer = z.infer<typeof measureContainer>;
+export type MeasureContainer = Container<MeasurePayload>;
 
 export function isMeasureContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureContainer {
-	return container.payload.type === payloadTypes.enum.measure;
+	return isContainerWithPayloadType(payloadTypes.enum.measure, container);
 }
 
-const measureCollectionContainer = container.extend({
-	payload: measureCollectionPayload
-});
-
-export type MeasureCollectionContainer = z.infer<typeof measureCollectionContainer>;
+export type MeasureCollectionContainer = Container<MeasureCollectionPayload>;
 
 export function isMeasureCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureCollectionContainer {
-	return container.payload.type === payloadTypes.enum.measure_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.measure_collection, container);
 }
 
-const objectiveContainer = container.extend({
-	payload: objectivePayload
-});
-
-export type ObjectiveContainer = z.infer<typeof objectiveContainer>;
+export type ObjectiveContainer = Container<ObjectivePayload>;
 
 export function isObjectiveContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ObjectiveContainer {
-	return container.payload.type === payloadTypes.enum.objective;
+	return isContainerWithPayloadType(payloadTypes.enum.objective, container);
 }
 
-const objectiveCollectionContainer = container.extend({
-	payload: objectiveCollectionPayload
-});
-
-export type ObjectiveCollectionContainer = z.infer<typeof objectiveCollectionContainer>;
+export type ObjectiveCollectionContainer = Container<ObjectiveCollectionPayload>;
 
 export function isObjectiveCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ObjectiveCollectionContainer {
-	return container.payload.type === payloadTypes.enum.objective_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.objective_collection, container);
 }
 
-export const organizationContainer = container.extend({
-	payload: organizationPayload
-});
-
-export type OrganizationContainer = z.infer<typeof organizationContainer>;
+export type OrganizationContainer = Container<OrganizationPayload>;
 
 export function isOrganizationContainer(
 	container: AnyContainer | EmptyContainer
 ): container is OrganizationContainer {
-	return container.payload.type === payloadTypes.enum.organization;
+	return isContainerWithPayloadType(payloadTypes.enum.organization, container);
 }
 
-export const organizationalUnitContainer = container.extend({
-	payload: organizationalUnitPayload
-});
-
-export type OrganizationalUnitContainer = z.infer<typeof organizationalUnitContainer>;
+export type OrganizationalUnitContainer = Container<OrganizationalUnitPayload>;
 
 export function isOrganizationalUnitContainer(
 	container: AnyContainer | EmptyContainer
 ): container is OrganizationalUnitContainer {
-	return container.payload.type === payloadTypes.enum.organizational_unit;
+	return isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container);
 }
 
-const pageContainer = container.extend({ payload: pagePayload });
-
-export type PageContainer = z.infer<typeof pageContainer>;
+export type PageContainer = Container<PagePayload>;
 
 export function isPageContainer(
 	container: AnyContainer | EmptyContainer
 ): container is PageContainer {
-	return container.payload.type === payloadTypes.enum.page;
+	return isContainerWithPayloadType(payloadTypes.enum.page, container);
 }
 
-const progressContainer = container.extend({
-	payload: progressPayload
-});
-
-export type ProgressContainer = z.infer<typeof progressContainer>;
+export type ProgressContainer = Container<ProgressPayload>;
 
 export function isProgressContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ProgressContainer {
-	return container.payload.type === payloadTypes.enum.progress;
+	return isContainerWithPayloadType(payloadTypes.enum.progress, container);
 }
 
-const reportContainer = container.extend({
-	payload: reportPayload
-});
-
-export type ReportContainer = z.infer<typeof reportContainer>;
+export type ReportContainer = Container<ReportPayload>;
 
 export function isReportContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ReportContainer {
-	return container.payload.type === payloadTypes.enum.report;
+	return isContainerWithPayloadType(payloadTypes.enum.report, container);
 }
 
-const ruleContainer = container.extend({
-	payload: rulePayload
-});
-
-export type RuleContainer = z.infer<typeof ruleContainer>;
+export type RuleContainer = Container<RulePayload>;
 
 export function isRuleContainer(
 	container: AnyContainer | EmptyContainer
 ): container is RuleContainer {
-	return container.payload.type === payloadTypes.enum.rule;
+	return isContainerWithPayloadType(payloadTypes.enum.rule, container);
 }
 
-const resourceContainer = container.extend({
-	payload: resourcePayload
-});
-
-export type ResourceContainer = z.infer<typeof resourceContainer>;
+export type ResourceContainer = Container<ResourcePayload>;
 
 export function isResourceContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceContainer {
-	return container.payload.type === payloadTypes.enum.resource;
+	return isContainerWithPayloadType(payloadTypes.enum.resource, container);
 }
 
-const resourceCollectionContainer = container.extend({
-	payload: resourceCollectionPayload
-});
-
-export type ResourceCollectionContainer = z.infer<typeof resourceCollectionContainer>;
+export type ResourceCollectionContainer = Container<ResourceCollectionPayload>;
 
 export function isResourceCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceCollectionContainer {
-	return container.payload.type === payloadTypes.enum.resource_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.resource_collection, container);
 }
 
-const resourceDataContainer = container.extend({
-	payload: resourceDataPayload
-});
-
-export type ResourceDataContainer = z.infer<typeof resourceDataContainer>;
+export type ResourceDataContainer = Container<ResourceDataPayload>;
 
 export function isResourceDataContainer(
 	container: AnyContainer | EmptyContainer
@@ -1984,11 +2180,7 @@ export function isResourceDataTotalBudgetForecastContainer(
 	);
 }
 
-const resourceDataCollectionContainer = container.extend({
-	payload: resourceDataCollectionPayload
-});
-
-export type ResourceDataCollectionContainer = z.infer<typeof resourceDataCollectionContainer>;
+export type ResourceDataCollectionContainer = Container<ResourceDataCollectionPayload>;
 
 export function isResourceDataCollectionContainer(
 	container: AnyContainer | EmptyContainer
@@ -1996,33 +2188,23 @@ export function isResourceDataCollectionContainer(
 	return container.payload.type === payloadTypes.enum.resource_data_collection;
 }
 
-const resourceV2Container = container.extend({
-	payload: resourceV2Payload
-});
-
-export type ResourceV2Container = z.infer<typeof resourceV2Container>;
+export type ResourceV2Container = Container<ResourceV2Payload>;
 
 export function isResourceV2Container(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceV2Container {
-	return container.payload.type === payloadTypes.enum.resource_v2;
+	return isContainerWithPayloadType(payloadTypes.enum.resource_v2, container);
 }
 
-const simpleMeasureContainer = container.extend({
-	payload: simpleMeasurePayload
-});
-
-export type SimpleMeasureContainer = z.infer<typeof simpleMeasureContainer>;
+export type SimpleMeasureContainer = Container<SimpleMeasurePayload>;
 
 export function isSimpleMeasureContainer(
 	container: AnyContainer | EmptyContainer
 ): container is SimpleMeasureContainer {
-	return container.payload.type === payloadTypes.enum.simple_measure;
+	return isContainerWithPayloadType(payloadTypes.enum.simple_measure, container);
 }
 
-const summaryContainer = container.extend({ payload: summaryPayload });
-
-export type SummaryContainer = z.infer<typeof summaryContainer>;
+export type SummaryContainer = Container<SummaryPayload>;
 
 export function isSummaryContainer(
 	container: AnyContainer | EmptyContainer
@@ -2030,59 +2212,39 @@ export function isSummaryContainer(
 	return container.payload.type === payloadTypes.enum.summary;
 }
 
-const programContainer = container.extend({
-	payload: programPayload
-});
-
-export type ProgramContainer = z.infer<typeof programContainer>;
+export type ProgramContainer = Container<ProgramPayload>;
 
 export function isProgramContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ProgramContainer {
-	return container.payload.type === payloadTypes.enum.program;
+	return isContainerWithPayloadType(payloadTypes.enum.program, container);
 }
 
-const programCollectionContainer = container.extend({
-	payload: programCollectionPayload
-});
-
-export type ProgramCollectionContainer = z.infer<typeof programCollectionContainer>;
+export type ProgramCollectionContainer = Container<ProgramCollectionPayload>;
 
 export function isProgramCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ProgramCollectionContainer {
-	return container.payload.type === payloadTypes.enum.program_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.program_collection, container);
 }
 
-const textContainer = container.extend({
-	payload: textPayload
-});
-
-export type TextContainer = z.infer<typeof textContainer>;
+export type TextContainer = Container<TextPayload>;
 
 export function isTextContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TextContainer {
-	return container.payload.type === payloadTypes.enum.text;
+	return isContainerWithPayloadType(payloadTypes.enum.text, container);
 }
 
-const taskContainer = container.extend({
-	payload: taskPayload
-});
-
-export type TaskContainer = z.infer<typeof taskContainer>;
+export type TaskContainer = Container<TaskPayload>;
 
 export function isTaskContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TaskContainer {
-	return container.payload.type === payloadTypes.enum.task;
+	return isContainerWithPayloadType(payloadTypes.enum.task, container);
 }
 
-const termContainer = container.extend({
-	payload: termPayload
-});
-
-export type TermContainer = z.infer<typeof termContainer>;
+export type TermContainer = Container<TermPayload>;
 
 export function isTermContainer(
 	container: AnyContainer | EmptyContainer
@@ -2090,16 +2252,12 @@ export function isTermContainer(
 	return container.payload.type === payloadTypes.enum.term;
 }
 
-const taskCollectionContainer = container.extend({
-	payload: taskCollectionPayload
-});
-
-export type TaskCollectionContainer = z.infer<typeof taskCollectionContainer>;
+export type TaskCollectionContainer = Container<TaskCollectionPayload>;
 
 export function isTaskCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TaskCollectionContainer {
-	return container.payload.type === payloadTypes.enum.task_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.task_collection, container);
 }
 
 export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
@@ -2110,147 +2268,103 @@ export function isMeasureMonitoringContainer(
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
-// #image
-const imageContainer = container.extend({
-	payload: imagePayload
-});
-export type ImageContainer = z.infer<typeof imageContainer>;
+export type ImageContainer = Container<ImagePayload>;
 
 export function isImageContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ImageContainer {
-	return container.payload.type === payloadTypes.enum.image;
+	return isContainerWithPayloadType(payloadTypes.enum.image, container);
 }
 
-// #Teaser
-const teaserContainer = container.extend({
-	payload: teaserPayload
-});
-
-export type TeaserContainer = z.infer<typeof teaserContainer>;
+export type TeaserContainer = Container<TeaserPayload>;
 
 export function isTeaserContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TeaserContainer {
-	return container.payload.type === payloadTypes.enum.teaser;
+	return isContainerWithPayloadType(payloadTypes.enum.teaser, container);
 }
 
-// #InfoBox
-const infoBoxContainer = container.extend({
-	payload: infoBoxPayload
-});
+export type InfoBoxContainer = Container<InfoBoxPayload>;
 
-export type InfoBoxContainer = z.infer<typeof infoBoxContainer>;
 export function isInfoBoxContainer(
 	container: AnyContainer | EmptyContainer
 ): container is InfoBoxContainer {
-	return container.payload.type === payloadTypes.enum.info_box;
+	return isContainerWithPayloadType(payloadTypes.enum.info_box, container);
 }
 
-// #TeaserHighlight
-const teaserHighlightContainer = container.extend({
-	payload: teaserHighlightPayload
-});
+export type TeaserHighlightContainer = Container<TeaserHighlightPayload>;
 
-export type TeaserHighlightContainer = z.infer<typeof teaserHighlightContainer>;
 export function isTeaserHighlightContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TeaserHighlightContainer {
-	return container.payload.type === payloadTypes.enum.teaser_highlight;
+	return isContainerWithPayloadType(payloadTypes.enum.teaser_highlight, container);
 }
 
-// #ContentPartner
-const contentPartnerContainer = container.extend({
-	payload: contentPartnerPayload
-});
-
-export type ContentPartnerContainer = z.infer<typeof contentPartnerContainer>;
+export type ContentPartnerContainer = Container<ContentPartnerPayload>;
 
 export function isContentPartnerContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ContentPartnerContainer {
-	return container.payload.type === payloadTypes.enum.content_partner;
+	return isContainerWithPayloadType(payloadTypes.enum.content_partner, container);
 }
 
-const contentPartnerCollectionContainer = container.extend({
-	payload: contentPartnerCollectionPayload
-});
-
-export type ContentPartnerCollectionContainer = z.infer<typeof contentPartnerCollectionContainer>;
+export type ContentPartnerCollectionContainer = Container<ContentPartnerCollectionPayload>;
 
 export function isContentPartnerCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ContentPartnerCollectionContainer {
-	return container.payload.type === payloadTypes.enum.content_partner_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.content_partner_collection, container);
 }
 
-// #ColContent
-const colContentContainer = container.extend({
-	payload: colContentPayload
-});
-
-export type ColContentContainer = z.infer<typeof colContentContainer>;
+export type ColContentContainer = Container<ColContentPayload>;
 
 export function isColContentContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ColContentContainer {
-	return container.payload.type === payloadTypes.enum.col_content;
+	return isContainerWithPayloadType(payloadTypes.enum.col_content, container);
 }
 
-// #Quote
-const quoteContainer = container.extend({
-	payload: quotePayload
-});
+export type QuoteContainer = Container<QuotePayload>;
 
-export type QuoteContainer = z.infer<typeof quoteContainer>;
 export function isQuoteContainer(
 	container: AnyContainer | EmptyContainer
 ): container is QuoteContainer {
-	return container.payload.type === payloadTypes.enum.quote;
+	return isContainerWithPayloadType(payloadTypes.enum.quote, container);
 }
 
-const teaserCollectionContainer = container.extend({
-	payload: teaserCollectionPayload
-});
+export type TeaserCollectionContainer = Container<TeaserCollectionPayload>;
 
-export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
+export type CollectionContainer = Container<
+	ContentPartnerCollectionPayload | TeaserCollectionPayload
+>;
 
-export type CollectionContainer = TeaserCollectionContainer | ContentPartnerCollectionContainer;
-
-export type TeaserLikeContainer =
-	| TeaserContainer
-	| InfoBoxContainer
-	| TeaserHighlightContainer
-	| QuoteContainer
-	| ColContentContainer;
+export type TeaserLikeContainer = Container<
+	TeaserPayload | InfoBoxPayload | TeaserHighlightPayload | QuotePayload | ColContentPayload
+>;
 
 export function isTeaserLikeContainer(container: AnyContainer): container is TeaserLikeContainer {
 	return (
-		[
-			payloadTypes.enum.teaser,
-			payloadTypes.enum.info_box,
-			payloadTypes.enum.teaser_highlight,
-			payloadTypes.enum.quote,
-			payloadTypes.enum.col_content
-		] as PayloadType[]
-	).includes(container.payload.type);
+		isContainerWithPayloadType(payloadTypes.enum.teaser, container) ||
+		isContainerWithPayloadType(payloadTypes.enum.info_box, container) ||
+		isContainerWithPayloadType(payloadTypes.enum.teaser_highlight, container) ||
+		isContainerWithPayloadType(payloadTypes.enum.quote, container) ||
+		isContainerWithPayloadType(payloadTypes.enum.col_content, container)
+	);
 }
 
 export function isTeaserCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TeaserCollectionContainer {
-	return container.payload.type === payloadTypes.enum.teaser_collection;
+	return isContainerWithPayloadType(payloadTypes.enum.teaser_collection, container);
 }
 
 export function isCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is CollectionContainer {
 	return (
-		[
-			payloadTypes.enum.teaser_collection,
-			payloadTypes.enum.content_partner_collection
-		] as PayloadType[]
-	).includes(container.payload.type);
+		isContainerWithPayloadType(payloadTypes.enum.content_partner_collection, container) ||
+		isContainerWithPayloadType(payloadTypes.enum.teaser_collection, container)
+	);
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
@@ -2260,9 +2374,18 @@ export function isContainer(container: AnyContainer | EmptyContainer): container
 	);
 }
 
-export type ContainerWithAudience = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { audience: Audience[] };
-};
+function hasProperty(
+	payload: AnyPayload | AnyInitialPayload,
+	key: PropertyKey
+): key is keyof AnyPayload {
+	return (
+		key in (anyPayload.options.map((o) => o.shape).find((s) => s.type.value == payload.type) ?? {})
+	);
+}
+
+export type PayloadWithAudience = AnyPayload & { audience: Audience[] };
+
+export type ContainerWithAudience = Container<PayloadWithAudience>;
 
 export function isContainerWithAudience(
 	container: AnyContainer | NewContainer
@@ -2270,9 +2393,9 @@ export function isContainerWithAudience(
 	return hasProperty(container.payload, 'audience');
 }
 
-export type ContainerWithBody = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { body: string | undefined };
-};
+export type PayloadWithBody = AnyPayload & { body: string | undefined };
+
+export type ContainerWithBody = Container<PayloadWithBody>;
 
 export function isContainerWithBody(
 	container: AnyContainer | NewContainer
@@ -2280,9 +2403,9 @@ export function isContainerWithBody(
 	return hasProperty(container.payload, 'body');
 }
 
-export type ContainerWithSdg = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { sdg: SustainableDevelopmentGoal[] };
-};
+export type PayloadWithSdg = AnyPayload & { sdg: SustainableDevelopmentGoal[] };
+
+export type ContainerWithSdg = Container<PayloadWithSdg>;
 
 export function isContainerWithSdg(
 	container: AnyContainer | NewContainer
@@ -2290,19 +2413,9 @@ export function isContainerWithSdg(
 	return hasProperty(container.payload, 'sdg');
 }
 
-export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { category: Record<string, string[]> };
-};
+export type PayloadWithDescription = AnyPayload & { description: string | undefined };
 
-export function isContainerWithCategory(
-	container: AnyContainer | NewContainer
-): container is ContainerWithCategory {
-	return hasProperty(container.payload, 'category');
-}
-
-export type ContainerWithDescription = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { description: string | undefined };
-};
+export type ContainerWithDescription = Container<PayloadWithDescription>;
 
 export function isContainerWithDescription(
 	container: AnyContainer | NewContainer
@@ -2310,9 +2423,9 @@ export function isContainerWithDescription(
 	return hasProperty(container.payload, 'description');
 }
 
-export type ContainerWithDuration = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { startDate: string; endDate: string };
-};
+export type PayloadWithDuration = AnyPayload & { startDate: string; endDate: string };
+
+export type ContainerWithDuration = Container<PayloadWithDuration>;
 
 export function isContainerWithDuration(
 	container: AnyContainer | NewContainer
@@ -2320,9 +2433,9 @@ export function isContainerWithDuration(
 	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
 }
 
-export type ContainerWithEditorialState = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { editorialState: EditorialState | undefined };
-};
+export type PayloadWithEditorialState = AnyPayload & { editorialState: EditorialState | undefined };
+
+export type ContainerWithEditorialState = Container<PayloadWithEditorialState>;
 
 export function isContainerWithEditorialState(
 	container: AnyContainer | NewContainer
@@ -2330,9 +2443,9 @@ export function isContainerWithEditorialState(
 	return hasProperty(container.payload, 'editorialState');
 }
 
-export type ContainerWithFulfillmentDate = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { fulfillmentDate: string | undefined };
-};
+export type PayloadWithFulfillmentDate = AnyPayload & { fulfillmentDate: string | undefined };
+
+export type ContainerWithFulfillmentDate = Container<PayloadWithFulfillmentDate>;
 
 export function isContainerWithFulfillmentDate(
 	container: AnyContainer | NewContainer
@@ -2340,9 +2453,9 @@ export function isContainerWithFulfillmentDate(
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
-export type ContainerWithHierarchyLevel = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { hierarchyLevel: number };
-};
+export type PayloadWithHierarchyLevel = AnyPayload & { hierarchyLevel: number };
+
+export type ContainerWithHierarchyLevel = Container<PayloadWithHierarchyLevel>;
 
 export function isContainerWithHierarchyLevel(
 	container: AnyContainer | NewContainer
@@ -2350,9 +2463,9 @@ export function isContainerWithHierarchyLevel(
 	return hasProperty(container.payload, 'hierarchyLevel');
 }
 
-export type ContainerWithName = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { name: string | undefined };
-};
+export type PayloadWithName = AnyPayload & { name: string | undefined };
+
+export type ContainerWithName = Container<PayloadWithName>;
 
 export function isContainerWithName(
 	container: AnyContainer | NewContainer
@@ -2360,9 +2473,9 @@ export function isContainerWithName(
 	return hasProperty(container.payload, 'name');
 }
 
-export type ContainerWithProgress = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { progress: number | undefined };
-};
+export type PayloadWithProgress = AnyPayload & { progress: number | undefined };
+
+export type ContainerWithProgress = Container<PayloadWithProgress>;
 
 export function isContainerWithProgress(
 	container: AnyContainer | NewContainer
@@ -2370,9 +2483,9 @@ export function isContainerWithProgress(
 	return hasProperty(container.payload, 'progress');
 }
 
-export type ContainerWithStatus = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { status: Status };
-};
+export type PayloadWithStatus = AnyPayload & { status: Status };
+
+export type ContainerWithStatus = Container<PayloadWithStatus>;
 
 export function isContainerWithStatus(
 	container: AnyContainer | NewContainer
@@ -2380,9 +2493,9 @@ export function isContainerWithStatus(
 	return hasProperty(container.payload, 'status');
 }
 
-export type ContainerWithSummary = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { summary: string | undefined };
-};
+export type PayloadWithSummary = AnyPayload & { summary: string | undefined };
+
+export type ContainerWithSummary = Container<PayloadWithSummary>;
 
 export function isContainerWithSummary(
 	container: AnyContainer | NewContainer
@@ -2390,9 +2503,9 @@ export function isContainerWithSummary(
 	return hasProperty(container.payload, 'summary');
 }
 
-export type ContainerWithTitle = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { title: string | undefined };
-};
+export type PayloadWithTitle = AnyPayload & { title: string | undefined };
+
+export type ContainerWithTitle = Container<PayloadWithTitle>;
 
 export function isContainerWithTitle(
 	container: AnyContainer | NewContainer
@@ -2400,125 +2513,15 @@ export function isContainerWithTitle(
 	return hasProperty(container.payload, 'title');
 }
 
-export type ContainerWithTopic = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { topic: Topic[] };
-};
+export type PayloadWithTopic = AnyPayload & { topic: Topic[] };
+
+export type ContainerWithTopic = Container<PayloadWithTopic>;
 
 export function isContainerWithTopic(
 	container: AnyContainer | NewContainer
 ): container is ContainerWithTopic {
 	return hasProperty(container.payload, 'topic');
 }
-
-export const newContainer = anyContainer
-	.omit({
-		guid: true,
-		revision: true,
-		valid_currently: true,
-		valid_from: true
-	})
-	.extend({
-		relation: z.array(partialRelation).default([])
-	});
-
-export type NewContainer = z.infer<typeof newContainer>;
-
-export const emptyContainer = newContainer.extend({
-	payload: z.discriminatedUnion('type', [
-		initialActualDataPayload,
-		initialAdministrativeAreaBasicDataPayload,
-		initialBinaryIndicatorPayload,
-		initialChapterPayload,
-		initialCategoryPayload,
-		initialColContentPayload,
-		initialContentPartnerCollectionPayload,
-		initialContentPartnerPayload,
-		initialCustomCollectionPayload,
-		initialEffectCollectionPayload,
-		initialEffectPayload,
-		initialFileCollectionPayload,
-		initialGoalCollectionPayload,
-		initialGoalPayload,
-		initialHelpPayload,
-		initialImagePayload,
-		initialIndicatorCollectionPayload,
-		initialIndicatorPayload,
-		initialIndicatorTemplatePayload,
-		initialInfoBoxPayload,
-		initialKnowledgePayload,
-		initialMapPayload,
-		initialMeasureCollectionPayload,
-		initialMeasurePayload,
-		initialObjectiveCollectionPayload,
-		initialObjectivePayload,
-		initialOrganizationPayload,
-		initialOrganizationalUnitPayload,
-		initialPagePayload,
-		initialProgramCollectionPayload,
-		initialProgramPayload,
-		initialProgressPayload,
-		initialQuotePayload,
-		initialRulePayload,
-		initialReportPayload,
-		initialResourceCollectionPayload,
-		initialResourcePayload,
-		initialResourceV2Payload,
-		initialResourceDataPayload,
-		initialResourceDataCollectionPayload,
-		initialSimpleMeasurePayload,
-		initialSummaryPayload,
-		initialTextPayload,
-		initialTaskCollectionPayload,
-		initialTaskPayload,
-		initialTermPayload,
-		initialTeaserPayload,
-		initialTeaserCollectionPayload,
-		initialTeaserHighlightPayload,
-		initialUndefinedPayload
-	])
-});
-
-export type EmptyContainer = z.infer<typeof emptyContainer>;
-
-const emptyEffectContainer = emptyContainer.extend({
-	payload: initialEffectPayload
-});
-
-export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
-
-const emptyIndicatorContainer = emptyContainer.extend({
-	payload: initialIndicatorPayload
-});
-
-export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
-
-const emptyObjectiveContainer = emptyContainer.extend({
-	payload: initialObjectivePayload
-});
-
-export type EmptyObjectiveContainer = z.infer<typeof emptyObjectiveContainer>;
-
-const emptyOrganizationalUnitContainer = newContainer.extend({
-	payload: initialOrganizationalUnitPayload
-});
-
-export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
-
-const emptyRuleContainer = emptyContainer.extend({
-	payload: initialRulePayload
-});
-
-export type EmptyRuleContainer = z.infer<typeof emptyRuleContainer>;
-
-/* eslint-enable @typescript-eslint/no-unused-vars */
-
-export const modifiedContainer = anyContainer.omit({
-	revision: true,
-	valid_currently: true,
-	valid_from: true
-});
-
-export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export const user = z.object({
 	email: z.string().email().optional(),
@@ -2671,19 +2674,18 @@ export function containerOfType(
 	managedBy: string,
 	realm: string
 ) {
-	return emptyContainer.parse({
+	return createNewContainerSchema(anyInitialPayload).parse({
 		managed_by: payloadType == payloadTypes.enum.organizational_unit ? organization : managedBy,
 		organization,
 		organizational_unit:
 			payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
 		payload: { type: payloadType },
 		realm
-	}) as EmptyContainer;
+	}) as NewContainer;
 }
 
-export function mayDelete(container: AnyContainer | EmptyContainer, ability: MongoAbility) {
+export function mayDelete(container: Container<AnyPayload>, ability: MongoAbility) {
 	return (
-		'guid' in container &&
 		container.relation.filter(
 			({ predicate, object }) =>
 				(predicate == predicates.enum['is-part-of'] ||
@@ -2691,15 +2693,14 @@ export function mayDelete(container: AnyContainer | EmptyContainer, ability: Mon
 					predicate == predicates.enum['is-part-of-measure']) &&
 				'guid' in container &&
 				object == container.guid
-		).length == 0 &&
-		ability.can('delete', container)
+		).length == 0 && ability.can('delete', container)
 	);
 }
 
 export function newIndicatorTemplateFromIndicator(container: IndicatorContainer) {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { historicalValues, quantity, ...copiedPayload } = container.payload;
-	return newContainer.parse({
+	return createNewContainerSchema(indicatorTemplatePayload).parse({
 		payload: { ...copiedPayload, type: payloadTypes.enum.indicator_template },
 		organization: container.organization,
 		organizational_unit: container.organization,
@@ -2718,8 +2719,7 @@ export function newCategoryTemplateFromCategory(
 		organization.guid,
 		organization.realm
 	) as NewContainer;
-	const payload = template.payload as CategoryContainer['payload'];
-	Object.assign(payload, category.payload);
+	const payload = category.payload;
 	payload.visibility = visibility.enum.public;
 	return template;
 }
@@ -2737,8 +2737,7 @@ export function newTermForCategoryTemplate(
 		organization.guid,
 		organization.realm
 	) as NewContainer;
-	const payload = template.payload as TermContainer['payload'];
-	Object.assign(payload, term.payload);
+	const payload = term.payload;
 	payload.visibility = visibility.enum.public;
 	template.relation = [
 		{

@@ -6,12 +6,13 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
-	type ActualDataContainer,
+	type ActualDataPayload,
 	containerOfType,
 	editorialState,
-	emptyContainer,
+	type IndicatorTemplatePayload,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
+	newContainer,
 	type NewContainer,
 	payloadTypes,
 	predicates
@@ -133,8 +134,11 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		})
 	);
 
-	const containers: { indicator: NewContainer; title: string; yearValues: [number, number][] }[] =
-		[];
+	const containers: {
+		indicator: NewContainer<IndicatorTemplatePayload>;
+		title: string;
+		yearValues: [number, number][];
+	}[] = [];
 	const errors: string[] = [];
 	let lineNumber = 1;
 
@@ -234,7 +238,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 				containers.push({
 					title,
-					indicator: emptyContainer.parse({
+					indicator: newContainer.parse({
 						managed_by: orgUnit?.guid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
 						organizational_unit: orgUnit?.guid ?? null,
@@ -259,7 +263,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 								subject: locals.user.guid
 							}
 						]
-					}) as NewContainer,
+					}) as NewContainer<IndicatorTemplatePayload>,
 					yearValues
 				});
 			} catch (e) {
@@ -289,7 +293,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					indicator.organizational_unit,
 					indicator.managed_by,
 					env.PUBLIC_KC_REALM
-				) as NewContainer & { payload: ActualDataContainer['payload'] };
+				) as NewContainer<ActualDataPayload>;
 
 				actualDataContainer.payload = {
 					...actualDataContainer.payload,

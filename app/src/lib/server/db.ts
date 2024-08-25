@@ -9,6 +9,8 @@ import {
 	type SerializableValue
 } from 'slonik';
 import { z } from 'zod';
+import { createFeatureDecisions } from '$lib/features';
+import { getFeatures } from '$lib/server/features';
 import {
 	type AnyContainer,
 	anyContainer,
@@ -23,6 +25,7 @@ import {
 	type OrganizationContainer,
 	organizationContainer,
 	type PayloadType,
+	type OrganizationPayload,
 	payloadTypes,
 	type Predicate,
 	predicates,
@@ -32,10 +35,9 @@ import {
 	type User,
 	user,
 	userRelation,
-	visibility
+	visibility,
+	type AnyPayload
 } from '$lib/models';
-import { createFeatureDecisions } from '$lib/features';
-import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -138,8 +140,8 @@ const typeAliases = {
 
 export const sql = createSqlTag({ typeAliases });
 
-export function createContainer(container: NewContainer) {
-	return (connection: DatabaseConnection): Promise<AnyContainer> => {
+export function createContainer(container: NewContainer<AnyPayload>) {
+	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			let organizationGuid;
 
@@ -265,7 +267,7 @@ export function updateContainer(container: ModifiedContainer) {
 					) == -1
 			);
 			await deleteManyContainerRelations(deletedRelations)(txConnection);
-			await updateManyContainerRelations(container.relation)(txConnection);
+			await updateManyContainerRelations(container.relation as Relation[])(txConnection);
 
 			if (previousRevision.organizational_unit != container.organizational_unit) {
 				await bulkUpdateOrganizationalUnit(
@@ -1768,6 +1770,6 @@ export function setUp(name: string, realm: string) {
 			realm,
 			relation: [],
 			user: []
-		})(connection);
+		} as NewContainer<OrganizationPayload>)(connection);
 	};
 }

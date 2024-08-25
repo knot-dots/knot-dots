@@ -7,9 +7,11 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	type AnyPayload,
+	anyPayload,
 	containerOfType,
 	editorialState,
-	emptyContainer,
+	createNewContainerSchema,
 	type NewContainer,
 	payloadTypes,
 	predicates
@@ -83,7 +85,8 @@ export const actions = {
 			})
 		);
 
-		const containers: NewContainer[] = [];
+		const importContainer = createNewContainerSchema(anyPayload);
+		const containers: NewContainer<AnyPayload>[] = [];
 		const errors = [];
 
 		try {
@@ -92,8 +95,9 @@ export const actions = {
 					const organizationalUnit = organizationalUnits.find(
 						({ payload }) => payload.name == record.organizationalUnit
 					);
+
 					const program = programs.find(({ payload }) => payload.title == record.program);
-					const container = emptyContainer.parse({
+					const container = importContainer.parse({
 						managed_by: organizationalUnit?.guid ?? organization.guid,
 						organization: organization.guid,
 						organizational_unit: organizationalUnit?.guid ?? null,
@@ -139,7 +143,7 @@ export const actions = {
 								subject: typeof creator === 'string' ? creator : locals.user.guid
 							}
 						]
-					}) as NewContainer;
+					});
 					containers.push(container);
 				} catch (error) {
 					errors.push(

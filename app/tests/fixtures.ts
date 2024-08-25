@@ -9,6 +9,9 @@ import {
 	type GoalContainer,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
+	type InitialCategoryPayload,
+	type InitialResourceDataPayload,
+	type InitialTermPayload,
 	type MeasureContainer,
 	type NewContainer,
 	type ObjectiveContainer,
@@ -168,8 +171,8 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as NewContainer;
-		(newCategory.payload as CategoryContainer['payload']).title = categoryTitle;
+		) as NewContainer<InitialCategoryPayload>;
+		newCategory.payload.title = categoryTitle;
 
 		const category = (await createContainer(adminContext, newCategory)) as CategoryContainer;
 
@@ -181,8 +184,8 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testGoal.organization,
 				'knot-dots'
-			) as NewContainer;
-			const termPayload = newTerm.payload as TermContainer['payload'];
+			) as NewContainer<InitialTermPayload>;
+			const termPayload = newTerm.payload;
 			termPayload.title = termName;
 			termPayload.value = termName.toLowerCase().replace(/\s+/g, '-');
 			newTerm.relation = [
@@ -740,7 +743,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ResourceDataContainer;
+			) as NewContainer<InitialResourceDataPayload>;
 			const testSubordinateMeasureResourceData = await createContainer(adminContext, {
 				...newResourceData,
 				payload: {

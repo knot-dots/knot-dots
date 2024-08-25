@@ -3,20 +3,22 @@ import type { DatabasePool } from 'slonik';
 import de from '$lib/locales/de.json' assert { type: 'json' };
 import {
 	audience,
+	type CategoryContainer,
+	type CategoryPayload,
 	containerOfType,
 	isCategoryContainer,
 	isTermContainer,
+	type ModifiedContainer,
+	type NewContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	sustainableDevelopmentGoals,
-	topics,
-	visibility,
-	type CategoryContainer,
-	type ModifiedContainer,
-	type NewContainer,
 	type Relation,
-	type TermContainer
+	sustainableDevelopmentGoals,
+	type TermContainer,
+	type TermPayload,
+	topics,
+	visibility
 } from '$lib/models';
 import {
 	createContainer,
@@ -203,9 +205,9 @@ async function createCategory(
 		null,
 		organizationGuid,
 		realm
-	) as NewContainer;
+	) as NewContainer<CategoryPayload>;
 
-	const payload = newCategory.payload as CategoryContainer['payload'];
+	const payload = newCategory.payload;
 	payload.key = seed.key;
 	payload.title = seed.title;
 	if (seed.description) {
@@ -362,9 +364,9 @@ async function createTerm(
 		category.organizational_unit,
 		category.managed_by,
 		category.realm
-	) as NewContainer;
+	) as NewContainer<TermPayload>;
 
-	const payload = newTerm.payload as TermContainer['payload'];
+	const payload = newTerm.payload;
 	payload.title = seed.title;
 	payload.value = seed.value;
 	if (seed.description) {

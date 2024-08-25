@@ -6,9 +6,12 @@ import { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
 	type AnyContainer,
+	type AnyPayload,
+	anyPayload,
 	audience,
 	type Container,
 	createCopyOf,
+	createNewContainerSchema,
 	type GoalContainer,
 	indicatorCategories,
 	type IndicatorContainer,
@@ -21,8 +24,8 @@ import {
 	isReportContainer,
 	isTaskContainer,
 	type MeasureContainer,
+	type MeasurePayload,
 	type NewContainer,
-	newContainer,
 	type PartialRelation,
 	payloadTypes,
 	policyFieldBNK,
@@ -110,7 +113,7 @@ async function copyMeasureFromOriginal<T extends AnyContainer>(
 					)?.position ?? 0
 			}
 		]
-	} as NewContainer)(txConnection)) as MeasureContainer;
+	} as NewContainer<MeasurePayload>)(txConnection)) as MeasureContainer;
 
 	const isCopyOfRelation = copiedMeasure.relation.find(
 		({ object, predicate }) => predicate === predicates.enum['is-copy-of'] && object !== undefined
@@ -165,7 +168,7 @@ async function copyGoalsFromOriginal(
 		});
 
 		isPartOfObjects.push(
-			(await createContainer(copy as NewContainer)(txConnection)) as GoalContainer
+			(await createContainer(copy as NewContainer<AnyPayload>)(txConnection)) as GoalContainer
 		);
 	}
 
@@ -204,7 +207,7 @@ async function copyTasksFromOriginal(
 			subject: userGuid
 		});
 
-		await createContainer(copy as NewContainer)(txConnection);
+		await createContainer(copy as NewContainer<AnyPayload>)(txConnection);
 	}
 }
 
@@ -248,7 +251,9 @@ async function copyIndicatorsFromOriginal(
 			});
 
 			measuredByObjects.push(
-				(await createContainer(copy as NewContainer)(txConnection)) as IndicatorContainer
+				(await createContainer(copy as NewContainer<AnyPayload>)(
+					txConnection
+				)) as IndicatorContainer
 			);
 		}
 	}
@@ -290,7 +295,7 @@ async function copyEffectsFromOriginal(
 			subject: userGuid
 		});
 
-		await createContainer(copy as NewContainer)(txConnection);
+		await createContainer(copy as NewContainer<AnyPayload>)(txConnection);
 	}
 }
 
@@ -324,7 +329,7 @@ async function copySectionsFromOriginal(
 			subject: userGuid
 		});
 
-		await createContainer(copy as NewContainer)(txConnection);
+		await createContainer(copy as NewContainer<AnyPayload>)(txConnection);
 	}
 }
 
@@ -426,7 +431,7 @@ async function copyProgram(
 					)?.position ?? 0
 			});
 
-			isPartOfObjects.push(await createContainer(copy as NewContainer)(txConnection));
+			isPartOfObjects.push(await createContainer(copy as NewContainer<AnyPayload>)(txConnection));
 		}
 	}
 
@@ -598,7 +603,7 @@ export const POST = (async ({ locals, request }) => {
 	const data = await request.json().catch((reason: SyntaxError) => {
 		error(400, { message: reason.message });
 	});
-	const parseResult = newContainer.safeParse(data);
+	const parseResult = createNewContainerSchema(anyPayload).safeParse(data);
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);

@@ -7,10 +7,10 @@ import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	anyPayload,
+	createNewContainerSchema,
 	editorialState,
-	emptyContainer,
 	isProgramContainer,
-	type NewContainer,
 	predicates
 } from '$lib/models';
 import { pollJobStatus, startGoalsJob, startJob } from '$lib/server/ai';
@@ -89,7 +89,7 @@ export const POST = (async ({ locals, request }) => {
 					for (const { id, project } of parsedPollResponse.data.completed_projects) {
 						if (!extracted.has(id)) {
 							try {
-								const newContainer = emptyContainer.parse({
+								const newContainer = createNewContainerSchema(anyPayload).parse({
 									managed_by: container.managed_by,
 									organization: container.organization,
 									organizational_unit: container.organizational_unit,
@@ -118,7 +118,7 @@ export const POST = (async ({ locals, request }) => {
 											subject: locals.user.guid
 										}
 									]
-								}) as NewContainer;
+								});
 								await locals.pool.connect(createContainer(newContainer));
 							} catch (error) {
 								log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));

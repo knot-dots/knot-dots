@@ -2,11 +2,12 @@ import { v4 as uuid } from 'uuid';
 import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import {
+	anyPayload,
 	type AnyPayload,
+	createNewContainerSchema,
 	type MeasureContainer,
 	modifiedContainer,
 	type NewContainer,
-	newContainer,
 	type PartialRelation,
 	payloadTypes,
 	predicates,
@@ -30,7 +31,7 @@ function initializeNewContainer(
 	payload: Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
 	relation: PartialRelation[]
 ) {
-	return newContainer.parse({
+	return createNewContainerSchema(anyPayload).parse({
 		managed_by: organization,
 		organization,
 		organizational_unit: null,

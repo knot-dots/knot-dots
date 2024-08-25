@@ -3,7 +3,13 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
-import { newContainer, payloadTypes, predicates } from '$lib/models';
+import {
+	type NewContainer,
+	newContainer,
+	type PagePayload,
+	payloadTypes,
+	predicates
+} from '$lib/models';
 import { createContainer, getContainerBySlug, getManyOrganizationContainers } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -28,7 +34,7 @@ export const GET = (async ({ locals, params }) => {
 						organizational_unit: null,
 						realm: env.PUBLIC_KC_REALM,
 						user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
-					})
+					}) as NewContainer<PagePayload>
 				)
 			);
 			return json(container);
