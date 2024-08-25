@@ -677,17 +677,19 @@ const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: tr
 
 export type InitialBinaryIndicatorPayload = z.infer<typeof initialBinaryIndicatorPayload>;
 
-const unrefinedCategoryPayload = z.object({
-	description: z.string().trim().optional(),
-	key: z.string().trim().optional(),
-	objectTypes: z
-		.array(categoryObjectTypes)
-		.transform(deduplicate)
-		.default(categoryObjectTypes.options),
-	title: z.string().trim().min(1),
-	type: z.literal(payloadTypes.enum.category),
-	visibility: visibility.default(visibility.enum['public'])
-});
+const unrefinedCategoryPayload = z
+	.object({
+		description: z.string().trim().optional(),
+		key: z.string().trim().optional(),
+		objectTypes: z
+			.array(categoryObjectTypes)
+			.transform(deduplicate)
+			.default(categoryObjectTypes.options),
+		title: z.string().trim().min(1),
+		type: z.literal(payloadTypes.enum.category),
+		visibility: visibility.default(visibility.enum['public'])
+	})
+	.strict();
 
 const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
 	if (payload.title && !payload.key) {
@@ -725,16 +727,21 @@ const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: tr
 
 export type InitialTermPayload = z.infer<typeof initialTermPayload>;
 
-const actualDataPayload = z.object({
-	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
-	booleanValue: z.boolean().default(false),
-	indicator: z.string().uuid(),
-	source: z.string().optional(),
-	title: z.string(),
-	type: z.literal(payloadTypes.enum.actual_data),
-	values: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const actualDataPayload = z
+	.object({
+		audience: z
+			.array(audience)
+			.transform(deduplicate)
+			.default([audience.enum['audience.citizens']]),
+		booleanValue: z.boolean().default(false),
+		indicator: z.string().uuid(),
+		source: z.string().optional(),
+		title: z.string(),
+		type: z.literal(payloadTypes.enum.actual_data),
+		values: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type ActualDataPayload = z.infer<typeof actualDataPayload>;
 
@@ -742,14 +749,16 @@ const initialActualDataPayload = actualDataPayload.partial({ indicator: true, ti
 
 export type InitialActualDataPayload = z.infer<typeof initialActualDataPayload>;
 
-const administrativeAreaBasicDataPayload = z.object({
-	title: z
-		.string()
-		.readonly()
-		.default(() => unwrapFunctionStore(_)('administrative_area.basic_data')),
-	type: z.literal(payloadTypes.enum.administrative_area_basic_data),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const administrativeAreaBasicDataPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('administrative_area.basic_data')),
+		type: z.literal(payloadTypes.enum.administrative_area_basic_data),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type AdministrativeAreaBasicDataPayload = z.infer<typeof administrativeAreaBasicDataPayload>;
 
@@ -768,7 +777,8 @@ const chapterPayload = basePayload
 	.omit({
 		description: true,
 		summary: true
-	});
+	})
+	.strict();
 
 export type ChapterPayload = z.infer<typeof chapterPayload>;
 
@@ -839,17 +849,19 @@ const initialFileCollectionPayload = fileCollectionPayload;
 
 export type InitialFileCollectionPayload = z.infer<typeof initialFileCollectionPayload>;
 
-const goalPayload = basePayload.extend({
-	fulfillmentDate: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional(),
-	goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
-	goalType: goalType.optional(),
-	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-	progress: z.number().nonnegative().optional(),
-	type: z.literal(payloadTypes.enum.goal)
-});
+const goalPayload = basePayload
+	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
+		goalType: goalType.optional(),
+		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
+		progress: z.number().nonnegative().optional(),
+		type: z.literal(payloadTypes.enum.goal)
+	})
+	.strict();
 
 export type GoalPayload = z.infer<typeof goalPayload>;
 
@@ -877,13 +889,15 @@ const initialGoalCollectionPayload = goalCollectionPayload;
 
 export type InitialGoalCollectionPayload = z.infer<typeof initialGoalCollectionPayload>;
 
-const helpPayload = z.object({
-	body: z.string().trim().default(''),
-	slug: z.string().default(''),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.help),
-	visibility: visibility.default(visibility.enum['public'])
-});
+const helpPayload = z
+	.object({
+		body: z.string().trim().default(''),
+		slug: z.string().default(''),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.help),
+		visibility: visibility.default(visibility.enum['public'])
+	})
+	.strict();
 
 export type HelpPayload = z.infer<typeof helpPayload>;
 
@@ -891,15 +905,17 @@ const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: 
 
 export type InitialHelpPayload = z.infer<typeof initialHelpPayload>;
 
-const indicatorPayload = basePayload.extend({
-	externalReference: z.string().url().optional(),
-	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
-	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
-	quantity: z.string(),
-	type: z.literal(payloadTypes.enum.indicator),
-	unit: z.string()
-});
+const indicatorPayload = basePayload
+	.extend({
+		externalReference: z.string().url().optional(),
+		historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
+		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
+		quantity: z.string(),
+		type: z.literal(payloadTypes.enum.indicator),
+		unit: z.string()
+	})
+	.strict();
 
 export type IndicatorPayload = z.infer<typeof indicatorPayload>;
 
@@ -932,7 +948,8 @@ const indicatorTemplatePayload = indicatorPayload
 	.extend({
 		type: z.literal(payloadTypes.enum.indicator_template)
 	})
-	.omit({ historicalValues: true, quantity: true });
+	.omit({ historicalValues: true, quantity: true })
+	.strict();
 
 export type IndicatorTemplatePayload = z.infer<typeof indicatorTemplatePayload>;
 
@@ -1046,14 +1063,16 @@ const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 export type InitialObjectiveCollectionPayload = z.infer<typeof initialObjectiveCollectionPayload>;
 
-const progressPayload = z.object({
-	title: z
-		.string()
-		.readonly()
-		.default(() => unwrapFunctionStore(_)('progress')),
-	type: z.literal(payloadTypes.enum.progress),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const progressPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('progress')),
+		type: z.literal(payloadTypes.enum.progress),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type ProgressPayload = z.infer<typeof progressPayload>;
 
@@ -1105,14 +1124,16 @@ const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true }
 
 export type InitialSimpleMeasurePayload = z.infer<typeof initialSimpleMeasurePayload>;
 
-const summaryPayload = z.object({
-	title: z
-		.string()
-		.readonly()
-		.default(() => unwrapFunctionStore(_)('summary')),
-	type: z.literal(payloadTypes.enum.summary),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const summaryPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('summary')),
+		type: z.literal(payloadTypes.enum.summary),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type SummaryPayload = z.infer<typeof summaryPayload>;
 
@@ -1169,14 +1190,17 @@ const measureMonitoringBasePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
-const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).extend({
-	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	booleanValue: z.boolean().optional(),
-	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
-	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
-	type: z.literal(payloadTypes.enum.effect)
-});
+const effectPayload = measureMonitoringBasePayload
+	.omit({ summary: true })
+	.extend({
+		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		booleanValue: z.boolean().optional(),
+		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
+		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
+		type: z.literal(payloadTypes.enum.effect)
+	})
+	.strict();
 
 export type EffectPayload = z.infer<typeof effectPayload>;
 
@@ -1548,27 +1572,29 @@ const initialTaskCollectionPayload = taskCollectionPayload;
 
 export type InitialTaskCollectionPayload = z.infer<typeof initialTaskCollectionPayload>;
 
-const organizationPayload = z.object({
-	boards: z.array(boards).transform(deduplicate).default([]),
-	color: backgroundColor.optional(),
-	cover: z.string().url().optional(),
-	default: z.boolean().default(false),
-	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.default([]),
-	image: z.string().url().optional(),
-	name: z.string().trim(),
-	organizationCategory: organizationCategories.optional(),
-	type: z.literal(payloadTypes.enum.organization),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const organizationPayload = z
+	.object({
+		boards: z.array(boards).transform(deduplicate).default([]),
+		color: backgroundColor.optional(),
+		cover: z.string().url().optional(),
+		default: z.boolean().default(false),
+		description: z.string().trim().optional(),
+		favorite: z
+			.array(
+				z.object({
+					href: z.string(),
+					icon: z.url().optional(),
+					title: z.string().trim()
+				})
+			)
+			.default([]),
+		image: z.string().url().optional(),
+		name: z.string().trim(),
+		organizationCategory: organizationCategories.optional(),
+		type: z.literal(payloadTypes.enum.organization),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type OrganizationPayload = z.infer<typeof organizationPayload>;
 
@@ -1576,35 +1602,37 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 export type InitialOrganizationPayload = z.infer<typeof initialOrganizationPayload>;
 
-const organizationalUnitPayload = z.object({
-	administrativeType: administrativeTypes.optional(),
-	boards: z.array(boards).transform(deduplicate).default([]),
-	color: backgroundColor.optional(),
-	cover: z.string().url().optional(),
-	cityAndMunicipalityTypeBBSR: z.string().optional(),
-	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.default([]),
-	federalState: z.string().optional(),
-	geometry: z.string().uuid().optional(),
-	image: z.string().url().optional(),
-	level: z.number().int().positive().default(1),
-	name: z.string().trim(),
-	nameBBSR: z.string().optional(),
-	nameOSM: z.string().optional(),
-	officialMunicipalityKey: z.string().length(8).optional(),
-	officialRegionalCode: z.string().length(12).optional(),
-	organizationalUnitType: organizationalUnitType.optional(),
-	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const organizationalUnitPayload = z
+	.object({
+		administrativeType: administrativeTypes.optional(),
+		boards: z.array(boards).transform(deduplicate).default([]),
+		color: backgroundColor.optional(),
+		cover: z.string().url().optional(),
+		cityAndMunicipalityTypeBBSR: z.string().optional(),
+		description: z.string().trim().optional(),
+		favorite: z
+			.array(
+				z.object({
+					href: z.string(),
+					icon: z.url().optional(),
+					title: z.string().trim()
+				})
+			)
+			.default([]),
+		federalState: z.string().optional(),
+		geometry: z.string().uuid().optional(),
+		image: z.string().url().optional(),
+		level: z.number().int().positive().default(1),
+		name: z.string().trim(),
+		nameBBSR: z.string().optional(),
+		nameOSM: z.string().optional(),
+		officialMunicipalityKey: z.string().length(8).optional(),
+		officialRegionalCode: z.string().length(12).optional(),
+		organizationalUnitType: organizationalUnitType.optional(),
+		type: z.literal(payloadTypes.enum.organizational_unit),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
 
@@ -1612,14 +1640,16 @@ const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ nam
 
 export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizationalUnitPayload>;
 
-const pagePayload = z.object({
-	body: z.string().trim(),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.page),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const pagePayload = z
+	.object({
+		body: z.string().trim(),
+		color: backgroundColor.optional(),
+		cover: z.url().optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.page),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type PagePayload = z.infer<typeof pagePayload>;
 
