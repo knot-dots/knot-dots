@@ -30,14 +30,6 @@
 	import {
 		type ActualDataContainer,
 		type Container,
-		type GoalStatus,
-		type ProgramStatus,
-		type ResourceCategory,
-		type ResourceUnit,
-		type RuleStatus,
-		type Status,
-		type TaskCategory,
-		type TaskStatus,
 		isActualDataContainer,
 		isContainerWithDescription,
 		isContainerWithDuration,
@@ -93,7 +85,7 @@
 {#each columns as col (col)}
 	{#if col === 'type'}
 		<div class="cell" class:cell--locked={editable}>
-			<span>{$_(container.payload.type) as string}</span>
+			<span>{$_(container.payload.type)}</span>
 		</div>
 	{:else if col === 'description'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
@@ -120,31 +112,31 @@
 				<StatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.status as Status}
+					bind:value={container.payload.status}
 				/>
 			{:else if 'taskStatus' in container.payload}
 				<TaskStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.taskStatus as TaskStatus}
+					bind:value={container.payload.taskStatus}
 				/>
 			{:else if 'ruleStatus' in container.payload}
 				<RuleStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.ruleStatus as RuleStatus}
+					bind:value={container.payload.ruleStatus}
 				/>
 			{:else if 'goalStatus' in container.payload}
 				<GoalStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.goalStatus as GoalStatus}
+					bind:value={container.payload.goalStatus}
 				/>
 			{:else if 'programStatus' in container.payload}
 				<ProgramStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.programStatus as ProgramStatus}
+					bind:value={container.payload.programStatus}
 				/>
 			{/if}
 		</div>
@@ -211,7 +203,7 @@
 				<TaskCategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
-					bind:value={container.payload.taskCategory as TaskCategory}
+					bind:value={container.payload.taskCategory}
 				/>
 			{/if}
 		</div>
@@ -352,7 +344,7 @@
 {#if columns.includes('resourceCategory')}
 	<div class="cell cell--locked">
 		{#if 'resourceCategory' in container.payload}
-			<span>{$_(container.payload.resourceCategory as ResourceCategory) as string}</span>
+			<span>{$_(container.payload.resourceCategory)}</span>
 		{/if}
 	</div>
 {/if}
@@ -360,7 +352,7 @@
 {#if columns.includes('resourceUnit')}
 	<div class="cell cell--locked">
 		{#if 'resourceUnit' in container.payload}
-			<span>{$_(container.payload.resourceUnit as ResourceUnit) as string}</span>
+			<span>{$_(container.payload.resourceUnit)}</span>
 		{/if}
 	</div>
 {/if}

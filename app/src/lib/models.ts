@@ -162,10 +162,6 @@ export const levels = z.enum(levelValues);
 
 export type Level = z.infer<typeof levels>;
 
-export function isLevel(value: unknown): value is Level {
-	return levelValues.includes(value as Level);
-}
-
 const listTypeValues = ['carousel', 'wall', 'list', 'accordion'] as const;
 
 export const listTypes = z.enum(listTypeValues);
@@ -345,8 +341,6 @@ const indicatorTypeValues = [
 
 export const indicatorTypes = z.enum(indicatorTypeValues);
 
-export type IndicatorType = z.infer<typeof indicatorTypes>;
-
 const goalTypeValues = [
 	'goal_type.vision',
 	'goal_type.model',
@@ -375,8 +369,6 @@ export type GoalType = z.infer<typeof goalType>;
 const organizationalUnitTypeValues = ['organizational_unit_type.administrative_area'] as const;
 
 export const organizationalUnitType = z.enum(organizationalUnitTypeValues);
-
-export type OrganizationalUnitType = z.infer<typeof organizationalUnitType>;
 
 const topicValues = [
 	'topic.citizen_participation',
@@ -426,8 +418,6 @@ const policyFieldBNKValues = [
 
 export const policyFieldBNK = z.enum(policyFieldBNKValues);
 
-export type PolicyFieldBNK = z.infer<typeof policyFieldBNK>;
-
 const taskCategoryValues = [
 	'task_category.default',
 	'task_category.program_management',
@@ -439,8 +429,6 @@ const taskCategoryValues = [
 
 export const taskCategories = z.enum(taskCategoryValues);
 
-export type TaskCategory = z.infer<typeof taskCategories>;
-
 const organizationCategoryValues = [
 	'organization_category.business',
 	'organization_category.government',
@@ -449,8 +437,6 @@ const organizationCategoryValues = [
 ] as const;
 
 export const organizationCategories = z.enum(organizationCategoryValues);
-
-export type OrganizationCategory = z.infer<typeof organizationCategories>;
 
 const indicatorCategoryValues = [
 	'indicator_category.fgk',
@@ -463,8 +449,6 @@ const indicatorCategoryValues = [
 
 export const indicatorCategories = z.enum(indicatorCategoryValues);
 
-export type IndicatorCategory = z.infer<typeof indicatorCategories>;
-
 const resourceCategoryValues = [
 	'resource_category.money',
 	'resource_category.personnel',
@@ -472,8 +456,6 @@ const resourceCategoryValues = [
 ] as const;
 
 export const resourceCategories = z.enum(resourceCategoryValues);
-
-export type ResourceCategory = z.infer<typeof resourceCategories>;
 
 const quantityValues = [
 	'quantity.custom',
@@ -497,12 +479,6 @@ const quantityValues = [
 ] as const;
 
 export const quantities = z.enum(quantityValues);
-
-export type Quantity = z.infer<typeof quantities>;
-
-export function isQuantity(value: unknown): value is Quantity {
-	return quantityValues.includes(value as Quantity);
-}
 
 export function fromCounts(options: string[], counts: Record<string, number> = {}) {
 	const m = new Map<string, number>(options.map((opt) => [opt, 0]));
@@ -546,8 +522,6 @@ const resourceUnitValues = ['unit.euro', 'unit.piece', 'unit.personnel_hour'] as
 
 export const resourceUnits = z.enum(resourceUnitValues);
 
-export type ResourceUnit = z.infer<typeof resourceUnits>;
-
 export const resourceDataTypes = z.enum([
 	'resource_data_type.actual_resource_allocation',
 	'resource_data_type.planned_resource_allocation',
@@ -555,8 +529,6 @@ export const resourceDataTypes = z.enum([
 	'resource_data_type.total_budget',
 	'resource_data_type.total_budget_forecast'
 ] as const);
-
-export type ResourceDataType = z.infer<typeof resourceDataTypes>;
 
 const audienceValues = [
 	'audience.administration',
@@ -629,8 +601,6 @@ export const administrativeTypes = z.enum([
 
 export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high']);
 
-export type Benefit = z.infer<typeof benefit>;
-
 export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'iooi.impact']);
 
 export type IooiType = z.infer<typeof iooiTypes>;
@@ -674,8 +644,6 @@ const binaryIndicatorPayload = basePayload
 export type BinaryIndicatorPayload = z.infer<typeof binaryIndicatorPayload>;
 
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
-
-export type InitialBinaryIndicatorPayload = z.infer<typeof initialBinaryIndicatorPayload>;
 
 const unrefinedCategoryPayload = z
 	.object({
@@ -747,8 +715,6 @@ export type ActualDataPayload = z.infer<typeof actualDataPayload>;
 
 const initialActualDataPayload = actualDataPayload.partial({ indicator: true, title: true });
 
-export type InitialActualDataPayload = z.infer<typeof initialActualDataPayload>;
-
 const administrativeAreaBasicDataPayload = z
 	.object({
 		title: z
@@ -763,10 +729,6 @@ const administrativeAreaBasicDataPayload = z
 export type AdministrativeAreaBasicDataPayload = z.infer<typeof administrativeAreaBasicDataPayload>;
 
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
-
-export type InitialAdministrativeAreaBasicDataPayload = z.infer<
-	typeof initialAdministrativeAreaBasicDataPayload
->;
 
 const chapterPayload = basePayload
 	.extend({
@@ -783,8 +745,6 @@ const chapterPayload = basePayload
 export type ChapterPayload = z.infer<typeof chapterPayload>;
 
 const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
-
-export type InitialChapterPayload = z.infer<typeof initialChapterPayload>;
 
 const customCollectionPayload = z
 	.object({
@@ -820,8 +780,6 @@ export type CustomCollectionPayload = z.infer<typeof customCollectionPayload>;
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
-export type InitialCustomCollectionPayload = z.infer<typeof initialCustomCollectionPayload>;
-
 const fileCollectionPayload = z
 	.object({
 		file: z
@@ -847,8 +805,6 @@ export type FileCollectionPayload = z.infer<typeof fileCollectionPayload>;
 
 const initialFileCollectionPayload = fileCollectionPayload;
 
-export type InitialFileCollectionPayload = z.infer<typeof initialFileCollectionPayload>;
-
 const goalPayload = basePayload
 	.extend({
 		fulfillmentDate: z
@@ -870,8 +826,6 @@ const initialGoalPayload = goalPayload.partial({
 	title: true
 });
 
-export type InitialGoalPayload = z.infer<typeof initialGoalPayload>;
-
 const goalCollectionPayload = z
 	.object({
 		title: z
@@ -887,8 +841,6 @@ export type GoalCollectionPayload = z.infer<typeof goalCollectionPayload>;
 
 const initialGoalCollectionPayload = goalCollectionPayload;
 
-export type InitialGoalCollectionPayload = z.infer<typeof initialGoalCollectionPayload>;
-
 const helpPayload = z
 	.object({
 		body: z.string().trim().default(''),
@@ -902,8 +854,6 @@ const helpPayload = z
 export type HelpPayload = z.infer<typeof helpPayload>;
 
 const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: true });
-
-export type InitialHelpPayload = z.infer<typeof initialHelpPayload>;
 
 const indicatorPayload = basePayload
 	.extend({
@@ -942,8 +892,6 @@ export type IndicatorCollectionPayload = z.infer<typeof indicatorCollectionPaylo
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
-export type InitialIndicatorCollectionPayload = z.infer<typeof initialIndicatorCollectionPayload>;
-
 const indicatorTemplatePayload = indicatorPayload
 	.extend({
 		type: z.literal(payloadTypes.enum.indicator_template)
@@ -958,8 +906,6 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	unit: true
 });
 
-export type InitialIndicatorTemplatePayload = z.infer<typeof initialIndicatorTemplatePayload>;
-
 const knowledgePayload = basePayload
 	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
 	.strict();
@@ -967,8 +913,6 @@ const knowledgePayload = basePayload
 export type KnowledgePayload = z.infer<typeof knowledgePayload>;
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
-
-export type InitialKnowledgePayload = z.infer<typeof initialKnowledgePayload>;
 
 const mapPayload = z
 	.object({
@@ -985,8 +929,6 @@ const mapPayload = z
 export type MapPayload = z.infer<typeof mapPayload>;
 
 const initialMapPayload = mapPayload;
-
-export type InitialMapPayload = z.infer<typeof initialMapPayload>;
 
 const measurePayload = basePayload
 	.extend({
@@ -1008,8 +950,6 @@ export type MeasurePayload = z.infer<typeof measurePayload>;
 
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
-export type InitialMeasurePayload = z.infer<typeof initialMeasurePayload>;
-
 const measureCollectionPayload = z
 	.object({
 		title: z
@@ -1024,8 +964,6 @@ const measureCollectionPayload = z
 export type MeasureCollectionPayload = z.infer<typeof measureCollectionPayload>;
 
 const initialMeasureCollectionPayload = measureCollectionPayload;
-
-export type InitialMeasureCollectionPayload = z.infer<typeof initialMeasureCollectionPayload>;
 
 const objectivePayload = basePayload
 	.omit({ category: true, summary: true, topic: true })
@@ -1061,8 +999,6 @@ export type ObjectiveCollectionPayload = z.infer<typeof objectiveCollectionPaylo
 
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
-export type InitialObjectiveCollectionPayload = z.infer<typeof initialObjectiveCollectionPayload>;
-
 const progressPayload = z
 	.object({
 		title: z
@@ -1077,8 +1013,6 @@ const progressPayload = z
 export type ProgressPayload = z.infer<typeof progressPayload>;
 
 const initialProgressPayload = progressPayload;
-
-export type InitialProgressPayload = z.infer<typeof initialProgressPayload>;
 
 const rulePayload = basePayload
 	.extend({
@@ -1122,8 +1056,6 @@ export type SimpleMeasurePayload = z.infer<typeof simpleMeasurePayload>;
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
-export type InitialSimpleMeasurePayload = z.infer<typeof initialSimpleMeasurePayload>;
-
 const summaryPayload = z
 	.object({
 		title: z
@@ -1138,8 +1070,6 @@ const summaryPayload = z
 export type SummaryPayload = z.infer<typeof summaryPayload>;
 
 const initialSummaryPayload = summaryPayload;
-
-export type InitialSummaryPayload = z.infer<typeof initialSummaryPayload>;
 
 const programPayload = basePayload
 	.omit({
@@ -1163,8 +1093,6 @@ const initialProgramPayload = programPayload.partial({
 	title: true
 });
 
-export type InitialProgramPayload = z.infer<typeof initialProgramPayload>;
-
 const programCollectionPayload = z
 	.object({
 		title: z
@@ -1179,8 +1107,6 @@ const programCollectionPayload = z
 export type ProgramCollectionPayload = z.infer<typeof programCollectionPayload>;
 
 const initialProgramCollectionPayload = programCollectionPayload;
-
-export type InitialProgramCollectionPayload = z.infer<typeof initialProgramCollectionPayload>;
 
 const measureMonitoringBasePayload = z.object({
 	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
@@ -1223,8 +1149,6 @@ export type EffectCollectionPayload = z.infer<typeof effectCollectionPayload>;
 
 const initialEffectCollectionPayload = effectCollectionPayload;
 
-export type InitialEffectCollectionPayload = z.infer<typeof initialEffectCollectionPayload>;
-
 const reportPayload = basePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.report)
@@ -1234,8 +1158,6 @@ const reportPayload = basePayload
 export type ReportPayload = z.infer<typeof reportPayload>;
 
 const initialReportPayload = reportPayload.partial({ title: true });
-
-export type InitialReportPayload = z.infer<typeof initialReportPayload>;
 
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
@@ -1256,8 +1178,6 @@ const initialResourcePayload = resourcePayload.partial({
 	unit: true
 });
 
-export type InitialResourcePayload = z.infer<typeof initialResourcePayload>;
-
 const resourceCollectionPayload = z
 	.object({
 		title: z
@@ -1272,8 +1192,6 @@ const resourceCollectionPayload = z
 export type ResourceCollectionPayload = z.infer<typeof resourceCollectionPayload>;
 
 const initialResourceCollectionPayload = resourceCollectionPayload;
-
-export type InitialResourceCollectionPayload = z.infer<typeof initialResourceCollectionPayload>;
 
 const resourceV2Payload = basePayload
 	.omit({ audience: true, category: true, summary: true, topic: true })
@@ -1290,8 +1208,6 @@ const resourceV2Payload = basePayload
 export type ResourceV2Payload = z.infer<typeof resourceV2Payload>;
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
-
-export type InitialResourceV2Payload = z.infer<typeof initialResourceV2Payload>;
 
 const resourceDataPayload = z
 	.object({
@@ -1340,10 +1256,6 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 	resourceDataType: true
 });
 
-export type InitialResourceDataCollectionPayload = z.infer<
-	typeof initialResourceDataCollectionPayload
->;
-
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -1361,8 +1273,6 @@ export type TaskPayload = z.infer<typeof taskPayload>;
 
 const initialTaskPayload = taskPayload.partial({ title: true });
 
-export type InitialTaskPayload = z.infer<typeof initialTaskPayload>;
-
 const imagePayload = z
 	.object({
 		body: z.string().trim().optional(),
@@ -1377,8 +1287,6 @@ const imagePayload = z
 export type ImagePayload = z.infer<typeof imagePayload>;
 
 const initialImagePayload = imagePayload.partial({ body: true, title: true });
-
-export type InitialImagePayload = z.infer<typeof initialImagePayload>;
 
 const teaserPayload = z
 	.object({
@@ -1419,8 +1327,6 @@ export type TeaserPayload = z.infer<typeof teaserPayload>;
 
 const initialTeaserPayload = teaserPayload.partial({ title: true });
 
-export type InitialTeaserPayload = z.infer<typeof initialTeaserPayload>;
-
 const infoBoxPayload = teaserPayload
 	.extend({
 		colSize: teaserColSizes.default('100-0'),
@@ -1439,8 +1345,6 @@ const infoBoxPayload = teaserPayload
 export type InfoBoxPayload = z.infer<typeof infoBoxPayload>;
 
 const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
-
-export type InitialInfoBoxPayload = z.infer<typeof initialInfoBoxPayload>;
 
 const teaserHighlightPayload = teaserPayload
 	.extend({
@@ -1461,8 +1365,6 @@ export type TeaserHighlightPayload = z.infer<typeof teaserHighlightPayload>;
 
 const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
 
-export type InitialTeaserHighlightPayload = z.infer<typeof initialTeaserHighlightPayload>;
-
 const quotePayload = teaserPayload
 	.extend({
 		colSize: teaserColSizes.default('100-0'),
@@ -1481,8 +1383,6 @@ const quotePayload = teaserPayload
 export type QuotePayload = z.infer<typeof quotePayload>;
 
 const initialQuotePayload = quotePayload.partial({ title: true });
-
-export type InitialQuotePayload = z.infer<typeof initialQuotePayload>;
 
 const colContentPayload = teaserPayload
 	.extend({
@@ -1503,8 +1403,6 @@ export type ColContentPayload = z.infer<typeof colContentPayload>;
 
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
-export type InitialColContentPayload = z.infer<typeof initialColContentPayload>;
-
 const contentPartnerPayload = basePayload
 	.extend({
 		image: z.string().url().optional(),
@@ -1518,8 +1416,6 @@ export type ContentPartnerPayload = z.infer<typeof contentPartnerPayload>;
 
 const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
 
-export type InitialContentPartnerPayload = z.infer<typeof initialContentPartnerPayload>;
-
 const contentPartnerCollectionPayload = z
 	.object({
 		title: z.string().readonly().default('Partners'),
@@ -1532,10 +1428,6 @@ const contentPartnerCollectionPayload = z
 export type ContentPartnerCollectionPayload = z.infer<typeof contentPartnerCollectionPayload>;
 
 const initialContentPartnerCollectionPayload = contentPartnerCollectionPayload;
-
-export type InitialContentPartnerCollectionPayload = z.infer<
-	typeof initialContentPartnerCollectionPayload
->;
 
 const teaserCollectionPayload = z
 	.object({
@@ -1553,8 +1445,6 @@ export type TeaserCollectionPayload = z.infer<typeof teaserCollectionPayload>;
 
 const initialTeaserCollectionPayload = teaserCollectionPayload;
 
-export type InitialTeaserCollectionPayload = z.infer<typeof initialTeaserCollectionPayload>;
-
 const taskCollectionPayload = z
 	.object({
 		title: z
@@ -1569,8 +1459,6 @@ const taskCollectionPayload = z
 export type TaskCollectionPayload = z.infer<typeof taskCollectionPayload>;
 
 const initialTaskCollectionPayload = taskCollectionPayload;
-
-export type InitialTaskCollectionPayload = z.infer<typeof initialTaskCollectionPayload>;
 
 const organizationPayload = z
 	.object({
@@ -1599,8 +1487,6 @@ const organizationPayload = z
 export type OrganizationPayload = z.infer<typeof organizationPayload>;
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
-
-export type InitialOrganizationPayload = z.infer<typeof initialOrganizationPayload>;
 
 const organizationalUnitPayload = z
 	.object({
@@ -1655,8 +1541,6 @@ export type PagePayload = z.infer<typeof pagePayload>;
 
 const initialPagePayload = pagePayload.partial({ body: true, title: true });
 
-export type InitialPagePayload = z.infer<typeof initialPagePayload>;
-
 const textPayload = z
 	.object({
 		audience: z
@@ -1674,8 +1558,6 @@ export type TextPayload = z.infer<typeof textPayload>;
 
 const initialTextPayload = textPayload.partial({ body: true, title: true });
 
-export type InitialTextPayload = z.infer<typeof initialTextPayload>;
-
 const undefinedPayload = z
 	.object({
 		title: z.string().trim(),
@@ -1684,11 +1566,7 @@ const undefinedPayload = z
 	})
 	.strict();
 
-export type UndefinedPayload = z.infer<typeof undefinedPayload>;
-
 const initialUndefinedPayload = undefinedPayload.partial({ title: true });
-
-export type InitialUndefinedPayload = z.infer<typeof initialUndefinedPayload>;
 
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
@@ -1801,8 +1679,6 @@ const initialPayload = z.discriminatedUnion('type', [
 	initialTextPayload,
 	initialUndefinedPayload
 ]);
-
-export type InitialPayload = z.infer<typeof initialPayload>;
 
 export const anyInitialPayload = z.discriminatedUnion('type', [
 	...initialPayload.options,
