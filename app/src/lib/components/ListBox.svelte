@@ -11,11 +11,13 @@
 	export let label: string;
 	export let options: Array<{ value: string | null | undefined; label: string }> = [];
 	export let required = false;
-	export let value: string[] = [];
+	export let value: string[] | string | null | undefined;
 
 	const listbox = createListbox({
 		label,
-		selected: options.filter(({ value: v }) => (value as unknown[]).includes(v))
+		selected: Array.isArray(value)
+			? options.filter(({ value: v }) => (value as unknown[]).includes(v))
+			: options.find(({ value: v }) => value === v)
 	});
 
 	const [popperRef, popperContent] = createPopperActions({
@@ -27,30 +29,44 @@
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	};
 
-	$: value = $listbox.selected.map(({ value: v }) => v);
+	$: value = Array.isArray($listbox.selected)
+		? $listbox.selected.map(({ value: v }) => v)
+		: $listbox.selected?.value;
 </script>
 
 <div class="meta">
 	<span class="meta-key">{$_(label)}</span>
 	<div class="meta-value">
-		<button
-			class:invalid={required && value.length === 0}
-			class:valid={!required || value.length > 0}
-			use:listbox.button
-			use:popperRef
-		>
-			<ul class="selected">
-				{#each $listbox.selected as selected (selected.value)}
-					<li>
-						<span>{selected.label}</span>
-						<span use:listbox.deselect={selected}>
-							<XMark />
-						</span>
-					</li>
-				{/each}
-			</ul>
-			<ChevronUpDown />
-		</button>
+		{#if Array.isArray(value)}
+			<button
+				class:invalid={required && value.length === 0}
+				class:valid={!required || value.length > 0}
+				use:listbox.button
+				use:popperRef
+			>
+				<ul class="selected-multi">
+					{#each $listbox.selected as selected (selected.value)}
+						<li>
+							<span>{selected.label}</span>
+							<span use:listbox.deselect={selected}>
+								<XMark />
+							</span>
+						</li>
+					{/each}
+				</ul>
+				<ChevronUpDown />
+			</button>
+		{:else}
+			<button
+				class:invalid={required && value}
+				class:valid={!required || value}
+				use:listbox.button
+				use:popperRef
+			>
+				<span class="selected-single">{$listbox.selected?.label ?? ''}</span>
+				<ChevronUpDown />
+			</button>
+		{/if}
 
 		{#if $listbox.expanded}
 			<ul
@@ -61,7 +77,9 @@
 			>
 				{#each options as option (option.value)}
 					{@const active = $listbox.active === option}
-					{@const selected = $listbox.selected.includes(option)}
+					{@const selected = Array.isArray($listbox.selected)
+						? $listbox.selected.includes(option)
+						: $listbox.selected === option}
 					<li class:active use:listbox.item={{ value: option }}>
 						{option.label}
 						{#if selected}
@@ -96,14 +114,19 @@
 		flex-shrink: 0;
 	}
 
-	.selected {
+	.selected-single {
+		line-height: 1.2;
+		margin: 0.25rem 0.375rem;
+	}
+
+	.selected-multi {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
 		overflow: hidden;
 	}
 
-	.selected > li {
+	.selected-multi > li {
 		align-items: center;
 		border: solid 1px;
 		border-radius: 0.375rem;
@@ -115,13 +138,13 @@
 		text-align: center;
 	}
 
-	.selected > li > :first-child {
+	.selected-multi > li > :first-child {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	.selected > li > :last-child {
+	.selected-multi > li > :last-child {
 		flex-shrink: 0;
 	}
 
