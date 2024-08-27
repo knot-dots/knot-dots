@@ -37,7 +37,7 @@
 
 	<ListBox
 		label={$_('audience')}
-		options={audience.options}
+		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
 		bind:value={container.payload.audience}
 	/>
 

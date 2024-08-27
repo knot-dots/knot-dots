@@ -37,19 +37,19 @@
 
 	<ListBox
 		label={$_('topic.label')}
-		options={topics.options}
+		options={topics.options.map((o) => ({ value: o, label: $_(o) }))}
 		bind:value={container.payload.topic}
 	/>
 
 	<ListBox
 		label={$_('category')}
-		options={sustainableDevelopmentGoals.options}
+		options={sustainableDevelopmentGoals.options.map((o) => ({ value: o, label: $_(o) }))}
 		bind:value={container.payload.category}
 	/>
 
 	<ListBox
 		label={$_('audience')}
-		options={audience.options}
+		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
 		bind:value={container.payload.audience}
 	/>
 

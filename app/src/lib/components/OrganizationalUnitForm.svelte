@@ -43,6 +43,6 @@
 
 <ListBox
 	label={$_('boards')}
-	options={['board.indicators']}
+	options={['board.indicators'].map((o) => ({ value: o, label: $_(o) }))}
 	bind:value={container.payload.boards}
 />

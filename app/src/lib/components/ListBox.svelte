@@ -9,13 +9,13 @@
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 
 	export let label: string;
-	export let options: string[] = [];
+	export let options: Array<{ value: string | null | undefined; label: string }> = [];
 	export let required = false;
 	export let value: string[] = [];
 
 	const listbox = createListbox({
 		label,
-		selected: value
+		selected: options.filter(({ value: v }) => (value as unknown[]).includes(v))
 	});
 
 	const [popperRef, popperContent] = createPopperActions({
@@ -27,7 +27,7 @@
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	};
 
-	$: value = $listbox.selected;
+	$: value = $listbox.selected.map(({ value: v }) => v);
 </script>
 
 <div class="meta">
@@ -40,9 +40,9 @@
 			use:popperRef
 		>
 			<ul class="selected">
-				{#each $listbox.selected as selected (selected)}
+				{#each $listbox.selected as selected (selected.value)}
 					<li>
-						<span>{$_(selected)}</span>
+						<span>{selected.label}</span>
 						<span use:listbox.deselect={selected}>
 							<XMark />
 						</span>
@@ -59,11 +59,11 @@
 				use:listbox.items
 				use:popperContent={extraOpts}
 			>
-				{#each options as option (option)}
+				{#each options as option (option.value)}
 					{@const active = $listbox.active === option}
 					{@const selected = $listbox.selected.includes(option)}
 					<li class:active use:listbox.item={{ value: option }}>
-						{$_(option)}
+						{option.label}
 						{#if selected}
 							<Check />
 						{/if}
