@@ -41,6 +41,7 @@
 			<button
 				class:invalid={required && value.length === 0}
 				class:valid={!required || value.length > 0}
+				on:change
 				use:listbox.button
 				use:popperRef
 			>
@@ -60,6 +61,7 @@
 			<button
 				class:invalid={required && value}
 				class:valid={!required || value}
+				on:change
 				use:listbox.button
 				use:popperRef
 			>
