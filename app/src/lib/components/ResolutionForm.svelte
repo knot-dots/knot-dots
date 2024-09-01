@@ -36,7 +36,7 @@
 			{$_('valid_from')}
 			<input type="date" name="validFrom" bind:value={container.payload.validFrom} />
 		</label>
-		{#if container.payload.resolutionStatus == resolutionStatus.enum['resolution_status.invalid']}
+		{#if container.payload.resolutionStatus === resolutionStatus.enum['resolution_status.invalid']}
 			<label>
 				{$_('valid_until')}
 				<input type="date" name="validUntil" bind:value={container.payload.validUntil} />
@@ -48,21 +48,11 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label class="meta">
-		<span class="meta-value">{$_('resolution_status')}</span>
-		<select
-			class="meta-key"
-			name="resolutionStatus"
-			bind:value={container.payload.resolutionStatus}
-			required
-		>
-			{#each resolutionStatus.options as statusOption}
-				<option value={statusOption}>
-					{$_(statusOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
+	<ListBox
+		label={$_('resolution_status')}
+		options={resolutionStatus.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value={container.payload.resolutionStatus}
+	/>
 
 	<StrategyRelationSelector {container} />
 

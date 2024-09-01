@@ -1320,6 +1320,19 @@ export function isPartOf(container: { relation: PartialRelation[]; revision: num
 	};
 }
 
+export function isPartOfMeasure(container: { relation: PartialRelation[]; revision: number }) {
+	return function (candidate: AnyContainer) {
+		return (
+			container.relation.findIndex(
+				(r) =>
+					r.predicate === predicates.enum['is-part-of-measure'] &&
+					r.subject === candidate.revision &&
+					candidate.revision !== container.revision
+			) > -1
+		);
+	};
+}
+
 export function hasMember(user: { guid: string }) {
 	return (container: AnyContainer) =>
 		container.user.find(

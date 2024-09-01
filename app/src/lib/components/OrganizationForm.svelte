@@ -44,14 +44,11 @@
 	<Editor label={$_('description')} bind:value={container.payload.description} />
 {/key}
 
-<label>
-	{$_('organization_category.label')}
-	<select name="organizationCategory" bind:value={container.payload.organizationCategory}>
-		{#each organizationCategories.options as organizationCategoryOption}
-			<option value={organizationCategoryOption}>{$_(organizationCategoryOption)}</option>
-		{/each}
-	</select>
-</label>
+<ListBox
+	label={$_('organization_category.label')}
+	options={organizationCategories.options.map((o) => ({ value: o, label: $_(o) }))}
+	bind:value={container.payload.organizationCategory}
+/>
 
 <ListBox
 	label={$_('boards')}

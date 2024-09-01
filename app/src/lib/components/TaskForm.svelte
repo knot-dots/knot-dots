@@ -3,8 +3,8 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Editor from '$lib/components/Editor.svelte';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import { taskCategories, taskStatus } from '$lib/models';
@@ -28,8 +28,6 @@
 			$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
 		);
 	});
-
-	let statusParam = paramsFromURL($page.url).get('taskStatus');
 </script>
 
 <fieldset class="form-tab" id="basic-data">
@@ -41,44 +39,29 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label class="meta">
-		<span class="meta-key">{$_('task_status.label')}</span>
-		<select class="meta-value" name="status" bind:value={container.payload.taskStatus} required>
-			{#each taskStatus.options as statusOption}
-				<option value={statusOption} selected={statusOption === statusParam}>
-					{$_(statusOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
+	<ListBox
+		label={$_('task_status.label')}
+		options={taskStatus.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value={container.payload.taskStatus}
+	/>
 
-	<label class="meta">
-		<span class="meta-key">{$_('assignee')}</span>
-		<select class="meta-value" name="assignee" bind:value={container.payload.assignee}>
-			<option value={undefined}></option>
-			{#await membersPromise then members}
-				{#each members as { display_name, guid }}
-					{#if display_name !== ''}
-						<option value={guid}>
-							{display_name}
-						</option>
-					{/if}
-				{/each}
-			{/await}
-		</select>
-	</label>
+	{#await membersPromise}
+		<ListBox label={$_('assignee')} options={[]} bind:value={container.payload.assignee} />
+	{:then members}
+		<ListBox
+			label={$_('assignee')}
+			options={members
+				.filter(({ display_name }) => display_name !== '')
+				.map(({ display_name, guid }) => ({ value: guid, label: display_name }))}
+			bind:value={container.payload.assignee}
+		/>
+	{/await}
 
-	<label class="meta">
-		<span class="meta-key">{$_('task_category.label')}</span>
-		<select class="meta-value" name="taskCategory" bind:value={container.payload.taskCategory}>
-			<option value={undefined}></option>
-			{#each taskCategories.options as taskCategoryOption}
-				<option value={taskCategoryOption}>
-					{$_(taskCategoryOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
+	<ListBox
+		label={$_('task_category.label')}
+		options={taskCategories.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value={container.payload.taskCategory}
+	/>
 
 	<label class="meta">
 		<span class="meta-key">{$_('fulfillment_date')}</span>

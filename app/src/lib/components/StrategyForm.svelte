@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Trash from '~icons/heroicons/trash';
-	import { page } from '$app/stores';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import {
@@ -23,8 +21,6 @@
 		containerForm: { tabs: [] }
 	}));
 
-	let levelParam = paramsFromURL($page.url).get('level') ?? levels.enum['level.local'];
-
 	function removeImage() {
 		delete container.payload.image;
 		container.payload = container.payload;
@@ -38,32 +34,17 @@
 	}
 </script>
 
-<label class="meta">
-	<span class="meta-key">{$_('level.label')}</span>
-	<select class="meta-value" name="level" bind:value={container.payload.level} required>
-		{#each levels.options as levelOption}
-			<option value={levelOption} selected={levelOption === levelParam}>
-				{$_(levelOption)}
-			</option>
-		{/each}
-	</select>
-</label>
+<ListBox
+	label={$_('level.label')}
+	options={levels.options.map((o) => ({ value: o, label: $_(o) }))}
+	bind:value={container.payload.level}
+/>
 
-<label class="meta">
-	<span class="meta-key">{$_('strategy_type.label')}</span>
-	<select
-		class="meta-value"
-		name="strategy-type"
-		bind:value={container.payload.strategyType}
-		required
-	>
-		{#each strategyTypes.options as strategyTypeOption}
-			<option value={strategyTypeOption}>
-				{$_(strategyTypeOption)}
-			</option>
-		{/each}
-	</select>
-</label>
+<ListBox
+	label={$_('strategy_type.label')}
+	options={strategyTypes.options.map((o) => ({ value: o, label: $_(o) }))}
+	bind:value={container.payload.strategyType}
+/>
 
 {#if 'image' in container.payload}
 	<div class="meta">

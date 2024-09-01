@@ -26,14 +26,11 @@
 </script>
 
 <fieldset class="form-tab" id="basic-data">
-	<label>
-		{$_('label.unit')}
-		<select name="unit" bind:value={container.payload.unit}>
-			{#each units.options as unitOption}
-				<option value={unitOption}>{$_(unitOption)}</option>
-			{/each}
-		</select>
-	</label>
+	<ListBox
+		label={$_('label.unit')}
+		options={units.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value={container.payload.unit}
+	/>
 
 	{#key 'guid' in container ? container.guid : ''}
 		<Editor label={$_('description')} bind:value={container.payload.description} />

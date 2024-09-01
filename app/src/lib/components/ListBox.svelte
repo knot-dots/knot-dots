@@ -9,7 +9,7 @@
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 
 	type Option = {
-		value: string | null | undefined;
+		value: string | number | null | undefined;
 		label: string;
 		group?: string;
 	};
@@ -17,7 +17,7 @@
 	export let label: string;
 	export let options: Array<Option> = [];
 	export let required = false;
-	export let value: string[] | string | null | undefined;
+	export let value: string[] | number[] | string | number | null | undefined;
 
 	const listbox = createListbox({
 		label,

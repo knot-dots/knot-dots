@@ -1,50 +1,47 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { containerOfType, isTaskContainer, paramsFromFragment, payloadTypes } from '$lib/models';
+	import {
+		containerOfType,
+		isTaskContainer,
+		paramsFromFragment,
+		payloadTypes,
+		status
+	} from '$lib/models';
 	import type { AnyContainer, Container, EmptyContainer, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
+	import ListBox from '$lib/components/ListBox.svelte';
 
 	export let container: AnyContainer | EmptyContainer;
 
-	const payloadGroups = [
-		{
-			label: 'payload_group.long_term_goals',
-			items: [payloadTypes.enum.model, payloadTypes.enum.vision].filter((i) =>
-				paramsFromFragment($page.url).has('payloadType', i)
-			)
-		},
-		{
-			label: 'payload_group.strategic_goals',
-			items: [payloadTypes.enum.strategic_goal].filter((i) =>
-				paramsFromFragment($page.url).has('payloadType', i)
-			)
-		},
-		{
-			label: 'payload_group.measurable_goals',
-			items: [payloadTypes.enum.operational_goal].filter((i) =>
-				paramsFromFragment($page.url).has('payloadType', i)
-			)
-		},
-		{
-			label: 'payload_group.implementation',
-			items: [
-				payloadTypes.enum.measure,
-				payloadTypes.enum.simple_measure,
-				payloadTypes.enum.resolution
-			].filter((i) => paramsFromFragment($page.url).has('payloadType', i))
-		},
-		{
-			label: 'payload_group.misc',
-			items: [payloadTypes.enum.text].filter((i) =>
-				paramsFromFragment($page.url).has('payloadType', i)
-			)
-		}
-	];
-
-	async function restart(event: { currentTarget: HTMLSelectElement }) {
+	const payloadTypeOptions = paramsFromFragment($page.url).has('is-part-of-strategy')
+		? [
+				...[payloadTypes.enum.model, payloadTypes.enum.vision]
+					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
+					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.long_term_goals') })),
+				...[payloadTypes.enum.strategic_goal]
+					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
+					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.strategic_goals') })),
+				...[payloadTypes.enum.operational_goal]
+					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
+					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.measurable_goals') })),
+				...[
+					payloadTypes.enum.measure,
+					payloadTypes.enum.simple_measure,
+					payloadTypes.enum.resolution
+				]
+					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
+					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.implementation') })),
+				...[payloadTypes.enum.text]
+					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
+					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.misc') }))
+			]
+		: paramsFromFragment($page.url)
+				.getAll('payloadType')
+				.map((pt) => ({ value: pt, label: $_(pt) }));
+	async function restart(event: Event) {
 		container.payload = containerOfType(
-			event.currentTarget.value as PayloadType,
+			(event as CustomEvent).detail.selected.value as PayloadType,
 			container.organization,
 			container.organizational_unit,
 			container.realm
@@ -98,23 +95,10 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label>
-		{$_('payload_type')}
-		<select name="type" on:change={restart} required>
-			<option></option>
-			{#if paramsFromFragment($page.url).has('is-part-of-strategy')}
-				{#each payloadGroups as { label, items }}
-					<optgroup label={$_(label)}>
-						{#each items as option}
-							<option value={option}>{$_(option)}</option>
-						{/each}
-					</optgroup>
-				{/each}
-			{:else}
-				{#each paramsFromFragment($page.url).getAll('payloadType') as option}
-					<option value={option}>{$_(option)}</option>
-				{/each}
-			{/if}
-		</select>
-	</label>
+	<ListBox
+		label={$_('payload_type')}
+		options={payloadTypeOptions}
+		value={payloadTypes.enum.undefined}
+		on:change={restart}
+	/>
 </fieldset>

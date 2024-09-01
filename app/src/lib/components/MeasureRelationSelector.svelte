@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import {
 		type AnyContainer,
 		type EmptyContainer,
@@ -74,19 +75,20 @@
 			);
 	}
 
-	function onChangeIsPartOfMeasure(event: { currentTarget: HTMLSelectElement }) {
+	function onChangeIsPartOfMeasure(event: Event) {
 		const isPartOfMeasureIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-measure'] &&
 				('revision' in container ? subject == container.revision : true)
 		);
+		const value = (event as CustomEvent).detail.selected.value;
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfMeasureIndex),
-			...(event.currentTarget.value
+			...(value
 				? [
 						{
-							object: parseInt(event.currentTarget.value),
+							object: parseInt(value),
 							position: 0,
 							predicate: predicates.enum['is-part-of-measure'],
 							...('revision' in container ? { subject: container.revision } : undefined)
@@ -105,7 +107,7 @@
 			container.relation = [
 				...container.relation.slice(0, isPartOfIndex),
 				{
-					object: parseInt(event.currentTarget.value),
+					object: parseInt(value),
 					position: 0,
 					predicate: predicates.enum['is-part-of'],
 					...('revision' in container ? { subject: container.revision } : undefined)
@@ -115,7 +117,7 @@
 		}
 	}
 
-	function onChangeIsPartOf(event: { currentTarget: HTMLSelectElement }) {
+	function onChangeIsPartOf(event: Event) {
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
@@ -125,7 +127,7 @@
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
 			{
-				object: parseInt(event.currentTarget.value),
+				object: parseInt((event as CustomEvent).detail.selected.value),
 				position: 0,
 				predicate: predicates.enum['is-part-of'],
 				...('revision' in container ? { subject: container.revision } : undefined)
@@ -136,64 +138,44 @@
 </script>
 
 {#await isPartOfMeasureOptionsRequest then measureContainers}
-	<label class="meta">
-		<span class="meta-key">{$_('measure')}</span>
-		<select class="meta-value" name="isPartOfMeasure" on:change={onChangeIsPartOfMeasure}>
-			<option></option>
-			{#each measureContainers as option}
-				<option
-					value={option.revision}
-					selected={container.relation.findIndex(
-						(r) =>
-							r.predicate === predicates.enum['is-part-of-measure'] && r.object === option.revision
-					) > -1}
-				>
-					{option.payload.title}
-				</option>
-			{/each}
-		</select>
-	</label>
+	<ListBox
+		label={$_('measure')}
+		options={[
+			{ value: undefined, label: $_('not_part_of_measure') },
+			...measureContainers.map(({ payload, revision }) => ({
+				value: revision,
+				label: payload.title
+			}))
+		]}
+		value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of-measure'])
+			?.object}
+		on:change={onChangeIsPartOfMeasure}
+	/>
 {/await}
 
 {#if isTaskContainer(container) || isMilestoneContainer(container)}
 	{#await isPartOfOptionsRequest then isPartOfOptions}
 		{#if isPartOfOptions.length > 0}
-			{@const optionGroups = [
-				{
-					heading: $_('measure_results'),
-					options: isPartOfOptions.filter(isMeasureResultContainer)
-				},
-				{
-					heading: $_('milestones'),
-					options: isPartOfOptions.filter(isMilestoneContainer)
-				}
+			{@const options = [
+				{ value: undefined, label: $_('not_part_of') },
+				...isPartOfOptions.filter(isMeasureResultContainer).map(({ payload, revision }) => ({
+					value: revision,
+					label: payload.title,
+					group: $_('measure_results')
+				})),
+				...isPartOfOptions.filter(isMilestoneContainer).map(({ payload, revision }) => ({
+					value: revision,
+					label: payload.title,
+					group: $_('milestones')
+				}))
 			]}
-			<label class="meta">
-				<span class="meta-key">{$_('superordinate_element')}</span>
-				<select class="meta-value" name="isParOf" on:change={onChangeIsPartOf}>
-					{#each optionGroups as group}
-						{#if group.options.length > 0}
-							<optgroup label={group.heading}>
-								{#each group.options as option}
-									<option
-										selected={container.relation.findIndex(
-											(r) =>
-												r.predicate === predicates.enum['is-part-of'] &&
-												r.object === option.revision
-										) > -1}
-									>
-										{#if 'name' in option.payload}
-											{option.payload.name}
-										{:else}
-											{option.payload.title}
-										{/if}
-									</option>
-								{/each}
-							</optgroup>
-						{/if}
-					{/each}
-				</select>
-			</label>
+			<ListBox
+				label={$_('superordinate_element')}
+				{options}
+				value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])
+					?.object}
+				on:change={onChangeIsPartOf}
+			/>
 		{/if}
 	{/await}
 {/if}

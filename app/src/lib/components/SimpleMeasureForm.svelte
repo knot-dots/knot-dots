@@ -107,16 +107,11 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<label class="meta">
-		<span class="meta-key">{$_('status.label')}</span>
-		<select class="meta-value" name="status" bind:value={container.payload.status} required>
-			{#each status.options as statusOption}
-				<option value={statusOption} selected={statusOption === statusParam}>
-					{$_(statusOption)}
-				</option>
-			{/each}
-		</select>
-	</label>
+	<ListBox
+		label={$_('status.label')}
+		options={status.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value={container.payload.status}
+	/>
 
 	<ListBox
 		label={$_('measure_type')}

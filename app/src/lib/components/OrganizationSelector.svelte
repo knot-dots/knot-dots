@@ -1,40 +1,39 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { ability } from '$lib/stores';
+	import ListBox from '$lib/components/ListBox.svelte';
 	import type { AnyContainer, EmptyContainer } from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	export let container: AnyContainer | EmptyContainer;
 </script>
 
 {#if $ability.can('update', container.payload.type, 'organization')}
-	<label class="meta">
-		<span class="meta-key">{$_('organization')}</span>
-		<select class="meta-value" bind:value={container.organization}>
-			{#each $page.data.organizations as organizationOption}
-				<option value={organizationOption.guid}>
-					{organizationOption.payload.name}
-				</option>
-			{/each}
-		</select>
-	</label>
+	<ListBox
+		label={$_('organization')}
+		options={$page.data.organizations.map(({ guid, payload }) => ({
+			value: guid,
+			label: payload.name
+		}))}
+		bind:value={container.organization}
+	/>
 {/if}
 
-{#if $ability.can('update', container.payload.type, 'organizational_unit')}
-	<label class="meta">
-		<span class="meta-key">{$_('organizational_unit')}</span>
-		<select class="meta-value" bind:value={container.organizational_unit}>
-			<option value={null}>
-				{$page.data.organizations.find(({ guid }) => guid == container.organization)?.payload
-					.name ?? ''}
-			</option>
-			{#each $page.data.organizationalUnits as organizationalUnitOption}
-				{#if organizationalUnitOption.organization === container.organization}
-					<option value={organizationalUnitOption.guid}>
-						{organizationalUnitOption.payload.name}
-					</option>
-				{/if}
-			{/each}
-		</select>
-	</label>
+{#if $ability.can('update', container.payload.type, 'organizational_unit') && $page.data.organizationalUnits.length > 0}
+	<ListBox
+		label={$_('organizational_unit')}
+		options={[
+			{
+				value: null,
+				label:
+					$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
+						.name ?? ''
+			},
+			...$page.data.organizationalUnits.map(({ guid, payload }) => ({
+				value: guid,
+				label: payload.name
+			}))
+		]}
+		bind:value={container.organizational_unit}
+	/>
 {/if}
