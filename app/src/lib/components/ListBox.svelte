@@ -8,8 +8,14 @@
 	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 
+	type Option = {
+		value: string | null | undefined;
+		label: string;
+		group?: string;
+	};
+
 	export let label: string;
-	export let options: Array<{ value: string | null | undefined; label: string }> = [];
+	export let options: Array<Option> = [];
 	export let required = false;
 	export let value: string[] | string | null | undefined;
 
@@ -32,6 +38,16 @@
 	$: value = Array.isArray($listbox.selected)
 		? $listbox.selected.map(({ value: v }) => v)
 		: $listbox.selected?.value;
+
+	$: optionsByGroup = Object.entries(
+		options.reduce(
+			(accumulator: Record<string, Array<Option>>, item) => {
+				accumulator[item.group ?? ''] = [...(accumulator[item.group ?? ''] ?? []), item];
+				return accumulator;
+			},
+			{} as Record<string, Array<Option>>
+		)
+	);
 </script>
 
 <div class="meta">
@@ -77,17 +93,22 @@
 				use:listbox.items
 				use:popperContent={extraOpts}
 			>
-				{#each options as option (option.value)}
-					{@const active = $listbox.active === option}
-					{@const selected = Array.isArray($listbox.selected)
-						? $listbox.selected.includes(option)
-						: $listbox.selected === option}
-					<li class:active use:listbox.item={{ value: option }}>
-						{option.label}
-						{#if selected}
-							<Check />
-						{/if}
-					</li>
+				{#each optionsByGroup as [group, options] (group)}
+					{#if group}
+						<li class="heading">{group}</li>
+					{/if}
+					{#each options as option (option.value)}
+						{@const active = $listbox.active === option}
+						{@const selected = Array.isArray($listbox.selected)
+							? $listbox.selected.includes(option)
+							: $listbox.selected === option}
+						<li class:active use:listbox.item={{ value: option }}>
+							{option.label}
+							{#if selected}
+								<Check />
+							{/if}
+						</li>
+					{/each}
 				{/each}
 			</ul>
 		{/if}
@@ -174,6 +195,10 @@
 		background-color: var(--focus-color);
 		color: white;
 		outline: none;
+	}
+
+	.options > li.heading {
+		font-weight: 600;
 	}
 
 	.invalid {
