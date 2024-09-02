@@ -6,8 +6,13 @@
 	export let value: string | undefined;
 </script>
 
-<ListBox
-	label={$_('status.label')}
-	options={status.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value
-/>
+<div class="meta">
+	<p class="meta-key">{$_('status.label')}</p>
+	<div class="meta-key">
+		<ListBox
+			label={$_('status.label')}
+			options={status.options.map((o) => ({ value: o, label: $_(o) }))}
+			bind:value
+		/>
+	</div>
+</div>

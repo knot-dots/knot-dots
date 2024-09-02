@@ -178,25 +178,25 @@
 				</tbody>
 			</table>
 		</fieldset>
-
-		<fieldset class="form-tab" id="metadata">
-			<legend>{$_('form.metadata')}</legend>
-
-			<IndicatorTypeSelector bind:value={container.payload.indicatorType} />
-
-			{#if $ability.can('update', container, 'indicatorCategory')}
-				<IndicatorCategorySelector bind:value={container.payload.indicatorCategory} />
-			{/if}
-
-			<MeasureTypeSelector bind:value={container.payload.measureType} />
-
-			<TopicSelector bind:value={container.payload.topic} />
-
-			<CategorySelector bind:value={container.payload.category} />
-
-			<AudienceSelector bind:value={container.payload.audience} />
-		</fieldset>
 	{/if}
+
+	<fieldset class="form-tab" id="metadata">
+		<legend>{$_('form.metadata')}</legend>
+
+		<IndicatorTypeSelector bind:value={container.payload.indicatorType} />
+
+		{#if $ability.can('update', container, 'indicatorCategory')}
+			<IndicatorCategorySelector bind:value={container.payload.indicatorCategory} />
+		{/if}
+
+		<MeasureTypeSelector bind:value={container.payload.measureType} />
+
+		<TopicSelector bind:value={container.payload.topic} />
+
+		<CategorySelector bind:value={container.payload.category} />
+
+		<AudienceSelector bind:value={container.payload.audience} />
+	</fieldset>
 {/if}
 
 <style>

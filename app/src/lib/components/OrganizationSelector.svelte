@@ -9,31 +9,41 @@
 </script>
 
 {#if $ability.can('update', container.payload.type, 'organization')}
-	<ListBox
-		label={$_('organization')}
-		options={$page.data.organizations.map(({ guid, payload }) => ({
-			value: guid,
-			label: payload.name
-		}))}
-		bind:value={container.organization}
-	/>
+	<div class="meta">
+		<p class="meta-key">{$_('organization')}</p>
+		<div class="meta-value">
+			<ListBox
+				label={$_('organization')}
+				options={$page.data.organizations.map(({ guid, payload }) => ({
+					value: guid,
+					label: payload.name
+				}))}
+				bind:value={container.organization}
+			/>
+		</div>
+	</div>
 {/if}
 
 {#if $ability.can('update', container.payload.type, 'organizational_unit') && $page.data.organizationalUnits.length > 0}
-	<ListBox
-		label={$_('organizational_unit')}
-		options={[
-			{
-				value: null,
-				label:
-					$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
-						.name ?? ''
-			},
-			...$page.data.organizationalUnits.map(({ guid, payload }) => ({
-				value: guid,
-				label: payload.name
-			}))
-		]}
-		bind:value={container.organizational_unit}
-	/>
+	<div class="meta">
+		<p class="meta-key">{$_('organizational_unit')}</p>
+		<div class="meta-value">
+			<ListBox
+				label={$_('organizational_unit')}
+				options={[
+					{
+						value: null,
+						label:
+							$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
+								.name ?? ''
+					},
+					...$page.data.organizationalUnits.map(({ guid, payload }) => ({
+						value: guid,
+						label: payload.name
+					}))
+				]}
+				bind:value={container.organizational_unit}
+			/>
+		</div>
+	</div>
 {/if}

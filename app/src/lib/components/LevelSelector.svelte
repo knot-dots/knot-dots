@@ -6,8 +6,13 @@
 	export let value: string | undefined;
 </script>
 
-<ListBox
-	label={$_('level.label')}
-	options={levels.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value
-/>
+<div class="meta">
+	<p class="meta-key">{$_('level.label')}</p>
+	<div class="meta-value">
+		<ListBox
+			label={$_('level.label')}
+			options={levels.options.map((o) => ({ value: o, label: $_(o) }))}
+			bind:value
+		/>
+	</div>
+</div>

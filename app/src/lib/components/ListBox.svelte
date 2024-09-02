@@ -3,7 +3,6 @@
 	import { cubicOut } from 'svelte/easing';
 	import { createListbox } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-	import { _ } from 'svelte-i18n';
 	import Check from '~icons/heroicons/check-20-solid';
 	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
@@ -14,7 +13,7 @@
 		group?: string;
 	};
 
-	export let label: string;
+	export let label: string | undefined = undefined;
 	export let options: Array<Option> = [];
 	export let required = false;
 	export let value: string[] | number[] | string | number | null | undefined;
@@ -50,69 +49,66 @@
 	);
 </script>
 
-<div class="meta">
-	<span class="meta-key">{$_(label)}</span>
-	<div class="meta-value">
-		{#if Array.isArray(value)}
-			<button
-				class:invalid={required && value.length === 0}
-				class:valid={!required || value.length > 0}
-				on:change
-				use:listbox.button
-				use:popperRef
-			>
-				<ul class="selected-multi">
-					{#each $listbox.selected as selected (selected.value)}
-						<li>
-							<span>{selected.label}</span>
-							<span use:listbox.deselect={selected}>
-								<XMark />
-							</span>
-						</li>
-					{/each}
-				</ul>
-				<ChevronUpDown />
-			</button>
-		{:else}
-			<button
-				class:invalid={required && value}
-				class:valid={!required || value}
-				on:change
-				use:listbox.button
-				use:popperRef
-			>
-				<span class="selected-single">{$listbox.selected?.label ?? ''}</span>
-				<ChevronUpDown />
-			</button>
-		{/if}
-
-		{#if $listbox.expanded}
-			<ul
-				class="focus-indicator options"
-				out:fade={{ duration: 100, easing: cubicOut }}
-				use:listbox.items
-				use:popperContent={extraOpts}
-			>
-				{#each optionsByGroup as [group, options] (group)}
-					{#if group}
-						<li class="heading">{group}</li>
-					{/if}
-					{#each options as option (option.value)}
-						{@const active = $listbox.active === option}
-						{@const selected = Array.isArray($listbox.selected)
-							? $listbox.selected.includes(option)
-							: $listbox.selected === option}
-						<li class:active use:listbox.item={{ value: option }}>
-							{option.label}
-							{#if selected}
-								<Check />
-							{/if}
-						</li>
-					{/each}
+<div>
+	{#if Array.isArray(value)}
+		<button
+			class:invalid={required && value.length === 0}
+			class:valid={!required || value.length > 0}
+			on:change
+			use:listbox.button
+			use:popperRef
+		>
+			<ul class="selected-multi">
+				{#each $listbox.selected as selected (selected.value)}
+					<li>
+						<span>{selected.label}</span>
+						<span use:listbox.deselect={selected}>
+							<XMark />
+						</span>
+					</li>
 				{/each}
 			</ul>
-		{/if}
-	</div>
+			<ChevronUpDown />
+		</button>
+	{:else}
+		<button
+			class:invalid={required && value}
+			class:valid={!required || value}
+			on:change
+			use:listbox.button
+			use:popperRef
+		>
+			<span class="selected-single">{$listbox.selected?.label ?? ''}</span>
+			<ChevronUpDown />
+		</button>
+	{/if}
+
+	{#if $listbox.expanded}
+		<ul
+			class="focus-indicator options"
+			out:fade={{ duration: 100, easing: cubicOut }}
+			use:listbox.items
+			use:popperContent={extraOpts}
+		>
+			{#each optionsByGroup as [group, options] (group)}
+				{#if group}
+					<li class="heading">{group}</li>
+				{/if}
+				{#each options as option (option.value)}
+					{@const active = $listbox.active === option}
+					{@const selected = Array.isArray($listbox.selected)
+						? $listbox.selected.includes(option)
+						: $listbox.selected === option}
+					<li class:active use:listbox.item={{ value: option }}>
+						{option.label}
+						{#if selected}
+							<Check />
+						{/if}
+					</li>
+				{/each}
+			{/each}
+		</ul>
+	{/if}
 </div>
 
 <style>

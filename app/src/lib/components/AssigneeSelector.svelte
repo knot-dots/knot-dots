@@ -12,14 +12,19 @@
 	);
 </script>
 
-{#await membersPromise}
-	<ListBox label={$_('assignee')} options={[]} {value} />
-{:then members}
-	<ListBox
-		label={$_('assignee')}
-		options={members
-			.filter(({ display_name }) => display_name !== '')
-			.map(({ display_name, guid }) => ({ value: guid, label: display_name }))}
-		bind:value
-	/>
-{/await}
+<div class="meta">
+	<p class="meta-key">{$_('assignee')}</p>
+	<div class="meta-value">
+		{#await membersPromise}
+			<ListBox label={$_('assignee')} options={[]} {value} />
+		{:then members}
+			<ListBox
+				label={$_('assignee')}
+				options={members
+					.filter(({ display_name }) => display_name !== '')
+					.map(({ display_name, guid }) => ({ value: guid, label: display_name }))}
+				bind:value
+			/>
+		{/await}
+	</div>
+</div>

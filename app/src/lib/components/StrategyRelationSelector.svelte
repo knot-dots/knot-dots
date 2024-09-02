@@ -206,19 +206,24 @@
 </script>
 
 {#await isPartOfStrategyOptionsRequest then strategyContainers}
-	<ListBox
-		label={$_('strategy')}
-		options={[
-			{ value: undefined, label: $_('not_part_of_strategy') },
-			...strategyContainers.map(({ payload, revision }) => ({
-				value: revision,
-				label: payload.title
-			}))
-		]}
-		value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of-strategy'])
-			?.object}
-		on:change={onChangeIsPartOfStrategy}
-	/>
+	<div class="meta">
+		<p class="meta-key">{$_('strategy')}</p>
+		<div class="meta-value">
+			<ListBox
+				options={[
+					{ value: undefined, label: $_('not_part_of_strategy') },
+					...strategyContainers.map(({ payload, revision }) => ({
+						value: revision,
+						label: payload.title
+					}))
+				]}
+				value={container.relation.find(
+					(r) => r.predicate === predicates.enum['is-part-of-strategy']
+				)?.object}
+				on:change={onChangeIsPartOfStrategy}
+			/>
+		</div>
+	</div>
 {/await}
 
 {#await isPartOfOptionsRequest then isPartOfOptions}
@@ -248,11 +253,16 @@
 				group: $_('payload_group.implementation')
 			}))
 		]}
-		<ListBox
-			label={$_('superordinate_element')}
-			{options}
-			value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object}
-			on:change={onChangeIsPartOf}
-		/>
+		<div class="meta">
+			<p class="meta-key">{$_('superordinate_element')}</p>
+			<div class="meta-value">
+				<ListBox
+					{options}
+					value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])
+						?.object}
+					on:change={onChangeIsPartOf}
+				/>
+			</div>
+		</div>
 	{/if}
 {/await}

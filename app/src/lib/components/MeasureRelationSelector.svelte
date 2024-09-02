@@ -125,19 +125,23 @@
 </script>
 
 {#await isPartOfMeasureOptionsRequest then measureContainers}
-	<ListBox
-		label={$_('measure')}
-		options={[
-			{ value: undefined, label: $_('not_part_of_measure') },
-			...measureContainers.map(({ payload, revision }) => ({
-				value: revision,
-				label: payload.title
-			}))
-		]}
-		value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of-measure'])
-			?.object}
-		on:change={onChangeIsPartOfMeasure}
-	/>
+	<div class="meta">
+		<p class="meta-key">{$_('measure')}</p>
+		<div class="meta-value">
+			<ListBox
+				options={[
+					{ value: undefined, label: $_('not_part_of_measure') },
+					...measureContainers.map(({ payload, revision }) => ({
+						value: revision,
+						label: payload.title
+					}))
+				]}
+				value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of-measure'])
+					?.object}
+				on:change={onChangeIsPartOfMeasure}
+			/>
+		</div>
+	</div>
 {/await}
 
 {#if isTaskContainer(container) || isMilestoneContainer(container)}
@@ -156,13 +160,17 @@
 					group: $_('milestones')
 				}))
 			]}
-			<ListBox
-				label={$_('superordinate_element')}
-				{options}
-				value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])
-					?.object}
-				on:change={onChangeIsPartOf}
-			/>
+			<div class="meta">
+				<p class="meta-key">{$_('superordinate_element')}</p>
+				<div class="meta-value">
+					<ListBox
+						{options}
+						value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])
+							?.object}
+						on:change={onChangeIsPartOf}
+					/>
+				</div>
+			</div>
 		{/if}
 	{/await}
 {/if}

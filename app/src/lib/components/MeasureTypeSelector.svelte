@@ -6,8 +6,13 @@
 	export let value: string[];
 </script>
 
-<ListBox
-	label={$_('measure_type')}
-	options={measureTypes.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value
-/>
+<div class="meta">
+	<p class="meta-key">{$_('measure_type')}</p>
+	<div class="meta-value">
+		<ListBox
+			label={$_('measure_type')}
+			options={measureTypes.options.map((o) => ({ value: o, label: $_(o) }))}
+			bind:value
+		/>
+	</div>
+</div>
