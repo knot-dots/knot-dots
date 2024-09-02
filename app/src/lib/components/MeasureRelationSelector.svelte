@@ -97,24 +97,6 @@
 				: []),
 			...container.relation.slice(isPartOfMeasureIndex + 1)
 		];
-
-		if (container.payload.type === payloadTypes.enum.task) {
-			const isPartOfIndex = container.relation.findIndex(
-				({ predicate, subject }) =>
-					predicate === predicates.enum['is-part-of'] &&
-					('revision' in container ? subject == container.revision : true)
-			);
-			container.relation = [
-				...container.relation.slice(0, isPartOfIndex),
-				{
-					object: parseInt(value),
-					position: 0,
-					predicate: predicates.enum['is-part-of'],
-					...('revision' in container ? { subject: container.revision } : undefined)
-				},
-				...container.relation.slice(isPartOfIndex + 1)
-			];
-		}
 	}
 
 	function onChangeIsPartOf(event: Event) {
