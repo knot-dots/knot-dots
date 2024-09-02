@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
-	import RelationSelector from '$lib/components/RelationSelector.svelte';
+	import OrganizationalUnitRelationSelector from '$lib/components/OrganizationalUnitRelationSelector.svelte';
 	import type {
 		AnyContainer,
 		EmptyOrganizationalUnitContainer,
@@ -36,7 +36,7 @@
 	<Editor label={$_('description')} bind:value={container.payload.description} />
 {/key}
 
-<RelationSelector
+<OrganizationalUnitRelationSelector
 	{container}
 	isPartOfOptions={isPartOfOptions.filter(isOrganizationalUnitContainer).filter(filterByLevel)}
 />
