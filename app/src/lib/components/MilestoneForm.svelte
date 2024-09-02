@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import ListBox from '$lib/components/ListBox.svelte';
 	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import { audience } from '$lib/models';
 	import type { EmptyMilestoneContainer, MilestoneContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -65,11 +64,7 @@
 
 	<MeasureRelationSelector {container} />
 
-	<ListBox
-		label={$_('audience')}
-		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.audience}
-	/>
+	<AudienceSelector bind:value={container.payload.audience} />
 
 	<OrganizationSelector bind:container />
 </fieldset>

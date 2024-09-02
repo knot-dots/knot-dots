@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
-	import paramsFromURL from '$lib/client/paramsFromURL';
+	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
+	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import ResolutionStatusSelector from '$lib/components/ResolutionStatusSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
-	import { audience, resolutionStatus, sustainableDevelopmentGoals, topics } from '$lib/models';
+	import TopicSelector from '$lib/components/TopicSelector.svelte';
+	import { resolutionStatus } from '$lib/models';
 	import type { EmptyResolutionContainer, ResolutionContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -48,31 +49,15 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<ListBox
-		label={$_('resolution_status')}
-		options={resolutionStatus.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.resolutionStatus}
-	/>
+	<ResolutionStatusSelector bind:value={container.payload.resolutionStatus} />
 
 	<StrategyRelationSelector {container} />
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.topic}
-	/>
+	<TopicSelector bind:value={container.payload.topic} />
 
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.category}
-	/>
+	<CategorySelector bind:value={container.payload.category} />
 
-	<ListBox
-		label={$_('audience')}
-		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.audience}
-	/>
+	<AudienceSelector bind:value={container.payload.audience} />
 
 	<OrganizationSelector bind:container />
 </fieldset>

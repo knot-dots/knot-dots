@@ -1,13 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
-	import fetchMembers from '$lib/client/fetchMembers';
+	import AssigneeSelector from '$lib/components/AssigneeSelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import ListBox from '$lib/components/ListBox.svelte';
 	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import { taskCategories, taskStatus } from '$lib/models';
+	import TaskCategorySelector from '$lib/components/TaskCategorySelector.svelte';
+	import TaskStatusSelector from '$lib/components/TaskStatusSelector.svelte';
 	import type { EmptyTaskContainer, TaskContainer, User } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -20,14 +18,6 @@
 			tabs: ['basic-data', 'metadata']
 		}
 	}));
-
-	let membersPromise: Promise<User[]> = new Promise(() => []);
-
-	onMount(() => {
-		membersPromise = fetchMembers(
-			$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
-		);
-	});
 </script>
 
 <fieldset class="form-tab" id="basic-data">
@@ -39,29 +29,11 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<ListBox
-		label={$_('task_status.label')}
-		options={taskStatus.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.taskStatus}
-	/>
+	<TaskStatusSelector bind:value={container.payload.taskStatus} />
 
-	{#await membersPromise}
-		<ListBox label={$_('assignee')} options={[]} bind:value={container.payload.assignee} />
-	{:then members}
-		<ListBox
-			label={$_('assignee')}
-			options={members
-				.filter(({ display_name }) => display_name !== '')
-				.map(({ display_name, guid }) => ({ value: guid, label: display_name }))}
-			bind:value={container.payload.assignee}
-		/>
-	{/await}
+	<AssigneeSelector bind:value={container.payload.assignee} />
 
-	<ListBox
-		label={$_('task_category.label')}
-		options={taskCategories.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.taskCategory}
-	/>
+	<TaskCategorySelector bind:value={container.payload.taskCategory} />
 
 	<label class="meta">
 		<span class="meta-key">{$_('fulfillment_date')}</span>

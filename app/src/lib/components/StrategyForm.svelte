@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Trash from '~icons/heroicons/trash';
-	import ListBox from '$lib/components/ListBox.svelte';
+	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
+	import CategorySelector from '$lib/components/CategorySelector.svelte';
+	import ChapterTypeSelector from '$lib/components/ChapterTypeSelector.svelte';
+	import LevelSelector from '$lib/components/LevelSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
-	import {
-		audience,
-		chapterTypeOptions,
-		levels,
-		strategyTypes,
-		sustainableDevelopmentGoals,
-		topics
-	} from '$lib/models';
+	import StrategyTypeSelector from '$lib/components/StrategyTypeSelector.svelte';
+	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -34,17 +31,9 @@
 	}
 </script>
 
-<ListBox
-	label={$_('level.label')}
-	options={levels.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.level}
-/>
+<LevelSelector bind:value={container.payload.level} />
 
-<ListBox
-	label={$_('strategy_type.label')}
-	options={strategyTypes.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.strategyType}
-/>
+<StrategyTypeSelector bind:value={container.payload.strategyType} />
 
 {#if 'image' in container.payload}
 	<div class="meta">
@@ -96,28 +85,12 @@
 	</div>
 </label>
 
-<ListBox
-	label={$_('chapter_type')}
-	options={chapterTypeOptions.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.chapterType}
-/>
+<ChapterTypeSelector bind:value={container.payload.chapterType} />
 
-<ListBox
-	label={$_('topic.label')}
-	options={topics.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.topic}
-/>
+<TopicSelector bind:value={container.payload.topic} />
 
-<ListBox
-	label={$_('category')}
-	options={sustainableDevelopmentGoals.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.category}
-/>
+<CategorySelector bind:value={container.payload.category} />
 
-<ListBox
-	label={$_('audience')}
-	options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.audience}
-/>
+<AudienceSelector bind:value={container.payload.audience} />
 
 <OrganizationSelector bind:container />

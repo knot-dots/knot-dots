@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
+	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import ListBox from '$lib/components/ListBox.svelte';
+	import MeasureTypeSelector from '$lib/components/MeasureTypeSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import StatusSelector from '$lib/components/StatusSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
-	import { audience, measureTypes, status, sustainableDevelopmentGoals, topics } from '$lib/models';
-	import type { EmptyMeasureContainer, MeasureContainer } from '$lib/models';
+	import TopicSelector from '$lib/components/TopicSelector.svelte';
+	import { type EmptyMeasureContainer, type MeasureContainer, status } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: MeasureContainer | EmptyMeasureContainer;
@@ -53,37 +56,17 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<ListBox
-		label={$_('status.label')}
-		options={status.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.status}
-	/>
+	<StatusSelector bind:value={container.payload.status} />
 
-	<ListBox
-		label={$_('measure_type')}
-		options={measureTypes.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.measureType}
-	/>
+	<MeasureTypeSelector bind:value={container.payload.measureType} />
 
 	<StrategyRelationSelector {container} />
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.topic}
-	/>
+	<TopicSelector bind:value={container.payload.topic} />
 
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.category}
-	/>
+	<CategorySelector bind:value={container.payload.category} />
 
-	<ListBox
-		label={$_('audience')}
-		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.audience}
-	/>
+	<AudienceSelector bind:value={container.payload.audience} />
 
 	<OrganizationSelector bind:container />
 

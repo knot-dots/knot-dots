@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
+	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import ListBox from '$lib/components/ListBox.svelte';
-	import {
-		audience,
-		indicatorCategories,
-		indicatorTypes,
-		measureTypes,
-		sustainableDevelopmentGoals,
-		topics,
-		units
-	} from '$lib/models';
+	import MeasureTypeSelector from '$lib/components/MeasureTypeSelector.svelte';
+	import IndicatorCategorySelector from '$lib/components/IndicatorCategorySelector.svelte';
+	import IndicatorTypeSelector from '$lib/components/IndicatorTypeSelector.svelte';
+	import TopicSelector from '$lib/components/TopicSelector.svelte';
+	import UnitSelector from '$lib/components/UnitSelector.svelte';
 	import type { ContainerFormTabKey, IndicatorTemplateContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -26,11 +23,7 @@
 </script>
 
 <fieldset class="form-tab" id="basic-data">
-	<ListBox
-		label={$_('label.unit')}
-		options={units.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.unit}
-	/>
+	<UnitSelector bind:value={container.payload.unit} />
 
 	{#key 'guid' in container ? container.guid : ''}
 		<Editor label={$_('description')} bind:value={container.payload.description} />
@@ -52,41 +45,17 @@
 <fieldset class="form-tab" id="metadata">
 	<legend>{$_('form.metadata')}</legend>
 
-	<ListBox
-		label={$_('indicator_type')}
-		options={indicatorTypes.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.indicatorType}
-	/>
+	<IndicatorTypeSelector bind:value={container.payload.indicatorType} />
 
 	{#if $ability.can('update', container, 'indicatorCategory')}
-		<ListBox
-			label={$_('indicator_category')}
-			options={indicatorCategories.options.map((o) => ({ value: o, label: $_(o) }))}
-			bind:value={container.payload.indicatorCategory}
-		/>
+		<IndicatorCategorySelector bind:value={container.payload.indicatorCategory} />
 	{/if}
 
-	<ListBox
-		label={$_('measure_type')}
-		options={measureTypes.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.measureType}
-	/>
+	<MeasureTypeSelector bind:value={container.payload.measureType} />
 
-	<ListBox
-		label={$_('topic.label')}
-		options={topics.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.topic}
-	/>
+	<TopicSelector bind:value={container.payload.topic} />
 
-	<ListBox
-		label={$_('category')}
-		options={sustainableDevelopmentGoals.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.category}
-	/>
+	<CategorySelector bind:value={container.payload.category} />
 
-	<ListBox
-		label={$_('audience')}
-		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
-		bind:value={container.payload.audience}
-	/>
+	<AudienceSelector bind:value={container.payload.audience} />
 </fieldset>
