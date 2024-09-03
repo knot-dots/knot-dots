@@ -17,31 +17,39 @@ const { handle: authentication } = SvelteKitAuth({
 	callbacks: {
 		async jwt({ token, user, account }) {
 			if (user) {
-				token.familyName = user.familyName;
-				token.givenName = user.givenName;
 				token.sub = user.id;
 			}
 			if (account?.access_token) {
 				// decode without validating
-				const { realm_access, sub }: { realm_access: { roles: string[] }; sub: string } =
-					JSON.parse(Buffer.from(account.access_token.split('.')[1], 'base64').toString());
+				const {
+					family_name,
+					given_name,
+					realm_access,
+					sub
+				}: {
+					family_name: string;
+					given_name: string;
+					realm_access: { roles: string[] };
+					sub: string;
+				} = JSON.parse(Buffer.from(account.access_token.split('.')[1], 'base64').toString());
 				token.roles = realm_access.roles;
 				token.sub = sub;
+				const pool = await getPool();
+				await pool.connect(
+					createOrUpdateUser({
+						family_name: family_name,
+						given_name: given_name,
+						guid: sub,
+						realm: env.PUBLIC_KC_REALM ?? ''
+					})
+				);
 			}
 			return token;
 		},
 		async session({ session, token }) {
 			const pool = await getPool();
 			const [containerUserRelations] = await Promise.all([
-				pool.connect(getAllMembershipRelationsOfUser(token.sub as string)),
-				pool.connect(
-					createOrUpdateUser({
-						family_name: token.familyName as string,
-						given_name: token.givenName as string,
-						guid: token.sub as string,
-						realm: env.PUBLIC_KC_REALM ?? ''
-					})
-				)
+				pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
 			]);
 			session.user.adminOf = containerUserRelations
 				.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
