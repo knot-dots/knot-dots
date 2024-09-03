@@ -194,7 +194,9 @@
 			<li>
 				<a
 					class="button button-nav"
-					href={accountURL($page.url.href)}
+					href={`${overlayURL($page.url, overlayKey.enum['profile'], $user.guid)}&${
+						overlayKey.enum['my-settings']
+					}`}
 					title={$_('profile.settings')}
 				>
 					<span class="small-only"><Cog6Tooth /></span>

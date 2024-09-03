@@ -59,6 +59,7 @@
 	},
 	"establish_relations": "Establish relations",
 	"expand_sidebar": "Expand sidebar",
+	"family_name": "Family name",
 	"files": "Files",
 	"filter": "Filter",
 	"filter.all_organizational_units": "All organizational units",
@@ -70,6 +71,7 @@
 		"with_progress": "Use progress bar"
 	},
 	"fulfillment_date": "Fulfillment date",
+	"given_name": "Given name",
 	"goals:": "Goals",
 	"help": "Help",
 	"home": "Home screen",

@@ -59,6 +59,7 @@
 	},
 	"establish_relations": "Beziehungen festlegen",
 	"expand_sidebar": "Seitenleiste aufklappen",
+	"family_name": "Name",
 	"files": "Dateien",
 	"filter": "Filtern",
 	"filter.all_organizational_units": "Alle Organisations-Ebenen",
@@ -71,6 +72,7 @@
 		"with_progress": "Mit Fortschrittsanzeige"
 	},
 	"fulfillment_date": "Erfüllungsdatum",
+	"given_name": "Vorname",
 	"goals": "Ziele",
 	"help": "Hilfe",
 	"home": "Startseite",

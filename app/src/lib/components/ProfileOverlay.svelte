@@ -6,6 +6,7 @@
 	import Minimize from '~icons/knotdots/minimize';
 	import { page } from '$app/stores';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
+	import ProfileSettings from '$lib/components/ProfileSettings.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
@@ -88,6 +89,8 @@
 	<div class="content-details masked-overflow">
 		{#if paramsFromFragment($page.url).has(overlayKey.enum['my-tasks']) && tasks}
 			<Tasks containers={tasks} />
+		{:else if paramsFromFragment($page.url).has(overlayKey.enum['my-settings'])}
+			<ProfileSettings />
 		{:else}
 			<ProfileView containers={relatedContainers} {organizations} {organizationalUnits} />
 		{/if}
