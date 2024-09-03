@@ -39,6 +39,7 @@ services:
       - ./app/.env
     volumes:
       - ./migrate/sql:/srv/migrations
+    working_dir: /srv/migrations
   keycloak:
     command:
       - start-dev
