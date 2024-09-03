@@ -20,10 +20,7 @@ const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
 const { handle: authentication } = SvelteKitAuth({
 	callbacks: {
-		async jwt({ token, user, account }) {
-			if (user) {
-				token.sub = user.id;
-			}
+		async jwt({ token, account }) {
 			if (account?.access_token) {
 				// decode without validating
 				const {
