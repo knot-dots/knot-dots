@@ -7,7 +7,7 @@
 	import Dialog from '$lib/components/Dialog.svelte';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
-	import { isAdminOf, predicates } from '$lib/models';
+	import { displayName, isAdminOf, predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
 
 	export let container: AnyContainer;
@@ -104,7 +104,7 @@
 	<tbody>
 		{#each users as u (u.guid)}
 			<tr>
-				<td>{u.display_name}</td>
+				<td>{displayName(u)}</td>
 				<td>
 					{#key container.user}
 						<select name="role" on:change={handleChangeRole(u, container)}>

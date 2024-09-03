@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import ListBox from '$lib/components/ListBox.svelte';
-	import { type User } from '$lib/models';
+	import { displayName, type User } from '$lib/models';
 
 	export let value: string | undefined;
 
@@ -21,8 +21,8 @@
 			<ListBox
 				label={$_('assignee')}
 				options={members
-					.filter(({ display_name }) => display_name !== '')
-					.map(({ display_name, guid }) => ({ value: guid, label: display_name }))}
+					.filter(({ family_name }) => family_name !== '')
+					.map((m) => ({ value: m.guid, label: displayName(m) }))}
 				bind:value
 			/>
 		{/await}

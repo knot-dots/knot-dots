@@ -1159,8 +1159,8 @@ export function getAllContainersRelatedToMeasure(
 export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
-			INSERT INTO "user" (display_name, realm, guid)
-			VALUES (${user.display_name}, ${user.realm}, ${user.guid})
+			INSERT INTO "user" (family_name, given_name, realm, guid)
+			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid})
 			RETURNING *
 		`);
 	};
@@ -1169,9 +1169,9 @@ export function createUser(user: User) {
 export function createOrUpdateUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
-			INSERT INTO "user" (display_name, realm, guid)
-			VALUES (${user.display_name}, ${user.realm}, ${user.guid})
-			ON CONFLICT (guid) DO UPDATE SET display_name = ${user.display_name}
+			INSERT INTO "user" (family_name, given_name, realm, guid)
+			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid})
+			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name}
 			RETURNING *
 		`);
 	};
@@ -1196,7 +1196,7 @@ export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 			)})
 			JOIN container c ON cu.object = c.revision AND c.valid_currently
 			WHERE c.guid = ${guid}
-			ORDER BY display_name
+			ORDER BY family_name, given_name
 		`);
 	};
 }

@@ -13,6 +13,7 @@
 		type AnyContainer,
 		type Container,
 		type ContainerDetailViewTabKey,
+		displayName,
 		getCreator,
 		isContainerWithObjective,
 		isMeasureContainer,
@@ -231,8 +232,9 @@
 									values: {
 										date: revisions[0].valid_from,
 										creator: getCreator(revisions[0])
-											.filter((guid) => organizationMembersByGuid.has(guid))
-											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.map((guid) => organizationMembersByGuid.get(guid))
+											.filter((m) => m !== undefined)
+											.map((m) => displayName(m))
 											.join(', ')
 									}
 								})
@@ -249,8 +251,9 @@
 									values: {
 										date: container.valid_from,
 										creator: getCreator(container)
-											.filter((guid) => organizationMembersByGuid.has(guid))
-											.map((guid) => organizationMembersByGuid.get(guid)?.display_name)
+											.map((guid) => organizationMembersByGuid.get(guid))
+											.filter((m) => m !== undefined)
+											.map((m) => displayName(m))
 											.join(', ')
 									}
 								})

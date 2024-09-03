@@ -36,7 +36,8 @@ const { handle: authentication } = SvelteKitAuth({
 				pool.connect(getAllMembershipRelationsOfUser(token.sub as string)),
 				pool.connect(
 					createOrUpdateUser({
-						display_name: `${token.givenName} ${token.familyName}`.trim(),
+						family_name: token.familyName as string,
+						given_name: token.givenName as string,
 						guid: token.sub as string,
 						realm: env.PUBLIC_KC_REALM ?? ''
 					})

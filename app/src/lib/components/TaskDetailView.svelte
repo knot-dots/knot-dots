@@ -7,6 +7,7 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
+		displayName,
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
@@ -84,13 +85,15 @@
 
 		{#if 'assignee' in selectedRevision.payload && selectedRevision.payload.assignee && $ability.can('read', selectedRevision, 'assignee')}
 			{#await organizationMembersRequest then organizationMembers}
-				<div class="meta">
-					<h3 class="meta-key">{$_('assignee')}</h3>
-					<p class="meta-value">
-						{organizationMembers.find(({ guid }) => guid === selectedRevision.payload.assignee)
-							?.display_name}
-					</p>
-				</div>
+				{@const member = organizationMembers.find(
+					({ guid }) => guid === selectedRevision.payload.assignee
+				)}
+				{#if member}
+					<div class="meta">
+						<h3 class="meta-key">{$_('assignee')}</h3>
+						<p class="meta-value">{displayName(member)}</p>
+					</div>
+				{/if}
 			{/await}
 		{/if}
 

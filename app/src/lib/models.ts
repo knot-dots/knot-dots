@@ -395,12 +395,17 @@ const partialRelation = z.union([
 export type PartialRelation = z.infer<typeof partialRelation>;
 
 export const user = z.object({
-	display_name: z.string().max(64),
+	family_name: z.string().max(32).default(''),
+	given_name: z.string().max(32).default(''),
 	guid: z.string().uuid(),
 	realm: z.string().max(1024)
 });
 
 export type User = z.infer<typeof user>;
+
+export function displayName(user: User) {
+	return `${user.given_name} ${user.family_name}`;
+}
 
 export const keycloakUser = z.object({
 	email: z.string().email(),
