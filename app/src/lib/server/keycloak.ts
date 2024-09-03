@@ -38,6 +38,24 @@ export async function createUser(user: NewUser) {
 	return z.string().uuid().parse(response.headers.get('Location')?.split('/').pop());
 }
 
+export async function updateUser(user: User) {
+	const token = await getToken();
+	const response = await fetch(
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}`,
+		{
+			body: JSON.stringify({
+				firstName: user.given_name,
+				lastName: user.family_name
+			}),
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			method: 'PUT'
+		}
+	);
+	if (!response.ok) {
+		throw new Error(`Failed to update user. Keycloak responded with ${response.status}`);
+	}
+}
+
 export async function confirmUser(
 	id: string,
 	givenName: string,
