@@ -239,7 +239,7 @@ form {
     display: none;
 }
 
-[aria-controls="password"], [aria-controls="password-confirm"] {
+[aria-controls|="password"] {
     display: none;
 }
 
