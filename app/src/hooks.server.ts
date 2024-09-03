@@ -9,7 +9,12 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { createFeatureDecisions } from '$lib/features';
 import { predicates } from '$lib/models';
-import { createOrUpdateUser, getAllMembershipRelationsOfUser, getPool } from '$lib/server/db';
+import {
+	createOrUpdateUser,
+	getAllMembershipRelationsOfUser,
+	getPool,
+	getUser
+} from '$lib/server/db';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
@@ -48,15 +53,16 @@ const { handle: authentication } = SvelteKitAuth({
 		},
 		async session({ session, token }) {
 			const pool = await getPool();
-			const [containerUserRelations] = await Promise.all([
+			const [user, containerUserRelations] = await Promise.all([
+				pool.connect(getUser(token.sub as string)),
 				pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
 			]);
 			session.user.adminOf = containerUserRelations
 				.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
 				.map(({ object }) => object);
-			session.user.familyName = token.familyName as string;
-			session.user.givenName = token.givenName as string;
-			session.user.guid = token.sub as string;
+			session.user.familyName = user.family_name;
+			session.user.givenName = user.given_name;
+			session.user.guid = user.guid;
 			session.user.memberOf = containerUserRelations
 				.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
 				.map(({ object }) => object);
