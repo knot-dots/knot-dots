@@ -134,6 +134,10 @@
 		);
 		const value = (event as CustomEvent).detail.selected.value;
 
+		if (value === container.relation[isPartOfStrategyIndex].object) {
+			return;
+		}
+
 		container.relation = [
 			...container.relation.slice(0, isPartOfStrategyIndex),
 			...(value
