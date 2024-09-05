@@ -37,10 +37,12 @@
 							$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
 								.name ?? ''
 					},
-					...$page.data.organizationalUnits.map(({ guid, payload }) => ({
-						value: guid,
-						label: payload.name
-					}))
+					...$page.data.organizationalUnits
+						.filter(({ organization }) => organization === container.organization)
+						.map(({ guid, payload }) => ({
+							value: guid,
+							label: payload.name
+						}))
 				]}
 				bind:value={container.organizational_unit}
 			/>
