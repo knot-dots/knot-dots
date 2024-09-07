@@ -149,13 +149,6 @@
 		</p>
 	{/if}
 
-	{#if 'summary' in container.payload || ('description' in container.payload && !isSimpleMeasureContainer(container))}
-		<div class="summary">
-			<h3>{$_('summary')}</h3>
-			<Summary {container} />
-		</div>
-	{/if}
-
 	{#if 'body' in container.payload}
 		<Viewer value={container.payload.body} />
 	{/if}
