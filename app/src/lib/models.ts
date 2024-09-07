@@ -761,7 +761,7 @@ const textPayload = z
 	.object({
 		audience: z.array(audience).default([audience.enum['audience.public']]),
 		body: z.string().trim().optional(),
-		title: z.string().trim().optional(),
+		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.text),
 		visibility: visibility.default('members')
 	})

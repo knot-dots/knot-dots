@@ -156,7 +156,7 @@
 				bind:value={container.payload.title}
 				readonly={container.payload.type === payloadTypes.enum.indicator &&
 					container.payload.quantity !== quantities.enum['quantity.custom']}
-				required={container.payload.type !== payloadTypes.enum.text}
+				required
 			/>
 		{/if}
 	</label>
