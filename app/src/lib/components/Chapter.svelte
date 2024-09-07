@@ -18,6 +18,9 @@
 		containerOfType,
 		isContainerWithEffect,
 		isContainerWithObjective,
+		isObjectiveContainer,
+		isPartOf as isPartOfFilter,
+		isPartOfMeasure,
 		isSimpleMeasureContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -175,21 +178,35 @@
 		<Viewer value={container.payload.result} />
 	{/if}
 
-	{#if isContainerWithObjective(container)}
+	{#if isContainerWithObjective(container) && relatedContainers
+			.filter(isObjectiveContainer)
+			.filter(isPartOfFilter(container)).length > 0}
 		<h4>{$_('objectives')}</h4>
 		<ObjectiveCarousel {container} {relatedContainers} />
 	{/if}
 
 	{#if isContainerWithEffect(container)}
-		<h4>{$_('resources')}</h4>
-		<PartOfMeasureCarousel
-			{container}
-			payloadType={payloadTypes.enum.resource}
-			{relatedContainers}
-		/>
+		{#if relatedContainers
+			.filter(({ payload }) => payload.type == payloadTypes.enum.resource)
+			.filter(isPartOfMeasure(container)).length > 0}
+			<h4>{$_('resources')}</h4>
+			<PartOfMeasureCarousel
+				{container}
+				payloadType={payloadTypes.enum.resource}
+				{relatedContainers}
+			/>
+		{/if}
 
-		<h4>{$_('effects')}</h4>
-		<PartOfMeasureCarousel {container} payloadType={payloadTypes.enum.effect} {relatedContainers} />
+		{#if relatedContainers
+			.filter(({ payload }) => payload.type == payloadTypes.enum.effect)
+			.filter(isPartOfMeasure(container)).length > 0}
+			<h4>{$_('effects')}</h4>
+			<PartOfMeasureCarousel
+				{container}
+				payloadType={payloadTypes.enum.effect}
+				{relatedContainers}
+			/>
+		{/if}
 	{/if}
 
 	<footer class="content-actions">
