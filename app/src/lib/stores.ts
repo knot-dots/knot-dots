@@ -194,7 +194,7 @@ if (browser) {
 		const hashParams = paramsFromFragment(values.url);
 
 		if (hashParams.size > 0) {
-			if (!hashParams.has(overlayKey.enum.edit)) {
+			if (!hashParams.has(overlayKey.enum.edit) && !hashParams.has(overlayKey.enum.create)) {
 				overlayHistory.update((value) =>
 					(hashParams.toString() == value[value.length - 1]?.toString() ?? '')
 						? value
