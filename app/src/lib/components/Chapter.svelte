@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _, date, number } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import ChevronDoubleDown from '~icons/heroicons/chevron-double-down-20-solid';
 	import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-20-solid';
 	import ChevronDown from '~icons/heroicons/chevron-down-20-solid';
@@ -187,7 +187,7 @@
 	{#if isContainerWithEffect(container)}
 		{#if relatedContainers
 			.filter(({ payload }) => payload.type == payloadTypes.enum.resource)
-			.filter((rc) => isPartOfMeasure(container)(rc) || isPartOfFilter(container)(rc)).length > 0}
+			.filter(isPartOfFilter(container)).length > 0}
 			<h4>{$_('resources')}</h4>
 			<PartOfMeasureCarousel
 				{container}
@@ -198,7 +198,7 @@
 
 		{#if relatedContainers
 			.filter(({ payload }) => payload.type == payloadTypes.enum.effect)
-			.filter(isPartOfMeasure(container)).length > 0}
+			.filter(isPartOfFilter(container)).length > 0}
 			<h4>{$_('effects')}</h4>
 			<PartOfMeasureCarousel
 				{container}
