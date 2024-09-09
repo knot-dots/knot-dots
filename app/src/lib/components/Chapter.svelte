@@ -12,7 +12,6 @@
 	import ObjectiveCarousel from '$lib/components/ObjectiveCarousel.svelte';
 	import PartOfMeasureCarousel from '$lib/components/PartOfMeasureCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
-	import Summary from '$lib/components/Summary.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		containerOfType,
@@ -188,7 +187,7 @@
 	{#if isContainerWithEffect(container)}
 		{#if relatedContainers
 			.filter(({ payload }) => payload.type == payloadTypes.enum.resource)
-			.filter(isPartOfMeasure(container)).length > 0}
+			.filter((rc) => isPartOfMeasure(container)(rc) || isPartOfFilter(container)(rc)).length > 0}
 			<h4>{$_('resources')}</h4>
 			<PartOfMeasureCarousel
 				{container}

@@ -7,6 +7,7 @@
 		type Container,
 		type ContainerWithEffect,
 		isOverlayKey,
+		isPartOf,
 		isPartOfMeasure,
 		overlayKey,
 		paramsFromFragment,
@@ -22,7 +23,7 @@
 
 	$: parts = relatedContainers
 		.filter(({ payload }) => payload.type == payloadType)
-		.filter(isPartOfMeasure(container));
+		.filter((rc) => isPartOfMeasure(container)(rc) || isPartOf(container)(rc));
 
 	function addItemURL(url: URL) {
 		const params = paramsFromFragment(url);
