@@ -749,6 +749,7 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 
 export const container = z.object({
 	guid: z.string().uuid(),
+	managed_by: z.string().uuid(),
 	organization: z.string().uuid(),
 	organizational_unit: z.string().uuid().nullable(),
 	payload: z.discriminatedUnion('type', [
@@ -1381,9 +1382,10 @@ export function containerOfType(
 	realm: string
 ) {
 	return emptyContainer.parse({
-		payload: { type: payloadType },
+		managed_by: organizationalUnit ?? organization,
 		organization,
 		organizational_unit: organizationalUnit,
+		payload: { type: payloadType },
 		realm
 	}) as EmptyContainer;
 }

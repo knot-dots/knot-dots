@@ -105,9 +105,10 @@ export function createContainer(container: NewContainer) {
 
 			const containerResult = organizationGuid
 				? await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (guid, organization, payload, realm)
+					INSERT INTO container (guid, managed_by, organization, payload, realm)
 					VALUES (
 						${organizationGuid},
+            ${container.managed_by},
 						${organizationGuid},
 						${sql.jsonb(<SerializableValue>container.payload)},
 						${container.realm}
@@ -116,9 +117,10 @@ export function createContainer(container: NewContainer) {
 				`)
 				: organizationalUnitGuid
 					? await txConnection.one(sql.typeAlias('anyContainer')`
-						INSERT INTO container (guid, organization, payload, realm)
+						INSERT INTO container (guid, managed_by, organization, payload, realm)
 						VALUES (
 							${organizationalUnitGuid},
+              ${container.managed_by},
 							${container.organization},
 							${sql.jsonb(<SerializableValue>container.payload)},
 							${container.realm}
@@ -126,8 +128,9 @@ export function createContainer(container: NewContainer) {
 						RETURNING *
 					`)
 					: await txConnection.one(sql.typeAlias('anyContainer')`
-						INSERT INTO container (organization, organizational_unit, payload, realm)
+						INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
 						VALUES (
+							${container.managed_by},
 							${container.organization},
 							${container.organizational_unit},
 							${sql.jsonb(<SerializableValue>container.payload)},
@@ -192,9 +195,10 @@ export function updateContainer(container: ModifiedContainer) {
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, organization, organizational_unit, payload, realm)
+				INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
+					${container.managed_by},
 					${container.organization},
 					${container.organizational_unit},
 					${sql.jsonb(<SerializableValue>container.payload)},
@@ -1283,6 +1287,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 export function setUp(name: string, realm: string) {
 	return async (connection: DatabaseConnection) => {
 		return await createContainer({
+			managed_by: '00000000-0000-0000-0000-000000000000',
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
 			payload: {
