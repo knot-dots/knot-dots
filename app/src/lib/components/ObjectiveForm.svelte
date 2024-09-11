@@ -20,7 +20,7 @@
 
 	$: if (container.payload.wantedValues.length == 0) {
 		const thisYear = new Date().getFullYear();
-		container.payload.wantedValues = [...Array(5)].map((_, index) => [thisYear + index, 0]);
+		container.payload.wantedValues = [...Array(1)].map((_, index) => [thisYear + index, 0]);
 	}
 
 	function appendWantedValue() {

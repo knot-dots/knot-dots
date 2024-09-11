@@ -25,8 +25,8 @@
 		const thisYear = new Date().getFullYear();
 		container.payload = {
 			...container.payload,
-			achievedValues: [...Array(5)].map((_, index) => [thisYear + index, 0]),
-			plannedValues: [...Array(5)].map((_, index) => [thisYear + index, 0])
+			achievedValues: [...Array(1)].map((_, index) => [thisYear + index, 0]),
+			plannedValues: [...Array(1)].map((_, index) => [thisYear + index, 0])
 		};
 	}
 

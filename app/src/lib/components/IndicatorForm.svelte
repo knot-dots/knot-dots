@@ -32,10 +32,7 @@
 
 	$: if (withHistoricalValues && !hasHistoricalValues(container)) {
 		const thisYear = new Date().getFullYear();
-		container.payload.historicalValues = [...Array(10)].map((_, index) => [
-			thisYear + index - 5,
-			0
-		]);
+		container.payload.historicalValues = [...Array(1)].map((_, index) => [thisYear + index, 0]);
 	} else if (!withHistoricalValues && hasHistoricalValues(container)) {
 		container.payload.historicalValues = [];
 	}
