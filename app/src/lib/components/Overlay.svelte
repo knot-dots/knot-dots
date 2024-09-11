@@ -495,7 +495,7 @@
 		</footer>
 	{:else if hashParams.has(overlayKey.enum.members) && users}
 		<aside>
-			<Sidebar helpSlug="members">
+			<Sidebar helpSlug="overlay-members">
 				<svelte:fragment slot="extra">
 					<li>
 						<button
@@ -564,7 +564,7 @@
 		<Relations containers={relatedContainers} />
 	{:else if hashParams.has(overlayKey.enum['measures']) && isStrategyContainer(container) && measures}
 		<aside>
-			<Sidebar helpSlug="measures">
+			<Sidebar helpSlug="overlay-measures">
 				<svelte:fragment slot="filters">
 					<AudienceFilter />
 					<CategoryFilter />
@@ -607,7 +607,7 @@
 		<MeasureMonitoring {container} containers={measureElements} {indicators} />
 	{:else if hashParams.has(overlayKey.enum.tasks) && tasks && relatedContainers}
 		<aside>
-			<Sidebar helpSlug="tasks">
+			<Sidebar helpSlug="overlay-tasks">
 				<Search slot="search" />
 				<svelte:fragment slot="filters">
 					<TaskCategoryFilter />
@@ -629,7 +629,7 @@
 		<Tasks {container} containers={tasks} {relatedContainers} />
 	{:else if hashParams.has(overlayKey.enum.indicators) && indicators}
 		<aside>
-			<Sidebar helpSlug="tasks">
+			<Sidebar helpSlug="overlay-indicators">
 				<svelte:fragment slot="extra">
 					<li>
 						<button

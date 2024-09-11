@@ -26,7 +26,7 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug="strategies" slot="sidebar">
+	<Sidebar helpSlug="programs-by-level" slot="sidebar">
 		<Workspaces slot="workspaces" />
 
 		<Search slot="search" />
