@@ -134,7 +134,7 @@
 		);
 		const value = (event as CustomEvent).detail.selected.value;
 
-		if (value === container.relation[isPartOfStrategyIndex].object) {
+		if (isPartOfStrategyIndex > -1 && value === container.relation[isPartOfStrategyIndex].object) {
 			return;
 		}
 
