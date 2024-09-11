@@ -74,7 +74,7 @@
 					</thead>
 					<tbody>
 						<tr>
-							<td colspan="2">
+							<td colspan="3">
 								<button
 									class="quiet"
 									title={$_('prepend_row')}
