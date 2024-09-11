@@ -40,6 +40,12 @@
 		container.payload.plannedValues = [...container.payload.plannedValues, [year, 0]];
 	}
 
+	function prependYear() {
+		const year = container.payload.plannedValues[0][0] - 1;
+		container.payload.plannedValues = [[year, 0], ...container.payload.plannedValues];
+		container.payload.achievedValues = [[year, 0], ...container.payload.achievedValues];
+	}
+
 	function updateAchievedValues(index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
 			container.payload.achievedValues[index][1] = parseFloat(event.currentTarget.value);
@@ -87,6 +93,13 @@
 				</tr>
 			</thead>
 			<tbody>
+				<tr>
+					<td colspan="3">
+						<button class="quiet" title={$_('prepend_row')} type="button" on:click={prependYear}>
+							<PlusSmall />
+						</button>
+					</td>
+				</tr>
 				{#each container.payload.achievedValues.map((v, i) => i) as index}
 					<tr>
 						<th scope="row">
@@ -114,7 +127,7 @@
 					<td colspan="3">
 						<button
 							class="quiet"
-							title={$_('add_value')}
+							title={$_('append_row')}
 							type="button"
 							on:click={() => appendYear()}
 						>

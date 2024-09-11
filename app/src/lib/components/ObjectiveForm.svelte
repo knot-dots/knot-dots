@@ -28,6 +28,11 @@
 		container.payload.wantedValues = [...container.payload.wantedValues, [year, 0]];
 	}
 
+	function prependWantedValue() {
+		const year = container.payload.wantedValues[0][0] - 1;
+		container.payload.wantedValues = [[year, 0], ...container.payload.wantedValues];
+	}
+
 	function updateWantedValues(index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
 			container.payload.wantedValues[index][1] = parseFloat(event.currentTarget.value);
@@ -68,6 +73,18 @@
 						</tr>
 					</thead>
 					<tbody>
+						<tr>
+							<td colspan="2">
+								<button
+									class="quiet"
+									title={$_('prepend_row')}
+									type="button"
+									on:click={prependWantedValue}
+								>
+									<PlusSmall />
+								</button>
+							</td>
+						</tr>
 						{#each container.payload.wantedValues.map((v, i) => i) as index}
 							<tr>
 								<th scope="row">
@@ -96,7 +113,7 @@
 							<td colspan="3">
 								<button
 									class="quiet"
-									title={$_('add_value')}
+									title={$_('append_row')}
 									type="button"
 									on:click={() => appendWantedValue()}
 								>
