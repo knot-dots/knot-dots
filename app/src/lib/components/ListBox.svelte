@@ -121,6 +121,7 @@
 		--button-border-color: var(--color-gray-300);
 		--button-background: var(--color-gray-050);
 		--button-hover-background: var(--color-gray-050);
+		--button-hover-border-color: var(--color-gray-300);
 
 		display: flex;
 		justify-content: space-between;
