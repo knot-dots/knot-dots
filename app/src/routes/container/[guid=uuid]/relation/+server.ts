@@ -4,8 +4,8 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import {
 	audience,
+	isContainerWithEffect,
 	isIndicatorContainer,
-	isMeasureContainer,
 	payloadTypes,
 	relation,
 	strategyTypes,
@@ -58,7 +58,7 @@ export const GET = (async ({ locals, params, url }) => {
 
 		if (isIndicatorContainer(container)) {
 			containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container));
-		} else if (isMeasureContainer(container)) {
+		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(
 					container.revision,
