@@ -11,6 +11,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import createEffect from '$lib/client/createEffect';
+	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
@@ -57,10 +59,7 @@
 	import {
 		type AnyContainer,
 		type Container,
-		containerOfType,
 		type CustomEventMap,
-		type EmptyEffectContainer,
-		type EmptyObjectiveContainer,
 		findOverallObjective,
 		type IndicatorContainer,
 		isContainer,
@@ -150,68 +149,6 @@
 		const newParams = new URLSearchParams(hashParams);
 		newParams.set(overlayKey.enum['edit-help'], '');
 		return `#${newParams.toString()}`;
-	}
-
-	async function createEffect(target: Container, indicator: IndicatorContainer) {
-		const newEffect = containerOfType(
-			payloadTypes.enum.effect,
-			target.organization,
-			target.organizational_unit,
-			env.PUBLIC_KC_REALM
-		) as EmptyEffectContainer;
-		const response = await saveContainer({
-			...newEffect,
-			payload: { ...newEffect.payload, title: indicator.payload.title },
-			relation: [
-				{
-					object: indicator.revision,
-					position: 0,
-					predicate: predicates.enum['is-measured-by']
-				},
-				{
-					object: target.revision,
-					position: 0,
-					predicate: predicates.enum['is-part-of']
-				}
-			]
-		});
-		return await response.json();
-	}
-
-	async function createObjective(target: Container, indicator: IndicatorContainer) {
-		const isOverallObjective = target.guid == indicator.guid;
-		const newObjective = containerOfType(
-			payloadTypes.enum.objective,
-			target.organization,
-			target.organizational_unit,
-			env.PUBLIC_KC_REALM
-		) as EmptyObjectiveContainer;
-		const response = await saveContainer({
-			...newObjective,
-			payload: {
-				...newObjective.payload,
-				title: isOverallObjective
-					? $_('overall_objective_title', { values: { indicator: indicator.payload.title } })
-					: indicator.payload.title
-			},
-			relation: [
-				{
-					object: indicator.revision,
-					position: 0,
-					predicate: predicates.enum['is-objective-for']
-				},
-				...(isOverallObjective
-					? []
-					: [
-							{
-								object: target.revision,
-								position: 0,
-								predicate: predicates.enum['is-part-of']
-							}
-						])
-			]
-		});
-		return await response.json();
 	}
 
 	async function afterSubmit(
