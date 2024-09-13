@@ -4,7 +4,6 @@ import { page } from '$app/stores';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
-import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchContainers from '$lib/client/fetchContainers';
 import fetchContainersByUser from '$lib/client/fetchContainersByUser';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
@@ -167,13 +166,11 @@ export type OverlayData =
 	| {
 			key: 'create';
 			container: AnyContainer;
-			isPartOfOptions: AnyContainer[];
 			relatedContainers: Container[];
 	  }
 	| {
 			key: 'edit';
 			container: AnyContainer;
-			isPartOfOptions: AnyContainer[];
 			relatedContainers: Container[];
 	  }
 	| {
@@ -250,10 +247,6 @@ if (browser) {
 		}
 
 		if (hashParams.has(overlayKey.enum.create)) {
-			const isPartOfOptions = await fetchIsPartOfOptions(
-				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
-				hashParams.get('create') as PayloadType
-			);
 			let newContainer = containerOfType(
 				hashParams.get('create') as PayloadType,
 				values.data.currentOrganization.guid,
@@ -302,7 +295,6 @@ if (browser) {
 			overlay.set({
 				key: overlayKey.enum.create,
 				container: newContainer as AnyContainer,
-				isPartOfOptions,
 				relatedContainers: []
 			});
 		} else if (hashParams.has(overlayKey.enum['view-help'])) {
@@ -320,22 +312,15 @@ if (browser) {
 			const container = revisions[revisions.length - 1];
 
 			if (isIndicatorContainer(container)) {
-				const [isPartOfOptions, relatedContainers] = await Promise.all([
-					fetchIsPartOfOptions(
-						container.organizational_unit ?? container.organization,
-						container.payload.type
-					),
-					fetchRelatedContainers(container.guid, {
-						organization: [container.organization],
-						...(hashParams.has('strategy')
-							? { strategy: [hashParams.get('strategy') as string] }
-							: undefined)
-					})
-				]);
+				const relatedContainers = await fetchRelatedContainers(container.guid, {
+					organization: [container.organization],
+					...(hashParams.has('strategy')
+						? { strategy: [hashParams.get('strategy') as string] }
+						: undefined)
+				});
 				overlay.set({
 					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
 					container,
-					isPartOfOptions,
 					relatedContainers,
 					revisions
 				});
@@ -349,33 +334,25 @@ if (browser) {
 				})) as Container[];
 				overlay.set({
 					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
-					isPartOfOptions: [],
 					container,
 					relatedContainers,
 					revisions
 				});
 			} else {
-				const [isPartOfOptions, relatedContainers] = await Promise.all([
-					fetchIsPartOfOptions(
-						container.organizational_unit ?? container.organization,
-						container.payload.type
-					),
-					fetchRelatedContainers(container.guid, {
-						organization: [container.organization],
-						relationType: [
-							predicates.enum['is-consistent-with'],
-							predicates.enum['is-equivalent-to'],
-							predicates.enum['is-inconsistent-with'],
-							predicates.enum['is-measured-by'],
-							predicates.enum['is-objective-for'],
-							predicates.enum['is-part-of']
-						]
-					})
-				]);
+				const relatedContainers = await fetchRelatedContainers(container.guid, {
+					organization: [container.organization],
+					relationType: [
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-objective-for'],
+						predicates.enum['is-part-of']
+					]
+				});
 				overlay.set({
 					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
 					container,
-					isPartOfOptions,
 					relatedContainers,
 					revisions
 				});

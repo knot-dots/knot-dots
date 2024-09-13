@@ -60,7 +60,6 @@
 	} from '$lib/models';
 
 	export let container: AnyContainer;
-	export let isPartOfOptions: AnyContainer[];
 
 	const dispatch = createEventDispatcher<Pick<CustomEventMap, 'submitSuccessful'>>();
 
@@ -174,7 +173,7 @@
 	{:else if isOrganizationContainer(container)}
 		<OrganizationForm bind:container />
 	{:else if isOrganizationalUnitContainer(container)}
-		<OrganizationalUnitForm {isPartOfOptions} bind:container />
+		<OrganizationalUnitForm bind:container />
 	{:else if isPageContainer(container)}
 		<PageForm bind:container />
 	{:else if isResolutionContainer(container)}

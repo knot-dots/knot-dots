@@ -34,7 +34,6 @@
 	} from '$lib/stores';
 
 	export let container: AnyContainer;
-	export let isPartOfOptions: AnyContainer[];
 	export let relatedContainers: Container[];
 
 	let confirmDeleteDialog: HTMLDialogElement;
@@ -131,11 +130,7 @@
 	{/if}
 </aside>
 <div class="content-details masked-overflow">
-	<ContainerForm
-		bind:container
-		{isPartOfOptions}
-		on:submitSuccessful={(e) => afterSubmit(e, container)}
-	/>
+	<ContainerForm bind:container on:submitSuccessful={(e) => afterSubmit(e, container)} />
 </div>
 <footer class="content-footer">
 	{#if container.payload.type !== payloadTypes.enum.undefined}

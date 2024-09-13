@@ -36,7 +36,7 @@
 	</Sidebar>
 </aside>
 <div class="content-details masked-overflow">
-	<ContainerForm bind:container isPartOfOptions={[]} on:submitSuccessful={() => afterSubmit()} />
+	<ContainerForm bind:container on:submitSuccessful={() => afterSubmit()} />
 </div>
 <footer class="content-footer">
 	<div class="content-actions">

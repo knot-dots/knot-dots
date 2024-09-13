@@ -70,11 +70,7 @@
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</ViewHelpOverlay>
 	{:else if data.key === overlayKey.enum['create'] || data.key === overlayKey.enum['edit']}
-		<EditOverlay
-			container={data.container}
-			isPartOfOptions={data.isPartOfOptions}
-			relatedContainers={data.relatedContainers}
-		>
+		<EditOverlay container={data.container} relatedContainers={data.relatedContainers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</EditOverlay>
 	{:else if data.key === overlayKey.enum['members']}

@@ -1,18 +1,18 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
+	import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
-	import { predicates } from '$lib/models';
-	import type {
-		Container,
-		EmptyContainer,
-		OrganizationalUnitContainer,
-		PartialRelation
+	import {
+		type EmptyOrganizationalUnitContainer,
+		type OrganizationalUnitContainer,
+		type PartialRelation,
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 
-	export let container: Container | EmptyContainer;
-	export let isPartOfOptions: OrganizationalUnitContainer[];
+	export let container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
 
 	if (container.relation.length == 0) {
 		container.relation = paramsFromURL($page.url)
@@ -25,6 +25,16 @@
 				})
 			);
 	}
+
+	$: organization = container.organization;
+
+	$: isPartOfOptionsRequest = fetchIsPartOfOptions(
+		organization,
+		payloadTypes.enum.organizational_unit
+	) as Promise<OrganizationalUnitContainer[]>;
+
+	$: filterByLevel = ({ payload }: OrganizationalUnitContainer) =>
+		container.payload.level === payload.level + 1;
 
 	$: index = container.relation.findIndex(
 		({ predicate, subject }) =>
@@ -52,29 +62,28 @@
 	}
 </script>
 
-{#if isPartOfOptions.length > 0}
-	<div>
-		<p>{$_('superordinate_organizational_unit')}</p>
-		<ListBox
-			label={$_('superordinate_organizational_unit')}
-			options={[
-				{
-					value: undefined,
-					label:
-						$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
-							.name ?? ''
-				},
-				...isPartOfOptions.map(({ payload, guid }) => ({
-					value: guid,
-					label: payload.name
-				}))
-			]}
-			value={container.relation.find(
-				(r) =>
-					r.predicate === predicates.enum['is-part-of'] &&
-					(!('guid' in container) || r.object !== container.guid)
-			)?.object}
-			{onChange}
-		/>
-	</div>
-{/if}
+{#await isPartOfOptionsRequest then isPartOfOptions}
+	{#if isPartOfOptions.filter(filterByLevel).length > 0}
+		<div>
+			<p>{$_('superordinate_organizational_unit')}</p>
+			<ListBox
+				label={$_('superordinate_organizational_unit')}
+				options={[
+					{
+						value: undefined,
+						label:
+							$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
+								.name ?? ''
+					},
+					...isPartOfOptions.filter(filterByLevel).map(({ payload, revision }) => ({
+						value: revision,
+						label: payload.name
+					}))
+				]}
+				value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])
+					?.object}
+				on:change={onChange}
+			/>
+		</div>
+	{/if}
+{/await}

@@ -12,15 +12,11 @@
 	import { applicationState } from '$lib/stores';
 
 	export let container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
-	export let isPartOfOptions: AnyContainer[];
 
 	applicationState.update((state) => ({
 		...state,
 		containerForm: { tabs: [] }
 	}));
-
-	$: filterByLevel = ({ payload }: OrganizationalUnitContainer) =>
-		container.payload.level === payload.level + 1;
 </script>
 
 <label>
@@ -41,10 +37,7 @@
 	<input type="number" max="4" min="1" bind:value={container.payload.level} />
 </label>
 
-<OrganizationalUnitRelationSelector
-	{container}
-	isPartOfOptions={isPartOfOptions.filter(isOrganizationalUnitContainer).filter(filterByLevel)}
-/>
+<OrganizationalUnitRelationSelector {container} />
 
 <div>
 	<p>{$_('boards')}</p>

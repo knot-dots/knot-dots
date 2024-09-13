@@ -21,11 +21,6 @@
 	} from '$lib/models';
 	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
-	import type { PageData } from './$types';
-
-	export let data: PageData;
-
-	$: isPartOfOptions = data.isPartOfOptions;
 
 	let container = ((type: PayloadType) => {
 		const newContainer = containerOfType(
@@ -99,7 +94,7 @@
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<div class="content-details masked-overflow">
-				<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+				<ContainerForm {container} on:submitSuccessful={afterSubmit} />
 			</div>
 			<footer class="content-footer">
 				<Visibility {container} />

@@ -15,8 +15,6 @@
 
 	$: container = data.container;
 
-	$: isPartOfOptions = data.isPartOfOptions;
-
 	async function afterSubmit() {
 		await goto(`../${container.guid}`, {
 			invalidateAll: true
@@ -41,7 +39,7 @@
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<div class="content-details masked-overflow">
-				<ContainerForm {container} {isPartOfOptions} on:submitSuccessful={afterSubmit} />
+				<ContainerForm {container} on:submitSuccessful={afterSubmit} />
 			</div>
 			<footer class="content-footer">
 				<Visibility {container} />
