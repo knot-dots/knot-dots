@@ -1562,6 +1562,10 @@ export function getCreator(revision: AnyContainer) {
 		.map(({ subject }) => subject);
 }
 
+export function getManagedBy(container: AnyContainer, candidates: AnyContainer[]) {
+	return candidates.find(({ guid }) => guid === container.managed_by);
+}
+
 export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicatorContainer) {
 	return container.payload.historicalValues.length > 0;
 }

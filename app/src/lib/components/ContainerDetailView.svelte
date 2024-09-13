@@ -15,6 +15,7 @@
 		type ContainerDetailViewTabKey,
 		displayName,
 		getCreator,
+		getManagedBy,
 		isContainerWithObjective,
 		isMeasureContainer,
 		isMeasureResultContainer,
@@ -58,6 +59,12 @@
 	let organizationMembersRequest: Promise<User[]> = new Promise(() => []);
 
 	$: organizationMembersRequest = fetchMembers(container.organization);
+
+	$: managedBy = getManagedBy(container, [
+		...$page.data.organizations,
+		...$page.data.organizationalUnits,
+		...relatedContainers
+	]);
 </script>
 
 <article class="details">
@@ -220,6 +227,19 @@
 				{/each}
 			</ul>
 		</div>
+
+		{#if managedBy}
+			<div class="meta">
+				<h3 class="meta-key">{$_('managed_by')}</h3>
+				<p class="meta-value">
+					{#if 'title' in managedBy.payload}
+						{managedBy.payload.title}
+					{:else if 'name' in managedBy.payload}
+						{managedBy.payload.name}
+					{/if}
+				</p>
+			</div>
+		{/if}
 
 		{#await organizationMembersRequest then organizationMembers}
 			{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
