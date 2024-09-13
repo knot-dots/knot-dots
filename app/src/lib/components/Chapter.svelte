@@ -99,6 +99,7 @@
 		params.set('is-part-of-strategy', String(isPartOf.revision));
 		params.set('managed-by', isPartOf.managed_by);
 		params.set('position', String(position));
+		params.delete('payloadType');
 		for (const payloadType of isPartOf.payload.chapterType) {
 			params.append('payloadType', payloadType);
 		}
