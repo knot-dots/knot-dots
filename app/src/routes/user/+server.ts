@@ -73,6 +73,7 @@ export const POST = (async ({ locals, request }) => {
 		const container = await getContainerByGuid(parseResult.data.container.guid)(txConnection);
 		await updateContainer({
 			...container,
+			managed_by: container.guid,
 			relation: container.relation
 				.filter((r) => ('guid' in container ? r.subject == container.revision : true))
 				.map(({ object, position, predicate }) => ({
