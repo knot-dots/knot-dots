@@ -20,7 +20,7 @@ declare global {
 			organizations: OrganizationContainer[];
 			organizationalUnits: OrganizationalUnitContainer[];
 			random: number;
-			session: Session;
+			session: Session | null;
 			user?: KeycloakUser;
 		}
 		// interface Platform {}
