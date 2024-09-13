@@ -33,16 +33,18 @@
 	);
 
 	function onChange(event: Event) {
-		container.relation = [
-			...container.relation.slice(0, index),
-			{
-				object: parseInt((event as CustomEvent).detail.selected.value),
-				position: 0,
-				predicate: predicates.enum['is-part-of'],
-				...('revision' in container ? { subject: container.revision } : undefined)
-			},
-			...container.relation.slice(index + 1)
-		];
+		const value = (event as CustomEvent).detail.selected?.value;
+		if (value !== undefined)
+			container.relation = [
+				...container.relation.slice(0, index),
+				{
+					object: parseInt(value),
+					position: 0,
+					predicate: predicates.enum['is-part-of'],
+					...('revision' in container ? { subject: container.revision } : undefined)
+				},
+				...container.relation.slice(index + 1)
+			];
 	}
 </script>
 

@@ -39,9 +39,16 @@
 		: paramsFromFragment($page.url)
 				.getAll('payloadType')
 				.map((pt) => ({ value: pt, label: $_(pt) }));
+
 	async function restart(event: Event) {
+		const value = (event as CustomEvent).detail.selected?.value;
+
+		if (value === undefined) {
+			return;
+		}
+
 		container.payload = containerOfType(
-			(event as CustomEvent).detail.selected.value as PayloadType,
+			value as PayloadType,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,
