@@ -86,17 +86,6 @@
 			)
 			.concat(
 				paramsFromURL($page.url)
-					.getAll('is-part-of-measure')
-					.map(
-						(o): PartialRelation => ({
-							object: Number(o),
-							position: 0,
-							predicate: 'is-part-of-measure'
-						})
-					)
-			)
-			.concat(
-				paramsFromURL($page.url)
 					.getAll('is-part-of-strategy')
 					.map(
 						(o): PartialRelation => ({
