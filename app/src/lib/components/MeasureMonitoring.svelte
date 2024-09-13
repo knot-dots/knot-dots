@@ -56,7 +56,7 @@
 	{#each columns as column (column.title)}
 		<BoardColumn
 			addItemUrl={$mayCreateContainer(column.payloadType)
-				? `#create=${column.payloadType}&is-part-of-measure=${container.revision}`
+				? `#create=${column.payloadType}&is-part-of-measure=${container.revision}&managed-by=${container.managed_by}`
 				: undefined}
 			title={$_(column.title)}
 		>

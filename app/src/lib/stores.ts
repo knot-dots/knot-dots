@@ -215,7 +215,9 @@ if (browser) {
 				hashParams.get('create') as PayloadType,
 				values.data.currentOrganization.guid,
 				values.data.currentOrganizationalUnit?.guid ?? null,
-				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
+				hashParams.has('managed-by')
+					? (hashParams.get('managed-by') as string)
+					: (values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid),
 				env.PUBLIC_KC_REALM as string
 			);
 			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {

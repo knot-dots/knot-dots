@@ -32,7 +32,8 @@
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
 			[overlayKey.enum.create, payloadType],
 			[predicates.enum['is-part-of'], String(container.revision)],
-			[predicates.enum['is-part-of-measure'], String(container.revision)]
+			[predicates.enum['is-part-of-measure'], String(container.revision)],
+			['managed-by', container.managed_by]
 		]);
 
 		return `#${newParams.toString()}`;

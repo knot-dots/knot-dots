@@ -76,7 +76,7 @@
 			--background={taskStatusBackgrounds.get(column.title)}
 			--hover-border-color={taskStatusHoverColors.get(column.title)}
 			addItemUrl={container
-				? `#create=${column.payloadType}&is-part-of-measure=${container.revision}&taskStatus=${column.title}`
+				? `#create=${column.payloadType}&is-part-of-measure=${container.revision}&managed-by=${container.managed_by}&taskStatus=${column.title}`
 				: undefined}
 			items={column.items}
 			status={column.title}
