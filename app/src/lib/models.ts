@@ -1379,10 +1379,11 @@ export function containerOfType(
 	payloadType: PayloadType,
 	organization: string,
 	organizationalUnit: string | null,
+	managedBy: string,
 	realm: string
 ) {
 	return emptyContainer.parse({
-		managed_by: organizationalUnit ?? organization,
+		managed_by: managedBy,
 		organization,
 		organizational_unit: organizationalUnit,
 		payload: { type: payloadType },
@@ -1574,6 +1575,7 @@ export function createCopyOf(
 		container.payload.type,
 		organization,
 		organizationalUnit,
+		container.managed_by,
 		container.realm
 	);
 

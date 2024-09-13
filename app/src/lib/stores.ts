@@ -115,6 +115,7 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 			payloadType,
 			values[0].data.currentOrganization.guid,
 			values[0].data.currentOrganizationalUnit?.guid ?? null,
+			values[0].data.currentOrganizationalUnit?.guid ?? values[0].data.currentOrganization.guid,
 			''
 		);
 		return values[1].can('create', container);
@@ -214,6 +215,7 @@ if (browser) {
 				hashParams.get('create') as PayloadType,
 				values.data.currentOrganization.guid,
 				values.data.currentOrganizationalUnit?.guid ?? null,
+				values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid,
 				env.PUBLIC_KC_REALM as string
 			);
 			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {

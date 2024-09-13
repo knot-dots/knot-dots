@@ -66,7 +66,7 @@
 				.filter(({ payload }) => byPayloadType(payload.type, $page.url)) as part}
 				<Chapter container={part} headingTag="h3" isPartOf={container} {relatedContainers} />
 			{:else}
-				{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
+				{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
 					<a class="button" href={addChapterURL($page.url, container.revision)}>
 						<PlusSmall />
 						{$_('chapter')}

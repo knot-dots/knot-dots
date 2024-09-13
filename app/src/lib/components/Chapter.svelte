@@ -19,7 +19,6 @@
 		isContainerWithObjective,
 		isObjectiveContainer,
 		isPartOf as isPartOfFilter,
-		isPartOfMeasure,
 		isSimpleMeasureContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -213,7 +212,7 @@
 			{$_('read_more')}
 		</a>
 
-		{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, env.PUBLIC_KC_REALM))}
+		{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
 			<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
 				<PlusSmall />
 				{$_('chapter')}

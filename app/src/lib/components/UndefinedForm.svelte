@@ -44,6 +44,7 @@
 			(event as CustomEvent).detail.selected.value as PayloadType,
 			container.organization,
 			container.organizational_unit,
+			container.managed_by,
 			container.realm
 		).payload;
 

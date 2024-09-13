@@ -16,6 +16,7 @@ export default async function createObjective(target: Container, indicator: Indi
 		payloadTypes.enum.objective,
 		target.organization,
 		target.organizational_unit,
+		target.managed_by,
 		env.PUBLIC_KC_REALM
 	) as EmptyObjectiveContainer;
 	const response = await saveContainer({

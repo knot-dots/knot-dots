@@ -14,6 +14,7 @@ export default async function createEffect(target: Container, indicator: Indicat
 		payloadTypes.enum.effect,
 		target.organization,
 		target.organizational_unit,
+		target.managed_by,
 		env.PUBLIC_KC_REALM
 	) as EmptyEffectContainer;
 	const response = await saveContainer({
