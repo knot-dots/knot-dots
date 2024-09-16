@@ -157,7 +157,7 @@
 	"login": "Anmelden",
 	"logo": "Logo",
 	"logout": "Abmelden",
-	"managed_by": "Verantwortlich",
+	"managed_by": "Zuständig",
 	"map": "Karte",
 	"measure": "Maßnahme",
 	"measure.description": "Beabsichtigte Wirkung",
@@ -212,7 +212,7 @@
 	"other_organizations": "Andere Organisationen",
 	"overall_objective": "Gesamtziel",
 	"overall_objective_title": "Gesamtziel {indicator}",
-	"owned_by": "Zuständig",
+	"owned_by": "Inhaltlich verantwortlich",
 	"page": "Seite",
 	"page_title": "knotdots.net",
 	"payload_group": {
