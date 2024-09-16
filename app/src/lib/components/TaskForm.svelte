@@ -21,7 +21,9 @@
 		}
 	}));
 
-	$: membersPromise = fetchMembers(container.organizational_unit ?? container.organization);
+	$: organizationOrOrganizationalUnit = container.organizational_unit ?? container.organization;
+
+	$: membersPromise = fetchMembers(organizationOrOrganizationalUnit);
 </script>
 
 <fieldset class="form-tab" id="basic-data">
