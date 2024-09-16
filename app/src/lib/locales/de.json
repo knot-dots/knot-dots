@@ -525,7 +525,8 @@
 	"visibility": {
 		"creator": "Nur Autor*in",
 		"label": "Sichtbarkeit",
-		"members": "Alle Mitglieder",
+		"members": "Nur Team",
+		"organization": "Ganze Organisation",
 		"public": "Gesamte Öffentlichkeit"
 	},
 	"valid_from": "Gültig ab",

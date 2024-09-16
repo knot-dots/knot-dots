@@ -527,6 +527,7 @@
 		"creator": "Creator only",
 		"label": "Visibility",
 		"members": "Members only",
+		"organization": "Organization",
 		"public": "Public"
 	},
 	"vision": "Vision",

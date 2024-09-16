@@ -113,16 +113,20 @@ export default function defineAbilityFor(user: User) {
 			managed_by: { $in: user.memberOf }
 		});
 		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			organization: { $in: user.collaboratorOf }
+			'payload.visibility': visibility.enum.organization,
+			organization: { $in: [user.adminOf, user.collaboratorOf, user.headOf] }
 		});
 		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: user.collaboratorOf }
+			'payload.visibility': visibility.enum.organization,
+			organizational_unit: { $in: [user.adminOf, user.collaboratorOf, user.headOf] }
 		});
 		can('read', payloadTypes.enum.organizational_unit, {
 			'payload.visibility': visibility.enum.members,
 			guid: { $in: user.memberOf }
+		});
+		can('read', payloadTypes.enum.organizational_unit, {
+			'payload.visibility': visibility.enum.organization,
+			guid: { $in: [user.adminOf, user.collaboratorOf, user.headOf] }
 		});
 		can('read', payloadTypes.enum.organizational_unit, {
 			'payload.visibility': visibility.enum.creator,
