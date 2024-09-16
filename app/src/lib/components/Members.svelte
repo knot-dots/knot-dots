@@ -6,7 +6,7 @@
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
 	import Dialog from '$lib/components/Dialog.svelte';
-	import { displayName, isAdminOf, isCollaboratorOf, predicates } from '$lib/models';
+	import { displayName, isAdminOf, isCollaboratorOf, isHeadOf, predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
 
 	export let container: AnyContainer;
@@ -39,6 +39,17 @@
 						.concat({
 							subject: user.guid,
 							predicate: predicates.enum['is-collaborator-of']
+						});
+					break;
+				case 'role.head':
+					containerUser = container.user
+						.filter(
+							({ predicate, subject }) =>
+								predicate == predicates.enum['is-member-of'] || user.guid != subject
+						)
+						.concat({
+							subject: user.guid,
+							predicate: predicates.enum['is-head-of']
 						});
 					break;
 				default:
@@ -103,6 +114,9 @@
 						<select name="role" on:change={handleChangeRole(u, container)}>
 							<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
 								{$_('role.collaborator')}
+							</option>
+							<option value="role.head" selected={isHeadOf(u, container)}>
+								{$_('role.head')}
 							</option>
 							<option value="role.administrator" selected={isAdminOf(u, container)}>
 								{$_('role.administrator')}

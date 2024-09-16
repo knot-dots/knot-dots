@@ -37,10 +37,12 @@ declare module '@auth/core/types' {
 	interface Session {
 		user: {
 			adminOf: string[];
+			collaboratorOf: string[];
 			email: string;
 			familyName: string;
 			givenName: string;
 			guid: string;
+			headOf: string[];
 			memberOf: string[];
 			roles: string[];
 		};

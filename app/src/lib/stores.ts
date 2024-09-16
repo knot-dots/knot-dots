@@ -62,6 +62,7 @@ export type User = {
 	familyName: string;
 	givenName: string;
 	guid: string;
+	headOf: string[];
 	isAuthenticated: boolean;
 	memberOf: string[];
 	roles: string[];
@@ -82,6 +83,7 @@ export const user = derived(
 				familyName: '',
 				givenName: '',
 				guid: '',
+				headOf: [],
 				isAuthenticated: false,
 				memberOf: [],
 				roles: []
@@ -94,6 +96,7 @@ export const user = derived(
 		familyName: '',
 		givenName: '',
 		guid: '',
+		headOf: [],
 		isAuthenticated: false,
 		memberOf: [],
 		roles: []

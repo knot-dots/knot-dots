@@ -142,6 +142,7 @@ const predicateValues = [
 	'is-creator-of',
 	'is-duplicate-of',
 	'is-equivalent-to',
+	'is-head-of',
 	'is-inconsistent-with',
 	'is-measured-by',
 	'is-member-of',
@@ -1377,6 +1378,14 @@ export function isCollaboratorOf(user: { guid: string }, container: AnyContainer
 		container.user.findIndex(
 			({ predicate, subject }) =>
 				user.guid == subject && predicate == predicates.enum['is-collaborator-of']
+		) > -1
+	);
+}
+
+export function isHeadOf(user: { guid: string }, container: AnyContainer) {
+	return (
+		container.user.findIndex(
+			({ predicate, subject }) => user.guid == subject && predicate == predicates.enum['is-head-of']
 		) > -1
 	);
 }

@@ -63,6 +63,9 @@ const { handle: authentication } = SvelteKitAuth({
 			session.user.familyName = user.family_name;
 			session.user.givenName = user.given_name;
 			session.user.guid = user.guid;
+			session.user.headOf = containerUserRelations
+				.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
+				.map(({ object }) => object);
 			session.user.memberOf = containerUserRelations
 				.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
 				.map(({ object }) => object);
@@ -120,6 +123,7 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 			familyName: '',
 			givenName: '',
 			guid: '',
+			headOf: [],
 			isAuthenticated: false,
 			memberOf: [],
 			roles: []

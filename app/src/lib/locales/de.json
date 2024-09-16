@@ -361,7 +361,8 @@
 	"resources": "Ressourcen",
 	"role": {
 		"administrator": "Administrator*in",
-		"collaborator": "Mitarbeiter*in"
+		"collaborator": "Mitarbeiter*in",
+		"head": "Leiter*in"
 	},
 	"save": "Speichern",
 	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
