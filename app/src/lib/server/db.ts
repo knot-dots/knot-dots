@@ -212,7 +212,7 @@ export function updateContainer(container: ModifiedContainer) {
 				u.predicate,
 				u.subject
 			]);
-			const userResult = await txConnection.many(sql.typeAlias('userRelation')`
+			const userResult = await txConnection.any(sql.typeAlias('userRelation')`
 				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
