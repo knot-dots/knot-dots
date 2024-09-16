@@ -6,7 +6,7 @@
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
 	import Dialog from '$lib/components/Dialog.svelte';
-	import { displayName, isAdminOf, predicates } from '$lib/models';
+	import { displayName, isAdminOf, isCollaboratorOf, predicates } from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
 
 	export let container: AnyContainer;
@@ -19,21 +19,26 @@
 		return async (event: { currentTarget: HTMLSelectElement }) => {
 			let containerUser;
 			switch (event.currentTarget.value) {
-				case 'role.member':
-					containerUser = container.user.filter(
-						({ predicate, subject }) =>
-							predicate != predicates.enum['is-admin-of'] || user.guid != subject
-					);
-					break;
 				case 'role.administrator':
 					containerUser = container.user
 						.filter(
 							({ predicate, subject }) =>
-								predicate != predicates.enum['is-admin-of'] || user.guid != subject
+								predicate == predicates.enum['is-member-of'] || user.guid != subject
 						)
 						.concat({
 							subject: user.guid,
 							predicate: predicates.enum['is-admin-of']
+						});
+					break;
+				case 'role.collaborator':
+					containerUser = container.user
+						.filter(
+							({ predicate, subject }) =>
+								predicate == predicates.enum['is-member-of'] || user.guid != subject
+						)
+						.concat({
+							subject: user.guid,
+							predicate: predicates.enum['is-collaborator-of']
 						});
 					break;
 				default:
@@ -57,6 +62,7 @@
 					({ predicate, subject }) =>
 						subject != user.guid ||
 						(predicate != predicates.enum['is-admin-of'] &&
+							predicate != predicates.enum['is-collaborator-of'] &&
 							predicate != predicates.enum['is-member-of'])
 				)
 			]
@@ -95,8 +101,8 @@
 				<td>
 					{#key container.user}
 						<select name="role" on:change={handleChangeRole(u, container)}>
-							<option value="role.member" selected={!isAdminOf(u, container)}>
-								{$_('role.member')}
+							<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
+								{$_('role.collaborator')}
 							</option>
 							<option value="role.administrator" selected={isAdminOf(u, container)}>
 								{$_('role.administrator')}

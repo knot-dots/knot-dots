@@ -10,7 +10,6 @@
 	import Minimize from '~icons/knotdots/minimize';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { env } from '$env/dynamic/public';
 	import createEffect from '$lib/client/createEffect';
 	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';

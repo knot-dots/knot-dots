@@ -58,6 +58,7 @@ export const applicationState = writable<ApplicationState>({
 
 export type User = {
 	adminOf: string[];
+	collaboratorOf: string[];
 	familyName: string;
 	givenName: string;
 	guid: string;
@@ -77,6 +78,7 @@ export const user = derived(
 		} else {
 			return {
 				adminOf: [],
+				collaboratorOf: [],
 				familyName: '',
 				givenName: '',
 				guid: '',
@@ -88,6 +90,7 @@ export const user = derived(
 	},
 	{
 		adminOf: [],
+		collaboratorOf: [],
 		familyName: '',
 		givenName: '',
 		guid: '',

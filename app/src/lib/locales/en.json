@@ -360,8 +360,7 @@
 	"resources": "Resources",
 	"role": {
 		"administrator": "Administrator",
-		"creator": "Creator",
-		"member": "Member"
+		"collaborator": "Collaborator"
 	},
 	"save": "Save",
 	"save_and_create_measure": "Save and add measure",

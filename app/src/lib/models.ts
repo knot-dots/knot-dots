@@ -136,6 +136,7 @@ export function isLevel(value: unknown): value is Level {
 
 const predicateValues = [
 	'is-admin-of',
+	'is-collaborator-of',
 	'is-consistent-with',
 	'is-copy-of',
 	'is-creator-of',
@@ -1367,6 +1368,15 @@ export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 		container.user.findIndex(
 			({ predicate, subject }) =>
 				user.guid == subject && predicate == predicates.enum['is-admin-of']
+		) > -1
+	);
+}
+
+export function isCollaboratorOf(user: { guid: string }, container: AnyContainer) {
+	return (
+		container.user.findIndex(
+			({ predicate, subject }) =>
+				user.guid == subject && predicate == predicates.enum['is-collaborator-of']
 		) > -1
 	);
 }

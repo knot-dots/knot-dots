@@ -73,12 +73,12 @@ export default function defineAbilityFor(user: User) {
 			{ organizational_unit: { $in: user.adminOf } }
 		);
 		can('create', [...strategyChapterTypes, ...measureMonitoringTypes], {
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: user.collaboratorOf }
 		});
 		can(
 			'update',
 			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
-			{ managed_by: { $in: user.memberOf } }
+			{ managed_by: { $in: user.collaboratorOf } }
 		);
 		can(['delete'], [...strategyChapterTypes, ...measureMonitoringTypes], {
 			managed_by: { $in: user.adminOf }
@@ -93,9 +93,9 @@ export default function defineAbilityFor(user: User) {
 		can(
 			'relate',
 			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
-			{ managed_by: { $in: user.memberOf } }
+			{ managed_by: { $in: user.collaboratorOf } }
 		);
-		can('prioritize', payloadTypes.enum.task, { managed_by: { $in: user.memberOf } });
+		can('prioritize', payloadTypes.enum.task, { managed_by: { $in: user.collaboratorOf } });
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
 			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }
@@ -110,11 +110,11 @@ export default function defineAbilityFor(user: User) {
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organization: { $in: user.memberOf }
+			organization: { $in: user.collaboratorOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: user.memberOf }
+			organizational_unit: { $in: user.collaboratorOf }
 		});
 		can('read', payloadTypes.enum.organizational_unit, {
 			'payload.visibility': visibility.enum.members,
