@@ -171,7 +171,7 @@
 				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===
 					container.guid}
 				href={overlayURL($page.url, overlayKey.enum.members, container.guid)}
-				title={$_('members')}
+				title={$_('team')}
 			>
 				<Members />
 			</a>
