@@ -1024,7 +1024,11 @@ export function getAllContainersRelatedToStrategy(
 	filters: { categories: string[]; terms?: string; topics: string[]; type?: PayloadType[] }
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const predicate = [predicates.enum['is-part-of'], predicates.enum['is-part-of-strategy']];
+		const predicate = [
+			predicates.enum['is-part-of'],
+			predicates.enum['is-part-of-measure'],
+			predicates.enum['is-part-of-strategy']
+		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE relation(path) AS (
