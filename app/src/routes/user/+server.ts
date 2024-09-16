@@ -42,8 +42,8 @@ export const POST = (async ({ locals, request }) => {
 		const { firstName, id, lastName } = await findUserByEmail(parseResult.data.email);
 		user = await locals.pool.connect(
 			createOrUpdateUser({
-				family_name: firstName?.trim() ?? '',
-				given_name: lastName?.trim() ?? '',
+				family_name: lastName?.trim() ?? '',
+				given_name: firstName?.trim() ?? '',
 				guid: id,
 				realm: env.PUBLIC_KC_REALM ?? ''
 			})
