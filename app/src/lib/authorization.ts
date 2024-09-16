@@ -14,7 +14,7 @@ type Actions =
 	| 'prioritize';
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
-const objectiveTypes = [
+const strategyChapterTypes = [
 	payloadTypes.enum.measure,
 	payloadTypes.enum.model,
 	payloadTypes.enum.objective,
@@ -22,7 +22,6 @@ const objectiveTypes = [
 	payloadTypes.enum.resolution,
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.strategic_goal,
-	payloadTypes.enum.strategy,
 	payloadTypes.enum.text,
 	payloadTypes.enum.undefined,
 	payloadTypes.enum.vision
@@ -45,12 +44,16 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('relate', objectiveTypes);
+		can('relate', [payloadTypes.enum.strategy, ...strategyChapterTypes]);
 		can(['delete-recursively', 'relate'], measureMonitoringTypes);
 		can('delete-recursively', payloadTypes.enum.measure);
 		can('prioritize', payloadTypes.enum.task);
 		can('read', payloadTypes.enum.task, ['assignee']);
-		can('update', objectiveTypes, ['organization', 'organizational_unit']);
+		can(
+			'update',
+			[payloadTypes.enum.strategy, ...strategyChapterTypes],
+			['organization', 'organizational_unit']
+		);
 		can('update', measureMonitoringTypes, ['organization', 'organizational_unit']);
 		can('update', payloadTypes.enum.strategy, ['chapterType']);
 	} else if (user.isAuthenticated) {
@@ -58,63 +61,45 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update'], payloadTypes.enum.organizational_unit, {
 			organization: { $in: user.adminOf }
 		});
-		can(['create', 'update', 'delete'], objectiveTypes, { organization: { $in: user.adminOf } });
-		can(['create', 'update', 'delete'], measureMonitoringTypes, {
-			organization: { $in: user.adminOf }
+		can(
+			['create', 'update', 'delete'],
+			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
+			{ organization: { $in: user.adminOf } }
+		);
+		can(
+			['create', 'update', 'delete'],
+			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
+			{ organizational_unit: { $in: user.adminOf } }
+		);
+		can(['create', 'update', 'delete'], [...strategyChapterTypes, ...measureMonitoringTypes], {
+			managed_by: { $in: user.adminOf }
 		});
-		can(['create', 'update'], measureMonitoringTypes, { organization: { $in: user.memberOf } });
-		can(['create', 'update', 'delete'], payloadTypes.enum.indicator, {
-			organization: { $in: user.adminOf }
-		});
-		can('update', payloadTypes.enum.strategy, ['chapterType'], {
-			organization: { $in: user.adminOf }
-		});
-		can(['create', 'update', 'delete'], objectiveTypes, {
-			organizational_unit: { $in: user.adminOf }
-		});
-		can(['create', 'update', 'delete'], measureMonitoringTypes, {
-			organizational_unit: { $in: user.adminOf }
-		});
-		can(['create', 'update'], measureMonitoringTypes, {
-			organizational_unit: { $in: user.memberOf }
+		can(['create', 'update'], [...strategyChapterTypes, ...measureMonitoringTypes], {
+			managed_by: { $in: user.memberOf }
 		});
 		can(['create', 'update', 'delete'], payloadTypes.enum.indicator, {
-			organizational_unit: { $in: user.adminOf }
+			managed_by: { $in: user.adminOf }
 		});
 		can('update', payloadTypes.enum.strategy, ['chapterType'], {
-			organizational_unit: { $in: user.adminOf }
+			managed_by: { $in: user.adminOf }
 		});
-		can('relate', objectiveTypes, { organization: { $in: user.memberOf } });
-		can('relate', measureMonitoringTypes, { organization: { $in: user.memberOf } });
-		can('relate', objectiveTypes, { organizational_unit: { $in: user.memberOf } });
-		can('relate', measureMonitoringTypes, {
-			organizational_unit: { $in: user.memberOf }
-		});
-		can('prioritize', payloadTypes.enum.task, {
-			organization: { $in: user.memberOf }
-		});
-		can('prioritize', payloadTypes.enum.task, {
-			organizational_unit: { $in: user.memberOf }
-		});
+		can(
+			'relate',
+			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
+			{ managed_by: { $in: user.memberOf } }
+		);
+		can('prioritize', payloadTypes.enum.task, { managed_by: { $in: user.memberOf } });
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
 			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
-			organization: { $in: user.adminOf }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.creator,
-			organizational_unit: { $in: user.adminOf }
+			managed_by: { $in: user.adminOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organization: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: user.memberOf }
+			managed_by: { $in: user.memberOf }
 		});
 		can('read', payloadTypes.enum.organizational_unit, {
 			'payload.visibility': visibility.enum.members,
@@ -126,15 +111,13 @@ export default function defineAbilityFor(user: User) {
 		});
 		can('read', payloadTypes.enum.task, ['assignee'], {
 			'payload.visibility': visibility.enum.members,
-			organization: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.enum.task, ['assignee'], {
-			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: user.memberOf }
+			managed_by: { $in: user.memberOf }
 		});
 		cannot('update', payloadTypes.enum.indicator, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
-		can('update', objectiveTypes, ['organizational_unit'], { organization: { $in: user.adminOf } });
+		can('update', payloadTypes.options, ['organizational_unit'], {
+			organization: { $in: user.adminOf }
+		});
 	}
 
 	return build({
