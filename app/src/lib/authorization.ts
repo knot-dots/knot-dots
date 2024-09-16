@@ -10,6 +10,7 @@ type Actions =
 	| 'update'
 	| 'delete'
 	| 'delete-recursively'
+	| 'invite-members'
 	| 'relate'
 	| 'prioritize';
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
@@ -47,6 +48,7 @@ export default function defineAbilityFor(user: User) {
 		can('relate', [payloadTypes.enum.strategy, ...strategyChapterTypes]);
 		can(['delete-recursively', 'relate'], measureMonitoringTypes);
 		can('delete-recursively', payloadTypes.enum.measure);
+		can('invite-members', payloadTypes.options);
 		can('prioritize', payloadTypes.enum.task);
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can(
@@ -88,6 +90,7 @@ export default function defineAbilityFor(user: User) {
 		can('update', payloadTypes.enum.strategy, ['chapterType'], {
 			managed_by: { $in: user.adminOf }
 		});
+		can('invite-members', payloadTypes.options, { managed_by: { $in: user.adminOf } });
 		can(
 			'relate',
 			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
