@@ -115,7 +115,7 @@
 		}
 	}
 
-	function onChangeIsPartOfStrategy(event: Event) {
+	async function onChangeIsPartOfStrategy(event: Event) {
 		const isPartOfStrategyIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-strategy'] &&
@@ -127,6 +127,12 @@
 			return;
 		}
 
+		const isPartOfStrategyOptions = await isPartOfStrategyOptionsRequest;
+
+		container.managed_by =
+			isPartOfStrategyOptions.find(({ revision }) => revision == value)?.managed_by ??
+			container.organizational_unit ??
+			container.organization;
 		container.relation = [
 			...container.relation.slice(0, isPartOfStrategyIndex),
 			...(value

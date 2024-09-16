@@ -75,7 +75,7 @@
 			);
 	}
 
-	function onChangeIsPartOfMeasure(event: Event) {
+	async function onChangeIsPartOfMeasure(event: Event) {
 		const isPartOfMeasureIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-measure'] &&
@@ -83,6 +83,12 @@
 		);
 		const value = (event as CustomEvent).detail.selected.value;
 
+		const isPartOfMeasureOptions = await isPartOfMeasureOptionsRequest;
+
+		container.managed_by =
+			isPartOfMeasureOptions.find(({ revision }) => revision == value)?.managed_by ??
+			container.organizational_unit ??
+			container.organization;
 		container.relation = [
 			...container.relation.slice(0, isPartOfMeasureIndex),
 			...(value

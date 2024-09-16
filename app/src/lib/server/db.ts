@@ -256,6 +256,16 @@ export function updateContainer(container: ModifiedContainer) {
 				if (previousRevision.organization != container.organization) {
 					await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
 				}
+				if (previousRevision.managed_by != container.managed_by) {
+					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
+				}
+			} else if (
+				container.payload.type == payloadTypes.enum.measure ||
+				container.payload.type == payloadTypes.enum.simple_measure
+			) {
+				if (previousRevision.managed_by != container.managed_by) {
+					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
+				}
 			}
 
 			return { ...containerResult, user: userResult };
@@ -1260,6 +1270,55 @@ export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizati
 						containerResult.map(({ guid }) => guid),
 						sql.fragment`, `
 					)})
+				`);
+			}
+		});
+	};
+}
+
+export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const containerResult =
+				container.payload.type == payloadTypes.enum.strategy
+					? await getAllContainersRelatedToStrategy(container.revision, {
+							categories: [],
+							topics: [],
+							type: [
+								payloadTypes.enum.measure,
+								payloadTypes.enum.model,
+								payloadTypes.enum.objective,
+								payloadTypes.enum.operational_goal,
+								payloadTypes.enum.resolution,
+								payloadTypes.enum.simple_measure,
+								payloadTypes.enum.strategic_goal,
+								payloadTypes.enum.text
+							]
+						})(txConnection)
+					: await getAllContainersRelatedToMeasure(
+							container.revision,
+							{
+								type: [
+									payloadTypes.enum.effect,
+									payloadTypes.enum.measure_result,
+									payloadTypes.enum.milestone,
+									payloadTypes.enum.task
+								]
+							},
+							''
+						)(txConnection);
+
+			if (containerResult.length) {
+				await txConnection.query(sql.typeAlias('void')`
+					UPDATE container
+					SET managed_by = ${managedBy}
+					WHERE guid IN (${sql.join(
+						containerResult.map(({ guid }) => guid),
+						sql.fragment`, `
+					)})
+					  AND managed_by = ${container.managed_by}
+						AND valid_currently
+						AND NOT deleted
 				`);
 			}
 		});
