@@ -53,10 +53,9 @@ export default function defineAbilityFor(user: User) {
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can(
 			'update',
-			[payloadTypes.enum.strategy, ...strategyChapterTypes],
+			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
 			['organization', 'organizational_unit']
 		);
-		can('update', measureMonitoringTypes, ['organization', 'organizational_unit']);
 		can('update', payloadTypes.enum.strategy, ['chapterType']);
 	} else if (user.isAuthenticated) {
 		can('update', payloadTypes.enum.organization, { organization: { $in: user.adminOf } });
@@ -108,6 +107,14 @@ export default function defineAbilityFor(user: User) {
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
 			managed_by: { $in: user.memberOf }
+		});
+		can('read', payloadTypes.options, {
+			'payload.visibility': visibility.enum.members,
+			organization: { $in: user.memberOf }
+		});
+		can('read', payloadTypes.options, {
+			'payload.visibility': visibility.enum.members,
+			organizational_unit: { $in: user.memberOf }
 		});
 		can('read', payloadTypes.enum.organizational_unit, {
 			'payload.visibility': visibility.enum.members,
