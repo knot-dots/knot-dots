@@ -362,7 +362,8 @@
 	"role": {
 		"administrator": "Administrator*in",
 		"collaborator": "Mitarbeiter*in",
-		"head": "Leiter*in"
+		"head": "Leiter*in",
+		"observer": "Beobachter*in"
 	},
 	"save": "Speichern",
 	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",

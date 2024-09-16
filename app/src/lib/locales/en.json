@@ -361,7 +361,8 @@
 	"role": {
 		"administrator": "Administrator",
 		"collaborator": "Collaborator",
-		"head": "Head"
+		"head": "Head",
+		"observer": "Observer"
 	},
 	"save": "Save",
 	"save_and_create_measure": "Save and add measure",

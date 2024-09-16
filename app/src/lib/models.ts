@@ -1390,6 +1390,18 @@ export function isHeadOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
+export function isObserverOf(user: { guid: string }, container: AnyContainer) {
+	return (
+		container.user.findIndex(
+			({ predicate, subject }) =>
+				user.guid == subject && predicate != predicates.enum['is-member-of']
+		) > -1 &&
+		!isAdminOf(user, container) &&
+		!isCollaboratorOf(user, container) &&
+		!isHeadOf(user, container)
+	);
+}
+
 export function isAssignedTo(user: { guid: string }) {
 	return (container: TaskContainer) => container.payload.assignee === user.guid;
 }
