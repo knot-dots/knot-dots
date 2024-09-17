@@ -23,7 +23,7 @@ export const GET = (async ({ locals, params }) => {
 	return json(
 		users.map((u) => ({
 			...u,
-			display_name: members.find(({ id }) => id == u.guid)?.username ?? u.guid
+			email: members.find(({ id }) => id == u.guid)?.username ?? u.guid
 		}))
 	);
 }) satisfies RequestHandler;

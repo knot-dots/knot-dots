@@ -1298,6 +1298,7 @@ export function isPartOf(container: { relation: PartialRelation[]; revision: num
 }
 
 export const user = z.object({
+	email: z.string().email().optional(),
 	family_name: z.string().max(32).default(''),
 	given_name: z.string().max(32).default(''),
 	guid: z.string().uuid(),
@@ -1307,7 +1308,11 @@ export const user = z.object({
 export type User = z.infer<typeof user>;
 
 export function displayName(user: User) {
-	return `${user.given_name} ${user.family_name}`;
+	if (user.given_name != '' && user.family_name != '') {
+		return `${user.given_name} ${user.family_name}`;
+	} else {
+		return user.email ?? user.guid;
+	}
 }
 
 export const keycloakUser = z.object({
