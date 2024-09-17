@@ -1,106 +1,52 @@
-<script>
+<script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+
+	const groups = [
+		{
+			heading: $_('board.programs'),
+			items: [
+				{ text: $_('workspace.programs'), value: '/programs' },
+				{ text: $_('workspace.programs_by_level'), value: '/programs-by-level' }
+			]
+		},
+		{
+			heading: $_('board.implementation'),
+			items: [
+				{ text: $_('workspace.measures'), value: '/implementation' },
+				{ text: $_('workspace.tasks'), value: '/tasks' },
+				{ text: $_('workspace.measure_monitoring'), value: '/measure-monitoring' },
+				{ text: $_('workspace.measure_templates'), value: '/measure-templates' },
+				{ text: $_('workspace.resolutions'), value: '/resolutions' }
+			]
+		},
+		{
+			heading: $_('board.indicators'),
+			items: [{ text: $_('workspace.indicators'), value: '/indicators' }]
+		}
+	];
 </script>
 
-<li class="group">
-	<p>{$_('board.programs')}</p>
-	<ul>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/programs'}
-					on:click={async () => await goto('/programs')}
-				/>
-				{$_('workspace.programs')}
-			</label>
-		</li>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/programs-by-level'}
-					on:click={async () => await goto('/programs-by-level')}
-				/>
-				{$_('workspace.programs_by_level')}
-			</label>
-		</li>
-	</ul>
-</li>
-
-<li class="group">
-	<p>{$_('board.implementation')}</p>
-	<ul>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/implementation'}
-					on:click={async () => await goto('/implementation')}
-				/>
-				{$_('workspace.measures')}
-			</label>
-		</li>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/tasks'}
-					on:click={async () => await goto('/tasks')}
-				/>
-				{$_('workspace.tasks')}
-			</label>
-		</li>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/measure-monitoring'}
-					on:click={async () => await goto('/measure-monitoring')}
-				/>
-				{$_('workspace.measure_monitoring')}
-			</label>
-		</li>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/measure-templates'}
-					on:click={async () => await goto('/measure-templates')}
-				/>
-				{$_('workspace.measure_templates')}
-			</label>
-		</li>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/resolutions'}
-					on:click={async () => await goto('/resolutions')}
-				/>
-				{$_('workspace.resolutions')}
-			</label>
-		</li>
-	</ul>
-</li>
-
-<li class="group">
-	<p>{$_('board.indicators')}</p>
-	<ul>
-		<li>
-			<label>
-				<input
-					type="radio"
-					checked={$page.url.pathname === '/indicators'}
-					on:click={async () => await goto('/indicators')}
-				/>
-				{$_('workspace.indicators')}
-			</label>
-		</li>
-	</ul>
-</li>
+{#each groups as { heading, items }}
+	<li class="group">
+		<p>{heading}</p>
+		<ul>
+			{#each items as { text, value }}
+				<li>
+					<label>
+						<input
+							type="radio"
+							checked={$page.url.pathname === value}
+							on:click={async () => await goto(value)}
+						/>
+						{text}
+					</label>
+				</li>
+			{/each}
+		</ul>
+	</li>
+{/each}
 
 <style>
 	p {
