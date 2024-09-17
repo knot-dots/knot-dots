@@ -31,6 +31,7 @@
 
 		<Workspaces
 			indicators={selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
+			tasks={!('default' in selectedContext.payload) || !selectedContext.payload.default}
 		/>
 	</div>
 

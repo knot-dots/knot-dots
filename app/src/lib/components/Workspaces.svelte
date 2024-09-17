@@ -8,6 +8,7 @@
 	import { page } from '$app/stores';
 
 	export let indicators = false;
+	export let tasks = false;
 
 	const menu = createMenu();
 
@@ -23,7 +24,7 @@
 			heading: $_('board.implementation'),
 			items: [
 				{ text: $_('workspace.measures'), value: '/implementation' },
-				{ text: $_('workspace.tasks'), value: '/tasks' },
+				...(tasks ? [{ text: $_('workspace.tasks'), value: '/tasks' }] : []),
 				{ text: $_('workspace.measure_monitoring'), value: '/measure-monitoring' },
 				{ text: $_('workspace.measure_templates'), value: '/measure-templates' },
 				{ text: $_('workspace.resolutions'), value: '/resolutions' }
