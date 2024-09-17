@@ -11,7 +11,6 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import Workspaces from '$lib/components/Workspaces.svelte';
 	import {
 		isMeasureContainer,
 		isMilestoneContainer,
@@ -56,8 +55,6 @@
 <Layout>
 	<svelte:fragment slot="sidebar">
 		<Sidebar helpSlug="measure-monitoring">
-			<Workspaces slot="workspaces" />
-
 			<Search slot="search" />
 
 			<svelte:fragment slot="filters">

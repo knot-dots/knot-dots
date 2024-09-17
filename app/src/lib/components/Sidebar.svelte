@@ -7,7 +7,6 @@
 	import Info from '~icons/knotdots/info';
 	import Search from '~icons/knotdots/search';
 	import Sort from '~icons/knotdots/sort';
-	import Workspaces from '~icons/knotdots/workspaces';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
@@ -70,35 +69,6 @@
 </script>
 
 <ul class="sidebar-items" data-sveltekit-preload-data="hover">
-	{#if $$slots.workspaces}
-		<li class="sidebar-items-workspaces">
-			<button
-				class="button-nav button-square"
-				class:is-active={expandedItem === 'workspaces'}
-				on:click={() => lockItem('workspaces')}
-				on:mouseenter={() => expandItem('workspaces')}
-				on:mouseleave={() => collapseItemDelayed('workspaces')}
-				title={$_('workspaces')}
-				aria-controls="workspaces"
-				aria-expanded={expandedItem === 'workspaces'}
-			>
-				<Workspaces />
-			</button>
-			<!--svelte-ignore a11y-no-static-element-interactions -->
-			<div
-				class="expandable"
-				id="workspaces"
-				on:mouseenter={() => clearTimeout(timer)}
-				on:mouseleave={() => collapseItemDelayed('workspaces')}
-			>
-				<span class="button button-nav is-active">{$_('workspaces')}</span>
-				<ul class="workspaces">
-					<slot name="workspaces" />
-				</ul>
-			</div>
-		</li>
-	{/if}
-
 	{#if $$slots.search}
 		<li>
 			<button
@@ -213,10 +183,6 @@
 		gap: 0.5rem;
 		height: 100%;
 		position: relative;
-	}
-
-	.sidebar-items-workspaces {
-		margin-bottom: 2.5rem;
 	}
 
 	.sidebar-items-help:nth-child(n + 2) {

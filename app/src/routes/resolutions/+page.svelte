@@ -15,7 +15,6 @@
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { payloadTypes, resolutionStatus } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 	import { resolutionStatusBackgrounds, resolutionStatusHoverColors } from '$lib/theme/models';
@@ -31,8 +30,6 @@
 		{#if !$page.data.currentOrganization.payload.default}
 			<Sidebar helpSlug="resolutions">
 				<Search slot="search" />
-
-				<Workspaces slot="workspaces" />
 
 				<svelte:fragment slot="filters">
 					<AudienceFilter />

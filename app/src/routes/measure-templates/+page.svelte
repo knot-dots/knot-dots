@@ -11,7 +11,6 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import Workspaces from '$lib/components/Workspaces.svelte';
 	import type { PageData } from './$types';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
@@ -24,8 +23,6 @@
 <Layout>
 	<svelte:fragment slot="sidebar">
 		<Sidebar helpSlug="measure-templates">
-			<Workspaces slot="workspaces" />
-
 			<Search slot="search" />
 
 			<svelte:fragment slot="filters">

@@ -2,12 +2,10 @@
 	import { signIn } from '@auth/sveltekit/client';
 	import { _ } from 'svelte-i18n';
 	import Share from '~icons/heroicons/share-20-solid';
-	import Effects from '~icons/knotdots/effects';
-	import Measure from '~icons/knotdots/measure';
 	import Members from '~icons/knotdots/members';
-	import Programs from '~icons/knotdots/programs';
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
+	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { boards } from '$lib/models';
 	import { ability, applicationState, user } from '$lib/stores';
 
@@ -31,47 +29,9 @@
 			<span class="large-only">{$_('board.elements')}</span>
 		</a>
 
-		<ul class="button-group button-group-nav">
-			<li>
-				<a
-					href="/programs"
-					class="button button-nav"
-					class:is-active={$page.url.pathname === '/programs' ||
-						$page.url.pathname === '/programs-by-level'}
-					title={$_('board.programs')}
-				>
-					<span class="small-only"><Programs /></span>
-					<span class="large-only">{$_('board.programs')}</span>
-				</a>
-			</li>
-			<li>
-				<a
-					href="/implementation"
-					class="button button-nav"
-					class:is-active={$page.url.pathname === '/implementation' ||
-						$page.url.pathname === '/tasks' ||
-						$page.url.pathname === '/measure-monitoring'}
-					title={$_('board.implementation')}
-				>
-					<span class="small-only"><Measure /></span>
-					<span class="large-only">{$_('board.implementation')}</span>
-				</a>
-			</li>
-			{#if selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
-				<li>
-					<a
-						href="/indicators"
-						class="button button-nav"
-						class:is-active={$page.url.pathname === '/indicators' ||
-							$page.url.pathname === '/indicator-monitoring'}
-						title={$_('board.indicators')}
-					>
-						<span class="small-only"><Effects /></span>
-						<span class="large-only">{$_('board.indicators')}</span>
-					</a>
-				</li>
-			{/if}
-		</ul>
+		<Workspaces
+			indicators={selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
+		/>
 	</div>
 
 	{#if $page.data.currentOrganizationalUnit && $ability.can('update', $page.data.currentOrganizationalUnit)}
@@ -144,17 +104,10 @@
 		display: flex;
 		flex-grow: 0;
 		gap: 0.5rem;
-		overflow-x: auto;
 	}
 
 	.button.button-nav {
 		flex-shrink: 0;
-	}
-
-	.button-group {
-		flex-shrink: 1;
-		margin: 0 auto;
-		overflow-x: auto;
 	}
 
 	.user-menu {
@@ -167,10 +120,6 @@
 		gap: 0.75rem;
 	}
 
-	.large-only {
-		display: none;
-	}
-
 	@container (min-inline-size: 50rem) {
 		.main-menu {
 			gap: 2rem;
@@ -178,10 +127,6 @@
 
 		.large-only {
 			display: inherit;
-		}
-
-		.small-only {
-			display: none;
 		}
 	}
 </style>

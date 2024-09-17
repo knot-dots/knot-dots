@@ -14,7 +14,6 @@
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { payloadTypes } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
@@ -26,8 +25,6 @@
 
 <Layout>
 	<Sidebar helpSlug="strategies" slot="sidebar">
-		<Workspaces slot="workspaces" />
-
 		<Search slot="search" />
 
 		<svelte:fragment slot="filters">

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import AssigneeSelector from '$lib/components/AssigneeSelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';

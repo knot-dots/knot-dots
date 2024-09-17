@@ -7,7 +7,6 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
-	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
@@ -52,8 +51,6 @@
 <Layout>
 	<Sidebar helpSlug="tasks" slot="sidebar">
 		<Search slot="search" />
-
-		<Workspaces slot="workspaces" />
 
 		<svelte:fragment slot="filters">
 			<OrganizationIncludedFilter />

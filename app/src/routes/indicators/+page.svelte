@@ -8,7 +8,6 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
 	import type { PageData } from './$types';
 
@@ -19,8 +18,6 @@
 	<svelte:fragment slot="sidebar">
 		{#if isOrganizationContainer(data.container)}
 			<Sidebar helpSlug="indicators">
-				<Workspaces slot="workspaces" />
-
 				<svelte:fragment slot="filters">
 					<IndicatorTypeFilter />
 					<AudienceFilter />
@@ -31,8 +28,6 @@
 			</Sidebar>
 		{:else if isOrganizationalUnitContainer(data.container)}
 			<Sidebar helpSlug="indicators">
-				<Workspaces slot="workspaces" />
-
 				<svelte:fragment slot="filters">
 					<IndicatorTypeFilter />
 					<AudienceFilter />
