@@ -456,9 +456,7 @@ function prepareWhereCondition(filters: {
 		sql.fragment`payload->>'type' NOT IN ('organization', 'organizational_unit')`
 	];
 	if (filters.assignees?.length) {
-		conditions.push(
-			sql.fragment`payload->>'assignee' IN (${sql.join(filters.assignees, sql.fragment`, `)})`
-		);
+		conditions.push(sql.fragment`payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
 	}
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);

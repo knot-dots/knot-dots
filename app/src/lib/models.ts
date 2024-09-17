@@ -679,7 +679,7 @@ const initialResourcePayload = resourcePayload.partial({
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
-		assignee: z.string().uuid().optional(),
+		assignee: z.array(z.string().uuid()).default([]),
 		fulfillmentDate: z
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
@@ -1403,7 +1403,7 @@ export function isObserverOf(user: { guid: string }, container: AnyContainer) {
 }
 
 export function isAssignedTo(user: { guid: string }) {
-	return (container: TaskContainer) => container.payload.assignee === user.guid;
+	return (container: TaskContainer) => container.payload.assignee.includes(user.guid);
 }
 
 export function containerOfType(
@@ -1619,7 +1619,7 @@ export function createCopyOf(
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
 			...container.payload,
-			assignee: undefined,
+			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
 		};
 	} else if (isIndicatorContainer(container)) {

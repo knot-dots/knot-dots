@@ -85,13 +85,13 @@
 
 		{#if 'assignee' in selectedRevision.payload && selectedRevision.payload.assignee && $ability.can('read', selectedRevision, 'assignee')}
 			{#await organizationMembersRequest then organizationMembers}
-				{@const member = organizationMembers.find(
-					({ guid }) => guid === selectedRevision.payload.assignee
+				{@const members = organizationMembers.filter(({ guid }) =>
+					selectedRevision.payload.assignee.includes(guid)
 				)}
-				{#if member}
+				{#if members.length > 0}
 					<div class="meta">
 						<h3 class="meta-key">{$_('assignee')}</h3>
-						<p class="meta-value">{displayName(member)}</p>
+						<p class="meta-value">{members.map((m) => displayName(m)).join(', ')}</p>
 					</div>
 				{/if}
 			{/await}

@@ -4,7 +4,7 @@
 	import { displayName, type User } from '$lib/models';
 
 	export let candidates: User[];
-	export let value: string | undefined;
+	export let value: string[] = [];
 </script>
 
 <div class="meta">
