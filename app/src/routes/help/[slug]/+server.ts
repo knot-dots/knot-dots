@@ -23,6 +23,7 @@ export const GET = (async ({ locals, params }) => {
 				createContainer(
 					newContainer.parse({
 						payload: { body: '', slug: params.slug, title: '', type: payloadTypes.enum.page },
+						managed_by: organizations[0].guid,
 						organization: organizations[0].guid,
 						organizational_unit: null,
 						realm: env.PUBLIC_KC_REALM,
