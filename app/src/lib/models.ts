@@ -473,10 +473,7 @@ const measurePayload = basePayload
 	.extend({
 		annotation: z.string().trim().optional(),
 		comment: z.string().trim().optional(),
-		endDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		endDate: z.string().date().optional(),
 		indicatorContribution: z.record(z.string().uuid(), z.coerce.number().nonnegative()).optional(),
 		indicatorContributionAchieved: z
 			.record(z.string().uuid(), z.coerce.number().nonnegative())
@@ -493,10 +490,7 @@ const measurePayload = basePayload
 			)
 			.default([]),
 		result: z.string().trim().optional(),
-		startDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
 		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
@@ -570,10 +564,7 @@ const simpleMeasurePayload = basePayload
 				})
 			)
 			.default([]),
-		startDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
 	})
@@ -583,10 +574,7 @@ const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true }
 
 const strategicGoalPayload = basePayload
 	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		fulfillmentDate: z.string().date().optional(),
 		type: z.literal(payloadTypes.enum.strategic_goal)
 	})
 	.strict();
@@ -648,10 +636,7 @@ const initialMeasureResultPayload = measureResultPayload.partial({ title: true }
 
 const milestonePayload = measureMonitoringBasePayload
 	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		fulfillmentDate: z.string().date().optional(),
 		progress: z.number().nonnegative().default(0),
 		type: z.literal(payloadTypes.enum.milestone)
 	})
@@ -663,7 +648,7 @@ const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
 		amount: z.coerce.number(),
-		fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v)),
+		fulfillmentDate: z.string().date(),
 		type: z.literal(payloadTypes.enum.resource),
 		unit: z.string()
 	})
@@ -680,10 +665,7 @@ const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
 		assignee: z.array(z.string().uuid()).default([]),
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		fulfillmentDate: z.string().date().optional(),
 		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
 		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
 		type: z.literal(payloadTypes.enum.task)
