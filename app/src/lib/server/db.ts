@@ -283,8 +283,8 @@ export function deleteContainer(container: AnyContainer) {
 			`);
 
 			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
-				INSERT INTO container (deleted, guid, organization, organizational_unit, payload, realm)
-				SELECT true, guid, organization, organizational_unit, payload, realm FROM container
+				INSERT INTO container (deleted, guid, managed_by, organization, organizational_unit, payload, realm)
+				SELECT true, guid, managed_by, organization, organizational_unit, payload, realm FROM container
 				WHERE revision = ${container.revision}
 				RETURNING revision
 			`);
