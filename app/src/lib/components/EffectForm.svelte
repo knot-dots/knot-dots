@@ -73,11 +73,11 @@
 									({ revision }) =>
 										container.relation.findIndex(
 											({ object, predicate }) =>
-												predicate == predicates.enum['is-measured-by'] && object == revision
+												predicate === predicates.enum['is-measured-by'] && object === revision
 										) > -1
 								)}
 							{#if indicator}
-								{indicator.payload.title} ({$_(`${indicator.payload.unit}` ?? '')})
+								{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})
 							{/if}
 						{/await}
 					</th>

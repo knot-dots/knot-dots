@@ -59,7 +59,7 @@
 						<tr>
 							<th scope="col"></th>
 							<th scope="col" colspan="2">
-								{indicator.payload.title} ({$_(`${indicator.payload.unit}` ?? '')})
+								{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})
 							</th>
 						</tr>
 						<tr>
