@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
+import { createFeatureDecisions } from '$lib/features';
 import type { User } from '$lib/models';
 import { newUser, predicates } from '$lib/models';
 import {
@@ -59,7 +60,7 @@ export const POST = (async ({ locals, request }) => {
 			})
 		);
 
-		if (locals.featureDecisions.useNewOnboardingWorkflow()) {
+		if (createFeatureDecisions(locals.features).useNewOnboardingWorkflow()) {
 			const signupURL = `${env.PUBLIC_BASE_URL}?signup=${user.guid}`;
 			await sendVerificationEmailNewWorkflow(parseResult.data.email, signupURL);
 		} else {

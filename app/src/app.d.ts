@@ -9,7 +9,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			featureDecisions: Record<string, () => boolean>;
+			features: string[];
 			pool: DatabasePool;
 			user: User;
 		}
