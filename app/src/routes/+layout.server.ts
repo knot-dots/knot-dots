@@ -70,6 +70,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 	return {
 		currentOrganization,
 		currentOrganizationalUnit,
+		features: locals.features,
 		organizations,
 		organizationalUnits,
 		random: await random.json(),
