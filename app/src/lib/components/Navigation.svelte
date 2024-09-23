@@ -35,7 +35,7 @@
 		/>
 	</div>
 
-	{#if $page.data.currentOrganizationalUnit && $ability.can('update', $page.data.currentOrganizationalUnit)}
+	{#if $page.data.currentOrganizationalUnit && $ability.can('invite-members', $page.data.currentOrganizationalUnit)}
 		<a
 			href="/organization/{$page.data.currentOrganizationalUnit.guid}/members"
 			class="button button-nav"
@@ -44,7 +44,7 @@
 		>
 			<Members />
 		</a>
-	{:else if !$page.data.currentOrganization.payload.default && $ability.can('update', $page.data.currentOrganization)}
+	{:else if !$page.data.currentOrganization.payload.default && $ability.can('invite-members', $page.data.currentOrganization)}
 		<a
 			href="/organizational_unit/{$page.data.currentOrganization.guid}/members"
 			class="button button-nav"
