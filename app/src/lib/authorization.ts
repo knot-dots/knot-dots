@@ -64,6 +64,9 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update'], payloadTypes.enum.organizational_unit, {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
+		can('update', payloadTypes.enum.organizational_unit, {
+			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+		});
 		can(
 			['create', 'update', 'delete'],
 			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
