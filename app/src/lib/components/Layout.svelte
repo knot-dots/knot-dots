@@ -32,9 +32,11 @@
 				relatedContainers={$overlay.relatedContainers}
 			/>
 		{/if}
-		{#if browser && $overlay.object}
-			<RelationOverlay object={$overlay.object} />
-		{/if}
+		<slot name="relationOverlay">
+			{#if $overlay.object}
+				<RelationOverlay object={$overlay.object} />
+			{/if}
+		</slot>
 	</main>
 </div>
 
