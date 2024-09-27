@@ -9,15 +9,18 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
+	import NewRelationOverlay from '$lib/components/NewRelationOverlay.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import { payloadTypes, status } from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { createFeatureDecisions } from '$lib/features';
+	import { payloadTypes, predicates, status } from '$lib/models';
+	import { mayCreateContainer, overlay } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
@@ -85,5 +88,23 @@
 				</BoardColumn>
 			{/each}
 		</Board>
+	</svelte:fragment>
+
+	<svelte:fragment slot="relationOverlay">
+		{#if createFeatureDecisions(data.features).useNewRelationOverlay()}
+			{#if $overlay.object}
+				<NewRelationOverlay
+					object={$overlay.object}
+					enabledPredicates={[
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-prerequisite-for']
+					]}
+				/>
+			{/if}
+		{:else if $overlay.object}
+			<RelationOverlay object={$overlay.object} />
+		{/if}
 	</svelte:fragment>
 </Layout>

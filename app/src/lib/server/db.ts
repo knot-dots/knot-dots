@@ -241,6 +241,7 @@ export function updateContainer(container: ModifiedContainer) {
 				JOIN container s ON s.revision = cr.subject AND s.valid_currently
 				WHERE o.guid = ${container.guid}
 				ORDER BY o.guid, cr.predicate, cr.subject, cr.object DESC
+				ON CONFLICT DO NOTHING
       `);
 
 			if (container.payload.type == payloadTypes.enum.strategy) {

@@ -135,6 +135,7 @@ export function isLevel(value: unknown): value is Level {
 }
 
 const predicateValues = [
+	'contributes-to',
 	'is-admin-of',
 	'is-collaborator-of',
 	'is-consistent-with',

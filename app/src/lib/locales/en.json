@@ -349,12 +349,18 @@
 	"relation_overlay": {
 		"close": "Close",
 		"close_and_show_relations": "Close and show relations",
-		"help": "Please drag all cards to one of the drop zones in order to establish the specified relation with \"{nameOrTitle}\".",
+		"dragged_contributes_to_selected": "… contributes to {selected}",
+		"dragged_is_prerequisite_for_selected": "… is prerequisite for “{selected}”",
+		"dragged_is_superordinate_of_selected": "… is superordinate of “{selected}”",
+		"help": "Please drag all cards to one of the drop zones in order to establish the specified relation with “{nameOrTitle}”.",
 		"is_consistent_with": "consistent with",
 		"is_duplicate_of": "duplicate",
 		"is_equivalent_to": "equivalent",
 		"is_inconsistent_with": "inconsistent with",
-		"remove": "remove relations"
+		"remove": "remove relations",
+		"selected_contributes_to_dragged": "{selected} contributes to …",
+		"selected_is_prerequisite_for_dragged": "“{selected}” is prerequisite for …",
+		"selected_is_superordinate_of_dragged": "“{selected}” is superordinate of …"
 	},
 	"relations": "Relations",
 	"resolution": "Resolution",

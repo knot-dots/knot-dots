@@ -350,12 +350,18 @@
 	"relation_overlay": {
 		"close": "Schließen",
 		"close_and_show_relations": "Schließen und Beziehungen anzeigen",
-		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu \"{nameOrTitle}\" festlegen möchten.",
+		"dragged_contributes_to_selected": "… trägt zu {selected} bei",
+		"dragged_is_prerequisite_for_selected": "… ist Voraussetzung für „{selected}“",
+		"dragged_is_superordinate_of_selected": "… ist „{selected}“ übergeordnet",
+		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu „{nameOrTitle}“ festlegen möchten.",
 		"is_consistent_with": "Diese Vorhaben unterstützen sich gegenseitig",
 		"is_duplicate_of": "Dopplung",
 		"is_equivalent_to": "Diese Vorhaben entsprechen sich",
 		"is_inconsistent_with": "Diese Vorhaben widersprechen sich",
-		"remove": "Beziehungen lösen"
+		"remove": "Beziehungen lösen",
+		"selected_contributes_to_dragged": "{selected} trägt zu … bei",
+		"selected_is_prerequisite_for_dragged": "„{selected}“ ist Voraussetzung für …",
+		"selected_is_superordinate_of_dragged": "„{selected}“ ist … übergeordnet"
 	},
 	"relations": "Beziehungen",
 	"resolution": "Beschluss",

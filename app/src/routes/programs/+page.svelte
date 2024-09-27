@@ -7,15 +7,18 @@
 	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import NewRelationOverlay from '$lib/components/NewRelationOverlay.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import { payloadTypes } from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { createFeatureDecisions } from '$lib/features';
+	import { payloadTypes, predicates } from '$lib/models';
+	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -61,6 +64,24 @@
 				{/each}
 			</ul>
 		</div>
+	</svelte:fragment>
+
+	<svelte:fragment slot="relationOverlay">
+		{#if createFeatureDecisions(data.features).useNewRelationOverlay()}
+			{#if $overlay.object}
+				<NewRelationOverlay
+					object={$overlay.object}
+					enabledPredicates={[
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-superordinate-of']
+					]}
+				/>
+			{/if}
+		{:else if $overlay.object}
+			<RelationOverlay object={$overlay.object} />
+		{/if}
 	</svelte:fragment>
 </Layout>
 
