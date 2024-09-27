@@ -13,12 +13,18 @@ export default async function saveContainer(container: AnyContainer | NewContain
 		...container,
 		realm: env.PUBLIC_KC_REALM,
 		relation: container.relation
-			.filter((r) => ('guid' in container ? r.subject == container.revision : true))
-			.map(({ object, position, predicate }) => ({
-				predicate,
-				object,
-				position
-			}))
+			.filter((r) =>
+				'guid' in container
+					? r.subject == container.revision || r.object == container.revision
+					: true
+			)
+			.map(({ object, position, predicate, subject }) => {
+				return {
+					predicate,
+					...('guid' in container && object == container.revision ? { subject } : { object }),
+					position
+				};
+			})
 	});
 
 	return await fetch(url, {
