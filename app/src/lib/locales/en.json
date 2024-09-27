@@ -402,7 +402,7 @@
 	"signup_dialog.password": "Password",
 	"signup_dialog.password_confirm": "Confirm password",
 	"signup_dialog.password_mismatch": "The passwords do not match",
-	"signup_dialog.password_too_weak": "The password is too wesk",
+	"signup_dialog.password_too_weak": "The password is too weak",
 	"signup_dialog.submit": "Activate account",
 	"signup_dialog.unexpected_error": "Something went wrong. Please try again later.",
 	"simple_measure": "Simple measure",

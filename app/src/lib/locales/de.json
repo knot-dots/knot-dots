@@ -239,12 +239,12 @@
 	"quantity": {
 		"broadband_coverage": {
 			"description": "{contribution, number} % der privaten Haushalte haben Zugang zu Breitbandinternet.",
-			"input_prompt": "Wieviele private Haushalte sollen Zugang zu Breitband-Internet haben?",
+			"input_prompt": "Wie viele private Haushalte sollen Zugang zu Breitband-Internet haben?",
 			"label": "Zugang zu Breitband-Anschluss - private Haushalte"
 		},
 		"charging_stations": {
 			"description": "Es gibt {contribution, number} Ladestationen pro 1.000 Einwohner*innen.",
-			"input_prompt": "Wieviele Ladestationen sollen pro 1.000 Einwohner*innen erreicht werden?",
+			"input_prompt": "Wie viele Ladestationen sollen pro 1.000 Einwohner*innen erreicht werden?",
 			"label": "Ladestationen"
 		},
 		"co2": {
