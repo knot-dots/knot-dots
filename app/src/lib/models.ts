@@ -149,7 +149,9 @@ const predicateValues = [
 	'is-objective-for',
 	'is-part-of',
 	'is-part-of-measure',
-	'is-part-of-strategy'
+	'is-part-of-strategy',
+	'is-prerequisite-for',
+	'is-superordinate-of'
 ] as const;
 
 export const predicates = z.enum(predicateValues);

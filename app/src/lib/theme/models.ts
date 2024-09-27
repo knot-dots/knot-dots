@@ -2,6 +2,8 @@ import type { SvelteComponent } from 'svelte';
 import type { SVGAttributes } from 'svelte/elements';
 import Bars2 from '~icons/heroicons/bars-2-solid';
 import CheckCircle from '~icons/heroicons/check-circle-16-solid';
+import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-solid';
+import ChevronDoubleRight from '~icons/heroicons/chevron-double-right-solid';
 import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
 import Flag from '~icons/heroicons/flag-16-solid';
 import LightBulb from '~icons/heroicons/light-bulb-16-solid';
@@ -44,7 +46,9 @@ export const predicateIcons = new Map<string, typeof SvelteComponent<SVGAttribut
 		[predicates.enum['is-consistent-with'], Plus],
 		[predicates.enum['is-duplicate-of'], Square2Stack],
 		[predicates.enum['is-equivalent-to'], Bars2],
-		[predicates.enum['is-inconsistent-with'], Minus]
+		[predicates.enum['is-inconsistent-with'], Minus],
+		[predicates.enum['is-prerequisite-for'], ChevronDoubleRight],
+		[predicates.enum['is-superordinate-of'], ChevronDoubleUp]
 	]
 );
 
