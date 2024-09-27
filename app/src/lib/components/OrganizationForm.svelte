@@ -44,20 +44,26 @@
 	<Editor label={$_('description')} bind:value={container.payload.description} />
 {/key}
 
-<ListBox
-	label={$_('organization_category.label')}
-	options={organizationCategories.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.organizationCategory}
-/>
+<div>
+	<p>{$_('organization_category.label')}</p>
+	<ListBox
+		label={$_('organization_category.label')}
+		options={organizationCategories.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value={container.payload.organizationCategory}
+	/>
+</div>
 
-<ListBox
-	label={$_('boards')}
-	options={['board.indicators', 'board.organizational_units'].map((o) => ({
-		value: o,
-		label: $_(o)
-	}))}
-	bind:value={container.payload.boards}
-/>
+<div>
+	<p>{$_('boards')}</p>
+	<ListBox
+		label={$_('boards')}
+		options={['board.indicators', 'board.organizational_units'].map((o) => ({
+			value: o,
+			label: $_(o)
+		}))}
+		bind:value={container.payload.boards}
+	/>
+</div>
 
 <style>
 	.preview {

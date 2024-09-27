@@ -41,8 +41,11 @@
 	isPartOfOptions={isPartOfOptions.filter(isOrganizationalUnitContainer).filter(filterByLevel)}
 />
 
-<ListBox
-	label={$_('boards')}
-	options={['board.indicators'].map((o) => ({ value: o, label: $_(o) }))}
-	bind:value={container.payload.boards}
-/>
+<div>
+	<p>{$_('boards')}</p>
+	<ListBox
+		label={$_('boards')}
+		options={['board.indicators'].map((o) => ({ value: o, label: $_(o) }))}
+		bind:value={container.payload.boards}
+	/>
+</div>
