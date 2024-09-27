@@ -51,17 +51,17 @@
 		</span>
 	</div>
 {:else}
-	<label class="meta">
-		<span class="meta-key"></span>
+	<div class="meta">
+		<label class="meta-key" for="image">{$_('cover')}</label>
 		<p class="meta-value">
-			<input type="file" name="image" accept="image/png,image/jpeg" />
+			<input type="file" id="image" name="image" accept="image/png,image/jpeg" />
 			<span class="help">{$_('upload.image.help')}</span>
 		</p>
-	</label>
+	</div>
 {/if}
 
-<label class="meta">
-	<span class="meta-key">{$_('pdf')}</span>
+<div class="meta">
+	<label class="meta-key" for="pdf">{$_('pdf')}</label>
 	<div class="meta-value">
 		{#if container.payload.pdf.length > 0}
 			<ul>
@@ -80,10 +80,10 @@
 				{/each}
 			</ul>
 		{/if}
-		<input type="file" name="pdf" accept="application/pdf" multiple />
+		<input type="file" id="pdf" name="pdf" accept="application/pdf" multiple />
 		<span class="help">{$_('upload.pdf.help')}</span>
 	</div>
-</label>
+</div>
 
 <ChapterTypeSelector bind:value={container.payload.chapterType} />
 
