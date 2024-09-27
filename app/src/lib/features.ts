@@ -2,6 +2,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 	return {
 		useNewOnboardingWorkflow() {
 			return features.includes('NewOnboardingWorkflow');
+		},
+		useImportFromCsv() {
+			return features.includes('ImportFromCsv');
 		}
 	};
 }

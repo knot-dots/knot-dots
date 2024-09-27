@@ -4,4 +4,4 @@
 	import { topics } from '$lib/models';
 </script>
 
-<Filter key="topic" label={$_('topic.label')} options={topics.options.map((o) => [$_(o), o])} />
+<Filter key="topic" label={$_('topic')} options={topics.options.map((o) => [$_(o), o])} />

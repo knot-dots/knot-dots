@@ -7,10 +7,10 @@
 </script>
 
 <div class="meta">
-	<p class="meta-key">{$_('topic.label')}</p>
+	<p class="meta-key">{$_('topic')}</p>
 	<div class="meta-value">
 		<ListBox
-			label={$_('topic.label')}
+			label={$_('topic')}
 			options={topics.options.map((o) => ({ value: o, label: $_(o) }))}
 			bind:value
 		/>

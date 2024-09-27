@@ -157,3 +157,7 @@ export function filterVisible<T extends AnyContainer>(containers: Array<T>, user
 	const ability = defineAbilityFor(user);
 	return containers.filter((c) => ability.can('read', c));
 }
+
+export function mayImportFromCSV(user: User) {
+	return defineAbilityFor(user).can('create', payloadTypes.enum.strategy);
+}

@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import ArrowUpOnSquareStack from '~icons/heroicons/arrow-up-on-square-stack-20-solid';
 	import Info from '~icons/knotdots/info';
 	import Organization from '~icons/knotdots/organization';
+	import { page } from '$app/stores';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
-	import type { OrganizationContainer } from '$lib/models';
+	import { type OrganizationContainer, payloadTypes } from '$lib/models';
+	import { createFeatureDecisions } from '$lib/features';
+	import { mayCreateContainer } from '$lib/stores';
 
 	export let container: OrganizationContainer;
 </script>
@@ -15,4 +19,7 @@
 		iconSource={Organization}
 		text={$_('board.organizational_units')}
 	/>
+	{#if createFeatureDecisions($page.data.features).useImportFromCsv() && $mayCreateContainer(payloadTypes.enum.strategy)}
+		<SidebarTab href="/import" iconSource={ArrowUpOnSquareStack} text={$_('import')} />
+	{/if}
 {/if}

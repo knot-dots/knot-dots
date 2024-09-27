@@ -1105,7 +1105,7 @@ export const newContainer = anyContainer
 
 export type NewContainer = z.infer<typeof newContainer>;
 
-const emptyContainer = newContainer.extend({
+export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialEffectPayload,
 		initialIndicatorPayload,

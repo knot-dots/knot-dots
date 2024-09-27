@@ -70,6 +70,7 @@
 		"@milkdown/preset-commonmark": "^7.5.0",
 		"@milkdown/preset-gfm": "^7.5.0",
 		"check-password-strength": "^2.0.10",
+		"csv-parse": "^5.5.6",
 		"nodemailer": "^6.9.15",
 		"rehype-sanitize": "^6.0.0",
 		"rehype-stringify": "^10.0.0",

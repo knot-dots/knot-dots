@@ -76,7 +76,7 @@
 
 	<svelte:fragment slot="meta">
 		<div class="meta">
-			<h3 class="meta-key">{$_('status.label')}</h3>
+			<h3 class="meta-key">{$_('status')}</h3>
 			<p class="meta-value">
 				<span
 					class="badge badge--{resolutionStatusColors.get(
