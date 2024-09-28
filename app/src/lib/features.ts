@@ -6,6 +6,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useNewRelationOverlay() {
 			return features.includes('NewRelations');
 		},
+		useNewRelationTypeFilter() {
+			return features.includes('NewRelations');
+		},
 		useImportFromCsv() {
 			return features.includes('ImportFromCsv');
 		}

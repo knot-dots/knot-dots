@@ -32,7 +32,18 @@
 
 		<svelte:fragment slot="filters">
 			{#if $page.url.searchParams.has('related-to')}
-				<RelationTypeFilter />
+				{#if createFeatureDecisions(data.features).useNewRelationTypeFilter()}
+					<RelationTypeFilter
+						enabledPredicates={[
+							predicates.enum['is-consistent-with'],
+							predicates.enum['is-equivalent-to'],
+							predicates.enum['is-inconsistent-with'],
+							predicates.enum['is-superordinate-of']
+						]}
+					/>
+				{:else}
+					<RelationTypeFilter />
+				{/if}
 			{/if}
 			<AudienceFilter />
 			{#if !$page.data.currentOrganization.payload.default}

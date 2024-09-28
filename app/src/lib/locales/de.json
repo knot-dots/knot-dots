@@ -343,10 +343,13 @@
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relation_filter.label": "Beziehungen",
+	"relation_filter.option.contributes_to": "trägt bei",
 	"relation_filter.option.is_consistent_with": "unterstützen sich",
 	"relation_filter.option.is_equivalent_to": "entsprechen sich",
 	"relation_filter.option.is_inconsistent_with": "widersprechen sich",
 	"relation_filter.option.is_part_of": "hierarchisch",
+	"relation_filter.option.is_prerequisite_for": "bedingt sich",
+	"relation_filter.option.is_superordinate_of": "übergeordnet",
 	"relation_overlay": {
 		"close": "Schließen",
 		"close_and_show_relations": "Schließen und Beziehungen anzeigen",
