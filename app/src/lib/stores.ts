@@ -281,10 +281,7 @@ if (browser) {
 						container.organizational_unit ?? container.organization,
 						container.payload.type
 					),
-					fetchRelatedContainers(container.guid, {
-						organization: [container.organization],
-						relationType: ['hierarchical', 'other']
-					})
+					fetchRelatedContainers(container.guid, { organization: [container.organization] })
 				]);
 				overlay.set({
 					isPartOfOptions,
@@ -377,7 +374,7 @@ if (browser) {
 					...(container.organizational_unit
 						? { organizationalUnit: [container.organizational_unit] }
 						: undefined),
-					relationType: hashParams.has('related-to') ? ['hierarchical'] : ['other'],
+					...(hashParams.has('related-to') ? { relationType: ['hierarchical'] } : {}),
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				},
@@ -402,7 +399,6 @@ if (browser) {
 					category: hashParams.getAll('category'),
 					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
-					relationType: ['other'],
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				},
@@ -424,7 +420,9 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					organization: [container.organization],
-					relationType: ['hierarchical'],
+					...(hashParams.has('related-to')
+						? { relationType: [predicates.enum['is-part-of']] }
+						: {}),
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
