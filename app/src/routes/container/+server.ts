@@ -52,7 +52,7 @@ export const GET = (async ({ locals, url }) => {
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
-		relationType: z.array(z.enum(['hierarchical', 'other'])).default(['hierarchical', 'other']),
+		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		strategyType: z.array(strategyTypes).default([]),
 		taskCategory: z.array(taskCategories).default([]),

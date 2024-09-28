@@ -341,11 +341,11 @@
 	},
 	"read_more": "Read more",
 	"register": "Register",
-	"relation_filter": {
-		"hierarchical": "Hierarchical",
-		"label": "Relations",
-		"other": "Other"
-	},
+	"relation_filter.label": "Relations",
+	"relation_filter.option.is_consistent_with": "consistent with",
+	"relation_filter.option.is_equivalent_to": "equivalent",
+	"relation_filter.option.is_inconsistent_with": "inconsistent with",
+	"relation_filter.option.is_part_of": "hierarchical",
 	"relation_overlay": {
 		"close": "Close",
 		"close_and_show_relations": "Close and show relations",

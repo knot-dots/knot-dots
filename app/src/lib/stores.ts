@@ -307,7 +307,12 @@ if (browser) {
 					),
 					fetchRelatedContainers(container.guid, {
 						organization: [container.organization],
-						relationType: ['hierarchical', 'other']
+						relationType: [
+							predicates.enum['is-consistent-with'],
+							predicates.enum['is-equivalent-to'],
+							predicates.enum['is-inconsistent-with'],
+							predicates.enum['is-part-of']
+						]
 					})
 				]);
 				overlay.set({
@@ -345,7 +350,12 @@ if (browser) {
 						: undefined),
 					relationType:
 						hashParams.getAll('relationType').length == 0
-							? ['hierarchical', 'other']
+							? [
+									predicates.enum['is-consistent-with'],
+									predicates.enum['is-equivalent-to'],
+									predicates.enum['is-inconsistent-with'],
+									predicates.enum['is-part-of']
+								]
 							: hashParams.getAll('relationType'),
 					strategyType: hashParams.getAll('strategyType'),
 					terms: hashParams.get('terms') ?? '',
@@ -374,7 +384,9 @@ if (browser) {
 					...(container.organizational_unit
 						? { organizationalUnit: [container.organizational_unit] }
 						: undefined),
-					...(hashParams.has('related-to') ? { relationType: ['hierarchical'] } : {}),
+					...(hashParams.has('related-to')
+						? { relationType: [predicates.enum['is-part-of']] }
+						: {}),
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				},

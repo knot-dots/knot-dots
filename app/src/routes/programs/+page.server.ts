@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, filterOrganizationalUnits } from '$lib/models';
+import { audience, filterOrganizationalUnits, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
@@ -27,7 +27,12 @@ export const load = (async ({ locals, url, parent }) => {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.get('related-to') as string,
 				url.searchParams.getAll('relationType').length == 0
-					? ['hierarchical', 'other']
+					? [
+							predicates.enum['is-consistent-with'],
+							predicates.enum['is-equivalent-to'],
+							predicates.enum['is-inconsistent-with'],
+							predicates.enum['is-part-of']
+						]
 					: url.searchParams.getAll('relationType'),
 				{},
 				url.searchParams.get('sort') ?? ''

@@ -3,7 +3,8 @@ import {
 	type AnyContainer,
 	type Container,
 	audience,
-	filterOrganizationalUnits
+	filterOrganizationalUnits,
+	predicates
 } from '$lib/models';
 import {
 	getAllContainersWithIndicatorContributions,
@@ -26,7 +27,12 @@ export const load = (async ({ locals, url, parent }) => {
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					url.searchParams.get('related-to') as string,
 					url.searchParams.getAll('relationType').length == 0
-						? ['hierarchical', 'other']
+						? [
+								predicates.enum['is-consistent-with'],
+								predicates.enum['is-equivalent-to'],
+								predicates.enum['is-inconsistent-with'],
+								predicates.enum['is-part-of']
+							]
 						: url.searchParams.getAll('relationType'),
 					{
 						type: [

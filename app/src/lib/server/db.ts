@@ -811,7 +811,7 @@ export function getAllRelatedContainers(
 			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
 		`);
 
-		const isPartOfResult = relations.includes('hierarchical')
+		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
 			? await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE is_part_of_relation(path) AS (
 					--Top level items (roots)
@@ -835,16 +835,18 @@ export function getAllRelatedContainers(
 			`)
 			: [];
 
-		const otherRelationResult = relations.includes('other')
+		const otherPredicates = new Set(relations);
+		otherPredicates.delete(predicates.enum['is-part-of']);
+		const otherRelationResult = otherPredicates.size
 			? await connection.any(sql.typeAlias('relationPath')`
 				SELECT cr.subject, cr.object
 				FROM container_relation cr
 				JOIN container cs ON cs.revision = cr.subject
 					AND cs.valid_currently
-					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-copy-of']})
+					AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
 				JOIN container co ON co.revision = cr.object
 					AND co.valid_currently
-					AND cr.predicate NOT IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-copy-of']})
+					AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
 				WHERE cs.revision = ${revision} OR co.revision = ${revision}
 			`)
 			: [];
