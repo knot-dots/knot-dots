@@ -130,7 +130,7 @@ export const actions = {
 							? [
 									{
 										object: strategy.revision,
-										position: record.position,
+										position: parseInt(record.position),
 										predicate: predicates.enum['is-part-of-strategy']
 									}
 								]
