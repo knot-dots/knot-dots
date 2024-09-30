@@ -180,7 +180,7 @@
 
 		{#if 'topic' in container.payload}
 			<div class="meta">
-				<h3 class="meta-key">{$_('topic.label')}</h3>
+				<h3 class="meta-key">{$_('topic')}</h3>
 				<ul class="meta-value meta-value--topic">
 					{#each container.payload.topic as topic}
 						<li>{$_(topic)}</li>
