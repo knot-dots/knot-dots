@@ -1,7 +1,6 @@
 import { filterVisible } from '$lib/authorization';
 import { audience, filterOrganizationalUnits, payloadTypes } from '$lib/models';
 import {
-	getAllRelatedContainers,
 	getAllRelatedContainersByStrategyType,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
@@ -22,19 +21,7 @@ export const load = (async ({ locals, url, parent }) => {
 			.map(({ guid }) => guid);
 	}
 
-	if (url.searchParams.has('related-to')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.get('related-to') as string,
-				url.searchParams.getAll('relationType').length == 0
-					? ['hierarchical', 'other']
-					: url.searchParams.getAll('relationType'),
-				{},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
-	} else if (url.searchParams.has('strategyType')) {
+	if (url.searchParams.has('strategyType')) {
 		containers = await locals.pool.connect(
 			getAllRelatedContainersByStrategyType(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
