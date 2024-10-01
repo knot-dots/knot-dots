@@ -16,7 +16,9 @@
 		displayName,
 		getCreator,
 		getManagedBy,
+		isAdminOf,
 		isContainerWithObjective,
+		isHeadOf,
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
@@ -229,16 +231,20 @@
 		</div>
 
 		{#if managedBy}
-			<div class="meta">
-				<h3 class="meta-key">{$_('managed_by')}</h3>
-				<p class="meta-value">
-					{#if 'title' in managedBy.payload}
-						{managedBy.payload.title}
-					{:else if 'name' in managedBy.payload}
-						{managedBy.payload.name}
-					{/if}
-				</p>
-			</div>
+			{#await fetchMembers(managedBy.guid) then members}
+				{@const headsOf = members
+					.filter((m) => isHeadOf(m, managedBy))
+					.map((m) => displayName(m))
+					.join(', ')}
+				{@const adminsOf = members
+					.filter((m) => isAdminOf(m, managedBy))
+					.map((m) => displayName(m))
+					.join(', ')}
+				<div class="meta">
+					<h3 class="meta-key">{$_('managed_by')}</h3>
+					<p class="meta-value">{headsOf ? headsOf : adminsOf}</p>
+				</div>
+			{/await}
 		{/if}
 
 		{#await organizationMembersRequest then organizationMembers}
