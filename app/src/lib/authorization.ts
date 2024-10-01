@@ -77,6 +77,12 @@ export default function defineAbilityFor(user: User) {
 			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
 			{ organizational_unit: { $in: [...user.adminOf, ...user.headOf] } }
 		);
+		can('invite-members', payloadTypes.options, {
+			organization: { $in: [...user.adminOf, ...user.headOf] }
+		});
+		can('invite-members', payloadTypes.options, {
+			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+		});
 		can('create', [...strategyChapterTypes, ...measureMonitoringTypes], {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
