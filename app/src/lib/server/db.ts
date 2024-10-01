@@ -258,14 +258,14 @@ export function updateContainer(container: ModifiedContainer) {
 					await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
 				}
 				if (previousRevision.managed_by != container.managed_by) {
-					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
+					await bulkUpdateManagedBy(previousRevision, containerResult)(txConnection);
 				}
 			} else if (
 				container.payload.type == payloadTypes.enum.measure ||
 				container.payload.type == payloadTypes.enum.simple_measure
 			) {
 				if (previousRevision.managed_by != container.managed_by) {
-					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
+					await bulkUpdateManagedBy(previousRevision, containerResult)(txConnection);
 				}
 			}
 
@@ -1287,12 +1287,15 @@ export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizati
 	};
 }
 
-export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) {
+export function bulkUpdateManagedBy(
+	container: AnyContainer,
+	managedBy: { guid: string; revision: number }
+) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			const containerResult =
 				container.payload.type == payloadTypes.enum.strategy
-					? await getAllContainersRelatedToStrategy(container.revision, {
+					? await getAllContainersRelatedToStrategy(managedBy.revision, {
 							categories: [],
 							topics: [],
 							type: [
@@ -1303,11 +1306,12 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 								payloadTypes.enum.resolution,
 								payloadTypes.enum.simple_measure,
 								payloadTypes.enum.strategic_goal,
-								payloadTypes.enum.text
+								payloadTypes.enum.text,
+								payloadTypes.enum.vision
 							]
 						})(txConnection)
 					: await getAllContainersRelatedToMeasure(
-							container.revision,
+							managedBy.revision,
 							{
 								type: [
 									payloadTypes.enum.effect,
@@ -1322,7 +1326,7 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 			if (containerResult.length) {
 				await txConnection.query(sql.typeAlias('void')`
 					UPDATE container
-					SET managed_by = ${managedBy}
+					SET managed_by = ${managedBy.guid}
 					WHERE guid IN (${sql.join(
 						containerResult.map(({ guid }) => guid),
 						sql.fragment`, `
