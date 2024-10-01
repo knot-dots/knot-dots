@@ -12,6 +12,8 @@
 		isCollaboratorOf,
 		isHeadOf,
 		isObserverOf,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		predicates
 	} from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
@@ -126,18 +128,22 @@
 				<td>
 					{#key container.user}
 						<select name="role" on:change={handleChangeRole(u, container)}>
-							<option value="role.observer" selected={isObserverOf(u, container)}>
-								{$_('role.observer')}
-							</option>
+							{#if !isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)}
+								<option value="role.observer" selected={isObserverOf(u, container)}>
+									{$_('role.observer')}
+								</option>
+							{/if}
 							<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
 								{$_('role.collaborator')}
 							</option>
 							<option value="role.head" selected={isHeadOf(u, container)}>
 								{$_('role.head')}
 							</option>
-							<option value="role.administrator" selected={isAdminOf(u, container)}>
-								{$_('role.administrator')}
-							</option>
+							{#if isOrganizationContainer(container)}
+								<option value="role.administrator" selected={isAdminOf(u, container)}>
+									{$_('role.administrator')}
+								</option>
+							{/if}
 						</select>
 					{/key}
 				</td>
