@@ -306,7 +306,7 @@ export function deleteContainerRecursively(container: AnyContainer) {
 			const parts = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				['hierarchical'],
+				[predicates.enum['is-part-of']],
 				{},
 				''
 			)(txConnection);
@@ -1245,7 +1245,7 @@ export function bulkUpdateOrganization(container: AnyContainer, organization: st
 			const containerResult = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				['hierarchical'],
+				[predicates.enum['is-part-of']],
 				{},
 				''
 			)(txConnection);
@@ -1269,7 +1269,7 @@ export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizati
 			const containerResult = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				['hierarchical'],
+				[predicates.enum['is-part-of']],
 				{},
 				''
 			)(txConnection);
