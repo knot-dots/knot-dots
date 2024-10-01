@@ -86,6 +86,7 @@
 					({ predicate, subject }) =>
 						subject != user.guid ||
 						(predicate != predicates.enum['is-admin-of'] &&
+							predicate != predicates.enum['is-head-of'] &&
 							predicate != predicates.enum['is-collaborator-of'] &&
 							predicate != predicates.enum['is-member-of'])
 				)
