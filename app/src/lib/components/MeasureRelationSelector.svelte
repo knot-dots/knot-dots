@@ -28,7 +28,7 @@
 			...(container.organizational_unit
 				? { organizationalUnit: [container.organizational_unit] }
 				: undefined),
-			payloadType: [payloadTypes.enum.measure]
+			payloadType: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
 		}) as Promise<MeasureContainer[]>;
 
 		const measureRevision = container.relation.find(

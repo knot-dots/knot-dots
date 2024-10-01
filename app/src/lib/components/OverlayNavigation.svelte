@@ -135,7 +135,7 @@
 				{/if}
 			{/if}
 
-			{#if isMeasureContainer(container)}
+			{#if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
 				<li>
 					<a
 						class="button button-nav"
