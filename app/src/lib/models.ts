@@ -438,7 +438,7 @@ const basePayload = z
 		summary: z.string().trim().max(200).optional(),
 		title: z.string().trim(),
 		topic: z.array(topics).default([]),
-		visibility: visibility.default('members')
+		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
