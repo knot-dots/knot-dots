@@ -70,6 +70,7 @@
 		isPageContainer,
 		isResolutionContainer,
 		isResourceContainer,
+		isSimpleMeasureContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		type MeasureContainer,
@@ -522,7 +523,7 @@
 			</Sidebar>
 		</aside>
 		<Measures containers={measures} />
-	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && isContainerWithEffect(container) && measureElements && indicators}
+	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && (isMeasureContainer(container) || isSimpleMeasureContainer(container)) && measureElements && indicators}
 		<aside>
 			<Sidebar helpSlug="internal-objectives">
 				<Search slot="search" />

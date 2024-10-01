@@ -11,11 +11,12 @@
 		type MeasureContainer,
 		type MeasureMonitoringContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		type SimpleMeasureContainer
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
-	export let container: MeasureContainer;
+	export let container: MeasureContainer | SimpleMeasureContainer;
 	export let containers: MeasureMonitoringContainer[];
 	export let indicators: IndicatorContainer[];
 
