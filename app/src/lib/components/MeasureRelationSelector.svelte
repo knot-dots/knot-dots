@@ -76,6 +76,10 @@
 	}
 
 	async function onChangeIsPartOfMeasure(event: Event) {
+		if ((event as CustomEvent).detail.selected == undefined) {
+			return;
+		}
+
 		const isPartOfMeasureIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-measure'] &&
@@ -91,21 +95,21 @@
 			container.organization;
 		container.relation = [
 			...container.relation.slice(0, isPartOfMeasureIndex),
-			...(value
-				? [
-						{
-							object: parseInt(value),
-							position: 0,
-							predicate: predicates.enum['is-part-of-measure'],
-							...('revision' in container ? { subject: container.revision } : undefined)
-						}
-					]
-				: []),
+			{
+				object: parseInt(value),
+				position: 0,
+				predicate: predicates.enum['is-part-of-measure'],
+				...('revision' in container ? { subject: container.revision } : undefined)
+			},
 			...container.relation.slice(isPartOfMeasureIndex + 1)
 		];
 	}
 
 	function onChangeIsPartOf(event: Event) {
+		if ((event as CustomEvent).detail.selected == undefined) {
+			return;
+		}
+
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
@@ -115,16 +119,12 @@
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
-			...(value
-				? [
-						{
-							object: parseInt((event as CustomEvent).detail.selected.value),
-							position: 0,
-							predicate: predicates.enum['is-part-of'],
-							...('revision' in container ? { subject: container.revision } : undefined)
-						}
-					]
-				: []),
+			{
+				object: parseInt((event as CustomEvent).detail.selected.value),
+				position: 0,
+				predicate: predicates.enum['is-part-of'],
+				...('revision' in container ? { subject: container.revision } : undefined)
+			},
 			...container.relation.slice(isPartOfIndex + 1)
 		];
 	}
