@@ -618,7 +618,7 @@ const measureMonitoringBasePayload = z.object({
 	description: z.string().trim().optional(),
 	summary: z.string().trim().max(200).optional(),
 	title: z.string(),
-	visibility: visibility.default('members')
+	visibility: visibility.default(visibility.enum['organization'])
 });
 
 const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).extend({
@@ -685,7 +685,7 @@ const organizationPayload = z.object({
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
-	visibility: visibility.default('members')
+	visibility: visibility.default(visibility.enum['organization'])
 });
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
@@ -697,7 +697,7 @@ const organizationalUnitPayload = z.object({
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility: visibility.default('members')
+	visibility: visibility.default(visibility.enum['organization'])
 });
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
@@ -707,7 +707,7 @@ const pagePayload = z.object({
 	slug: z.string(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.page),
-	visibility: visibility.default('public')
+	visibility: visibility.default(visibility.enum['public'])
 });
 
 const initialPagePayload = pagePayload.partial({ body: true, slug: true, title: true });
@@ -718,7 +718,7 @@ const textPayload = z
 		body: z.string().trim().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.text),
-		visibility: visibility.default('members')
+		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
@@ -728,7 +728,7 @@ const undefinedPayload = z
 	.object({
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.undefined),
-		visibility: visibility.default('members')
+		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
