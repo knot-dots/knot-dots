@@ -8,7 +8,7 @@
 
 <div class="meta">
 	<p class="meta-key">{$_('status')}</p>
-	<div class="meta-key">
+	<div class="meta-value">
 		<ListBox
 			label={$_('status')}
 			options={status.options.map((o) => ({ value: o, label: $_(o) }))}
