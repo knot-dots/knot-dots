@@ -1198,7 +1198,7 @@ export function getAllContainersRelatedToUser(guid: string) {
 			WHERE c.valid_currently
 				AND NOT c.deleted
 				AND c.payload->'assignee' ? ${guid}
-			ORDER BY valid_from
+			ORDER BY valid_from DESC
 		`);
 		return withUserAndRelation(connection, containerResult);
 	};
