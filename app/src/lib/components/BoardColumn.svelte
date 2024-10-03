@@ -56,12 +56,8 @@
 		background: var(--background, var(--gradient-fourth-column));
 	}
 
-	section:nth-child(5) {
+	section:nth-child(n + 5) {
 		background: var(--background, var(--gradient-fifth-column));
-	}
-
-	section:nth-child(6) {
-		background: var(--background, var(--gradient-sixth-column));
 	}
 
 	header {

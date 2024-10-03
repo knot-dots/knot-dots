@@ -70,11 +70,6 @@
 		rgba(40, 169, 231, 0.15) 0%,
 		rgba(32, 164, 238, 0.15) 100%
 	);
-	--gradient-sixth-column: linear-gradient(
-		90deg,
-		rgba(40, 169, 231, 0.15) 0%,
-		rgba(32, 164, 238, 0.15) 100%
-	);
 	--gradient-idea: linear-gradient(90deg, rgba(218, 75, 96, 0.15) 0%, rgba(225, 95, 96, 0.15) 100%);
 	--gradient-in-planning: linear-gradient(
 		90deg,
