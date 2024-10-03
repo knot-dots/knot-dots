@@ -12,7 +12,6 @@
 		isMeasureResultContainer,
 		isMilestoneContainer,
 		overlayKey,
-		owners,
 		taskStatus
 	} from '$lib/models';
 	import type { AnyContainer, Container, TaskContainer, User } from '$lib/models';
@@ -22,10 +21,6 @@
 	export let container: TaskContainer;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
-
-	let organizationMembersRequest: Promise<User[]> = new Promise(() => []);
-
-	$: organizationMembersRequest = fetchMembers(container.organization);
 
 	let selectedRevision: TaskContainer;
 
@@ -84,14 +79,14 @@
 		</div>
 
 		{#if 'assignee' in selectedRevision.payload && selectedRevision.payload.assignee && $ability.can('read', selectedRevision, 'assignee')}
-			{#await organizationMembersRequest then organizationMembers}
-				{@const members = organizationMembers.filter(({ guid }) =>
+			{#await fetchMembers(container.managed_by) then members}
+				{@const assignees = members.filter(({ guid }) =>
 					selectedRevision.payload.assignee.includes(guid)
 				)}
-				{#if members.length > 0}
+				{#if assignees.length > 0}
 					<div class="meta">
 						<h3 class="meta-key">{$_('assignee')}</h3>
-						<p class="meta-value">{members.map((m) => displayName(m)).join(', ')}</p>
+						<p class="meta-value">{assignees.map((m) => displayName(m)).join(', ')}</p>
 					</div>
 				{/if}
 			{/await}

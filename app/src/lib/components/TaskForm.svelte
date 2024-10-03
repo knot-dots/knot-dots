@@ -20,9 +20,7 @@
 		}
 	}));
 
-	$: organizationOrOrganizationalUnit = container.organizational_unit ?? container.organization;
-
-	$: membersPromise = fetchMembers(organizationOrOrganizationalUnit);
+	$: managedBy = container.managed_by;
 </script>
 
 <fieldset class="form-tab" id="basic-data">
@@ -36,7 +34,7 @@
 
 	<TaskStatusSelector bind:value={container.payload.taskStatus} />
 
-	{#await membersPromise}
+	{#await fetchMembers(managedBy)}
 		<AssigneeSelector candidates={[]} value={container.payload.assignee} />
 	{:then members}
 		<AssigneeSelector candidates={members} bind:value={container.payload.assignee} />
