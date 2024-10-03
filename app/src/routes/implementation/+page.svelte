@@ -86,7 +86,10 @@
 				<BoardColumn
 					--background={statusBackgrounds.get(statusOption)}
 					--hover-border-color={statusHoverColors.get(statusOption)}
-					addItemUrl={$mayCreateContainer(payloadTypes.enum.measure)
+					addItemUrl={$mayCreateContainer(
+						payloadTypes.enum.measure,
+						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
+					)
 						? `#create=measure&status=${statusOption}`
 						: undefined}
 					title={$_(statusOption)}

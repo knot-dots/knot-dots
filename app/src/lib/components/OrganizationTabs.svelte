@@ -19,7 +19,7 @@
 		iconSource={Organization}
 		text={$_('board.organizational_units')}
 	/>
-	{#if createFeatureDecisions($page.data.features).useImportFromCsv() && $mayCreateContainer(payloadTypes.enum.strategy)}
+	{#if createFeatureDecisions($page.data.features).useImportFromCsv() && $mayCreateContainer(payloadTypes.enum.strategy, $page.data.currentOrganization.guid)}
 		<SidebarTab href="/import" iconSource={ArrowUpOnSquareStack} text={$_('import')} />
 	{/if}
 {/if}

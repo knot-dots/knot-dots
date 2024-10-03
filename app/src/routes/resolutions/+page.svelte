@@ -63,7 +63,10 @@
 				<BoardColumn
 					--background={resolutionStatusBackgrounds.get(statusOption)}
 					--hover-border-color={resolutionStatusHoverColors.get(statusOption)}
-					addItemUrl={$mayCreateContainer(payloadTypes.enum.measure)
+					addItemUrl={$mayCreateContainer(
+						payloadTypes.enum.resolution,
+						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
+					)
 						? `#create=resolution&resolutionStatus=${statusOption}`
 						: undefined}
 					title={$_(statusOption)}

@@ -9,6 +9,7 @@
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import type { TaskContainer } from '$lib/models';
+	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
@@ -65,7 +66,12 @@
 				<TaskBoardColumn
 					--background={taskStatusBackgrounds.get(column.title)}
 					--hover-border-color={taskStatusHoverColors.get(column.title)}
-					addItemUrl="#create={column.payloadType}&taskStatus={column.title}"
+					addItemUrl={$mayCreateContainer(
+						payloadTypes.enum.task,
+						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
+					)
+						? `#create=${column.payloadType}&taskStatus=${column.title}`
+						: undefined}
 					items={column.items}
 					status={column.title}
 				/>

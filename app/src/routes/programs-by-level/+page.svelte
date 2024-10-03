@@ -62,7 +62,10 @@
 		<Board>
 			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
 				<BoardColumn
-					addItemUrl={$mayCreateContainer(payloadTypes.enum.strategy)
+					addItemUrl={$mayCreateContainer(
+						payloadTypes.enum.strategy,
+						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
+					)
 						? `#create=strategy&level=${levelOption}`
 						: undefined}
 					title={$_(levelOption)}

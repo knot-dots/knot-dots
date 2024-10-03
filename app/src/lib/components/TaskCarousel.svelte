@@ -34,7 +34,7 @@
 </script>
 
 {#await tasksRequest then tasks}
-	{#if tasks.length > 0 || $mayCreateContainer(payloadTypes.enum.task)}
+	{#if tasks.length > 0 || $mayCreateContainer(payloadTypes.enum.task, container.managed_by)}
 		<div class="tasks">
 			<h3>{$_('tasks')}</h3>
 			{#if tasks.length > 0}
@@ -46,7 +46,7 @@
 					{/each}
 				</ul>
 			{/if}
-			{#if $mayCreateContainer(payloadTypes.enum.task)}
+			{#if $mayCreateContainer(payloadTypes.enum.task, container.managed_by)}
 				<a class="button" href={addTaskURL($page.url)}>{$_('add_item')}</a>
 			{/if}
 		</div>

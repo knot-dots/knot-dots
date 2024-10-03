@@ -57,7 +57,7 @@
 	}
 </script>
 
-{#if parts.length > 0 || $mayCreateContainer(payloadTypes.enum.objective)}
+{#if parts.length > 0 || $mayCreateContainer(payloadTypes.enum.objective, container.managed_by)}
 	<div>
 		{#if parts.length > 0}
 			<ul class="carousel">
@@ -76,7 +76,7 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if $mayCreateContainer(payloadTypes.enum.objective)}
+		{#if $mayCreateContainer(payloadTypes.enum.objective, container.managed_by)}
 			<a
 				class="button"
 				href={addItemURL($page.url)}

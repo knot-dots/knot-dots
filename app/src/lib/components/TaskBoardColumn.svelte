@@ -53,7 +53,7 @@
 		<h2>
 			{$_(status)}
 		</h2>
-		{#if addItemUrl && $ability.can('create', containerOfTypeTask())}
+		{#if addItemUrl}
 			<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
 		{/if}
 	</header>
@@ -79,7 +79,7 @@
 			{/each}
 		</div>
 	{/if}
-	{#if addItemUrl && $ability.can('create', containerOfTypeTask())}
+	{#if addItemUrl}
 		<footer>
 			<a href={addItemUrl}>
 				{$_('add_item')}

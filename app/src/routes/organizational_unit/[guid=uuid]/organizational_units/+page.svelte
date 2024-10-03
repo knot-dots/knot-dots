@@ -38,7 +38,10 @@
 		<Board>
 			{#each byLevel.entries() as [level, containers]}
 				<BoardColumn
-					addItemUrl={$mayCreateContainer(payloadTypes.enum.organizational_unit)
+					addItemUrl={$mayCreateContainer(
+						payloadTypes.enum.organizational_unit,
+						data.container.organization
+					)
 						? `#create=${payloadTypes.enum.organizational_unit}&level=${level}`
 						: undefined}
 					title={$_('organizational_unit_level', { values: { level } })}

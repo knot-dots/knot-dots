@@ -63,7 +63,7 @@
 	}
 </script>
 
-{#if relatedContainers.length > 0 || $mayCreateContainer(payloadType)}
+{#if relatedContainers.length > 0 || $mayCreateContainer(payloadType, container.managed_by)}
 	<div>
 		{#if relatedContainers.length > 0}
 			<ul class="carousel">
@@ -82,7 +82,7 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if $mayCreateContainer(payloadType)}
+		{#if $mayCreateContainer(payloadType, container.managed_by)}
 			<a
 				class="button"
 				href={addItemURL($page.url)}

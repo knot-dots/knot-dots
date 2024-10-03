@@ -11,6 +11,7 @@
 		type TaskContainer,
 		taskStatus
 	} from '$lib/models';
+	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 
 	export let container: AnyContainer | undefined = undefined;
@@ -75,7 +76,7 @@
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(column.title)}
 			--hover-border-color={taskStatusHoverColors.get(column.title)}
-			addItemUrl={container
+			addItemUrl={container && $mayCreateContainer(payloadTypes.enum.task, container.managed_by)
 				? `#create=${column.payloadType}&is-part-of-measure=${container.revision}&managed-by=${container.managed_by}&taskStatus=${column.title}`
 				: undefined}
 			items={column.items}

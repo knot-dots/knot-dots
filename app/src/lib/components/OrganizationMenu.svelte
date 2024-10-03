@@ -151,7 +151,10 @@
 				<BoardColumn
 					--background="transparent"
 					--border="solid 1px var(--color-gray-900)"
-					addItemUrl={$mayCreateContainer(payloadTypes.enum.organization)
+					addItemUrl={$mayCreateContainer(
+						payloadTypes.enum.organization,
+						$page.data.currentOrganization.guid
+					)
 						? `#create=${payloadTypes.enum.organization}`
 						: undefined}
 					title={$_('organizations')}
@@ -195,7 +198,10 @@
 						--border="solid 1px var(--color-gray-900)"
 						addItemUrl={!$page.data.currentOrganization.payload.default &&
 						$page.data.currentOrganization.payload.boards.includes('board.organizational_units') &&
-						$mayCreateContainer(payloadTypes.enum.organizational_unit)
+						$mayCreateContainer(
+							payloadTypes.enum.organizational_unit,
+							$page.data.currentOrganization.guid
+						)
 							? `#create=${payloadTypes.enum.organizational_unit}&level=${level}`
 							: undefined}
 						title={$_('organizational_unit_level', { values: { level } })}

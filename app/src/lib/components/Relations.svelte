@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -30,7 +31,11 @@
 <Board>
 	{#each columns as column (column.title)}
 		<BoardColumn
-			addItemUrl={column.title === 'strategies' && $mayCreateContainer(payloadTypes.enum.strategy)
+			addItemUrl={column.title === 'strategies' &&
+			$mayCreateContainer(
+				payloadTypes.enum.strategy,
+				$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
+			)
 				? `#create=${column.payloadType}`
 				: undefined}
 			title={$_(column.title)}

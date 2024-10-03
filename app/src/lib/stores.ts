@@ -116,12 +116,12 @@ export const getOrganizationalUnit = derived(page, (values) => {
 });
 
 export const mayCreateContainer = derived([page, ability], (values) => {
-	return (payloadType: PayloadType): boolean => {
+	return (payloadType: PayloadType, managedBy: string): boolean => {
 		const container = containerOfType(
 			payloadType,
 			values[0].data.currentOrganization.guid,
 			values[0].data.currentOrganizationalUnit?.guid ?? null,
-			values[0].data.currentOrganizationalUnit?.guid ?? values[0].data.currentOrganization.guid,
+			managedBy,
 			''
 		);
 		return values[1].can('create', container);
