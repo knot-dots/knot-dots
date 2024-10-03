@@ -416,6 +416,7 @@ if (browser) {
 					category: hashParams.getAll('category'),
 					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
+					relationType: [predicates.enum['is-part-of-strategy']],
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				},
