@@ -6,13 +6,17 @@
 	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import NewMeasureMonitoring from '$lib/components/NewMeasureMonitoring.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
+		isIndicatorContainer,
 		isMeasureContainer,
+		isMeasureMonitoringContainer,
 		isMilestoneContainer,
 		isTaskContainer,
 		predicates
@@ -68,30 +72,38 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="main">
-		<Board>
-			<BoardColumn title={$_('measures')}>
-				<div class="vertical-scroll-wrapper masked-overflow">
-					{#each measures as container}
-						<Card {container} showRelationFilter></Card>
-					{/each}
-				</div>
-			</BoardColumn>
+		{#if createFeatureDecisions(data.features).useNewMeasureMonitoringBoard()}
+			<NewMeasureMonitoring
+				{measures}
+				containers={data.containers.filter(isMeasureMonitoringContainer)}
+				indicators={data.containers.filter(isIndicatorContainer)}
+			/>
+		{:else}
+			<Board>
+				<BoardColumn title={$_('measures')}>
+					<div class="vertical-scroll-wrapper masked-overflow">
+						{#each measures as container}
+							<Card {container} showRelationFilter></Card>
+						{/each}
+					</div>
+				</BoardColumn>
 
-			<BoardColumn title={$_('milestones')}>
-				<div class="vertical-scroll-wrapper masked-overflow">
-					{#each milestones as container}
-						<Card {container} showRelationFilter></Card>
-					{/each}
-				</div>
-			</BoardColumn>
+				<BoardColumn title={$_('milestones')}>
+					<div class="vertical-scroll-wrapper masked-overflow">
+						{#each milestones as container}
+							<Card {container} showRelationFilter></Card>
+						{/each}
+					</div>
+				</BoardColumn>
 
-			<BoardColumn title={$_('tasks')}>
-				<div class="vertical-scroll-wrapper masked-overflow">
-					{#each tasks as container}
-						<Card {container} showRelationFilter></Card>
-					{/each}
-				</div>
-			</BoardColumn>
-		</Board>
+				<BoardColumn title={$_('tasks')}>
+					<div class="vertical-scroll-wrapper masked-overflow">
+						{#each tasks as container}
+							<Card {container} showRelationFilter></Card>
+						{/each}
+					</div>
+				</BoardColumn>
+			</Board>
+		{/if}
 	</svelte:fragment>
 </Layout>

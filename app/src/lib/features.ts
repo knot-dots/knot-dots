@@ -1,5 +1,8 @@
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
 	return {
+		useNewMeasureMonitoringBoard() {
+			return features.includes('NewMeasureMonitoring');
+		},
 		useNewOnboardingWorkflow() {
 			return features.includes('NewOnboardingWorkflow');
 		},

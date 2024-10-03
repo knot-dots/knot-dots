@@ -35,6 +35,7 @@
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import Members from '$lib/components/Members.svelte';
+	import NewMeasureMonitoring from '$lib/components/NewMeasureMonitoring.svelte';
 	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
@@ -55,6 +56,7 @@
 	import Tasks from '$lib/components/Tasks.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -541,7 +543,11 @@
 				</svelte:fragment>
 			</Sidebar>
 		</aside>
-		<MeasureMonitoring {container} containers={measureElements} {indicators} />
+		{#if createFeatureDecisions($page.data.features).useNewMeasureMonitoringBoard()}
+			<NewMeasureMonitoring measures={[container]} containers={measureElements} {indicators} />
+		{:else}
+			<MeasureMonitoring {container} containers={measureElements} {indicators} />
+		{/if}
 	{:else if hashParams.has(overlayKey.enum.tasks) && tasks && relatedContainers}
 		<aside>
 			<Sidebar helpSlug="overlay-tasks">

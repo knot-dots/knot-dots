@@ -1,4 +1,5 @@
 import { filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import { filterOrganizationalUnits, payloadTypes } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -24,7 +25,18 @@ export const load = (async ({ locals, url, parent }) => {
 				categories: url.searchParams.getAll('category'),
 				topics: url.searchParams.getAll('topic'),
 				terms: url.searchParams.get('terms') ?? '',
-				type: [payloadTypes.enum.measure, payloadTypes.enum.milestone, payloadTypes.enum.task]
+				type: [
+					...(createFeatureDecisions(locals.features).useNewMeasureMonitoringBoard()
+						? [
+								payloadTypes.enum.effect,
+								payloadTypes.enum.indicator,
+								payloadTypes.enum.measure_result
+							]
+						: []),
+					payloadTypes.enum.measure,
+					payloadTypes.enum.milestone,
+					payloadTypes.enum.task
+				]
 			},
 			url.searchParams.get('sort') ?? ''
 		)
