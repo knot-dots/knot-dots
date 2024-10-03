@@ -32,7 +32,7 @@
 	<div class="measures">
 		<h3>{$_('profile.my_measures')}</h3>
 		<ul class="carousel">
-			{#each containers.filter(isMeasureContainer).filter(hasMember($user)) as measure}
+			{#each containers.filter(isMeasureContainer) as measure}
 				<li>
 					<Card --height="100%" container={measure} />
 				</li>
@@ -54,7 +54,7 @@
 	<div class="strategies">
 		<h3>{$_('profile.my_strategies')}</h3>
 		<ul class="carousel">
-			{#each containers.filter(isStrategyContainer).filter(hasMember($user)) as strategy}
+			{#each containers.filter(isStrategyContainer) as strategy}
 				<li>
 					<Card --height="100%" container={strategy} />
 				</li>

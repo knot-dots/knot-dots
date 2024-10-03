@@ -1181,6 +1181,28 @@ export function getAllContainersRelatedToMeasure(
 	};
 }
 
+export function getAllContainersRelatedToUser(guid: string) {
+	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
+		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
+			SELECT c.* FROM container c
+			JOIN container m ON c.managed_by = m.guid
+			JOIN container_user cu ON cu.subject = ${guid}
+				AND cu.predicate = ${predicates.enum['is-member-of']}
+				AND cu.object = m.revision
+				AND m.valid_currently
+				AND NOT m.deleted
+			WHERE c.valid_currently
+				AND NOT c.deleted
+			UNION
+			SELECT c.* FROM container c
+			WHERE c.valid_currently
+				AND NOT c.deleted
+				AND payload -> 'assignee' ? ${guid};
+		`);
+		return withUserAndRelation(connection, containerResult);
+	};
+}
+
 export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`

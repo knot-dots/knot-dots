@@ -6,6 +6,7 @@ import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
 import fetchContainers from '$lib/client/fetchContainers';
+import fetchContainersByUser from '$lib/client/fetchContainersByUser';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -16,12 +17,14 @@ import {
 	type Container,
 	containerOfType,
 	createCopyOf,
-	hasMember,
 	type IndicatorContainer,
+	isContainer,
 	isEffectContainer,
 	isIndicatorContainer,
 	isMeasureMonitoringContainer,
 	isObjectiveContainer,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	isStrategyContainer,
 	isTaskContainer,
 	mayDelete,
@@ -515,22 +518,14 @@ if (browser) {
 				revisions: []
 			});
 		} else if (hashParams.has(overlayKey.enum.profile) && values.data.session) {
-			const organizations = values.data.organizations.filter(hasMember(values.data.session.user));
-			const organizationalUnits = values.data.organizationalUnits.filter(
-				hasMember(values.data.session.user)
+			const relatedContainers = await fetchContainersByUser(
+				hashParams.get(overlayKey.enum.profile) as string
 			);
-			const relatedContainers = (await fetchContainers({
-				organization: organizations.map(({ guid }: OrganizationContainer) => guid),
-				organizationalUnit: organizationalUnits.map(
-					({ guid }: OrganizationalUnitContainer) => guid
-				),
-				payloadType: [payloadTypes.enum.measure, payloadTypes.enum.strategy, payloadTypes.enum.task]
-			})) as Container[];
 			overlay.set({
 				isPartOfOptions: [],
-				organizations,
-				organizationalUnits,
-				relatedContainers,
+				organizations: relatedContainers.filter(isOrganizationContainer),
+				organizationalUnits: relatedContainers.filter(isOrganizationalUnitContainer),
+				relatedContainers: relatedContainers.filter(isContainer),
 				revisions: []
 			});
 		} else {
