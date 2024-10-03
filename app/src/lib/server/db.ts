@@ -797,6 +797,7 @@ export function getAllRelatedContainers(
 		assignees?: string[];
 		audience?: string[];
 		categories?: string[];
+		measureTypes?: string[];
 		organizationalUnits?: string[];
 		strategyTypes?: string[];
 		taskCategories?: string[];
