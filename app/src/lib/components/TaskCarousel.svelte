@@ -16,7 +16,8 @@
 	export let container: Container;
 
 	$: tasksRequest = fetchRelatedContainers(container.guid, {
-		payloadType: [payloadTypes.enum.task]
+		payloadType: [payloadTypes.enum.task],
+		relationType: [predicates.enum['is-part-of']]
 	}) as Promise<TaskContainer[]>;
 
 	function addTaskURL(url: URL) {

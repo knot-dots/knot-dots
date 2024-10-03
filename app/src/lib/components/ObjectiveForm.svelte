@@ -16,7 +16,11 @@
 	}));
 
 	$: guid = container.guid;
-	$: relatedContainerRequest = fetchRelatedContainers(guid, {}, '');
+	$: relatedContainerRequest = fetchRelatedContainers(
+		guid,
+		{ relationType: [predicates.enum['is-objective-for']] },
+		''
+	);
 
 	$: if (container.payload.wantedValues.length == 0) {
 		const thisYear = new Date().getFullYear();

@@ -64,7 +64,13 @@
 		isObjectiveContainer(container)
 	) {
 		if (relatedContainers.length == 0) {
-			relatedContainersPromise = fetchRelatedContainers(container.guid, {});
+			relatedContainersPromise = fetchRelatedContainers(container.guid, {
+				relationType: [
+					predicates.enum['is-measured-by'],
+					predicates.enum['is-objective-for'],
+					predicates.enum['is-part-of']
+				]
+			});
 		} else {
 			relatedContainersPromise = new Promise((resolve) => resolve(relatedContainers));
 		}

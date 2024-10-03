@@ -31,7 +31,11 @@
 	}
 
 	$: guid = container.guid;
-	$: relatedContainerRequest = fetchRelatedContainers(guid, {}, '');
+	$: relatedContainerRequest = fetchRelatedContainers(
+		guid,
+		{ relationType: [predicates.enum['is-measured-by'], predicates.enum['is-part-of']] },
+		''
+	);
 
 	function appendYear() {
 		const year =
