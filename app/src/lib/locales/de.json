@@ -225,8 +225,10 @@
 		"implementation": "Umsetzung",
 		"long_term_goals": "Langfristige Ziele",
 		"measurable_goals": "Messbare Ziele",
-		"strategic_goals": "Strategische Ziele",
-		"misc": "Sonstiges"
+		"measure_results": "Maßnahmenergebnisse",
+		"milestones": "Meilensteine",
+		"misc": "Sonstiges",
+		"strategic_goals": "Strategische Ziele"
 	},
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",

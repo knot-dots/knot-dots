@@ -224,8 +224,10 @@
 		"implementation": "Implementation",
 		"long_term_goals": "Long term goals",
 		"measurable_goals": "Measurable goals",
-		"strategic_goals": "Strategic goals",
-		"misc": "Miscellaneous"
+		"measure_results": "Measure results",
+		"milestones": "Milestone",
+		"misc": "Miscellaneous",
+		"strategic_goals": "Strategic goals"
 	},
 	"payload_type": "Type of element",
 	"pdf": "PDF",

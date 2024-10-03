@@ -46,7 +46,9 @@ export const load = (async ({ locals, url, parent }) => {
 							'strategic_goal',
 							'operational_goal',
 							'measure',
-							'simple_measure'
+							'simple_measure',
+							'measure_result',
+							'milestone'
 						]
 					},
 					url.searchParams.get('sort') ?? ''
@@ -78,7 +80,9 @@ export const load = (async ({ locals, url, parent }) => {
 							'strategic_goal',
 							'operational_goal',
 							'measure',
-							'simple_measure'
+							'simple_measure',
+							'measure_result',
+							'milestone'
 						]
 					},
 					url.searchParams.get('sort') ?? ''
@@ -111,7 +115,9 @@ export const load = (async ({ locals, url, parent }) => {
 							'operational_goal',
 							'measure',
 							'resolution',
-							'simple_measure'
+							'simple_measure',
+							'measure_result',
+							'milestone'
 						]
 					},
 					url.searchParams.get('sort') ?? ''

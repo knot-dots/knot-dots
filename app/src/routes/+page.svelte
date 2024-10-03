@@ -44,6 +44,14 @@
 				payloadTypes.enum.simple_measure,
 				payloadTypes.enum.resolution
 			]
+		},
+		{
+			title: 'payload_group.measure_results',
+			payloadType: [payloadTypes.enum.effect, payloadTypes.enum.measure_result]
+		},
+		{
+			title: 'payload_group.milestones',
+			payloadType: [payloadTypes.enum.milestone]
 		}
 	];
 </script>
