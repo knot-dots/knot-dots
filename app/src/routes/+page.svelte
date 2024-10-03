@@ -56,6 +56,7 @@
 			{#if $page.url.searchParams.has('related-to')}
 				<RelationTypeFilter
 					enabledPredicates={[
+						predicates.enum['is-part-of'],
 						predicates.enum['is-consistent-with'],
 						predicates.enum['is-equivalent-to'],
 						predicates.enum['is-inconsistent-with'],
