@@ -17,6 +17,7 @@
 	export let measures: Array<MeasureContainer | SimpleMeasureContainer>;
 	export let containers: MeasureMonitoringContainer[];
 	export let indicators: IndicatorContainer[];
+	export let showMeasures = false;
 
 	const columns = [
 		{
@@ -37,11 +38,11 @@
 </script>
 
 <Board>
-	{#if measures.length > 1}
+	{#if showMeasures}
 		<BoardColumn title={$_('measures')}>
 			<div class="vertical-scroll-wrapper masked-overflow">
 				{#each measures as c}
-					<Card container={c} />
+					<Card container={c} showRelationFilter />
 				{/each}
 			</div>
 		</BoardColumn>
@@ -56,10 +57,14 @@
 								?.object ?? 0
 						)}
 						{#if indicator}
-							<Card container={c} relatedContainers={[...measures, indicator, c]} />
+							<Card
+								container={c}
+								relatedContainers={[...measures, indicator, c]}
+								showRelationFilter
+							/>
 						{/if}
 					{:else}
-						<Card container={c} />
+						<Card container={c} showRelationFilter />
 					{/if}
 				{/each}
 			</div>

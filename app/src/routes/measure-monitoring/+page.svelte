@@ -77,6 +77,7 @@
 				{measures}
 				containers={data.containers.filter(isMeasureMonitoringContainer)}
 				indicators={data.containers.filter(isIndicatorContainer)}
+				showMeasures
 			/>
 		{:else}
 			<Board>

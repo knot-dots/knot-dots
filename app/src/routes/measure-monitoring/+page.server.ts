@@ -28,7 +28,20 @@ export const load = (async ({ locals, url, parent }) => {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.get('related-to') as string,
 				[predicates.enum['is-part-of']],
-				{},
+				{
+					type: [
+						...(createFeatureDecisions(locals.features).useNewMeasureMonitoringBoard()
+							? [
+									payloadTypes.enum.effect,
+									payloadTypes.enum.indicator,
+									payloadTypes.enum.measure_result
+								]
+							: []),
+						payloadTypes.enum.measure,
+						payloadTypes.enum.milestone,
+						payloadTypes.enum.task
+					]
+				},
 				url.searchParams.get('sort') ?? ''
 			)
 		);
