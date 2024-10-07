@@ -3,6 +3,7 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { goto } from '$app/navigation';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import Progress from '$lib/components/Progress.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		type AnyContainer,
@@ -70,6 +71,13 @@
 						<PlusSmall />{$_('add_item')}
 					</button>
 				{/if}
+			</div>
+		{/if}
+
+		{#if 'progress' in container.payload}
+			<div class="progress">
+				<h3>{$_('progress')}</h3>
+				<Progress value={container.payload.progress} />
 			</div>
 		{/if}
 	</svelte:fragment>

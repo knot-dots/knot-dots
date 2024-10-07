@@ -631,6 +631,8 @@ const initialEffectPayload = effectPayload.partial({ title: true });
 
 const measureResultPayload = measureMonitoringBasePayload
 	.extend({
+		fulfillmentDate: z.string().date().optional(),
+		progress: z.number().nonnegative().optional(),
 		type: z.literal(payloadTypes.enum.measure_result)
 	})
 	.strict();
