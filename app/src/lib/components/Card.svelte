@@ -13,6 +13,7 @@
 	import {
 		isEffectContainer,
 		isIndicatorContainer,
+		isMeasureResultContainer,
 		isObjectiveContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
@@ -61,6 +62,7 @@
 	$: if (
 		isIndicatorContainer(container) ||
 		isEffectContainer(container) ||
+		isMeasureResultContainer(container) ||
 		isObjectiveContainer(container)
 	) {
 		if (relatedContainers.length == 0) {
@@ -215,6 +217,15 @@
 				{@const indicator = relatedContainers.find(isIndicatorContainer)}
 				{#if indicator}
 					<IndicatorChart container={indicator} {relatedContainers} showEffects />
+				{/if}
+			{/await}
+		{:else if isMeasureResultContainer(container)}
+			{#await relatedContainersPromise then relatedContainers}
+				{@const indicator = relatedContainers.find(isIndicatorContainer)}
+				{#if indicator}
+					<IndicatorChart container={indicator} {relatedContainers} showEffects />
+				{:else}
+					<Summary {container} />
 				{/if}
 			{/await}
 		{:else if isObjectiveContainer(container)}

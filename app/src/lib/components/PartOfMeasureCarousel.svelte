@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Card from '$lib/components/Card.svelte';
 	import {
@@ -15,7 +14,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { addEffectState, mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 
 	export let container: ContainerWithEffect;
 	export let relatedContainers: Container[];
@@ -38,29 +37,6 @@
 
 		return `#${newParams.toString()}`;
 	}
-
-	async function addEffect(target: ContainerWithEffect) {
-		const params = new URLSearchParams([
-			[overlayKey.enum.create, payloadTypes.enum.indicator],
-			['alreadyInUse', '']
-		]);
-
-		for (const category of container.payload.category) {
-			params.append('category', category);
-		}
-
-		for (const topic of container.payload.topic) {
-			params.append('topic', topic);
-		}
-
-		for (const measureType of container.payload.measureType) {
-			params.append('measureType', measureType);
-		}
-
-		$addEffectState = { target };
-
-		await goto(`#${params.toString()}`);
-	}
 </script>
 
 {#if relatedContainers.length > 0 || $mayCreateContainer(payloadType, container.managed_by)}
@@ -72,9 +48,11 @@
 						<Card
 							--height="100%"
 							{container}
-							relatedContainers={relatedContainers.filter(({ relation }) =>
-								relation.some(({ object, subject }) =>
-									[object, subject].includes(container.revision)
+							relatedContainers={relatedContainers.filter(({ payload, relation }) =>
+								relation.some(
+									({ object, subject }) =>
+										[object, subject].includes(container.revision) ||
+										payload.type === payloadTypes.enum.indicator
 								)
 							)}
 						/>
@@ -83,16 +61,7 @@
 			</ul>
 		{/if}
 		{#if $mayCreateContainer(payloadType, container.managed_by)}
-			<a
-				class="button"
-				href={addItemURL($page.url)}
-				on:click={payloadType == payloadTypes.enum.effect
-					? (event) => {
-							event.preventDefault();
-							addEffect(container);
-						}
-					: undefined}
-			>
+			<a class="button" href={addItemURL($page.url)}>
 				{$_('add_item')}
 			</a>
 		{/if}

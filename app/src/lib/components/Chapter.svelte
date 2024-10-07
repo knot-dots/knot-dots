@@ -198,12 +198,12 @@
 		{/if}
 
 		{#if relatedContainers
-			.filter(({ payload }) => payload.type == payloadTypes.enum.effect)
+			.filter(({ payload }) => payload.type == payloadTypes.enum.measure_result)
 			.filter(isPartOfFilter(container)).length > 0}
-			<h4>{$_('effects')}</h4>
+			<h4>{$_('measure_results')}</h4>
 			<PartOfMeasureCarousel
 				{container}
-				payloadType={payloadTypes.enum.effect}
+				payloadType={payloadTypes.enum.measure_result}
 				{relatedContainers}
 			/>
 		{/if}

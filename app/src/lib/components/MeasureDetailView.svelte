@@ -123,15 +123,6 @@
 			/>
 		</div>
 
-		<div id="effects">
-			<h3>{$_('effects')}</h3>
-			<PartOfMeasureCarousel
-				{container}
-				{relatedContainers}
-				payloadType={payloadTypes.enum.effect}
-			/>
-		</div>
-
 		<div id="measure-results">
 			<h3>{$_('measure_results')}</h3>
 			<PartOfMeasureCarousel

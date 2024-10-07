@@ -33,6 +33,7 @@
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
+	import MeasureResultDetailView from '$lib/components/MeasureResultDetailView.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import NewMeasureMonitoring from '$lib/components/NewMeasureMonitoring.svelte';
@@ -68,6 +69,7 @@
 		isEffectContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
+		isMeasureResultContainer,
 		isObjectiveContainer,
 		isPageContainer,
 		isResolutionContainer,
@@ -664,6 +666,8 @@
 				<IndicatorDetailView {container} {relatedContainers} {revisions} />
 			{:else if isContainerWithEffect(container)}
 				<MeasureDetailView {container} {relatedContainers} {revisions} />
+			{:else if isMeasureResultContainer(container)}
+				<MeasureResultDetailView {container} {relatedContainers} {revisions} />
 			{:else if isObjectiveContainer(container)}
 				<ObjectiveDetailView {container} {relatedContainers} {revisions} />
 			{:else if isResolutionContainer(container)}

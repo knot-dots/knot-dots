@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
@@ -7,6 +6,8 @@
 	import {
 		type IndicatorContainer,
 		isEffectContainer,
+		isMeasureResultContainer,
+		isPartOf,
 		type MeasureContainer,
 		type MeasureMonitoringContainer,
 		payloadTypes,
@@ -22,7 +23,7 @@
 	const columns = [
 		{
 			title: 'measure_results',
-			payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.effect] as string[]
+			payloadType: [payloadTypes.enum.measure_result] as string[]
 		},
 		{
 			title: 'milestones',
@@ -51,17 +52,21 @@
 		<BoardColumn title={$_(column.title)}>
 			<div class="vertical-scroll-wrapper masked-overflow">
 				{#each containers.filter(({ payload }) => column.payloadType.includes(payload.type)) as c}
-					{#if isEffectContainer(c)}
-						{@const indicator = indicatorsByRevision.get(
-							c.relation.find(({ predicate }) => predicate === predicates.enum['is-measured-by'])
-								?.object ?? 0
-						)}
-						{#if indicator}
-							<Card
-								container={c}
-								relatedContainers={[...measures, indicator, c]}
-								showRelationFilter
-							/>
+					{#if isMeasureResultContainer(c)}
+						{@const effect = containers.filter(isEffectContainer).find((e) => isPartOf(c)(e))}
+						{#if effect}
+							{@const indicator = indicatorsByRevision.get(
+								effect.relation.find(
+									({ predicate }) => predicate === predicates.enum['is-measured-by']
+								)?.object ?? 0
+							)}
+							{#if indicator}
+								<Card
+									container={c}
+									relatedContainers={[...measures, indicator, effect, c]}
+									showRelationFilter
+								/>
+							{/if}
 						{/if}
 					{:else}
 						<Card container={c} showRelationFilter />

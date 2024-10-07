@@ -2,11 +2,13 @@
 	import * as Plot from '@observablehq/plot';
 	import { _ } from 'svelte-i18n';
 	import {
+		findAncestors,
 		findOverallObjective,
 		findParentObjectives,
 		hasHistoricalValues,
 		isContainerWithEffect,
 		isEffectContainer,
+		isMeasureContainer,
 		predicates,
 		status
 	} from '$lib/models';
@@ -91,28 +93,22 @@
 			const measureContainers = relatedContainers.filter(isContainerWithEffect);
 
 			effects = effectContainers
-				.map(({ payload, revision }) => {
-					const measure = measureContainers.find(
-						({ relation }) =>
-							relation.findIndex(
-								({ predicate, subject }) =>
-									predicate == predicates.enum['is-part-of'] && subject == revision
-							) > -1
-					);
+				.map((c) => {
+					const measure = findAncestors(c, relatedContainers).find(isMeasureContainer);
 					return {
 						indicator: container.guid,
-						values: payload.plannedValues
+						values: c.payload.plannedValues
 							.map(([year, value], index) => ({
 								Year: year,
 								Value:
 									measure?.payload.status == status.enum['status.in_implementation'] &&
-									payload.achievedValues[index]
-										? value - payload.achievedValues[index][1]
+									c.payload.achievedValues[index]
+										? value - c.payload.achievedValues[index][1]
 										: value,
 								Status: measure?.payload.status as string
 							}))
 							.concat(
-								payload.achievedValues.map(([year, value]) => ({
+								c.payload.achievedValues.map(([year, value]) => ({
 									Year: year,
 									Value: value,
 									Status: status.enum['status.done'] as string
