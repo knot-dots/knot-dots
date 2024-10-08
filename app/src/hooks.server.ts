@@ -130,11 +130,8 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 		};
 	}
 
-	const features = [];
+	const features = ['NewMeasureMonitoring', 'NewOnboardingWorkflow', 'NewRelations'];
 	if (event.locals.user.roles.includes('sysadmin')) {
-		features.push('NewMeasureMonitoring');
-		features.push('NewOnboardingWorkflow');
-		features.push('NewRelations');
 		features.push('ImportFromCsv');
 	}
 	event.locals.features = features;
