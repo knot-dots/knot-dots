@@ -67,6 +67,8 @@
 									showRelationFilter
 								/>
 							{/if}
+						{:else}
+							<Card container={c} showRelationFilter />
 						{/if}
 					{:else}
 						<Card container={c} showRelationFilter />
