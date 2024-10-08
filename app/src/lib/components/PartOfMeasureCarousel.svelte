@@ -48,12 +48,12 @@
 						<Card
 							--height="100%"
 							{container}
-							relatedContainers={relatedContainers.filter(({ payload, relation }) =>
-								relation.some(
-									({ object, subject }) =>
-										[object, subject].includes(container.revision) ||
-										payload.type === payloadTypes.enum.indicator
-								)
+							relatedContainers={relatedContainers.filter(
+								({ payload, relation }) =>
+									payload.type === payloadTypes.enum.indicator ||
+									relation.some(({ object, subject }) =>
+										[object, subject].includes(container.revision)
+									)
 							)}
 						/>
 					</li>
