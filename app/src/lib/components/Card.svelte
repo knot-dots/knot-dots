@@ -15,6 +15,7 @@
 		isIndicatorContainer,
 		isMeasureResultContainer,
 		isObjectiveContainer,
+		isPartOf,
 		isResourceContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -221,7 +222,16 @@
 			{/await}
 		{:else if isMeasureResultContainer(container)}
 			{#await relatedContainersPromise then relatedContainers}
-				{@const indicator = relatedContainers.find(isIndicatorContainer)}
+				{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
+				{@const indicator = relatedContainers
+					.filter(isIndicatorContainer)
+					.find(
+						({ revision }) =>
+							(effect?.relation.findIndex(
+								({ object, predicate }) =>
+									predicate == predicates.enum['is-measured-by'] && object == revision
+							) ?? -1) > -1
+					)}
 				{#if indicator}
 					<IndicatorChart container={indicator} {relatedContainers} showEffects />
 				{:else}
