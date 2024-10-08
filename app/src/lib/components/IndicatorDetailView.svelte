@@ -58,18 +58,6 @@
 
 <ContainerDetailView {container} {relatedContainers} {revisions} tabs={['basic-data', 'metadata']}>
 	<svelte:fragment slot="data">
-		<div class="intro">
-			{#if currentTab === tab.enum.historical_values}
-				<Viewer value={container.payload.historicalValuesIntro} />
-			{:else if currentTab === tab.enum.objectives}
-				<Viewer value={container.payload.objectivesIntro} />
-			{:else if currentTab === tab.enum.measures}
-				<Viewer value={container.payload.measuresIntro} />
-			{:else}
-				<Viewer value={container.payload.description} />
-			{/if}
-		</div>
-
 		<select class="view-mode" bind:value={viewMode}>
 			<option value="chart">{$_('indicator.view_mode.chart')}</option>
 			<option value="table">{$_('indicator.view_mode.table')}</option>
@@ -80,6 +68,8 @@
 		{:else if viewMode === 'table'}
 			<IndicatorTable {container} {relatedContainers} {showEffects} {showObjectives} />
 		{/if}
+
+		<Viewer value={container.payload.description} />
 
 		{#if showEffects}
 			<div class="measures">
