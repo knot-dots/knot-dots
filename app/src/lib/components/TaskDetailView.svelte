@@ -8,6 +8,7 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		displayName,
+		isContainerWithObjective,
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
