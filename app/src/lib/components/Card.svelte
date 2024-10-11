@@ -5,7 +5,6 @@
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
@@ -56,27 +55,6 @@
 		selected = $page.data.container;
 	} else {
 		selected = undefined;
-	}
-
-	let relatedContainersPromise: Promise<Container[]>;
-
-	$: if (
-		isIndicatorContainer(container) ||
-		isEffectContainer(container) ||
-		isMeasureResultContainer(container) ||
-		isObjectiveContainer(container)
-	) {
-		if (relatedContainers.length == 0) {
-			relatedContainersPromise = fetchRelatedContainers(container.guid, {
-				relationType: [
-					predicates.enum['is-measured-by'],
-					predicates.enum['is-objective-for'],
-					predicates.enum['is-part-of']
-				]
-			});
-		} else {
-			relatedContainersPromise = new Promise((resolve) => resolve(relatedContainers));
-		}
 	}
 
 	async function applyRelationFilter(url: URL) {
@@ -199,11 +177,7 @@
 
 	<div class="content">
 		{#if isIndicatorContainer(container)}
-			{#await relatedContainersPromise}
-				<IndicatorChart {container} />
-			{:then relatedContainers}
-				<IndicatorChart {container} {relatedContainers} showEffects showObjectives />
-			{/await}
+			<IndicatorChart {container} {relatedContainers} showEffects showObjectives />
 			<p class="badges">
 				{#each container.payload.indicatorType as indicatorType}
 					<span class="badge">{$_(indicatorType)}</span>
@@ -214,37 +188,31 @@
 				{/each}
 			</p>
 		{:else if isEffectContainer(container)}
-			{#await relatedContainersPromise then relatedContainers}
-				{@const indicator = relatedContainers.find(isIndicatorContainer)}
-				{#if indicator}
-					<IndicatorChart container={indicator} {relatedContainers} showEffects />
-				{/if}
-			{/await}
+			{@const indicator = relatedContainers.find(isIndicatorContainer)}
+			{#if indicator}
+				<IndicatorChart container={indicator} {relatedContainers} showEffects />
+			{/if}
 		{:else if isMeasureResultContainer(container)}
-			{#await relatedContainersPromise then relatedContainers}
-				{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
-				{@const indicator = relatedContainers
-					.filter(isIndicatorContainer)
-					.find(
-						({ revision }) =>
-							(effect?.relation.findIndex(
-								({ object, predicate }) =>
-									predicate === predicates.enum['is-measured-by'] && object === revision
-							) ?? -1) > -1
-					)}
-				{#if indicator}
-					<IndicatorChart container={indicator} {relatedContainers} showEffects />
-				{:else}
-					<Summary {container} />
-				{/if}
-			{/await}
+			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
+			{@const indicator = relatedContainers
+				.filter(isIndicatorContainer)
+				.find(
+					({ revision }) =>
+						(effect?.relation.findIndex(
+							({ object, predicate }) =>
+								predicate === predicates.enum['is-measured-by'] && object === revision
+						) ?? -1) > -1
+				)}
+			{#if indicator}
+				<IndicatorChart container={indicator} {relatedContainers} showEffects />
+			{:else}
+				<Summary {container} />
+			{/if}
 		{:else if isObjectiveContainer(container)}
-			{#await relatedContainersPromise then relatedContainers}
-				{@const indicator = relatedContainers.find(isIndicatorContainer)}
-				{#if indicator}
-					<IndicatorChart container={indicator} {relatedContainers} showObjectives />
-				{/if}
-			{/await}
+			{@const indicator = relatedContainers.find(isIndicatorContainer)}
+			{#if indicator}
+				<IndicatorChart container={indicator} {relatedContainers} showObjectives />
+			{/if}
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} compact />
 		{:else if isResourceContainer(container)}

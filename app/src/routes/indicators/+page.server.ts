@@ -1,17 +1,21 @@
 import { filterVisible } from '$lib/authorization';
 import { audience, type IndicatorContainer, indicatorTypes, payloadTypes } from '$lib/models';
-import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
+import {
+	getAllContainersRelatedToIndicators,
+	getAllRelatedOrganizationalUnitContainers,
+	getManyContainers
+} from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, parent, url }) => {
-	let containers;
+	let containers: IndicatorContainer[];
 
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (url.searchParams.getAll('included').includes('all-organizational-units')) {
-		containers = await locals.pool.connect(
+		containers = (await locals.pool.connect(
 			getManyContainers([currentOrganization.guid], { type: [payloadTypes.enum.indicator] }, '')
-		);
+		)) as IndicatorContainer[];
 	} else {
 		let organizationalUnits: string[] = [];
 		if (currentOrganizationalUnit) {
@@ -22,7 +26,7 @@ export const load = (async ({ locals, parent, url }) => {
 				.filter(({ payload }) => payload.level >= currentOrganizationalUnit.payload.level)
 				.map(({ guid }) => guid);
 		}
-		containers = await locals.pool.connect(
+		containers = (await locals.pool.connect(
 			getManyContainers(
 				[currentOrganization.guid],
 				{
@@ -38,11 +42,18 @@ export const load = (async ({ locals, parent, url }) => {
 				},
 				''
 			)
-		);
+		)) as IndicatorContainer[];
 	}
+
+	const relatedContainers = await locals.pool.connect(
+		getAllContainersRelatedToIndicators(containers)
+	);
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: filterVisible(containers, locals.user) as IndicatorContainer[]
+		containers: filterVisible(
+			[...containers, ...relatedContainers],
+			locals.user
+		) as IndicatorContainer[]
 	};
 }) satisfies PageServerLoad;

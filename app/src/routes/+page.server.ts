@@ -41,6 +41,8 @@ export const load = (async ({ locals, url, parent }) => {
 						: url.searchParams.getAll('relationType'),
 					{
 						type: [
+							payloadTypes.enum.effect,
+							payloadTypes.enum.indicator,
 							payloadTypes.enum.measure,
 							payloadTypes.enum.measure_result,
 							payloadTypes.enum.milestone,
@@ -75,6 +77,8 @@ export const load = (async ({ locals, url, parent }) => {
 						topics: url.searchParams.getAll('topic'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [
+							payloadTypes.enum.effect,
+							payloadTypes.enum.indicator,
 							payloadTypes.enum.measure,
 							payloadTypes.enum.measure_result,
 							payloadTypes.enum.milestone,
@@ -109,6 +113,8 @@ export const load = (async ({ locals, url, parent }) => {
 						strategyTypes: url.searchParams.getAll('strategyType'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [
+							payloadTypes.enum.effect,
+							payloadTypes.enum.indicator,
 							payloadTypes.enum.measure,
 							payloadTypes.enum.measure_result,
 							payloadTypes.enum.milestone,

@@ -3,7 +3,12 @@
 	import type { DndEvent, Item } from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
-	import { isPartOf } from '$lib/models';
+	import {
+		isEffectContainer,
+		isIndicatorContainer,
+		isMeasureResultContainer,
+		isPartOf
+	} from '$lib/models';
 	import type { Container } from '$lib/models';
 	import Card from '$lib/components/Card.svelte';
 	import { ability, dragged, overlay } from '$lib/stores';
@@ -53,6 +58,37 @@
 	>
 		{#each items as { guid, container } (guid)}
 			<div>
+				{#if isMeasureResultContainer(container)}
+					{#await $page.data.containers then otherContainers}
+						<Card
+							{container}
+							relatedContainers={[
+								...otherContainers.filter(isIndicatorContainer),
+								...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
+							]}
+							showRelationFilter
+						/>
+					{/await}
+				{:else}
+					<Card
+						{container}
+						relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
+							isPartOf(container)
+						) ?? []}
+						showRelationFilter
+					/>
+				{/if}
+			</div>
+		{/each}
+	</div>
+{:else}
+	<div class="vertical-scroll-wrapper masked-overflow">
+		{#each items as { container }}
+			{#if isMeasureResultContainer(container)}
+				{#await $page.data.containers then relatedContainers}
+					<Card {container} {relatedContainers} showRelationFilter />
+				{/await}
+			{:else}
 				<Card
 					{container}
 					relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
@@ -60,19 +96,7 @@
 					) ?? []}
 					showRelationFilter
 				/>
-			</div>
-		{/each}
-	</div>
-{:else}
-	<div class="vertical-scroll-wrapper masked-overflow">
-		{#each items as { container }}
-			<Card
-				{container}
-				relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
-					isPartOf(container)
-				) ?? []}
-				showRelationFilter
-			/>
+			{/if}
 		{/each}
 	</div>
 {/if}

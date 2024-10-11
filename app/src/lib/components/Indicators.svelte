@@ -2,10 +2,10 @@
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Card from '$lib/components/Card.svelte';
-	import { type IndicatorContainer, payloadTypes } from '$lib/models';
+	import { type Container, isIndicatorContainer, payloadTypes } from '$lib/models';
 	import { ability } from '$lib/stores';
 
-	export let containers: IndicatorContainer[];
+	export let containers: Container[];
 </script>
 
 <div class="indicators">
@@ -18,9 +18,9 @@
 		</p>
 	{/if}
 	<ul>
-		{#each containers as container}
+		{#each containers.filter(isIndicatorContainer) as container}
 			<li>
-				<Card --height="100%" {container} />
+				<Card --height="100%" {container} relatedContainers={containers} />
 			</li>
 		{/each}
 	</ul>
