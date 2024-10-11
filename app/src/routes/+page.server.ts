@@ -5,7 +5,8 @@ import {
 	type Container,
 	audience,
 	filterOrganizationalUnits,
-	predicates
+	predicates,
+	payloadTypes
 } from '$lib/models';
 import {
 	getAllContainersWithIndicatorContributions,
@@ -40,15 +41,15 @@ export const load = (async ({ locals, url, parent }) => {
 						: url.searchParams.getAll('relationType'),
 					{
 						type: [
-							'strategy',
-							'model',
-							'vision',
-							'strategic_goal',
-							'operational_goal',
-							'measure',
-							'simple_measure',
-							'measure_result',
-							'milestone'
+							payloadTypes.enum.measure,
+							payloadTypes.enum.measure_result,
+							payloadTypes.enum.milestone,
+							payloadTypes.enum.model,
+							payloadTypes.enum.operational_goal,
+							payloadTypes.enum.simple_measure,
+							payloadTypes.enum.strategic_goal,
+							payloadTypes.enum.strategy,
+							payloadTypes.enum.vision
 						]
 					},
 					url.searchParams.get('sort') ?? ''
@@ -74,15 +75,15 @@ export const load = (async ({ locals, url, parent }) => {
 						topics: url.searchParams.getAll('topic'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [
-							'strategy',
-							'model',
-							'vision',
-							'strategic_goal',
-							'operational_goal',
-							'measure',
-							'simple_measure',
-							'measure_result',
-							'milestone'
+							payloadTypes.enum.measure,
+							payloadTypes.enum.measure_result,
+							payloadTypes.enum.milestone,
+							payloadTypes.enum.model,
+							payloadTypes.enum.operational_goal,
+							payloadTypes.enum.simple_measure,
+							payloadTypes.enum.strategic_goal,
+							payloadTypes.enum.strategy,
+							payloadTypes.enum.vision
 						]
 					},
 					url.searchParams.get('sort') ?? ''
@@ -108,16 +109,16 @@ export const load = (async ({ locals, url, parent }) => {
 						strategyTypes: url.searchParams.getAll('strategyType'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [
-							'strategy',
-							'model',
-							'vision',
-							'strategic_goal',
-							'operational_goal',
-							'measure',
-							'resolution',
-							'simple_measure',
-							'measure_result',
-							'milestone'
+							payloadTypes.enum.measure,
+							payloadTypes.enum.measure_result,
+							payloadTypes.enum.milestone,
+							payloadTypes.enum.model,
+							payloadTypes.enum.operational_goal,
+							payloadTypes.enum.resolution,
+							payloadTypes.enum.simple_measure,
+							payloadTypes.enum.strategic_goal,
+							payloadTypes.enum.strategy,
+							payloadTypes.enum.vision
 						]
 					},
 					url.searchParams.get('sort') ?? ''
