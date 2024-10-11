@@ -229,7 +229,7 @@
 						({ revision }) =>
 							(effect?.relation.findIndex(
 								({ object, predicate }) =>
-									predicate == predicates.enum['is-measured-by'] && object == revision
+									predicate === predicates.enum['is-measured-by'] && object === revision
 							) ?? -1) > -1
 					)}
 				{#if indicator}

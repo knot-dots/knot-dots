@@ -95,12 +95,16 @@
 			container.organization;
 		container.relation = [
 			...container.relation.slice(0, isPartOfMeasureIndex),
-			{
-				object: parseInt(value),
-				position: 0,
-				predicate: predicates.enum['is-part-of-measure'],
-				...('revision' in container ? { subject: container.revision } : undefined)
-			},
+			...(value
+				? [
+						{
+							object: parseInt(value),
+							position: 0,
+							predicate: predicates.enum['is-part-of-measure'],
+							...('revision' in container ? { subject: container.revision } : undefined)
+						}
+					]
+				: []),
 			...container.relation.slice(isPartOfMeasureIndex + 1)
 		];
 	}
@@ -119,12 +123,16 @@
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
-			{
-				object: parseInt((event as CustomEvent).detail.selected.value),
-				position: 0,
-				predicate: predicates.enum['is-part-of'],
-				...('revision' in container ? { subject: container.revision } : undefined)
-			},
+			...(value
+				? [
+						{
+							object: parseInt((event as CustomEvent).detail.selected.value),
+							position: 0,
+							predicate: predicates.enum['is-part-of'],
+							...('revision' in container ? { subject: container.revision } : undefined)
+						}
+					]
+				: []),
 			...container.relation.slice(isPartOfIndex + 1)
 		];
 	}
