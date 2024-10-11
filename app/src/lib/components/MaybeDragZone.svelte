@@ -6,6 +6,7 @@
 	import {
 		isEffectContainer,
 		isIndicatorContainer,
+		isMeasureContainer,
 		isMeasureResultContainer,
 		isPartOf
 	} from '$lib/models';
@@ -64,6 +65,7 @@
 							{container}
 							relatedContainers={[
 								...otherContainers.filter(isIndicatorContainer),
+								...otherContainers.filter(isMeasureContainer),
 								...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
 							]}
 							showRelationFilter
@@ -90,6 +92,7 @@
 						{container}
 						relatedContainers={[
 							...otherContainers.filter(isIndicatorContainer),
+							...otherContainers.filter(isMeasureContainer),
 							...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
 						]}
 						showRelationFilter

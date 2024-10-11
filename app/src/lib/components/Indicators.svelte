@@ -2,7 +2,14 @@
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Card from '$lib/components/Card.svelte';
-	import { type Container, isIndicatorContainer, payloadTypes } from '$lib/models';
+	import {
+		type Container,
+		isContainerWithObjective,
+		isIndicatorContainer,
+		isMeasureContainer,
+		isMeasureResultContainer,
+		payloadTypes
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	export let containers: Container[];
@@ -19,8 +26,16 @@
 	{/if}
 	<ul>
 		{#each containers.filter(isIndicatorContainer) as container}
+			{@const relatedContainers = [
+				...containers.filter(({ relation }) =>
+					relation.some(({ object }) => object === container.revision)
+				),
+				...containers.filter(isMeasureContainer),
+				...containers.filter(isMeasureResultContainer),
+				...containers.filter(isContainerWithObjective)
+			]}
 			<li>
-				<Card --height="100%" {container} relatedContainers={containers} />
+				<Card --height="100%" {container} {relatedContainers} />
 			</li>
 		{/each}
 	</ul>

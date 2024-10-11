@@ -10,8 +10,10 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
+		isContainerWithObjective,
 		isEffectContainer,
 		isIndicatorContainer,
+		isMeasureContainer,
 		isMeasureResultContainer,
 		isObjectiveContainer,
 		isPartOf,
@@ -177,7 +179,19 @@
 
 	<div class="content">
 		{#if isIndicatorContainer(container)}
-			<IndicatorChart {container} {relatedContainers} showEffects showObjectives />
+			<IndicatorChart
+				{container}
+				relatedContainers={[
+					...relatedContainers.filter(({ relation }) =>
+						relation.some(({ object }) => object === container.revision)
+					),
+					...relatedContainers.filter(isMeasureContainer),
+					...relatedContainers.filter(isMeasureResultContainer),
+					...relatedContainers.filter(isContainerWithObjective)
+				]}
+				showEffects
+				showObjectives
+			/>
 			<p class="badges">
 				{#each container.payload.indicatorType as indicatorType}
 					<span class="badge">{$_(indicatorType)}</span>
@@ -204,7 +218,11 @@
 						) ?? -1) > -1
 				)}
 			{#if indicator}
-				<IndicatorChart container={indicator} {relatedContainers} showEffects />
+				<IndicatorChart
+					container={indicator}
+					relatedContainers={[container, ...relatedContainers]}
+					showEffects
+				/>
 			{:else}
 				<Summary {container} />
 			{/if}
