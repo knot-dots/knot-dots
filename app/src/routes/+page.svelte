@@ -88,12 +88,12 @@
 		<Board>
 			{#each columns as column (column.title)}
 				<BoardColumn
-					addItemUrl={column.title === 'programs' &&
+					addItemUrl={(column.title === 'programs' || column.title.includes('goals')) &&
 					$mayCreateContainer(
 						payloadTypes.enum.strategy,
 						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
 					)
-						? `#create=${payloadTypes.enum.strategy}`
+						? `#create=${column.payloadType[0]}`
 						: undefined}
 					title={$_(column.title)}
 				>
