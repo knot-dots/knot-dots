@@ -47,7 +47,7 @@
 		},
 		{
 			title: 'payload_group.measure_results',
-			payloadType: [payloadTypes.enum.effect, payloadTypes.enum.measure_result]
+			payloadType: [payloadTypes.enum.measure_result]
 		},
 		{
 			title: 'payload_group.milestones',
