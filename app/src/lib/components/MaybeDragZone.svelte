@@ -85,8 +85,15 @@
 	<div class="vertical-scroll-wrapper masked-overflow">
 		{#each items as { container }}
 			{#if isMeasureResultContainer(container)}
-				{#await $page.data.containers then relatedContainers}
-					<Card {container} {relatedContainers} showRelationFilter />
+				{#await $page.data.containers then otherContainers}
+					<Card
+						{container}
+						relatedContainers={[
+							...otherContainers.filter(isIndicatorContainer),
+							...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
+						]}
+						showRelationFilter
+					/>
 				{/await}
 			{:else}
 				<Card
