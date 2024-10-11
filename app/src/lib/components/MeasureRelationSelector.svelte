@@ -10,12 +10,16 @@
 		type EmptyContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
+		isModelContainer,
+		isOperationalGoalContainer,
 		isTaskContainer,
+		isVisionContainer,
 		type MeasureContainer,
 		type PartialRelation,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
+	import { isStrategicGoalContainer } from '$lib/models.js';
 
 	export let container: AnyContainer | EmptyContainer;
 
@@ -47,6 +51,17 @@
 				isPartOfOptionsRequest = fetchContainers({
 					isPartOfMeasure: [measureRevision],
 					payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.milestone]
+				});
+			} else {
+				isPartOfOptionsRequest = fetchContainers({
+					organization: [container.organization],
+					organizationalUnit: container.organizational_unit ? [container.organizational_unit] : [],
+					payloadType: [
+						payloadTypes.enum.model,
+						payloadTypes.enum.operational_goal,
+						payloadTypes.enum.strategic_goal,
+						payloadTypes.enum.vision
+					]
 				});
 			}
 		}
@@ -163,6 +178,28 @@
 		{#if isPartOfOptions.length > 0}
 			{@const options = [
 				{ value: undefined, label: $_('not_part_of') },
+				...isPartOfOptions
+					.filter((c) => isVisionContainer(c) || isModelContainer(c))
+					.map(({ payload, revision }) => ({
+						value: revision,
+						label: payload.title,
+						group: $_('payload_group.long_term_goals')
+					})),
+				...isPartOfOptions.filter(isStrategicGoalContainer).map(({ payload, revision }) => ({
+					value: revision,
+					label: payload.title,
+					group: $_('payload_group.strategic_goals')
+				})),
+				...isPartOfOptions.filter(isOperationalGoalContainer).map(({ payload, revision }) => ({
+					value: revision,
+					label: payload.title,
+					group: $_('payload_group.measurable_goals')
+				})),
+				...isPartOfOptions.filter(isMeasureResultContainer).map(({ payload, revision }) => ({
+					value: revision,
+					label: payload.title,
+					group: $_('measure_results')
+				})),
 				...isPartOfOptions.filter(isMeasureResultContainer).map(({ payload, revision }) => ({
 					value: revision,
 					label: payload.title,
