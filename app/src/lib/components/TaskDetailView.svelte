@@ -44,6 +44,8 @@
 
 	$: milestone = relatedContainers.find(isMilestoneContainer);
 
+	$: goal = relatedContainers.find(isContainerWithObjective);
+
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
 	function containerURL(type: string, guid: string) {
@@ -127,6 +129,13 @@
 							{$_(milestone.payload.title)}
 						</a>
 					{/if}
+				</p>
+			</div>
+		{:else if goal}
+			<div class="meta">
+				<h3 class="meta-key">{$_('goal')}</h3>
+				<p class="meta-value">
+					<a href={containerURL(goal.payload.type, goal.guid)}>{goal.payload.title}</a>
 				</p>
 			</div>
 		{/if}
