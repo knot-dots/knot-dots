@@ -16,7 +16,7 @@ import {
 	topics
 } from '$lib/models';
 import {
-	getAllContainersRelatedToIndicator,
+	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
 	getAllRelatedContainers,
 	getContainerByGuid,
@@ -60,7 +60,7 @@ export const GET = (async ({ locals, params, url }) => {
 		let containers;
 
 		if (isIndicatorContainer(container)) {
-			containers = await locals.pool.connect(getAllContainersRelatedToIndicator(container));
+			containers = await locals.pool.connect(getAllContainersRelatedToIndicators([container]));
 		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(

@@ -960,14 +960,17 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 	};
 }
 
-export function getAllContainersRelatedToIndicator(container: IndicatorContainer) {
+export function getAllContainersRelatedToIndicators(containers: IndicatorContainer[]) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const objectiveAndEffectResult = await connection.any(sql.typeAlias('revision')`
 			SELECT c.revision
 			FROM container c
 			JOIN container_relation cr ON c.revision = cr.subject
 				AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
-			WHERE cr.object = ${container.revision}
+			WHERE cr.object IN (${sql.join(
+				containers.map(({ revision }) => revision),
+				sql.fragment`, `
+			)})
         AND c.valid_currently
 				AND NOT c.deleted
 		`);
