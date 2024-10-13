@@ -13,7 +13,6 @@
 	import Tasks from '~icons/knotdots/tasks';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { accountURL } from '$lib/authentication';
 	import {
 		type AnyContainer,
 		boards,
@@ -58,7 +57,7 @@
 		{#if container}
 			<a
 				class="button button-nav title"
-				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.view) === container.guid}
+				class:is-active={$overlay?.key === overlayKey.enum.view}
 				href={overlayURL($page.url, overlayKey.enum.view, container.guid)}
 			>
 				{#if container.payload.type === payloadTypes.enum.organization || container.payload.type === payloadTypes.enum.organizational_unit}
@@ -67,11 +66,11 @@
 					{container.payload.title}
 				{/if}
 			</a>
-		{:else if paramsFromFragment($page.url).has(overlayKey.enum.profile) && $overlay.organizations && $overlay.organizationalUnits}
+		{:else if $overlay?.key === overlayKey.enum.profile}
 			<a
 				class="button button-nav title"
-				class:is-active={$page.url.hash ===
-					overlayURL($page.url, overlayKey.enum.profile, $user.guid)}
+				class:is-active={!paramsFromFragment($page.url).has(overlayKey.enum['my-tasks']) &&
+					!paramsFromFragment($page.url).has(overlayKey.enum['my-settings'])}
 				href={overlayURL($page.url, overlayKey.enum.profile, $user.guid)}
 			>
 				{$user.givenName}
@@ -86,8 +85,7 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.relations) ===
-							container.guid}
+						class:is-active={$overlay?.key === overlayKey.enum.relations}
 						href={overlayURL($page.url, overlayKey.enum.relations, container.guid)}
 						title={$_('relations')}
 					>
@@ -99,8 +97,7 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.chapters) ===
-							container.guid}
+						class:is-active={$overlay?.key === overlayKey.enum.chapters}
 						href={overlayURL($page.url, overlayKey.enum.chapters, container.guid)}
 						title={$_('board.chapters')}
 					>
@@ -111,8 +108,7 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.measures) ===
-							container.guid}
+						class:is-active={$overlay?.key === overlayKey.enum.measures}
 						href={overlayURL($page.url, overlayKey.enum.measures, container.guid)}
 						title={$_('measures')}
 					>
@@ -124,8 +120,7 @@
 					<li>
 						<a
 							class="button button-nav"
-							class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.indicators) ===
-								container.guid}
+							class:is-active={$overlay?.key === overlayKey.enum.indicators}
 							href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
 						>
 							<span class="small-only"><Effects /></span>
@@ -139,9 +134,7 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(
-							overlayKey.enum['measure-monitoring']
-						) === container.guid}
+						class:is-active={$overlay?.key === overlayKey.enum['measure-monitoring']}
 						href={overlayURL($page.url, overlayKey.enum['measure-monitoring'], container.guid)}
 						title={$_('board.measure_monitoring')}
 					>
@@ -153,8 +146,7 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.tasks) ===
-							container.guid}
+						class:is-active={$overlay?.key === overlayKey.enum.tasks}
 						href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
 						title={$_('tasks')}
 					>
@@ -168,15 +160,14 @@
 		{#if (isIndicatorContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || isStrategyContainer(container)) && $ability.can('invite-members', container)}
 			<a
 				class="button button-nav"
-				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.members) ===
-					container.guid}
+				class:is-active={$overlay?.key === overlayKey.enum.members}
 				href={overlayURL($page.url, overlayKey.enum.members, container.guid)}
 				title={$_('team')}
 			>
 				<Members />
 			</a>
 		{/if}
-	{:else if paramsFromFragment($page.url).has(overlayKey.enum.profile) && $overlay.organizations && $overlay.organizationalUnits}
+	{:else if $overlay?.key === overlayKey.enum.profile}
 		<ul class="button-group button-group-nav">
 			<li>
 				<a
@@ -195,6 +186,7 @@
 			<li>
 				<a
 					class="button button-nav"
+					class:is-active={paramsFromFragment($page.url).has(overlayKey.enum['my-settings'])}
 					href={`${overlayURL($page.url, overlayKey.enum['profile'], $user.guid)}&${
 						overlayKey.enum['my-settings']
 					}`}
@@ -218,7 +210,7 @@
 		<a href={overlayURL($page.url, 'profile', $user.guid)}>
 			<span
 				class="avatar avatar-s button button-nav"
-				class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.profile) === $user.guid}
+				class:is-active={$overlay?.key === overlayKey.enum.profile}
 			>
 				{$user.givenName.at(0)}{$user.familyName.at(0)}
 			</span>

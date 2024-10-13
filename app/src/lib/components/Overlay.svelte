@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { page } from '$app/stores';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditHelpOverlay from '$lib/components/EditHelpOverlay.svelte';
 	import EditOverlay from '$lib/components/EditOverlay.svelte';
@@ -15,42 +14,12 @@
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
-	import {
-		type AnyContainer,
-		type Container,
-		type IndicatorContainer,
-		isMeasureContainer,
-		isPageContainer,
-		isSimpleMeasureContainer,
-		isStrategyContainer,
-		type MeasureContainer,
-		type MeasureMonitoringContainer,
-		overlayKey,
-		paramsFromFragment,
-		type TaskContainer,
-		type User
-	} from '$lib/models';
-	import { overlayWidth } from '$lib/stores';
+	import { overlayKey } from '$lib/models';
+	import { type OverlayData, overlayWidth } from '$lib/stores';
 
-	export let indicators: IndicatorContainer[] | undefined = undefined;
-	export let measures: MeasureContainer[] | undefined = undefined;
-	export let measureElements: MeasureMonitoringContainer[] | undefined = undefined;
-	export let isPartOfOptions: AnyContainer[];
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
-	export let tasks: TaskContainer[] | undefined = undefined;
-	export let users: User[] | undefined = undefined;
+	export let data: OverlayData;
 
 	setContext('overlay', true);
-
-	let container: AnyContainer;
-
-	$: {
-		container = revisions[revisions.length - 1];
-	}
-
-	$: hashParams = paramsFromFragment($page.url);
-	$: edit = hashParams.has(overlayKey.enum.create) || hashParams.has(overlayKey.enum.edit);
 
 	let fullScreen = false;
 
@@ -90,49 +59,57 @@
 >
 	<!--svelte-ignore a11y-no-static-element-interactions -->
 	<div class="resize-handle" on:mousedown|preventDefault={startExpand} />
-	<OverlayNavigation {container} />
-	{#if isPageContainer(container) && hashParams.has(overlayKey.enum['edit-help'])}
-		<EditHelpOverlay {container}>
+	<OverlayNavigation container={'container' in data ? data.container : undefined} />
+	{#if data.key === overlayKey.enum['edit-help']}
+		<EditHelpOverlay container={data.container}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</EditHelpOverlay>
-	{:else if isPageContainer(container) && hashParams.has(overlayKey.enum['view-help'])}
-		<ViewHelpOverlay {container}>
+	{:else if data.key === overlayKey.enum['view-help']}
+		<ViewHelpOverlay container={data.container}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</ViewHelpOverlay>
-	{:else if edit}
-		<EditOverlay {container} {isPartOfOptions} {relatedContainers}>
+	{:else if data.key === overlayKey.enum['create'] || data.key === overlayKey.enum['edit']}
+		<EditOverlay
+			container={data.container}
+			isPartOfOptions={data.isPartOfOptions}
+			relatedContainers={data.relatedContainers}
+		>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</EditOverlay>
-	{:else if hashParams.has(overlayKey.enum.members) && users}
-		<MembersOverlay {container} {users}>
+	{:else if data.key === overlayKey.enum['members']}
+		<MembersOverlay container={data.container} users={data.users}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</MembersOverlay>
-	{:else if hashParams.has(overlayKey.enum.chapters) && isStrategyContainer(container) && relatedContainers}
-		<ChaptersOverlay containers={relatedContainers}>
+	{:else if data.key === overlayKey.enum['chapters']}
+		<ChaptersOverlay containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</ChaptersOverlay>
-	{:else if hashParams.has(overlayKey.enum.relations) && relatedContainers}
-		<RelationsOverlay containers={relatedContainers}>
+	{:else if data.key === overlayKey.enum['relations']}
+		<RelationsOverlay containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</RelationsOverlay>
-	{:else if hashParams.has(overlayKey.enum['measures']) && isStrategyContainer(container) && measures}
-		<MeasuresOverlay containers={measures}>
+	{:else if data.key === overlayKey.enum['measures']}
+		<MeasuresOverlay containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</MeasuresOverlay>
-	{:else if hashParams.has(overlayKey.enum['measure-monitoring']) && (isMeasureContainer(container) || isSimpleMeasureContainer(container)) && measureElements && indicators}
-		<MeasureMonitoringOverlay {container} containers={measureElements}>
+	{:else if data.key === overlayKey.enum['measure-monitoring']}
+		<MeasureMonitoringOverlay container={data.container} containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</MeasureMonitoringOverlay>
-	{:else if hashParams.has(overlayKey.enum.tasks) && tasks && relatedContainers}
-		<TasksOverlay {container} containers={tasks}>
+	{:else if data.key === overlayKey.enum['tasks']}
+		<TasksOverlay container={data.container} containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</TasksOverlay>
-	{:else if hashParams.has(overlayKey.enum.indicators) && indicators}
-		<IndicatorsOverlay containers={indicators}>
+	{:else if data.key === overlayKey.enum['indicators']}
+		<IndicatorsOverlay containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</IndicatorsOverlay>
-	{:else if 'guid' in container}
-		<ViewOverlay {container} {relatedContainers} {revisions}>
+	{:else if data.key === overlayKey.enum['view']}
+		<ViewOverlay
+			container={data.container}
+			relatedContainers={data.relatedContainers}
+			revisions={data.revisions}
+		>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</ViewOverlay>
 	{/if}

@@ -17,7 +17,7 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { payloadTypes, predicates } from '$lib/models';
+	import { overlayKey, payloadTypes, predicates } from '$lib/models';
 	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
 
@@ -79,7 +79,7 @@
 
 	<svelte:fragment slot="relationOverlay">
 		{#if createFeatureDecisions(data.features).useNewRelationOverlay()}
-			{#if $overlay.object}
+			{#if $overlay?.key === overlayKey.enum.relate}
 				<NewRelationOverlay
 					object={$overlay.object}
 					enabledPredicates={[
@@ -90,7 +90,7 @@
 					]}
 				/>
 			{/if}
-		{:else if $overlay.object}
+		{:else if $overlay?.key === overlayKey.enum.relate}
 			<RelationOverlay object={$overlay.object} />
 		{/if}
 	</svelte:fragment>

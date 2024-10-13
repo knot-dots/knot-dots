@@ -18,20 +18,14 @@ import {
 	containerOfType,
 	createCopyOf,
 	type IndicatorContainer,
-	isContainer,
 	isEffectContainer,
 	isIndicatorContainer,
-	isMeasureMonitoringContainer,
 	isObjectiveContainer,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
 	isStrategyContainer,
-	isTaskContainer,
 	mayDelete,
 	type MeasureContainer,
 	type MeasureMonitoringContainer,
-	type OrganizationalUnitContainer,
-	type OrganizationContainer,
+	type PageContainer,
 	overlayKey,
 	paramsFromFragment,
 	type PayloadType,
@@ -41,10 +35,10 @@ import {
 	type ResolutionStatus,
 	type Status,
 	status,
-	type TaskContainer,
 	type TaskStatus,
 	taskStatus,
-	type User as UserRecord
+	type User as UserRecord,
+	type TaskContainer
 } from '$lib/models';
 
 export const applicationState = writable<ApplicationState>({
@@ -173,25 +167,78 @@ type AddObjectiveState = {
 
 export const addObjectiveState = writable<AddObjectiveState>({});
 
-type Overlay = {
-	indicators?: IndicatorContainer[];
-	measureElements?: MeasureMonitoringContainer[];
-	isPartOfOptions: AnyContainer[];
-	measures?: MeasureContainer[];
-	object?: Container;
-	organizations?: OrganizationContainer[];
-	organizationalUnits?: OrganizationalUnitContainer[];
-	relatedContainers: Container[];
-	revisions: AnyContainer[];
-	tasks?: TaskContainer[];
-	users?: UserRecord[];
-};
+export type OverlayData =
+	| {
+			key: 'chapters';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
+			key: 'create';
+			container: AnyContainer;
+			isPartOfOptions: AnyContainer[];
+			relatedContainers: Container[];
+	  }
+	| {
+			key: 'edit';
+			container: AnyContainer;
+			isPartOfOptions: AnyContainer[];
+			relatedContainers: Container[];
+	  }
+	| {
+			key: 'edit-help';
+			container: PageContainer;
+	  }
+	| {
+			key: 'indicators';
+			container: AnyContainer;
+			containers: IndicatorContainer[];
+	  }
+	| {
+			key: 'measure-monitoring';
+			container: MeasureContainer;
+			containers: Container[];
+	  }
+	| {
+			key: 'measures';
+			container: AnyContainer;
+			containers: MeasureContainer[];
+	  }
+	| {
+			key: 'members';
+			container: AnyContainer;
+			users: UserRecord[];
+	  }
+	| {
+			key: 'profile';
+			containers: AnyContainer[];
+	  }
+	| {
+			key: 'relate';
+			object: Container;
+	  }
+	| {
+			key: 'relations';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
+			key: 'tasks';
+			container: Container;
+			containers: Container[];
+	  }
+	| {
+			key: 'view';
+			container: AnyContainer;
+			revisions: AnyContainer[];
+			relatedContainers: Container[];
+	  }
+	| {
+			key: 'view-help';
+			container: PageContainer;
+	  };
 
-export const overlay = writable<Overlay>({
-	isPartOfOptions: [],
-	relatedContainers: [],
-	revisions: []
-});
+export const overlay = writable<OverlayData | undefined>();
 
 export const overlayHistory = writable<URLSearchParams[]>([]);
 
@@ -262,16 +309,19 @@ if (browser) {
 				);
 			}
 			overlay.set({
+				key: overlayKey.enum.create,
+				container: newContainer as AnyContainer,
 				isPartOfOptions,
-				relatedContainers: [],
-				revisions: [newContainer] as AnyContainer[]
+				relatedContainers: []
 			});
 		} else if (hashParams.has(overlayKey.enum['view-help'])) {
 			const help = await fetchHelpBySlug(hashParams.get(overlayKey.enum['view-help']) as string);
-			overlay.update((previous) => ({
-				...previous,
-				revisions: [help]
-			}));
+			overlay.set({
+				key: hashParams.has(overlayKey.enum['edit-help'])
+					? overlayKey.enum['edit-help']
+					: overlayKey.enum['view-help'],
+				container: help
+			});
 		} else if (hashParams.has(overlayKey.enum.view)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.view) as string
@@ -287,6 +337,8 @@ if (browser) {
 					fetchRelatedContainers(container.guid, { organization: [container.organization] })
 				]);
 				overlay.set({
+					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
+					container,
 					isPartOfOptions,
 					relatedContainers,
 					revisions
@@ -298,7 +350,9 @@ if (browser) {
 					topic: hashParams.getAll('topic')
 				})) as Container[];
 				overlay.set({
+					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
 					isPartOfOptions: [],
+					container,
 					relatedContainers,
 					revisions
 				});
@@ -321,20 +375,21 @@ if (browser) {
 					})
 				]);
 				overlay.set({
+					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
+					container,
 					isPartOfOptions,
 					relatedContainers,
 					revisions
 				});
 			}
 		} else if (hashParams.has(overlayKey.enum.members)) {
-			const [revisions, users] = await Promise.all([
+			const [revisions, users] = (await Promise.all([
 				fetchContainerRevisions(hashParams.get(overlayKey.enum.members) as string),
 				fetchMembers(hashParams.get(overlayKey.enum.members) as string)
-			]);
+			])) as [Container[], UserRecord[]];
 			overlay.set({
-				isPartOfOptions: [],
-				relatedContainers: [],
-				revisions,
+				key: overlayKey.enum.members,
+				container: revisions[revisions.length - 1],
 				users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {
@@ -342,7 +397,7 @@ if (browser) {
 				hashParams.get(overlayKey.enum.relations) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const relatedContainers = await fetchRelatedContainers(
+			const containers = await fetchRelatedContainers(
 				hashParams.get(overlayKey.enum.relations) as string,
 				{
 					audience: hashParams.has('audienceChanged')
@@ -368,17 +423,13 @@ if (browser) {
 				},
 				hashParams.get('sort') ?? 'alpha'
 			);
-			overlay.set({
-				isPartOfOptions: [],
-				relatedContainers,
-				revisions
-			});
+			overlay.set({ key: overlayKey.enum.relations, container, containers });
 		} else if (hashParams.has(overlayKey.enum.chapters)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.chapters) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const relatedContainers = await fetchRelatedContainers(
+			const containers = (await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					audience: hashParams.has('audienceChanged')
@@ -396,19 +447,15 @@ if (browser) {
 					topic: hashParams.getAll('topic')
 				},
 				hashParams.get('sort') ?? 'alpha'
-			);
-			overlay.set({
-				isPartOfOptions: [],
-				relatedContainers,
-				revisions
-			});
+			)) as Container[];
+			overlay.set({ key: overlayKey.enum.chapters, container, containers });
 		} else if (hashParams.has(overlayKey.enum.measures)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum['measures']) as string
 			);
 			const container = revisions[revisions.length - 1];
-			const measures = (await fetchRelatedContainers(
-				container.guid,
+			const containers = (await fetchRelatedContainers(
+				hashParams.get(overlayKey.enum['measures']) as string,
 				{
 					audience: hashParams.has('audienceChanged')
 						? hashParams.getAll('audience')
@@ -422,19 +469,13 @@ if (browser) {
 				},
 				hashParams.get('sort') ?? 'alpha'
 			)) as MeasureContainer[];
-			overlay.set({
-				isPartOfOptions: [],
-				measures,
-				relatedContainers: [],
-				revisions
-			});
+			overlay.set({ key: overlayKey.enum.measures, container, containers });
 		} else if (hashParams.has(overlayKey.enum['measure-monitoring'])) {
-			const revisions = await fetchContainerRevisions(
+			const revisions = (await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum['measure-monitoring']) as string
-			);
+			)) as MeasureContainer[];
 			const container = revisions[revisions.length - 1];
-
-			const relatedContainers = (await fetchRelatedContainers(
+			const containers = (await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					organization: [container.organization],
@@ -445,17 +486,11 @@ if (browser) {
 				},
 				hashParams.get('sort') ?? 'alpha'
 			)) as Array<MeasureMonitoringContainer | IndicatorContainer>;
-			overlay.set({
-				indicators: relatedContainers.filter(isIndicatorContainer),
-				isPartOfOptions: [],
-				measureElements: relatedContainers.filter(isMeasureMonitoringContainer),
-				relatedContainers: [],
-				revisions
-			});
+			overlay.set({ key: overlayKey.enum['measure-monitoring'], container, containers });
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
-			const revisions = await fetchContainerRevisions(
+			const revisions = (await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.tasks) as string
-			);
+			)) as TaskContainer[];
 			const container = revisions[revisions.length - 1];
 			const containers = await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
@@ -471,16 +506,11 @@ if (browser) {
 				},
 				'priority'
 			);
-			overlay.set({
-				isPartOfOptions: [],
-				relatedContainers: containers.filter((c) => !isTaskContainer(c)),
-				revisions,
-				tasks: containers.filter(isTaskContainer)
-			});
+			overlay.set({ key: overlayKey.enum.tasks, container, containers });
 		} else if (hashParams.has(overlayKey.enum.indicators)) {
-			const revisions = await fetchContainerRevisions(
+			const revisions = (await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.indicators) as string
-			);
+			)) as Container[];
 			const container = revisions[revisions.length - 1];
 			const [relatedContainers, indicators] = await Promise.all([
 				fetchContainers({
@@ -502,37 +532,25 @@ if (browser) {
 				.filter(({ predicate }) => predicate == predicates.enum['is-measured-by'])
 				.map(({ object }) => object);
 			overlay.set({
-				indicators: indicators.filter(
+				key: overlayKey.enum.indicators,
+				container,
+				containers: indicators.filter(
 					({ revision }) =>
 						indicatorsFromObjectives.includes(revision) || indicatorsFromEffects.includes(revision)
-				) as IndicatorContainer[],
-				isPartOfOptions: [],
-				relatedContainers: [],
-				revisions
+				) as IndicatorContainer[]
 			});
 		} else if (hashParams.has(overlayKey.enum.relate)) {
-			const revisions = await fetchContainerRevisions(
+			const revisions = (await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.relate) as string
-			);
-			overlay.set({
-				isPartOfOptions: [],
-				object: revisions[revisions.length - 1] as Container,
-				relatedContainers: [],
-				revisions: []
-			});
+			)) as Container[];
+			overlay.set({ key: overlayKey.enum.relate, object: revisions[revisions.length - 1] });
 		} else if (hashParams.has(overlayKey.enum.profile) && values.data.session) {
-			const relatedContainers = await fetchContainersByUser(
+			const containers = await fetchContainersByUser(
 				hashParams.get(overlayKey.enum.profile) as string
 			);
-			overlay.set({
-				isPartOfOptions: [],
-				organizations: relatedContainers.filter(isOrganizationContainer),
-				organizationalUnits: relatedContainers.filter(isOrganizationalUnitContainer),
-				relatedContainers: relatedContainers.filter(isContainer),
-				revisions: []
-			});
+			overlay.set({ key: overlayKey.enum.profile, containers });
 		} else {
-			overlay.set({ isPartOfOptions: [], relatedContainers: [], revisions: [] });
+			overlay.set(undefined);
 		}
 	});
 }

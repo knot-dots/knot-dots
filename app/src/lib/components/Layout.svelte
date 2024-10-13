@@ -1,11 +1,16 @@
 <script>
 	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
-	import { browser } from '$app/environment';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import ProfileOverlay from '$lib/components/ProfileOverlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import {
+		isContainer,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
+		overlayKey
+	} from '$lib/models';
 	import { overlay } from '$lib/stores';
 
 	const duration = 300;
@@ -23,17 +28,17 @@
 			<slot name="sidebar" />
 		</aside>
 		<slot name="main" />
-		{#if $overlay.revisions[$overlay.revisions.length - 1]}
-			<Overlay {...$overlay} />
-		{:else if $overlay.organizations && $overlay.organizationalUnits}
+		{#if $overlay && $overlay.key === overlayKey.enum.profile}
 			<ProfileOverlay
-				organizations={$overlay.organizations}
-				organizationalUnits={$overlay.organizationalUnits}
-				relatedContainers={$overlay.relatedContainers}
+				organizations={$overlay.containers.filter(isOrganizationContainer)}
+				organizationalUnits={$overlay.containers.filter(isOrganizationalUnitContainer)}
+				relatedContainers={$overlay.containers.filter(isContainer)}
 			/>
+		{:else if $overlay && $overlay.key !== overlayKey.enum.relate}
+			<Overlay data={$overlay} />
 		{/if}
 		<slot name="relationOverlay">
-			{#if $overlay.object}
+			{#if $overlay?.key === overlayKey.enum.relate}
 				<RelationOverlay object={$overlay.object} />
 			{/if}
 		</slot>

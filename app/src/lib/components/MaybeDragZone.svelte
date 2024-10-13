@@ -8,7 +8,8 @@
 		isIndicatorContainer,
 		isMeasureContainer,
 		isMeasureResultContainer,
-		isPartOf
+		isPartOf,
+		overlayKey
 	} from '$lib/models';
 	import type { Container } from '$lib/models';
 	import Card from '$lib/components/Card.svelte';
@@ -50,7 +51,7 @@
 	}
 </script>
 
-{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay.object && $ability.can('relate', $overlay.object)}
+{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relate && $ability.can('relate', $overlay.object)}
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
