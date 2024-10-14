@@ -3,18 +3,17 @@
 	import Card from '$lib/components/Card.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import {
-		hasMember,
 		isAssignedTo,
 		isMeasureContainer,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		isStrategyContainer,
 		isTaskContainer
 	} from '$lib/models';
-	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import type { AnyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 
-	export let containers: Container[];
-	export let organizations: OrganizationContainer[];
-	export let organizationalUnits: OrganizationalUnitContainer[];
+	export let containers: AnyContainer[];
 </script>
 
 <article class="details">
@@ -43,7 +42,7 @@
 	<div class="organizations">
 		<h3>{$_('profile.my_organizations')}</h3>
 		<ul class="carousel">
-			{#each [...organizations, ...organizationalUnits] as organization}
+			{#each containers.filter((c) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c)) as organization}
 				<li>
 					<OrganizationCard --height="100%" container={organization} />
 				</li>

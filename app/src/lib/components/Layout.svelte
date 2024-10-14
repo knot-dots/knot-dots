@@ -3,14 +3,8 @@
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import ProfileOverlay from '$lib/components/ProfileOverlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
-	import {
-		isContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		overlayKey
-	} from '$lib/models';
+	import { overlayKey } from '$lib/models';
 	import { overlay } from '$lib/stores';
 
 	const duration = 300;
@@ -28,13 +22,7 @@
 			<slot name="sidebar" />
 		</aside>
 		<slot name="main" />
-		{#if $overlay && $overlay.key === overlayKey.enum.profile}
-			<ProfileOverlay
-				organizations={$overlay.containers.filter(isOrganizationContainer)}
-				organizationalUnits={$overlay.containers.filter(isOrganizationalUnitContainer)}
-				relatedContainers={$overlay.containers.filter(isContainer)}
-			/>
-		{:else if $overlay && $overlay.key !== overlayKey.enum.relate}
+		{#if $overlay && $overlay.key !== overlayKey.enum.relate}
 			<Overlay data={$overlay} />
 		{/if}
 		<slot name="relationOverlay">
