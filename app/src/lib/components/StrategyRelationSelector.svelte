@@ -175,7 +175,7 @@
 					: []),
 				...container.relation.slice(isPartOfIndex + 1)
 			];
-		} else {
+		} else if (value) {
 			isPartOfOptionsRequest = fetchContainers({
 				isPartOfStrategy: [parseInt(value)],
 				payloadType: allowedSuperordinateTypes
