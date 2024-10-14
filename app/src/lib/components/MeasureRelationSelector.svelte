@@ -12,6 +12,7 @@
 		isMilestoneContainer,
 		isModelContainer,
 		isOperationalGoalContainer,
+		isStrategicGoalContainer,
 		isTaskContainer,
 		isVisionContainer,
 		type MeasureContainer,
@@ -19,7 +20,6 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { isStrategicGoalContainer } from '$lib/models.js';
 
 	export let container: AnyContainer | EmptyContainer;
 
@@ -194,11 +194,6 @@
 					value: revision,
 					label: payload.title,
 					group: $_('payload_group.measurable_goals')
-				})),
-				...isPartOfOptions.filter(isMeasureResultContainer).map(({ payload, revision }) => ({
-					value: revision,
-					label: payload.title,
-					group: $_('measure_results')
 				})),
 				...isPartOfOptions.filter(isMeasureResultContainer).map(({ payload, revision }) => ({
 					value: revision,
