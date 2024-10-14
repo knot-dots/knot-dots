@@ -61,15 +61,17 @@
 			<div>
 				{#if isMeasureResultContainer(container)}
 					{#await $page.data.containers then otherContainers}
-						<Card
-							{container}
-							relatedContainers={[
-								...otherContainers.filter(isIndicatorContainer),
-								...otherContainers.filter(isMeasureContainer),
-								...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
-							]}
-							showRelationFilter
-						/>
+						{#if Array.isArray(otherContainers)}
+							<Card
+								{container}
+								relatedContainers={[
+									...otherContainers.filter(isIndicatorContainer),
+									...otherContainers.filter(isMeasureContainer),
+									...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
+								]}
+								showRelationFilter
+							/>
+						{/if}
 					{/await}
 				{:else}
 					<Card
@@ -88,15 +90,17 @@
 		{#each items as { container }}
 			{#if isMeasureResultContainer(container)}
 				{#await $page.data.containers then otherContainers}
-					<Card
-						{container}
-						relatedContainers={[
-							...otherContainers.filter(isIndicatorContainer),
-							...otherContainers.filter(isMeasureContainer),
-							...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
-						]}
-						showRelationFilter
-					/>
+					{#if Array.isArray(otherContainers)}
+						<Card
+							{container}
+							relatedContainers={[
+								...otherContainers.filter(isIndicatorContainer),
+								...otherContainers.filter(isMeasureContainer),
+								...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
+							]}
+							showRelationFilter
+						/>
+					{/if}
 				{/await}
 			{:else}
 				<Card
