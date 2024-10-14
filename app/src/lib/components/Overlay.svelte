@@ -14,12 +14,7 @@
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
-	import {
-		isContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		overlayKey
-	} from '$lib/models';
+	import { overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 	import ProfileOverlay from '$lib/components/ProfileOverlay.svelte';
 
