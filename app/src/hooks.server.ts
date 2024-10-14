@@ -7,7 +7,6 @@ import { serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import { createFeatureDecisions } from '$lib/features';
 import { predicates } from '$lib/models';
 import {
 	createOrUpdateUser,
@@ -130,7 +129,7 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 		};
 	}
 
-	const features = ['NewMeasureMonitoring', 'NewOnboardingWorkflow', 'NewRelations'];
+	const features = ['NewOnboardingWorkflow', 'NewRelations'];
 	if (event.locals.user.roles.includes('sysadmin')) {
 		features.push('ImportFromCsv');
 	}

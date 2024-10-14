@@ -1,5 +1,4 @@
 import { filterVisible } from '$lib/authorization';
-import { createFeatureDecisions } from '$lib/features';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -30,13 +29,9 @@ export const load = (async ({ locals, url, parent }) => {
 				[predicates.enum['is-part-of']],
 				{
 					type: [
-						...(createFeatureDecisions(locals.features).useNewMeasureMonitoringBoard()
-							? [
-									payloadTypes.enum.effect,
-									payloadTypes.enum.indicator,
-									payloadTypes.enum.measure_result
-								]
-							: []),
+						payloadTypes.enum.effect,
+						payloadTypes.enum.indicator,
+						payloadTypes.enum.measure_result,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.milestone,
 						payloadTypes.enum.task
@@ -54,13 +49,9 @@ export const load = (async ({ locals, url, parent }) => {
 					topics: url.searchParams.getAll('topic'),
 					terms: url.searchParams.get('terms') ?? '',
 					type: [
-						...(createFeatureDecisions(locals.features).useNewMeasureMonitoringBoard()
-							? [
-									payloadTypes.enum.effect,
-									payloadTypes.enum.indicator,
-									payloadTypes.enum.measure_result
-								]
-							: []),
+						payloadTypes.enum.effect,
+						payloadTypes.enum.indicator,
+						payloadTypes.enum.measure_result,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.milestone,
 						payloadTypes.enum.task

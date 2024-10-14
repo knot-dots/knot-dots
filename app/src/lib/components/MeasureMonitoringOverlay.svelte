@@ -1,8 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { createFeatureDecisions } from '$lib/features';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
-	import NewMeasureMonitoring from '$lib/components/NewMeasureMonitoring.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -25,16 +22,9 @@
 		<slot slot="extra" />
 	</Sidebar>
 </aside>
-{#if createFeatureDecisions($page.data.features).useNewMeasureMonitoringBoard()}
-	<NewMeasureMonitoring
-		measures={[container]}
-		containers={containers.filter(isMeasureMonitoringContainer)}
-		indicators={containers.filter(isIndicatorContainer)}
-	/>
-{:else}
-	<MeasureMonitoring
-		{container}
-		containers={containers.filter(isMeasureMonitoringContainer)}
-		indicators={containers.filter(isIndicatorContainer)}
-	/>
-{/if}
+
+<MeasureMonitoring
+	measures={[container]}
+	containers={containers.filter(isMeasureMonitoringContainer)}
+	indicators={containers.filter(isIndicatorContainer)}
+/>
