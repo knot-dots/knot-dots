@@ -6,7 +6,7 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
-		type AnyContainer,
+		type Container,
 		type EmptyContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
@@ -21,10 +21,45 @@
 		predicates
 	} from '$lib/models';
 
-	export let container: AnyContainer | EmptyContainer;
+	export let container: Container | EmptyContainer;
 
-	let isPartOfOptionsRequest: Promise<AnyContainer[]> = new Promise(() => []);
+	let isPartOfOptionsRequest: Promise<Container[]> = new Promise(() => []);
 	let isPartOfMeasureOptionsRequest: Promise<MeasureContainer[]> = new Promise(() => []);
+
+	function createIsPartOfOptionsRequest(
+		container: Container | EmptyContainer
+	): Promise<Container[]> {
+		const measureRevision = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+		)?.object;
+
+		if (isMilestoneContainer(container) && measureRevision) {
+			return fetchContainers({
+				isPartOfMeasure: [measureRevision],
+				payloadType: [payloadTypes.enum.measure_result]
+			}) as Promise<Container[]>;
+		} else if (isTaskContainer(container)) {
+			if (measureRevision) {
+				return fetchContainers({
+					isPartOfMeasure: [measureRevision],
+					payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.milestone]
+				}) as Promise<Container[]>;
+			} else {
+				return fetchContainers({
+					organization: [container.organization],
+					organizationalUnit: container.organizational_unit ? [container.organizational_unit] : [],
+					payloadType: [
+						payloadTypes.enum.model,
+						payloadTypes.enum.operational_goal,
+						payloadTypes.enum.strategic_goal,
+						payloadTypes.enum.vision
+					]
+				}) as Promise<Container[]>;
+			}
+		}
+
+		return new Promise(() => []);
+	}
 
 	onMount(() => {
 		isPartOfMeasureOptionsRequest = fetchContainers({
@@ -35,36 +70,7 @@
 			payloadType: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
 		}) as Promise<MeasureContainer[]>;
 
-		const measureRevision = container.relation.find(
-			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
-		)?.object;
-
-		if (isMilestoneContainer(container)) {
-			if (measureRevision) {
-				isPartOfOptionsRequest = fetchContainers({
-					isPartOfMeasure: [measureRevision],
-					payloadType: [payloadTypes.enum.measure_result]
-				});
-			}
-		} else if (isTaskContainer(container)) {
-			if (measureRevision) {
-				isPartOfOptionsRequest = fetchContainers({
-					isPartOfMeasure: [measureRevision],
-					payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.milestone]
-				});
-			} else {
-				isPartOfOptionsRequest = fetchContainers({
-					organization: [container.organization],
-					organizationalUnit: container.organizational_unit ? [container.organizational_unit] : [],
-					payloadType: [
-						payloadTypes.enum.model,
-						payloadTypes.enum.operational_goal,
-						payloadTypes.enum.strategic_goal,
-						payloadTypes.enum.vision
-					]
-				});
-			}
-		}
+		isPartOfOptionsRequest = createIsPartOfOptionsRequest(container);
 	});
 
 	if (container.relation.length == 0) {
@@ -122,6 +128,8 @@
 				: []),
 			...container.relation.slice(isPartOfMeasureIndex + 1)
 		];
+
+		isPartOfOptionsRequest = createIsPartOfOptionsRequest(container);
 	}
 
 	function onChangeIsPartOf(event: Event) {
