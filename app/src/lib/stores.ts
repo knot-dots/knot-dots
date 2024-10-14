@@ -24,7 +24,6 @@ import {
 	isStrategyContainer,
 	mayDelete,
 	type MeasureContainer,
-	type MeasureMonitoringContainer,
 	type PageContainer,
 	overlayKey,
 	paramsFromFragment,
@@ -196,7 +195,7 @@ export type OverlayData =
 	  }
 	| {
 			key: 'measure-monitoring';
-			container: MeasureContainer;
+			container: AnyContainer;
 			containers: Container[];
 	  }
 	| {
@@ -471,9 +470,9 @@ if (browser) {
 			)) as MeasureContainer[];
 			overlay.set({ key: overlayKey.enum.measures, container, containers });
 		} else if (hashParams.has(overlayKey.enum['measure-monitoring'])) {
-			const revisions = (await fetchContainerRevisions(
+			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum['measure-monitoring']) as string
-			)) as MeasureContainer[];
+			);
 			const container = revisions[revisions.length - 1];
 			const containers = (await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
@@ -482,10 +481,18 @@ if (browser) {
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
 						: {}),
-					terms: hashParams.get('terms') ?? ''
+					terms: hashParams.get('terms') ?? '',
+					payloadType: [
+						payloadTypes.enum.effect,
+						payloadTypes.enum.indicator,
+						payloadTypes.enum.measure,
+						payloadTypes.enum.measure_result,
+						payloadTypes.enum.milestone,
+						payloadTypes.enum.simple_measure
+					]
 				},
 				hashParams.get('sort') ?? 'alpha'
-			)) as Array<MeasureMonitoringContainer | IndicatorContainer>;
+			)) as Container[];
 			overlay.set({ key: overlayKey.enum['measure-monitoring'], container, containers });
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
 			const revisions = (await fetchContainerRevisions(

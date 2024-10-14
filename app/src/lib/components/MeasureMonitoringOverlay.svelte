@@ -4,15 +4,21 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import {
+		type AnyContainer,
 		type Container,
 		isIndicatorContainer,
+		isMeasureContainer,
 		isMeasureMonitoringContainer,
-		type MeasureContainer,
-		type SimpleMeasureContainer
+		isSimpleMeasureContainer
 	} from '$lib/models';
 
-	export let container: MeasureContainer | SimpleMeasureContainer;
+	export let container: AnyContainer;
 	export let containers: Container[];
+
+	$: measures =
+		isMeasureContainer(container) || isSimpleMeasureContainer(container)
+			? [container]
+			: containers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c));
 </script>
 
 <aside>
@@ -24,7 +30,8 @@
 </aside>
 
 <MeasureMonitoring
-	measures={[container]}
+	{measures}
 	containers={containers.filter(isMeasureMonitoringContainer)}
 	indicators={containers.filter(isIndicatorContainer)}
+	showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
 />

@@ -116,18 +116,33 @@
 						<span class="large-only">{$_('measures')}</span>
 					</a>
 				</li>
-				{#if $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
-					<li>
-						<a
-							class="button button-nav"
-							class:is-active={$overlay?.key === overlayKey.enum.indicators}
-							href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
-						>
-							<span class="small-only"><Effects /></span>
-							<span class="large-only">{$_('indicators')}</span>
-						</a>
-					</li>
-				{/if}
+			{/if}
+
+			{#if isMeasureContainer(container) || isSimpleMeasureContainer(container) || isStrategyContainer(container)}
+				<li>
+					<a
+						class="button button-nav"
+						class:is-active={$overlay?.key === overlayKey.enum['measure-monitoring']}
+						href={overlayURL($page.url, overlayKey.enum['measure-monitoring'], container.guid)}
+						title={$_('board.measure_monitoring')}
+					>
+						<span class="small-only"><Objectives /></span>
+						<span class="large-only">{$_('board.measure_monitoring')}</span>
+					</a>
+				</li>
+			{/if}
+
+			{#if isStrategyContainer(container) && $page.data.currentOrganization.payload.boards.includes(boards.enum['board.indicators'])}
+				<li>
+					<a
+						class="button button-nav"
+						class:is-active={$overlay?.key === overlayKey.enum.indicators}
+						href={overlayURL($page.url, overlayKey.enum.indicators, container.guid)}
+					>
+						<span class="small-only"><Effects /></span>
+						<span class="large-only">{$_('indicators')}</span>
+					</a>
+				</li>
 			{/if}
 
 			{#if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
