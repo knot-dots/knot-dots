@@ -223,7 +223,7 @@ export type OverlayData =
 	  }
 	| {
 			key: 'tasks';
-			container: Container;
+			container: AnyContainer;
 			containers: Container[];
 	  }
 	| {
@@ -495,9 +495,9 @@ if (browser) {
 			)) as Container[];
 			overlay.set({ key: overlayKey.enum['measure-monitoring'], container, containers });
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
-			const revisions = (await fetchContainerRevisions(
+			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.tasks) as string
-			)) as TaskContainer[];
+			);
 			const container = revisions[revisions.length - 1];
 			const containers = await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
