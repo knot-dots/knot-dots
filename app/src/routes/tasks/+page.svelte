@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
+	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -62,6 +65,19 @@
 
 	<svelte:fragment slot="main">
 		<Board>
+			{#if data.relatedContainers.length > 0}
+				<BoardColumn
+					--background="white"
+					--border="solid 1px var(--color-gray-900)"
+					title={$_('goals_and_measure_results_and_milestones')}
+				>
+					<div class="vertical-scroll-wrapper masked-overflow">
+						{#each data.relatedContainers as container}
+							<Card {container} showRelationFilter />
+						{/each}
+					</div>
+				</BoardColumn>
+			{/if}
 			{#each columns as column (column.title)}
 				<TaskBoardColumn
 					--background={taskStatusBackgrounds.get(column.title)}
@@ -74,7 +90,10 @@
 						: undefined}
 					items={column.items}
 					status={column.title}
-				/>
+					let:container
+				>
+					<Card {container} showRelationFilter={data.relatedContainers.length > 0} />
+				</TaskBoardColumn>
 			{/each}
 		</Board>
 	</svelte:fragment>
