@@ -231,26 +231,26 @@
 		</div>
 
 		{#if managedBy}
-			{#await fetchMembers(managedBy.guid) then members}
-				{@const headsOf = members
-					.filter((m) => isHeadOf(m, managedBy))
-					.map((m) => displayName(m))
-					.join(', ')}
-				{@const adminsOf = members
-					.filter((m) => isAdminOf(m, managedBy))
-					.map((m) => displayName(m))
-					.join(', ')}
-				<div class="meta">
-					<h3 class="meta-key">{$_('managed_by')}</h3>
+			<div class="meta">
+				<h3 class="meta-key">{$_('managed_by')}</h3>
+				{#await fetchMembers(managedBy.guid) then members}
+					{@const headsOf = members
+						.filter((m) => isHeadOf(m, managedBy))
+						.map((m) => displayName(m))
+						.join(', ')}
+					{@const adminsOf = members
+						.filter((m) => isAdminOf(m, managedBy))
+						.map((m) => displayName(m))
+						.join(', ')}
 					<p class="meta-value">{headsOf ? headsOf : adminsOf}</p>
-				</div>
-			{/await}
+				{/await}
+			</div>
 		{/if}
 
-		{#await organizationMembersRequest then organizationMembers}
-			{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
-			<div class="meta">
-				<h3 class="meta-key">{$_('created_date')}</h3>
+		<div class="meta">
+			<h3 class="meta-key">{$_('created_date')}</h3>
+			{#await organizationMembersRequest then organizationMembers}
+				{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
 				<ul class="meta-value">
 					<li>
 						{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
@@ -267,9 +267,12 @@
 							: $date(revisions[0].valid_from, { format: 'long' })}
 					</li>
 				</ul>
-			</div>
-			<div class="meta">
-				<h3 class="meta-key">{$_('modified_date')}</h3>
+			{/await}
+		</div>
+		<div class="meta">
+			<h3 class="meta-key">{$_('modified_date')}</h3>
+			{#await organizationMembersRequest then organizationMembers}
+				{@const organizationMembersByGuid = new Map(organizationMembers.map((m) => [m.guid, m]))}
 				<ul class="meta-value">
 					<li>
 						{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
@@ -286,8 +289,8 @@
 							: $date(container.valid_from, { format: 'long' })}
 					</li>
 				</ul>
-			</div>
-		{/await}
+			{/await}
+		</div>
 
 		{#if $ability.can('read', container, 'visibility')}
 			<div class="meta">
