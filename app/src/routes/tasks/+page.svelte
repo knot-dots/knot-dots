@@ -11,45 +11,11 @@
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
-	import type { TaskContainer } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-
-	$: columns = [
-		{
-			title: taskStatus.enum['task_status.idea'],
-			payloadType: payloadTypes.enum.task,
-			items: data.containers.filter(
-				(c) => isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.idea']
-			) as TaskContainer[]
-		},
-		{
-			title: taskStatus.enum['task_status.in_planning'],
-			payloadType: payloadTypes.enum.task,
-			items: data.containers.filter(
-				(c) =>
-					isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.in_planning']
-			) as TaskContainer[]
-		},
-		{
-			title: taskStatus.enum['task_status.in_progress'],
-			payloadType: payloadTypes.enum.task,
-			items: data.containers.filter(
-				(c) =>
-					isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.in_progress']
-			) as TaskContainer[]
-		},
-		{
-			title: taskStatus.enum['task_status.done'],
-			payloadType: payloadTypes.enum.task,
-			items: data.containers.filter(
-				(c) => isTaskContainer(c) && c.payload.taskStatus === taskStatus.enum['task_status.done']
-			) as TaskContainer[]
-		}
-	];
 </script>
 
 <Layout>
@@ -78,18 +44,20 @@
 					</div>
 				</BoardColumn>
 			{/if}
-			{#each columns as column (column.title)}
+			{#each taskStatus.options as taskStatusOption}
 				<TaskBoardColumn
-					--background={taskStatusBackgrounds.get(column.title)}
-					--hover-border-color={taskStatusHoverColors.get(column.title)}
+					--background={taskStatusBackgrounds.get(taskStatusOption)}
+					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
 					addItemUrl={$mayCreateContainer(
 						payloadTypes.enum.task,
 						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
 					)
-						? `#create=${column.payloadType}&taskStatus=${column.title}`
+						? `#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`
 						: undefined}
-					items={column.items}
-					status={column.title}
+					items={data.containers
+						.filter(isTaskContainer)
+						.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
+					status={taskStatusOption}
 					let:container
 				>
 					<Card {container} showRelationFilter={data.relatedContainers.length > 0} />
