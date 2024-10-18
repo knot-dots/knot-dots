@@ -488,7 +488,8 @@ if (browser) {
 						payloadTypes.enum.measure,
 						payloadTypes.enum.measure_result,
 						payloadTypes.enum.milestone,
-						payloadTypes.enum.simple_measure
+						payloadTypes.enum.simple_measure,
+						payloadTypes.enum.task
 					]
 				},
 				hashParams.get('sort') ?? 'alpha'
