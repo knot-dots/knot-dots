@@ -376,6 +376,7 @@
 	"resolution_status.draft": "In Ausarbeitung",
 	"resolution_status.in_force": "Gültig",
 	"resolution_status.invalid": "Ungültig",
+	"resolution_status.rejected": "Verworfen",
 	"resource": "Ressource",
 	"resources": "Ressourcen",
 	"role": {
@@ -437,6 +438,7 @@
 	"status.in_implementation": "In Umsetzung",
 	"status.in_operation": "In Betrieb",
 	"status.in_planning": "In Planung",
+	"status.rejected": "Verworfen",
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",
 	"strategies": "Strategien",
@@ -474,7 +476,8 @@
 		"idea": "Idee",
 		"in_planning": "In Planung",
 		"in_progress": "In Umsetzung",
-		"label": "Status"
+		"label": "Status",
+		"rejected": "Verworfen"
 	},
 	"tasks": "Aufgaben",
 	"team": "Team",

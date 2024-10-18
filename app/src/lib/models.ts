@@ -164,7 +164,8 @@ const statusValues = [
 	'status.in_planning',
 	'status.in_implementation',
 	'status.in_operation',
-	'status.done'
+	'status.done',
+	'status.rejected'
 ] as const;
 
 export const status = z.enum(statusValues);
@@ -174,7 +175,8 @@ export type Status = z.infer<typeof status>;
 const resolutionStatusValues = [
 	'resolution_status.draft',
 	'resolution_status.in_force',
-	'resolution_status.invalid'
+	'resolution_status.invalid',
+	'resolution_status.rejected'
 ] as const;
 
 export const resolutionStatus = z.enum(resolutionStatusValues);
@@ -185,7 +187,8 @@ const taskStatusValues = [
 	'task_status.idea',
 	'task_status.in_planning',
 	'task_status.in_progress',
-	'task_status.done'
+	'task_status.done',
+	'task_status.rejected'
 ] as const;
 
 export const taskStatus = z.enum(taskStatusValues);

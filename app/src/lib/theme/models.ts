@@ -7,6 +7,7 @@ import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-solid';
 import ChevronDoubleRight from '~icons/heroicons/chevron-double-right-solid';
 import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
 import Flag from '~icons/heroicons/flag-16-solid';
+import HandThumbDown from '~icons/heroicons/hand-thumb-down-16-solid';
 import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 import Minus from '~icons/heroicons/minus-solid';
 import Pencil from '~icons/heroicons/pencil-16-solid';
@@ -79,7 +80,8 @@ export const statusColors = new Map<Status, string>([
 	[status.enum['status.in_planning'], 'orange'],
 	[status.enum['status.in_implementation'], 'yellow'],
 	[status.enum['status.in_operation'], 'green'],
-	[status.enum['status.done'], 'green']
+	[status.enum['status.done'], 'green'],
+	[status.enum['status.rejected'], 'blue']
 ]);
 
 export const statusBackgrounds = new Map<Status, string>([
@@ -87,7 +89,8 @@ export const statusBackgrounds = new Map<Status, string>([
 	[status.enum['status.in_planning'], 'var(--gradient-in-planning)'],
 	[status.enum['status.in_implementation'], 'var(--gradient-in-implementation)'],
 	[status.enum['status.in_operation'], 'var(--gradient-in-operation)'],
-	[status.enum['status.done'], 'var(--gradient-done)']
+	[status.enum['status.done'], 'var(--gradient-done)'],
+	[status.enum['status.rejected'], 'var(--gradient-rejected)']
 ]);
 
 export const statusHoverColors = new Map<Status, string>([
@@ -95,7 +98,8 @@ export const statusHoverColors = new Map<Status, string>([
 	[status.enum['status.in_planning'], 'var(--color-hover-in-planning)'],
 	[status.enum['status.in_implementation'], 'var(--color-hover-in-implementation)'],
 	[status.enum['status.in_operation'], 'var(--color-hover-in-operation)'],
-	[status.enum['status.done'], 'var(--color-hover-done)']
+	[status.enum['status.done'], 'var(--color-hover-done)'],
+	[status.enum['status.rejected'], 'var(--color-hover-rejected)']
 ]);
 
 export const statusIcons = new Map<Status, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>([
@@ -103,28 +107,32 @@ export const statusIcons = new Map<Status, typeof SvelteComponent<SVGAttributes<
 	[status.enum['status.in_planning'], Pencil],
 	[status.enum['status.in_implementation'], Cog8Tooth],
 	[status.enum['status.in_operation'], Flag],
-	[status.enum['status.done'], CheckCircle]
+	[status.enum['status.done'], CheckCircle],
+	[status.enum['status.rejected'], HandThumbDown]
 ]);
 
 export const taskStatusColors = new Map<TaskStatus, string>([
 	[taskStatus.enum['task_status.idea'], 'red'],
 	[taskStatus.enum['task_status.in_planning'], 'orange'],
 	[taskStatus.enum['task_status.in_progress'], 'yellow'],
-	[taskStatus.enum['task_status.done'], 'green']
+	[taskStatus.enum['task_status.done'], 'green'],
+	[taskStatus.enum['task_status.rejected'], 'blue']
 ]);
 
 export const taskStatusBackgrounds = new Map<TaskStatus, string>([
 	[taskStatus.enum['task_status.idea'], 'var(--gradient-idea)'],
 	[taskStatus.enum['task_status.in_planning'], 'var(--gradient-in-planning)'],
 	[taskStatus.enum['task_status.in_progress'], 'var(--gradient-in-implementation)'],
-	[taskStatus.enum['task_status.done'], 'var(--gradient-done)']
+	[taskStatus.enum['task_status.done'], 'var(--gradient-done)'],
+	[taskStatus.enum['task_status.rejected'], 'var(--gradient-rejected)']
 ]);
 
 export const taskStatusHoverColors = new Map<TaskStatus, string>([
 	[taskStatus.enum['task_status.idea'], 'var(--color-hover-idea)'],
 	[taskStatus.enum['task_status.in_planning'], 'var(--color-hover-in-planning)'],
 	[taskStatus.enum['task_status.in_progress'], 'var(--color-hover-in-implementation)'],
-	[taskStatus.enum['task_status.done'], 'var(--color-hover-done)']
+	[taskStatus.enum['task_status.done'], 'var(--color-hover-done)'],
+	[taskStatus.enum['task_status.rejected'], 'var(--color-hover-rejected)']
 ]);
 
 export const taskStatusIcons = new Map<
@@ -134,25 +142,29 @@ export const taskStatusIcons = new Map<
 	[taskStatus.enum['task_status.idea'], LightBulb],
 	[taskStatus.enum['task_status.in_planning'], Pencil],
 	[taskStatus.enum['task_status.in_progress'], Cog8Tooth],
-	[taskStatus.enum['task_status.done'], Flag]
+	[taskStatus.enum['task_status.done'], Flag],
+	[taskStatus.enum['task_status.rejected'], HandThumbDown]
 ]);
 
 export const resolutionStatusColors = new Map<ResolutionStatus, string>([
 	[resolutionStatus.enum['resolution_status.draft'], 'yellow'],
 	[resolutionStatus.enum['resolution_status.in_force'], 'green'],
-	[resolutionStatus.enum['resolution_status.invalid'], 'red']
+	[resolutionStatus.enum['resolution_status.invalid'], 'red'],
+	[resolutionStatus.enum['resolution_status.rejected'], 'blue']
 ]);
 
 export const resolutionStatusBackgrounds = new Map<ResolutionStatus, string>([
 	[resolutionStatus.enum['resolution_status.draft'], 'var(--gradient-in-implementation)'],
 	[resolutionStatus.enum['resolution_status.in_force'], 'var(--gradient-done)'],
-	[resolutionStatus.enum['resolution_status.invalid'], 'var(--gradient-idea)']
+	[resolutionStatus.enum['resolution_status.invalid'], 'var(--gradient-idea)'],
+	[resolutionStatus.enum['resolution_status.rejected'], 'var(--gradient-rejected)']
 ]);
 
 export const resolutionStatusHoverColors = new Map<ResolutionStatus, string>([
 	[resolutionStatus.enum['resolution_status.draft'], 'var(--color-hover-in-implementation)'],
 	[resolutionStatus.enum['resolution_status.in_force'], 'var(--color-hover-done)'],
-	[resolutionStatus.enum['resolution_status.invalid'], 'var(--color-hover-idea)']
+	[resolutionStatus.enum['resolution_status.invalid'], 'var(--color-hover-idea)'],
+	[resolutionStatus.enum['resolution_status.rejected'], 'var(--color-hover-rejected)']
 ]);
 
 export const resolutionStatusIcons = new Map<
@@ -161,5 +173,6 @@ export const resolutionStatusIcons = new Map<
 >([
 	[resolutionStatus.enum['resolution_status.draft'], Cog8Tooth],
 	[resolutionStatus.enum['resolution_status.in_force'], Flag],
-	[resolutionStatus.enum['resolution_status.invalid'], XCircle]
+	[resolutionStatus.enum['resolution_status.invalid'], XCircle],
+	[resolutionStatus.enum['resolution_status.rejected'], HandThumbDown]
 ]);

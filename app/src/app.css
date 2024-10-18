@@ -91,12 +91,18 @@
 		rgba(70, 190, 203, 0.15) 40.28%,
 		rgba(110, 218, 166, 0.15) 100%
 	);
+	--gradient-rejected: linear-gradient(
+			90deg,
+			rgba(40, 169, 231, 0.15) 0%,
+			rgba(32, 164, 238, 0.15) 100%
+	);
 	--color-hover-neutral: #b4e1f7;
 	--color-hover-idea: rgba(218, 75, 96, 0.35);
 	--color-hover-in-planning: rgba(241, 140, 95, 0.35);
 	--color-hover-in-implementation: rgb(252, 205, 108, 0.35);
 	--color-hover-in-operation: rgba(168, 234, 152, 0.35);
 	--color-hover-done: rgba(110, 218, 166, 0.35);
+	--color-hover-rejected: rgba(40, 169, 231, 0.35);
 
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
 	--shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
