@@ -149,18 +149,6 @@
 				<li>
 					<a
 						class="button button-nav"
-						class:is-active={$overlay?.key === overlayKey.enum['measure-monitoring']}
-						href={overlayURL($page.url, overlayKey.enum['measure-monitoring'], container.guid)}
-						title={$_('board.measure_monitoring')}
-					>
-						<span class="small-only"><Objectives /></span>
-						<span class="large-only">{$_('board.measure_monitoring')}</span>
-					</a>
-				</li>
-
-				<li>
-					<a
-						class="button button-nav"
 						class:is-active={$overlay?.key === overlayKey.enum.tasks}
 						href={overlayURL($page.url, overlayKey.enum.tasks, container.guid)}
 						title={$_('tasks')}
