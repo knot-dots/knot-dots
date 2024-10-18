@@ -513,11 +513,9 @@ function prepareWhereCondition(filters: {
 		);
 	}
 	if (filters.template) {
-		conditions.push(sql.fragment`(payload->'template')::boolean`);
+		conditions.push(sql.fragment`payload @> '{"template": true}'`);
 	} else {
-		conditions.push(
-			sql.fragment`(NOT (payload->'template')::boolean OR payload->'template' IS NULL)`
-		);
+		conditions.push(sql.fragment`(payload @> '{"template": false}' OR NOT payload ? 'template')`);
 	}
 	if (filters.terms?.trim()) {
 		conditions.push(
