@@ -219,8 +219,11 @@
 				<div class="meta-value">
 					<ListBox
 						{options}
-						value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])
-							?.object}
+						value={container.relation.find(
+							(r) =>
+								r.predicate === predicates.enum['is-part-of'] &&
+								('revision' in container ? r.subject === container.revision : true)
+						)?.object}
 						on:change={onChangeIsPartOf}
 					/>
 				</div>
