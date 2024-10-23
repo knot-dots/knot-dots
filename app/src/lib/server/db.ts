@@ -960,6 +960,10 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 
 export function getAllContainersRelatedToIndicators(containers: IndicatorContainer[]) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		if (containers.length == 0) {
+			return [];
+		}
+
 		const objectiveAndEffectResult = await connection.any(sql.typeAlias('revision')`
 			SELECT c.revision
 			FROM container c
