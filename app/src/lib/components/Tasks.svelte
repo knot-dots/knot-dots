@@ -56,7 +56,7 @@
 			status={taskStatusOption}
 			let:container
 		>
-			<Card {container} showRelationFilter={relatedContainers.length > 0} />
+			<Card {container} showRelationFilter />
 		</TaskBoardColumn>
 	{/each}
 </Board>
