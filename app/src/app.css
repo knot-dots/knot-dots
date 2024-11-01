@@ -247,25 +247,25 @@ td {
 }
 
 /* Focus styles */
-:is(a, button, input, select, summary, textarea, .focus-indicator) {
+:is(a, button, input, select, summary, textarea, [contenteditable], .focus-indicator) {
 	--outline-color: var(--focus-color, currentColor);
 	--outline-offset: -1px;
 	--outline-size: max(3px, 0.08em);
 	--outline-style: solid;
 }
 
-:is(a, button, input, select, summary, textarea):focus,
+:is(a, button, input, select, summary, textarea, [contenteditable]):focus,
 .focus-indicator:focus-within {
 	outline: var(--outline-size) var(--outline-style) var(--outline-color);
 	outline-offset: var(--outline-offset);
 }
 
-:is(a, button, input, select, summary, textarea):focus-visible {
+:is(a, button, input, select, summary, textarea, [contenteditable]):focus-visible {
 	outline: var(--outline-size) var(--outline-style) var(--outline-color);
 	outline-offset: var(--outline-offset);
 }
 
-:is(a, button, input, select, summary, textarea):focus:not(:focus-visible) {
+:is(a, button, input, select, summary, textarea, [contenteditable]):focus:not(:focus-visible) {
 	/* Removes the regular focus styles for browsers that support :focus-visible */
 	outline: none;
 }
@@ -812,6 +812,43 @@ label > input[type='checkbox'].toggle {
 	margin-bottom: 0.875rem;
 }
 
+.details-editable {
+	padding-left: 4rem;
+}
+
+.details-editable .details-tab {
+	gap: 0.5rem;
+}
+
+.details-editable h2 {
+	border-radius: 8px;
+	min-height: calc(1.5em + 1.5rem);
+	padding: 0.75rem 1rem;
+}
+
+.details-editable h3 {
+	margin-bottom: 0;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+.details-editable [contenteditable='plaintext-only'] {
+	background-color: var(--color-gray-050);
+}
+
+.details-editable .markdown-body {
+	min-height: 3rem;
+	padding: 0.75rem 1rem;
+}
+
+.details-editable .markdown-body > :first-child {
+	margin-top: 0;
+}
+
+.details-editable .markdown-body > :last-child {
+	margin-bottom: 0;
+}
+
 .meta {
 	display: flex;
 	flex-direction: row;
@@ -834,6 +871,28 @@ label > input[type='checkbox'].toggle {
 .meta-value > svg {
 	display: inline;
 	vertical-align: top;
+}
+
+.tabular {
+	align-items: baseline;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	padding: 0 1rem;
+}
+
+.tabular > *:nth-child(1) {
+	flex: 0 1 calc(40rem * 999 - 100% * 999);
+	min-width: 10rem;
+}
+
+.tabular > *:nth-child(2) {
+	flex: 1 1 calc(40rem * 999 - 100% * 999);
+	min-width: 1px;
+}
+
+.value {
+	padding: 0.75rem 1rem;
 }
 
 /* Markdown editor and viewer */
@@ -978,7 +1037,38 @@ label > input[type='checkbox'].toggle {
 	width: 19.5rem;
 }
 
+/* Dropdown */
+.dropdown-button {
+	--button-active-background: var(--color-gray-050);
+	--button-hover-background: var(--color-gray-050);
+	--button-background: var(--color-gray-050);
+}
+
+.dropdown-panel {
+	background-color: white;
+	max-height: 20rem;
+	overflow-x: hidden;
+	overflow-y: auto;
+	position: absolute;
+	z-index: 1;
+}
+
+.dropdown-reference {
+	position: relative;
+}
+
 /* Utility classes */
 .is-hidden {
 	display: none;
+}
+
+.is-visually-hidden {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
 }
