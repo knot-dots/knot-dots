@@ -14,6 +14,7 @@ export type ContainerFormTabKey = ContainerDetailViewTabKey;
 export type ApplicationState = {
 	containerDetailView: {
 		activeTab?: ContainerDetailViewTabKey;
+		editable?: boolean;
 		tabs: Array<ContainerDetailViewTabKey>;
 	};
 	containerForm: {

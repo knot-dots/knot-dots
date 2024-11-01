@@ -1,0 +1,41 @@
+<script context="module">
+	let counter = 0;
+</script>
+
+<script lang="ts">
+	import { _, number } from 'svelte-i18n';
+
+	export let editable = false;
+	export let label: string;
+	export let value: number | undefined;
+
+	let id = `number-${counter++}`;
+</script>
+
+<p class="tabular">
+	{#if editable}
+		<label for={id}>
+			{label}
+		</label>
+		<span><input {id} type="number" bind:value /></span>
+	{:else}
+		<span class="label">{label}</span>
+		<span class="value">
+			{#if value}
+				{$number(value)}
+			{:else}
+				&nbsp;
+			{/if}
+		</span>
+	{/if}
+</p>
+
+<style>
+	input[type='number'] {
+		border: none;
+		display: inline-flex;
+		line-height: 1.5;
+		max-height: 3rem;
+		width: auto;
+	}
+</style>

@@ -41,7 +41,8 @@ import {
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
-		tabs: []
+		tabs: [],
+		editable: false
 	},
 	containerForm: {
 		tabs: []
@@ -306,6 +307,10 @@ if (browser) {
 					organizationalUnit?.guid ?? null
 				);
 			}
+			applicationState.update((state) => ({
+				...state,
+				containerDetailView: { ...state.containerDetailView, editable: true }
+			}));
 			overlay.set({
 				key: overlayKey.enum.create,
 				container: newContainer as AnyContainer,
