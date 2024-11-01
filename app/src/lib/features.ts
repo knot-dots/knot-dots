@@ -11,6 +11,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useImportFromCsv() {
 			return features.includes('ImportFromCsv');
+		},
+		useEditableDetailView() {
+			return features.includes('NewEditingExperience');
 		}
 	};
 }
