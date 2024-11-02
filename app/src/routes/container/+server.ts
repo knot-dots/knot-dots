@@ -4,8 +4,8 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
+	type AnyContainer,
 	audience,
-	type Container,
 	createCopyOf,
 	indicatorCategories,
 	type IndicatorContainer,
@@ -35,7 +35,8 @@ import {
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToStrategy,
 	getAllRelatedContainers,
-	getManyContainers
+	getManyContainers,
+	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -74,7 +75,7 @@ export const GET = (async ({ locals, url }) => {
 		error(400, { message: parseResult.error.message });
 	}
 
-	let containers: Container[];
+	let containers: AnyContainer[];
 
 	if (parseResult.data.isPartOfStrategy.length > 0) {
 		containers = await locals.pool.connect(
@@ -109,6 +110,14 @@ export const GET = (async ({ locals, url }) => {
 				)
 			);
 		}
+	} else if (parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit)) {
+		containers = await locals.pool.connect(
+			getManyOrganizationalUnitContainers(
+				parseResult.data.organization.length > 0
+					? { organization: parseResult.data.organization[0] }
+					: {}
+			)
+		);
 	} else {
 		containers = await locals.pool.connect(
 			getManyContainers(

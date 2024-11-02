@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import fetchIsPartOfOptions from '$lib/client/fetchIsPartOfOptions';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
@@ -28,10 +28,10 @@
 
 	$: organization = container.organization;
 
-	$: isPartOfOptionsRequest = fetchIsPartOfOptions(
-		organization,
-		payloadTypes.enum.organizational_unit
-	) as Promise<OrganizationalUnitContainer[]>;
+	$: isPartOfOptionsRequest = fetchContainers({
+		organization: [organization],
+		payloadType: [payloadTypes.enum.organizational_unit]
+	}) as Promise<OrganizationalUnitContainer[]>;
 
 	$: filterByLevel = ({ payload }: OrganizationalUnitContainer) =>
 		container.payload.level === payload.level + 1;

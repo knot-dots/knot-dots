@@ -718,63 +718,6 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 	};
 }
 
-export function maybePartOf(organizationOrOrganizationalUnit: string, containerType: PayloadType) {
-	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
-		let candidateType: PayloadType[];
-		if (containerType == 'model') {
-			candidateType = ['strategy'];
-		} else if (containerType == 'strategic_goal') {
-			candidateType = ['model'];
-		} else if (containerType == 'operational_goal') {
-			candidateType = ['strategic_goal'];
-		} else if (containerType == 'measure') {
-			candidateType = ['operational_goal'];
-		} else if (containerType == 'text') {
-			candidateType = ['model', 'operational_goal', 'strategic_goal', 'strategy'];
-		} else if (containerType == 'measure_result') {
-			candidateType = ['vision'];
-		} else if (containerType == 'milestone') {
-			candidateType = ['measure_result'];
-		} else if (containerType == 'task') {
-			candidateType = ['milestone'];
-		} else if (containerType == 'organizational_unit') {
-			candidateType = ['organizational_unit'];
-		} else {
-			return [];
-		}
-
-		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
-			SELECT *
-			FROM container
-			WHERE (organization = ${organizationOrOrganizationalUnit} OR organizational_unit = ${organizationOrOrganizationalUnit})
-			  AND payload->>'type' IN (${sql.join(candidateType, sql.fragment`,`)})
-			  AND valid_currently
-				AND NOT deleted
-			ORDER BY payload->>'name' ASC, payload->>'title' ASC
-		`);
-
-		const userResult =
-			containerResult.length > 0
-				? await connection.any(sql.typeAlias('userRelationWithObject')`
-					SELECT *
-					FROM container_user
-					WHERE object IN (${sql.join(
-						containerResult.map((c) => c.revision),
-						sql.fragment`, `
-					)})
-				`)
-				: [];
-
-		return containerResult.map((c) => ({
-			...c,
-			relation: [],
-			user: userResult
-				.filter((u) => u.object === c.revision)
-				.map(({ predicate, subject }) => ({ predicate, subject }))
-		}));
-	};
-}
-
 export function getAllRelatedContainers(
 	organizations: string[],
 	guid: string,
