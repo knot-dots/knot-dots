@@ -234,6 +234,7 @@ export const POST = (async ({ locals, request }) => {
 										)
 									)?.revision as number
 								}))
+								.filter(({ object }) => object !== undefined)
 						);
 
 						copyContainer.user.push({
@@ -277,6 +278,7 @@ export const POST = (async ({ locals, request }) => {
 										)
 									)?.revision as number
 								}))
+								.filter(({ object }) => object !== undefined)
 						);
 
 						copyContainer.user.push({
@@ -355,6 +357,7 @@ export const POST = (async ({ locals, request }) => {
 										)
 									)?.revision as number
 								}))
+								.filter(({ object }) => object !== undefined)
 						);
 
 						copyContainer.user.push({
