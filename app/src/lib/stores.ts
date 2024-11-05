@@ -36,8 +36,7 @@ import {
 	status,
 	type TaskStatus,
 	taskStatus,
-	type User as UserRecord,
-	type TaskContainer
+	type User as UserRecord
 } from '$lib/models';
 
 export const applicationState = writable<ApplicationState>({
@@ -436,9 +435,6 @@ if (browser) {
 						: [audience.enum['audience.public'], audience.enum['audience.organization']],
 					category: hashParams.getAll('category'),
 					organization: [container.organization],
-					...(container.organizational_unit
-						? { organizationalUnit: [container.organizational_unit] }
-						: undefined),
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
 						: {}),
