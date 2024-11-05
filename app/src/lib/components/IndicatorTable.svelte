@@ -11,7 +11,8 @@
 		isObjectiveContainer,
 		predicates,
 		status,
-		findOverallObjective
+		findOverallObjective,
+		findAncestors
 	} from '$lib/models';
 
 	export let container: IndicatorContainer;
@@ -102,27 +103,22 @@
 		measureContainers = relatedContainers.filter(isContainerWithEffect);
 
 		effects = effectContainers
-			.map(({ payload, revision }) => {
-				const measure = measureContainers.find(({ relation }) =>
-					relation.find(
-						({ predicate, subject }) =>
-							predicate == predicates.enum['is-part-of'] && subject == revision
-					)
-				);
+			.map((c) => {
+				const measure = findAncestors(c, relatedContainers).find(isContainerWithEffect);
 				return {
 					indicator: container.guid,
-					values: payload.plannedValues
+					values: c.payload.plannedValues
 						.map(([year, value], index) => ({
 							Year: year,
 							Value:
 								measure?.payload.status == status.enum['status.in_implementation'] &&
-								payload.achievedValues[index]
-									? value - payload.achievedValues[index][1]
+								c.payload.achievedValues[index]
+									? value - c.payload.achievedValues[index][1]
 									: value,
 							Status: measure?.payload.status as string
 						}))
 						.concat(
-							payload.achievedValues.map(([year, value]) => ({
+							c.payload.achievedValues.map(([year, value]) => ({
 								Year: year,
 								Value: value,
 								Status: status.enum['status.done'] as string
