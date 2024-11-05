@@ -10,10 +10,10 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
+		isContainerWithEffect,
 		isContainerWithObjective,
 		isEffectContainer,
 		isIndicatorContainer,
-		isMeasureContainer,
 		isMeasureResultContainer,
 		isObjectiveContainer,
 		isPartOf,
@@ -185,7 +185,7 @@
 					...relatedContainers.filter(({ relation }) =>
 						relation.some(({ object }) => object === container.revision)
 					),
-					...relatedContainers.filter(isMeasureContainer),
+					...relatedContainers.filter(isContainerWithEffect),
 					...relatedContainers.filter(isMeasureResultContainer),
 					...relatedContainers.filter(isContainerWithObjective)
 				]}

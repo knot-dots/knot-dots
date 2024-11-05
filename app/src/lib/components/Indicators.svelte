@@ -4,9 +4,9 @@
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
+		isContainerWithEffect,
 		isContainerWithObjective,
 		isIndicatorContainer,
-		isMeasureContainer,
 		isMeasureResultContainer,
 		payloadTypes
 	} from '$lib/models';
@@ -30,7 +30,7 @@
 				...containers.filter(({ relation }) =>
 					relation.some(({ object }) => object === container.revision)
 				),
-				...containers.filter(isMeasureContainer),
+				...containers.filter(isContainerWithEffect),
 				...containers.filter(isMeasureResultContainer),
 				...containers.filter(isContainerWithObjective)
 			]}

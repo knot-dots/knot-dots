@@ -94,7 +94,7 @@
 
 			effects = effectContainers
 				.map((c) => {
-					const measure = findAncestors(c, relatedContainers).find(isMeasureContainer);
+					const measure = findAncestors(c, relatedContainers).find(isContainerWithEffect);
 					return {
 						indicator: container.guid,
 						values: c.payload.plannedValues

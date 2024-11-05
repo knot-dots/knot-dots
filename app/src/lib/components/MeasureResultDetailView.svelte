@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _, date } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { goto } from '$app/navigation';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
@@ -8,10 +8,10 @@
 	import {
 		type AnyContainer,
 		type Container,
-		isMeasureContainer,
+		type ContainerWithEffect,
+		isContainerWithEffect,
 		isPartOf,
 		isPartOfMeasure,
-		type MeasureContainer,
 		type MeasureResultContainer,
 		overlayKey,
 		payloadTypes
@@ -25,12 +25,12 @@
 	export let revisions: AnyContainer[];
 
 	$: measure = relatedContainers
-		.filter(isMeasureContainer)
+		.filter(isContainerWithEffect)
 		.find((rc) => isPartOfMeasure(rc)(container));
 
 	$: effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container));
 
-	async function addEffect(target: MeasureResultContainer, measure: MeasureContainer) {
+	async function addEffect(target: MeasureResultContainer, measure: ContainerWithEffect) {
 		const params = new URLSearchParams([
 			[overlayKey.enum.create, payloadTypes.enum.indicator],
 			['alreadyInUse', '']
