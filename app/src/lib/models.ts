@@ -593,9 +593,9 @@ const strategyPayload = basePayload
 	.extend({
 		chapterType: z.array(payloadTypes).default(chapterTypeOptions),
 		image: z.string().url().optional(),
-		level: levels,
+		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
-		strategyType: strategyTypes,
+		strategyType: strategyTypes.default(strategyTypes.enum['strategy_type.misc']),
 		type: z.literal(payloadTypes.enum.strategy)
 	})
 	.strict();
