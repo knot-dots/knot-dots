@@ -445,6 +445,7 @@
 	"strategy_type": {
 		"isek": "Integrated urban development concept",
 		"label": "Strategy type",
+		"misc": "Miscellaneous",
 		"mobility": "Mobility",
 		"smart_city": "Smart city",
 		"sustainability": "Sustainability"

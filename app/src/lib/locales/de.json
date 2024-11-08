@@ -446,6 +446,7 @@
 	"strategy_type": {
 		"isek": "ISEK",
 		"label": "Art der Strategie",
+		"misc": "Sonstige",
 		"mobility": "Mobilität",
 		"smart_city": "Smart City",
 		"sustainability": "Nachhaltigkeit"

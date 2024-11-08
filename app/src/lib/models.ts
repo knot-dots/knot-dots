@@ -196,6 +196,7 @@ export const taskStatus = z.enum(taskStatusValues);
 export type TaskStatus = z.infer<typeof taskStatus>;
 
 const strategyTypeValues = [
+	'strategy_type.misc',
 	'strategy_type.mobility',
 	'strategy_type.sustainability',
 	'strategy_type.smart_city',
