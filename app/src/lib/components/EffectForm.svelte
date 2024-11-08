@@ -3,8 +3,8 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import {
 		type EffectContainer,
+		isContainerWithEffect,
 		isIndicatorContainer,
-		isMeasureContainer,
 		predicates
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -143,7 +143,7 @@
 		</table>
 		{#await relatedContainerRequest then containers}
 			{@const indicator = containers.find(isIndicatorContainer)}
-			{@const measure = containers.find(isMeasureContainer)}
+			{@const measure = containers.find(isContainerWithEffect)}
 			{#if indicator && measure}
 				<IndicatorChart container={indicator} relatedContainers={containers} showEffects />
 			{/if}

@@ -4,9 +4,9 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import {
+		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
-		isMeasureContainer,
 		isMeasureResultContainer,
 		isPartOf,
 		overlayKey
@@ -67,7 +67,7 @@
 								{container}
 								relatedContainers={[
 									...otherContainers.filter(isIndicatorContainer),
-									...otherContainers.filter(isMeasureContainer),
+									...otherContainers.filter(isContainerWithEffect),
 									...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
 								]}
 								showRelationFilter
@@ -96,7 +96,7 @@
 							{container}
 							relatedContainers={[
 								...otherContainers.filter(isIndicatorContainer),
-								...otherContainers.filter(isMeasureContainer),
+								...otherContainers.filter(isContainerWithEffect),
 								...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
 							]}
 							showRelationFilter
