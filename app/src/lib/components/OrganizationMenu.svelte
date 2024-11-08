@@ -106,7 +106,7 @@
 					$page.data.organizationalUnits
 				).find(({ payload }) => payload.image);
 				if (firstAncestorWithImage?.payload.image) {
-					logo = firstAncestorWithImage?.payload.image;
+					logo = firstAncestorWithImage.payload.image;
 				} else if ($page.data.currentOrganization.payload.image) {
 					logo = $page.data.currentOrganization.payload.image;
 				}
