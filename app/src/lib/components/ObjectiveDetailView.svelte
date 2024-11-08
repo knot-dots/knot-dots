@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import { isIndicatorContainer, predicates } from '$lib/models';
 	import type { AnyContainer, Container, ObjectiveContainer } from '$lib/models';
 
@@ -24,6 +25,13 @@
 	<svelte:fragment slot="data">
 		{#if indicator}
 			<IndicatorChart container={indicator} {relatedContainers} showObjectives />
+		{/if}
+
+		{#if container.payload.description}
+			<div class="description">
+				<h3>{$_('description')}</h3>
+				<Viewer value={container.payload.description} />
+			</div>
 		{/if}
 	</svelte:fragment>
 
