@@ -16,6 +16,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import {
 		findAncestors,
+		findDescendants,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type OrganizationalUnitContainer,
@@ -49,6 +50,23 @@
 	let landingPageURL: string;
 
 	$: {
+		let organizationalUnits = $page.data.organizationalUnits.filter(
+			(c: OrganizationalUnitContainer) =>
+				selectedContext
+					? selectedContext.guid != currentContext.guid
+						? c.organization == selectedContext.organization
+						: true
+					: true
+		);
+
+		if (selectedContext && isOrganizationalUnitContainer(selectedContext)) {
+			organizationalUnits = [
+				selectedContext,
+				...findAncestors(selectedContext, organizationalUnits),
+				...findDescendants(selectedContext, organizationalUnits)
+			];
+		}
+
 		organizationalUnitsByLevel = [];
 
 		if ('default' in currentContext.payload && currentContext.payload.default) {
@@ -68,15 +86,7 @@
 			for (const level of [1, 2, 3, 4]) {
 				organizationalUnitsByLevel = [
 					...organizationalUnitsByLevel,
-					$page.data.organizationalUnits
-						.filter((c: OrganizationalUnitContainer) => c.payload.level === level)
-						.filter((c: OrganizationalUnitContainer) =>
-							selectedContext
-								? selectedContext.guid != currentContext.guid
-									? c.organization == selectedContext.organization
-									: true
-								: true
-						)
+					organizationalUnits.filter(({ payload }) => payload.level === level)
 				];
 			}
 		} else {
@@ -105,11 +115,7 @@
 			for (const level of [1, 2, 3, 4]) {
 				organizationalUnitsByLevel = [
 					...organizationalUnitsByLevel,
-					$page.data.organizationalUnits
-						.filter((c: OrganizationalUnitContainer) => c.payload.level === level)
-						.filter((c: OrganizationalUnitContainer) =>
-							selectedContext ? c.organization == selectedContext.organization : true
-						)
+					organizationalUnits.filter(({ payload }) => payload.level === level)
 				];
 			}
 		}
