@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import {
 		type EffectContainer,
 		isContainerWithEffect,
 		isIndicatorContainer,
+		isMeasureResultContainer,
 		predicates
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 
 	export let container: EffectContainer;
 
@@ -143,8 +144,13 @@
 		{#await relatedContainerRequest then containers}
 			{@const indicator = containers.find(isIndicatorContainer)}
 			{@const measure = containers.find(isContainerWithEffect)}
-			{#if indicator && measure}
-				<IndicatorChart container={indicator} relatedContainers={containers} showEffects />
+			{@const measureResult = containers.find(isMeasureResultContainer)}
+			{#if indicator && measure && measureResult}
+				<IndicatorChart
+					container={indicator}
+					relatedContainers={[measure, measureResult, container]}
+					showEffects
+				/>
 			{/if}
 		{/await}
 	</div>
