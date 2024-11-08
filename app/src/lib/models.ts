@@ -622,11 +622,13 @@ const measureMonitoringBasePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
-const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).extend({
-	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	type: z.literal(payloadTypes.enum.effect)
-});
+const effectPayload = measureMonitoringBasePayload
+	.omit({ description: true, summary: true })
+	.extend({
+		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		type: z.literal(payloadTypes.enum.effect)
+	});
 
 const initialEffectPayload = effectPayload.partial({ title: true });
 

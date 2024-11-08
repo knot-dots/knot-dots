@@ -34,13 +34,6 @@
 		{#if indicator}
 			<IndicatorChart container={indicator} {relatedContainers} showEffects />
 		{/if}
-
-		{#if container.payload.description}
-			<div class="description">
-				<h3>{$_('description')}</h3>
-				<Viewer value={container.payload.description} />
-			</div>
-		{/if}
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">

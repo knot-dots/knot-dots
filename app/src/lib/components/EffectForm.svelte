@@ -10,7 +10,6 @@
 	import { applicationState } from '$lib/stores';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import Editor from '$lib/components/Editor.svelte';
 
 	export let container: EffectContainer;
 
@@ -149,10 +148,6 @@
 			{/if}
 		{/await}
 	</div>
-
-	{#key container.guid}
-		<Editor label={$_('description')} bind:value={container.payload.description} />
-	{/key}
 </fieldset>
 
 <style>
