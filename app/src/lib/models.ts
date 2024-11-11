@@ -601,8 +601,6 @@ const strategyPayload = basePayload
 	.strict();
 
 const initialStrategyPayload = strategyPayload.partial({
-	level: true,
-	strategyType: true,
 	title: true
 });
 
