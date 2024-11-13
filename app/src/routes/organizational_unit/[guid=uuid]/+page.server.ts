@@ -1,8 +1,9 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
+import { type IndicatorContainer, isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
 import {
+	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
 	getManyContainers
@@ -46,8 +47,13 @@ export const load = (async ({ params, locals }) => {
 		)
 	]);
 
+	const relatedContainers = await locals.pool.connect(
+		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[])
+	);
+
 	return {
 		container,
+		containersRelatedToIndicators: filterVisible(relatedContainers, locals.user),
 		indicators: filterVisible(indicators, locals.user),
 		measures: filterVisible(measures, locals.user),
 		strategies: filterVisible(strategies, locals.user)

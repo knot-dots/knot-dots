@@ -1,8 +1,12 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { isOrganizationContainer, payloadTypes } from '$lib/models';
-import { getContainerByGuid, getManyContainers } from '$lib/server/db';
+import { type IndicatorContainer, isOrganizationContainer, payloadTypes } from '$lib/models';
+import {
+	getAllContainersRelatedToIndicators,
+	getContainerByGuid,
+	getManyContainers
+} from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params, locals }) => {
@@ -28,9 +32,14 @@ export const load = (async ({ params, locals }) => {
 		)
 	]);
 
+	const relatedContainers = await locals.pool.connect(
+		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[])
+	);
+
 	return {
 		container,
 		indicators: filterVisible(indicators, locals.user),
+		containersRelatedToIndicators: filterVisible(relatedContainers, locals.user),
 		measures: filterVisible(measures, locals.user),
 		strategies: filterVisible(strategies, locals.user)
 	};

@@ -3,10 +3,18 @@
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import Card from '$lib/components/Card.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import type { Container, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import {
+		type Container,
+		isContainerWithEffect,
+		isContainerWithObjective,
+		isMeasureResultContainer,
+		type OrganizationalUnitContainer,
+		type OrganizationContainer
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	export let container: OrganizationContainer | OrganizationalUnitContainer;
+	export let containersRelatedToIndicators: Container[];
 	export let indicators: Container[];
 	export let measures: Container[];
 	export let strategies: Container[];
@@ -43,8 +51,16 @@
 			<h3>{$_('indicators')}</h3>
 			<ul class="carousel">
 				{#each indicators as indicator}
+					{@const relatedContainers = [
+						...containersRelatedToIndicators.filter(({ relation }) =>
+							relation.some(({ object }) => object === indicator.revision)
+						),
+						...containersRelatedToIndicators.filter(isContainerWithEffect),
+						...containersRelatedToIndicators.filter(isMeasureResultContainer),
+						...containersRelatedToIndicators.filter(isContainerWithObjective)
+					]}
 					<li>
-						<Card --height="100%" container={indicator} />
+						<Card --height="100%" container={indicator} {relatedContainers} />
 					</li>
 				{/each}
 			</ul>
