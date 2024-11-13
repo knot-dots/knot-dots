@@ -40,10 +40,13 @@
 	--color-green-background: rgba(110, 218, 166, 0.15);
 	--color-blue: #21a5ed;
 	--color-blue-background: rgba(33, 165, 237, 0.15);
+	--color-contributes-to: #7ad0ff;
 	--color-is-consistent-with: #6edabe;
 	--color-is-duplicate-of: #f9e579;
 	--color-is-equivalent-to: #7ad0ff;
 	--color-is-inconsistent-with: #ca1d61;
+	--color-is-prerequisite-of: #7ad0ff;
+	--color-is-superordinate-of: #7ad0ff;
 	--gradient-primary: linear-gradient(45deg, rgba(77, 195, 197, 1) 0%, rgba(33, 165, 237, 1) 100%);
 	--gradient-first-column: linear-gradient(
 		90deg,
