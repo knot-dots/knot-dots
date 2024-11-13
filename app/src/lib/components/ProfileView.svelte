@@ -4,7 +4,7 @@
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import {
 		isAssignedTo,
-		isMeasureContainer,
+		isContainerWithEffect,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isStrategyContainer,
@@ -31,7 +31,7 @@
 	<div class="measures">
 		<h3>{$_('profile.my_measures')}</h3>
 		<ul class="carousel">
-			{#each containers.filter(isMeasureContainer) as measure}
+			{#each containers.filter(isContainerWithEffect) as measure}
 				<li>
 					<Card --height="100%" container={measure} />
 				</li>
