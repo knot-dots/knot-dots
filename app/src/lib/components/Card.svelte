@@ -339,7 +339,7 @@
 	}
 
 	header {
-		align-items: center;
+		align-items: flex-start;
 		display: flex;
 		margin-bottom: 1rem;
 	}
