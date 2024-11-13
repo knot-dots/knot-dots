@@ -17,7 +17,11 @@ export const load = (async ({ params, locals }) => {
 			getManyContainers([container.guid], { type: [payloadTypes.enum.strategy] }, '')
 		),
 		locals.pool.connect(
-			getManyContainers([container.guid], { type: [payloadTypes.enum.measure] }, '')
+			getManyContainers(
+				[container.guid],
+				{ type: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure] },
+				''
+			)
 		),
 		locals.pool.connect(
 			getManyContainers([container.guid], { type: [payloadTypes.enum.indicator] }, '')
