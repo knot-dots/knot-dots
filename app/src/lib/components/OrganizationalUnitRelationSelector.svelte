@@ -49,6 +49,7 @@
 </script>
 
 {#if isPartOfOptions.length > 0}
+	<p>{$_('superordinate_organizational_unit')}</p>
 	<ListBox
 		label={$_('superordinate_organizational_unit')}
 		options={isPartOfOptions.map(({ payload, revision }) => ({
