@@ -41,6 +41,7 @@
 			class="button button-nav"
 			class:is-active={$page.url.pathname ===
 				`/organization/${$page.data.currentOrganizationalUnit.guid}/members`}
+			title={$_('members')}
 		>
 			<Members />
 		</a>
