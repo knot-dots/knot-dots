@@ -47,7 +47,7 @@ export const load = (async ({ locals, parent, url }) => {
 				url.searchParams.get('related-to') as string,
 				[predicates.enum['is-part-of']],
 				{},
-				url.searchParams.get('sort') ?? ''
+				'priority'
 			)
 		);
 		taskContainers = containers.filter(isTaskContainer);
