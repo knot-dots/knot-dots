@@ -470,6 +470,7 @@ label {
 
 input[type='date'],
 input[type='email'],
+input[type='number'],
 input[type='password'],
 input[type='search'],
 input[type='text'],
@@ -535,6 +536,7 @@ textarea {
 
 input[type='date']:active,
 input[type='email']:active,
+input[type='number']:active,
 input[type='password']:active,
 input[type='search']:active,
 input[type='text']:active,
@@ -545,6 +547,7 @@ textarea:active {
 
 input[type='date']:invalid,
 input[type='email']:invalid,
+input[type='number']:invalid,
 input[type='password']:invalid,
 input[type='search']:invalid,
 input[type='text']:invalid,

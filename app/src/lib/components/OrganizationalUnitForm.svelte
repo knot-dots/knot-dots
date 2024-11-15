@@ -36,6 +36,11 @@
 	<Editor label={$_('description')} bind:value={container.payload.description} />
 {/key}
 
+<label>
+	{$_('organizational_unit.level')}
+	<input type="number" max="4" min="1" bind:value={container.payload.level} />
+</label>
+
 <OrganizationalUnitRelationSelector
 	{container}
 	isPartOfOptions={isPartOfOptions.filter(isOrganizationalUnitContainer).filter(filterByLevel)}
@@ -49,3 +54,9 @@
 		bind:value={container.payload.boards}
 	/>
 </div>
+
+<style>
+	input[type='number'] {
+		width: auto;
+	}
+</style>
