@@ -53,9 +53,9 @@
 		let organizationalUnits = $page.data.organizationalUnits.filter(
 			(c: OrganizationalUnitContainer) =>
 				selectedContext
-					? selectedContext.guid != currentContext.guid
-						? c.organization == selectedContext.organization
-						: true
+					? 'default' in selectedContext.payload && selectedContext.payload.default
+						? true
+						: c.organization == selectedContext.organization
 					: true
 		);
 
