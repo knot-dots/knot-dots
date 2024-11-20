@@ -6,6 +6,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
+	import Filter from '$lib/components/Filter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import NewRelationOverlay from '$lib/components/NewRelationOverlay.svelte';
@@ -32,6 +33,13 @@
 		<Search slot="search" />
 
 		<svelte:fragment slot="filters">
+			{#if !$page.data.currentOrganization.payload.default && !$page.url.searchParams.has('related-to')}
+				<Filter
+					initialValue={['only_related']}
+					key="programs"
+					options={[[$_(`programs_by_level_filter.only_related`), 'only_related']]}
+				/>
+			{/if}
 			{#if $page.url.searchParams.has('related-to')}
 				{#if createFeatureDecisions(data.features).useNewRelationTypeFilter()}
 					<RelationTypeFilter

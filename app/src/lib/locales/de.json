@@ -246,6 +246,7 @@
 	},
 	"profile_settings.change_password": "Passwort ändern",
 	"programs": "Programme",
+	"programs_by_level_filter.only_related": "Nur verknüpfte Programme",
 	"progress": "Fortschritt",
 	"quantity": {
 		"broadband_coverage": {
