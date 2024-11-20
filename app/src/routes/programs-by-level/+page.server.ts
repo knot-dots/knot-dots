@@ -26,19 +26,22 @@ export const load = (async ({ locals, url, parent }) => {
 				.map(({ guid }) => guid);
 		}
 
-		return filterOrganizationalUnits(
-			containers,
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		);
+		return [
+			...containers.filter(({ organization }) => organization != currentOrganization.guid),
+			...filterOrganizationalUnits(
+				containers,
+				url,
+				subordinateOrganizationalUnits,
+				currentOrganizationalUnit
+			)
+		];
 	}
 
 	if (url.searchParams.has('related-to')) {
 		containers = await filterOrganizationalUnitsAsync(
 			locals.pool.connect(
 				getAllRelatedContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
+					[],
 					url.searchParams.get('related-to') as string,
 					url.searchParams.getAll('relationType').length == 0
 						? [
