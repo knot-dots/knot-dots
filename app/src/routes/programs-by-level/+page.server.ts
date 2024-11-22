@@ -29,7 +29,7 @@ export const load = (async ({ locals, url, parent }) => {
 		return [
 			...containers.filter(({ organization }) => organization != currentOrganization.guid),
 			...filterOrganizationalUnits(
-				containers,
+				containers.filter(({ organization }) => organization == currentOrganization.guid),
 				url,
 				subordinateOrganizationalUnits,
 				currentOrganizationalUnit
