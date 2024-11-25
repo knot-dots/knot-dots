@@ -24,6 +24,7 @@
 		crepe.editor.config((ctx) => {
 			ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
 				value = markdown;
+				node.closest('form')?.requestSubmit();
 			});
 			ctx.update(rootAttrsCtx, (prev) => ({
 				...prev,

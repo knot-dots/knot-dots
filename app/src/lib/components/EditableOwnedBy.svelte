@@ -5,6 +5,7 @@
 	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
 	import { page } from '$app/stores';
 	import clickOutside from '$lib/clickOutside';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import type { AnyContainer, EmptyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -78,7 +79,7 @@
 									type="radio"
 									value={option.value}
 									bind:group={container.organization}
-									on:change
+									on:change={requestSubmit}
 								/>
 								{option.label}
 							</label>
@@ -90,7 +91,7 @@
 										type="radio"
 										value={option.value}
 										bind:group={container.organizational_unit}
-										on:change
+										on:change={requestSubmit}
 									/>
 									{option.label}
 								</label>

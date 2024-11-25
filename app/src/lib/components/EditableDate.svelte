@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
+	import requestSubmit from '$lib/client/requestSubmit';
 
 	export let editable = false;
 	export let label: string;
@@ -17,7 +18,9 @@
 		<label for={id}>
 			{label}
 		</label>
-		<span><input {id} type="date" bind:value /></span>
+		<span>
+			<input {id} type="date" bind:value on:change={requestSubmit} />
+		</span>
 	{:else}
 		<span class="label">{label}</span>
 		<time class="value" datetime={value}>

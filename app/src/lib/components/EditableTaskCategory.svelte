@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import { taskCategories } from '$lib/models';
 
@@ -15,4 +16,5 @@
 		value: o
 	}))}
 	bind:value
+	on:change={requestSubmit}
 />
