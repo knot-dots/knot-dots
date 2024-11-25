@@ -3,9 +3,9 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import Chapter from '$lib/components/Chapter.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
+	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableLevel from '$lib/components/EditableLevel.svelte';
@@ -84,7 +84,13 @@
 			{#each relatedContainers
 				.filter( ({ guid, relation }) => relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'] && guid != container.guid) )
 				.filter(({ payload }) => byPayloadType(payload.type, $page.url)) as part}
-				<Chapter container={part} headingTag="h3" isPartOf={container} {relatedContainers} />
+				<EditableChapter
+					container={part}
+					editable={$applicationState.containerDetailView.editable}
+					headingTag="h3"
+					isPartOf={container}
+					{relatedContainers}
+				/>
 			{:else}
 				{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
 					<a class="button" href={addChapterURL($page.url, container.revision)}>
