@@ -1,8 +1,12 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { modifiedContainer, predicates } from '$lib/models';
-import { getAllContainerRevisionsByGuid, updateContainer } from '$lib/server/db';
+import { etag, modifiedContainer, predicates } from '$lib/models';
+import {
+	getAllContainerRevisionsByGuid,
+	getContainerByGuid,
+	updateContainer
+} from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -17,13 +21,25 @@ export const GET = (async ({ locals, params }) => {
 	}
 }) satisfies RequestHandler;
 
-export const POST = (async ({ locals, request }) => {
+export const POST = (async ({ locals, params, request }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
 	if (request.headers.get('Content-Type') != 'application/json') {
 		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
+	}
+
+	const container = await locals.pool.connect(getContainerByGuid(params.guid)).catch((reason) => {
+		if (reason instanceof NotFoundError) {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		} else {
+			throw reason;
+		}
+	});
+
+	if (request.headers.has('If-Match') && etag(container) != request.headers.get('If-Match')) {
+		error(412, { message: unwrapFunctionStore(_)('error.precondition_failed') });
 	}
 
 	const data = await request.json().catch((reason: SyntaxError) => {

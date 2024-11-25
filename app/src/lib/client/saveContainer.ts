@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
-import { modifiedContainer, type NewContainer, newContainer } from '$lib/models';
+import { etag, modifiedContainer, type NewContainer, newContainer } from '$lib/models';
 import type { AnyContainer } from '$lib/models';
 
 export default async function saveContainer(container: AnyContainer | NewContainer) {
@@ -32,7 +32,8 @@ export default async function saveContainer(container: AnyContainer | NewContain
 		body: JSON.stringify(data),
 		credentials: 'include',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
+			...('revision' in container ? { 'If-Match': etag(container) } : undefined)
 		}
 	});
 }
