@@ -4,10 +4,27 @@
 	import CopyCat from '~icons/knotdots/copycat';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import createObjective from '$lib/client/createObjective';
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
+	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
+	import EditableIndicatorDetailView from '$lib/components/EditableIndicatorDetailView.svelte';
+	import EditableMeasureDetailView from '$lib/components/EditableMeasureDetailView.svelte';
+	import EditableMeasureResultDetailView from '$lib/components/EditableMeasureResultDetailView.svelte';
+	import EditableMilestoneDetailView from '$lib/components/EditableMilestoneDetailView.svelte';
+	import EditableModelDetailView from '$lib/components/EditableModelDetailView.svelte';
+	import EditableObjectiveDetailView from '$lib/components/EditableObjectiveDetailView.svelte';
+	import EditableOperationalGoalDetailView from '$lib/components/EditableOperationalGoalDetailView.svelte';
+	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
+	import EditableResolutionDetailView from '$lib/components/EditableResolutionDetailView.svelte';
+	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
+	import EditableStrategicGoalDetailView from '$lib/components/EditableStrategicGoalDetailView.svelte';
+	import EditableStrategyDetailView from '$lib/components/EditableStrategyDetailView.svelte';
+	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
+	import EditableVisionDetailView from '$lib/components/EditableVisionDetailView.svelte';
 	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
@@ -24,6 +41,7 @@
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import TaskDetailView from '$lib/components/TaskDetailView.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -34,11 +52,17 @@
 		isEffectContainer,
 		isIndicatorContainer,
 		isMeasureResultContainer,
+		isMilestoneContainer,
+		isModelContainer,
 		isObjectiveContainer,
+		isOperationalGoalContainer,
+		isOrganizationalUnitContainer,
 		isResolutionContainer,
 		isResourceContainer,
+		isStrategicGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
+		isVisionContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
 		payloadTypes,
@@ -46,11 +70,10 @@
 		quantities
 	} from '$lib/models';
 	import { ability, user } from '$lib/stores';
-	import createObjective from '$lib/client/createObjective';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
+	export let revisions: AnyContainer[] = [];
 
 	let mayShowRelationButton = getContext('mayShowRelationButton');
 	let saveAsIndicatorTemplateDisabled = false;
@@ -173,7 +196,39 @@
 	</header>
 {/if}
 <div class="content-details masked-overflow">
-	{#if isEffectContainer(container)}
+	{#if createFeatureDecisions($page.data.features)}
+		{#if isEffectContainer(container)}
+			<EditableEffectDetailView {container} {relatedContainers} {revisions} />
+		{:else if isIndicatorContainer(container)}
+			<EditableIndicatorDetailView {container} {relatedContainers} {revisions} />
+		{:else if isContainerWithEffect(container)}
+			<EditableMeasureDetailView {container} {relatedContainers} {revisions} />
+		{:else if isMeasureResultContainer(container)}
+			<EditableMeasureResultDetailView {container} {relatedContainers} {revisions} />
+		{:else if isMilestoneContainer(container)}
+			<EditableMilestoneDetailView {container} {relatedContainers} {revisions} />
+		{:else if isModelContainer(container)}
+			<EditableModelDetailView {container} {relatedContainers} {revisions} />
+		{:else if isObjectiveContainer(container)}
+			<EditableObjectiveDetailView {container} {relatedContainers} {revisions} />
+		{:else if isOperationalGoalContainer(container)}
+			<EditableOperationalGoalDetailView {container} {relatedContainers} {revisions} />
+		{:else if isOrganizationalUnitContainer(container)}
+			<EditableOrganizationalUnitDetailView {container} {relatedContainers} />
+		{:else if isResolutionContainer(container)}
+			<EditableResolutionDetailView {container} {relatedContainers} {revisions} />
+		{:else if isResourceContainer(container)}
+			<EditableResourceDetailView {container} {relatedContainers} {revisions} />
+		{:else if isStrategicGoalContainer(container)}
+			<EditableStrategicGoalDetailView {container} {relatedContainers} {revisions} />
+		{:else if isStrategyContainer(container)}
+			<EditableStrategyDetailView {container} {relatedContainers} {revisions} />
+		{:else if isTaskContainer(container)}
+			<EditableTaskDetailView {container} {relatedContainers} {revisions} />
+		{:else if isVisionContainer(container)}
+			<EditableVisionDetailView {container} {relatedContainers} {revisions} />
+		{/if}
+	{:else if isEffectContainer(container)}
 		<EffectDetailView {container} {relatedContainers} {revisions} />
 	{:else if isIndicatorContainer(container)}
 		<IndicatorDetailView {container} {relatedContainers} {revisions} />
