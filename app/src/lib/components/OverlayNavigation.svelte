@@ -4,6 +4,7 @@
 	import ArrowRightOnRectangle from '~icons/heroicons/arrow-right-on-rectangle-20-solid';
 	import ChevronLeft from '~icons/heroicons/chevron-left';
 	import Cog6Tooth from '~icons/heroicons/cog-6-tooth-20-solid';
+	import Pencil from '~icons/heroicons/pencil-solid';
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import Effects from '~icons/knotdots/effects';
@@ -25,7 +26,7 @@
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
-	import { ability, overlay, overlayHistory, user } from '$lib/stores';
+	import { ability, applicationState, overlay, overlayHistory, user } from '$lib/stores';
 
 	export let container: AnyContainer | undefined = undefined;
 
@@ -39,6 +40,16 @@
 		const closeURL = new URL(url);
 		closeURL.hash = '';
 		return closeURL.toString();
+	}
+
+	function toggleEditMode() {
+		applicationState.update((state) => ({
+			...state,
+			containerDetailView: {
+				...state.containerDetailView,
+				editable: !state.containerDetailView.editable
+			}
+		}));
 	}
 </script>
 
@@ -210,6 +221,16 @@
 	{/if}
 
 	{#if $user.isAuthenticated}
+		<button
+			title={$_('edit_mode')}
+			type="button"
+			class="button-nav button-square"
+			class:is-active={$applicationState.containerDetailView.editable}
+			on:click={toggleEditMode}
+		>
+			<Pencil />
+		</button>
+
 		<a href={overlayURL($page.url, 'profile', $user.guid)}>
 			<span
 				class="avatar avatar-s button button-nav"
