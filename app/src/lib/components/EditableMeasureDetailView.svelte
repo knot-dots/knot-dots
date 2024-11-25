@@ -2,6 +2,7 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -121,12 +122,22 @@
 					<label class="is-visually-hidden" for="startDate">
 						{$_('start_date')}
 					</label>
-					<input id="startDate" type="date" bind:value={container.payload.startDate} />
+					<input
+						id="startDate"
+						type="date"
+						bind:value={container.payload.startDate}
+						on:change={requestSubmit}
+					/>
 					–
 					<label class="is-visually-hidden" for="endDate">
 						{$_('end_date')}
 					</label>
-					<input id="endDate" type="date" bind:value={container.payload.endDate} />
+					<input
+						id="endDate"
+						type="date"
+						bind:value={container.payload.endDate}
+						on:change={requestSubmit}
+					/>
 				</span>
 			</fieldset>
 		{:else}

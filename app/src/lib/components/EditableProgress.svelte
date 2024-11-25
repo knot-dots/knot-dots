@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import requestSubmit from '$lib/client/requestSubmit';
 
 	export let compact = false;
 	export let editable = false;
@@ -20,7 +21,16 @@
 			</label>
 		</h3>
 		<p>
-			<input {id} type="range" max="1" min="0" list="steps" step="0.1" bind:value />
+			<input
+				{id}
+				type="range"
+				max="1"
+				min="0"
+				list="steps"
+				step="0.1"
+				bind:value
+				on:change={requestSubmit}
+			/>
 			<datalist id="steps">
 				<option value="0"></option>
 				<option value="0.1"></option>

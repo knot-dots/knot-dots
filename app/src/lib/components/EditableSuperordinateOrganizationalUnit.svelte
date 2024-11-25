@@ -35,7 +35,8 @@
 				('revision' in container ? subject == container.revision : true)
 		);
 
-		const value = parseInt((event.target as HTMLInputElement).value);
+		const target = event.target as HTMLInputElement;
+		const value = parseInt(target.value);
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
@@ -51,6 +52,8 @@
 				: []),
 			...container.relation.slice(isPartOfIndex + 1)
 		];
+
+		target.closest('form')?.requestSubmit();
 	}
 </script>
 

@@ -2,6 +2,7 @@
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -54,12 +55,22 @@
 					<label class="is-visually-hidden" for="validFrom">
 						{$_('valid_from')}
 					</label>
-					<input id="validFrom" type="date" bind:value={container.payload.validFrom} />
+					<input
+						id="validFrom"
+						type="date"
+						bind:value={container.payload.validFrom}
+						on:change={requestSubmit}
+					/>
 					–
 					<label class="is-visually-hidden" for="validUntil">
 						{$_('valid_until')}
 					</label>
-					<input id="validUntil" type="date" bind:value={container.payload.validUntil} />
+					<input
+						id="validUntil"
+						type="date"
+						bind:value={container.payload.validUntil}
+						on:change={requestSubmit}
+					/>
 				</span>
 			</fieldset>
 		{:else}

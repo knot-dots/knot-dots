@@ -3,6 +3,7 @@
 	import { createDisclosure } from 'svelte-headlessui';
 	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
 	import clickOutside from '$lib/clickOutside';
+	import requestSubmit from '$lib/client/requestSubmit';
 
 	export let editable = false;
 	export let label: string;
@@ -46,7 +47,12 @@
 				<fieldset class="dropdown-panel" use:disclosure.panel use:popperContent={extraOpts}>
 					{#each options as option (option.value)}
 						<label>
-							<input type="checkbox" value={option.value} bind:group={value} />
+							<input
+								type="checkbox"
+								value={option.value}
+								bind:group={value}
+								on:change={requestSubmit}
+							/>
 							{option.label}
 						</label>
 					{/each}
