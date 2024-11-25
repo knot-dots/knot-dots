@@ -41,7 +41,7 @@
 </script>
 
 <article class="details details-editable">
-	<form on:submit={debouncedSave(container)} novalidate>
+	<form on:submit|preventDefault={debouncedSave(container)} novalidate>
 		<div class="details-tab" id="basic-data">
 			{#if $applicationState.containerDetailView.editable}
 				<h2
