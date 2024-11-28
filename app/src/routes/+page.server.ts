@@ -1,12 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import {
-	type AnyContainer,
-	type Container,
-	audience,
-	filterOrganizationalUnits,
-	predicates,
-	payloadTypes
-} from '$lib/models';
+import { audience, filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllContainersWithIndicatorContributions,
 	getAllRelatedContainers,
@@ -17,12 +10,22 @@ import {
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url, parent }) => {
-	let containersPromise;
-	let containersWithIndicatorContributionsPromise;
+	let containers;
+	let containersWithIndicatorContributions;
+	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
+	if (currentOrganizationalUnit) {
+		const relatedOrganizationalUnits = await locals.pool.connect(
+			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
+		);
+		subordinateOrganizationalUnits = relatedOrganizationalUnits
+			.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
+			.map(({ guid }) => guid);
+	}
+
 	if (url.searchParams.has('related-to')) {
-		[containersPromise, containersWithIndicatorContributionsPromise] = [
+		[containers, containersWithIndicatorContributions] = await Promise.all([
 			locals.pool.connect(
 				getAllRelatedContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
@@ -57,9 +60,9 @@ export const load = (async ({ locals, url, parent }) => {
 					currentOrganization.payload.default ? [] : [currentOrganization.guid]
 				)
 			)
-		];
+		]);
 	} else if (url.searchParams.has('strategyType')) {
-		[containersPromise, containersWithIndicatorContributionsPromise] = [
+		[containers, containersWithIndicatorContributions] = await Promise.all([
 			locals.pool.connect(
 				getAllRelatedContainersByStrategyType(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
@@ -91,9 +94,9 @@ export const load = (async ({ locals, url, parent }) => {
 					currentOrganization.payload.default ? [] : [currentOrganization.guid]
 				)
 			)
-		];
+		]);
 	} else {
-		[containersPromise, containersWithIndicatorContributionsPromise] = [
+		[containers, containersWithIndicatorContributions] = await Promise.all([
 			locals.pool.connect(
 				getManyContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
@@ -126,40 +129,19 @@ export const load = (async ({ locals, url, parent }) => {
 					currentOrganization.payload.default ? [] : [currentOrganization.guid]
 				)
 			)
-		];
-	}
-
-	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
-		const containers = await promise;
-		return filterVisible(containers, locals.user);
-	}
-
-	async function filterOrganizationalUnitsAsync<T extends Container>(promise: Promise<Array<T>>) {
-		let subordinateOrganizationalUnits: string[] = [];
-
-		const containers = await promise;
-
-		if (currentOrganizationalUnit) {
-			const relatedOrganizationalUnits = await locals.pool.connect(
-				getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-			);
-			subordinateOrganizationalUnits = relatedOrganizationalUnits
-				.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
-				.map(({ guid }) => guid);
-		}
-
-		return filterOrganizationalUnits(
-			containers,
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		);
+		]);
 	}
 
 	return {
-		containers: filterOrganizationalUnitsAsync(filterVisibleAsync(containersPromise)),
-		containersWithIndicatorContributions: await filterVisibleAsync(
-			containersWithIndicatorContributionsPromise
+		containers: filterOrganizationalUnits(
+			filterVisible(containers, locals.user),
+			url,
+			subordinateOrganizationalUnits,
+			currentOrganizationalUnit
+		),
+		containersWithIndicatorContributions: filterVisible(
+			containersWithIndicatorContributions,
+			locals.user
 		)
 	};
 }) satisfies PageServerLoad;
