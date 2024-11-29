@@ -105,58 +105,70 @@
 		{/if}
 
 		{#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
-			<h4 class="chapter-subtitle">{$_('annotation')}</h4>
-			<EditableFormattedText
-				{editable}
-				label={$_('annotation')}
-				bind:value={container.payload.annotation}
-			/>
+			<div class="annotation">
+				<h4 class="chapter-subtitle">{$_('annotation')}</h4>
+				<EditableFormattedText
+					{editable}
+					label={$_('annotation')}
+					bind:value={container.payload.annotation}
+				/>
+			</div>
 		{:else if 'comment' in container.payload && container.payload.status === status.enum['status.in_implementation']}
-			<h4 class="chapter-subtitle">{$_('comment')}</h4>
-			<EditableFormattedText
-				{editable}
-				label={$_('comment')}
-				bind:value={container.payload.comment}
-			/>
+			<div class="comment">
+				<h4 class="chapter-subtitle">{$_('comment')}</h4>
+				<EditableFormattedText
+					{editable}
+					label={$_('comment')}
+					bind:value={container.payload.comment}
+				/>
+			</div>
 		{:else if 'result' in container.payload && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
-			<h4 class="chapter-subtitle">{$_('result')}</h4>
-			<EditableFormattedText
-				{editable}
-				label={$_('result')}
-				bind:value={container.payload.result}
-			/>
+			<div class="result">
+				<h4 class="chapter-subtitle">{$_('result')}</h4>
+				<EditableFormattedText
+					{editable}
+					label={$_('result')}
+					bind:value={container.payload.result}
+				/>
+			</div>
 		{/if}
 
 		{#if isContainerWithObjective(container) && relatedContainers
 				.filter(isObjectiveContainer)
 				.filter(isPartOfFilter(container)).length > 0}
-			<h4 class="chapter-subtitle">{$_('objectives')}</h4>
-			<EditableObjectiveCarousel {container} {editable} {relatedContainers} />
+			<div class="objectives">
+				<h4 class="chapter-subtitle">{$_('objectives')}</h4>
+				<EditableObjectiveCarousel {container} {editable} {relatedContainers} />
+			</div>
 		{/if}
 
 		{#if isContainerWithEffect(container)}
 			{#if relatedContainers
 				.filter(({ payload }) => payload.type === payloadTypes.enum.resource)
 				.filter(isPartOfFilter(container)).length > 0}
-				<h4 class="chapter-subtitle">{$_('resources')}</h4>
-				<EditablePartOfMeasureCarousel
-					{container}
-					{editable}
-					payloadType={payloadTypes.enum.resource}
-					{relatedContainers}
-				/>
+				<div class="resources">
+					<h4 class="chapter-subtitle">{$_('resources')}</h4>
+					<EditablePartOfMeasureCarousel
+						{container}
+						{editable}
+						payloadType={payloadTypes.enum.resource}
+						{relatedContainers}
+					/>
+				</div>
 			{/if}
 
 			{#if relatedContainers
 				.filter(({ payload }) => payload.type === payloadTypes.enum.measure_result)
 				.filter(isPartOfFilter(container)).length > 0}
-				<h4>{$_('measure_results')}</h4>
-				<EditablePartOfMeasureCarousel
-					{container}
-					{editable}
-					payloadType={payloadTypes.enum.measure_result}
-					{relatedContainers}
-				/>
+				<div class="measure-results">
+					<h4 class="chapter-subtitle">{$_('measure_results')}</h4>
+					<EditablePartOfMeasureCarousel
+						{container}
+						{editable}
+						payloadType={payloadTypes.enum.measure_result}
+						{relatedContainers}
+					/>
+				</div>
 			{/if}
 		{/if}
 
@@ -177,6 +189,9 @@
 
 <style>
 	.chapter {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
 		margin-bottom: 1.5rem;
 		max-width: 50rem;
 	}
@@ -185,7 +200,6 @@
 		border-radius: 8px;
 		font-size: 1rem;
 		font-weight: 600;
-		margin-bottom: 0.5rem;
 		min-height: calc(1.5em + 1.5rem);
 		padding: 0.75rem 1rem;
 	}
@@ -195,12 +209,12 @@
 		color: var(--color-gray-800);
 		font-size: 1rem;
 		font-weight: 500;
-		margin-bottom: 0;
 		min-height: calc(1.5em + 1.5rem);
 		padding: 0.75rem 1rem;
 	}
 
 	.content-actions {
-		margin-top: 0.875rem;
+		margin: 0;
+		padding: 0.5rem 0.75rem;
 	}
 </style>
