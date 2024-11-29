@@ -34,6 +34,8 @@
 		<span use:dragHandle>
 			<DragHandle />
 		</span>
+	{:else}
+		<span />
 	{/if}
 </div>
 <div class="cell">
@@ -120,11 +122,6 @@
 		white-space: nowrap;
 	}
 
-	.cell:nth-child(1) {
-		color: var(--color-gray-500);
-		width: calc(1.25rem + 2rem);
-	}
-
 	.cell:nth-child(n + 2) {
 		border: solid 1px var(--color-gray-200);
 		max-width: 20rem;
@@ -133,6 +130,11 @@
 	.cell > * {
 		display: block;
 		padding: 0.75rem 1rem;
+	}
+
+	.cell:nth-child(1) > span {
+		color: var(--color-gray-500);
+		width: calc(1.25rem + 2rem);
 	}
 
 	.cell > :is(input[type='date'], [contenteditable='plaintext-only'], .dropdown-reference) {
