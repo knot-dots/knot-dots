@@ -74,6 +74,7 @@
 				class="chapter-title"
 				contenteditable="plaintext-only"
 				bind:textContent={container.payload.title}
+				on:input={(e) => e.currentTarget?.closest('form')?.requestSubmit()}
 				on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 			>
 				{container.payload.title}
