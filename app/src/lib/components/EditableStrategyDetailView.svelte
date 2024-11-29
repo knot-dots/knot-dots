@@ -198,6 +198,10 @@
 		position: sticky;
 	}
 
+	.table-head .cell {
+		padding: 0.75rem 1rem;
+	}
+
 	.row {
 		border: none;
 	}
