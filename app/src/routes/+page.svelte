@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
@@ -95,10 +96,12 @@
 					title={$_(column.title)}
 				>
 					<MaybeDragZone
-						containers={data.containers.filter(
-							(c) =>
-								column.payloadType.findIndex((payloadType) => payloadType === c.payload.type) > -1
-						)}
+						containers={data.containers
+							.filter(
+								(c) =>
+									column.payloadType.findIndex((payloadType) => payloadType === c.payload.type) > -1
+							)
+							.slice(0, browser ? undefined : 10)}
 					/>
 				</BoardColumn>
 			{/each}
