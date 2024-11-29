@@ -15,6 +15,6 @@ export default function debouncedSave(container: AnyContainer) {
 				const error = await response.json();
 				alert(error.message);
 			}
-		}, 1000);
+		}, 2000);
 	};
 }
