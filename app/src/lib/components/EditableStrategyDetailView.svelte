@@ -84,13 +84,15 @@
 			{#each relatedContainers
 				.filter( ({ guid, relation }) => relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'] && guid != container.guid) )
 				.filter(({ payload }) => byPayloadType(payload.type, $page.url)) as part}
-				<EditableChapter
-					container={part}
-					editable={$applicationState.containerDetailView.editable}
-					headingTag="h3"
-					isPartOf={container}
-					{relatedContainers}
-				/>
+				<form class="chapter" on:submit|preventDefault={debouncedSave(part)} novalidate>
+					<EditableChapter
+						container={part}
+						editable={$applicationState.containerDetailView.editable}
+						headingTag="h3"
+						isPartOf={container}
+						{relatedContainers}
+					/>
+				</form>
 			{:else}
 				{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
 					<a class="button" href={addChapterURL($page.url, container.revision)}>
@@ -107,5 +109,13 @@
 	.chapters {
 		border-top: solid 1px var(--color-gray-300);
 		padding-top: 1.5rem;
+	}
+
+	.chapter {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-bottom: 1.5rem;
+		max-width: 50rem;
 	}
 </style>

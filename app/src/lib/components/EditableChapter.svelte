@@ -3,7 +3,6 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import debouncedSave from '$lib/client/debouncedSave';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
@@ -65,137 +64,121 @@
 	}
 </script>
 
-<div class="chapter">
-	<form on:submit|preventDefault={debouncedSave(container)} novalidate>
-		{#if editable}
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
-			<svelte:element
-				this={headingTag}
-				class="chapter-title"
-				contenteditable="plaintext-only"
-				bind:textContent={container.payload.title}
-				on:input={(e) => e.currentTarget?.closest('form')?.requestSubmit()}
-				on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-			>
-				{container.payload.title}
-			</svelte:element>
-		{:else}
-			<svelte:element this={headingTag} class="chapter-title" contenteditable="false">
-				{container.payload.title}
-			</svelte:element>
-		{/if}
+{#if editable}
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<svelte:element
+		this={headingTag}
+		class="chapter-title"
+		contenteditable="plaintext-only"
+		bind:textContent={container.payload.title}
+		on:input={(e) => e.currentTarget?.closest('form')?.requestSubmit()}
+		on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+	>
+		{container.payload.title}
+	</svelte:element>
+{:else}
+	<svelte:element this={headingTag} class="chapter-title" contenteditable="false">
+		{container.payload.title}
+	</svelte:element>
+{/if}
 
-		{#if 'status' in container.payload}
-			<EditableStatus {editable} bind:value={container.payload.status} />
-		{/if}
+{#if 'status' in container.payload}
+	<EditableStatus {editable} bind:value={container.payload.status} />
+{/if}
 
-		{#if 'body' in container.payload}
-			<EditableFormattedText {editable} label={$_('body')} bind:value={container.payload.body} />
-		{/if}
+{#if 'body' in container.payload}
+	<EditableFormattedText {editable} label={$_('body')} bind:value={container.payload.body} />
+{/if}
 
-		{#if 'description' in container.payload}
-			<EditableFormattedText {editable} bind:value={container.payload.description} />
-		{/if}
+{#if 'description' in container.payload}
+	<EditableFormattedText {editable} bind:value={container.payload.description} />
+{/if}
 
-		{#if 'progress' in container.payload}
-			<div class="progress">
-				<h4 class="chapter-subtitle">{$_('progress')}</h4>
-				<EditableProgress {editable} bind:value={container.payload.progress} />
-			</div>
-		{/if}
+{#if 'progress' in container.payload}
+	<div class="progress">
+		<h4 class="chapter-subtitle">{$_('progress')}</h4>
+		<EditableProgress {editable} bind:value={container.payload.progress} />
+	</div>
+{/if}
 
-		{#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
-			<div class="annotation">
-				<h4 class="chapter-subtitle">{$_('annotation')}</h4>
-				<EditableFormattedText
-					{editable}
-					label={$_('annotation')}
-					bind:value={container.payload.annotation}
-				/>
-			</div>
-		{:else if 'comment' in container.payload && container.payload.status === status.enum['status.in_implementation']}
-			<div class="comment">
-				<h4 class="chapter-subtitle">{$_('comment')}</h4>
-				<EditableFormattedText
-					{editable}
-					label={$_('comment')}
-					bind:value={container.payload.comment}
-				/>
-			</div>
-		{:else if 'result' in container.payload && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
-			<div class="result">
-				<h4 class="chapter-subtitle">{$_('result')}</h4>
-				<EditableFormattedText
-					{editable}
-					label={$_('result')}
-					bind:value={container.payload.result}
-				/>
-			</div>
-		{/if}
+{#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
+	<div class="annotation">
+		<h4 class="chapter-subtitle">{$_('annotation')}</h4>
+		<EditableFormattedText
+			{editable}
+			label={$_('annotation')}
+			bind:value={container.payload.annotation}
+		/>
+	</div>
+{:else if 'comment' in container.payload && container.payload.status === status.enum['status.in_implementation']}
+	<div class="comment">
+		<h4 class="chapter-subtitle">{$_('comment')}</h4>
+		<EditableFormattedText
+			{editable}
+			label={$_('comment')}
+			bind:value={container.payload.comment}
+		/>
+	</div>
+{:else if 'result' in container.payload && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
+	<div class="result">
+		<h4 class="chapter-subtitle">{$_('result')}</h4>
+		<EditableFormattedText {editable} label={$_('result')} bind:value={container.payload.result} />
+	</div>
+{/if}
 
-		{#if isContainerWithObjective(container) && relatedContainers
-				.filter(isObjectiveContainer)
-				.filter(isPartOfFilter(container)).length > 0}
-			<div class="objectives">
-				<h4 class="chapter-subtitle">{$_('objectives')}</h4>
-				<EditableObjectiveCarousel {container} {editable} {relatedContainers} />
-			</div>
-		{/if}
+{#if isContainerWithObjective(container) && relatedContainers
+		.filter(isObjectiveContainer)
+		.filter(isPartOfFilter(container)).length > 0}
+	<div class="objectives">
+		<h4 class="chapter-subtitle">{$_('objectives')}</h4>
+		<EditableObjectiveCarousel {container} {editable} {relatedContainers} />
+	</div>
+{/if}
 
-		{#if isContainerWithEffect(container)}
-			{#if relatedContainers
-				.filter(({ payload }) => payload.type === payloadTypes.enum.resource)
-				.filter(isPartOfFilter(container)).length > 0}
-				<div class="resources">
-					<h4 class="chapter-subtitle">{$_('resources')}</h4>
-					<EditablePartOfMeasureCarousel
-						{container}
-						{editable}
-						payloadType={payloadTypes.enum.resource}
-						{relatedContainers}
-					/>
-				</div>
-			{/if}
+{#if isContainerWithEffect(container)}
+	{#if relatedContainers
+		.filter(({ payload }) => payload.type === payloadTypes.enum.resource)
+		.filter(isPartOfFilter(container)).length > 0}
+		<div class="resources">
+			<h4 class="chapter-subtitle">{$_('resources')}</h4>
+			<EditablePartOfMeasureCarousel
+				{container}
+				{editable}
+				payloadType={payloadTypes.enum.resource}
+				{relatedContainers}
+			/>
+		</div>
+	{/if}
 
-			{#if relatedContainers
-				.filter(({ payload }) => payload.type === payloadTypes.enum.measure_result)
-				.filter(isPartOfFilter(container)).length > 0}
-				<div class="measure-results">
-					<h4 class="chapter-subtitle">{$_('measure_results')}</h4>
-					<EditablePartOfMeasureCarousel
-						{container}
-						{editable}
-						payloadType={payloadTypes.enum.measure_result}
-						{relatedContainers}
-					/>
-				</div>
-			{/if}
-		{/if}
+	{#if relatedContainers
+		.filter(({ payload }) => payload.type === payloadTypes.enum.measure_result)
+		.filter(isPartOfFilter(container)).length > 0}
+		<div class="measure-results">
+			<h4 class="chapter-subtitle">{$_('measure_results')}</h4>
+			<EditablePartOfMeasureCarousel
+				{container}
+				{editable}
+				payloadType={payloadTypes.enum.measure_result}
+				{relatedContainers}
+			/>
+		</div>
+	{/if}
+{/if}
 
-		<footer class="content-actions">
-			<a class="button" href={viewInOverlayURL($page.url)}>
-				{$_('read_more')}
-			</a>
+<footer class="content-actions">
+	<a class="button" href={viewInOverlayURL($page.url)}>
+		{$_('read_more')}
+	</a>
 
-			{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
-				<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
-					<PlusSmall />
-					{$_('chapter')}
-				</a>
-			{/if}
-		</footer>
-	</form>
-</div>
+	{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
+		<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
+			<PlusSmall />
+			{$_('chapter')}
+		</a>
+	{/if}
+</footer>
 
 <style>
-	.chapter {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin-bottom: 1.5rem;
-		max-width: 50rem;
-	}
-
 	.chapter-title {
 		border-radius: 8px;
 		font-size: 1rem;
