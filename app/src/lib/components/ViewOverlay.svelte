@@ -38,6 +38,7 @@
 	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
+	import StrategyViewModes from '$lib/components/StrategyViewModes.svelte';
 	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import TaskDetailView from '$lib/components/TaskDetailView.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
@@ -167,6 +168,9 @@
 				/>
 				<CategoryFilter />
 				<TopicFilter />
+			</svelte:fragment>
+			<svelte:fragment slot="viewMode">
+				<StrategyViewModes />
 			</svelte:fragment>
 			<ContainerDetailViewTabs {container} slot="tabs" />
 			<slot slot="extra" />

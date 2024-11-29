@@ -2,6 +2,7 @@
 	import { tick } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import DocumentText from '~icons/heroicons/document-text-20-solid';
+	import Eye from '~icons/heroicons/eye-solid';
 	import Filter from '~icons/knotdots/filter';
 	import Help from '~icons/knotdots/help';
 	import Info from '~icons/knotdots/info';
@@ -150,6 +151,35 @@
 				<span class="button button-nav is-active">{$_('sort')}</span>
 				<ul>
 					<slot name="sort" />
+				</ul>
+			</div>
+		</li>
+	{/if}
+
+	{#if $$slots.viewMode}
+		<li>
+			<button
+				class="button-nav button-square"
+				class:is-active={expandedItem === 'sort'}
+				on:click={() => lockItem('sort')}
+				on:mouseenter={() => expandItem('sort')}
+				on:mouseleave={() => collapseItemDelayed('sort')}
+				title={$_('sort')}
+				aria-controls="sort"
+				aria-expanded={expandedItem === 'sort'}
+			>
+				<Eye />
+			</button>
+			<!--svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class="expandable"
+				id="sort"
+				on:mouseenter={() => clearTimeout(timer)}
+				on:mouseleave={() => collapseItemDelayed('sort')}
+			>
+				<span class="button button-nav is-active">{$_('view_mode')}</span>
+				<ul>
+					<slot name="viewMode" />
 				</ul>
 			</div>
 		</li>

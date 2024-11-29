@@ -15,6 +15,7 @@ export type ApplicationState = {
 	containerDetailView: {
 		activeTab?: ContainerDetailViewTabKey;
 		editable?: boolean;
+		mode?: 'view_mode.preview' | 'view_mode.table';
 		tabs: Array<ContainerDetailViewTabKey>;
 	};
 	containerForm: {
@@ -738,31 +739,35 @@ const undefinedPayload = z
 
 const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 
+const payload = z.discriminatedUnion('type', [
+	effectPayload,
+	indicatorPayload,
+	indicatorTemplatePayload,
+	measurePayload,
+	measureResultPayload,
+	milestonePayload,
+	modelPayload,
+	objectivePayload,
+	operationalGoalPayload,
+	pagePayload,
+	resolutionPayload,
+	resourcePayload,
+	simpleMeasurePayload,
+	strategicGoalPayload,
+	strategyPayload,
+	taskPayload,
+	textPayload,
+	visionPayload
+]);
+
+export type Payload = z.infer<typeof payload>;
+
 export const container = z.object({
 	guid: z.string().uuid(),
 	managed_by: z.string().uuid(),
 	organization: z.string().uuid(),
 	organizational_unit: z.string().uuid().nullable(),
-	payload: z.discriminatedUnion('type', [
-		effectPayload,
-		indicatorPayload,
-		indicatorTemplatePayload,
-		measurePayload,
-		measureResultPayload,
-		milestonePayload,
-		modelPayload,
-		objectivePayload,
-		operationalGoalPayload,
-		pagePayload,
-		resolutionPayload,
-		resourcePayload,
-		simpleMeasurePayload,
-		strategicGoalPayload,
-		strategyPayload,
-		taskPayload,
-		textPayload,
-		visionPayload
-	]),
+	payload: payload,
 	realm: z.string().max(1024),
 	relation: z.array(relation).default([]),
 	revision: z.number().int().positive(),
@@ -773,30 +778,40 @@ export const container = z.object({
 
 export type Container = z.infer<typeof container>;
 
+const anyPayload = z.discriminatedUnion('type', [
+	effectPayload,
+	indicatorPayload,
+	indicatorTemplatePayload,
+	measurePayload,
+	measureResultPayload,
+	milestonePayload,
+	modelPayload,
+	objectivePayload,
+	operationalGoalPayload,
+	organizationPayload,
+	organizationalUnitPayload,
+	pagePayload,
+	resolutionPayload,
+	resourcePayload,
+	simpleMeasurePayload,
+	strategicGoalPayload,
+	strategyPayload,
+	taskPayload,
+	textPayload,
+	undefinedPayload,
+	visionPayload
+]);
+
+export type AnyPayload = z.infer<typeof anyPayload>;
+
+function hasProperty(payload: AnyPayload, key: PropertyKey): key is keyof AnyPayload {
+	return (
+		key in (anyPayload.options.map((o) => o.shape).find((s) => s.type.value == payload.type) ?? {})
+	);
+}
+
 export const anyContainer = container.extend({
-	payload: z.discriminatedUnion('type', [
-		effectPayload,
-		indicatorPayload,
-		indicatorTemplatePayload,
-		measurePayload,
-		measureResultPayload,
-		milestonePayload,
-		modelPayload,
-		objectivePayload,
-		operationalGoalPayload,
-		organizationPayload,
-		organizationalUnitPayload,
-		pagePayload,
-		resolutionPayload,
-		resourcePayload,
-		simpleMeasurePayload,
-		strategicGoalPayload,
-		strategyPayload,
-		taskPayload,
-		textPayload,
-		undefinedPayload,
-		visionPayload
-	])
+	payload: anyPayload
 });
 
 export type AnyContainer = z.infer<typeof anyContainer>;
@@ -1097,6 +1112,16 @@ export function isContainer(container: AnyContainer): container is Container {
 		container.payload.type !== payloadTypes.enum.organization &&
 		container.payload.type !== payloadTypes.enum.organizational_unit
 	);
+}
+
+export type ContainerWithFulfillmentDate = AnyContainer & {
+	payload: AnyPayload & { fulfillmentDate: string | undefined };
+};
+
+export function isContainerWithFulfillmentDate(
+	container: AnyContainer
+): container is ContainerWithFulfillmentDate {
+	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
 export const newContainer = anyContainer

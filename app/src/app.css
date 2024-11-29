@@ -199,35 +199,41 @@ select {
 }
 
 /* Tables */
-table {
+table, .table {
 	border-collapse: collapse;
 	border-color: inherit;
 	color: var(--color-gray-500);
+	display: table;
 	text-align: left;
 	text-indent: 0;
 	width: 100%;
 }
 
-thead {
+thead, .table-head {
 	background: var(--color-gray-050);
 	color: var(--color-gray-800);
+	display: table-header-group;
 	text-transform: uppercase;
 }
 
-tbody {
+tbody, .table-body {
 	color: var(--color-gray-900);
+	display: table-row-group;
 }
 
-tr {
+tr, .row {
 	border-bottom: solid 1px var(--color-gray-200);
+	display: table-row;
 }
 
 th {
 	padding: 0.75rem 1.5rem;
 }
 
-td {
+td, .cell {
+	display: table-cell;
 	padding: 1rem 1.5rem;
+	vertical-align: middle
 }
 
 /* Remove all animations, transitions and smooth scroll for people that prefer not to see them */

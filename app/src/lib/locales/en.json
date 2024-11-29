@@ -544,6 +544,9 @@
 	},
 	"valid_from": "Valid from",
 	"valid_until": "Valid until",
+	"view_mode": "View mode",
+	"view_mode.preview": "Preview",
+	"view_mode.table": "Table",
 	"visible_for": "Visible for",
 	"visibility": {
 		"creator": "Creator only",
