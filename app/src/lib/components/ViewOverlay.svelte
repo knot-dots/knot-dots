@@ -200,7 +200,7 @@
 	</header>
 {/if}
 <div class="content-details masked-overflow">
-	{#if createFeatureDecisions($page.data.features)}
+	{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
 		{#if isEffectContainer(container)}
 			<EditableEffectDetailView {container} {relatedContainers} {revisions} />
 		{:else if isIndicatorContainer(container)}
