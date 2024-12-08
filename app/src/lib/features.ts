@@ -14,6 +14,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useEditableDetailView() {
 			return features.includes('NewEditingExperience');
+		},
+		useViewModes() {
+			return features.includes('NewEditingExperience');
 		}
 	};
 }

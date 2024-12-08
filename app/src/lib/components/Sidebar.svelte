@@ -10,6 +10,7 @@
 	import Sort from '~icons/knotdots/sort';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { createFeatureDecisions } from '$lib/features';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
 	import SidebarTab from '$lib/components/SidebarTab.svelte';
 	import { overlayHistory } from '$lib/stores';
@@ -156,7 +157,7 @@
 		</li>
 	{/if}
 
-	{#if $$slots.viewMode}
+	{#if $$slots.viewMode && createFeatureDecisions($page.data.features).useViewModes()}}
 		<li>
 			<button
 				class="button-nav button-square"
