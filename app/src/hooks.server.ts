@@ -132,7 +132,6 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 	const features = ['NewOnboardingWorkflow', 'NewRelations'];
 	if (event.locals.user.roles.includes('sysadmin')) {
 		features.push('ImportFromCsv');
-		features.push('NewEditingExperience');
 	}
 	event.locals.features = features;
 
