@@ -14,6 +14,7 @@
 	import Tasks from '~icons/knotdots/tasks';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		boards,
@@ -221,15 +222,17 @@
 	{/if}
 
 	{#if $user.isAuthenticated}
-		<button
-			title={$_('edit_mode')}
-			type="button"
-			class="button-nav button-square"
-			class:is-active={$applicationState.containerDetailView.editable}
-			on:click={toggleEditMode}
-		>
-			<Pencil />
-		</button>
+		{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+			<button
+				title={$_('edit_mode')}
+				type="button"
+				class="button-nav button-square"
+				class:is-active={$applicationState.containerDetailView.editable}
+				on:click={toggleEditMode}
+			>
+				<Pencil />
+			</button>
+		{/if}
 
 		<a href={overlayURL($page.url, 'profile', $user.guid)}>
 			<span
