@@ -5,6 +5,7 @@
 	import {
 		isAssignedTo,
 		isContainerWithEffect,
+		isMemberOf,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isStrategyContainer,
@@ -31,7 +32,9 @@
 	<div class="measures">
 		<h3>{$_('profile.my_measures')}</h3>
 		<ul class="carousel">
-			{#each containers.filter(isContainerWithEffect) as measure}
+			{#each containers
+				.filter(isContainerWithEffect)
+				.filter((c) => isMemberOf($user, c)) as measure}
 				<li>
 					<Card --height="100%" container={measure} />
 				</li>
@@ -42,7 +45,9 @@
 	<div class="organizations">
 		<h3>{$_('profile.my_organizations')}</h3>
 		<ul class="carousel">
-			{#each containers.filter((c) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c)) as organization}
+			{#each containers
+				.filter((c) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c))
+				.filter((c) => isMemberOf($user, c)) as organization}
 				<li>
 					<OrganizationCard --height="100%" container={organization} />
 				</li>

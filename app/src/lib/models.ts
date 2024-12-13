@@ -1413,6 +1413,15 @@ export function isHeadOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
+export function isMemberOf(user: { guid: string }, container: AnyContainer) {
+	return (
+		container.user.findIndex(
+			({ predicate, subject }) =>
+				user.guid == subject && predicate == predicates.enum['is-member-of']
+		) > -1
+	);
+}
+
 export function isObserverOf(user: { guid: string }, container: AnyContainer) {
 	return (
 		container.user.findIndex(
