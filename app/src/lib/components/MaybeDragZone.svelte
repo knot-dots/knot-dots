@@ -60,50 +60,6 @@
 	>
 		{#each items as { guid, container } (guid)}
 			<div>
-				{#if isMeasureResultContainer(container)}
-					{#await $page.data.containers then otherContainers}
-						{#if Array.isArray(otherContainers)}
-							<Card
-								{container}
-								relatedContainers={[
-									...otherContainers.filter(isIndicatorContainer),
-									...otherContainers.filter(isContainerWithEffect),
-									...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
-								]}
-								showRelationFilter
-							/>
-						{/if}
-					{/await}
-				{:else}
-					<Card
-						{container}
-						relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
-							isPartOf(container)
-						) ?? []}
-						showRelationFilter
-					/>
-				{/if}
-			</div>
-		{/each}
-	</div>
-{:else}
-	<div class="vertical-scroll-wrapper masked-overflow">
-		{#each items as { container }}
-			{#if isMeasureResultContainer(container)}
-				{#await $page.data.containers then otherContainers}
-					{#if Array.isArray(otherContainers)}
-						<Card
-							{container}
-							relatedContainers={[
-								...otherContainers.filter(isIndicatorContainer),
-								...otherContainers.filter(isContainerWithEffect),
-								...otherContainers.filter(isEffectContainer).filter(isPartOf(container))
-							]}
-							showRelationFilter
-						/>
-					{/if}
-				{/await}
-			{:else}
 				<Card
 					{container}
 					relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
@@ -111,7 +67,19 @@
 					) ?? []}
 					showRelationFilter
 				/>
-			{/if}
+			</div>
+		{/each}
+	</div>
+{:else}
+	<div class="vertical-scroll-wrapper masked-overflow">
+		{#each items as { container }}
+			<Card
+				{container}
+				relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
+					isPartOf(container)
+				) ?? []}
+				showRelationFilter
+			/>
 		{/each}
 	</div>
 {/if}
