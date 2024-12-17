@@ -223,6 +223,7 @@
 
 	div :global([contenteditable]) {
 		min-height: 6.25rem;
+		padding: 0;
 		white-space: pre-wrap;
 	}
 
