@@ -60,6 +60,22 @@
 	>
 		{#each items as { guid, container } (guid)}
 			<div>
+				<slot {container}>
+					<Card
+						{container}
+						relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
+							isPartOf(container)
+						) ?? []}
+						showRelationFilter
+					/>
+				</slot>
+			</div>
+		{/each}
+	</div>
+{:else}
+	<div class="vertical-scroll-wrapper masked-overflow">
+		{#each items as { container }}
+			<slot {container}>
 				<Card
 					{container}
 					relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
@@ -67,19 +83,7 @@
 					) ?? []}
 					showRelationFilter
 				/>
-			</div>
-		{/each}
-	</div>
-{:else}
-	<div class="vertical-scroll-wrapper masked-overflow">
-		{#each items as { container }}
-			<Card
-				{container}
-				relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
-					isPartOf(container)
-				) ?? []}
-				showRelationFilter
-			/>
+			</slot>
 		{/each}
 	</div>
 {/if}

@@ -11,6 +11,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useViewModes() {
 			return features.includes('NewEditingExperience');
+		},
+		useObjectivesAndEffectsWorkspace() {
+			return features.includes('NewImpactMeasurement');
 		}
 	};
 }

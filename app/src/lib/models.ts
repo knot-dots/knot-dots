@@ -1364,6 +1364,18 @@ export function isPartOfMeasure(container: { relation: PartialRelation[]; revisi
 	};
 }
 
+export function isRelatedTo(container: { relation: Relation[]; revision: number }) {
+	return function (candidate: AnyContainer) {
+		return (
+			container.relation.findIndex(
+				({ object, subject }) =>
+					(candidate.revision === object || candidate.revision === subject) &&
+					candidate.revision !== container.revision
+			) > -1
+		);
+	};
+}
+
 export function hasMember(user: { guid: string }) {
 	return (container: AnyContainer) =>
 		container.user.find(

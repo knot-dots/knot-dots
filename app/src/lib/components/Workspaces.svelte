@@ -6,6 +6,7 @@
 	import Workspaces from '~icons/knotdots/workspaces';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { createFeatureDecisions } from '$lib/features';
 
 	export let indicators = false;
 	export let tasks = false;
@@ -34,7 +35,17 @@
 			? [
 					{
 						heading: $_('board.indicators'),
-						items: [{ text: $_('workspace.indicators'), value: '/indicators' }]
+						items: [
+							{ text: $_('workspace.indicators'), value: '/indicators' },
+							...(createFeatureDecisions($page.data.features).useObjectivesAndEffectsWorkspace()
+								? [
+										{
+											text: $_('workspace.objectives_and_effects'),
+											value: '/objectives-and-effects'
+										}
+									]
+								: [])
+						]
 					}
 				]
 			: [])
