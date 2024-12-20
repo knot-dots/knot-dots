@@ -26,12 +26,6 @@ services:
   migrate:
     build:
       context: migrate
-    command:
-      - -database
-      - postgres:///
-      - -path
-      - /srv/migrations
-      - up
     depends_on:
       db:
         condition: service_healthy
