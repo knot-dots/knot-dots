@@ -4,7 +4,7 @@
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
-	import { overlayKey } from '$lib/models';
+	import { overlayKey, predicates } from '$lib/models';
 	import { overlay } from '$lib/stores';
 
 	const duration = 300;
@@ -22,12 +22,23 @@
 			<slot name="sidebar" />
 		</aside>
 		<slot name="main" />
-		{#if $overlay && $overlay.key !== overlayKey.enum.relate}
-			<Overlay data={$overlay} />
-		{/if}
-		<slot name="relationOverlay">
-			{#if $overlay?.key === overlayKey.enum.relate}
-				<RelationOverlay object={$overlay.object} />
+		<slot name="overlay">
+			{#if $overlay}
+				<Overlay data={$overlay}>
+					<svelte:fragment slot="relationOverlay">
+						{#if $overlay.key === overlayKey.enum['relations']}
+							<RelationOverlay
+								object={$overlay.container}
+								enabledPredicates={[
+									predicates.enum['is-consistent-with'],
+									predicates.enum['is-equivalent-to'],
+									predicates.enum['is-inconsistent-with'],
+									predicates.enum['is-duplicate-of']
+								]}
+							/>
+						{/if}
+					</svelte:fragment>
+				</Overlay>
 			{/if}
 		</slot>
 	</main>

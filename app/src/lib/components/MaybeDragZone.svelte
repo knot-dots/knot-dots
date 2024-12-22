@@ -51,7 +51,7 @@
 	}
 </script>
 
-{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relate && $ability.can('relate', $overlay.object)}
+{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relations && $ability.can('relate', $overlay.container)}
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}

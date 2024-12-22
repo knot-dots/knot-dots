@@ -49,8 +49,8 @@
 		? paramsFromFragment($page.url).get('related-to')
 		: $page.url.searchParams.get('related-to');
 
-	$: if ($overlay?.key === overlayKey.enum.relate) {
-		selected = $overlay.object;
+	$: if ($overlay?.key === overlayKey.enum.relations) {
+		selected = $overlay.container;
 	} else if (!overlayContext && relatedTo && $page.data.containers) {
 		selected = $page.data.containers.find(({ guid }: Container) => guid == relatedTo);
 	} else if (!overlayContext && $page.data.container) {

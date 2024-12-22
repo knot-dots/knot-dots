@@ -9,6 +9,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
+	import Overlay from '$lib/components/Overlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -100,17 +101,23 @@
 		</Board>
 	</svelte:fragment>
 
-	<svelte:fragment slot="relationOverlay">
-		{#if $overlay?.key === overlayKey.enum.relate}
-			<RelationOverlay
-				object={$overlay.object}
-				enabledPredicates={[
-					predicates.enum['is-consistent-with'],
-					predicates.enum['is-equivalent-to'],
-					predicates.enum['is-inconsistent-with'],
-					predicates.enum['contributes-to']
-				]}
-			/>
+	<svelte:fragment slot="overlay">
+		{#if $overlay}
+			<Overlay data={$overlay}>
+				<svelte:fragment slot="relationOverlay">
+					{#if $overlay.key === overlayKey.enum['relations']}
+						<RelationOverlay
+							object={$overlay.container}
+							enabledPredicates={[
+								predicates.enum['is-consistent-with'],
+								predicates.enum['is-equivalent-to'],
+								predicates.enum['is-inconsistent-with'],
+								predicates.enum['contributes-to']
+							]}
+						/>
+					{/if}
+				</svelte:fragment>
+			</Overlay>
 		{/if}
 	</svelte:fragment>
 </Layout>

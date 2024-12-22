@@ -262,7 +262,7 @@
 			</button>
 		{/if}
 		{#if mayShowRelationButton && $ability.can('relate', container)}
-			<a class="button" href="#relate={container.guid}">
+			<a class="button" href="#relations={container.guid}">
 				{$_('establish_relations')}
 			</a>
 		{/if}

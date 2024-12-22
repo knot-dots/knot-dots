@@ -141,18 +141,6 @@ if (browser) {
 	overlayWidth.subscribe((value) => sessionStorage.setItem('overlayWidth', value.toString()));
 }
 
-const storedRelationOverlayWidth = browser ? sessionStorage.getItem('relationOverlayWidth') : null;
-
-export const relationOverlayWidth = writable<number>(
-	storedRelationOverlayWidth ? parseFloat(storedRelationOverlayWidth) : 0.5
-);
-
-if (browser) {
-	relationOverlayWidth.subscribe((value) =>
-		sessionStorage.setItem('relationOverlayWidth', value.toString())
-	);
-}
-
 type AddEffectState = {
 	target?: Container;
 	effect?: IndicatorContainer;
@@ -214,13 +202,8 @@ export type OverlayData =
 			containers: AnyContainer[];
 	  }
 	| {
-			key: 'relate';
-			object: Container;
-	  }
-	| {
 			key: 'relations';
-			container: AnyContainer;
-			containers: Container[];
+			container: Container;
 	  }
 	| {
 			key: 'tasks';
@@ -397,37 +380,10 @@ if (browser) {
 				users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {
-			const revisions = await fetchContainerRevisions(
+			const revisions = (await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.relations) as string
-			);
-			const container = revisions[revisions.length - 1];
-			const containers = await fetchRelatedContainers(
-				hashParams.get(overlayKey.enum.relations) as string,
-				{
-					audience: hashParams.has('audienceChanged')
-						? hashParams.getAll('audience')
-						: [audience.enum['audience.public'], audience.enum['audience.organization']],
-					category: hashParams.getAll('category'),
-					organization: [container.organization],
-					...(container.organizational_unit
-						? { organizationalUnit: [container.organizational_unit] }
-						: undefined),
-					relationType:
-						hashParams.getAll('relationType').length == 0
-							? [
-									predicates.enum['is-consistent-with'],
-									predicates.enum['is-equivalent-to'],
-									predicates.enum['is-inconsistent-with'],
-									predicates.enum['is-part-of']
-								]
-							: hashParams.getAll('relationType'),
-					strategyType: hashParams.getAll('strategyType'),
-					terms: hashParams.get('terms') ?? '',
-					topic: hashParams.getAll('topic')
-				},
-				hashParams.get('sort') ?? 'alpha'
-			);
-			overlay.set({ key: overlayKey.enum.relations, container, containers });
+			)) as Container[];
+			overlay.set({ key: overlayKey.enum.relations, container: revisions[revisions.length - 1] });
 		} else if (hashParams.has(overlayKey.enum.chapters)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.chapters) as string
@@ -549,11 +505,6 @@ if (browser) {
 						indicatorsFromObjectives.includes(revision) || indicatorsFromEffects.includes(revision)
 				) as IndicatorContainer[]
 			});
-		} else if (hashParams.has(overlayKey.enum.relate)) {
-			const revisions = (await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum.relate) as string
-			)) as Container[];
-			overlay.set({ key: overlayKey.enum.relate, object: revisions[revisions.length - 1] });
 		} else if (hashParams.has(overlayKey.enum.profile) && values.data.session) {
 			const containers = await fetchContainersByUser(
 				hashParams.get(overlayKey.enum.profile) as string

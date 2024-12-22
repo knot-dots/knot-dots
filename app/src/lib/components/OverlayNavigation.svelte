@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { signIn, signOut } from '@auth/sveltekit/client';
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import ArrowRightOnRectangle from '~icons/heroicons/arrow-right-on-rectangle-20-solid';
 	import ChevronLeft from '~icons/heroicons/chevron-left';
@@ -30,6 +31,8 @@
 	import { ability, applicationState, overlay, overlayHistory, user } from '$lib/stores';
 
 	export let container: AnyContainer | undefined = undefined;
+
+	let mayShowRelationButton = getContext('mayShowRelationButton');
 
 	async function navigateBack() {
 		$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
@@ -93,7 +96,7 @@
 
 	{#if container}
 		<ul class="button-group button-group-nav">
-			{#if !isStrategyContainer(container) && container.relation.length > 0}
+			{#if mayShowRelationButton}
 				<li>
 					<a
 						class="button button-nav"
@@ -105,7 +108,8 @@
 						<span class="large-only">{$_('relations')}</span>
 					</a>
 				</li>
-			{:else if isStrategyContainer(container) && container.relation.length > 0}
+			{/if}
+			{#if isStrategyContainer(container) && container.relation.length > 0}
 				<li>
 					<a
 						class="button button-nav"

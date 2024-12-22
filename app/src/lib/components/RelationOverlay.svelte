@@ -2,11 +2,9 @@
 	import { type DndEvent, dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Trash from '~icons/heroicons/trash';
-	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
-	import OverlayWrapper from '$lib/components/OverlayWrapper.svelte';
 	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
 	import { dragged, overlayHistory } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
@@ -207,81 +205,70 @@
 	}
 </script>
 
-<OverlayWrapper>
-	<header class="content-header">
-		<h2>
-			<button class="quiet" on:click={() => close()}>
-				<XMark />
-			</button>
-		</h2>
-	</header>
-	<div class="content-details">
-		<p>
-			{$_('relation_overlay.help', {
-				values: {
-					type: $_(object.payload.type),
-					nameOrTitle: object.payload.title
-				}
-			})}
-		</p>
+<div class="content-details masked-overflow">
+	<p>
+		{$_('relation_overlay.help', {
+			values: {
+				type: $_(object.payload.type),
+				nameOrTitle: object.payload.title
+			}
+		})}
+	</p>
 
-		{#each dropZones as zone, i (i)}
-			<div class="drop-zone-wrapper">
-				<svelte:component this={predicateIcons.get(zone.predicate)} />
-				{zone.help}
-				<div
-					class="drop-zone drop-zone--{zone.predicate}"
-					class:drop-zone--is-active={i === activeDropZoneIndex}
-					class:drop-zone--has-received={zone.active}
-					use:dndzone={{
-						dropTargetStyle: {},
-						items: zone.items,
-						morphDisabled: true
-					}}
-					on:consider={(e) => handleDndConsider(i, e)}
-					on:finalize={(e) => handleDndFinalize(i, e)}
-				>
-					{#each zone.items as item (item.guid)}
-						<span>{item.guid}</span>
-					{/each}
-				</div>
-			</div>
-		{/each}
-
+	{#each dropZones as zone, i (i)}
 		<div class="drop-zone-wrapper">
-			<Trash />
-			{$_('relation_overlay.remove')}
+			<svelte:component this={predicateIcons.get(zone.predicate)} />
+			{zone.help}
 			<div
-				class="drop-zone drop-zone--remove"
-				class:drop-zone--is-active={unrelateZone.considered}
-				class:drop-zone--has-received={unrelateZone.active}
+				class="drop-zone drop-zone--{zone.predicate}"
+				class:drop-zone--is-active={i === activeDropZoneIndex}
+				class:drop-zone--has-received={zone.active}
 				use:dndzone={{
 					dropTargetStyle: {},
-					items: unrelateZone.items,
+					items: zone.items,
 					morphDisabled: true
 				}}
-				on:consider={handleUnrelateConsider}
-				on:finalize={handleUnrelateFinalize}
+				on:consider={(e) => handleDndConsider(i, e)}
+				on:finalize={(e) => handleDndFinalize(i, e)}
 			>
-				{#each unrelateZone.items as item (item.guid)}
+				{#each zone.items as item (item.guid)}
 					<span>{item.guid}</span>
 				{/each}
 			</div>
 		</div>
+	{/each}
 
-		<footer class="content-footer">
-			<div class="content-actions">
-				<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
-				<a class="button" href={`?related-to=${object.guid}`}>
-					{$_('relation_overlay.close_and_show_relations')}
-				</a>
-			</div>
-		</footer>
+	<div class="drop-zone-wrapper">
+		<Trash />
+		{$_('relation_overlay.remove')}
+		<div
+			class="drop-zone drop-zone--remove"
+			class:drop-zone--is-active={unrelateZone.considered}
+			class:drop-zone--has-received={unrelateZone.active}
+			use:dndzone={{
+				dropTargetStyle: {},
+				items: unrelateZone.items,
+				morphDisabled: true
+			}}
+			on:consider={handleUnrelateConsider}
+			on:finalize={handleUnrelateFinalize}
+		>
+			{#each unrelateZone.items as item (item.guid)}
+				<span>{item.guid}</span>
+			{/each}
+		</div>
 	</div>
-</OverlayWrapper>
+</div>
+<footer class="content-footer">
+	<div class="content-actions">
+		<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
+		<a class="button" href={`?related-to=${object.guid}`}>
+			{$_('relation_overlay.close_and_show_relations')}
+		</a>
+	</div>
+</footer>
 
 <style>
-	.content-header,
 	.content-details,
 	.content-footer {
 		padding-left: 1.5rem;

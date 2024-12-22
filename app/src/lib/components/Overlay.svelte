@@ -10,7 +10,7 @@
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
-	import RelationsOverlay from '$lib/components/RelationsOverlay.svelte';
+	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
@@ -86,9 +86,7 @@
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</ChaptersOverlay>
 	{:else if data.key === overlayKey.enum['relations']}
-		<RelationsOverlay containers={data.containers}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
-		</RelationsOverlay>
+		<slot name="relationOverlay" />
 	{:else if data.key === overlayKey.enum['measures']}
 		<MeasuresOverlay containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
