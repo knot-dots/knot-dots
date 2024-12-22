@@ -1,23 +1,29 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { _ } from 'svelte-i18n';
-	import Board from '$lib/components/Board.svelte';
-	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
+	import { predicates } from '$lib/models';
 	import type { PageData } from './$types';
-	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
-	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 
 	export let data: PageData;
 
-	setContext('mayShowRelationButton', true);
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [
+			predicates.enum['is-consistent-with'],
+			predicates.enum['is-equivalent-to'],
+			predicates.enum['is-inconsistent-with'],
+			predicates.enum['is-prerequisite-for']
+		]
+	});
 </script>
 
 <Layout>

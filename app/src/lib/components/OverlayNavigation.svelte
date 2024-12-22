@@ -32,7 +32,8 @@
 
 	export let container: AnyContainer | undefined = undefined;
 
-	let mayShowRelationButton = getContext('mayShowRelationButton');
+	let mayShowRelationButton = (getContext('relationOverlay') as { enabled: boolean })
+		.enabled as boolean;
 
 	async function navigateBack() {
 		$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);

@@ -86,7 +86,7 @@
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
 		</ChaptersOverlay>
 	{:else if data.key === overlayKey.enum['relations']}
-		<slot name="relationOverlay" />
+		<RelationOverlay object={data.container} />
 	{:else if data.key === overlayKey.enum['measures']}
 		<MeasuresOverlay containers={data.containers}>
 			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />

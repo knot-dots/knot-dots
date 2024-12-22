@@ -15,14 +15,22 @@
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import { payloadTypes, resolutionStatus } from '$lib/models';
+	import { payloadTypes, predicates, resolutionStatus } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 	import { resolutionStatusBackgrounds, resolutionStatusHoverColors } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	setContext('mayShowRelationButton', true);
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [
+			predicates.enum['is-consistent-with'],
+			predicates.enum['is-equivalent-to'],
+			predicates.enum['is-inconsistent-with'],
+			predicates.enum['is-duplicate-of']
+		]
+	});
 </script>
 
 <Layout>

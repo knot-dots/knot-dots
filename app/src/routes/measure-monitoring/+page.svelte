@@ -48,7 +48,15 @@
 				) > -1
 		);
 
-	setContext('mayShowRelationButton', true);
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [
+			predicates.enum['is-consistent-with'],
+			predicates.enum['is-equivalent-to'],
+			predicates.enum['is-inconsistent-with'],
+			predicates.enum['is-duplicate-of']
+		]
+	});
 </script>
 
 <Layout>

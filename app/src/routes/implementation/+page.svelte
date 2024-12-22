@@ -10,22 +10,28 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
-	import Overlay from '$lib/components/Overlay.svelte';
-	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import { overlayKey, payloadTypes, predicates, status } from '$lib/models';
-	import { mayCreateContainer, overlay } from '$lib/stores';
+	import { payloadTypes, predicates, status } from '$lib/models';
+	import { mayCreateContainer } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	setContext('mayShowRelationButton', true);
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [
+			predicates.enum['is-consistent-with'],
+			predicates.enum['is-equivalent-to'],
+			predicates.enum['is-inconsistent-with'],
+			predicates.enum['is-prerequisite-for']
+		]
+	});
 </script>
 
 <Layout>
@@ -97,25 +103,5 @@
 				</BoardColumn>
 			{/each}
 		</Board>
-	</svelte:fragment>
-
-	<svelte:fragment slot="overlay">
-		{#if $overlay}
-			<Overlay data={$overlay}>
-				<svelte:fragment slot="relationOverlay">
-					{#if $overlay.key === overlayKey.enum['relations']}
-						<RelationOverlay
-							object={$overlay.container}
-							enabledPredicates={[
-								predicates.enum['is-consistent-with'],
-								predicates.enum['is-equivalent-to'],
-								predicates.enum['is-inconsistent-with'],
-								predicates.enum['is-prerequisite-for']
-							]}
-						/>
-					{/if}
-				</svelte:fragment>
-			</Overlay>
-		{/if}
 	</svelte:fragment>
 </Layout>

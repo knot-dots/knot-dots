@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { type DndEvent, dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Trash from '~icons/heroicons/trash';
@@ -10,7 +11,8 @@
 	import { predicateIcons } from '$lib/theme/models';
 
 	export let object: Container;
-	export let enabledPredicates: Predicate[];
+
+	let enabledPredicates = (getContext('relationOverlay') as { predicates: Predicate[] }).predicates;
 
 	type DropZone = {
 		active: boolean;

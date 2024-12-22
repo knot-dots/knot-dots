@@ -76,7 +76,7 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[] = [];
 
-	let mayShowRelationButton = getContext('mayShowRelationButton');
+	let mayShowRelationButton = (getContext('relationOverlay') as { enabled: boolean }).enabled;
 	let saveAsIndicatorTemplateDisabled = false;
 
 	function saveIndicatorAsTemplate(c: IndicatorContainer) {
