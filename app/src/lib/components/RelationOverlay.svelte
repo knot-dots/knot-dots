@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { dndzone, TRIGGERS } from 'svelte-dnd-action';
-	import type { DndEvent } from 'svelte-dnd-action';
+	import { type DndEvent, dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Trash from '~icons/heroicons/trash';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
@@ -8,46 +7,125 @@
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
 	import OverlayWrapper from '$lib/components/OverlayWrapper.svelte';
-	import { predicates } from '$lib/models';
-	import type { AnyContainer, Container, Predicate } from '$lib/models';
+	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
 	import { dragged, overlayHistory } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
 
-	export let object: AnyContainer;
+	export let object: Container;
+	export let enabledPredicates: Predicate[];
 
 	type DropZone = {
 		active: boolean;
 		help: string;
 		items: { guid: string; container: Container }[];
 		predicate: Predicate;
+		createRelation: (selected: Container, dragged: Container) => Relation;
 	};
+
+	function createRelation(subject: Container, predicate: Predicate, object: Container): Relation {
+		return {
+			object: object.revision,
+			position: 0,
+			predicate: predicate,
+			subject: subject.revision
+		};
+	}
 
 	const dropZones: DropZone[] = [
 		{
 			active: false,
 			items: [],
 			help: $_('relation_overlay.is_consistent_with'),
-			predicate: predicates.enum['is-consistent-with']
+			predicate: predicates.enum['is-consistent-with'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(dragged, this.predicate, selected);
+			}
 		},
 		{
 			active: false,
 			items: [],
 			help: $_('relation_overlay.is_inconsistent_with'),
-			predicate: predicates.enum['is-inconsistent-with']
+			predicate: predicates.enum['is-inconsistent-with'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(dragged, this.predicate, selected);
+			}
 		},
 		{
 			active: false,
 			items: [],
 			help: $_('relation_overlay.is_equivalent_to'),
-			predicate: predicates.enum['is-equivalent-to']
+			predicate: predicates.enum['is-equivalent-to'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(dragged, this.predicate, selected);
+			}
 		},
 		{
 			active: false,
 			items: [],
-			help: $_('relation_overlay.is_duplicate_of'),
-			predicate: predicates.enum['is-duplicate-of']
+			help: $_('relation_overlay.selected_is_superordinate_of_dragged', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['is-superordinate-of'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(selected, this.predicate, dragged);
+			}
+		},
+		{
+			active: false,
+			items: [],
+			help: $_('relation_overlay.dragged_is_superordinate_of_selected', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['is-superordinate-of'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(dragged, this.predicate, selected);
+			}
+		},
+		{
+			active: false,
+			items: [],
+			help: $_('relation_overlay.selected_is_prerequisite_for_dragged', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['is-prerequisite-for'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(selected, this.predicate, dragged);
+			}
+		},
+		{
+			active: false,
+			items: [],
+			help: $_('relation_overlay.dragged_is_prerequisite_for_selected', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['is-prerequisite-for'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(dragged, this.predicate, selected);
+			}
+		},
+		{
+			active: false,
+			items: [],
+			help: $_('relation_overlay.selected_contributes_to_dragged', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['contributes-to'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(selected, this.predicate, dragged);
+			}
+		},
+		{
+			active: false,
+			items: [],
+			help: $_('relation_overlay.dragged_contributes_to_selected', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['contributes-to'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(dragged, this.predicate, selected);
+			}
 		}
-	];
+	].filter(({ predicate }) => enabledPredicates.includes(predicate));
 
 	async function close() {
 		if ($overlayHistory.length > 1) {
@@ -78,12 +156,7 @@
 		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
 	) {
 		if (event.detail.info.trigger === TRIGGERS.DROPPED_INTO_ZONE && $dragged) {
-			$dragged.relation.push({
-				object: object.revision,
-				position: 0,
-				predicate: dropZones[index].predicate,
-				subject: $dragged.revision
-			});
+			$dragged.relation.push(dropZones[index].createRelation(object, $dragged));
 			dropZones[index].active = true;
 			setTimeout(() => {
 				dropZones[index].active = false;
@@ -117,9 +190,10 @@
 			$dragged.relation = $dragged.relation.filter(
 				(relation) =>
 					(relation.predicate != predicates.enum['is-consistent-with'] &&
-						relation.predicate != predicates.enum['is-duplicate-of'] &&
 						relation.predicate != predicates.enum['is-equivalent-to'] &&
-						relation.predicate != predicates.enum['is-inconsistent-with']) ||
+						relation.predicate != predicates.enum['is-inconsistent-with'] &&
+						relation.predicate != predicates.enum['is-prerequisite-for'] &&
+						relation.predicate != predicates.enum['is-superordinate-of']) ||
 					(relation.object != object.revision && relation.subject != object.revision)
 			);
 			unrelateZone.active = true;
@@ -146,12 +220,12 @@
 			{$_('relation_overlay.help', {
 				values: {
 					type: $_(object.payload.type),
-					nameOrTitle: 'title' in object.payload ? object.payload.title : object.payload.name
+					nameOrTitle: object.payload.title
 				}
 			})}
 		</p>
 
-		{#each dropZones as zone, i (zone.predicate)}
+		{#each dropZones as zone, i (i)}
 			<div class="drop-zone-wrapper">
 				<svelte:component this={predicateIcons.get(zone.predicate)} />
 				{zone.help}
@@ -217,6 +291,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
+		overflow-y: auto;
 	}
 
 	.content-details > p {
@@ -242,7 +317,7 @@
 		border-radius: 8px;
 		bottom: 0;
 		left: 0;
-		outline: dashed 2px var(--color-is-duplicate-of);
+		outline: dashed 2px var(--color-is-equivalent-to);
 		position: absolute;
 		right: 0;
 		top: 0;
@@ -265,7 +340,7 @@
 		outline-color: var(--color-is-inconsistent-with);
 	}
 
-	.drop-zone.drop-zone--is-equivalent-to {
-		outline-color: var(--color-is-equivalent-to);
+	.drop-zone.drop-zone--remove {
+		outline-color: var(--color-is-duplicate-of);
 	}
 </style>

@@ -7,7 +7,6 @@
 	import Card from '$lib/components/Card.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import NewRelationOverlay from '$lib/components/NewRelationOverlay.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
@@ -16,7 +15,6 @@
 	import Sort from '$lib/components/Sort.svelte';
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import { overlayKey, payloadTypes, predicates } from '$lib/models';
 	import { ability, overlay } from '$lib/stores';
 	import type { PageData } from './$types';
@@ -32,18 +30,14 @@
 
 		<svelte:fragment slot="filters">
 			{#if $page.url.searchParams.has('related-to')}
-				{#if createFeatureDecisions(data.features).useNewRelationTypeFilter()}
-					<RelationTypeFilter
-						enabledPredicates={[
-							predicates.enum['is-consistent-with'],
-							predicates.enum['is-equivalent-to'],
-							predicates.enum['is-inconsistent-with'],
-							predicates.enum['is-superordinate-of']
-						]}
-					/>
-				{:else}
-					<RelationTypeFilter />
-				{/if}
+				<RelationTypeFilter
+					enabledPredicates={[
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-superordinate-of']
+					]}
+				/>
 			{/if}
 			<AudienceFilter />
 			{#if !$page.data.currentOrganization.payload.default}
@@ -78,20 +72,16 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="relationOverlay">
-		{#if createFeatureDecisions(data.features).useNewRelationOverlay()}
-			{#if $overlay?.key === overlayKey.enum.relate}
-				<NewRelationOverlay
-					object={$overlay.object}
-					enabledPredicates={[
-						predicates.enum['is-consistent-with'],
-						predicates.enum['is-equivalent-to'],
-						predicates.enum['is-inconsistent-with'],
-						predicates.enum['is-superordinate-of']
-					]}
-				/>
-			{/if}
-		{:else if $overlay?.key === overlayKey.enum.relate}
-			<RelationOverlay object={$overlay.object} />
+		{#if $overlay?.key === overlayKey.enum.relate}
+			<RelationOverlay
+				object={$overlay.object}
+				enabledPredicates={[
+					predicates.enum['is-consistent-with'],
+					predicates.enum['is-equivalent-to'],
+					predicates.enum['is-inconsistent-with'],
+					predicates.enum['is-superordinate-of']
+				]}
+			/>
 		{/if}
 	</svelte:fragment>
 </Layout>
