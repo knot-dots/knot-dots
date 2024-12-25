@@ -204,6 +204,7 @@ export type OverlayData =
 	| {
 			key: 'relations';
 			container: Container;
+			relatedContainers: Container[];
 	  }
 	| {
 			key: 'tasks';
@@ -383,7 +384,23 @@ if (browser) {
 			const revisions = (await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.relations) as string
 			)) as Container[];
-			overlay.set({ key: overlayKey.enum.relations, container: revisions[revisions.length - 1] });
+			const container = revisions[revisions.length - 1];
+			const relatedContainers = (await fetchRelatedContainers(container.guid, {
+				relationType: [
+					predicates.enum['contributes-to'],
+					predicates.enum['is-consistent-with'],
+					predicates.enum['is-duplicate-of'],
+					predicates.enum['is-equivalent-to'],
+					predicates.enum['is-inconsistent-with'],
+					predicates.enum['is-prerequisite-for'],
+					predicates.enum['is-superordinate-of']
+				]
+			})) as Container[];
+			overlay.set({
+				key: overlayKey.enum.relations,
+				container,
+				relatedContainers
+			});
 		} else if (hashParams.has(overlayKey.enum.chapters)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.chapters) as string

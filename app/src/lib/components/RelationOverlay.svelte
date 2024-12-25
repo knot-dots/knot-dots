@@ -2,15 +2,16 @@
 	import { getContext } from 'svelte';
 	import { type DndEvent, dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
-	import Trash from '~icons/heroicons/trash';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
+	import Card from '$lib/components/Card.svelte';
 	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
 	import { dragged, overlayHistory } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
 
 	export let object: Container;
+	export let relatedContainers: Container[];
 
 	let enabledPredicates = (getContext('relationOverlay') as { predicates: Predicate[] }).predicates;
 
@@ -34,7 +35,17 @@
 	const dropZones: DropZone[] = [
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								(r.object == object.revision || r.subject == object.revision) &&
+								r.predicate == predicates.enum['is-consistent-with']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.is_consistent_with'),
 			predicate: predicates.enum['is-consistent-with'],
 			createRelation: function (selected: Container, dragged: Container) {
@@ -43,7 +54,17 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								(r.object == object.revision || r.subject == object.revision) &&
+								r.predicate == predicates.enum['is-inconsistent-with']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.is_inconsistent_with'),
 			predicate: predicates.enum['is-inconsistent-with'],
 			createRelation: function (selected: Container, dragged: Container) {
@@ -52,7 +73,17 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								(r.object == object.revision || r.subject == object.revision) &&
+								r.predicate == predicates.enum['is-equivalent-to']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.is_equivalent_to'),
 			predicate: predicates.enum['is-equivalent-to'],
 			createRelation: function (selected: Container, dragged: Container) {
@@ -61,7 +92,16 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								r.object == object.revision && r.predicate == predicates.enum['is-superordinate-of']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.selected_is_superordinate_of_dragged', {
 				values: { selected: object.payload.title }
 			}),
@@ -72,7 +112,17 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								r.subject == object.revision &&
+								r.predicate == predicates.enum['is-superordinate-of']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.dragged_is_superordinate_of_selected', {
 				values: { selected: object.payload.title }
 			}),
@@ -83,7 +133,16 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								r.object == object.revision && r.predicate == predicates.enum['is-prerequisite-for']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.selected_is_prerequisite_for_dragged', {
 				values: { selected: object.payload.title }
 			}),
@@ -94,7 +153,17 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								r.subject == object.revision &&
+								r.predicate == predicates.enum['is-prerequisite-for']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.dragged_is_prerequisite_for_selected', {
 				values: { selected: object.payload.title }
 			}),
@@ -105,7 +174,15 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) => r.object == object.revision && r.predicate == predicates.enum['contributes-to']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.selected_contributes_to_dragged', {
 				values: { selected: object.payload.title }
 			}),
@@ -116,7 +193,16 @@
 		},
 		{
 			active: false,
-			items: [],
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								r.subject == object.revision && r.predicate == predicates.enum['contributes-to']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
 			help: $_('relation_overlay.dragged_contributes_to_selected', {
 				values: { selected: object.payload.title }
 			}),
@@ -165,46 +251,6 @@
 			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
 		}
 	}
-
-	const unrelateZone = {
-		active: false,
-		considered: false,
-		items: [] as { guid: string; container: Container }[]
-	};
-
-	function handleUnrelateConsider(
-		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
-	) {
-		if (event.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) {
-			unrelateZone.considered = true;
-		} else if (event.detail.info.trigger === TRIGGERS.DRAGGED_LEFT) {
-			unrelateZone.considered = false;
-		}
-		unrelateZone.items = event.detail.items;
-	}
-
-	function handleUnrelateFinalize(
-		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
-	) {
-		if (event.detail.info.trigger === TRIGGERS.DROPPED_INTO_ZONE && $dragged) {
-			$dragged.relation = $dragged.relation.filter(
-				(relation) =>
-					(relation.predicate != predicates.enum['is-consistent-with'] &&
-						relation.predicate != predicates.enum['is-equivalent-to'] &&
-						relation.predicate != predicates.enum['is-inconsistent-with'] &&
-						relation.predicate != predicates.enum['is-prerequisite-for'] &&
-						relation.predicate != predicates.enum['is-superordinate-of']) ||
-					(relation.object != object.revision && relation.subject != object.revision)
-			);
-			unrelateZone.active = true;
-			setTimeout(() => {
-				unrelateZone.active = false;
-				unrelateZone.considered = false;
-			}, 2000);
-			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
-			invalidateAll();
-		}
-	}
 </script>
 
 <div class="content-details masked-overflow">
@@ -219,10 +265,12 @@
 
 	{#each dropZones as zone, i (i)}
 		<div class="drop-zone-wrapper">
-			<svelte:component this={predicateIcons.get(zone.predicate)} />
-			{zone.help}
-			<div
-				class="drop-zone drop-zone--{zone.predicate}"
+			<p>
+				<svelte:component this={predicateIcons.get(zone.predicate)} />
+				{zone.help}
+			</p>
+			<ul
+				class="carousel drop-zone drop-zone--{zone.predicate}"
 				class:drop-zone--is-active={i === activeDropZoneIndex}
 				class:drop-zone--has-received={zone.active}
 				use:dndzone={{
@@ -234,33 +282,15 @@
 				on:finalize={(e) => handleDndFinalize(i, e)}
 			>
 				{#each zone.items as item (item.guid)}
-					<span>{item.guid}</span>
+					<li>
+						<Card --height="100%" container={item.container} />
+					</li>
 				{/each}
-			</div>
+			</ul>
 		</div>
 	{/each}
-
-	<div class="drop-zone-wrapper">
-		<Trash />
-		{$_('relation_overlay.remove')}
-		<div
-			class="drop-zone drop-zone--remove"
-			class:drop-zone--is-active={unrelateZone.considered}
-			class:drop-zone--has-received={unrelateZone.active}
-			use:dndzone={{
-				dropTargetStyle: {},
-				items: unrelateZone.items,
-				morphDisabled: true
-			}}
-			on:consider={handleUnrelateConsider}
-			on:finalize={handleUnrelateFinalize}
-		>
-			{#each unrelateZone.items as item (item.guid)}
-				<span>{item.guid}</span>
-			{/each}
-		</div>
-	</div>
 </div>
+
 <footer class="content-footer">
 	<div class="content-actions">
 		<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
@@ -288,48 +318,26 @@
 	}
 
 	.drop-zone-wrapper {
-		background-color: var(--color-gray-050);
 		color: var(--color-gray-500);
-		padding: 1rem;
-		position: relative;
 		margin: 0 1.5rem;
 		stroke: var(--color-gray-500);
-		text-align: center;
 	}
 
-	.drop-zone-wrapper > :global(svg) {
-		margin: 0 auto 0.5rem;
-		stroke-width: 2.5px;
+	.drop-zone-wrapper > p {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
 	}
 
 	.drop-zone {
+		background-color: var(--color-gray-050);
 		border-radius: 8px;
-		bottom: 0;
-		left: 0;
-		outline: dashed 2px var(--color-is-equivalent-to);
-		position: absolute;
-		right: 0;
-		top: 0;
+		min-height: 10rem;
+		padding: 1rem;
 	}
 
 	.drop-zone.drop-zone--is-active {
-		outline-style: solid;
+		outline-style: dashed;
 		outline-width: 3px;
-	}
-
-	.drop-zone.drop-zone--has-received {
-		outline-style: solid;
-	}
-
-	.drop-zone.drop-zone--is-consistent-with {
-		outline-color: var(--color-is-consistent-with);
-	}
-
-	.drop-zone.drop-zone--is-inconsistent-with {
-		outline-color: var(--color-is-inconsistent-with);
-	}
-
-	.drop-zone.drop-zone--remove {
-		outline-color: var(--color-is-duplicate-of);
 	}
 </style>
