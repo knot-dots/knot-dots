@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signIn, signOut } from '@auth/sveltekit/client';
-	import { getContext } from 'svelte';
+	import { getContext, hasContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import ArrowRightOnRectangle from '~icons/heroicons/arrow-right-on-rectangle-20-solid';
 	import ChevronLeft from '~icons/heroicons/chevron-left';
@@ -32,8 +32,9 @@
 
 	export let container: AnyContainer | undefined = undefined;
 
-	let mayShowRelationButton = (getContext('relationOverlay') as { enabled: boolean })
-		.enabled as boolean;
+	let mayShowRelationButton =
+		hasContext('relationOverlay') &&
+		((getContext('relationOverlay') as { enabled: boolean }).enabled as boolean);
 
 	async function navigateBack() {
 		$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);

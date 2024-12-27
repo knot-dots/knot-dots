@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, hasContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import CopyCat from '~icons/knotdots/copycat';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
@@ -76,7 +76,9 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[] = [];
 
-	let mayShowRelationButton = (getContext('relationOverlay') as { enabled: boolean }).enabled;
+	let mayShowRelationButton =
+		hasContext('relationOverlay') &&
+		(getContext('relationOverlay') as { enabled: boolean }).enabled;
 	let saveAsIndicatorTemplateDisabled = false;
 
 	function saveIndicatorAsTemplate(c: IndicatorContainer) {
