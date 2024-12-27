@@ -1146,14 +1146,34 @@ export function getAllContainersRelatedToMeasure(
 			SELECT DISTINCT unnest(path) FROM relation r WHERE ${revision} = ANY(path)
 		`);
 
+		const otherPredicate = [
+			predicates.enum['contributes-to'],
+			predicates.enum['is-consistent-with'],
+			predicates.enum['is-duplicate-of'],
+			predicates.enum['is-equivalent-to'],
+			predicates.enum['is-inconsistent-with'],
+			predicates.enum['is-prerequisite-for']
+		];
+		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
+			SELECT cr.subject, cr.object
+			FROM container_relation cr
+			JOIN container cs ON cs.revision = cr.subject
+				AND cs.valid_currently
+				AND cr.predicate IN (${sql.join(otherPredicate, sql.fragment`, `)})
+			JOIN container co ON co.revision = cr.object
+				AND co.valid_currently
+				AND cr.predicate IN (${sql.join(otherPredicate, sql.fragment`, `)})
+			WHERE cs.revision = ${revision} OR co.revision = ${revision}
+		`);
+
 		const containerResult =
-			relationPathResult.length > 0
+			[...relationPathResult, ...otherRelationResult].length > 0
 				? await connection.any(sql.typeAlias('container')`
 					SELECT c.*
 					FROM container c
 					${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 					WHERE c.revision IN (${sql.join(
-						relationPathResult.flatMap((r) => Object.values(r)),
+						[...relationPathResult, ...otherRelationResult].flatMap((r) => Object.values(r)),
 						sql.fragment`, `
 					)})
 						AND ${prepareWhereCondition(filters)}
