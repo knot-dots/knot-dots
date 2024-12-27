@@ -98,7 +98,8 @@
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.object == object.revision && r.predicate == predicates.enum['is-superordinate-of']
+								r.subject == object.revision &&
+								r.predicate == predicates.enum['is-superordinate-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -118,8 +119,7 @@
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.subject == object.revision &&
-								r.predicate == predicates.enum['is-superordinate-of']
+								r.object == object.revision && r.predicate == predicates.enum['is-superordinate-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -139,7 +139,8 @@
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.object == object.revision && r.predicate == predicates.enum['is-prerequisite-for']
+								r.subject == object.revision &&
+								r.predicate == predicates.enum['is-prerequisite-for']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -159,8 +160,7 @@
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.subject == object.revision &&
-								r.predicate == predicates.enum['is-prerequisite-for']
+								r.object == object.revision && r.predicate == predicates.enum['is-prerequisite-for']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -179,7 +179,8 @@
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) => r.object == object.revision && r.predicate == predicates.enum['contributes-to']
+							(r) =>
+								r.subject == object.revision && r.predicate == predicates.enum['contributes-to']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -198,8 +199,7 @@
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) =>
-								r.subject == object.revision && r.predicate == predicates.enum['contributes-to']
+							(r) => r.object == object.revision && r.predicate == predicates.enum['contributes-to']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
