@@ -140,6 +140,7 @@ const predicateValues = [
 	'contributes-to',
 	'is-admin-of',
 	'is-collaborator-of',
+	'is-concrete-target-of',
 	'is-consistent-with',
 	'is-copy-of',
 	'is-creator-of',
@@ -154,6 +155,7 @@ const predicateValues = [
 	'is-part-of-measure',
 	'is-part-of-strategy',
 	'is-prerequisite-for',
+	'is-sub-target-of',
 	'is-superordinate-of'
 ] as const;
 

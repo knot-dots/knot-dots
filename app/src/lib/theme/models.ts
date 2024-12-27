@@ -46,11 +46,13 @@ import {
 export const predicateIcons = new Map<string, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>(
 	[
 		[predicates.enum['contributes-to'], ChartPie],
+		[predicates.enum['is-concrete-target-of'], ChartPie],
 		[predicates.enum['is-consistent-with'], Plus],
 		[predicates.enum['is-duplicate-of'], Square2Stack],
 		[predicates.enum['is-equivalent-to'], Bars2],
 		[predicates.enum['is-inconsistent-with'], Minus],
 		[predicates.enum['is-prerequisite-for'], ChevronDoubleRight],
+		[predicates.enum['is-sub-target-of'], ChartPie],
 		[predicates.enum['is-superordinate-of'], ChevronDoubleUp]
 	]
 );

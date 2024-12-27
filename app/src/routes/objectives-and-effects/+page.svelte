@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
@@ -18,11 +19,17 @@
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
-		isRelatedTo
+		isRelatedTo,
+		predicates
 	} from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [predicates.enum['is-concrete-target-of'], predicates.enum['is-sub-target-of']]
+	});
 
 	function relatedToFilter(container: Container) {
 		if ($page.url.searchParams.has('related-to')) {
@@ -67,32 +74,32 @@
 					</div>
 				</BoardColumn>
 				<BoardColumn title={$_('objectives')}>
-					<div class="vertical-scroll-wrapper masked-overflow">
-						{#each data.containers
-							.filter(isObjectiveContainer)
-							.filter(relatedToFilter) as container}
-							<Card
-								{container}
-								relatedContainers={[container, ...data.containers.filter(isRelatedTo(container))]}
-								showRelationFilter
-							/>
-						{/each}
-					</div>
+					<MaybeDragZone
+						containers={data.containers.filter(isObjectiveContainer).filter(relatedToFilter)}
+						let:container
+					>
+						<Card
+							{container}
+							relatedContainers={[container, ...data.containers.filter(isRelatedTo(container))]}
+							showRelationFilter
+						/>
+					</MaybeDragZone>
 				</BoardColumn>
 				<BoardColumn title={$_('effects')}>
-					<div class="vertical-scroll-wrapper masked-overflow">
-						{#each data.containers.filter(isEffectContainer).filter(relatedToFilter) as container}
-							<Card
-								{container}
-								relatedContainers={[
-									container,
-									...data.containers.filter(isRelatedTo(container)),
-									...data.containers.filter(isContainerWithEffect)
-								]}
-								showRelationFilter
-							/>
-						{/each}
-					</div>
+					<MaybeDragZone
+						containers={data.containers.filter(isEffectContainer).filter(relatedToFilter)}
+						let:container
+					>
+						<Card
+							{container}
+							relatedContainers={[
+								container,
+								...data.containers.filter(isRelatedTo(container)),
+								...data.containers.filter(isContainerWithEffect)
+							]}
+							showRelationFilter
+						/>
+					</MaybeDragZone>
 				</BoardColumn>
 			</Board>
 		{/key}

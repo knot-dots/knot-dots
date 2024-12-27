@@ -388,11 +388,13 @@ if (browser) {
 			const relatedContainers = (await fetchRelatedContainers(container.guid, {
 				relationType: [
 					predicates.enum['contributes-to'],
+					predicates.enum['is-concrete-target-of'],
 					predicates.enum['is-consistent-with'],
 					predicates.enum['is-duplicate-of'],
 					predicates.enum['is-equivalent-to'],
 					predicates.enum['is-inconsistent-with'],
 					predicates.enum['is-prerequisite-for'],
+					predicates.enum['is-sub-target-of'],
 					predicates.enum['is-superordinate-of']
 				]
 			})) as Container[];
