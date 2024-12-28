@@ -1493,6 +1493,26 @@ export function newIndicatorTemplateFromIndicator(container: IndicatorContainer)
 	});
 }
 
+export function findConnected<T extends AnyContainer>(container: T, containers: T[]) {
+	const found = new Set([container]);
+
+	const recurse = (container: T, containers: T[]) => {
+		for (const { object, predicate, subject } of container.relation) {
+			const related = containers
+				.filter(({ revision }) => revision != container.revision)
+				.find(({ revision }) => revision == object || revision == subject);
+			if (related && !found.has(related)) {
+				found.add(related);
+				recurse(related, containers);
+			}
+		}
+	};
+
+	recurse(container, containers);
+
+	return found;
+}
+
 export function findAncestors<T extends AnyContainer>(
 	container: T,
 	containers: T[],
