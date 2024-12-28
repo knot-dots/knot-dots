@@ -1493,11 +1493,18 @@ export function newIndicatorTemplateFromIndicator(container: IndicatorContainer)
 	});
 }
 
-export function findConnected<T extends AnyContainer>(container: T, containers: T[]) {
+export function findConnected<T extends AnyContainer>(
+	container: T,
+	containers: T[],
+	predicates: Predicate[]
+) {
 	const found = new Set([container]);
 
 	const recurse = (container: T, containers: T[]) => {
 		for (const { object, predicate, subject } of container.relation) {
+			if (!predicates.includes(predicate as Predicate)) {
+				continue;
+			}
 			const related = containers
 				.filter(({ revision }) => revision != container.revision)
 				.find(({ revision }) => revision == object || revision == subject);

@@ -41,7 +41,12 @@
 		);
 
 		if (selectedContainer) {
-			containers = findConnected(selectedContainer, data.containers);
+			containers = findConnected(selectedContainer, data.containers, [
+				predicates.enum['is-concrete-target-of'],
+				predicates.enum['is-measured-by'],
+				predicates.enum['is-objective-for'],
+				predicates.enum['is-sub-target-of']
+			]);
 		}
 	} else {
 		containers = new Set(data.containers);
