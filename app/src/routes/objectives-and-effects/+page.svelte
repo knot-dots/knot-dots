@@ -15,6 +15,7 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import {
 		type Container,
+		findAncestors,
 		findConnected,
 		isContainerWithEffect,
 		isEffectContainer,
@@ -45,6 +46,27 @@
 	} else {
 		containers = new Set(data.containers);
 	}
+
+	let objectivesByLevel: Map<number, Container[]>;
+
+	$: {
+		objectivesByLevel = new Map<number, Container[]>();
+
+		for (const container of data.containers.filter(isObjectiveContainer)) {
+			const ancestors = findAncestors(
+				container,
+				data.containers.filter(isObjectiveContainer),
+				predicates.enum['is-sub-target-of']
+			);
+			const level = ancestors.length;
+
+			if (objectivesByLevel.has(level)) {
+				objectivesByLevel.set(level, [...(objectivesByLevel.get(level) as Container[]), container]);
+			} else {
+				objectivesByLevel.set(level, [container]);
+			}
+		}
+	}
 </script>
 
 <Layout>
@@ -72,20 +94,17 @@
 						{/each}
 					</div>
 				</BoardColumn>
-				<BoardColumn title={$_('objectives')}>
-					<MaybeDragZone
-						containers={data.containers
-							.filter(isObjectiveContainer)
-							.filter((c) => containers.has(c))}
-						let:container
-					>
-						<Card
-							{container}
-							relatedContainers={[container, ...data.containers.filter(isRelatedTo(container))]}
-							showRelationFilter
-						/>
-					</MaybeDragZone>
-				</BoardColumn>
+				{#each objectivesByLevel.entries() as [key, value] (key)}
+					<BoardColumn title={`${$_('objectives')} ${key + 1}`}>
+						<MaybeDragZone containers={value.filter((c) => containers.has(c))} let:container>
+							<Card
+								{container}
+								relatedContainers={[container, ...data.containers.filter(isRelatedTo(container))]}
+								showRelationFilter
+							/>
+						</MaybeDragZone>
+					</BoardColumn>
+				{/each}
 				<BoardColumn title={$_('effects')}>
 					<MaybeDragZone
 						containers={data.containers.filter(isEffectContainer).filter((c) => containers.has(c))}
