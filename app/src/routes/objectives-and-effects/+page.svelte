@@ -15,6 +15,7 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import {
 		type Container,
+		findConnected,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
@@ -26,25 +27,23 @@
 
 	export let data: PageData;
 
+	let containers: Set<Container> = new Set();
+
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-concrete-target-of'], predicates.enum['is-sub-target-of']]
 	});
 
-	function relatedToFilter(container: Container) {
-		if ($page.url.searchParams.has('related-to')) {
-			const selectedContainer = data.containers.find(
-				({ guid }) => guid === $page.url.searchParams.get('related-to')
-			);
-			return (
-				selectedContainer?.revision === container.revision ||
-				container.relation.findIndex(
-					({ object, subject }) =>
-						selectedContainer?.revision === object || selectedContainer?.revision === subject
-				) > -1
-			);
+	$: if ($page.url.searchParams.has('related-to')) {
+		const selectedContainer = data.containers.find(
+			({ guid }) => guid === $page.url.searchParams.get('related-to')
+		);
+
+		if (selectedContainer) {
+			containers = findConnected(selectedContainer, data.containers);
 		}
-		return true;
+	} else {
+		containers = new Set(data.containers);
 	}
 </script>
 
@@ -68,14 +67,16 @@
 					<div class="vertical-scroll-wrapper masked-overflow">
 						{#each data.containers
 							.filter(isIndicatorContainer)
-							.filter(relatedToFilter) as container}
+							.filter((c) => containers.has(c)) as container}
 							<Card {container} relatedContainers={data.containers} showRelationFilter />
 						{/each}
 					</div>
 				</BoardColumn>
 				<BoardColumn title={$_('objectives')}>
 					<MaybeDragZone
-						containers={data.containers.filter(isObjectiveContainer).filter(relatedToFilter)}
+						containers={data.containers
+							.filter(isObjectiveContainer)
+							.filter((c) => containers.has(c))}
 						let:container
 					>
 						<Card
@@ -87,7 +88,7 @@
 				</BoardColumn>
 				<BoardColumn title={$_('effects')}>
 					<MaybeDragZone
-						containers={data.containers.filter(isEffectContainer).filter(relatedToFilter)}
+						containers={data.containers.filter(isEffectContainer).filter((c) => containers.has(c))}
 						let:container
 					>
 						<Card
