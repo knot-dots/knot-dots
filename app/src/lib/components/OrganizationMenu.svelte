@@ -21,7 +21,8 @@
 		isOrganizationContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { applicationState, mayCreateContainer } from '$lib/stores';
 
@@ -62,7 +63,7 @@
 		if (selectedContext && isOrganizationalUnitContainer(selectedContext)) {
 			organizationalUnits = [
 				selectedContext,
-				...findAncestors(selectedContext, organizationalUnits),
+				...findAncestors(selectedContext, organizationalUnits, predicates.enum['is-part-of']),
 				...findDescendants(selectedContext, organizationalUnits)
 			];
 		}
@@ -103,7 +104,8 @@
 			} else if (isOrganizationalUnitContainer(currentContext)) {
 				const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
 					currentContext,
-					$page.data.organizationalUnits
+					$page.data.organizationalUnits,
+					predicates.enum['is-part-of']
 				).find(({ payload }) => payload.image);
 				if (firstAncestorWithImage?.payload.image) {
 					logo = firstAncestorWithImage.payload.image;

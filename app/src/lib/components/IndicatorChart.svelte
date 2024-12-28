@@ -94,7 +94,9 @@
 
 			effects = effectContainers
 				.map((c) => {
-					const measure = findAncestors(c, relatedContainers).find(isContainerWithEffect);
+					const measure = findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+						isContainerWithEffect
+					);
 					return {
 						indicator: container.guid,
 						values: c.payload.plannedValues
