@@ -41,12 +41,21 @@
 		);
 
 		if (selectedContainer) {
-			containers = findConnected(selectedContainer, data.containers, [
-				predicates.enum['is-concrete-target-of'],
-				predicates.enum['is-measured-by'],
-				predicates.enum['is-objective-for'],
-				predicates.enum['is-sub-target-of']
-			]);
+			if (isIndicatorContainer(selectedContainer)) {
+				containers = findConnected(selectedContainer, data.containers, [
+					predicates.enum['is-measured-by'],
+					predicates.enum['is-objective-for']
+				]);
+			} else {
+				containers = new Set(
+					data.containers.filter(isRelatedTo(selectedContainer)).filter(isIndicatorContainer)
+				).union(
+					findConnected(selectedContainer, data.containers, [
+						predicates.enum['is-concrete-target-of'],
+						predicates.enum['is-sub-target-of']
+					])
+				);
+			}
 		}
 	} else {
 		containers = new Set(data.containers);
