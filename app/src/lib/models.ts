@@ -1540,21 +1540,22 @@ export function findAncestors<T extends AnyContainer>(
 	return [parent, ...findAncestors(parent, containers, predicate)];
 }
 
-export function findDescendants<T extends AnyContainer>(container: T, containers: T[]): T[] {
+export function findDescendants<T extends AnyContainer>(
+	container: T,
+	containers: T[],
+	predicate: Predicate
+): T[] {
 	const children = containers.filter(
 		({ relation, revision }) =>
 			relation.findIndex(
-				({ object, predicate }) =>
-					predicate == predicates.enum['is-part-of'] &&
-					object == container.revision &&
-					object != revision
+				(r) => r.predicate == predicate && r.object == container.revision && r.object != revision
 			) > -1
 	);
 
 	const descendants = [...children];
 
 	for (const child of children) {
-		descendants.push(...findDescendants(child, containers));
+		descendants.push(...findDescendants(child, containers, predicates.enum['is-part-of']));
 	}
 
 	return descendants;
@@ -1573,7 +1574,7 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 	}
 
 	for (const container of roots) {
-		const descendants = findDescendants(container, containers);
+		const descendants = findDescendants(container, containers, predicates.enum['is-part-of']);
 		const objectives = descendants.filter(isPartOf(container)).filter(isObjectiveContainer);
 
 		if (objectives.length > 0) {

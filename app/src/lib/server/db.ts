@@ -313,7 +313,7 @@ export function deleteContainerRecursively(container: AnyContainer) {
 
 			await deleteContainer(container)(txConnection);
 
-			for (const part of findDescendants(container, parts)) {
+			for (const part of findDescendants(container, parts, predicates.enum['is-part-of'])) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}
 		});

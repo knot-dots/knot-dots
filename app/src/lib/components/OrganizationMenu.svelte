@@ -64,7 +64,7 @@
 			organizationalUnits = [
 				selectedContext,
 				...findAncestors(selectedContext, organizationalUnits, predicates.enum['is-part-of']),
-				...findDescendants(selectedContext, organizationalUnits)
+				...findDescendants(selectedContext, organizationalUnits, predicates.enum['is-part-of'])
 			];
 		}
 

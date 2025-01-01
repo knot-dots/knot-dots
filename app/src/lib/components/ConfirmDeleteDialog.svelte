@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Dialog from '$lib/components/Dialog.svelte';
-	import { type AnyContainer, type Container, findDescendants } from '$lib/models';
+	import { type AnyContainer, type Container, findDescendants, predicates } from '$lib/models';
 
 	export let dialog: HTMLDialogElement;
 	export let handleSubmit: (event: SubmitEvent) => void;
@@ -20,7 +20,10 @@
 		</h3>
 		<p>
 			{$_('confirm_delete_dialog.message', {
-				values: { count: 1 + findDescendants(container, relatedContainers).length }
+				values: {
+					count:
+						1 + findDescendants(container, relatedContainers, predicates.enum['is-part-of']).length
+				}
 			})}
 		</p>
 		<button class="primary" type="submit"
