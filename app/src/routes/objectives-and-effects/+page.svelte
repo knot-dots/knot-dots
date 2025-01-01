@@ -17,6 +17,7 @@
 		type Container,
 		findAncestors,
 		findConnected,
+		findDescendants,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
@@ -46,15 +47,41 @@
 					predicates.enum['is-measured-by'],
 					predicates.enum['is-objective-for']
 				]);
-			} else {
-				containers = new Set(
-					data.containers.filter(isRelatedTo(selectedContainer)).filter(isIndicatorContainer)
-				).union(
-					findConnected(selectedContainer, data.containers, [
-						predicates.enum['is-concrete-target-of'],
+			} else if (isObjectiveContainer(selectedContainer)) {
+				const indicator = data.containers
+					.filter(isIndicatorContainer)
+					.find(isRelatedTo(selectedContainer));
+				const effect = indicator
+					? data.containers.filter(isEffectContainer).find(isRelatedTo(indicator))
+					: undefined;
+				containers = new Set([
+					selectedContainer,
+					...(indicator ? [indicator] : []),
+					...(effect ? [effect] : []),
+					...findAncestors(selectedContainer, data.containers, predicates.enum['is-sub-target-of']),
+					...findDescendants(
+						selectedContainer,
+						data.containers,
 						predicates.enum['is-sub-target-of']
-					])
-				);
+					)
+				]);
+			} else if (isEffectContainer(selectedContainer)) {
+				const objective = data.containers
+					.filter(isObjectiveContainer)
+					.find(isRelatedTo(selectedContainer));
+				const indicator = data.containers
+					.filter(isIndicatorContainer)
+					.find(isRelatedTo(selectedContainer));
+				containers = new Set([
+					selectedContainer,
+					...(indicator ? [indicator] : []),
+					...(objective
+						? [
+								objective,
+								...findAncestors(objective, data.containers, predicates.enum['is-sub-target-of'])
+							]
+						: [])
+				]);
 			}
 		}
 	} else {
