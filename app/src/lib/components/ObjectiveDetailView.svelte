@@ -1,9 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { isIndicatorContainer, predicates } from '$lib/models';
+	import {
+		isContainerWithObjective,
+		isIndicatorContainer,
+		overlayKey,
+		overlayURL,
+		predicates
+	} from '$lib/models';
 	import type { AnyContainer, Container, ObjectiveContainer } from '$lib/models';
 
 	export let container: ObjectiveContainer;
@@ -19,6 +26,7 @@
 						predicate == predicates.enum['is-objective-for'] && object == revision
 				) > -1
 		);
+	$: goal = relatedContainers.find(isContainerWithObjective);
 </script>
 
 <ContainerDetailView {container} {relatedContainers} {revisions}>
@@ -36,6 +44,17 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">
+		{#if goal}
+			<div class="meta">
+				<h3 class="meta-key">{$_('goal')}</h3>
+				<p class="meta-value">
+					<a href={overlayURL($page.url, overlayKey.enum.view, goal.guid)}>
+						{$_(goal.payload.title)}
+					</a>
+				</p>
+			</div>
+		{/if}
+
 		{#if indicator}
 			<div class="meta">
 				<h3 class="meta-key">{$_('indicator_type')}</h3>
