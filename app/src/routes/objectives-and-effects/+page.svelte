@@ -135,7 +135,7 @@
 						{/each}
 					</div>
 				</BoardColumn>
-				{#each objectivesByLevel.entries() as [key, value] (key)}
+				{#each [...objectivesByLevel.entries()].toSorted() as [key, value] (key)}
 					<BoardColumn title={`${$_('objectives')} ${key + 1}`}>
 						<MaybeDragZone containers={value.filter((c) => containers.has(c))} let:container>
 							<Card
