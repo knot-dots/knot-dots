@@ -1,14 +1,11 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, type IndicatorContainer, payloadTypes } from '$lib/models';
+import { audience, type Container, type IndicatorContainer, payloadTypes } from '$lib/models';
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, parent, url }) => {
-	let containers: IndicatorContainer[];
-
 	const { currentOrganization } = await parent();
-
-	containers = (await locals.pool.connect(
+	const containers = (await locals.pool.connect(
 		getManyContainers(
 			[currentOrganization.guid],
 			{
@@ -31,9 +28,6 @@ export const load = (async ({ locals, parent, url }) => {
 
 	return {
 		container: currentOrganization,
-		containers: filterVisible(
-			[...containers, ...relatedContainers],
-			locals.user
-		) as IndicatorContainer[]
+		containers: filterVisible([...containers, ...relatedContainers], locals.user)
 	};
 }) satisfies PageServerLoad;

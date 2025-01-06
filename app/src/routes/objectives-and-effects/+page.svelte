@@ -18,6 +18,7 @@
 		findAncestors,
 		findConnected,
 		findDescendants,
+		findLeafObjectives,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
@@ -51,13 +52,17 @@
 				const indicator = data.containers
 					.filter(isIndicatorContainer)
 					.find(isRelatedTo(selectedContainer));
-				const effect = indicator
-					? data.containers.filter(isEffectContainer).find(isRelatedTo(indicator))
-					: undefined;
 				containers = new Set([
 					selectedContainer,
 					...(indicator ? [indicator] : []),
-					...(effect ? [effect] : []),
+					...findLeafObjectives([
+						selectedContainer,
+						...findDescendants(
+							selectedContainer,
+							data.containers.filter(isObjectiveContainer),
+							predicates.enum['is-sub-target-of']
+						)
+					]).flatMap((c) => data.containers.filter(isEffectContainer).filter(isRelatedTo(c))),
 					...findAncestors(selectedContainer, data.containers, predicates.enum['is-sub-target-of']),
 					...findDescendants(
 						selectedContainer,
