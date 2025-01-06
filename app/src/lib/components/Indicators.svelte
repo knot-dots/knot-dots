@@ -14,7 +14,6 @@
 		isContainerWithObjective,
 		isIndicatorContainer,
 		isMeasureResultContainer,
-		isRelatedTo,
 		overlayKey,
 		payloadTypes,
 		predicates

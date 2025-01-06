@@ -19,7 +19,6 @@
 		findConnected,
 		findDescendants,
 		isContainerWithEffect,
-		isContainerWithObjective,
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
