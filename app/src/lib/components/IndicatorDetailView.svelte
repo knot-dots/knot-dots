@@ -81,8 +81,6 @@
 			<IndicatorTable {container} {relatedContainers} {showEffects} {showObjectives} />
 		{/if}
 
-		<Viewer value={container.payload.description} />
-
 		{#if showEffects}
 			<div class="measures">
 				<h3>{$_('measures')}</h3>
@@ -122,6 +120,8 @@
 				{/each}
 			</ul>
 		</div>
+
+		<Viewer value={container.payload.description} />
 	</svelte:fragment>
 
 	<svelte:fragment slot="meta">

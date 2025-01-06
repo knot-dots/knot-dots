@@ -82,12 +82,6 @@
 			<IndicatorTable {container} {relatedContainers} {showEffects} {showObjectives} />
 		{/if}
 
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
 		{#if showEffects}
 			<div class="measures">
 				<h3>{$_('measures')}</h3>
@@ -128,6 +122,12 @@
 			</ul>
 		</div>
 	</svelte:fragment>
+
+	<EditableFormattedText
+		editable={$applicationState.containerDetailView.editable}
+		label={$_('description')}
+		bind:value={container.payload.description}
+	/>
 </EditableContainerDetailView>
 
 <style>
