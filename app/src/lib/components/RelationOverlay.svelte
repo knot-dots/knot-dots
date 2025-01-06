@@ -425,7 +425,7 @@
 					<li>
 						<Card --height="100%" container={item.container}>
 							<svelte:fragment slot="button">
-								{#if object.relation.find((r) => zone.predicate == r.predicate && item.container.revision == r.object && object.revision == r.subject)}
+								{#if object.relation.find((r) => zone.predicate === r.predicate && item.container.revision === r.object && object.revision === r.subject)}
 									<button
 										class="button-square"
 										type="button"
