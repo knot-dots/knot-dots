@@ -109,6 +109,24 @@
 			});
 		}
 
+		const trendWithEffects =
+			effects[0]?.value < 0
+				? [
+						...effects.map(({ date, value, status }) => ({ date, value: Math.abs(value), status })),
+						...container.payload.historicalValues.map(([key, value]) => ({
+							date: new Date(key, 0),
+							value:
+								value -
+								Math.abs(
+									effects
+										.filter(({ date }) => date.getFullYear() == key)
+										.reduce((accumulator, currentValue) => accumulator + currentValue.value, 0)
+								),
+							status: 'trend'
+						}))
+					]
+				: [...effects, ...trend.map((t) => ({ ...t, status: 'trend' }))];
+
 		div?.firstChild?.remove();
 		div?.append(
 			Plot.plot({
@@ -127,18 +145,27 @@
 				marks: [
 					...(showEffects && effects.length > 0
 						? [
-								Plot.areaY([...effects, ...trend.map((t) => ({ ...t, status: 'trend' }))], {
+								Plot.areaY(trendWithEffects, {
 									x: 'date',
 									y: 'value',
 									fill: 'status',
 									interval: 'year',
-									order: [
-										'trend',
-										status.enum['status.done'],
-										status.enum['status.in_planning'],
-										status.enum['status.in_implementation'],
-										status.enum['status.idea']
-									],
+									order:
+										effects[0]?.value < 0
+											? [
+													'trend',
+													status.enum['status.idea'],
+													status.enum['status.in_planning'],
+													status.enum['status.in_implementation'],
+													status.enum['status.done']
+												]
+											: [
+													'trend',
+													status.enum['status.done'],
+													status.enum['status.in_implementation'],
+													status.enum['status.in_planning'],
+													status.enum['status.idea']
+												],
 									reduce: 'sum'
 								})
 							]
