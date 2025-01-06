@@ -2,7 +2,8 @@
 	import { getContext } from 'svelte';
 	import { type DndEvent, dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
-	import { goto } from '$app/navigation';
+	import Minus from '~icons/heroicons/minus-solid';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
@@ -32,7 +33,9 @@
 		};
 	}
 
-	const dropZones: DropZone[] = [
+	let dropZones: DropZone[] = [];
+
+	$: dropZones = [
 		{
 			active: false,
 			items: relatedContainers
@@ -372,6 +375,20 @@
 			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
 		}
 	}
+
+	async function removeRelation(subject: Container, predicate: Predicate, object: Container) {
+		object.relation = object.relation.filter(
+			(r) =>
+				r.object != object.revision || r.predicate != predicate || r.subject != subject.revision
+		);
+		subject.relation = subject.relation.filter(
+			(r) =>
+				r.object != object.revision || r.predicate != predicate || r.subject != subject.revision
+		);
+
+		await saveContainer(subject);
+		await invalidateAll();
+	}
 </script>
 
 <div class="content-details masked-overflow">
@@ -404,7 +421,29 @@
 			>
 				{#each zone.items as item (item.guid)}
 					<li>
-						<Card --height="100%" container={item.container} />
+						<Card --height="100%" container={item.container}>
+							<svelte:fragment slot="button">
+								{#if object.relation.find((r) => zone.predicate == r.predicate && item.container.revision == r.object && object.revision == r.subject)}
+									<button
+										class="button-square"
+										type="button"
+										on:click|stopPropagation={() =>
+											removeRelation(object, zone.predicate, item.container)}
+									>
+										<Minus />
+									</button>
+								{:else}
+									<button
+										class="button-square"
+										type="button"
+										on:click|stopPropagation={() =>
+											removeRelation(item.container, zone.predicate, object)}
+									>
+										<Minus />
+									</button>
+								{/if}
+							</svelte:fragment>
+						</Card>
 					</li>
 				{/each}
 			</ul>
