@@ -1555,7 +1555,7 @@ export function findDescendants<T extends AnyContainer>(
 	const descendants = [...children];
 
 	for (const child of children) {
-		descendants.push(...findDescendants(child, containers, predicates.enum['is-part-of']));
+		descendants.push(...findDescendants(child, containers, predicate));
 	}
 
 	return descendants;
