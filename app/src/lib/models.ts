@@ -1322,7 +1322,10 @@ export const user = z.object({
 	family_name: z.string().max(32).default(''),
 	given_name: z.string().max(32).default(''),
 	guid: z.string().uuid(),
-	realm: z.string().max(1024)
+	realm: z.string().max(1024),
+	settings: z.object({
+		features: z.array(z.string()).optional()
+	})
 });
 
 export type User = z.infer<typeof user>;

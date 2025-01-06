@@ -63,11 +63,14 @@ export type User = {
 	isAuthenticated: boolean;
 	memberOf: string[];
 	roles: string[];
+	settings: {
+		features?: string[];
+	};
 };
 
 export const user = derived(
 	page,
-	(values) => {
+	(values): User => {
 		if (values.data.session?.user) {
 			return {
 				...values.data.session?.user,
@@ -83,7 +86,8 @@ export const user = derived(
 				headOf: [],
 				isAuthenticated: false,
 				memberOf: [],
-				roles: []
+				roles: [],
+				settings: {}
 			};
 		}
 	},
@@ -96,7 +100,8 @@ export const user = derived(
 		headOf: [],
 		isAuthenticated: false,
 		memberOf: [],
-		roles: []
+		roles: [],
+		settings: {}
 	}
 );
 

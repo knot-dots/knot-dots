@@ -46,6 +46,7 @@ declare module '@auth/core/types' {
 			headOf: string[];
 			memberOf: string[];
 			roles: string[];
+			settings: { features?: string[] };
 		};
 	}
 }

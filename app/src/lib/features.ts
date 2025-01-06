@@ -1,3 +1,10 @@
+export const featureFlags = [
+	'NewOnboardingWorkflow',
+	'ImportFromCsv',
+	'NewEditingExperience',
+	'NewImpactMeasurement'
+] as const;
+
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
 	return {
 		useNewOnboardingWorkflow() {

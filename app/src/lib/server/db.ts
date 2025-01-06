@@ -1233,8 +1233,8 @@ export function getAllContainersRelatedToUser(guid: string) {
 export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
-			INSERT INTO "user" (family_name, given_name, realm, guid)
-			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid})
+			INSERT INTO "user" (family_name, given_name, realm, guid, settings)
+			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(<SerializableValue>user.settings)}
 			RETURNING *
 		`);
 	};
@@ -1243,9 +1243,9 @@ export function createUser(user: User) {
 export function createOrUpdateUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
-			INSERT INTO "user" (family_name, given_name, realm, guid)
-			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid})
-			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name}
+			INSERT INTO "user" (family_name, given_name, realm, guid, settings)
+			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(<SerializableValue>user.settings)})
+			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name}, settings = ${sql.jsonb(<SerializableValue>user.settings)}
 			RETURNING *
 		`);
 	};

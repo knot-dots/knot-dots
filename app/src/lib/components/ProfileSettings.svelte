@@ -3,9 +3,12 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import { featureFlags } from '$lib/features';
 	import saveUser from '$lib/client/saveUser';
 	import { user as userSchema } from '$lib/models';
 	import { user } from '$lib/stores';
+
+	let features = 'features' in $user.settings ? $user.settings.features : [];
 
 	async function save(event: { currentTarget: HTMLFormElement }) {
 		const data = new FormData(event.currentTarget);
@@ -14,7 +17,8 @@
 			family_name: data.get('familyName'),
 			given_name: data.get('givenName'),
 			guid: $user.guid,
-			realm: env.PUBLIC_KC_REALM
+			realm: env.PUBLIC_KC_REALM,
+			settings: { features: data.getAll('feature') }
 		});
 
 		if (parseResult.success) {
@@ -49,6 +53,22 @@
 		{$_('family_name')}
 		<input name="familyName" type="text" value={$user.familyName} maxlength="32" required />
 	</label>
+
+	{#if $user.roles.includes('sysadmin')}
+		<fieldset>
+			<legend>{$_('feature_flags')}</legend>
+			<ul>
+				{#each featureFlags as flag}
+					<li>
+						<label>
+							<input type="checkbox" name="feature" value={flag} bind:group={features} />
+							{flag}
+						</label>
+					</li>
+				{/each}
+			</ul>
+		</fieldset>
+	{/if}
 
 	<footer>
 		<button class="primary" type="submit">{$_('save')}</button>

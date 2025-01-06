@@ -41,7 +41,8 @@ const { handle: authentication } = SvelteKitAuth({
 						family_name: family_name,
 						given_name: given_name,
 						guid: sub,
-						realm: env.PUBLIC_KC_REALM ?? ''
+						realm: env.PUBLIC_KC_REALM ?? '',
+						settings: {}
 					})
 				);
 			}
@@ -69,6 +70,7 @@ const { handle: authentication } = SvelteKitAuth({
 				.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
 				.map(({ object }) => object);
 			session.user.roles = token.roles as string[];
+			session.user.settings = user.settings;
 			return session;
 		}
 	},
@@ -125,17 +127,12 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 			headOf: [],
 			isAuthenticated: false,
 			memberOf: [],
-			roles: []
+			roles: [],
+			settings: {}
 		};
 	}
 
-	const features = ['NewOnboardingWorkflow'];
-	if (event.locals.user.roles.includes('sysadmin')) {
-		features.push('ImportFromCsv');
-		features.push('NewEditingExperience');
-		features.push('NewImpactMeasurement');
-	}
-	event.locals.features = features;
+	event.locals.features = event.locals.user.settings.features ?? ['NewOnboardingWorkflow'];
 
 	return resolve(event);
 }) satisfies Handle;

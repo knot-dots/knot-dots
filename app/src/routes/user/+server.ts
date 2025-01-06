@@ -46,7 +46,8 @@ export const POST = (async ({ locals, request }) => {
 				family_name: lastName?.trim() ?? '',
 				given_name: firstName?.trim() ?? '',
 				guid: id,
-				realm: env.PUBLIC_KC_REALM ?? ''
+				realm: env.PUBLIC_KC_REALM ?? '',
+				settings: {}
 			})
 		);
 	} catch (error) {
@@ -56,7 +57,8 @@ export const POST = (async ({ locals, request }) => {
 				family_name: '',
 				given_name: '',
 				guid: subject,
-				realm: env.PUBLIC_KC_REALM ?? ''
+				realm: env.PUBLIC_KC_REALM ?? '',
+				settings: {}
 			})
 		);
 
