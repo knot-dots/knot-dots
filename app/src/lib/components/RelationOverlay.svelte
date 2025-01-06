@@ -361,7 +361,7 @@
 		dropZones[index].items = event.detail.items;
 	}
 
-	function handleDndFinalize(
+	async function handleDndFinalize(
 		index: number,
 		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
 	) {
@@ -372,7 +372,8 @@
 				dropZones[index].active = false;
 				activeDropZoneIndex = -1;
 			}, 2000);
-			saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
+			await saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
+			await invalidateAll();
 		}
 	}
 
