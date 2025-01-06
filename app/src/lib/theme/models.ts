@@ -1,5 +1,6 @@
 import type { SvelteComponent } from 'svelte';
 import type { SVGAttributes } from 'svelte/elements';
+import ArrowTrendingUp from '~icons/heroicons/arrow-trending-up-solid';
 import Bars2 from '~icons/heroicons/bars-2-solid';
 import ChartPie from '~icons/heroicons/chart-pie';
 import CheckCircle from '~icons/heroicons/check-circle-16-solid';
@@ -46,6 +47,7 @@ import {
 export const predicateIcons = new Map<string, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>(
 	[
 		[predicates.enum['contributes-to'], ChartPie],
+		[predicates.enum['is-affected-by'], ArrowTrendingUp],
 		[predicates.enum['is-concrete-target-of'], ChartPie],
 		[predicates.enum['is-consistent-with'], Plus],
 		[predicates.enum['is-duplicate-of'], Square2Stack],

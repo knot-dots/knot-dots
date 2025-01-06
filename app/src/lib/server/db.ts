@@ -964,6 +964,26 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 			return [];
 		}
 
+		const indicatorResult = await connection.any(sql.typeAlias('revision')`
+			SELECT c.revision
+			FROM container c
+			JOIN container_relation cr ON (c.revision = cr.subject OR c.revision = cr.object) AND cr.predicate = ${predicates.enum['is-affected-by']}
+			WHERE (cr.object IN (${sql.join(
+				containers.map(({ revision }) => revision),
+				sql.fragment`, `
+			)}) OR cr.subject IN (${sql.join(
+				containers.map(({ revision }) => revision),
+				sql.fragment`, `
+			)}))
+			  AND guid NOT IN (${sql.join(
+					containers.map(({ guid }) => guid),
+					sql.fragment`, `
+				)})
+			  AND c.payload->>'type' = ${payloadTypes.enum.indicator}
+        AND c.valid_currently
+				AND NOT c.deleted
+		`);
+
 		const objectiveAndEffectResult = await connection.any(sql.typeAlias('revision')`
 			SELECT c.revision
 			FROM container c
@@ -1016,7 +1036,7 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 					SELECT c.*
 					FROM container c
 					WHERE c.revision IN (${sql.join(
-						isPartOfResult.map(({ revision }) => revision),
+						[...isPartOfResult, ...indicatorResult].map(({ revision }) => revision),
 						sql.fragment`, `
 					)})
 				`)

@@ -123,6 +123,7 @@
 
 	const highlightColorMap = new Map<string, string>([
 		[predicates.enum['contributes-to'], 'var(--color-contributes-to)'],
+		[predicates.enum['is-affected-by'], 'var(--color-is-affected-by)'],
 		[predicates.enum['is-concrete-target-of'], 'var(--color-is-concrete-target-of)'],
 		[predicates.enum['is-consistent-with'], 'var(--color-is-consistent-with)'],
 		[predicates.enum['is-duplicate-of'], 'var(--color-is-duplicate-of)'],

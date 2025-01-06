@@ -292,6 +292,45 @@
 			createRelation: function (selected: Container, dragged: Container) {
 				return createRelation(dragged, this.predicate, selected);
 			}
+		},
+		{
+			active: false,
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) =>
+								r.subject == object.revision && r.predicate == predicates.enum['is-affected-by']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
+			help: $_('relation_overlay.selected_is_affected_by_dragged', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['is-affected-by'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(selected, this.predicate, dragged);
+			}
+		},
+		{
+			active: false,
+			items: relatedContainers
+				.filter(({ revision }) => revision != object.revision)
+				.filter(
+					({ relation }) =>
+						relation.findIndex(
+							(r) => r.object == object.revision && r.predicate == predicates.enum['is-affected-by']
+						) > -1
+				)
+				.map((container) => ({ guid: container.guid, container })),
+			help: $_('relation_overlay.dragged_is_affected_by_selected', {
+				values: { selected: object.payload.title }
+			}),
+			predicate: predicates.enum['is-affected-by'],
+			createRelation: function (selected: Container, dragged: Container) {
+				return createRelation(dragged, this.predicate, selected);
+			}
 		}
 	].filter(({ predicate }) => enabledPredicates.includes(predicate));
 

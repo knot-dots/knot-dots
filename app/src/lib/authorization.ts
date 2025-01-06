@@ -45,7 +45,11 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('relate', [payloadTypes.enum.strategy, ...strategyChapterTypes]);
+		can('relate', [
+			payloadTypes.enum.indicator,
+			payloadTypes.enum.strategy,
+			...strategyChapterTypes
+		]);
 		can(['delete-recursively', 'relate'], measureMonitoringTypes);
 		can('delete-recursively', payloadTypes.enum.measure);
 		can('invite-members', payloadTypes.options);
@@ -105,7 +109,12 @@ export default function defineAbilityFor(user: User) {
 		});
 		can(
 			'relate',
-			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
+			[
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.strategy,
+				...strategyChapterTypes,
+				...measureMonitoringTypes
+			],
 			{ managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
 		);
 		can('prioritize', payloadTypes.enum.task, {

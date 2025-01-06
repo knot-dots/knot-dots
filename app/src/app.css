@@ -41,6 +41,7 @@
 	--color-blue: #21a5ed;
 	--color-blue-background: rgba(33, 165, 237, 0.15);
 	--color-contributes-to: #7ad0ff;
+	--color-is-affected-by: #7ad0ff;
 	--color-is-concrete-target-of: #7ad0ff;
 	--color-is-consistent-with: #6edabe;
 	--color-is-duplicate-of: #f9e579;

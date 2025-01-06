@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
@@ -8,10 +9,15 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
+	import { isOrganizationalUnitContainer, isOrganizationContainer, predicates } from '$lib/models';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [predicates.enum['is-affected-by']]
+	});
 </script>
 
 <Layout>

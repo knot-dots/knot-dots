@@ -3,14 +3,7 @@
 	import type { DndEvent, Item } from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
-	import {
-		isContainerWithEffect,
-		isEffectContainer,
-		isIndicatorContainer,
-		isMeasureResultContainer,
-		isPartOf,
-		overlayKey
-	} from '$lib/models';
+	import { isPartOf, overlayKey } from '$lib/models';
 	import type { Container } from '$lib/models';
 	import Card from '$lib/components/Card.svelte';
 	import { ability, dragged, overlay } from '$lib/stores';
