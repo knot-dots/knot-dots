@@ -1587,6 +1587,16 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 	return Array.from(parentObjectives);
 }
 
+export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveContainer[] {
+	return containers.filter(
+		({ relation, revision }) =>
+			relation.findIndex(
+				({ predicate, object }) =>
+					predicate == predicates.enum['is-sub-target-of'] && object == revision
+			) == -1
+	);
+}
+
 export function findOverallObjective(container: IndicatorContainer, containers: Container[]) {
 	return containers
 		.filter(isObjectiveContainer)

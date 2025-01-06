@@ -5,10 +5,14 @@
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import EffectChart from '$lib/components/EffectChart.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
+	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Summary from '$lib/components/Summary.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isContainerWithEffect,
 		isContainerWithObjective,
@@ -184,19 +188,35 @@
 
 	<div class="content">
 		{#if isIndicatorContainer(container)}
-			<IndicatorChart
-				{container}
-				relatedContainers={[
-					...relatedContainers.filter(({ relation }) =>
-						relation.some(({ object }) => object === container.revision)
-					),
-					...relatedContainers.filter(isContainerWithEffect),
-					...relatedContainers.filter(isMeasureResultContainer),
-					...relatedContainers.filter(isContainerWithObjective)
-				]}
-				showEffects
-				showObjectives
-			/>
+			{#if createFeatureDecisions($page.data.features).useNewCharts()}
+				<NewIndicatorChart
+					{container}
+					relatedContainers={[
+						...relatedContainers.filter(({ relation }) =>
+							relation.some(({ object }) => object === container.revision)
+						),
+						...relatedContainers.filter(isContainerWithEffect),
+						...relatedContainers.filter(isMeasureResultContainer),
+						...relatedContainers.filter(isContainerWithObjective)
+					]}
+					showEffects
+					showObjectives
+				/>
+			{:else}
+				<IndicatorChart
+					{container}
+					relatedContainers={[
+						...relatedContainers.filter(({ relation }) =>
+							relation.some(({ object }) => object === container.revision)
+						),
+						...relatedContainers.filter(isContainerWithEffect),
+						...relatedContainers.filter(isMeasureResultContainer),
+						...relatedContainers.filter(isContainerWithObjective)
+					]}
+					showEffects
+					showObjectives
+				/>
+			{/if}
 			<p class="badges">
 				{#each container.payload.indicatorType as indicatorType}
 					<span class="badge">{$_(indicatorType)}</span>
@@ -209,7 +229,11 @@
 		{:else if isEffectContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				<IndicatorChart container={indicator} {relatedContainers} showEffects />
+				{#if createFeatureDecisions($page.data.features).useNewCharts()}
+					<EffectChart {container} {relatedContainers} />
+				{:else}
+					<IndicatorChart container={indicator} {relatedContainers} showEffects />
+				{/if}
 			{/if}
 		{:else if isMeasureResultContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
@@ -222,19 +246,27 @@
 								predicate === predicates.enum['is-measured-by'] && object === revision
 						) ?? -1) > -1
 				)}
-			{#if indicator}
-				<IndicatorChart
-					container={indicator}
-					relatedContainers={[container, ...relatedContainers]}
-					showEffects
-				/>
+			{#if indicator && effect}
+				{#if createFeatureDecisions($page.data.features).useNewCharts()}
+					<EffectChart container={effect} {relatedContainers} />
+				{:else}
+					<IndicatorChart
+						container={indicator}
+						relatedContainers={[container, ...relatedContainers]}
+						showEffects
+					/>
+				{/if}
 			{:else}
 				<Summary {container} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				<IndicatorChart container={indicator} {relatedContainers} showObjectives />
+				{#if createFeatureDecisions($page.data.features).useNewCharts()}
+					<ObjectiveChart {container} {relatedContainers} />
+				{:else}
+					<IndicatorChart container={indicator} {relatedContainers} showObjectives />
+				{/if}
 			{/if}
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} compact />

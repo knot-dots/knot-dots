@@ -19,6 +19,7 @@
 		findConnected,
 		findDescendants,
 		isContainerWithEffect,
+		isContainerWithObjective,
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
@@ -138,11 +139,7 @@
 				{#each [...objectivesByLevel.entries()].toSorted() as [key, value] (key)}
 					<BoardColumn title={`${$_('objectives')} ${key + 1}`}>
 						<MaybeDragZone containers={value.filter((c) => containers.has(c))} let:container>
-							<Card
-								{container}
-								relatedContainers={[container, ...data.containers.filter(isRelatedTo(container))]}
-								showRelationFilter
-							/>
+							<Card {container} relatedContainers={data.containers} showRelationFilter />
 						</MaybeDragZone>
 					</BoardColumn>
 				{/each}
@@ -154,7 +151,6 @@
 						<Card
 							{container}
 							relatedContainers={[
-								container,
 								...data.containers.filter(isRelatedTo(container)),
 								...data.containers.filter(isContainerWithEffect)
 							]}

@@ -3,7 +3,9 @@
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isContainerWithObjective,
 		isIndicatorContainer,
@@ -32,7 +34,11 @@
 <ContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		{#if indicator}
-			<IndicatorChart container={indicator} {relatedContainers} showObjectives />
+			{#if createFeatureDecisions($page.data.features).useNewCharts()}
+				<ObjectiveChart {container} {relatedContainers} />
+			{:else}
+				<IndicatorChart container={indicator} {relatedContainers} showObjectives />
+			{/if}
 		{/if}
 
 		{#if container.payload.description}

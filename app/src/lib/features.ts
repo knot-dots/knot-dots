@@ -14,6 +14,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useObjectivesAndEffectsWorkspace() {
 			return features.includes('NewImpactMeasurement');
+		},
+		useNewCharts() {
+			return features.includes('NewImpactMeasurement');
 		}
 	};
 }

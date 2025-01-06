@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { page } from '$app/stores';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -126,11 +129,15 @@
 					</table>
 				{/if}
 
-				<IndicatorChart
-					container={indicator}
-					relatedContainers={[container, ...relatedContainers]}
-					showObjectives
-				/>
+				{#if createFeatureDecisions($page.data.features).useNewCharts()}
+					<ObjectiveChart {container} {relatedContainers} />
+				{:else}
+					<IndicatorChart
+						container={indicator}
+						relatedContainers={[container, ...relatedContainers]}
+						showObjectives
+					/>
+				{/if}
 			</div>
 		{/if}
 
