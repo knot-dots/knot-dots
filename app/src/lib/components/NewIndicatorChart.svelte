@@ -78,20 +78,33 @@
 						title: c.payload.title,
 						guid: c.guid
 					}));
-				} else {
+				} else if (measure?.payload.status == status.enum['status.in_implementation']) {
 					return [
 						...c.payload.plannedValues.map(([year, value], index) => ({
 							date: new Date(year, 0),
-							value:
-								measure?.payload.status == status.enum['status.in_implementation'] &&
-								c.payload.achievedValues[index]
-									? value - c.payload.achievedValues[index][1]
-									: value,
+							value: c.payload.achievedValues[index]
+								? value - c.payload.achievedValues[index][1]
+								: value,
 							status: measure?.payload.status as string,
+							title: c.payload.title,
+							guid: c.guid
+						})),
+						...c.payload.achievedValues.map(([year, value]) => ({
+							date: new Date(year, 0),
+							value: value,
+							status: status.enum['status.done'] as string,
 							title: c.payload.title,
 							guid: c.guid
 						}))
 					];
+				} else {
+					return c.payload.plannedValues.map(([year, value]) => ({
+						date: new Date(year, 0),
+						value: value,
+						status: measure?.payload.status as string,
+						title: c.payload.title,
+						guid: c.guid
+					}));
 				}
 			});
 		}
