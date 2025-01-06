@@ -413,6 +413,7 @@
 				class:drop-zone--is-active={i === activeDropZoneIndex}
 				class:drop-zone--has-received={zone.active}
 				use:dndzone={{
+					dragDisabled: true,
 					dropTargetStyle: {},
 					items: zone.items,
 					morphDisabled: true
