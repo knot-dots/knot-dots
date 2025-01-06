@@ -8,6 +8,7 @@
 	import { page } from '$app/stores';
 	import {
 		type Container,
+		findConnected,
 		type IndicatorContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
@@ -15,24 +16,40 @@
 		isMeasureResultContainer,
 		isRelatedTo,
 		overlayKey,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { ability, dragged, overlay } from '$lib/stores';
 
 	export let containers: Container[];
 
-	let selectedContainer: Container | undefined = undefined;
+	let selectedContainer: IndicatorContainer | undefined = undefined;
 
 	$: if ($page.url.searchParams.has('related-to')) {
-		selectedContainer = containers.find(
-			({ guid }) => guid === $page.url.searchParams.get('related-to')
-		);
+		selectedContainer = containers
+			.filter(isIndicatorContainer)
+			.find(({ guid }) => guid === $page.url.searchParams.get('related-to'));
+	} else {
+		selectedContainer = undefined;
 	}
 
-	$: items = containers
-		.filter(isIndicatorContainer)
-		.filter((c) => (selectedContainer ? isRelatedTo(selectedContainer)(c) : true))
-		.map((container) => ({ guid: container.guid, container }));
+	let items: Array<{ guid: string; container: IndicatorContainer }> = [];
+
+	$: if (selectedContainer) {
+		const connectedContainers = findConnected(
+			selectedContainer,
+			containers.filter(isIndicatorContainer),
+			[predicates.enum['is-affected-by']]
+		);
+		items = containers
+			.filter(isIndicatorContainer)
+			.filter((c) => connectedContainers.has(c))
+			.map((container) => ({ guid: container.guid, container }));
+	} else {
+		items = containers
+			.filter(isIndicatorContainer)
+			.map((container) => ({ guid: container.guid, container }));
+	}
 
 	let shouldIgnoreDndEvents = false;
 
