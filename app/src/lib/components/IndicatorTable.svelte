@@ -201,10 +201,12 @@
 <div>
 	<table>
 		<thead>
-			<th></th>
-			{#each years as year}
-				<th>{year}</th>
-			{/each}
+			<tr>
+				<th></th>
+				{#each years as year}
+					<th>{year}</th>
+				{/each}
+			</tr>
 		</thead>
 
 		<tbody>

@@ -50,7 +50,7 @@
 					bind:textContent={container.payload.title}
 					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 					on:input={(e) => e.currentTarget?.closest('form')?.requestSubmit()}
-				/>
+				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">
 					{container.payload.title}

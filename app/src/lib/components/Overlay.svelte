@@ -59,7 +59,7 @@
 	style="--width-factor: {$overlayWidth}"
 >
 	<!--svelte-ignore a11y-no-static-element-interactions -->
-	<div class="resize-handle" on:mousedown|preventDefault={startExpand} />
+	<div class="resize-handle" on:mousedown|preventDefault={startExpand}></div>
 	<OverlayNavigation container={'container' in data ? data.container : undefined} />
 	{#if data.key === overlayKey.enum['edit-help']}
 		<EditHelpOverlay container={data.container}>

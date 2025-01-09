@@ -35,7 +35,7 @@
 			<DragHandle />
 		</span>
 	{:else}
-		<span />
+		<span></span>
 	{/if}
 </div>
 <div class="cell">
@@ -45,7 +45,7 @@
 			bind:textContent={container.payload.title}
 			on:input={(e) => e.currentTarget?.closest('form')?.requestSubmit()}
 			on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-		/>
+		></h3>
 	{:else}
 		<h3 contenteditable="false">{container.payload.title}</h3>
 	{/if}

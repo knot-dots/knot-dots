@@ -65,7 +65,7 @@
 
 		<button
 			class="relation-button"
-			title={$_('show_related_objects')}
+			aria-label={$_('show_related_objects')}
 			type="button"
 			class:is-active={container.guid === selectedContext?.guid}
 			on:click|stopPropagation={() => {

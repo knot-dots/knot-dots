@@ -17,7 +17,7 @@
 	{:else if $node.attrs.listType === 'bullet'}
 		<span class="bullet"></span>
 	{/if}
-	<div use:contentRef />
+	<div use:contentRef></div>
 </div>
 
 <style>

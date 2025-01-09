@@ -27,7 +27,7 @@
 			contenteditable="plaintext-only"
 			bind:textContent={container.payload.name}
 			on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-		/>
+		></h2>
 	{:else}
 		<h2 class="details-title" contenteditable="false">
 			{container.payload.name}

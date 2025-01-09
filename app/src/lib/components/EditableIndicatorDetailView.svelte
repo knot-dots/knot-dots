@@ -121,13 +121,13 @@
 				{/each}
 			</ul>
 		</div>
-	</svelte:fragment>
 
-	<EditableFormattedText
-		editable={$applicationState.containerDetailView.editable}
-		label={$_('description')}
-		bind:value={container.payload.description}
-	/>
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			label={$_('description')}
+			bind:value={container.payload.description}
+		/>
+	</svelte:fragment>
 </EditableContainerDetailView>
 
 <style>

@@ -1,5 +1,5 @@
-import type { SvelteComponent } from 'svelte';
-import type { SVGAttributes } from 'svelte/elements';
+import type { Component } from 'svelte';
+import type { SvelteHTMLElements } from 'svelte/elements';
 import ArrowTrendingUp from '~icons/heroicons/arrow-trending-up-solid';
 import Bars2 from '~icons/heroicons/bars-2-solid';
 import ChartPie from '~icons/heroicons/chart-pie';
@@ -44,20 +44,18 @@ import {
 	taskStatus
 } from '$lib/models';
 
-export const predicateIcons = new Map<string, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>(
-	[
-		[predicates.enum['contributes-to'], ChartPie],
-		[predicates.enum['is-affected-by'], ArrowTrendingUp],
-		[predicates.enum['is-concrete-target-of'], ChartPie],
-		[predicates.enum['is-consistent-with'], Plus],
-		[predicates.enum['is-duplicate-of'], Square2Stack],
-		[predicates.enum['is-equivalent-to'], Bars2],
-		[predicates.enum['is-inconsistent-with'], Minus],
-		[predicates.enum['is-prerequisite-for'], ChevronDoubleRight],
-		[predicates.enum['is-sub-target-of'], ChartPie],
-		[predicates.enum['is-superordinate-of'], ChevronDoubleUp]
-	]
-);
+export const predicateIcons = new Map<string, Component<SvelteHTMLElements['svg']>>([
+	[predicates.enum['contributes-to'], ChartPie],
+	[predicates.enum['is-affected-by'], ArrowTrendingUp],
+	[predicates.enum['is-concrete-target-of'], ChartPie],
+	[predicates.enum['is-consistent-with'], Plus],
+	[predicates.enum['is-duplicate-of'], Square2Stack],
+	[predicates.enum['is-equivalent-to'], Bars2],
+	[predicates.enum['is-inconsistent-with'], Minus],
+	[predicates.enum['is-prerequisite-for'], ChevronDoubleRight],
+	[predicates.enum['is-sub-target-of'], ChartPie],
+	[predicates.enum['is-superordinate-of'], ChevronDoubleUp]
+]);
 
 export const sdgIcons = new Map<SustainableDevelopmentGoal, string>([
 	[sustainableDevelopmentGoals.enum['sdg.01'], sdg01],
@@ -106,7 +104,7 @@ export const statusHoverColors = new Map<Status, string>([
 	[status.enum['status.rejected'], 'var(--color-hover-rejected)']
 ]);
 
-export const statusIcons = new Map<Status, typeof SvelteComponent<SVGAttributes<SVGSVGElement>>>([
+export const statusIcons = new Map<Status, Component<SvelteHTMLElements['svg']>>([
 	[status.enum['status.idea'], LightBulb],
 	[status.enum['status.in_planning'], Pencil],
 	[status.enum['status.in_implementation'], Cog8Tooth],
@@ -139,10 +137,7 @@ export const taskStatusHoverColors = new Map<TaskStatus, string>([
 	[taskStatus.enum['task_status.rejected'], 'var(--color-hover-rejected)']
 ]);
 
-export const taskStatusIcons = new Map<
-	TaskStatus,
-	typeof SvelteComponent<SVGAttributes<SVGSVGElement>>
->([
+export const taskStatusIcons = new Map<TaskStatus, Component<SvelteHTMLElements['svg']>>([
 	[taskStatus.enum['task_status.idea'], LightBulb],
 	[taskStatus.enum['task_status.in_planning'], Pencil],
 	[taskStatus.enum['task_status.in_progress'], Cog8Tooth],
@@ -173,7 +168,7 @@ export const resolutionStatusHoverColors = new Map<ResolutionStatus, string>([
 
 export const resolutionStatusIcons = new Map<
 	ResolutionStatus,
-	typeof SvelteComponent<SVGAttributes<SVGSVGElement>>
+	Component<SvelteHTMLElements['svg']>
 >([
 	[resolutionStatus.enum['resolution_status.draft'], Cog8Tooth],
 	[resolutionStatus.enum['resolution_status.in_force'], Flag],

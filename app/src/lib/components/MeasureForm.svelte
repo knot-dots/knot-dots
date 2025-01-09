@@ -25,7 +25,7 @@
 <fieldset class="form-tab" id="basic-data">
 	<label>
 		{$_('measure.summary')}
-		<textarea name="summary" maxlength="200" bind:value={container.payload.summary} />
+		<textarea name="summary" maxlength="200" bind:value={container.payload.summary}></textarea>
 	</label>
 
 	{#key 'guid' in container ? container.guid : ''}

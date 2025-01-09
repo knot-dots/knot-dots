@@ -31,7 +31,7 @@
 	<slot />
 </ul>
 
-<div role="tabpanel" aria-labelledby="id-tab" use:init />
+<div role="tabpanel" aria-labelledby="id-tab" use:init></div>
 
 <style>
 	.tabs {

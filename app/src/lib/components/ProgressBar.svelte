@@ -69,7 +69,7 @@
 						: indicator.value > 0.3
 							? 'var(--color-yellow-200)'
 							: 'var(--color-red-600)'}
-				/>
+				></span>
 			{:else if contributions['achieved'] >= 100}
 				<span
 					class="value"
@@ -78,7 +78,7 @@
 					})}
 					style:background-color="var(--color-green-500)"
 					style:width="100%"
-				/>
+				></span>
 			{:else if contributions['achieved'] + contributions['planned'] >= 100}
 				<span
 					class="value"
@@ -89,7 +89,7 @@
 						'achieved'
 					]}%, var(--color-yellow-200) {contributions['achieved']}% 100%)"
 					style:width="100%"
-				/>
+				></span>
 			{:else}
 				<span
 					class="value"
@@ -102,7 +102,7 @@
 						contributions['planned']}%, var(--color-red-600) {contributions['achieved'] +
 						contributions['planned']}%) 100%"
 					style:width="100%"
-				/>
+				></span>
 			{/if}
 		</div>
 	</div>

@@ -321,7 +321,7 @@
 			{#if showRelationFilter}
 				<button
 					class="relation-button"
-					title={$_('show_relations')}
+					aria-label={$_('show_relations')}
 					class:is-active={relatedTo === container.guid}
 					on:click|stopPropagation={() => applyRelationFilter($page.url)}
 				>

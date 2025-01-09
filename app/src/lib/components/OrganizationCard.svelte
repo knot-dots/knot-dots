@@ -79,7 +79,7 @@
 		{#if showRelationFilter}
 			<button
 				class="relation-button"
-				title={$_('show_related_objects')}
+				aria-label={$_('show_related_objects')}
 				type="button"
 				class:is-active={relatedTo === container.guid}
 				on:click|stopPropagation={() => toggleRelatedTo($page.url.searchParams)}

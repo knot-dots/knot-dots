@@ -33,7 +33,7 @@
 
 <Layout>
 	<Sidebar helpSlug="organization-edit" slot="sidebar">
-		<OrganizationTabs container={data.container} />
+		<OrganizationTabs container={data.container} slot="tabs" />
 	</Sidebar>
 
 	<svelte:fragment slot="main">
