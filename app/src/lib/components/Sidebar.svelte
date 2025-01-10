@@ -157,7 +157,7 @@
 		</li>
 	{/if}
 
-	{#if $$slots.viewMode && createFeatureDecisions($page.data.features).useViewModes()}}
+	{#if $$slots.viewMode && createFeatureDecisions($page.data.features).useViewModes()}
 		<li>
 			<button
 				class="button-nav button-square"
