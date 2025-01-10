@@ -34,7 +34,6 @@
 		"@sveltejs/kit": "^2.15.2",
 		"@sveltejs/vite-plugin-svelte": "^4.0.4",
 		"@types/nodemailer": "^6.4.17",
-		"@types/uuid": "^10.0.0",
 		"@typescript-eslint/eslint-plugin": "^8.19.1",
 		"@typescript-eslint/parser": "^8.19.1",
 		"autoprefixer": "^10.4.20",
@@ -58,6 +57,7 @@
 		"tslib": "^2.8.1",
 		"typescript": "^5.7.3",
 		"unplugin-icons": "^22.0.0",
+		"uuid": "^11.0.5",
 		"vite": "^5.4.11",
 		"vitest": "^2.1.8"
 	},
@@ -82,7 +82,6 @@
 		"roarr": "^7.21.1",
 		"slonik": "^46.4.0",
 		"unified": "^11.0.5",
-		"uuid": "^10.0.0",
 		"zod": "^3.24.1"
 	}
 }
