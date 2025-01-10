@@ -3,7 +3,7 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Roarr as log } from 'roarr';
-import { serializeError } from 'serialize-error';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
@@ -138,7 +138,7 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 }) satisfies Handle;
 
 export const handleError = (async ({ error }) => {
-	log.error(serializeError(error), String(error));
+	log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 	return {
 		message: unwrapFunctionStore(_)('error.unexpected')
 	};

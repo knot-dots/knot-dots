@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { Roarr as log } from 'roarr';
-import { serializeError } from 'serialize-error';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
@@ -61,7 +61,7 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) => {
 				user = foundUser;
 			}
 		} catch (error) {
-			log.warn(serializeError(error), String(error));
+			log.warn(isErrorLike(error) ? serializeError(error) : {}, String(error));
 		}
 	}
 
