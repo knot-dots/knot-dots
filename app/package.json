@@ -83,5 +83,8 @@
 		"slonik": "^46.4.0",
 		"unified": "^11.0.5",
 		"zod": "^3.24.1"
+	},
+	"optionalDependencies": {
+		"@rollup/rollup-linux-arm64-gnu": "^4.30.1"
 	}
 }
