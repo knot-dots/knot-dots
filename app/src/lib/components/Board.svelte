@@ -1,9 +1,9 @@
-<div class="board">
+<div>
 	<slot />
 </div>
 
 <style>
-	.board {
+	div {
 		--margin-y: 0.75rem;
 
 		display: flex;
