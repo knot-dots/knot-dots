@@ -1,15 +1,14 @@
 <script lang="ts">
-	import { createDisclosure } from 'svelte-headlessui';
+	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
-	import clickOutside from '$lib/clickOutside';
 
 	export let editable = false;
 	export let label: string;
 	export let options: Array<{ href?: string; label: string; value: string | undefined }>;
 	export let value: string | undefined;
 
-	const disclosure = createDisclosure({ expanded: false });
+	const popover = createPopover({});
 
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
@@ -26,17 +25,12 @@
 <div class="tabular">
 	<span class="label">{label}</span>
 	{#if editable}
-		<div
-			class="dropdown-reference"
-			use:popperRef
-			use:clickOutside
-			on:outsideclick={() => disclosure.close()}
-		>
-			<button class="dropdown-button" type="button" use:disclosure.button>
+		<div class="dropdown-reference" use:popperRef>
+			<button class="dropdown-button" type="button" use:popover.button>
 				{#if selected}{selected.label}{:else}&nbsp;{/if}<ChevronUpDown />
 			</button>
-			{#if $disclosure.expanded}
-				<fieldset class="dropdown-panel" use:disclosure.panel use:popperContent={extraOpts}>
+			{#if $popover.expanded}
+				<fieldset class="dropdown-panel" use:popover.panel use:popperContent={extraOpts}>
 					{#each options as option (option.value)}
 						<label>
 							<input type="radio" value={option.value} bind:group={value} on:change />

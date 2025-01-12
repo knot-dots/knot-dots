@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createPopperActions } from 'svelte-popperjs';
-	import { createDisclosure } from 'svelte-headlessui';
+	import { createPopover } from 'svelte-headlessui';
 	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
-	import clickOutside from '$lib/clickOutside';
 	import requestSubmit from '$lib/client/requestSubmit';
 
 	export let editable = false;
@@ -10,7 +9,7 @@
 	export let options: Array<{ label: string; value: string }>;
 	export let value: string[];
 
-	const disclosure = createDisclosure({ expanded: false });
+	const popover = createPopover({});
 
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
@@ -27,13 +26,8 @@
 <div class="tabular">
 	<span class="label">{label}</span>
 	{#if editable}
-		<div
-			class="dropdown-reference"
-			use:popperRef
-			use:clickOutside
-			on:outsideclick={() => disclosure.close()}
-		>
-			<button class="dropdown-button" type="button" use:disclosure.button>
+		<div class="dropdown-reference" use:popperRef>
+			<button class="dropdown-button" type="button" use:popover.button>
 				<span class="selected">
 					{#each options.filter((o) => value.includes(o.value)) as selectedOption}
 						<span class="value">{selectedOption.label}</span>
@@ -43,8 +37,8 @@
 				</span>
 				<ChevronUpDown />
 			</button>
-			{#if $disclosure.expanded}
-				<fieldset class="dropdown-panel" use:disclosure.panel use:popperContent={extraOpts}>
+			{#if $popover.expanded}
+				<fieldset class="dropdown-panel" use:popover.panel use:popperContent={extraOpts}>
 					{#each options as option (option.value)}
 						<label>
 							<input

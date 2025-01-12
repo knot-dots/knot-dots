@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { createDisclosure } from 'svelte-headlessui';
+	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
 	import { page } from '$app/stores';
-	import clickOutside from '$lib/clickOutside';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import type { AnyContainer, EmptyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -12,7 +11,7 @@
 	export let container: AnyContainer | EmptyContainer;
 	export let editable = false;
 
-	const disclosure = createDisclosure({ expanded: false });
+	const popover = createPopover({});
 
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
@@ -55,13 +54,8 @@
 <div class="tabular">
 	<span class="label">{$_('owned_by')}</span>
 	{#if editable && ($ability.can('update', container.payload.type, 'organization') || $ability.can('update', container.payload.type, 'organizational_unit'))}
-		<div
-			class="dropdown-reference"
-			use:popperRef
-			use:clickOutside
-			on:outsideclick={() => disclosure.close()}
-		>
-			<button class="dropdown-button" type="button" use:disclosure.button>
+		<div class="dropdown-reference" use:popperRef>
+			<button class="dropdown-button" type="button" use:popover.button>
 				<span class="selected">
 					<span class="value">{selectedOrganization.label}</span>
 					{#if selectedOrganizationalUnit?.value}
@@ -70,8 +64,8 @@
 				</span>
 				<ChevronUpDown />
 			</button>
-			{#if $disclosure.expanded}
-				<fieldset class="dropdown-panel" use:disclosure.panel use:popperContent={extraOpts}>
+			{#if $popover.expanded}
+				<fieldset class="dropdown-panel" use:popover.panel use:popperContent={extraOpts}>
 					{#each organizationOptions as option (option.value)}
 						{#if $ability.can('update', container.payload.type, 'organization')}
 							<label class:is-hidden={option.value === container.organization}>
