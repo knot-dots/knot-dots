@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { flip } from 'svelte/animate';
-	import { _ } from 'svelte-i18n';
 	import { dragHandleZone } from 'svelte-dnd-action';
+	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -144,9 +144,16 @@
 		<div class="table-head">
 			<div class="row">
 				<div class="cell"></div>
-				<div class="cell"></div>
-				<div class="cell">{$_('fulfillment_date')}</div>
+				<div class="cell">{$_('title')}</div>
+				<div class="cell">{$_('description')}</div>
 				<div class="cell">{$_('status')}</div>
+				<div class="cell">{$_('organization')}</div>
+				<div class="cell">{$_('organizational_unit')}</div>
+				<div class="cell">{$_('topic')}</div>
+				<div class="cell">{$_('category')}</div>
+				<div class="cell">{$_('fulfillment_date')}</div>
+				<div class="cell">{$_('planned_duration')}</div>
+				<div class="cell">{$_('audience')}</div>
 				<div class="cell">{$_('object')}</div>
 			</div>
 		</div>
@@ -163,7 +170,10 @@
 					on:submit|preventDefault={debouncedSave(part)}
 					novalidate
 				>
-					<EditableRow container={part} editable={$applicationState.containerDetailView.editable} />
+					<EditableRow
+						container={part}
+						editable={$applicationState.containerDetailView.editable ?? false}
+					/>
 				</form>
 			{/each}
 		</div>
