@@ -10,6 +10,8 @@
 	--color-gray-300: #e2e2ea;
 	--color-gray-400: #d5d5dc;
 	--color-gray-500: #6b7280;
+	--color-gray-600: #4b5563;
+	--color-gray-700: #374151;
 	--color-gray-800: #1f2a37;
 	--color-gray-900: #111827;
 	--color-green-050: #f3faf7;
@@ -205,7 +207,7 @@ select {
 table, .table {
 	border-collapse: collapse;
 	border-color: inherit;
-	color: var(--color-gray-500);
+	color: var(--color-gray-700);
 	display: table;
 	text-align: left;
 	text-indent: 0;
@@ -214,13 +216,11 @@ table, .table {
 
 thead, .table-head {
 	background: var(--color-gray-050);
-	color: var(--color-gray-800);
+	color: var(--color-gray-600);
 	display: table-header-group;
-	text-transform: uppercase;
 }
 
 tbody, .table-body {
-	color: var(--color-gray-900);
 	display: table-row-group;
 }
 
@@ -230,12 +230,12 @@ tr, .row {
 }
 
 th {
-	padding: 0.75rem 1.5rem;
+	padding: 0.5rem;
 }
 
 td, .cell {
 	display: table-cell;
-	padding: 1rem 1.5rem;
+	padding: 0.75rem 0.5rem;
 	vertical-align: middle
 }
 
@@ -489,7 +489,6 @@ textarea {
 	background-color: var(--color-gray-050);
 	border: solid 1px var(--color-gray-300);
 	border-radius: 8px;
-	color: var(--color-gray-500);
 	display: block;
 	font-size: 1rem;
 	font-weight: 400;
@@ -850,14 +849,6 @@ label > input[type='checkbox'].toggle {
 	padding: 0.75rem 1rem;
 }
 
-.details-editable .markdown-body > :first-child {
-	margin-top: 0;
-}
-
-.details-editable .markdown-body > :last-child {
-	margin-bottom: 0;
-}
-
 .meta {
 	display: flex;
 	flex-direction: row;
@@ -919,10 +910,12 @@ label > input[type='checkbox'].toggle {
 	margin: 0.875rem 0;
 }
 
+.markdown-body > *:first-child,
 .milkdown .editor > *:first-child {
 	margin-top: 0;
 }
 
+.markdown-body > *:last-child,
 .milkdown .editor > *:last-child {
 	margin-bottom: 0;
 }
@@ -977,6 +970,7 @@ label > input[type='checkbox'].toggle {
 	gap: 0.25rem;
 	padding: 0.125rem 0.75rem;
 	text-align: center;
+	white-space: nowrap;
 }
 
 .badge.badge--large {
@@ -1055,6 +1049,7 @@ label > input[type='checkbox'].toggle {
 
 .dropdown-panel {
 	background-color: white;
+	margin: 0;
 	max-height: 20rem;
 	overflow-x: hidden;
 	overflow-y: auto;
@@ -1063,7 +1058,6 @@ label > input[type='checkbox'].toggle {
 }
 
 .dropdown-reference {
-	position: relative;
 }
 
 /* Utility classes */
