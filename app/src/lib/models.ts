@@ -1127,6 +1127,26 @@ export function isContainerWithFulfillmentDate(
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
+export type ContainerWithDuration = AnyContainer & {
+	payload: AnyPayload & { startDate: string; endDate: string };
+};
+
+export function isContainerWithDuration(
+	container: AnyContainer
+): container is ContainerWithDuration {
+	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
+}
+
+export type ContainerWithDescription = AnyContainer & {
+	payload: AnyPayload & { description: string | undefined };
+};
+
+export function isContainerWithDescription(
+	container: AnyContainer
+): container is ContainerWithDescription {
+	return hasProperty(container.payload, 'description');
+}
+
 export const newContainer = anyContainer
 	.omit({
 		guid: true,
