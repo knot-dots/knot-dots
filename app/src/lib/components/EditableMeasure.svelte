@@ -70,6 +70,7 @@
 {:then measureCandidates}
 	<EditableSingleChoice
 		{editable}
+		handleChange={onChange}
 		label={$_('measure')}
 		options={[
 			{ value: undefined, label: $_('not_part_of_measure') },
@@ -80,6 +81,5 @@
 			}))
 		]}
 		value={isPartOfMeasureObject ? String(isPartOfMeasureObject) : undefined}
-		on:change={onChange}
 	/>
 {/await}

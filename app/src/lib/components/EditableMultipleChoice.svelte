@@ -1,24 +1,11 @@
 <script lang="ts">
-	import { createPopperActions } from 'svelte-popperjs';
-	import { createPopover } from 'svelte-headlessui';
-	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
 
 	export let editable = false;
 	export let label: string;
 	export let options: Array<{ label: string; value: string }>;
 	export let value: string[];
-
-	const popover = createPopover({});
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
-	};
 
 	$: selected = options.filter((o) => value.includes(o.value)).map(({ label }) => label);
 </script>
@@ -26,33 +13,7 @@
 <div class="tabular">
 	<span class="label">{label}</span>
 	{#if editable}
-		<div class="dropdown-reference" use:popperRef>
-			<button class="dropdown-button" type="button" use:popover.button>
-				<span class="selected">
-					{#each options.filter((o) => value.includes(o.value)) as selectedOption}
-						<span class="value">{selectedOption.label}</span>
-					{:else}
-						&nbsp;
-					{/each}
-				</span>
-				<ChevronUpDown />
-			</button>
-			{#if $popover.expanded}
-				<fieldset class="dropdown-panel" use:popover.panel use:popperContent={extraOpts}>
-					{#each options as option (option.value)}
-						<label>
-							<input
-								type="checkbox"
-								value={option.value}
-								bind:group={value}
-								on:change={requestSubmit}
-							/>
-							{option.label}
-						</label>
-					{/each}
-				</fieldset>
-			{/if}
-		</div>
+		<MultipleChoiceDropdown handleChange={requestSubmit} {options} bind:value />
 	{:else}
 		<ul class="selected">
 			{#each options.filter((o) => value.includes(o.value)) as selectedOption}
@@ -65,12 +26,6 @@
 </div>
 
 <style>
-	button {
-		border: none;
-		min-width: 3rem;
-		padding: 0.75rem 0.25rem 0.75rem 1rem;
-	}
-
 	.selected {
 		display: block;
 	}

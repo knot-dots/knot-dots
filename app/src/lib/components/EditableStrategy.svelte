@@ -70,6 +70,7 @@
 {:then strategyCandidates}
 	<EditableSingleChoice
 		{editable}
+		handleChange={onChange}
 		label={$_('strategy')}
 		options={[
 			{ value: undefined, label: $_('not_part_of_strategy') },
@@ -80,6 +81,5 @@
 			}))
 		]}
 		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : undefined}
-		on:change={onChange}
 	/>
 {/await}

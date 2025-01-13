@@ -141,6 +141,7 @@
 {:then isPartOfOptions}
 	<EditableSingleChoice
 		{editable}
+		handleChange={onChange}
 		label={$_('superordinate_element')}
 		options={[
 			{ value: undefined, label: $_('not_part_of') },
@@ -151,6 +152,5 @@
 			}))
 		]}
 		value={isPartOfObject ? String(isPartOfObject) : undefined}
-		on:change={onChange}
 	/>
 {/await}
