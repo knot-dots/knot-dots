@@ -195,24 +195,15 @@
 	}
 
 	.table {
-		margin-left: calc(4rem - 1.25rem - 2rem);
 		width: fit-content;
 	}
 
-	.table-body {
-		color: inherit;
-	}
-
-	.table-head {
-		background-color: transparent;
-		position: sticky;
-	}
-
 	.table-head .cell {
-		padding: 0.75rem 1rem;
+		padding: 0.5rem;
+		white-space: nowrap;
 	}
 
-	.row {
-		border: none;
+	.row:hover {
+		background-color: var(--color-gray-050);
 	}
 </style>

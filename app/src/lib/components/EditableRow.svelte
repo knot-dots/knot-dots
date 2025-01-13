@@ -136,90 +136,90 @@
 		{/if}
 	{/if}
 </div>
-<div class="cell">
-	{#if 'status' in container.payload}
+
+<div class="cell cell-nowrap">
+	{#if isContainerWithDuration(container)}
 		{#if editable}
-			<div
-				class="dropdown-reference"
-				use:popperRef
-				use:clickOutside
-				on:outsideclick={() => disclosure.close()}
-			>
-				<button class="dropdown-button" type="button" use:disclosure.button>
-					{#if selectedStatus}{selectedStatus.label}{:else}&nbsp;{/if}<ChevronUpDown />
-				</button>
-				{#if $disclosure.expanded}
-					<fieldset class="dropdown-panel" use:disclosure.panel use:popperContent={extraOpts}>
-						{#each statusOptions as option (option.value)}
-							<label>
-								<input
-									type="radio"
-									value={option.value}
-									bind:group={container.payload.status}
-									on:change={requestSubmit}
-								/>
-								{option.label}
-							</label>
-						{/each}
-					</fieldset>
-				{/if}
-			</div>
-		{:else if selectedStatus}
-			<span>{selectedStatus.label}</span>
+			<input type="date" bind:value={container.payload.startDate} onchange={requestSubmit} />—
+			<input type="date" bind:value={container.payload.endDate} onchange={requestSubmit} />
+		{:else}
+			{#if container.payload.startDate}
+				<time datetime={container.payload.startDate}>
+					{$date(new Date(container.payload.startDate), {
+						day: '2-digit',
+						month: '2-digit',
+						year: 'numeric'
+					})}
+				</time>{/if}{#if container.payload.endDate}–<time datetime={container.payload.endDate}>
+					{$date(new Date(container.payload.endDate), {
+						day: '2-digit',
+						month: '2-digit',
+						year: 'numeric'
+					})}
+				</time>
+			{/if}
 		{/if}
 	{/if}
 </div>
+
+<div class="cell">
+	{#if 'audience' in container.payload}
+		{#if editable}
+			<AudienceDropdown bind:value={container.payload.audience} />
+		{:else if container.payload.audience.length > 0}
+			<ul>
+				{#each container.payload.audience as audience}
+					<li>{$_(audience)}</li>
+				{/each}
+			</ul>
+		{/if}
+	{/if}
+</div>
+
 <div class="cell">
 	<span>{$_(container.payload.type)}</span>
 </div>
 
 <style>
 	h3 {
+		color: var(--color-gray-900);
 		font-size: 1rem;
-		font-weight: 600;
+		font-weight: 500;
 		overflow: auto;
 	}
 
 	input[type='date'] {
 		border: none;
-		border-radius: 0;
-		display: flex;
+		display: inline-flex;
 		line-height: 1.5;
 		max-height: 3rem;
+		width: fit-content;
 	}
 
 	.cell {
-		padding: 0;
+		overflow: hidden;
+		vertical-align: top;
 		white-space: nowrap;
 	}
 
+	.cell:nth-child(1) {
+		color: var(--color-gray-500);
+		min-width: calc(20px + 2 * 0.5rem);
+	}
+
 	.cell:nth-child(n + 2) {
-		border: solid 1px var(--color-gray-200);
 		max-width: 20rem;
 	}
 
-	.cell > * {
+	.category {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		width: 10rem;
+	}
+
+	.category > li {
 		display: block;
-		padding: 0.75rem 1rem;
-	}
-
-	.cell:nth-child(1) > span {
-		color: var(--color-gray-500);
-		width: calc(1.25rem + 2rem);
-	}
-
-	.cell > :is(input[type='date'], [contenteditable='plaintext-only'], .dropdown-reference) {
-		background-color: var(--color-gray-050);
-	}
-
-	.dropdown-button {
-		background-color: transparent;
-		border: none;
-		border-radius: 0;
-		padding: 0;
-	}
-
-	.dropdown-panel {
-		width: auto;
+		flex-shrink: 0;
 	}
 </style>

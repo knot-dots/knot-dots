@@ -44,5 +44,6 @@
 	button {
 		border: none;
 		padding: 0.75rem 0.25rem 0.75rem 1rem;
+		text-wrap: nowrap;
 	}
 </style>
