@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import { resolutionStatus } from '$lib/models';
 
@@ -13,5 +12,4 @@
 	label={$_('resolution_status')}
 	options={resolutionStatus.options.map((o) => ({ value: o, label: $_(o) }))}
 	bind:value
-	on:change={requestSubmit}
 />
