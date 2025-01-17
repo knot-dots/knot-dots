@@ -72,8 +72,8 @@ services:
       - qa
   smtp:
     environment:
-      ServerOptions__AuthenticationRequired: 1
-      ServerOptions__SmtpAllowAnyCredentials: 1
+      ServerOptions__AuthenticationRequired: true
+      ServerOptions__SmtpAllowAnyCredentials: true
     image: rnwood/smtp4dev
     ports:
       - "8081:80"
