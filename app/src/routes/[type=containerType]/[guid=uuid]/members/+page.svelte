@@ -34,7 +34,7 @@
 					</button>
 				</h2>
 			</header>
-			<div class="content-details masked-overflow table">
+			<div class="content-details masked-overflow">
 				<Members container={data.container} users={data.users} />
 			</div>
 		</div>
