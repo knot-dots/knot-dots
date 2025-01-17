@@ -128,11 +128,9 @@
 				<td>
 					{#key container.user}
 						<select name="role" on:change={handleChangeRole(u, container)}>
-							{#if !isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)}
-								<option value="role.observer" selected={isObserverOf(u, container)}>
-									{$_('role.observer')}
-								</option>
-							{/if}
+							<option value="role.observer" selected={isObserverOf(u, container)}>
+								{$_('role.observer')}
+							</option>
 							<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
 								{$_('role.collaborator')}
 							</option>
