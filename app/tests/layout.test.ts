@@ -9,7 +9,9 @@ test('home screen has expected regions', async ({ page, viewport }) => {
 test('navigation contains expected elements', async ({ page, viewport }) => {
 	await page.goto('/');
 	await expect(
-		page.getByRole('navigation').getByRole('button', { name: 'Organization menu' })
+		page
+			.getByRole('navigation')
+			.getByRole('button', { name: 'Organizations and organizational units' })
 	).toBeVisible();
 	await expect(
 		page.getByRole('navigation').getByRole('button', { name: 'Workspaces' })

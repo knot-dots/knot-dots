@@ -1,3 +1,9 @@
+<script module>
+	import { createPopover } from 'svelte-headlessui';
+
+	export const popover = createPopover({});
+</script>
+
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
@@ -9,8 +15,8 @@
 	import logo1 from '$lib/assets/logo-1.svg';
 	import logo2 from '$lib/assets/logo-2.svg';
 	import logo3 from '$lib/assets/logo-3.svg';
-	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
 	import OrganizationMenuCard from '$lib/components/OrganizationMenuCard.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
@@ -24,23 +30,13 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { applicationState, mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 
 	$: if (paramsFromURL($page.url).has('create')) {
-		$applicationState.organizationMenu.showDropDown = false;
+		popover.close();
 	}
 
-	$: showDropDown = $applicationState.organizationMenu.showDropDown;
-
-	function toggleDropDown() {
-		applicationState.update((state) => ({
-			...state,
-			organizationMenu: {
-				...state.organizationMenu,
-				showDropDown: !state.organizationMenu.showDropDown
-			}
-		}));
-	}
+	popover.set({ label: $_('organizations_and_organizational_units') });
 
 	let organizations: OrganizationContainer[];
 	let organizationalUnitsByLevel: OrganizationalUnitContainer[][];
@@ -140,21 +136,17 @@
 		</span>
 	</a>
 
-	<button
-		class="button-nav organization-menu-toggle"
-		class:is-active={showDropDown}
-		type="button"
-		on:click={toggleDropDown}
-		aria-controls="organization-menu-details"
-		aria-expanded={showDropDown}
-		aria-label={showDropDown ? $_('close_organization_menu') : $_('open_organization_menu')}
-	>
-		<span title={$_('organizations_and_organizational_units')}><Organization /></span>
-		{#if showDropDown}<ChevronUp />{:else}<ChevronDown />{/if}
+	<button class="button-nav organization-menu-toggle" type="button" use:popover.button>
+		<span><Organization /></span>
+		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
-	{#if showDropDown}
-		<div class="organization-menu-details" transition:slide={{ axis: 'y', duration: 400 }}>
+	{#if $popover.expanded}
+		<div
+			class="organization-menu-details"
+			transition:slide={{ axis: 'y', duration: 400 }}
+			use:popover.panel
+		>
 			<Board>
 				<BoardColumn
 					--background="transparent"

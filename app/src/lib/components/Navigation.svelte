@@ -5,17 +5,15 @@
 	import Members from '~icons/knotdots/members';
 	import { page } from '$app/stores';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
+	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { boards } from '$lib/models';
-	import { ability, applicationState, user } from '$lib/stores';
+	import { ability, user } from '$lib/stores';
 
 	$: selectedContext = $page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
 </script>
 
-<nav
-	class:is-elevated={$applicationState.organizationMenu.showDropDown}
-	data-sveltekit-preload-data="hover"
->
+<nav class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover">
 	<OrganizationMenu />
 
 	<div class="main-menu">
