@@ -11,7 +11,7 @@
 	export let indicators = false;
 	export let tasks = false;
 
-	const menu = createMenu();
+	const menu = createMenu({ label: $_('workspaces') });
 
 	const groups = [
 		{
@@ -50,29 +50,32 @@
 				]
 			: [])
 	];
+
+	function onChange(e: Event) {
+		const selected = (e as CustomEvent).detail.selected;
+		if (selected) {
+			goto(selected);
+		}
+	}
 </script>
 
 <div class="dropdown">
-	<button class="button button-nav dropdown-toggle" title={$_('workspaces')} use:menu.button>
+	<button class="button button-nav dropdown-toggle" use:menu.button on:change={onChange}>
 		<span class="small-only"><Workspaces /></span>
 		<span class="large-only">{$_('workspaces')}</span>
 		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
 	{#if $menu.expanded}
-		<ul>
-			{#each groups as { heading, items }}
+		<ul use:menu.items>
+			{#each groups as { heading, items }, index}
 				<li class="group">
-					<p>{heading}</p>
-					<ul>
+					<p id="group-{index}">{heading}</p>
+					<ul role="group" aria-labelledby="group-{index}">
 						{#each items as { text, value }}
-							<li>
-								<label>
-									<input
-										type="radio"
-										checked={$page.url.pathname === value}
-										on:click={async () => await goto(value)}
-									/>
+							<li class:is-active={$menu.active === value}>
+								<label use:menu.item={{ value }}>
+									<input type="radio" checked={$page.url.pathname === value} />
 									{text}
 								</label>
 							</li>
