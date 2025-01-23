@@ -74,11 +74,13 @@
 	}
 
 	function mayDeriveFrom(container: AnyContainer) {
-		return container.relation.some(
-			({ predicate }) =>
-				predicate === predicates.enum['is-part-of-strategy'] ||
-				predicate === predicates.enum['is-part-of-measure']
-		);
+		return container.relation
+			.filter(({ object }) => object !== container.revision)
+			.some(
+				({ predicate }) =>
+					predicate === predicates.enum['is-part-of-strategy'] ||
+					predicate === predicates.enum['is-part-of-measure']
+			);
 	}
 
 	async function createAnother(container: AnyContainer) {
