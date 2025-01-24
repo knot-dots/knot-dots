@@ -35,6 +35,7 @@
 	"confirm_delete_dialog.message": "Möchten Sie {count, plural, one {dieses Objekt} other {diese # Objekte}} wirklich löschen?",
 	"confirm_delete_dialog.button": "Ich möchte \"{title}\" löschen",
 	"copy": "Kopieren",
+	"copy_of": "Kopie: {title}",
 	"cover": "Titelbild",
 	"create_another": "Weiteres Objekt",
 	"created_by": "{date, date, long} von {creator}",

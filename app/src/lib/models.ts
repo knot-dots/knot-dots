@@ -1,4 +1,5 @@
 import type { MongoAbility } from '@casl/ability';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 
 export type ContainerDetailViewTabKey =
@@ -1740,7 +1741,8 @@ export function createCopyOf(
 
 	copy.payload = {
 		...copy.payload,
-		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
+		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
+		title: unwrapFunctionStore(_)('copy_of', { values: { title: copy.payload.title } })
 	};
 
 	copy.relation.push({
