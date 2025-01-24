@@ -207,6 +207,20 @@
 			<li>
 				<a
 					class="button button-nav"
+					class:is-active={paramsFromFragment($page.url).has(overlayKey.enum['my-measures'])}
+					href={`${overlayURL($page.url, overlayKey.enum.profile, $user.guid)}&${
+						overlayKey.enum['my-measures']
+					}`}
+					title={$_('profile.my_measures')}
+				>
+					<span class="small-only"><Tasks /></span>
+					<span class="large-only">{$_('profile.my_measures')}</span>
+				</a>
+			</li>
+
+			<li>
+				<a
+					class="button button-nav"
 					class:is-active={paramsFromFragment($page.url).has(overlayKey.enum['my-settings'])}
 					href={`${overlayURL($page.url, overlayKey.enum['profile'], $user.guid)}&${
 						overlayKey.enum['my-settings']

@@ -34,6 +34,7 @@ export const overlayKey = z.enum([
 	'measure-monitoring',
 	'measures',
 	'members',
+	'my-measures',
 	'my-settings',
 	'my-tasks',
 	'profile',

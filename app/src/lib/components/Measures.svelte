@@ -3,10 +3,10 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { type MeasureContainer, status } from '$lib/models';
+	import { type ContainerWithEffect, status } from '$lib/models';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 
-	export let containers: MeasureContainer[];
+	export let containers: ContainerWithEffect[];
 </script>
 
 <Board>
