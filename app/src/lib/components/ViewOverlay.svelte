@@ -74,13 +74,16 @@
 	}
 
 	function mayDeriveFrom(container: AnyContainer) {
-		return container.relation
-			.filter(({ object }) => object !== container.revision)
-			.some(
-				({ predicate }) =>
-					predicate === predicates.enum['is-part-of-strategy'] ||
-					predicate === predicates.enum['is-part-of-measure']
-			);
+		return (
+			isStrategyContainer(container) ||
+			container.relation
+				.filter(({ object }) => object !== container.revision)
+				.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-strategy'] ||
+						predicate === predicates.enum['is-part-of-measure']
+				)
+		);
 	}
 
 	async function createAnother(container: AnyContainer) {
@@ -94,7 +97,12 @@
 		const params = new URLSearchParams();
 		params.append(overlayKey.enum.create, 'undefined');
 
-		if (isPartOfStrategyRelation) {
+		if (isStrategyContainer(container)) {
+			params.append(predicates.enum['is-part-of-strategy'], String(container.revision));
+			for (const payloadType of container.payload.chapterType ?? []) {
+				params.append('payloadType', payloadType);
+			}
+		} else if (isPartOfStrategyRelation) {
 			const strategy = relatedContainers
 				.filter(isStrategyContainer)
 				.find(({ relation }) =>
@@ -112,9 +120,7 @@
 			for (const payloadType of strategy?.payload.chapterType ?? []) {
 				params.append('payloadType', payloadType);
 			}
-		}
-
-		if (isPartOfMeasureRelation) {
+		} else if (isPartOfMeasureRelation) {
 			params.append(predicates.enum['is-part-of-measure'], String(isPartOfMeasureRelation.object));
 			params.append('payloadType', payloadTypes.enum.measure_result);
 			params.append('payloadType', payloadTypes.enum.milestone);
