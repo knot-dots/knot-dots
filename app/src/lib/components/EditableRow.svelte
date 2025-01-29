@@ -11,6 +11,7 @@
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
+	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
 	import {
 		type Container,
 		isContainerWithDescription,
@@ -178,6 +179,14 @@
 
 <div class="cell">
 	<span>{$_(container.payload.type)}</span>
+</div>
+
+<div class="cell">
+	{#if editable}
+		<VisibilityDropdown bind:value={container.payload.visibility} />
+	{:else}
+		<span>{$_(`visibility.${container.payload.visibility}`)}</span>
+	{/if}
 </div>
 
 <style>

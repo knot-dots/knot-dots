@@ -155,6 +155,7 @@
 				<div class="cell">{$_('planned_duration')}</div>
 				<div class="cell">{$_('audience')}</div>
 				<div class="cell">{$_('object')}</div>
+				<div class="cell">{$_('visibility.label')}</div>
 			</div>
 		</div>
 		<div
