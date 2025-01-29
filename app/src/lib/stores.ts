@@ -18,9 +18,7 @@ import {
 	containerOfType,
 	createCopyOf,
 	type IndicatorContainer,
-	isEffectContainer,
 	isIndicatorContainer,
-	isObjectiveContainer,
 	isStrategyContainer,
 	mayDelete,
 	type MeasureContainer,
@@ -336,7 +334,7 @@ if (browser) {
 			} else if (isStrategyContainer(container)) {
 				const relatedContainers = (await fetchContainers({
 					category: hashParams.getAll('category'),
-					isPartOfStrategy: [container.revision],
+					isPartOfStrategy: [container.guid],
 					topic: hashParams.getAll('topic')
 				})) as Container[];
 				overlay.set({
@@ -505,7 +503,7 @@ if (browser) {
 			)) as Container[];
 			const container = revisions[revisions.length - 1];
 			const relatedContainers = (await fetchContainers({
-				isPartOfStrategy: [container.revision]
+				isPartOfStrategy: [container.guid]
 			})) as Container[];
 			overlay.set({
 				key: overlayKey.enum.indicators,

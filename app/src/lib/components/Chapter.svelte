@@ -39,10 +39,10 @@
 
 	$: isPartOfRelation = isPartOf.relation.filter(
 		({ object, predicate }) =>
-			predicate == predicates.enum['is-part-of-strategy'] && object == isPartOf.revision
+			predicate == predicates.enum['is-part-of-strategy'] && object == isPartOf.guid
 	);
 
-	$: currentIndex = isPartOfRelation.findIndex(({ subject }) => container.revision == subject);
+	$: currentIndex = isPartOfRelation.findIndex(({ subject }) => container.guid == subject);
 
 	function swap(x: number, y: number) {
 		return ([...xs]) => (xs.length > 1 ? (([xs[x], xs[y]] = [xs[y], xs[x]]), xs) : xs);
@@ -81,7 +81,7 @@
 
 		const response = await fetch(url, {
 			method: 'POST',
-			body: JSON.stringify(relation),
+			body: JSON.stringify(relation.map((r, index) => ({ ...r, position: index }))),
 			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json'
@@ -96,7 +96,7 @@
 	function addChapterURL(url: URL, position: number) {
 		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum.undefined);
-		params.set('is-part-of-strategy', String(isPartOf.revision));
+		params.set('is-part-of-strategy', String(isPartOf.guid));
 		params.set('managed-by', isPartOf.managed_by);
 		params.set('position', String(position));
 		params.delete('payloadType');

@@ -264,7 +264,7 @@
 								({ relation }) =>
 									relation.findIndex(
 										({ object, predicate }) =>
-											predicate == predicates.enum['is-part-of'] && object == measure.revision
+											predicate == predicates.enum['is-part-of'] && object == measure.guid
 									) > -1
 							)
 							.flatMap(({ payload }) => payload.achievedValues)
@@ -290,7 +290,7 @@
 								({ relation }) =>
 									relation.findIndex(
 										({ object, predicate }) =>
-											predicate == predicates.enum['is-part-of'] && object == measure.revision
+											predicate === predicates.enum['is-part-of'] && object === measure.guid
 									) > -1
 							)
 							.flatMap(({ payload }) => payload.plannedValues)
@@ -316,7 +316,7 @@
 								({ relation }) =>
 									relation.findIndex(
 										({ object, predicate }) =>
-											predicate == predicates.enum['is-part-of'] && object == measure.revision
+											predicate === predicates.enum['is-part-of'] && object === measure.guid
 									) > -1
 							)
 							.flatMap(({ payload }) => payload.plannedValues)
@@ -342,7 +342,7 @@
 								({ relation }) =>
 									relation.findIndex(
 										({ object, predicate }) =>
-											predicate == predicates.enum['is-part-of'] && object == measure.revision
+											predicate === predicates.enum['is-part-of'] && object === measure.guid
 									) > -1
 							)
 							.flatMap(({ payload }) => payload.plannedValues)

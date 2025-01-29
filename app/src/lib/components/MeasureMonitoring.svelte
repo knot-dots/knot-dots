@@ -35,7 +35,7 @@
 		}
 	];
 
-	$: indicatorsByRevision = new Map(indicators.map((i) => [i.revision, i]));
+	$: indicatorsByGuid = new Map(indicators.map((i) => [i.guid, i]));
 </script>
 
 <Board>
@@ -55,10 +55,10 @@
 					{#if isMeasureResultContainer(c)}
 						{@const effect = containers.filter(isEffectContainer).find((e) => isPartOf(c)(e))}
 						{#if effect}
-							{@const indicator = indicatorsByRevision.get(
+							{@const indicator = indicatorsByGuid.get(
 								effect.relation.find(
 									({ predicate }) => predicate === predicates.enum['is-measured-by']
-								)?.object ?? 0
+								)?.object ?? ''
 							)}
 							{#if indicator}
 								<Card

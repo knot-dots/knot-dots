@@ -31,7 +31,7 @@ export default async function createObjective(target: Container, indicator: Indi
 		},
 		relation: [
 			{
-				object: indicator.revision,
+				object: indicator.guid,
 				position: 0,
 				predicate: predicates.enum['is-objective-for']
 			},
@@ -39,7 +39,7 @@ export default async function createObjective(target: Container, indicator: Indi
 				? []
 				: [
 						{
-							object: target.revision,
+							object: target.guid,
 							position: 0,
 							predicate: predicates.enum['is-part-of']
 						}

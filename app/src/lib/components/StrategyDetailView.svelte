@@ -14,10 +14,10 @@
 	export let relatedContainers: Container[] = [];
 	export let revisions: AnyContainer[];
 
-	function addChapterURL(url: URL, strategyRevision: number) {
+	function addChapterURL(url: URL, strategyGuid: string) {
 		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum.undefined);
-		params.set('is-part-of-strategy', String(strategyRevision));
+		params.set('is-part-of-strategy', strategyGuid);
 		for (const payloadType of container.payload.chapterType) {
 			params.append('payloadType', payloadType);
 		}
@@ -67,7 +67,7 @@
 				<Chapter container={part} headingTag="h3" isPartOf={container} {relatedContainers} />
 			{:else}
 				{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
-					<a class="button" href={addChapterURL($page.url, container.revision)}>
+					<a class="button" href={addChapterURL($page.url, container.guid)}>
 						<PlusSmall />
 						{$_('chapter')}
 					</a>

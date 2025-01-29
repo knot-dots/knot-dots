@@ -77,13 +77,6 @@ export const POST = (async ({ locals, request }) => {
 		await updateContainer({
 			...container,
 			managed_by: container.guid,
-			relation: container.relation
-				.filter((r) => ('guid' in container ? r.subject == container.revision : true))
-				.map(({ object, position, predicate }) => ({
-					predicate,
-					object,
-					position
-				})),
 			user: [
 				...parseResult.data.container.user,
 				{ subject: user.guid, predicate: predicates.enum['is-member-of'] }

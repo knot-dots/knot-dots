@@ -77,7 +77,7 @@
 		return (
 			isStrategyContainer(container) ||
 			container.relation
-				.filter(({ object }) => object !== container.revision)
+				.filter(({ object }) => object !== container.guid)
 				.some(
 					({ predicate }) =>
 						predicate === predicates.enum['is-part-of-strategy'] ||
@@ -98,7 +98,7 @@
 		params.append(overlayKey.enum.create, 'undefined');
 
 		if (isStrategyContainer(container)) {
-			params.append(predicates.enum['is-part-of-strategy'], String(container.revision));
+			params.append(predicates.enum['is-part-of-strategy'], container.guid);
 			for (const payloadType of container.payload.chapterType ?? []) {
 				params.append('payloadType', payloadType);
 			}

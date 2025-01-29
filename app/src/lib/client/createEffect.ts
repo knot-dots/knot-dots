@@ -22,12 +22,12 @@ export default async function createEffect(target: Container, indicator: Indicat
 		payload: { ...newEffect.payload, title: indicator.payload.title },
 		relation: [
 			{
-				object: indicator.revision,
+				object: indicator.guid,
 				position: 0,
 				predicate: predicates.enum['is-measured-by']
 			},
 			{
-				object: target.revision,
+				object: target.guid,
 				position: 0,
 				predicate: predicates.enum['is-part-of']
 			}

@@ -26,10 +26,10 @@
 
 	function createRelation(subject: Container, predicate: Predicate, object: Container): Relation {
 		return {
-			object: object.revision,
+			object: object.guid,
 			position: 0,
 			predicate: predicate,
-			subject: subject.revision
+			subject: subject.guid
 		};
 	}
 
@@ -39,12 +39,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								(r.object == object.revision || r.subject == object.revision) &&
+								(r.object == object.guid || r.subject == object.guid) &&
 								r.predicate == predicates.enum['is-consistent-with']
 						) > -1
 				)
@@ -58,12 +58,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								(r.object == object.revision || r.subject == object.revision) &&
+								(r.object == object.guid || r.subject == object.guid) &&
 								r.predicate == predicates.enum['is-inconsistent-with']
 						) > -1
 				)
@@ -77,12 +77,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								(r.object == object.revision || r.subject == object.revision) &&
+								(r.object == object.guid || r.subject == object.guid) &&
 								r.predicate == predicates.enum['is-equivalent-to']
 						) > -1
 				)
@@ -96,13 +96,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.subject == object.revision &&
-								r.predicate == predicates.enum['is-superordinate-of']
+								r.subject == object.guid && r.predicate == predicates.enum['is-superordinate-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -117,12 +116,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.object == object.revision && r.predicate == predicates.enum['is-superordinate-of']
+								r.object == object.guid && r.predicate == predicates.enum['is-superordinate-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -137,13 +136,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.subject == object.revision &&
-								r.predicate == predicates.enum['is-prerequisite-for']
+								r.subject == object.guid && r.predicate == predicates.enum['is-prerequisite-for']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -158,12 +156,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.object == object.revision && r.predicate == predicates.enum['is-prerequisite-for']
+								r.object == object.guid && r.predicate == predicates.enum['is-prerequisite-for']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -178,12 +176,11 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) =>
-								r.subject == object.revision && r.predicate == predicates.enum['contributes-to']
+							(r) => r.subject == object.guid && r.predicate == predicates.enum['contributes-to']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -198,11 +195,11 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) => r.object == object.revision && r.predicate == predicates.enum['contributes-to']
+							(r) => r.object == object.guid && r.predicate == predicates.enum['contributes-to']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -217,12 +214,11 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) =>
-								r.subject == object.revision && r.predicate == predicates.enum['is-sub-target-of']
+							(r) => r.subject == object.guid && r.predicate == predicates.enum['is-sub-target-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -237,12 +233,11 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) =>
-								r.object == object.revision && r.predicate == predicates.enum['is-sub-target-of']
+							(r) => r.object == object.guid && r.predicate == predicates.enum['is-sub-target-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -257,13 +252,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.subject == object.revision &&
-								r.predicate == predicates.enum['is-concrete-target-of']
+								r.subject == object.guid && r.predicate == predicates.enum['is-concrete-target-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -278,13 +272,12 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
 							(r) =>
-								r.object == object.revision &&
-								r.predicate == predicates.enum['is-concrete-target-of']
+								r.object == object.guid && r.predicate == predicates.enum['is-concrete-target-of']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -299,12 +292,11 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) =>
-								r.subject == object.revision && r.predicate == predicates.enum['is-affected-by']
+							(r) => r.subject == object.guid && r.predicate == predicates.enum['is-affected-by']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -319,11 +311,11 @@
 		{
 			active: false,
 			items: relatedContainers
-				.filter(({ revision }) => revision != object.revision)
+				.filter(({ guid }) => guid != object.guid)
 				.filter(
 					({ relation }) =>
 						relation.findIndex(
-							(r) => r.object == object.revision && r.predicate == predicates.enum['is-affected-by']
+							(r) => r.object == object.guid && r.predicate == predicates.enum['is-affected-by']
 						) > -1
 				)
 				.map((container) => ({ guid: container.guid, container })),
@@ -379,12 +371,10 @@
 
 	async function removeRelation(subject: Container, predicate: Predicate, object: Container) {
 		object.relation = object.relation.filter(
-			(r) =>
-				r.object != object.revision || r.predicate != predicate || r.subject != subject.revision
+			(r) => r.object != object.guid || r.predicate != predicate || r.subject != subject.guid
 		);
 		subject.relation = subject.relation.filter(
-			(r) =>
-				r.object != object.revision || r.predicate != predicate || r.subject != subject.revision
+			(r) => r.object != object.guid || r.predicate != predicate || r.subject != subject.guid
 		);
 
 		await saveContainer(subject);
@@ -425,7 +415,7 @@
 					<li>
 						<Card container={item.container}>
 							{#snippet button()}
-								{#if object.relation.find((r) => zone.predicate === r.predicate && item.container.revision === r.object && object.revision === r.subject)}
+								{#if object.relation.find((r) => zone.predicate === r.predicate && item.container.guid === r.object && object.guid === r.subject)}
 									<button
 										class="button-square"
 										type="button"

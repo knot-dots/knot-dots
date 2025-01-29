@@ -45,7 +45,7 @@
 
 	async function afterSubmit({ detail }: CustomEvent<CustomEventMap['submitSuccessful']>) {
 		const params = new URLSearchParams($page.url.searchParams);
-		params.set('is-part-of', String(detail.result.revision));
+		params.set('is-part-of', detail.result.guid);
 
 		if (
 			detail.event.submitter?.id === 'save-and-next' &&

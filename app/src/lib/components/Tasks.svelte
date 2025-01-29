@@ -51,7 +51,7 @@
 			--background={taskStatusBackgrounds.get(taskStatusOption)}
 			--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
 			addItemUrl={container && $mayCreateContainer(payloadTypes.enum.task, container.managed_by)
-				? `#create=${payloadTypes.enum.task}&is-part-of-measure=${container.revision}&managed-by=${container.managed_by}&taskStatus=${taskStatusOption}`
+				? `#create=${payloadTypes.enum.task}&is-part-of-measure=${container.guid}&managed-by=${container.managed_by}&taskStatus=${taskStatusOption}`
 				: undefined}
 			items={containers.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 			status={taskStatusOption}

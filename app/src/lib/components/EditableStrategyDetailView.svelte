@@ -50,11 +50,11 @@
 	async function handleDndFinalize(event: CustomEvent<DndEvent<Container>>) {
 		parts = event.detail.items;
 		const relation = [
-			...parts.map(({ revision }, index) => ({
-				object: container.revision,
+			...parts.map(({ guid }, index) => ({
+				object: container.guid,
 				position: index,
 				predicate: predicates.enum['is-part-of-strategy'],
-				subject: revision
+				subject: guid
 			})),
 			...container.relation.filter(
 				({ predicate }) => predicate !== predicates.enum['is-part-of-strategy']
@@ -64,10 +64,10 @@
 		await invalidateAll();
 	}
 
-	function addChapterURL(url: URL, strategyRevision: number) {
+	function addChapterURL(url: URL, strategyGuid: string) {
 		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum.undefined);
-		params.set('is-part-of-strategy', String(strategyRevision));
+		params.set('is-part-of-strategy', strategyGuid);
 		for (const payloadType of container.payload.chapterType) {
 			params.append('payloadType', payloadType);
 		}
@@ -130,7 +130,7 @@
 					</form>
 				{:else}
 					{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
-						<a class="button" href={addChapterURL($page.url, container.revision)}>
+						<a class="button" href={addChapterURL($page.url, container.guid)}>
 							<PlusSmall />
 							{$_('chapter')}
 						</a>

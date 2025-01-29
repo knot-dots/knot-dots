@@ -28,7 +28,7 @@
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
 			[overlayKey.enum.create, payloadTypes.enum.task],
-			[predicates.enum['is-part-of'], String(container.revision)],
+			[predicates.enum['is-part-of'], container.guid],
 			...container.relation
 				.filter(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
 				.map(({ object }) => [predicates.enum['is-part-of-measure'], String(object)])

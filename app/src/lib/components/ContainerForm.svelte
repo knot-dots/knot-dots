@@ -72,14 +72,7 @@
 
 		const parseResult = z.union([modifiedContainer, newContainer]).safeParse({
 			...container,
-			realm: env.PUBLIC_KC_REALM,
-			relation: container.relation
-				.filter((r) => ('guid' in container ? r.subject == container.revision : true))
-				.map(({ object, position, predicate }) => ({
-					predicate,
-					object,
-					position
-				}))
+			realm: env.PUBLIC_KC_REALM
 		});
 
 		if (parseResult.success) {

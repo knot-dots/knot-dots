@@ -32,11 +32,11 @@
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
-				('revision' in container ? subject == container.revision : true)
+				('guid' in container ? subject == container.guid : true)
 		);
 
 		const target = event.target as HTMLInputElement;
-		const value = parseInt(target.value);
+		const value = target.value;
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
@@ -46,7 +46,7 @@
 							object: value,
 							position: 0,
 							predicate: predicates.enum['is-part-of'],
-							...('revision' in container ? { subject: container.revision } : undefined)
+							...('guid' in container ? { subject: container.guid } : undefined)
 						}
 					]
 				: []),
@@ -73,12 +73,12 @@
 			{ value: undefined, label: $_('not_part_of') },
 			...isPartOfOptions
 				.filter(({ payload }) => container.payload.level === payload.level + 1)
-				.map(({ guid, payload, revision }) => ({
+				.map(({ guid, payload }) => ({
 					href: overlayURL($page.url, overlayKey.enum.view, guid),
 					label: payload.name,
-					value: String(revision)
+					value: guid
 				}))
 		]}
-		value={isPartOfObject ? String(isPartOfObject) : undefined}
+		value={isPartOfObject}
 	/>
 {/await}

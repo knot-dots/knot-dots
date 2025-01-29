@@ -19,7 +19,7 @@
 			.getAll('is-part-of')
 			.map(
 				(o): PartialRelation => ({
-					object: Number(o),
+					object: o,
 					position: 0,
 					predicate: 'is-part-of'
 				})

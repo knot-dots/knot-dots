@@ -156,18 +156,14 @@
 
 	function highlightColor(a: AnyContainer, b: Container) {
 		return a.relation
-			.filter(
-				(r) => a.revision != b.revision && (r.object === b.revision || r.subject === b.revision)
-			)
+			.filter((r) => a.guid != b.guid && (r.object === b.guid || r.subject === b.guid))
 			.map(({ predicate }) => highlightColorMap.get(predicate))
 			.pop();
 	}
 
 	function relationIcon(a: AnyContainer, b: Container) {
 		return a.relation
-			.filter(
-				(r) => a.revision != b.revision && (r.object === b.revision || r.subject === b.revision)
-			)
+			.filter((r) => a.guid != b.guid && (r.object === b.guid || r.subject === b.guid))
 			.map(({ predicate }) => predicateIcons.get(predicate))
 			.pop();
 	}
@@ -221,7 +217,7 @@
 					{container}
 					relatedContainers={[
 						...relatedContainers.filter(({ relation }) =>
-							relation.some(({ object }) => object === container.revision)
+							relation.some(({ object }) => object === container.guid)
 						),
 						...relatedContainers.filter(isContainerWithEffect),
 						...relatedContainers.filter(isMeasureResultContainer),
@@ -235,7 +231,7 @@
 					{container}
 					relatedContainers={[
 						...relatedContainers.filter(({ relation }) =>
-							relation.some(({ object }) => object === container.revision)
+							relation.some(({ object }) => object === container.guid)
 						),
 						...relatedContainers.filter(isContainerWithEffect),
 						...relatedContainers.filter(isMeasureResultContainer),
@@ -268,10 +264,10 @@
 			{@const indicator = relatedContainers
 				.filter(isIndicatorContainer)
 				.find(
-					({ revision }) =>
+					({ guid }) =>
 						(effect?.relation.findIndex(
 							({ object, predicate }) =>
-								predicate === predicates.enum['is-measured-by'] && object === revision
+								predicate === predicates.enum['is-measured-by'] && object === guid
 						) ?? -1) > -1
 				)}
 			{#if indicator && effect}

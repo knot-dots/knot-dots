@@ -9,8 +9,8 @@ export default async function fetchContainers(
 		category?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
-		isPartOfMeasure?: number[];
-		isPartOfStrategy?: number[];
+		isPartOfMeasure?: string[];
+		isPartOfStrategy?: string[];
 		measureType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];

@@ -36,15 +36,15 @@
 
 	$: isPartOfRelation = isPartOf.relation.filter(
 		({ object, predicate }) =>
-			predicate == predicates.enum['is-part-of-strategy'] && object == isPartOf.revision
+			predicate == predicates.enum['is-part-of-strategy'] && object == isPartOf.guid
 	);
 
-	$: currentIndex = isPartOfRelation.findIndex(({ subject }) => container.revision == subject);
+	$: currentIndex = isPartOfRelation.findIndex(({ subject }) => container.guid == subject);
 
 	function addChapterURL(url: URL, position: number) {
 		const params = paramsFromFragment(url);
 		params.set('create', payloadTypes.enum.undefined);
-		params.set('is-part-of-strategy', String(isPartOf.revision));
+		params.set('is-part-of-strategy', String(isPartOf.guid));
 		params.set('managed-by', isPartOf.managed_by);
 		params.set('position', String(position));
 		params.delete('payloadType');

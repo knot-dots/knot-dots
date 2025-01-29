@@ -75,10 +75,11 @@ export async function getPool() {
 const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
+	guid: z.object({ guid: z.string().uuid() }),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	organizationalUnitContainer: organizationalUnitContainer.omit({ relation: true, user: true }),
 	relation,
-	relationPath: z.object({}).catchall(z.number().int().positive().nullable()),
+	relationPath: z.object({}).catchall(z.string().uuid()),
 	revision: z.object({ revision: z.number().int().positive() }),
 	user,
 	userRelation,
@@ -91,7 +92,7 @@ const typeAliases = {
 const sql = createSqlTag({ typeAliases });
 
 export function createContainer(container: NewContainer) {
-	return (connection: DatabaseConnection) => {
+	return (connection: DatabaseConnection): Promise<AnyContainer> => {
 		return connection.transaction(async (txConnection) => {
 			let organizationGuid;
 			let organizationalUnitGuid;
@@ -152,19 +153,12 @@ export function createContainer(container: NewContainer) {
 				RETURNING predicate, subject
       `);
 
-			const relationValues = container.relation.map((r) => [
-				r.object ?? containerResult.revision,
-				r.position,
-				r.predicate,
-				r.subject ?? containerResult.revision
-			]);
-			const relationResult = await txConnection.any(sql.typeAlias('relation')`
-				INSERT INTO container_relation (object, position, predicate, subject)
-				SELECT *
-				FROM ${sql.unnest(relationValues, ['int8', 'int4', 'text', 'int8'])}
-				ON CONFLICT DO NOTHING
-				RETURNING *
-      `);
+			const relations = container.relation.map((r) => ({
+				...r,
+				object: r.object ?? containerResult.guid,
+				subject: r.subject ?? containerResult.guid
+			}));
+			const relationResult = await createManyContainerRelations(relations)(txConnection);
 
 			const isPartOfStrategyRelation = relationResult.find(
 				({ predicate }) => predicate == predicates.enum['is-part-of-strategy']
@@ -174,7 +168,7 @@ export function createContainer(container: NewContainer) {
 					UPDATE container_relation SET position = position + 1
 					WHERE predicate = ${predicates.enum['is-part-of-strategy']}
 						AND object = ${isPartOfStrategyRelation.object}
-						AND subject != ${containerResult.revision}
+						AND subject != ${containerResult.guid}
 						AND position >= ${isPartOfStrategyRelation.position}
 				`);
 			}
@@ -220,30 +214,16 @@ export function updateContainer(container: ModifiedContainer) {
 				RETURNING predicate, subject
       `);
 
-			const relationValues = container.relation.map((r) => [
-				r.object ?? containerResult.revision,
-				r.position,
-				r.predicate,
-				r.subject ?? containerResult.revision
-			]);
-			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, position, predicate, subject)
-				SELECT *
-				FROM ${sql.unnest(relationValues, ['int8', 'int4', 'text', 'int8'])}
-				ON CONFLICT DO NOTHING
-      `);
-
-			// Create new records for relations having this container as object.
-			await txConnection.query(sql.typeAlias('void')`
-				INSERT INTO container_relation (object, position, predicate, subject)
-				SELECT DISTINCT ON (o.guid, cr.predicate, cr.subject) ${containerResult.revision}, cr.position, cr.predicate, cr.subject
-				FROM container_relation cr
-				JOIN container o ON o.revision = cr.object
-				JOIN container s ON s.revision = cr.subject AND s.valid_currently
-				WHERE o.guid = ${container.guid}
-				ORDER BY o.guid, cr.predicate, cr.subject, cr.object DESC
-				ON CONFLICT DO NOTHING
-      `);
+			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
+			const deletedRelations = relationResult.filter(
+				(r) =>
+					container.relation.findIndex(
+						({ object, predicate, subject }) =>
+							object === r.object && predicate === r.predicate && subject === r.subject
+					) == -1
+			);
+			await deleteManyContainerRelations(deletedRelations)(txConnection);
+			await createManyContainerRelations(container.relation)(txConnection);
 
 			if (container.payload.type == payloadTypes.enum.strategy) {
 				if (
@@ -259,14 +239,14 @@ export function updateContainer(container: ModifiedContainer) {
 					await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
 				}
 				if (previousRevision.managed_by != container.managed_by) {
-					await bulkUpdateManagedBy(previousRevision, containerResult)(txConnection);
+					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 				}
 			} else if (
 				container.payload.type == payloadTypes.enum.measure ||
 				container.payload.type == payloadTypes.enum.simple_measure
 			) {
 				if (previousRevision.managed_by != container.managed_by) {
-					await bulkUpdateManagedBy(previousRevision, containerResult)(txConnection);
+					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 				}
 			}
 
@@ -290,6 +270,9 @@ export function deleteContainer(container: AnyContainer) {
 				WHERE revision = ${container.revision}
 				RETURNING revision
 			`);
+
+			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
+			await deleteManyContainerRelations(relationResult)(txConnection);
 
 			const userValues = container.user.map((u) => [deletedRevision, u.predicate, u.subject]);
 			await txConnection.query(sql.typeAlias('void')`
@@ -321,20 +304,6 @@ export function deleteContainerRecursively(container: AnyContainer) {
 	};
 }
 
-export function updateContainerRelationPosition(relation: Relation[]) {
-	return async (connection: DatabaseConnection) => {
-		return connection.transaction(async (txConnection) => {
-			await Promise.all(
-				relation.map(({ object, predicate, subject }, position) =>
-					txConnection.query(sql.typeAlias('void')`
-						UPDATE container_relation SET position = ${position} WHERE object = ${object} AND predicate = ${predicate} AND subject = ${subject}
-					`)
-				)
-			);
-		});
-	};
-}
-
 export function getContainerByGuid(guid: string) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer> => {
 		const containerResult = await connection.one(sql.typeAlias('anyContainer')`
@@ -352,10 +321,10 @@ export function getContainerByGuid(guid: string) {
 		const relationResult = await connection.any(sql.typeAlias('relation')`
 			SELECT cr.*
 			FROM container_relation cr
-			JOIN container co ON cr.object = co.revision AND co.valid_currently
-			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
-			WHERE subject = ${containerResult.revision} OR object = ${containerResult.revision}
-			ORDER BY position
+			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			ORDER BY cr.position
 		`);
 		return {
 			...containerResult,
@@ -381,10 +350,10 @@ export function getContainerBySlug(slug: string) {
 		const relationResult = await connection.any(sql.typeAlias('relation')`
 			SELECT cr.*
 			FROM container_relation cr
-			JOIN container co ON cr.object = co.revision AND co.valid_currently
-			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
-			WHERE subject = ${containerResult.revision} OR object = ${containerResult.revision}
-			ORDER BY position
+			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			ORDER BY cr.position
 		`);
 		return {
 			...containerResult,
@@ -418,16 +387,16 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 		const relationResult = await connection.any(sql.typeAlias('relation')`
 			SELECT cr.*
 			FROM container_relation cr
-			JOIN container co ON cr.object = co.revision AND co.valid_currently
-			JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
-			WHERE subject IN (${revisions}) OR object IN (${revisions})
-			ORDER BY position
+			WHERE (cr.subject IN (${guid}) OR cr.object IN (${guid}))
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			ORDER BY cr.position
 		`);
 
 		return containerResult.map((c) => ({
 			...c,
 			relation: relationResult.filter(
-				({ object, subject }) => object === c.revision || subject === c.revision
+				({ object, subject }) => object === c.guid || subject === c.guid
 			),
 			user: userResult
 				.filter((u) => u.object === c.revision)
@@ -453,22 +422,24 @@ function prepareWhereCondition(filters: {
 	type?: PayloadType[];
 }) {
 	const conditions = [
-		sql.fragment`valid_currently`,
-		sql.fragment`NOT deleted`,
-		sql.fragment`payload->>'type' NOT IN ('organization', 'organizational_unit')`
+		sql.fragment`c.valid_currently`,
+		sql.fragment`NOT c.deleted`,
+		sql.fragment`c.payload->>'type' NOT IN ('organization', 'organizational_unit')`
 	];
 	if (filters.assignees?.length) {
-		conditions.push(sql.fragment`payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
+		conditions.push(sql.fragment`c.payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
 	}
 	if (filters.audience?.length) {
-		conditions.push(sql.fragment`payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
+		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
 	if (filters.categories?.length) {
-		conditions.push(sql.fragment`payload->'category' ?| ${sql.array(filters.categories, 'text')}`);
+		conditions.push(
+			sql.fragment`c.payload->'category' ?| ${sql.array(filters.categories, 'text')}`
+		);
 	}
 	if (filters.indicatorCategories?.length) {
 		conditions.push(
-			sql.fragment`payload->'indicatorCategory' ?| ${sql.array(
+			sql.fragment`c.payload->'indicatorCategory' ?| ${sql.array(
 				filters.indicatorCategories,
 				'text'
 			)}`
@@ -476,22 +447,22 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.indicatorTypes?.length) {
 		conditions.push(
-			sql.fragment`payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
+			sql.fragment`c.payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
 		);
 	}
 	if (filters.measureTypes?.length) {
 		conditions.push(
-			sql.fragment`payload->'measureType' ?| ${sql.array(filters.measureTypes, 'text')}`
+			sql.fragment`c.payload->'measureType' ?| ${sql.array(filters.measureTypes, 'text')}`
 		);
 	}
 	if (filters.organizations?.length) {
 		conditions.push(
-			sql.fragment`organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
+			sql.fragment`c.organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
 		);
 	}
 	if (filters.organizationalUnits?.length) {
 		conditions.push(
-			sql.fragment`organizational_unit IN (${sql.join(
+			sql.fragment`c.organizational_unit IN (${sql.join(
 				filters.organizationalUnits,
 				sql.fragment`, `
 			)})`
@@ -499,7 +470,7 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.strategyTypes?.length) {
 		conditions.push(
-			sql.fragment`payload->>'strategyType' IN (${sql.join(
+			sql.fragment`c.payload->>'strategyType' IN (${sql.join(
 				filters.strategyTypes,
 				sql.fragment`, `
 			)})`
@@ -507,41 +478,41 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.taskCategories?.length) {
 		conditions.push(
-			sql.fragment`payload->>'taskCategory' IN (${sql.join(
+			sql.fragment`c.payload->>'taskCategory' IN (${sql.join(
 				filters.taskCategories,
 				sql.fragment`, `
 			)})`
 		);
 	}
 	if (filters.template) {
-		conditions.push(sql.fragment`payload @> '{"template": true}'`);
+		conditions.push(sql.fragment`c.payload @> '{"template": true}'`);
 	} else {
-		conditions.push(sql.fragment`(payload @> '{"template": false}' OR NOT payload ? 'template')`);
+		conditions.push(sql.fragment`(c.payload @> '{"template": false}' OR NOT payload ? 'template')`);
 	}
-	if (filters.terms?.trim()) {
+	if (filters.terms) {
 		conditions.push(
 			sql.fragment`to_tsquery('german', ${filters.terms
 				.trim()
 				.split(' ')
 				.map((t) => `${t}:*`)
-				.join(' & ')}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+				.join(' & ')}) @@ jsonb_to_tsvector('german', c.payload, '["string", "numeric"]')`
 		);
 	}
 	if (filters.topics?.length) {
-		conditions.push(sql.fragment`payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
+		conditions.push(sql.fragment`c.payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
 	}
 	if (filters.type?.length) {
 		conditions.push(
-			sql.fragment`payload->>'type' IN (${sql.join(filters.type, sql.fragment`, `)})`
+			sql.fragment`c.payload->>'type' IN (${sql.join(filters.type, sql.fragment`, `)})`
 		);
 	}
 	return sql.join(conditions, sql.fragment` AND `);
 }
 
 function prepareOrderByExpression(sort: string) {
-	let order_by = sql.fragment`payload->>'title' COLLATE human_sort`;
+	let order_by = sql.fragment`c.payload->>'title' COLLATE human_sort`;
 	if (sort == 'modified') {
-		order_by = sql.fragment`valid_from DESC`;
+		order_by = sql.fragment`c.valid_from DESC`;
 	} else if (sort == 'priority') {
 		order_by = sql.fragment`priority`;
 	}
@@ -553,7 +524,7 @@ async function withUserAndRelation<T extends AnyContainer>(
 	containerResult: Readonly<Array<Omit<T, 'user' | 'relation'>>>
 ) {
 	const revisions = sql.join(
-		containerResult.map((c) => c.revision),
+		containerResult.map(({ revision }) => revision),
 		sql.fragment`, `
 	);
 
@@ -566,22 +537,27 @@ async function withUserAndRelation<T extends AnyContainer>(
 			`)
 			: [];
 
+	const guids = sql.join(
+		containerResult.map(({ guid }) => guid),
+		sql.fragment`, `
+	);
+
 	const relationResult =
 		containerResult.length > 0
 			? await connection.any(sql.typeAlias('relation')`
 				SELECT cr.*
 				FROM container_relation cr
-				JOIN container co ON cr.object = co.revision AND co.valid_currently
-				JOIN container cs ON cr.subject = cs.revision AND cs.valid_currently
-				WHERE object IN (${revisions}) OR subject IN (${revisions})
-				ORDER BY position
+				WHERE (cr.object IN (${guids}) OR cr.subject IN (${guids}))
+					AND cr.valid_currently
+					AND NOT cr.deleted
+				ORDER BY cr.position
 			`)
 			: [];
 
 	return containerResult.map((c) => ({
 		...c,
 		relation: relationResult.filter(
-			({ object, subject }) => object === c.revision || subject === c.revision
+			({ object, subject }) => object === c.guid || subject === c.guid
 		),
 		user: userResult
 			.filter((u) => u.object === c.revision)
@@ -610,8 +586,8 @@ export function getManyContainers(
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT *
-			FROM container ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
+			SELECT c.*
+			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)};
     `);
@@ -684,14 +660,10 @@ export function getManyOrganizationalUnitContainers(filters: { organization?: st
 
 export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
-		const revision = await connection.oneFirst(sql.typeAlias('revision')`
-			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
-		`);
-
-		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+		const relationPathResult = await connection.any(sql.unsafe`
 			WITH RECURSIVE is_part_of_relation(path) AS (
 				--Top level items (roots)
-				SELECT array[c.revision] as path, c.revision as subject
+				SELECT array[c.guid] as path, c.guid as subject
 				FROM container c
 				WHERE c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
 					AND c.valid_currently
@@ -699,17 +671,23 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 						--No relations with this as the subject.
 						SELECT *
 						FROM container_relation parent_test
-						WHERE c.revision = parent_test.subject AND parent_test.predicate = 'is-part-of'
+						WHERE c.guid = parent_test.subject
+						  AND parent_test.predicate = 'is-part-of'
+							AND parent_test.valid_currently
+							AND NOT parent_test.deleted
 					)
 				UNION ALL
-				SELECT array_append(r.path, c.revision), c.revision
+				SELECT array_append(r.path, c.guid), c.guid
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate = 'is-part-of'
+				JOIN container_relation cr ON c.guid = cr.subject
+					AND cr.predicate = 'is-part-of'
+					AND cr.valid_currently
+					AND NOT cr.deleted
 				JOIN is_part_of_relation r ON cr.object = r.subject
 				WHERE c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
 				  AND c.valid_currently
 			)
-			SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${revision} = ANY(path)
+			SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${guid} = ANY(path)
 		`);
 
 		const containerResult =
@@ -717,8 +695,8 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				? await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			SELECT *
 			FROM container
-			WHERE revision IN (${sql.join(
-				relationPathResult.map((r) => Object.values(r)).flat(),
+			WHERE guid IN (${sql.join(
+				relationPathResult.flatMap((r) => Object.values(r)),
 				sql.fragment`, `
 			)})
 				AND valid_currently
@@ -807,31 +785,33 @@ export function getAllRelatedContainers(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const revision = await connection.oneFirst(sql.typeAlias('revision')`
-			SELECT revision FROM container WHERE guid = ${guid} AND valid_currently AND NOT deleted
-		`);
-
 		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
 			? await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE is_part_of_relation(path) AS (
 					--Top level items (roots)
-					SELECT array[c.revision] as path, c.revision as subject
+					SELECT array[c.guid] as path, c.guid as subject
 					FROM container c
 					WHERE c.valid_currently
 						AND NOT EXISTS(
 							--No relations with this as the subject.
 							SELECT *
 							FROM container_relation parent_test
-							WHERE c.revision = parent_test.subject AND parent_test.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-strategy']})
+							WHERE c.guid = parent_test.subject
+							  AND parent_test.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-strategy']})
+								AND parent_test.valid_currently
+								AND NOT parent_test.deleted
 						)
 					UNION ALL
-					SELECT array_append(r.path, c.revision), c.revision
+					SELECT array_append(r.path, c.guid), c.guid
 					FROM container c
-					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-strategy']})
+					JOIN container_relation cr ON c.guid = cr.subject
+						AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-strategy']})
+					  AND cr.valid_currently
+						AND NOT cr.deleted
 					JOIN is_part_of_relation r ON cr.object = r.subject
 					WHERE c.valid_currently
 				)
-				SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${revision} = ANY(path)
+				SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${guid} = ANY(path)
 			`)
 			: [];
 
@@ -841,25 +821,18 @@ export function getAllRelatedContainers(
 			? await connection.any(sql.typeAlias('relationPath')`
 				SELECT cr.subject, cr.object
 				FROM container_relation cr
-				JOIN container cs ON cs.revision = cr.subject
-					AND cs.valid_currently
-					AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
-				JOIN container co ON co.revision = cr.object
-					AND co.valid_currently
-					AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
-				WHERE cs.revision = ${revision} OR co.revision = ${revision}
+				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+          AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
 			`)
 			: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT *
-			FROM container ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
-			WHERE revision IN (${sql.join(
-				isPartOfResult
-					.concat(otherRelationResult)
-					.map((r) => Object.values(r))
-					.flat()
-					.concat([revision]),
+			SELECT c.*
+			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
+      WHERE c.guid IN (${sql.join(
+				[...isPartOfResult, ...otherRelationResult, [guid]].flatMap((r) => Object.values(r)),
 				sql.fragment`, `
 			)})
 				AND ${prepareWhereCondition({ ...filters, organizations })}
@@ -871,7 +844,7 @@ export function getAllRelatedContainers(
 				({ payload }) =>
 					payload.type == payloadTypes.enum.effect || payload.type == payloadTypes.enum.objective
 			)
-			.map(({ revision }) => revision);
+			.map(({ guid }) => guid);
 
 		const includeIndicators =
 			filters.type == undefined ||
@@ -883,9 +856,11 @@ export function getAllRelatedContainers(
 				? await connection.any(sql.typeAlias('container')`
 				SELECT c.*
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.object
+				JOIN container_relation cr ON c.guid = cr.object
 					AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
 					AND cr.subject IN (${sql.join(objectivesAndEffects, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
 				WHERE c.valid_currently
 					AND NOT c.deleted
 			`)
@@ -911,23 +886,21 @@ export function getAllRelatedContainersByStrategyType(
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
-			SELECT co.revision, cr.subject
+			SELECT co.guid, cr.subject
 			FROM container co
-			LEFT JOIN container_relation cr ON co.revision = cr.object
+			LEFT JOIN container_relation cr ON co.guid = cr.object
 				AND cr.predicate = ${predicates.enum['is-part-of-strategy']}
-				AND co.valid_currently
-			LEFT JOIN container cs ON cs.revision = cr.subject
-				AND cr.predicate = ${predicates.enum['is-part-of-strategy']}
-				AND	cs.valid_currently
+				AND cr.valid_currently
+			  AND NOT cr.deleted
 			WHERE co.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
 		`);
 
 		const containerResult =
 			relationPathResult.length > 0
 				? await connection.any(sql.typeAlias('container')`
-					SELECT *
-					FROM container
-					WHERE revision IN (${sql.join(
+					SELECT c.*
+					FROM container c
+					WHERE c.guid IN (${sql.join(
 						relationPathResult.map((r) => Object.values(r)).flat(),
 						sql.fragment`, `
 					)})
@@ -943,12 +916,12 @@ export function getAllRelatedContainersByStrategyType(
 export function getAllContainersWithIndicatorContributions(organizations: string[]) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT *
-			FROM container
+			SELECT c.*
+			FROM container c
 			WHERE ${prepareWhereCondition({ organizations })}
 				AND (
-					payload->>'indicatorContribution' IS NOT NULL
-					OR payload->>'indicatorContribution' != '{}'
+					c.payload->>'indicatorContribution' IS NOT NULL
+					OR c.payload->>'indicatorContribution' != '{}'
 				)
 		`);
 		return containerResult.map((c) => ({
@@ -965,15 +938,18 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 			return [];
 		}
 
-		const indicatorResult = await connection.any(sql.typeAlias('revision')`
-			SELECT c.revision
+		const indicatorResult = await connection.any(sql.typeAlias('guid')`
+			SELECT c.guid
 			FROM container c
-			JOIN container_relation cr ON (c.revision = cr.subject OR c.revision = cr.object) AND cr.predicate = ${predicates.enum['is-affected-by']}
+			JOIN container_relation cr ON (c.guid = cr.subject OR c.guid = cr.object)
+				AND cr.predicate = ${predicates.enum['is-affected-by']}
+				AND cr.valid_currently
+				AND NOT cr.deleted
 			WHERE (cr.object IN (${sql.join(
-				containers.map(({ revision }) => revision),
+				containers.map(({ guid }) => guid),
 				sql.fragment`, `
 			)}) OR cr.subject IN (${sql.join(
-				containers.map(({ revision }) => revision),
+				containers.map(({ guid }) => guid),
 				sql.fragment`, `
 			)}))
 			  AND guid NOT IN (${sql.join(
@@ -985,13 +961,15 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 				AND NOT c.deleted
 		`);
 
-		const objectiveAndEffectResult = await connection.any(sql.typeAlias('revision')`
-			SELECT c.revision
+		const objectiveAndEffectResult = await connection.any(sql.typeAlias('guid')`
+			SELECT c.guid
 			FROM container c
-			JOIN container_relation cr ON c.revision = cr.subject
+			JOIN container_relation cr ON c.guid = cr.subject
 				AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
+				AND cr.valid_currently
+				AND NOT cr.deleted
 			WHERE cr.object IN (${sql.join(
-				containers.map(({ revision }) => revision),
+				containers.map(({ guid }) => guid),
 				sql.fragment`, `
 			)})
         AND c.valid_currently
@@ -1000,10 +978,10 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 
 		const isPartOfResult =
 			objectiveAndEffectResult.length > 0
-				? await connection.any(sql.typeAlias('revision')`
+				? await connection.any(sql.typeAlias('guid')`
 					WITH RECURSIVE is_part_of_relation(path) AS (
 						--Top level items (roots)
-						SELECT array[c.revision] AS path, c.revision, c.payload
+						SELECT array[c.guid] AS path, c.guid, c.payload
 						FROM container c
 						WHERE c.valid_currently
 							AND NOT deleted
@@ -1011,21 +989,27 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 								--No relations with this as the subject.
 								SELECT *
 								FROM container_relation parent_test
-								WHERE c.revision = parent_test.subject AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
+								WHERE c.guid = parent_test.subject
+								  AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
+									AND parent_test.valid_currently
+									AND NOT parent_test.deleted
 							)
 							UNION ALL
-							SELECT array_append(r.path, c.revision), c.revision, c.payload
+							SELECT array_append(r.path, c.guid), c.guid, c.payload
 							FROM container c
-							JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
-							JOIN is_part_of_relation r ON cr.object = r.revision
+							JOIN container_relation cr ON c.guid = cr.subject
+								AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
+							  AND cr.valid_currently
+							  AND NOT cr.deleted
+							JOIN is_part_of_relation r ON cr.object = r.guid
 							WHERE c.valid_currently
 								AND NOT c.deleted
 							)
-					SELECT DISTINCT unnest(r.path) AS revision
+					SELECT DISTINCT unnest(r.path) AS guid
 					FROM is_part_of_relation r
-					JOIN container c ON r.path[array_upper(r.path, 1)] = c.revision
-					WHERE c.revision IN (${sql.join(
-						objectiveAndEffectResult.map(({ revision }) => revision),
+					JOIN container c ON r.path[array_upper(r.path, 1)] = c.guid
+					WHERE c.guid IN (${sql.join(
+						objectiveAndEffectResult.map(({ guid }) => guid),
 						sql.fragment`, `
 					)})
 				`)
@@ -1036,10 +1020,12 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 				? await connection.any(sql.typeAlias('container')`
 					SELECT c.*
 					FROM container c
-					WHERE c.revision IN (${sql.join(
-						[...isPartOfResult, ...indicatorResult].map(({ revision }) => revision),
+					WHERE c.guid IN (${sql.join(
+						[...isPartOfResult, ...indicatorResult].map(({ guid }) => guid),
 						sql.fragment`, `
 					)})
+						AND c.valid_currently
+						AND NOT c.deleted
 				`)
 				: [];
 
@@ -1048,7 +1034,7 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 }
 
 export function getAllContainersRelatedToStrategy(
-	revision: number,
+	guid: string,
 	filters: { categories: string[]; terms?: string; topics: string[]; type?: PayloadType[] }
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
@@ -1059,36 +1045,44 @@ export function getAllContainersRelatedToStrategy(
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
-				WITH RECURSIVE relation(path) AS (
-					--Top level items (roots)
-					SELECT array[c.revision] as path, c.revision as subject
-					FROM container c
-					WHERE c.valid_currently
-						AND NOT EXISTS(
-							--No relations with this as the subject.
-							SELECT *
-							FROM container_relation parent_test
-							WHERE c.revision = parent_test.subject AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
-						)
-					UNION ALL
-					SELECT array_append(r.path, c.revision), c.revision
-					FROM container c
-					JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
-					JOIN relation r ON cr.object = r.subject
-					WHERE c.valid_currently
-				)
-				SELECT DISTINCT unnest(path) FROM relation r WHERE ${revision} = ANY(path)
-			`);
+			WITH RECURSIVE relation(path) AS (
+				--Top level items (roots)
+				SELECT array[c.guid] as path, c.guid AS subject
+				FROM container c
+				WHERE c.valid_currently
+					AND NOT EXISTS(
+						--No relations with this as the subject.
+						SELECT *
+						FROM container_relation parent_test
+						WHERE c.guid = parent_test.subject
+							AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+							AND parent_test.valid_currently
+							AND NOT parent_test.deleted
+					)
+				UNION ALL
+				SELECT array_append(r.path, c.guid), c.guid
+				FROM container c
+				JOIN container_relation cr ON c.guid = cr.subject
+					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+				JOIN relation r ON cr.object = r.subject
+				WHERE c.valid_currently
+			)
+			SELECT DISTINCT unnest(path) FROM relation r WHERE ${guid} = ANY(path)
+		`);
 
 		const containerResult =
 			relationPathResult.length > 0
 				? await connection.any(sql.typeAlias('container')`
 					SELECT c.*
 					FROM container c
-					LEFT JOIN container_relation cr ON c.revision = cr.subject
+					LEFT JOIN container_relation cr ON c.guid = cr.subject
 						AND cr.predicate = 'is-part-of-strategy'
-						AND cr.object = ${revision}
-					WHERE c.revision IN (${sql.join(
+						AND cr.object = ${guid}
+						AND cr.valid_currently
+						AND NOT cr.deleted
+					WHERE c.guid IN (${sql.join(
 						relationPathResult.flatMap((r) => Object.values(r)),
 						sql.fragment`, `
 					)})
@@ -1102,7 +1096,7 @@ export function getAllContainersRelatedToStrategy(
 				({ payload }) =>
 					payload.type == payloadTypes.enum.effect || payload.type == payloadTypes.enum.objective
 			)
-			.map(({ revision }) => revision);
+			.map(({ guid }) => guid);
 
 		const includeIndicators =
 			filters.type == undefined ||
@@ -1114,9 +1108,11 @@ export function getAllContainersRelatedToStrategy(
 				? await connection.any(sql.typeAlias('container')`
 				SELECT c.*
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.object
+				JOIN container_relation cr ON c.guid = cr.object
 					AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
 					AND cr.subject IN (${sql.join(objectivesAndEffects, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
 				WHERE c.valid_currently
 					AND NOT c.deleted
 			`)
@@ -1127,7 +1123,7 @@ export function getAllContainersRelatedToStrategy(
 }
 
 export function getAllContainersRelatedToMeasure(
-	revision: number,
+	guid: string,
 	filters: {
 		assignees?: string[];
 		categories?: string[];
@@ -1148,23 +1144,29 @@ export function getAllContainersRelatedToMeasure(
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
 			WITH RECURSIVE relation(path) AS (
 				--Top level items (roots)
-				SELECT array[c.revision] as path, c.revision as subject
+				SELECT array[c.guid] as path, c.guid as subject
 				FROM container c
 				WHERE c.valid_currently
 					AND NOT EXISTS(
 						--No relations with this as the subject.
 						SELECT *
 						FROM container_relation parent_test
-						WHERE c.revision = parent_test.subject AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+						WHERE c.guid = parent_test.subject
+						  AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+							AND parent_test.valid_currently
+							AND NOT parent_test.deleted
 					)
 				UNION ALL
-				SELECT array_append(r.path, c.revision), c.revision
+				SELECT array_append(r.path, c.guid), c.guid
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+				JOIN container_relation cr ON c.guid = cr.subject
+					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
 				JOIN relation r ON cr.object = r.subject
 				WHERE c.valid_currently
 			)
-			SELECT DISTINCT unnest(path) FROM relation r WHERE ${revision} = ANY(path)
+			SELECT DISTINCT unnest(path) FROM relation r WHERE ${guid} = ANY(path)
 		`);
 
 		const otherPredicate = [
@@ -1178,13 +1180,10 @@ export function getAllContainersRelatedToMeasure(
 		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
 			SELECT cr.subject, cr.object
 			FROM container_relation cr
-			JOIN container cs ON cs.revision = cr.subject
-				AND cs.valid_currently
-				AND cr.predicate IN (${sql.join(otherPredicate, sql.fragment`, `)})
-			JOIN container co ON co.revision = cr.object
-				AND co.valid_currently
-				AND cr.predicate IN (${sql.join(otherPredicate, sql.fragment`, `)})
-			WHERE cs.revision = ${revision} OR co.revision = ${revision}
+			WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+        AND cr.predicate IN (${sql.join(otherPredicate, sql.fragment`, `)})
+				AND cr.valid_currently
+				AND NOT cr.deleted
 		`);
 
 		const containerResult =
@@ -1193,7 +1192,7 @@ export function getAllContainersRelatedToMeasure(
 					SELECT c.*
 					FROM container c
 					${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
-					WHERE c.revision IN (${sql.join(
+					WHERE c.guid IN (${sql.join(
 						[...relationPathResult, ...otherRelationResult].flatMap((r) => Object.values(r)),
 						sql.fragment`, `
 					)})
@@ -1219,6 +1218,8 @@ export function getAllContainersRelatedToMeasure(
 				JOIN container_relation cr ON c.revision = cr.object
 					AND cr.predicate = ${predicates.enum['is-measured-by']}
 					AND cr.subject IN (${sql.join(effects, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
 				WHERE c.valid_currently
 					AND NOT c.deleted
 			`)
@@ -1248,6 +1249,65 @@ export function getAllContainersRelatedToUser(guid: string) {
 			ORDER BY valid_from DESC
 		`);
 		return withUserAndRelation(connection, containerResult);
+	};
+}
+
+export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
+	return async (connection: DatabaseConnection) => {
+		const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
+		return await connection.any(sql.typeAlias('relation')`
+			INSERT INTO container_relation (object, position, predicate, subject)
+			SELECT *
+			FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
+			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO NOTHING
+			RETURNING *
+		`);
+	};
+}
+
+export function updateManyContainerRelations(relations: ReadonlyArray<Relation>) {
+	return async (connection: DatabaseConnection) => {
+		const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
+		return connection.transaction(async (txConnection) => {
+			await txConnection.query(sql.typeAlias('void')`
+				UPDATE container_relation cr
+				SET valid_currently = false
+				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])} AS u(object, position, predicate, subject)
+				WHERE cr.object = u.object AND cr.predicate = u.predicate AND cr.subject = u.subject
+			`);
+			return createManyContainerRelations(relations)(txConnection);
+		});
+	};
+}
+
+export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
+			await txConnection.query(sql.typeAlias('void')`
+				UPDATE container_relation cr
+				SET valid_currently = false
+				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])} AS u(object, position, predicate, subject)
+				WHERE cr.object = u.object AND cr.predicate = u.predicate AND cr.subject = u.subject
+			`);
+			await txConnection.query(sql.typeAlias('void')`
+				INSERT INTO container_relation (object, position, predicate, subject, deleted)
+				SELECT *, true
+				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
+			`);
+		});
+	};
+}
+
+export function getAllDirectContainerRelations(guid: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.typeAlias('relation')`
+			SELECT object, position, predicate, subject
+			FROM container_relation
+			WHERE (subject = ${guid} OR object = ${guid})
+				AND valid_currently
+			  AND NOT deleted
+		`);
 	};
 }
 
@@ -1357,15 +1417,12 @@ export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizati
 	};
 }
 
-export function bulkUpdateManagedBy(
-	container: AnyContainer,
-	managedBy: { guid: string; revision: number }
-) {
+export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			const containerResult =
 				container.payload.type == payloadTypes.enum.strategy
-					? await getAllContainersRelatedToStrategy(managedBy.revision, {
+					? await getAllContainersRelatedToStrategy(container.guid, {
 							categories: [],
 							topics: [],
 							type: [
@@ -1381,7 +1438,7 @@ export function bulkUpdateManagedBy(
 							]
 						})(txConnection)
 					: await getAllContainersRelatedToMeasure(
-							managedBy.revision,
+							container.guid,
 							{
 								type: [
 									payloadTypes.enum.effect,
@@ -1396,7 +1453,7 @@ export function bulkUpdateManagedBy(
 			if (containerResult.length) {
 				await txConnection.query(sql.typeAlias('void')`
 					UPDATE container
-					SET managed_by = ${managedBy.guid}
+					SET managed_by = ${managedBy}
 					WHERE guid IN (${sql.join(
 						containerResult.map(({ guid }) => guid),
 						sql.fragment`, `

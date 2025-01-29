@@ -20,7 +20,7 @@ import {
 	getAllContainersRelatedToMeasure,
 	getAllRelatedContainers,
 	getContainerByGuid,
-	updateContainerRelationPosition
+	updateManyContainerRelations
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { filterVisible } from '$lib/authorization';
@@ -64,7 +64,7 @@ export const GET = (async ({ locals, params, url }) => {
 		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(
-					container.revision,
+					container.guid,
 					{
 						assignees: parseResult.data.assignee,
 						categories: parseResult.data.category,
@@ -125,7 +125,7 @@ export const POST = (async ({ locals, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
-		await locals.pool.connect(updateContainerRelationPosition(parseResult.data));
+		await locals.pool.connect(updateManyContainerRelations(parseResult.data));
 		return new Response(null, { status: 204 });
 	}
 }) satisfies RequestHandler;

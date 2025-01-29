@@ -19,7 +19,7 @@
 			.getAll('is-part-of')
 			.map(
 				(o): PartialRelation => ({
-					object: Number(o),
+					object: o,
 					position: 0,
 					predicate: 'is-part-of'
 				})
@@ -29,7 +29,7 @@
 	$: index = container.relation.findIndex(
 		({ predicate, subject }) =>
 			predicate === predicates.enum['is-part-of'] &&
-			('revision' in container ? subject == container.revision : true)
+			('guid' in container ? subject == container.guid : true)
 	);
 
 	function onChange(event: Event) {
@@ -38,10 +38,10 @@
 			container.relation = [
 				...container.relation.slice(0, index),
 				{
-					object: parseInt(value),
+					object: value,
 					position: 0,
 					predicate: predicates.enum['is-part-of'],
-					...('revision' in container ? { subject: container.revision } : undefined)
+					...('guid' in container ? { subject: container.guid } : undefined)
 				},
 				...container.relation.slice(index + 1)
 			];
@@ -52,8 +52,8 @@
 	<p>{$_('superordinate_organizational_unit')}</p>
 	<ListBox
 		label={$_('superordinate_organizational_unit')}
-		options={isPartOfOptions.map(({ payload, revision }) => ({
-			value: revision,
+		options={isPartOfOptions.map(({ payload, guid }) => ({
+			value: guid,
 			label: payload.name
 		}))}
 		value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object}

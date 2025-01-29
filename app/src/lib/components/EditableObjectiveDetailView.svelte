@@ -23,10 +23,10 @@
 	$: indicator = relatedContainers
 		.filter(isIndicatorContainer)
 		.find(
-			({ revision }) =>
+			({ guid }) =>
 				container.relation.findIndex(
 					({ object, predicate }) =>
-						predicate == predicates.enum['is-objective-for'] && object == revision
+						predicate == predicates.enum['is-objective-for'] && object == guid
 				) > -1
 		);
 

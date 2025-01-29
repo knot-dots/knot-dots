@@ -105,7 +105,7 @@
 			{#each items as { guid, container } (guid)}
 				{@const relatedContainers = [
 					...containers.filter(({ relation }) =>
-						relation.some(({ object }) => object === container.revision)
+						relation.some(({ object }) => object === container.guid)
 					),
 					...containers.filter(isContainerWithEffect),
 					...containers.filter(isMeasureResultContainer),
@@ -121,7 +121,7 @@
 			{#each items as { guid, container } (guid)}
 				{@const relatedContainers = [
 					...containers.filter(({ relation }) =>
-						relation.some(({ object }) => object === container.revision)
+						relation.some(({ object }) => object === container.guid)
 					),
 					...containers.filter(isContainerWithEffect),
 					...containers.filter(isMeasureResultContainer),

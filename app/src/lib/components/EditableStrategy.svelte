@@ -34,16 +34,16 @@
 		const isPartOfStrategyIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-strategy'] &&
-				('revision' in container ? subject == container.revision : true)
+				('guid' in container ? subject == container.guid : true)
 		);
 
 		const target = event.target as HTMLInputElement;
-		const value = parseInt(target.value);
+		const value = target.value;
 
 		const isPartOfStrategyOptions = await strategyCandidatesRequest;
 
 		container.managed_by =
-			isPartOfStrategyOptions.find(({ revision }) => revision == value)?.managed_by ??
+			isPartOfStrategyOptions.find(({ guid }) => guid == value)?.managed_by ??
 			container.organizational_unit ??
 			container.organization;
 		container.relation = [
@@ -54,7 +54,7 @@
 							object: value,
 							position: 0,
 							predicate: predicates.enum['is-part-of-strategy'],
-							...('revision' in container ? { subject: container.revision } : undefined)
+							...('guid' in container ? { subject: container.guid } : undefined)
 						}
 					]
 				: []),
@@ -74,10 +74,10 @@
 		label={$_('strategy')}
 		options={[
 			{ value: undefined, label: $_('not_part_of_strategy') },
-			...strategyCandidates.map(({ guid, payload, revision }) => ({
+			...strategyCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
-				value: String(revision)
+				value: guid
 			}))
 		]}
 		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : undefined}

@@ -53,7 +53,7 @@
 				{#each indicators as indicator}
 					{@const relatedContainers = [
 						...containersRelatedToIndicators.filter(({ relation }) =>
-							relation.some(({ object }) => object === indicator.revision)
+							relation.some(({ object }) => object === indicator.guid)
 						),
 						...containersRelatedToIndicators.filter(isContainerWithEffect),
 						...containersRelatedToIndicators.filter(isMeasureResultContainer),

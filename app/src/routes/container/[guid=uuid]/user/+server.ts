@@ -61,13 +61,6 @@ export const POST = (async ({ locals, params, request }) => {
 	await locals.pool.connect(
 		updateContainer({
 			...container,
-			relation: container.relation
-				.filter((r) => ('guid' in container ? r.subject == container.revision : true))
-				.map(({ object, position, predicate }) => ({
-					predicate,
-					object,
-					position
-				})),
 			user: parseResult.data
 		})
 	);

@@ -20,30 +20,30 @@
 		payloadType: PayloadType,
 		organization: string,
 		organizational_unit: string | null,
-		measureRevision?: number,
-		strategyRevision?: number
+		measureGuid?: string,
+		strategyGuid?: string
 	): Promise<Container[]> {
-		if (measureRevision) {
+		if (measureGuid) {
 			if (payloadType == payloadTypes.enum.milestone) {
 				return fetchContainers({
-					isPartOfMeasure: [measureRevision],
+					isPartOfMeasure: [measureGuid],
 					payloadType: [payloadTypes.enum.measure_result]
 				}) as Promise<Container[]>;
 			} else if (payloadType == payloadTypes.enum.task) {
 				return fetchContainers({
-					isPartOfMeasure: [measureRevision],
+					isPartOfMeasure: [measureGuid],
 					payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.milestone]
 				}) as Promise<Container[]>;
 			}
-		} else if (strategyRevision) {
+		} else if (strategyGuid) {
 			if (payloadType == payloadTypes.enum.strategic_goal) {
 				return fetchContainers({
-					isPartOfStrategy: [strategyRevision],
+					isPartOfStrategy: [strategyGuid],
 					payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
 				}) as Promise<Container[]>;
 			} else if (payloadType == payloadTypes.enum.operational_goal) {
 				fetchContainers({
-					isPartOfStrategy: [strategyRevision],
+					isPartOfStrategy: [strategyGuid],
 					payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
 				}) as Promise<Container[]>;
 			} else if (
@@ -51,7 +51,7 @@
 				payloadType == payloadTypes.enum.simple_measure
 			) {
 				fetchContainers({
-					isPartOfStrategy: [strategyRevision],
+					isPartOfStrategy: [strategyGuid],
 					payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
 				}) as Promise<Container[]>;
 			}
@@ -80,11 +80,11 @@
 
 	$: organizationalUnit = container.organizational_unit;
 
-	$: strategyRevision = container.relation.find(
+	$: strategyGuid = container.relation.find(
 		({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
 	)?.object;
 
-	$: measureRevision = container.relation.find(
+	$: measureGuid = container.relation.find(
 		({ predicate }) => predicate === predicates.enum['is-part-of-measure']
 	)?.object;
 
@@ -94,8 +94,8 @@
 		payloadType,
 		organization,
 		organizationalUnit,
-		measureRevision,
-		strategyRevision
+		measureGuid,
+		strategyGuid
 	);
 
 	$: isPartOfObject = container.relation.find(
@@ -106,11 +106,11 @@
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
-				('revision' in container ? subject == container.revision : true)
+				('guid' in container ? subject == container.guid : true)
 		);
 
 		const target = event.target as HTMLInputElement;
-		const value = parseInt(target.value);
+		const value = target.value;
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
@@ -120,7 +120,7 @@
 							object: value,
 							position: 0,
 							predicate: predicates.enum['is-part-of'],
-							...('revision' in container ? { subject: container.revision } : undefined)
+							...('guid' in container ? { subject: container.guid } : undefined)
 						}
 					]
 				: []),
@@ -145,12 +145,12 @@
 		label={$_('superordinate_element')}
 		options={[
 			{ value: undefined, label: $_('not_part_of') },
-			...isPartOfOptions.map(({ guid, payload, revision }) => ({
+			...isPartOfOptions.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
-				value: String(revision)
+				value: guid
 			}))
 		]}
-		value={isPartOfObject ? String(isPartOfObject) : undefined}
+		value={isPartOfObject ? isPartOfObject : undefined}
 	/>
 {/await}

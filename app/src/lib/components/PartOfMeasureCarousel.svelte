@@ -30,8 +30,8 @@
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
 			[overlayKey.enum.create, payloadType],
-			[predicates.enum['is-part-of'], String(container.revision)],
-			[predicates.enum['is-part-of-measure'], String(container.revision)],
+			[predicates.enum['is-part-of'], container.guid],
+			[predicates.enum['is-part-of-measure'], container.guid],
 			['managed-by', container.managed_by]
 		]);
 
@@ -50,9 +50,7 @@
 							relatedContainers={relatedContainers.filter(
 								({ payload, relation }) =>
 									payload.type === payloadTypes.enum.indicator ||
-									relation.some(({ object, subject }) =>
-										[object, subject].includes(container.revision)
-									)
+									relation.some(({ object, subject }) => [object, subject].includes(container.guid))
 							)}
 						/>
 					</li>

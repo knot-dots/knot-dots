@@ -45,8 +45,8 @@ export const GET = (async ({ locals, url }) => {
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
-		isPartOfMeasure: z.array(z.coerce.number().int().positive()).default([]),
-		isPartOfStrategy: z.array(z.coerce.number().int().positive()).default([]),
+		isPartOfMeasure: z.array(z.string().uuid()).default([]),
+		isPartOfStrategy: z.array(z.string().uuid()).default([]),
 		measureType: z.array(measureTypes).default([]),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
@@ -165,7 +165,7 @@ export const POST = (async ({ locals, request }) => {
 				if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
 					const containersRelatedToOriginal = filterVisible(
 						await getAllContainersRelatedToMeasure(
-							isCopyOfRelation.object as number,
+							isCopyOfRelation.object as string,
 							{},
 							''
 						)(txConnection),
@@ -184,12 +184,12 @@ export const POST = (async ({ locals, request }) => {
 						);
 
 						copyContainer.relation.push({
-							object: createdContainer.revision,
+							object: createdContainer.guid,
 							predicate: predicates.enum['is-part-of'],
 							position: 0
 						});
 						copyContainer.relation.push({
-							object: createdContainer.revision,
+							object: createdContainer.guid,
 							predicate: predicates.enum['is-part-of-measure'],
 							position: 0
 						});
@@ -213,7 +213,7 @@ export const POST = (async ({ locals, request }) => {
 						);
 
 						copyContainer.relation.push({
-							object: createdContainer.revision,
+							object: createdContainer.guid,
 							predicate: predicates.enum['is-part-of-measure'],
 							position: 0
 						});
@@ -221,7 +221,7 @@ export const POST = (async ({ locals, request }) => {
 							...copyFrom.relation
 								.filter(
 									({ predicate, subject }) =>
-										predicate == predicates.enum['is-part-of'] && subject == copyFrom.revision
+										predicate == predicates.enum['is-part-of'] && subject == copyFrom.guid
 								)
 								.map(({ position, predicate, object: originalIsPartOfObject }) => ({
 									position,
@@ -232,7 +232,7 @@ export const POST = (async ({ locals, request }) => {
 												predicate == predicates.enum['is-copy-of'] &&
 												originalIsPartOfObject == object
 										)
-									)?.revision as number
+									)?.guid as string
 								}))
 								.filter(({ object }) => object !== undefined)
 						);
@@ -257,7 +257,7 @@ export const POST = (async ({ locals, request }) => {
 						);
 
 						copyContainer.relation.push({
-							object: createdContainer.revision,
+							object: createdContainer.guid,
 							predicate: predicates.enum['is-part-of-measure'],
 							position: 0
 						});
@@ -265,7 +265,7 @@ export const POST = (async ({ locals, request }) => {
 							...copyFrom.relation
 								.filter(
 									({ predicate, subject }) =>
-										predicate == predicates.enum['is-part-of'] && subject == copyFrom.revision
+										predicate == predicates.enum['is-part-of'] && subject == copyFrom.guid
 								)
 								.map(({ position, predicate, object: originalIsPartOfObject }) => ({
 									position,
@@ -276,7 +276,7 @@ export const POST = (async ({ locals, request }) => {
 												predicate == predicates.enum['is-copy-of'] &&
 												originalIsPartOfObject == object
 										)
-									)?.revision as number
+									)?.guid as string
 								}))
 								.filter(({ object }) => object !== undefined)
 						);
@@ -307,10 +307,10 @@ export const POST = (async ({ locals, request }) => {
 								relation: [
 									...match.relation,
 									{
-										object: copyFrom.revision,
+										object: copyFrom.guid,
 										position: 0,
 										predicate: predicates.enum['is-copy-of'],
-										subject: match.revision
+										subject: match.guid
 									}
 								]
 							});
@@ -336,7 +336,7 @@ export const POST = (async ({ locals, request }) => {
 						);
 
 						copyContainer.relation.push({
-							object: createdContainer.revision,
+							object: createdContainer.guid,
 							predicate: predicates.enum['is-part-of'],
 							position: 0
 						});
@@ -344,7 +344,7 @@ export const POST = (async ({ locals, request }) => {
 							...copyFrom.relation
 								.filter(
 									({ predicate, subject }) =>
-										predicate == predicates.enum['is-measured-by'] && subject == copyFrom.revision
+										predicate == predicates.enum['is-measured-by'] && subject == copyFrom.guid
 								)
 								.map(({ position, predicate, object: originalIsMeasuredByObject }) => ({
 									position,
@@ -355,7 +355,7 @@ export const POST = (async ({ locals, request }) => {
 												predicate == predicates.enum['is-copy-of'] &&
 												originalIsMeasuredByObject == object
 										)
-									)?.revision as number
+									)?.guid as string
 								}))
 								.filter(({ object }) => object !== undefined)
 						);

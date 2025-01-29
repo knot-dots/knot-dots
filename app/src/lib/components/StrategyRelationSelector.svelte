@@ -79,7 +79,7 @@
 			.getAll('is-part-of')
 			.map(
 				(o): PartialRelation => ({
-					object: Number(o),
+					object: o,
 					position: 0,
 					predicate: 'is-part-of'
 				})
@@ -89,7 +89,7 @@
 					.getAll('is-part-of-strategy')
 					.map(
 						(o): PartialRelation => ({
-							object: Number(o),
+							object: o,
 							position: parseInt(paramsFromURL($page.url).get('position') ?? '0'),
 							predicate: 'is-part-of-strategy'
 						})
@@ -100,7 +100,7 @@
 			const isPartOfStrategyIndex = container.relation.findIndex(
 				({ predicate, subject }) =>
 					predicate === predicates.enum['is-part-of-strategy'] &&
-					('revision' in container ? subject == container.revision : true)
+					('guid' in container ? subject == container.guid : true)
 			);
 
 			if (isPartOfStrategyIndex > -1) {
@@ -123,7 +123,7 @@
 		const isPartOfStrategyIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-strategy'] &&
-				('revision' in container ? subject == container.revision : true)
+				('guid' in container ? subject == container.guid : true)
 		);
 		const value = (event as CustomEvent).detail.selected.value;
 
@@ -134,7 +134,7 @@
 		const isPartOfStrategyOptions = await isPartOfStrategyOptionsRequest;
 
 		container.managed_by =
-			isPartOfStrategyOptions.find(({ revision }) => revision == value)?.managed_by ??
+			isPartOfStrategyOptions.find(({ guid }) => guid == value)?.managed_by ??
 			container.organizational_unit ??
 			container.organization;
 		container.relation = [
@@ -142,10 +142,10 @@
 			...(value
 				? [
 						{
-							object: parseInt(value),
+							object: value,
 							position: 0,
 							predicate: predicates.enum['is-part-of-strategy'],
-							...('revision' in container ? { subject: container.revision } : undefined)
+							...('guid' in container ? { subject: container.guid } : undefined)
 						}
 					]
 				: []),
@@ -159,17 +159,17 @@
 			const isPartOfIndex = container.relation.findIndex(
 				({ predicate, subject }) =>
 					predicate === predicates.enum['is-part-of'] &&
-					('revision' in container ? subject == container.revision : true)
+					('guid' in container ? subject == container.guid : true)
 			);
 			container.relation = [
 				...container.relation.slice(0, isPartOfIndex),
 				...(value
 					? [
 							{
-								object: parseInt((event as CustomEvent).detail.selected.value),
+								object: (event as CustomEvent).detail.selected.value,
 								position: 0,
 								predicate: predicates.enum['is-part-of'],
-								...('revision' in container ? { subject: container.revision } : undefined)
+								...('guid' in container ? { subject: container.guid } : undefined)
 							}
 						]
 					: []),
@@ -177,7 +177,7 @@
 			];
 		} else if (value) {
 			isPartOfOptionsRequest = fetchContainers({
-				isPartOfStrategy: [parseInt(value)],
+				isPartOfStrategy: [value],
 				payloadType: allowedSuperordinateTypes
 			});
 		}
@@ -191,7 +191,7 @@
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
-				('revision' in container ? subject == container.revision : true)
+				('guid' in container ? subject == container.guid : true)
 		);
 		const value = (event as CustomEvent).detail.selected.value;
 
@@ -200,10 +200,10 @@
 			...(value
 				? [
 						{
-							object: parseInt((event as CustomEvent).detail.selected.value),
+							object: (event as CustomEvent).detail.selected.value,
 							position: 0,
 							predicate: predicates.enum['is-part-of'],
-							...('revision' in container ? { subject: container.revision } : undefined)
+							...('guid' in container ? { subject: container.guid } : undefined)
 						}
 					]
 				: []),
@@ -219,8 +219,8 @@
 			<ListBox
 				options={[
 					{ value: undefined, label: $_('not_part_of_strategy') },
-					...strategyContainers.map(({ payload, revision }) => ({
-						value: revision,
+					...strategyContainers.map(({ payload, guid }) => ({
+						value: guid,
 						label: payload.title
 					}))
 				]}
@@ -239,23 +239,23 @@
 			{ value: undefined, label: $_('not_part_of') },
 			...isPartOfOptions
 				.filter((c) => isModelContainer(c) || isVisionContainer(c))
-				.map(({ payload, revision }) => ({
-					value: revision,
+				.map(({ payload, guid }) => ({
+					value: guid,
 					label: payload.title,
 					group: $_('payload_group.long_term_goals')
 				})),
-			...isPartOfOptions.filter(isStrategicGoalContainer).map(({ payload, revision }) => ({
-				value: revision,
+			...isPartOfOptions.filter(isStrategicGoalContainer).map(({ payload, guid }) => ({
+				value: guid,
 				label: payload.title,
 				group: $_('payload_group.strategic_goals')
 			})),
-			...isPartOfOptions.filter(isOperationalGoalContainer).map(({ payload, revision }) => ({
-				value: revision,
+			...isPartOfOptions.filter(isOperationalGoalContainer).map(({ payload, guid }) => ({
+				value: guid,
 				label: payload.title,
 				group: $_('payload_group.measurable_goals')
 			})),
-			...isPartOfOptions.filter(isMeasureContainer).map(({ payload, revision }) => ({
-				value: revision,
+			...isPartOfOptions.filter(isMeasureContainer).map(({ payload, guid }) => ({
+				value: guid,
 				label: payload.title,
 				group: $_('payload_group.implementation')
 			}))
@@ -268,7 +268,7 @@
 					value={container.relation.find(
 						(r) =>
 							r.predicate === predicates.enum['is-part-of'] &&
-							('revision' in container ? r.subject === container.revision : true)
+							('guid' in container ? r.subject === container.guid : true)
 					)?.object}
 					onChange={onChangeIsPartOf}
 				/>

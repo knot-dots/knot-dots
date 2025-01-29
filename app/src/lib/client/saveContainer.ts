@@ -12,19 +12,9 @@ export default async function saveContainer(container: AnyContainer | NewContain
 	const data = z.union([modifiedContainer, newContainer]).parse({
 		...container,
 		realm: env.PUBLIC_KC_REALM,
-		relation: container.relation
-			.filter((r) =>
-				'guid' in container
-					? r.subject == container.revision || r.object == container.revision
-					: true
-			)
-			.map(({ object, position, predicate, subject }) => {
-				return {
-					predicate,
-					...('guid' in container && object == container.revision ? { subject } : { object }),
-					position
-				};
-			})
+		relation: container.relation.filter((r) =>
+			'guid' in container ? r.subject == container.guid || r.object == container.guid : true
+		)
 	});
 
 	return await fetch(url, {

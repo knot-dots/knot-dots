@@ -393,10 +393,10 @@ export const audience = z.enum(audienceValues);
 export type Audience = z.infer<typeof audience>;
 
 export const relation = z.object({
-	object: z.number().int().positive(),
+	object: z.string().uuid(),
 	position: z.number().int().nonnegative(),
 	predicate: z.string().max(128),
-	subject: z.number().int().positive()
+	subject: z.string().uuid()
 });
 
 export type Relation = z.infer<typeof relation>;
@@ -1301,15 +1301,11 @@ const emptyTaskContainer = emptyContainer.extend({
 
 export type EmptyTaskContainer = z.infer<typeof emptyTaskContainer>;
 
-export const modifiedContainer = anyContainer
-	.omit({
-		revision: true,
-		valid_currently: true,
-		valid_from: true
-	})
-	.extend({
-		relation: z.array(partialRelation)
-	});
+export const modifiedContainer = anyContainer.omit({
+	revision: true,
+	valid_currently: true,
+	valid_from: true
+});
 
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
@@ -1324,14 +1320,14 @@ export interface CustomEventMap {
 	};
 }
 
-export function isPartOf(container: { relation: PartialRelation[]; revision: number }) {
+export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
 	return function (candidate: AnyContainer) {
 		return (
 			container.relation.findIndex(
 				(r) =>
 					r.predicate === predicates.enum['is-part-of'] &&
-					r.subject === candidate.revision &&
-					candidate.revision !== container.revision
+					r.subject === candidate.guid &&
+					candidate.guid !== container.guid
 			) > -1
 		);
 	};
@@ -1376,26 +1372,26 @@ export const newUser = z.object({
 
 export type NewUser = z.infer<typeof newUser>;
 
-export function isPartOfMeasure(container: { relation: PartialRelation[]; revision: number }) {
+export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: string }) {
 	return function (candidate: AnyContainer) {
 		return (
 			container.relation.findIndex(
 				(r) =>
 					r.predicate === predicates.enum['is-part-of-measure'] &&
-					r.subject === candidate.revision &&
-					candidate.revision !== container.revision
+					r.subject === candidate.guid &&
+					candidate.guid !== container.guid
 			) > -1
 		);
 	};
 }
 
-export function isRelatedTo(container: { relation: Relation[]; revision: number }) {
+export function isRelatedTo(container: { relation: Relation[]; guid: string }) {
 	return function (candidate: AnyContainer) {
 		return (
 			container.relation.findIndex(
 				({ object, subject }) =>
-					(candidate.revision === object || candidate.revision === subject) &&
-					candidate.revision !== container.revision
+					(candidate.guid === object || candidate.guid === subject) &&
+					candidate.guid !== container.guid
 			) > -1
 		);
 	};
@@ -1498,8 +1494,8 @@ export function mayDelete(container: AnyContainer | EmptyContainer, ability: Mon
 			({ predicate, object }) =>
 				(predicate == predicates.enum['is-part-of'] ||
 					predicate == predicates.enum['is-part-of-measure']) &&
-				'revision' in container &&
-				object == container.revision
+				'guid' in container &&
+				object == container.guid
 		).length == 0 &&
 		ability.can('delete', container)
 	);
@@ -1529,8 +1525,8 @@ export function findConnected<T extends AnyContainer>(
 				continue;
 			}
 			const related = containers
-				.filter(({ revision }) => revision != container.revision)
-				.find(({ revision }) => revision == object || revision == subject);
+				.filter(({ guid }) => guid != container.guid)
+				.find(({ guid }) => guid == object || guid == subject);
 			if (related && !found.has(related)) {
 				found.add(related);
 				recurse(related, containers);
@@ -1548,14 +1544,14 @@ export function findAncestors<T extends AnyContainer>(
 	containers: T[],
 	predicate: Predicate
 ): T[] {
-	const parentRevision = container.relation.find(
-		(r) => r.predicate == predicate && r.subject == container.revision
+	const parentGuid = container.relation.find(
+		(r) => r.predicate == predicate && r.subject == container.guid
 	)?.object;
-	if (!parentRevision) {
+	if (!parentGuid) {
 		return [];
 	}
 
-	const parent = containers.find(({ revision }) => revision == parentRevision);
+	const parent = containers.find(({ guid }) => guid == parentGuid);
 	if (!parent) {
 		return [];
 	}
@@ -1569,9 +1565,9 @@ export function findDescendants<T extends AnyContainer>(
 	predicate: Predicate
 ): T[] {
 	const children = containers.filter(
-		({ relation, revision }) =>
+		({ relation, guid }) =>
 			relation.findIndex(
-				(r) => r.predicate == predicate && r.object == container.revision && r.object != revision
+				(r) => r.predicate == predicate && r.object == container.guid && r.object != guid
 			) > -1
 	);
 
@@ -1612,10 +1608,10 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 
 export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveContainer[] {
 	return containers.filter(
-		({ relation, revision }) =>
+		({ relation, guid }) =>
 			relation.findIndex(
 				({ predicate, object }) =>
-					predicate == predicates.enum['is-sub-target-of'] && object == revision
+					predicate == predicates.enum['is-sub-target-of'] && object == guid
 			) == -1
 	);
 }
@@ -1627,7 +1623,7 @@ export function findOverallObjective(container: IndicatorContainer, containers: 
 			({ relation }) =>
 				relation.some(
 					({ object, predicate }) =>
-						predicate == predicates.enum['is-objective-for'] && object == container.revision
+						predicate == predicates.enum['is-objective-for'] && object == container.guid
 				) && relation.findIndex(({ predicate }) => predicate == predicates.enum['is-part-of']) == -1
 		);
 }
@@ -1747,7 +1743,7 @@ export function createCopyOf(
 	};
 
 	copy.relation.push({
-		object: container.revision,
+		object: container.guid,
 		predicate: predicates.enum['is-copy-of'],
 		position: 0
 	});

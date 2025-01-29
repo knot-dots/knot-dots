@@ -28,8 +28,8 @@
 		const newParams = new URLSearchParams([
 			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
 			[overlayKey.enum.create, payloadTypes.enum.objective],
-			[predicates.enum['is-part-of'], String(container.revision)],
-			[predicates.enum['is-objective-for'], String(container.revision)]
+			[predicates.enum['is-part-of'], container.guid],
+			[predicates.enum['is-objective-for'], container.guid]
 		]);
 
 		return `#${newParams.toString()}`;
@@ -66,7 +66,7 @@
 				<Card
 					{container}
 					relatedContainers={relatedContainers.filter(({ relation }) =>
-						relation.some(({ object, subject }) => [object, subject].includes(container.revision))
+						relation.some(({ object, subject }) => [object, subject].includes(container.guid))
 					)}
 				/>
 			</li>
