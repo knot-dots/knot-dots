@@ -15,22 +15,29 @@
 	--color-gray-800: #1f2a37;
 	--color-gray-900: #111827;
 	--color-green-050: #f3faf7;
+	--color-green-100: #def7ec;
 	--color-green-500: #0e9f6e;
 	--color-green-600: #057a55;
 	--color-green-700: #046c4e;
+	--color-green-800: #03543f;
 	--color-indigo-050: #f0f5ff;
 	--color-indigo-500: #6875f5;
 	--color-orange-050: #fff8f1;
-	--color-orange-600: #ff5a1f;
+	--color-orange-100: #feecdc;
+	--color-orange-800: #8a2c0d;
 	--color-red-050: #fdf2f2;
+	--color-red-100: #fde8e8;
 	--color-red-300: #f8b4b4;
 	--color-red-500: #f05252;
 	--color-red-600: #e02424;
 	--color-red-700: #c81e1e;
+	--color-red-800: #9b1c1c;
 	--color-yellow-050: #fdfdea;
+	--color-yellow-100: #fdf6b2;
 	--color-yellow-200: #fce96a;
 	--color-yellow-300: #faca15;
 	--color-yellow-400: #e3a008;
+	--color-yellow-800: #723b13;
 	--color-primary: #4dc3c5;
 	--color-red: #ca1d61;
 	--color-red-background: rgba(205, 37, 97, 0.15);
@@ -968,7 +975,7 @@ label > input[type='checkbox'].toggle {
 	display: inline-flex;
 	justify-content: center;
 	gap: 0.25rem;
-	padding: 0.125rem 0.75rem;
+	padding: 0.125rem 0.625rem;
 	text-align: center;
 	white-space: nowrap;
 }
@@ -979,23 +986,23 @@ label > input[type='checkbox'].toggle {
 }
 
 .badge.badge--red {
-	--button-background: var(--color-red-background);
-	--color: var(--color-red);
+	--button-background: var(--color-red-100);
+	--color: var(--color-red-800);
 }
 
 .badge.badge--orange {
-	--button-background: var(--color-orange-background);
-	--color: var(--color-orange);
+	--button-background: var(--color-orange-100);
+	--color: var(--color-orange-800);
 }
 
 .badge.badge--yellow {
-	--button-background: var(--color-yellow-background);
-	--color: var(--color-yellow);
+	--button-background: var(--color-yellow-100);
+	--color: var(--color-yellow-800);
 }
 
 .badge.badge--green {
-	--button-background: var(--color-green-background);
-	--color: var(--color-green);
+	--button-background: var(--color-green-100);
+	--color: var(--color-green-800);
 }
 
 .badge > svg {
