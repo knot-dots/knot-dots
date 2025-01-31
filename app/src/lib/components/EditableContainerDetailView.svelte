@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import debouncedSave from '$lib/client/debouncedSave';
+	import autoSave from '$lib/client/autoSave';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import {
 		type AnyContainer,
@@ -41,7 +41,7 @@
 </script>
 
 <article class="details details-editable">
-	<form on:submit|preventDefault={debouncedSave(container)} novalidate>
+	<form on:submit|preventDefault={autoSave(container)} novalidate>
 		<div class="details-tab" id="basic-data">
 			{#if $applicationState.containerDetailView.editable}
 				<h2

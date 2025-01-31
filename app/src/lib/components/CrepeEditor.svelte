@@ -7,6 +7,8 @@
 
 	export let value = '';
 
+	let timer: ReturnType<typeof setTimeout>;
+
 	function editor(node: HTMLElement) {
 		const crepe = new Crepe({
 			defaultValue: value,
@@ -24,7 +26,10 @@
 		crepe.editor.config((ctx) => {
 			ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
 				value = markdown;
-				node.closest('form')?.requestSubmit();
+				clearTimeout(timer);
+				timer = setTimeout(async () => {
+					node.closest('form')?.requestSubmit();
+				}, 2000);
 			});
 			ctx.update(rootAttrsCtx, (prev) => ({
 				...prev,
