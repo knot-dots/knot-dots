@@ -6,6 +6,8 @@ export default function autoSave(container: AnyContainer) {
 	return async () => {
 		const response = await saveContainer(container);
 		if (response.ok) {
+			const updatedContainer = await response.json();
+			container.revision = updatedContainer.revision;
 			await invalidateAll();
 		} else {
 			const error = await response.json();
