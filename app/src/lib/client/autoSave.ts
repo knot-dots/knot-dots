@@ -1,4 +1,3 @@
-import { invalidateAll } from '$app/navigation';
 import saveContainer from '$lib/client/saveContainer';
 import type { AnyContainer } from '$lib/models';
 
