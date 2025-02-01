@@ -1,139 +1,89 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import Card from '$lib/components/Card.svelte';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import type { Snippet } from 'svelte';
 
-	export let container: OrganizationContainer | OrganizationalUnitContainer;
-	export let showRelationFilter = false;
-	export let linkPath = `/${container.payload.type}/${container.guid}`;
-
-	let organizationLink: HTMLAnchorElement;
-
-	$: relatedTo = $page.url.searchParams.get('related-to');
-
-	async function toggleRelatedTo(params: URLSearchParams) {
-		const query = new URLSearchParams(params);
-		if (relatedTo === container.guid) {
-			query.delete('related-to');
-		} else {
-			query.delete('related-to');
-			query.append('related-to', container.guid);
-		}
-		await goto(`?${query.toString()}`);
+	interface Props {
+		button?: Snippet;
+		container: OrganizationContainer | OrganizationalUnitContainer;
+		linkPath?: string;
+		showRelationFilter?: boolean;
 	}
 
-	function handleClick(event: MouseEvent) {
-		if (organizationLink == event.target) {
-			return;
-		}
-		const isTextSelected = window.getSelection()?.toString();
-		if (!isTextSelected) {
-			organizationLink.click();
-		}
-	}
+	let {
+		button,
+		container,
+		linkPath = `/${container.payload.type}/${container.guid}`,
+		showRelationFilter = false
+	}: Props = $props();
 
-	function handleKeyUp(event: KeyboardEvent) {
-		if (event.key == 'Enter') {
-			organizationLink.click();
-		}
+	let relatedTo = $derived(page.url.searchParams.get('related-to'));
+
+	function toggleRelatedTo(params: URLSearchParams) {
+		return async (event: Event) => {
+			event.stopPropagation();
+
+			const query = new URLSearchParams(params);
+			if (relatedTo === container.guid) {
+				query.delete('related-to');
+			} else {
+				query.delete('related-to');
+				query.append('related-to', container.guid);
+			}
+			await goto(`?${query.toString()}`);
+		};
 	}
 
 	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-		url.hostname = `${container.guid}.${url.hostname}`;
-		url.pathname = linkPath;
-		return url.toString();
+		return () => {
+			const url = new URL(env.PUBLIC_BASE_URL ?? '');
+			url.hostname = `${container.guid}.${url.hostname}`;
+			url.pathname = linkPath;
+			return url.toString();
+		};
 	}
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-<article
-	tabindex="-1"
-	title={container.payload.name}
-	data-sveltekit-keepfocus
-	class="card"
-	class:is-active={$page.url.hostname.split('.')[0] == container.guid}
-	on:click={handleClick}
-	on:keyup={handleKeyUp}
->
-	<header>
-		<h3>
-			<a href={organizationURL(container)} bind:this={organizationLink}>
-				{container.payload.name}
-			</a>
-		</h3>
-	</header>
-
+{#snippet body()}
 	{#if 'image' in container.payload}
-		<img alt={$_('image')} class="text" src={container.payload.image} />
+		<img alt={$_('image')} src={container.payload.image} />
 	{/if}
+{/snippet}
 
-	<footer>
-		{#if 'organizationCategory' in container.payload && container.payload.organizationCategory}
-			<span class="badge">
-				{$_(container.payload.organizationCategory)}
-			</span>
-		{/if}
-		{#if showRelationFilter}
-			<button
-				class="relation-button"
-				aria-label={$_('show_related_objects')}
-				type="button"
-				class:is-active={relatedTo === container.guid}
-				on:click|stopPropagation={() => toggleRelatedTo($page.url.searchParams)}
-			>
-			</button>
-		{/if}
-	</footer>
-</article>
+{#snippet footer()}
+	{#if 'organizationCategory' in container.payload && container.payload.organizationCategory}
+		<span class="badge">
+			{$_(container.payload.organizationCategory)}
+		</span>
+	{/if}
+{/snippet}
+
+{#if button}
+	<Card {body} {button} {container} href={organizationURL(container)} {footer} />
+{:else}
+	<Card {body} {container} href={organizationURL(container)} {footer}>
+		{#snippet button()}
+			{#if showRelationFilter}
+				<button
+					class="relation-button"
+					aria-label={$_('show_related_objects')}
+					type="button"
+					class:is-active={relatedTo === container.guid}
+					onclick={toggleRelatedTo(page.url.searchParams)}
+				>
+				</button>
+			{/if}
+		{/snippet}
+	</Card>
+{/if}
 
 <style>
-	.card {
-		background: #ffffff;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow: var(--shadow-md);
-		cursor: pointer;
-		display: flex;
-		flex-direction: column;
-		padding: 1.25rem;
-		height: var(--height, auto);
-		width: 100%;
-	}
-
-	.card:hover,
-	.card.is-active {
-		border-color: var(--hover-border-color, var(--color-hover-neutral));
-		border-width: 3px;
-		outline: none;
-		padding: calc(1.25rem - 2px);
-	}
-
-	header {
-		margin-bottom: 1rem;
-	}
-
-	header h3 {
-		font-size: 1rem;
-		font-weight: 700;
-	}
-
-	.text {
-		color: var(--color-gray-500);
-		font-size: 0.875rem;
-		font-weight: 500;
-		margin-bottom: 1rem;
-	}
-
 	img {
 		max-height: 7rem;
 		object-fit: contain;
-	}
-
-	footer {
-		display: flex;
-		margin-top: auto;
 	}
 </style>

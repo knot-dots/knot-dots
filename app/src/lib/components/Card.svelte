@@ -42,13 +42,24 @@
 	} from '$lib/theme/models';
 
 	interface Props {
+		body?: Snippet;
 		button?: Snippet;
 		container: AnyContainer;
+		footer?: Snippet;
+		href?: () => string;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;
 	}
 
-	let { button, container, relatedContainers = [], showRelationFilter = false }: Props = $props();
+	let {
+		body,
+		button,
+		container,
+		footer,
+		href,
+		relatedContainers = [],
+		showRelationFilter = false
+	}: Props = $props();
 
 	let overlayContext = getContext('overlay');
 
@@ -201,8 +212,10 @@
 		{/if}
 	</header>
 
-	<div class="content">
-		{#if isIndicatorContainer(container)}
+	<div class="body">
+		{#if body}
+			{@render body()}
+		{:else if isIndicatorContainer(container)}
 			{#if createFeatureDecisions(page.data.features).useNewCharts()}
 				<NewIndicatorChart
 					{container}
@@ -300,7 +313,9 @@
 	</div>
 
 	<footer>
-		{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
+		{#if footer}
+			{@render footer()}
+		{:else if 'indicator' in container.payload && container.payload.indicator.length > 0}
 			<ProgressBar
 				guid={container.guid}
 				indicator={container.payload.indicator[0]}
@@ -412,7 +427,7 @@
 		width: 1.5rem;
 	}
 
-	.content {
+	.body {
 		color: var(--color-gray-500);
 		font-size: 0.875rem;
 		font-weight: 500;

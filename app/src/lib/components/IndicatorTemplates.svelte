@@ -91,15 +91,16 @@
 		{#each indicatortTemplates.filter((c) => !alreadyInUse(c, indicators)) as template}
 			<li>
 				<IndicatorTemplateCard --height="100%" container={template}>
-					<button
-						class="button-square"
-						title={$_('indicator_template.select')}
-						type="button"
-						on:click|stopPropagation={() => select(template)}
-						slot="button"
-					>
-						<PlusSmall />
-					</button>
+					{#snippet button()}
+						<button
+							class="button-square"
+							title={$_('indicator_template.select')}
+							type="button"
+							on:click|stopPropagation={() => select(template)}
+						>
+							<PlusSmall />
+						</button>
+					{/snippet}
 				</IndicatorTemplateCard>
 			</li>
 		{/each}
