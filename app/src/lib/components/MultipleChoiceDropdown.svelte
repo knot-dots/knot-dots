@@ -10,7 +10,6 @@
 	}
 
 	let { handleChange, options, value = $bindable() }: Props = $props();
-	let selected = $derived(options.filter((o) => value.includes(o.value)).map(({ label }) => label));
 
 	const popover = createPopover({});
 
