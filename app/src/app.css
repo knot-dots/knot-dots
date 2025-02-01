@@ -586,13 +586,12 @@ textarea:invalid {
 
 label > input[type='checkbox'],
 label > input[type='radio'] {
-	margin-right: 8px;
-	vertical-align: top;
+	margin: 0 0.5rem 0 0;
 }
 
 label:has(> input[type='checkbox'], > input[type='radio']) {
-	display: block;
-	line-height: 1.2em;
+	align-items: center;
+	display: flex;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
