@@ -3,7 +3,6 @@ import type { SvelteHTMLElements } from 'svelte/elements';
 import ArrowTrendingUp from '~icons/heroicons/arrow-trending-up-solid';
 import Bars2 from '~icons/heroicons/bars-2-solid';
 import ChartPie from '~icons/heroicons/chart-pie';
-import CheckCircle from '~icons/heroicons/check-circle-16-solid';
 import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-solid';
 import ChevronDoubleRight from '~icons/heroicons/chevron-double-right-solid';
 import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
@@ -13,6 +12,7 @@ import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 import Minus from '~icons/heroicons/minus-solid';
 import Pencil from '~icons/heroicons/pencil-16-solid';
 import Plus from '~icons/heroicons/plus-solid';
+import ShieldCheck from '~icons/heroicons/shield-check-16-solid';
 import Square2Stack from '~icons/heroicons/square-2-stack';
 import XCircle from '~icons/heroicons/x-circle-16-solid';
 import sdg01 from '$lib/assets/sdg/sdg-01.svg';
@@ -78,12 +78,12 @@ export const sdgIcons = new Map<SustainableDevelopmentGoal, string>([
 ]);
 
 export const statusColors = new Map<Status, string>([
-	[status.enum['status.idea'], 'red'],
+	[status.enum['status.idea'], 'pink'],
 	[status.enum['status.in_planning'], 'orange'],
 	[status.enum['status.in_implementation'], 'yellow'],
-	[status.enum['status.in_operation'], 'green'],
+	[status.enum['status.in_operation'], 'blue'],
 	[status.enum['status.done'], 'green'],
-	[status.enum['status.rejected'], 'blue']
+	[status.enum['status.rejected'], 'purple']
 ]);
 
 export const statusBackgrounds = new Map<Status, string>([
@@ -109,16 +109,16 @@ export const statusIcons = new Map<Status, Component<SvelteHTMLElements['svg']>>
 	[status.enum['status.in_planning'], Pencil],
 	[status.enum['status.in_implementation'], Cog8Tooth],
 	[status.enum['status.in_operation'], Flag],
-	[status.enum['status.done'], CheckCircle],
+	[status.enum['status.done'], ShieldCheck],
 	[status.enum['status.rejected'], HandThumbDown]
 ]);
 
 export const taskStatusColors = new Map<TaskStatus, string>([
-	[taskStatus.enum['task_status.idea'], 'red'],
+	[taskStatus.enum['task_status.idea'], 'pink'],
 	[taskStatus.enum['task_status.in_planning'], 'orange'],
 	[taskStatus.enum['task_status.in_progress'], 'yellow'],
 	[taskStatus.enum['task_status.done'], 'green'],
-	[taskStatus.enum['task_status.rejected'], 'blue']
+	[taskStatus.enum['task_status.rejected'], 'purple']
 ]);
 
 export const taskStatusBackgrounds = new Map<TaskStatus, string>([
@@ -149,7 +149,7 @@ export const resolutionStatusColors = new Map<ResolutionStatus, string>([
 	[resolutionStatus.enum['resolution_status.draft'], 'yellow'],
 	[resolutionStatus.enum['resolution_status.in_force'], 'green'],
 	[resolutionStatus.enum['resolution_status.invalid'], 'red'],
-	[resolutionStatus.enum['resolution_status.rejected'], 'blue']
+	[resolutionStatus.enum['resolution_status.rejected'], 'purple']
 ]);
 
 export const resolutionStatusBackgrounds = new Map<ResolutionStatus, string>([

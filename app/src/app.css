@@ -25,6 +25,10 @@
 	--color-orange-050: #fff8f1;
 	--color-orange-100: #feecdc;
 	--color-orange-800: #8a2c0d;
+	--color-pink-100: #fce8f3;
+	--color-pink-800: #99154b;
+	--color-purple-100: #edebfe;
+	--color-purple-800: #5521b5;
 	--color-red-050: #fdf2f2;
 	--color-red-100: #fde8e8;
 	--color-red-300: #f8b4b4;
@@ -975,6 +979,7 @@ label > input[type='checkbox'].toggle {
 	color: var(--color);
 	display: inline-flex;
 	justify-content: center;
+	font-size: 0.875rem;
 	gap: 0.25rem;
 	padding: 0.125rem 0.625rem;
 	text-align: center;
@@ -994,6 +999,16 @@ label > input[type='checkbox'].toggle {
 .badge.badge--orange {
 	--button-background: var(--color-orange-100);
 	--color: var(--color-orange-800);
+}
+
+.badge.badge--pink {
+	--button-background: var(--color-pink-100);
+	--color: var(--color-pink-800);
+}
+
+.badge.badge--purple {
+	--button-background: var(--color-purple-100);
+	--color: var(--color-purple-800);
 }
 
 .badge.badge--yellow {
