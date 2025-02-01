@@ -368,29 +368,25 @@
 		background: #ffffff;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		display: flex;
 		flex-direction: column;
 		height: var(--height, auto);
 		hyphens: auto;
-		padding: 1.25rem;
+		padding: 1rem;
 		width: 100%;
 		word-break: break-word;
 	}
 
-	.card:hover,
-	.card.is-active {
-		border-color: var(--hover-border-color, var(--color-hover-neutral));
-		border-width: 3px;
-		outline: none;
-		padding: calc(1.25rem - 2px);
+	.card:hover {
+		background-color: var(--color-gray-100);
 	}
 
 	.card.is-highlighted {
 		border-color: var(--highlight-color, var(--color-gray-200));
 		border-width: 3px;
-		padding: calc(1.25rem - 2px);
+		padding: calc(1rem - 2px);
 	}
 
 	.card.is-highlighted:hover {
@@ -412,8 +408,9 @@
 	}
 
 	header h3 {
+		color: var(--color-gray-900);
 		font-size: 1rem;
-		font-weight: 700;
+		font-weight: 600;
 		margin-bottom: 0;
 	}
 
@@ -430,7 +427,7 @@
 	.body {
 		color: var(--color-gray-500);
 		font-size: 0.875rem;
-		font-weight: 500;
+		font-weight: 400;
 		margin-bottom: 1rem;
 	}
 
@@ -438,7 +435,7 @@
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
-		gap: 0.25rem;
+		gap: 0.5rem;
 	}
 
 	footer {

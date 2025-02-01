@@ -84,13 +84,13 @@
 		background-color: #ffffff;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-sm);
 		flex-shrink: 0;
 		overflow: hidden;
 	}
 
 	footer:hover {
-		border-color: var(--hover-border-color, var(--color-hover-neutral));
+		background-color: var(--color-gray-100);
 	}
 
 	footer a {
