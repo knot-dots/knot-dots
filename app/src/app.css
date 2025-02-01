@@ -42,6 +42,7 @@
 	--color-yellow-300: #faca15;
 	--color-yellow-400: #e3a008;
 	--color-yellow-800: #723b13;
+	--color-primary-600: var(--color-blue-600);
 	--color-primary: #4dc3c5;
 	--color-red: #ca1d61;
 	--color-red-background: rgba(205, 37, 97, 0.15);
@@ -129,7 +130,7 @@
 	--shadow-xl: 0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px rgba(0, 0, 0, 0.04);
 	--shadow-2xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
 
-	--focus-color: var(--color-blue-900);
+	--focus-color: var(--color-primary-600);
 	--active-color: var(--color-blue-200);
 	--button-background: transparent;
 	--button-border-color: #d1d5db;
@@ -271,7 +272,7 @@ td, .cell {
 :is(a, button, input, select, summary, textarea, [contenteditable], .focus-indicator) {
 	--outline-color: var(--focus-color, currentColor);
 	--outline-offset: -1px;
-	--outline-size: max(3px, 0.08em);
+	--outline-size: max(2px, 0.067em);
 	--outline-style: solid;
 }
 
