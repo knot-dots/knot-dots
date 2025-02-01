@@ -372,6 +372,7 @@
 		cursor: pointer;
 		display: flex;
 		flex-direction: column;
+		gap: 1rem;
 		height: var(--height, auto);
 		hyphens: auto;
 		padding: 1rem;
@@ -404,7 +405,6 @@
 	header {
 		align-items: flex-start;
 		display: flex;
-		margin-bottom: 1rem;
 	}
 
 	header h3 {
@@ -428,7 +428,6 @@
 		color: var(--color-gray-500);
 		font-size: 0.875rem;
 		font-weight: 400;
-		margin-bottom: 1rem;
 	}
 
 	.badges {
@@ -449,5 +448,25 @@
 
 	footer :global(.progress) {
 		flex-grow: 1;
+	}
+
+	@container style(--card-style: carousel) {
+		.card {
+			display: grid;
+			grid-row: inherit;
+			grid-template-rows: inherit;
+		}
+
+		header {
+			grid-row: 1 / 2;
+		}
+
+		.body {
+			grid-row: 2 / 3;
+		}
+
+		footer {
+			grid-row: 3 / 4;
+		}
 	}
 </style>

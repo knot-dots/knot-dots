@@ -41,7 +41,7 @@
 	{#await tasksRequest then tasks}
 		{#each tasks as task}
 			<li>
-				<Card --height="100%" container={task} />
+				<Card container={task} />
 			</li>
 		{/each}
 	{/await}
@@ -70,10 +70,10 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		cursor: pointer;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
+		display: grid;
+		grid-row: 1 / 4;
 		height: 267px;
+		justify-content: center;
 	}
 
 	.card :global(svg) {

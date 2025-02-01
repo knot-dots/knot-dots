@@ -1056,16 +1056,21 @@ label > input[type='checkbox'].toggle {
 
 /* Carousel */
 .carousel {
-	display: flex;
-	flex-direction: row;
+	display: grid;
 	gap: 1rem;
+	grid-auto-columns: 20rem;
+	grid-auto-flow: column;
+	grid-template-rows: repeat(3, min-content);
 	overflow-x: auto;
 	padding: 1.5rem 0;
 }
 
 .carousel > li {
-	flex-shrink: 0;
-	width: 19.5rem;
+	--card-style: carousel;
+
+	display: grid;
+	grid-row: 1 / 4;
+	grid-template-rows: subgrid;
 }
 
 /* Dropdown */

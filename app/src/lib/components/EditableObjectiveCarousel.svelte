@@ -64,7 +64,6 @@
 		{#each parts as container}
 			<li>
 				<Card
-					--height="100%"
 					{container}
 					relatedContainers={relatedContainers.filter(({ relation }) =>
 						relation.some(({ object, subject }) => [object, subject].includes(container.revision))
@@ -108,10 +107,10 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		cursor: pointer;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
+		display: grid;
+		grid-row: 1 / 4;
 		height: 267px;
+		justify-content: center;
 	}
 
 	.card :global(svg) {

@@ -42,7 +42,7 @@
 				<ul class="carousel">
 					{#each tasks as task}
 						<li>
-							<Card --height="100%" container={task} />
+							<Card container={task} />
 						</li>
 					{/each}
 				</ul>

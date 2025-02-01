@@ -46,7 +46,6 @@
 				{#each parts as container}
 					<li>
 						<Card
-							--height="100%"
 							{container}
 							relatedContainers={relatedContainers.filter(
 								({ payload, relation }) =>
