@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
@@ -41,56 +41,65 @@
 		taskStatusIcons
 	} from '$lib/theme/models';
 
-	export let container: AnyContainer;
-	export let relatedContainers: Container[] = [];
-	export let showRelationFilter = false;
+	interface Props {
+		button?: Snippet;
+		container: AnyContainer;
+		relatedContainers?: Container[];
+		showRelationFilter?: boolean;
+	}
 
-	let selected: Container | undefined;
+	let { button, container, relatedContainers = [], showRelationFilter = false }: Props = $props();
 
 	let overlayContext = getContext('overlay');
 
-	$: relatedTo = overlayContext
-		? paramsFromFragment($page.url).get('related-to')
-		: $page.url.searchParams.get('related-to');
+	let relatedTo = $derived(
+		overlayContext
+			? paramsFromFragment(page.url).get('related-to')
+			: page.url.searchParams.get('related-to')
+	);
 
-	$: if ($overlay?.key === overlayKey.enum.relations) {
-		selected = $overlay.container;
-	} else if (!overlayContext && relatedTo && $page.data.containers) {
-		selected = $page.data.containers.find(({ guid }: Container) => guid == relatedTo);
-	} else if (!overlayContext && $page.data.container) {
-		selected = $page.data.container;
-	} else {
-		selected = undefined;
-	}
-
-	async function applyRelationFilter(url: URL) {
-		if (overlayContext) {
-			const params = paramsFromFragment(url);
-			if (relatedTo === container.guid) {
-				params.delete('related-to');
-			} else {
-				params.set('related-to', container.guid);
-			}
-			await goto(`#${params.toString()}`);
+	let selected = $derived.by(() => {
+		if ($overlay?.key === overlayKey.enum.relations) {
+			return $overlay.container;
+		} else if (!overlayContext && relatedTo && page.data.containers) {
+			return page.data.containers.find(({ guid }: Container) => guid == relatedTo);
+		} else if (!overlayContext && page.data.container) {
+			return page.data.container;
 		} else {
-			const params = new URLSearchParams(url.searchParams);
-			if (relatedTo === container.guid) {
-				params.delete('related-to');
-			} else {
-				params.set('related-to', container.guid);
-			}
-			await goto(`?${params.toString()}${url.hash}`);
+			return undefined;
 		}
+	});
+
+	function applyRelationFilter(url: URL) {
+		return async (event: Event) => {
+			event.stopPropagation();
+
+			if (overlayContext) {
+				const params = paramsFromFragment(url);
+				if (relatedTo === container.guid) {
+					params.delete('related-to');
+				} else {
+					params.set('related-to', container.guid);
+				}
+				await goto(`#${params.toString()}`);
+			} else {
+				const params = new URLSearchParams(url.searchParams);
+				if (relatedTo === container.guid) {
+					params.delete('related-to');
+				} else {
+					params.set('related-to', container.guid);
+				}
+				await goto(`?${params.toString()}${url.hash}`);
+			}
+		};
 	}
 
-	let containerPreviewURL: string;
-
-	$: {
-		const hashParams = paramsFromFragment($page.url);
+	function computeHref(url: URL) {
+		const hashParams = paramsFromFragment(url);
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
-			containerPreviewURL = '#';
+			return '#';
 		} else {
-			containerPreviewURL = overlayURL($page.url, 'view', container.guid);
+			return overlayURL(url, 'view', container.guid);
 		}
 	}
 
@@ -153,7 +162,7 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <article
 	tabindex="-1"
 	title={'title' in container.payload
@@ -163,16 +172,20 @@
 			: undefined}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromFragment($page.url).get(overlayKey.enum.view) === container.guid ||
-		paramsFromFragment($page.url).get(overlayKey.enum.relate) === container.guid}
+	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid ||
+		paramsFromFragment(page.url).get(overlayKey.enum.relate) === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
-	on:click={handleClick}
-	on:keyup={handleKeyUp}
+	onclick={handleClick}
+	onkeyup={handleKeyUp}
 >
 	<header>
 		<h3>
-			<a href={containerPreviewURL} bind:this={previewLink} on:click={updateOverlayHistory}>
+			<a
+				href={href ? href() : computeHref(page.url)}
+				bind:this={previewLink}
+				onclick={updateOverlayHistory}
+			>
 				{#if 'title' in container.payload}
 					{container.payload.title}
 				{:else if 'name' in container.payload}
@@ -181,15 +194,16 @@
 			</a>
 		</h3>
 		{#if selected && relationIcon(container, selected)}
+			{@const RelationIcon = relationIcon(container, selected)}
 			<span>
-				<svelte:component this={relationIcon(container, selected)} />
+				<RelationIcon />
 			</span>
 		{/if}
 	</header>
 
 	<div class="content">
 		{#if isIndicatorContainer(container)}
-			{#if createFeatureDecisions($page.data.features).useNewCharts()}
+			{#if createFeatureDecisions(page.data.features).useNewCharts()}
 				<NewIndicatorChart
 					{container}
 					relatedContainers={[
@@ -230,7 +244,7 @@
 		{:else if isEffectContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				{#if createFeatureDecisions($page.data.features).useNewCharts()}
+				{#if createFeatureDecisions(page.data.features).useNewCharts()}
 					<EffectChart {container} {relatedContainers} />
 				{:else}
 					<IndicatorChart container={indicator} {relatedContainers} showEffects />
@@ -248,7 +262,7 @@
 						) ?? -1) > -1
 				)}
 			{#if indicator && effect}
-				{#if createFeatureDecisions($page.data.features).useNewCharts()}
+				{#if createFeatureDecisions(page.data.features).useNewCharts()}
 					<EffectChart container={effect} {relatedContainers} />
 				{:else}
 					<IndicatorChart
@@ -263,7 +277,7 @@
 		{:else if isObjectiveContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				{#if createFeatureDecisions($page.data.features).useNewCharts()}
+				{#if createFeatureDecisions(page.data.features).useNewCharts()}
 					<ObjectiveChart {container} {relatedContainers} />
 				{:else}
 					<IndicatorChart container={indicator} {relatedContainers} showObjectives />
@@ -294,20 +308,22 @@
 				compact
 			/>
 		{:else if 'resolutionStatus' in container.payload}
+			{@const ResolutionStatusIcon =
+				resolutionStatusIcons.get(container.payload.resolutionStatus) ?? Cog8Tooth}
 			<span class="badge badge--{resolutionStatusColors.get(container.payload.resolutionStatus)}">
-				<svelte:component
-					this={resolutionStatusIcons.get(container.payload.resolutionStatus) ?? Cog8Tooth}
-				/>
+				<ResolutionStatusIcon />
 				{$_(container.payload.resolutionStatus)}
 			</span>
 		{:else if 'status' in container.payload}
+			{@const StatusIcon = statusIcons.get(container.payload.status) ?? LightBulb}
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
-				<svelte:component this={statusIcons.get(container.payload.status) ?? LightBulb} />
+				<StatusIcon />
 				{$_(container.payload.status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
+			{@const TaskStatusIcon = taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb}
 			<span class="badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
-				<svelte:component this={taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb} />
+				<TaskStatusIcon />
 				{$_(container.payload.taskStatus)}
 			</span>
 		{:else if 'progress' in container.payload}
@@ -317,17 +333,18 @@
 		{:else if 'indicatorType' in container.payload}
 			<span></span>
 		{/if}
-		<slot name="button">
-			{#if showRelationFilter}
-				<button
-					class="relation-button"
-					aria-label={$_('show_relations')}
-					class:is-active={relatedTo === container.guid}
-					on:click|stopPropagation={() => applyRelationFilter($page.url)}
-				>
-				</button>
-			{/if}
-		</slot>
+
+		{#if button}
+			{@render button()}
+		{:else if showRelationFilter}
+			<button
+				class="relation-button"
+				aria-label={$_('show_relations')}
+				class:is-active={relatedTo === container.guid}
+				onclick={applyRelationFilter(page.url)}
+			>
+			</button>
+		{/if}
 	</footer>
 </article>
 

@@ -75,15 +75,16 @@
 		{#each indicators.filter(() => params.has('alreadyInUse')) as indicator}
 			<li>
 				<Card --height="100%" container={indicator}>
-					<button
-						class="button-square"
-						title={$_('indicator_template.select')}
-						type="button"
-						on:click|stopPropagation={() => select(indicator)}
-						slot="button"
-					>
-						<PlusSmall />
-					</button>
+					{#snippet button()}
+						<button
+							class="button-square"
+							title={$_('indicator_template.select')}
+							type="button"
+							on:click|stopPropagation={() => select(indicator)}
+						>
+							<PlusSmall />
+						</button>
+					{/snippet}
 				</Card>
 			</li>
 		{/each}
