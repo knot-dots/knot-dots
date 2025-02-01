@@ -9,6 +9,7 @@
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
+	import TaskCard from '$lib/components/TaskCard.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import { isTaskContainer, payloadTypes, taskStatus } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
@@ -60,7 +61,7 @@
 					status={taskStatusOption}
 					let:container
 				>
-					<Card {container} showRelationFilter />
+					<TaskCard {container} showRelationFilter />
 				</TaskBoardColumn>
 			{/each}
 		</Board>

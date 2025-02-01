@@ -4,6 +4,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
+	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -56,7 +57,7 @@
 			status={taskStatusOption}
 			let:container
 		>
-			<Card {container} showRelationFilter />
+			<TaskCard {container} showRelationFilter />
 		</TaskBoardColumn>
 	{/each}
 </Board>

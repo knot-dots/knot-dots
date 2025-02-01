@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers.js';
-	import Card from '$lib/components/Card.svelte';
+	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
 		isOverlayKey,
 		overlayKey,
@@ -42,7 +42,7 @@
 				<ul class="carousel">
 					{#each tasks as task}
 						<li>
-							<Card container={task} />
+							<TaskCard container={task} showTaskStatusBadge />
 						</li>
 					{/each}
 				</ul>

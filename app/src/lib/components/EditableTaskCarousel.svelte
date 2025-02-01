@@ -2,7 +2,7 @@
 	import Plus from '~icons/heroicons/plus-solid';
 	import { page } from '$app/stores';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import Card from '$lib/components/Card.svelte';
+	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
 		isOverlayKey,
 		overlayKey,
@@ -41,7 +41,7 @@
 	{#await tasksRequest then tasks}
 		{#each tasks as task}
 			<li>
-				<Card container={task} />
+				<TaskCard container={task} showTaskStatusBadge />
 			</li>
 		{/each}
 	{/await}
