@@ -43,6 +43,7 @@
 	--color-yellow-400: #e3a008;
 	--color-yellow-800: #723b13;
 	--color-primary-600: var(--color-blue-600);
+	--color-primary-700: var(--color-blue-700);
 	--color-primary: #4dc3c5;
 	--color-red: #ca1d61;
 	--color-red-background: rgba(205, 37, 97, 0.15);
@@ -488,6 +489,10 @@ button.button-copycat:hover,
 /* Form controls */
 label {
 	font-weight: 500;
+}
+
+input, progress {
+	accent-color: var(--color-primary-700);
 }
 
 input[type='date'],
