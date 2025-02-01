@@ -24,7 +24,7 @@
 	};
 </script>
 
-<div class="dropdown-reference" use:popperRef>
+<div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		<span class="selected">
 			{#each options.filter((o) => value.includes(o.value)) as selectedOption}

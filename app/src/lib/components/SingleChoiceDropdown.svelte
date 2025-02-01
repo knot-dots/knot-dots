@@ -24,7 +24,7 @@
 	};
 </script>
 
-<div class="dropdown-reference" use:popperRef>
+<div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		{#if selected}{selected.label}{:else}&nbsp;{/if}<ChevronUpDown />
 	</button>
