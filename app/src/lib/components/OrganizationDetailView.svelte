@@ -60,7 +60,7 @@
 						...containersRelatedToIndicators.filter(isContainerWithObjective)
 					]}
 					<li>
-						<Card --height="100%" container={indicator} {relatedContainers} />
+						<Card container={indicator} {relatedContainers} />
 					</li>
 				{/each}
 			</ul>
@@ -72,7 +72,7 @@
 		<ul class="carousel">
 			{#each strategies as strategy}
 				<li>
-					<Card --height="100%" container={strategy} />
+					<Card container={strategy} />
 				</li>
 			{/each}
 		</ul>
@@ -83,7 +83,7 @@
 		<ul class="carousel">
 			{#each measures as measure}
 				<li>
-					<Card --height="100%" container={measure} />
+					<Card container={measure} />
 				</li>
 			{/each}
 		</ul>

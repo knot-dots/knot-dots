@@ -72,7 +72,7 @@
 			<ul class="carousel">
 				{#each relatedContainers.filter(isIndicatorContainer) as indicator}
 					<li>
-						<Card --height="100%" container={indicator} />
+						<Card container={indicator} />
 					</li>
 				{/each}
 			</ul>
@@ -84,7 +84,7 @@
 		<ul class="carousel">
 			{#each relatedContainers.filter(isStrategyContainer) as strategy}
 				<li>
-					<Card --height="100%" container={strategy} />
+					<Card container={strategy} />
 				</li>
 			{/each}
 		</ul>
@@ -95,7 +95,7 @@
 		<ul class="carousel">
 			{#each relatedContainers.filter(isContainerWithEffect) as measure}
 				<li>
-					<Card --height="100%" container={measure} />
+					<Card container={measure} />
 				</li>
 			{/each}
 		</ul>

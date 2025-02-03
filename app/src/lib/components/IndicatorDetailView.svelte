@@ -87,7 +87,7 @@
 				<ul class="carousel">
 					{#each relatedContainers.filter((c) => isContainerWithEffect(c)) as measure}
 						<li>
-							<Card --height="100%" container={measure} />
+							<Card container={measure} />
 						</li>
 					{/each}
 				</ul>
@@ -99,11 +99,11 @@
 				<h3>{$_('goals')}</h3>
 				<ul class="carousel">
 					{#if overallObjective}
-						<li><Card --height="100%" container={overallObjective} /></li>
+						<li><Card container={overallObjective} /></li>
 					{/if}
 					{#each relatedContainers.filter(isContainerWithObjective) as objective}
 						<li>
-							<Card --height="100%" container={objective} />
+							<Card container={objective} />
 						</li>
 					{/each}
 				</ul>
@@ -115,7 +115,7 @@
 			<ul class="carousel">
 				{#each relatedContainers.filter(isStrategyContainer) as strategy}
 					<li>
-						<Card --height="100%" container={strategy} />
+						<Card container={strategy} />
 					</li>
 				{/each}
 			</ul>

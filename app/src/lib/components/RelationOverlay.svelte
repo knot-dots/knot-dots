@@ -423,7 +423,7 @@
 			>
 				{#each zone.items as item (item.guid)}
 					<li>
-						<Card --height="100%" container={item.container}>
+						<Card container={item.container}>
 							{#snippet button()}
 								{#if object.relation.find((r) => zone.predicate === r.predicate && item.container.revision === r.object && object.revision === r.subject)}
 									<button
