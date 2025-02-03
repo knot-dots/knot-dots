@@ -17,6 +17,7 @@
 				[Crepe.Feature.Cursor]: true,
 				[Crepe.Feature.CodeMirror]: false,
 				[Crepe.Feature.ImageBlock]: true,
+				[Crepe.Feature.Latex]: false,
 				[Crepe.Feature.LinkTooltip]: true,
 				[Crepe.Feature.Table]: true
 			},
