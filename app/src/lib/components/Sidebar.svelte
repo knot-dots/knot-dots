@@ -7,7 +7,7 @@
 	import Help from '~icons/knotdots/help';
 	import Info from '~icons/knotdots/info';
 	import Search from '~icons/knotdots/search';
-	import Sort from '~icons/knotdots/sort';
+	import Sort from '~icons/heroicons/arrows-up-down-20-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { createFeatureDecisions } from '$lib/features';

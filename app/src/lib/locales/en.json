@@ -41,6 +41,7 @@
 	"created_by": "{date, date, long} by {creator}",
 	"created_date": "Created at",
 	"creator": "Creator",
+	"days_ago": "{daysAgo, plural, one {# day ago} other {# days ago}}",
 	"delete": "Delete",
 	"description": "Description",
 	"download": "Download",
@@ -259,7 +260,7 @@
 			"label": "charging stations"
 		},
 		"co2": {
-			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}} ",
+			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}}",
 			"input_prompt": "How many tons of CO₂ will be saved?",
 			"label": "CO₂"
 		},
@@ -437,6 +438,7 @@
 	"slug": "Slug",
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",
+	"sort_fulfillment_date": "Fulfillment date",
 	"sort_modified": "Last modified",
 	"start_date": "start",
 	"status": "Status",
