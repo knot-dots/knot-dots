@@ -38,6 +38,16 @@
 	$: organization = container.organization;
 
 	$: organizationMembersPromise = fetchMembers(organization);
+
+	let timer: ReturnType<typeof setTimeout>;
+
+	function debouncedSubmit(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		clearTimeout(timer);
+		timer = setTimeout(async () => {
+			input.closest('form')?.requestSubmit();
+		}, 2000);
+	}
 </script>
 
 <article class="details details-editable">
@@ -49,7 +59,7 @@
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.title}
 					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					on:input={(e) => e.currentTarget?.closest('form')?.requestSubmit()}
+					on:input={debouncedSubmit}
 				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">
