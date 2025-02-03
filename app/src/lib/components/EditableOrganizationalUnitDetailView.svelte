@@ -16,6 +16,16 @@
 
 	export let container: OrganizationalUnitContainer;
 	export let relatedContainers: Container[];
+
+	let timer: ReturnType<typeof setTimeout>;
+
+	function debouncedSubmit(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		clearTimeout(timer);
+		timer = setTimeout(async () => {
+			input.closest('form')?.requestSubmit();
+		}, 2000);
+	}
 </script>
 
 <article class="details details-editable">
@@ -28,6 +38,7 @@
 			contenteditable="plaintext-only"
 			bind:textContent={container.payload.name}
 			on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+			on:input={debouncedSubmit}
 		></h2>
 	{:else}
 		<h2 class="details-title" contenteditable="false">
