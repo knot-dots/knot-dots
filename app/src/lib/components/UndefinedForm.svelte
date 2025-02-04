@@ -107,6 +107,6 @@
 		label={$_('payload_type')}
 		options={payloadTypeOptions}
 		value={payloadTypes.enum.undefined}
-		on:change={restart}
+		onChange={restart}
 	/>
 </fieldset>
