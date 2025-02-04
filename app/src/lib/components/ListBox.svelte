@@ -14,6 +14,7 @@
 	};
 
 	export let label: string | undefined = undefined;
+	export let onChange = handleChange;
 	export let options: Array<Option> = [];
 	export let required = false;
 	export let value: string[] | number[] | string | number | null | undefined;
@@ -34,10 +35,6 @@
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	};
 
-	$: value = Array.isArray($listbox.selected)
-		? $listbox.selected.map(({ value: v }) => v)
-		: $listbox.selected?.value;
-
 	$: optionsByGroup = Object.entries(
 		options.reduce(
 			(accumulator: Record<string, Array<Option>>, item) => {
@@ -47,6 +44,16 @@
 			{} as Record<string, Array<Option>>
 		)
 	);
+
+	function handleChange(event: Event) {
+		if ((event as CustomEvent).detail.selected) {
+			if (Array.isArray((event as CustomEvent).detail.selected)) {
+				value = (event as CustomEvent).detail.selected.map(({ value }: Option) => value);
+			} else {
+				value = (event as CustomEvent).detail.selected.value;
+			}
+		}
+	}
 </script>
 
 <div>
@@ -54,7 +61,7 @@
 		<button
 			class:invalid={required && value.length === 0}
 			class:valid={!required || value.length > 0}
-			on:change
+			on:change={onChange}
 			use:listbox.button
 			use:popperRef
 		>
@@ -74,7 +81,7 @@
 		<button
 			class:invalid={required && value}
 			class:valid={!required || value}
-			on:change
+			on:change={onChange}
 			use:listbox.button
 			use:popperRef
 		>

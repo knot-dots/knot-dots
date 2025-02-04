@@ -175,7 +175,7 @@
 				]}
 				value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of-measure'])
 					?.object}
-				on:change={onChangeIsPartOfMeasure}
+				onChange={onChangeIsPartOfMeasure}
 			/>
 		</div>
 	</div>
@@ -224,7 +224,7 @@
 								r.predicate === predicates.enum['is-part-of'] &&
 								('revision' in container ? r.subject === container.revision : true)
 						)?.object}
-						on:change={onChangeIsPartOf}
+						onChange={onChangeIsPartOf}
 					/>
 				</div>
 			</div>
