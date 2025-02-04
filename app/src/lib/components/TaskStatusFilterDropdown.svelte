@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import Filter from '~icons/knotdots/filter';
+	import Filter from '~icons/knotdots/filter-badge';
 	import { type TaskStatus, taskStatus } from '$lib/models';
 	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 
