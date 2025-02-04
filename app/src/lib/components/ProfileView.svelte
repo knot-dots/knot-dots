@@ -57,9 +57,9 @@
 							new Date(b.payload.fulfillmentDate).getTime()
 						);
 					} else if (a.payload.fulfillmentDate) {
-						return 1;
-					} else if (b.payload.fulfillmentDate) {
 						return -1;
+					} else if (b.payload.fulfillmentDate) {
+						return 1;
 					} else {
 						return 0;
 					}
