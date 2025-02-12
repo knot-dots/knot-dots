@@ -1010,12 +1010,12 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 								--No relations with this as the subject.
 								SELECT *
 								FROM container_relation parent_test
-								WHERE c.revision = parent_test.subject AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure')
+								WHERE c.revision = parent_test.subject AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
 							)
 							UNION ALL
 							SELECT array_append(r.path, c.revision), c.revision, c.payload
 							FROM container c
-							JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN ('is-part-of', 'is-part-of-measure')
+							JOIN container_relation cr ON c.revision = cr.subject AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
 							JOIN is_part_of_relation r ON cr.object = r.revision
 							WHERE c.valid_currently
 								AND NOT c.deleted
