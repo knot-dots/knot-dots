@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Indicators from '$lib/components/Indicators.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import type { IndicatorContainer } from '$lib/models';
+	import type { Container } from '$lib/models';
 
-	export let containers: IndicatorContainer[];
+	export let containers: Container[];
 </script>
 
 <aside>

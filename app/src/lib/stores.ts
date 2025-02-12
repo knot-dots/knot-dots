@@ -182,7 +182,7 @@ export type OverlayData =
 	| {
 			key: 'indicators';
 			container: AnyContainer;
-			containers: IndicatorContainer[];
+			containers: Container[];
 	  }
 	| {
 			key: 'measure-monitoring';
@@ -474,7 +474,11 @@ if (browser) {
 				},
 				hashParams.get('sort') ?? 'alpha'
 			)) as Container[];
-			overlay.set({ key: overlayKey.enum['measure-monitoring'], container, containers });
+			overlay.set({
+				key: overlayKey.enum['measure-monitoring'],
+				container,
+				containers
+			});
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.tasks) as string
@@ -500,32 +504,13 @@ if (browser) {
 				hashParams.get(overlayKey.enum.indicators) as string
 			)) as Container[];
 			const container = revisions[revisions.length - 1];
-			const [relatedContainers, indicators] = await Promise.all([
-				fetchContainers({
-					isPartOfStrategy: [container.revision]
-				}),
-				fetchContainers({
-					organization: [container.organization],
-					payloadType: [payloadTypes.enum.indicator]
-				})
-			]);
-			const indicatorsFromObjectives = relatedContainers
-				.filter(isObjectiveContainer)
-				.flatMap(({ relation }) => relation)
-				.filter(({ predicate }) => predicate == predicates.enum['is-objective-for'])
-				.map(({ object }) => object);
-			const indicatorsFromEffects = relatedContainers
-				.filter(isEffectContainer)
-				.flatMap(({ relation }) => relation)
-				.filter(({ predicate }) => predicate == predicates.enum['is-measured-by'])
-				.map(({ object }) => object);
+			const relatedContainers = (await fetchContainers({
+				isPartOfStrategy: [container.revision]
+			})) as Container[];
 			overlay.set({
 				key: overlayKey.enum.indicators,
 				container,
-				containers: indicators.filter(
-					({ revision }) =>
-						indicatorsFromObjectives.includes(revision) || indicatorsFromEffects.includes(revision)
-				) as IndicatorContainer[]
+				containers: relatedContainers
 			});
 		} else if (hashParams.has(overlayKey.enum.profile) && values.data.session) {
 			const containers = await fetchContainersByUser(
