@@ -2,11 +2,12 @@ module.exports = {
 	root: true,
 	parser: '@typescript-eslint/parser',
 	extends: [
-		'eslint:recommended',
-		'plugin:@typescript-eslint/recommended',
-		'plugin:svelte/recommended',
-		'prettier'
-	],
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:svelte/recommended",
+        "prettier",
+        "plugin:storybook/recommended"
+    ],
 	plugins: ['@typescript-eslint'],
 	overrides: [
 		{
