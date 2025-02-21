@@ -17,6 +17,7 @@
 		isTaskContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
+		type StrategyContainer,
 		type TaskContainer,
 		type TaskStatus,
 		taskStatus
@@ -125,7 +126,9 @@
 	<div class="strategies">
 		<h2>{$_('profile.my_strategies')}</h2>
 		<ul class="carousel">
-			{#each containers.filter(isStrategyContainer) as strategy}
+			{#each containers
+				.filter(isStrategyContainer)
+				.filter((c: StrategyContainer) => isMemberOf($user, c)) as strategy}
 				<li>
 					<Card container={strategy} />
 				</li>
