@@ -117,6 +117,26 @@ export default function defineAbilityFor(user: User) {
 			],
 			{ managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
 		);
+		can(
+			'relate',
+			[
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.strategy,
+				...strategyChapterTypes,
+				...measureMonitoringTypes
+			],
+			{ organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
+		);
+		can(
+			'relate',
+			[
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.strategy,
+				...strategyChapterTypes,
+				...measureMonitoringTypes
+			],
+			{ organizatioal_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
+		);
 		can('prioritize', payloadTypes.enum.task, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
