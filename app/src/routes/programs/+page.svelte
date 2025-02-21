@@ -15,7 +15,7 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { payloadTypes, predicates } from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -60,7 +60,7 @@
 
 	<svelte:fragment slot="main">
 		<div>
-			{#if $ability.can('create', payloadTypes.enum.strategy)}
+			{#if $mayCreateContainer(payloadTypes.enum.strategy, data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid)}
 				<p>
 					<a class="button primary" href="#create={payloadTypes.enum.strategy}">
 						<PlusSmall />
