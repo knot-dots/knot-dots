@@ -34,17 +34,21 @@
 
 	function onChange(event: Event) {
 		const value = (event as CustomEvent).detail.selected?.value;
-		if (value !== undefined)
-			container.relation = [
-				...container.relation.slice(0, index),
-				{
-					object: value,
-					position: 0,
-					predicate: predicates.enum['is-part-of'],
-					...('guid' in container ? { subject: container.guid } : undefined)
-				},
-				...container.relation.slice(index + 1)
-			];
+
+		container.relation = [
+			...container.relation.slice(0, index),
+			...(value
+				? [
+						{
+							object: value,
+							position: 0,
+							predicate: predicates.enum['is-part-of'],
+							...('guid' in container ? { subject: container.guid } : undefined)
+						}
+					]
+				: []),
+			...container.relation.slice(index + 1)
+		];
 	}
 </script>
 
@@ -52,10 +56,18 @@
 	<p>{$_('superordinate_organizational_unit')}</p>
 	<ListBox
 		label={$_('superordinate_organizational_unit')}
-		options={isPartOfOptions.map(({ payload, guid }) => ({
-			value: guid,
-			label: payload.name
-		}))}
+		options={[
+			{
+				value: undefined,
+				label:
+					$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
+						.name ?? ''
+			},
+			...isPartOfOptions.map(({ payload, guid }) => ({
+				value: guid,
+				label: payload.name
+			}))
+		]}
 		value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object}
 		{onChange}
 	/>
