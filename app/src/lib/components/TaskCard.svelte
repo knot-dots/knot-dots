@@ -3,7 +3,7 @@
 	import CalendarDays from '~icons/heroicons/calendar-days-16-solid';
 	import ExclamationCircle from '~icons/heroicons/exclamation-circle-16-solid';
 	import Card from '$lib/components/Card.svelte';
-	import type { Container, TaskContainer } from '$lib/models';
+	import { type Container, type TaskContainer, taskStatus } from '$lib/models';
 	import { taskStatusIcons, taskStatusColors } from '$lib/theme/models';
 
 	interface Props {
@@ -34,6 +34,14 @@
 		const diffInMs = todayUTC - givenDateUTC;
 		return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 	}
+
+	function isPending(container: TaskContainer): boolean {
+		return (
+			container.payload.taskStatus === 'task_status.idea' ||
+			container.payload.taskStatus === 'task_status.in_planning' ||
+			container.payload.taskStatus === 'task_status.in_progress'
+		);
+	}
 </script>
 
 <Card {container} {relatedContainers} {showRelationFilter}>
@@ -42,7 +50,7 @@
 
 		<div class="badges">
 			{#if container.payload.fulfillmentDate}
-				{#if calculateDaysFromNow(container.payload.fulfillmentDate) > 0}
+				{#if isPending(container) && calculateDaysFromNow(container.payload.fulfillmentDate) > 0}
 					<time class="badge badge--red" datetime={container.payload.fulfillmentDate}>
 						<ExclamationCircle />
 						{$_('days_ago', {
