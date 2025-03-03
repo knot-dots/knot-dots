@@ -6,6 +6,7 @@ import type {
 	QueryResultRow,
 	SerializableValue
 } from 'slonik';
+import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 import {
 	anyContainer,
@@ -99,7 +100,7 @@ export function createContainer(container: NewContainer) {
 				organizationGuid = await createGroup(container.payload.name);
 				await updateAccessSettings(organizationGuid);
 			} else if (container.payload.type === payloadTypes.enum.organizational_unit) {
-				organizationalUnitGuid = await createGroup(container.payload.name);
+				organizationalUnitGuid = uuid();
 				await updateAccessSettings(organizationalUnitGuid);
 			}
 
