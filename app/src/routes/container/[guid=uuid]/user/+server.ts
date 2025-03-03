@@ -61,6 +61,10 @@ export const POST = (async ({ locals, params, request }) => {
 	await locals.pool.connect(
 		updateContainer({
 			...container,
+			managed_by:
+				container.managed_by == container.guid && parseResult.data.length == 0
+					? (container.organizational_unit ?? container.organization)
+					: container.managed_by,
 			user: parseResult.data
 		})
 	);
