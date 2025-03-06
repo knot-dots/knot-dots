@@ -14,8 +14,8 @@
 		"format": "prettier --write ./src"
 	},
 	"devDependencies": {
-		"@auth/core": "^0.38.0",
-		"@auth/sveltekit": "^1.8.0",
+		"@auth/core": "^0.37.4",
+		"@auth/sveltekit": "~1.7.4",
 		"@casl/ability": "^6.7.3",
 		"@faker-js/faker": "^9.5.1",
 		"@iconify-json/heroicons": "^1.2.2",
