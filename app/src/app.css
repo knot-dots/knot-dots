@@ -888,8 +888,10 @@ label > input[type='checkbox'].toggle {
 	flex: 1 1 calc(40rem * 999 - 100% * 999);
 }
 
-.meta-value--category li {
-	display: inline-block;
+.meta-value--category {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
 }
 
 .meta-value > svg {
