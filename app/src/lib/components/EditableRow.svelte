@@ -188,6 +188,10 @@
 		white-space: nowrap;
 	}
 
+	.cell:hover {
+		background-color: var(--color-gray-100);
+	}
+
 	.cell:nth-child(1) {
 		color: var(--color-gray-500);
 		min-width: calc(20px + 2 * 0.5rem);
