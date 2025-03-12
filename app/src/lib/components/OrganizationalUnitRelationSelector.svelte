@@ -68,7 +68,11 @@
 				label: payload.name
 			}))
 		]}
-		value={container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object}
+		value={container.relation.find(
+			(r) =>
+				r.predicate === predicates.enum['is-part-of'] &&
+				(!('guid' in container) || r.object !== container.guid)
+		)?.object}
 		{onChange}
 	/>
 {/if}
