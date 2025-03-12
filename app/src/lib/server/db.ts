@@ -1203,7 +1203,7 @@ export function getAllContainersRelatedToMeasure(
 
 		const effects = containerResult
 			.filter(({ payload }) => payload.type == payloadTypes.enum.effect)
-			.map(({ revision }) => revision);
+			.map(({ guid }) => guid);
 
 		const includeIndicators =
 			filters.type == undefined ||
@@ -1215,7 +1215,7 @@ export function getAllContainersRelatedToMeasure(
 				? await connection.any(sql.typeAlias('container')`
 				SELECT c.*
 				FROM container c
-				JOIN container_relation cr ON c.revision = cr.object
+				JOIN container_relation cr ON c.guid = cr.object
 					AND cr.predicate = ${predicates.enum['is-measured-by']}
 					AND cr.subject IN (${sql.join(effects, sql.fragment`, `)})
 					AND cr.valid_currently
