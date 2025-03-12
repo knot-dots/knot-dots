@@ -53,26 +53,28 @@
 </script>
 
 {#if isPartOfOptions.length > 0}
-	<p>{$_('superordinate_organizational_unit')}</p>
-	<ListBox
-		label={$_('superordinate_organizational_unit')}
-		options={[
-			{
-				value: undefined,
-				label:
-					$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
-						.name ?? ''
-			},
-			...isPartOfOptions.map(({ payload, guid }) => ({
-				value: guid,
-				label: payload.name
-			}))
-		]}
-		value={container.relation.find(
-			(r) =>
-				r.predicate === predicates.enum['is-part-of'] &&
-				(!('guid' in container) || r.object !== container.guid)
-		)?.object}
-		{onChange}
-	/>
+	<div>
+		<p>{$_('superordinate_organizational_unit')}</p>
+		<ListBox
+			label={$_('superordinate_organizational_unit')}
+			options={[
+				{
+					value: undefined,
+					label:
+						$page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
+							.name ?? ''
+				},
+				...isPartOfOptions.map(({ payload, guid }) => ({
+					value: guid,
+					label: payload.name
+				}))
+			]}
+			value={container.relation.find(
+				(r) =>
+					r.predicate === predicates.enum['is-part-of'] &&
+					(!('guid' in container) || r.object !== container.guid)
+			)?.object}
+			{onChange}
+		/>
+	</div>
 {/if}
