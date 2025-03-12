@@ -593,12 +593,14 @@ textarea:invalid {
 
 label > input[type='checkbox'],
 label > input[type='radio'] {
-	margin: 0 0.5rem 0 0;
+	margin: 0;
 }
 
 label:has(> input[type='checkbox'], > input[type='radio']) {
 	align-items: center;
 	display: flex;
+	font-size: 0.875rem;
+	gap: 0.5rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -1005,6 +1007,11 @@ label > input[type='checkbox'].toggle {
 	padding: 0.25rem 0.75rem;
 }
 
+.badge.badge--gray {
+	--button-background: var(--color-gray-100);
+	--color: var(--color-gray-900);
+}
+
 .badge.badge--red {
 	--button-background: var(--color-red-100);
 	--color: var(--color-red-800);
@@ -1110,8 +1117,14 @@ label > input[type='checkbox'].toggle {
 	padding: 0.125rem 0.5rem;
 }
 
+.dropdown-button img, .dropdown-button svg {
+	max-width: initial;
+}
+
 .dropdown-panel {
 	background-color: white;
+	border-radius: 8px;
+	border: solid 1px var(--color-gray-200);
 	border-color: var(--color-gray-200);
 	display: flex;
 	flex-direction: column;
@@ -1125,12 +1138,12 @@ label > input[type='checkbox'].toggle {
 	z-index: 1;
 }
 
-.dropdown-panel > *:has(> input[type='checkbox'], > input[type='radio']) {
+.dropdown-panel *:has(> input[type='checkbox'], input[type='radio']) {
 	border-radius: 0.5rem;
 	padding: 0.5rem 0.75rem;
 }
 
-.dropdown-panel > *:has(> input[type='checkbox'], > input[type='radio']):hover {
+.dropdown-panel *:has(> input[type='checkbox'], input[type='radio']):hover {
 	background-color: var(--color-gray-100);
 }
 

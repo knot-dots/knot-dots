@@ -18,7 +18,6 @@
 		isContainerWithDuration,
 		isContainerWithFulfillmentDate
 	} from '$lib/models';
-	import { sdgIcons } from '$lib/theme/models';
 
 	export let container: Container;
 	export let editable: boolean;
@@ -86,39 +85,17 @@
 
 <div class="cell">
 	{#if 'topic' in container.payload}
-		{#if editable}
-			<TopicDropdown bind:value={container.payload.topic} handleChange={requestSubmit} />
-		{:else if container.payload.topic.length > 0}
-			<ul>
-				{#each container.payload.topic as topic}
-					<li>
-						{$_(topic)}
-					</li>
-				{/each}
-			</ul>
-		{/if}
+		<TopicDropdown {editable} handleChange={requestSubmit} bind:value={container.payload.topic} />
 	{/if}
 </div>
 
 <div class="cell">
 	{#if 'category' in container.payload}
-		{#if editable}
-			<CategoryDropdown handleChange={requestSubmit} bind:value={container.payload.category} />
-		{:else if container.payload.category.length > 0}
-			<ul class="category">
-				{#each container.payload.category as category}
-					<li>
-						<img
-							src={sdgIcons.get(category)}
-							alt={$_(category)}
-							title={$_(category)}
-							width="30"
-							height="30"
-						/>
-					</li>
-				{/each}
-			</ul>
-		{/if}
+		<CategoryDropdown
+			{editable}
+			handleChange={requestSubmit}
+			bind:value={container.payload.category}
+		/>
 	{/if}
 </div>
 
@@ -218,17 +195,5 @@
 
 	.cell:nth-child(n + 2) {
 		max-width: 20rem;
-	}
-
-	.category {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem;
-		width: 10rem;
-	}
-
-	.category > li {
-		display: block;
-		flex-shrink: 0;
 	}
 </style>

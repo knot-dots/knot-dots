@@ -195,6 +195,7 @@
 	"model": "Model",
 	"models": "Models",
 	"modified_date": "Modified at",
+	"n_more": "{count, plural, one {+1} other {+#}}",
 	"not_part_of": "None",
 	"not_part_of_measure": "None",
 	"not_part_of_strategy": "None",

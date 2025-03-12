@@ -196,6 +196,7 @@
 	"model": "Leitbild",
 	"models": "Visionen",
 	"modified_date": "Geändert am",
+	"n_more": "{count, plural, one {+1} other {+#}}",
 	"not_part_of": "Keines",
 	"not_part_of_measure": "Keine",
 	"not_part_of_strategy": "Keine",

@@ -1,18 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
-	import { sustainableDevelopmentGoals } from '$lib/models';
+	import requestSubmit from '$lib/client/requestSubmit';
+	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
+	import type { SustainableDevelopmentGoal } from '$lib/models';
 
 	export let editable = false;
-	export let value: string[];
+	export let value: SustainableDevelopmentGoal[];
 </script>
 
-<EditableMultipleChoice
-	{editable}
-	label={$_('category')}
-	options={sustainableDevelopmentGoals.options.map((o) => ({
-		label: $_(o),
-		value: o
-	}))}
-	bind:value
-/>
+<div class="tabular">
+	<span class="label">{$_('category')}</span>
+	<div class="value">
+		<CategoryDropdown {editable} handleChange={requestSubmit} bind:value />
+	</div>
+</div>
