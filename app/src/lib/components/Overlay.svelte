@@ -132,7 +132,7 @@
 		width: 3.5rem;
 	}
 
-	.overlay > :global(aside ~ *) {
+	.overlay > :global(aside ~ *:not(dialog)) {
 		margin-left: 3.5rem;
 	}
 
