@@ -1,5 +1,6 @@
 import Keycloak from '@auth/core/providers/keycloak';
 import { SvelteKitAuth } from '@auth/sveltekit';
+import { type Span, trace } from '@opentelemetry/api';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Roarr as log } from 'roarr';
@@ -105,7 +106,16 @@ const { handle: authentication } = SvelteKitAuth({
 	trustHost: true
 });
 
-export const handle = sequence(authentication, async ({ event, resolve }) => {
+const tracer = trace.getTracer('app');
+
+const tracing = (async ({ event, resolve }) =>
+	tracer.startActiveSpan('handle', async (span: Span) => {
+		const response = await resolve(event);
+		span.end();
+		return response;
+	})) satisfies Handle;
+
+export const handle = sequence(tracing, authentication, async ({ event, resolve }) => {
 	const lang = event.request.headers.get('accept-language')?.split(',')[0];
 	locale.set(lang ?? 'de');
 
