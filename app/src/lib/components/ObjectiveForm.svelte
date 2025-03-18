@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Minus from '~icons/heroicons/minus-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Editor from '$lib/components/Editor.svelte';
@@ -37,6 +38,15 @@
 		container.payload.wantedValues = [[year, 0], ...container.payload.wantedValues];
 	}
 
+	function removeWantedValue(index: number) {
+		return () => {
+			container.payload.wantedValues = [
+				...container.payload.wantedValues.slice(0, index),
+				...container.payload.wantedValues.slice(index + 1)
+			];
+		};
+	}
+
 	function updateWantedValues(index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
 			container.payload.wantedValues[index][1] = parseFloat(event.currentTarget.value);
@@ -62,7 +72,7 @@
 					<thead>
 						<tr>
 							<th scope="col"></th>
-							<th scope="col" colspan="2">
+							<th scope="col" colspan="3">
 								{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})
 							</th>
 						</tr>
@@ -74,11 +84,12 @@
 							<th scope="col">
 								{$_('indicator.extrapolated_values')}
 							</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
-							<td colspan="3">
+							<td colspan="4">
 								<button
 									class="quiet"
 									title={$_('prepend_row')}
@@ -111,10 +122,17 @@
 										readonly
 									/>
 								</td>
+								<td>
+									{#if index == 0 || index == container.payload.wantedValues.length - 1}
+										<button class="quiet" type="button" on:click={removeWantedValue(index)}>
+											<Minus />
+										</button>
+									{/if}
+								</td>
 							</tr>
 						{/each}
 						<tr>
-							<td colspan="3">
+							<td colspan="4">
 								<button
 									class="quiet"
 									title={$_('append_row')}

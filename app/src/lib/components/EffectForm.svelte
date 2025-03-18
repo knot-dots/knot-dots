@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Minus from '~icons/heroicons/minus-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -53,6 +54,19 @@
 		container.payload.achievedValues = [[year, 0], ...container.payload.achievedValues];
 	}
 
+	function removeYear(index: number) {
+		return () => {
+			container.payload.plannedValues = [
+				...container.payload.plannedValues.slice(0, index),
+				...container.payload.plannedValues.slice(index + 1)
+			];
+			container.payload.achievedValues = [
+				...container.payload.achievedValues.slice(0, index),
+				...container.payload.achievedValues.slice(index + 1)
+			];
+		};
+	}
+
 	function updateAchievedValues(index: number) {
 		return (event: { currentTarget: HTMLInputElement }) => {
 			container.payload.achievedValues[index][1] = parseFloat(event.currentTarget.value);
@@ -72,7 +86,7 @@
 			<thead>
 				<tr>
 					<th scope="col"></th>
-					<th scope="col" colspan="2">
+					<th scope="col" colspan="3">
 						{#await relatedContainerRequest then containers}
 							{@const indicator = containers
 								.filter(isIndicatorContainer)
@@ -97,11 +111,12 @@
 					<th scope="col">
 						{$_('indicator.effect.achieved_values')}
 					</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td colspan="3">
+					<td colspan="4">
 						<button class="quiet" title={$_('prepend_row')} type="button" on:click={prependYear}>
 							<PlusSmall />
 						</button>
@@ -128,10 +143,17 @@
 								on:change={updateAchievedValues(index)}
 							/>
 						</td>
+						<td>
+							{#if index == 0 || index == container.payload.plannedValues.length - 1}
+								<button class="quiet" type="button" on:click={removeYear(index)}>
+									<Minus />
+								</button>
+							{/if}
+						</td>
 					</tr>
 				{/each}
 				<tr>
-					<td colspan="3">
+					<td colspan="4">
 						<button
 							class="quiet"
 							title={$_('append_row')}
