@@ -125,7 +125,8 @@ export const load = (async ({ locals, url, parent }) =>
 								payloadTypes.enum.vision
 							]
 						},
-						url.searchParams.get('sort') ?? ''
+						url.searchParams.get('sort') ?? '',
+						1000
 					)
 				),
 				locals.pool.connect(

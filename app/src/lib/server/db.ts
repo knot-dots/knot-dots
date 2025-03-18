@@ -582,14 +582,16 @@ export function getManyContainers(
 		topics?: string[];
 		type?: PayloadType[];
 	},
-	sort: string
+	sort: string,
+	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
-			ORDER BY ${prepareOrderByExpression(sort)};
+			ORDER BY ${prepareOrderByExpression(sort)}
+			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``};
     `);
 
 		return withUserAndRelation<Container>(connection, containerResult);
