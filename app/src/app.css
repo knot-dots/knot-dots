@@ -1164,3 +1164,9 @@ label > input[type='checkbox'].toggle {
 	position: absolute;
 	width: 1px;
 }
+
+.truncated {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

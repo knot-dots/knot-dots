@@ -6,11 +6,12 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
+	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import OrganizationDropdown from '$lib/components/OrganizationDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
-	import Viewer from '$lib/components/Viewer.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
 	import {
 		type Container,
@@ -34,21 +35,12 @@
 </div>
 
 <div class="cell">
-	{#if editable}
-		<h3
-			contenteditable="plaintext-only"
-			bind:textContent={container.payload.title}
-			oninput={requestSubmit}
-			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-		></h3>
-	{:else}
-		<h3 contenteditable="false">{container.payload.title}</h3>
-	{/if}
+	<TitleDropdown {editable} bind:value={container.payload.title} />
 </div>
 
 <div class="cell">
-	{#if isContainerWithDescription(container)}
-		<Viewer value={container.payload.description} />
+	{#if isContainerWithDescription(container) && container.payload.description}
+		<FormattedTextDropdown {editable} bind:value={container.payload.description} />
 	{/if}
 </div>
 
@@ -176,12 +168,6 @@
 </div>
 
 <style>
-	h3 {
-		color: var(--color-gray-900);
-		font-size: inherit;
-		font-weight: 500;
-	}
-
 	fieldset {
 		border: none;
 		padding: 0;

@@ -6,6 +6,7 @@
 	import { listener, listenerCtx } from '@milkdown/plugin-listener';
 
 	export let value = '';
+	export let blockEditEnabled = false;
 
 	let timer: ReturnType<typeof setTimeout>;
 
@@ -13,7 +14,7 @@
 		const crepe = new Crepe({
 			defaultValue: value,
 			features: {
-				[Crepe.Feature.BlockEdit]: true,
+				[Crepe.Feature.BlockEdit]: blockEditEnabled,
 				[Crepe.Feature.Cursor]: true,
 				[Crepe.Feature.CodeMirror]: false,
 				[Crepe.Feature.ImageBlock]: true,
