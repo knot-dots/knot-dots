@@ -124,4 +124,14 @@
 		justify-content: center;
 		width: 30px;
 	}
+
+	@container style(--drop-down-style: table) {
+		button > :global(svg) {
+			display: none;
+		}
+
+		.dropdown-button {
+			width: 13.75rem;
+		}
+	}
 </style>

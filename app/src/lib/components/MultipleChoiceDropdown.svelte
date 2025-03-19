@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronUpDown from '~icons/heroicons/chevron-up-down-20-solid';
+	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 
 	interface Props {
 		handleChange: (event: Event) => void;
@@ -32,7 +32,7 @@
 				&nbsp;
 			{/each}
 		</span>
-		<ChevronUpDown />
+		<ChevronDown />
 	</button>
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
@@ -50,7 +50,7 @@
 	button {
 		border: none;
 		min-width: 3rem;
-		padding: 0.75rem 0.25rem 0.75rem 1rem;
+		width: 100%;
 	}
 
 	.selected {
@@ -58,10 +58,23 @@
 	}
 
 	.value {
-		display: list-item;
-		list-style: none;
 		padding: 0;
 		text-align: left;
-		text-wrap: nowrap;
+	}
+
+	.value:not(:last-child)::after {
+		content: ', ';
+	}
+
+	@container style(--drop-down-style: table) {
+		button > :global(svg) {
+			display: none;
+		}
+
+		.selected {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 	}
 </style>

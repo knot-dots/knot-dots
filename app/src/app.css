@@ -147,6 +147,7 @@
 	--button-disabled-border-color: var(--color-gray-100);
 	--button-hover-background: var(--color-gray-400);
 	--button-hover-border-color: #d1d5db;
+	--form-control-background: var(--color-gray-050);
 
 	--nav-height: 65px;
 	--organization-menu-max-width: 20rem;
@@ -511,14 +512,12 @@ input[type='text'],
 select,
 textarea {
 	appearance: none;
-	background-color: var(--color-gray-050);
+	background-color: var(--form-control-background);
 	border: solid 1px var(--color-gray-300);
 	border-radius: 8px;
 	display: block;
-	font-size: 1rem;
-	font-weight: 400;
 	line-height: 1.2;
-	padding: 12px 16px;
+	padding: 0.75rem 1rem;
 	width: 100%;
 }
 
@@ -527,7 +526,7 @@ input[type='date'] {
 }
 
 input[type='file'] {
-	background-color: var(--color-gray-050);
+	background-color: var(--form-control-background);
 	border: solid 1px var(--color-gray-300);
 	border-radius: 8px;
 	color: var(--color-gray-500);
@@ -867,7 +866,7 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-editable [contenteditable='plaintext-only'] {
-	background-color: var(--color-gray-050);
+	background-color: var(--form-control-background);;
 }
 
 .details-editable .markdown-body {
@@ -1044,6 +1043,7 @@ label > input[type='checkbox'].toggle {
 
 .badge > svg {
 	height: 1rem;
+	max-width: initial;
 	width: 1rem;
 }
 
@@ -1097,9 +1097,15 @@ label > input[type='checkbox'].toggle {
 
 /* Dropdown */
 .dropdown-button {
-	--button-active-background: var(--color-gray-050);
-	--button-hover-background: var(--color-gray-050);
-	--button-background: var(--color-gray-050);
+	--button-active-background: transparent;
+	--button-background: transparent;
+	--button-hover-background: transparent;
+	--button-hover-border-color: transparent;
+	--padding-y: 0;
+	--padding-x: 0;
+
+	border: none;
+	display: flex;
 }
 
 .dropdown-button.dropdown-button--badge {
@@ -1115,10 +1121,6 @@ label > input[type='checkbox'].toggle {
 	gap: 0.25rem;
 	min-width: 3rem;
 	padding: 0.125rem 0.5rem;
-}
-
-.dropdown-button img, .dropdown-button svg {
-	max-width: initial;
 }
 
 .dropdown-panel {

@@ -102,7 +102,7 @@
 <div class="cell">
 	{#if isContainerWithFulfillmentDate(container)}
 		{#if editable}
-			<input type="date" bind:value={container.payload.fulfillmentDate} onchange={requestSubmit} />
+			<input type="date" onchange={requestSubmit} bind:value={container.payload.fulfillmentDate} />
 		{:else if container.payload.fulfillmentDate}
 			<time datetime={container.payload.fulfillmentDate}>
 				{$date(new Date(container.payload.fulfillmentDate), {
@@ -115,27 +115,38 @@
 	{/if}
 </div>
 
-<div class="cell cell-nowrap">
+<div class="cell">
 	{#if isContainerWithDuration(container)}
 		{#if editable}
-			<input type="date" bind:value={container.payload.startDate} onchange={requestSubmit} />—
-			<input type="date" bind:value={container.payload.endDate} onchange={requestSubmit} />
+			<fieldset>
+				<input
+					type="date"
+					onchange={requestSubmit}
+					bind:value={container.payload.startDate}
+				/>–<input type="date" onchange={requestSubmit} bind:value={container.payload.endDate} />
+			</fieldset>
 		{:else}
-			{#if container.payload.startDate}
-				<time datetime={container.payload.startDate}>
-					{$date(new Date(container.payload.startDate), {
-						day: '2-digit',
-						month: '2-digit',
-						year: 'numeric'
-					})}
-				</time>{/if}{#if container.payload.endDate}–<time datetime={container.payload.endDate}>
-					{$date(new Date(container.payload.endDate), {
-						day: '2-digit',
-						month: '2-digit',
-						year: 'numeric'
-					})}
-				</time>
-			{/if}
+			<span>
+				{#if container.payload.startDate}
+					<time datetime={container.payload.startDate}>
+						{$date(new Date(container.payload.startDate), {
+							day: '2-digit',
+							month: '2-digit',
+							year: 'numeric'
+						})}
+					</time>
+				{/if}
+				{#if container.payload.endDate}
+					–
+					<time datetime={container.payload.endDate}>
+						{$date(new Date(container.payload.endDate), {
+							day: '2-digit',
+							month: '2-digit',
+							year: 'numeric'
+						})}
+					</time>
+				{/if}
+			</span>
 		{/if}
 	{/if}
 </div>
@@ -145,11 +156,9 @@
 		{#if editable}
 			<AudienceDropdown bind:value={container.payload.audience} />
 		{:else if container.payload.audience.length > 0}
-			<ul>
-				{#each container.payload.audience as audience}
-					<li>{$_(audience)}</li>
-				{/each}
-			</ul>
+			<p class="truncated">
+				{container.payload.audience.map((a) => $_(a)).join(', ')}
+			</p>
 		{/if}
 	{/if}
 </div>
@@ -169,26 +178,34 @@
 <style>
 	h3 {
 		color: var(--color-gray-900);
-		font-size: 1rem;
+		font-size: inherit;
 		font-weight: 500;
-		overflow: auto;
+	}
+
+	fieldset {
+		border: none;
+		padding: 0;
 	}
 
 	input[type='date'] {
 		border: none;
 		display: inline-flex;
 		line-height: 1.5;
-		max-height: 3rem;
+		padding: 0;
 		width: fit-content;
 	}
 
 	.cell {
-		overflow: hidden;
-		vertical-align: top;
-		white-space: nowrap;
+		--drop-down-style: table;
+		--form-control-background: white;
+
+		font-size: 0.875rem;
+		height: 55px;
+		vertical-align: middle;
 	}
 
-	.cell:hover {
+	.cell:hover,
+	:global(.row:hover .cell:hover input) {
 		background-color: var(--color-gray-100);
 	}
 
@@ -199,5 +216,10 @@
 
 	.cell:nth-child(n + 2) {
 		max-width: 20rem;
+	}
+
+	.cell > :global(span),
+	.cell > fieldset {
+		white-space: nowrap;
 	}
 </style>

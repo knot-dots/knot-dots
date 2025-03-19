@@ -54,7 +54,7 @@
 
 <style>
 	div :global(.milkdown) {
-		--crepe-color-background: var(--color-gray-050);
+		--crepe-color-background: var(--form-control-background);
 		--crepe-color-on-background: var(--color-gray-500);
 		--crepe-color-outline: var(--crepe-color-on-background);
 		border-radius: 8px;
