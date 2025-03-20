@@ -1,0 +1,35 @@
+name: CI (drupal)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'drupal/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'drupal/**'
+
+env:
+  REGISTRY: rg.fr-par.scw.cloud/knot-dots
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: "{{defaultContext}}:drupal"
+          target: production
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.REGISTRY }}/drupal:${{ github.sha }}
+            ${{ env.REGISTRY }}/drupal:latest
