@@ -9,20 +9,53 @@ services:
       migrate:
         condition: service_completed_successfully
     env_file:
+      - ./db/.env
       - ./app/.env
     ports:
       - "5173:5173"
     volumes:
       - ./app/src:/srv/app/src
+  composer:
+    build:
+      context: drupal
+      target: builder
+    volumes:
+      - ./drupal:/srv/app
+      - ~/.composer:/tmp
   db:
     env_file:
-      - ./app/.env
+      - ./db/.env
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U dev" ]
       interval: 3s
       timeout: 3s
       retries: 3
     image: postgres:14
+  drupal:
+    build:
+      context: drupal
+    command:
+      - "/usr/sbin/apache2ctl"
+      - "-DFOREGROUND"
+    depends_on:
+      db:
+        condition: service_healthy
+      smtp:
+        condition: service_started
+    entrypoint:
+      - "docker-entrypoint.sh"
+    env_file:
+      - ./db/.env
+      - ./drupal/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./drupal/config:/srv/app/config
+      - ./drupal/vendor:/srv/app/vendor
+      - ./drupal/web/modules:/srv/app/web/modules:cached
+      - ./drupal/web/profiles:/srv/app/web/profiles:cached
+      - ./drupal/web/sites:/srv/app/web/sites:ro,cached
+      - public-files:/srv/app/web/files
   migrate:
     build:
       context: migrate
@@ -30,6 +63,7 @@ services:
       db:
         condition: service_healthy
     env_file:
+      - ./db/.env
       - ./app/.env
     volumes:
       - ./migrate/sql:/srv/migrations
@@ -63,6 +97,7 @@ services:
       migrate:
         condition: service_completed_successfully
     env_file:
+      - ./db/.env
       - ./app/.env
     environment:
       - PUBLIC_BASE_URL=http://localhost:3000
@@ -77,3 +112,5 @@ services:
     image: rnwood/smtp4dev
     ports:
       - "8081:80"
+volumes:
+  public-files:

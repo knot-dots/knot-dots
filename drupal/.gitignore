@@ -1,0 +1,14 @@
+/vendor
+/web/*
+!/web/modules
+!/web/libraries
+!/web/profiles
+!/web/sites
+/web/modules/*
+!/web/modules/custom
+/web/profiles/*
+!/web/profiles/custom
+/web/sites/*
+!/web/sites/default
+!/web/sites/simpletest
+/web/sites/default/default.*

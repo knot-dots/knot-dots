@@ -1,0 +1,34 @@
+name: knotdots
+type: profile
+description: ''
+version: VERSION
+core_version_requirement: "^9 || ^10"
+install:
+  - block_content
+  - ckeditor5
+  - config
+  - config_translation
+  - content_translation
+  - datetime
+  - field_ui
+  - help
+  - image
+  - link
+  - locale
+  - media
+  - media_library
+  - menu_ui
+  - migrate
+  - node
+  - options
+  - path
+  - s3fs
+  - shortcut
+  - taxonomy
+  - text
+  - toolbar
+  - update
+  - views
+themes:
+  - claro
+  - olivero
