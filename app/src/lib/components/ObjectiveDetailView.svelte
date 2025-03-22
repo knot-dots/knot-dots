@@ -9,6 +9,7 @@
 	import {
 		isContainerWithObjective,
 		isIndicatorContainer,
+		isPartOf,
 		overlayKey,
 		overlayURL,
 		predicates
@@ -28,7 +29,17 @@
 						predicate == predicates.enum['is-objective-for'] && object == guid
 				) > -1
 		);
-	$: goal = relatedContainers.find(isContainerWithObjective);
+	$: goal = relatedContainers
+		.filter(isContainerWithObjective)
+		.find(
+			(candidate) =>
+				container.relation.findIndex(
+					({ object, predicate, subject }) =>
+						container.guid === subject &&
+						candidate.guid === object &&
+						predicate === predicates.enum['is-part-of']
+				) > -1
+		);
 </script>
 
 <ContainerDetailView {container} {relatedContainers} {revisions}>
