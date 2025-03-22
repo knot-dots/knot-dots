@@ -14,6 +14,7 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		findAncestors,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isEffectContainer,
@@ -21,6 +22,7 @@
 		isMeasureResultContainer,
 		isObjectiveContainer,
 		isPartOf,
+		isRelatedTo,
 		isResourceContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -49,6 +51,7 @@
 		href?: () => string;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;
+		titleOverride?: boolean;
 	}
 
 	let {
@@ -58,7 +61,8 @@
 		footer,
 		href,
 		relatedContainers = [],
-		showRelationFilter = false
+		showRelationFilter = false,
+		titleOverride = false
 	}: Props = $props();
 
 	let overlayContext = getContext('overlay');
@@ -193,7 +197,31 @@
 				bind:this={previewLink}
 				onclick={updateOverlayHistory}
 			>
-				{#if 'title' in container.payload}
+				{#if titleOverride && isObjectiveContainer(container)}
+					{@const goal = relatedContainers
+						.filter(isContainerWithObjective)
+						.find(
+							(candidate) =>
+								container.relation.findIndex(
+									({ object, predicate, subject }) =>
+										container.guid === subject &&
+										candidate.guid === object &&
+										predicate === predicates.enum['is-part-of']
+								) > -1
+						)}
+					{#if goal}
+						{goal.payload.title} ({container.payload.title})
+					{/if}
+				{:else if titleOverride && isEffectContainer(container)}
+					{@const measure = findAncestors(
+						container,
+						relatedContainers,
+						predicates.enum['is-part-of']
+					).find(isContainerWithEffect)}
+					{#if measure}
+						{measure.payload.title} ({container.payload.title})
+					{/if}
+				{:else if 'title' in container.payload}
 					{container.payload.title}
 				{:else if 'name' in container.payload}
 					{container.payload.name}

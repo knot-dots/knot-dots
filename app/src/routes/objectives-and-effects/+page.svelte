@@ -143,7 +143,12 @@
 				{#each [...objectivesByLevel.entries()].toSorted() as [key, value] (key)}
 					<BoardColumn title={`${$_('objectives')} ${key + 1}`}>
 						<MaybeDragZone containers={value.filter((c) => containers.has(c))} let:container>
-							<Card {container} relatedContainers={data.containers} showRelationFilter />
+							<Card
+								{container}
+								relatedContainers={data.containers}
+								showRelationFilter
+								titleOverride
+							/>
 						</MaybeDragZone>
 					</BoardColumn>
 				{/each}
@@ -159,6 +164,7 @@
 								...data.containers.filter(isContainerWithEffect)
 							]}
 							showRelationFilter
+							titleOverride
 						/>
 					</MaybeDragZone>
 				</BoardColumn>
