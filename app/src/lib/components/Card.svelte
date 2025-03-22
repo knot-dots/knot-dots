@@ -113,6 +113,10 @@
 		const hashParams = paramsFromFragment(url);
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			return '#';
+		} else if (hashParams.has('indicators')) {
+			return overlayURL(url, 'view', container.guid, [
+				['strategy', hashParams.get('indicators') as string]
+			]);
 		} else {
 			return overlayURL(url, 'view', container.guid);
 		}

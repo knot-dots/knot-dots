@@ -12,6 +12,7 @@ export default async function fetchRelatedContainers(
 		organizationalUnit?: string[];
 		payloadType?: string[];
 		relationType?: string[];
+		strategy?: string[];
 		strategyType?: string[];
 		taskCategory?: string[];
 		terms?: string;
@@ -46,6 +47,9 @@ export default async function fetchRelatedContainers(
 	}
 	if (sort) {
 		params.append('sort', sort);
+	}
+	for (const value of filters.strategy ?? []) {
+		params.append('strategy', value);
 	}
 	for (const value of filters.strategyType ?? []) {
 		params.append('strategyType', value);

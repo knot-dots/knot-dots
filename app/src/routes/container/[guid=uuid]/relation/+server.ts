@@ -2,11 +2,16 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import { env } from '$env/dynamic/public';
+import { filterVisible } from '$lib/authorization';
 import {
+	type AnyContainer,
 	audience,
 	isContainerWithEffect,
 	isIndicatorContainer,
 	measureTypes,
+	type OrganizationalUnitContainer,
+	type OrganizationContainer,
 	payloadTypes,
 	predicates,
 	relation,
@@ -18,12 +23,16 @@ import {
 import {
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
+	getAllContainersRelatedToStrategy,
 	getAllRelatedContainers,
+	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
+	getManyOrganizationalUnitContainers,
+	getManyOrganizationContainers,
+	setUp,
 	updateManyContainerRelations
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
-import { filterVisible } from '$lib/authorization';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
@@ -36,6 +45,7 @@ export const GET = (async ({ locals, params, url }) => {
 		payloadType: z.array(payloadTypes).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
+		strategy: z.array(z.string()),
 		strategyType: z.array(strategyTypes).default([]),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
@@ -60,7 +70,72 @@ export const GET = (async ({ locals, params, url }) => {
 		let containers;
 
 		if (isIndicatorContainer(container)) {
-			containers = await locals.pool.connect(getAllContainersRelatedToIndicators([container]));
+			if (parseResult.data.strategy.length > 0) {
+				const [containersRelatedToStrategy, containersRelatedToIndicator] = await Promise.all([
+					locals.pool.connect(getAllContainersRelatedToStrategy(parseResult.data.strategy[0], {})),
+					locals.pool.connect(getAllContainersRelatedToIndicators([container], {}))
+				]);
+
+				containers = containersRelatedToStrategy.filter(({ guid }) =>
+					containersRelatedToIndicator.some(
+						({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
+					)
+				);
+			} else {
+				let currentOrganization;
+				let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+
+				async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
+					const containers = await promise;
+					return filterVisible(containers, locals.user);
+				}
+
+				const [organizations, organizationalUnits] = await Promise.all([
+					filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
+					filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
+				]);
+
+				if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
+					currentOrganization = organizations.find(({ payload }) => payload.default);
+					if (!currentOrganization) {
+						currentOrganization = (await locals.pool.connect(
+							setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
+						)) as OrganizationContainer;
+					}
+				} else {
+					currentOrganization = organizations.find(({ guid }) =>
+						url.hostname.startsWith(`${guid}.`)
+					);
+				}
+
+				if (!currentOrganization) {
+					currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
+						url.hostname.startsWith(`${guid}.`)
+					);
+
+					currentOrganization = organizations.find(
+						({ guid }) => guid === currentOrganizationalUnit?.organization
+					);
+				}
+
+				let subordinateOrganizationalUnits: string[] = [];
+
+				if (currentOrganizationalUnit) {
+					const relatedOrganizationalUnits = await locals.pool.connect(
+						getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
+					);
+					subordinateOrganizationalUnits = relatedOrganizationalUnits
+						.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
+						.map(({ guid }) => guid)
+						.concat(currentOrganizationalUnit.guid);
+				}
+
+				containers = await locals.pool.connect(
+					getAllContainersRelatedToIndicators([container], {
+						organizationalUnits: subordinateOrganizationalUnits
+					})
+				);
+			}
 		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(

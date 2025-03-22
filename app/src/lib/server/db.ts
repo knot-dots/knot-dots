@@ -934,7 +934,10 @@ export function getAllContainersWithIndicatorContributions(organizations: string
 	};
 }
 
-export function getAllContainersRelatedToIndicators(containers: IndicatorContainer[]) {
+export function getAllContainersRelatedToIndicators(
+	containers: IndicatorContainer[],
+	filters: { organizationalUnits?: string[] }
+) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		if (containers.length == 0) {
 			return [];
@@ -1022,12 +1025,11 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 				? await connection.any(sql.typeAlias('container')`
 					SELECT c.*
 					FROM container c
-					WHERE c.guid IN (${sql.join(
-						[...isPartOfResult, ...indicatorResult].map(({ guid }) => guid),
-						sql.fragment`, `
-					)})
-						AND c.valid_currently
-						AND NOT c.deleted
+					WHERE ${prepareWhereCondition({ ...filters })}
+					  AND c.guid IN (${sql.join(
+							[...isPartOfResult, ...indicatorResult].map(({ guid }) => guid),
+							sql.fragment`, `
+						)})
 				`)
 				: [];
 
@@ -1037,7 +1039,7 @@ export function getAllContainersRelatedToIndicators(containers: IndicatorContain
 
 export function getAllContainersRelatedToStrategy(
 	guid: string,
-	filters: { categories: string[]; terms?: string; topics: string[]; type?: PayloadType[] }
+	filters: { categories?: string[]; terms?: string; topics?: string[]; type?: PayloadType[] }
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const predicate = [

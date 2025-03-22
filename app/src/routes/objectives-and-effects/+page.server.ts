@@ -23,7 +23,7 @@ export const load = (async ({ locals, parent, url }) => {
 	)) as IndicatorContainer[];
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(containers)
+		getAllContainersRelatedToIndicators(containers, {})
 	);
 
 	return {

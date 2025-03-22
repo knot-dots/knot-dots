@@ -1,5 +1,11 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, type IndicatorContainer, indicatorTypes, payloadTypes } from '$lib/models';
+import {
+	audience,
+	filterOrganizationalUnits,
+	type IndicatorContainer,
+	indicatorTypes,
+	payloadTypes
+} from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers,
@@ -9,23 +15,25 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, parent, url }) => {
 	let containers: IndicatorContainer[];
+	let organizationalUnits: string[] = [];
 
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
+
+	if (currentOrganizationalUnit) {
+		const relatedOrganizationalUnits = await locals.pool.connect(
+			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
+		);
+		organizationalUnits = relatedOrganizationalUnits
+			.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
+			.map(({ guid }) => guid)
+			.concat(currentOrganizationalUnit.guid);
+	}
 
 	if (url.searchParams.getAll('included').includes('all-organizational-units')) {
 		containers = (await locals.pool.connect(
 			getManyContainers([currentOrganization.guid], { type: [payloadTypes.enum.indicator] }, '')
 		)) as IndicatorContainer[];
 	} else {
-		let organizationalUnits: string[] = [];
-		if (currentOrganizationalUnit) {
-			const relatedOrganizationalUnits = await locals.pool.connect(
-				getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-			);
-			organizationalUnits = relatedOrganizationalUnits
-				.filter(({ payload }) => payload.level >= currentOrganizationalUnit.payload.level)
-				.map(({ guid }) => guid);
-		}
 		containers = (await locals.pool.connect(
 			getManyContainers(
 				[currentOrganization.guid],
@@ -46,7 +54,7 @@ export const load = (async ({ locals, parent, url }) => {
 	}
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(containers)
+		getAllContainersRelatedToIndicators(containers, { organizationalUnits })
 	);
 
 	return {

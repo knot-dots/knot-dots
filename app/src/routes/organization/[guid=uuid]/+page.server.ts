@@ -33,7 +33,7 @@ export const load = (async ({ params, locals }) => {
 	]);
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[])
+		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[], {})
 	);
 
 	return {

@@ -21,8 +21,9 @@ export const load = (async ({ params, locals }) => {
 		getAllRelatedOrganizationalUnitContainers(container.guid)
 	);
 	const organizationalUnits = relatedOrganizationalUnits
-		.filter(({ payload }) => payload.level >= container.payload.level)
-		.map(({ guid }) => guid);
+		.filter(({ payload }) => payload.level > container.payload.level)
+		.map(({ guid }) => guid)
+		.concat(container.guid);
 	const [strategies, measures, indicators] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
@@ -48,7 +49,7 @@ export const load = (async ({ params, locals }) => {
 	]);
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[])
+		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[], { organizationalUnits })
 	);
 
 	return {

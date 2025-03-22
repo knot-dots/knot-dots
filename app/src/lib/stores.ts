@@ -322,7 +322,12 @@ if (browser) {
 						container.organizational_unit ?? container.organization,
 						container.payload.type
 					),
-					fetchRelatedContainers(container.guid, { organization: [container.organization] })
+					fetchRelatedContainers(container.guid, {
+						organization: [container.organization],
+						...(hashParams.has('strategy')
+							? { strategy: [hashParams.get('strategy') as string] }
+							: undefined)
+					})
 				]);
 				overlay.set({
 					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,

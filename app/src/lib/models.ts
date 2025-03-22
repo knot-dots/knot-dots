@@ -40,6 +40,7 @@ export const overlayKey = z.enum([
 	'profile',
 	'relate',
 	'relations',
+	'strategy',
 	'tasks',
 	'view',
 	'view-help'
@@ -1632,12 +1633,13 @@ export function paramsFromFragment(url: URL) {
 	return new URLSearchParams(url.hash.substring(1) ?? '');
 }
 
-export function overlayURL(url: URL, key: OverlayKey, guid: string) {
+export function overlayURL(url: URL, key: OverlayKey, guid: string, extraParams?: string[][]) {
 	const hashParams = paramsFromFragment(url);
 
 	const newParams = new URLSearchParams([
 		...Array.from(hashParams.entries()).filter(([k]) => !isOverlayKey(k)),
-		[key, guid]
+		[key, guid],
+		...(extraParams ?? [])
 	]);
 
 	return `#${newParams.toString()}`;
