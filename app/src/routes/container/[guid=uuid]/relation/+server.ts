@@ -45,7 +45,7 @@ export const GET = (async ({ locals, params, url }) => {
 		payloadType: z.array(payloadTypes).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
-		strategy: z.array(z.string()),
+		strategy: z.array(z.string()).default([]),
 		strategyType: z.array(strategyTypes).default([]),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
