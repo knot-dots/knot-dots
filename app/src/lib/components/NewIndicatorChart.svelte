@@ -177,7 +177,14 @@
 									reduce: 'sum'
 								})
 							]
-						: []),
+						: [
+								Plot.areaY(trendWithEffects, {
+									x: 'date',
+									y: 'value',
+									fill: 'status',
+									interval: 'year'
+								})
+							]),
 					...(showObjectives && objectives.length > 0
 						? [
 								Plot.lineY(objectives, {
