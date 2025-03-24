@@ -856,7 +856,7 @@ export function getAllRelatedContainers(
 		const indicatorResult =
 			objectivesAndEffects.length > 0 && includeIndicators
 				? await connection.any(sql.typeAlias('container')`
-				SELECT c.*
+				SELECT DISTINCT(c.*)
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.object
 					AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
@@ -1110,7 +1110,7 @@ export function getAllContainersRelatedToStrategy(
 		const indicatorResult =
 			objectivesAndEffects.length > 0 && includeIndicators
 				? await connection.any(sql.typeAlias('container')`
-				SELECT c.*
+				SELECT DISTINCT(c.*)
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.object
 					AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
@@ -1217,7 +1217,7 @@ export function getAllContainersRelatedToMeasure(
 		const indicatorResult =
 			effects.length > 0 && includeIndicators
 				? await connection.any(sql.typeAlias('container')`
-				SELECT c.*
+				SELECT DISTINCT(c.*)
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.object
 					AND cr.predicate = ${predicates.enum['is-measured-by']}
