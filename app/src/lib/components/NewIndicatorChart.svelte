@@ -97,6 +97,14 @@
 							guid: c.guid
 						}))
 					];
+				} else if (measure?.payload.status == status.enum['status.rejected']) {
+					return c.payload.plannedValues.map(([year]) => ({
+						date: new Date(year, 0),
+						value: 0,
+						status: measure?.payload.status as string,
+						title: c.payload.title,
+						guid: c.guid
+					}));
 				} else {
 					return c.payload.plannedValues.map(([year, value]) => ({
 						date: new Date(year, 0),
