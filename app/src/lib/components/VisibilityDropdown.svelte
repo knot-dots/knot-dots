@@ -15,6 +15,7 @@
 {#if editable}
 	<SingleChoiceDropdown
 		handleChange={requestSubmit}
+		offset={[-41, -39]}
 		options={visibility.options.map((o) => ({ value: o, label: $_(`visibility.${o}`) }))}
 		bind:value
 	/>

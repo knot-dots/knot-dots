@@ -14,6 +14,7 @@
 {#if editable}
 	<SingleChoiceDropdown
 		handleChange={requestSubmit}
+		offset={[0, -39]}
 		options={page.data.organizationalUnits.map(({ guid, payload }) => ({
 			value: guid,
 			label: payload.name

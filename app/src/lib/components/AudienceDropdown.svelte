@@ -15,6 +15,7 @@
 {#if editable}
 	<MultipleChoiceDropdown
 		handleChange={requestSubmit}
+		offset={[-41, -39]}
 		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
 		bind:value
 	/>

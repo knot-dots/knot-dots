@@ -5,11 +5,12 @@
 
 	interface Props {
 		handleChange: (event: Event) => void;
+		offset?: [number, number];
 		options: Array<{ label: string; value: string }>;
 		value: string[];
 	}
 
-	let { handleChange, options, value = $bindable() }: Props = $props();
+	let { handleChange, offset = [0, 4], options, value = $bindable() }: Props = $props();
 
 	const popover = createPopover({});
 
@@ -19,7 +20,7 @@
 	});
 
 	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+		modifiers: [{ name: 'offset', options: { offset } }]
 	};
 </script>
 
