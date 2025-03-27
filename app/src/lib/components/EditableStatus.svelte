@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
-	import { status } from '$lib/models';
+	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 
 	export let editable = false;
 	export let value: string;
 </script>
 
-<EditableSingleChoice
-	{editable}
-	label={$_('status')}
-	options={status.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value
-/>
+<div class="tabular">
+	<span class="label">{$_('status')}</span>
+	<div class="value">
+		<StatusDropdown {editable} bind:value />
+	</div>
+</div>

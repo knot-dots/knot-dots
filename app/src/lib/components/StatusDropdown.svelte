@@ -7,12 +7,13 @@
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
 	interface Props {
+		editable?: boolean;
 		value: Status;
 	}
 
-	let { value = $bindable() } = $props();
+	let { editable = false, value = $bindable() } = $props();
 
-	const popover = createPopover();
+	const popover = createPopover({ label: $_('status') });
 
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
@@ -20,40 +21,52 @@
 	});
 
 	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [-40, -45] } }]
+		modifiers: [{ name: 'offset', options: { offset: [-41, -41] } }]
 	};
 
 	const StatusIcon = $derived(statusIcons.get(value));
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
-		<span class="badge badge--{statusColors.get(value)}">
-			<StatusIcon />{$_(value)}
-		</span>
-		<ChevronDown />
-	</button>
+{#if editable}
+	<div class="dropdown" use:popperRef>
+		<button class="dropdown-button" type="button" use:popover.button>
+			<span class="badge badge--{statusColors.get(value)}">
+				<StatusIcon />{$_(value)}
+			</span>
+			<ChevronDown />
+		</button>
 
-	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			{#each status.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
-				{@const StatusIcon = statusIcons.get(option.value)}
-				<label>
-					<input type="checkbox" value={option.value} bind:group={value} />
-					<span class="badge badge--{statusColors.get(option.value)}">
-						<StatusIcon />
-						{option.label}
-					</span>
-				</label>
-			{/each}
-		</fieldset>
-	{/if}
-</div>
+		{#if $popover.expanded}
+			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				{#each status.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
+					{@const StatusIcon = statusIcons.get(option.value)}
+					<label>
+						<input type="checkbox" value={option.value} bind:group={value} />
+						<span class="badge badge--{statusColors.get(option.value)}">
+							<StatusIcon />
+							{option.label}
+						</span>
+					</label>
+				{/each}
+			</fieldset>
+		{/if}
+	</div>
+{:else}
+	{@const StatusIcon = statusIcons.get(value)}
+	<span class="badge badge--{statusColors.get(value)}">
+		<StatusIcon />
+		{$_(value)}
+	</span>
+{/if}
 
 <style>
 	@container style(--drop-down-style: table) {
 		button > :global(svg) {
 			display: none;
 		}
+	}
+
+	.badge {
+		float: left;
 	}
 </style>

@@ -46,11 +46,7 @@
 
 <div class="cell">
 	{#if 'status' in container.payload}
-		{#if editable}
-			<StatusDropdown bind:value={container.payload.status} />
-		{:else}
-			<span class="badge">{$_(container.payload.status)}</span>
-		{/if}
+		<StatusDropdown {editable} bind:value={container.payload.status} />
 	{/if}
 </div>
 
