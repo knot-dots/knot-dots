@@ -41,7 +41,7 @@
 				{#each status.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
 					{@const StatusIcon = statusIcons.get(option.value)}
 					<label>
-						<input type="checkbox" value={option.value} bind:group={value} />
+						<input type="radio" value={option.value} bind:group={value} />
 						<span class="badge badge--{statusColors.get(option.value)}">
 							<StatusIcon />
 							{option.label}
