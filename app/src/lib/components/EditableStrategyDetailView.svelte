@@ -145,17 +145,16 @@
 			<div class="row">
 				<div class="cell"></div>
 				<div class="cell">{$_('title')}</div>
+				<div class="cell">{$_('object')}</div>
 				<div class="cell">{$_('description')}</div>
+				<div class="cell">{$_('visibility.label')}</div>
 				<div class="cell">{$_('status')}</div>
-				<div class="cell">{$_('organization')}</div>
-				<div class="cell">{$_('organizational_unit')}</div>
-				<div class="cell">{$_('topic')}</div>
 				<div class="cell">{$_('category')}</div>
+				<div class="cell">{$_('topic')}</div>
+				<div class="cell">{$_('audience')}</div>
 				<div class="cell">{$_('fulfillment_date')}</div>
 				<div class="cell">{$_('planned_duration')}</div>
-				<div class="cell">{$_('audience')}</div>
-				<div class="cell">{$_('object')}</div>
-				<div class="cell">{$_('visibility.label')}</div>
+				<div class="cell">{$_('organizational_unit')}</div>
 			</div>
 		</div>
 		<div

@@ -6,7 +6,6 @@
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
-	import OrganizationDropdown from '$lib/components/OrganizationDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
@@ -38,28 +37,22 @@
 </div>
 
 <div class="cell">
+	<span>{$_(container.payload.type)}</span>
+</div>
+
+<div class="cell">
 	{#if isContainerWithDescription(container) && container.payload.description}
 		<FormattedTextDropdown {editable} bind:value={container.payload.description} />
 	{/if}
 </div>
 
 <div class="cell">
+	<VisibilityDropdown {editable} bind:value={container.payload.visibility} />
+</div>
+
+<div class="cell">
 	{#if 'status' in container.payload}
 		<StatusDropdown {editable} bind:value={container.payload.status} />
-	{/if}
-</div>
-
-<div class="cell">
-	<OrganizationDropdown {editable} bind:value={container.organization} />
-</div>
-
-<div class="cell">
-	<OrganizationalUnitDropdown {editable} bind:value={container.organizational_unit} />
-</div>
-
-<div class="cell">
-	{#if 'topic' in container.payload}
-		<TopicDropdown {editable} handleChange={requestSubmit} bind:value={container.payload.topic} />
 	{/if}
 </div>
 
@@ -70,6 +63,18 @@
 			handleChange={requestSubmit}
 			bind:value={container.payload.category}
 		/>
+	{/if}
+</div>
+
+<div class="cell">
+	{#if 'topic' in container.payload}
+		<TopicDropdown {editable} handleChange={requestSubmit} bind:value={container.payload.topic} />
+	{/if}
+</div>
+
+<div class="cell">
+	{#if 'audience' in container.payload}
+		<AudienceDropdown {editable} bind:value={container.payload.audience} />
 	{/if}
 </div>
 
@@ -126,17 +131,7 @@
 </div>
 
 <div class="cell">
-	{#if 'audience' in container.payload}
-		<AudienceDropdown {editable} bind:value={container.payload.audience} />
-	{/if}
-</div>
-
-<div class="cell">
-	<span>{$_(container.payload.type)}</span>
-</div>
-
-<div class="cell">
-	<VisibilityDropdown {editable} bind:value={container.payload.visibility} />
+	<OrganizationalUnitDropdown {editable} bind:value={container.organizational_unit} />
 </div>
 
 <style>
