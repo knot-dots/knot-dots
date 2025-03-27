@@ -4,17 +4,24 @@
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 
 	interface Props {
+		editable?: boolean;
 		value: string | null;
 	}
 
-	let { value = $bindable() }: Props = $props();
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
-<SingleChoiceDropdown
-	handleChange={requestSubmit}
-	options={page.data.organizationalUnits.map(({ guid, payload }) => ({
-		value: guid,
-		label: payload.name
-	}))}
-	bind:value
-/>
+{#if editable}
+	<SingleChoiceDropdown
+		handleChange={requestSubmit}
+		options={page.data.organizationalUnits.map(({ guid, payload }) => ({
+			value: guid,
+			label: payload.name
+		}))}
+		bind:value
+	/>
+{:else}
+	<span>
+		{page.data.organizationalUnits.find(({ guid }) => guid === value)?.payload.name}
+	</span>
+{/if}

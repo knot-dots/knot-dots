@@ -5,14 +5,21 @@
 	import { audience } from '$lib/models';
 
 	interface Props {
+		editable?: boolean;
 		value: string[];
 	}
 
-	let { value = $bindable() }: Props = $props();
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
-<MultipleChoiceDropdown
-	handleChange={requestSubmit}
-	options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
-	bind:value
-/>
+{#if editable}
+	<MultipleChoiceDropdown
+		handleChange={requestSubmit}
+		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value
+	/>
+{:else if value.length > 0}
+	<p class="truncated">
+		{value.map((a) => $_(a)).join(', ')}
+	</p>
+{/if}

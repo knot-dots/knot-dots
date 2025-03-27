@@ -2,7 +2,6 @@
 	import { dragHandle } from 'svelte-dnd-action';
 	import { _, date } from 'svelte-i18n';
 	import DragHandle from '~icons/knotdots/draghandle';
-	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
@@ -51,24 +50,11 @@
 </div>
 
 <div class="cell">
-	{#if editable}
-		<OrganizationDropdown bind:value={container.organization} />
-	{:else}
-		<span>
-			{page.data.organizations.find(({ guid }) => guid === container.organization)?.payload.name}
-		</span>
-	{/if}
+	<OrganizationDropdown {editable} bind:value={container.organization} />
 </div>
 
 <div class="cell">
-	{#if editable}
-		<OrganizationalUnitDropdown bind:value={container.organizational_unit} />
-	{:else}
-		<span>
-			{page.data.organizationalUnits.find(({ guid }) => guid === container.organizational_unit)
-				?.payload.name}
-		</span>
-	{/if}
+	<OrganizationalUnitDropdown {editable} bind:value={container.organizational_unit} />
 </div>
 
 <div class="cell">
@@ -141,13 +127,7 @@
 
 <div class="cell">
 	{#if 'audience' in container.payload}
-		{#if editable}
-			<AudienceDropdown bind:value={container.payload.audience} />
-		{:else if container.payload.audience.length > 0}
-			<p class="truncated">
-				{container.payload.audience.map((a) => $_(a)).join(', ')}
-			</p>
-		{/if}
+		<AudienceDropdown {editable} bind:value={container.payload.audience} />
 	{/if}
 </div>
 
@@ -156,11 +136,7 @@
 </div>
 
 <div class="cell">
-	{#if editable}
-		<VisibilityDropdown bind:value={container.payload.visibility} />
-	{:else}
-		<span>{$_(`visibility.${container.payload.visibility}`)}</span>
-	{/if}
+	<VisibilityDropdown {editable} bind:value={container.payload.visibility} />
 </div>
 
 <style>

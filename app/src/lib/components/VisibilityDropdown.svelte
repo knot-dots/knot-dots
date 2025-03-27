@@ -5,14 +5,25 @@
 	import { visibility } from '$lib/models';
 
 	interface Props {
+		editable: boolean;
 		value: string;
 	}
 
-	let { value = $bindable() }: Props = $props();
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
-<SingleChoiceDropdown
-	handleChange={requestSubmit}
-	options={visibility.options.map((o) => ({ value: o, label: $_(`visibility.${o}`) }))}
-	bind:value
-/>
+{#if editable}
+	<SingleChoiceDropdown
+		handleChange={requestSubmit}
+		options={visibility.options.map((o) => ({ value: o, label: $_(`visibility.${o}`) }))}
+		bind:value
+	/>
+{:else}
+	<span>{$_(`visibility.${value}`)}</span>
+{/if}
+
+<style>
+	span {
+		white-space: nowrap;
+	}
+</style>
