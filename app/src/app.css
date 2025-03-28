@@ -828,14 +828,17 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-title {
+	align-items: center;
 	color: var(--color-gray-800);
-	display: block;
+	display: flex;
 	font-size: 1.125rem;
 	font-weight: 600;
+	gap: 0.5rem;
+	justify-content: space-between;
 }
 
-.details-title > a {
-	float: right;
+.details-title > a, .details-title > button {
+	flex-shrink: 0
 }
 
 .details h3 {
