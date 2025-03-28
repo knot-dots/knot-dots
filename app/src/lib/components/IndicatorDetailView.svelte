@@ -6,11 +6,9 @@
 	import type { IndicatorTab } from '$lib/components/IndicatorTabs.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import IndicatorTable from '$lib/components/IndicatorTable.svelte';
-	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
+	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -66,17 +64,7 @@
 		</select>
 
 		{#if viewMode === 'chart'}
-			{#if createFeatureDecisions($page.data.features).useNewCharts()}
-				<NewIndicatorChart
-					{container}
-					{relatedContainers}
-					{showEffects}
-					{showObjectives}
-					showLegend
-				/>
-			{:else}
-				<IndicatorChart {container} {relatedContainers} {showEffects} {showObjectives} />
-			{/if}
+			<IndicatorChart {container} {relatedContainers} {showEffects} {showObjectives} showLegend />
 		{:else if viewMode === 'table'}
 			<IndicatorTable {container} {relatedContainers} {showEffects} {showObjectives} />
 		{/if}

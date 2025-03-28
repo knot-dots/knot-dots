@@ -2,14 +2,11 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isContainerWithObjective,
 		isIndicatorContainer,
-		isPartOf,
 		overlayKey,
 		overlayURL,
 		predicates
@@ -45,11 +42,7 @@
 <ContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		{#if indicator}
-			{#if createFeatureDecisions($page.data.features).useNewCharts()}
-				<ObjectiveChart {container} {relatedContainers} />
-			{:else}
-				<IndicatorChart container={indicator} {relatedContainers} showObjectives />
-			{/if}
+			<ObjectiveChart {container} {relatedContainers} />
 		{/if}
 
 		{#if container.payload.description}

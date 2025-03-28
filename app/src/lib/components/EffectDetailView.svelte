@@ -3,8 +3,6 @@
 	import { page } from '$app/stores';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isContainerWithEffect,
 		isIndicatorContainer,
@@ -33,11 +31,7 @@
 <ContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		{#if indicator}
-			{#if createFeatureDecisions($page.data.features).useNewCharts()}
-				<EffectChart {container} {relatedContainers} showLegend />
-			{:else}
-				<IndicatorChart container={indicator} {relatedContainers} showEffects />
-			{/if}
+			<EffectChart {container} {relatedContainers} showLegend />
 		{/if}
 	</svelte:fragment>
 

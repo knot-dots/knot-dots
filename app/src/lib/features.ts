@@ -1,8 +1,7 @@
 export const featureFlags = [
 	'NewOnboardingWorkflow',
 	'ImportFromCsv',
-	'NewEditingExperience',
-	'NewImpactMeasurement'
+	'NewEditingExperience'
 ] as const;
 
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
@@ -18,12 +17,6 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useViewModes() {
 			return features.includes('NewEditingExperience');
-		},
-		useObjectivesAndEffectsWorkspace() {
-			return features.includes('NewImpactMeasurement');
-		},
-		useNewCharts() {
-			return features.includes('NewImpactMeasurement');
 		}
 	};
 }

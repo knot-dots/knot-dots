@@ -2,11 +2,8 @@
 	import { _ } from 'svelte-i18n';
 	import Minus from '~icons/heroicons/minus-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { page } from '$app/stores';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import EffectChart from '$lib/components/EffectChart.svelte';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type EffectContainer,
 		isContainerWithEffect,
@@ -171,19 +168,11 @@
 			{@const measure = containers.find(isContainerWithEffect)}
 			{@const measureResult = containers.find(isMeasureResultContainer)}
 			{#if indicator && measure && measureResult}
-				{#if createFeatureDecisions($page.data.features)}
-					<EffectChart
-						{container}
-						relatedContainers={[indicator, measure, measureResult]}
-						showLegend
-					/>
-				{:else}
-					<IndicatorChart
-						container={indicator}
-						relatedContainers={[measure, measureResult, container]}
-						showEffects
-					/>
-				{/if}
+				<EffectChart
+					{container}
+					relatedContainers={[indicator, measure, measureResult]}
+					showLegend
+				/>
 			{/if}
 		{/await}
 	</div>

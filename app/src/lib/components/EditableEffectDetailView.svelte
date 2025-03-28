@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { page } from '$app/stores';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -139,15 +136,7 @@
 					</table>
 				{/if}
 
-				{#if createFeatureDecisions($page.data.features).useNewCharts()}
-					<EffectChart {container} {relatedContainers} showLegend />
-				{:else}
-					<IndicatorChart
-						container={indicator}
-						relatedContainers={[container, ...relatedContainers]}
-						showEffects
-					/>
-				{/if}
+				<EffectChart {container} {relatedContainers} showLegend />
 			</div>
 		{/if}
 	</svelte:fragment>

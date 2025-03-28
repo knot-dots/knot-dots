@@ -7,12 +7,10 @@
 	import { page } from '$app/state';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Summary from '$lib/components/Summary.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		findAncestors,
 		isContainerWithEffect,
@@ -244,35 +242,19 @@
 		{#if body}
 			{@render body()}
 		{:else if isIndicatorContainer(container)}
-			{#if createFeatureDecisions(page.data.features).useNewCharts()}
-				<NewIndicatorChart
-					{container}
-					relatedContainers={[
-						...relatedContainers.filter(({ relation }) =>
-							relation.some(({ object }) => object === container.guid)
-						),
-						...relatedContainers.filter(isContainerWithEffect),
-						...relatedContainers.filter(isMeasureResultContainer),
-						...relatedContainers.filter(isContainerWithObjective)
-					]}
-					showEffects
-					showObjectives
-				/>
-			{:else}
-				<IndicatorChart
-					{container}
-					relatedContainers={[
-						...relatedContainers.filter(({ relation }) =>
-							relation.some(({ object }) => object === container.guid)
-						),
-						...relatedContainers.filter(isContainerWithEffect),
-						...relatedContainers.filter(isMeasureResultContainer),
-						...relatedContainers.filter(isContainerWithObjective)
-					]}
-					showEffects
-					showObjectives
-				/>
-			{/if}
+			<IndicatorChart
+				{container}
+				relatedContainers={[
+					...relatedContainers.filter(({ relation }) =>
+						relation.some(({ object }) => object === container.guid)
+					),
+					...relatedContainers.filter(isContainerWithEffect),
+					...relatedContainers.filter(isMeasureResultContainer),
+					...relatedContainers.filter(isContainerWithObjective)
+				]}
+				showEffects
+				showObjectives
+			/>
 			<p class="badges">
 				{#each container.payload.indicatorType as indicatorType}
 					<span class="badge">{$_(indicatorType)}</span>
@@ -285,11 +267,7 @@
 		{:else if isEffectContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				{#if createFeatureDecisions(page.data.features).useNewCharts()}
-					<EffectChart {container} {relatedContainers} />
-				{:else}
-					<IndicatorChart container={indicator} {relatedContainers} showEffects />
-				{/if}
+				<EffectChart {container} {relatedContainers} />
 			{/if}
 		{:else if isMeasureResultContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
@@ -303,26 +281,14 @@
 						) ?? -1) > -1
 				)}
 			{#if indicator && effect}
-				{#if createFeatureDecisions(page.data.features).useNewCharts()}
-					<EffectChart container={effect} {relatedContainers} />
-				{:else}
-					<IndicatorChart
-						container={indicator}
-						relatedContainers={[container, ...relatedContainers]}
-						showEffects
-					/>
-				{/if}
+				<EffectChart container={effect} {relatedContainers} />
 			{:else}
 				<Summary {container} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				{#if createFeatureDecisions(page.data.features).useNewCharts()}
-					<ObjectiveChart {container} {relatedContainers} />
-				{:else}
-					<IndicatorChart container={indicator} {relatedContainers} showObjectives />
-				{/if}
+				<ObjectiveChart {container} {relatedContainers} />
 			{/if}
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} compact />
