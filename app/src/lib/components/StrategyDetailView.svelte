@@ -5,11 +5,9 @@
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
-	import saveContainer from '$lib/client/saveContainer';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
@@ -72,8 +70,16 @@
 				({ predicate }) => predicate !== predicates.enum['is-part-of-strategy']
 			)
 		];
-		await saveContainer({ ...container, relation });
-		await invalidateAll();
+
+		const url = `/container/${container.guid}/relation`;
+		await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(relation),
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
 	}
 </script>
 

@@ -3,11 +3,9 @@
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
-	import saveContainer from '$lib/client/saveContainer';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
@@ -60,8 +58,16 @@
 				({ predicate }) => predicate !== predicates.enum['is-part-of-strategy']
 			)
 		];
-		await saveContainer({ ...container, relation });
-		await invalidateAll();
+
+		const url = `/container/${container.guid}/relation`;
+		await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(relation),
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
 	}
 
 	function addChapterURL(url: URL, strategyGuid: string) {
