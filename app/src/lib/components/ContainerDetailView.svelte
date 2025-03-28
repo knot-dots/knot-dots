@@ -36,7 +36,10 @@
 	export let revisions: AnyContainer[];
 	export let tabs: ContainerDetailViewTabKey[] = ['basic-data', 'metadata'];
 
-	applicationState.update((state) => ({ ...state, containerDetailView: { tabs } }));
+	applicationState.update((state) => ({
+		...state,
+		containerDetailView: { ...state.containerDetailView, tabs }
+	}));
 
 	$: strategy = isStrategyContainer(container)
 		? container

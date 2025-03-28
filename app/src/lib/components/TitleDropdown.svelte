@@ -61,6 +61,7 @@
 		color: var(--color-gray-900);
 		font-size: inherit;
 		font-weight: 500;
+		margin-bottom: 0;
 		padding: 0.75rem 1rem;
 	}
 
