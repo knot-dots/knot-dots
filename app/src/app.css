@@ -620,10 +620,12 @@ fieldset {
 
 /* Toggle style checkboxes */
 .toggle {
-	--width: 3em;
+	--height: 1.5rem;
 	--padding: 0.125rem;
+	--width: calc(var(--height) * 2);
+
 	appearance: none;
-	border-radius: calc(var(--width) / 2);
+	border-radius: var(--height);
 	background-color: var(--color-gray-200);
 	display: inline-grid;
 	margin: 0;
@@ -634,12 +636,12 @@ fieldset {
 
 .toggle::before {
 	background-color: #ffffff;
-	border-radius: calc(var(--width) / 2);
+	border-radius: var(--height);
 	content: '';
-	height: calc(var(--width) / 2);
+	height: var(--height);
 	transform: translateX(0);
 	transition: 120ms transform ease-in-out;
-	width: calc(var(--width) / 2);
+	width: var(--height);
 }
 
 .toggle:checked {
@@ -647,7 +649,7 @@ fieldset {
 }
 
 .toggle:checked::before {
-	transform: translateX(calc(var(--width) / 2 - var(--padding) * 2));
+	transform: translateX(calc(var(--width) - var(--height) - var(--padding) * 2));
 }
 
 .toggle:focus {

@@ -3,13 +3,13 @@
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import ArrowDownTray from '~icons/heroicons/arrow-down-tray-20-solid';
-	import Pencil from '~icons/heroicons/pencil-solid';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
+	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import { containerOfType, paramsFromFragment, payloadTypes, predicates } from '$lib/models';
 	import type { AnyContainer, Container, PayloadType, StrategyContainer } from '$lib/models';
@@ -134,9 +134,7 @@
 			<h2 class="details-title">
 				{container.payload.title}
 				{#if $ability.can('update', container)}
-					<button class="button button-square quiet" type="button" on:click={toggleEditMode}>
-						<Pencil />
-					</button>
+					<EditModeToggle />
 				{/if}
 			</h2>
 		</div>

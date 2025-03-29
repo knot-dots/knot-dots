@@ -5,7 +5,6 @@
 	import ArrowRightOnRectangle from '~icons/heroicons/arrow-right-on-rectangle-20-solid';
 	import ChevronLeft from '~icons/heroicons/chevron-left';
 	import Cog6Tooth from '~icons/heroicons/cog-6-tooth-20-solid';
-	import Pencil from '~icons/heroicons/pencil-solid';
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import Effects from '~icons/knotdots/effects';
@@ -16,6 +15,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { createFeatureDecisions } from '$lib/features';
+	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import {
 		type AnyContainer,
 		boards,
@@ -243,15 +243,7 @@
 
 	{#if $user.isAuthenticated}
 		{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
-			<button
-				title={$_('edit_mode')}
-				type="button"
-				class="button-nav button-square"
-				class:is-active={$applicationState.containerDetailView.editable}
-				on:click={toggleEditMode}
-			>
-				<Pencil />
-			</button>
+			<EditModeToggle />
 		{/if}
 
 		<a href={overlayURL($page.url, 'profile', $user.guid)}>
