@@ -7,16 +7,14 @@
 	import { history } from '@milkdown/plugin-history';
 	import { listener, listenerCtx } from '@milkdown/plugin-listener';
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
-	import type { Uploader } from '@milkdown/plugin-upload';
 	import { commonmark, listItemSchema } from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
-	import { Node } from '@milkdown/prose/model';
 	import { $view as view } from '@milkdown/utils';
 	import { useNodeViewFactory, useProsemirrorAdapterProvider } from '@prosemirror-adapter/svelte';
 	import type { SvelteNodeViewComponent } from '@prosemirror-adapter/svelte';
-	import { uploadAsFormData } from '$lib/client/upload';
 	import ListItem from '$lib/components/ListItem.svelte';
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
+	import uploader from '$lib/milkdown/uploader';
 
 	export let value = '';
 	export let label = '';
@@ -25,41 +23,6 @@
 
 	useProsemirrorAdapterProvider();
 	const nodeViewFactory = useNodeViewFactory();
-
-	const uploader: Uploader = async (files, schema) => {
-		const images: File[] = [];
-
-		for (let i = 0; i < files.length; i++) {
-			const file = files.item(i);
-			if (!file) {
-				continue;
-			}
-
-			if (!file.type.includes('image')) {
-				continue;
-			}
-
-			images.push(file);
-		}
-
-		const nodes: Array<Node | undefined> = await Promise.all(
-			images.map(async (image) => {
-				try {
-					const src = await uploadAsFormData(image);
-					const alt = image.name;
-					return schema.nodes.image.createAndFill({
-						src,
-						alt
-					}) as Node;
-				} catch (e) {
-					console.log(e);
-					return;
-				}
-			})
-		);
-
-		return nodes.filter((n): n is Node => n instanceof Node);
-	};
 
 	let editor: Editor;
 
