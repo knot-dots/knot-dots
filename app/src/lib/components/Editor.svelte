@@ -7,12 +7,8 @@
 	import { history } from '@milkdown/plugin-history';
 	import { listener, listenerCtx } from '@milkdown/plugin-listener';
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
-	import { commonmark, listItemSchema } from '@milkdown/preset-commonmark';
+	import { commonmark } from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
-	import { $view as view } from '@milkdown/utils';
-	import { useNodeViewFactory, useProsemirrorAdapterProvider } from '@prosemirror-adapter/svelte';
-	import type { SvelteNodeViewComponent } from '@prosemirror-adapter/svelte';
-	import ListItem from '$lib/components/ListItem.svelte';
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
 	import uploader from '$lib/milkdown/uploader';
 
@@ -20,9 +16,6 @@
 	export let label = '';
 
 	const labelId = `label-${counter + 1}`;
-
-	useProsemirrorAdapterProvider();
-	const nodeViewFactory = useNodeViewFactory();
 
 	let editor: Editor;
 
@@ -61,14 +54,6 @@
 			.use(history)
 			.use(listener)
 			.use(upload)
-			.use(
-				view(listItemSchema.node, () =>
-					nodeViewFactory({
-						component: ListItem as SvelteNodeViewComponent,
-						as: 'li'
-					})
-				)
-			)
 			.use(toolbar)
 			.create()
 			.then((e) => (editor = e));

@@ -932,7 +932,8 @@ label > input[type='checkbox'].toggle {
 /* Markdown editor and viewer */
 .markdown-body ol,
 .milkdown .editor ol,
-.markdown-body ul:not(.contains-task-list) {
+.markdown-body ul:not(.contains-task-list),
+.milkdown .editor ul:not(.contains-task-list) {
 	list-style: revert;
 	padding-inline-start: 1.5rem;
 }
