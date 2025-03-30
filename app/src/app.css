@@ -908,11 +908,15 @@ label > input[type='checkbox'].toggle {
 }
 
 .tabular {
-	align-items: baseline;
+	align-items: start;
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 	padding: 0 1rem;
+}
+
+.tabular > * {
+	padding: 0.75rem 1rem;
 }
 
 .tabular > *:nth-child(1) {
@@ -923,10 +927,6 @@ label > input[type='checkbox'].toggle {
 .tabular > *:nth-child(2) {
 	flex: 1 1 calc(40rem * 999 - 100% * 999);
 	min-width: 1px;
-}
-
-.value {
-	padding: 0.75rem 1rem;
 }
 
 /* Markdown editor and viewer */
