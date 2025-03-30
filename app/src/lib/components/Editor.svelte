@@ -3,35 +3,20 @@
 </script>
 
 <script lang="ts">
-	import {
-		Editor,
-		commandsCtx,
-		defaultValueCtx,
-		editorViewOptionsCtx,
-		rootCtx
-	} from '@milkdown/core';
-	import { history, redoCommand, undoCommand } from '@milkdown/plugin-history';
+	import { Editor, defaultValueCtx, editorViewOptionsCtx, rootCtx } from '@milkdown/core';
+	import { history } from '@milkdown/plugin-history';
 	import { listener, listenerCtx } from '@milkdown/plugin-listener';
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
 	import type { Uploader } from '@milkdown/plugin-upload';
-	import {
-		commonmark,
-		listItemSchema,
-		toggleEmphasisCommand,
-		toggleStrongCommand,
-		wrapInBulletListCommand
-	} from '@milkdown/preset-commonmark';
+	import { commonmark, listItemSchema } from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
 	import { Node } from '@milkdown/prose/model';
 	import { $view as view } from '@milkdown/utils';
 	import { useNodeViewFactory, useProsemirrorAdapterProvider } from '@prosemirror-adapter/svelte';
 	import type { SvelteNodeViewComponent } from '@prosemirror-adapter/svelte';
-	import { _ } from 'svelte-i18n';
-	import ArrowUturnLeft from '~icons/heroicons/arrow-uturn-left-20-solid';
-	import ArrowUturnRight from '~icons/heroicons/arrow-uturn-right-20-solid';
-	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import ListItem from '$lib/components/ListItem.svelte';
+	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
 
 	export let value = '';
 	export let label = '';
@@ -103,6 +88,11 @@
 					attributes: { 'aria-labelledby': labelId }
 				}));
 			})
+			.config((ctx) => {
+				ctx.set(toolbar.key, {
+					view: toolbarPluginView(ctx)
+				});
+			})
 			.use(commonmark)
 			.use(gfm)
 			.use(history)
@@ -116,6 +106,7 @@
 					})
 				)
 			)
+			.use(toolbar)
 			.create()
 			.then((e) => (editor = e));
 
@@ -127,93 +118,17 @@
 			}
 		};
 	}
-
-	function toggleEmphasis() {
-		editor.action((ctx) => {
-			ctx.get(commandsCtx).call(toggleEmphasisCommand.key);
-		});
-	}
-
-	function toggleStrong() {
-		editor.action((ctx) => {
-			ctx.get(commandsCtx).call(toggleStrongCommand.key);
-		});
-	}
-
-	function wrapInBulletList() {
-		editor.action((ctx) => {
-			ctx.get(commandsCtx).call(wrapInBulletListCommand.key);
-		});
-	}
-
-	function undo() {
-		editor.action((ctx) => {
-			ctx.get(commandsCtx).call(undoCommand.key);
-		});
-	}
-
-	function redo() {
-		editor.action((ctx) => {
-			ctx.get(commandsCtx).call(redoCommand.key);
-		});
-	}
 </script>
 
 <div>
 	<p id={labelId}>{label}</p>
-	<div class="focus-indicator" use:makeEditor>
-		<ul class="toolbar">
-			<li>
-				<button type="button" on:click={undo} on:mousedown|preventDefault>
-					<strong><ArrowUturnLeft /></strong>
-				</button>
-			</li>
-			<li>
-				<button type="button" on:click={redo} on:mousedown|preventDefault>
-					<strong><ArrowUturnRight /></strong>
-				</button>
-			</li>
-			<li>
-				<button type="button" on:click={toggleStrong} on:mousedown|preventDefault>
-					<strong>{$_('editor.strong')}</strong>
-				</button>
-			</li>
-			<li>
-				<button type="button" on:click={toggleEmphasis} on:mousedown|preventDefault>
-					<em>{$_('editor.emphasis')}</em>
-				</button>
-			</li>
-			<li>
-				<button type="button" on:click={wrapInBulletList} on:mousedown|preventDefault>
-					<ListBullet />
-				</button>
-			</li>
-		</ul>
-	</div>
+	<div class="focus-indicator" use:makeEditor></div>
 </div>
 
 <style>
 	.focus-indicator {
 		border: solid 1px var(--color-gray-300);
 		border-radius: 8px;
-	}
-
-	.toolbar {
-		display: flex;
-		border-bottom: solid 1px var(--color-gray-300);
-	}
-
-	.toolbar li {
-		display: flex;
-	}
-
-	.toolbar button {
-		align-items: center;
-		border: none;
-		display: flex;
-		justify-content: center;
-		padding: 0.5rem;
-		width: 2.5rem;
 	}
 
 	div :global(.milkdown) {

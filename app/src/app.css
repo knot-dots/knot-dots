@@ -957,6 +957,18 @@ label > input[type='checkbox'].toggle {
 	text-decoration: underline;
 }
 
+.milkdown-tooltip {
+	position: absolute;
+}
+
+.milkdown [data-show='true'] {
+	display: block;
+}
+
+.milkdown [data-show='false'] {
+	display: none;
+}
+
 /* Fade out overflow effect */
 .masked-overflow {
 	--mask-image-content: linear-gradient(
