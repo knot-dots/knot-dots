@@ -851,6 +851,8 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-editable {
+	--editor-style: new;
+
 	padding-left: 4rem;
 }
 

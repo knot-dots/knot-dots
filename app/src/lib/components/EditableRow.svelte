@@ -150,6 +150,7 @@
 
 	.cell {
 		--drop-down-style: table;
+		--editor-style: new;
 		--form-control-background: white;
 
 		font-size: 0.875rem;

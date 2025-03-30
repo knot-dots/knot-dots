@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CrepeEditor from '$lib/components/CrepeEditor.svelte';
+	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 
 	export let editable = false;
@@ -8,11 +8,7 @@
 </script>
 
 {#if editable}
-	<CrepeEditor bind:value>
-		{#if label}
-			<h3>{label}</h3>
-		{/if}
-	</CrepeEditor>
+	<Editor {label} bind:value />
 {:else}
 	<div>
 		{#if label}

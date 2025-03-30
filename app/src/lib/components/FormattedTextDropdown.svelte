@@ -9,7 +9,7 @@
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
 	import { unified } from 'unified';
-	import CrepeEditor from '$lib/components/CrepeEditor.svelte';
+	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 
 	interface Props {
@@ -50,7 +50,7 @@
 	{#if $popover.expanded}
 		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 			{#if editable}
-				<CrepeEditor bind:value />
+				<Editor bind:value />
 			{:else}
 				<Viewer {value} />
 			{/if}

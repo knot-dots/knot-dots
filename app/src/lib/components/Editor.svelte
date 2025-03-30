@@ -84,28 +84,37 @@
 </script>
 
 <div>
-	<p id={labelId}>{label}</p>
-	<div class="focus-indicator" use:makeEditor></div>
+	{#if label}
+		<h3 id={labelId}>{label}</h3>
+	{/if}
+	<div use:makeEditor></div>
 </div>
 
 <style>
-	.focus-indicator {
+	:global(.milkdown) {
+		background-color: var(--form-control-background);
 		border: solid 1px var(--color-gray-300);
 		border-radius: 8px;
-	}
-
-	div :global(.milkdown) {
-		background-color: var(--color-gray-050);
 		padding: 0.75rem 1rem;
 	}
 
-	div :global([contenteditable]) {
+	:global([contenteditable]) {
 		min-height: 6.25rem;
 		padding: 0;
 		white-space: pre-wrap;
 	}
 
-	div :global([contenteditable]:focus) {
+	:global([contenteditable]:focus) {
 		outline: none;
+	}
+
+	@container style(--editor-style: new) {
+		:global(.milkdown) {
+			border: none;
+		}
+
+		:global([contenteditable]) {
+			min-height: revert;
+		}
 	}
 </style>
