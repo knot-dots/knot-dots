@@ -66,20 +66,20 @@
 </script>
 
 {#await strategyCandidatesRequest}
-	<EditableSingleChoice {editable} label={$_('strategy')} options={[]} value={undefined} />
+	<EditableSingleChoice {editable} label={$_('strategy')} options={[]} value="" />
 {:then strategyCandidates}
 	<EditableSingleChoice
 		{editable}
 		handleChange={onChange}
 		label={$_('strategy')}
 		options={[
-			{ value: undefined, label: $_('not_part_of_strategy') },
+			{ value: '', label: $_('not_part_of_strategy') },
 			...strategyCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))
 		]}
-		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : undefined}
+		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : ''}
 	/>
 {/await}

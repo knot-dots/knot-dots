@@ -61,17 +61,17 @@
 </script>
 
 {#await strategyCandidatesRequest}
-	<SingleChoiceDropdown handleChange={() => null} options={[]} value={undefined} />
+	<SingleChoiceDropdown handleChange={() => null} options={[]} value="" />
 {:then strategyCandidates}
 	<SingleChoiceDropdown
 		{handleChange}
 		options={[
-			{ value: undefined, label: $_('not_part_of_strategy') },
+			{ value: '', label: $_('not_part_of_strategy') },
 			...strategyCandidates.map(({ payload, revision }) => ({
 				label: payload.title,
 				value: String(revision)
 			}))
 		]}
-		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : undefined}
+		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : ''}
 	/>
 {/await}

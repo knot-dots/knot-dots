@@ -24,9 +24,8 @@
 		payloadType: [payloadTypes.enum.organizational_unit]
 	}) as Promise<OrganizationalUnitContainer[]>;
 
-	$: isPartOfObject = container.relation.find(
-		(r) => r.predicate === predicates.enum['is-part-of']
-	)?.object;
+	$: isPartOfObject =
+		container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object ?? '';
 
 	async function onChange(event: Event) {
 		const isPartOfIndex = container.relation.findIndex(
@@ -62,7 +61,7 @@
 		{editable}
 		label={$_('superordinate_organizational_unit')}
 		options={[]}
-		value={undefined}
+		value=""
 	/>
 {:then isPartOfOptions}
 	<EditableSingleChoice
@@ -70,7 +69,7 @@
 		handleChange={onChange}
 		label={$_('superordinate_organizational_unit')}
 		options={[
-			{ value: undefined, label: $_('not_part_of') },
+			{ value: '', label: $_('not_part_of') },
 			...isPartOfOptions
 				.filter(({ payload }) => container.payload.level === payload.level + 1)
 				.map(({ guid, payload }) => ({

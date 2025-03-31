@@ -66,20 +66,20 @@
 </script>
 
 {#await measureCandidatesRequest}
-	<EditableSingleChoice {editable} label={$_('measure')} options={[]} value={undefined} />
+	<EditableSingleChoice {editable} label={$_('measure')} options={[]} value="" />
 {:then measureCandidates}
 	<EditableSingleChoice
 		{editable}
 		handleChange={onChange}
 		label={$_('measure')}
 		options={[
-			{ value: undefined, label: $_('not_part_of_measure') },
+			{ value: '', label: $_('not_part_of_measure') },
 			...measureCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))
 		]}
-		value={isPartOfMeasureObject ? String(isPartOfMeasureObject) : undefined}
+		value={isPartOfMeasureObject ? String(isPartOfMeasureObject) : ''}
 	/>
 {/await}

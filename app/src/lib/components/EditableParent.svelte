@@ -132,25 +132,20 @@
 </script>
 
 {#await isPartOfOptionsRequest}
-	<EditableSingleChoice
-		{editable}
-		label={$_('superordinate_element')}
-		options={[]}
-		value={undefined}
-	/>
+	<EditableSingleChoice {editable} label={$_('superordinate_element')} options={[]} value="" />
 {:then isPartOfOptions}
 	<EditableSingleChoice
 		{editable}
 		handleChange={onChange}
 		label={$_('superordinate_element')}
 		options={[
-			{ value: undefined, label: $_('not_part_of') },
+			{ value: '', label: $_('not_part_of') },
 			...isPartOfOptions.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))
 		]}
-		value={isPartOfObject ? isPartOfObject : undefined}
+		value={isPartOfObject ? isPartOfObject : ''}
 	/>
 {/await}
