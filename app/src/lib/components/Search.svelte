@@ -47,6 +47,7 @@
 <style>
 	.search {
 		display: flex;
+		position: relative;
 	}
 
 	.search > button {

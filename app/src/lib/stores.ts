@@ -340,6 +340,7 @@ if (browser) {
 				const relatedContainers = (await fetchContainers({
 					category: hashParams.getAll('category'),
 					isPartOfStrategy: [container.guid],
+					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				})) as Container[];
 				overlay.set({

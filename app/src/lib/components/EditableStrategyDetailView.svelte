@@ -16,6 +16,7 @@
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import EditableStrategyType from '$lib/components/EditableStrategyType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
+	import Search from '$lib/components/Search.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -150,6 +151,7 @@
 		<div class="details-tab" id="basic-data">
 			<h2 class="details-title">
 				{container.payload.title}
+				<Search />
 			</h2>
 		</div>
 
@@ -197,6 +199,12 @@
 {/if}
 
 <style>
+	h2 :global(.search) {
+		flex-basis: 24rem;
+		font-size: 1rem;
+		font-weight: normal;
+	}
+
 	.chapters {
 		border-top: solid 1px var(--color-gray-300);
 		padding-top: 1.5rem;
