@@ -146,44 +146,54 @@
 		</svelte:fragment>
 	</EditableContainerDetailView>
 {:else if $applicationState.containerDetailView.mode === 'view_mode.table'}
-	<div class="table">
-		<div class="table-head">
-			<div class="row">
-				<div class="cell"></div>
-				<div class="cell">{$_('title')}</div>
-				<div class="cell">{$_('object')}</div>
-				<div class="cell">{$_('description')}</div>
-				<div class="cell">{$_('visibility.label')}</div>
-				<div class="cell">{$_('status')}</div>
-				<div class="cell">{$_('category')}</div>
-				<div class="cell">{$_('topic')}</div>
-				<div class="cell">{$_('audience')}</div>
-				<div class="cell">{$_('fulfillment_date')}</div>
-				<div class="cell">{$_('planned_duration')}</div>
-				<div class="cell">{$_('organizational_unit')}</div>
+	<article class="details">
+		<div class="details-tab" id="basic-data">
+			<h2 class="details-title">
+				{container.payload.title}
+			</h2>
+		</div>
+
+		<div class="details-tab details-tab--table" id="chapters">
+			<div class="table">
+				<div class="table-head">
+					<div class="row">
+						<div class="cell"></div>
+						<div class="cell">{$_('title')}</div>
+						<div class="cell">{$_('object')}</div>
+						<div class="cell">{$_('description')}</div>
+						<div class="cell">{$_('visibility.label')}</div>
+						<div class="cell">{$_('status')}</div>
+						<div class="cell">{$_('category')}</div>
+						<div class="cell">{$_('topic')}</div>
+						<div class="cell">{$_('audience')}</div>
+						<div class="cell">{$_('fulfillment_date')}</div>
+						<div class="cell">{$_('planned_duration')}</div>
+						<div class="cell">{$_('organizational_unit')}</div>
+					</div>
+				</div>
+				<div
+					class="table-body"
+					use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
+					on:consider={handleDndConsider}
+					on:finalize={handleDndFinalize}
+				>
+					{#each parts as part (part.guid)}
+						<form
+							class="row"
+							animate:flip={{ duration: 100 }}
+							on:submit|preventDefault={autoSave(part)}
+							novalidate
+						>
+							<EditableRow
+								container={part}
+								editable={$applicationState.containerDetailView.editable ?? false}
+							/>
+						</form>
+					{/each}
+				</div>
 			</div>
 		</div>
-		<div
-			class="table-body"
-			use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
-			on:consider={handleDndConsider}
-			on:finalize={handleDndFinalize}
-		>
-			{#each parts as part (part.guid)}
-				<form
-					class="row"
-					animate:flip={{ duration: 100 }}
-					on:submit|preventDefault={autoSave(part)}
-					novalidate
-				>
-					<EditableRow
-						container={part}
-						editable={$applicationState.containerDetailView.editable ?? false}
-					/>
-				</form>
-			{/each}
-		</div>
-	</div>
+	</article>
 {/if}
 
 <style>
@@ -198,6 +208,10 @@
 		gap: 0.5rem;
 		margin-bottom: 1.5rem;
 		max-width: 50rem;
+	}
+
+	.details-tab.details-tab--table {
+		overflow-x: auto;
 	}
 
 	.table {

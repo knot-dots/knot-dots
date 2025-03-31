@@ -138,7 +138,7 @@
 				{/if}
 			</h2>
 		</div>
-		<div class="details-tab" id="chapters">
+		<div class="details-tab details-tab--table" id="chapters">
 			<div class="table">
 				<div class="table-head">
 					<div class="row">
@@ -187,7 +187,7 @@
 		padding-top: 1.5rem;
 	}
 
-	.details-tab {
+	.details-tab--table {
 		overflow-x: auto;
 	}
 
