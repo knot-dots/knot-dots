@@ -26,6 +26,7 @@
 		overlayKey,
 		owners,
 		paramsFromFragment,
+		predicates,
 		type User
 	} from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
@@ -43,11 +44,31 @@
 
 	$: strategy = isStrategyContainer(container)
 		? container
-		: relatedContainers.find(isStrategyContainer);
+		: relatedContainers
+				.filter(isStrategyContainer)
+				.find(
+					(candidate) =>
+						container.relation.findIndex(
+							(r) =>
+								r.predicate === predicates.enum['is-part-of-strategy'] &&
+								r.object === candidate.guid &&
+								candidate.guid !== container.guid
+						) > -1
+				);
 
 	$: measure = isMeasureContainer(container)
 		? container
-		: relatedContainers.find(isMeasureContainer);
+		: relatedContainers
+				.filter(isMeasureContainer)
+				.find(
+					(candidate) =>
+						container.relation.findIndex(
+							(r) =>
+								r.predicate === predicates.enum['is-part-of-measure'] &&
+								r.object === candidate.guid &&
+								candidate.guid !== container.guid
+						) > -1
+				);
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
