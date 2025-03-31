@@ -11,6 +11,7 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
+	import Search from '$lib/components/Search.svelte';
 	import { containerOfType, paramsFromFragment, payloadTypes, predicates } from '$lib/models';
 	import type { AnyContainer, Container, PayloadType, StrategyContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -182,6 +183,12 @@
 {/if}
 
 <style>
+	h2 :global(.search) {
+		flex-basis: 24rem;
+		font-size: 1rem;
+		font-weight: normal;
+	}
+
 	.chapters {
 		border-top: solid 1px var(--color-gray-300);
 		padding-top: 1.5rem;
