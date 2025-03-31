@@ -28,20 +28,18 @@
 {#if editable || value.length > 1}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" type="button" use:popover.button>
-			{#if value.length > 0}
-				{#each topics.options
-					.filter((o) => value.includes(o))
-					.slice(0, 1)
-					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
-					<span class="badge badge--gray">{selectedOption.label}</span>
-				{:else}
-					&nbsp;
-				{/each}
-				{#if value.length > 1}
-					<span class="badge badge--gray badge--more">
-						{$_('n_more', { values: { count: value.length - 1 } })}
-					</span>
-				{/if}
+			{#each topics.options
+				.filter((o) => value.includes(o))
+				.slice(0, 1)
+				.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+				<span class="badge badge--gray">{selectedOption.label}</span>
+			{:else}
+				&nbsp;
+			{/each}
+			{#if value.length > 1}
+				<span class="badge badge--gray badge--more">
+					{$_('n_more', { values: { count: value.length - 1 } })}
+				</span>
 			{/if}
 			<ChevronDown />
 		</button>
@@ -95,6 +93,10 @@
 		float: left;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	.dropdown-button {
+		width: 100%;
 	}
 
 	@container style(--drop-down-style: table) {
