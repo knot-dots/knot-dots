@@ -53,12 +53,9 @@
 	}
 
 	.value {
+		display: block;
 		padding: 0;
 		text-align: left;
-	}
-
-	.value:not(:last-child)::after {
-		content: ', ';
 	}
 
 	@container style(--drop-down-style: table) {
@@ -66,6 +63,14 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+		}
+
+		.value {
+			display: revert;
+		}
+
+		.value:not(:last-child)::after {
+			content: ', ';
 		}
 	}
 </style>

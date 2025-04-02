@@ -29,18 +29,22 @@
 {#if editable || value.length > 6}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" type="button" use:popover.button>
-			{#each sustainableDevelopmentGoals.options
-				.filter((o) => value.includes(o))
-				.slice(0, value.length > 6 ? 5 : value.length)
-				.map((o) => ({ label: $_(o), value: o })) as selectedOption}
-				{@const sdgIcon = sdgIcons.get(selectedOption.value)}
-				<img src={sdgIcon} width="30" height="30" alt={selectedOption.label} />
-			{:else}
-				&nbsp;
-			{/each}
-			{#if value.length > 6}
-				<span class="more-indicator">{$_('n_more', { values: { count: value.length - 5 } })}</span>
-			{/if}
+			<span class="selected">
+				{#each sustainableDevelopmentGoals.options
+					.filter((o) => value.includes(o))
+					.slice(0, value.length > 6 ? 5 : value.length)
+					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+					{@const sdgIcon = sdgIcons.get(selectedOption.value)}
+					<img src={sdgIcon} width="30" height="30" alt={selectedOption.label} />
+				{:else}
+					&nbsp;
+				{/each}
+				{#if value.length > 6}
+					<span class="more-indicator">
+						{$_('n_more', { values: { count: value.length - 5 } })}
+					</span>
+				{/if}
+			</span>
 			<ChevronDown />
 		</button>
 
@@ -103,7 +107,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
-		width: 13.75rem;
 	}
 
 	.dropdown-panel {
@@ -123,7 +126,13 @@
 		width: 30px;
 	}
 
+	.selected {
+		display: flex;
+		gap: 0.5rem;
+	}
+
 	@container style(--drop-down-style: table) {
+		ul,
 		.dropdown-button {
 			width: 13.75rem;
 		}

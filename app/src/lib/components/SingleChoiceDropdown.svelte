@@ -27,7 +27,10 @@
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
-		{#if selected}{selected.label}{:else}&nbsp;{/if}<ChevronDown />
+		<span class="selected">
+			{#if selected}{selected.label}{:else}&nbsp;{/if}
+		</span>
+		<ChevronDown />
 	</button>
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
