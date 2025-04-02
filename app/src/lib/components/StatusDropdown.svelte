@@ -60,12 +60,6 @@
 {/if}
 
 <style>
-	@container style(--drop-down-style: table) {
-		button > :global(svg) {
-			display: none;
-		}
-	}
-
 	.badge {
 		float: left;
 	}

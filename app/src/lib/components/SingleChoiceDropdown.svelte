@@ -40,16 +40,3 @@
 		</fieldset>
 	{/if}
 </div>
-
-<style>
-	button {
-		border: none;
-		text-wrap: nowrap;
-	}
-
-	@container style(--drop-down-style: table) {
-		button > :global(svg) {
-			display: none;
-		}
-	}
-</style>

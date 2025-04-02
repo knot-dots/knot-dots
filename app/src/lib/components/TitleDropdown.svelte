@@ -71,7 +71,6 @@
 		font-size: inherit;
 		font-weight: 500;
 		text-align: left;
-		width: 100%;
 	}
 
 	.dropdown-panel {

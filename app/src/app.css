@@ -1126,6 +1126,9 @@ label > input[type='checkbox'].toggle {
 
 	border: none;
 	display: flex;
+	justify-content: space-between;
+	white-space: nowrap;
+	width: 100%;
 }
 
 .dropdown-button.dropdown-button--badge {
@@ -1167,6 +1170,12 @@ label > input[type='checkbox'].toggle {
 
 .dropdown-panel *:has(> input[type='checkbox'], input[type='radio']):hover {
 	background-color: var(--color-gray-100);
+}
+
+@container style(--drop-down-style: table) {
+	.dropdown-button > svg {
+		display: none;
+	}
 }
 
 /* Utility classes */

@@ -62,7 +62,6 @@
 	.dropdown-button {
 		display: block;
 		text-align: left;
-		width: 100%;
 	}
 
 	.dropdown-panel {

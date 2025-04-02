@@ -94,14 +94,4 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-
-	.dropdown-button {
-		width: 100%;
-	}
-
-	@container style(--drop-down-style: table) {
-		button > :global(svg) {
-			display: none;
-		}
-	}
 </style>

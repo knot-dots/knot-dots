@@ -48,12 +48,6 @@
 </div>
 
 <style>
-	button {
-		border: none;
-		min-width: 3rem;
-		width: 100%;
-	}
-
 	.selected {
 		display: block;
 	}
@@ -68,10 +62,6 @@
 	}
 
 	@container style(--drop-down-style: table) {
-		button > :global(svg) {
-			display: none;
-		}
-
 		.selected {
 			overflow: hidden;
 			text-overflow: ellipsis;
