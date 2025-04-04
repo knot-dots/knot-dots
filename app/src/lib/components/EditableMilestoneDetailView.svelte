@@ -5,11 +5,12 @@
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import { type AnyContainer, type Container, type MilestoneContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: MilestoneContainer;
 	export let relatedContainers: Container[];
@@ -47,6 +48,16 @@
 			bind:value={container.payload.audience}
 		/>
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		<EditableOrganization
+			editable={$applicationState.containerDetailView.editable &&
+				$ability.can('update', container.payload.type, 'organization')}
+			bind:value={container.organization}
+		/>
+
+		<EditableOrganizationalUnit
+			editable={$applicationState.containerDetailView.editable &&
+				$ability.can('update', container.payload.type, 'organizational_unit')}
+			bind:value={container.organizational_unit}
+		/>
 	</svelte:fragment>
 </EditableContainerDetailView>

@@ -12,7 +12,8 @@
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableLevel from '$lib/components/EditableLevel.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import EditableStrategyType from '$lib/components/EditableStrategyType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
@@ -120,7 +121,17 @@
 				bind:value={container.payload.audience}
 			/>
 
-			<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+			<EditableOrganization
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container.payload.type, 'organization')}
+				bind:value={container.organization}
+			/>
+
+			<EditableOrganizationalUnit
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container.payload.type, 'organizational_unit')}
+				bind:value={container.organizational_unit}
+			/>
 		</svelte:fragment>
 
 		<svelte:fragment slot="extra">
