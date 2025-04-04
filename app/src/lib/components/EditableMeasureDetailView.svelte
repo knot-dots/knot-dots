@@ -8,7 +8,8 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
@@ -24,7 +25,7 @@
 		payloadTypes,
 		status
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: ContainerWithEffect;
 	export let relatedContainers: Container[];
@@ -187,7 +188,19 @@
 			bind:value={container.payload.audience}
 		/>
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		{#if $ability.can('update', container.payload.type, 'organization')}
+			<EditableOrganization
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organization}
+			/>
+		{/if}
+
+		{#if $ability.can('update', container.payload.type, 'organizational_unit')}
+			<EditableOrganizationalUnit
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organizational_unit}
+			/>
+		{/if}
 	</svelte:fragment>
 </EditableContainerDetailView>
 

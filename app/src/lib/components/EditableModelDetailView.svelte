@@ -5,12 +5,13 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import { type AnyContainer, type Container, type ModelContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: ModelContainer;
 	export let relatedContainers: Container[];
@@ -56,6 +57,18 @@
 			bind:value={container.payload.audience}
 		/>
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		{#if $ability.can('update', container.payload.type, 'organization')}
+			<EditableOrganization
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organization}
+			/>
+		{/if}
+
+		{#if $ability.can('update', container.payload.type, 'organizational_unit')}
+			<EditableOrganizationalUnit
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organizational_unit}
+			/>
+		{/if}
 	</svelte:fragment>
 </EditableContainerDetailView>

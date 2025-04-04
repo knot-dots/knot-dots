@@ -8,7 +8,8 @@
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditableTaskCategory from '$lib/components/EditableTaskCategory.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
@@ -91,6 +92,18 @@
 
 		<EditableParent editable={$applicationState.containerDetailView.editable} bind:container />
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		{#if $ability.can('update', container.payload.type, 'organization')}
+			<EditableOrganization
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organization}
+			/>
+		{/if}
+
+		{#if $ability.can('update', container.payload.type, 'organizational_unit')}
+			<EditableOrganizationalUnit
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organizational_unit}
+			/>
+		{/if}
 	</svelte:fragment>
 </EditableContainerDetailView>
