@@ -6,7 +6,8 @@
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
@@ -66,6 +67,14 @@
 			bind:value={container.payload.audience}
 		/>
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		<EditableOrganization
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organization}
+		/>
+
+		<EditableOrganizationalUnit
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organizational_unit}
+		/>
 	</svelte:fragment>
 </EditableContainerDetailView>
