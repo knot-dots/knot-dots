@@ -34,12 +34,14 @@
 	</button>
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			{#each options as option (option.value)}
-				<label>
-					<input type="radio" value={option.value} bind:group={value} onchange={handleChange} />
-					{option.label}
-				</label>
-			{/each}
+			<div>
+				{#each options as option (option.value)}
+					<label>
+						<input type="radio" value={option.value} bind:group={value} onchange={handleChange} />
+						{option.label}
+					</label>
+				{/each}
+			</div>
 		</fieldset>
 	{/if}
 </div>
