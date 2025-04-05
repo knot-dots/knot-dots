@@ -66,16 +66,6 @@
 {/if}
 
 <style>
-	.carousel {
-		border-radius: 8px;
-		min-height: 299px;
-		padding: 1rem;
-	}
-
-	.carousel.editable {
-		background-color: var(--color-gray-050);
-	}
-
 	.card {
 		align-items: center;
 		background: #ffffff;
@@ -85,7 +75,7 @@
 		cursor: pointer;
 		display: grid;
 		grid-row: 1 / 4;
-		min-height: 267px;
+		min-height: 6rem;
 		justify-content: center;
 	}
 
