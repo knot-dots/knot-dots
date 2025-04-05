@@ -83,6 +83,11 @@
 </div>
 
 <style>
+	h3 {
+		color: inherit;
+		margin-bottom: 0;
+	}
+
 	:global(.milkdown) {
 		background-color: var(--form-control-background);
 		border: solid 1px var(--color-gray-300);
@@ -101,8 +106,15 @@
 	}
 
 	@container style(--editor-style: new) {
+		h3 {
+			color: var(--color-gray-700);
+			margin-bottom: 0.5rem;
+		}
+
 		:global(.milkdown) {
+			background-color: transparent;
 			border: none;
+			padding: 0;
 		}
 
 		:global([contenteditable]) {
