@@ -117,46 +117,42 @@
 		</div>
 
 		{#if $applicationState.containerDetailView.editable}
-			<fieldset class="tabular">
-				<span class="label">{$_('planned_duration')}</span>
-				<span>
-					<label class="is-visually-hidden" for="startDate">
-						{$_('start_date')}
-					</label>
-					<input
-						id="startDate"
-						type="date"
-						bind:value={container.payload.startDate}
-						on:change={requestSubmit}
-					/>
-					–
-					<label class="is-visually-hidden" for="endDate">
-						{$_('end_date')}
-					</label>
-					<input
-						id="endDate"
-						type="date"
-						bind:value={container.payload.endDate}
-						on:change={requestSubmit}
-					/>
-				</span>
+			<div class="label">{$_('planned_duration')}</div>
+			<fieldset>
+				<label class="is-visually-hidden" for="startDate">
+					{$_('start_date')}
+				</label>
+				<input
+					id="startDate"
+					type="date"
+					bind:value={container.payload.startDate}
+					on:change={requestSubmit}
+				/>
+				–
+				<label class="is-visually-hidden" for="endDate">
+					{$_('end_date')}
+				</label>
+				<input
+					id="endDate"
+					type="date"
+					bind:value={container.payload.endDate}
+					on:change={requestSubmit}
+				/>
 			</fieldset>
 		{:else}
-			<p class="tabular">
-				<span class="label">{$_('planned_duration')}</span>
-				<span class="value">
-					{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}
-						{$date(new Date(selectedRevision.payload.startDate), { format: 'long' })}–{$date(
-							new Date(selectedRevision.payload.endDate),
-							{ format: 'long' }
-						)}
-					{:else if selectedRevision.payload.startDate}
-						{$date(new Date(selectedRevision.payload.startDate), { format: 'long' })}–
-					{:else}
-						&nbsp;
-					{/if}
-				</span>
-			</p>
+			<div class="label">{$_('planned_duration')}</div>
+			<div class="value">
+				{#if selectedRevision.payload.startDate && selectedRevision.payload.endDate}
+					{$date(new Date(selectedRevision.payload.startDate), { format: 'long' })}–{$date(
+						new Date(selectedRevision.payload.endDate),
+						{ format: 'long' }
+					)}
+				{:else if selectedRevision.payload.startDate}
+					{$date(new Date(selectedRevision.payload.startDate), { format: 'long' })}–
+				{:else}
+					&nbsp;
+				{/if}
+			</div>
 		{/if}
 
 		<EditableMeasureType
@@ -205,17 +201,15 @@
 <style>
 	fieldset {
 		border: none;
-	}
-
-	label {
-		padding: 0 1rem;
+		padding: 0;
 	}
 
 	input[type='date'] {
 		border: none;
 		display: inline-flex;
 		line-height: 1.5;
-		max-height: 3rem;
+		max-height: 2.25rem;
+		padding: 0.375rem;
 		width: auto;
 	}
 </style>

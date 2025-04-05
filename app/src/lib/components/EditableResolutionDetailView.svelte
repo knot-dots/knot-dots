@@ -50,8 +50,8 @@
 		/>
 
 		{#if $applicationState.containerDetailView.editable}
-			<fieldset class="tabular">
-				<span class="label">{$_('valid_from')}</span>
+			<div class="label">{$_('valid_from')}</div>
+			<fieldset>
 				<span>
 					<label class="is-visually-hidden" for="validFrom">
 						{$_('valid_from')}
@@ -75,21 +75,19 @@
 				</span>
 			</fieldset>
 		{:else}
-			<p class="tabular">
-				<span class="label">{$_('valid_from')}</span>
-				<span class="value">
-					{#if selectedRevision.payload.validFrom && selectedRevision.payload.validUntil}
-						{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–{$date(
-							new Date(selectedRevision.payload.validUntil),
-							{ format: 'long' }
-						)}
-					{:else if selectedRevision.payload.validFrom}
-						{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–
-					{:else}
-						&nbsp;
-					{/if}
-				</span>
-			</p>
+			<div class="label">{$_('valid_from')}</div>
+			<div class="value">
+				{#if selectedRevision.payload.validFrom && selectedRevision.payload.validUntil}
+					{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–{$date(
+						new Date(selectedRevision.payload.validUntil),
+						{ format: 'long' }
+					)}
+				{:else if selectedRevision.payload.validFrom}
+					{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–
+				{:else}
+					&nbsp;
+				{/if}
+			</div>
 		{/if}
 
 		<EditableResolutionStatus
@@ -131,17 +129,15 @@
 <style>
 	fieldset {
 		border: none;
-	}
-
-	label {
-		padding: 0 1rem;
+		padding: 0;
 	}
 
 	input[type='date'] {
 		border: none;
 		display: inline-flex;
 		line-height: 1.5;
-		max-height: 3rem;
+		max-height: 2.25rem;
+		padding: 0.375rem;
 		width: auto;
 	}
 </style>

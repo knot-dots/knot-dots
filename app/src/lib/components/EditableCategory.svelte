@@ -8,9 +8,5 @@
 	export let value: SustainableDevelopmentGoal[];
 </script>
 
-<div class="tabular">
-	<span class="label">{$_('category')}</span>
-	<div class="value">
-		<CategoryDropdown {editable} handleChange={requestSubmit} bind:value />
-	</div>
-</div>
+<div class="label">{$_('category')}</div>
+<CategoryDropdown {editable} handleChange={requestSubmit} bind:value />

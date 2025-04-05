@@ -7,9 +7,5 @@
 	export let value: string[];
 </script>
 
-<div class="tabular">
-	<span class="label">{$_('topic')}</span>
-	<div class="value">
-		<TopicDropdown {editable} handleChange={requestSubmit} bind:value />
-	</div>
-</div>
+<div class="label">{$_('topic')}</div>
+<TopicDropdown {editable} handleChange={requestSubmit} bind:value />

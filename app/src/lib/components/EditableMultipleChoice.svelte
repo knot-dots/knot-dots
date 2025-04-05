@@ -10,31 +10,25 @@
 	$: selected = options.filter((o) => value.includes(o.value)).map(({ label }) => label);
 </script>
 
-<div class="tabular">
-	<span class="label">{label}</span>
-	{#if editable}
-		<MultipleChoiceDropdown handleChange={requestSubmit} {options} bind:value />
-	{:else}
-		<ul class="selected">
-			{#each options.filter((o) => value.includes(o.value)) as selectedOption}
-				<li class="value">{selectedOption.label}</li>
-			{:else}
-				<li>&nbsp;</li>
-			{/each}
-		</ul>
-	{/if}
-</div>
+<div class="label">{label}</div>
+{#if editable}
+	<MultipleChoiceDropdown handleChange={requestSubmit} {options} bind:value />
+{:else}
+	<ul class="value">
+		{#each options.filter((o) => value.includes(o.value)) as selectedOption}
+			<li>{selectedOption.label}</li>
+		{:else}
+			<li>&nbsp;</li>
+		{/each}
+	</ul>
+{/if}
 
 <style>
-	.selected {
+	.value {
 		display: block;
 	}
 
-	ul {
-		padding: 0.75rem 1rem;
-	}
-
-	.value {
+	.value > li {
 		display: list-item;
 		list-style: none;
 		padding: 0;
