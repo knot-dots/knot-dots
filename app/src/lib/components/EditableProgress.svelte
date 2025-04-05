@@ -55,6 +55,7 @@
 						? 'var(--color-yellow-300)'
 						: 'var(--color-red-600)'}
 				class:compact
+				{value}
 			></progress>
 			{#if !compact}
 				{value * 100} %
