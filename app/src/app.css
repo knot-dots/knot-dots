@@ -1111,6 +1111,7 @@ label > input[type='checkbox'].toggle {
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
+	min-height: calc(6rem + 2 * 1.5rem);
 	overflow-x: auto;
 	padding: 1.5rem 0;
 }
