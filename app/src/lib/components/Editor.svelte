@@ -76,11 +76,10 @@
 	}
 </script>
 
-<div>
+<div use:makeEditor>
 	{#if label}
 		<h3 id={labelId}>{label}</h3>
 	{/if}
-	<div use:makeEditor></div>
 </div>
 
 <style>
