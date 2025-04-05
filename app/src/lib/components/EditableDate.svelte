@@ -13,32 +13,31 @@
 	let id = `date-${counter++}`;
 </script>
 
-<p class="tabular">
-	{#if editable}
-		<label for={id}>
-			{label}
-		</label>
-		<span>
-			<input {id} type="date" bind:value on:change={requestSubmit} />
-		</span>
-	{:else}
-		<span class="label">{label}</span>
-		<time class="value" datetime={value}>
-			{#if value}
-				{$date(new Date(value), { format: 'long' })}
-			{:else}
-				&nbsp;
-			{/if}
-		</time>
-	{/if}
-</p>
+{#if editable}
+	<label class="label" for={id}>
+		{label}
+	</label>
+	<span>
+		<input {id} type="date" bind:value on:change={requestSubmit} />
+	</span>
+{:else}
+	<span class="label">{label}</span>
+	<time class="value" datetime={value}>
+		{#if value}
+			{$date(new Date(value), { format: 'long' })}
+		{:else}
+			&nbsp;
+		{/if}
+	</time>
+{/if}
 
 <style>
 	input[type='date'] {
 		border: none;
 		display: inline-flex;
 		line-height: 1.5;
-		max-height: 3rem;
+		max-height: 2.25rem;
+		padding: 0.375rem;
 		width: auto;
 	}
 </style>

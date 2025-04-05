@@ -10,9 +10,5 @@
 	let { editable = false, value = $bindable() } = $props();
 </script>
 
-<div class="tabular">
-	<span class="label">{$_('organization')}</span>
-	<div class="value">
-		<OrganizationDropdown {editable} bind:value />
-	</div>
-</div>
+<div class="label">{$_('organization')}</div>
+<OrganizationDropdown {editable} bind:value />

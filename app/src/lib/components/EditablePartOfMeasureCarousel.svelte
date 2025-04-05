@@ -81,11 +81,11 @@
 		background: #ffffff;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		display: grid;
 		grid-row: 1 / 4;
-		height: 267px;
+		min-height: 267px;
 		justify-content: center;
 	}
 
