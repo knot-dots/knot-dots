@@ -940,6 +940,10 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Markdown editor and viewer */
+.markdown-body {
+	min-height: 1.5em;
+}
+
 .markdown-body ol,
 .milkdown .editor ol,
 .markdown-body ul:not(.contains-task-list),
