@@ -11,21 +11,19 @@
 	$: selected = options.find((o) => o.value == value);
 </script>
 
-<div class="tabular">
-	<span class="label">{label}</span>
-	{#if editable}
-		<SingleChoiceDropdown {handleChange} {options} bind:value />
-	{:else}
-		<span class="value">
-			{#if selected}
-				{#if selected.href}
-					<a href={selected.href}>{selected.label}</a>
-				{:else}
-					{selected.label}
-				{/if}
+<div class="label">{label}</div>
+{#if editable}
+	<SingleChoiceDropdown {handleChange} {options} bind:value />
+{:else}
+	<div class="value">
+		{#if selected}
+			{#if selected.href}
+				<a href={selected.href}>{selected.label}</a>
 			{:else}
-				&nbsp;
+				{selected.label}
 			{/if}
-		</span>
-	{/if}
-</div>
+		{:else}
+			&nbsp;
+		{/if}
+	</div>
+{/if}

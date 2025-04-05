@@ -86,8 +86,8 @@
 			{/if}
 		{/if}
 	</div>
-{:else if value.length > 0}
-	<ul>
+{:else}
+	<ul class="value">
 		{#each value as category}
 			<li>
 				<img
@@ -98,6 +98,8 @@
 					height="30"
 				/>
 			</li>
+		{:else}
+			&nbsp;
 		{/each}
 	</ul>
 {/if}

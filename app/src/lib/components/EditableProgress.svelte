@@ -52,7 +52,7 @@
 				style:--color={value > 0.7
 					? 'var(--color-green-500)'
 					: value > 0.3
-						? 'var(--color-yellow-200)'
+						? 'var(--color-yellow-300)'
 						: 'var(--color-red-600)'}
 				class:compact
 			></progress>
@@ -64,25 +64,20 @@
 </div>
 
 <style>
-	p {
-		padding: 0 1rem;
-	}
-
 	input[type='range'] {
-		display: inline-block;
+		display: block;
 		padding: 0;
-		vertical-align: middle;
+		width: 100%;
 	}
 
 	progress {
-		--height: 6px;
+		--height: 0.5rem;
 
 		appearance: none;
 		background-color: var(--color-gray-200);
 		border: none;
 		border-radius: calc(var(--height) * 0.5);
 		height: var(--height);
-		margin-right: 1rem;
 		overflow: hidden;
 		vertical-align: middle;
 	}

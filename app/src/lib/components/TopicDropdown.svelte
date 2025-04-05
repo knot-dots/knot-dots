@@ -77,12 +77,16 @@
 		{/if}
 	</div>
 {:else}
-	{#each topics.options
-		.filter((o) => value.includes(o))
-		.slice(0, 1)
-		.map((o) => ({ label: $_(o), value: o })) as selectedOption}
-		<span class="badge badge--gray">{selectedOption.label}</span>
-	{/each}
+	<div class="value">
+		{#each topics.options
+			.filter((o) => value.includes(o))
+			.slice(0, 1)
+			.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+			<span class="badge badge--gray">{selectedOption.label}</span>
+		{:else}
+			&nbsp;
+		{/each}
+	</div>
 {/if}
 
 <style>

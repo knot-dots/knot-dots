@@ -22,7 +22,7 @@
 		bind:value
 	/>
 {:else}
-	<span>
+	<div class="value">
 		{page.data.organizations.find(({ guid }) => guid === value)?.payload.name}
-	</span>
+	</div>
 {/if}

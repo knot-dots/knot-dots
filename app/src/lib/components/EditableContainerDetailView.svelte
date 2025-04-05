@@ -67,11 +67,11 @@
 				</h2>
 			{/if}
 
-			<slot name="data" />
+			<div class="data-grid">
+				<slot name="data" />
 
-			<div class="tabular">
-				<span class="label">{$_('managed_by')}</span>
-				<span class="value">
+				<div class="label">{$_('managed_by')}</div>
+				<div class="value">
 					{#await teamPromise}
 						&nbsp;
 					{:then members}
@@ -83,17 +83,14 @@
 							.filter((m) => isAdminOf(m, managedBy))
 							.map((m) => displayName(m))
 							.join(', ')}
-
 						{#if headsOf}{headsOf}{:else if adminsOf}{adminsOf}{:else}&nbsp;{/if}
 					{/await}
-				</span>
-			</div>
+				</div>
 
-			<div class="tabular">
-				<span class="label">{$_('created_date')}</span>
-				<span class="value">
+				<div class="label">{$_('created_date')}</div>
+				<div class="value">
 					{#await organizationMembersPromise}
-						&nbsp;
+						{$date(revisions[0].valid_from, { format: 'long' })}
 					{:then organizationMembers}
 						{@const organizationMembersByGuid = new Map(
 							organizationMembers.map((m) => [m.guid, m])
@@ -111,14 +108,12 @@
 								})
 							: $date(revisions[0].valid_from, { format: 'long' })}
 					{/await}
-				</span>
-			</div>
+				</div>
 
-			<div class="tabular">
-				<span class="label">{$_('modified_date')}</span>
-				<span class="value">
+				<div class="label">{$_('modified_date')}</div>
+				<div class="value">
 					{#await organizationMembersPromise}
-						&nbsp;
+						{$date(container.valid_from, { format: 'long' })}
 					{:then organizationMembers}
 						{@const organizationMembersByGuid = new Map(
 							organizationMembers.map((m) => [m.guid, m])
@@ -136,7 +131,7 @@
 								})
 							: $date(container.valid_from, { format: 'long' })}
 					{/await}
-				</span>
+				</div>
 			</div>
 
 			<slot name="extra" />

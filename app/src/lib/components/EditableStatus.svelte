@@ -6,9 +6,5 @@
 	export let value: string;
 </script>
 
-<div class="tabular">
-	<span class="label">{$_('status')}</span>
-	<div class="value">
-		<StatusDropdown {editable} bind:value />
-	</div>
-</div>
+<div class="label">{$_('status')}</div>
+<StatusDropdown {editable} bind:value />
