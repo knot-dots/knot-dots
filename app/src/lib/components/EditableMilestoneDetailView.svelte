@@ -7,7 +7,6 @@
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import { type AnyContainer, type Container, type MilestoneContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -19,22 +18,6 @@
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
-		<div class="tasks">
-			<h3>{$_('tasks')}</h3>
-			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
-		</div>
-
-		<EditableProgress
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.progress}
-		/>
-
 		<EditableDate
 			editable={$applicationState.containerDetailView.editable}
 			label={$_('fulfillment_date')}
@@ -61,5 +44,17 @@
 				bind:value={container.organizational_unit}
 			/>
 		{/if}
+	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.description}
+		/>
+
+		<div class="details-tab" id="tasks">
+			<h3>{$_('tasks')}</h3>
+			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
+		</div>
 	</svelte:fragment>
 </EditableContainerDetailView>

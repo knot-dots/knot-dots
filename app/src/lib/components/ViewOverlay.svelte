@@ -15,16 +15,13 @@
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
 	import MeasureResultDetailView from '$lib/components/MeasureResultDetailView.svelte';
-	import MeasureStatusTabs from '$lib/components/MeasureStatusTabs.svelte';
 	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import ResolutionDetailView from '$lib/components/ResolutionDetailView.svelte';
-	import ResolutionStatusTabs from '$lib/components/ResolutionStatusTabs.svelte';
 	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
 	import StrategyViewModes from '$lib/components/StrategyViewModes.svelte';
-	import TaskStatusTabs from '$lib/components/TaskStatusTabs.svelte';
 	import TaskDetailView from '$lib/components/TaskDetailView.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -180,18 +177,6 @@
 {#if isIndicatorContainer(container)}
 	<header class="content-header">
 		<IndicatorTabs {container} />
-	</header>
-{:else if isContainerWithEffect(container)}
-	<header class="content-header">
-		<MeasureStatusTabs {container} {revisions} />
-	</header>
-{:else if isResolutionContainer(container)}
-	<header class="content-header">
-		<ResolutionStatusTabs {container} {revisions} />
-	</header>
-{:else if isTaskContainer(container)}
-	<header class="content-header">
-		<TaskStatusTabs {container} {revisions} />
 	</header>
 {/if}
 <div class="content-details masked-overflow">

@@ -62,7 +62,7 @@
 </script>
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions} tabs={[]}>
-	<svelte:fragment slot="data">
+	<svelte:fragment slot="extra">
 		{#if indicator}
 			<div class="values">
 				{#if $applicationState.containerDetailView.editable}

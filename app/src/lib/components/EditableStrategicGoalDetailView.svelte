@@ -22,26 +22,6 @@
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
-		<div class="objectives">
-			<h3>{$_('objectives')}</h3>
-			<EditableObjectiveCarousel
-				{container}
-				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
-			/>
-		</div>
-
-		<div class="tasks">
-			<h3>{$_('tasks')}</h3>
-			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
-		</div>
-
 		<EditableDate
 			editable={$applicationState.containerDetailView.editable}
 			label={$_('fulfillment_date')}
@@ -80,5 +60,26 @@
 				bind:value={container.organizational_unit}
 			/>
 		{/if}
+	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.description}
+		/>
+
+		<div class="details-tab" id="objectives">
+			<h3>{$_('objectives')}</h3>
+			<EditableObjectiveCarousel
+				{container}
+				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
+			/>
+		</div>
+
+		<div class="details-tab" id="tasks">
+			<h3>{$_('tasks')}</h3>
+			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
+		</div>
 	</svelte:fragment>
 </EditableContainerDetailView>
