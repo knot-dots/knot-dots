@@ -13,9 +13,20 @@
 		getManagedBy,
 		isAdminOf,
 		isContainerWithProgress,
-		isHeadOf
+		isContainerWithStatus,
+		isHeadOf,
+		isResolutionContainer,
+		isTaskContainer
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
+	import {
+		resolutionStatusColors,
+		resolutionStatusIcons,
+		statusColors,
+		statusIcons,
+		taskStatusColors,
+		taskStatusIcons
+	} from '$lib/theme/models';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
@@ -68,6 +79,39 @@
 					{container.payload.title}
 				</h2>
 			{/if}
+
+			<ul class="badges">
+				<li class="badge badge--purple">{$_(container.payload.type)}</li>
+				{#if isContainerWithStatus(container)}
+					{@const StatusIcon = statusIcons.get(container.payload.status)}
+					{#key container.payload.status}
+						<li class="badge badge--{statusColors.get(container.payload.status)}">
+							<StatusIcon />
+							{$_(container.payload.status)}
+						</li>
+					{/key}
+				{:else if isTaskContainer(container)}
+					{@const TaskStatusIcon = taskStatusIcons.get(container.payload.taskStatus)}
+					{#key container.payload.taskStatus}
+						<li class="badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
+							<TaskStatusIcon />
+							{$_(container.payload.taskStatus)}
+						</li>
+					{/key}
+				{:else if isResolutionContainer(container)}
+					{@const ResolutionStatusIcon = resolutionStatusIcons.get(
+						container.payload.resolutionStatus
+					)}
+					{#key container.payload.resolutionStatus}
+						<li
+							class="badge badge--{resolutionStatusColors.get(container.payload.resolutionStatus)}"
+						>
+							<ResolutionStatusIcon />
+							{$_(container.payload.resolutionStatus)}
+						</li>
+					{/key}
+				{/if}
+			</ul>
 
 			{#if isContainerWithProgress(container)}
 				<EditableProgress
@@ -157,5 +201,12 @@
 		font-weight: 600;
 		line-height: 1.25;
 		margin: 1.5rem 0 1rem;
+	}
+
+	.badges {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+		padding: 0.375rem 0 0.75rem;
 	}
 </style>
