@@ -8,7 +8,6 @@
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
@@ -22,32 +21,6 @@
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
-		<div class="objectives">
-			<h3>{$_('objectives')}</h3>
-			<EditableObjectiveCarousel
-				{container}
-				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
-			/>
-		</div>
-
-		<div class="tasks">
-			<h3>{$_('tasks')}</h3>
-			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
-		</div>
-
-		<EditableProgress
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.progress}
-			compact
-		/>
-
 		<EditableDate
 			editable={$applicationState.containerDetailView.editable}
 			label={$_('fulfillment_date')}
@@ -82,5 +55,26 @@
 				$ability.can('update', container.payload.type, 'organizational_unit')}
 			bind:value={container.organizational_unit}
 		/>
+	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.description}
+		/>
+
+		<div class="details-tab" id="objectives">
+			<h3>{$_('objectives')}</h3>
+			<EditableObjectiveCarousel
+				{container}
+				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
+			/>
+		</div>
+
+		<div class="details-tab" id="tasks">
+			<h3>{$_('tasks')}</h3>
+			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
+		</div>
 	</svelte:fragment>
 </EditableContainerDetailView>

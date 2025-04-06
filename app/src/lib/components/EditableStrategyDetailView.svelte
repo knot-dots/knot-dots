@@ -216,11 +216,6 @@
 		font-weight: normal;
 	}
 
-	.chapters {
-		border-top: solid 1px var(--color-gray-300);
-		padding-top: 1.5rem;
-	}
-
 	.chapter {
 		display: flex;
 		flex-direction: column;

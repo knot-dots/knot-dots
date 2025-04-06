@@ -10,7 +10,7 @@
 {#if editable}
 	<Editor {label} bind:value autosave />
 {:else}
-	<div>
+	<div class="details-tab">
 		{#if label}
 			<h3>{label}</h3>
 		{/if}

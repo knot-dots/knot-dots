@@ -17,9 +17,7 @@
 	<label class="label" for={id}>
 		{label}
 	</label>
-	<span>
-		<input {id} type="date" bind:value on:change={requestSubmit} />
-	</span>
+	<input class="value" {id} type="date" bind:value on:change={requestSubmit} />
 {:else}
 	<span class="label">{label}</span>
 	<time class="value" datetime={value}>
@@ -37,7 +35,5 @@
 		display: inline-flex;
 		line-height: 1.5;
 		max-height: 2.25rem;
-		padding: 0.375rem;
-		width: auto;
 	}
 </style>

@@ -10,7 +10,6 @@
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import {
 		type AnyContainer,
@@ -62,37 +61,6 @@
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
-		{#if measure && (effect || $mayCreateContainer(payloadTypes.enum.effect, container.managed_by))}
-			<div class="effect">
-				<h3>{$_('effect')}</h3>
-				<div class="effect-inner" class:editable={$applicationState.containerDetailView.editable}>
-					{#if effect}
-						<Card container={effect} {relatedContainers} />
-					{:else}
-						<button class="card" type="button" on:click={() => addEffect(container, measure)}>
-							<Plus />{$_('add_item')}
-						</button>
-					{/if}
-				</div>
-			</div>
-		{/if}
-
-		<div>
-			<h3>{$_('tasks')}</h3>
-			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
-		</div>
-
-		<EditableProgress
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.progress}
-		/>
-
 		<EditableDate
 			editable={$applicationState.containerDetailView.editable}
 			label={$_('fulfillment_date')}
@@ -118,13 +86,39 @@
 			bind:value={container.organizational_unit}
 		/>
 	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.description}
+		/>
+
+		{#if measure && (effect || $mayCreateContainer(payloadTypes.enum.effect, container.managed_by))}
+			<div class="detail-tab" id="effect">
+				<h3>{$_('effect')}</h3>
+				<div class="effect-inner" class:editable={$applicationState.containerDetailView.editable}>
+					{#if effect}
+						<Card container={effect} {relatedContainers} />
+					{:else}
+						<button class="card" type="button" on:click={() => addEffect(container, measure)}>
+							<Plus />{$_('add_item')}
+						</button>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
+		<div class="detail-tab" id="tasks">
+			<h3>{$_('tasks')}</h3>
+			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
+		</div>
+	</svelte:fragment>
 </EditableContainerDetailView>
 
 <style>
 	.effect-inner {
 		border-radius: 8px;
 		min-height: 456px;
-		padding: 1rem;
 	}
 
 	.effect-inner.editable {
