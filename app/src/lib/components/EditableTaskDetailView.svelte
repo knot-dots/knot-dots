@@ -58,12 +58,6 @@
 
 <EditableContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={selectedRevision.payload.description}
-		/>
-
 		<EditableTaskStatus
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={selectedRevision.payload.taskStatus}
@@ -100,6 +94,13 @@
 		<EditableOrganizationalUnit
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={container.organizational_unit}
+		/>
+	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={selectedRevision.payload.description}
 		/>
 	</svelte:fragment>
 </EditableContainerDetailView>

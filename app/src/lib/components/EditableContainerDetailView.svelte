@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import autoSave from '$lib/client/autoSave';
 	import fetchMembers from '$lib/client/fetchMembers';
+	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -11,6 +12,7 @@
 		getCreator,
 		getManagedBy,
 		isAdminOf,
+		isContainerWithProgress,
 		isHeadOf
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -50,8 +52,8 @@
 	}
 </script>
 
-<article class="details details-editable">
-	<form on:submit|preventDefault={autoSave(container)} novalidate>
+<form on:submit|preventDefault={autoSave(container)} novalidate>
+	<article class="details details-editable">
 		<div class="details-tab" id="basic-data">
 			{#if $applicationState.containerDetailView.editable}
 				<h2
@@ -67,7 +69,16 @@
 				</h2>
 			{/if}
 
-			<div class="data-grid">
+			{#if isContainerWithProgress(container)}
+				<EditableProgress
+					editable={$applicationState.containerDetailView.editable}
+					bind:value={container.payload.progress}
+					compact
+				/>
+			{/if}
+
+			<p class="section-label" id="properties-label">{$_('properties')}</p>
+			<section class="data-grid" aria-labelledby="properties-label">
 				<slot name="data" />
 
 				<div class="label">{$_('managed_by')}</div>
@@ -132,9 +143,19 @@
 							: $date(container.valid_from, { format: 'long' })}
 					{/await}
 				</div>
-			</div>
-
-			<slot name="extra" />
+			</section>
 		</div>
-	</form>
-</article>
+
+		<slot name="extra" />
+	</article>
+</form>
+
+<style>
+	.section-label {
+		color: var(--color-gray-600);
+		font-size: 1.25rem;
+		font-weight: 600;
+		line-height: 1.25;
+		margin: 1.5rem 0 1rem;
+	}
+</style>

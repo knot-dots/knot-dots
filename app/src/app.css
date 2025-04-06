@@ -855,11 +855,11 @@ label > input[type='checkbox'].toggle {
 
 	container-type: inline-size;
 	font-size: 0.875rem;
-	padding-left: 4rem;
+	padding: 0 2rem 1.5rem;
 }
 
 .details-editable .details-tab {
-	gap: 0.5rem;
+	display: block;
 }
 
 .details-editable h2 {
@@ -917,7 +917,10 @@ label > input[type='checkbox'].toggle {
 	padding: 0.375rem 0;
 }
 
-.data-grid .value {
+.data-grid > .value {
+	background-color: var(--form-control-background);
+	border-radius: 4px;
+	font-weight: 500;
 	padding: 0.375rem;
 }
 

@@ -97,7 +97,7 @@
 {/if}
 
 {#if 'body' in container.payload}
-	<EditableFormattedText {editable} label={$_('body')} bind:value={container.payload.body} />
+	<EditableFormattedText {editable} bind:value={container.payload.body} />
 {/if}
 
 {#if 'description' in container.payload}
@@ -190,24 +190,23 @@
 
 <style>
 	.chapter-title {
-		border-radius: 8px;
-		font-size: 1rem;
+		color: var(--color-gray-800);
+		font-size: 1.875rem;
 		font-weight: 600;
-		min-height: calc(1.5em + 1.5rem);
-		padding: 0.75rem 1rem;
+		margin-bottom: 0.5rem;
+		min-height: 1em;
 	}
 
 	.chapter-subtitle {
-		border-radius: 8px;
-		color: var(--color-gray-800);
-		font-size: 1rem;
-		font-weight: 500;
-		min-height: calc(1.5em + 1.5rem);
-		padding: 0.75rem 1rem;
+		color: var(--color-gray-700);
+		font-size: 1.5rem;
+		font-weight: 600;
+		line-height: 1.25;
+		margin-bottom: 0.5rem;
+		margin-top: 2rem;
 	}
 
 	.content-actions {
 		margin: 0;
-		padding: 0.5rem 0.75rem;
 	}
 </style>

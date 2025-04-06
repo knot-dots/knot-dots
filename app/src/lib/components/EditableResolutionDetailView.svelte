@@ -23,32 +23,10 @@
 	export let container: ResolutionContainer;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
-
-	let selectedRevision: ResolutionContainer;
-
-	$: {
-		const parseResult = resolutionStatus.safeParse(
-			paramsFromURL($page.url).get('resolutionStatus')
-		);
-		if (parseResult.success) {
-			selectedRevision =
-				(revisions as ResolutionContainer[]).findLast(
-					({ payload }) => payload.resolutionStatus == parseResult.data
-				) ?? container;
-		} else {
-			selectedRevision = container;
-		}
-	}
 </script>
 
-<EditableContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
+<EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
 		{#if $applicationState.containerDetailView.editable}
 			<div class="label">{$_('valid_from')}</div>
 			<fieldset>
@@ -57,6 +35,7 @@
 						{$_('valid_from')}
 					</label>
 					<input
+						class="value"
 						id="validFrom"
 						type="date"
 						bind:value={container.payload.validFrom}
@@ -67,6 +46,7 @@
 						{$_('valid_until')}
 					</label>
 					<input
+						class="value"
 						id="validUntil"
 						type="date"
 						bind:value={container.payload.validUntil}
@@ -77,13 +57,13 @@
 		{:else}
 			<div class="label">{$_('valid_from')}</div>
 			<div class="value">
-				{#if selectedRevision.payload.validFrom && selectedRevision.payload.validUntil}
-					{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–{$date(
-						new Date(selectedRevision.payload.validUntil),
+				{#if container.payload.validFrom && container.payload.validUntil}
+					{$date(new Date(container.payload.validFrom), { format: 'long' })}–{$date(
+						new Date(container.payload.validUntil),
 						{ format: 'long' }
 					)}
-				{:else if selectedRevision.payload.validFrom}
-					{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–
+				{:else if container.payload.validFrom}
+					{$date(new Date(container.payload.validFrom), { format: 'long' })}
 				{:else}
 					&nbsp;
 				{/if}
@@ -122,6 +102,13 @@
 			bind:value={container.organizational_unit}
 		/>
 	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.description}
+		/>
+	</svelte:fragment>
 </EditableContainerDetailView>
 
 <style>
@@ -132,10 +119,10 @@
 
 	input[type='date'] {
 		border: none;
+		border-radius: 4px;
 		display: inline-flex;
 		line-height: 1.5;
 		max-height: 2.25rem;
-		padding: 0.375rem;
 		width: auto;
 	}
 </style>
