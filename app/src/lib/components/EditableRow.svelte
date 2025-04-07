@@ -17,6 +17,7 @@
 		isContainerWithDuration,
 		isContainerWithFulfillmentDate
 	} from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	export let container: Container;
 	export let editable: boolean;
@@ -131,7 +132,10 @@
 </div>
 
 <div class="cell">
-	<OrganizationalUnitDropdown {editable} bind:value={container.organizational_unit} />
+	<OrganizationalUnitDropdown
+		editable={editable && $ability.can('update', container, 'organizational_unit')}
+		bind:value={container.organizational_unit}
+	/>
 </div>
 
 <style>
