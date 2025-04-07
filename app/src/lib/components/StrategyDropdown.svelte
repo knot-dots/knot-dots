@@ -66,7 +66,7 @@
 	<SingleChoiceDropdown
 		{handleChange}
 		options={[
-			{ value: '', label: $_('not_part_of_strategy') },
+			{ value: '', label: $_('empty') },
 			...strategyCandidates.map(({ payload, revision }) => ({
 				label: payload.title,
 				value: String(revision)

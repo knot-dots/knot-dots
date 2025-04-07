@@ -51,6 +51,7 @@
 	},
 	"effect": "Wirkung",
 	"effects": "Wirkung",
+	"empty": "Leer",
 	"end_date": "Ende",
 	"error": {
 		"unauthorized": "Leider ist das nicht erlaubt.",

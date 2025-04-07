@@ -35,7 +35,7 @@
 					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
 					<span class="badge badge--gray">{selectedOption.label}</span>
 				{:else}
-					&nbsp;
+					{$_('empty')}
 				{/each}
 				{#if value.length > 1}
 					<span class="badge badge--gray badge--more">
@@ -84,7 +84,7 @@
 			.map((o) => ({ label: $_(o), value: o })) as selectedOption}
 			<span class="badge badge--gray">{selectedOption.label}</span>
 		{:else}
-			&nbsp;
+			{$_('empty')}
 		{/each}
 	</div>
 {/if}

@@ -58,7 +58,7 @@
 				{:else if container.payload.validFrom}
 					{$date(new Date(container.payload.validFrom), { format: 'long' })}
 				{:else}
-					&nbsp;
+					{$_('empty')}
 				{/if}
 			</div>
 		{/if}

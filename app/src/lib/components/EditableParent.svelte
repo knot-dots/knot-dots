@@ -139,7 +139,7 @@
 		handleChange={onChange}
 		label={$_('superordinate_element')}
 		options={[
-			{ value: '', label: $_('not_part_of') },
+			{ value: '', label: $_('empty') },
 			...isPartOfOptions.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
