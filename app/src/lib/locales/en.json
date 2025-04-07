@@ -252,6 +252,8 @@
 	"programs_by_level_filter.only_related": "Only related programs",
 	"progress": "Progress",
 	"properties": "Properties",
+	"properties.hide": "Hide properties",
+	"properties.show_all": "Show all properties",
 	"quantity": {
 		"broadband_coverage": {
 			"description": "{contribution, number} % of private households have access to broadband internet.",

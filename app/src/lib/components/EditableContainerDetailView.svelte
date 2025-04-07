@@ -1,5 +1,9 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
+	import { createDisclosure } from 'svelte-headlessui';
 	import { _, date } from 'svelte-i18n';
+	import ArrowDown from '~icons/heroicons/arrow-down-16-solid';
+	import ArrowUp from '~icons/heroicons/arrow-up-16-solid';
 	import { page } from '$app/stores';
 	import autoSave from '$lib/client/autoSave';
 	import fetchMembers from '$lib/client/fetchMembers';
@@ -37,6 +41,10 @@
 		...state,
 		containerDetailView: { ...state.containerDetailView, tabs }
 	}));
+
+	const disclosure = createDisclosure();
+
+	let disclosure_expanded = $disclosure.expanded;
 
 	$: managedBy = getManagedBy(container, [
 		...$page.data.organizations,
@@ -123,8 +131,6 @@
 
 			<p class="section-label" id="properties-label">{$_('properties')}</p>
 			<section class="data-grid" aria-labelledby="properties-label">
-				<slot name="data" />
-
 				<div class="label">{$_('managed_by')}</div>
 				<div class="value">
 					{#await teamPromise}
@@ -188,6 +194,30 @@
 					{/await}
 				</div>
 			</section>
+
+			{#if $disclosure.expanded}
+				<div
+					class="data-grid"
+					transition:slide={{ duration: 125 }}
+					on:introend={() => {
+						disclosure_expanded = true;
+					}}
+					on:outroend={() => {
+						disclosure_expanded = false;
+					}}
+					use:disclosure.panel
+				>
+					<slot name="data" />
+				</div>
+			{/if}
+
+			<button type="button" use:disclosure.button>
+				{#if disclosure_expanded}
+					<ArrowUp /> {$_('properties.hide')}
+				{:else}
+					<ArrowDown /> {$_('properties.show_all')}
+				{/if}
+			</button>
 		</div>
 
 		<slot name="extra" />
@@ -201,6 +231,21 @@
 		font-weight: 600;
 		line-height: 1.25;
 		margin: 1.5rem 0 1rem;
+	}
+
+	button {
+		--button-border-color: var(--color-primary-700);
+		--button-hover-background: var(--color-primary-700);
+		--padding-x: 0.75rem;
+		--padding-y: 0.5rem;
+
+		color: var(--color-primary-700);
+		display: flex;
+		margin: 0.75rem auto 0;
+	}
+
+	button:hover {
+		color: white;
 	}
 
 	.badges {
