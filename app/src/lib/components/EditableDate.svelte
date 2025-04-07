@@ -24,7 +24,7 @@
 		{#if value}
 			{$date(new Date(value), { format: 'long' })}
 		{:else}
-			&nbsp;
+			{$_('empty')}
 		{/if}
 	</time>
 {/if}

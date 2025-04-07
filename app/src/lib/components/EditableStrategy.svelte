@@ -73,7 +73,7 @@
 		handleChange={onChange}
 		label={$_('strategy')}
 		options={[
-			{ value: '', label: $_('not_part_of_strategy') },
+			{ value: '', label: $_('empty') },
 			...strategyCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,

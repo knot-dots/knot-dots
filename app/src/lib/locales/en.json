@@ -51,6 +51,7 @@
 	},
 	"effect": "Effect",
 	"effects": "Effects",
+	"empty": "Empty",
 	"end_date": "End",
 	"error": {
 		"unauthorized": "Sorry, you are not allowed to do this.",

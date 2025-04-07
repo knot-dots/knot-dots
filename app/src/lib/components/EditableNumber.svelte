@@ -26,7 +26,7 @@
 		{#if value}
 			{$number(value)}
 		{:else}
-			&nbsp;
+			{$_('empty')}
 		{/if}
 	</span>
 {/if}
