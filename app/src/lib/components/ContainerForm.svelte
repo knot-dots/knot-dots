@@ -197,3 +197,15 @@
 		<UndefinedForm bind:container />
 	{/if}
 </form>
+
+<style>
+	.details-title {
+		display: block;
+	}
+
+	.details-title input {
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.2;
+	}
+</style>
