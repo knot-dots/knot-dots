@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -24,9 +23,10 @@
 	};
 
 	function debouncedSubmit(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
 		clearTimeout(timer);
 		timer = setTimeout(async () => {
-			requestSubmit(event);
+			input.closest('form')?.requestSubmit();
 		}, 2000);
 	}
 

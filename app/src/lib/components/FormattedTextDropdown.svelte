@@ -50,7 +50,7 @@
 	{#if $popover.expanded}
 		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 			{#if editable}
-				<Editor bind:value />
+				<Editor bind:value autosave />
 			{:else}
 				<Viewer {value} />
 			{/if}

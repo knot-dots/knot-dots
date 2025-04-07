@@ -62,6 +62,16 @@
 			return `#view=${container.guid}`;
 		}
 	}
+
+	let timer: ReturnType<typeof setTimeout>;
+
+	function debouncedSubmit(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
+		clearTimeout(timer);
+		timer = setTimeout(async () => {
+			input.closest('form')?.requestSubmit();
+		}, 2000);
+	}
 </script>
 
 {#if editable}
@@ -71,7 +81,7 @@
 		class="chapter-title"
 		contenteditable="plaintext-only"
 		bind:textContent={container.payload.title}
-		on:input={(e) => e.currentTarget?.closest('form')?.requestSubmit()}
+		on:input={debouncedSubmit}
 		on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 	>
 		{container.payload.title}

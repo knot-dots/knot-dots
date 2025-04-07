@@ -14,10 +14,12 @@
 
 	export let value = '';
 	export let label = '';
+	export let autosave = false;
 
 	const labelId = `label-${counter + 1}`;
 
 	let editor: Editor;
+	let timer: ReturnType<typeof setTimeout>;
 
 	function makeEditor(node: HTMLElement) {
 		Editor.make()
@@ -30,6 +32,12 @@
 			.config((ctx) => {
 				ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
 					value = markdown;
+					if (autosave) {
+						clearTimeout(timer);
+						timer = setTimeout(async () => {
+							node.closest('form')?.requestSubmit();
+						}, 2000);
+					}
 				});
 			})
 			.config((ctx) => {
