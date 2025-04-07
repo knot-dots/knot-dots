@@ -69,7 +69,7 @@
 		handleChange={onChange}
 		label={$_('superordinate_organizational_unit')}
 		options={[
-			{ value: '', label: $_('not_part_of') },
+			{ value: '', label: $_('empty') },
 			...isPartOfOptions
 				.filter(({ payload }) => container.payload.level === payload.level + 1)
 				.map(({ guid, payload }) => ({

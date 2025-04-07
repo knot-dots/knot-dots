@@ -37,7 +37,7 @@
 					{@const sdgIcon = sdgIcons.get(selectedOption.value)}
 					<img src={sdgIcon} width="30" height="30" alt={selectedOption.label} />
 				{:else}
-					&nbsp;
+					{$_('empty')}
 				{/each}
 				{#if value.length > 6}
 					<span class="more-indicator">
@@ -99,7 +99,7 @@
 				/>
 			</li>
 		{:else}
-			&nbsp;
+			{$_('empty')}
 		{/each}
 	</ul>
 {/if}

@@ -72,7 +72,7 @@
 				{:else if container.payload.startDate}
 					{$date(new Date(container.payload.startDate), { format: 'long' })}–
 				{:else}
-					&nbsp;
+					{$_('empty')}
 				{/if}
 			</div>
 		{/if}

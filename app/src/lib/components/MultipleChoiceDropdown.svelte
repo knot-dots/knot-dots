@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
+	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 
@@ -30,7 +31,7 @@
 			{#each options.filter((o) => value.includes(o.value)) as selectedOption}
 				<span class="value">{selectedOption.label}</span>
 			{:else}
-				&nbsp;
+				{$_('empty')}
 			{/each}
 		</span>
 		<ChevronDown />

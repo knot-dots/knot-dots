@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
 
@@ -18,7 +19,7 @@
 		{#each options.filter((o) => value.includes(o.value)) as selectedOption}
 			<li>{selectedOption.label}</li>
 		{:else}
-			<li>&nbsp;</li>
+			<li>{$_('empty')}</li>
 		{/each}
 	</ul>
 {/if}

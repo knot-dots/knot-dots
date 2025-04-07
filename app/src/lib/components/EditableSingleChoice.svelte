@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 
@@ -23,7 +24,7 @@
 				{selected.label}
 			{/if}
 		{:else}
-			&nbsp;
+			{$_('empty')}
 		{/if}
 	</div>
 {/if}

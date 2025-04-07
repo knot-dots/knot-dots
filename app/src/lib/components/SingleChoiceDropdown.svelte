@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
+	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 
@@ -28,7 +29,7 @@
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		<span class="selected">
-			{#if selected}{selected.label}{:else}&nbsp;{/if}
+			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
 		</span>
 		<ChevronDown />
 	</button>
