@@ -760,28 +760,6 @@ label > input[type='checkbox'].toggle {
 	width: 1.5rem;
 }
 
-/* SVG icons */
-.icon-20 {
-	--size: 20px;
-
-	height: var(--size);
-	width: var(--size);
-}
-
-.icon-24 {
-	--size: 24px;
-
-	height: var(--size);
-	width: var(--size);
-}
-
-.icon-32 {
-	--size: 32px;
-
-	height: var(--size);
-	width: var(--size);
-}
-
 /* Avatars */
 .avatar {
 	border-radius: 50%;
