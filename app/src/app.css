@@ -1139,9 +1139,9 @@ label > input[type='checkbox'].toggle {
 
 /* Dropdown */
 .dropdown-button {
-	--button-active-background: var(--form-control-background);
+	--button-active-background: var(--color-gray-300);
 	--button-background: var(--form-control-background);
-	--button-hover-background: var(--form-control-background);
+	--button-hover-background: var(--color-gray-100);
 	--button-hover-border-color: var(--form-control-background);
 	--padding-y: 0.375rem;
 	--padding-x: 0.375rem;
@@ -1175,8 +1175,24 @@ label > input[type='checkbox'].toggle {
 	margin: 0.125rem;
 }
 
+.dropdown-button[aria-expanded='true'] {
+	background-color: var(--color-gray-200);
+}
+
+.dropdown-button.dropdown-button--badge[aria-expanded='true'] {
+	background-color: var(--color-primary-100);
+}
+
+.dropdown-button[aria-expanded='true'] > svg {
+	color: var(--color-primary-600);
+}
+
 .dropdown-button.dropdown-button--badge > svg {
 	margin: 0;
+}
+
+.dropdown-button.dropdown-button--badge[aria-expanded='true'] > svg {
+	color: var(--color-primary-800);
 }
 
 .dropdown-panel {
@@ -1211,8 +1227,15 @@ label > input[type='checkbox'].toggle {
 	}
 
 	.dropdown-button {
+		--button-active-background: var(--form-control-background);
+		--button-hover-background: var(--form-control-background);
+
 		--padding-y: 0;
 		--padding-x: 0;
+	}
+
+	.dropdown-button[aria-expanded='true'] {
+		background-color: var(--form-control-background);
 	}
 
 	.dropdown-button > svg {
