@@ -132,7 +132,7 @@
 			<p class="section-label" id="properties-label">{$_('properties')}</p>
 			<section class="data-grid" aria-labelledby="properties-label">
 				<div class="label">{$_('managed_by')}</div>
-				<div class="value">
+				<div class="value value--read-only">
 					{#await teamPromise}
 						&nbsp;
 					{:then members}
@@ -149,7 +149,7 @@
 				</div>
 
 				<div class="label">{$_('created_date')}</div>
-				<div class="value">
+				<div class="value value--read-only">
 					{#await organizationMembersPromise}
 						{$date(revisions[0].valid_from, { format: 'long' })}
 					{:then organizationMembers}
@@ -172,7 +172,7 @@
 				</div>
 
 				<div class="label">{$_('modified_date')}</div>
-				<div class="value">
+				<div class="value value--read-only">
 					{#await organizationMembersPromise}
 						{$date(container.valid_from, { format: 'long' })}
 					{:then organizationMembers}
