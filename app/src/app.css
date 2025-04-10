@@ -1286,6 +1286,29 @@ label > input[type='checkbox'].toggle {
 	}
 }
 
+/* Loader */
+.loader {
+	animation: rotation 1.5s linear infinite;
+	border-radius: 50%;
+	border-style: solid;
+	border-width: 4px;
+	border-color: var(--color-gray-200) var(--color-gray-200) var(--color-gray-200) var(--color-primary-600);
+	box-sizing: border-box;
+	flex-shrink: 0;
+	height: 1rem;
+	position: relative;
+	width: 1rem;
+}
+
+@keyframes rotation {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
 /* Utility classes */
 .is-hidden {
 	display: none;
