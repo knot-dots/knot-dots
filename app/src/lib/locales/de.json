@@ -554,7 +554,9 @@
 		"image.help": "JPG, PNG-Dateien, maximal 100 MB",
 		"image.remove": "Bild löschen",
 		"file.help": "PDF, Word, Excel; max 100 MB",
-		"pdf.help": "PDF; max 100 MB"
+		"pdf.choose": "PDF wählen",
+		"pdf.help": "PDF-Dateien, maximal 100 MB",
+		"pdf.remove": "PDF löschen"
 	},
 	"user": {
 		"display_name": "Name",
