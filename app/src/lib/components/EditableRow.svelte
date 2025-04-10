@@ -60,6 +60,7 @@
 <div class="cell">
 	{#if 'category' in container.payload}
 		<CategoryDropdown
+			compact
 			{editable}
 			handleChange={requestSubmit}
 			bind:value={container.payload.category}
@@ -69,7 +70,12 @@
 
 <div class="cell">
 	{#if 'topic' in container.payload}
-		<TopicDropdown {editable} handleChange={requestSubmit} bind:value={container.payload.topic} />
+		<TopicDropdown
+			compact
+			{editable}
+			handleChange={requestSubmit}
+			bind:value={container.payload.topic}
+		/>
 	{/if}
 </div>
 

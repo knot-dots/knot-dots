@@ -1214,6 +1214,7 @@ label > input[type='checkbox'].toggle {
 }
 
 .dropdown-button > svg {
+	flex-shrink: 0;
 	margin: 0.125rem;
 }
 
