@@ -550,7 +550,9 @@
 	"unit.ton_per_capita": "t je Einwohner*in",
 	"unit.watt_per_capita": "W je Einwohner*in",
 	"upload": {
+		"image.choose": "Bild wählen",
 		"image.help": "JPG, PNG; max 100 MB",
+		"image.remove": "Bild löschen",
 		"file.help": "PDF, Word, Excel; max 100 MB",
 		"pdf.help": "PDF; max 100 MB"
 	},
