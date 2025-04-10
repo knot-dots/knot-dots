@@ -549,7 +549,9 @@
 	"unit.ton_per_capita": "t per capita",
 	"unit.watt_per_capita": "W per capita",
 	"upload": {
+		"image.choose": "Choose image",
 		"image.help": "JPG, PNG; max 100 MB",
+		"image.remove": "Remove image",
 		"file.help": "PDF, Word, Excel; max 100 MB",
 		"pdf.help": "PDF; max 100 MB"
 	},

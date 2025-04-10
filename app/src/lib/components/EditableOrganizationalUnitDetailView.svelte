@@ -3,6 +3,7 @@
 	import autoSave from '$lib/client/autoSave';
 	import Card from '$lib/components/Card.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
 	import EditableSuperordinateOrganizationalUnit from '$lib/components/EditableSuperordinateOrganizationalUnit.svelte';
@@ -32,9 +33,11 @@
 <form on:submit|preventDefault={autoSave(container)} novalidate>
 	<article class="details details-editable">
 		<header>
-			{#if 'image' in container.payload}
-				<img alt="logo" class="logo" src={container.payload.image} />
-			{/if}
+			<EditableLogo
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.payload.image}
+			/>
+			<div class="spacer"></div>
 			{#if $applicationState.containerDetailView.editable}
 				<h2
 					class="details-title"
@@ -123,7 +126,7 @@
 	header {
 		align-items: center;
 		display: flex;
-		gap: 1rem;
+		gap: 0.75rem;
 	}
 
 	h2 {
