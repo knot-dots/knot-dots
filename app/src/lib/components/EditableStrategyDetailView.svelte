@@ -11,6 +11,7 @@
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableLevel from '$lib/components/EditableLevel.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
@@ -99,6 +100,12 @@
 			<EditableStrategyType
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.strategyType}
+			/>
+
+			<EditableImage
+				editable={$applicationState.containerDetailView.editable}
+				label={$_('cover')}
+				bind:value={container.payload.image}
 			/>
 
 			<EditableChapterType
