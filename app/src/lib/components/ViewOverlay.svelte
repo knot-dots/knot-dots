@@ -45,6 +45,7 @@
 		isStrategicGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
+		isTextContainer,
 		isVisionContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
@@ -236,6 +237,10 @@
 		{:else if isTaskContainer(container)}
 			{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}
 				<EditableTaskDetailView {container} {relatedContainers} {revisions} />
+			{/await}
+		{:else if isTextContainer(container)}
+			{#await import('./EditableTextDetailView.svelte') then { default: EditableTextDetailView }}
+				<EditableTextDetailView {container} {relatedContainers} {revisions} />
 			{/await}
 		{:else if isVisionContainer(container)}
 			{#await import('./EditableVisionDetailView.svelte') then { default: EditableVisionDetailView }}
