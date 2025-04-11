@@ -552,7 +552,9 @@
 		"image.choose": "Choose image",
 		"image.help": "JPG, PNG, max 100 MB",
 		"image.remove": "Remove image",
-		"file.help": "PDF, Word, Excel; max 100 MB",
+		"file.choose": "Choose file",
+		"file.help": "PDF, Word, Excel, max 100 MB",
+		"file.remove": "Remove file",
 		"pdf.choose": "Choose PDF",
 		"pdf.help": "PDF, max 100 MB",
 		"pdf.remove": "Remove PDF"
