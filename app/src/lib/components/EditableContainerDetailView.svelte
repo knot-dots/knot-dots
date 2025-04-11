@@ -8,6 +8,7 @@
 	import autoSave from '$lib/client/autoSave';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -22,7 +23,7 @@
 		isResolutionContainer,
 		isTaskContainer
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import {
 		resolutionStatusColors,
 		resolutionStatusIcons,
@@ -193,6 +194,13 @@
 							: $date(container.valid_from, { format: 'long' })}
 					{/await}
 				</div>
+
+				{#if $ability.can('update', container, 'visibility')}
+					<EditableVisibility
+						editable={$applicationState.containerDetailView.editable}
+						bind:value={container.payload.visibility}
+					/>
+				{/if}
 			</section>
 
 			{#if $disclosure.expanded}

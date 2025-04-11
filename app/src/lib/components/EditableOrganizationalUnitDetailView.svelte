@@ -7,6 +7,7 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
 	import EditableSuperordinateOrganizationalUnit from '$lib/components/EditableSuperordinateOrganizationalUnit.svelte';
+	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import {
 		type Container,
 		isContainerWithEffect,
@@ -77,6 +78,13 @@
 					}))}
 					bind:value={container.payload.boards}
 				/>
+
+				{#if $ability.can('update', container, 'visibility')}
+					<EditableVisibility
+						editable={$applicationState.containerDetailView.editable}
+						bind:value={container.payload.visibility}
+					/>
+				{/if}
 			</div>
 		</div>
 
