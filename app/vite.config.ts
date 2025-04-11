@@ -15,6 +15,9 @@ export default defineConfig({
 				if (collection === 'heroicons') {
 					props.width = '20px';
 					props.height = '20px';
+				} else if (collection === 'flowbite') {
+					props.width = '20px';
+					props.height = '20px';
 				} else if (collection === 'knotdots') {
 					props.width = '20px';
 					props.height = '20px';

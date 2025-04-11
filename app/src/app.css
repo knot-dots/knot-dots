@@ -1,56 +1,115 @@
 :root {
-	--color-blue-050: #ebf5ff;
-	--color-blue-100: #e1effe;
-	--color-blue-200: #c3ddfd;
-	--color-blue-300: #a4cafe;
-	--color-blue-500: #3f83f8;
-	--color-blue-600: #1c64f2;
-	--color-blue-700: #1a56db;
-	--color-blue-900: #233876;
 	--color-gray-050: #f9fafb;
 	--color-gray-100: #f3f4f6;
 	--color-gray-200: #e5e7eb;
-	--color-gray-300: #e2e2ea;
-	--color-gray-400: #d5d5dc;
+	--color-gray-300: #d1d5db;
+	--color-gray-400: #9ca3af;
 	--color-gray-500: #6b7280;
 	--color-gray-600: #4b5563;
 	--color-gray-700: #374151;
 	--color-gray-800: #1f2a37;
-	--color-gray-900: #111827;
-	--color-green-050: #f3faf7;
-	--color-green-100: #def7ec;
-	--color-green-500: #0e9f6e;
-	--color-green-600: #057a55;
-	--color-green-700: #046c4e;
-	--color-green-800: #03543f;
-	--color-indigo-050: #f0f5ff;
-	--color-indigo-500: #6875f5;
-	--color-orange-050: #fff8f1;
-	--color-orange-100: #feecdc;
-	--color-orange-800: #8a2c0d;
-	--color-pink-100: #fce8f3;
-	--color-pink-800: #99154b;
-	--color-purple-100: #edebfe;
-	--color-purple-800: #5521b5;
+	--color-gray-900: #111928;
 	--color-red-050: #fdf2f2;
 	--color-red-100: #fde8e8;
+	--color-red-200: #fbd5d5;
 	--color-red-300: #f8b4b4;
+	--color-red-400: #f98080;
 	--color-red-500: #f05252;
 	--color-red-600: #e02424;
 	--color-red-700: #c81e1e;
 	--color-red-800: #9b1c1c;
+	--color-red-900: #771d1d;
+	--color-orange-050: #fff8f1;
+	--color-orange-100: #feecdc;
+	--color-orange-200: #fcd9bd;
+	--color-orange-300: #fdba8c;
+	--color-orange-400: #ff8a4c;
+	--color-orange-500: #ff5a1f;
+	--color-orange-600: #d03801;
+	--color-orange-700: #b43403;
+	--color-orange-800: #8a2c0d;
+	--color-orange-900: #771d1d;
 	--color-yellow-050: #fdfdea;
 	--color-yellow-100: #fdf6b2;
 	--color-yellow-200: #fce96a;
 	--color-yellow-300: #faca15;
 	--color-yellow-400: #e3a008;
+	--color-yellow-500: #c27803;
+	--color-yellow-600: #9f580a;
+	--color-yellow-700: #8e4b10;
 	--color-yellow-800: #723b13;
-	--color-primary-050: var(--color-blue-050);
-	--color-primary-100: var(--color-blue-100);
-	--color-primary-200: var(--color-blue-200);
-	--color-primary-300: var(--color-blue-300);
-	--color-primary-600: var(--color-blue-600);
-	--color-primary-700: var(--color-blue-700);
+	--color-yellow-900: #633112;
+	--color-green-050: #f3faf7;
+	--color-green-100: #def7ec;
+	--color-green-200: #bcf0da;
+	--color-green-300: #84e1bc;
+	--color-green-400: #31c48d;
+	--color-green-500: #0e9f6e;
+	--color-green-600: #057a55;
+	--color-green-700: #046c4e;
+	--color-green-800: #03543f;
+	--color-green-900: #014737;
+	--color-teal-050: #edfafa;
+	--color-teal-100: #d5f5f6;
+	--color-teal-200: #afecef;
+	--color-teal-300: #7edce2;
+	--color-teal-400: #16bdca;
+	--color-teal-500: #0694a2;
+	--color-teal-600: #047481;
+	--color-teal-700: #036672;
+	--color-teal-800: #05505c;
+	--color-teal-900: #014451;
+	--color-blue-050: #ebf5ff;
+	--color-blue-100: #e1effe;
+	--color-blue-200: #c3ddfd;
+	--color-blue-300: #a4cafe;
+	--color-blue-400: #76a9fa;
+	--color-blue-500: #3f83f8;
+	--color-blue-600: #1c64f2;
+	--color-blue-700: #1a56db;
+	--color-blue-800: #1e429f;
+	--color-blue-900: #233876;
+	--color-indigo-050: #f0f5ff;
+	--color-indigo-100: #e5edff;
+	--color-indigo-200: #cddbfe;
+	--color-indigo-300: #b4c6fc;
+	--color-indigo-400: #8da2fb;
+	--color-indigo-500: #6875f5;
+	--color-indigo-600: #5850ec;
+	--color-indigo-700: #5145cd;
+	--color-indigo-800: #42389d;
+	--color-indigo-900: #362f78;
+	--color-purple-050: #f6f5ff;
+	--color-purple-100: #edebfe;
+	--color-purple-200: #dcd7fe;
+	--color-purple-300: #cabffd;
+	--color-purple-400: #ac94fa;
+	--color-purple-500: #9061f9;
+	--color-purple-600: #7e3af2;
+	--color-purple-700: #6c2bd9;
+	--color-purple-800: #5521b5;
+	--color-purple-900: #4a1d96;
+	--color-pink-050: #fdf2f8;
+	--color-pink-100: #fce8f3;
+	--color-pink-200: #fad1e8;
+	--color-pink-300: #f8b4d9;
+	--color-pink-400: #f17eb8;
+	--color-pink-500: #e74694;
+	--color-pink-600: #d61f69;
+	--color-pink-700: #bf125d;
+	--color-pink-800: #99154b;
+	--color-pink-900: #751a3d;
+	--color-primary-050: #ebf5ff;
+	--color-primary-100: #e1effe;
+	--color-primary-200: #c3ddfd;
+	--color-primary-300: #a4cafe;
+	--color-primary-400: #76a9fa;
+	--color-primary-500: #3f83f8;
+	--color-primary-600: #1c64f2;
+	--color-primary-700: #1a56db;
+	--color-primary-800: #1e429f;
+	--color-primary-900: #233876;
+
 	--color-primary: #4dc3c5;
 	--color-red: #ca1d61;
 	--color-red-background: rgba(205, 37, 97, 0.15);
@@ -701,28 +760,6 @@ label > input[type='checkbox'].toggle {
 	width: 1.5rem;
 }
 
-/* SVG icons */
-.icon-20 {
-	--size: 20px;
-
-	height: var(--size);
-	width: var(--size);
-}
-
-.icon-24 {
-	--size: 24px;
-
-	height: var(--size);
-	width: var(--size);
-}
-
-.icon-32 {
-	--size: 32px;
-
-	height: var(--size);
-	width: var(--size);
-}
-
 /* Avatars */
 .avatar {
 	border-radius: 50%;
@@ -853,32 +890,30 @@ label > input[type='checkbox'].toggle {
 .details-editable {
 	--editor-style: new;
 
-	padding-left: 4rem;
+	container-type: inline-size;
+	font-size: 0.875rem;
+	padding: 0 2rem 1.5rem;
 }
 
 .details-editable .details-tab {
-	gap: 0.5rem;
+	display: block;
 }
 
 .details-editable h2 {
-	border-radius: 8px;
-	min-height: calc(1.5em + 1.5rem);
-	padding: 0.75rem 1rem;
+	color: var(--color-gray-900);
+	font-size: 2.25rem;
+	font-weight: 700;
+	line-height: 1.25;
+	margin-bottom: 0.75rem;
+	margin-top: 3rem;
 }
 
 .details-editable h3 {
-	margin-bottom: 0;
-	padding-left: 1rem;
-	padding-right: 1rem;
-}
-
-.details-editable [contenteditable='plaintext-only'] {
-	background-color: var(--form-control-background);;
-}
-
-.details-editable .markdown-body {
-	min-height: 3rem;
-	padding: 0.75rem 1rem;
+	color: var(--color-gray-700);
+	font-size: 1.5rem;
+	font-weight: 600;
+	line-height: 1.25;
+	margin-bottom: 0.5rem;
 }
 
 .meta {
@@ -907,29 +942,57 @@ label > input[type='checkbox'].toggle {
 	vertical-align: top;
 }
 
-.tabular {
-	align-items: start;
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	padding: 0 1rem;
+.data-grid {
+	border-left: solid 2px var(--color-gray-200);
+	display: grid;
+	gap: 0.5rem;
+	padding-left: 1.5rem;
 }
 
-.tabular > * {
-	padding: 0.75rem 1rem;
+.data-grid + .data-grid {
+	padding-top: 0.5rem;
 }
 
-.tabular > *:nth-child(1) {
-	flex: 0 1 calc(40rem * 999 - 100% * 999);
-	min-width: 10rem;
+.data-grid .label {
+	min-height: 2.25rem;
+	padding: 0.375rem 0;
 }
 
-.tabular > *:nth-child(2) {
-	flex: 1 1 calc(40rem * 999 - 100% * 999);
-	min-width: 1px;
+.data-grid > .value {
+	background-color: var(--form-control-background);
+	border-radius: 4px;
+	font-weight: 500;
+	padding: 0.375rem;
+}
+
+.data-grid .value.value--read-only {
+	background-color: transparent;
+	color: var(--color-gray-400);
+}
+
+@container (min-inline-size: 40rem) {
+	.data-grid {
+		grid-template-columns: 1fr 3fr;
+	}
+
+	.data-grid > * {
+		grid-column: 1 / -1;
+	}
+
+	.data-grid > .label {
+		grid-column: 1 / 2;
+	}
+
+	.data-grid > .label + * {
+		grid-column: 2 / 3;
+	}
 }
 
 /* Markdown editor and viewer */
+.markdown-body {
+	min-height: 1.5em;
+}
+
 .markdown-body ol,
 .milkdown .editor ol,
 .markdown-body ul:not(.contains-task-list),
@@ -1097,6 +1160,7 @@ label > input[type='checkbox'].toggle {
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
+	min-height: calc(6rem + 2 * 1.5rem);
 	overflow-x: auto;
 	padding: 1.5rem 0;
 }
@@ -1117,15 +1181,20 @@ label > input[type='checkbox'].toggle {
 
 /* Dropdown */
 .dropdown-button {
-	--button-active-background: transparent;
-	--button-background: transparent;
-	--button-hover-background: transparent;
-	--button-hover-border-color: transparent;
-	--padding-y: 0;
-	--padding-x: 0;
+	--button-active-background: var(--color-gray-300);
+	--button-background: var(--form-control-background);
+	--button-hover-background: var(--color-gray-100);
+	--button-hover-border-color: var(--form-control-background);
+	--padding-y: 0.375rem;
+	--padding-x: 0.375rem;
 
+	align-items: start;
 	border: none;
+	border-radius: 4px;
 	display: flex;
+	justify-content: space-between;
+	white-space: nowrap;
+	width: 100%;
 }
 
 .dropdown-button.dropdown-button--badge {
@@ -1133,6 +1202,7 @@ label > input[type='checkbox'].toggle {
 	--button-hover-background: var(--color-primary-100);
 	--button-background: var(--color-primary-050);
 
+	align-items: center;
 	border: solid 1px var(--color-primary-200);
 	border-radius: calc(infinity * 1px);
 	color: var(--color-primary-700);
@@ -1141,6 +1211,31 @@ label > input[type='checkbox'].toggle {
 	gap: 0.25rem;
 	min-width: 3rem;
 	padding: 0.125rem 0.5rem;
+}
+
+.dropdown-button > svg {
+	flex-shrink: 0;
+	margin: 0.125rem;
+}
+
+.dropdown-button[aria-expanded='true'] {
+	background-color: var(--color-gray-200);
+}
+
+.dropdown-button.dropdown-button--badge[aria-expanded='true'] {
+	background-color: var(--color-primary-100);
+}
+
+.dropdown-button[aria-expanded='true'] > svg {
+	color: var(--color-primary-600);
+}
+
+.dropdown-button.dropdown-button--badge > svg {
+	margin: 0;
+}
+
+.dropdown-button.dropdown-button--badge[aria-expanded='true'] > svg {
+	color: var(--color-primary-800);
 }
 
 .dropdown-panel {
@@ -1160,13 +1255,58 @@ label > input[type='checkbox'].toggle {
 	z-index: 1;
 }
 
-.dropdown-panel *:has(> input[type='checkbox'], input[type='radio']) {
+.dropdown-panel *:has(> input[type='checkbox'], > input[type='radio']) {
 	border-radius: 0.5rem;
 	padding: 0.5rem 0.75rem;
 }
 
-.dropdown-panel *:has(> input[type='checkbox'], input[type='radio']):hover {
+.dropdown-panel *:has(> input[type='checkbox'], > input[type='radio']):hover {
 	background-color: var(--color-gray-100);
+}
+
+@container style(--drop-down-style: table) {
+	.dropdown {
+		--form-control-background: transparent;
+	}
+
+	.dropdown-button {
+		--button-active-background: var(--form-control-background);
+		--button-hover-background: var(--form-control-background);
+
+		--padding-y: 0;
+		--padding-x: 0;
+	}
+
+	.dropdown-button[aria-expanded='true'] {
+		background-color: var(--form-control-background);
+	}
+
+	.dropdown-button > svg {
+		display: none;
+	}
+}
+
+/* Loader */
+.loader {
+	animation: rotation 1.5s linear infinite;
+	border-radius: 50%;
+	border-style: solid;
+	border-width: 4px;
+	border-color: var(--color-gray-200) var(--color-gray-200) var(--color-gray-200) var(--color-primary-600);
+	box-sizing: border-box;
+	flex-shrink: 0;
+	height: 1rem;
+	position: relative;
+	width: 1rem;
+}
+
+@keyframes rotation {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 /* Utility classes */

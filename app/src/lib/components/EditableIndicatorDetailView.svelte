@@ -58,7 +58,7 @@
 </script>
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	<svelte:fragment slot="extra">
 		<select class="view-mode" bind:value={viewMode}>
 			<option value="chart">{$_('indicator.view_mode.chart')}</option>
 			<option value="table">{$_('indicator.view_mode.table')}</option>
@@ -71,7 +71,7 @@
 		{/if}
 
 		{#if showEffects}
-			<div class="measures">
+			<div class="details-tab" id="measures">
 				<h3>{$_('measures')}</h3>
 				<ul class="carousel">
 					{#each relatedContainers.filter((c) => isContainerWithEffect(c)) as measure}
@@ -84,7 +84,7 @@
 		{/if}
 
 		{#if showObjectives}
-			<div class="goals">
+			<div class="details-tab" id="goals">
 				<h3>{$_('goals')}</h3>
 				<ul class="carousel">
 					{#if overallObjective}
@@ -99,7 +99,7 @@
 			</div>
 		{/if}
 
-		<div class="strategies">
+		<div class="details-tab" id="strategies">
 			<h3>{$_('strategies')}</h3>
 			<ul class="carousel">
 				{#each relatedContainers.filter(isStrategyContainer) as strategy}
@@ -112,7 +112,6 @@
 
 		<EditableFormattedText
 			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
 			bind:value={container.payload.description}
 		/>
 	</svelte:fragment>

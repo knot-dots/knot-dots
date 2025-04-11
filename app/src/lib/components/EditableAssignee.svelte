@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ListBox from '$lib/components/ListBox.svelte';
-	import { displayName, type User } from '$lib/models';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
-	import fetchMembers from '$lib/client/fetchMembers';
+	import { displayName, type User } from '$lib/models';
 
 	export let candidatesPromise: Promise<User[]>;
 	export let editable = false;

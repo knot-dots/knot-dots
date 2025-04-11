@@ -5,8 +5,8 @@
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
-	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import { type AnyContainer, type Container, type MilestoneContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -18,22 +18,6 @@
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
-		<div class="tasks">
-			<h3>{$_('tasks')}</h3>
-			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
-		</div>
-
-		<EditableProgress
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.progress}
-		/>
-
 		<EditableDate
 			editable={$applicationState.containerDetailView.editable}
 			label={$_('fulfillment_date')}
@@ -47,6 +31,26 @@
 			bind:value={container.payload.audience}
 		/>
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		<EditableOrganization
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organization}
+		/>
+
+		<EditableOrganizationalUnit
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organizational_unit}
+		/>
+	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.description}
+		/>
+
+		<div class="details-tab" id="tasks">
+			<h3>{$_('tasks')}</h3>
+			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
+		</div>
 	</svelte:fragment>
 </EditableContainerDetailView>

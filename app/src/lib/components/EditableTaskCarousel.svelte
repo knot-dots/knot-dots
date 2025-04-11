@@ -53,26 +53,16 @@
 </ul>
 
 <style>
-	.carousel {
-		border-radius: 8px;
-		min-height: 299px;
-		padding: 1rem;
-	}
-
-	.carousel.editable {
-		background-color: var(--color-gray-050);
-	}
-
 	.card {
 		align-items: center;
 		background: #ffffff;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		display: grid;
 		grid-row: 1 / 4;
-		height: 267px;
+		min-height: 6rem;
 		justify-content: center;
 	}
 

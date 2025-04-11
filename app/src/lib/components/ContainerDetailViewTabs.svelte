@@ -6,6 +6,8 @@
 	import PuzzlePiece from '~icons/heroicons/puzzle-piece-20-solid';
 	import Resources from '~icons/knotdots/resources';
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import { isContainerWithEffect } from '$lib/models';
 	import type { AnyContainer, ContainerDetailViewTabKey } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -78,7 +80,7 @@
 		</button>
 	</li>
 {/if}
-{#if $applicationState.containerDetailView.tabs.includes('metadata')}
+{#if $applicationState.containerDetailView.tabs.includes('metadata') && !createFeatureDecisions(page.data.features).useEditableDetailView()}
 	<li>
 		<button
 			title={$_('form.metadata')}

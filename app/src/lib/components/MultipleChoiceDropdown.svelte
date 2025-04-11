@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
+	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 
@@ -30,52 +31,54 @@
 			{#each options.filter((o) => value.includes(o.value)) as selectedOption}
 				<span class="value">{selectedOption.label}</span>
 			{:else}
-				&nbsp;
+				{$_('empty')}
 			{/each}
 		</span>
 		<ChevronDown />
 	</button>
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			{#each options as option (option.value)}
-				<label>
-					<input type="checkbox" value={option.value} bind:group={value} onchange={handleChange} />
-					{option.label}
-				</label>
-			{/each}
+			<div>
+				{#each options as option (option.value)}
+					<label>
+						<input
+							type="checkbox"
+							value={option.value}
+							bind:group={value}
+							onchange={handleChange}
+						/>
+						{option.label}
+					</label>
+				{/each}
+			</div>
 		</fieldset>
 	{/if}
 </div>
 
 <style>
-	button {
-		border: none;
-		min-width: 3rem;
-		width: 100%;
-	}
-
 	.selected {
 		display: block;
 	}
 
 	.value {
+		display: block;
 		padding: 0;
 		text-align: left;
 	}
 
-	.value:not(:last-child)::after {
-		content: ', ';
-	}
-
 	@container style(--drop-down-style: table) {
-		button > :global(svg) {
-			display: none;
-		}
-
 		.selected {
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+		}
+
+		.value {
+			display: revert;
+		}
+
+		.value:not(:last-child)::after {
+			content: ', ';
 		}
 	}
 </style>

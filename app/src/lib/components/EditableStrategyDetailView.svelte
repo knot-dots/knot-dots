@@ -11,8 +11,11 @@
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableLevel from '$lib/components/EditableLevel.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
+	import EditablePDF from '$lib/components/EditablePDF.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import EditableStrategyType from '$lib/components/EditableStrategyType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
@@ -100,6 +103,17 @@
 				bind:value={container.payload.strategyType}
 			/>
 
+			<EditableImage
+				editable={$applicationState.containerDetailView.editable}
+				label={$_('cover')}
+				bind:value={container.payload.image}
+			/>
+
+			<EditablePDF
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.payload.pdf}
+			/>
+
 			<EditableChapterType
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.chapterType}
@@ -120,7 +134,15 @@
 				bind:value={container.payload.audience}
 			/>
 
-			<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+			<EditableOrganization
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organization}
+			/>
+
+			<EditableOrganizationalUnit
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.organizational_unit}
+			/>
 		</svelte:fragment>
 
 		<svelte:fragment slot="extra">
@@ -203,11 +225,6 @@
 		flex-basis: 24rem;
 		font-size: 1rem;
 		font-weight: normal;
-	}
-
-	.chapters {
-		border-top: solid 1px var(--color-gray-300);
-		padding-top: 1.5rem;
 	}
 
 	.chapter {

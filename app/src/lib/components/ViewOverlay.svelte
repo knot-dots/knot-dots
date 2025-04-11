@@ -181,18 +181,6 @@
 	<header class="content-header">
 		<IndicatorTabs {container} />
 	</header>
-{:else if isContainerWithEffect(container)}
-	<header class="content-header">
-		<MeasureStatusTabs {container} {revisions} />
-	</header>
-{:else if isResolutionContainer(container)}
-	<header class="content-header">
-		<ResolutionStatusTabs {container} {revisions} />
-	</header>
-{:else if isTaskContainer(container)}
-	<header class="content-header">
-		<TaskStatusTabs {container} {revisions} />
-	</header>
 {/if}
 <div class="content-details masked-overflow">
 	{#if createFeatureDecisions($page.data.features).useEditableDetailView()}

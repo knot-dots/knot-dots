@@ -8,7 +8,8 @@
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditableTaskCategory from '$lib/components/EditableTaskCategory.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
@@ -57,12 +58,6 @@
 
 <EditableContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={selectedRevision.payload.description}
-		/>
-
 		<EditableTaskStatus
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={selectedRevision.payload.taskStatus}
@@ -91,6 +86,21 @@
 
 		<EditableParent editable={$applicationState.containerDetailView.editable} bind:container />
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		<EditableOrganization
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organization}
+		/>
+
+		<EditableOrganizationalUnit
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organizational_unit}
+		/>
+	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={selectedRevision.payload.description}
+		/>
 	</svelte:fragment>
 </EditableContainerDetailView>

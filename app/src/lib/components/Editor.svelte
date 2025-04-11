@@ -9,6 +9,8 @@
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
 	import { commonmark } from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
+	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
 	import uploader from '$lib/milkdown/uploader';
 
@@ -76,14 +78,23 @@
 	}
 </script>
 
-<div>
+<div
+	class={createFeatureDecisions(page.data.features).useEditableDetailView()
+		? 'details-tab'
+		: undefined}
+	use:makeEditor
+>
 	{#if label}
 		<h3 id={labelId}>{label}</h3>
 	{/if}
-	<div use:makeEditor></div>
 </div>
 
 <style>
+	h3 {
+		color: inherit;
+		margin-bottom: 0;
+	}
+
 	:global(.milkdown) {
 		background-color: var(--form-control-background);
 		border: solid 1px var(--color-gray-300);
@@ -102,8 +113,15 @@
 	}
 
 	@container style(--editor-style: new) {
+		h3 {
+			color: var(--color-gray-700);
+			margin-bottom: 0.5rem;
+		}
+
 		:global(.milkdown) {
+			background-color: transparent;
 			border: none;
+			padding: 0;
 		}
 
 		:global([contenteditable]) {

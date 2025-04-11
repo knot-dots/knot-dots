@@ -1147,6 +1147,24 @@ export function isContainerWithDescription(
 	return hasProperty(container.payload, 'description');
 }
 
+export type ContainerWithProgress = AnyContainer & {
+	payload: AnyPayload & { progress: number | undefined };
+};
+
+export function isContainerWithProgress(
+	container: AnyContainer
+): container is ContainerWithProgress {
+	return hasProperty(container.payload, 'progress');
+}
+
+export type ContainerWithStatus = AnyContainer & {
+	payload: AnyPayload & { status: Status };
+};
+
+export function isContainerWithStatus(container: AnyContainer): container is ContainerWithStatus {
+	return hasProperty(container.payload, 'status');
+}
+
 export const newContainer = anyContainer
 	.omit({
 		guid: true,

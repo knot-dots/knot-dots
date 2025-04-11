@@ -15,12 +15,12 @@
 
 <div class="progress">
 	{#if editable}
-		<h3>
+		<p class="label">
 			<label for={id}>
 				{$_('progress')}
 			</label>
-		</h3>
-		<p>
+		</p>
+		<p class="value">
 			<input
 				{id}
 				type="range"
@@ -46,15 +46,16 @@
 			</datalist>
 		</p>
 	{:else}
-		<h3>{$_('progress')}</h3>
-		<p>
+		<p class="label">{$_('progress')}</p>
+		<p class="value">
 			<progress
 				style:--color={value > 0.7
 					? 'var(--color-green-500)'
 					: value > 0.3
-						? 'var(--color-yellow-200)'
+						? 'var(--color-yellow-300)'
 						: 'var(--color-red-600)'}
 				class:compact
+				{value}
 			></progress>
 			{#if !compact}
 				{value * 100} %
@@ -64,25 +65,24 @@
 </div>
 
 <style>
-	p {
-		padding: 0 1rem;
+	div {
+		padding-bottom: 0.75rem;
 	}
 
 	input[type='range'] {
-		display: inline-block;
-		padding: 0;
-		vertical-align: middle;
+		margin: 0;
+		padding: 0.125rem 0;
+		width: 100%;
 	}
 
 	progress {
-		--height: 6px;
+		--height: 0.5rem;
 
 		appearance: none;
 		background-color: var(--color-gray-200);
 		border: none;
 		border-radius: calc(var(--height) * 0.5);
 		height: var(--height);
-		margin-right: 1rem;
 		overflow: hidden;
 		vertical-align: middle;
 	}

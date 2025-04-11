@@ -73,7 +73,7 @@
 		handleChange={onChange}
 		label={$_('measure')}
 		options={[
-			{ value: '', label: $_('not_part_of_measure') },
+			{ value: '', label: $_('empty') },
 			...measureCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,

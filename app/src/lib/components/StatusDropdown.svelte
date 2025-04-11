@@ -53,19 +53,15 @@
 	</div>
 {:else}
 	{@const StatusIcon = statusIcons.get(value)}
-	<span class="badge badge--{statusColors.get(value)}">
-		<StatusIcon />
-		{$_(value)}
-	</span>
+	<div class="value">
+		<span class="badge badge--{statusColors.get(value)}">
+			<StatusIcon />
+			{$_(value)}
+		</span>
+	</div>
 {/if}
 
 <style>
-	@container style(--drop-down-style: table) {
-		button > :global(svg) {
-			display: none;
-		}
-	}
-
 	.badge {
 		float: left;
 	}

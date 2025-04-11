@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 
@@ -11,21 +12,19 @@
 	$: selected = options.find((o) => o.value == value);
 </script>
 
-<div class="tabular">
-	<span class="label">{label}</span>
-	{#if editable}
-		<SingleChoiceDropdown {handleChange} {options} bind:value />
-	{:else}
-		<span class="value">
-			{#if selected}
-				{#if selected.href}
-					<a href={selected.href}>{selected.label}</a>
-				{:else}
-					{selected.label}
-				{/if}
+<div class="label">{label}</div>
+{#if editable}
+	<SingleChoiceDropdown {handleChange} {options} bind:value />
+{:else}
+	<div class="value">
+		{#if selected}
+			{#if selected.href}
+				<a href={selected.href}>{selected.label}</a>
 			{:else}
-				&nbsp;
+				{selected.label}
 			{/if}
-		</span>
-	{/if}
-</div>
+		{:else}
+			{$_('empty')}
+		{/if}
+	</div>
+{/if}

@@ -223,7 +223,7 @@ export function updateContainer(container: ModifiedContainer) {
 					) == -1
 			);
 			await deleteManyContainerRelations(deletedRelations)(txConnection);
-			await createManyContainerRelations(container.relation)(txConnection);
+			await updateManyContainerRelations(container.relation)(txConnection);
 
 			if (container.payload.type == payloadTypes.enum.strategy) {
 				if (
@@ -1277,7 +1277,10 @@ export function updateManyContainerRelations(relations: ReadonlyArray<Relation>)
 				UPDATE container_relation cr
 				SET valid_currently = false
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])} AS u(object, position, predicate, subject)
-				WHERE cr.object = u.object AND cr.predicate = u.predicate AND cr.subject = u.subject
+				WHERE cr.object = u.object
+				  AND cr.predicate = u.predicate
+				  AND cr.subject = u.subject
+					AND cr.valid_currently
 			`);
 			return createManyContainerRelations(relations)(txConnection);
 		});

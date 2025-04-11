@@ -7,7 +7,8 @@
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableOwnedBy from '$lib/components/EditableOwnedBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableResolutionStatus from '$lib/components/EditableResolutionStatus.svelte';
 	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
@@ -22,40 +23,19 @@
 	export let container: ResolutionContainer;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
-
-	let selectedRevision: ResolutionContainer;
-
-	$: {
-		const parseResult = resolutionStatus.safeParse(
-			paramsFromURL($page.url).get('resolutionStatus')
-		);
-		if (parseResult.success) {
-			selectedRevision =
-				(revisions as ResolutionContainer[]).findLast(
-					({ payload }) => payload.resolutionStatus == parseResult.data
-				) ?? container;
-		} else {
-			selectedRevision = container;
-		}
-	}
 </script>
 
-<EditableContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
+<EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
-
 		{#if $applicationState.containerDetailView.editable}
-			<fieldset class="tabular">
-				<span class="label">{$_('valid_from')}</span>
+			<div class="label">{$_('valid_from')}</div>
+			<fieldset>
 				<span>
 					<label class="is-visually-hidden" for="validFrom">
 						{$_('valid_from')}
 					</label>
 					<input
+						class="value"
 						id="validFrom"
 						type="date"
 						bind:value={container.payload.validFrom}
@@ -66,6 +46,7 @@
 						{$_('valid_until')}
 					</label>
 					<input
+						class="value"
 						id="validUntil"
 						type="date"
 						bind:value={container.payload.validUntil}
@@ -74,21 +55,19 @@
 				</span>
 			</fieldset>
 		{:else}
-			<p class="tabular">
-				<span class="label">{$_('valid_from')}</span>
-				<span class="value">
-					{#if selectedRevision.payload.validFrom && selectedRevision.payload.validUntil}
-						{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–{$date(
-							new Date(selectedRevision.payload.validUntil),
-							{ format: 'long' }
-						)}
-					{:else if selectedRevision.payload.validFrom}
-						{$date(new Date(selectedRevision.payload.validFrom), { format: 'long' })}–
-					{:else}
-						&nbsp;
-					{/if}
-				</span>
-			</p>
+			<div class="label">{$_('valid_from')}</div>
+			<div class="value">
+				{#if container.payload.validFrom && container.payload.validUntil}
+					{$date(new Date(container.payload.validFrom), { format: 'long' })}–{$date(
+						new Date(container.payload.validUntil),
+						{ format: 'long' }
+					)}
+				{:else if container.payload.validFrom}
+					{$date(new Date(container.payload.validFrom), { format: 'long' })}
+				{:else}
+					{$_('empty')}
+				{/if}
+			</div>
 		{/if}
 
 		<EditableResolutionStatus
@@ -113,24 +92,37 @@
 			bind:value={container.payload.audience}
 		/>
 
-		<EditableOwnedBy editable={$applicationState.containerDetailView.editable} bind:container />
+		<EditableOrganization
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organization}
+		/>
+
+		<EditableOrganizationalUnit
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.organizational_unit}
+		/>
+	</svelte:fragment>
+
+	<svelte:fragment slot="extra">
+		<EditableFormattedText
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.description}
+		/>
 	</svelte:fragment>
 </EditableContainerDetailView>
 
 <style>
 	fieldset {
 		border: none;
-	}
-
-	label {
-		padding: 0 1rem;
+		padding: 0;
 	}
 
 	input[type='date'] {
 		border: none;
+		border-radius: 4px;
 		display: inline-flex;
 		line-height: 1.5;
-		max-height: 3rem;
+		max-height: 2.25rem;
 		width: auto;
 	}
 </style>

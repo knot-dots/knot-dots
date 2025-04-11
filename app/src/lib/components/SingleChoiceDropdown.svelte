@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
+	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 
@@ -27,29 +28,21 @@
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
-		{#if selected}{selected.label}{:else}&nbsp;{/if}<ChevronDown />
+		<span class="selected">
+			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+		</span>
+		<ChevronDown />
 	</button>
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			{#each options as option (option.value)}
-				<label>
-					<input type="radio" value={option.value} bind:group={value} onchange={handleChange} />
-					{option.label}
-				</label>
-			{/each}
+			<div>
+				{#each options as option (option.value)}
+					<label>
+						<input type="radio" value={option.value} bind:group={value} onchange={handleChange} />
+						{option.label}
+					</label>
+				{/each}
+			</div>
 		</fieldset>
 	{/if}
 </div>
-
-<style>
-	button {
-		border: none;
-		text-wrap: nowrap;
-	}
-
-	@container style(--drop-down-style: table) {
-		button > :global(svg) {
-			display: none;
-		}
-	}
-</style>

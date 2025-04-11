@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
@@ -22,7 +23,7 @@
 		bind:value
 	/>
 {:else}
-	<span>
-		{page.data.organizations.find(({ guid }) => guid === value)?.payload.name}
-	</span>
+	<div class="value">
+		{page.data.organizations.find(({ guid }) => guid === value)?.payload.name ?? $_('empty')}
+	</div>
 {/if}
