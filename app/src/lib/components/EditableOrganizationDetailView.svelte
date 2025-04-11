@@ -6,6 +6,7 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
+	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import {
 		type Container,
 		isContainerWithEffect,
@@ -13,7 +14,7 @@
 		isStrategyContainer,
 		type OrganizationContainer
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: OrganizationContainer;
 	export let relatedContainers: Container[];
@@ -67,6 +68,13 @@
 					}))}
 					bind:value={container.payload.boards}
 				/>
+
+				{#if $ability.can('update', container, 'visibility')}
+					<EditableVisibility
+						editable={$applicationState.containerDetailView.editable}
+						bind:value={container.payload.visibility}
+					/>
+				{/if}
 			</div>
 		</div>
 
