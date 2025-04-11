@@ -7,15 +7,18 @@
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
-	import EditableStatus from '$lib/components/EditableStatus.svelte';
 	import {
 		type Container,
 		containerOfType,
 		isContainerWithEffect,
 		isContainerWithObjective,
+		isContainerWithProgress,
+		isContainerWithStatus,
 		isObjectiveContainer,
 		isPartOf as isPartOfFilter,
+		isResolutionContainer,
 		isSimpleMeasureContainer,
+		isTaskContainer,
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
@@ -25,6 +28,14 @@
 		type StrategyContainer
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import {
+		resolutionStatusColors,
+		resolutionStatusIcons,
+		statusColors,
+		statusIcons,
+		taskStatusColors,
+		taskStatusIcons
+	} from '$lib/theme/models';
 
 	export let container: Container;
 	export let editable = false;
@@ -92,8 +103,37 @@
 	</svelte:element>
 {/if}
 
-{#if 'status' in container.payload}
-	<EditableStatus {editable} bind:value={container.payload.status} />
+<ul class="badges">
+	<li class="badge badge--purple">{$_(container.payload.type)}</li>
+	{#if isContainerWithStatus(container)}
+		{@const StatusIcon = statusIcons.get(container.payload.status)}
+		{#key container.payload.status}
+			<li class="badge badge--{statusColors.get(container.payload.status)}">
+				<StatusIcon />
+				{$_(container.payload.status)}
+			</li>
+		{/key}
+	{:else if isTaskContainer(container)}
+		{@const TaskStatusIcon = taskStatusIcons.get(container.payload.taskStatus)}
+		{#key container.payload.taskStatus}
+			<li class="badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
+				<TaskStatusIcon />
+				{$_(container.payload.taskStatus)}
+			</li>
+		{/key}
+	{:else if isResolutionContainer(container)}
+		{@const ResolutionStatusIcon = resolutionStatusIcons.get(container.payload.resolutionStatus)}
+		{#key container.payload.resolutionStatus}
+			<li class="badge badge--{resolutionStatusColors.get(container.payload.resolutionStatus)}">
+				<ResolutionStatusIcon />
+				{$_(container.payload.resolutionStatus)}
+			</li>
+		{/key}
+	{/if}
+</ul>
+
+{#if isContainerWithProgress(container)}
+	<EditableProgress {editable} bind:value={container.payload.progress} compact />
 {/if}
 
 {#if 'body' in container.payload}
@@ -104,35 +144,20 @@
 	<EditableFormattedText {editable} bind:value={container.payload.description} />
 {/if}
 
-{#if 'progress' in container.payload}
-	<div class="progress">
-		<h4 class="chapter-subtitle">{$_('progress')}</h4>
-		<EditableProgress {editable} bind:value={container.payload.progress} />
-	</div>
-{/if}
-
 {#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
 	<div class="annotation">
 		<h4 class="chapter-subtitle">{$_('annotation')}</h4>
-		<EditableFormattedText
-			{editable}
-			label={$_('annotation')}
-			bind:value={container.payload.annotation}
-		/>
+		<EditableFormattedText {editable} bind:value={container.payload.annotation} />
 	</div>
 {:else if 'comment' in container.payload && container.payload.status === status.enum['status.in_implementation']}
 	<div class="comment">
 		<h4 class="chapter-subtitle">{$_('comment')}</h4>
-		<EditableFormattedText
-			{editable}
-			label={$_('comment')}
-			bind:value={container.payload.comment}
-		/>
+		<EditableFormattedText {editable} bind:value={container.payload.comment} />
 	</div>
 {:else if 'result' in container.payload && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
 	<div class="result">
 		<h4 class="chapter-subtitle">{$_('result')}</h4>
-		<EditableFormattedText {editable} label={$_('result')} bind:value={container.payload.result} />
+		<EditableFormattedText {editable} bind:value={container.payload.result} />
 	</div>
 {/if}
 
@@ -189,11 +214,18 @@
 </footer>
 
 <style>
+	.badges {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+		padding: 0.375rem 0 0.75rem;
+	}
+
 	.chapter-title {
 		color: var(--color-gray-800);
 		font-size: 1.875rem;
 		font-weight: 600;
-		margin-bottom: 0.5rem;
+		margin-bottom: 0;
 		min-height: 1em;
 	}
 
