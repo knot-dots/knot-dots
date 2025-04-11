@@ -4,6 +4,7 @@
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
@@ -36,6 +37,13 @@
 	tabs={['basic-data', 'resources', 'effects', 'milestones', 'metadata']}
 >
 	<svelte:fragment slot="data">
+		{#if isSimpleMeasureContainer(container)}
+			<EditableFile
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.payload.file}
+			/>
+		{/if}
+
 		{#if $applicationState.containerDetailView.editable}
 			<div class="label">{$_('planned_duration')}</div>
 			<fieldset>
