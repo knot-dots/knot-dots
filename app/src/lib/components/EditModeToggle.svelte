@@ -16,9 +16,10 @@
 	.toggle {
 		--height: 1.75rem;
 		--padding: 0.25rem;
-		--width: 5rem;
+		--width: 4.5rem;
 
 		background-color: var(--color-gray-050);
+		border: solid 1px var(--color-gray-200);
 		position: relative;
 	}
 
@@ -30,7 +31,7 @@
 		text-align: center;
 		text-transform: capitalize;
 		top: calc(var(--height) / 2 - 0.5em);
-		width: calc(var(--width) - var(--height) - 2 * var(--padding));
+		width: calc(var(--width) - var(--height));
 	}
 
 	.toggle::before {
@@ -40,13 +41,14 @@
 		background-repeat: no-repeat;
 	}
 
+	.toggle:checked {
+		background-color: var(--color-green-050);
+		border: solid 1px var(--color-green-200);
+	}
+
 	.toggle:checked::after {
 		color: var(--color-green-500);
 		left: var(--padding);
-	}
-
-	.toggle:checked {
-		background-color: var(--color-green-050);
 	}
 
 	.toggle:checked::before {

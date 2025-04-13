@@ -684,8 +684,9 @@ fieldset {
 	--width: calc(var(--height) * 2);
 
 	appearance: none;
-	border-radius: var(--height);
 	background-color: var(--color-gray-200);
+	border-radius: var(--height);
+	box-sizing: content-box;
 	display: inline-grid;
 	margin: 0;
 	padding: var(--padding);
@@ -708,7 +709,7 @@ fieldset {
 }
 
 .toggle:checked::before {
-	transform: translateX(calc(var(--width) - var(--height) - var(--padding) * 2));
+	transform: translateX(calc(var(--width) - var(--height)));
 }
 
 .toggle:focus {
