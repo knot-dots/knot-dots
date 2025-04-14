@@ -51,11 +51,13 @@
 
 <style>
 	.toolbar {
-		background-color: var(--form-control-background);
-		border: solid 1px var(--color-gray-300);
-		border-radius: 8px;
+		background-color: white;
+		border: solid 1px var(--color-gray-200);
+		border-radius: 12px;
 		box-shadow: var(--shadow-sm);
 		display: flex;
+		gap: 0.25rem;
+		padding: 0.5rem;
 	}
 
 	.toolbar li {
@@ -63,12 +65,18 @@
 	}
 
 	.toolbar button {
+		--button-active-background: var(--color-gray-200);
+		--button-hover-background: var(--color-gray-100);
+		--padding-x: 0;
+		--padding-y: 0;
+
 		align-items: center;
 		border: none;
+		border-radius: 4px;
 		display: flex;
+		font-size: 1rem;
 		justify-content: center;
-		padding: 0.5rem;
-		width: 2.5rem;
+		width: 1.5rem;
 	}
 
 	.toolbar button:hover {
