@@ -10,6 +10,7 @@
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
+	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
@@ -28,6 +29,7 @@
 	import {
 		type AnyContainer,
 		type Container,
+		containerOfType,
 		findOverallObjective,
 		type IndicatorContainer,
 		isContainer,
@@ -47,13 +49,14 @@
 		isTaskContainer,
 		isTextContainer,
 		isVisionContainer,
+		type NewContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
 		payloadTypes,
 		predicates,
 		quantities
 	} from '$lib/models';
-	import { ability, user } from '$lib/stores';
+	import { ability, newContainer, user } from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
@@ -82,6 +85,48 @@
 						predicate === predicates.enum['is-part-of-measure']
 				)
 		);
+	}
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	let createAnotherOptions: { label: string; value: string }[] = [];
+
+	$: {
+		const isPartOfStrategyRelation = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
+		);
+		const isPartOfMeasureRelation = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+		);
+
+		if (isStrategyContainer(container)) {
+			createAnotherOptions = [...container.payload.chapterType].map((p) => ({
+				label: $_(p),
+				value: p
+			}));
+		} else if (isPartOfStrategyRelation) {
+			const strategy = relatedContainers
+				.filter(isStrategyContainer)
+				.find(({ relation }) =>
+					relation.some(
+						({ predicate, object }) =>
+							object == isPartOfStrategyRelation.object &&
+							predicate == isPartOfStrategyRelation.predicate
+					)
+				);
+			createAnotherOptions = [...(strategy?.payload.chapterType ?? [])].map((p) => ({
+				label: $_(p),
+				value: p
+			}));
+		} else if (isPartOfMeasureRelation) {
+			createAnotherOptions = [
+				payloadTypes.enum.measure_result,
+				payloadTypes.enum.milestone,
+				payloadTypes.enum.task
+			].map((p) => ({ label: $_(p), value: p }));
+		}
 	}
 
 	async function createAnother(container: AnyContainer) {
@@ -126,6 +171,52 @@
 		}
 
 		await goto(`#${params.toString()}`, { state: { derivedFrom: container } });
+	}
+
+	function createContainerDerivedFrom(container: AnyContainer) {
+		return async (event: Event) => {
+			console.log(event);
+			$newContainer = containerOfType(
+				(event as CustomEvent).detail.selected,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
+
+			$newContainer.payload = {
+				...$newContainer.payload,
+				...('assignee' in container.payload && isTaskContainer($newContainer)
+					? { assignee: container.payload.assignee }
+					: undefined),
+				...('audience' in container.payload && 'audience' in $newContainer.payload
+					? { audience: container.payload.audience }
+					: undefined),
+				...('category' in container.payload && 'category' in $newContainer.payload
+					? { category: container.payload.category }
+					: undefined),
+				...('resolutionStatus' in container.payload && 'resolutionStatus' in $newContainer.payload
+					? { resolutionStatus: container.payload.resolutionStatus }
+					: undefined),
+				...('status' in container.payload && 'status' in $newContainer.payload
+					? { status: container.payload.status }
+					: undefined),
+				...('taskCategory' in container.payload && 'taskCategory' in $newContainer.payload
+					? { taskCategory: container.payload.taskCategory }
+					: undefined),
+				...('taskStatus' in container.payload && 'taskStatus' in $newContainer.payload
+					? { taskStatus: container.payload.taskStatus }
+					: undefined),
+				...('topic' in container.payload && 'topic' in $newContainer.payload
+					? { topic: container.payload.topic }
+					: undefined),
+				...('visibility' in container.payload && 'visibility' in $newContainer.payload
+					? { visibility: container.payload.visibility }
+					: undefined)
+			};
+
+			createContainerDialog.getElement().showModal();
+		};
 	}
 
 	async function createCopy(container: AnyContainer) {
@@ -282,9 +373,19 @@
 			</a>
 		{/if}
 		{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
-			<button class="primary" type="button" on:click={() => createAnother(container)}>
-				<PlusSmall />{$_('create_another')}
-			</button>
+			{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+				<DropDownMenu
+					handleChange={createContainerDerivedFrom(container)}
+					label={$_('create_another')}
+					options={createAnotherOptions}
+				>
+					{#snippet icon()}<PlusSmall />{/snippet}
+				</DropDownMenu>
+			{:else}
+				<button class="primary" type="button" on:click={() => createAnother(container)}>
+					<PlusSmall />{$_('create_another')}
+				</button>
+			{/if}
 		{/if}
 		{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
 			<button

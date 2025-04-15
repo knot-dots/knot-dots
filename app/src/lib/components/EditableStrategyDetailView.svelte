@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
@@ -6,6 +7,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
+	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
@@ -20,17 +22,19 @@
 	import EditableStrategyType from '$lib/components/EditableStrategyType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
 		containerOfType,
+		type NewContainer,
 		paramsFromFragment,
 		type PayloadType,
 		payloadTypes,
 		predicates,
 		type StrategyContainer
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	export let container: StrategyContainer;
 	export let relatedContainers: Container[] = [];
@@ -72,6 +76,26 @@
 				'Content-Type': 'application/json'
 			}
 		});
+	}
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function createContainer(event: Event) {
+		$newContainer = containerOfType(
+			(event as CustomEvent).detail.selected as PayloadType,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			env.PUBLIC_KC_REALM as string
+		) as NewContainer;
+
+		$newContainer.relation = [
+			{ object: container.guid, predicate: predicates.enum['is-part-of-strategy'], position: 0 }
+		];
+
+		createContainerDialog.getElement().showModal();
 	}
 
 	function addChapterURL(url: URL, strategyGuid: string) {
@@ -161,10 +185,20 @@
 					</form>
 				{:else}
 					{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
-						<a class="button" href={addChapterURL($page.url, container.guid)}>
-							<PlusSmall />
-							{$_('chapter')}
-						</a>
+						{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+							<DropDownMenu
+								handleChange={createContainer}
+								label={$_('chapter')}
+								options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+							>
+								{#snippet icon()}<PlusSmall />{/snippet}
+							</DropDownMenu>
+						{:else}
+							<a class="button" href={addChapterURL($page.url, container.guid)}>
+								<PlusSmall />
+								{$_('chapter')}
+							</a>
+						{/if}
 					{/if}
 				{/each}
 			</div>

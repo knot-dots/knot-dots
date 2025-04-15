@@ -1,17 +1,27 @@
 <script lang="ts">
-	import { dndzone } from 'svelte-dnd-action';
-	import type { DndEvent } from 'svelte-dnd-action';
+	import { getContext } from 'svelte';
+	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { browser } from '$app/environment';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import saveContainer from '$lib/client/saveContainer';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import Card from '$lib/components/Card.svelte';
-	import saveContainer from '$lib/client/saveContainer';
-	import { containerOfType, payloadTypes } from '$lib/models';
-	import type { TaskContainer, TaskStatus } from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { createFeatureDecisions } from '$lib/features';
+	import {
+		containerOfType,
+		isTaskContainer,
+		type NewContainer,
+		type PartialRelation,
+		payloadTypes,
+		predicates,
+		type TaskContainer,
+		type TaskStatus,
+		taskStatus
+	} from '$lib/models';
+	import { ability, newContainer } from '$lib/stores';
 
 	export let addItemUrl: string | undefined = undefined;
 	export let items: TaskContainer[] = [];
@@ -40,11 +50,48 @@
 	function containerOfTypeTask() {
 		return containerOfType(
 			payloadTypes.enum.task,
-			$page.data.currentOrganization.guid,
-			$page.data.currentOrganizationalUnit?.guid ?? null,
-			$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid,
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM
 		);
+	}
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function createContainer(event: Event) {
+		event.preventDefault();
+
+		const params = new URLSearchParams(
+			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
+		);
+
+		$newContainer = containerOfTypeTask() as NewContainer;
+
+		if (params.has('taskStatus') && isTaskContainer($newContainer)) {
+			$newContainer.payload.taskStatus = params.get('taskStatus') as TaskStatus;
+		}
+
+		$newContainer.relation = [
+			...params.getAll(predicates.enum['is-part-of']).map(
+				(o): PartialRelation => ({
+					object: o,
+					position: 0,
+					predicate: predicates.enum['is-part-of']
+				})
+			),
+			...params.getAll(predicates.enum['is-part-of-measure']).map(
+				(o): PartialRelation => ({
+					object: o,
+					position: 0,
+					predicate: predicates.enum['is-part-of-measure']
+				})
+			)
+		];
+
+		createContainerDialog.getElement().showModal();
 	}
 </script>
 
@@ -54,7 +101,11 @@
 			{$_(status)}
 		</h2>
 		{#if addItemUrl}
-			<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
+			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
+				<a href={addItemUrl} on:click={createContainer} title={$_('add_item')}><PlusSmall /></a>
+			{:else}
+				<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
+			{/if}
 		{/if}
 	</header>
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}

@@ -1,12 +1,15 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type Container,
 		containerOfType,
@@ -19,15 +22,17 @@
 		isResolutionContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
+		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
+		type PayloadType,
 		payloadTypes,
 		predicates,
 		type Relation,
 		status,
 		type StrategyContainer
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, newContainer } from '$lib/stores';
 	import {
 		resolutionStatusColors,
 		resolutionStatusIcons,
@@ -51,6 +56,28 @@
 	);
 
 	$: currentIndex = isPartOfRelation.findIndex(({ subject }) => container.guid == subject);
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function createContainerAt(position: number) {
+		return (event: Event) => {
+			$newContainer = containerOfType(
+				(event as CustomEvent).detail.selected as PayloadType,
+				isPartOf.organization,
+				isPartOf.organizational_unit,
+				isPartOf.managed_by,
+				env.PUBLIC_KC_REALM as string
+			) as NewContainer;
+
+			$newContainer.relation = [
+				{ object: isPartOf.guid, predicate: predicates.enum['is-part-of-strategy'], position }
+			];
+
+			createContainerDialog.getElement().showModal();
+		};
+	}
 
 	function addChapterURL(url: URL, position: number) {
 		const params = paramsFromFragment(url);
@@ -206,10 +233,20 @@
 	</a>
 
 	{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
-		<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
-			<PlusSmall />
-			{$_('chapter')}
-		</a>
+		{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+			<DropDownMenu
+				handleChange={createContainerAt(currentIndex + 1)}
+				label={$_('chapter')}
+				options={isPartOf.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+			>
+				{#snippet icon()}<PlusSmall />{/snippet}
+			</DropDownMenu>
+		{:else}
+			<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
+				<PlusSmall />
+				{$_('chapter')}
+			</a>
+		{/if}
 	{/if}
 </footer>
 

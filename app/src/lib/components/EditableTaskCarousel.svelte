@@ -1,17 +1,18 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
+	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/heroicons/plus-solid';
-	import { page } from '$app/stores';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
-		isOverlayKey,
-		overlayKey,
-		paramsFromFragment,
+		type Container,
+		containerOfType,
+		type NewContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		type TaskContainer
 	} from '$lib/models';
-	import type { Container, TaskContainer } from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	export let container: Container;
 	export let editable = false;
@@ -23,17 +24,31 @@
 		relationType: [predicates.enum['is-part-of']]
 	}) as Promise<TaskContainer[]>;
 
-	function addTaskURL(url: URL) {
-		const params = paramsFromFragment(url);
-		const newParams = new URLSearchParams([
-			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadTypes.enum.task],
-			[predicates.enum['is-part-of'], container.guid],
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function createContainer() {
+		$newContainer = containerOfType(
+			payloadTypes.enum.task,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as NewContainer;
+
+		$newContainer.relation = [
+			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] },
 			...container.relation
 				.filter(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
-				.map(({ object }) => [predicates.enum['is-part-of-measure'], String(object)])
-		]);
-		return `#${newParams.toString()}`;
+				.map(({ object }) => ({
+					object,
+					position: 0,
+					predicate: predicates.enum['is-part-of-measure']
+				}))
+		];
+
+		createContainerDialog.getElement().showModal();
 	}
 </script>
 
@@ -45,9 +60,11 @@
 			</li>
 		{/each}
 	{/await}
-	{#if editable && $mayCreateContainer(payloadTypes.enum.task, container.managed_by)}
+	{#if $mayCreateContainer(payloadTypes.enum.task, container.managed_by) && editable}
 		<li>
-			<a class="card" href={addTaskURL($page.url)}><Plus /></a>
+			<button aria-label={$_('add_item')} class="card" onclick={createContainer} type="button">
+				<Plus />
+			</button>
 		</li>
 	{/if}
 </ul>

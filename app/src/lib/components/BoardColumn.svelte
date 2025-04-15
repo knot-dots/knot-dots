@@ -1,9 +1,80 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { env } from '$env/dynamic/public';
+	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
+	import {
+		containerOfType,
+		isMeasureContainer,
+		isOrganizationalUnitContainer,
+		isResolutionContainer,
+		isTaskContainer,
+		type NewContainer,
+		overlayKey,
+		type PartialRelation,
+		type PayloadType,
+		predicates,
+		resolutionStatus,
+		type ResolutionStatus,
+		type Status,
+		taskStatus,
+		type TaskStatus
+	} from '$lib/models';
+	import { newContainer } from '$lib/stores';
 
 	export let title: string;
 	export let addItemUrl: string | undefined = undefined;
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function createContainer(event: Event) {
+		event.preventDefault();
+
+		const params = new URLSearchParams(
+			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
+		);
+
+		$newContainer = containerOfType(
+			params.get(overlayKey.enum.create) as PayloadType,
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as NewContainer;
+
+		if (isOrganizationalUnitContainer($newContainer) && params.has('level')) {
+			$newContainer.payload.level = parseInt(params.get('level') as string);
+		} else if (isResolutionContainer($newContainer) && params.has('resolutionStatus')) {
+			$newContainer.payload.resolutionStatus = params.get('resolutionStatus') as ResolutionStatus;
+		} else if (isMeasureContainer($newContainer) && params.has('status')) {
+			$newContainer.payload.status = params.get('status') as Status;
+		} else if (isTaskContainer($newContainer) && params.has('taskStatus')) {
+			$newContainer.payload.taskStatus = params.get('taskStatus') as TaskStatus;
+		}
+
+		$newContainer.relation = [
+			...params.getAll(predicates.enum['is-part-of']).map(
+				(o): PartialRelation => ({
+					object: o,
+					position: 0,
+					predicate: predicates.enum['is-part-of']
+				})
+			),
+			...params.getAll(predicates.enum['is-part-of-measure']).map(
+				(o): PartialRelation => ({
+					object: o,
+					position: 0,
+					predicate: predicates.enum['is-part-of-measure']
+				})
+			)
+		];
+
+		createContainerDialog.getElement().showModal();
+	}
 </script>
 
 <section>
@@ -12,7 +83,11 @@
 			{title}
 		</h2>
 		{#if addItemUrl}
-			<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
+			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
+				<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><PlusSmall /></a>
+			{:else}
+				<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
+			{/if}
 		{/if}
 	</header>
 

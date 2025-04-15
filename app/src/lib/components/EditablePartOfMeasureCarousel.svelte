@@ -1,21 +1,20 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/heroicons/plus-solid';
-	import { page } from '$app/stores';
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
+		containerOfType,
 		type ContainerWithEffect,
-		isOverlayKey,
 		isPartOf,
 		isPartOfMeasure,
-		overlayKey,
-		paramsFromFragment,
+		type NewContainer,
 		type PayloadType,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	export let container: ContainerWithEffect;
 	export let editable = false;
@@ -26,18 +25,25 @@
 		.filter(({ payload }) => payload.type == payloadType)
 		.filter((rc) => isPartOfMeasure(container)(rc) || isPartOf(container)(rc));
 
-	function addItemURL(url: URL) {
-		const params = paramsFromFragment(url);
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
 
-		const newParams = new URLSearchParams([
-			...Array.from(params.entries()).filter(([k]) => !isOverlayKey(k)),
-			[overlayKey.enum.create, payloadType],
-			[predicates.enum['is-part-of'], container.guid],
-			[predicates.enum['is-part-of-measure'], container.guid],
-			['managed-by', container.managed_by]
-		]);
+	function createContainer() {
+		$newContainer = containerOfType(
+			payloadType,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as NewContainer;
 
-		return `#${newParams.toString()}`;
+		$newContainer.relation = [
+			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-measure'] }
+		];
+
+		createContainerDialog.getElement().showModal();
 	}
 </script>
 
@@ -57,9 +63,9 @@
 		{/each}
 		{#if $mayCreateContainer(payloadType, container.managed_by) && editable}
 			<li>
-				<a class="card" href={addItemURL($page.url)} title={$_('add_item')}>
+				<button aria-label={$_('add_item')} class="card" onclick={createContainer} type="button">
 					<Plus />
-				</a>
+				</button>
 			</li>
 		{/if}
 	</ul>
