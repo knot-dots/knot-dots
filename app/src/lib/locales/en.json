@@ -38,6 +38,7 @@
 	"copy_of": "Copy: {title}",
 	"cover": "Cover",
 	"create_another": "Create another element",
+	"create_container_dialog.title": "Create new object",
 	"created_by": "{date, date, long} by {creator}",
 	"created_date": "Created at",
 	"creator": "Creator",

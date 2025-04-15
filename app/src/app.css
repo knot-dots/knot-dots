@@ -407,6 +407,32 @@ button.quiet,
 	--button-border-color: transparent;
 }
 
+button.button-primary,
+.button.button-primary {
+	--button-active-background: var(--color-primary-900);
+	--button-background: var(--color-primary-700);
+	--button-hover-background: var(--color-primary-800);
+
+	border: none;
+	color: white;
+}
+
+button.button-alternative,
+.button.button-alternative {
+	--button-active-background: var(--color-gray-200);
+	--button-background: white;
+	--button-border-color: var(--color-gray-200);
+	--button-hover-background: var(--color-gray-100);
+	--button-hover-border-color: var(--color-gray-200);
+
+	color: var(--color-gray-900);
+}
+
+button.button-alternative:hover,
+.button.button-alternative:hover {
+	color: var(--color-primary-700);
+}
+
 button.fully-rounded,
 .button.fully-rounded {
 	border-radius: calc(1.5rem + var(--padding-y));
@@ -418,6 +444,14 @@ button.button-nav,
 	--button-active-background: var(--color-gray-900);
 	--button-hover-background: var(--button-active-background);
 	--button-hover-border-color: var(--button-border-color);
+}
+
+button.button-xs,
+.button.button-xs {
+	--padding-x: 0.75rem;
+	--padding-y: 0.5rem;
+
+	font-size: 0.75rem;
 }
 
 button:hover,
@@ -907,6 +941,7 @@ label > input[type='checkbox'].toggle {
 	line-height: 1.25;
 	margin-bottom: 0.75rem;
 	margin-top: 3rem;
+	min-height: calc(1.25 * 2.25rem);
 }
 
 .details-editable h3 {

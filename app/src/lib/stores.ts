@@ -34,7 +34,8 @@ import {
 	status,
 	type TaskStatus,
 	taskStatus,
-	type User as UserRecord
+	type User as UserRecord,
+	type NewContainer
 } from '$lib/models';
 
 export const applicationState = writable<ApplicationState>({
@@ -154,6 +155,8 @@ type AddObjectiveState = {
 };
 
 export const addObjectiveState = writable<AddObjectiveState>({});
+
+export const newContainer = writable<NewContainer | undefined>();
 
 export type OverlayData =
 	| {

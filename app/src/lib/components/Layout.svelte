@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
+	import { setContext } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
+	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { overlay } from '$lib/stores';
@@ -11,6 +13,10 @@
 
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
+
+	let dialog: HTMLDialogElement;
+
+	setContext('createContainerDialog', { getElement: () => dialog });
 </script>
 
 <Navigation />
@@ -25,6 +31,7 @@
 		{/if}
 	</main>
 </div>
+<CreateContainerDialog bind:dialog />
 
 <style>
 	div {

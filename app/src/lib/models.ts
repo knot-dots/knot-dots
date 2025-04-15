@@ -1110,31 +1110,41 @@ export function isMeasureMonitoringContainer(
 	);
 }
 
-export function isContainer(container: AnyContainer): container is Container {
+export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
 	return (
 		container.payload.type !== payloadTypes.enum.organization &&
 		container.payload.type !== payloadTypes.enum.organizational_unit
 	);
 }
 
-export type ContainerWithFulfillmentDate = AnyContainer & {
-	payload: AnyPayload & { fulfillmentDate: string | undefined };
+export type ContainerWithAudience = AnyContainer & {
+	payload: AnyPayload & { audience: Audience[] };
 };
 
-export function isContainerWithFulfillmentDate(
-	container: AnyContainer
-): container is ContainerWithFulfillmentDate {
-	return hasProperty(container.payload, 'fulfillmentDate');
+export function isContainerWithAudience(
+	container: AnyContainer | NewContainer
+): container is ContainerWithAudience {
+	return hasProperty(container.payload, 'audience');
 }
 
-export type ContainerWithDuration = AnyContainer & {
-	payload: AnyPayload & { startDate: string; endDate: string };
+export type ContainerWithBody = AnyContainer & {
+	payload: AnyPayload & { body: string | undefined };
 };
 
-export function isContainerWithDuration(
-	container: AnyContainer
-): container is ContainerWithDuration {
-	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
+export function isContainerWithBody(
+	container: AnyContainer | NewContainer
+): container is ContainerWithBody {
+	return hasProperty(container.payload, 'body');
+}
+
+export type ContainerWithCategory = AnyContainer & {
+	payload: AnyPayload & { category: SustainableDevelopmentGoal[] };
+};
+
+export function isContainerWithCategory(
+	container: AnyContainer | NewContainer
+): container is ContainerWithCategory {
+	return hasProperty(container.payload, 'category');
 }
 
 export type ContainerWithDescription = AnyContainer & {
@@ -1142,9 +1152,39 @@ export type ContainerWithDescription = AnyContainer & {
 };
 
 export function isContainerWithDescription(
-	container: AnyContainer
+	container: AnyContainer | NewContainer
 ): container is ContainerWithDescription {
 	return hasProperty(container.payload, 'description');
+}
+
+export type ContainerWithDuration = AnyContainer & {
+	payload: AnyPayload & { startDate: string; endDate: string };
+};
+
+export function isContainerWithDuration(
+	container: AnyContainer | NewContainer
+): container is ContainerWithDuration {
+	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
+}
+
+export type ContainerWithFulfillmentDate = AnyContainer & {
+	payload: AnyPayload & { fulfillmentDate: string | undefined };
+};
+
+export function isContainerWithFulfillmentDate(
+	container: AnyContainer | NewContainer
+): container is ContainerWithFulfillmentDate {
+	return hasProperty(container.payload, 'fulfillmentDate');
+}
+
+export type ContainerWithName = AnyContainer & {
+	payload: AnyPayload & { name: string | undefined };
+};
+
+export function isContainerWithName(
+	container: AnyContainer | NewContainer
+): container is ContainerWithName {
+	return hasProperty(container.payload, 'name');
 }
 
 export type ContainerWithProgress = AnyContainer & {
@@ -1152,7 +1192,7 @@ export type ContainerWithProgress = AnyContainer & {
 };
 
 export function isContainerWithProgress(
-	container: AnyContainer
+	container: AnyContainer | NewContainer
 ): container is ContainerWithProgress {
 	return hasProperty(container.payload, 'progress');
 }
@@ -1161,8 +1201,30 @@ export type ContainerWithStatus = AnyContainer & {
 	payload: AnyPayload & { status: Status };
 };
 
-export function isContainerWithStatus(container: AnyContainer): container is ContainerWithStatus {
+export function isContainerWithStatus(
+	container: AnyContainer | NewContainer
+): container is ContainerWithStatus {
 	return hasProperty(container.payload, 'status');
+}
+
+export type ContainerWithTitle = AnyContainer & {
+	payload: AnyPayload & { title: string | undefined };
+};
+
+export function isContainerWithTitle(
+	container: AnyContainer | NewContainer
+): container is ContainerWithTitle {
+	return hasProperty(container.payload, 'title');
+}
+
+export type ContainerWithTopic = AnyContainer & {
+	payload: AnyPayload & { topic: Topic[] };
+};
+
+export function isContainerWithTopic(
+	container: AnyContainer | NewContainer
+): container is ContainerWithTopic {
+	return hasProperty(container.payload, 'topic');
 }
 
 export const newContainer = anyContainer
