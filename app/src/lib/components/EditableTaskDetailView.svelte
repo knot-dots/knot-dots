@@ -29,20 +29,6 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
-	let selectedRevision: TaskContainer;
-
-	$: {
-		const parseResult = taskStatus.safeParse(paramsFromURL($page.url).get('taskStatus'));
-		if (parseResult.success) {
-			selectedRevision =
-				(revisions as TaskContainer[]).findLast(
-					({ payload }) => payload.taskStatus == parseResult.data
-				) ?? container;
-		} else {
-			selectedRevision = container;
-		}
-	}
-
 	$: managedBy = container.managed_by;
 
 	$: assigneeCandidatesPromise = fetchMembers(managedBy);
@@ -56,24 +42,24 @@
 	$: goal = relatedContainers.find(isContainerWithObjective);
 </script>
 
-<EditableContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
+<EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<EditableTaskStatus
 			editable={$applicationState.containerDetailView.editable}
-			bind:value={selectedRevision.payload.taskStatus}
+			bind:value={container.payload.taskStatus}
 		/>
 
-		{#if $ability.can('read', selectedRevision, 'assignee')}
+		{#if $ability.can('read', container, 'assignee')}
 			<EditableAssignee
 				editable={$applicationState.containerDetailView.editable}
 				candidatesPromise={assigneeCandidatesPromise}
-				bind:value={selectedRevision.payload.assignee}
+				bind:value={container.payload.assignee}
 			/>
 		{/if}
 
 		<EditableTaskCategory
 			editable={$applicationState.containerDetailView.editable}
-			bind:value={selectedRevision.payload.taskCategory}
+			bind:value={container.payload.taskCategory}
 		/>
 
 		<EditableDate
@@ -102,7 +88,7 @@
 	<svelte:fragment slot="extra">
 		<EditableFormattedText
 			editable={$applicationState.containerDetailView.editable}
-			bind:value={selectedRevision.payload.description}
+			bind:value={container.payload.description}
 		/>
 	</svelte:fragment>
 </EditableContainerDetailView>
