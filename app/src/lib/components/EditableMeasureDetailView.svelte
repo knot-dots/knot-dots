@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { _, date } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
+	import { _ } from 'svelte-i18n';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableDuration from '$lib/components/EditableDuration.svelte';
 	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
@@ -44,46 +44,7 @@
 			/>
 		{/if}
 
-		{#if $applicationState.containerDetailView.editable}
-			<div class="label">{$_('planned_duration')}</div>
-			<fieldset>
-				<label class="is-visually-hidden" for="startDate">
-					{$_('start_date')}
-				</label>
-				<input
-					class="value"
-					id="startDate"
-					type="date"
-					bind:value={container.payload.startDate}
-					on:change={requestSubmit}
-				/>
-				–
-				<label class="is-visually-hidden" for="endDate">
-					{$_('end_date')}
-				</label>
-				<input
-					class="value"
-					id="endDate"
-					type="date"
-					bind:value={container.payload.endDate}
-					on:change={requestSubmit}
-				/>
-			</fieldset>
-		{:else}
-			<div class="label">{$_('planned_duration')}</div>
-			<div class="value">
-				{#if container.payload.startDate && container.payload.endDate}
-					{$date(new Date(container.payload.startDate), { format: 'long' })}–{$date(
-						new Date(container.payload.endDate),
-						{ format: 'long' }
-					)}
-				{:else if container.payload.startDate}
-					{$date(new Date(container.payload.startDate), { format: 'long' })}–
-				{:else}
-					{$_('empty')}
-				{/if}
-			</div>
-		{/if}
+		<EditableDuration editable={$applicationState.containerDetailView.editable} bind:container />
 
 		<EditableStatus
 			editable={$applicationState.containerDetailView.editable}
@@ -184,18 +145,3 @@
 		</div>
 	</svelte:fragment>
 </EditableContainerDetailView>
-
-<style>
-	fieldset {
-		border: none;
-		padding: 0;
-	}
-
-	input[type='date'] {
-		border: none;
-		display: inline-flex;
-		line-height: 1.5;
-		max-height: 2.25rem;
-		width: auto;
-	}
-</style>
