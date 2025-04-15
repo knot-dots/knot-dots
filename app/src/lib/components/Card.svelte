@@ -297,7 +297,9 @@
 			<p>
 				{container.payload.amount}
 				{container.payload.unit},
-				{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+				{container.payload.fulfillmentDate
+					? $date(new Date(container.payload.fulfillmentDate), { format: 'medium' })
+					: ''}
 			</p>
 		{:else if 'image' in container.payload}
 			<img alt={$_('cover_image')} src={container.payload.image} />

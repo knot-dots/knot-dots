@@ -24,7 +24,11 @@
 	<svelte:fragment slot="data">
 		<div class="amount">
 			<h3>{$_('amount')}</h3>
-			<p>{$number(container.payload.amount)} {container.payload.unit}</p>
+			<p>
+				{#if container.payload.amount}
+					{$number(container.payload.amount)} {container.payload.unit}
+				{/if}
+			</p>
 		</div>
 	</svelte:fragment>
 
@@ -32,7 +36,9 @@
 		<div class="meta">
 			<h3 class="meta-key">{$_('fulfillment_date')}</h3>
 			<p class="meta-value">
-				{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+				{#if container.payload.fulfillmentDate}
+					{$date(new Date(container.payload.fulfillmentDate), { format: 'medium' })}
+				{/if}
 			</p>
 		</div>
 

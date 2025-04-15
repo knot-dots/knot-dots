@@ -35,22 +35,11 @@
 
 	<label>
 		{$_('amount')}
-		<input
-			type="text"
-			inputmode="numeric"
-			name="amount"
-			bind:value={container.payload.amount}
-			required
-		/>
+		<input type="text" inputmode="numeric" name="amount" bind:value={container.payload.amount} />
 	</label>
 
 	<label>
 		{$_('fulfillment_date')}
-		<input
-			type="date"
-			name="fulfillmentDate"
-			bind:value={container.payload.fulfillmentDate}
-			required
-		/>
+		<input type="date" name="fulfillmentDate" bind:value={container.payload.fulfillmentDate} />
 	</label>
 </fieldset>

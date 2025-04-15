@@ -658,10 +658,10 @@ const initialMilestonePayload = milestonePayload.partial({ title: true });
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
-		amount: z.coerce.number(),
-		fulfillmentDate: z.string().date(),
+		amount: z.coerce.number().optional(),
+		fulfillmentDate: z.string().date().optional(),
 		type: z.literal(payloadTypes.enum.resource),
-		unit: z.string()
+		unit: z.string().optional()
 	})
 	.strict();
 
