@@ -96,15 +96,26 @@
 		{#if measure && (effect || $mayCreateContainer(payloadTypes.enum.effect, container.managed_by))}
 			<div class="detail-tab" id="effect">
 				<h3>{$_('effect')}</h3>
-				<div class="effect-inner" class:editable={$applicationState.containerDetailView.editable}>
+				<ul class="carousel">
 					{#if effect}
-						<Card container={effect} {relatedContainers} />
+						<li>
+							<Card container={effect} {relatedContainers} />
+						</li>
+					{:else if $applicationState.containerDetailView.editable}
+						<li>
+							<button
+								aria-label={$_('add_item')}
+								class="card"
+								type="button"
+								on:click={() => addEffect(container, measure)}
+							>
+								<Plus />
+							</button>
+						</li>
 					{:else}
-						<button class="card" type="button" on:click={() => addEffect(container, measure)}>
-							<Plus />{$_('add_item')}
-						</button>
+						<li>&nbsp;</li>
 					{/if}
-				</div>
+				</ul>
 			</div>
 		{/if}
 
@@ -116,12 +127,21 @@
 </EditableContainerDetailView>
 
 <style>
-	.effect-inner {
+	.card {
+		align-items: center;
+		background: #ffffff;
+		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
-		min-height: 456px;
+		box-shadow: var(--shadow-sm);
+		cursor: pointer;
+		display: grid;
+		grid-row: 1 / 4;
+		min-height: 6rem;
+		justify-content: center;
 	}
 
-	.effect-inner.editable {
-		background-color: var(--color-gray-050);
+	.card :global(svg) {
+		height: 4rem;
+		width: 4rem;
 	}
 </style>
