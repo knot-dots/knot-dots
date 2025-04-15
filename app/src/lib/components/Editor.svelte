@@ -9,8 +9,10 @@
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
 	import { commonmark } from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
+	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
+	import { placeholderConfig, placeholderPlugin } from '$lib/milkdown/placeholder';
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
 	import uploader from '$lib/milkdown/uploader';
 
@@ -55,6 +57,14 @@
 				}));
 			})
 			.config((ctx) => {
+				ctx.update(placeholderConfig.key, (prev) => {
+					return {
+						...prev,
+						text: $_('empty')
+					};
+				});
+			})
+			.config((ctx) => {
 				ctx.set(toolbar.key, {
 					view: toolbarPluginView(ctx)
 				});
@@ -63,6 +73,8 @@
 			.use(gfm)
 			.use(history)
 			.use(listener)
+			.use(placeholderConfig)
+			.use(placeholderPlugin)
 			.use(upload)
 			.use(toolbar)
 			.create()
@@ -110,6 +122,10 @@
 
 	:global([contenteditable]:focus) {
 		outline: none;
+	}
+
+	:global([contenteditable] .placeholder::before) {
+		content: attr(data-placeholder);
 	}
 
 	@container style(--editor-style: new) {
