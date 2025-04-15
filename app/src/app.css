@@ -1244,6 +1244,7 @@ label > input[type='checkbox'].toggle {
 	border-radius: 8px;
 	border: solid 1px var(--color-gray-200);
 	border-color: var(--color-gray-200);
+	box-shadow: var(--shadow-lg);
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;

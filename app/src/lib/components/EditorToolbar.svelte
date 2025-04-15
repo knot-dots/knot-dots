@@ -54,7 +54,7 @@
 		background-color: white;
 		border: solid 1px var(--color-gray-200);
 		border-radius: 12px;
-		box-shadow: var(--shadow-sm);
+		box-shadow: var(--shadow-md);
 		display: flex;
 		gap: 0.25rem;
 		padding: 0.5rem;
