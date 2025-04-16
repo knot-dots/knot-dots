@@ -215,6 +215,17 @@
 			</div>
 		{/if}
 
+		{#if 'policyFieldBNK' in container.payload}
+			<div class="meta">
+				<h3 class="meta-key">{$_('policy_field_bnk')}</h3>
+				<ul class="meta-value meta-value--policy-field-bnk">
+					{#each container.payload.policyFieldBNK as policyFieldBNK}
+						<li>{$_(policyFieldBNK)}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
 		{#if 'category' in container.payload}
 			<div class="meta">
 				<h3 class="meta-key">{$_('category')}</h3>

@@ -18,6 +18,7 @@
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditablePDF from '$lib/components/EditablePDF.svelte';
+	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import EditableStrategyType from '$lib/components/EditableStrategyType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
@@ -146,6 +147,11 @@
 			<EditableTopic
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.topic}
+			/>
+
+			<EditablePolicyFieldBNK
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.payload.policyFieldBNK}
 			/>
 
 			<EditableCategory

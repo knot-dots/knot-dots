@@ -6,6 +6,7 @@
 	import ChapterTypeSelector from '$lib/components/ChapterTypeSelector.svelte';
 	import LevelSelector from '$lib/components/LevelSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import PolicyFieldBNKSelector from '$lib/components/PolicyFieldBNKSelector.svelte';
 	import StrategyTypeSelector from '$lib/components/StrategyTypeSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
@@ -88,6 +89,8 @@
 <ChapterTypeSelector bind:value={container.payload.chapterType} />
 
 <TopicSelector bind:value={container.payload.topic} />
+
+<PolicyFieldBNKSelector bind:value={container.payload.policyFieldBNK} />
 
 <CategorySelector bind:value={container.payload.category} />
 

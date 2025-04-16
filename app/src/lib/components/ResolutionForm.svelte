@@ -4,6 +4,7 @@
 	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
+	import PolicyFieldBNKSelector from '$lib/components/PolicyFieldBNKSelector.svelte';
 	import ResolutionStatusSelector from '$lib/components/ResolutionStatusSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
@@ -54,6 +55,8 @@
 	<StrategyRelationSelector {container} />
 
 	<TopicSelector bind:value={container.payload.topic} />
+
+	<PolicyFieldBNKSelector bind:value={container.payload.policyFieldBNK} />
 
 	<CategorySelector bind:value={container.payload.category} />
 

@@ -3,9 +3,10 @@
 	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
 	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import MeasureTypeSelector from '$lib/components/MeasureTypeSelector.svelte';
 	import IndicatorCategorySelector from '$lib/components/IndicatorCategorySelector.svelte';
 	import IndicatorTypeSelector from '$lib/components/IndicatorTypeSelector.svelte';
+	import MeasureTypeSelector from '$lib/components/MeasureTypeSelector.svelte';
+	import PolicyFieldBNKSelector from '$lib/components/PolicyFieldBNKSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import UnitSelector from '$lib/components/UnitSelector.svelte';
 	import type { ContainerFormTabKey, IndicatorTemplateContainer } from '$lib/models';
@@ -42,6 +43,8 @@
 	<MeasureTypeSelector bind:value={container.payload.measureType} />
 
 	<TopicSelector bind:value={container.payload.topic} />
+
+	<PolicyFieldBNKSelector bind:value={container.payload.policyFieldBNK} />
 
 	<CategorySelector bind:value={container.payload.category} />
 

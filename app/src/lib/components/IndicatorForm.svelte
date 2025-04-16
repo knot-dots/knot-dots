@@ -8,6 +8,7 @@
 	import IndicatorTemplates from '$lib/components/IndicatorTemplates.svelte';
 	import IndicatorTypeSelector from '$lib/components/IndicatorTypeSelector.svelte';
 	import MeasureTypeSelector from '$lib/components/MeasureTypeSelector.svelte';
+	import PolicyFieldBNKSelector from '$lib/components/PolicyFieldBNKSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import UnitSelector from '$lib/components/UnitSelector.svelte';
 	import { hasHistoricalValues, indicatorCategories, quantities } from '$lib/models';
@@ -177,6 +178,8 @@
 		<MeasureTypeSelector bind:value={container.payload.measureType} />
 
 		<TopicSelector bind:value={container.payload.topic} />
+
+		<PolicyFieldBNKSelector bind:value={container.payload.policyFieldBNK} />
 
 		<CategorySelector bind:value={container.payload.category} />
 

@@ -274,6 +274,24 @@ export const topics = z.enum(topicValues);
 
 export type Topic = z.infer<typeof topics>;
 
+const policyFieldBNKValues = [
+	'policy_field_bnk.climate',
+	'policy_field_bnk.circular_economy',
+	'policy_field_bnk.environment',
+	'policy_field_bnk.spatial_development',
+	'policy_field_bnk.housing',
+	'policy_field_bnk.mobility',
+	'policy_field_bnk.social_justice',
+	'policy_field_bnk.education_and_culture',
+	'policy_field_bnk.health',
+	'policy_field_bnk.decent_work',
+	'policy_field_bnk.global_cooperation'
+] as const;
+
+export const policyFieldBNK = z.enum(policyFieldBNKValues);
+
+export type PolicyFieldBNK = z.infer<typeof policyFieldBNK>;
+
 const taskCategoryValues = [
 	'task_category.default',
 	'task_category.program_management',
@@ -444,6 +462,7 @@ const basePayload = z
 		audience: z.array(audience).default([audience.enum['audience.public']]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		description: z.string().trim().optional(),
+		policyFieldBNK: z.array(policyFieldBNK).default([]),
 		summary: z.string().trim().max(200).optional(),
 		title: z.string().trim(),
 		topic: z.array(topics).default([]),

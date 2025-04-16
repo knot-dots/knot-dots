@@ -8,6 +8,7 @@
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
+	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
 	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
@@ -32,6 +33,11 @@
 		<EditableTopic
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={container.payload.topic}
+		/>
+
+		<EditablePolicyFieldBNK
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.policyFieldBNK}
 		/>
 
 		<EditableCategory
