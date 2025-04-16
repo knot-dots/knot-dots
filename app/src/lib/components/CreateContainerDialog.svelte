@@ -386,29 +386,31 @@
 
 <style>
 	article {
-		padding: 0 5rem 1.5rem;
+		padding: 0 1.5rem 1.5rem;
+	}
+
+	@media (min-width: 768px) {
+		article {
+			padding: 0 5rem 1.5rem;
+		}
 	}
 
 	dialog {
 		border: none;
-		margin: 0;
+		border-radius: 8px;
+		box-shadow: var(--shadow-2xl);
+		margin: auto;
 		padding: 0;
-		overflow-y: auto;
-		width: 100%;
+		overflow: auto;
+		width: calc(min(54rem, 100vw));
 	}
 
-	@media (min-width: 768px) {
-		dialog {
-			border-radius: 8px;
-			margin: auto;
-			max-height: 90vh;
-			max-width: 80vw;
-		}
+	dialog::backdrop {
+		background: hsla(0, 0%, 50%, 0.3);
+	}
 
-		dialog::backdrop {
-			background: hsla(0, 0%, 50%, 0.3);
-			backdrop-filter: blur(0.125rem);
-		}
+	dialog > * {
+		min-width: 30rem;
 	}
 
 	.button-primary {
