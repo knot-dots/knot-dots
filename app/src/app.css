@@ -1025,7 +1025,9 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Markdown editor and viewer */
-.markdown-body {
+.markdown-body, .milkdown .editor {
+	font-size: 1rem;
+	line-height: 1.5;
 	min-height: 1.5em;
 }
 
