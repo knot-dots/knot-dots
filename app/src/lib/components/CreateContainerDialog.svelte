@@ -364,7 +364,9 @@
 							<ArrowDown /> {$_('properties.show_all')}
 						{/if}
 					</button>
+				</div>
 
+				<div class="details-tab">
 					{#if isContainerWithDescription($newContainer)}
 						<EditableFormattedText
 							editable
@@ -386,6 +388,7 @@
 
 <style>
 	article {
+		overflow: auto;
 		padding: 0 1.5rem 1.5rem;
 	}
 
@@ -401,7 +404,6 @@
 		box-shadow: var(--shadow-2xl);
 		margin: auto;
 		padding: 0;
-		overflow: auto;
 		width: calc(min(54rem, 100vw));
 	}
 
@@ -453,10 +455,14 @@
 
 	.dialog-actions {
 		align-items: center;
+		background-color: white;
 		display: flex;
 		gap: 0.5rem;
 		justify-content: space-between;
 		padding: 1.5rem;
+		position: sticky;
+		top: 0;
+		z-index: 1;
 	}
 
 	.dialog-actions span {
