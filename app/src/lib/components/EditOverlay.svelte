@@ -13,6 +13,7 @@
 	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
 	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
 	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
@@ -117,6 +118,7 @@
 				<MeasureTypeFilter />
 				<CategoryFilter />
 				<TopicFilter />
+				<PolicyFieldBNKFilter />
 				<IndicatorTypeFilter />
 			</svelte:fragment>
 			<slot slot="extra" />

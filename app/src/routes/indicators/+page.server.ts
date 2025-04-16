@@ -45,6 +45,7 @@ export const load = (async ({ locals, parent, url }) => {
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
 					organizationalUnits,
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]
 				},

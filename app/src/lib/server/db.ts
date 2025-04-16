@@ -414,6 +414,7 @@ function prepareWhereCondition(filters: {
 	measureTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
+	policyFieldsBNK?: string[];
 	strategyTypes?: string[];
 	taskCategories?: string[];
 	template?: boolean;
@@ -466,6 +467,11 @@ function prepareWhereCondition(filters: {
 				filters.organizationalUnits,
 				sql.fragment`, `
 			)})`
+		);
+	}
+	if (filters.policyFieldsBNK?.length) {
+		conditions.push(
+			sql.fragment`c.payload->'policyFieldBNK' ?| ${sql.array(filters.policyFieldsBNK, 'text')}`
 		);
 	}
 	if (filters.strategyTypes?.length) {
@@ -575,6 +581,7 @@ export function getManyContainers(
 		measureTypes?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
+		policyFieldsBNK?: string[];
 		strategyTypes?: string[];
 		taskCategories?: string[];
 		template?: boolean;
@@ -778,6 +785,7 @@ export function getAllRelatedContainers(
 		categories?: string[];
 		measureTypes?: string[];
 		organizationalUnits?: string[];
+		policyFieldsBNK?: string[];
 		strategyTypes?: string[];
 		taskCategories?: string[];
 		terms?: string;
@@ -880,6 +888,7 @@ export function getAllRelatedContainersByStrategyType(
 		categories?: string[];
 		measureTypes?: string[];
 		organizationalUnits?: string[];
+		policyFieldsBNK?: string[];
 		terms?: string;
 		topics?: string[];
 		type?: PayloadType[];
@@ -1039,7 +1048,13 @@ export function getAllContainersRelatedToIndicators(
 
 export function getAllContainersRelatedToStrategy(
 	guid: string,
-	filters: { categories?: string[]; terms?: string; topics?: string[]; type?: PayloadType[] }
+	filters: {
+		categories?: string[];
+		policyFieldsBNK?: string[];
+		terms?: string;
+		topics?: string[];
+		type?: PayloadType[];
+	}
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const predicate = [
@@ -1131,6 +1146,7 @@ export function getAllContainersRelatedToMeasure(
 	filters: {
 		assignees?: string[];
 		categories?: string[];
+		policyFieldsBNK?: string[];
 		taskCategories?: string[];
 		terms?: string;
 		topics?: string[];

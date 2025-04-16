@@ -343,6 +343,7 @@ if (browser) {
 				const relatedContainers = (await fetchContainers({
 					category: hashParams.getAll('category'),
 					isPartOfStrategy: [container.guid],
+					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				})) as Container[];
@@ -429,6 +430,7 @@ if (browser) {
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
 						: {}),
+					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				},
@@ -449,6 +451,7 @@ if (browser) {
 					category: hashParams.getAll('category'),
 					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
+					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-strategy']],
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')

@@ -46,6 +46,7 @@ export const load = (async ({ locals, url, parent }) => {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
 					categories: url.searchParams.getAll('category'),
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					topics: url.searchParams.getAll('topic'),
 					terms: url.searchParams.get('terms') ?? '',
 					type: [

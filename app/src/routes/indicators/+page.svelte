@@ -7,6 +7,7 @@
 	import Indicators from '$lib/components/Indicators.svelte';
 	import IndicatorsIncludedFilter from '$lib/components/IndicatorsIncludedFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { isOrganizationalUnitContainer, isOrganizationContainer, predicates } from '$lib/models';
@@ -30,6 +31,7 @@
 					<IndicatorCategoryFilter />
 					<CategoryFilter />
 					<TopicFilter />
+					<PolicyFieldBNKFilter />
 				</svelte:fragment>
 			</Sidebar>
 		{:else if isOrganizationalUnitContainer(data.container)}
@@ -41,6 +43,7 @@
 					<IndicatorCategoryFilter />
 					<CategoryFilter />
 					<TopicFilter />
+					<PolicyFieldBNKFilter />
 				</svelte:fragment>
 			</Sidebar>
 		{/if}

@@ -4,6 +4,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -68,6 +69,7 @@
 				<OrganizationIncludedFilter />
 				<CategoryFilter />
 				<TopicFilter />
+				<PolicyFieldBNKFilter />
 			</svelte:fragment>
 
 			<Sort slot="sort" />

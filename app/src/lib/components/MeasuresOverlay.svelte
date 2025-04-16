@@ -18,6 +18,7 @@
 			<AudienceFilter />
 			<CategoryFilter />
 			<TopicFilter />
+			<PolicyFieldBNKFilter />
 			<MeasureTypeFilter />
 		</svelte:fragment>
 		<Sort slot="sort" />

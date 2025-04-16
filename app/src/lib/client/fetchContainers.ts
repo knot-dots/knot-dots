@@ -15,6 +15,7 @@ export default async function fetchContainers(
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: PayloadType[];
+		policyFieldBNK?: string[];
 		relatedTo?: string[];
 		relationType?: string[];
 		strategyType?: string[];
@@ -57,6 +58,9 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
+	}
+	for (const value of filters.policyFieldBNK ?? []) {
+		params.append('policyFieldBNK', value);
 	}
 	for (const value of filters.relatedTo ?? []) {
 		params.append('relatedTo', value);

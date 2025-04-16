@@ -11,6 +11,7 @@
 	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import {
@@ -124,6 +125,7 @@
 				<IndicatorCategoryFilter />
 				<CategoryFilter />
 				<TopicFilter />
+				<PolicyFieldBNKFilter />
 			</svelte:fragment>
 		</Sidebar>
 	</svelte:fragment>

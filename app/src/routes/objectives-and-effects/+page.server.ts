@@ -15,6 +15,7 @@ export const load = (async ({ locals, parent, url }) => {
 				categories: url.searchParams.getAll('category'),
 				indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 				indicatorTypes: url.searchParams.getAll('indicatorType'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 				topics: url.searchParams.getAll('topic'),
 				type: [payloadTypes.enum.indicator]
 			},

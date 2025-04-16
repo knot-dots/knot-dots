@@ -23,6 +23,7 @@ import {
 	type NewContainer,
 	newContainer,
 	payloadTypes,
+	policyFieldBNK,
 	predicates,
 	strategyTypes,
 	sustainableDevelopmentGoals,
@@ -51,6 +52,7 @@ export const GET = (async ({ locals, url }) => {
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
+		policyFieldBNK: z.array(policyFieldBNK).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
@@ -78,6 +80,7 @@ export const GET = (async ({ locals, url }) => {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
 				categories: parseResult.data.category,
+				policyFieldsBNK: parseResult.data.policyFieldBNK,
 				terms: parseResult.data.terms[0],
 				topics: parseResult.data.topic,
 				type: parseResult.data.payloadType
@@ -117,6 +120,7 @@ export const GET = (async ({ locals, url }) => {
 					indicatorTypes: parseResult.data.indicatorType,
 					measureTypes: parseResult.data.measureType,
 					organizationalUnits: parseResult.data.organizationalUnit,
+					policyFieldsBNK: parseResult.data.policyFieldBNK,
 					strategyTypes: parseResult.data.strategyType,
 					terms: parseResult.data.terms[0],
 					topics: parseResult.data.topic,

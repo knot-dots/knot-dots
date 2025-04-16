@@ -47,6 +47,7 @@ export const load = (async ({ locals, url, parent }) => {
 						? url.searchParams.getAll('audience')
 						: [audience.enum['audience.public'], audience.enum['audience.organization']],
 					categories: url.searchParams.getAll('category'),
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					topics: url.searchParams.getAll('topic'),
 					strategyTypes: url.searchParams.getAll('strategyType'),
 					terms: url.searchParams.get('terms') ?? '',

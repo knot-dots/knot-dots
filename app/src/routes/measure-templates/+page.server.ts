@@ -26,6 +26,7 @@ export const load = (async ({ locals, url, parent }) => {
 					: [audience.enum['audience.public'], audience.enum['audience.organization']],
 				categories: url.searchParams.getAll('category'),
 				measureTypes: url.searchParams.getAll('measureType'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 				topics: url.searchParams.getAll('topic'),
 				template: true,
 				terms: url.searchParams.get('terms') ?? '',

@@ -11,6 +11,7 @@ export default async function fetchRelatedContainers(
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
+		policyFieldBNK?: string[];
 		relationType?: string[];
 		strategy?: string[];
 		strategyType?: string[];
@@ -41,6 +42,9 @@ export default async function fetchRelatedContainers(
 	}
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
+	}
+	for (const value of filters.policyFieldBNK ?? []) {
+		params.append('policyFieldBNK', value);
 	}
 	for (const value of filters.relationType ?? []) {
 		params.append('relationType', value);

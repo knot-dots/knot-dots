@@ -9,7 +9,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
-	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -44,6 +44,7 @@
 					<OrganizationIncludedFilter />
 					<CategoryFilter />
 					<TopicFilter />
+					<PolicyFieldBNKFilter />
 					<StrategyTypeFilter />
 				</svelte:fragment>
 
@@ -57,6 +58,7 @@
 					<AudienceFilter />
 					<CategoryFilter />
 					<TopicFilter />
+					<PolicyFieldBNKFilter />
 					<StrategyTypeFilter />
 				</svelte:fragment>
 

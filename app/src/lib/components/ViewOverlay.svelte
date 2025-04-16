@@ -18,6 +18,7 @@
 	import MeasureResultDetailView from '$lib/components/MeasureResultDetailView.svelte';
 	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import ResolutionDetailView from '$lib/components/ResolutionDetailView.svelte';
 	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -252,6 +253,7 @@
 				/>
 				<CategoryFilter />
 				<TopicFilter />
+				<PolicyFieldBNKFilter />
 			</svelte:fragment>
 			<svelte:fragment slot="viewMode">
 				<StrategyViewModes />

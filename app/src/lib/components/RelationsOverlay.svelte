@@ -1,6 +1,7 @@
 <script lang="ts">
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import Relations from '$lib/components/Relations.svelte';
 	import RelationTypeFilter from '$lib/components/RelationTypeFilter.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -21,6 +22,7 @@
 			<AudienceFilter />
 			<CategoryFilter />
 			<TopicFilter />
+			<PolicyFieldBNKFilter />
 			<StrategyTypeFilter />
 		</svelte:fragment>
 		<Sort slot="sort" />

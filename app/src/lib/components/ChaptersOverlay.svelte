@@ -2,6 +2,7 @@
 	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Chapters from '$lib/components/Chapters.svelte';
+	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Sort from '$lib/components/Sort.svelte';
@@ -18,6 +19,7 @@
 			<AudienceFilter />
 			<CategoryFilter />
 			<TopicFilter />
+			<PolicyFieldBNKFilter />
 		</svelte:fragment>
 		<Sort slot="sort" />
 		<slot slot="extra" />
