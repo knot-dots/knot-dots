@@ -62,6 +62,7 @@
 
 	.toolbar li {
 		display: flex;
+		padding: 0;
 	}
 
 	.toolbar button {
