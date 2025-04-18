@@ -460,6 +460,7 @@ export const boards = z.enum([
 
 const basePayload = z
 	.object({
+		aiSuggestion: z.boolean().default(false),
 		audience: z.array(audience).default([audience.enum['audience.public']]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		description: z.string().trim().optional(),

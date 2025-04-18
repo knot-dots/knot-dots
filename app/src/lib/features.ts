@@ -2,7 +2,8 @@ export const featureFlags = [
 	'NewOnboardingWorkflow',
 	'ImportFromCsv',
 	'NewEditingExperience',
-	'TableViewMode'
+	'TableViewMode',
+	'AI'
 ] as const;
 
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
@@ -18,6 +19,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useViewModes() {
 			return features.includes('TableViewMode');
+		},
+		useAI() {
+			return features.includes('AI');
 		}
 	};
 }
