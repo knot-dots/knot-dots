@@ -351,6 +351,7 @@
 										$newContainer.payload.type,
 										'organizational_unit'
 									)}
+									organization={$newContainer.organization}
 									bind:value={$newContainer.organizational_unit}
 								/>
 							{/if}

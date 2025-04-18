@@ -4,11 +4,12 @@
 
 	interface Props {
 		editable?: boolean;
+		organization: string;
 		value: string;
 	}
 
-	let { editable = false, value = $bindable() } = $props();
+	let { editable = false, organization, value = $bindable() } = $props();
 </script>
 
 <div class="label">{$_('organizational_unit')}</div>
-<OrganizationalUnitDropdown {editable} bind:value />
+<OrganizationalUnitDropdown {editable} {organization} bind:value />

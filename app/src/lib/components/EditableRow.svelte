@@ -140,6 +140,7 @@
 <div class="cell">
 	<OrganizationalUnitDropdown
 		editable={editable && $ability.can('update', container, 'organizational_unit')}
+		organization={container.organization}
 		bind:value={container.organizational_unit}
 	/>
 </div>

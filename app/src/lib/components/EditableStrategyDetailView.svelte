@@ -173,6 +173,7 @@
 			<EditableOrganizationalUnit
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container.payload.type, 'organizational_unit')}
+				organization={container.organization}
 				bind:value={container.organizational_unit}
 			/>
 		</svelte:fragment>

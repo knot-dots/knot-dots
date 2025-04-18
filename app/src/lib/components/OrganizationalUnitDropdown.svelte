@@ -6,22 +6,24 @@
 
 	interface Props {
 		editable?: boolean;
+		organization: string;
 		value: string | null;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, organization, value = $bindable() }: Props = $props();
+
+	let options = $derived(
+		page.data.organizationalUnits
+			.filter((ou) => ou.organization == organization)
+			.map(({ guid, payload }) => ({
+				value: guid,
+				label: payload.name
+			}))
+	);
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown
-		handleChange={requestSubmit}
-		offset={[0, -39]}
-		options={page.data.organizationalUnits.map(({ guid, payload }) => ({
-			value: guid,
-			label: payload.name
-		}))}
-		bind:value
-	/>
+	<SingleChoiceDropdown handleChange={requestSubmit} offset={[0, -39]} {options} bind:value />
 {:else}
 	<span class="value">
 		{page.data.organizationalUnits.find(({ guid }) => guid === value)?.payload.name ?? $_('empty')}
