@@ -2,6 +2,7 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import AskAI from '~icons/knotdots/ask-ai';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
@@ -21,6 +22,7 @@
 		isPartOf as isPartOfFilter,
 		isResolutionContainer,
 		isSimpleMeasureContainer,
+		isSuggestedByAI,
 		isTaskContainer,
 		type NewContainer,
 		overlayKey,
@@ -132,6 +134,9 @@
 
 <ul class="badges">
 	<li class="badge badge--purple">{$_(container.payload.type)}</li>
+	{#if isSuggestedByAI(container)}
+		<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
+	{/if}
 	{#if isContainerWithStatus(container)}
 		{@const StatusIcon = statusIcons.get(container.payload.status)}
 		{#key container.payload.status}

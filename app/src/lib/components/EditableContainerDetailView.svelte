@@ -4,6 +4,7 @@
 	import { _, date } from 'svelte-i18n';
 	import ArrowDown from '~icons/heroicons/arrow-down-16-solid';
 	import ArrowUp from '~icons/heroicons/arrow-up-16-solid';
+	import AskAI from '~icons/knotdots/ask-ai';
 	import { page } from '$app/stores';
 	import autoSave from '$lib/client/autoSave';
 	import fetchMembers from '$lib/client/fetchMembers';
@@ -21,6 +22,7 @@
 		isContainerWithStatus,
 		isHeadOf,
 		isResolutionContainer,
+		isSuggestedByAI,
 		isTaskContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -91,6 +93,9 @@
 
 			<ul class="badges">
 				<li class="badge badge--purple">{$_(container.payload.type)}</li>
+				{#if isSuggestedByAI(container)}
+					<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
+				{/if}
 				{#if isContainerWithStatus(container)}
 					{@const StatusIcon = statusIcons.get(container.payload.status)}
 					{#key container.payload.status}
