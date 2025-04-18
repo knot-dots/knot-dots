@@ -176,7 +176,6 @@
 
 	function createContainerDerivedFrom(container: AnyContainer) {
 		return async (event: Event) => {
-			console.log(event);
 			$newContainer = containerOfType(
 				(event as CustomEvent).detail.selected,
 				container.organization,
@@ -215,6 +214,36 @@
 					? { visibility: container.payload.visibility }
 					: undefined)
 			};
+
+			const isPartOfStrategyRelation = container.relation.find(
+				({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
+			);
+
+			const isPartOfMeasureRelation = container.relation.find(
+				({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+			);
+
+			if (isStrategyContainer(container)) {
+				$newContainer.relation = [
+					{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-strategy'] }
+				];
+			} else if (isPartOfStrategyRelation) {
+				$newContainer.relation = [
+					{
+						object: isPartOfStrategyRelation.object,
+						position: isPartOfStrategyRelation.position + 1,
+						predicate: predicates.enum['is-part-of-strategy']
+					}
+				];
+			} else if (isPartOfMeasureRelation) {
+				$newContainer.relation = [
+					{
+						object: isPartOfMeasureRelation.object,
+						position: 0,
+						predicate: predicates.enum['is-part-of-measure']
+					}
+				];
+			}
 
 			createContainerDialog.getElement().showModal();
 		};
