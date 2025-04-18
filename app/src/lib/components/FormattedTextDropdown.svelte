@@ -71,13 +71,10 @@
 		width: 50%;
 	}
 
-	.dropdown-panel > :global(.markdown-body) {
-		padding: 0.75rem 1rem;
-	}
-
-	.dropdown-panel :global(.editor) {
+	.dropdown-panel > :global(*) {
+		max-height: 20rem;
 		overflow-x: hidden;
 		overflow-y: auto;
-		max-height: 20rem;
+		padding: 0.75rem 1rem;
 	}
 </style>
