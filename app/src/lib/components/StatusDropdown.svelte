@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import { type Status, status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
@@ -41,7 +42,7 @@
 				{#each status.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
 					{@const StatusIcon = statusIcons.get(option.value)}
 					<label>
-						<input type="radio" value={option.value} bind:group={value} />
+						<input onchange={requestSubmit} type="radio" value={option.value} bind:group={value} />
 						<span class="badge badge--{statusColors.get(option.value)}">
 							<StatusIcon />
 							{option.label}
