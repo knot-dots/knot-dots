@@ -3,8 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import AskAI from '~icons/knotdots/ask-ai';
 	import CopyCat from '~icons/knotdots/copycat';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -59,7 +60,8 @@
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
-		quantities
+		quantities,
+		type StrategyContainer
 	} from '$lib/models';
 	import {
 		ability,
@@ -286,6 +288,30 @@
 		}
 		confirmDeleteDialog.close();
 	}
+
+	let isThinking = false;
+
+	async function askAI(container: StrategyContainer) {
+		isThinking = true;
+
+		try {
+			const response = await fetch('/ask-ai', {
+				credentials: 'include',
+				body: new URLSearchParams({ strategy: container.guid }),
+				method: 'POST'
+			});
+
+			if (response.ok) {
+				await invalidateAll();
+			} else {
+				alert($_('error_asking_ai'));
+			}
+		} catch (e) {
+			alert($_('error_asking_ai'));
+		} finally {
+			isThinking = false;
+		}
+	}
 </script>
 
 <aside>
@@ -444,16 +470,27 @@
 					<PlusSmall />{$_('create_another')}
 				</button>
 			{/if}
-		{/if}
-		{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
-			<button
-				class="button-copycat"
-				title={$_('copy')}
-				type="button"
-				on:click={() => createCopy(container)}
-			>
-				<CopyCat />
-			</button>
+			{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+				<button
+					class="button-copycat"
+					title={$_('copy')}
+					type="button"
+					on:click={() => createCopy(container)}
+				>
+					<CopyCat />
+				</button>
+			{/if}
+			{#if isStrategyContainer(container) && createFeatureDecisions($page.data.features).useAI() && $ability.can('create', payloadTypes.enum.undefined)}
+				<button
+					class="button-ai"
+					class:is-active={isThinking}
+					type="button"
+					on:click={() => askAI(container)}
+				>
+					<AskAI />
+					{$_('ask_ai')}
+				</button>
+			{/if}
 		{/if}
 		{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
 			<button

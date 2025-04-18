@@ -446,6 +446,28 @@ button.button-nav,
 	--button-hover-border-color: var(--button-border-color);
 }
 
+button.button-ai {
+	--button-active-background: linear-gradient(62deg, rgba(240, 82, 82, 0.40) 17.85%, rgba(154, 122, 225, 0.40) 46.05%, rgba(22, 189, 202, 0.40) 74.26%), #FFF;
+	--button-background: white;
+	--button-hover-background: linear-gradient(62deg, rgba(240, 82, 82, 0.20) 17.85%, rgba(154, 122, 225, 0.20) 46.05%, rgba(22, 189, 202, 0.20) 74.26%), #FFF;
+
+	border: none;
+	box-sizing: content-box;
+	position: relative;
+}
+
+button.button-ai::before {
+	border-radius: inherit;
+	background: linear-gradient(62deg, #F05252 17.85%, #9A7AE1 46.05%, #16BDCA 74.26%);
+	content: "";
+	height: calc(100% + 2px);
+	left: -1px;
+	position: absolute;
+	top: -1px;
+	width: calc(100% + 2px);
+	z-index: -1;
+}
+
 button.button-xs,
 .button.button-xs {
 	--padding-x: 0.75rem;

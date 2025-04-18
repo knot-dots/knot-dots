@@ -1422,19 +1422,6 @@ export interface CustomEventMap {
 	};
 }
 
-export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
-	return function (candidate: AnyContainer) {
-		return (
-			container.relation.findIndex(
-				(r) =>
-					r.predicate === predicates.enum['is-part-of'] &&
-					r.subject === candidate.guid &&
-					candidate.guid !== container.guid
-			) > -1
-		);
-	};
-}
-
 export const user = z.object({
 	email: z.string().email().optional(),
 	family_name: z.string().max(32).default(''),
@@ -1474,6 +1461,19 @@ export const newUser = z.object({
 
 export type NewUser = z.infer<typeof newUser>;
 
+export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
+	return function (candidate: AnyContainer) {
+		return (
+			container.relation.findIndex(
+				(r) =>
+					r.predicate === predicates.enum['is-part-of'] &&
+					r.subject === candidate.guid &&
+					candidate.guid !== container.guid
+			) > -1
+		);
+	};
+}
+
 export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: string }) {
 	return function (candidate: AnyContainer) {
 		return (
@@ -1497,6 +1497,10 @@ export function isRelatedTo(container: { relation: Relation[]; guid: string }) {
 			) > -1
 		);
 	};
+}
+
+export function isSuggestedByAI(container: Container) {
+	return 'aiSuggestion' in container.payload && container.payload.aiSuggestion;
 }
 
 export function hasMember(user: { guid: string }) {
