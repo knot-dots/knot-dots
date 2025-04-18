@@ -116,7 +116,6 @@
 
 	.badge .badge-text {
 		display: block;
-		font-size: 0.75rem;
 		max-width: 10rem;
 		overflow: hidden;
 		text-overflow: ellipsis;
