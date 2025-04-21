@@ -353,7 +353,7 @@
 		</Sidebar>
 	{/if}
 </aside>
-{#if isIndicatorContainer(container)}
+{#if !createFeatureDecisions($page.data.features).useEditableDetailView() && isIndicatorContainer(container)}
 	<header class="content-header">
 		<IndicatorTabs {container} />
 	</header>
