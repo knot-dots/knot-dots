@@ -385,6 +385,7 @@
 		"dragged_is_concrete_target_of_selected": "… ist erwartete Wirkung von „{selected}“",
 		"dragged_is_prerequisite_for_selected": "… ist Voraussetzung für „{selected}“",
 		"dragged_is_sub_target_of_selected": "… ist Teil von „{selected}“",
+		"dragged_is_subtask_of_selected": "… ist Teilaufgabe von „{selected}“",
 		"dragged_is_superordinate_of_selected": "… ist „{selected}“ übergeordnet",
 		"help": "Bitte ziehen Sie alle Kacheln (per Drag and Drop) auf das entsprechende Feld, mit denen Sie eine Beziehungen zu „{nameOrTitle}“ festlegen möchten.",
 		"is_consistent_with": "unterstützen sich",
@@ -397,6 +398,7 @@
 		"selected_is_concrete_target_of_dragged": "„{selected}“ ist erwartete Wirkung von …",
 		"selected_is_prerequisite_for_dragged": "„{selected}“ ist Voraussetzung für …",
 		"selected_is_sub_target_of_dragged": "„{selected}“ ist Teil von …",
+		"selected_is_subtask_of_dragged": "„{selected}“ ist Teilaufgabe von …",
 		"selected_is_superordinate_of_dragged": "„{selected}“ ist … übergeordnet"
 	},
 	"relations": "Beziehungen",

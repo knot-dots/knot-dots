@@ -157,6 +157,7 @@ const predicateValues = [
 	'is-part-of-strategy',
 	'is-prerequisite-for',
 	'is-sub-target-of',
+	'is-subtask-of',
 	'is-superordinate-of'
 ] as const;
 

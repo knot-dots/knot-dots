@@ -45,7 +45,11 @@ export const load = (async ({ locals, parent, url }) => {
 			getAllRelatedContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.get('related-to') as string,
-				[predicates.enum['is-part-of']],
+				[
+					predicates.enum['is-part-of'],
+					predicates.enum['is-prerequisite-for'],
+					predicates.enum['is-subtask-of']
+				],
 				{},
 				'priority'
 			)
