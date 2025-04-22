@@ -480,7 +480,7 @@
 					<CopyCat />
 				</button>
 			{/if}
-			{#if isStrategyContainer(container) && createFeatureDecisions($page.data.features).useAI() && $ability.can('create', payloadTypes.enum.undefined)}
+			{#if createFeatureDecisions($page.data.features).useAI() && isStrategyContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
 				<button
 					class="button-ai"
 					class:is-active={isThinking}
