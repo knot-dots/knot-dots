@@ -412,6 +412,16 @@ export const audience = z.enum(audienceValues);
 
 export type Audience = z.infer<typeof audience>;
 
+const editorialStateValues = [
+	'editorial_state.new',
+	'editorial_state.in_progress',
+	'editorial_state.approved'
+] as const;
+
+export const editorialState = z.enum(editorialStateValues);
+
+export type EditorialState = z.infer<typeof editorialState>;
+
 export const relation = z.object({
 	object: z.string().uuid(),
 	position: z.number().int().nonnegative(),
@@ -464,6 +474,7 @@ const basePayload = z
 		audience: z.array(audience).default([audience.enum['audience.public']]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		description: z.string().trim().optional(),
+		editorialState: editorialState.optional(),
 		policyFieldBNK: z.array(policyFieldBNK).default([]),
 		summary: z.string().trim().max(200).optional(),
 		title: z.string().trim(),

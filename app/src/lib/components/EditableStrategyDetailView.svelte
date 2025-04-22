@@ -13,6 +13,7 @@
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableLevel from '$lib/components/EditableLevel.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
@@ -118,6 +119,14 @@
 {#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
 	<EditableContainerDetailView {container} {relatedContainers} {revisions} tabs={['basic-data']}>
 		<svelte:fragment slot="data">
+			{#if $ability.can('read', container, 'payload.editorialState')}
+				<EditableEditorialState
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container, 'payload.editorialState')}
+					bind:value={container.payload.editorialState}
+				/>
+			{/if}
+
 			<EditableLevel
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.level}

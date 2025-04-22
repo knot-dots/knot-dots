@@ -56,6 +56,10 @@
 		"emphasis": "I",
 		"strong": "B"
 	},
+	"editorial_state": "Editorial state",
+	"editorial_state.new": "New",
+	"editorial_state.in_progress": "In progress",
+	"editorial_state.approved": "Approved",
 	"effect": "Effect",
 	"effects": "Effects",
 	"empty": "Empty",

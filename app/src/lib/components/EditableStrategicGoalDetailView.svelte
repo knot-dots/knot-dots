@@ -4,6 +4,7 @@
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
+	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
@@ -23,6 +24,14 @@
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
+		{#if $ability.can('read', container, 'payload.editorialState')}
+			<EditableEditorialState
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container, 'payload.editorialState')}
+				bind:value={container.payload.editorialState}
+			/>
+		{/if}
+
 		<EditableDate
 			editable={$applicationState.containerDetailView.editable}
 			label={$_('fulfillment_date')}

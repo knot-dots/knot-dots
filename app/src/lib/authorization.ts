@@ -180,6 +180,10 @@ export default function defineAbilityFor(user: User) {
 			'payload.visibility': visibility.enum.organization,
 			guid: { $in: [...user.memberOf] }
 		});
+		can('read', payloadTypes.options, ['payload.editorialState'], {
+			'payload.visibility': visibility.enum.members,
+			managed_by: { $in: user.memberOf }
+		});
 		can('read', payloadTypes.enum.task, ['assignee'], {
 			'payload.visibility': visibility.enum.members,
 			managed_by: { $in: user.memberOf }
@@ -188,6 +192,9 @@ export default function defineAbilityFor(user: User) {
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
+		});
+		can('update', payloadTypes.options, ['payload.editorialState'], {
+			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 	}
 

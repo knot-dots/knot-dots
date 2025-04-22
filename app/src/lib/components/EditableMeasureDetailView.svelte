@@ -4,6 +4,7 @@
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableDuration from '$lib/components/EditableDuration.svelte';
+	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
@@ -38,6 +39,14 @@
 	tabs={['basic-data', 'resources', 'effects', 'milestones', 'metadata']}
 >
 	<svelte:fragment slot="data">
+		{#if $ability.can('read', container, 'payload.editorialState')}
+			<EditableEditorialState
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container, 'payload.editorialState')}
+				bind:value={container.payload.editorialState}
+			/>
+		{/if}
+
 		{#if isSimpleMeasureContainer(container)}
 			<EditableFile
 				editable={$applicationState.containerDetailView.editable}
