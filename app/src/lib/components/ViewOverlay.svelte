@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { getContext, hasContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import CopyCat from '~icons/knotdots/copycat';
+	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import CopyCat from '~icons/knotdots/copycat';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import createObjective from '$lib/client/createObjective';
+	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
@@ -53,11 +56,19 @@
 		type NewContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
+		paramsFromFragment,
 		payloadTypes,
 		predicates,
 		quantities
 	} from '$lib/models';
-	import { ability, newContainer, user } from '$lib/stores';
+	import {
+		ability,
+		applicationState,
+		mayDeleteContainer,
+		newContainer,
+		overlayHistory,
+		user
+	} from '$lib/stores';
 
 	export let container: AnyContainer;
 	export let relatedContainers: Container[];
@@ -259,6 +270,22 @@
 			await goto(`#view=${objective.guid}&edit`, { invalidateAll: true });
 		};
 	}
+
+	let confirmDeleteDialog: HTMLDialogElement;
+
+	async function handleDelete(c: AnyContainer) {
+		const response = await deleteContainer(c);
+		if (response.ok) {
+			if ($overlayHistory.length > 1) {
+				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+				const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+				await goto(`#${newParams.toString()}`, { invalidateAll: true });
+			} else {
+				await goto('#', { invalidateAll: true });
+			}
+		}
+		confirmDeleteDialog.close();
+	}
 </script>
 
 <aside>
@@ -437,5 +464,22 @@
 				{$_('indicator.save_as_template')}
 			</button>
 		{/if}
+		{#if createFeatureDecisions($page.data.features).useEditableDetailView() && $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+			<button
+				aria-label={$_('delete')}
+				class="delete quiet"
+				type="button"
+				on:click={() => confirmDeleteDialog.showModal()}
+			>
+				<TrashBin />
+			</button>
+		{/if}
 	</div>
 </footer>
+
+<ConfirmDeleteDialog
+	bind:dialog={confirmDeleteDialog}
+	handleSubmit={() => handleDelete(container)}
+	{container}
+	{relatedContainers}
+/>
