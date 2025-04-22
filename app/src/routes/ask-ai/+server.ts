@@ -15,18 +15,19 @@ import {
 import { createContainer, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-const aiResponseSchema = z.object({
-	projects: z.array(
-		z.object({
-			Content: z.string(),
-			Status: z.string(),
-			'Short Description': z.string(),
-			Title: z.string()
-		})
-	)
-});
-
-// type Project = z.infer<typeof aiResponseSchema>['projects'][0];
+const aiResponseSchema = z.union([
+	z.object({
+		projects: z.array(
+			z.object({
+				Content: z.string(),
+				Status: z.string(),
+				'Short Description': z.string(),
+				Title: z.string()
+			})
+		)
+	}),
+	z.object({ detail: z.string() }).strict()
+]);
 
 export const POST = (async ({ locals, request }) => {
 	if (!createFeatureDecisions(locals.features).useAI()) {
@@ -66,7 +67,13 @@ export const POST = (async ({ locals, request }) => {
 		error(500, { message: unwrapFunctionStore(_)('error.internal_server_error') });
 	}
 
-	const containers = aiResponseSchema.parse(await aiResponse.json()).projects.map(
+	const parsedAiResponse = aiResponseSchema.parse(await aiResponse.json());
+
+	if ('detail' in parsedAiResponse) {
+		error(422, { message: parsedAiResponse.detail });
+	}
+
+	const containers = parsedAiResponse.projects.map(
 		(p, i) =>
 			emptyContainer.parse({
 				managed_by: container.managed_by,

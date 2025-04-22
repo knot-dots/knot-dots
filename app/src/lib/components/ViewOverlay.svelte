@@ -303,6 +303,9 @@
 
 			if (response.ok) {
 				await invalidateAll();
+			} else if (response.status === 422) {
+				const { message } = await response.json();
+				alert(message);
 			} else {
 				alert($_('error_asking_ai'));
 			}
