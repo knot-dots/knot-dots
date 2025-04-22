@@ -9,6 +9,7 @@ import { createFeatureDecisions } from '$lib/features';
 import de from '$lib/locales/de.json';
 import {
 	containerOfType,
+	editorialState,
 	emptyContainer,
 	type NewContainer,
 	payloadTypes,
@@ -114,6 +115,7 @@ export const actions = {
 							...(record.status ? { status: reverseTranslationMap.get(record.status) } : {}),
 							...(record.startDate ? { startDate: record.startDate } : {}),
 							...(record.summary ? { summary: record.summary } : {}),
+							editorialState: editorialState.enum['editorial_state.new'],
 							title: record.title,
 							...(record.topic
 								? {

@@ -5,6 +5,7 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	editorialState,
 	emptyContainer,
 	isStrategyContainer,
 	type NewContainer,
@@ -74,6 +75,7 @@ export const POST = (async ({ locals, request }) => {
 				payload: {
 					aiSuggestion: true,
 					description: p.Content,
+					editorialState: editorialState.enum['editorial_state.new'],
 					summary: p['Short Description'].substring(0, 200),
 					title: p.Title,
 					type: payloadTypes.enum.measure
