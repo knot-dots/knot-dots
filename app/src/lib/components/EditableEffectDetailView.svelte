@@ -1,6 +1,11 @@
 <script lang="ts">
+	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Minus from '~icons/heroicons/minus-small-solid';
+	import Plus from '~icons/heroicons/plus-small-solid';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import {
@@ -16,6 +21,8 @@
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
 
+	const disclosure = createDisclosure({});
+
 	$: indicator = relatedContainers
 		.filter(isIndicatorContainer)
 		.find(
@@ -26,127 +33,212 @@
 				) > -1
 		);
 
-	$: if (container.payload.achievedValues.length == 0) {
-		const thisYear = new Date().getFullYear();
-		container.payload = {
-			...container.payload,
-			achievedValues: [...Array(1)].map((_, index) => [thisYear + index, 0]),
-			plannedValues: [...Array(1)].map((_, index) => [thisYear + index, 0])
-		};
-	}
+	let newRowKey = 0;
 
 	function appendYear() {
+		const today = new Date();
 		const year =
-			container.payload.achievedValues[container.payload.achievedValues.length - 1][0] + 1;
+			container.payload.achievedValues.length == 0
+				? today.getFullYear()
+				: container.payload.achievedValues[container.payload.achievedValues.length - 1][0] + 1;
 		container.payload.achievedValues = [...container.payload.achievedValues, [year, 0]];
 		container.payload.plannedValues = [...container.payload.plannedValues, [year, 0]];
+		newRowKey = year;
 	}
 
 	function prependYear() {
 		const year = container.payload.plannedValues[0][0] - 1;
 		container.payload.plannedValues = [[year, 0], ...container.payload.plannedValues];
 		container.payload.achievedValues = [[year, 0], ...container.payload.achievedValues];
+		newRowKey = year;
+	}
+
+	function removeYear(index: number) {
+		return (event: Event) => {
+			container.payload.plannedValues = [
+				...container.payload.plannedValues.slice(0, index),
+				...container.payload.plannedValues.slice(index + 1)
+			];
+			container.payload.achievedValues = [
+				...container.payload.achievedValues.slice(0, index),
+				...container.payload.achievedValues.slice(index + 1)
+			];
+			requestSubmit(event);
+		};
 	}
 
 	function updateAchievedValues(index: number) {
-		return (event: { currentTarget: HTMLInputElement }) => {
-			container.payload.achievedValues[index][1] = parseFloat(event.currentTarget.value);
+		return (event: Event) => {
+			container.payload.achievedValues[index][1] = parseFloat(
+				(event.currentTarget as HTMLInputElement).value
+			);
+			requestSubmit(event);
 		};
 	}
 
 	function updatePlannedValues(index: number) {
-		return (event: { currentTarget: HTMLInputElement }) => {
-			container.payload.plannedValues[index][1] = parseFloat(event.currentTarget.value);
+		return (event: Event) => {
+			container.payload.plannedValues[index][1] = parseFloat(
+				(event.currentTarget as HTMLInputElement).value
+			);
+			requestSubmit(event);
 		};
+	}
+
+	function init(element: HTMLInputElement, shouldFocus: boolean) {
+		if (shouldFocus) {
+			element.focus();
+			element.select();
+		}
 	}
 </script>
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions} tabs={[]}>
 	<svelte:fragment slot="extra">
 		{#if indicator}
-			<div class="values">
-				{#if $applicationState.containerDetailView.editable}
-					<table class="spreadsheet">
-						<thead>
-							<tr>
-								<th scope="col"></th>
-								<th scope="col" colspan="2">
-									{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})
-								</th>
-							</tr>
-							<tr>
-								<th scope="col"></th>
-								<th scope="col">
-									{$_('indicator.effect.planned_values')}
-								</th>
-								<th scope="col">
-									{$_('indicator.effect.achieved_values')}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td colspan="3">
-									<button
-										class="quiet"
-										title={$_('prepend_row')}
-										type="button"
-										on:click={prependYear}
-									>
-										<PlusSmall />
-									</button>
-								</td>
-							</tr>
-							{#each container.payload.achievedValues.map((v, i) => i) as index}
+			{#if $applicationState.containerDetailView.editable}
+				<div class="disclosure">
+					<button class="disclosure-button" type="button" use:disclosure.button>
+						<span>
+							<small>{$_('indicator.table.edit')}</small>
+							<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
+						</span>
+						{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+					</button>
+
+					{#if $disclosure.expanded}
+						<table use:disclosure.panel>
+							<thead>
 								<tr>
-									<th scope="row">
-										{container.payload.achievedValues[index][0]}
-									</th>
-									<td>
-										<input
-											type="text"
-											inputmode="decimal"
-											value={container.payload.plannedValues[index][1]}
-											on:change={updatePlannedValues(index)}
-										/>
-									</td>
-									<td>
-										<input
-											type="text"
-											inputmode="decimal"
-											value={container.payload.achievedValues[index][1]}
-											on:change={updateAchievedValues(index)}
-										/>
+									<th>{$_('indicator.table.year')}</th>
+									<th>{$_('indicator.effect.planned_values')}</th>
+									<th>{$_('indicator.effect.achieved_values')}</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{#if container.payload.plannedValues.length > 0}
+									<tr>
+										<td colspan="4">
+											<button aria-label={$_('append_row')} onclick={prependYear} type="button">
+												<Plus />
+											</button>
+										</td>
+									</tr>
+								{/if}
+
+								{#each container.payload.plannedValues as [key], index (key)}
+									<tr>
+										<td class="year">
+											{container.payload.plannedValues[index][0]}
+										</td>
+										<td class="focus-indicator">
+											{#if $applicationState.containerDetailView.editable}
+												<input
+													inputmode="decimal"
+													onchange={updatePlannedValues(index)}
+													type="text"
+													value={container.payload.plannedValues[index][1]}
+													use:init={key === newRowKey}
+												/>
+											{:else}
+												{container.payload.plannedValues[index][1]}
+											{/if}
+										</td>
+										<td class="focus-indicator">
+											<input
+												inputmode="decimal"
+												onchange={updateAchievedValues(index)}
+												type="text"
+												value={container.payload.achievedValues[index][1]}
+											/>
+										</td>
+										<td>
+											{#if index === 0 || index === container.payload.plannedValues.length - 1}
+												<button
+													aria-label={$_('delete_row')}
+													onclick={removeYear(index)}
+													type="button"
+												>
+													<Minus />
+												</button>
+											{/if}
+										</td>
+									</tr>
+								{/each}
+
+								<tr>
+									<td colspan="4">
+										<button aria-label={$_('append_row')} onclick={appendYear} type="button">
+											<Plus />
+										</button>
 									</td>
 								</tr>
-							{/each}
-							<tr>
-								<td colspan="3">
-									<button
-										class="quiet"
-										title={$_('append_row')}
-										type="button"
-										on:click={() => appendYear()}
-									>
-										<PlusSmall />
-									</button>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				{/if}
+							</tbody>
+						</table>
+					{/if}
+				</div>
+			{/if}
 
-				<EffectChart {container} {relatedContainers} showLegend />
-			</div>
+			<EffectChart {container} {relatedContainers} showLegend />
 		{/if}
 	</svelte:fragment>
 </EditableContainerDetailView>
 
 <style>
-	.values {
-		align-items: center;
-		display: flex;
-		gap: 1rem;
-		margin-bottom: 2rem;
+	input {
+		background-color: transparent;
+		border: none;
+		border-radius: 0;
+		line-height: 1.5;
+		padding: 0;
+		text-align: right;
+		width: 100%;
+	}
+
+	table {
+		width: fit-content;
+	}
+
+	tr:last-of-type {
+		border-bottom: none;
+	}
+
+	th {
+		color: var(--color-gray-600);
+		font-weight: 400;
+	}
+
+	td > button {
+		--button-active-background: transparent;
+		--button-hover-background: transparent;
+		--padding-x: 0;
+		--padding-y: 0;
+
+		border: none;
+		color: var(--color-gray-500);
+		display: block;
+	}
+
+	td:hover,
+	tr:hover td:hover input {
+		background-color: var(--color-gray-100);
+	}
+
+	tr:hover,
+	tr:hover input {
+		background-color: var(--color-gray-050);
+	}
+
+	.disclosure {
+		margin-bottom: 1rem;
+	}
+
+	.focus-indicator input:focus {
+		outline-style: none;
+	}
+
+	.year {
+		color: var(--color-gray-900);
 	}
 </style>
