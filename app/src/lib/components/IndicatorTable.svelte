@@ -266,12 +266,14 @@
 				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.done']) as measure}
 					{@const valuesByYear = new Map(
 						effectContainers
-							.filter(
-								({ relation }) =>
-									relation.findIndex(
-										({ object, predicate }) =>
-											predicate == predicates.enum['is-part-of'] && object == measure.guid
-									) > -1
+							.filter((c) =>
+								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+									({ relation }) =>
+										relation.findIndex(
+											({ object, predicate }) =>
+												predicate == predicates.enum['is-part-of'] && object == measure.guid
+										) > -1
+								)
 							)
 							.flatMap(({ payload }) => payload.achievedValues)
 					)}
@@ -292,12 +294,14 @@
 				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_implementation']) as measure}
 					{@const valuesByYear = new Map(
 						effectContainers
-							.filter(
-								({ relation }) =>
-									relation.findIndex(
-										({ object, predicate }) =>
-											predicate === predicates.enum['is-part-of'] && object === measure.guid
-									) > -1
+							.filter((c) =>
+								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+									({ relation }) =>
+										relation.findIndex(
+											({ object, predicate }) =>
+												predicate == predicates.enum['is-part-of'] && object == measure.guid
+										) > -1
+								)
 							)
 							.flatMap(({ payload }) => payload.plannedValues)
 					)}
@@ -318,12 +322,14 @@
 				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_planning']) as measure}
 					{@const valuesByYear = new Map(
 						effectContainers
-							.filter(
-								({ relation }) =>
-									relation.findIndex(
-										({ object, predicate }) =>
-											predicate === predicates.enum['is-part-of'] && object === measure.guid
-									) > -1
+							.filter((c) =>
+								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+									({ relation }) =>
+										relation.findIndex(
+											({ object, predicate }) =>
+												predicate == predicates.enum['is-part-of'] && object == measure.guid
+										) > -1
+								)
 							)
 							.flatMap(({ payload }) => payload.plannedValues)
 					)}
@@ -344,12 +350,14 @@
 				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.idea']) as measure}
 					{@const valuesByYear = new Map(
 						effectContainers
-							.filter(
-								({ relation }) =>
-									relation.findIndex(
-										({ object, predicate }) =>
-											predicate === predicates.enum['is-part-of'] && object === measure.guid
-									) > -1
+							.filter((c) =>
+								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+									({ relation }) =>
+										relation.findIndex(
+											({ object, predicate }) =>
+												predicate == predicates.enum['is-part-of'] && object == measure.guid
+										) > -1
+								)
 							)
 							.flatMap(({ payload }) => payload.plannedValues)
 					)}
