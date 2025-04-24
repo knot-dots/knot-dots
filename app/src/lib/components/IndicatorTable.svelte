@@ -220,18 +220,24 @@
 
 		{#if showObjectives}
 			<tbody>
+				<tr>
+					<th colspan={years.length + 1}>{$_('objectives')}</th>
+				</tr>
+
 				<tr class="overall-objective">
 					<th scope="row">{$_('indicator.table.overall_objective')}</th>
 					{#each years as year}
 						<td>{overallObjectiveByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
+
 				<tr class="objective-total">
 					<th scope="row">{$_('indicator.table.objectives')}</th>
 					{#each years as year}
 						<td>{objectivesByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
+
 				{#each relatedContainers.filter(isObjectiveContainer) as containerWithObjective}
 					{@const valuesByYear = new Map(containerWithObjective.payload.wantedValues)}
 					<tr class="objective">
@@ -365,68 +371,98 @@
 	}
 
 	thead {
-		background-color: var(--color-gray-200);
-	}
-
-	td {
+		background-color: white;
 		text-align: right;
 	}
 
-	th[scope='row'] {
-		font-weight: normal;
-	}
-
-	tr {
+	tr:hover {
 		background-color: var(--color-gray-050);
-		border-bottom: solid 1px white;
 	}
 
-	.done-total {
-		background-color: var(--color-green);
+	th {
+		color: var(--color-gray-900);
+		font-weight: 500;
 	}
 
-	.done {
-		background-color: var(--color-green-background);
+	th[colspan] {
+		background-color: var(--color-gray-050);
+		color: var(--color-gray-600);
 	}
 
-	.historical-values {
+	th[scope='row']::before {
+		background-color: var(--indicator-color, var(--color-gray-900));
+		border-radius: 1rem;
+		content: '';
+		display: inline-block;
+		height: 0.75rem;
+		margin-right: 0.25rem;
+		vertical-align: middle;
+		width: 0.75rem;
+	}
+
+	td {
+		color: var(--color-gray-700);
+		font-weight: 400;
+		text-align: right;
+	}
+
+	td:hover {
 		background-color: var(--color-gray-100);
 	}
 
-	.idea-total {
-		background-color: var(--color-red);
+	.idea th,
+	.in-planning th,
+	.in-progress th,
+	.done th,
+	.objective th {
+		padding-left: 1rem;
+	}
+
+	.done {
+		--indicator-color: var(--color-green-200);
+	}
+
+	.done-total {
+		--indicator-color: var(--color-green-400);
+	}
+
+	.historical-values {
+		--indicator-color: var(--color-gray-200);
 	}
 
 	.idea {
-		background-color: var(--color-red-background);
+		--indicator-color: var(--color-pink-100);
 	}
 
-	.in-planning-total {
-		background-color: var(--color-yellow);
+	.idea-total {
+		--indicator-color: var(--color-pink-500);
 	}
 
 	.in-planning {
-		background-color: var(--color-yellow-background);
+		--indicator-color: var(--color-orange-200);
 	}
 
-	.in-progress-total {
-		background-color: var(--color-orange);
+	.in-planning-total {
+		--indicator-color: var(--color-orange-400);
 	}
 
 	.in-progress {
-		background-color: var(--color-orange-background);
+		--indicator-color: var(--color-yellow-200);
 	}
 
-	.objective-total {
-		background-color: var(--color-blue);
+	.in-progress-total {
+		--indicator-color: var(--color-yellow-300);
 	}
 
 	.objective {
-		background-color: var(--color-blue-background);
+		--indicator-color: var(--color-blue-200);
+	}
+
+	.objective-total {
+		--indicator-color: var(--color-blue-500);
 	}
 
 	.overall-objective {
-		background-color: var(--color-gray-800);
-		color: var(--color-gray-050);
+		--indicator-color: var(--color-gray-900);
 	}
 </style>
