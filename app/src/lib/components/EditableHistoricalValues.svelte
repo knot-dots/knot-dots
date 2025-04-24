@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { cubicInOut } from 'svelte/easing';
+	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
@@ -90,62 +92,64 @@
 	</button>
 
 	{#if $disclosure.expanded}
-		<table use:disclosure.panel>
-			<thead>
-				<tr>
-					<th>{$_('indicator.table.year')}</th>
-					<th>{$_('indicator.table.historical_values')}</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if container.payload.historicalValues.length > 0}
+		<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
+			<table>
+				<thead>
+					<tr>
+						<th>{$_('indicator.table.year')}</th>
+						<th>{$_('indicator.table.historical_values')}</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{#if container.payload.historicalValues.length > 0}
+						<tr>
+							<td colspan="3">
+								<button aria-label={$_('append_row')} onclick={prepend} type="button">
+									<Plus />
+								</button>
+							</td>
+						</tr>
+					{/if}
+
+					{#each container.payload.historicalValues as [key], index (key)}
+						<tr>
+							<td class="year">
+								{container.payload.historicalValues[index][0]}
+							</td>
+							<td class="focus-indicator">
+								{#if editable}
+									<input
+										inputmode="decimal"
+										onchange={update(index)}
+										type="text"
+										value={container.payload.historicalValues[index][1]}
+										use:init={key === newRowKey}
+									/>
+								{:else}
+									{container.payload.historicalValues[index][1]}
+								{/if}
+							</td>
+							<td>
+								{#if index === 0 || index === container.payload.historicalValues.length - 1}
+									<button aria-label={$_('delete_row')} onclick={remove(index)} type="button">
+										<Minus />
+									</button>
+								{/if}
+							</td>
+						</tr>
+					{/each}
+
 					<tr>
 						<td colspan="3">
-							<button aria-label={$_('append_row')} onclick={prepend} type="button">
+							<button aria-label={$_('append_row')} onclick={append} type="button">
 								<Plus />
 							</button>
 						</td>
 					</tr>
-				{/if}
-
-				{#each container.payload.historicalValues as [key], index (key)}
-					<tr>
-						<td class="year">
-							{container.payload.historicalValues[index][0]}
-						</td>
-						<td class="focus-indicator">
-							{#if editable}
-								<input
-									inputmode="decimal"
-									onchange={update(index)}
-									type="text"
-									value={container.payload.historicalValues[index][1]}
-									use:init={key === newRowKey}
-								/>
-							{:else}
-								{container.payload.historicalValues[index][1]}
-							{/if}
-						</td>
-						<td>
-							{#if index === 0 || index === container.payload.historicalValues.length - 1}
-								<button aria-label={$_('delete_row')} onclick={remove(index)} type="button">
-									<Minus />
-								</button>
-							{/if}
-						</td>
-					</tr>
-				{/each}
-
-				<tr>
-					<td colspan="3">
-						<button aria-label={$_('append_row')} onclick={append} type="button">
-							<Plus />
-						</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	{/if}
 </div>
 

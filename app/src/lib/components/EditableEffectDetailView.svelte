@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { cubicInOut } from 'svelte/easing';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { slide } from 'svelte/transition';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import Minus from '~icons/heroicons/minus-small-solid';
@@ -107,75 +109,77 @@
 					</button>
 
 					{#if $disclosure.expanded}
-						<table use:disclosure.panel>
-							<thead>
-								<tr>
-									<th>{$_('indicator.table.year')}</th>
-									<th>{$_('indicator.effect.planned_values')}</th>
-									<th>{$_('indicator.effect.achieved_values')}</th>
-									<th></th>
-								</tr>
-							</thead>
-							<tbody>
-								{#if container.payload.plannedValues.length > 0}
+						<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
+							<table>
+								<thead>
+									<tr>
+										<th>{$_('indicator.table.year')}</th>
+										<th>{$_('indicator.effect.planned_values')}</th>
+										<th>{$_('indicator.effect.achieved_values')}</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{#if container.payload.plannedValues.length > 0}
+										<tr>
+											<td colspan="4">
+												<button aria-label={$_('append_row')} onclick={prependYear} type="button">
+													<Plus />
+												</button>
+											</td>
+										</tr>
+									{/if}
+
+									{#each container.payload.plannedValues as [key], index (key)}
+										<tr>
+											<td class="year">
+												{container.payload.plannedValues[index][0]}
+											</td>
+											<td class="focus-indicator">
+												{#if $applicationState.containerDetailView.editable}
+													<input
+														inputmode="decimal"
+														onchange={updatePlannedValues(index)}
+														type="text"
+														value={container.payload.plannedValues[index][1]}
+														use:init={key === newRowKey}
+													/>
+												{:else}
+													{container.payload.plannedValues[index][1]}
+												{/if}
+											</td>
+											<td class="focus-indicator">
+												<input
+													inputmode="decimal"
+													onchange={updateAchievedValues(index)}
+													type="text"
+													value={container.payload.achievedValues[index][1]}
+												/>
+											</td>
+											<td>
+												{#if index === 0 || index === container.payload.plannedValues.length - 1}
+													<button
+														aria-label={$_('delete_row')}
+														onclick={removeYear(index)}
+														type="button"
+													>
+														<Minus />
+													</button>
+												{/if}
+											</td>
+										</tr>
+									{/each}
+
 									<tr>
 										<td colspan="4">
-											<button aria-label={$_('append_row')} onclick={prependYear} type="button">
+											<button aria-label={$_('append_row')} onclick={appendYear} type="button">
 												<Plus />
 											</button>
 										</td>
 									</tr>
-								{/if}
-
-								{#each container.payload.plannedValues as [key], index (key)}
-									<tr>
-										<td class="year">
-											{container.payload.plannedValues[index][0]}
-										</td>
-										<td class="focus-indicator">
-											{#if $applicationState.containerDetailView.editable}
-												<input
-													inputmode="decimal"
-													onchange={updatePlannedValues(index)}
-													type="text"
-													value={container.payload.plannedValues[index][1]}
-													use:init={key === newRowKey}
-												/>
-											{:else}
-												{container.payload.plannedValues[index][1]}
-											{/if}
-										</td>
-										<td class="focus-indicator">
-											<input
-												inputmode="decimal"
-												onchange={updateAchievedValues(index)}
-												type="text"
-												value={container.payload.achievedValues[index][1]}
-											/>
-										</td>
-										<td>
-											{#if index === 0 || index === container.payload.plannedValues.length - 1}
-												<button
-													aria-label={$_('delete_row')}
-													onclick={removeYear(index)}
-													type="button"
-												>
-													<Minus />
-												</button>
-											{/if}
-										</td>
-									</tr>
-								{/each}
-
-								<tr>
-									<td colspan="4">
-										<button aria-label={$_('append_row')} onclick={appendYear} type="button">
-											<Plus />
-										</button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+								</tbody>
+							</table>
+						</div>
 					{/if}
 				</div>
 			{/if}

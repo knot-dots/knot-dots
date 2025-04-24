@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { cubicInOut } from 'svelte/easing';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { slide } from 'svelte/transition';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import Minus from '~icons/heroicons/minus-small-solid';
@@ -94,62 +96,68 @@
 					</button>
 
 					{#if $disclosure.expanded}
-						<table use:disclosure.panel>
-							<thead>
-								<tr>
-									<th>{$_('indicator.table.year')}</th>
-									<th>{$_('indicator.wanted_values')}</th>
-									<th>{$_('indicator.table.historical_values')}</th>
-									<th></th>
-								</tr>
-							</thead>
-							<tbody>
-								{#if container.payload.wantedValues.length > 0}
+						<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
+							<table>
+								<thead>
+									<tr>
+										<th>{$_('indicator.table.year')}</th>
+										<th>{$_('indicator.wanted_values')}</th>
+										<th>{$_('indicator.table.historical_values')}</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									{#if container.payload.wantedValues.length > 0}
+										<tr>
+											<td colspan="4">
+												<button aria-label={$_('append_row')} onclick={prepend} type="button">
+													<Plus />
+												</button>
+											</td>
+										</tr>
+									{/if}
+
+									{#each container.payload.wantedValues as [key], index (key)}
+										<tr>
+											<td class="year">
+												{container.payload.wantedValues[index][0]}
+											</td>
+											<td class="focus-indicator">
+												<input
+													inputmode="decimal"
+													onchange={update(index)}
+													type="text"
+													value={container.payload.wantedValues[index][1]}
+													use:init={key === newRowKey}
+												/>
+											</td>
+											<td class="historical-values">
+												{historicalValuesByYear.get(container.payload.wantedValues[index][0])}
+											</td>
+											<td>
+												{#if index === 0 || index === container.payload.wantedValues.length - 1}
+													<button
+														aria-label={$_('delete_row')}
+														onclick={remove(index)}
+														type="button"
+													>
+														<Minus />
+													</button>
+												{/if}
+											</td>
+										</tr>
+									{/each}
+
 									<tr>
 										<td colspan="4">
-											<button aria-label={$_('append_row')} onclick={prepend} type="button">
+											<button aria-label={$_('append_row')} onclick={append} type="button">
 												<Plus />
 											</button>
 										</td>
 									</tr>
-								{/if}
-
-								{#each container.payload.wantedValues as [key], index (key)}
-									<tr>
-										<td class="year">
-											{container.payload.wantedValues[index][0]}
-										</td>
-										<td class="focus-indicator">
-											<input
-												inputmode="decimal"
-												onchange={update(index)}
-												type="text"
-												value={container.payload.wantedValues[index][1]}
-												use:init={key === newRowKey}
-											/>
-										</td>
-										<td class="historical-values">
-											{historicalValuesByYear.get(container.payload.wantedValues[index][0])}
-										</td>
-										<td>
-											{#if index === 0 || index === container.payload.wantedValues.length - 1}
-												<button aria-label={$_('delete_row')} onclick={remove(index)} type="button">
-													<Minus />
-												</button>
-											{/if}
-										</td>
-									</tr>
-								{/each}
-
-								<tr>
-									<td colspan="4">
-										<button aria-label={$_('append_row')} onclick={append} type="button">
-											<Plus />
-										</button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+								</tbody>
+							</table>
+						</div>
 					{/if}
 				</div>
 			{/if}
