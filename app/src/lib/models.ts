@@ -1199,6 +1199,16 @@ export function isContainerWithDuration(
 	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
 }
 
+export type ContainerWithEditorialState = AnyContainer & {
+	payload: AnyPayload & { editorialState: EditorialState | undefined };
+};
+
+export function isContainerWithEditorialState(
+	container: AnyContainer | NewContainer
+): container is ContainerWithEditorialState {
+	return hasProperty(container.payload, 'editorialState');
+}
+
 export type ContainerWithFulfillmentDate = AnyContainer & {
 	payload: AnyPayload & { fulfillmentDate: string | undefined };
 };

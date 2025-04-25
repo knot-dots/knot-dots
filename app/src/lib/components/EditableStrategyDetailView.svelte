@@ -245,6 +245,7 @@
 						<div class="cell">{$_('audience')}</div>
 						<div class="cell">{$_('fulfillment_date')}</div>
 						<div class="cell">{$_('planned_duration')}</div>
+						<div class="cell">{$_('editorial_state')}</div>
 						<div class="cell">{$_('organizational_unit')}</div>
 					</div>
 				</div>

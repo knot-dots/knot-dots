@@ -5,6 +5,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
+	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
@@ -16,6 +17,7 @@
 		type Container,
 		isContainerWithDescription,
 		isContainerWithDuration,
+		isContainerWithEditorialState,
 		isContainerWithFulfillmentDate
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -146,6 +148,12 @@
 				{/if}
 			</span>
 		{/if}
+	{/if}
+</div>
+
+<div class="cell">
+	{#if isContainerWithEditorialState(container)}
+		<EditorialStateDropdown {editable} bind:value={container.payload.editorialState} />
 	{/if}
 </div>
 
