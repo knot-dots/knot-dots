@@ -17,6 +17,10 @@
 	"audience.public": "Public",
 	"back": "Back",
 	"basic_data": "Basic data",
+	"benefit": "Benefit",
+	"benefit.high": "High",
+	"benefit.low": "Low",
+	"benefit.medium": "Medium",
 	"board": {
 		"chapters": "Chapters",
 		"elements": "Elements",
@@ -62,6 +66,7 @@
 	"editorial_state.approved": "Approved",
 	"effect": "Effect",
 	"effects": "Effects",
+	"effort": "Effort",
 	"empty": "Empty",
 	"end_date": "End",
 	"error": {

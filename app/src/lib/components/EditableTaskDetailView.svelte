@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import EditableAssignee from '$lib/components/EditableAssignee.svelte';
+	import EditableBenefit from '$lib/components/EditableBenefit.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -11,6 +10,7 @@
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
+	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableTaskCategory from '$lib/components/EditableTaskCategory.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
 	import {
@@ -20,8 +20,7 @@
 		isContainerWithObjective,
 		isMeasureResultContainer,
 		isMilestoneContainer,
-		type TaskContainer,
-		taskStatus
+		type TaskContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -66,6 +65,17 @@
 			editable={$applicationState.containerDetailView.editable}
 			label={$_('fulfillment_date')}
 			bind:value={container.payload.fulfillmentDate}
+		/>
+
+		<EditableBenefit
+			editable={$applicationState.containerDetailView.editable}
+			bind:value={container.payload.benefit}
+		/>
+
+		<EditablePlainText
+			editable={$applicationState.containerDetailView.editable}
+			label={$_('effort')}
+			bind:value={container.payload.effort}
 		/>
 
 		<EditableMeasure editable={$applicationState.containerDetailView.editable} bind:container />

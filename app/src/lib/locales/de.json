@@ -17,6 +17,10 @@
 	"audience.public": "Gesellschaft",
 	"back": "Zurück",
 	"basic_data": "Allgemeine Angaben",
+	"benefit": "Nutzen",
+	"benefit.high": "Groß",
+	"benefit.low": "Klein",
+	"benefit.medium": "Mittel",
 	"board": {
 		"chapters": "Strategie-Board",
 		"elements": "dots",
@@ -62,6 +66,7 @@
 	"editorial_state.approved": "Abgenommen",
 	"effect": "Wirkung",
 	"effects": "Wirkung",
+	"effort": "Aufwand",
 	"empty": "Leer",
 	"end_date": "Ende",
 	"error": {

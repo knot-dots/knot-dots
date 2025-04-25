@@ -468,6 +468,10 @@ export const boards = z.enum([
 	'board.tasks'
 ]);
 
+export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high']);
+
+export type Benefit = z.infer<typeof benefit>;
+
 const basePayload = z
 	.object({
 		aiSuggestion: z.boolean().default(false),
@@ -708,6 +712,8 @@ const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
 		assignee: z.array(z.string().uuid()).default([]),
+		benefit: benefit.optional(),
+		effort: z.string().optional(),
 		fulfillmentDate: z.string().date().optional(),
 		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
 		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),

@@ -7,10 +7,14 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
+	import EditableAmount from '$lib/components/EditableAmount.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
+	import EditableBenefit from '$lib/components/EditableBenefit.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
+	import EditableDuration from '$lib/components/EditableDuration.svelte';
+	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableLevel from '$lib/components/EditableLevel.svelte';
@@ -23,6 +27,7 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditablePDF from '$lib/components/EditablePDF.svelte';
+	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import EditableResolutionStatus from '$lib/components/EditableResolutionStatus.svelte';
 	import EditableStatus from '$lib/components/EditableStatus.svelte';
@@ -32,6 +37,8 @@
 	import EditableTaskCategory from '$lib/components/EditableTaskCategory.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
+	import EditableUnit from '$lib/components/EditableUnit.svelte';
+	import EditableValidFrom from '$lib/components/EditableValidFrom.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import {
 		isContainer,
@@ -71,11 +78,6 @@
 		taskStatusColors,
 		taskStatusIcons
 	} from '$lib/theme/models';
-	import EditableDuration from '$lib/components/EditableDuration.svelte';
-	import EditableFile from '$lib/components/EditableFile.svelte';
-	import EditableValidFrom from '$lib/components/EditableValidFrom.svelte';
-	import EditableAmount from '$lib/components/EditableAmount.svelte';
-	import EditableUnit from '$lib/components/EditableUnit.svelte';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -327,6 +329,12 @@
 									editable
 									label={$_('fulfillment_date')}
 									bind:value={$newContainer.payload.fulfillmentDate}
+								/>
+								<EditableBenefit editable bind:value={$newContainer.payload.benefit} />
+								<EditablePlainText
+									editable
+									label={$_('effort')}
+									bind:value={$newContainer.payload.effort}
 								/>
 								<EditableMeasure editable bind:container={$newContainer} />
 								<EditableParent editable bind:container={$newContainer} />
