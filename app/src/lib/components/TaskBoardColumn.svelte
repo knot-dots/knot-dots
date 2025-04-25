@@ -132,10 +132,11 @@
 	{/if}
 	{#if addItemUrl}
 		<footer>
-			<a href={addItemUrl}>
-				{$_('add_item')}
-				<PlusSmall />
-			</a>
+			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
+				<a href={addItemUrl} on:click={createContainer}>{$_('add_item')}<PlusSmall /></a>
+			{:else}
+				<a href={addItemUrl}>{$_('add_item')}<PlusSmall /></a>
+			{/if}
 		</footer>
 	{/if}
 </section>
