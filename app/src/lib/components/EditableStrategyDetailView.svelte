@@ -241,6 +241,7 @@
 						<div class="cell">{$_('status')}</div>
 						<div class="cell">{$_('category')}</div>
 						<div class="cell">{$_('topic')}</div>
+						<div class="cell">{$_('policy_field_bnk')}</div>
 						<div class="cell">{$_('audience')}</div>
 						<div class="cell">{$_('fulfillment_date')}</div>
 						<div class="cell">{$_('planned_duration')}</div>

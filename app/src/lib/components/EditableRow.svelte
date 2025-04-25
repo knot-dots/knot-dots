@@ -7,6 +7,7 @@
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
+	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
@@ -75,6 +76,17 @@
 			{editable}
 			handleChange={requestSubmit}
 			bind:value={container.payload.topic}
+		/>
+	{/if}
+</div>
+
+<div class="cell">
+	{#if 'policyFieldBNK' in container.payload}
+		<PolicyFieldBNKDropdown
+			compact
+			{editable}
+			handleChange={requestSubmit}
+			bind:value={container.payload.policyFieldBNK}
 		/>
 	{/if}
 </div>
