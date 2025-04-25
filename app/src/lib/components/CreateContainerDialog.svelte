@@ -108,6 +108,10 @@
 		dialog.close();
 		$newContainer = undefined;
 	}
+
+	function init(element: HTMLElement) {
+		element.focus();
+	}
 </script>
 
 <dialog bind:this={dialog}>
@@ -134,6 +138,7 @@
 							data-placeholder={$_('name')}
 							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 							bind:textContent={$newContainer.payload.name}
+							use:init
 						></h2>
 					{:else if isContainerWithTitle($newContainer)}
 						<h2
@@ -142,6 +147,7 @@
 							data-placeholder={$_('title')}
 							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 							bind:textContent={$newContainer.payload.title}
+							use:init
 						></h2>
 					{/if}
 
