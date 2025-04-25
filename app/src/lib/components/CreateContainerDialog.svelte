@@ -14,6 +14,7 @@
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableDuration from '$lib/components/EditableDuration.svelte';
+	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
@@ -222,6 +223,12 @@
 							use:disclosure.panel
 						>
 							{#if isMeasureContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableDuration editable bind:container={$newContainer} />
 								<EditableStatus editable bind:value={$newContainer.payload.status} />
 								<EditableMeasureType editable bind:value={$newContainer.payload.measureType} />
@@ -242,8 +249,20 @@
 								/>
 								<EditableMeasure container={$newContainer} editable />
 							{:else if isModelContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableStrategy editable bind:container={$newContainer} />
 							{:else if isOperationalGoalContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableDate
 									editable
 									label={$_('fulfillment_date')}
@@ -283,6 +302,12 @@
 									bind:value={$newContainer.payload.boards}
 								/>
 							{:else if isResolutionContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableValidFrom editable bind:container={$newContainer} />
 								<EditableResolutionStatus
 									editable
@@ -298,6 +323,12 @@
 									bind:value={$newContainer.payload.fulfillmentDate}
 								/>
 							{:else if isSimpleMeasureContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableFile editable bind:value={$newContainer.payload.file} />
 								<EditableDuration editable bind:container={$newContainer} />
 								<EditableStatus editable bind:value={$newContainer.payload.status} />
@@ -305,6 +336,12 @@
 								<EditableStrategy editable bind:container={$newContainer} />
 								<EditableParent editable bind:container={$newContainer} />
 							{:else if isStrategicGoalContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableDate
 									editable
 									label={$_('fulfillment_date')}
@@ -313,6 +350,12 @@
 								<EditableStrategy editable bind:container={$newContainer} />
 								<EditableParent editable bind:container={$newContainer} />
 							{:else if isStrategyContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableLevel editable bind:value={$newContainer.payload.level} />
 								<EditableStrategyType editable bind:value={$newContainer.payload.strategyType} />
 								<EditableImage
@@ -339,6 +382,12 @@
 								<EditableMeasure editable bind:container={$newContainer} />
 								<EditableParent editable bind:container={$newContainer} />
 							{:else if isVisionContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
 								<EditableStrategy bind:container={$newContainer} editable />
 							{/if}
 
