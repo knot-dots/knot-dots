@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { unified } from 'unified';
 	import remarkParse from 'remark-parse';
 	import remarkGfm from 'remark-gfm';
 	import remarkRehype from 'remark-rehype';
 	import rehypeSanitize from 'rehype-sanitize';
 	import rehypeStringify from 'rehype-stringify';
+	import { _ } from 'svelte-i18n';
+	import { unified } from 'unified';
 
 	export let value = '';
 </script>
@@ -17,6 +18,10 @@
 	.use(rehypeStringify)
 	.process(value) then content}
 	<div class="markdown-body">
-		{@html content}
+		{#if content.value}
+			{@html content.value}
+		{:else}
+			{$_('empty')}
+		{/if}
 	</div>
 {/await}

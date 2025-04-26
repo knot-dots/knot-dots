@@ -7,6 +7,7 @@
 	import remarkRehype from 'remark-rehype';
 	import stripMarkdown from 'strip-markdown';
 	import { createPopover } from 'svelte-headlessui';
+	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import { unified } from 'unified';
 	import Editor from '$lib/components/Editor.svelte';
@@ -14,7 +15,7 @@
 
 	interface Props {
 		editable?: boolean;
-		value: string;
+		value: string | undefined;
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
@@ -41,12 +42,15 @@
 		.use(rehypeExtractExcerpt, { maxLength: 200 })
 		.use(rehypeStringify)
 		.process(value) then content}
-		{#if content.data.excerpt}
-			<button class="dropdown-button truncated" type="button" use:popover.button>
+		<button class="dropdown-button truncated" type="button" use:popover.button>
+			{#if content.data.excerpt}
 				{@html content.data.excerpt}
-			</button>
-		{/if}
+			{:else}
+				{$_('empty')}
+			{/if}
+		</button>
 	{/await}
+
 	{#if $popover.expanded}
 		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 			{#if editable}

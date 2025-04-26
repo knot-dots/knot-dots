@@ -44,7 +44,7 @@
 </div>
 
 <div class="cell">
-	{#if isContainerWithDescription(container) && container.payload.description}
+	{#if isContainerWithDescription(container)}
 		<FormattedTextDropdown {editable} bind:value={container.payload.description} />
 	{/if}
 </div>
