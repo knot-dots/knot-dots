@@ -22,6 +22,6 @@
 	/>
 {:else}
 	<div class="value">
-		{value ?? $_('empty')}
+		{value ? $_(value) : $_('empty')}
 	</div>
 {/if}
