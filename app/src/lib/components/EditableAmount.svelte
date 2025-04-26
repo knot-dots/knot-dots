@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -14,15 +13,7 @@
 	<label class="label" for="amount">
 		{$_('amount')}
 	</label>
-	<input
-		class="value"
-		id="amount"
-		inputmode="numeric"
-		name="amount"
-		onchange={requestSubmit}
-		type="text"
-		bind:value
-	/>
+	<input class="value" id="amount" inputmode="numeric" name="amount" type="text" bind:value />
 {:else}
 	<span class="label">{$_('amount')}</span>
 	<span class="value">

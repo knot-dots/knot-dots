@@ -4,7 +4,6 @@
 
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 
 	export let editable = false;
 	export let label: string;
@@ -18,7 +17,7 @@
 		{label}
 	</label>
 	<span>
-		<input {id} type="number" bind:value on:change={requestSubmit} />
+		<input {id} type="number" bind:value />
 	</span>
 {:else}
 	<span class="label">{label}</span>

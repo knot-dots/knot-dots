@@ -23,7 +23,7 @@
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form on:submit|preventDefault={handleSubmit} novalidate>
+<form on:input={requestSubmit} on:submit|preventDefault={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<header>
 			<EditableLogo
@@ -36,7 +36,6 @@
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.name}
 					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					on:input={requestSubmit}
 				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">

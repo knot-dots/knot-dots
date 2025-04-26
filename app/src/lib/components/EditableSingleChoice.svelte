@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 
 	export let editable = false;
-	export let handleChange: (event: Event) => void = requestSubmit;
 	export let label: string;
 	export let options: Array<{ href?: string; label: string; value: string | undefined }>;
 	export let value: string | undefined;
@@ -14,7 +12,7 @@
 
 <div class="label">{label}</div>
 {#if editable}
-	<SingleChoiceDropdown {handleChange} {options} bind:value />
+	<SingleChoiceDropdown {options} bind:value />
 {:else}
 	<div class="value">
 		{#if selected}

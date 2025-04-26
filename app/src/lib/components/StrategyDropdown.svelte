@@ -61,10 +61,9 @@
 </script>
 
 {#await strategyCandidatesRequest}
-	<SingleChoiceDropdown handleChange={() => null} options={[]} value="" />
+	<SingleChoiceDropdown options={[]} value="" />
 {:then strategyCandidates}
 	<SingleChoiceDropdown
-		{handleChange}
 		options={[
 			{ value: '', label: $_('empty') },
 			...strategyCandidates.map(({ payload, revision }) => ({

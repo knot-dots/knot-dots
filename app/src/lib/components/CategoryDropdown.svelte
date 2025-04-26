@@ -9,11 +9,10 @@
 	interface Props {
 		compact?: boolean;
 		editable?: boolean;
-		handleChange: (event: Event) => void;
 		value: SustainableDevelopmentGoal[];
 	}
 
-	let { compact = false, editable = false, handleChange, value = $bindable() }: Props = $props();
+	let { compact = false, editable = false, value = $bindable() }: Props = $props();
 
 	const popover = createPopover({ label: $_('category') });
 
@@ -61,12 +60,7 @@
 						{#each sustainableDevelopmentGoals.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
 							{@const sdgIcon = sdgIcons.get(option.value)}
 							<label>
-								<input
-									type="checkbox"
-									value={option.value}
-									onchange={handleChange}
-									bind:group={value}
-								/>
+								<input type="checkbox" value={option.value} bind:group={value} />
 								<img src={sdgIcon} width="30" height="30" alt={option.label} />
 								{option.label}
 							</label>

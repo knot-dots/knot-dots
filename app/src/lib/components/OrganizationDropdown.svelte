@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 
 	interface Props {
@@ -14,7 +13,6 @@
 
 {#if editable}
 	<SingleChoiceDropdown
-		handleChange={requestSubmit}
 		offset={[-41, -39]}
 		options={page.data.organizations.map(({ guid, payload }) => ({
 			value: guid,

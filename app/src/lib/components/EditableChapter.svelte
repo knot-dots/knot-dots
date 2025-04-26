@@ -5,7 +5,6 @@
 	import AskAI from '~icons/knotdots/ask-ai';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
@@ -112,7 +111,6 @@
 		class="chapter-title"
 		contenteditable="plaintext-only"
 		bind:textContent={container.payload.title}
-		on:input={requestSubmit}
 		on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 	>
 		{container.payload.title}

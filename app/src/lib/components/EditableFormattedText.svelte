@@ -8,7 +8,7 @@
 </script>
 
 {#if editable}
-	<Editor {label} bind:value autosave />
+	<Editor {label} bind:value />
 {:else}
 	<div class="details-tab">
 		{#if label}

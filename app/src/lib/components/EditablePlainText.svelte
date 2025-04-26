@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -15,7 +14,7 @@
 	<div class="label">{label}</div>
 {/if}
 {#if editable}
-	<input class="value" onchange={requestSubmit} type="text" bind:value />
+	<input class="value" type="text" bind:value />
 {:else}
 	<div class="value">
 		{value ?? $_('empty')}

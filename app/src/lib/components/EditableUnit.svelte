@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -14,7 +13,7 @@
 	<label class="label" for="unit">
 		{$_('unit')}
 	</label>
-	<input class="value" id="unit" name="unit" oninput={requestSubmit} type="text" bind:value />
+	<input class="value" id="unit" name="unit" type="text" bind:value />
 {:else}
 	<span class="label">{$_('unit')}</span>
 	<span class="value">{value || $_('empty')}</span>

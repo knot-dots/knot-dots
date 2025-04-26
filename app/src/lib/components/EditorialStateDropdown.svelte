@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import { editorialState } from '$lib/models';
 
@@ -14,7 +13,6 @@
 
 {#if editable}
 	<SingleChoiceDropdown
-		handleChange={requestSubmit}
 		offset={[-41, -39]}
 		options={[
 			{ label: $_('empty'), value: undefined },

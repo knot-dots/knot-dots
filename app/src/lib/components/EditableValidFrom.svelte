@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import type { EmptyResolutionContainer, ResolutionContainer } from '$lib/models';
 
 	interface Props {
@@ -17,24 +16,12 @@
 		<label class="is-visually-hidden" for="startDate">
 			{$_('valid_from')}
 		</label>
-		<input
-			class="value"
-			id="startDate"
-			onchange={requestSubmit}
-			type="date"
-			bind:value={container.payload.validFrom}
-		/>
+		<input class="value" id="startDate" type="date" bind:value={container.payload.validFrom} />
 		–
 		<label class="is-visually-hidden" for="endDate">
 			{$_('valid_until')}
 		</label>
-		<input
-			class="value"
-			id="endDate"
-			onchange={requestSubmit}
-			type="date"
-			bind:value={container.payload.validUntil}
-		/>
+		<input class="value" id="endDate" type="date" bind:value={container.payload.validUntil} />
 	</fieldset>
 {:else}
 	<div class="label">{$_('valid_from')}</div>

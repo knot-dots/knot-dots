@@ -5,13 +5,12 @@
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 
 	interface Props {
-		handleChange: (event: Event) => void;
 		offset?: [number, number];
 		options: Array<{ href?: string; label: string; value: string | undefined }>;
 		value: string | null | undefined;
 	}
 
-	let { handleChange, offset = [0, 4], options, value = $bindable() }: Props = $props();
+	let { offset = [0, 4], options, value = $bindable() }: Props = $props();
 	let selected = $derived(options.find((o) => o.value == value));
 
 	const popover = createPopover({});
@@ -38,7 +37,7 @@
 			<div>
 				{#each options as option (option.value)}
 					<label>
-						<input type="radio" value={option.value} bind:group={value} onchange={handleChange} />
+						<input type="radio" value={option.value} bind:group={value} />
 						{option.label}
 					</label>
 				{/each}

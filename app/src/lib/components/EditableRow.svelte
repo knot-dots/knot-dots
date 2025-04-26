@@ -2,7 +2,6 @@
 	import { dragHandle } from 'svelte-dnd-action';
 	import { _, date } from 'svelte-i18n';
 	import DragHandle from '~icons/knotdots/draghandle';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
@@ -62,34 +61,19 @@
 
 <div class="cell">
 	{#if 'category' in container.payload}
-		<CategoryDropdown
-			compact
-			{editable}
-			handleChange={requestSubmit}
-			bind:value={container.payload.category}
-		/>
+		<CategoryDropdown compact {editable} bind:value={container.payload.category} />
 	{/if}
 </div>
 
 <div class="cell">
 	{#if 'topic' in container.payload}
-		<TopicDropdown
-			compact
-			{editable}
-			handleChange={requestSubmit}
-			bind:value={container.payload.topic}
-		/>
+		<TopicDropdown compact {editable} bind:value={container.payload.topic} />
 	{/if}
 </div>
 
 <div class="cell">
 	{#if 'policyFieldBNK' in container.payload}
-		<PolicyFieldBNKDropdown
-			compact
-			{editable}
-			handleChange={requestSubmit}
-			bind:value={container.payload.policyFieldBNK}
-		/>
+		<PolicyFieldBNKDropdown compact {editable} bind:value={container.payload.policyFieldBNK} />
 	{/if}
 </div>
 
@@ -102,7 +86,7 @@
 <div class="cell">
 	{#if isContainerWithFulfillmentDate(container)}
 		{#if editable}
-			<input type="date" onchange={requestSubmit} bind:value={container.payload.fulfillmentDate} />
+			<input type="date" bind:value={container.payload.fulfillmentDate} />
 		{:else if container.payload.fulfillmentDate}
 			<time datetime={container.payload.fulfillmentDate}>
 				{$date(new Date(container.payload.fulfillmentDate), {
@@ -119,11 +103,10 @@
 	{#if isContainerWithDuration(container)}
 		{#if editable}
 			<fieldset>
-				<input
+				<input type="date" bind:value={container.payload.startDate} />–<input
 					type="date"
-					onchange={requestSubmit}
-					bind:value={container.payload.startDate}
-				/>–<input type="date" onchange={requestSubmit} bind:value={container.payload.endDate} />
+					bind:value={container.payload.endDate}
+				/>
 			</fieldset>
 		{:else}
 			<span>

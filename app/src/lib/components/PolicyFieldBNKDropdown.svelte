@@ -8,11 +8,10 @@
 	interface Props {
 		compact?: boolean;
 		editable?: boolean;
-		handleChange: (event: Event) => void;
 		value: string[];
 	}
 
-	let { compact = false, editable = false, handleChange, value = $bindable() }: Props = $props();
+	let { compact = false, editable = false, value = $bindable() }: Props = $props();
 
 	const popover = createPopover({ label: $_('policy_field_bnk') });
 
@@ -58,12 +57,7 @@
 					<div>
 						{#each policyFieldBNK.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
 							<label>
-								<input
-									type="checkbox"
-									value={option.value}
-									onchange={handleChange}
-									bind:group={value}
-								/>
+								<input type="checkbox" value={option.value} bind:group={value} />
 								<span class="badge badge--gray">{option.label}</span>
 							</label>
 						{/each}

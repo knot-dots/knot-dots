@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import Chapter from '$lib/components/Chapter.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
@@ -168,6 +169,7 @@
 						<form
 							class="row"
 							animate:flip={{ duration: 100 }}
+							on:input={requestSubmit}
 							on:submit|preventDefault={autoSave(part, 2000)}
 							novalidate
 						>

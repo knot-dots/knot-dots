@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
 
 	export let editable = false;
@@ -13,7 +12,7 @@
 
 <div class="label">{label}</div>
 {#if editable}
-	<MultipleChoiceDropdown handleChange={requestSubmit} {options} bind:value />
+	<MultipleChoiceDropdown {options} bind:value />
 {:else}
 	<ul class="value">
 		{#each options.filter((o) => value.includes(o.value)) as selectedOption}

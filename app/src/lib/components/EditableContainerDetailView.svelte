@@ -67,7 +67,7 @@
 	$: organizationMembersPromise = fetchMembers(organization);
 </script>
 
-<form on:submit|preventDefault={handleSubmit} novalidate>
+<form on:input={requestSubmit} on:submit|preventDefault={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<div class="details-tab" id="basic-data">
 			{#if $applicationState.containerDetailView.editable}
@@ -76,7 +76,6 @@
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.title}
 					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					on:input={requestSubmit}
 				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">

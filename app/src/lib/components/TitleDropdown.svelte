@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -35,7 +34,6 @@
 			{#if editable}
 				<h3
 					contenteditable="plaintext-only"
-					oninput={requestSubmit}
 					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 					bind:textContent={value}
 					use:init

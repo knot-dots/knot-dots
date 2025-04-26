@@ -18,7 +18,6 @@
 
 	export let value = '';
 	export let label = '';
-	export let autosave = false;
 
 	const labelId = `label-${counter + 1}`;
 
@@ -35,9 +34,6 @@
 			.config((ctx) => {
 				ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
 					value = markdown;
-					if (autosave) {
-						node.closest('form')?.requestSubmit();
-					}
 				});
 			})
 			.config((ctx) => {

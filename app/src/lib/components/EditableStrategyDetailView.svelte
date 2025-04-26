@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
@@ -190,7 +191,12 @@
 		<svelte:fragment slot="extra">
 			<div class="chapters">
 				{#each parts as part}
-					<form class="chapter" on:submit|preventDefault={autoSave(part, 2000)} novalidate>
+					<form
+						class="chapter"
+						on:input|stopPropagation={requestSubmit}
+						on:submit|preventDefault={autoSave(part, 2000)}
+						novalidate
+					>
 						<EditableChapter
 							container={part}
 							editable={$applicationState.containerDetailView.editable}
@@ -259,6 +265,7 @@
 						<form
 							class="row"
 							animate:flip={{ duration: 100 }}
+							on:input|stopPropagation={requestSubmit}
 							on:submit|preventDefault={autoSave(part, 2000)}
 							novalidate
 						>
