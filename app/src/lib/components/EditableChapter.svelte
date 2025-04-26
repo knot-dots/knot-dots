@@ -5,6 +5,7 @@
 	import AskAI from '~icons/knotdots/ask-ai';
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
@@ -102,16 +103,6 @@
 			return `#view=${container.guid}`;
 		}
 	}
-
-	let timer: ReturnType<typeof setTimeout>;
-
-	function debouncedSubmit(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
-		clearTimeout(timer);
-		timer = setTimeout(async () => {
-			input.closest('form')?.requestSubmit();
-		}, 2000);
-	}
 </script>
 
 {#if editable}
@@ -121,7 +112,7 @@
 		class="chapter-title"
 		contenteditable="plaintext-only"
 		bind:textContent={container.payload.title}
-		on:input={debouncedSubmit}
+		on:input={requestSubmit}
 		on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 	>
 		{container.payload.title}

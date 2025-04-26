@@ -168,7 +168,7 @@
 						<form
 							class="row"
 							animate:flip={{ duration: 100 }}
-							on:submit|preventDefault={autoSave(part)}
+							on:submit|preventDefault={autoSave(part, 2000)}
 							novalidate
 						>
 							<EditableRow

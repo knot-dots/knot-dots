@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import autoSave from '$lib/client/autoSave';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import Card from '$lib/components/Card.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
@@ -19,18 +20,10 @@
 	export let container: OrganizationContainer;
 	export let relatedContainers: Container[];
 
-	let timer: ReturnType<typeof setTimeout>;
-
-	function debouncedSubmit(e: Event) {
-		const input = e.currentTarget as HTMLInputElement;
-		clearTimeout(timer);
-		timer = setTimeout(async () => {
-			input.closest('form')?.requestSubmit();
-		}, 2000);
-	}
+	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form on:submit|preventDefault={autoSave(container)} novalidate>
+<form on:submit|preventDefault={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<header>
 			<EditableLogo
@@ -43,7 +36,7 @@
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.name}
 					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					on:input={debouncedSubmit}
+					on:input={requestSubmit}
 				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
+	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -8,8 +9,6 @@
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
-
-	let timer: ReturnType<typeof setTimeout>;
 
 	const popover = createPopover();
 
@@ -21,14 +20,6 @@
 	const extraOpts = {
 		modifiers: [{ name: 'offset', options: { offset: [-24, -39] } }]
 	};
-
-	function debouncedSubmit(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
-		clearTimeout(timer);
-		timer = setTimeout(async () => {
-			input.closest('form')?.requestSubmit();
-		}, 2000);
-	}
 
 	function init(element: HTMLElement) {
 		element.focus();
@@ -44,9 +35,9 @@
 			{#if editable}
 				<h3
 					contenteditable="plaintext-only"
-					bind:textContent={value}
-					oninput={debouncedSubmit}
+					oninput={requestSubmit}
 					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+					bind:textContent={value}
 					use:init
 				></h3>
 			{:else}

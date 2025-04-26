@@ -23,7 +23,6 @@
 	const labelId = `label-${counter + 1}`;
 
 	let editor: Editor;
-	let timer: ReturnType<typeof setTimeout>;
 
 	function makeEditor(node: HTMLElement) {
 		Editor.make()
@@ -37,10 +36,7 @@
 				ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
 					value = markdown;
 					if (autosave) {
-						clearTimeout(timer);
-						timer = setTimeout(async () => {
-							node.closest('form')?.requestSubmit();
-						}, 2000);
+						node.closest('form')?.requestSubmit();
 					}
 				});
 			})

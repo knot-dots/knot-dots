@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
+	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -7,16 +8,6 @@
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
-
-	let timer: ReturnType<typeof setTimeout>;
-
-	function debouncedSubmit(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
-		clearTimeout(timer);
-		timer = setTimeout(async () => {
-			input.closest('form')?.requestSubmit();
-		}, 2000);
-	}
 </script>
 
 {#if editable}
@@ -28,7 +19,7 @@
 		id="amount"
 		inputmode="numeric"
 		name="amount"
-		onchange={debouncedSubmit}
+		onchange={requestSubmit}
 		type="text"
 		bind:value
 	/>

@@ -190,7 +190,7 @@
 		<svelte:fragment slot="extra">
 			<div class="chapters">
 				{#each parts as part}
-					<form class="chapter" on:submit|preventDefault={autoSave(part)} novalidate>
+					<form class="chapter" on:submit|preventDefault={autoSave(part, 2000)} novalidate>
 						<EditableChapter
 							container={part}
 							editable={$applicationState.containerDetailView.editable}
@@ -259,7 +259,7 @@
 						<form
 							class="row"
 							animate:flip={{ duration: 100 }}
-							on:submit|preventDefault={autoSave(part)}
+							on:submit|preventDefault={autoSave(part, 2000)}
 							novalidate
 						>
 							<EditableRow

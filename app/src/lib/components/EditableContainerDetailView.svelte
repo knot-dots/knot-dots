@@ -8,6 +8,7 @@
 	import { page } from '$app/stores';
 	import autoSave from '$lib/client/autoSave';
 	import fetchMembers from '$lib/client/fetchMembers';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import {
@@ -49,6 +50,8 @@
 
 	let disclosure_expanded = $disclosure.expanded;
 
+	const handleSubmit = autoSave(container, 2000);
+
 	$: managedBy = getManagedBy(container, [
 		...$page.data.organizations,
 		...$page.data.organizationalUnits,
@@ -62,19 +65,9 @@
 	$: organization = container.organization;
 
 	$: organizationMembersPromise = fetchMembers(organization);
-
-	let timer: ReturnType<typeof setTimeout>;
-
-	function debouncedSubmit(e: Event) {
-		const input = e.currentTarget as HTMLInputElement;
-		clearTimeout(timer);
-		timer = setTimeout(async () => {
-			input.closest('form')?.requestSubmit();
-		}, 2000);
-	}
 </script>
 
-<form on:submit|preventDefault={autoSave(container)} novalidate>
+<form on:submit|preventDefault={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<div class="details-tab" id="basic-data">
 			{#if $applicationState.containerDetailView.editable}
@@ -83,7 +76,7 @@
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.title}
 					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					on:input={debouncedSubmit}
+					on:input={requestSubmit}
 				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">
