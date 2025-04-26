@@ -188,7 +188,11 @@
 	}
 
 	function createContainerDerivedFrom(container: AnyContainer) {
-		return async (event: Event) => {
+		return (event: Event) => {
+			if (!(event as CustomEvent).detail.selected) {
+				return;
+			}
+
 			$newContainer = containerOfType(
 				(event as CustomEvent).detail.selected,
 				container.organization,

@@ -65,6 +65,10 @@
 
 	function createContainerAt(position: number) {
 		return (event: Event) => {
+			if (!(event as CustomEvent).detail.selected) {
+				return;
+			}
+
 			$newContainer = containerOfType(
 				(event as CustomEvent).detail.selected as PayloadType,
 				isPartOf.organization,
