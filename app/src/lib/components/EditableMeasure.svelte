@@ -26,19 +26,16 @@
 		payloadType: [payloadTypes.enum.measure]
 	}) as Promise<ContainerWithEffect[]>;
 
-	$: isPartOfMeasureObject = container.relation.find(
-		(r) => r.predicate === predicates.enum['is-part-of-measure']
-	)?.object;
+	$: isPartOfMeasureObject =
+		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-measure'])?.object ??
+		'';
 
-	async function onChange(event: Event) {
+	async function set(value: string) {
 		const isPartOfMeasureIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-measure'] &&
 				('guid' in container ? subject == container.guid : true)
 		);
-
-		const target = event.target as HTMLInputElement;
-		const value = target.value;
 
 		const isPartOfMeasureOptions = await measureCandidatesRequest;
 
@@ -60,8 +57,6 @@
 				: []),
 			...container.relation.slice(isPartOfMeasureIndex + 1)
 		];
-
-		target.closest('form')?.requestSubmit();
 	}
 </script>
 
@@ -70,16 +65,15 @@
 {:then measureCandidates}
 	<EditableSingleChoice
 		{editable}
-		handleChange={onChange}
 		label={$_('measure')}
 		options={[
-			{ value: '', label: $_('empty') },
+			{ label: $_('empty'), value: '' },
 			...measureCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))
 		]}
-		value={isPartOfMeasureObject ? String(isPartOfMeasureObject) : ''}
+		bind:value={() => isPartOfMeasureObject, set}
 	/>
 {/await}

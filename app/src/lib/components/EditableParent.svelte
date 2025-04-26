@@ -98,19 +98,15 @@
 		strategyGuid
 	);
 
-	$: isPartOfObject = container.relation.find(
-		(r) => r.predicate === predicates.enum['is-part-of']
-	)?.object;
+	$: isPartOfObject =
+		container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object ?? '';
 
-	async function onChange(event: Event) {
+	async function set(value: string) {
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
 				('guid' in container ? subject == container.guid : true)
 		);
-
-		const target = event.target as HTMLInputElement;
-		const value = target.value;
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
@@ -126,8 +122,6 @@
 				: []),
 			...container.relation.slice(isPartOfIndex + 1)
 		];
-
-		target.closest('form')?.requestSubmit();
 	}
 </script>
 
@@ -136,16 +130,15 @@
 {:then isPartOfOptions}
 	<EditableSingleChoice
 		{editable}
-		handleChange={onChange}
 		label={$_('superordinate_element')}
 		options={[
-			{ value: '', label: $_('empty') },
+			{ label: $_('empty'), value: '' },
 			...isPartOfOptions.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))
 		]}
-		value={isPartOfObject ? isPartOfObject : ''}
+		bind:value={() => isPartOfObject, set}
 	/>
 {/await}

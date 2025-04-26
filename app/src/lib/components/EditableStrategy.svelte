@@ -26,19 +26,16 @@
 		payloadType: [payloadTypes.enum.strategy]
 	}) as Promise<StrategyContainer[]>;
 
-	$: isPartOfStrategyObject = container.relation.find(
-		(r) => r.predicate === predicates.enum['is-part-of-strategy']
-	)?.object;
+	$: isPartOfStrategyObject =
+		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-strategy'])
+			?.object ?? '';
 
-	async function onChange(event: Event) {
+	async function set(value: string) {
 		const isPartOfStrategyIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-strategy'] &&
 				('guid' in container ? subject == container.guid : true)
 		);
-
-		const target = event.target as HTMLInputElement;
-		const value = target.value;
 
 		const isPartOfStrategyOptions = await strategyCandidatesRequest;
 
@@ -60,8 +57,6 @@
 				: []),
 			...container.relation.slice(isPartOfStrategyIndex + 1)
 		];
-
-		target.closest('form')?.requestSubmit();
 	}
 </script>
 
@@ -70,16 +65,15 @@
 {:then strategyCandidates}
 	<EditableSingleChoice
 		{editable}
-		handleChange={onChange}
 		label={$_('strategy')}
 		options={[
-			{ value: '', label: $_('empty') },
+			{ label: $_('empty'), value: '' },
 			...strategyCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))
 		]}
-		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : ''}
+		bind:value={() => isPartOfStrategyObject, set}
 	/>
 {/await}

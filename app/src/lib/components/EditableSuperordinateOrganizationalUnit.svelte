@@ -27,15 +27,12 @@
 	$: isPartOfObject =
 		container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object ?? '';
 
-	async function onChange(event: Event) {
+	async function set(value: string | undefined) {
 		const isPartOfIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
 				('guid' in container ? subject == container.guid : true)
 		);
-
-		const target = event.target as HTMLInputElement;
-		const value = target.value;
 
 		container.relation = [
 			...container.relation.slice(0, isPartOfIndex),
@@ -51,8 +48,6 @@
 				: []),
 			...container.relation.slice(isPartOfIndex + 1)
 		];
-
-		target.closest('form')?.requestSubmit();
 	}
 </script>
 
@@ -66,10 +61,9 @@
 {:then isPartOfOptions}
 	<EditableSingleChoice
 		{editable}
-		handleChange={onChange}
 		label={$_('superordinate_organizational_unit')}
 		options={[
-			{ value: '', label: $_('empty') },
+			{ label: $_('empty'), value: undefined },
 			...isPartOfOptions
 				.filter(({ payload }) => container.payload.level === payload.level + 1)
 				.map(({ guid, payload }) => ({
@@ -78,6 +72,6 @@
 					value: guid
 				}))
 		]}
-		value={isPartOfObject}
+		bind:value={() => isPartOfObject, set}
 	/>
 {/await}
