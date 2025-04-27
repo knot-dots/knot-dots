@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/flowbite/close-outline';
 	import Upload from '~icons/flowbite/upload-outline';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 
 	interface Props {
@@ -17,7 +18,7 @@
 		return (event: Event) => {
 			const input = event.currentTarget as HTMLInputElement;
 			value = [...value.slice(0, index), ...value.slice(index + 1)];
-			input.closest('form')?.requestSubmit();
+			requestSubmit(event);
 		};
 	}
 
@@ -31,12 +32,12 @@
 						.filter((f) => f instanceof File && f.size > 0)
 						.map(async (f) => [await uploadAsFormData(f), f.name])
 				);
+				requestSubmit(event);
 			} catch (e) {
 				console.log(e);
 			} finally {
 				uploadInProgress = false;
 			}
-			input.closest('form')?.requestSubmit();
 		}
 	}
 </script>

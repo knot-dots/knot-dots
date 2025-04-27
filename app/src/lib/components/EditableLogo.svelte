@@ -5,6 +5,7 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Plus from '~icons/heroicons/plus-solid';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 
 	interface Props {
@@ -26,7 +27,7 @@
 	function remove(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
 		value = undefined;
-		input.closest('form')?.requestSubmit();
+		requestSubmit(event);
 	}
 
 	async function upload(event: Event) {
@@ -35,12 +36,12 @@
 			try {
 				uploadInProgress = true;
 				value = await uploadAsFormData(input.files[0]);
+				requestSubmit(event);
 			} catch (e) {
 				console.log(e);
 			} finally {
 				uploadInProgress = false;
 			}
-			input.closest('form')?.requestSubmit();
 		}
 	}
 </script>
