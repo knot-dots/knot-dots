@@ -45,17 +45,13 @@
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
-		isModelContainer,
 		isObjectiveContainer,
-		isOperationalGoalContainer,
 		isOrganizationalUnitContainer,
 		isResolutionContainer,
 		isResourceContainer,
-		isStrategicGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		isTextContainer,
-		isVisionContainer,
 		type NewContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
@@ -391,17 +387,9 @@
 			{#await import('./EditableMilestoneDetailView.svelte') then { default: EditableMilestoneDetailView }}
 				<EditableMilestoneDetailView {container} {relatedContainers} {revisions} />
 			{/await}
-		{:else if isModelContainer(container)}
-			{#await import('./EditableModelDetailView.svelte') then { default: EditableModelDetailView }}
-				<EditableModelDetailView {container} {relatedContainers} {revisions} />
-			{/await}
 		{:else if isObjectiveContainer(container)}
 			{#await import('./EditableObjectiveDetailView.svelte') then { default: EditableObjectiveDetailView }}
 				<EditableObjectiveDetailView {container} {relatedContainers} {revisions} />
-			{/await}
-		{:else if isOperationalGoalContainer(container)}
-			{#await import('./EditableOperationalGoalDetailView.svelte') then { default: EditableOperationalGoalDetailView }}
-				<EditableOperationalGoalDetailView {container} {relatedContainers} {revisions} />
 			{/await}
 		{:else if isOrganizationalUnitContainer(container)}
 			{#await import('./EditableOrganizationalUnitDetailView.svelte') then { default: EditableOrganizationalUnitDetailView }}
@@ -415,10 +403,6 @@
 			{#await import('./EditableResourceDetailView.svelte') then { default: EditableResourceDetailView }}
 				<EditableResourceDetailView {container} {relatedContainers} {revisions} />
 			{/await}
-		{:else if isStrategicGoalContainer(container)}
-			{#await import('./EditableStrategicGoalDetailView.svelte') then { default: EditableStrategicGoalDetailView }}
-				<EditableStrategicGoalDetailView {container} {relatedContainers} {revisions} />
-			{/await}
 		{:else if isStrategyContainer(container)}
 			{#await import('./EditableStrategyDetailView.svelte') then { default: EditableStrategyDetailView }}
 				<EditableStrategyDetailView {container} {relatedContainers} {revisions} />
@@ -430,10 +414,6 @@
 		{:else if isTextContainer(container)}
 			{#await import('./EditableTextDetailView.svelte') then { default: EditableTextDetailView }}
 				<EditableTextDetailView {container} {relatedContainers} {revisions} />
-			{/await}
-		{:else if isVisionContainer(container)}
-			{#await import('./EditableVisionDetailView.svelte') then { default: EditableVisionDetailView }}
-				<EditableVisionDetailView {container} {relatedContainers} {revisions} />
 			{/await}
 		{/if}
 	{:else if isEffectContainer(container)}

@@ -46,14 +46,11 @@ export const load = (async ({ locals, url, parent }) =>
 						{
 							type: [
 								payloadTypes.enum.effect,
+								payloadTypes.enum.goal,
 								payloadTypes.enum.indicator,
 								payloadTypes.enum.measure,
-								payloadTypes.enum.model,
-								payloadTypes.enum.operational_goal,
 								payloadTypes.enum.simple_measure,
-								payloadTypes.enum.strategic_goal,
-								payloadTypes.enum.strategy,
-								payloadTypes.enum.vision
+								payloadTypes.enum.strategy
 							]
 						},
 						url.searchParams.get('sort') ?? ''
@@ -79,14 +76,11 @@ export const load = (async ({ locals, url, parent }) =>
 							terms: url.searchParams.get('terms') ?? '',
 							type: [
 								payloadTypes.enum.effect,
+								payloadTypes.enum.goal,
 								payloadTypes.enum.indicator,
 								payloadTypes.enum.measure,
-								payloadTypes.enum.model,
-								payloadTypes.enum.operational_goal,
 								payloadTypes.enum.simple_measure,
-								payloadTypes.enum.strategic_goal,
-								payloadTypes.enum.strategy,
-								payloadTypes.enum.vision
+								payloadTypes.enum.strategy
 							]
 						},
 						url.searchParams.get('sort') ?? ''
@@ -112,15 +106,12 @@ export const load = (async ({ locals, url, parent }) =>
 							terms: url.searchParams.get('terms') ?? '',
 							type: [
 								payloadTypes.enum.effect,
+								payloadTypes.enum.goal,
 								payloadTypes.enum.indicator,
 								payloadTypes.enum.measure,
-								payloadTypes.enum.model,
-								payloadTypes.enum.operational_goal,
 								payloadTypes.enum.resolution,
 								payloadTypes.enum.simple_measure,
-								payloadTypes.enum.strategic_goal,
-								payloadTypes.enum.strategy,
-								payloadTypes.enum.vision
+								payloadTypes.enum.strategy
 							]
 						},
 						url.searchParams.get('sort') ?? ''

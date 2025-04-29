@@ -84,21 +84,17 @@ const payloadTypeValues = [
 	'measure',
 	'measure_result',
 	'milestone',
-	'model',
 	'objective',
-	'operational_goal',
 	'organization',
 	'organizational_unit',
 	'page',
 	'resolution',
 	'resource',
 	'simple_measure',
-	'strategic_goal',
 	'strategy',
 	'task',
 	'text',
-	'undefined',
-	'vision'
+	'undefined'
 ] as const;
 
 export const payloadTypes = z.enum(payloadTypeValues);
@@ -111,13 +107,9 @@ export function isPayloadType(value: unknown): value is PayloadType {
 
 export const chapterTypeOptions = [
 	payloadTypes.enum.measure,
-	payloadTypes.enum.model,
-	payloadTypes.enum.operational_goal,
 	payloadTypes.enum.resolution,
 	payloadTypes.enum.simple_measure,
-	payloadTypes.enum.strategic_goal,
-	payloadTypes.enum.text,
-	payloadTypes.enum.vision
+	payloadTypes.enum.text
 ];
 
 const levelValues = [
@@ -578,34 +570,12 @@ const measurePayload = basePayload
 
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
-const modelPayload = basePayload
-	.extend({
-		type: z.literal(payloadTypes.enum.model)
-	})
-	.strict();
-
-const initialModelPayload = modelPayload.partial({ title: true });
-
 const objectivePayload = basePayload.omit({ category: true, summary: true, topic: true }).extend({
 	type: z.literal(payloadTypes.enum.objective),
 	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
 });
 
 const initialObjectivePayload = objectivePayload.partial({ title: true });
-
-const operationalGoalPayload = basePayload
-	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		indicator: z.array(indicator).max(1).default([]),
-		progress: z.number().nonnegative().optional(),
-		type: z.literal(payloadTypes.enum.operational_goal)
-	})
-	.strict();
-
-const initialOperationalGoalPayload = operationalGoalPayload.partial({ title: true });
 
 const resolutionPayload = basePayload.extend({
 	resolutionStatus: resolutionStatus.default(resolutionStatus.enum['resolution_status.draft']),
@@ -651,15 +621,6 @@ const simpleMeasurePayload = basePayload
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
-const strategicGoalPayload = basePayload
-	.extend({
-		fulfillmentDate: z.string().date().optional(),
-		type: z.literal(payloadTypes.enum.strategic_goal)
-	})
-	.strict();
-
-const initialStrategicGoalPayload = strategicGoalPayload.partial({ title: true });
-
 const strategyPayload = basePayload
 	.omit({
 		description: true,
@@ -678,14 +639,6 @@ const strategyPayload = basePayload
 const initialStrategyPayload = strategyPayload.partial({
 	title: true
 });
-
-const visionPayload = basePayload
-	.extend({
-		type: z.literal(payloadTypes.enum.vision)
-	})
-	.strict();
-
-const initialVisionPayload = visionPayload.partial({ title: true });
 
 const measureMonitoringBasePayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
@@ -822,18 +775,14 @@ const payload = z.discriminatedUnion('type', [
 	measurePayload,
 	measureResultPayload,
 	milestonePayload,
-	modelPayload,
 	objectivePayload,
-	operationalGoalPayload,
 	pagePayload,
 	resolutionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
-	strategicGoalPayload,
 	strategyPayload,
 	taskPayload,
-	textPayload,
-	visionPayload
+	textPayload
 ]);
 
 export type Payload = z.infer<typeof payload>;
@@ -862,21 +811,17 @@ const anyPayload = z.discriminatedUnion('type', [
 	measurePayload,
 	measureResultPayload,
 	milestonePayload,
-	modelPayload,
 	objectivePayload,
-	operationalGoalPayload,
 	organizationPayload,
 	organizationalUnitPayload,
 	pagePayload,
 	resolutionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
-	strategicGoalPayload,
 	strategyPayload,
 	taskPayload,
 	textPayload,
-	undefinedPayload,
-	visionPayload
+	undefinedPayload
 ]);
 
 export type AnyPayload = z.infer<typeof anyPayload>;
@@ -894,12 +839,7 @@ export const anyContainer = container.extend({
 export type AnyContainer = z.infer<typeof anyContainer>;
 
 export const containerWithObjective = container.extend({
-	payload: z.discriminatedUnion('type', [
-		modelPayload,
-		operationalGoalPayload,
-		strategicGoalPayload,
-		visionPayload
-	])
+	payload: z.discriminatedUnion('type', [goalPayload])
 });
 
 export type ContainerWithObjective = z.infer<typeof containerWithObjective>;
@@ -907,12 +847,7 @@ export type ContainerWithObjective = z.infer<typeof containerWithObjective>;
 export function isContainerWithObjective(
 	container: AnyContainer | EmptyContainer
 ): container is ContainerWithObjective {
-	return (
-		isModelContainer(container) ||
-		isOperationalGoalContainer(container) ||
-		isStrategicGoalContainer(container) ||
-		isVisionContainer(container)
-	);
+	return isGoalContainer(container);
 }
 
 export const containerWithEffect = container.extend({
@@ -987,18 +922,6 @@ export function isMeasureContainer(
 	return container.payload.type === payloadTypes.enum.measure;
 }
 
-const modelContainer = container.extend({
-	payload: modelPayload
-});
-
-export type ModelContainer = z.infer<typeof modelContainer>;
-
-export function isModelContainer(
-	container: AnyContainer | EmptyContainer
-): container is ModelContainer {
-	return container.payload.type === payloadTypes.enum.model;
-}
-
 const objectiveContainer = container.extend({
 	payload: objectivePayload
 });
@@ -1009,18 +932,6 @@ export function isObjectiveContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ObjectiveContainer {
 	return container.payload.type === payloadTypes.enum.objective;
-}
-
-const operationalGoalContainer = container.extend({
-	payload: operationalGoalPayload
-});
-
-export type OperationalGoalContainer = z.infer<typeof operationalGoalContainer>;
-
-export function isOperationalGoalContainer(
-	container: AnyContainer | EmptyContainer
-): container is OperationalGoalContainer {
-	return container.payload.type === payloadTypes.enum.operational_goal;
 }
 
 export const organizationContainer = container.extend({
@@ -1095,18 +1006,6 @@ export function isSimpleMeasureContainer(
 	return container.payload.type === payloadTypes.enum.simple_measure;
 }
 
-const strategicGoalContainer = container.extend({
-	payload: strategicGoalPayload
-});
-
-export type StrategicGoalContainer = z.infer<typeof strategicGoalContainer>;
-
-export function isStrategicGoalContainer(
-	container: AnyContainer | EmptyContainer
-): container is StrategicGoalContainer {
-	return container.payload.type === payloadTypes.enum.strategic_goal;
-}
-
 const strategyContainer = container.extend({
 	payload: strategyPayload
 });
@@ -1129,18 +1028,6 @@ export function isTextContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TextContainer {
 	return container.payload.type === payloadTypes.enum.text;
-}
-
-const visionContainer = container.extend({
-	payload: visionPayload
-});
-
-export type VisionContainer = z.infer<typeof visionContainer>;
-
-export function isVisionContainer(
-	container: AnyContainer | EmptyContainer
-): container is VisionContainer {
-	return container.payload.type === payloadTypes.enum.vision;
 }
 
 const measureResultContainer = container.extend({
@@ -1343,19 +1230,15 @@ export const emptyContainer = newContainer.extend({
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialMeasurePayload,
-		initialModelPayload,
 		initialObjectivePayload,
-		initialOperationalGoalPayload,
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
 		initialResolutionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,
-		initialStrategicGoalPayload,
 		initialStrategyPayload,
 		initialTextPayload,
-		initialVisionPayload,
 		initialMeasureResultPayload,
 		initialMilestonePayload,
 		initialTaskPayload,
@@ -1389,23 +1272,11 @@ const emptyMeasureContainer = emptyContainer.extend({
 
 export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
 
-const emptyModelContainer = emptyContainer.extend({
-	payload: initialModelPayload
-});
-
-export type EmptyModelContainer = z.infer<typeof emptyModelContainer>;
-
 const emptyObjectiveContainer = emptyContainer.extend({
 	payload: initialObjectivePayload
 });
 
 export type EmptyObjectiveContainer = z.infer<typeof emptyObjectiveContainer>;
-
-const emptyOperationalGoalContainer = emptyContainer.extend({
-	payload: initialOperationalGoalPayload
-});
-
-export type EmptyOperationalGoalContainer = z.infer<typeof emptyOperationalGoalContainer>;
 
 const emptyOrganizationContainer = newContainer.extend({
 	payload: initialOrganizationPayload
@@ -1443,12 +1314,6 @@ const emptySimpleMeasureContainer = emptyContainer.extend({
 
 export type EmptySimpleMeasureContainer = z.infer<typeof emptySimpleMeasureContainer>;
 
-const emptyStrategicGoalContainer = emptyContainer.extend({
-	payload: initialStrategicGoalPayload
-});
-
-export type EmptyStrategicGoalContainer = z.infer<typeof emptyStrategicGoalContainer>;
-
 const emptyStrategyContainer = emptyContainer.extend({
 	payload: initialStrategyPayload
 });
@@ -1460,12 +1325,6 @@ const emptyTextContainer = emptyContainer.extend({
 });
 
 export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
-
-const emptyVisionContainer = emptyContainer.extend({
-	payload: initialVisionPayload
-});
-
-export type EmptyVisionContainer = z.infer<typeof emptyVisionContainer>;
 
 const emptyMeasureResultContainer = emptyContainer.extend({
 	payload: initialMeasureResultPayload

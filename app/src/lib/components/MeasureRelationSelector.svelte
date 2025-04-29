@@ -8,13 +8,10 @@
 	import {
 		type Container,
 		type EmptyContainer,
+		isGoalContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
-		isModelContainer,
-		isOperationalGoalContainer,
-		isStrategicGoalContainer,
 		isTaskContainer,
-		isVisionContainer,
 		type MeasureContainer,
 		type PartialRelation,
 		payloadTypes,
@@ -48,12 +45,7 @@
 				return fetchContainers({
 					organization: [container.organization],
 					organizationalUnit: container.organizational_unit ? [container.organizational_unit] : [],
-					payloadType: [
-						payloadTypes.enum.model,
-						payloadTypes.enum.operational_goal,
-						payloadTypes.enum.strategic_goal,
-						payloadTypes.enum.vision
-					]
+					payloadType: [payloadTypes.enum.goal]
 				}) as Promise<Container[]>;
 			}
 		}
@@ -187,22 +179,12 @@
 			{@const options = [
 				{ value: undefined, label: $_('not_part_of') },
 				...isPartOfOptions
-					.filter((c) => isVisionContainer(c) || isModelContainer(c))
+					.filter((c) => isGoalContainer(c))
 					.map(({ payload, guid }) => ({
 						value: guid,
 						label: payload.title,
-						group: $_('payload_group.long_term_goals')
+						group: $_('payload_group.goals')
 					})),
-				...isPartOfOptions.filter(isStrategicGoalContainer).map(({ payload, guid }) => ({
-					value: guid,
-					label: payload.title,
-					group: $_('payload_group.strategic_goals')
-				})),
-				...isPartOfOptions.filter(isOperationalGoalContainer).map(({ payload, guid }) => ({
-					value: guid,
-					label: payload.title,
-					group: $_('payload_group.measurable_goals')
-				})),
 				...isPartOfOptions.filter(isMeasureResultContainer).map(({ payload, guid }) => ({
 					value: guid,
 					label: payload.title,

@@ -1392,15 +1392,12 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 							categories: [],
 							topics: [],
 							type: [
+								payloadTypes.enum.goal,
 								payloadTypes.enum.measure,
-								payloadTypes.enum.model,
 								payloadTypes.enum.objective,
-								payloadTypes.enum.operational_goal,
 								payloadTypes.enum.resolution,
 								payloadTypes.enum.simple_measure,
-								payloadTypes.enum.strategic_goal,
-								payloadTypes.enum.text,
-								payloadTypes.enum.vision
+								payloadTypes.enum.text
 							]
 						})(txConnection)
 					: await getAllContainersRelatedToMeasure(

@@ -4,44 +4,95 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import { type Container, isPartOf, payloadTypes } from '$lib/models';
+	import {
+		type Container,
+		type GoalContainer,
+		isGoalContainer,
+		isPartOf,
+		isStrategyContainer,
+		payloadTypes
+	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
 	export let containers: Container[];
 	export let containersWithIndicatorContributions: Container[] = [];
 
-	const columns = [
-		{ title: 'strategies', payloadType: [payloadTypes.enum.strategy] },
+	let goalsByHierarchyLevel: Map<number, GoalContainer[]>;
+
+	$: {
+		goalsByHierarchyLevel = new Map([[1, []]]);
+
+		for (const container of containers.filter(isGoalContainer)) {
+			const hierarchyLevel = container.payload.hierarchyLevel;
+
+			if (goalsByHierarchyLevel.has(hierarchyLevel)) {
+				goalsByHierarchyLevel.set(hierarchyLevel, [
+					...(goalsByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
+					container
+				]);
+			} else {
+				goalsByHierarchyLevel.set(hierarchyLevel, [container]);
+			}
+		}
+	}
+
+	$: columns = [
 		{
-			title: 'payload_group.long_term_goals',
-			payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
+			addItemUrl: '#create=strategy',
+			containers: containers.filter(isStrategyContainer),
+			key: 'programs',
+			title: $_('programs')
 		},
-		{ title: 'payload_group.strategic_goals', payloadType: [payloadTypes.enum.strategic_goal] },
+		...Array.from(goalsByHierarchyLevel.entries()).map(([hierarchyLevel, containers]) => ({
+			addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
+			containers,
+			key: `goals-${hierarchyLevel}`,
+			title: computeColumnTitleForGoals(containers)
+		})),
 		{
-			title: 'payload_group.measurable_goals',
-			payloadType: [payloadTypes.enum.operational_goal]
-		},
-		{
-			title: 'payload_group.implementation',
-			payloadType: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
+			addItemUrl: undefined,
+			containers: containers.filter(
+				(c) =>
+					[
+						payloadTypes.enum.measure,
+						payloadTypes.enum.resolution,
+						payloadTypes.enum.simple_measure
+					].findIndex((payloadType) => payloadType === c.payload.type) > -1
+			),
+			key: 'implementation',
+			title: $_('payload_group.implementation')
 		}
 	];
+
+	function computeColumnTitleForGoals(container: GoalContainer[]): string {
+		const goalTypes = new Set(container.map((c) => c.payload.goalType));
+
+		if (goalTypes.size == 1) {
+			return $_(`${goalTypes.values().next().value}.plural` as string);
+		} else if (goalTypes.size >= 1) {
+			return $_('goals_by_hierarchy_level', {
+				values: { level: container[0].payload.hierarchyLevel }
+			});
+		} else {
+			return $_('goals');
+		}
+	}
 </script>
 
 <Board>
-	{#each columns as column (column.title)}
+	{#each columns as column (column.key)}
 		<BoardColumn
-			addItemUrl={column.title === 'strategies' &&
+			addItemUrl={column.addItemUrl &&
 			$mayCreateContainer(
 				payloadTypes.enum.strategy,
 				$page.data.currentOrganizationalUnit?.guid ?? $page.data.currentOrganization.guid
 			)
-				? `#create=${column.payloadType}`
+				? column.addItemUrl
 				: undefined}
-			title={$_(column.title)}
+			title={column.title}
 		>
 			<div class="vertical-scroll-wrapper masked-overflow">
-				{#each containers.filter((c) => column.payloadType.findIndex((payloadType) => payloadType === c.payload.type) > -1) as container}
+				{#each column.containers as container}
 					<Card
 						{container}
 						relatedContainers={containersWithIndicatorContributions.filter(isPartOf)}

@@ -7,6 +7,7 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		containerOfType,
+		isGoalContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isResolutionContainer,
@@ -54,6 +55,8 @@
 			container.payload.status = params.get('status') as Status;
 		} else if (isTaskContainer(container) && params.has('taskStatus')) {
 			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
+		} else if (isGoalContainer(container) && params.has('hierarchyLevel')) {
+			container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
 		}
 
 		container.relation = [

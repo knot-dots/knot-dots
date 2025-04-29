@@ -16,15 +16,9 @@
 
 	const payloadTypeOptions = paramsFromFragment($page.url).has('is-part-of-strategy')
 		? [
-				...[payloadTypes.enum.model, payloadTypes.enum.vision]
+				...[payloadTypes.enum.goal]
 					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
-					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.long_term_goals') })),
-				...[payloadTypes.enum.strategic_goal]
-					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
-					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.strategic_goals') })),
-				...[payloadTypes.enum.operational_goal]
-					.filter((i) => paramsFromFragment($page.url).has('payloadType', i))
-					.map((pt) => ({ value: pt, label: $_(pt), group: $_('payload_group.measurable_goals') })),
+					.map((pt) => ({ value: pt, label: $_(pt), group: $_('goals') })),
 				...[
 					payloadTypes.enum.measure,
 					payloadTypes.enum.simple_measure,

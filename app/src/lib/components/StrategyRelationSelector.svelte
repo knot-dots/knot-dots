@@ -6,12 +6,9 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
+		type GoalContainer,
+		isGoalContainer,
 		isMeasureContainer,
-		isModelContainer,
-		isOperationalGoalContainer,
-		isSimpleMeasureContainer,
-		isStrategicGoalContainer,
-		isVisionContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -27,31 +24,7 @@
 	let isPartOfOptionsRequest: Promise<AnyContainer[]> = new Promise(() => []);
 	let isPartOfStrategyOptionsRequest: Promise<StrategyContainer[]> = new Promise(() => []);
 
-	let allowedSuperordinateTypes = [
-		payloadTypes.enum.model,
-		payloadTypes.enum.vision,
-		payloadTypes.enum.strategic_goal,
-		payloadTypes.enum.measure_result,
-		payloadTypes.enum.operational_goal,
-		payloadTypes.enum.measure
-	];
-
-	if (isStrategicGoalContainer(container)) {
-		allowedSuperordinateTypes = [payloadTypes.enum.model, payloadTypes.enum.vision];
-	} else if (isOperationalGoalContainer(container)) {
-		allowedSuperordinateTypes = [
-			payloadTypes.enum.model,
-			payloadTypes.enum.vision,
-			payloadTypes.enum.strategic_goal
-		];
-	} else if (isMeasureContainer(container) || isSimpleMeasureContainer(container)) {
-		allowedSuperordinateTypes = [
-			payloadTypes.enum.model,
-			payloadTypes.enum.vision,
-			payloadTypes.enum.strategic_goal,
-			payloadTypes.enum.operational_goal
-		];
-	}
+	const allowedSuperordinateTypes = [payloadTypes.enum.goal];
 
 	onMount(() => {
 		isPartOfStrategyOptionsRequest = fetchContainers({
@@ -66,7 +39,7 @@
 			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
 		)?.object;
 
-		if (strategyRevision && !isModelContainer(container) && !isVisionContainer(container)) {
+		if (strategyRevision) {
 			isPartOfOptionsRequest = fetchContainers({
 				isPartOfStrategy: [strategyRevision],
 				payloadType: allowedSuperordinateTypes
@@ -95,24 +68,6 @@
 						})
 					)
 			);
-
-		if (isModelContainer(container) || isVisionContainer(container)) {
-			const isPartOfStrategyIndex = container.relation.findIndex(
-				({ predicate, subject }) =>
-					predicate === predicates.enum['is-part-of-strategy'] &&
-					('guid' in container ? subject == container.guid : true)
-			);
-
-			if (isPartOfStrategyIndex > -1) {
-				container.relation = [
-					...container.relation,
-					{
-						...container.relation[isPartOfStrategyIndex],
-						predicate: predicates.enum['is-part-of']
-					}
-				];
-			}
-		}
 	}
 
 	async function onChangeIsPartOfStrategy(event: Event) {
@@ -152,30 +107,7 @@
 			...container.relation.slice(isPartOfStrategyIndex + 1)
 		];
 
-		if (
-			container.payload.type === payloadTypes.enum.model ||
-			container.payload.type === payloadTypes.enum.vision
-		) {
-			const isPartOfIndex = container.relation.findIndex(
-				({ predicate, subject }) =>
-					predicate === predicates.enum['is-part-of'] &&
-					('guid' in container ? subject == container.guid : true)
-			);
-			container.relation = [
-				...container.relation.slice(0, isPartOfIndex),
-				...(value
-					? [
-							{
-								object: (event as CustomEvent).detail.selected.value,
-								position: 0,
-								predicate: predicates.enum['is-part-of'],
-								...('guid' in container ? { subject: container.guid } : undefined)
-							}
-						]
-					: []),
-				...container.relation.slice(isPartOfIndex + 1)
-			];
-		} else if (value) {
+		if (value) {
 			isPartOfOptionsRequest = fetchContainers({
 				isPartOfStrategy: [value],
 				payloadType: allowedSuperordinateTypes
@@ -210,6 +142,39 @@
 			...container.relation.slice(isPartOfIndex + 1)
 		];
 	}
+
+	function goalsByHierarchyLevel(containers: GoalContainer[]) {
+		const goalsByHierarchyLevel = new Map<number, GoalContainer[]>([[1, []]]);
+
+		for (const container of containers) {
+			const hierarchyLevel = container.payload.hierarchyLevel;
+
+			if (goalsByHierarchyLevel.has(hierarchyLevel)) {
+				goalsByHierarchyLevel.set(hierarchyLevel, [
+					...(goalsByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
+					container
+				]);
+			} else {
+				goalsByHierarchyLevel.set(hierarchyLevel, [container]);
+			}
+		}
+
+		return goalsByHierarchyLevel;
+	}
+
+	function computeColumnTitleForGoals(containers: GoalContainer[]): string {
+		const goalTypes = new Set(containers.map((c) => c.payload.goalType));
+
+		if (goalTypes.size == 1) {
+			return $_(`${goalTypes.values().next().value}.plural` as string);
+		} else if (goalTypes.size >= 1) {
+			return $_('goals_by_hierarchy_level', {
+				values: { level: containers[0].payload.hierarchyLevel }
+			});
+		} else {
+			return $_('goals');
+		}
+	}
 </script>
 
 {#await isPartOfStrategyOptionsRequest then strategyContainers}
@@ -235,25 +200,18 @@
 
 {#await isPartOfOptionsRequest then isPartOfOptions}
 	{#if isPartOfOptions.length > 0}
+		{@const goals = goalsByHierarchyLevel(isPartOfOptions.filter(isGoalContainer))}
 		{@const options = [
 			{ value: undefined, label: $_('not_part_of') },
-			...isPartOfOptions
-				.filter((c) => isModelContainer(c) || isVisionContainer(c))
-				.map(({ payload, guid }) => ({
-					value: guid,
-					label: payload.title,
-					group: $_('payload_group.long_term_goals')
-				})),
-			...isPartOfOptions.filter(isStrategicGoalContainer).map(({ payload, guid }) => ({
-				value: guid,
-				label: payload.title,
-				group: $_('payload_group.strategic_goals')
-			})),
-			...isPartOfOptions.filter(isOperationalGoalContainer).map(({ payload, guid }) => ({
-				value: guid,
-				label: payload.title,
-				group: $_('payload_group.measurable_goals')
-			})),
+			...Array.from(goals.values())
+				.toSorted()
+				.flatMap((containers) =>
+					containers.map((container: GoalContainer) => ({
+						value: container.guid,
+						label: container.payload.title,
+						group: computeColumnTitleForGoals(containers)
+					}))
+				),
 			...isPartOfOptions.filter(isMeasureContainer).map(({ payload, guid }) => ({
 				value: guid,
 				label: payload.title,

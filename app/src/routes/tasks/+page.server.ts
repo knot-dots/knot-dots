@@ -77,10 +77,7 @@ export const load = (async ({ locals, parent, url }) => {
 						type: [
 							payloadTypes.enum.measure_result,
 							payloadTypes.enum.milestone,
-							payloadTypes.enum.model,
-							payloadTypes.enum.operational_goal,
-							payloadTypes.enum.strategic_goal,
-							payloadTypes.enum.vision
+							payloadTypes.enum.goal
 						]
 					},
 					'alpha'

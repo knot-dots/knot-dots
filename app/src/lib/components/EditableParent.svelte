@@ -36,35 +36,15 @@
 				}) as Promise<Container[]>;
 			}
 		} else if (strategyGuid) {
-			if (payloadType == payloadTypes.enum.strategic_goal) {
-				return fetchContainers({
-					isPartOfStrategy: [strategyGuid],
-					payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
-				}) as Promise<Container[]>;
-			} else if (payloadType == payloadTypes.enum.operational_goal) {
-				fetchContainers({
-					isPartOfStrategy: [strategyGuid],
-					payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
-				}) as Promise<Container[]>;
-			} else if (
-				payloadType == payloadTypes.enum.measure ||
-				payloadType == payloadTypes.enum.simple_measure
-			) {
-				fetchContainers({
-					isPartOfStrategy: [strategyGuid],
-					payloadType: [payloadTypes.enum.model, payloadTypes.enum.vision]
-				}) as Promise<Container[]>;
-			}
+			return fetchContainers({
+				isPartOfStrategy: [strategyGuid],
+				payloadType: [payloadTypes.enum.goal]
+			}) as Promise<Container[]>;
 		} else if (payloadType == payloadTypes.enum.task) {
 			return fetchContainers({
 				organization: [organization],
 				organizationalUnit: organizational_unit ? [organizational_unit] : [],
-				payloadType: [
-					payloadTypes.enum.model,
-					payloadTypes.enum.operational_goal,
-					payloadTypes.enum.strategic_goal,
-					payloadTypes.enum.vision
-				]
+				payloadType: [payloadTypes.enum.goal]
 			}) as Promise<Container[]>;
 		} else if (payloadType == payloadTypes.enum.organizational_unit) {
 			return fetchContainers({

@@ -11,21 +11,17 @@
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import MeasureResultForm from '$lib/components/MeasureResultForm.svelte';
 	import MilestoneForm from '$lib/components/MilestoneForm.svelte';
-	import ModelForm from '$lib/components/ModelForm.svelte';
 	import ObjectiveForm from '$lib/components/ObjectiveForm.svelte';
-	import OperationalGoalForm from '$lib/components/OperationalGoalForm.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
 	import PageForm from '$lib/components/PageForm.svelte';
 	import ResolutionForm from '$lib/components/ResolutionForm.svelte';
 	import ResourceForm from '$lib/components/ResourceForm.svelte';
 	import SimpleMeasureForm from '$lib/components/SimpleMeasureForm.svelte';
-	import StrategicGoalForm from '$lib/components/StrategicGoalForm.svelte';
 	import StrategyForm from '$lib/components/StrategyForm.svelte';
 	import TaskForm from '$lib/components/TaskForm.svelte';
 	import TextForm from '$lib/components/TextForm.svelte';
 	import UndefinedForm from '$lib/components/UndefinedForm.svelte';
-	import VisionForm from '$lib/components/VisionForm.svelte';
 	import {
 		isEffectContainer,
 		isGoalContainer,
@@ -34,20 +30,16 @@
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
-		isModelContainer,
 		isObjectiveContainer,
-		isOperationalGoalContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isPageContainer,
 		isResolutionContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
-		isStrategicGoalContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		isTextContainer,
-		isVisionContainer,
 		modifiedContainer,
 		newContainer,
 		payloadTypes,
@@ -168,12 +160,8 @@
 		<MeasureResultForm bind:container />
 	{:else if isMilestoneContainer(container)}
 		<MilestoneForm bind:container />
-	{:else if isModelContainer(container)}
-		<ModelForm bind:container />
 	{:else if isObjectiveContainer(container)}
 		<ObjectiveForm bind:container />
-	{:else if isOperationalGoalContainer(container)}
-		<OperationalGoalForm bind:container />
 	{:else if isOrganizationContainer(container)}
 		<OrganizationForm bind:container />
 	{:else if isOrganizationalUnitContainer(container)}
@@ -186,16 +174,12 @@
 		<ResourceForm bind:container />
 	{:else if isSimpleMeasureContainer(container)}
 		<SimpleMeasureForm bind:container />
-	{:else if isStrategicGoalContainer(container)}
-		<StrategicGoalForm bind:container />
 	{:else if isStrategyContainer(container)}
 		<StrategyForm bind:container />
 	{:else if isTaskContainer(container)}
 		<TaskForm bind:container />
 	{:else if isTextContainer(container)}
 		<TextForm bind:container />
-	{:else if isVisionContainer(container)}
-		<VisionForm bind:container />
 	{:else}
 		<UndefinedForm bind:container />
 	{/if}

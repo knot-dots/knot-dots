@@ -12,11 +12,7 @@
 		containerOfType,
 		isMeasureResultContainer,
 		isMilestoneContainer,
-		isModelContainer,
-		isOperationalGoalContainer,
-		isStrategicGoalContainer,
 		isStrategyContainer,
-		isVisionContainer,
 		payloadTypes
 	} from '$lib/models';
 	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
@@ -107,29 +103,9 @@
 					{:else}
 						<button class="primary" form="container-form" type="submit">{$_('save')}</button>
 					{/if}
-					{#if isModelContainer(container)}
-						<button id="save-and-create-strategic-goal" form="container-form" type="submit">
-							{$_('save_and_create_strategic_goal')}
-						</button>
-					{:else if isOperationalGoalContainer(container)}
-						<button id="save-and-create-measure" form="container-form" type="submit">
-							{$_('save_and_create_measure')}
-						</button>
-					{:else if isStrategicGoalContainer(container)}
-						<button id="save-and-create-operational-goal" form="container-form" type="submit">
-							{$_('save_and_create_operational_goal')}
-						</button>
-					{:else if isStrategyContainer(container)}
+					{#if isStrategyContainer(container)}
 						<button id="save-and-create-model" form="container-form" type="submit">
 							{$_('save_and_create_model')}
-						</button>
-					{:else if isVisionContainer(container)}
-						<button
-							id="save-and-create-internal-objective-strategic-goal"
-							form="container-form"
-							type="submit"
-						>
-							{$_('save_and_create_strategic_goal')}
 						</button>
 					{:else if isMeasureResultContainer(container)}
 						<button id="save-and-create-milestone" form="container-form" type="submit">

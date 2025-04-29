@@ -110,6 +110,7 @@
 	"goal_type.vision.plural": "Visions",
 	"goals": "Goals",
 	"goals_and_measure_results_and_milestones": "Goals, results milestones",
+	"goals_by_hierarchy_level": "Goals {level}",
 	"help": "Help",
 	"home": "Home screen",
 	"import.csv_file": "CSV file",
