@@ -143,21 +143,17 @@
 					<Viewer value={container.payload.body} />
 				</div>
 			{/if}
-
-			{#if 'indicator' in container.payload && container.payload.indicator.length > 0}
-				<div class="indicator">
-					<h3>{$_('indicator.legend')}</h3>
-					<ProgressBar
-						guid={container.guid}
-						indicator={container.payload.indicator[0]}
-						contributors={relatedContainers.filter(isMeasureContainer)}
-					/>
-				</div>
-			{/if}
 		</slot>
 	</div>
 
 	<div class="details-tab" id="metadata">
+		{#if 'goalType' in container.payload && container.payload.goalType}
+			<div class="meta">
+				<h3 class="meta-key">{$_('goal_type')}</h3>
+				<p class="meta-value">{$_(container.payload.goalType)}</p>
+			</div>
+		{/if}
+
 		<slot name="meta">
 			{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 				<div class="meta">

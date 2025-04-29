@@ -40,6 +40,7 @@
 		isContainer,
 		isContainerWithEffect,
 		isEffectContainer,
+		isGoalContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
 		isMeasureResultContainer,
@@ -58,7 +59,6 @@
 		type NewContainer,
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
-		paramsFromFragment,
 		payloadTypes,
 		predicates,
 		quantities,
@@ -370,6 +370,10 @@
 		{#if isEffectContainer(container)}
 			{#await import('./EditableEffectDetailView.svelte') then { default: EditableEffectDetailView }}
 				<EditableEffectDetailView {container} {relatedContainers} {revisions} />
+			{/await}
+		{:else if isGoalContainer(container)}
+			{#await import('./EditableGoalDetailView.svelte') then { default: EditableGoalDetailView }}
+				<EditableGoalDetailView {container} {relatedContainers} {revisions} />
 			{/await}
 		{:else if isIndicatorContainer(container)}
 			{#await import('./EditableIndicatorDetailView.svelte') then { default: EditableIndicatorDetailView }}

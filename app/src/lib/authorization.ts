@@ -16,6 +16,7 @@ type Actions =
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const strategyChapterTypes = [
+	payloadTypes.enum.goal,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.model,
 	payloadTypes.enum.objective,

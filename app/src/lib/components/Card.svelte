@@ -311,13 +311,6 @@
 	<footer>
 		{#if footer}
 			{@render footer()}
-		{:else if 'indicator' in container.payload && container.payload.indicator.length > 0}
-			<ProgressBar
-				guid={container.guid}
-				indicator={container.payload.indicator[0]}
-				contributors={relatedContainers}
-				compact
-			/>
 		{:else if 'resolutionStatus' in container.payload}
 			{@const ResolutionStatusIcon =
 				resolutionStatusIcons.get(container.payload.resolutionStatus) ?? Cog8Tooth}

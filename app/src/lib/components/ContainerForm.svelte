@@ -7,6 +7,7 @@
 	import EffectForm from '$lib/components/EffectForm.svelte';
 	import IndicatorForm from '$lib/components/IndicatorForm.svelte';
 	import IndicatorTemplateForm from '$lib/components/IndicatorTemplateForm.svelte';
+	import GoalForm from '$lib/components/GoalForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
 	import MeasureResultForm from '$lib/components/MeasureResultForm.svelte';
 	import MilestoneForm from '$lib/components/MilestoneForm.svelte';
@@ -27,6 +28,7 @@
 	import VisionForm from '$lib/components/VisionForm.svelte';
 	import {
 		isEffectContainer,
+		isGoalContainer,
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
@@ -158,6 +160,8 @@
 		<IndicatorForm bind:container />
 	{:else if isIndicatorTemplateContainer(container)}
 		<IndicatorTemplateForm bind:container />
+	{:else if isGoalContainer(container)}
+		<GoalForm bind:container />
 	{:else if isMeasureContainer(container)}
 		<MeasureForm bind:container />
 	{:else if isMeasureResultContainer(container)}

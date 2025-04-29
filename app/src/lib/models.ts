@@ -78,6 +78,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 
 const payloadTypeValues = [
 	'effect',
+	'goal',
 	'indicator',
 	'indicator_template',
 	'measure',
@@ -242,6 +243,17 @@ const indicatorTypeValues = [
 export const indicatorTypes = z.enum(indicatorTypeValues);
 
 export type IndicatorType = z.infer<typeof indicatorTypes>;
+
+const goalTypeValues = [
+	'goal_type.vision',
+	'goal_type.model',
+	'goal_type.strategic_goal',
+	'goal_type.operational_goal'
+] as const;
+
+export const goalType = z.enum(goalTypeValues);
+
+export type GoalType = z.infer<typeof goalType>;
 
 const topicValues = [
 	'topic.citizen_participation',
@@ -491,6 +503,23 @@ const basePayload = z
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
+
+const goalPayload = basePayload.extend({
+	fulfillmentDate: z
+		.string()
+		.refine((v) => z.coerce.date().safeParse(v))
+		.optional(),
+	goalType: goalType.optional(),
+	hierarchyLevel: z.number().int().gte(1).lte(6),
+	progress: z.number().nonnegative().optional(),
+	type: z.literal(payloadTypes.enum.goal)
+});
+
+const initialGoalPayload = goalPayload.partial({
+	goalType: true,
+	hierarchyLevel: true,
+	title: true
+});
 
 const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
@@ -787,6 +816,7 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 
 const payload = z.discriminatedUnion('type', [
 	effectPayload,
+	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	measurePayload,
@@ -826,6 +856,7 @@ export type Container = z.infer<typeof container>;
 
 const anyPayload = z.discriminatedUnion('type', [
 	effectPayload,
+	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	measurePayload,
@@ -906,6 +937,18 @@ export function isEffectContainer(
 	container: AnyContainer | EmptyContainer
 ): container is EffectContainer {
 	return container.payload.type === payloadTypes.enum.effect;
+}
+
+const goalContainer = container.extend({
+	payload: goalPayload
+});
+
+export type GoalContainer = z.infer<typeof goalContainer>;
+
+export function isGoalContainer(
+	container: AnyContainer | EmptyContainer
+): container is GoalContainer {
+	return container.payload.type === payloadTypes.enum.goal;
 }
 
 const indicatorContainer = container.extend({
@@ -1296,6 +1339,7 @@ export type NewContainer = z.infer<typeof newContainer>;
 export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialEffectPayload,
+		initialGoalPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialMeasurePayload,
@@ -1330,6 +1374,12 @@ export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
 const emptyIndicatorContainer = emptyContainer.extend({
 	payload: initialIndicatorPayload
 });
+
+const emptyGoalContainer = emptyContainer.extend({
+	payload: initialGoalPayload
+});
+
+export type EmptyGoalContainer = z.infer<typeof emptyGoalContainer>;
 
 export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
 

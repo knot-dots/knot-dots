@@ -18,6 +18,8 @@
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditableGoalType from '$lib/components/EditableGoalType.svelte';
+	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableLevel from '$lib/components/EditableLevel.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
@@ -53,6 +55,7 @@
 		isContainerWithStatus,
 		isContainerWithTitle,
 		isContainerWithTopic,
+		isGoalContainer,
 		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
@@ -244,7 +247,25 @@
 							transition:slide={{ duration: 125, easing: cubicInOut }}
 							use:disclosure.panel
 						>
-							{#if isMeasureContainer($newContainer)}
+							{#if isGoalContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
+								<EditableGoalType editable bind:value={$newContainer.payload.goalType} />
+								<EditableHierarchyLevel
+									editable
+									bind:value={$newContainer.payload.hierarchyLevel}
+								/>
+								<EditableDate
+									editable
+									label={$_('fulfillment_date')}
+									bind:value={$newContainer.payload.fulfillmentDate}
+								/>
+								<EditableStrategy editable bind:container={$newContainer} />
+							{:else if isMeasureContainer($newContainer)}
 								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
 									<EditableEditorialState
 										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
