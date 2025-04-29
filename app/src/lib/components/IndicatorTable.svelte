@@ -23,13 +23,11 @@
 	export let showObjectives = false;
 
 	let effects = [] as Array<{ Year: number; Value: number; Status: string }>;
-	let effectsMinYear = 0;
 	let objectives = [] as Array<{ Year: number; Value: number }>;
 	let objectivesMinYear = 0;
 	let overallObjective = [] as Array<{ Year: number; Value: number }>;
 	let overallObjectiveByYear: Map<number, number>;
 	let overallObjectiveMinYear = 0;
-	let maxYear = 0;
 	let objectivesByYear: Map<number, number>;
 	let ideasByYear: Map<number, number>;
 	let inPlanningByYear: Map<number, number>;
@@ -46,15 +44,18 @@
 			findOverallObjective(container, relatedContainers)?.payload.wantedValues.map(
 				([Year, Value]) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value })
 			) ?? [];
-		overallObjectiveMinYear = overallObjectiveMinYear
-			? Math.min(...overallObjective.map(({ Year }) => Year))
-			: 0;
+		overallObjectiveMinYear =
+			overallObjective.length > 0 ? Math.min(...overallObjective.map(({ Year }) => Year)) : 0;
 		overallObjectiveByYear = new Map(
 			[
-				{
-					Year: overallObjectiveMinYear - 1,
-					Value: historicalValuesByYear.get(overallObjectiveMinYear - 1) ?? 0
-				},
+				...(overallObjective.length > 0
+					? [
+							{
+								Year: overallObjectiveMinYear - 1,
+								Value: historicalValuesByYear.get(overallObjectiveMinYear - 1) ?? 0
+							}
+						]
+					: []),
 				...overallObjective
 			].map(({ Year, Value }) => [Year, Value])
 		);
@@ -90,10 +91,14 @@
 			objectives.length == 0 ? 0 : Math.min(...objectives.map(({ Year }) => Year));
 
 		objectives = [
-			{
-				Year: objectivesMinYear - 1,
-				Value: historicalValuesByYear.get(objectivesMinYear - 1) ?? 0
-			},
+			...(objectives.length > 0
+				? [
+						{
+							Year: objectivesMinYear - 1,
+							Value: historicalValuesByYear.get(objectivesMinYear - 1) ?? 0
+						}
+					]
+				: []),
 			...objectives
 		];
 
@@ -159,8 +164,6 @@
 				[] as Array<{ Year: number; Value: number; Status: string }>
 			);
 
-		effectsMinYear = effects.length == 0 ? 0 : Math.min(...effects.map(({ Year }) => Year));
-
 		ideasByYear = new Map(
 			effects
 				.filter(({ Status }) => Status == status.enum['status.idea'])
@@ -186,17 +189,13 @@
 		);
 	}
 
-	$: maxYear = Math.max(
-		...historicalValuesByYear.keys(),
-		...overallObjectiveByYear.keys(),
-		...objectivesByYear.keys(),
-		...effects.map(({ Year }) => Year)
-	);
-
 	$: years = Array.from(
-		{ length: maxYear - Math.max(effectsMinYear, objectivesMinYear, overallObjectiveMinYear) + 2 },
-		(value, index) =>
-			Math.max(effectsMinYear, objectivesMinYear, overallObjectiveMinYear) - 1 + index
+		new Set([
+			...historicalValuesByYear.keys(),
+			...overallObjectiveByYear.keys(),
+			...objectivesByYear.keys(),
+			...effects.map(({ Year }) => Year)
+		])
 	);
 </script>
 
