@@ -4,15 +4,17 @@
 		type Container,
 		type ContainerWithEffect,
 		type EffectContainer,
+		findAncestors,
+		findLeafObjectives,
+		findOverallObjective,
 		type IndicatorContainer,
-		findParentObjectives,
 		isContainerWithEffect,
+		isContainerWithObjective,
 		isEffectContainer,
 		isObjectiveContainer,
+		isPartOf,
 		predicates,
-		status,
-		findOverallObjective,
-		findAncestors
+		status
 	} from '$lib/models';
 
 	export let container: IndicatorContainer;
@@ -57,7 +59,7 @@
 			].map(({ Year, Value }) => [Year, Value])
 		);
 
-		objectives = findParentObjectives(relatedContainers)
+		objectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer))
 			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
 			.reduce(
@@ -238,10 +240,16 @@
 					{/each}
 				</tr>
 
-				{#each relatedContainers.filter(isObjectiveContainer) as containerWithObjective}
-					{@const valuesByYear = new Map(containerWithObjective.payload.wantedValues)}
+				{#each relatedContainers.filter(isContainerWithObjective) as containerWithObjective}
+					{@const valuesByYear = new Map(
+						findLeafObjectives(
+							relatedContainers
+								.filter(isObjectiveContainer)
+								.filter(isPartOf(containerWithObjective))
+						).flatMap(({ payload }) => payload.wantedValues)
+					)}
 					<tr class="objective">
-						<th scope="row">{container.payload.title}</th>
+						<th scope="row">{containerWithObjective.payload.title}</th>
 						{#each years as year}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
