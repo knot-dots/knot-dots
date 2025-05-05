@@ -115,7 +115,7 @@ export const actions = {
 							...(record.status ? { status: reverseTranslationMap.get(record.status) } : {}),
 							...(record.startDate ? { startDate: record.startDate } : {}),
 							...(record.summary ? { summary: record.summary } : {}),
-							editorialState: editorialState.enum['editorial_state.new'],
+							editorialState: editorialState.enum['editorial_state.draft'],
 							title: record.title,
 							...(record.topic
 								? {

@@ -82,7 +82,7 @@ export const POST = (async ({ locals, request }) => {
 				payload: {
 					aiSuggestion: true,
 					description: p.Content,
-					editorialState: editorialState.enum['editorial_state.new'],
+					editorialState: editorialState.enum['editorial_state.draft'],
 					summary: p['Short Description'].substring(0, 200),
 					title: p.Title,
 					type: payloadTypes.enum.measure

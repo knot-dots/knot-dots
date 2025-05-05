@@ -413,9 +413,11 @@ export const audience = z.enum(audienceValues);
 export type Audience = z.infer<typeof audience>;
 
 const editorialStateValues = [
-	'editorial_state.new',
-	'editorial_state.in_progress',
-	'editorial_state.approved'
+	'editorial_state.draft',
+	'editorial_state.requires_post_qualification',
+	'editorial_state.in_post_qualification',
+	'editorial_state.approved',
+	'editorial_state.rejected'
 ] as const;
 
 export const editorialState = z.enum(editorialStateValues);
