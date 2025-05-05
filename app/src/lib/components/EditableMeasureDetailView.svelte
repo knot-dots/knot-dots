@@ -41,6 +41,7 @@
 	<svelte:fragment slot="data">
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState
+				aiSuggestion={container.payload.aiSuggestion}
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container, 'payload.editorialState')}
 				bind:value={container.payload.editorialState}

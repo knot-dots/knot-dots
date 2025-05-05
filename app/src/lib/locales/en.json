@@ -62,7 +62,7 @@
 	},
 	"editorial_state": "Editorial state",
 	"editorial_state.approved": "Approved",
-	"editorial_state.draft": "Draft",
+	"editorial_state.draft": "{aiSuggestion, select, yes {AI suggestion} other {Draft}}",
 	"editorial_state.in_post_qualification": "In post-qualification",
 	"editorial_state.rejected": "Rejected",
 	"editorial_state.requires_post_qualification": "Requires post-qualification",

@@ -62,7 +62,7 @@
 	},
 	"editorial_state": "Redaktionsstatus",
 	"editorial_state.approved": "Freigegeben",
-	"editorial_state.draft": "Entwurf",
+	"editorial_state.draft": "{aiSuggestion, select, yes {KI-Vorschlag} other {Entwurf}}",
 	"editorial_state.in_post_qualification": "In Nachqualifizierung",
 	"editorial_state.rejected": "Abgelehnt",
 	"editorial_state.requires_post_qualification": "Zur Überprüfung",

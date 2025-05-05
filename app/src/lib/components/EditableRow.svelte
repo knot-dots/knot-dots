@@ -136,7 +136,11 @@
 
 <div class="cell">
 	{#if isContainerWithEditorialState(container)}
-		<EditorialStateDropdown {editable} bind:value={container.payload.editorialState} />
+		<EditorialStateDropdown
+			aiSuggestion={'aiSuggestion' in container.payload && container.payload.aiSuggestion}
+			{editable}
+			bind:value={container.payload.editorialState}
+		/>
 	{/if}
 </div>
 

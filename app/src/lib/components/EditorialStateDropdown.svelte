@@ -4,11 +4,12 @@
 	import { editorialState } from '$lib/models';
 
 	interface Props {
+		aiSuggestion?: boolean;
 		editable?: boolean;
 		value: string | undefined;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { aiSuggestion = false, editable = false, value = $bindable() }: Props = $props();
 </script>
 
 {#if editable}
@@ -16,7 +17,10 @@
 		offset={[-41, -39]}
 		options={[
 			{ label: $_('empty'), value: undefined },
-			...editorialState.options.map((o) => ({ label: $_(o), value: o }))
+			...editorialState.options.map((o) => ({
+				label: $_(o, { values: { aiSuggestion: aiSuggestion ? 'yes' : 'no' } }),
+				value: o
+			}))
 		]}
 		bind:value
 	/>
