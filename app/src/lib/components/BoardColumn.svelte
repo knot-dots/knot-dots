@@ -38,7 +38,7 @@
 			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
 		);
 
-		$newContainer = containerOfType(
+		const container = containerOfType(
 			params.get(overlayKey.enum.create) as PayloadType,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
@@ -46,17 +46,17 @@
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
-		if (isOrganizationalUnitContainer($newContainer) && params.has('level')) {
-			$newContainer.payload.level = parseInt(params.get('level') as string);
-		} else if (isResolutionContainer($newContainer) && params.has('resolutionStatus')) {
-			$newContainer.payload.resolutionStatus = params.get('resolutionStatus') as ResolutionStatus;
-		} else if (isMeasureContainer($newContainer) && params.has('status')) {
-			$newContainer.payload.status = params.get('status') as Status;
-		} else if (isTaskContainer($newContainer) && params.has('taskStatus')) {
-			$newContainer.payload.taskStatus = params.get('taskStatus') as TaskStatus;
+		if (isOrganizationalUnitContainer(container) && params.has('level')) {
+			container.payload.level = parseInt(params.get('level') as string);
+		} else if (isResolutionContainer(container) && params.has('resolutionStatus')) {
+			container.payload.resolutionStatus = params.get('resolutionStatus') as ResolutionStatus;
+		} else if (isMeasureContainer(container) && params.has('status')) {
+			container.payload.status = params.get('status') as Status;
+		} else if (isTaskContainer(container) && params.has('taskStatus')) {
+			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
 		}
 
-		$newContainer.relation = [
+		container.relation = [
 			...params.getAll(predicates.enum['is-part-of']).map(
 				(o): PartialRelation => ({
 					object: o,
@@ -72,6 +72,8 @@
 				})
 			)
 		];
+
+		$newContainer = container;
 
 		createContainerDialog.getElement().showModal();
 	}

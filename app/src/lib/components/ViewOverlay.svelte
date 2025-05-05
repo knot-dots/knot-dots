@@ -193,7 +193,7 @@
 				return;
 			}
 
-			$newContainer = containerOfType(
+			const derived = containerOfType(
 				(event as CustomEvent).detail.selected,
 				container.organization,
 				container.organizational_unit,
@@ -201,33 +201,33 @@
 				container.realm
 			) as NewContainer;
 
-			$newContainer.payload = {
-				...$newContainer.payload,
-				...('assignee' in container.payload && isTaskContainer($newContainer)
+			derived.payload = {
+				...derived.payload,
+				...('assignee' in container.payload && isTaskContainer(derived)
 					? { assignee: container.payload.assignee }
 					: undefined),
-				...('audience' in container.payload && 'audience' in $newContainer.payload
+				...('audience' in container.payload && 'audience' in derived.payload
 					? { audience: container.payload.audience }
 					: undefined),
-				...('category' in container.payload && 'category' in $newContainer.payload
+				...('category' in container.payload && 'category' in derived.payload
 					? { category: container.payload.category }
 					: undefined),
-				...('resolutionStatus' in container.payload && 'resolutionStatus' in $newContainer.payload
+				...('resolutionStatus' in container.payload && 'resolutionStatus' in derived.payload
 					? { resolutionStatus: container.payload.resolutionStatus }
 					: undefined),
-				...('status' in container.payload && 'status' in $newContainer.payload
+				...('status' in container.payload && 'status' in derived.payload
 					? { status: container.payload.status }
 					: undefined),
-				...('taskCategory' in container.payload && 'taskCategory' in $newContainer.payload
+				...('taskCategory' in container.payload && 'taskCategory' in derived.payload
 					? { taskCategory: container.payload.taskCategory }
 					: undefined),
-				...('taskStatus' in container.payload && 'taskStatus' in $newContainer.payload
+				...('taskStatus' in container.payload && 'taskStatus' in derived.payload
 					? { taskStatus: container.payload.taskStatus }
 					: undefined),
-				...('topic' in container.payload && 'topic' in $newContainer.payload
+				...('topic' in container.payload && 'topic' in derived.payload
 					? { topic: container.payload.topic }
 					: undefined),
-				...('visibility' in container.payload && 'visibility' in $newContainer.payload
+				...('visibility' in container.payload && 'visibility' in derived.payload
 					? { visibility: container.payload.visibility }
 					: undefined)
 			};
@@ -241,11 +241,11 @@
 			);
 
 			if (isStrategyContainer(container)) {
-				$newContainer.relation = [
+				derived.relation = [
 					{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-strategy'] }
 				];
 			} else if (isPartOfStrategyRelation) {
-				$newContainer.relation = [
+				derived.relation = [
 					{
 						object: isPartOfStrategyRelation.object,
 						position: isPartOfStrategyRelation.position + 1,
@@ -253,7 +253,7 @@
 					}
 				];
 			} else if (isPartOfMeasureRelation) {
-				$newContainer.relation = [
+				derived.relation = [
 					{
 						object: isPartOfMeasureRelation.object,
 						position: 0,
@@ -261,6 +261,8 @@
 					}
 				];
 			}
+
+			$newContainer = derived;
 
 			createContainerDialog.getElement().showModal();
 		};

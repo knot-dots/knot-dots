@@ -69,7 +69,7 @@
 				return;
 			}
 
-			$newContainer = containerOfType(
+			const chapter = containerOfType(
 				(event as CustomEvent).detail.selected as PayloadType,
 				isPartOf.organization,
 				isPartOf.organizational_unit,
@@ -77,9 +77,11 @@
 				env.PUBLIC_KC_REALM as string
 			) as NewContainer;
 
-			$newContainer.relation = [
+			chapter.relation = [
 				{ object: isPartOf.guid, predicate: predicates.enum['is-part-of-strategy'], position }
 			];
+
+			$newContainer = chapter;
 
 			createContainerDialog.getElement().showModal();
 		};

@@ -30,7 +30,7 @@
 	);
 
 	function createContainer() {
-		$newContainer = containerOfType(
+		const partOfMeasure = containerOfType(
 			payloadType,
 			container.organization,
 			container.organizational_unit,
@@ -38,10 +38,12 @@
 			container.realm
 		) as NewContainer;
 
-		$newContainer.relation = [
+		partOfMeasure.relation = [
 			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] },
 			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-measure'] }
 		];
+
+		$newContainer = partOfMeasure;
 
 		createContainerDialog.getElement().showModal();
 	}

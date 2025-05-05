@@ -68,13 +68,13 @@
 			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
 		);
 
-		$newContainer = containerOfTypeTask() as NewContainer;
+		const container = containerOfTypeTask() as NewContainer;
 
-		if (params.has('taskStatus') && isTaskContainer($newContainer)) {
-			$newContainer.payload.taskStatus = params.get('taskStatus') as TaskStatus;
+		if (params.has('taskStatus') && isTaskContainer(container)) {
+			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
 		}
 
-		$newContainer.relation = [
+		container.relation = [
 			...params.getAll(predicates.enum['is-part-of']).map(
 				(o): PartialRelation => ({
 					object: o,
@@ -90,6 +90,8 @@
 				})
 			)
 		];
+
+		$newContainer = container;
 
 		createContainerDialog.getElement().showModal();
 	}
