@@ -3,6 +3,7 @@
 	import { createMenu } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 
 	interface Props {
 		handleChange: (event: Event) => void;
@@ -29,7 +30,7 @@
 	<button onchange={handleChange} type="button" use:menu.button>
 		{#if icon}{@render icon()}{/if}
 		<span>{label}</span>
-		<ChevronDown />
+		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 	{#if $menu.expanded}
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>

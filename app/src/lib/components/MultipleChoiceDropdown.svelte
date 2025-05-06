@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 
 	interface Props {
 		offset?: [number, number];
@@ -33,7 +34,7 @@
 				{$_('empty')}
 			{/each}
 		</span>
-		<ChevronDown />
+		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>

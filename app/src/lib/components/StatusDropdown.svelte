@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import { type Status, status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
@@ -33,7 +34,7 @@
 			<span class="badge badge--{statusColors.get(value)}">
 				<StatusIcon />{$_(value)}
 			</span>
-			<ChevronDown />
+			{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
 
 		{#if $popover.expanded}

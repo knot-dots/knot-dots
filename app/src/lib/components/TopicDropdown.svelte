@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import { topics } from '$lib/models';
 
 	interface Props {
@@ -48,7 +49,7 @@
 					</span>
 				{/if}
 			</span>
-			<ChevronDown />
+			{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
 
 		{#if $popover.expanded}
