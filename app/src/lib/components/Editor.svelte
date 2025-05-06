@@ -89,7 +89,13 @@
 	use:makeEditor
 >
 	{#if label}
-		<h3 id={labelId}>{label}</h3>
+		{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
+			<p class="label">
+				<span class="badge badge--purple">{label}</span>
+			</p>
+		{:else}
+			<h3 id={labelId}>{label}</h3>
+		{/if}
 	{/if}
 </div>
 
@@ -121,9 +127,8 @@
 	}
 
 	@container style(--editor-style: new) {
-		h3 {
-			color: var(--color-gray-700);
-			margin-bottom: 0.5rem;
+		.label {
+			margin-bottom: 2rem;
 		}
 
 		:global(.milkdown) {

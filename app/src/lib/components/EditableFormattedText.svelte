@@ -12,8 +12,16 @@
 {:else}
 	<div class="details-tab">
 		{#if label}
-			<h3>{label}</h3>
+			<p class="label">
+				<span class="badge badge--purple">{label}</span>
+			</p>
 		{/if}
 		<Viewer {value} />
 	</div>
 {/if}
+
+<style>
+	.label {
+		margin-bottom: 2rem;
+	}
+</style>
