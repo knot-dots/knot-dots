@@ -21,9 +21,7 @@ export const load = (async ({ locals, url, parent }) => {
 		getManyContainers(
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{
-				audience: url.searchParams.has('audienceChanged')
-					? url.searchParams.getAll('audience')
-					: [audience.enum['audience.public'], audience.enum['audience.organization']],
+				audience: url.searchParams.getAll('audience'),
 				categories: url.searchParams.getAll('category'),
 				measureTypes: url.searchParams.getAll('measureType'),
 				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),

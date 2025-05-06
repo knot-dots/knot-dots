@@ -9,9 +9,7 @@ export const load = (async ({ locals, parent, url }) => {
 		getManyContainers(
 			[currentOrganization.guid],
 			{
-				audience: url.searchParams.has('audienceChanged')
-					? url.searchParams.getAll('audience')
-					: [audience.enum['audience.public'], audience.enum['audience.organization']],
+				audience: url.searchParams.getAll('audience'),
 				categories: url.searchParams.getAll('category'),
 				indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 				indicatorTypes: url.searchParams.getAll('indicatorType'),

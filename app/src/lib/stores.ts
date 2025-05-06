@@ -423,9 +423,7 @@ if (browser) {
 			const containers = (await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
-					audience: hashParams.has('audienceChanged')
-						? hashParams.getAll('audience')
-						: [audience.enum['audience.public'], audience.enum['audience.organization']],
+					audience: hashParams.getAll('audience'),
 					category: hashParams.getAll('category'),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
@@ -446,9 +444,7 @@ if (browser) {
 			const containers = (await fetchRelatedContainers(
 				hashParams.get(overlayKey.enum['measures']) as string,
 				{
-					audience: hashParams.has('audienceChanged')
-						? hashParams.getAll('audience')
-						: [audience.enum['audience.public'], audience.enum['audience.organization']],
+					audience: hashParams.getAll('audience'),
 					category: hashParams.getAll('category'),
 					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],

@@ -64,9 +64,7 @@ export const load = (async ({ locals, url, parent }) => {
 				getManyContainers(
 					[currentOrganization.guid],
 					{
-						audience: url.searchParams.has('audienceChanged')
-							? url.searchParams.getAll('audience')
-							: [audience.enum['audience.public'], audience.enum['audience.organization']],
+						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						topics: url.searchParams.getAll('topic'),
@@ -109,9 +107,7 @@ export const load = (async ({ locals, url, parent }) => {
 				getManyContainers(
 					[],
 					{
-						audience: url.searchParams.has('audienceChanged')
-							? url.searchParams.getAll('audience')
-							: [audience.enum['audience.public'], audience.enum['audience.organization']],
+						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						topics: url.searchParams.getAll('topic'),
