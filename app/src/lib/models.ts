@@ -403,9 +403,12 @@ export const unitByQuantity = new Map<Quantity, Unit>([
 ]);
 
 const audienceValues = [
-	'audience.public',
-	'audience.organization',
-	'audience.project_management'
+	'audience.administration',
+	'audience.citizens',
+	'audience.companies',
+	'audience.entire_group',
+	'audience.urban_society',
+	'audience.voluntary_work_associations_ngos'
 ] as const;
 
 export const audience = z.enum(audienceValues);
@@ -477,7 +480,7 @@ export type Benefit = z.infer<typeof benefit>;
 const basePayload = z
 	.object({
 		aiSuggestion: z.boolean().default(false),
-		audience: z.array(audience).default([audience.enum['audience.public']]),
+		audience: z.array(audience).default([audience.enum['audience.citizens']]),
 		category: z.array(sustainableDevelopmentGoals).default([]),
 		description: z.string().trim().optional(),
 		editorialState: editorialState.optional(),
@@ -656,7 +659,7 @@ const visionPayload = basePayload
 const initialVisionPayload = visionPayload.partial({ title: true });
 
 const measureMonitoringBasePayload = z.object({
-	audience: z.array(audience).default([audience.enum['audience.public']]),
+	audience: z.array(audience).default([audience.enum['audience.citizens']]),
 	description: z.string().trim().optional(),
 	summary: z.string().trim().max(200).optional(),
 	title: z.string(),
@@ -762,7 +765,7 @@ const initialPagePayload = pagePayload.partial({ body: true, slug: true, title: 
 
 const textPayload = z
 	.object({
-		audience: z.array(audience).default([audience.enum['audience.public']]),
+		audience: z.array(audience).default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.text),
