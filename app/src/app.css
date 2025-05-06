@@ -200,12 +200,12 @@
 	--focus-color: var(--color-primary-600);
 	--active-color: var(--color-blue-200);
 	--button-background: transparent;
-	--button-border-color: #d1d5db;
+	--button-border-color: var(--color-gray-200);
 	--button-active-background: var(--color-gray-300);
 	--button-disabled-background: var(--color-gray-100);
 	--button-disabled-border-color: var(--color-gray-100);
-	--button-hover-background: var(--color-gray-400);
-	--button-hover-border-color: #d1d5db;
+	--button-hover-background: var(--color-gray-100);
+	--button-hover-border-color: var(--button-border-color);
 	--form-control-background: var(--color-gray-050);
 
 	--nav-height: 65px;
