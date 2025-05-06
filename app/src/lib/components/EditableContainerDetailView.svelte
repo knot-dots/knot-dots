@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _, date } from 'svelte-i18n';
@@ -203,7 +204,7 @@
 			{#if $disclosure.expanded}
 				<div
 					class="data-grid"
-					transition:slide={{ duration: 125 }}
+					transition:slide={{ duration: 125, easing: cubicInOut }}
 					on:introend={() => {
 						disclosure_expanded = true;
 					}}

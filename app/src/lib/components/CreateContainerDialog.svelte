@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -219,7 +220,7 @@
 							onoutroend={() => {
 								disclosure_expanded = false;
 							}}
-							transition:slide={{ duration: 125 }}
+							transition:slide={{ duration: 125, easing: cubicInOut }}
 							use:disclosure.panel
 						>
 							{#if isMeasureContainer($newContainer)}
