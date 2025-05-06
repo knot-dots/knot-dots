@@ -453,7 +453,10 @@
 		<ContainerDetailView {container} {relatedContainers} {revisions} />
 	{/if}
 </div>
-<footer class="content-footer">
+<footer
+	class="content-footer"
+	class:content-footer--new={createFeatureDecisions($page.data.features).useEditableDetailView()}
+>
 	<div class="content-actions">
 		{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
 			<button type="button" on:click={createOverallObjective(container)}>
@@ -529,3 +532,20 @@
 	{container}
 	{relatedContainers}
 />
+
+<style>
+	.content-footer.content-footer--new {
+		padding-bottom: 0;
+	}
+
+	.content-footer.content-footer--new .content-actions {
+		font-size: 0.875rem;
+		margin-top: 0;
+		padding: 0.5rem 2rem;
+	}
+
+	.toggle {
+		--height: 1rem;
+		--width: 2.25rem;
+	}
+</style>
