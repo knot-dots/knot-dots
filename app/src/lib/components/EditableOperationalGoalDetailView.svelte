@@ -76,6 +76,7 @@
 	<svelte:fragment slot="extra">
 		<EditableFormattedText
 			editable={$applicationState.containerDetailView.editable}
+			label={$_('description')}
 			bind:value={container.payload.description}
 		/>
 

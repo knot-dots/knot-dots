@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -75,6 +76,7 @@
 	<svelte:fragment slot="extra">
 		<EditableFormattedText
 			editable={$applicationState.containerDetailView.editable}
+			label={$_('description')}
 			bind:value={container.payload.description}
 		/>
 	</svelte:fragment>
