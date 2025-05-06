@@ -1,0 +1,14 @@
+UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '1') WHERE payload->>'type' = 'vision';
+UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.vision"') WHERE payload->>'type' = 'vision';
+UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '1') WHERE payload->>'type' = 'model';
+UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.model"') WHERE payload->>'type' = 'model';
+UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '2') WHERE payload->>'type' = 'strategic_goal';
+UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.strategic_goal"') WHERE payload->>'type' = 'strategic_goal';
+UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '3') WHERE payload->>'type' = 'operational_goal';
+UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.operational_goal"') WHERE payload->>'type' = 'operational_goal';
+UPDATE container SET payload = jsonb_set(payload, '{"type"}', '"goal"') WHERE payload->>'type' IN ('vision', 'model', 'strategic_goal', 'operational_goal');
+UPDATE container SET payload = payload - 'indicator' WHERE payload ? 'indicator';
+UPDATE container SET payload = jsonb_set(payload, '{"chapterType"}', (payload->'chapterType') - 'vision') WHERE payload->'chapterType' ?| array['vision'];
+UPDATE container SET payload = jsonb_set(payload, '{"chapterType"}', (payload->'chapterType') - 'model') WHERE payload->'chapterType' ?| array['model'];
+UPDATE container SET payload = jsonb_set(payload, '{"chapterType"}', (payload->'chapterType') - 'operational_goal') WHERE payload->'chapterType' ?| array['operational_goal'];
+UPDATE container SET payload = jsonb_set(payload, '{"chapterType"}', (payload->'chapterType') - 'strategic_goal') WHERE payload->'chapterType' ?| array['strategic_goal'];
