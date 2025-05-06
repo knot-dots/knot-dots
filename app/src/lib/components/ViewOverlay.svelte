@@ -41,6 +41,7 @@
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
+		isMeasureContainer,
 		isMeasureResultContainer,
 		isMilestoneContainer,
 		isModelContainer,
@@ -458,6 +459,17 @@
 	class:content-footer--new={createFeatureDecisions($page.data.features).useEditableDetailView()}
 >
 	<div class="content-actions">
+		{#if createFeatureDecisions($page.data.features).useEditableDetailView() && isMeasureContainer(container)}
+			<label>
+				<input
+					class="toggle"
+					name="template"
+					type="checkbox"
+					bind:checked={container.payload.template}
+				/>
+				{$_('template')}
+			</label>
+		{/if}
 		{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
 			<button type="button" on:click={createOverallObjective(container)}>
 				<PlusSmall />{$_('overall_objective')}
