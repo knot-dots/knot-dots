@@ -166,7 +166,6 @@
 						></textarea>
 					{:else if isContainerWithTitle($newContainer)}
 						<textarea
-							autofocus
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
