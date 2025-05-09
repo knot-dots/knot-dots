@@ -239,7 +239,13 @@ export type IndicatorType = z.infer<typeof indicatorTypes>;
 const goalTypeValues = [
 	'goal_type.vision',
 	'goal_type.model',
+	'goal_type.long_term_goal',
+	'goal_type.topic_area',
+	'goal_type.policy_field',
 	'goal_type.strategic_goal',
+	'goal_type.objective',
+	'goal_type.key_result',
+	'goal_type.key_performance_indicator',
 	'goal_type.operational_goal'
 ] as const;
 
