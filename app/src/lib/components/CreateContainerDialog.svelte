@@ -109,6 +109,10 @@
 			return;
 		}
 
+		if (event.submitter.classList.contains('button-primary')) {
+			save($newContainer as NewContainer);
+		}
+
 		dialog.close();
 		$newContainer = undefined;
 	}
@@ -125,14 +129,12 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button
-					class="button-xs button-primary"
-					type="submit"
-					onclick={() => save($newContainer as NewContainer)}
-				>
+				<button class="button-xs button-primary" type="submit">
 					{$_('save')}
 				</button>
-				<button class="button-xs button-alternative" type="submit">{$_('cancel')}</button>
+				<button class="button-xs button-alternative" formnovalidate type="submit">
+					{$_('cancel')}
+				</button>
 			</p>
 
 			<article class="details details-editable">
