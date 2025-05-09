@@ -122,6 +122,17 @@
 		(event.currentTarget as HTMLTextAreaElement).style.height =
 			`${(event.currentTarget as HTMLTextAreaElement).scrollHeight}px`;
 	}
+
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			(
+				(event.currentTarget as HTMLTextAreaElement)
+					.closest('form')
+					?.querySelector('.button-primary') as HTMLButtonElement | null
+			)?.click();
+		}
+	}
 </script>
 
 <dialog bind:this={dialog}>
@@ -143,7 +154,7 @@
 						<!-- svelte-ignore a11y_autofocus -->
 						<textarea
 							autofocus
-							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
 							required
@@ -154,7 +165,7 @@
 						<!-- svelte-ignore a11y_autofocus -->
 						<textarea
 							autofocus
-							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
 							required
