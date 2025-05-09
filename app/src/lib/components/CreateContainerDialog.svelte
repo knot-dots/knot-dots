@@ -113,8 +113,10 @@
 		$newContainer = undefined;
 	}
 
-	function init(element: HTMLElement) {
-		element.focus();
+	function resizeTextarea(event: Event) {
+		(event.currentTarget as HTMLTextAreaElement).style.height = 'auto';
+		(event.currentTarget as HTMLTextAreaElement).style.height =
+			`${(event.currentTarget as HTMLTextAreaElement).scrollHeight}px`;
 	}
 </script>
 
@@ -136,23 +138,27 @@
 			<article class="details details-editable">
 				<div class="details-tab" id="basic-data">
 					{#if isContainerWithName($newContainer)}
-						<h2
-							class="details-title"
-							contenteditable="plaintext-only"
-							data-placeholder={$_('name')}
+						<!-- svelte-ignore a11y_autofocus -->
+						<textarea
+							autofocus
 							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							bind:textContent={$newContainer.payload.name}
-							use:init
-						></h2>
+							onkeyup={resizeTextarea}
+							placeholder={$_('title')}
+							required
+							rows="1"
+							bind:value={$newContainer.payload.name}
+						></textarea>
 					{:else if isContainerWithTitle($newContainer)}
-						<h2
-							class="details-title"
-							contenteditable="plaintext-only"
-							data-placeholder={$_('title')}
+						<!-- svelte-ignore a11y_autofocus -->
+						<textarea
+							autofocus
 							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							bind:textContent={$newContainer.payload.title}
-							use:init
-						></h2>
+							onkeyup={resizeTextarea}
+							placeholder={$_('title')}
+							required
+							rows="1"
+							bind:value={$newContainer.payload.title}
+						></textarea>
 					{/if}
 
 					<ul class="badges">
@@ -454,12 +460,12 @@
 <style>
 	article {
 		overflow: auto;
-		padding: 0 1.5rem 1.5rem;
+		padding: 1px 1.5rem 1.5rem;
 	}
 
 	@media (min-width: 768px) {
 		article {
-			padding: 0 5rem 3rem;
+			padding: 1px 5rem 3rem;
 		}
 	}
 
@@ -478,6 +484,24 @@
 
 	dialog > * {
 		min-width: 30rem;
+	}
+
+	textarea {
+		background-color: white;
+		border: none;
+		border-radius: 0;
+		color: var(--color-gray-900);
+		font-size: 2.25rem;
+		font-weight: 700;
+		line-height: 1.25;
+		min-height: revert;
+		overflow: hidden;
+		padding: 0;
+		resize: none;
+	}
+
+	textarea:invalid {
+		background-color: var(--color-red-100);
 	}
 
 	.button-primary {
