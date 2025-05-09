@@ -446,7 +446,7 @@
 	}
 
 	.idea {
-		--indicator-color: var(--color-pink-100);
+		--indicator-color: var(--color-pink-200);
 	}
 
 	.idea-total {
