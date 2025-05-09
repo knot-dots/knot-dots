@@ -69,8 +69,6 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) =>
 			}
 		}
 
-		const random = await fetch('/random');
-
 		span.end();
 
 		return {
@@ -79,7 +77,6 @@ export const load: LayoutServerLoad = async ({ fetch, locals, url }) =>
 			features: locals.features,
 			organizations,
 			organizationalUnits,
-			random: await random.json(),
 			session: await locals.auth(),
 			user
 		};

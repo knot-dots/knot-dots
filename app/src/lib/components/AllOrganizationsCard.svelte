@@ -2,9 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import logo1 from '$lib/assets/logo-1.svg';
-	import logo2 from '$lib/assets/logo-2.svg';
-	import logo3 from '$lib/assets/logo-3.svg';
+	import logo from '$lib/assets/logo.svg';
 	import Card from '$lib/components/Card.svelte';
 	import { type OrganizationContainer } from '$lib/models';
 
@@ -13,9 +11,6 @@
 	}
 
 	let { linkPath }: Props = $props();
-
-	const logos = [logo1, logo2, logo3];
-	const logo = logos[Math.floor(page.data.random * logos.length)];
 
 	let defaultOrganization = $derived(
 		page.data.organizations.find(
@@ -39,7 +34,7 @@
 
 <style>
 	img {
-		max-height: 7rem;
+		height: 7rem;
 		object-fit: contain;
 	}
 </style>

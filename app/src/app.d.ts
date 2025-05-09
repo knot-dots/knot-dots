@@ -19,7 +19,6 @@ declare global {
 			features: string[];
 			organizations: OrganizationContainer[];
 			organizationalUnits: OrganizationalUnitContainer[];
-			random: number;
 			session: Session | null;
 			user?: KeycloakUser;
 		}

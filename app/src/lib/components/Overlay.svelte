@@ -29,7 +29,7 @@
 		if (isStrategyContainer(data.container)) {
 			return [
 				{
-					label: $_('workspace.chapters'),
+					label: $_('workspace.strategy'),
 					value: overlayURL(page.url, overlayKey.enum.chapters, data.container.guid)
 				},
 				{
