@@ -133,6 +133,10 @@
 			)?.click();
 		}
 	}
+
+	function init(element: HTMLElement) {
+		element.focus();
+	}
 </script>
 
 <dialog bind:this={dialog}>
@@ -151,18 +155,16 @@
 			<article class="details details-editable">
 				<div class="details-tab" id="basic-data">
 					{#if isContainerWithName($newContainer)}
-						<!-- svelte-ignore a11y_autofocus -->
 						<textarea
-							autofocus
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
 							required
 							rows="1"
 							bind:value={$newContainer.payload.name}
+							use:init
 						></textarea>
 					{:else if isContainerWithTitle($newContainer)}
-						<!-- svelte-ignore a11y_autofocus -->
 						<textarea
 							autofocus
 							onkeydown={handleKeyDown}
@@ -171,6 +173,7 @@
 							required
 							rows="1"
 							bind:value={$newContainer.payload.title}
+							use:init
 						></textarea>
 					{/if}
 
