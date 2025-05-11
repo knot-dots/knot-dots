@@ -36,7 +36,7 @@
 
 	$: columns = [
 		{
-			addItemUrl: '#create=strategy',
+			addItemUrl: undefined,
 			containers: containers.filter(isStrategyContainer),
 			key: 'programs',
 			title: $_('programs')
@@ -79,7 +79,7 @@
 
 <Board>
 	{#each columns as column (column.key)}
-		<BoardColumn title={column.title}>
+		<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
 			<div class="vertical-scroll-wrapper masked-overflow">
 				{#each column.containers as container}
 					<Card
