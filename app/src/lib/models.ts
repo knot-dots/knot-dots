@@ -106,6 +106,7 @@ export function isPayloadType(value: unknown): value is PayloadType {
 }
 
 export const chapterTypeOptions = [
+	payloadTypes.enum.goal,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.resolution,
 	payloadTypes.enum.simple_measure,
