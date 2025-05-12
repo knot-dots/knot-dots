@@ -18,7 +18,8 @@
 	import StrategyTypeFilter from '$lib/components/StrategyTypeFilter.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import {
-		type GoalContainer,
+		computeColumnTitleForGoals,
+		goalsByHierarchyLevel,
 		isGoalContainer,
 		isStrategyContainer,
 		payloadTypes,
@@ -39,24 +40,7 @@
 		]
 	});
 
-	let goalsByHierarchyLevel: Map<number, GoalContainer[]>;
-
-	$: {
-		goalsByHierarchyLevel = new Map([[1, []]]);
-
-		for (const container of data.containers.filter(isGoalContainer)) {
-			const hierarchyLevel = container.payload.hierarchyLevel;
-
-			if (goalsByHierarchyLevel.has(hierarchyLevel)) {
-				goalsByHierarchyLevel.set(hierarchyLevel, [
-					...(goalsByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
-					container
-				]);
-			} else {
-				goalsByHierarchyLevel.set(hierarchyLevel, [container]);
-			}
-		}
-	}
+	$: goals = goalsByHierarchyLevel(data.containers.filter(isGoalContainer));
 
 	$: columns = [
 		{
@@ -65,7 +49,7 @@
 			key: 'programs',
 			title: $_('programs')
 		},
-		...Array.from(goalsByHierarchyLevel.entries())
+		...Array.from(goals.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => ({
 				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
@@ -89,20 +73,6 @@
 			title: $_('payload_group.implementation')
 		}
 	];
-
-	function computeColumnTitleForGoals(containers: GoalContainer[]): string {
-		const goalTypes = new Set(containers.map((c) => c.payload.goalType));
-
-		if (goalTypes.size == 1) {
-			return $_(`${goalTypes.values().next().value}.plural` as string);
-		} else if (goalTypes.size >= 1) {
-			return $_('goals_by_hierarchy_level', {
-				values: { level: containers[0].payload.hierarchyLevel }
-			});
-		} else {
-			return $_('goals');
-		}
-	}
 </script>
 
 <Layout>

@@ -6,7 +6,9 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
+		computeColumnTitleForGoals,
 		type GoalContainer,
+		goalsByHierarchyLevel,
 		isGoalContainer,
 		isMeasureContainer,
 		payloadTypes,
@@ -141,39 +143,6 @@
 				: []),
 			...container.relation.slice(isPartOfIndex + 1)
 		];
-	}
-
-	function goalsByHierarchyLevel(containers: GoalContainer[]) {
-		const goalsByHierarchyLevel = new Map<number, GoalContainer[]>([[1, []]]);
-
-		for (const container of containers) {
-			const hierarchyLevel = container.payload.hierarchyLevel;
-
-			if (goalsByHierarchyLevel.has(hierarchyLevel)) {
-				goalsByHierarchyLevel.set(hierarchyLevel, [
-					...(goalsByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
-					container
-				]);
-			} else {
-				goalsByHierarchyLevel.set(hierarchyLevel, [container]);
-			}
-		}
-
-		return goalsByHierarchyLevel;
-	}
-
-	function computeColumnTitleForGoals(containers: GoalContainer[]): string {
-		const goalTypes = new Set(containers.map((c) => c.payload.goalType));
-
-		if (goalTypes.size == 1) {
-			return $_(`${goalTypes.values().next().value}.plural` as string);
-		} else if (goalTypes.size >= 1) {
-			return $_('goals_by_hierarchy_level', {
-				values: { level: containers[0].payload.hierarchyLevel }
-			});
-		} else {
-			return $_('goals');
-		}
 	}
 </script>
 
