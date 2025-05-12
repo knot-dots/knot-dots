@@ -52,6 +52,7 @@
 				ctx.update(placeholderConfig.key, (prev) => {
 					return {
 						...prev,
+						mode: 'doc' as const,
 						text: $_('empty')
 					};
 				});
