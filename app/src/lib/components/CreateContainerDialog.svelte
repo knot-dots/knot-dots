@@ -522,15 +522,6 @@
 		padding: 0.375rem 0 0.75rem;
 	}
 
-	.details-title:empty {
-		background-color: var(--color-red-100);
-	}
-
-	.details-title:empty::before {
-		color: var(--color-red-500);
-		content: attr(data-placeholder);
-	}
-
 	.dialog-actions {
 		align-items: center;
 		background-color: white;
