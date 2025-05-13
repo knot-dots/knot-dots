@@ -458,15 +458,6 @@ export const userRelation = z.object({
 	subject: z.string().uuid()
 });
 
-const indicator = z.object({
-	max: z.coerce.number().nonnegative(),
-	min: z.coerce.number().nonnegative(),
-	quantity: z.string().optional(),
-	value: z.number().nonnegative().optional()
-});
-
-export type Indicator = z.infer<typeof indicator>;
-
 export const taskPriority = z.object({
 	priority: z.number().int(),
 	task: z.string().uuid()
