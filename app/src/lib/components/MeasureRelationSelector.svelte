@@ -6,11 +6,12 @@
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import {
+		computeColumnTitleForGoals,
 		type Container,
 		type EmptyContainer,
+		type GoalContainer,
+		goalsByHierarchyLevel,
 		isGoalContainer,
-		isMeasureResultContainer,
-		isMilestoneContainer,
 		isTaskContainer,
 		type MeasureContainer,
 		type PartialRelation,
@@ -30,16 +31,16 @@
 			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
 		)?.object;
 
-		if (isMilestoneContainer(container) && measureRevision) {
+		if (isGoalContainer(container) && measureRevision) {
 			return fetchContainers({
 				isPartOfMeasure: [measureRevision],
-				payloadType: [payloadTypes.enum.measure_result]
+				payloadType: [payloadTypes.enum.goal]
 			}) as Promise<Container[]>;
 		} else if (isTaskContainer(container)) {
 			if (measureRevision) {
 				return fetchContainers({
 					isPartOfMeasure: [measureRevision],
-					payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.milestone]
+					payloadType: [payloadTypes.enum.goal]
 				}) as Promise<Container[]>;
 			} else {
 				return fetchContainers({
@@ -173,28 +174,28 @@
 	</div>
 {/await}
 
-{#if isTaskContainer(container) || isMilestoneContainer(container)}
+{#if isTaskContainer(container) || isGoalContainer(container)}
 	{#await isPartOfOptionsRequest then isPartOfOptions}
 		{#if isPartOfOptions.length > 0}
+			{@const goals = goalsByHierarchyLevel(
+				isPartOfOptions
+					.filter(isGoalContainer)
+					.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+					.filter(({ relation }) =>
+						relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+					)
+			)}
 			{@const options = [
 				{ value: undefined, label: $_('not_part_of') },
-				...isPartOfOptions
-					.filter((c) => isGoalContainer(c))
-					.map(({ payload, guid }) => ({
-						value: guid,
-						label: payload.title,
-						group: $_('payload_group.goals')
-					})),
-				...isPartOfOptions.filter(isMeasureResultContainer).map(({ payload, guid }) => ({
-					value: guid,
-					label: payload.title,
-					group: $_('measure_results')
-				})),
-				...isPartOfOptions.filter(isMilestoneContainer).map(({ payload, guid }) => ({
-					value: guid,
-					label: payload.title,
-					group: $_('milestones')
-				}))
+				...Array.from(goals.values())
+					.toSorted()
+					.flatMap((containers) =>
+						containers.map((container: GoalContainer) => ({
+							value: container.guid,
+							label: container.payload.title,
+							group: computeColumnTitleForGoals(containers)
+						}))
+					)
 			]}
 			<div class="meta">
 				<p class="meta-key">{$_('superordinate_element')}</p>

@@ -40,7 +40,13 @@
 		]
 	});
 
-	$: goals = goalsByHierarchyLevel(data.containers.filter(isGoalContainer));
+	$: goals = goalsByHierarchyLevel(
+		data.containers
+			.filter(isGoalContainer)
+			.filter(({ relation }) =>
+				relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+			)
+	);
 
 	$: columns = [
 		{

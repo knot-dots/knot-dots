@@ -1403,12 +1403,7 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 					: await getAllContainersRelatedToMeasure(
 							container.guid,
 							{
-								type: [
-									payloadTypes.enum.effect,
-									payloadTypes.enum.measure_result,
-									payloadTypes.enum.milestone,
-									payloadTypes.enum.task
-								]
+								type: [payloadTypes.enum.effect, payloadTypes.enum.goal, payloadTypes.enum.task]
 							},
 							''
 						)(txConnection);

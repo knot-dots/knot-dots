@@ -13,7 +13,6 @@
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isIndicatorContainer,
-		isMeasureResultContainer,
 		overlayKey,
 		payloadTypes,
 		predicates
@@ -108,7 +107,6 @@
 						relation.some(({ object }) => object === container.guid)
 					),
 					...containers.filter(isContainerWithEffect),
-					...containers.filter(isMeasureResultContainer),
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
@@ -124,7 +122,6 @@
 						relation.some(({ object }) => object === container.guid)
 					),
 					...containers.filter(isContainerWithEffect),
-					...containers.filter(isMeasureResultContainer),
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>

@@ -7,8 +7,8 @@
 	import {
 		type EffectContainer,
 		isContainerWithEffect,
+		isGoalContainer,
 		isIndicatorContainer,
-		isMeasureResultContainer,
 		predicates
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -166,13 +166,9 @@
 		{#await relatedContainerRequest then containers}
 			{@const indicator = containers.find(isIndicatorContainer)}
 			{@const measure = containers.find(isContainerWithEffect)}
-			{@const measureResult = containers.find(isMeasureResultContainer)}
-			{#if indicator && measure && measureResult}
-				<EffectChart
-					{container}
-					relatedContainers={[indicator, measure, measureResult]}
-					showLegend
-				/>
+			{@const goal = containers.find(isGoalContainer)}
+			{#if indicator && measure && goal}
+				<EffectChart {container} relatedContainers={[indicator, measure, goal]} showLegend />
 			{/if}
 		{/await}
 	</div>

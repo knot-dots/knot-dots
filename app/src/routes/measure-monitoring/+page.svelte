@@ -10,10 +10,10 @@
 	import Sort from '$lib/components/Sort.svelte';
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import {
+		isGoalContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer,
-		isMilestoneContainer,
 		isTaskContainer,
 		predicates
 	} from '$lib/models';
@@ -23,8 +23,8 @@
 
 	$: measures = data.containers.filter(isMeasureContainer);
 
-	$: milestones = data.containers
-		.filter(isMilestoneContainer)
+	$: goals = data.containers
+		.filter(isGoalContainer)
 		.filter(
 			({ relation }) =>
 				relation.findIndex(
@@ -43,7 +43,7 @@
 				relation.findIndex(
 					(r) =>
 						(r.predicate === predicates.enum['is-part-of'] &&
-							milestones.map(({ guid }) => guid).includes(r.object)) ||
+							goals.map(({ guid }) => guid).includes(r.object)) ||
 						(r.predicate === predicates.enum['is-part-of-measure'] &&
 							measures.map(({ guid }) => guid).includes(r.object))
 				) > -1

@@ -7,7 +7,7 @@ export type ContainerDetailViewTabKey =
 	| 'effects'
 	| 'historical-values'
 	| 'metadata'
-	| 'milestones'
+	| 'goals'
 	| 'resources';
 
 export type ContainerFormTabKey = ContainerDetailViewTabKey;
@@ -82,8 +82,6 @@ const payloadTypeValues = [
 	'indicator',
 	'indicator_template',
 	'measure',
-	'measure_result',
-	'milestone',
 	'objective',
 	'organization',
 	'organizational_unit',
@@ -247,7 +245,8 @@ const goalTypeValues = [
 	'goal_type.objective',
 	'goal_type.key_result',
 	'goal_type.key_performance_indicator',
-	'goal_type.operational_goal'
+	'goal_type.operational_goal',
+	'goal_type.milestone'
 ] as const;
 
 export const goalType = z.enum(goalTypeValues);
@@ -664,26 +663,6 @@ const effectPayload = measureMonitoringBasePayload
 
 const initialEffectPayload = effectPayload.partial({ title: true });
 
-const measureResultPayload = measureMonitoringBasePayload
-	.extend({
-		fulfillmentDate: z.string().date().optional(),
-		progress: z.number().nonnegative().optional(),
-		type: z.literal(payloadTypes.enum.measure_result)
-	})
-	.strict();
-
-const initialMeasureResultPayload = measureResultPayload.partial({ title: true });
-
-const milestonePayload = measureMonitoringBasePayload
-	.extend({
-		fulfillmentDate: z.string().date().optional(),
-		progress: z.number().nonnegative().default(0),
-		type: z.literal(payloadTypes.enum.milestone)
-	})
-	.strict();
-
-const initialMilestonePayload = milestonePayload.partial({ title: true });
-
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
@@ -779,8 +758,6 @@ const payload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	measurePayload,
-	measureResultPayload,
-	milestonePayload,
 	objectivePayload,
 	pagePayload,
 	resolutionPayload,
@@ -815,8 +792,6 @@ const anyPayload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	measurePayload,
-	measureResultPayload,
-	milestonePayload,
 	objectivePayload,
 	organizationPayload,
 	organizationalUnitPayload,
@@ -1036,30 +1011,6 @@ export function isTextContainer(
 	return container.payload.type === payloadTypes.enum.text;
 }
 
-const measureResultContainer = container.extend({
-	payload: measureResultPayload
-});
-
-export type MeasureResultContainer = z.infer<typeof measureResultContainer>;
-
-export function isMeasureResultContainer(
-	container: AnyContainer | EmptyContainer
-): container is MeasureResultContainer {
-	return container.payload.type === payloadTypes.enum.measure_result;
-}
-
-const milestoneContainer = container.extend({
-	payload: milestonePayload
-});
-
-export type MilestoneContainer = z.infer<typeof milestoneContainer>;
-
-export function isMilestoneContainer(
-	container: AnyContainer | EmptyContainer
-): container is MilestoneContainer {
-	return container.payload.type === payloadTypes.enum.milestone;
-}
-
 const taskContainer = container.extend({
 	payload: taskPayload
 });
@@ -1072,21 +1023,12 @@ export function isTaskContainer(
 	return container.payload.type === payloadTypes.enum.task;
 }
 
-export type MeasureMonitoringContainer =
-	| EffectContainer
-	| MeasureResultContainer
-	| MilestoneContainer
-	| TaskContainer;
+export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
 
 export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureMonitoringContainer {
-	return (
-		isEffectContainer(container) ||
-		isMeasureResultContainer(container) ||
-		isMilestoneContainer(container) ||
-		isTaskContainer(container)
-	);
+	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
@@ -1245,8 +1187,6 @@ export const emptyContainer = newContainer.extend({
 		initialSimpleMeasurePayload,
 		initialStrategyPayload,
 		initialTextPayload,
-		initialMeasureResultPayload,
-		initialMilestonePayload,
 		initialTaskPayload,
 		initialUndefinedPayload
 	])
@@ -1331,18 +1271,6 @@ const emptyTextContainer = emptyContainer.extend({
 });
 
 export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
-
-const emptyMeasureResultContainer = emptyContainer.extend({
-	payload: initialMeasureResultPayload
-});
-
-export type EmptyMeasureResultContainer = z.infer<typeof emptyMeasureResultContainer>;
-
-const emptyMilestoneContainer = emptyContainer.extend({
-	payload: initialMilestonePayload
-});
-
-export type EmptyMilestoneContainer = z.infer<typeof emptyMilestoneContainer>;
 
 const emptyTaskContainer = emptyContainer.extend({
 	payload: initialTaskPayload

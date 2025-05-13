@@ -7,19 +7,17 @@ import {
 	type AnyContainer,
 	audience,
 	createCopyOf,
+	type GoalContainer,
 	indicatorCategories,
 	type IndicatorContainer,
 	indicatorTypes,
 	isEffectContainer,
+	isGoalContainer,
 	isIndicatorContainer,
 	isMeasureContainer,
-	isMeasureResultContainer,
-	isMilestoneContainer,
 	isTaskContainer,
 	type MeasureContainer,
-	type MeasureResultContainer,
 	measureTypes,
-	type MilestoneContainer,
 	type NewContainer,
 	newContainer,
 	payloadTypes,
@@ -186,11 +184,11 @@ export const POST = (async ({ locals, request }) => {
 						locals.user
 					);
 
-					const isPartOfObjects: Array<
-						MeasureContainer | MeasureResultContainer | MilestoneContainer
-					> = [createdContainer];
+					const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdContainer];
 
-					for (const copyFrom of containersRelatedToOriginal.filter(isMeasureResultContainer)) {
+					for (const copyFrom of containersRelatedToOriginal
+						.filter(isGoalContainer)
+						.toSorted((a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel)) {
 						const copyContainer = createCopyOf(
 							copyFrom,
 							createdContainer.organization,
@@ -202,30 +200,6 @@ export const POST = (async ({ locals, request }) => {
 							predicate: predicates.enum['is-part-of'],
 							position: 0
 						});
-						copyContainer.relation.push({
-							object: createdContainer.guid,
-							predicate: predicates.enum['is-part-of-measure'],
-							position: 0
-						});
-						copyContainer.user.push({
-							predicate: predicates.enum['is-creator-of'],
-							subject: locals.user.guid
-						});
-
-						isPartOfObjects.push(
-							(await createContainer(copyContainer as NewContainer)(
-								txConnection
-							)) as MeasureResultContainer
-						);
-					}
-
-					for (const copyFrom of containersRelatedToOriginal.filter(isMilestoneContainer)) {
-						const copyContainer = createCopyOf(
-							copyFrom,
-							createdContainer.organization,
-							createdContainer.organizational_unit
-						);
-
 						copyContainer.relation.push({
 							object: createdContainer.guid,
 							predicate: predicates.enum['is-part-of-measure'],
@@ -257,9 +231,7 @@ export const POST = (async ({ locals, request }) => {
 						});
 
 						isPartOfObjects.push(
-							(await createContainer(copyContainer as NewContainer)(
-								txConnection
-							)) as MilestoneContainer
+							(await createContainer(copyContainer as NewContainer)(txConnection)) as GoalContainer
 						);
 					}
 

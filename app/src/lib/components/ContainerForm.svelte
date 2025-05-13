@@ -9,8 +9,6 @@
 	import IndicatorTemplateForm from '$lib/components/IndicatorTemplateForm.svelte';
 	import GoalForm from '$lib/components/GoalForm.svelte';
 	import MeasureForm from '$lib/components/MeasureForm.svelte';
-	import MeasureResultForm from '$lib/components/MeasureResultForm.svelte';
-	import MilestoneForm from '$lib/components/MilestoneForm.svelte';
 	import ObjectiveForm from '$lib/components/ObjectiveForm.svelte';
 	import OrganizationForm from '$lib/components/OrganizationForm.svelte';
 	import OrganizationalUnitForm from '$lib/components/OrganizationalUnitForm.svelte';
@@ -28,8 +26,6 @@
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
-		isMeasureResultContainer,
-		isMilestoneContainer,
 		isObjectiveContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -156,10 +152,6 @@
 		<GoalForm bind:container />
 	{:else if isMeasureContainer(container)}
 		<MeasureForm bind:container />
-	{:else if isMeasureResultContainer(container)}
-		<MeasureResultForm bind:container />
-	{:else if isMilestoneContainer(container)}
-		<MilestoneForm bind:container />
 	{:else if isObjectiveContainer(container)}
 		<ObjectiveForm bind:container />
 	{:else if isOrganizationContainer(container)}

@@ -30,10 +30,9 @@ export const load = (async ({ locals, url, parent }) => {
 				{
 					type: [
 						payloadTypes.enum.effect,
+						payloadTypes.enum.goal,
 						payloadTypes.enum.indicator,
-						payloadTypes.enum.measure_result,
 						payloadTypes.enum.measure,
-						payloadTypes.enum.milestone,
 						payloadTypes.enum.task
 					]
 				},
@@ -51,10 +50,9 @@ export const load = (async ({ locals, url, parent }) => {
 					terms: url.searchParams.get('terms') ?? '',
 					type: [
 						payloadTypes.enum.effect,
+						payloadTypes.enum.goal,
 						payloadTypes.enum.indicator,
-						payloadTypes.enum.measure_result,
 						payloadTypes.enum.measure,
-						payloadTypes.enum.milestone,
 						payloadTypes.enum.task
 					]
 				},

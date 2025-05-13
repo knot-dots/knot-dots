@@ -4,11 +4,12 @@
 	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import GoalTypeSelector from '$lib/components/GoalTypeSelector.svelte';
+	import MeasureRelationSelector from '$lib/components/MeasureRelationSelector.svelte';
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import PolicyFieldBNKSelector from '$lib/components/PolicyFieldBNKSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
-	import type { GoalContainer, EmptyGoalContainer } from '$lib/models';
+	import { type GoalContainer, type EmptyGoalContainer, predicates } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	export let container: GoalContainer | EmptyGoalContainer;
@@ -82,7 +83,11 @@
 		<input class="meta-value" type="date" bind:value={container.payload.fulfillmentDate} />
 	</label>
 
-	<StrategyRelationSelector {container} />
+	{#if container.relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])}
+		<MeasureRelationSelector {container} />
+	{:else}
+		<StrategyRelationSelector {container} />
+	{/if}
 
 	<TopicSelector bind:value={container.payload.topic} />
 

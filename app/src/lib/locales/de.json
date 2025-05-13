@@ -107,6 +107,8 @@
 	"goal_type.key_result.plural": "Key Results",
 	"goal_type.long_term_goal": "Langfristiges Ziel",
 	"goal_type.long_term_goal.plural": "Langfristige Ziele",
+	"goal_type.milestone": "Meilenstein",
+	"goal_type.milestone.plural": "Meilensteine",
 	"goal_type.model": "Leitbild",
 	"goal_type.model.plural": "Leitbilder",
 	"goal_type.objective": "Objective",

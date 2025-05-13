@@ -8,13 +8,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
-	import {
-		containerOfType,
-		isMeasureResultContainer,
-		isMilestoneContainer,
-		isStrategyContainer,
-		payloadTypes
-	} from '$lib/models';
+	import { containerOfType, isStrategyContainer, payloadTypes } from '$lib/models';
 	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -106,14 +100,6 @@
 					{#if isStrategyContainer(container)}
 						<button id="save-and-create-model" form="container-form" type="submit">
 							{$_('save_and_create_model')}
-						</button>
-					{:else if isMeasureResultContainer(container)}
-						<button id="save-and-create-milestone" form="container-form" type="submit">
-							{$_('save_and_create_milestone')}
-						</button>
-					{:else if isMilestoneContainer(container)}
-						<button id="save-and-create-task" form="container-form" type="submit">
-							{$_('save_and_create_task')}
 						</button>
 					{/if}
 					<button type="button" on:click={() => window.history.back()}>{$_('cancel')}</button>

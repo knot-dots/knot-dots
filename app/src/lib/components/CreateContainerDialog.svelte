@@ -57,8 +57,6 @@
 		isContainerWithTopic,
 		isGoalContainer,
 		isMeasureContainer,
-		isMeasureResultContainer,
-		isMilestoneContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isResolutionContainer,
@@ -68,7 +66,8 @@
 		isTaskContainer,
 		type NewContainer,
 		overlayKey,
-		overlayURL
+		overlayURL,
+		predicates
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 	import {
@@ -260,7 +259,11 @@
 									label={$_('fulfillment_date')}
 									bind:value={$newContainer.payload.fulfillmentDate}
 								/>
-								<EditableStrategy editable bind:container={$newContainer} />
+								{#if $newContainer.relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])}
+									<EditableMeasure editable bind:container={$newContainer} />
+								{:else}
+									<EditableStrategy editable bind:container={$newContainer} />
+								{/if}
 							{:else if isMeasureContainer($newContainer)}
 								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
 									<EditableEditorialState
@@ -273,20 +276,6 @@
 								<EditableMeasureType editable bind:value={$newContainer.payload.measureType} />
 								<EditableStrategy editable bind:container={$newContainer} />
 								<EditableParent editable bind:container={$newContainer} />
-							{:else if isMeasureResultContainer($newContainer)}
-								<EditableDate
-									editable
-									label={$_('fulfillment_date')}
-									bind:value={$newContainer.payload.fulfillmentDate}
-								/>
-								<EditableMeasure container={$newContainer} editable />
-							{:else if isMilestoneContainer($newContainer)}
-								<EditableDate
-									editable
-									label={$_('fulfillment_date')}
-									bind:value={$newContainer.payload.fulfillmentDate}
-								/>
-								<EditableMeasure container={$newContainer} editable />
 							{:else if isOrganizationContainer($newContainer)}
 								<EditableOrganizationCategory
 									editable

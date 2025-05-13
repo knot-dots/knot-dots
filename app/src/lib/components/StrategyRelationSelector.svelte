@@ -173,6 +173,9 @@
 			isPartOfOptions
 				.filter(isGoalContainer)
 				.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+				.filter(({ relation }) =>
+					relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+				)
 		)}
 		{@const options = [
 			{ value: undefined, label: $_('not_part_of') },

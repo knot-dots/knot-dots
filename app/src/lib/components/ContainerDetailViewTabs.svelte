@@ -68,13 +68,13 @@
 		</button>
 	</li>
 {/if}
-{#if $applicationState.containerDetailView.tabs.includes('milestones')}
+{#if $applicationState.containerDetailView.tabs.includes('goals')}
 	<li>
 		<button
-			title={$_('milestones')}
+			title={$_('goals')}
 			type="button"
 			class="button-nav button-square"
-			on:click={() => updateApplicationState('milestones')}
+			on:click={() => updateApplicationState('goals')}
 		>
 			<Milestones />
 		</button>

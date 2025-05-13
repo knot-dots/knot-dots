@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { goto } from '$app/navigation';
+	import Card from '$lib/components/Card.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -8,6 +11,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableGoalType from '$lib/components/EditableGoalType.svelte';
 	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
+	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
@@ -16,12 +20,65 @@
 	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
-	import type { GoalContainer } from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import {
+		type Container,
+		type ContainerWithEffect,
+		type GoalContainer,
+		isContainerWithEffect,
+		isEffectContainer,
+		isPartOf,
+		isPartOfMeasure,
+		isStrategyContainer,
+		overlayKey,
+		payloadTypes,
+		predicates
+	} from '$lib/models';
+	import { ability, addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
 
 	export let container: GoalContainer;
 	export let relatedContainers: any[];
 	export let revisions: any[];
+
+	$: measure = relatedContainers
+		.filter(isContainerWithEffect)
+		.find((rc) => isPartOfMeasure(rc)(container));
+
+	$: strategy = relatedContainers
+		.filter(isStrategyContainer)
+		.find(
+			(candidate) =>
+				container.relation.findIndex(
+					(r) =>
+						r.predicate === predicates.enum['is-part-of-strategy'] &&
+						r.object === candidate.guid &&
+						candidate.guid !== container.guid
+				) > -1
+		);
+
+	$: effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container));
+
+	async function addEffect(target: Container, measure: ContainerWithEffect) {
+		const params = new URLSearchParams([
+			[overlayKey.enum.create, payloadTypes.enum.indicator],
+			['alreadyInUse', '']
+		]);
+
+		for (const category of measure.payload.category) {
+			params.append('category', category);
+		}
+
+		for (const topic of measure.payload.topic) {
+			params.append('topic', topic);
+		}
+
+		for (const measureType of measure.payload.measureType) {
+			params.append('measureType', measureType);
+		}
+
+		$addEffectState = { target };
+
+		await goto(`#${params.toString()}`);
+	}
 </script>
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions}>
@@ -50,7 +107,11 @@
 			bind:value={container.payload.fulfillmentDate}
 		/>
 
-		<EditableStrategy {container} editable={$applicationState.containerDetailView.editable} />
+		{#if measure}
+			<EditableMeasure {container} editable={$applicationState.containerDetailView.editable} />
+		{:else}
+			<EditableStrategy {container} editable={$applicationState.containerDetailView.editable} />
+		{/if}
 
 		<EditableParent {container} editable={$applicationState.containerDetailView.editable} />
 
@@ -94,14 +155,40 @@
 			bind:value={container.payload.description}
 		/>
 
-		<div class="details-tab" id="objectives">
-			<h3>{$_('objectives')}</h3>
-			<EditableObjectiveCarousel
-				{container}
-				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
-			/>
-		</div>
+		{#if measure && (effect || $mayCreateContainer(payloadTypes.enum.effect, container.managed_by))}
+			<div class="detail-tab" id="effect">
+				<h3>{$_('effect')}</h3>
+				<ul class="carousel">
+					{#if effect}
+						<li>
+							<Card container={effect} {relatedContainers} />
+						</li>
+					{:else if $applicationState.containerDetailView.editable}
+						<li>
+							<button
+								aria-label={$_('add_item')}
+								class="card"
+								type="button"
+								on:click={() => addEffect(container, measure)}
+							>
+								<PlusSmall />
+							</button>
+						</li>
+					{:else}
+						<li>&nbsp;</li>
+					{/if}
+				</ul>
+			</div>
+		{:else}
+			<div class="details-tab" id="objectives">
+				<h3>{$_('objectives')}</h3>
+				<EditableObjectiveCarousel
+					{container}
+					editable={$applicationState.containerDetailView.editable}
+					{relatedContainers}
+				/>
+			</div>
+		{/if}
 
 		<div class="details-tab" id="tasks">
 			<h3>{$_('tasks')}</h3>
@@ -109,3 +196,23 @@
 		</div>
 	</svelte:fragment>
 </EditableContainerDetailView>
+
+<style>
+	.card {
+		align-items: center;
+		background: #ffffff;
+		border: 1px solid var(--color-gray-200);
+		border-radius: 8px;
+		box-shadow: var(--shadow-sm);
+		cursor: pointer;
+		display: grid;
+		grid-row: 1 / 4;
+		min-height: 6rem;
+		justify-content: center;
+	}
+
+	.card :global(svg) {
+		height: 4rem;
+		width: 4rem;
+	}
+</style>

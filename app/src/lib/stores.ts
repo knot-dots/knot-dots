@@ -12,7 +12,6 @@ import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
 	type AnyContainer,
 	type ApplicationState,
-	audience,
 	type Container,
 	containerOfType,
 	createCopyOf,
@@ -449,9 +448,8 @@ if (browser) {
 					payloadType: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.indicator,
+						payloadTypes.enum.goal,
 						payloadTypes.enum.measure,
-						payloadTypes.enum.measure_result,
-						payloadTypes.enum.milestone,
 						payloadTypes.enum.simple_measure,
 						payloadTypes.enum.task
 					]
@@ -472,11 +470,7 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					assignee: hashParams.getAll('assignee'),
-					payloadType: [
-						payloadTypes.enum.measure_result,
-						payloadTypes.enum.milestone,
-						payloadTypes.enum.task
-					],
+					payloadType: [payloadTypes.enum.goal, payloadTypes.enum.task],
 					taskCategory: hashParams.getAll('taskCategory'),
 					terms: hashParams.get('terms') ?? ''
 				},

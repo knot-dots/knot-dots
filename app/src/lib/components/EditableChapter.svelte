@@ -213,14 +213,14 @@
 	{/if}
 
 	{#if relatedContainers
-		.filter(({ payload }) => payload.type === payloadTypes.enum.measure_result)
+		.filter(({ payload }) => payload.type === payloadTypes.enum.goal)
 		.filter(isPartOfFilter(container)).length > 0}
 		<div class="measure-results">
-			<h4 class="chapter-subtitle">{$_('measure_results')}</h4>
+			<h4 class="chapter-subtitle">{$_('goals')}</h4>
 			<EditablePartOfMeasureCarousel
 				{container}
 				{editable}
-				payloadType={payloadTypes.enum.measure_result}
+				payloadType={payloadTypes.enum.goal}
 				{relatedContainers}
 			/>
 		</div>

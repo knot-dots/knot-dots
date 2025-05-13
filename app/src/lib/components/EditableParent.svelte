@@ -24,17 +24,10 @@
 		strategyGuid?: string
 	): Promise<Container[]> {
 		if (measureGuid) {
-			if (payloadType == payloadTypes.enum.milestone) {
-				return fetchContainers({
-					isPartOfMeasure: [measureGuid],
-					payloadType: [payloadTypes.enum.measure_result]
-				}) as Promise<Container[]>;
-			} else if (payloadType == payloadTypes.enum.task) {
-				return fetchContainers({
-					isPartOfMeasure: [measureGuid],
-					payloadType: [payloadTypes.enum.measure_result, payloadTypes.enum.milestone]
-				}) as Promise<Container[]>;
-			}
+			return fetchContainers({
+				isPartOfMeasure: [measureGuid],
+				payloadType: [payloadTypes.enum.goal]
+			}) as Promise<Container[]>;
 		} else if (strategyGuid) {
 			return fetchContainers({
 				isPartOfStrategy: [strategyGuid],
@@ -115,6 +108,15 @@
 			{ label: $_('empty'), value: '' },
 			...isPartOfOptions
 				.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+				.filter(({ relation }) =>
+					strategyGuid
+						? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+						: measureGuid
+							? relation.some(
+									({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+								)
+							: true
+				)
 				.map(({ guid, payload }) => ({
 					href: overlayURL($page.url, overlayKey.enum.view, guid),
 					label: payload.title,

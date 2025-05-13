@@ -74,11 +74,7 @@ export const load = (async ({ locals, parent, url }) => {
 				getManyContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					{
-						type: [
-							payloadTypes.enum.measure_result,
-							payloadTypes.enum.milestone,
-							payloadTypes.enum.goal
-						]
+						type: [payloadTypes.enum.goal]
 					},
 					'alpha'
 				)

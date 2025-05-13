@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
 	import Pencil from '~icons/heroicons/pencil-solid';
+	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import fetchMembers from '$lib/client/fetchMembers';
+	import Card from '$lib/components/Card.svelte';
 	import ObjectiveCarousel from '$lib/components/ObjectiveCarousel.svelte';
 	import Progress from '$lib/components/Progress.svelte';
-	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import TaskCarousel from '$lib/components/TaskCarousel.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -13,24 +15,26 @@
 		type AnyContainer,
 		type Container,
 		type ContainerDetailViewTabKey,
+		type ContainerWithEffect,
 		displayName,
 		getCreator,
 		getManagedBy,
 		isAdminOf,
 		isContainerWithObjective,
+		isEffectContainer,
 		isHeadOf,
 		isMeasureContainer,
-		isMeasureResultContainer,
-		isMilestoneContainer,
+		isPartOf,
 		isStrategyContainer,
 		overlayKey,
 		owners,
 		paramsFromFragment,
+		payloadTypes,
 		predicates,
 		type User
 	} from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability, addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
@@ -69,6 +73,31 @@
 								candidate.guid !== container.guid
 						) > -1
 				);
+
+	$: effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container));
+
+	async function addEffect(target: Container, measure: ContainerWithEffect) {
+		const params = new URLSearchParams([
+			[overlayKey.enum.create, payloadTypes.enum.indicator],
+			['alreadyInUse', '']
+		]);
+
+		for (const category of measure.payload.category) {
+			params.append('category', category);
+		}
+
+		for (const topic of measure.payload.topic) {
+			params.append('topic', topic);
+		}
+
+		for (const measureType of measure.payload.measureType) {
+			params.append('measureType', measureType);
+		}
+
+		$addEffectState = { target };
+
+		await goto(`#${params.toString()}`);
+	}
 
 	let isPage = $page.url.pathname == `/${container.payload.type}/${container.guid}`;
 
@@ -119,7 +148,20 @@
 				</div>
 			{/if}
 
-			{#if isContainerWithObjective(container)}
+			{#if measure && (effect || $mayCreateContainer(payloadTypes.enum.effect, container.managed_by))}
+				<div class="effect">
+					<h3>{$_('effect')}</h3>
+					{#if effect}
+						<Card container={effect} {relatedContainers} />
+					{:else}
+						<button type="button" on:click={() => addEffect(container, measure)}>
+							<PlusSmall />{$_('add_item')}
+						</button>
+					{/if}
+				</div>
+			{/if}
+
+			{#if strategy && isContainerWithObjective(container)}
 				<div class="indicator-objective">
 					<h3>{$_('objectives')}</h3>
 					<ObjectiveCarousel {container} {relatedContainers} />
@@ -133,7 +175,7 @@
 				</div>
 			{/if}
 
-			{#if isContainerWithObjective(container) || isMilestoneContainer(container) || isMeasureResultContainer(container)}
+			{#if isContainerWithObjective(container)}
 				<TaskCarousel {container} />
 			{/if}
 

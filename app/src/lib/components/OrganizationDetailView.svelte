@@ -7,7 +7,6 @@
 		type Container,
 		isContainerWithEffect,
 		isContainerWithObjective,
-		isMeasureResultContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer
 	} from '$lib/models';
@@ -56,7 +55,6 @@
 							relation.some(({ object }) => object === indicator.guid)
 						),
 						...containersRelatedToIndicators.filter(isContainerWithEffect),
-						...containersRelatedToIndicators.filter(isMeasureResultContainer),
 						...containersRelatedToIndicators.filter(isContainerWithObjective)
 					]}
 					<li>

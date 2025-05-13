@@ -4,13 +4,15 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import {
+		computeColumnTitleForGoals,
+		goalsByHierarchyLevel,
 		type IndicatorContainer,
 		isEffectContainer,
-		isMeasureResultContainer,
+		isGoalContainer,
 		isPartOf,
+		isTaskContainer,
 		type MeasureContainer,
 		type MeasureMonitoringContainer,
-		payloadTypes,
 		predicates,
 		type SimpleMeasureContainer
 	} from '$lib/models';
@@ -20,18 +22,20 @@
 	export let indicators: IndicatorContainer[];
 	export let showMeasures = false;
 
-	const columns = [
+	$: goals = goalsByHierarchyLevel(containers.filter(isGoalContainer));
+
+	$: columns = [
+		...Array.from(goals.entries())
+			.toSorted()
+			.map(([hierarchyLevel, containers]) => ({
+				containers: containers,
+				key: `goals-${hierarchyLevel}`,
+				title: computeColumnTitleForGoals(containers)
+			})),
 		{
-			title: 'measure_results',
-			payloadType: [payloadTypes.enum.measure_result] as string[]
-		},
-		{
-			title: 'milestones',
-			payloadType: [payloadTypes.enum.milestone] as string[]
-		},
-		{
-			title: 'tasks',
-			payloadType: [payloadTypes.enum.task] as string[]
+			containers: containers.filter(isTaskContainer),
+			key: 'tasks',
+			title: 'tasks'
 		}
 	];
 
@@ -48,12 +52,14 @@
 			</div>
 		</BoardColumn>
 	{/if}
-	{#each columns as column (column.title)}
+	{#each columns as column (column.key)}
 		<BoardColumn title={$_(column.title)}>
 			<div class="vertical-scroll-wrapper masked-overflow">
-				{#each containers.filter(({ payload }) => column.payloadType.includes(payload.type)) as c}
-					{#if isMeasureResultContainer(c)}
-						{@const effect = containers.filter(isEffectContainer).find((e) => isPartOf(c)(e))}
+				{#each column.containers as container}
+					{#if isGoalContainer(container)}
+						{@const effect = containers
+							.filter(isEffectContainer)
+							.find((e) => isPartOf(container)(e))}
 						{#if effect}
 							{@const indicator = indicatorsByGuid.get(
 								effect.relation.find(
@@ -62,16 +68,16 @@
 							)}
 							{#if indicator}
 								<Card
-									container={c}
-									relatedContainers={[...measures, indicator, effect, c]}
+									{container}
+									relatedContainers={[...measures, indicator, effect, container]}
 									showRelationFilter
 								/>
 							{/if}
 						{:else}
-							<Card container={c} showRelationFilter />
+							<Card {container} showRelationFilter />
 						{/if}
 					{:else}
-						<Card container={c} showRelationFilter />
+						<Card {container} showRelationFilter />
 					{/if}
 				{/each}
 			</div>

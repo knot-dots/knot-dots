@@ -57,7 +57,7 @@
 	container={selectedRevision}
 	{relatedContainers}
 	{revisions}
-	tabs={['basic-data', 'resources', 'effects', 'milestones', 'metadata']}
+	tabs={['basic-data', 'resources', 'effects', 'goals', 'metadata']}
 >
 	<svelte:fragment slot="data">
 		{#if 'summary' in container.payload || ('description' in container.payload && !isSimpleMeasureContainer(container))}
@@ -123,22 +123,9 @@
 			/>
 		</div>
 
-		<div id="measure-results">
-			<h3>{$_('measure_results')}</h3>
-			<PartOfMeasureCarousel
-				{container}
-				{relatedContainers}
-				payloadType={payloadTypes.enum.measure_result}
-			/>
-		</div>
-
-		<div id="milestones">
-			<h3>{$_('milestones')}</h3>
-			<PartOfMeasureCarousel
-				{container}
-				{relatedContainers}
-				payloadType={payloadTypes.enum.milestone}
-			/>
+		<div id="goals">
+			<h3>{$_('goals')}</h3>
+			<PartOfMeasureCarousel {container} {relatedContainers} payloadType={payloadTypes.enum.goal} />
 		</div>
 	</svelte:fragment>
 

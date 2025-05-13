@@ -10,8 +10,6 @@
 		displayName,
 		isContainerWithObjective,
 		isMeasureContainer,
-		isMeasureResultContainer,
-		isMilestoneContainer,
 		overlayKey,
 		taskStatus
 	} from '$lib/models';
@@ -40,10 +38,6 @@
 	$: measure = isMeasureContainer(container)
 		? container
 		: relatedContainers.find(isMeasureContainer);
-
-	$: measureResult = relatedContainers.find(isMeasureResultContainer);
-
-	$: milestone = relatedContainers.find(isMilestoneContainer);
 
 	$: goal = relatedContainers.find(isContainerWithObjective);
 
@@ -120,16 +114,6 @@
 					<a href={containerURL(measure.payload.type, measure.guid)}>
 						{$_(measure.payload.title)}
 					</a>
-					{#if measureResult}
-						/ <a href={containerURL(measureResult.payload.type, measureResult.guid)}>
-							{$_(measureResult.payload.title)}
-						</a>
-					{/if}
-					{#if milestone}
-						/ <a href={containerURL(milestone.payload.type, milestone.guid)}>
-							{$_(milestone.payload.title)}
-						</a>
-					{/if}
 				</p>
 			</div>
 		{:else if goal}

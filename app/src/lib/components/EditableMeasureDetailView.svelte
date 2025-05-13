@@ -36,7 +36,7 @@
 	{container}
 	{relatedContainers}
 	{revisions}
-	tabs={['basic-data', 'resources', 'effects', 'milestones', 'metadata']}
+	tabs={['basic-data', 'resources', 'effects', 'goals', 'metadata']}
 >
 	<svelte:fragment slot="data">
 		{#if $ability.can('read', container, 'payload.editorialState')}
@@ -142,23 +142,13 @@
 			/>
 		</div>
 
-		<div class="details-tab" id="measure-results">
-			<h3>{$_('measure_results')}</h3>
+		<div class="details-tab" id="goals">
+			<h3>{$_('goals')}</h3>
 			<EditablePartOfMeasureCarousel
 				{container}
 				editable={$applicationState.containerDetailView.editable}
 				{relatedContainers}
-				payloadType={payloadTypes.enum.measure_result}
-			/>
-		</div>
-
-		<div class="details-tab" id="milestones">
-			<h3>{$_('milestones')}</h3>
-			<EditablePartOfMeasureCarousel
-				{container}
-				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
-				payloadType={payloadTypes.enum.milestone}
+				payloadType={payloadTypes.enum.goal}
 			/>
 		</div>
 	</svelte:fragment>

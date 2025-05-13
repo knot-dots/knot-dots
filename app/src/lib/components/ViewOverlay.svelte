@@ -19,7 +19,6 @@
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
-	import MeasureResultDetailView from '$lib/components/MeasureResultDetailView.svelte';
 	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
 	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
 	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
@@ -43,8 +42,6 @@
 		isGoalContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
-		isMeasureResultContainer,
-		isMilestoneContainer,
 		isObjectiveContainer,
 		isOrganizationalUnitContainer,
 		isResolutionContainer,
@@ -132,11 +129,10 @@
 				value: p
 			}));
 		} else if (isPartOfMeasureRelation) {
-			createAnotherOptions = [
-				payloadTypes.enum.measure_result,
-				payloadTypes.enum.milestone,
-				payloadTypes.enum.task
-			].map((p) => ({ label: $_(p), value: p }));
+			createAnotherOptions = [payloadTypes.enum.goal, payloadTypes.enum.task].map((p) => ({
+				label: $_(p),
+				value: p
+			}));
 		}
 	}
 
@@ -176,8 +172,7 @@
 			}
 		} else if (isPartOfMeasureRelation) {
 			params.append(predicates.enum['is-part-of-measure'], String(isPartOfMeasureRelation.object));
-			params.append('payloadType', payloadTypes.enum.measure_result);
-			params.append('payloadType', payloadTypes.enum.milestone);
+			params.append('payloadType', payloadTypes.enum.goal);
 			params.append('payloadType', payloadTypes.enum.task);
 		}
 
@@ -379,14 +374,6 @@
 			{#await import('./EditableMeasureDetailView.svelte') then { default: EditableMeasureDetailView }}
 				<EditableMeasureDetailView {container} {relatedContainers} {revisions} />
 			{/await}
-		{:else if isMeasureResultContainer(container)}
-			{#await import('./EditableMeasureResultDetailView.svelte') then { default: EditableMeasureResultDetailView }}
-				<EditableMeasureResultDetailView {container} {relatedContainers} {revisions} />
-			{/await}
-		{:else if isMilestoneContainer(container)}
-			{#await import('./EditableMilestoneDetailView.svelte') then { default: EditableMilestoneDetailView }}
-				<EditableMilestoneDetailView {container} {relatedContainers} {revisions} />
-			{/await}
 		{:else if isObjectiveContainer(container)}
 			{#await import('./EditableObjectiveDetailView.svelte') then { default: EditableObjectiveDetailView }}
 				<EditableObjectiveDetailView {container} {relatedContainers} {revisions} />
@@ -422,8 +409,6 @@
 		<IndicatorDetailView {container} {relatedContainers} {revisions} />
 	{:else if isContainerWithEffect(container)}
 		<MeasureDetailView {container} {relatedContainers} {revisions} />
-	{:else if isMeasureResultContainer(container)}
-		<MeasureResultDetailView {container} {relatedContainers} {revisions} />
 	{:else if isObjectiveContainer(container)}
 		<ObjectiveDetailView {container} {relatedContainers} {revisions} />
 	{:else if isResolutionContainer(container)}

@@ -9,18 +9,16 @@
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
-	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
 		findAncestors,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isEffectContainer,
+		isGoalContainer,
 		isIndicatorContainer,
-		isMeasureResultContainer,
 		isObjectiveContainer,
 		isPartOf,
-		isRelatedTo,
 		isResourceContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -249,7 +247,6 @@
 						relation.some(({ object }) => object === container.guid)
 					),
 					...relatedContainers.filter(isContainerWithEffect),
-					...relatedContainers.filter(isMeasureResultContainer),
 					...relatedContainers.filter(isContainerWithObjective)
 				]}
 				showEffects
@@ -269,7 +266,7 @@
 			{#if indicator}
 				<EffectChart {container} {relatedContainers} />
 			{/if}
-		{:else if isMeasureResultContainer(container)}
+		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
 			{@const indicator = relatedContainers
 				.filter(isIndicatorContainer)

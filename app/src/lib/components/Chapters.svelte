@@ -10,13 +10,20 @@
 		isGoalContainer,
 		isPartOf,
 		isStrategyContainer,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 
 	export let containers: Container[];
 	export let containersWithIndicatorContributions: Container[] = [];
 
-	$: goals = goalsByHierarchyLevel(containers.filter(isGoalContainer));
+	$: goals = goalsByHierarchyLevel(
+		containers
+			.filter(isGoalContainer)
+			.filter(({ relation }) =>
+				relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+			)
+	);
 
 	$: columns = [
 		{

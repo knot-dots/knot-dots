@@ -18,8 +18,6 @@
 		type Container,
 		isContainerWithEffect,
 		isContainerWithObjective,
-		isMeasureResultContainer,
-		isMilestoneContainer,
 		type TaskContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -33,10 +31,6 @@
 	$: assigneeCandidatesPromise = fetchMembers(managedBy);
 
 	$: measure = relatedContainers.find(isContainerWithEffect);
-
-	$: measureResult = relatedContainers.find(isMeasureResultContainer);
-
-	$: milestone = relatedContainers.find(isMilestoneContainer);
 
 	$: goal = relatedContainers.find(isContainerWithObjective);
 </script>

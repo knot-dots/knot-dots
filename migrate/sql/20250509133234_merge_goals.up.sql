@@ -2,11 +2,14 @@ UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '1') WHE
 UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.vision"') WHERE payload->>'type' = 'vision';
 UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '1') WHERE payload->>'type' = 'model';
 UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.model"') WHERE payload->>'type' = 'model';
+UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '1') WHERE payload->>'type' = 'measure_result';
 UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '2') WHERE payload->>'type' = 'strategic_goal';
 UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.strategic_goal"') WHERE payload->>'type' = 'strategic_goal';
+UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '2') WHERE payload->>'type' = 'milestone';
+UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.milestone"') WHERE payload->>'type' = 'milestone';
 UPDATE container SET payload = jsonb_set(payload, '{"hierarchyLevel"}', '3') WHERE payload->>'type' = 'operational_goal';
 UPDATE container SET payload = jsonb_set(payload, '{"goalType"}', '"goal_type.operational_goal"') WHERE payload->>'type' = 'operational_goal';
-UPDATE container SET payload = jsonb_set(payload, '{"type"}', '"goal"') WHERE payload->>'type' IN ('vision', 'model', 'strategic_goal', 'operational_goal');
+UPDATE container SET payload = jsonb_set(payload, '{"type"}', '"goal"') WHERE payload->>'type' IN ('vision', 'model', 'strategic_goal', 'operational_goal', 'measure_result', 'milestone');
 UPDATE container SET payload = payload - 'indicator' WHERE payload ? 'indicator';
 UPDATE container SET payload = jsonb_set(payload, '{"chapterType"}', (payload->'chapterType' || '["goal"]'::jsonb)) WHERE payload->'chapterType' ?| array['vision', 'model', 'strategic_goal', 'operational_goal'];
 UPDATE container SET payload = jsonb_set(payload, '{"chapterType"}', (payload->'chapterType') - 'vision') WHERE payload->'chapterType' ?| array['vision'];
