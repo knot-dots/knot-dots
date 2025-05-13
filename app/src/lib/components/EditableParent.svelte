@@ -113,11 +113,13 @@
 		label={$_('superordinate_element')}
 		options={[
 			{ label: $_('empty'), value: '' },
-			...isPartOfOptions.map(({ guid, payload }) => ({
-				href: overlayURL($page.url, overlayKey.enum.view, guid),
-				label: payload.title,
-				value: guid
-			}))
+			...isPartOfOptions
+				.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+				.map(({ guid, payload }) => ({
+					href: overlayURL($page.url, overlayKey.enum.view, guid),
+					label: payload.title,
+					value: guid
+				}))
 		]}
 		bind:value={() => isPartOfObject, set}
 	/>

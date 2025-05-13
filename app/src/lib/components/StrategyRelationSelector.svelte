@@ -169,7 +169,11 @@
 
 {#await isPartOfOptionsRequest then isPartOfOptions}
 	{#if isPartOfOptions.length > 0}
-		{@const goals = goalsByHierarchyLevel(isPartOfOptions.filter(isGoalContainer))}
+		{@const goals = goalsByHierarchyLevel(
+			isPartOfOptions
+				.filter(isGoalContainer)
+				.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+		)}
 		{@const options = [
 			{ value: undefined, label: $_('not_part_of') },
 			...Array.from(goals.values())
