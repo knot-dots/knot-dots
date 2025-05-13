@@ -86,6 +86,10 @@
 	);
 
 	function createContainer(event: Event) {
+		if (!(event as CustomEvent).detail.selected) {
+			return;
+		}
+
 		const chapter = containerOfType(
 			(event as CustomEvent).detail.selected as PayloadType,
 			container.organization,
