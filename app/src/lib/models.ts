@@ -509,14 +509,13 @@ const goalPayload = basePayload.extend({
 		.refine((v) => z.coerce.date().safeParse(v))
 		.optional(),
 	goalType: goalType.optional(),
-	hierarchyLevel: z.number().int().gte(1).lte(6),
+	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 	progress: z.number().nonnegative().optional(),
 	type: z.literal(payloadTypes.enum.goal)
 });
 
 const initialGoalPayload = goalPayload.partial({
 	goalType: true,
-	hierarchyLevel: true,
 	title: true
 });
 
