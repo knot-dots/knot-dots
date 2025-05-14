@@ -1030,7 +1030,7 @@ label > input[type='checkbox'].toggle {
 
 @container (min-inline-size: 40rem) {
 	.data-grid {
-		grid-template-columns: 1fr 3fr;
+		grid-template-columns: 1fr minmax(0, 3fr);
 	}
 
 	.data-grid > * {
