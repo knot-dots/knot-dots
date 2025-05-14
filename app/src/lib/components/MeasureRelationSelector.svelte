@@ -205,7 +205,8 @@
 						value={container.relation.find(
 							(r) =>
 								r.predicate === predicates.enum['is-part-of'] &&
-								('guid' in container ? r.subject === container.guid : true)
+								('guid' in container ? r.subject === container.guid : true) &&
+								options.some(({ value }) => value === r.object)
 						)?.object}
 						onChange={onChangeIsPartOf}
 					/>

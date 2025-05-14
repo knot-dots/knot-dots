@@ -71,8 +71,12 @@
 		strategyGuid
 	);
 
-	$: isPartOfObject =
-		container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object ?? '';
+	$: isPartOfObject = (options: Array<{ value: string }>) =>
+		container.relation.find(
+			(r) =>
+				r.predicate === predicates.enum['is-part-of'] &&
+				options.some(({ value }) => value === r.object)
+		)?.object ?? '';
 
 	async function set(value: string) {
 		const isPartOfIndex = container.relation.findIndex(
@@ -101,28 +105,27 @@
 {#await isPartOfOptionsRequest}
 	<EditableSingleChoice {editable} label={$_('superordinate_element')} options={[]} value="" />
 {:then isPartOfOptions}
+	{@const options = [
+		{ label: $_('empty'), value: '' },
+		...isPartOfOptions
+			.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+			.filter(({ relation }) =>
+				strategyGuid
+					? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+					: measureGuid
+						? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+						: true
+			)
+			.map(({ guid, payload }) => ({
+				href: overlayURL($page.url, overlayKey.enum.view, guid),
+				label: payload.title,
+				value: guid
+			}))
+	]}
 	<EditableSingleChoice
 		{editable}
 		label={$_('superordinate_element')}
-		options={[
-			{ label: $_('empty'), value: '' },
-			...isPartOfOptions
-				.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
-				.filter(({ relation }) =>
-					strategyGuid
-						? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
-						: measureGuid
-							? relation.some(
-									({ predicate }) => predicate === predicates.enum['is-part-of-measure']
-								)
-							: true
-				)
-				.map(({ guid, payload }) => ({
-					href: overlayURL($page.url, overlayKey.enum.view, guid),
-					label: payload.title,
-					value: guid
-				}))
-		]}
-		bind:value={() => isPartOfObject, set}
+		{options}
+		bind:value={() => isPartOfObject(options), set}
 	/>
 {/await}
