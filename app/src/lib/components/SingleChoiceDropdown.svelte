@@ -28,7 +28,7 @@
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
-		<span class="selected">
+		<span class="truncated">
 			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
 		</span>
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
@@ -39,7 +39,7 @@
 				{#each options as option (option.value)}
 					<label>
 						<input type="radio" value={option.value} bind:group={value} />
-						{option.label}
+						<span class="truncated">{option.label}</span>
 					</label>
 				{/each}
 			</div>
