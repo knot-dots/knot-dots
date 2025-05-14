@@ -23,6 +23,8 @@
 		type IndicatorContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
+		isObjectiveContainer,
+		isRelatedTo,
 		isStrategyContainer,
 		type ObjectiveContainer,
 		paramsFromFragment
@@ -163,10 +165,15 @@
 							<Card container={overallObjective} />
 						</li>
 					{/if}
-					{#each relatedContainers.filter(isContainerWithObjective) as objective}
-						<li>
-							<Card container={objective} />
-						</li>
+					{#each relatedContainers.filter(isObjectiveContainer) as objective}
+						{@const goal = relatedContainers
+							.filter(isContainerWithObjective)
+							.find(isRelatedTo(objective))}
+						{#if goal}
+							<li>
+								<Card container={goal} />
+							</li>
+						{/if}
 					{/each}
 				</ul>
 			</div>
