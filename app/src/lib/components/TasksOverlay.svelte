@@ -4,7 +4,13 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
-	import { type AnyContainer, type Container, isGoalContainer, isTaskContainer } from '$lib/models';
+	import {
+		type AnyContainer,
+		type Container,
+		isGoalContainer,
+		isPartOf,
+		isTaskContainer
+	} from '$lib/models';
 
 	export let container: AnyContainer;
 	export let containers: Container[];
@@ -24,5 +30,7 @@
 <Tasks
 	{container}
 	containers={containers.filter(isTaskContainer)}
-	relatedContainers={containers.filter(isGoalContainer)}
+	relatedContainers={containers
+		.filter(isGoalContainer)
+		.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
 />

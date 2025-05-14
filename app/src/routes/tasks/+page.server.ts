@@ -2,12 +2,14 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import {
-	type Container,
 	filterOrganizationalUnits,
+	type GoalContainer,
+	isGoalContainer,
 	isPartOf,
 	isTaskContainer,
 	payloadTypes,
-	predicates
+	predicates,
+	type TaskContainer
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -16,13 +18,16 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-function filterRelated(containers: Container[], taskContainers: Container[]): Container[] {
+function filterRelated(
+	containers: GoalContainer[],
+	taskContainers: TaskContainer[]
+): GoalContainer[] {
 	return containers.filter((c) => taskContainers.some(isPartOf(c)));
 }
 
 export const load = (async ({ locals, parent, url }) => {
-	let taskContainers;
-	let otherContainers;
+	let taskContainers: TaskContainer[];
+	let otherContainers: GoalContainer[];
 	let subordinateOrganizationalUnits: string[] = [];
 
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
@@ -55,9 +60,9 @@ export const load = (async ({ locals, parent, url }) => {
 			)
 		);
 		taskContainers = containers.filter(isTaskContainer);
-		otherContainers = containers.filter((c) => !isTaskContainer(c));
+		otherContainers = containers.filter(isGoalContainer);
 	} else {
-		[taskContainers, otherContainers] = await Promise.all([
+		[taskContainers, otherContainers] = (await Promise.all([
 			locals.pool.connect(
 				getManyContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
@@ -79,7 +84,7 @@ export const load = (async ({ locals, parent, url }) => {
 					'alpha'
 				)
 			)
-		]);
+		])) as [TaskContainer[], GoalContainer[]];
 	}
 
 	const containers = filterOrganizationalUnits(

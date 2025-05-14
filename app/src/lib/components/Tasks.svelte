@@ -8,6 +8,7 @@
 	import {
 		type AnyContainer,
 		type Container,
+		type GoalContainer,
 		payloadTypes,
 		type TaskContainer,
 		taskStatus
@@ -17,7 +18,7 @@
 
 	export let container: AnyContainer | undefined = undefined;
 	export let containers: TaskContainer[];
-	export let relatedContainers: Container[] = [];
+	export let relatedContainers: GoalContainer[] = [];
 
 	function sortByTitle(a: Container, b: Container) {
 		const titleA = a.payload.title.toUpperCase();
@@ -30,6 +31,16 @@
 		}
 		return 0;
 	}
+
+	function goalsColumnTitle(containers: GoalContainer[]) {
+		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
+
+		if (goalTypes.size == 1) {
+			return $_(`${goalTypes.values().next().value}.plural`);
+		} else {
+			return $_('goals');
+		}
+	}
 </script>
 
 <Board>
@@ -37,7 +48,7 @@
 		<BoardColumn
 			--background="white"
 			--border="solid 1px var(--color-gray-900)"
-			title={$_('measure_results_and_milestones')}
+			title={goalsColumnTitle(relatedContainers)}
 		>
 			<div class="vertical-scroll-wrapper masked-overflow">
 				{#each relatedContainers.sort(sortByTitle) as container}

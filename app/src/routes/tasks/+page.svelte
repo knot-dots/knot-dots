@@ -15,6 +15,7 @@
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import {
+		type GoalContainer,
 		isTaskContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -32,6 +33,16 @@
 		enabled: true,
 		predicates: [predicates.enum['is-prerequisite-for'], predicates.enum['is-subtask-of']]
 	});
+
+	function goalsColumnTitle(containers: GoalContainer[]) {
+		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
+
+		if (goalTypes.size == 1) {
+			return $_(`${goalTypes.values().next().value}.plural`);
+		} else {
+			return $_('goals');
+		}
+	}
 </script>
 
 <Layout>
@@ -51,7 +62,7 @@
 				<BoardColumn
 					--background="white"
 					--border="solid 1px var(--color-gray-900)"
-					title={$_('goals_and_measure_results_and_milestones')}
+					title={goalsColumnTitle(data.relatedContainers)}
 				>
 					<div class="vertical-scroll-wrapper masked-overflow">
 						{#each data.relatedContainers as container}
