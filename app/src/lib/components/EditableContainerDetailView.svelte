@@ -85,7 +85,11 @@
 			{/if}
 
 			<ul class="badges">
-				<li class="badge badge--purple">{$_(container.payload.type)}</li>
+				<li class="badge badge--purple">
+					{'goalType' in container.payload && container.payload.goalType
+						? $_(container.payload.goalType)
+						: $_(container.payload.type)}
+				</li>
 				{#if isSuggestedByAI(container)}
 					<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
 				{/if}

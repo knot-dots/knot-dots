@@ -175,7 +175,11 @@
 					{/if}
 
 					<ul class="badges">
-						<li class="badge badge--purple">{$_($newContainer.payload.type)}</li>
+						<li class="badge badge--purple">
+							{'goalType' in $newContainer.payload && $newContainer.payload.goalType
+								? $_($newContainer.payload.goalType)
+								: $_($newContainer.payload.type)}
+						</li>
 						{#if isContainerWithStatus($newContainer)}
 							{@const StatusIcon = statusIcons.get($newContainer.payload.status)}
 							{#key $newContainer.payload.status}
