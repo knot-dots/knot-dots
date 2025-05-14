@@ -58,7 +58,9 @@
 	)?.object;
 
 	$: measureGuid = container.relation.find(
-		({ predicate }) => predicate === predicates.enum['is-part-of-measure']
+		({ object, predicate }) =>
+			predicate === predicates.enum['is-part-of-measure'] &&
+			(!('guid' in container) || object !== container.guid)
 	)?.object;
 
 	$: payloadType = container.payload.type;
