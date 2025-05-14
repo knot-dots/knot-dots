@@ -30,6 +30,9 @@
 </aside>
 
 <MeasureMonitoring
+	measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)
+		? container
+		: undefined}
 	{measures}
 	containers={containers.filter(isMeasureMonitoringContainer)}
 	indicators={containers.filter(isIndicatorContainer)}
