@@ -1279,6 +1279,10 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Dropdown */
+.dropdown {
+	position: relative;
+}
+
 .dropdown-button {
 	--button-active-background: var(--color-gray-300);
 	--button-background: var(--form-control-background);
@@ -1348,6 +1352,7 @@ label > input[type='checkbox'].toggle {
 	gap: 0.5rem;
 	margin: 0;
 	max-height: 20rem;
+	max-width: 100%;
 	overflow-x: hidden;
 	overflow-y: auto;
 	padding: 0.5rem;
@@ -1366,6 +1371,7 @@ label > input[type='checkbox'].toggle {
 
 @container style(--drop-down-style: table) {
 	.dropdown {
+		position: revert;
 		--form-control-background: transparent;
 	}
 
@@ -1383,6 +1389,10 @@ label > input[type='checkbox'].toggle {
 
 	.dropdown-button > svg {
 		display: none;
+	}
+
+	.dropdown-panel {
+		max-width: revert;
 	}
 }
 
