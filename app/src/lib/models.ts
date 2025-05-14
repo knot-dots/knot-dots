@@ -1616,12 +1616,12 @@ export function overlayURL(url: URL, key: OverlayKey, guid: string, extraParams?
 	return `#${newParams.toString()}`;
 }
 
-export function filterOrganizationalUnits(
-	containers: Container[],
+export function filterOrganizationalUnits<T extends AnyContainer>(
+	containers: Array<T>,
 	url: URL,
 	subordinateOrganizationalUnits: string[],
 	currentOrganizationalUnit?: OrganizationalUnitContainer
-) {
+): Array<T> {
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
