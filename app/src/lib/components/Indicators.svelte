@@ -134,7 +134,6 @@
 
 <style>
 	div {
-		flex: 1 1;
 		overflow-y: auto;
 		padding: 1.5rem;
 	}
@@ -148,7 +147,6 @@
 		flex-direction: row;
 		flex-wrap: wrap;
 		gap: 1.5rem;
-		min-width: calc(100vw - 3.5rem - 3rem);
 	}
 
 	li {

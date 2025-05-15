@@ -80,14 +80,13 @@
 	nav {
 		align-items: center;
 		background: white;
+		border-bottom: 1px solid var(--color-gray-200);
 		container-type: inline-size;
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		justify-content: space-between;
-		height: var(--nav-height);
-		padding: 0 1rem;
-		position: absolute;
+		padding: 0.75rem;
 		width: 100%;
 		z-index: 2;
 	}

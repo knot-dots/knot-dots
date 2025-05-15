@@ -19,47 +19,46 @@
 	setContext('createContainerDialog', { getElement: () => dialog });
 </script>
 
-<Navigation />
 <div in:fly={transitionIn} out:fly={transitionOut}>
+	<aside>
+		<slot name="sidebar" />
+	</aside>
 	<main>
-		<aside>
-			<slot name="sidebar" />
-		</aside>
+		<Navigation />
 		<slot name="main" />
-		{#if $overlay}
-			<Overlay data={$overlay} />
-		{/if}
 	</main>
+	{#if $overlay}
+		<Overlay data={$overlay} />
+	{/if}
 </div>
 <CreateContainerDialog bind:dialog />
 
 <style>
 	div {
+		display: flex;
+		flex-direction: row;
 		height: 100vh;
-		padding-top: var(--nav-height);
 		width: 100%;
+	}
+
+	aside {
+		border-right: 1px solid var(--color-gray-200);
+		display: flex;
+		flex-direction: column;
+		flex-shrink: 0;
+		font-size: 0.875rem;
+		min-width: 0;
+		padding: 0.75rem;
+		width: 4.25rem;
 	}
 
 	main {
 		background-color: white;
 		display: flex;
+		flex-direction: column;
 		flex-grow: 1;
 		height: 100%;
 		min-width: 0;
 		padding: 0;
-	}
-
-	main > aside {
-		font-size: 0.875rem;
-		height: calc(100vh - var(--nav-height));
-		min-width: 0;
-		padding: 1.5rem 0.5rem 0.5rem;
-		position: absolute;
-		top: var(--nav-height);
-		width: 3.5rem;
-	}
-
-	main > aside + :global(*) {
-		margin-left: 3.5rem;
 	}
 </style>

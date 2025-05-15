@@ -271,7 +271,7 @@
 		gap: 0.5rem;
 		height: var(--nav-height);
 		justify-content: space-between;
-		padding: 0 0.5rem;
+		padding: 0 0.75rem;
 	}
 
 	nav > * {

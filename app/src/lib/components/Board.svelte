@@ -9,8 +9,8 @@
 		display: flex;
 		flex: 1 1;
 		gap: var(--margin-y);
-		height: calc(100% - 2 * var(--margin-y));
-		margin: var(--margin-y) 0.375rem;
+		height: 100%;
 		overflow: auto;
+		padding: var(--margin-y) 0.375rem;
 	}
 </style>

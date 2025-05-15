@@ -208,7 +208,7 @@
 	--button-hover-border-color: var(--button-border-color);
 	--form-control-background: var(--color-gray-050);
 
-	--nav-height: 65px;
+	--nav-height: 66px;
 	--organization-menu-max-width: 20rem;
 }
 
@@ -848,14 +848,11 @@ label > input[type='checkbox'].toggle {
 /* Container detail page content */
 .detail-page-content {
 	background-color: white;
-	border: 1px solid var(--color-gray-200);
-	border-radius: 8px;
-	box-shadow: var(--shadow-lg);
 	display: flex;
-	flex: 1 1;
 	flex-direction: column;
-	height: calc(100% - 2rem);
-	margin: 1rem 1rem 1rem 0;
+	height: 100%;
+	overflow: auto;
+	padding: 4rem calc((100% - 46rem) / 2);
 }
 
 .content-header {
@@ -1205,10 +1202,10 @@ label > input[type='checkbox'].toggle {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
-	margin-left: -0.375rem;
-	position: relative;
+	position: absolute;
 	padding: 0;
-	top: calc(var(--nav-height) * -1);
+	right: 0;
+	top: 0;
 	width: 100%;
 	z-index: 3;
 }
