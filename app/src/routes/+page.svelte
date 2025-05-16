@@ -44,7 +44,7 @@
 		data.containers
 			.filter(isGoalContainer)
 			.filter(({ relation }) =>
-				relation.some(({ predicate }) => predicate !== predicates.enum['is-part-of-measure'])
+				relation.every(({ predicate }) => predicate !== predicates.enum['is-part-of-measure'])
 			)
 	);
 
