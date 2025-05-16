@@ -497,7 +497,7 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.terms) {
 		conditions.push(
-			sql.fragment`to_tsquery('german', ${filters.terms
+			sql.fragment`websearch_to_tsquery('german', ${filters.terms
 				.trim()
 				.split(' ')
 				.map((t) => `${t}:*`)
