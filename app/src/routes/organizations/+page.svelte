@@ -3,10 +3,6 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
-	import OrganizationCategoryFilter from '$lib/components/OrganizationCategoryFilter.svelte';
-	import Search from '$lib/components/Search.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
-	import Sort from '$lib/components/Sort.svelte';
 	import { payloadTypes } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
@@ -15,13 +11,6 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug="organizations" slot="sidebar">
-		<Search slot="search" />
-		<svelte:fragment slot="filters">
-			<OrganizationCategoryFilter />
-		</svelte:fragment>
-		<Sort slot="sort" />
-	</Sidebar>
 	<svelte:fragment slot="main">
 		<div>
 			{#if $ability.can('create', payloadTypes.enum.organization)}

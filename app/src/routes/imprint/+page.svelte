@@ -2,7 +2,6 @@
 	import Pencil from '~icons/heroicons/pencil-solid';
 	import Layout from '$lib/components/Layout.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { ability } from '$lib/stores';
 	import type { PageData } from './$types';
 
@@ -10,8 +9,6 @@
 </script>
 
 <Layout>
-	<Sidebar slot="sidebar" />
-
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<header class="content-header">

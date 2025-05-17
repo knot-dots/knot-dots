@@ -2,18 +2,13 @@
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import OrganizationIncludedFilter from '$lib/components/OrganizationIncludedFilter.svelte';
-	import Search from '$lib/components/Search.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
-	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import {
 		type GoalContainer,
 		isTaskContainer,
@@ -46,16 +41,6 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug="tasks" slot="sidebar">
-		<Search slot="search" />
-
-		<svelte:fragment slot="filters">
-			<OrganizationIncludedFilter />
-			<TaskCategoryFilter />
-			<AssigneeFilter />
-		</svelte:fragment>
-	</Sidebar>
-
 	<svelte:fragment slot="main">
 		<Board>
 			{#if data.relatedContainers.length > 0}

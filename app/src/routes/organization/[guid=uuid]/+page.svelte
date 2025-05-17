@@ -3,8 +3,6 @@
 	import EditableOrganizationDetailView from '$lib/components/EditableOrganizationDetailView.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationDetailView from '$lib/components/OrganizationDetailView.svelte';
-	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { PageData } from './$types';
 
@@ -12,10 +10,6 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug="organization-view" slot="sidebar">
-		<OrganizationTabs container={data.container} slot="tabs" />
-	</Sidebar>
-
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<div class="content-details masked-overflow">

@@ -1,5 +1,5 @@
 {
-	"about": "Über uns",
+	"about": "Über knot dots",
 	"add_item": "Hinzufügen",
 	"ai_feedback": "KI-Feedback",
 	"ai_feedback.correct": "Korrekt",
@@ -648,6 +648,7 @@
 	"workspace.measure_templates": "Maßnahmen-Vorlagen",
 	"workspace.measures": "Maßnahmen Status-Board",
 	"workspace.objectives_and_effects": "Wirkungsebenen",
+	"workspace.profile": "Mein Bereich",
 	"workspace.programs": "Programme",
 	"workspace.programs_by_level": "Föderales Programme-Board",
 	"workspace.resolutions": "Beschlüsse",

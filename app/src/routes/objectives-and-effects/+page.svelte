@@ -2,18 +2,11 @@
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
-	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
-	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import {
 		type Container,
 		findAncestors,
@@ -117,19 +110,6 @@
 </script>
 
 <Layout>
-	<svelte:fragment slot="sidebar">
-		<Sidebar helpSlug="indicators">
-			<svelte:fragment slot="filters">
-				<IndicatorTypeFilter />
-				<AudienceFilter />
-				<IndicatorCategoryFilter />
-				<CategoryFilter />
-				<TopicFilter />
-				<PolicyFieldBNKFilter />
-			</svelte:fragment>
-		</Sidebar>
-	</svelte:fragment>
-
 	<svelte:fragment slot="main">
 		{#key $page.url.searchParams}
 			<Board>

@@ -4,9 +4,7 @@
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import { type CustomEventMap, payloadTypes } from '$lib/models';
 	import { mayDeleteContainer } from '$lib/stores';
@@ -31,10 +29,6 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`} slot="sidebar">
-		<ContainerFormTabs {container} slot="tabs" />
-	</Sidebar>
-
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<div class="content-details masked-overflow">

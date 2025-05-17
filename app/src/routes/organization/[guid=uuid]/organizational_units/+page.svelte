@@ -4,9 +4,6 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
-	import OrganizationTabs from '$lib/components/OrganizationTabs.svelte';
-	import Search from '$lib/components/Search.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { payloadTypes } from '$lib/models';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
@@ -29,11 +26,6 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug="organizational-units" slot="sidebar">
-		<OrganizationTabs container={data.container} slot="tabs" />
-		<Search slot="search" />
-	</Sidebar>
-
 	<svelte:fragment slot="main">
 		<Board>
 			{#each byLevel.entries() as [level, containers]}

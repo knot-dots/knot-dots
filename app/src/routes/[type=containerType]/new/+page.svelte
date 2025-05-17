@@ -4,9 +4,7 @@
 	import { page } from '$app/stores';
 	import { env } from '$env/dynamic/public';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import { containerOfType, isStrategyContainer, payloadTypes } from '$lib/models';
 	import type { AnyContainer, CustomEventMap, PayloadType } from '$lib/models';
@@ -77,10 +75,6 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`} slot="sidebar">
-		<ContainerFormTabs {container} slot="tabs" />
-	</Sidebar>
-
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<div class="content-details masked-overflow">

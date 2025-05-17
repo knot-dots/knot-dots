@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Layout from '$lib/components/Layout.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import type { ActionData, PageData } from './$types';
-	import ListBox from '$lib/components/ListBox.svelte';
 	import { displayName } from '$lib/models';
 
 	export let data: PageData;
@@ -11,8 +9,6 @@
 </script>
 
 <Layout>
-	<Sidebar helpSlug="import" slot="sidebar" />
-
 	<div class="detail-page-content" slot="main">
 		<div class="content-details masked-overflow">
 			{#if form?.errors}

@@ -4,6 +4,7 @@
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
+	import NewSidebar from '$lib/components/NewSidebar.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { overlay } from '$lib/stores';
 
@@ -21,7 +22,11 @@
 
 <div in:fly={transitionIn} out:fly={transitionOut}>
 	<aside>
-		<slot name="sidebar" />
+		{#if $$slots.sidebar}
+			<slot name="sidebar" />
+		{:else}
+			<NewSidebar />
+		{/if}
 	</aside>
 	<main>
 		<Navigation />
@@ -47,9 +52,8 @@
 		flex-direction: column;
 		flex-shrink: 0;
 		font-size: 0.875rem;
+		max-width: 17rem;
 		min-width: 0;
-		padding: 0.75rem;
-		width: 4.25rem;
 	}
 
 	main {

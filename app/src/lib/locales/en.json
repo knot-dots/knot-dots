@@ -1,5 +1,5 @@
 {
-	"about": "About us",
+	"about": "About knot dots",
 	"add_item": "Add item",
 	"ai_feedback": "AI feedback",
 	"ai_feedback.correct": "Correct",
@@ -647,6 +647,7 @@
 	"workspace.measure_templates": "Measure templates",
 	"workspace.measures": "Measures status board",
 	"workspace.objectives_and_effects": "Objectives and effects",
+	"workspace.profile": "My workspace",
 	"workspace.programs": "Programs",
 	"workspace.programs_by_level": "Programs by level",
 	"workspace.resolutions": "Resolutions",
