@@ -5,10 +5,14 @@
 	import ChevronUp from '~icons/heroicons/chevron-up-20-solid';
 	import Workspaces from '~icons/knotdots/workspaces';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	export let indicators = false;
-	export let tasks = false;
+	interface Props {
+		indicators?: boolean;
+		tasks?: boolean;
+	}
+
+	let { indicators = false, tasks = false }: Props = $props();
 
 	const menu = createMenu({ label: $_('workspaces') });
 
@@ -56,7 +60,7 @@
 </script>
 
 <div class="dropdown">
-	<button class="button button-nav dropdown-toggle" use:menu.button on:change={onChange}>
+	<button class="button button-nav dropdown-toggle" onchange={onChange} use:menu.button>
 		<span class="small-only"><Workspaces /></span>
 		<span class="large-only">{$_('workspaces')}</span>
 		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
@@ -71,7 +75,7 @@
 						{#each items as { text, value }}
 							<li class:is-active={$menu.active === value}>
 								<label use:menu.item={{ value }}>
-									<input type="radio" checked={$page.url.pathname === value} />
+									<input type="radio" checked={page.url.pathname === value} />
 									{text}
 								</label>
 							</li>
