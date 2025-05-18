@@ -11,7 +11,7 @@
 	import ChevronUp from '~icons/heroicons/chevron-up-20-solid';
 	import Home from '~icons/heroicons/home';
 	import Organization from '~icons/knotdots/organization';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import logo1 from '$lib/assets/logo-1.svg';
 	import logo2 from '$lib/assets/logo-2.svg';
 	import logo3 from '$lib/assets/logo-3.svg';
@@ -32,22 +32,40 @@
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
-	$: if (paramsFromURL($page.url).has('create')) {
-		popover.close();
-	}
+	$effect(() => {
+		if (paramsFromURL(page.url).has('create')) {
+			popover.close();
+		}
+	});
 
 	popover.set({ label: $_('organizations_and_organizational_units') });
 
-	let organizations: OrganizationContainer[];
-	let organizationalUnitsByLevel: OrganizationalUnitContainer[][];
-	let currentContext: OrganizationContainer | OrganizationalUnitContainer =
-		$page.data.currentOrganizationalUnit ?? $page.data.currentOrganization;
-	let selectedContext: OrganizationContainer | OrganizationalUnitContainer | null = currentContext;
-	let logo: string;
-	let landingPageURL: string;
+	const currentContext = $derived(
+		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+	);
 
-	$: {
-		let organizationalUnits = $page.data.organizationalUnits.filter(
+	let selectedContext = $derived(currentContext);
+
+	let organizations = $derived.by(() => {
+		if ('default' in currentContext.payload && currentContext.payload.default) {
+			return page.data.organizations
+				.filter((c: OrganizationContainer) => !c.payload.default)
+				.filter((c: OrganizationContainer) =>
+					selectedContext && selectedContext.guid != currentContext.guid
+						? c.organization == selectedContext.organization
+						: true
+				);
+		} else {
+			return page.data.organizations
+				.filter((c: OrganizationContainer) => !c.payload.default)
+				.filter((c: OrganizationContainer) =>
+					selectedContext ? c.organization == selectedContext.organization : true
+				);
+		}
+	});
+
+	let organizationalUnitsByLevel = $derived.by(() => {
+		let organizationalUnits = page.data.organizationalUnits.filter(
 			(c: OrganizationalUnitContainer) =>
 				selectedContext
 					? 'default' in selectedContext.payload && selectedContext.payload.default
@@ -64,60 +82,47 @@
 			];
 		}
 
-		organizationalUnitsByLevel = [];
+		let organizationalUnitsByLevel: OrganizationalUnitContainer[][] = [];
 
-		if ('default' in currentContext.payload && currentContext.payload.default) {
-			organizations = $page.data.organizations
-				.filter((c: OrganizationContainer) => !c.payload.default)
-				.filter((c: OrganizationContainer) =>
-					selectedContext && selectedContext.guid != currentContext.guid
-						? c.organization == selectedContext.organization
-						: true
-				);
+		for (const level of [1, 2, 3, 4]) {
+			organizationalUnitsByLevel = [
+				...organizationalUnitsByLevel,
+				organizationalUnits.filter(({ payload }) => payload.level === level)
+			];
+		}
 
-			landingPageURL = '/about';
+		return organizationalUnitsByLevel;
+	});
 
-			const logos = [logo1, logo2, logo3];
-			logo = logos[Math.floor($page.data.random * logos.length)];
+	let logo = $derived.by(() => {
+		const logos = [logo1, logo2, logo3];
+		let logo = logos[Math.floor(page.data.random * logos.length)];
 
-			for (const level of [1, 2, 3, 4]) {
-				organizationalUnitsByLevel = [
-					...organizationalUnitsByLevel,
-					organizationalUnits.filter(({ payload }) => payload.level === level)
-				];
-			}
-		} else {
-			organizations = $page.data.organizations
-				.filter((c: OrganizationContainer) => !c.payload.default)
-				.filter((c: OrganizationContainer) =>
-					selectedContext ? c.organization == selectedContext.organization : true
-				);
-
-			landingPageURL = `/${currentContext.payload.type}/${currentContext.guid}`;
-
-			if (currentContext.payload.image) {
-				logo = currentContext.payload.image;
-			} else if (isOrganizationalUnitContainer(currentContext)) {
-				const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
-					currentContext,
-					$page.data.organizationalUnits,
-					predicates.enum['is-part-of']
-				).find(({ payload }) => payload.image);
-				if (firstAncestorWithImage?.payload.image) {
-					logo = firstAncestorWithImage.payload.image;
-				} else if ($page.data.currentOrganization.payload.image) {
-					logo = $page.data.currentOrganization.payload.image;
-				}
-			}
-
-			for (const level of [1, 2, 3, 4]) {
-				organizationalUnitsByLevel = [
-					...organizationalUnitsByLevel,
-					organizationalUnits.filter(({ payload }) => payload.level === level)
-				];
+		if (currentContext.payload.image) {
+			logo = currentContext.payload.image;
+		} else if (isOrganizationalUnitContainer(currentContext)) {
+			const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
+				currentContext,
+				page.data.organizationalUnits,
+				predicates.enum['is-part-of']
+			).find(({ payload }) => payload.image);
+			if (firstAncestorWithImage?.payload.image) {
+				logo = firstAncestorWithImage.payload.image;
+			} else if (page.data.currentOrganization.payload.image) {
+				logo = page.data.currentOrganization.payload.image;
 			}
 		}
-	}
+
+		return logo;
+	});
+
+	let landingPageURL = $derived.by(() => {
+		if ('default' in currentContext.payload && currentContext.payload.default) {
+			return '/about';
+		} else {
+			return `/${currentContext.payload.type}/${currentContext.guid}`;
+		}
+	});
 </script>
 
 <div class="organization-menu">
@@ -153,7 +158,7 @@
 					--border="solid 1px var(--color-gray-900)"
 					addItemUrl={$mayCreateContainer(
 						payloadTypes.enum.organization,
-						$page.data.currentOrganization.guid
+						page.data.currentOrganization.guid
 					)
 						? `#create=${payloadTypes.enum.organization}`
 						: undefined}
@@ -165,7 +170,7 @@
 								<OrganizationMenuCard
 									--height="100%"
 									{container}
-									linkPath={$page.url.pathname
+									linkPath={page.url.pathname
 										.replace(/(\/about)|(\/imprint)|(\/privacy)/, `/organization/${container.guid}`)
 										.replace('/organizational_unit/', '/organization/')
 										.replace(currentContext.guid, container.guid)}
@@ -177,7 +182,7 @@
 								<OrganizationMenuCard
 									--height="100%"
 									{container}
-									linkPath={$page.url.pathname
+									linkPath={page.url.pathname
 										.replace(/(\/about)|(\/imprint)|(\/privacy)/, `/organization/${container.guid}`)
 										.replace('/organizational_unit/', '/organization/')
 										.replace(currentContext.guid, container.guid)}
@@ -186,7 +191,7 @@
 							{/each}
 							<AllOrganizationsCard
 								--height="100%"
-								linkPath={$page.url.pathname.replace(/\/organization(al_unit)?\/.*/, '/about')}
+								linkPath={page.url.pathname.replace(/\/organization(al_unit)?\/.*/, '/about')}
 							/>
 						{/if}
 					</div>
@@ -196,11 +201,11 @@
 					<BoardColumn
 						--background="transparent"
 						--border="solid 1px var(--color-gray-900)"
-						addItemUrl={!$page.data.currentOrganization.payload.default &&
-						$page.data.currentOrganization.payload.boards.includes('board.organizational_units') &&
+						addItemUrl={!page.data.currentOrganization.payload.default &&
+						page.data.currentOrganization.payload.boards.includes('board.organizational_units') &&
 						$mayCreateContainer(
 							payloadTypes.enum.organizational_unit,
-							$page.data.currentOrganization.guid
+							page.data.currentOrganization.guid
 						)
 							? `#create=${payloadTypes.enum.organizational_unit}&level=${level}`
 							: undefined}
@@ -210,7 +215,7 @@
 							{#each containers as container}
 								<OrganizationMenuCard
 									{container}
-									linkPath={$page.url.pathname
+									linkPath={page.url.pathname
 										.replace(
 											/(\/about)|(\/imprint)|(\/privacy)/,
 											`/organizational_unit/${container.guid}`
