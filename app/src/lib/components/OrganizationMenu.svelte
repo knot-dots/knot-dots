@@ -5,16 +5,12 @@
 </script>
 
 <script lang="ts">
+	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import ChevronDown from '~icons/heroicons/chevron-down-20-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-20-solid';
-	import Home from '~icons/heroicons/home';
-	import Organization from '~icons/knotdots/organization';
+	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import { page } from '$app/state';
-	import logo1 from '$lib/assets/logo-1.svg';
-	import logo2 from '$lib/assets/logo-2.svg';
-	import logo3 from '$lib/assets/logo-3.svg';
+	import logo from '$lib/assets/logo.svg';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
 	import OrganizationMenuCard from '$lib/components/OrganizationMenuCard.svelte';
@@ -94,12 +90,11 @@
 		return organizationalUnitsByLevel;
 	});
 
-	let logo = $derived.by(() => {
-		const logos = [logo1, logo2, logo3];
-		let logo = logos[Math.floor(page.data.random * logos.length)];
+	let orgLogo = $derived.by(() => {
+		let orgLogo = logo;
 
 		if (currentContext.payload.image) {
-			logo = currentContext.payload.image;
+			orgLogo = currentContext.payload.image;
 		} else if (isOrganizationalUnitContainer(currentContext)) {
 			const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
 				currentContext,
@@ -107,31 +102,19 @@
 				predicates.enum['is-part-of']
 			).find(({ payload }) => payload.image);
 			if (firstAncestorWithImage?.payload.image) {
-				logo = firstAncestorWithImage.payload.image;
+				orgLogo = firstAncestorWithImage.payload.image;
 			} else if (page.data.currentOrganization.payload.image) {
-				logo = page.data.currentOrganization.payload.image;
+				orgLogo = page.data.currentOrganization.payload.image;
 			}
 		}
 
-		return logo;
-	});
-
-	let landingPageURL = $derived.by(() => {
-		if ('default' in currentContext.payload && currentContext.payload.default) {
-			return '/about';
-		} else {
-			return `/${currentContext.payload.type}/${currentContext.guid}`;
-		}
+		return orgLogo;
 	});
 </script>
 
 <div class="organization-menu">
-	<a href={landingPageURL}>
-		{#if logo}
-			<img alt={$_('logo')} class="logo" src={logo} />
-		{:else}
-			<Home />
-		{/if}
+	<button class="dropdown-button" type="button" use:popover.button>
+		<img alt={$_('logo')} src={orgLogo} />
 		<span>
 			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
 				{$_('all_organizations')}
@@ -139,17 +122,13 @@
 				{currentContext.payload.name}
 			{/if}
 		</span>
-	</a>
-
-	<button class="button-nav organization-menu-toggle" type="button" use:popover.button>
-		<span><Organization /></span>
-		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+		<ChevronSort />
 	</button>
 
 	{#if $popover.expanded}
 		<div
-			class="organization-menu-details"
-			transition:slide={{ axis: 'y', duration: 400 }}
+			class="organization-menu-panel"
+			transition:slide={{ duration: 123, easing: cubicInOut }}
 			use:popover.panel
 		>
 			<Board>
@@ -234,47 +213,20 @@
 </div>
 
 <style>
-	.organization-menu {
+	.dropdown-button {
 		align-items: center;
-		display: flex;
-		flex-shrink: 0;
-		gap: 1.5rem;
-	}
-
-	.organization-menu > a {
-		align-items: center;
-		display: flex;
+		border-radius: 8px;
+		box-shadow: var(--shadow-sm);
+		color: var(--color-gray-900);
 		gap: 0.5rem;
-		max-width: var(--organization-menu-max-width);
+		padding: 0.375rem 0.75rem;
 	}
 
-	.organization-menu > a > :global(svg) {
-		flex-shrink: 0;
+	.dropdown-button img {
+		max-height: 1.5rem;
 	}
 
-	.organization-menu > a > span {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.organization-menu-toggle {
-		align-items: center;
-		display: flex;
-		flex-shrink: 0;
-		gap: 0.5rem;
-		padding: 0 var(--padding-y) 0 0;
-		overflow: hidden;
-	}
-
-	.organization-menu-toggle span {
-		background: white;
-		border-right: solid 1px var(--button-border-color);
-		color: black;
-		padding: var(--padding-y);
-	}
-
-	.organization-menu-details {
+	.organization-menu-panel {
 		background: white;
 		height: calc(100vh - var(--nav-height));
 		left: 0;
