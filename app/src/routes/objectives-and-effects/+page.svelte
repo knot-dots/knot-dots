@@ -1,96 +1,109 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
+		audience,
+		computeFacetCount,
 		type Container,
 		findAncestors,
 		findConnected,
 		findDescendants,
 		findLeafObjectives,
+		indicatorCategories,
+		indicatorTypes,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
 		isRelatedTo,
-		predicates
+		policyFieldBNK,
+		predicates,
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 
-	export let data: PageData;
-
-	let containers: Set<Container> = new Set();
+	let { data }: PageProps = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-concrete-target-of'], predicates.enum['is-sub-target-of']]
 	});
 
-	$: if ($page.url.searchParams.has('related-to')) {
-		const selectedContainer = data.containers.find(
-			({ guid }) => guid === $page.url.searchParams.get('related-to')
-		);
+	let containers = $derived.by(() => {
+		let containers = new Set<Container>();
 
-		if (selectedContainer) {
-			if (isIndicatorContainer(selectedContainer)) {
-				containers = findConnected(selectedContainer, data.containers, [
-					predicates.enum['is-measured-by'],
-					predicates.enum['is-objective-for']
-				]);
-			} else if (isObjectiveContainer(selectedContainer)) {
-				const indicator = data.containers
-					.filter(isIndicatorContainer)
-					.find(isRelatedTo(selectedContainer));
-				containers = new Set([
-					selectedContainer,
-					...(indicator ? [indicator] : []),
-					...findLeafObjectives([
+		if (page.url.searchParams.has('related-to')) {
+			const selectedContainer = data.containers.find(
+				({ guid }) => guid === page.url.searchParams.get('related-to')
+			);
+
+			if (selectedContainer) {
+				if (isIndicatorContainer(selectedContainer)) {
+					containers = findConnected(selectedContainer, data.containers, [
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-objective-for']
+					]);
+				} else if (isObjectiveContainer(selectedContainer)) {
+					const indicator = data.containers
+						.filter(isIndicatorContainer)
+						.find(isRelatedTo(selectedContainer));
+					containers = new Set([
 						selectedContainer,
+						...(indicator ? [indicator] : []),
+						...findLeafObjectives([
+							selectedContainer,
+							...findDescendants(
+								selectedContainer,
+								data.containers.filter(isObjectiveContainer),
+								predicates.enum['is-sub-target-of']
+							)
+						]).flatMap((c) => data.containers.filter(isEffectContainer).filter(isRelatedTo(c))),
+						...findAncestors(
+							selectedContainer,
+							data.containers,
+							predicates.enum['is-sub-target-of']
+						),
 						...findDescendants(
 							selectedContainer,
-							data.containers.filter(isObjectiveContainer),
+							data.containers,
 							predicates.enum['is-sub-target-of']
 						)
-					]).flatMap((c) => data.containers.filter(isEffectContainer).filter(isRelatedTo(c))),
-					...findAncestors(selectedContainer, data.containers, predicates.enum['is-sub-target-of']),
-					...findDescendants(
+					]);
+				} else if (isEffectContainer(selectedContainer)) {
+					const objective = data.containers
+						.filter(isObjectiveContainer)
+						.find(isRelatedTo(selectedContainer));
+					const indicator = data.containers
+						.filter(isIndicatorContainer)
+						.find(isRelatedTo(selectedContainer));
+					containers = new Set([
 						selectedContainer,
-						data.containers,
-						predicates.enum['is-sub-target-of']
-					)
-				]);
-			} else if (isEffectContainer(selectedContainer)) {
-				const objective = data.containers
-					.filter(isObjectiveContainer)
-					.find(isRelatedTo(selectedContainer));
-				const indicator = data.containers
-					.filter(isIndicatorContainer)
-					.find(isRelatedTo(selectedContainer));
-				containers = new Set([
-					selectedContainer,
-					...(indicator ? [indicator] : []),
-					...(objective
-						? [
-								objective,
-								...findAncestors(objective, data.containers, predicates.enum['is-sub-target-of'])
-							]
-						: [])
-				]);
+						...(indicator ? [indicator] : []),
+						...(objective
+							? [
+									objective,
+									...findAncestors(objective, data.containers, predicates.enum['is-sub-target-of'])
+								]
+							: [])
+					]);
+				}
 			}
+		} else {
+			containers = new Set(data.containers);
 		}
-	} else {
-		containers = new Set(data.containers);
-	}
 
-	let objectivesByLevel: Map<number, Container[]>;
+		return containers;
+	});
 
-	$: {
-		objectivesByLevel = new Map<number, Container[]>();
+	let objectivesByLevel = $derived.by(() => {
+		let objectivesByLevel = new Map<number, Container[]>();
 
 		for (const container of data.containers.filter(isObjectiveContainer)) {
 			const ancestors = findAncestors(
@@ -106,12 +119,29 @@
 				objectivesByLevel.set(level, [container]);
 			}
 		}
-	}
+
+		return objectivesByLevel;
+	});
+
+	let facets = $derived.by(() => {
+		const facets = new Map([
+			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
+			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
+			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+		]);
+
+		return computeFacetCount(facets, data.containers);
+	});
+
+	setContext('facets', () => facets);
 </script>
 
 <Layout>
 	<svelte:fragment slot="main">
-		{#key $page.url.searchParams}
+		{#key page.url.searchParams}
 			<Board>
 				<BoardColumn title={$_('indicators')}>
 					<div class="vertical-scroll-wrapper masked-overflow">

@@ -3,44 +3,54 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
+		audience,
+		computeFacetCount,
 		isGoalContainer,
 		isIndicatorContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer,
 		isTaskContainer,
-		predicates
+		measureTypes,
+		policyFieldBNK,
+		predicates,
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 
-	export let data: PageData;
+	let { data }: PageProps = $props();
 
-	$: measures = data.containers.filter(isMeasureContainer);
+	let measures = $derived(data.containers.filter(isMeasureContainer));
 
-	$: goals = data.containers
-		.filter(isGoalContainer)
-		.filter(
-			({ relation }) =>
-				relation.findIndex(
-					(r) =>
-						(r.predicate === predicates.enum['is-part-of'] &&
-							measures.map(({ guid }) => guid).includes(r.object)) ||
-						(r.predicate === predicates.enum['is-part-of-measure'] &&
-							measures.map(({ guid }) => guid).includes(r.object))
-				) > -1
-		);
+	let goals = $derived(
+		data.containers
+			.filter(isGoalContainer)
+			.filter(
+				({ relation }) =>
+					relation.findIndex(
+						(r) =>
+							(r.predicate === predicates.enum['is-part-of'] &&
+								measures.map(({ guid }) => guid).includes(r.object)) ||
+							(r.predicate === predicates.enum['is-part-of-measure'] &&
+								measures.map(({ guid }) => guid).includes(r.object))
+					) > -1
+			)
+	);
 
-	$: tasks = data.containers
-		.filter(isTaskContainer)
-		.filter(
-			({ relation }) =>
-				relation.findIndex(
-					(r) =>
-						(r.predicate === predicates.enum['is-part-of'] &&
-							goals.map(({ guid }) => guid).includes(r.object)) ||
-						(r.predicate === predicates.enum['is-part-of-measure'] &&
-							measures.map(({ guid }) => guid).includes(r.object))
-				) > -1
-		);
+	let tasks = $derived(
+		data.containers
+			.filter(isTaskContainer)
+			.filter(
+				({ relation }) =>
+					relation.findIndex(
+						(r) =>
+							(r.predicate === predicates.enum['is-part-of'] &&
+								goals.map(({ guid }) => guid).includes(r.object)) ||
+							(r.predicate === predicates.enum['is-part-of-measure'] &&
+								measures.map(({ guid }) => guid).includes(r.object))
+					) > -1
+			)
+	);
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -51,6 +61,20 @@
 			predicates.enum['is-duplicate-of']
 		]
 	});
+
+	let facets = $derived.by(() => {
+		const facets = new Map([
+			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
+			['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]
+		]);
+
+		return computeFacetCount(facets, data.containers);
+	});
+
+	setContext('facets', () => facets);
 </script>
 
 <Layout>

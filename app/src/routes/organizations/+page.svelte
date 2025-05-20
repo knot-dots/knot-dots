@@ -3,11 +3,22 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
-	import { payloadTypes } from '$lib/models';
+	import { computeFacetCount, organizationCategories, payloadTypes } from '$lib/models';
 	import { ability } from '$lib/stores';
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
+	import { setContext } from 'svelte';
 
-	export let data: PageData;
+	let { data }: PageProps = $props();
+
+	let facets = $derived.by(() => {
+		const facets = new Map([
+			['organizationCategory', new Map(organizationCategories.options.map((v) => [v as string, 0]))]
+		]);
+
+		return computeFacetCount(facets, data.containers);
+	});
+
+	setContext('facets', () => facets);
 </script>
 
 <Layout>

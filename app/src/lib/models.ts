@@ -1757,3 +1757,26 @@ export function computeColumnTitleForGoals(containers: GoalContainer[]) {
 		return unwrapFunctionStore(_)('goals');
 	}
 }
+
+export function computeFacetCount(
+	facets: Map<string, Map<string, number>>,
+	containers: AnyContainer[]
+) {
+	console.log(facets);
+	for (const container of containers) {
+		for (const key of facets.keys()) {
+			if (key in container.payload) {
+				const foci = facets.get(key) as Map<string, number>;
+				if (Array.isArray(container.payload[key as keyof typeof container.payload])) {
+					for (const value of container.payload[key as keyof typeof container.payload]) {
+						foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
+					}
+				} else {
+					const value = container.payload[key as keyof typeof container.payload];
+					foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
+				}
+			}
+		}
+	}
+	return facets;
+}

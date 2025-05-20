@@ -5,12 +5,22 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { payloadTypes, predicates, resolutionStatus } from '$lib/models';
+	import {
+		audience,
+		computeFacetCount,
+		payloadTypes,
+		policyFieldBNK,
+		predicates,
+		resolutionStatus,
+		strategyTypes,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 	import { resolutionStatusBackgrounds, resolutionStatusHoverColors } from '$lib/theme/models';
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 
-	export let data: PageData;
+	let { data }: PageProps = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -21,6 +31,20 @@
 			predicates.enum['is-duplicate-of']
 		]
 	});
+
+	let facets = $derived.by(() => {
+		const facets = new Map([
+			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
+			['strategyType', new Map(strategyTypes.options.map((v) => [v as string, 0]))]
+		]);
+
+		return computeFacetCount(facets, data.containers);
+	});
+
+	setContext('facets', () => facets);
 </script>
 
 <Layout>

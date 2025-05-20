@@ -10,24 +10,37 @@
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
+		computeFacetCount,
 		type GoalContainer,
 		isTaskContainer,
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
+		taskCategories,
 		taskStatus
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
+	import Navigation from '$lib/components/Navigation.svelte';
 
-	export let data: PageData;
+	let { data }: PageProps = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-prerequisite-for'], predicates.enum['is-subtask-of']]
 	});
+
+	let facets = $derived.by(() => {
+		const facets = new Map([
+			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))]
+		]);
+
+		return computeFacetCount(facets, data.containers);
+	});
+
+	setContext('facets', () => facets);
 
 	function goalsColumnTitle(containers: GoalContainer[]) {
 		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
