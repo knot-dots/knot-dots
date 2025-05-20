@@ -11,19 +11,24 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
+	import Cog from '~icons/flowbite/cog-outline';
 	import Grid from '~icons/flowbite/grid-solid';
 	import Home from '~icons/flowbite/home-solid';
 	import Favicon from '~icons/knotdots/favicon';
 	import OrganizationalUnit from '~icons/knotdots/organizational-unit';
+	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+
 	import { user } from '$lib/stores';
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
 
 	const platformMenu = createDisclosure({ label: $_('platform_menu') });
+
+	let dialog: HTMLDialogElement;
 
 	let sidebarExpanded = $state(true);
 
@@ -141,6 +146,12 @@
 		use:userMenu.panel
 	>
 		<li>
+			<button class="sidebar-menu-item" onclick={() => dialog.showModal()} type="button">
+				<Cog />
+				<span class:is-visually-hidden={!sidebarExpanded}>{$_('profile.settings')}</span>
+			</button>
+		</li>
+		<li>
 			<button
 				class="sidebar-menu-item sidebar-menu-item--logout"
 				onclick={() => signOut()}
@@ -169,6 +180,8 @@
 		<span class:is-visually-hidden={!sidebarExpanded}>{$_('login')}</span>
 	</button>
 {/if}
+
+<ProfileSettingsDialog bind:dialog />
 
 <style>
 	header {

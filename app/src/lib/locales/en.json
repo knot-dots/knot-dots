@@ -309,6 +309,7 @@
 		"settings": "Settings"
 	},
 	"profile_settings.change_password": "Change password",
+	"profile_settings.title": "Account settings",
 	"programs": "Programs",
 	"programs_by_level_filter.only_related": "Only related programs",
 	"progress": "Progress",

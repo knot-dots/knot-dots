@@ -310,6 +310,7 @@
 		"settings": "Einstellungen"
 	},
 	"profile_settings.change_password": "Passwort ändern",
+	"profile_settings.title": "Account-Einstellungen",
 	"programs": "Programme",
 	"programs_by_level_filter.only_related": "Nur verknüpfte Programme",
 	"progress": "Fortschritt",
