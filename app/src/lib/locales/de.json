@@ -1,5 +1,6 @@
 {
 	"about": "Über knot dots",
+	"active_filters": "{count, plural, one {1 aktiv} other {# aktiv}}",
 	"add_item": "Hinzufügen",
 	"ai_feedback": "KI-Feedback",
 	"ai_feedback.correct": "Korrekt",

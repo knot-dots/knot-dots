@@ -42,6 +42,18 @@
 
 	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
 
+	let activeFilters = $derived.by(() => {
+		let count = 0;
+
+		for (const key of page.url.searchParams.keys()) {
+			if (facets?.().has(key)) {
+				count = count + 1;
+			}
+		}
+
+		return count;
+	});
+
 	function applySort() {
 		if (overlay) {
 			const query = new URLSearchParams(page.url.hash.substring(1));
@@ -81,6 +93,9 @@
 			<button class="dropdown-button dropdown-button--command" type="button" use:filterBar.button>
 				<Filter />
 				<span>{$_('filter')}</span>
+				{#if activeFilters > 0}
+					<span class="indicator">{activeFilters}</span>
+				{/if}
 			</button>
 		{/if}
 
@@ -148,6 +163,7 @@
 <style>
 	nav {
 		--icon-color: var(--color-gray-500);
+		--indicator-background-color: var(--color-primary-700);
 
 		align-items: center;
 		background: white;
@@ -226,6 +242,11 @@
 	.filter-and-sort legend + span[aria-hidden='true'] {
 		color: var(--color-primary-700);
 		padding: 0 0.75rem 0 0.5rem;
+	}
+
+	.filter-and-sort span:first-child {
+		color: var(--color-primary-700);
+		padding: 0 0.25rem 0 0.5rem;
 	}
 
 	.filter-and-sort button:first-of-type {

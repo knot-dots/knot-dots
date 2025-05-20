@@ -191,6 +191,10 @@
 	--color-hover-done: rgba(110, 218, 166, 0.35);
 	--color-hover-rejected: rgba(40, 169, 231, 0.35);
 
+	--indicator-background-color: var(--color-gray-700);
+	--indicator-color: white;
+	--indicator-font-size: 0.625rem;
+
 	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
 	--shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
@@ -1234,6 +1238,18 @@ label > input[type='checkbox'].toggle {
 	height: 1rem;
 	max-width: initial;
 	width: 1rem;
+}
+
+/* Indicators */
+.indicator {
+	background-color: var(--indicator-background-color);
+	border-radius: calc(var(--indicator-font-size) * 1.5);
+	color: var(--indicator-color);
+	display: inline-grid;
+	font-size: var(--indicator-font-size);
+	place-content: center;
+	height: calc(var(--indicator-font-size) * 1.5);
+	width: calc(var(--indicator-font-size) * 1.5);
 }
 
 /* Tabs */

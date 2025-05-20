@@ -79,6 +79,9 @@
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		<span>{$_(labelForKey.get(key) ?? key)}</span>
+		{#if selected.length > 0}
+			<span class="indicator">{selected.length}</span>
+		{/if}
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
@@ -132,5 +135,9 @@
 	.dropdown-panel {
 		max-height: calc(100vh - 8rem);
 		max-width: revert;
+	}
+
+	.dropdown-panel > div > p:last-child {
+		display: none;
 	}
 </style>
