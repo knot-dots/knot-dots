@@ -29,7 +29,11 @@
 		{/if}
 	</aside>
 	<main>
-		<Navigation />
+		{#if $$slots.header}
+			<slot name="header" />
+		{:else}
+			<Navigation />
+		{/if}
 		<slot name="main" />
 	</main>
 	{#if $overlay}

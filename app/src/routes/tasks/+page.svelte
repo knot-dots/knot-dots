@@ -41,6 +41,8 @@
 </script>
 
 <Layout>
+	<Navigation sortOptions={[]} slot="header" />
+
 	<svelte:fragment slot="main">
 		<Board>
 			{#if data.relatedContainers.length > 0}

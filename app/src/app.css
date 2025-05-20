@@ -208,7 +208,7 @@
 	--button-hover-border-color: var(--button-border-color);
 	--form-control-background: var(--color-gray-050);
 
-	--nav-height: 66px;
+	--nav-height: 63px;
 	--organization-menu-max-width: 20rem;
 }
 
@@ -417,6 +417,22 @@ button.button-primary,
 	color: white;
 }
 
+button.button-outline,
+.button.button-outline {
+	--button-active-background: var(--color-primary-900);
+	--button-border-color: var(--color-primary-700);
+	--button-hover-background: var(--color-primary-800);
+
+	 color: var(--color-primary-700)
+}
+
+button.button-outline:active,
+.button.button-outline:active,
+button.button-outline:hover,
+.button.button-outline:hover {
+	color: white;
+}
+
 button.button-alternative,
 .button.button-alternative {
 	--button-active-background: var(--color-gray-200);
@@ -474,6 +490,12 @@ button.button-xs,
 	--padding-y: 0.5rem;
 
 	font-size: 0.75rem;
+}
+
+button.button-xs svg,
+.button.button-xs svg {
+	height: 0.875rem;
+	width: 0.875rem;
 }
 
 button:hover,
@@ -1343,15 +1365,14 @@ label > input[type='checkbox'].toggle {
 .dropdown-button > svg {
 	color: var(--color-gray-500);
 	flex-shrink: 0;
-	margin: 0.125rem;
 }
 
 .dropdown-button[aria-expanded='true'] {
-	background-color: var(--color-gray-200);
+	--button-background: var(--color-gray-200);
 }
 
 .dropdown-button.dropdown-button--badge[aria-expanded='true'] {
-	background-color: var(--color-primary-100);
+	--button-background: var(--color-primary-100);
 }
 
 .dropdown-button[aria-expanded='true'] > svg {

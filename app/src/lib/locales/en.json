@@ -88,6 +88,7 @@
 	"files": "Files",
 	"filter": "Filter",
 	"filter.all_organizational_units": "All organizational units",
+	"filter.no_results": "No results",
 	"form": {
 		"basic_data": "Basic data",
 		"effects": "Effects",
@@ -643,6 +644,7 @@
 	},
 	"vision": "Vision",
 	"visions": "Visions",
+	"workspace.dots": "Overview",
 	"workspace.indicators": "Tiles",
 	"workspace.measure_monitoring": "Measure monitoring",
 	"workspace.measure_templates": "Measure templates",

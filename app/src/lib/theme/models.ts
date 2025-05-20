@@ -1,5 +1,7 @@
 import type { Component } from 'svelte';
-import type { SvelteHTMLElements } from 'svelte/elements';
+import type { SvelteHTMLElements, SVGAttributes } from 'svelte/elements';
+import ArrowSortLetters from '~icons/flowbite/arrow-sort-letters-outline';
+import Clock from '~icons/flowbite/clock-outline';
 import ArrowTrendingUp from '~icons/heroicons/arrow-trending-up-solid';
 import Bars2 from '~icons/heroicons/bars-2-solid';
 import ChartPie from '~icons/heroicons/chart-pie';
@@ -44,7 +46,7 @@ import {
 	taskStatus
 } from '$lib/models';
 
-export const predicateIcons = new Map<string, Component<SvelteHTMLElements['svg']>>([
+export const predicateIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>>([
 	[predicates.enum['contributes-to'], ChartPie],
 	[predicates.enum['is-affected-by'], ArrowTrendingUp],
 	[predicates.enum['is-concrete-target-of'], ChartPie],
@@ -76,6 +78,11 @@ export const sdgIcons = new Map<SustainableDevelopmentGoal, string>([
 	[sustainableDevelopmentGoals.enum['sdg.15'], sdg15],
 	[sustainableDevelopmentGoals.enum['sdg.16'], sdg16],
 	[sustainableDevelopmentGoals.enum['sdg.17'], sdg17]
+]);
+
+export const sortIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>>([
+	['alpha', ArrowSortLetters],
+	['modified', Clock]
 ]);
 
 export const statusColors = new Map<Status, string>([

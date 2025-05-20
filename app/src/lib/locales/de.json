@@ -88,6 +88,7 @@
 	"files": "Dateien",
 	"filter": "Filtern",
 	"filter.all_organizational_units": "Alle Organisations-Ebenen",
+	"filter.no_results": "Keine Ergebnisse",
 	"form": {
 		"basic_data": "Allgemeine Angaben",
 		"effects": "Wirkungsplanung",
@@ -644,6 +645,7 @@
 	"view_mode.table": "Tabelle",
 	"vision": "Vision",
 	"visions": "Visionen",
+	"workspace.dots": "Überblick",
 	"workspace.indicators": "Indikatoren",
 	"workspace.measure_monitoring": "Maßnahmen-Monitoring",
 	"workspace.measure_templates": "Maßnahmen-Vorlagen",

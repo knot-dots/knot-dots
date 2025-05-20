@@ -1,133 +1,269 @@
 <script lang="ts">
-	import { signIn } from '@auth/sveltekit/client';
+	import { getContext } from 'svelte';
+	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import Share from '~icons/heroicons/share-20-solid';
-	import Members from '~icons/knotdots/members';
+	import Sort from '~icons/flowbite/sort-outline';
+	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import Users from '~icons/flowbite/users-outline';
+	import Filter from '~icons/knotdots/filter';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
+	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
+	import NewSearch from '$lib/components/NewSearch.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
-	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
-	import { boards } from '$lib/models';
-	import { ability, user } from '$lib/stores';
+	import { popover } from '$lib/components/OrganizationMenu.svelte';
+	import { ability } from '$lib/stores';
+	import { sortIcons } from '$lib/theme/models';
+
+	interface Props {
+		sortOptions?: [string, string][];
+	}
+
+	let {
+		sortOptions = [
+			[$_('sort_alphabetically'), 'alpha'],
+			[$_('sort_modified'), 'modified']
+		]
+	}: Props = $props();
+
+	let overlay = getContext('overlay');
+
+	let facets = getContext<() => Map<string, Map<string, number>>>('facets');
+
+	let filterBar = createPopover({ label: $_('filters') });
+
+	let sortBar = createPopover({ label: $_('sort') });
 
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
+
+	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
+
+	function applySort() {
+		if (overlay) {
+			const query = new URLSearchParams(page.url.hash.substring(1));
+			query.delete('sort');
+			if (selectedSort != 'alpha') {
+				query.append('sort', selectedSort);
+			}
+			goto(`#${query.toString()}`, { keepFocus: true });
+		} else {
+			const query = new URLSearchParams(page.url.searchParams);
+			query.delete('sort');
+			if (selectedSort != 'alpha') {
+				query.append('sort', selectedSort);
+			}
+			goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
+		}
+	}
+
+	function resetFilters() {
+		const query = new URLSearchParams(page.url.searchParams);
+		for (const key of facets?.().keys()) {
+			query.delete(key);
+		}
+		goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
+	}
 </script>
 
 <nav class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover">
 	<OrganizationMenu />
 
-	<div class="main-menu">
-		<a
-			href="/"
-			class="button button-nav"
-			class:is-active={page.url.pathname === '/'}
-			title={$_('board.elements')}
-		>
-			<Share />
-			<span class="large-only">{$_('board.elements')}</span>
-		</a>
+	<Workspaces options={workspaceOptions} />
 
-		<Workspaces
-			indicators={selectedContext.payload.boards.includes(boards.enum['board.indicators'])}
-			tasks={!('default' in selectedContext.payload) || !selectedContext.payload.default}
-		/>
-	</div>
+	<form class="commands" data-sveltekit-keepfocus>
+		<NewSearch />
 
-	{#if page.data.currentOrganizationalUnit && $ability.can('invite-members', page.data.currentOrganizationalUnit)}
-		<a
-			href="/organization/{page.data.currentOrganizationalUnit.guid}/members"
-			class="button button-nav"
-			class:is-active={page.url.pathname ===
-				`/organization/${page.data.currentOrganizationalUnit.guid}/members`}
-			title={$_('members')}
-		>
-			<Members />
-		</a>
-	{:else if !page.data.currentOrganization.payload.default && $ability.can('invite-members', page.data.currentOrganization)}
-		<a
-			href="/organizational_unit/{page.data.currentOrganization.guid}/members"
-			class="button button-nav"
-			class:is-active={page.url.pathname ===
-				`/organizational_unit/${page.data.currentOrganization.guid}/members`}
-			title={$_('members')}
-		>
-			<Members />
-		</a>
-	{:else}
-		<span></span>
-	{/if}
-
-	<ul class="user-menu" class:is-authenticated={$user.isAuthenticated}>
-		{#if $user.isAuthenticated}
-			<li>
-				<a href="#profile={$user.guid}">
-					<span class="avatar avatar-s button button-nav">
-						{$user.givenName.at(0)}{$user.familyName.at(0)}
-					</span>
-				</a>
-			</li>
-		{:else}
-			<li>
-				<button class="button-nav fully-rounded" type="button" on:click={() => signIn('keycloak')}>
-					{$_('login')}
-				</button>
-			</li>
+		{#if facets?.().size > 0}
+			<button class="dropdown-button dropdown-button--command" type="button" use:filterBar.button>
+				<Filter />
+				<span>{$_('filter')}</span>
+			</button>
 		{/if}
-	</ul>
+
+		{#if sortOptions.length > 1}
+			<button class="dropdown-button dropdown-button--command" type="button" use:sortBar.button>
+				<Sort />
+				<span class="is-visually-hidden">{$_('sort')}</span>
+			</button>
+		{/if}
+
+		{#if $ability.can('invite-members', selectedContext)}
+			<div class="divider"></div>
+
+			<a href={`/${selectedContext.payload.type}/${selectedContext.guid}/members`}>
+				<Users />
+				<span class="is-visually-hidden">{$_('members')}</span>
+			</a>
+		{/if}
+	</form>
+
+	<EditModeToggle />
 </nav>
+
+<form class="filter-and-sort">
+	{#if $filterBar.expanded}
+		<fieldset use:filterBar.panel>
+			{#if activeFilters > 0}
+				<span>{$_('active_filters', { values: { count: activeFilters } })}</span>
+			{/if}
+
+			<button class="button-outline button-xs" onclick={resetFilters} type="button">
+				<TrashBin />
+			</button>
+
+			{#each facets?.().entries() as [key, foci] (key)}
+				{@const options = [...foci.entries()]
+					.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+					.toSorted((a, b) =>
+						a.label.localeCompare(b.label, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						})
+					)}
+				{#if options.filter(({ count }) => count > 0).length > 0}
+					<FilterDropDown {key} {options} />
+				{/if}
+			{/each}
+		</fieldset>
+	{:else if $sortBar.expanded}
+		<fieldset aria-labelledby="legend" use:sortBar.panel>
+			<legend class="is-visually-hidden">{$_('sort')}</legend>
+			<span aria-hidden="true">{$_('sort')}</span>
+			{#each sortOptions as [label, value]}
+				{@const Icon = sortIcons.get(value)}
+				<label class="sort-option">
+					<input onchange={applySort} type="radio" {value} bind:group={selectedSort} />
+					<Icon />
+					{label}
+				</label>
+			{/each}
+		</fieldset>
+	{/if}
+</form>
 
 <style>
 	nav {
+		--icon-color: var(--color-gray-500);
+
 		align-items: center;
 		background: white;
 		border-bottom: 1px solid var(--color-gray-200);
+		color: var(--color-gray-700);
 		container-type: inline-size;
 		display: flex;
+		flex-wrap: wrap;
 		font-size: 0.875rem;
 		gap: 0.5rem;
-		justify-content: space-between;
 		padding: 0.75rem;
-		width: 100%;
 		z-index: 2;
 	}
 
-	nav > * {
-		margin: 0;
+	nav :global(svg) {
+		color: var(--icon-color);
+	}
+
+	.commands {
+		align-items: center;
+		display: flex;
+		flex-direction: row;
+		flex-shrink: 0;
+		gap: 0.75rem;
+		margin: 0 0.75rem 0 auto;
+	}
+
+	.commands > * {
+		width: fit-content;
+	}
+
+	.divider {
+		border-left: solid 1px var(--color-gray-200);
+		height: 1.5rem;
+	}
+
+	.dropdown-button.dropdown-button--command {
+		--button-background: transparent;
+
+		align-items: center;
+		border-radius: 8px;
+		height: 2rem;
+		padding: 0 0.5rem 0 0.375rem;
+	}
+
+	.dropdown-button.dropdown-button--command:global([aria-expanded='true']) {
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
+	}
+
+	.dropdown-button.dropdown-button--command :global(svg) {
+		height: 1rem;
+		margin: 0.125rem;
+		width: 1rem;
+	}
+
+	.filter-and-sort fieldset {
+		--indicator-background-color: var(--color-primary-700);
+
+		align-items: center;
+		background-color: var(--color-primary-050);
+		border-radius: 0;
+		border: none;
+		display: flex;
+		flex-direction: row;
+		font-size: 0.875rem;
+		gap: 0.25rem;
+		height: 3rem;
+		padding-left: 1rem;
+	}
+
+	.filter-and-sort fieldset > :global(*) {
+		flex-shrink: 0;
+	}
+
+	.filter-and-sort legend + span[aria-hidden='true'] {
+		color: var(--color-primary-700);
+		padding: 0 0.75rem 0 0.5rem;
+	}
+
+	.filter-and-sort button:first-of-type {
+		margin-right: 0.75rem;
 	}
 
 	.is-elevated {
 		z-index: 4;
 	}
 
-	.main-menu {
-		display: flex;
-		flex-grow: 0;
-		gap: 0.5rem;
+	.sort-option {
+		border-radius: 8px;
+		gap: 0;
+		padding: 0.5rem 0.625rem;
 	}
 
-	.button.button-nav {
-		flex-shrink: 0;
+	.sort-option > input {
+		appearance: none;
 	}
 
-	.user-menu {
-		gap: 1rem;
+	.sort-option > :global(svg) {
+		height: 1rem;
+		margin-right: 0.375rem;
+		width: 1rem;
 	}
 
-	.user-menu.is-authenticated {
-		align-items: center;
-		display: flex;
-		gap: 0.75rem;
+	.sort-option:focus-within,
+	.sort-option:hover {
+		background-color: var(--color-primary-100);
 	}
 
-	@container (min-inline-size: 50rem) {
-		.main-menu {
-			gap: 2rem;
-		}
+	.sort-option:has(> input:active) {
+		background-color: var(--color-primary-300);
+		color: var(--color-primary-700);
+	}
 
-		.large-only {
-			display: inherit;
-		}
+	.sort-option:has(> input:checked) {
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
 	}
 </style>
