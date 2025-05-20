@@ -652,6 +652,8 @@
 	"workspace.measures": "Measures status board",
 	"workspace.objectives_and_effects": "Objectives and effects",
 	"workspace.profile": "My workspace",
+	"workspace.profile.measures":  "My measures",
+	"workspace.profile.tasks": "My Tasks",
 	"workspace.programs": "Programs",
 	"workspace.programs_by_level": "Programs by level",
 	"workspace.resolutions": "Resolutions",

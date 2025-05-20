@@ -653,6 +653,8 @@
 	"workspace.measures": "Maßnahmen Status-Board",
 	"workspace.objectives_and_effects": "Wirkungsebenen",
 	"workspace.profile": "Mein Bereich",
+	"workspace.profile.measures":  "Meine Maßnahmen",
+	"workspace.profile.tasks": "Meine Aufgaben",
 	"workspace.programs": "Programme",
 	"workspace.programs_by_level": "Föderales Programme-Board",
 	"workspace.resolutions": "Beschlüsse",

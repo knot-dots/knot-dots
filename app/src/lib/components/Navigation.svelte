@@ -19,13 +19,15 @@
 
 	interface Props {
 		sortOptions?: [string, string][];
+		workspaceOptions?: { label: string; value: string }[];
 	}
 
 	let {
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
-		]
+		],
+		workspaceOptions
 	}: Props = $props();
 
 	let overlay = getContext('overlay');

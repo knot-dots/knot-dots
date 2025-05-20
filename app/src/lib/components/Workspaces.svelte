@@ -8,28 +8,32 @@
 	import { page } from '$app/state';
 	import { boards } from '$lib/models';
 
-	let selectedContext = $derived(
-		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
-	);
+	interface Props {
+		options?: { label: string; value: string }[];
+	}
 
-	let options = $derived([
-		{ label: $_('workspace.dots'), value: '/' },
-		{ label: $_('workspace.programs'), value: '/programs' },
-		{ label: $_('workspace.programs_by_level'), value: '/programs-by-level' },
-		{ label: $_('workspace.measures'), value: '/implementation' },
-		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
-			? [{ label: $_('workspace.tasks'), value: '/tasks' }]
-			: []),
-		{ label: $_('workspace.measure_monitoring'), value: '/measure-monitoring' },
-		{ label: $_('workspace.measure_templates'), value: '/measure-templates' },
-		{ label: $_('workspace.resolutions'), value: '/resolutions' },
-		...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
-			? [
-					{ label: $_('workspace.indicators'), value: '/indicators' },
-					{ label: $_('workspace.objectives_and_effects'), value: '/objectives-and-effects' }
-				]
-			: [])
-	]);
+	let selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
+
+	let {
+		options = [
+			{ label: $_('workspace.dots'), value: '/' },
+			{ label: $_('workspace.programs'), value: '/programs' },
+			{ label: $_('workspace.programs_by_level'), value: '/programs-by-level' },
+			{ label: $_('workspace.measures'), value: '/implementation' },
+			...(!('default' in selectedContext.payload) || !selectedContext.payload.default
+				? [{ label: $_('workspace.tasks'), value: '/tasks' }]
+				: []),
+			{ label: $_('workspace.measure_monitoring'), value: '/measure-monitoring' },
+			{ label: $_('workspace.measure_templates'), value: '/measure-templates' },
+			{ label: $_('workspace.resolutions'), value: '/resolutions' },
+			...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
+				? [
+						{ label: $_('workspace.indicators'), value: '/indicators' },
+						{ label: $_('workspace.objectives_and_effects'), value: '/objectives-and-effects' }
+					]
+				: [])
+		]
+	}: Props = $props();
 
 	const menu = createMenu({ label: $_('workspaces'), selected: page.url.pathname });
 
