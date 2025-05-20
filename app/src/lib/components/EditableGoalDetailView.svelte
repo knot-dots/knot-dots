@@ -150,10 +150,12 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="extra">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.description}
-		/>
+		{#key container.guid}
+			<EditableFormattedText
+				editable={$applicationState.containerDetailView.editable}
+				bind:value={container.payload.description}
+			/>
+		{/key}
 
 		{#if measure && (effect || $mayCreateContainer(payloadTypes.enum.effect, container.managed_by))}
 			<div class="detail-tab" id="effect">

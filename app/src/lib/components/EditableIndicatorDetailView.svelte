@@ -190,11 +190,13 @@
 			</ul>
 		</div>
 
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('description')}
-			bind:value={container.payload.description}
-		/>
+		{#key container.guid}
+			<EditableFormattedText
+				editable={$applicationState.containerDetailView.editable}
+				label={$_('description')}
+				bind:value={container.payload.description}
+			/>
+		{/key}
 	</svelte:fragment>
 </EditableContainerDetailView>
 

@@ -16,10 +16,12 @@
 
 <EditableContainerDetailView {container} {relatedContainers} {revisions} tabs={[]}>
 	<svelte:fragment slot="data">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('body')}
-			bind:value={container.payload.body}
-		/>
+		{#key container.guid}
+			<EditableFormattedText
+				editable={$applicationState.containerDetailView.editable}
+				label={$_('body')}
+				bind:value={container.payload.body}
+			/>
+		{/key}
 	</svelte:fragment>
 </EditableContainerDetailView>

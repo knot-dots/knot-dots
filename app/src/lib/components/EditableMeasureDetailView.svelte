@@ -106,31 +106,33 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="extra">
-		<EditableFormattedText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('measure.description')}
-			bind:value={container.payload.description}
-		/>
+		{#key container.guid}
+			<EditableFormattedText
+				editable={$applicationState.containerDetailView.editable}
+				label={$_('measure.description')}
+				bind:value={container.payload.description}
+			/>
 
-		{#if (isMeasureContainer(container) && container.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer(container)}
-			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
-				label={$_('annotation')}
-				bind:value={container.payload.annotation}
-			/>
-		{:else if isMeasureContainer(container) && container.payload.status === status.enum['status.in_implementation']}
-			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
-				label={$_('comment')}
-				bind:value={container.payload.comment}
-			/>
-		{:else if isMeasureContainer(container) && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
-			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
-				label={$_('result')}
-				bind:value={container.payload.result}
-			/>
-		{/if}
+			{#if (isMeasureContainer(container) && container.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer(container)}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable}
+					label={$_('annotation')}
+					bind:value={container.payload.annotation}
+				/>
+			{:else if isMeasureContainer(container) && container.payload.status === status.enum['status.in_implementation']}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable}
+					label={$_('comment')}
+					bind:value={container.payload.comment}
+				/>
+			{:else if isMeasureContainer(container) && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable}
+					label={$_('result')}
+					bind:value={container.payload.result}
+				/>
+			{/if}
+		{/key}
 
 		<div class="details-tab" id="resources">
 			<h3>{$_('resources')}</h3>
