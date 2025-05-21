@@ -842,11 +842,12 @@ export function getAllRelatedContainersByStrategyType(
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
 			SELECT co.guid, cr.subject
 			FROM container co
-			LEFT JOIN container_relation cr ON co.guid = cr.object
+			JOIN container_relation cr ON co.guid = cr.object
 				AND cr.predicate = ${predicates.enum['is-part-of-strategy']}
 				AND cr.valid_currently
-			  AND NOT cr.deleted
-			WHERE co.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
+				AND NOT cr.deleted
+			WHERE co.organization IN (${sql.join(organizations, sql.fragment`, `)})
+				AND co.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
 		`);
 
 		const containerResult =
