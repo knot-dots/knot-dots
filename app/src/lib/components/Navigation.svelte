@@ -258,7 +258,7 @@
 		gap: 0.25rem;
 		height: 3rem;
 		overflow: auto;
-		padding-left: 1rem;
+		padding: 0 0 0 1rem;
 	}
 
 	.filter-and-sort fieldset > :global(*) {
