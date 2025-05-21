@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { createPopover } from 'svelte-headlessui';
+	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
@@ -35,9 +35,9 @@
 
 	let facets = getContext<() => Map<string, Map<string, number>>>('facets');
 
-	let filterBar = createPopover({ label: $_('filters') });
+	let filterBar = createDisclosure({ label: $_('filters') });
 
-	let sortBar = createPopover({ label: $_('sort') });
+	let sortBar = createDisclosure({ label: $_('sort') });
 
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
@@ -93,7 +93,12 @@
 		<NewSearch />
 
 		{#if facets?.().size > 0}
-			<button class="dropdown-button dropdown-button--command" type="button" use:filterBar.button>
+			<button
+				class="dropdown-button dropdown-button--command"
+				onclick={() => sortBar.close()}
+				type="button"
+				use:filterBar.button
+			>
 				<Filter />
 				<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('filter')}</span>
 				{#if activeFilters > 0}
@@ -103,7 +108,12 @@
 		{/if}
 
 		{#if sortOptions.length > 1}
-			<button class="dropdown-button dropdown-button--command" type="button" use:sortBar.button>
+			<button
+				class="dropdown-button dropdown-button--command"
+				onclick={() => filterBar.close()}
+				type="button"
+				use:sortBar.button
+			>
 				<Sort />
 				<span class="is-visually-hidden">{$_('sort')}</span>
 			</button>
