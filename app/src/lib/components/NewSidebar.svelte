@@ -4,7 +4,6 @@
 	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import ArrowLeftToBracket from '~icons/flowbite/arrow-right-to-bracket-outline';
 	import ArrowRightToBracket from '~icons/flowbite/arrow-right-to-bracket-outline';
 	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
@@ -45,7 +44,7 @@
 	}
 </script>
 
-<header class:sidebarExpanded transition:slide={{ duration: 125, easing: cubicInOut }}>
+<header transition:slide={{ duration: 125, easing: cubicInOut }}>
 	{#if sidebarExpanded}
 		<a href={env.PUBLIC_BASE_URL} title="knotdots.net">
 			<img class="logo" src={logo} alt="knot dots Logo" />
@@ -99,7 +98,7 @@
 			</a>
 		</li>
 	{/if}
-	{#if page.data.session}
+	{#if $user.isAuthenticated}
 		<li>
 			<a
 				class="sidebar-menu-item"
@@ -184,11 +183,6 @@
 			<strong class="truncated">{$user.givenName} {$user.familyName}</strong>
 			<ChevronSort />
 		{/if}
-	</button>
-{:else}
-	<button class="dropdown-button" onclick={() => signIn('keycloak')} type="button">
-		<ArrowLeftToBracket />
-		<span class:is-visually-hidden={!sidebarExpanded}>{$_('login')}</span>
 	</button>
 {/if}
 

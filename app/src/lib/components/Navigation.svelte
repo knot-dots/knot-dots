@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { signIn } from '@auth/sveltekit/client';
 	import { getContext } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -15,7 +16,7 @@
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
-	import { ability } from '$lib/stores';
+	import { ability, user } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -130,6 +131,12 @@
 	</form>
 
 	<EditModeToggle />
+
+	{#if !$user.isAuthenticated}
+		<button class="button-primary button-xs" onclick={() => signIn('keycloak')} type="button">
+			{$_('login')}
+		</button>
+	{/if}
 </nav>
 
 <form class="filter-and-sort">
