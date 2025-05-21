@@ -74,9 +74,13 @@
 	}
 </script>
 
-<article class="details">
+<article class="details details-editable">
+	<header>
+		<h2 class="details-title">{$_('workspace.profile')}</h2>
+	</header>
+
 	<div class="tasks">
-		<h2>{$_('profile.my_tasks')}</h2>
+		<h3>{$_('profile.my_tasks')}</h3>
 
 		<div class="carousel-toolbar">
 			<SortDropdown options={sortOptions} bind:value={sort} />
@@ -98,7 +102,7 @@
 	</div>
 
 	<div class="measures">
-		<h2>{$_('profile.my_measures')}</h2>
+		<h3>{$_('profile.my_measures')}</h3>
 		<ul class="carousel">
 			{#each containers
 				.filter(isContainerWithEffect)
@@ -111,7 +115,7 @@
 	</div>
 
 	<div class="organizations">
-		<h2>{$_('profile.my_organizations')}</h2>
+		<h3>{$_('profile.my_organizations')}</h3>
 		<ul class="carousel">
 			{#each containers
 				.filter((c: AnyContainer) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c))
@@ -124,7 +128,7 @@
 	</div>
 
 	<div class="strategies">
-		<h2>{$_('profile.my_strategies')}</h2>
+		<h3>{$_('profile.my_strategies')}</h3>
 		<ul class="carousel">
 			{#each containers
 				.filter(isStrategyContainer)
