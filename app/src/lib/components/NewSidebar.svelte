@@ -37,14 +37,11 @@
 	}
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-
-		if (!('default' in container.payload) || !container.payload.default) {
-			url.hostname = `${container.guid}.${url.hostname}`;
-			url.pathname = `/${container.payload.type}/${container.guid}`;
+		if ('default' in container.payload && container.payload.default) {
+			return '/';
+		} else {
+			return `/${container.payload.type}/${container.guid}`;
 		}
-
-		return url.toString();
 	}
 </script>
 
@@ -75,7 +72,12 @@
 
 <ul class="sidebar-menu sidebar-menu--navigation" data-sveltekit-preload-data="hover">
 	<li>
-		<a class="sidebar-menu-item" href={landingPageURL(page.data.currentOrganization)}>
+		<a
+			class="sidebar-menu-item"
+			class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+				page.url.pathname}
+			href={landingPageURL(page.data.currentOrganization)}
+		>
 			<Home />
 			<span class:is-visually-hidden={!sidebarExpanded}>
 				{page.data.currentOrganization.payload.name}
@@ -84,7 +86,12 @@
 	</li>
 	{#if page.data.currentOrganizationalUnit}
 		<li>
-			<a class="sidebar-menu-item" href={landingPageURL(page.data.currentOrganizationalUnit)}>
+			<a
+				class="sidebar-menu-item"
+				class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
+					page.url.pathname}
+				href={landingPageURL(page.data.currentOrganizationalUnit)}
+			>
 				<OrganizationalUnit />
 				<span class:is-visually-hidden={!sidebarExpanded}>
 					{page.data.currentOrganizationalUnit.payload.name}
@@ -94,7 +101,11 @@
 	{/if}
 	{#if page.data.session}
 		<li>
-			<a class="sidebar-menu-item" href="/me">
+			<a
+				class="sidebar-menu-item"
+				class:sidebar-menu-item--active={'/me' === page.url.pathname}
+				href="/me"
+			>
 				<Grid />
 				<span class:is-visually-hidden={!sidebarExpanded}>{$_('workspace.profile')}</span>
 			</a>
@@ -252,6 +263,10 @@
 		width: 100%;
 	}
 
+	.sidebar-menu-item.sidebar-menu-item--active {
+		background-color: var(--color-gray-200);
+	}
+
 	.sidebar-menu-item.sidebar-menu-item--logout {
 		--color: var(--color-red-600);
 		--icon-color: var(--color-red-600);
@@ -262,7 +277,7 @@
 	}
 
 	.sidebar-menu-item:active {
-		background-color: var(--color-gray-200);
+		background-color: var(--color-gray-300);
 	}
 
 	.sidebar-menu-item:focus,
