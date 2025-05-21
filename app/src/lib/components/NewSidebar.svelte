@@ -51,7 +51,7 @@
 			<img class="logo" src={logo} alt="knot dots Logo" />
 		</a>
 		<button
-			class="action-button action-button--size-s action-button--padding-loose"
+			class="action-button action-button--size-s action-button--padding-tight"
 			onclick={toggleSidebar}
 			type="button"
 		>
@@ -60,7 +60,7 @@
 		</button>
 	{:else}
 		<button
-			class="action-button action-button--size-s action-button--padding-loose"
+			class="action-button action-button--size-s action-button--padding-tight"
 			onclick={toggleSidebar}
 			type="button"
 		>
@@ -203,7 +203,11 @@
 		gap: 0.5rem;
 		height: var(--nav-height);
 		justify-content: space-between;
-		padding: 0.5rem 0.75rem;
+		padding: 0.5rem 0.5rem;
+	}
+
+	header img {
+		margin-left: 0.25rem;
 	}
 
 	.avatar {

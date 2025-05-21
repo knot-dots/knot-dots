@@ -565,8 +565,10 @@ button.button-copycat:hover,
 
 .action-button {
 	border: none;
+	border-radius: 8px;
 	color: var(--color-gray-500);
 	font-size: 0.75rem;
+	padding: 0.5rem;
 }
 
 .action-button:active {
@@ -578,16 +580,12 @@ button.button-copycat:hover,
 	background-color: var(--color-gray-100);
 }
 
-.action-button.action-button--size-s {
-	border-radius: 4px;
-}
-
-.action-button.action-button--padding-loose {
-	padding: 0.125rem;
-}
-
 .action-button.action-button--padding-tight {
 	padding: 0.375rem;
+}
+
+.action-button.action-button--size-s {
+	border-radius: 4px;
 }
 
 /* Button group */
