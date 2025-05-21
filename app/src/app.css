@@ -1392,6 +1392,8 @@ label > input[type='checkbox'].toggle {
 
 .dropdown-button.dropdown-button--badge[aria-expanded='true'] {
 	--button-background: var(--color-primary-100);
+
+	color: var(--color-primary-800);
 }
 
 .dropdown-button[aria-expanded='true'] > svg {
