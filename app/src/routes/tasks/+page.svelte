@@ -34,7 +34,8 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))]
+			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+			['assignee', new Map()]
 		]);
 
 		return computeFacetCount(facets, data.containers);
