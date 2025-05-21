@@ -224,6 +224,7 @@
 		border-radius: 8px;
 		height: 2rem;
 		padding: 0 0.5rem 0 0.375rem;
+		position: relative;
 	}
 
 	.dropdown-button.dropdown-button--command:global([aria-expanded='true']) {
@@ -269,6 +270,12 @@
 
 	.filter-and-sort button:first-of-type {
 		margin-right: 0.75rem;
+	}
+
+	.indicator {
+		position: absolute;
+		right: -0.375rem;
+		top: -0.375rem;
 	}
 
 	.is-elevated {
