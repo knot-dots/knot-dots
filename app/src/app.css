@@ -903,7 +903,6 @@ label > input[type='checkbox'].toggle {
 	flex-direction: column;
 	height: 100%;
 	overflow: auto;
-	padding: 4rem calc((100% - 46rem) / 2);
 }
 
 .content-header {
@@ -919,7 +918,6 @@ label > input[type='checkbox'].toggle {
 	--mask-height: 1.5rem;
 
 	flex-grow: 1;
-	padding: 1.5rem;
 }
 
 .content-footer {
@@ -963,6 +961,15 @@ label > input[type='checkbox'].toggle {
 	display: flex;
 	flex-direction: column;
 	gap: 2rem;
+	padding: 4rem 0;
+}
+
+.details > * {
+	padding: 0 max(5rem, calc(100% - 52rem)) 0 5rem;
+}
+
+.details > *:has(> .carousel) {
+	padding: 0 0 0 5rem;
 }
 
 .details-tab {
@@ -997,7 +1004,6 @@ label > input[type='checkbox'].toggle {
 
 	container-type: inline-size;
 	font-size: 0.875rem;
-	padding: 0 2rem 1.5rem;
 }
 
 .details-editable .details-tab {
@@ -1010,7 +1016,6 @@ label > input[type='checkbox'].toggle {
 	font-weight: 700;
 	line-height: 1.25;
 	margin-bottom: 0.75rem;
-	margin-top: 3rem;
 	min-height: calc(1.25 * 2.25rem);
 }
 

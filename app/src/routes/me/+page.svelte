@@ -26,6 +26,5 @@
 	div {
 		height: 100%;
 		overflow: auto;
-		padding: 4rem calc((100% - 46rem) / 2);
 	}
 </style>
