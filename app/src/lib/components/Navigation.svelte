@@ -94,7 +94,7 @@
 		{#if facets?.().size > 0}
 			<button class="dropdown-button dropdown-button--command" type="button" use:filterBar.button>
 				<Filter />
-				<span>{$_('filter')}</span>
+				<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('filter')}</span>
 				{#if activeFilters > 0}
 					<span class="indicator">{activeFilters}</span>
 				{/if}
@@ -234,6 +234,7 @@
 		font-size: 0.875rem;
 		gap: 0.25rem;
 		height: 3rem;
+		overflow: auto;
 		padding-left: 1rem;
 	}
 
@@ -288,5 +289,18 @@
 	.sort-option:has(> input:checked) {
 		background-color: var(--color-primary-100);
 		color: var(--color-primary-700);
+	}
+
+	@container (min-width: 768px) {
+		.is-visually-hidden.is-visually-hidden--mobile-only {
+			border: revert;
+			clip: revert;
+			height: revert;
+			margin: revert;
+			overflow: revert;
+			padding: revert;
+			position: revert;
+			width: revert;
+		}
 	}
 </style>

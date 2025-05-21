@@ -91,7 +91,9 @@
 		padding: 0 0.5rem 0 2rem;
 	}
 
-	.search > input:focus {
-		width: 16rem;
+	@container (min-width: 768px) {
+		.search > input:focus {
+			width: 16rem;
+		}
 	}
 </style>

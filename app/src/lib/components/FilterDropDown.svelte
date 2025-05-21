@@ -117,6 +117,10 @@
 		color: var(--color-gray-500);
 	}
 
+	.dropdown {
+		position: static;
+	}
+
 	.dropdown-button {
 		--button-active-background: var(--color-primary-100);
 		--button-background: transparent;
