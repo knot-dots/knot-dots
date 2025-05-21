@@ -1246,7 +1246,9 @@ label > input[type='checkbox'].toggle {
 /* Indicators */
 .indicator {
 	background-color: var(--indicator-background-color);
+	border: 1px solid var(--color-gray-100);
 	border-radius: calc(var(--indicator-font-size) * 1.5);
+	box-shadow: var(--shadow-sm);
 	color: var(--indicator-color);
 	display: inline-grid;
 	font-size: var(--indicator-font-size);
