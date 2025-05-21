@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { getContext, hasContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import ArrowRightOnRectangle from '~icons/heroicons/arrow-right-on-rectangle-20-solid';
 	import ChevronLeft from '~icons/heroicons/chevron-left';
-	import Cog6Tooth from '~icons/heroicons/cog-6-tooth-20-solid';
 	import Share from '~icons/heroicons/share-20-solid';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 	import Effects from '~icons/knotdots/effects';
@@ -25,7 +22,6 @@
 		isStrategyContainer,
 		overlayKey,
 		overlayURL,
-		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
 	import { ability, applicationState, overlay, overlayHistory, user } from '$lib/stores';
@@ -82,16 +78,6 @@
 				{:else}
 					{container.payload.title}
 				{/if}
-			</a>
-		{:else if $overlay?.key === overlayKey.enum.profile}
-			<a
-				class="button button-nav title"
-				class:is-active={!paramsFromFragment($page.url).has(overlayKey.enum['my-tasks']) &&
-					!paramsFromFragment($page.url).has(overlayKey.enum['my-settings'])}
-				href={overlayURL($page.url, overlayKey.enum.profile, $user.guid)}
-			>
-				{$user.givenName}
-				{$user.familyName}
 			</a>
 		{/if}
 	</div>
@@ -188,76 +174,12 @@
 				<Members />
 			</a>
 		{/if}
-	{:else if $overlay?.key === overlayKey.enum.profile}
-		<ul class="button-group button-group-nav">
-			<li>
-				<a
-					class="button button-nav"
-					class:is-active={paramsFromFragment($page.url).has(overlayKey.enum['my-tasks'])}
-					href={`${overlayURL($page.url, overlayKey.enum.profile, $user.guid)}&${
-						overlayKey.enum['my-tasks']
-					}`}
-					title={$_('profile.my_tasks')}
-				>
-					<span class="small-only"><Tasks /></span>
-					<span class="large-only">{$_('profile.my_tasks')}</span>
-				</a>
-			</li>
-
-			<li>
-				<a
-					class="button button-nav"
-					class:is-active={paramsFromFragment($page.url).has(overlayKey.enum['my-measures'])}
-					href={`${overlayURL($page.url, overlayKey.enum.profile, $user.guid)}&${
-						overlayKey.enum['my-measures']
-					}`}
-					title={$_('profile.my_measures')}
-				>
-					<span class="small-only"><Tasks /></span>
-					<span class="large-only">{$_('profile.my_measures')}</span>
-				</a>
-			</li>
-
-			<li>
-				<a
-					class="button button-nav"
-					class:is-active={paramsFromFragment($page.url).has(overlayKey.enum['my-settings'])}
-					href={`${overlayURL($page.url, overlayKey.enum['profile'], $user.guid)}&${
-						overlayKey.enum['my-settings']
-					}`}
-					title={$_('profile.settings')}
-				>
-					<span class="small-only"><Cog6Tooth /></span>
-					<span class="large-only">{$_('profile.settings')}</span>
-				</a>
-			</li>
-
-			<li>
-				<button class="button-nav" title={$_('logout')} on:click={() => signOut()}>
-					<span class="small-only"><ArrowRightOnRectangle /></span>
-					<span class="large-only">{$_('logout')}</span>
-				</button>
-			</li>
-		</ul>
 	{/if}
 
 	{#if $user.isAuthenticated}
 		{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
 			<EditModeToggle />
 		{/if}
-
-		<a href={overlayURL($page.url, 'profile', $user.guid)}>
-			<span
-				class="avatar avatar-s button button-nav"
-				class:is-active={$overlay?.key === overlayKey.enum.profile}
-			>
-				{$user.givenName.at(0)}{$user.familyName.at(0)}
-			</span>
-		</a>
-	{:else}
-		<button class="button-nav fully-rounded" type="button" on:click={() => signIn('keycloak')}>
-			{$_('login')}
-		</button>
 	{/if}
 </nav>
 

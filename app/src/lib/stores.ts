@@ -197,10 +197,6 @@ export type OverlayData =
 			users: UserRecord[];
 	  }
 	| {
-			key: 'profile';
-			containers: AnyContainer[];
-	  }
-	| {
 			key: 'relations';
 			container: Container;
 			relatedContainers: Container[];
@@ -490,11 +486,6 @@ if (browser) {
 				container,
 				containers: relatedContainers
 			});
-		} else if (hashParams.has(overlayKey.enum.profile) && values.data.session) {
-			const containers = await fetchContainersByUser(
-				hashParams.get(overlayKey.enum.profile) as string
-			);
-			overlay.set({ key: overlayKey.enum.profile, containers });
 		} else {
 			overlay.set(undefined);
 		}

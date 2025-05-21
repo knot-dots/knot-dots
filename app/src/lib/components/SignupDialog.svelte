@@ -44,8 +44,7 @@
 		if (response.ok) {
 			dialog.close();
 			const url = new URL(window.location.href);
-			url.search = '';
-			url.hash = overlayKey.enum.profile;
+			url.pathname = '/me';
 			await signIn('keycloak', { callbackUrl: url.toString() });
 		} else {
 			error = $_('signup_dialog.unexpected_error');
