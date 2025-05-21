@@ -3,8 +3,12 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import type { AnyContainer, User } from '$lib/models';
 
-	export let container: AnyContainer;
-	export let users: User[];
+	interface Props {
+		container: AnyContainer;
+		users: User[];
+	}
+
+	let { container, users }: Props = $props();
 </script>
 
 <aside>

@@ -2,11 +2,15 @@
 	import { _ } from 'svelte-i18n';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 
-	export let dialog: HTMLDialogElement;
+	interface Props {
+		dialog: HTMLDialogElement;
+	}
+
+	let { dialog = $bindable() }: Props = $props();
 </script>
 
-<dialog bind:this={dialog} on:close>
-	<button tabindex="-1" title={$_('close_modal')} type="button" on:click={() => dialog.close()}>
+<dialog bind:this={dialog}>
+	<button tabindex="-1" title={$_('close_modal')} type="button" onclick={() => dialog.close()}>
 		<XMark />
 	</button>
 	<slot />

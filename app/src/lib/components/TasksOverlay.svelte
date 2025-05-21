@@ -12,8 +12,12 @@
 		isTaskContainer
 	} from '$lib/models';
 
-	export let container: AnyContainer;
-	export let containers: Container[];
+	interface Props {
+		container: AnyContainer;
+		containers: Container[];
+	}
+
+	let { container, containers }: Props = $props();
 </script>
 
 <aside>

@@ -3,14 +3,25 @@
 	import Dialog from '$lib/components/Dialog.svelte';
 	import { type AnyContainer, type Container, findDescendants, predicates } from '$lib/models';
 
-	export let dialog: HTMLDialogElement;
-	export let handleSubmit: (event: SubmitEvent) => void;
-	export let container: AnyContainer;
-	export let relatedContainers: Container[];
+	interface Props {
+		dialog: HTMLDialogElement;
+		handleSubmit: (event: SubmitEvent) => void;
+		container: AnyContainer;
+		relatedContainers: Container[];
+	}
+
+	let { dialog = $bindable(), handleSubmit, container, relatedContainers }: Props = $props();
+
+	function preventDefault(fn: (event: SubmitEvent) => void) {
+		return function (this: HTMLDialogElement, event: SubmitEvent) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
+	}
 </script>
 
 <Dialog bind:dialog>
-	<form on:submit|preventDefault={handleSubmit}>
+	<form onsubmit={preventDefault(handleSubmit)}>
 		<h3>
 			{$_('confirm_delete_dialog.heading', {
 				values: {
@@ -26,13 +37,13 @@
 				}
 			})}
 		</p>
-		<button class="primary" type="submit"
-			>{$_('confirm_delete_dialog.button', {
+		<button class="primary" type="submit">
+			{$_('confirm_delete_dialog.button', {
 				values: {
 					title: 'title' in container.payload ? container.payload.title : container.payload.name
 				}
-			})}</button
-		>
+			})}
+		</button>
 	</form>
 </Dialog>
 

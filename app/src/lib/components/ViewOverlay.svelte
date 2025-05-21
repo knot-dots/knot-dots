@@ -6,7 +6,7 @@
 	import AskAI from '~icons/knotdots/ask-ai';
 	import CopyCat from '~icons/knotdots/copycat';
 	import { goto, invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
@@ -66,14 +66,19 @@
 		user
 	} from '$lib/stores';
 
-	export let container: AnyContainer;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[] = [];
+	interface Props {
+		container: AnyContainer;
+		relatedContainers: Container[];
+		revisions?: AnyContainer[];
+	}
+
+	let { container, relatedContainers, revisions = [] }: Props = $props();
 
 	let mayShowRelationButton =
 		hasContext('relationOverlay') &&
 		(getContext('relationOverlay') as { enabled: boolean }).enabled;
-	let saveAsIndicatorTemplateDisabled = false;
+
+	let saveAsIndicatorTemplateDisabled = $state(false);
 
 	function saveIndicatorAsTemplate(c: IndicatorContainer) {
 		return async () => {
@@ -99,9 +104,9 @@
 		'createContainerDialog'
 	);
 
-	let createAnotherOptions: { label: string; value: string }[] = [];
+	let createAnotherOptions = $derived.by(() => {
+		let createAnotherOptions: { label: string; value: string }[] = [];
 
-	$: {
 		const isPartOfStrategyRelation = container.relation.find(
 			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
 		);
@@ -134,7 +139,9 @@
 				value: p
 			}));
 		}
-	}
+
+		return createAnotherOptions;
+	});
 
 	async function createAnother(container: AnyContainer) {
 		const isPartOfStrategyRelation = container.relation.find(
@@ -287,7 +294,7 @@
 		confirmDeleteDialog.close();
 	}
 
-	let isThinking = false;
+	let isThinking = $state(false);
 
 	async function askAI(container: StrategyContainer) {
 		isThinking = true;
@@ -351,13 +358,13 @@
 		</Sidebar>
 	{/if}
 </aside>
-{#if !createFeatureDecisions($page.data.features).useEditableDetailView() && isIndicatorContainer(container)}
+{#if !createFeatureDecisions(page.data.features).useEditableDetailView() && isIndicatorContainer(container)}
 	<header class="content-header">
 		<IndicatorTabs {container} />
 	</header>
 {/if}
 <div class="content-details masked-overflow">
-	{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+	{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
 		{#if isEffectContainer(container)}
 			{#await import('./EditableEffectDetailView.svelte') then { default: EditableEffectDetailView }}
 				<EditableEffectDetailView {container} {relatedContainers} {revisions} />
@@ -425,10 +432,10 @@
 </div>
 <footer
 	class="content-footer"
-	class:content-footer--new={createFeatureDecisions($page.data.features).useEditableDetailView()}
+	class:content-footer--new={createFeatureDecisions(page.data.features).useEditableDetailView()}
 >
 	<div class="content-actions">
-		{#if createFeatureDecisions($page.data.features).useEditableDetailView() && isMeasureContainer(container)}
+		{#if createFeatureDecisions(page.data.features).useEditableDetailView() && isMeasureContainer(container)}
 			<label>
 				<input
 					class="toggle"
@@ -440,7 +447,7 @@
 			</label>
 		{/if}
 		{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
-			<button type="button" on:click={createOverallObjective(container)}>
+			<button type="button" onclick={createOverallObjective(container)}>
 				<PlusSmall />{$_('overall_objective')}
 			</button>
 		{/if}
@@ -450,7 +457,7 @@
 			</a>
 		{/if}
 		{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
-			{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
 				<DropDownMenu
 					handleChange={createContainerDerivedFrom(container)}
 					label={$_('create_another')}
@@ -459,7 +466,7 @@
 					{#snippet icon()}<PlusSmall />{/snippet}
 				</DropDownMenu>
 			{:else}
-				<button class="primary" type="button" on:click={() => createAnother(container)}>
+				<button class="primary" type="button" onclick={() => createAnother(container)}>
 					<PlusSmall />{$_('create_another')}
 				</button>
 			{/if}
@@ -468,17 +475,17 @@
 					class="button-copycat"
 					title={$_('copy')}
 					type="button"
-					on:click={() => createCopy(container)}
+					onclick={() => createCopy(container)}
 				>
 					<CopyCat />
 				</button>
 			{/if}
-			{#if createFeatureDecisions($page.data.features).useAI() && isStrategyContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
+			{#if createFeatureDecisions(page.data.features).useAI() && isStrategyContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
 				<button
 					class="button-ai"
 					class:is-active={isThinking}
 					type="button"
-					on:click={() => askAI(container)}
+					onclick={() => askAI(container)}
 				>
 					<AskAI />
 					{$_('ask_ai')}
@@ -488,18 +495,18 @@
 		{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
 			<button
 				type="button"
-				on:click={saveIndicatorAsTemplate(container)}
+				onclick={saveIndicatorAsTemplate(container)}
 				disabled={saveAsIndicatorTemplateDisabled}
 			>
 				{$_('indicator.save_as_template')}
 			</button>
 		{/if}
-		{#if createFeatureDecisions($page.data.features).useEditableDetailView() && $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+		{#if createFeatureDecisions(page.data.features).useEditableDetailView() && $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
 			<button
 				aria-label={$_('delete')}
 				class="delete quiet"
 				type="button"
-				on:click={() => confirmDeleteDialog.showModal()}
+				onclick={() => confirmDeleteDialog.showModal()}
 			>
 				<TrashBin />
 			</button>

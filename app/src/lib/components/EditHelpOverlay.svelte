@@ -1,14 +1,18 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { overlayKey, type PageContainer, paramsFromFragment } from '$lib/models';
 
-	export let container: PageContainer;
+	interface Props {
+		container: PageContainer;
+	}
 
-	$: hashParams = paramsFromFragment($page.url);
+	let { container }: Props = $props();
+
+	let hashParams = $derived(paramsFromFragment(page.url));
 
 	async function afterSubmit() {
 		const newParams = new URLSearchParams(hashParams);

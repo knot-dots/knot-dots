@@ -1,14 +1,18 @@
 <script lang="ts">
 	import Pencil from '~icons/heroicons/pencil-solid';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { overlayKey, type PageContainer, paramsFromFragment } from '$lib/models';
 	import { ability } from '$lib/stores';
 
-	export let container: PageContainer;
+	interface Props {
+		container: PageContainer;
+	}
 
-	$: hashParams = paramsFromFragment($page.url);
+	let { container }: Props = $props();
+
+	let hashParams = $derived(paramsFromFragment(page.url));
 
 	function editHelpURL() {
 		const newParams = new URLSearchParams(hashParams);

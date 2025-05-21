@@ -9,7 +9,11 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import type { MeasureContainer } from '$lib/models';
 
-	export let containers: MeasureContainer[];
+	interface Props {
+		containers: MeasureContainer[];
+	}
+
+	let { containers }: Props = $props();
 </script>
 
 <aside>

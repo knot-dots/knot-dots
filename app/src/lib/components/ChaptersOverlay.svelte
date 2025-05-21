@@ -9,7 +9,11 @@
 	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { type Container } from '$lib/models';
 
-	export let containers: Container[];
+	interface Props {
+		containers: Container[];
+	}
+
+	let { containers }: Props = $props();
 </script>
 
 <aside>

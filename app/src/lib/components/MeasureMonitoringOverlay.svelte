@@ -12,13 +12,18 @@
 		isSimpleMeasureContainer
 	} from '$lib/models';
 
-	export let container: AnyContainer;
-	export let containers: Container[];
+	interface Props {
+		container: AnyContainer;
+		containers: Container[];
+	}
 
-	$: measures =
+	let { container, containers }: Props = $props();
+
+	let measures = $derived(
 		isMeasureContainer(container) || isSimpleMeasureContainer(container)
 			? [container]
-			: containers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c));
+			: containers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+	);
 </script>
 
 <aside>

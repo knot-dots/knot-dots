@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Trash from '~icons/heroicons/trash';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import createEffect from '$lib/client/createEffect';
 	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -33,12 +33,16 @@
 		overlayHistory
 	} from '$lib/stores';
 
-	export let container: AnyContainer;
-	export let relatedContainers: Container[];
+	interface Props {
+		container: AnyContainer;
+		relatedContainers: Container[];
+	}
+
+	let { container, relatedContainers }: Props = $props();
 
 	let confirmDeleteDialog: HTMLDialogElement;
 
-	$: hashParams = paramsFromFragment($page.url);
+	let hashParams = $derived(paramsFromFragment(page.url));
 
 	async function afterSubmit(
 		{ detail }: CustomEvent<CustomEventMap['submitSuccessful']>,
@@ -146,7 +150,7 @@
 				class="delete quiet"
 				title={$_('delete')}
 				type="button"
-				on:click={() => confirmDeleteDialog.showModal()}
+				onclick={() => confirmDeleteDialog.showModal()}
 			>
 				<Trash />
 			</button>

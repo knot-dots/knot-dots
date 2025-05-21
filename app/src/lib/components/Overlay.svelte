@@ -17,19 +17,24 @@
 	import { overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
-	export let data: OverlayData;
+	interface Props {
+		data: OverlayData;
+	}
+
+	let { data }: Props = $props();
 
 	setContext('overlay', true);
 
-	let fullScreen = false;
+	let fullScreen = $state(false);
 
 	function toggleFullscreen() {
 		fullScreen = !fullScreen;
 	}
 
-	let offset = 0;
+	let offset = $state(0);
 
 	function startExpand(event: MouseEvent) {
+		event.preventDefault();
 		offset = event.offsetX - 12;
 		window.addEventListener('mousemove', expand);
 	}
@@ -49,7 +54,7 @@
 	}
 </script>
 
-<svelte:window on:mouseup={stopExpand} />
+<svelte:window onmouseup={stopExpand} />
 
 <section
 	class="overlay"
@@ -57,46 +62,46 @@
 	transition:slide={{ axis: 'x' }}
 	style="--width-factor: {$overlayWidth}"
 >
-	<!--svelte-ignore a11y-no-static-element-interactions -->
-	<div class="resize-handle" on:mousedown|preventDefault={startExpand}></div>
+	<!--svelte-ignore a11y_no_static_element_interactions -->
+	<div class="resize-handle" onmousedown={startExpand}></div>
 	<OverlayNavigation container={'container' in data ? data.container : undefined} />
 	{#if data.key === overlayKey.enum['edit-help']}
 		<EditHelpOverlay container={data.container}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</EditHelpOverlay>
 	{:else if data.key === overlayKey.enum['view-help']}
 		<ViewHelpOverlay container={data.container}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</ViewHelpOverlay>
 	{:else if data.key === overlayKey.enum['create'] || data.key === overlayKey.enum['edit']}
 		<EditOverlay container={data.container} relatedContainers={data.relatedContainers}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</EditOverlay>
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</MembersOverlay>
 	{:else if data.key === overlayKey.enum['chapters']}
 		<ChaptersOverlay containers={data.containers}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</ChaptersOverlay>
 	{:else if data.key === overlayKey.enum['relations']}
 		<RelationOverlay object={data.container} relatedContainers={data.relatedContainers} />
 	{:else if data.key === overlayKey.enum['measures']}
 		<MeasuresOverlay containers={data.containers}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</MeasuresOverlay>
 	{:else if data.key === overlayKey.enum['measure-monitoring']}
 		<MeasureMonitoringOverlay container={data.container} containers={data.containers}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</MeasureMonitoringOverlay>
 	{:else if data.key === overlayKey.enum['tasks']}
 		<TasksOverlay container={data.container} containers={data.containers}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</TasksOverlay>
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers}>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</IndicatorsOverlay>
 	{:else if data.key === overlayKey.enum['view']}
 		<ViewOverlay
@@ -104,7 +109,7 @@
 			relatedContainers={data.relatedContainers}
 			revisions={data.revisions}
 		>
-			<OverlayFullscreenToggle on:click={toggleFullscreen} enabled={fullScreen} />
+			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
 		</ViewOverlay>
 	{/if}
 </section>
