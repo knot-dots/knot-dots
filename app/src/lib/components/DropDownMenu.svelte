@@ -50,10 +50,11 @@
 <style>
 	.menu-item > button {
 		--button-active-background: transparent;
-		--button-hover-background: transparent;
-		--padding-x: 0;
-		--padding-y: 0;
+		--button-hover-background: var(--color-gray-100);
+		--padding-x: 0.75rem;
+		--padding-y: 0.5rem;
 
 		border: none;
+		width: 100%;
 	}
 </style>

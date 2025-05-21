@@ -1420,12 +1420,12 @@ label > input[type='checkbox'].toggle {
 	z-index: 1;
 }
 
-.dropdown-panel *:has(> input[type='checkbox'], > input[type='radio'], > button) {
+.dropdown-panel :has(> input[type='checkbox'], > input[type='radio']) {
 	border-radius: 0.5rem;
 	padding: 0.5rem 0.75rem;
 }
 
-.dropdown-panel *:has(> input[type='checkbox'], > input[type='radio'], > button):hover {
+.dropdown-panel *:has(> input[type='checkbox'], > input[type='radio']):hover {
 	background-color: var(--color-gray-100);
 }
 
