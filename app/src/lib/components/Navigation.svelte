@@ -101,7 +101,7 @@
 			>
 				<Filter />
 				<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('filter')}</span>
-				{#if activeFilters > 0}
+				{#if activeFilters > 0 && !$filterBar.expanded}
 					<span class="indicator">{activeFilters}</span>
 				{/if}
 			</button>
