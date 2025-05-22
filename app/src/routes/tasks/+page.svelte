@@ -7,6 +7,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
@@ -23,7 +24,6 @@
 	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
-	import Navigation from '$lib/components/Navigation.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -41,8 +41,6 @@
 		return computeFacetCount(facets, data.containers);
 	});
 
-	setContext('facets', () => facets);
-
 	function goalsColumnTitle(containers: GoalContainer[]) {
 		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
 
@@ -55,7 +53,7 @@
 </script>
 
 <Layout>
-	<Navigation sortOptions={[]} slot="header" />
+	<Navigation {facets} sortOptions={[]} slot="header" />
 
 	<svelte:fragment slot="main">
 		<Board>

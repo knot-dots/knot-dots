@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
@@ -33,11 +32,9 @@
 
 		return computeFacetCount(facets, data.containers);
 	});
-
-	setContext('facets', () => facets);
 </script>
 
 <Layout>
-	<Navigation {workspaceOptions} slot="header" />
+	<Navigation {facets} search {workspaceOptions} slot="header" />
 	<Measures containers={data.containers} slot="main" />
 </Layout>

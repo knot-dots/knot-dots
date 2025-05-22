@@ -20,8 +20,6 @@
 
 	let overlay = getContext('overlay');
 
-	let facets = getContext<() => Map<string, Map<string, number>>>('facets');
-
 	const changeKey = `${key}Changed`;
 
 	const labelForKey = new Map([
@@ -93,17 +91,17 @@
 						<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 						<span class="badge badge--gray">
 							{option.label}
-							<span class="counter">({facets().get(key)?.get(option.value)})</span>
+							<span class="counter">({option.count})</span>
 						</span>
 					</label>
 				{/each}
 				<p>{$_('filter.no_results')}</p>
-				{#each options.filter(({ count }) => count == 0) as option (option.value)}
+				{#each options.filter(({ count }) => count === 0) as option (option.value)}
 					<label>
 						<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 						<span class="badge badge--gray">
 							{option.label}
-							<span class="counter">({facets().get(key)?.get(option.value)})</span>
+							<span class="counter">({option.count})</span>
 						</span>
 					</label>
 				{/each}

@@ -2,11 +2,11 @@
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Layout from '$lib/components/Layout.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import { computeFacetCount, organizationCategories, payloadTypes } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import type { PageProps } from './$types';
-	import { setContext } from 'svelte';
 
 	let { data }: PageProps = $props();
 
@@ -17,11 +17,11 @@
 
 		return computeFacetCount(facets, data.containers);
 	});
-
-	setContext('facets', () => facets);
 </script>
 
 <Layout>
+	<Navigation {facets} search slot="header" />
+
 	<svelte:fragment slot="main">
 		<div>
 			{#if $ability.can('create', payloadTypes.enum.organization)}

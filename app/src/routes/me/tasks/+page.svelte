@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Layout from '$lib/components/Layout.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
@@ -22,11 +21,9 @@
 
 		return computeFacetCount(facets, data.containers);
 	});
-
-	setContext('facets', () => facets);
 </script>
 
 <Layout>
-	<Navigation sortOptions={[]} {workspaceOptions} slot="header" />
+	<Navigation {facets} search sortOptions={[]} {workspaceOptions} slot="header" />
 	<Tasks containers={data.containers} slot="main" />
 </Layout>

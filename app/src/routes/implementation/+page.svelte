@@ -5,6 +5,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		computeFacetCount,
@@ -43,11 +44,11 @@
 
 		return computeFacetCount(facets, data.containers);
 	});
-
-	setContext('facets', () => facets);
 </script>
 
 <Layout>
+	<Navigation {facets} search slot="header" />
+
 	<svelte:fragment slot="main">
 		<Board>
 			{#each status.options as statusOption}

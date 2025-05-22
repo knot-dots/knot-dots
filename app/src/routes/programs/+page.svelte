@@ -4,6 +4,7 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Card from '$lib/components/Card.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		computeFacetCount,
@@ -40,11 +41,11 @@
 
 		return computeFacetCount(facets, data.containers);
 	});
-
-	setContext('facets', () => facets);
 </script>
 
 <Layout>
+	<Navigation {facets} search slot="header" />
+
 	<svelte:fragment slot="main">
 		<div>
 			{#if $mayCreateContainer(payloadTypes.enum.strategy, data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid)}

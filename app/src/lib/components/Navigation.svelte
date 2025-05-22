@@ -16,15 +16,20 @@
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
+	import { paramsFromFragment } from '$lib/models';
 	import { ability, user } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
+		facets?: Map<string, Map<string, number>>;
+		search?: boolean;
 		sortOptions?: [string, string][];
 		workspaceOptions?: { label: string; value: string }[];
 	}
 
 	let {
+		facets = new Map(),
+		search = false,
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
@@ -33,8 +38,6 @@
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
-
-	let facets = getContext<() => Map<string, Map<string, number>>>('facets');
 
 	let filterBar = createDisclosure({ label: $_('filters') });
 
@@ -50,7 +53,7 @@
 		let count = 0;
 
 		for (const key of page.url.searchParams.keys()) {
-			if (facets?.().has(key)) {
+			if (facets.has(key)) {
 				count = count + 1;
 			}
 		}
@@ -78,7 +81,7 @@
 
 	function resetFilters() {
 		const query = new URLSearchParams(page.url.searchParams);
-		for (const key of facets?.().keys()) {
+		for (const key of facets.keys()) {
 			query.delete(key);
 		}
 		goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
@@ -91,9 +94,11 @@
 	<Workspaces options={workspaceOptions} />
 
 	<form class="commands" data-sveltekit-keepfocus>
-		<NewSearch />
+		{#if search}
+			<NewSearch />
+		{/if}
 
-		{#if facets?.().size > 0}
+		{#if facets.size > 0}
 			<button
 				class="dropdown-button dropdown-button--command"
 				onclick={() => sortBar.close()}
@@ -139,7 +144,7 @@
 	{/if}
 </nav>
 
-<form class="filter-and-sort">
+<form class="filter-and-sort" data-sveltekit-keepfocus>
 	{#if $filterBar.expanded}
 		<fieldset use:filterBar.panel>
 			{#if activeFilters > 0}
@@ -150,7 +155,7 @@
 				<TrashBin />
 			</button>
 
-			{#each facets?.().entries() as [key, foci] (key)}
+			{#each facets.entries() as [key, foci] (key)}
 				{#if key === 'assignee'}
 					<AssigneeFilterDropDown />
 				{:else}

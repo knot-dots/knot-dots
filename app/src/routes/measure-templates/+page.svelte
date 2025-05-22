@@ -2,11 +2,10 @@
 	import { setContext } from 'svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		computeFacetCount,
-		indicatorCategories,
-		indicatorTypes,
 		measureTypes,
 		policyFieldBNK,
 		predicates,
@@ -38,11 +37,11 @@
 
 		return computeFacetCount(facets, data.containers);
 	});
-
-	setContext('facets', () => facets);
 </script>
 
 <Layout>
+	<Navigation {facets} search slot="header" />
+
 	<svelte:fragment slot="main">
 		<div>
 			<ul>
