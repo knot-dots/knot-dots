@@ -102,7 +102,7 @@
 	}
 </script>
 
-<nav class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover">
+<header class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover" role="banner">
 	{#if overlay}
 		<OverlayCloseButton />
 		<OverlayFullscreenToggle />
@@ -163,7 +163,7 @@
 			{$_('login')}
 		</button>
 	{/if}
-</nav>
+</header>
 
 <form class="filter-and-sort" data-sveltekit-keepfocus>
 	{#if $filterBar.expanded}
@@ -211,7 +211,7 @@
 </form>
 
 <style>
-	nav {
+	header {
 		--icon-color: var(--color-gray-500);
 		--indicator-background-color: var(--color-primary-700);
 
@@ -228,7 +228,7 @@
 		z-index: 2;
 	}
 
-	nav :global(svg) {
+	header :global(svg) {
 		color: var(--icon-color);
 	}
 

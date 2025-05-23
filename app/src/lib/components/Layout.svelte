@@ -21,13 +21,13 @@
 </script>
 
 <div in:fly={transitionIn} out:fly={transitionOut}>
-	<aside>
+	<nav>
 		{#if $$slots.sidebar}
 			<slot name="sidebar" />
 		{:else}
 			<NewSidebar />
 		{/if}
-	</aside>
+	</nav>
 	<main>
 		{#if $$slots.header}
 			<slot name="header" />
@@ -50,7 +50,7 @@
 		width: 100%;
 	}
 
-	aside {
+	nav {
 		border-right: 1px solid var(--color-gray-200);
 		display: flex;
 		flex-direction: column;
