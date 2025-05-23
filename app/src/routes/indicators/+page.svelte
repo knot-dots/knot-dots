@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
+	import Header from '$lib/components/Header.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		computeFacetCount,
@@ -41,7 +41,7 @@
 </script>
 
 <Layout>
-	<Navigation {facets} search slot="header" />
+	<Header {facets} search slot="header" />
 
 	<svelte:fragment slot="main">
 		<Indicators containers={data.containers} />

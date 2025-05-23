@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Navigation from '$lib/components/Navigation.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import PageDetailView from '$lib/components/PageDetailView.svelte';
 	import { type PageContainer } from '$lib/models';
 
@@ -10,7 +10,7 @@
 	let { container }: Props = $props();
 </script>
 
-<Navigation sortOptions={[]} workspaceOptions={[]} />
+<Header sortOptions={[]} workspaceOptions={[]} />
 <div class="content-details masked-overflow">
 	<PageDetailView {container} />
 </div>

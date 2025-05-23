@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Chapters from '$lib/components/Chapters.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import {
 		audience,
 		type Container,
@@ -26,6 +26,6 @@
 	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Navigation {facets} search {workspaceOptions} />
+<Header {facets} search {workspaceOptions} />
 
 <Chapters {containers} />

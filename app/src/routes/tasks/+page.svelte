@@ -5,9 +5,9 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
@@ -56,7 +56,7 @@
 </script>
 
 <Layout>
-	<Navigation {facets} sortOptions={[]} slot="header" />
+	<Header {facets} sortOptions={[]} slot="header" />
 
 	<svelte:fragment slot="main">
 		<Board>

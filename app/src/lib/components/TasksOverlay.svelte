@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import {
 		type AnyContainer,
@@ -26,7 +26,7 @@
 	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Navigation {facets} search {workspaceOptions} />
+<Header {facets} search {workspaceOptions} />
 
 <Tasks
 	{container}

@@ -3,8 +3,8 @@
 	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
-	import NewSidebar from '$lib/components/NewSidebar.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { overlay } from '$lib/stores';
 
@@ -25,14 +25,14 @@
 		{#if $$slots.sidebar}
 			<slot name="sidebar" />
 		{:else}
-			<NewSidebar />
+			<Sidebar />
 		{/if}
 	</nav>
 	<main>
 		{#if $$slots.header}
 			<slot name="header" />
 		{:else}
-			<Navigation />
+			<Header />
 		{/if}
 		<slot name="main" />
 	</main>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import type { PageProps } from './$types';
 
@@ -15,7 +15,7 @@
 </script>
 
 <Layout>
-	<Navigation sortOptions={[]} {workspaceOptions} slot="header" />
+	<Header sortOptions={[]} {workspaceOptions} slot="header" />
 
 	<div slot="main">
 		<ProfileView containers={data.containers} />

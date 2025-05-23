@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import { computeFacetCount, taskCategories } from '$lib/models';
 	import type { PageProps } from './$types';
@@ -24,6 +24,6 @@
 </script>
 
 <Layout>
-	<Navigation {facets} search sortOptions={[]} {workspaceOptions} slot="header" />
+	<Header {facets} search sortOptions={[]} {workspaceOptions} slot="header" />
 	<Tasks containers={data.containers} slot="main" />
 </Layout>

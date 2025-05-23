@@ -12,7 +12,7 @@
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
-	import NewSearch from '$lib/components/NewSearch.svelte';
+	import Search from '$lib/components/Search.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
@@ -116,7 +116,7 @@
 
 	<form class="commands" data-sveltekit-keepfocus>
 		{#if search}
-			<NewSearch />
+			<Search />
 		{/if}
 
 		{#if facets.size > 0}

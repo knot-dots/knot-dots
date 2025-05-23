@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import { overlayKey, type PageContainer, paramsFromFragment } from '$lib/models';
 
 	interface Props {
@@ -34,7 +34,7 @@
 	}
 </script>
 
-<Navigation sortOptions={[]} workspaceOptions={[]} />
+<Header sortOptions={[]} workspaceOptions={[]} />
 <div class="content-details masked-overflow">
 	<ContainerForm bind:container on:submitSuccessful={() => afterSubmit()} />
 </div>

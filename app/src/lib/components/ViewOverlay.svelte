@@ -14,10 +14,10 @@
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
 	import ResolutionDetailView from '$lib/components/ResolutionDetailView.svelte';
 	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
@@ -331,11 +331,11 @@
 		['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 	])}
-	<Navigation facets={computeFacetCount(facets, relatedContainers)} search {workspaceOptions} />
+	<Header facets={computeFacetCount(facets, relatedContainers)} search {workspaceOptions} />
 {:else if isContainerWithEffect(container)}
-	<Navigation {workspaceOptions} sortOptions={[]} />
+	<Header {workspaceOptions} sortOptions={[]} />
 {:else}
-	<Navigation sortOptions={[]} />
+	<Header sortOptions={[]} />
 {/if}
 
 {#if !createFeatureDecisions(page.data.features).useEditableDetailView() && isIndicatorContainer(container)}

@@ -8,7 +8,7 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		type AnyContainer,
@@ -125,7 +125,7 @@
 	});
 </script>
 
-<Navigation {facets} search={!!facets} sortOptions={facets ? undefined : []} />
+<Header {facets} search={!!facets} sortOptions={facets ? undefined : []} />
 <div class="content-details masked-overflow">
 	<ContainerForm bind:container on:submitSuccessful={(e) => afterSubmit(e, container)} />
 </div>

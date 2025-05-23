@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import { computeFacetCount, organizationCategories, payloadTypes } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -20,7 +20,7 @@
 </script>
 
 <Layout>
-	<Navigation {facets} search slot="header" />
+	<Header {facets} search slot="header" />
 
 	<svelte:fragment slot="main">
 		<div>

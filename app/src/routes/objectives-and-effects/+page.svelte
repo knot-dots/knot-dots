@@ -5,9 +5,9 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		computeFacetCount,
@@ -139,7 +139,7 @@
 </script>
 
 <Layout>
-	<Navigation {facets} search slot="header" />
+	<Header {facets} search slot="header" />
 
 	<svelte:fragment slot="main">
 		{#key page.url.searchParams}

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import Header from '$lib/components/Header.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		type Container,
@@ -30,6 +30,6 @@
 	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Navigation {facets} search {workspaceOptions} />
+<Header {facets} search {workspaceOptions} />
 
 <Indicators {containers} />

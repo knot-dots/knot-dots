@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import Header from '$lib/components/Header.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		type AnyContainer,
 		audience,
@@ -40,7 +40,7 @@
 	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Navigation {facets} search {workspaceOptions} />
+<Header {facets} search {workspaceOptions} />
 
 <MeasureMonitoring
 	measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)

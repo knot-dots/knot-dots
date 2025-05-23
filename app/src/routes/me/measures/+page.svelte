@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		computeFacetCount,
@@ -35,6 +35,6 @@
 </script>
 
 <Layout>
-	<Navigation {facets} search {workspaceOptions} slot="header" />
+	<Header {facets} search {workspaceOptions} slot="header" />
 	<Measures containers={data.containers} slot="main" />
 </Layout>

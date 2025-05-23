@@ -1,6 +1,6 @@
 <script lang="ts">
+	import Header from '$lib/components/Header.svelte';
 	import Measures from '$lib/components/Measures.svelte';
-	import Navigation from '$lib/components/Navigation.svelte';
 	import {
 		audience,
 		type MeasureContainer,
@@ -28,6 +28,6 @@
 	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Navigation {facets} search {workspaceOptions} />
+<Header {facets} search {workspaceOptions} />
 
 <Measures {containers} />
