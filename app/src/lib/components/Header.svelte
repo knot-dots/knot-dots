@@ -134,7 +134,7 @@
 			</button>
 		{/if}
 
-		{#if sortOptions.length > 1}
+		{#if sortOptions.length > 1 && (facets.size > 0 || search)}
 			<button
 				class="dropdown-button dropdown-button--command"
 				onclick={() => filterBar.close()}
