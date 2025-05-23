@@ -131,11 +131,6 @@
 							knotdots.net Homepage
 						</a>
 					</li>
-					<li>
-						<a class="sidebar-menu-item sidebar-menu-item--secondary" href="/imprint">
-							{$_('imprint')}
-						</a>
-					</li>
 				</ul>
 			</li>
 		{/if}

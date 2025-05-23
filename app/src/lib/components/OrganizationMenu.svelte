@@ -150,7 +150,6 @@
 									--height="100%"
 									{container}
 									linkPath={page.url.pathname
-										.replace(/(\/about)|(\/imprint)|(\/privacy)/, `/organization/${container.guid}`)
 										.replace('/organizational_unit/', '/organization/')
 										.replace(currentContext.guid, container.guid)}
 									bind:selectedContext
@@ -162,7 +161,6 @@
 									--height="100%"
 									{container}
 									linkPath={page.url.pathname
-										.replace(/(\/about)|(\/imprint)|(\/privacy)/, `/organization/${container.guid}`)
 										.replace('/organizational_unit/', '/organization/')
 										.replace(currentContext.guid, container.guid)}
 									bind:selectedContext
@@ -195,10 +193,6 @@
 								<OrganizationMenuCard
 									{container}
 									linkPath={page.url.pathname
-										.replace(
-											/(\/about)|(\/imprint)|(\/privacy)/,
-											`/organizational_unit/${container.guid}`
-										)
 										.replace('/organization/', '/organizational_unit/')
 										.replace(currentContext.guid, container.guid)}
 									bind:selectedContext
