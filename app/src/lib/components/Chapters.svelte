@@ -26,12 +26,6 @@
 	);
 
 	$: columns = [
-		{
-			addItemUrl: undefined,
-			containers: containers.filter(isStrategyContainer),
-			key: 'programs',
-			title: $_('programs')
-		},
 		...Array.from(goals.entries()).map(([hierarchyLevel, containers]) => ({
 			addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
 			containers,
