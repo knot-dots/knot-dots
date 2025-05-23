@@ -15,7 +15,7 @@
 </script>
 
 <Layout>
-	<Navigation {workspaceOptions} slot="header" />
+	<Navigation sortOptions={[]} {workspaceOptions} slot="header" />
 
 	<div slot="main">
 		<ProfileView containers={data.containers} />
