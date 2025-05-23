@@ -53,7 +53,7 @@
 				},
 				{
 					label: $_('workspace.tasks'),
-					value: overlayURL(page.url, overlayKey.enum.indicators, data.container.guid)
+					value: overlayURL(page.url, overlayKey.enum.tasks, data.container.guid)
 				}
 			];
 		}
