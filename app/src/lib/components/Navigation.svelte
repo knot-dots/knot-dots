@@ -14,6 +14,10 @@
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
 	import NewSearch from '$lib/components/NewSearch.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
+	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
+	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
+	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
+	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { paramsFromFragment } from '$lib/models';
@@ -51,8 +55,9 @@
 
 	let activeFilters = $derived.by(() => {
 		let count = 0;
+		const params = overlay ? paramsFromFragment(page.url) : page.url.searchParams;
 
-		for (const key of page.url.searchParams.keys()) {
+		for (const key of params.keys()) {
 			if (facets.has(key)) {
 				count = count + 1;
 			}
@@ -80,16 +85,31 @@
 	}
 
 	function resetFilters() {
-		const query = new URLSearchParams(page.url.searchParams);
-		for (const key of facets.keys()) {
-			query.delete(key);
+		if (overlay) {
+			const query = paramsFromFragment(page.url);
+			for (const key of facets.keys()) {
+				query.delete(key);
+			}
+			goto(`#${query.toString()}`, { keepFocus: true });
+		} else {
+			const query = new URLSearchParams(page.url.searchParams);
+			for (const key of facets.keys()) {
+				query.delete(key);
+			}
+			goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
 		}
-		goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
 	}
 </script>
 
 <nav class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover">
-	<OrganizationMenu />
+	{#if overlay}
+		<OverlayCloseButton />
+		<OverlayFullscreenToggle />
+		<OverlayBackButton />
+		<OverlayTitle />
+	{:else}
+		<OrganizationMenu />
+	{/if}
 
 	<Workspaces options={workspaceOptions} />
 
@@ -200,7 +220,6 @@
 		color: var(--color-gray-700);
 		container-type: inline-size;
 		display: flex;
-		flex-wrap: wrap;
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		padding: 0.75rem;

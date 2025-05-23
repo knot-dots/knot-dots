@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
@@ -11,6 +12,8 @@
 	interface Props {
 		options?: { label: string; value: string }[];
 	}
+
+	let overlay = getContext('overlay');
 
 	let selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
 
@@ -52,12 +55,20 @@
 			goto(selected);
 		}
 	}
+
+	function isActiveItem(item: { value: string }) {
+		if (overlay) {
+			return page.url.hash === item.value;
+		} else {
+			return page.url.pathname === item.value;
+		}
+	}
 </script>
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" onchange={onChange} type="button" use:menu.button>
 		<span>
-			{options.find(({ value }) => value === page.url.pathname)?.label ?? $_('workspaces')}
+			{options.find(isActiveItem)?.label ?? $_('workspaces')}
 		</span>
 		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
@@ -78,6 +89,10 @@
 </div>
 
 <style>
+	.dropdown {
+		flex-shrink: 0;
+	}
+
 	.dropdown-button {
 		--button-background: transparent;
 
