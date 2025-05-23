@@ -245,6 +245,10 @@
 		width: fit-content;
 	}
 
+	.commands > .divider:first-child {
+		display: none;
+	}
+
 	.divider {
 		border-left: solid 1px var(--color-gray-200);
 		height: 1.5rem;
