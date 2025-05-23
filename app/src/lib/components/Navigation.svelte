@@ -176,20 +176,18 @@
 			</button>
 
 			{#each facets.entries() as [key, foci] (key)}
+				{@const options = [...foci.entries()]
+					.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+					.toSorted((a, b) =>
+						a.label.localeCompare(b.label, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						})
+					)}
 				{#if key === 'assignee'}
-					<AssigneeFilterDropDown />
-				{:else}
-					{@const options = [...foci.entries()]
-						.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
-						.toSorted((a, b) =>
-							a.label.localeCompare(b.label, undefined, {
-								numeric: true,
-								sensitivity: 'base'
-							})
-						)}
-					{#if options.filter(({ count }) => count > 0).length > 0}
-						<FilterDropDown {key} {options} />
-					{/if}
+					<AssigneeFilterDropDown {options} />
+				{:else if options.filter(({ count }) => count > 0).length > 0}
+					<FilterDropDown {key} {options} />
 				{/if}
 			{/each}
 		</fieldset>
