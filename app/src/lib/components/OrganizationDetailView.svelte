@@ -27,7 +27,7 @@
 		{container.payload.name}
 		{#if $ability.can('update', container)}
 			<a
-				href="{container.guid}/edit"
+				href="{container.payload.type}/{container.guid}/edit"
 				class="button button-square quiet"
 				data-sveltekit-replacestate
 			>

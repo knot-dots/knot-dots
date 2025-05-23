@@ -14,7 +14,7 @@
 	$: container = data.container;
 
 	async function afterSubmit() {
-		await goto(`../${container.guid}`, {
+		await goto(`/`, {
 			invalidateAll: true
 		});
 	}
@@ -39,7 +39,7 @@
 				<Visibility {container} />
 				<div class="content-actions">
 					<button class="primary" form="container-form" type="submit">{$_('save')}</button>
-					<a class="button" href=".">{$_('cancel')}</a>
+					<a class="button" href="/">{$_('cancel')}</a>
 					{#if $mayDeleteContainer(container)}
 						<button class="delete quiet" title={$_('delete')} type="button" on:click={handleDelete}>
 							<Trash />

@@ -19,7 +19,7 @@
 
 	let {
 		options = [
-			{ label: $_('workspace.dots'), value: '/' },
+			{ label: $_('workspace.all'), value: '/all' },
 			{ label: $_('workspace.programs'), value: '/programs' },
 			{ label: $_('workspace.programs_by_level'), value: '/programs-by-level' },
 			{ label: $_('workspace.measures'), value: '/implementation' },

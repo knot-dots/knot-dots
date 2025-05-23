@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { signIn, signOut } from '@auth/sveltekit/client';
+	import { signOut } from '@auth/sveltekit/client';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
@@ -39,7 +39,9 @@
 		if ('default' in container.payload && container.payload.default) {
 			return '/';
 		} else {
-			return `/${container.payload.type}/${container.guid}`;
+			const url = new URL(env.PUBLIC_BASE_URL);
+			url.hostname = `${container.guid}.${url.hostname}`;
+			return url.toString();
 		}
 	}
 </script>

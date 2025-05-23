@@ -149,9 +149,7 @@
 								<OrganizationMenuCard
 									--height="100%"
 									{container}
-									linkPath={page.url.pathname
-										.replace('/organizational_unit/', '/organization/')
-										.replace(currentContext.guid, container.guid)}
+									linkPath={page.url.pathname}
 									bind:selectedContext
 								/>
 							{/each}
@@ -160,16 +158,11 @@
 								<OrganizationMenuCard
 									--height="100%"
 									{container}
-									linkPath={page.url.pathname
-										.replace('/organizational_unit/', '/organization/')
-										.replace(currentContext.guid, container.guid)}
+									linkPath={page.url.pathname}
 									bind:selectedContext
 								/>
 							{/each}
-							<AllOrganizationsCard
-								--height="100%"
-								linkPath={page.url.pathname.replace(/\/organization(al_unit)?\/.*/, '/about')}
-							/>
+							<AllOrganizationsCard --height="100%" linkPath={page.url.pathname} />
 						{/if}
 					</div>
 				</BoardColumn>
@@ -192,9 +185,7 @@
 							{#each containers as container}
 								<OrganizationMenuCard
 									{container}
-									linkPath={page.url.pathname
-										.replace('/organization/', '/organizational_unit/')
-										.replace(currentContext.guid, container.guid)}
+									linkPath={page.url.pathname}
 									bind:selectedContext
 								/>
 							{/each}

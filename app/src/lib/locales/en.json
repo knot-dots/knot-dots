@@ -645,7 +645,7 @@
 	},
 	"vision": "Vision",
 	"visions": "Visions",
-	"workspace.dots": "Overview",
+	"workspace.all": "Overview",
 	"workspace.indicators": "Tiles",
 	"workspace.measure_monitoring": "Measure monitoring",
 	"workspace.measure_templates": "Measure templates",
