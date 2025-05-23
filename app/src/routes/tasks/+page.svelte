@@ -56,7 +56,7 @@
 </script>
 
 <Layout>
-	<Header {facets} sortOptions={[]} slot="header" />
+	<Header {facets} search sortOptions={[]} slot="header" />
 
 	<svelte:fragment slot="main">
 		<Board>
