@@ -155,9 +155,9 @@
 		{/if}
 	</form>
 
-	<EditModeToggle />
-
-	{#if !$user.isAuthenticated}
+	{#if $user.isAuthenticated}
+		<EditModeToggle />
+	{:else}
 		<button class="button-primary button-xs" onclick={() => signIn('keycloak')} type="button">
 			{$_('login')}
 		</button>
@@ -222,6 +222,7 @@
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
+		height: var(--nav-height);
 		padding: 0.75rem;
 		z-index: 2;
 	}
