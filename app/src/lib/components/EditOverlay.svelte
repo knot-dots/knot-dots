@@ -6,25 +6,24 @@
 	import createEffect from '$lib/client/createEffect';
 	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import ContainerFormTabs from '$lib/components/ContainerFormTabs.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
-	import IndicatorCategoryFilter from '$lib/components/IndicatorCategoryFilter.svelte';
-	import IndicatorTypeFilter from '$lib/components/IndicatorTypeFilter.svelte';
-	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
-	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
-	import TopicFilter from '$lib/components/TopicFilter.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		type AnyContainer,
+		audience,
 		type Container,
 		type CustomEventMap,
+		indicatorCategories,
+		indicatorTypes,
 		isIndicatorContainer,
 		overlayKey,
 		paramsFromFragment,
-		payloadTypes
+		payloadTypes,
+		policyFieldBNK,
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
 	import {
 		addEffectState,
@@ -111,28 +110,22 @@
 			return `#${newParams.toString()}`;
 		}
 	}
+
+	let facets = $derived.by(() => {
+		if (isIndicatorContainer(container)) {
+			return new Map([
+				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
+				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
+				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+			]);
+		}
+	});
 </script>
 
-<aside>
-	{#if isIndicatorContainer(container) && !container.payload.quantity}
-		<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
-			<svelte:fragment slot="filters">
-				<IndicatorCategoryFilter />
-				<MeasureTypeFilter />
-				<CategoryFilter />
-				<TopicFilter />
-				<PolicyFieldBNKFilter />
-				<IndicatorTypeFilter />
-			</svelte:fragment>
-			<slot slot="extra" />
-		</Sidebar>
-	{:else}
-		<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-edit`}>
-			<ContainerFormTabs {container} slot="tabs" />
-			<slot slot="extra" />
-		</Sidebar>
-	{/if}
-</aside>
+<Navigation {facets} search={!!facets} sortOptions={facets ? undefined : []} />
 <div class="content-details masked-overflow">
 	<ContainerForm bind:container on:submitSuccessful={(e) => afterSubmit(e, container)} />
 </div>

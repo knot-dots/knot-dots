@@ -119,7 +119,7 @@
 
 	function byPayloadType(payloadType: PayloadType, url: URL) {
 		const params = paramsFromFragment(url);
-		return !params.has('payloadType') || params.getAll('payloadType').includes(payloadType);
+		return !params.has('type') || params.getAll('type').includes(payloadType);
 	}
 </script>
 

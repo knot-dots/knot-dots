@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Members from '$lib/components/Members.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import type { AnyContainer, User } from '$lib/models';
 
 	interface Props {
@@ -11,11 +11,7 @@
 	let { container, users }: Props = $props();
 </script>
 
-<aside>
-	<Sidebar helpSlug="overlay-members">
-		<slot slot="extra" />
-	</Sidebar>
-</aside>
+<Navigation sortOptions={[]} workspaceOptions={[]} />
 <div class="content-details masked-overflow">
 	<Members {container} {users} />
 </div>

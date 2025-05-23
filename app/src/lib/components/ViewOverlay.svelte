@@ -10,28 +10,24 @@
 	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
-	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
-	import ContainerDetailViewTabs from '$lib/components/ContainerDetailViewTabs.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
-	import PayloadTypeFilter from '$lib/components/PayloadTypeFilter.svelte';
-	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
 	import ResolutionDetailView from '$lib/components/ResolutionDetailView.svelte';
 	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
-	import StrategyViewModes from '$lib/components/StrategyViewModes.svelte';
 	import TaskDetailView from '$lib/components/TaskDetailView.svelte';
-	import TopicFilter from '$lib/components/TopicFilter.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
+		audience,
+		computeFacetCount,
 		type Container,
 		containerOfType,
 		findOverallObjective,
@@ -53,9 +49,12 @@
 		newIndicatorTemplateFromIndicator,
 		overlayKey,
 		payloadTypes,
+		policyFieldBNK,
 		predicates,
 		quantities,
-		type StrategyContainer
+		type StrategyContainer,
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
 	import {
 		ability,
@@ -79,6 +78,8 @@
 		(getContext('relationOverlay') as { enabled: boolean }).enabled;
 
 	let saveAsIndicatorTemplateDisabled = $state(false);
+
+	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 
 	function saveIndicatorAsTemplate(c: IndicatorContainer) {
 		return async () => {
@@ -322,42 +323,21 @@
 	}
 </script>
 
-<aside>
-	{#if isStrategyContainer(container)}
-		<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
-			<svelte:fragment slot="filters">
-				<PayloadTypeFilter
-					options={Array.from(
-						new Set(
-							relatedContainers
-								.filter(({ guid, relation }) =>
-									relation.some(
-										({ predicate }) =>
-											predicate === predicates.enum['is-part-of-strategy'] &&
-											guid !== container.guid
-									)
-								)
-								.map(({ payload }) => payload.type)
-						)
-					)}
-				/>
-				<CategoryFilter />
-				<TopicFilter />
-				<PolicyFieldBNKFilter />
-			</svelte:fragment>
-			<svelte:fragment slot="viewMode">
-				<StrategyViewModes />
-			</svelte:fragment>
-			<ContainerDetailViewTabs {container} slot="tabs" />
-			<slot slot="extra" />
-		</Sidebar>
-	{:else}
-		<Sidebar helpSlug={`${container.payload.type.replace('_', '-')}-view`}>
-			<ContainerDetailViewTabs {container} slot="tabs" />
-			<slot slot="extra" />
-		</Sidebar>
-	{/if}
-</aside>
+{#if isStrategyContainer(container)}
+	{@const facets = new Map([
+		['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
+		['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+		['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+		['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+	])}
+	<Navigation facets={computeFacetCount(facets, relatedContainers)} search {workspaceOptions} />
+{:else if isContainerWithEffect(container)}
+	<Navigation {workspaceOptions} sortOptions={[]} />
+{:else}
+	<Navigation sortOptions={[]} />
+{/if}
+
 {#if !createFeatureDecisions(page.data.features).useEditableDetailView() && isIndicatorContainer(container)}
 	<header class="content-header">
 		<IndicatorTabs {container} />

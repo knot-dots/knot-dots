@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditHelpOverlay from '$lib/components/EditHelpOverlay.svelte';
 	import EditOverlay from '$lib/components/EditOverlay.svelte';
@@ -8,13 +10,11 @@
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
-	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
-	import OverlayNavigation from '$lib/components/OverlayNavigation.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
-	import { overlayKey } from '$lib/models';
+	import { isContainerWithEffect, isStrategyContainer, overlayKey, overlayURL } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
 	interface Props {
@@ -25,11 +25,45 @@
 
 	setContext('overlay', true);
 
-	let fullScreen = $state(false);
+	let workspaceOptions = $derived.by(() => {
+		if (isStrategyContainer(data.container)) {
+			return [
+				{
+					label: $_('workspace.chapters'),
+					value: overlayURL(page.url, overlayKey.enum.chapters, data.container.guid)
+				},
+				{
+					label: $_('workspace.measures'),
+					value: overlayURL(page.url, overlayKey.enum.measures, data.container.guid)
+				},
+				{
+					label: $_('workspace.measure_monitoring'),
+					value: overlayURL(page.url, overlayKey.enum['measure-monitoring'], data.container.guid)
+				},
+				{
+					label: $_('workspace.indicators'),
+					value: overlayURL(page.url, overlayKey.enum.indicators, data.container.guid)
+				}
+			];
+		} else if (isContainerWithEffect(data.container)) {
+			return [
+				{
+					label: $_('workspace.measure_monitoring'),
+					value: overlayURL(page.url, overlayKey.enum['measure-monitoring'], data.container.guid)
+				},
+				{
+					label: $_('workspace.tasks'),
+					value: overlayURL(page.url, overlayKey.enum.indicators, data.container.guid)
+				}
+			];
+		}
+	});
 
-	function toggleFullscreen() {
-		fullScreen = !fullScreen;
-	}
+	setContext('workspaceOptions', workspaceOptions);
+
+	let fullScreen = $state({ enabled: false });
+
+	setContext('overlayFullScreen', fullScreen);
 
 	let offset = $state(0);
 
@@ -58,59 +92,38 @@
 
 <section
 	class="overlay"
-	class:overlay-fullscreen={fullScreen}
+	class:overlay-fullscreen={fullScreen.enabled}
 	transition:slide={{ axis: 'x' }}
 	style="--width-factor: {$overlayWidth}"
 >
 	<!--svelte-ignore a11y_no_static_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand}></div>
-	<OverlayNavigation container={'container' in data ? data.container : undefined} />
 	{#if data.key === overlayKey.enum['edit-help']}
-		<EditHelpOverlay container={data.container}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</EditHelpOverlay>
+		<EditHelpOverlay container={data.container} />
 	{:else if data.key === overlayKey.enum['view-help']}
-		<ViewHelpOverlay container={data.container}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</ViewHelpOverlay>
+		<ViewHelpOverlay container={data.container} />
 	{:else if data.key === overlayKey.enum['create'] || data.key === overlayKey.enum['edit']}
-		<EditOverlay container={data.container} relatedContainers={data.relatedContainers}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</EditOverlay>
+		<EditOverlay container={data.container} relatedContainers={data.relatedContainers} />
 	{:else if data.key === overlayKey.enum['members']}
-		<MembersOverlay container={data.container} users={data.users}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</MembersOverlay>
+		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}
-		<ChaptersOverlay containers={data.containers}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</ChaptersOverlay>
+		<ChaptersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['relations']}
 		<RelationOverlay object={data.container} relatedContainers={data.relatedContainers} />
 	{:else if data.key === overlayKey.enum['measures']}
-		<MeasuresOverlay containers={data.containers}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</MeasuresOverlay>
+		<MeasuresOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['measure-monitoring']}
-		<MeasureMonitoringOverlay container={data.container} containers={data.containers}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</MeasureMonitoringOverlay>
+		<MeasureMonitoringOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['tasks']}
-		<TasksOverlay container={data.container} containers={data.containers}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</TasksOverlay>
+		<TasksOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['indicators']}
-		<IndicatorsOverlay containers={data.containers}>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</IndicatorsOverlay>
+		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
 		<ViewOverlay
 			container={data.container}
 			relatedContainers={data.relatedContainers}
 			revisions={data.revisions}
-		>
-			<OverlayFullscreenToggle onclick={toggleFullscreen} enabled={fullScreen} />
-		</ViewOverlay>
+		/>
 	{/if}
 </section>
 

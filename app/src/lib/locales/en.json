@@ -657,6 +657,7 @@
 	"workspace.programs": "Programs",
 	"workspace.programs_by_level": "Programs by level",
 	"workspace.resolutions": "Resolutions",
+	"workspace.strategy": "Strategy board",
 	"workspace.tasks": "Tasks status board",
 	"workspaces": "Workspaces"
 }

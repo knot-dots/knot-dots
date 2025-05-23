@@ -1,32 +1,33 @@
 <script lang="ts">
-	import AudienceFilter from '$lib/components/AudienceFilter.svelte';
-	import CategoryFilter from '$lib/components/CategoryFilter.svelte';
-	import MeasureTypeFilter from '$lib/components/MeasureTypeFilter.svelte';
 	import Measures from '$lib/components/Measures.svelte';
-	import PolicyFieldBNKFilter from '$lib/components/PolicyFieldBNKFilter.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
-	import Sort from '$lib/components/Sort.svelte';
-	import TopicFilter from '$lib/components/TopicFilter.svelte';
-	import type { MeasureContainer } from '$lib/models';
+	import Navigation from '$lib/components/Navigation.svelte';
+	import {
+		audience,
+		type MeasureContainer,
+		measureTypes,
+		policyFieldBNK,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
+	import { getContext } from 'svelte';
 
 	interface Props {
 		containers: MeasureContainer[];
 	}
 
 	let { containers }: Props = $props();
+
+	const facets = new Map([
+		['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+		['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+		['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
+		['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]
+	]);
+
+	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<aside>
-	<Sidebar helpSlug="overlay-measures">
-		<svelte:fragment slot="filters">
-			<AudienceFilter />
-			<CategoryFilter />
-			<TopicFilter />
-			<PolicyFieldBNKFilter />
-			<MeasureTypeFilter />
-		</svelte:fragment>
-		<Sort slot="sort" />
-		<slot slot="extra" />
-	</Sidebar>
-</aside>
+<Navigation {facets} search {workspaceOptions} />
+
 <Measures {containers} />

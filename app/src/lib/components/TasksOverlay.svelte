@@ -1,15 +1,14 @@
 <script lang="ts">
-	import AssigneeFilter from '$lib/components/AssigneeFilter.svelte';
-	import Search from '$lib/components/Search.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { getContext } from 'svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
-	import TaskCategoryFilter from '$lib/components/TaskCategoryFilter.svelte';
 	import {
 		type AnyContainer,
 		type Container,
 		isGoalContainer,
 		isPartOf,
-		isTaskContainer
+		isTaskContainer,
+		taskCategories
 	} from '$lib/models';
 
 	interface Props {
@@ -18,18 +17,16 @@
 	}
 
 	let { container, containers }: Props = $props();
+
+	const facets = new Map([
+		['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+		['assignee', new Map()]
+	]);
+
+	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<aside>
-	<Sidebar helpSlug="overlay-tasks">
-		<Search slot="search" />
-		<svelte:fragment slot="filters">
-			<TaskCategoryFilter />
-			<AssigneeFilter />
-		</svelte:fragment>
-		<slot slot="extra" />
-	</Sidebar>
-</aside>
+<Navigation {facets} search {workspaceOptions} />
 
 <Tasks
 	{container}

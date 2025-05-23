@@ -26,6 +26,7 @@
 		['indicatorType', 'indicator_type'],
 		['indicatorCategory', 'indicator_category'],
 		['measureType', 'measure_type'],
+		['type', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],
 		['strategyType', 'strategy_type.label'],
 		['taskCategory', 'task_category.label']
