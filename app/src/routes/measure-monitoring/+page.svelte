@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import { page } from '$app/state';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
@@ -65,6 +66,9 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
+			...((!page.data.currentOrganization.payload.default
+				? [['included', new Map()]]
+				: []) as Array<[string, Map<string, number>]>),
 			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
 			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],

@@ -24,7 +24,7 @@
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import EditableStrategyType from '$lib/components/EditableStrategyType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
-	import Search from '$lib/components/Search.svelte';
+	import NewSearch from '$lib/components/NewSearch.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
@@ -237,7 +237,7 @@
 		<div class="details-tab" id="basic-data">
 			<h2 class="details-title">
 				{container.payload.title}
-				<Search />
+				<NewSearch />
 			</h2>
 		</div>
 

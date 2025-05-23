@@ -34,6 +34,9 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
+			...((!page.data.currentOrganization.payload.default
+				? [['included', new Map()]]
+				: []) as Array<[string, Map<string, number>]>),
 			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
 			['assignee', new Map()]
 		]);

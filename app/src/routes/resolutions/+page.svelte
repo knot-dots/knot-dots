@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Layout from '$lib/components/Layout.svelte';
@@ -35,6 +36,9 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
+			...((!page.data.currentOrganization.payload.default
+				? [['included', new Map()]]
+				: []) as Array<[string, Map<string, number>]>),
 			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
 			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],

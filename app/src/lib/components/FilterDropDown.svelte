@@ -13,7 +13,7 @@
 		initialValue?: string[];
 		key: string;
 		label?: string;
-		options: Array<{ count: number; value: string; label: string }>;
+		options: Array<{ count?: number; value: string; label: string }>;
 	}
 
 	let { initialValue = [], key, label, options }: Props = $props();
@@ -23,6 +23,7 @@
 	const changeKey = `${key}Changed`;
 
 	const labelForKey = new Map([
+		['included', 'included.label'],
 		['indicatorType', 'indicator_type'],
 		['indicatorCategory', 'indicator_category'],
 		['measureType', 'measure_type'],
@@ -87,17 +88,19 @@
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 			<div>
-				{#each options.filter(({ count }) => count > 0) as option (option.value)}
+				{#each options.filter(({ count }) => count === undefined || count > 0) as option (option.value)}
 					<label>
 						<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 						<span class="badge badge--gray">
 							{option.label}
-							<span class="counter">({option.count})</span>
+							{#if option.count !== undefined}
+								<span class="counter">({option.count})</span>
+							{/if}
 						</span>
 					</label>
 				{/each}
 				<p>{$_('filter.no_results')}</p>
-				{#each options.filter(({ count }) => count === 0) as option (option.value)}
+				{#each options.filter(({ count }) => count !== undefined && count === 0) as option (option.value)}
 					<label>
 						<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 						<span class="badge badge--gray">

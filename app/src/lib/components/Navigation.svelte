@@ -13,6 +13,7 @@
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
 	import NewSearch from '$lib/components/NewSearch.svelte';
+	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
 	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
@@ -186,6 +187,8 @@
 					)}
 				{#if key === 'assignee'}
 					<AssigneeFilterDropDown {options} />
+				{:else if key === 'included'}
+					<OrganizationIncludedFilterDropDown />
 				{:else if options.filter(({ count }) => count > 0).length > 0}
 					<FilterDropDown {key} {options} />
 				{/if}

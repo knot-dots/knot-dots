@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import { page } from '$app/state';
 	import Indicators from '$lib/components/Indicators.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Navigation from '$lib/components/Navigation.svelte';
@@ -24,6 +25,9 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
+			...((!page.data.currentOrganization.payload.default
+				? [['included', new Map()]]
+				: []) as Array<[string, Map<string, number>]>),
 			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
 			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
