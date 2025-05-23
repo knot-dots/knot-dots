@@ -332,10 +332,8 @@
 		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 	])}
 	<Header facets={computeFacetCount(facets, relatedContainers)} search {workspaceOptions} />
-{:else if isContainerWithEffect(container)}
-	<Header {workspaceOptions} sortOptions={[]} />
 {:else}
-	<Header sortOptions={[]} />
+	<Header {workspaceOptions} sortOptions={[]} />
 {/if}
 
 {#if !createFeatureDecisions(page.data.features).useEditableDetailView() && isIndicatorContainer(container)}

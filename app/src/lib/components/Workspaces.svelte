@@ -65,28 +65,30 @@
 	}
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" onchange={onChange} type="button" use:menu.button>
-		<span>
-			{options.find(isActiveItem)?.label ?? $_('workspaces')}
-		</span>
-		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-	</button>
+{#if options.length > 1}
+	<div class="dropdown" use:popperRef>
+		<button class="dropdown-button" onchange={onChange} type="button" use:menu.button>
+			<span>
+				{options.find(isActiveItem)?.label ?? $_('workspaces')}
+			</span>
+			{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+		</button>
 
-	{#if $menu.expanded}
-		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
-			<ul class="menu">
-				{#each options as option}
-					<li class="menu-item">
-						<button use:menu.item={{ value: option.value }}>
-							{option.label}
-						</button>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
-</div>
+		{#if $menu.expanded}
+			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
+				<ul class="menu">
+					{#each options as option}
+						<li class="menu-item">
+							<button use:menu.item={{ value: option.value }}>
+								{option.label}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+	</div>
+{/if}
 
 <style>
 	.dropdown {

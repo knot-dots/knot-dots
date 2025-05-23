@@ -56,6 +56,8 @@
 					value: overlayURL(page.url, overlayKey.enum.tasks, data.container.guid)
 				}
 			];
+		} else {
+			return [];
 		}
 	});
 
