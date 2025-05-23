@@ -1758,7 +1758,6 @@ export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
 	containers: AnyContainer[]
 ) {
-	console.log(facets);
 	for (const container of containers) {
 		for (const key of facets.keys()) {
 			if (key in container.payload) {
