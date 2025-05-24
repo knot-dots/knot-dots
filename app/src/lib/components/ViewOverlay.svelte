@@ -331,7 +331,19 @@
 		['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 	])}
-	<Header facets={computeFacetCount(facets, relatedContainers)} search {workspaceOptions} />
+	<Header
+		facets={computeFacetCount(
+			facets,
+			relatedContainers.filter(({ guid, relation }) =>
+				relation.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-strategy'] && guid != container.guid
+				)
+			)
+		)}
+		search
+		{workspaceOptions}
+	/>
 {:else}
 	<Header {workspaceOptions} sortOptions={[]} />
 {/if}
