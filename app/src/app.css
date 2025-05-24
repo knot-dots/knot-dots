@@ -300,7 +300,6 @@ table, .table {
 }
 
 thead, .table-head {
-	background: var(--color-gray-050);
 	color: var(--color-gray-600);
 	display: table-header-group;
 }
@@ -310,18 +309,30 @@ tbody, .table-body {
 }
 
 tr, .row {
-	border-bottom: solid 1px var(--color-gray-200);
+	background-color: white;
 	display: table-row;
 }
 
-th {
-	padding: 0.5rem;
+tr:hover, .row:hover {
+	background-color: var(--color-gray-050);
 }
 
 td, .cell {
+	border-bottom: solid 1px var(--color-gray-200);
 	display: table-cell;
 	padding: 0.75rem 0.5rem;
 	vertical-align: middle
+}
+
+td:hover,
+.cell:hover {
+	background-color: var(--color-gray-100);
+}
+
+th,
+.table-head .cell {
+	background-color: var(--color-gray-050);
+	padding: 0.5rem;
 }
 
 /* Remove all animations, transitions and smooth scroll for people that prefer not to see them */

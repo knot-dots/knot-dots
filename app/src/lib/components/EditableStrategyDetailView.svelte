@@ -327,12 +327,6 @@
 	}
 
 	.table-head .cell {
-		padding: 0.5rem;
 		white-space: nowrap;
-	}
-
-	.row:hover,
-	.row:hover :global(input) {
-		background-color: var(--color-gray-050);
 	}
 </style>

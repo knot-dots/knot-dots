@@ -211,6 +211,14 @@
 		min-width: calc(20px + 2 * 0.5rem);
 	}
 
+	:global(.row:hover input) {
+		background-color: var(--color-gray-050);
+	}
+
+	:global(.row:hover .cell:hover input) {
+		background-color: var(--color-gray-100);
+	}
+
 	.cell > :global(span),
 	.cell > fieldset {
 		white-space: nowrap;
