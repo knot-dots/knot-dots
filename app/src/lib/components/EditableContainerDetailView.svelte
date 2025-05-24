@@ -61,7 +61,7 @@
 	$: organizationMembersPromise = fetchMembers(organization);
 </script>
 
-<form on:input={requestSubmit} on:submit|preventDefault={handleSubmit} novalidate>
+<form on:input={requestSubmit} on:submit={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<div class="details-tab" id="basic-data">
 			{#if $applicationState.containerDetailView.editable}

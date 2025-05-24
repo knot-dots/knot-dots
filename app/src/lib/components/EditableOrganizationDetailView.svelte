@@ -23,7 +23,7 @@
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form on:input={requestSubmit} on:submit|preventDefault={handleSubmit} novalidate>
+<form on:input={requestSubmit} on:submit={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<header>
 			<EditableLogo

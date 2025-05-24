@@ -200,7 +200,7 @@
 					<form
 						class="chapter"
 						on:input|stopPropagation={requestSubmit}
-						on:submit|preventDefault={autoSave(part, 2000)}
+						on:submit={autoSave(part, 2000)}
 						novalidate
 					>
 						<EditableChapter
@@ -272,7 +272,7 @@
 							class="row"
 							animate:flip={{ duration: 100 }}
 							on:input|stopPropagation={requestSubmit}
-							on:submit|preventDefault={autoSave(part, 2000)}
+							on:submit={autoSave(part, 2000)}
 							novalidate
 						>
 							<EditableRow
