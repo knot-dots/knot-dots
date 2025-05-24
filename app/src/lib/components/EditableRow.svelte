@@ -23,7 +23,7 @@
 
 	export let columns: string[];
 	export let container: Container;
-	export let editable: boolean;
+	export let editable = false;
 </script>
 
 {#if columns.includes('action')}

@@ -293,7 +293,7 @@
 									'organizationalUnit'
 								]}
 								container={part}
-								editable={$applicationState.containerDetailView.editable ?? false}
+								editable={$applicationState.containerDetailView.editable}
 							/>
 						</form>
 					{/each}
