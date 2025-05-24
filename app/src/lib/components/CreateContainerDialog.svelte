@@ -7,8 +7,10 @@
 	import ArrowUp from '~icons/heroicons/arrow-up-16-solid';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import fetchMembers from '$lib/client/fetchMembers';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableAmount from '$lib/components/EditableAmount.svelte';
+	import EditableAssignee from '$lib/components/EditableAssignee.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableBenefit from '$lib/components/EditableBenefit.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
@@ -67,7 +69,9 @@
 		type NewContainer,
 		overlayKey,
 		overlayURL,
-		predicates
+		payloadTypes,
+		predicates,
+		type User
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 	import {
@@ -84,6 +88,18 @@
 	}
 
 	let { dialog = $bindable() }: Props = $props();
+
+	let managedBy = $derived($newContainer?.managed_by);
+
+	let payloadType = $derived($newContainer?.payload.type);
+
+	let assigneeCandidatesPromise = $derived.by(() => {
+		if (managedBy && payloadType === payloadTypes.enum.task) {
+			return fetchMembers(managedBy);
+		} else {
+			return new Promise<User[]>(() => []);
+		}
+	});
 
 	const disclosure = createDisclosure();
 
@@ -364,6 +380,11 @@
 								<EditableChapterType editable bind:value={$newContainer.payload.chapterType} />
 							{:else if isTaskContainer($newContainer)}
 								<EditableTaskStatus editable bind:value={$newContainer.payload.taskStatus} />
+								<EditableAssignee
+									editable
+									candidatesPromise={assigneeCandidatesPromise}
+									bind:value={$newContainer.payload.assignee}
+								/>
 								<EditableTaskCategory editable bind:value={$newContainer.payload.taskCategory} />
 								<EditableDate
 									editable
