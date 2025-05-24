@@ -17,17 +17,9 @@
 		IndicatorContainer,
 		IndicatorTemplateContainer
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability } from '$lib/stores';
 
 	export let container: IndicatorContainer | EmptyIndicatorContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'historical-values', 'metadata']
-		}
-	}));
 
 	let withHistoricalValues = 'guid' in container ? hasHistoricalValues(container) : false;
 

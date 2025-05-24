@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Trash from '~icons/heroicons/trash';
-	import { page } from '$app/stores';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
 	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
@@ -12,21 +10,9 @@
 	import StatusSelector from '$lib/components/StatusSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
-	import { status } from '$lib/models';
 	import type { EmptySimpleMeasureContainer, SimpleMeasureContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: SimpleMeasureContainer | EmptySimpleMeasureContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'metadata']
-		}
-	}));
-
-	let statusParam = paramsFromURL($page.url).get('status') ?? status.enum['status.idea'];
 
 	function removeFile(index: number) {
 		container.payload.file = [

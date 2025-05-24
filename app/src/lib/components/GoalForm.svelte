@@ -10,17 +10,8 @@
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import { type GoalContainer, type EmptyGoalContainer, predicates } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: GoalContainer | EmptyGoalContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'metadata']
-		}
-	}));
 
 	let withProgress = 'progress' in container.payload;
 </script>

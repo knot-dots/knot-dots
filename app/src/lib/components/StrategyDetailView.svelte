@@ -86,7 +86,7 @@
 </script>
 
 {#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
-	<ContainerDetailView {container} {relatedContainers} {revisions} tabs={[]}>
+	<ContainerDetailView {container} {relatedContainers} {revisions}>
 		<svelte:fragment slot="meta">
 			<div class="meta">
 				<h3 class="meta-key">{$_('level.label')}</h3>

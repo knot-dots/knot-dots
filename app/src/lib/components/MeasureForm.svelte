@@ -10,17 +10,8 @@
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import { type EmptyMeasureContainer, type MeasureContainer, status } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: MeasureContainer | EmptyMeasureContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'metadata']
-		}
-	}));
 </script>
 
 <fieldset class="form-tab" id="basic-data">

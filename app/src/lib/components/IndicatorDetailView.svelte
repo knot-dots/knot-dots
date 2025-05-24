@@ -56,7 +56,7 @@
 	}
 </script>
 
-<ContainerDetailView {container} {relatedContainers} {revisions} tabs={['basic-data', 'metadata']}>
+<ContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<select class="view-mode" bind:value={viewMode}>
 			<option value="chart">{$_('indicator.view_mode.chart')}</option>

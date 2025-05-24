@@ -11,16 +11,8 @@
 		isIndicatorContainer,
 		predicates
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: EffectContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			tabs: []
-		}
-	}));
 
 	$: if (container.payload.achievedValues.length == 0) {
 		const thisYear = new Date().getFullYear();

@@ -9,18 +9,10 @@
 	import PolicyFieldBNKSelector from '$lib/components/PolicyFieldBNKSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import UnitSelector from '$lib/components/UnitSelector.svelte';
-	import type { ContainerFormTabKey, IndicatorTemplateContainer } from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import type { IndicatorTemplateContainer } from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	export let container: IndicatorTemplateContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'guid' in container ? 'basic-data' : 'metadata',
-			tabs: [...('guid' in container ? [] : ['metadata' as ContainerFormTabKey]), 'basic-data']
-		}
-	}));
 </script>
 
 <fieldset class="form-tab" id="basic-data">

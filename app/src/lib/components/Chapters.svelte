@@ -9,7 +9,6 @@
 		goalsByHierarchyLevel,
 		isGoalContainer,
 		isPartOf,
-		isStrategyContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';

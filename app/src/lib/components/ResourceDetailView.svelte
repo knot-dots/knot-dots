@@ -20,7 +20,7 @@
 		: relatedContainers.find(isMeasureContainer);
 </script>
 
-<ContainerDetailView {container} {relatedContainers} {revisions} tabs={[]}>
+<ContainerDetailView {container} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<div class="amount">
 			<h3>{$_('amount')}</h3>

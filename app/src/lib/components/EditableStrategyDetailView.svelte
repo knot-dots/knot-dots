@@ -124,7 +124,7 @@
 </script>
 
 {#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
-	<EditableContainerDetailView bind:container {relatedContainers} {revisions} tabs={['basic-data']}>
+	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		<svelte:fragment slot="data">
 			{#if $ability.can('read', container, 'payload.editorialState')}
 				<EditableEditorialState

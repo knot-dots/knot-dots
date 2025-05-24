@@ -1,16 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import {
-		containerOfType,
-		isTaskContainer,
-		paramsFromFragment,
-		payloadTypes,
-		status
-	} from '$lib/models';
-	import type { AnyContainer, Container, EmptyContainer, PayloadType } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 	import ListBox from '$lib/components/ListBox.svelte';
+	import { containerOfType, isTaskContainer, paramsFromFragment, payloadTypes } from '$lib/models';
+	import type { AnyContainer, Container, EmptyContainer, PayloadType } from '$lib/models';
 
 	export let container: AnyContainer | EmptyContainer;
 
@@ -84,14 +77,6 @@
 			};
 		}
 	}
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'metadata',
-			tabs: ['metadata']
-		}
-	}));
 </script>
 
 <fieldset class="form-tab" id="metadata">

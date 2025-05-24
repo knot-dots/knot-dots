@@ -2,26 +2,10 @@ import type { MongoAbility } from '@casl/ability';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 
-export type ContainerDetailViewTabKey =
-	| 'basic-data'
-	| 'effects'
-	| 'historical-values'
-	| 'metadata'
-	| 'goals'
-	| 'resources';
-
-export type ContainerFormTabKey = ContainerDetailViewTabKey;
-
 export type ApplicationState = {
 	containerDetailView: {
-		activeTab?: ContainerDetailViewTabKey;
 		editable?: boolean;
 		mode?: 'view_mode.preview' | 'view_mode.table';
-		tabs: Array<ContainerDetailViewTabKey>;
-	};
-	containerForm: {
-		activeTab?: ContainerFormTabKey;
-		tabs: Array<ContainerFormTabKey>;
 	};
 };
 

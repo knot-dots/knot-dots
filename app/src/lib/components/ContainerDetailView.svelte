@@ -14,7 +14,6 @@
 	import {
 		type AnyContainer,
 		type Container,
-		type ContainerDetailViewTabKey,
 		type ContainerWithEffect,
 		displayName,
 		getCreator,
@@ -34,17 +33,11 @@
 		type User
 	} from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
-	import { ability, addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
+	import { ability, addEffectState, mayCreateContainer } from '$lib/stores';
 
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
-	export let tabs: ContainerDetailViewTabKey[] = ['basic-data', 'metadata'];
-
-	applicationState.update((state) => ({
-		...state,
-		containerDetailView: { ...state.containerDetailView, tabs }
-	}));
 
 	$: strategy = isStrategyContainer(container)
 		? container

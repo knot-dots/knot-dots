@@ -3,20 +3,9 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import ListBox from '$lib/components/ListBox.svelte';
 	import OrganizationalUnitRelationSelector from '$lib/components/OrganizationalUnitRelationSelector.svelte';
-	import type {
-		AnyContainer,
-		EmptyOrganizationalUnitContainer,
-		OrganizationalUnitContainer
-	} from '$lib/models';
-	import { isOrganizationalUnitContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import type { EmptyOrganizationalUnitContainer, OrganizationalUnitContainer } from '$lib/models';
 
 	export let container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: { tabs: [] }
-	}));
 </script>
 
 <label>

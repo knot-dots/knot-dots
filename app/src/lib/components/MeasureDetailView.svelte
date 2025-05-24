@@ -53,12 +53,7 @@
 	}
 </script>
 
-<ContainerDetailView
-	container={selectedRevision}
-	{relatedContainers}
-	{revisions}
-	tabs={['basic-data', 'resources', 'effects', 'goals', 'metadata']}
->
+<ContainerDetailView container={selectedRevision} {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		{#if 'summary' in container.payload || ('description' in container.payload && !isSimpleMeasureContainer(container))}
 			<div class="summary">

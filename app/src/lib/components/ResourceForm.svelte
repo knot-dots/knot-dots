@@ -2,17 +2,9 @@
 	import { _ } from 'svelte-i18n';
 	import type { EmptyResourceContainer, PartialRelation, ResourceContainer } from '$lib/models';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import { applicationState } from '$lib/stores';
 	import { page } from '$app/stores';
 
 	export let container: ResourceContainer | EmptyResourceContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			tabs: []
-		}
-	}));
 
 	if (container.relation.length == 0) {
 		container.relation = paramsFromURL($page.url)

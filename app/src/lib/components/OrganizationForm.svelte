@@ -5,14 +5,8 @@
 	import ListBox from '$lib/components/ListBox.svelte';
 	import { organizationCategories } from '$lib/models';
 	import type { EmptyOrganizationContainer, OrganizationContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: OrganizationContainer | EmptyOrganizationContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: { tabs: [] }
-	}));
 
 	function removeImage() {
 		delete container.payload.image;

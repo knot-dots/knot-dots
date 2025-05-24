@@ -38,12 +38,8 @@ import {
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
-		tabs: [],
 		editable: false,
 		mode: 'view_mode.preview'
-	},
-	containerForm: {
-		tabs: []
 	}
 });
 

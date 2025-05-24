@@ -5,17 +5,8 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import StrategyRelationSelector from '$lib/components/StrategyRelationSelector.svelte';
 	import { type EmptyTextContainer, type TextContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: TextContainer | EmptyTextContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'metadata']
-		}
-	}));
 </script>
 
 <fieldset class="form-tab" id="basic-data">

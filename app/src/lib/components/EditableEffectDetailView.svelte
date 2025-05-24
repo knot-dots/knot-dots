@@ -95,7 +95,7 @@
 	}
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions} tabs={[]}>
+<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	<svelte:fragment slot="extra">
 		{#if indicator}
 			{#if $applicationState.containerDetailView.editable}

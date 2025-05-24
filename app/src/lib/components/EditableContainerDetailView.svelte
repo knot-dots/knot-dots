@@ -15,7 +15,6 @@
 	import {
 		type AnyContainer,
 		type Container,
-		type ContainerDetailViewTabKey,
 		displayName,
 		getCreator,
 		getManagedBy,
@@ -40,12 +39,6 @@
 	export let container: Container;
 	export let relatedContainers: Container[];
 	export let revisions: AnyContainer[];
-	export let tabs: ContainerDetailViewTabKey[] = ['basic-data', 'metadata'];
-
-	applicationState.update((state) => ({
-		...state,
-		containerDetailView: { ...state.containerDetailView, tabs }
-	}));
 
 	const disclosure = createDisclosure();
 

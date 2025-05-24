@@ -10,14 +10,8 @@
 	import StrategyTypeSelector from '$lib/components/StrategyTypeSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import type { EmptyStrategyContainer, StrategyContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: StrategyContainer | EmptyStrategyContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: { tabs: [] }
-	}));
 
 	function removeImage() {
 		delete container.payload.image;

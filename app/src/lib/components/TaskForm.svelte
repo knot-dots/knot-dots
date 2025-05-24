@@ -7,18 +7,9 @@
 	import OrganizationSelector from '$lib/components/OrganizationSelector.svelte';
 	import TaskCategorySelector from '$lib/components/TaskCategorySelector.svelte';
 	import TaskStatusSelector from '$lib/components/TaskStatusSelector.svelte';
-	import type { EmptyTaskContainer, TaskContainer, User } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import type { EmptyTaskContainer, TaskContainer } from '$lib/models';
 
 	export let container: TaskContainer | EmptyTaskContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'metadata']
-		}
-	}));
 
 	$: managedBy = container.managed_by;
 </script>

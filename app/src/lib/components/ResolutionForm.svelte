@@ -10,17 +10,8 @@
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import { resolutionStatus } from '$lib/models';
 	import type { EmptyResolutionContainer, ResolutionContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: ResolutionContainer | EmptyResolutionContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			activeTab: 'basic-data',
-			tabs: ['basic-data', 'metadata']
-		}
-	}));
 </script>
 
 <fieldset class="form-tab" id="basic-data">

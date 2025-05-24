@@ -5,16 +5,8 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Editor from '$lib/components/Editor.svelte';
 	import { isIndicatorContainer, type ObjectiveContainer, predicates } from '$lib/models';
-	import { applicationState } from '$lib/stores';
 
 	export let container: ObjectiveContainer;
-
-	applicationState.update((state) => ({
-		...state,
-		containerForm: {
-			tabs: []
-		}
-	}));
 
 	$: guid = container.guid;
 	$: relatedContainerRequest = fetchRelatedContainers(

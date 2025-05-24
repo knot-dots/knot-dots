@@ -14,7 +14,7 @@
 	let { container, relatedContainers, revisions }: Props = $props();
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions} tabs={[]}>
+<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		{#key container.guid}
 			<EditableFormattedText

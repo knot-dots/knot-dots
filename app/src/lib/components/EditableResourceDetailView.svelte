@@ -12,7 +12,7 @@
 	export let revisions: AnyContainer[];
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions} tabs={['basic-data']}>
+<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<EditableAmount
 			editable={$applicationState.containerDetailView.editable}
