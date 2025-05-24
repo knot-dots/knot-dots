@@ -271,7 +271,7 @@
 						<form
 							class="row"
 							animate:flip={{ duration: 100 }}
-							on:input|stopPropagation={requestSubmit}
+							on:input={requestSubmit}
 							on:submit={autoSave(part, 2000)}
 							novalidate
 						>
