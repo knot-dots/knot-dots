@@ -75,7 +75,7 @@
 	}
 </script>
 
-<EditableContainerDetailView {container} {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<EditableIndicatorUnit
 			editable={$applicationState.containerDetailView.editable}

@@ -35,7 +35,7 @@
 	$: goal = relatedContainers.find(isContainerWithObjective);
 </script>
 
-<EditableContainerDetailView {container} {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		<EditableTaskStatus
 			editable={$applicationState.containerDetailView.editable}

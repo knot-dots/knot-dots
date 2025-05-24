@@ -20,7 +20,7 @@
 	export let revisions: AnyContainer[];
 </script>
 
-<EditableContainerDetailView {container} {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	<svelte:fragment slot="data">
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState

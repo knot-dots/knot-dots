@@ -33,7 +33,7 @@
 </script>
 
 <EditableContainerDetailView
-	{container}
+	bind:container
 	{relatedContainers}
 	{revisions}
 	tabs={['basic-data', 'resources', 'effects', 'goals', 'metadata']}
