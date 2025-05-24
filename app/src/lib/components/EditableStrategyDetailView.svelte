@@ -245,7 +245,7 @@
 			<div class="table">
 				<div class="table-head">
 					<div class="row">
-						<div class="cell"></div>
+						<div class="cell cell--action"></div>
 						<div class="cell">{$_('title')}</div>
 						<div class="cell">{$_('object')}</div>
 						<div class="cell">{$_('description')}</div>
@@ -276,6 +276,22 @@
 							novalidate
 						>
 							<EditableRow
+								columns={[
+									'action',
+									'title',
+									'type',
+									'description',
+									'visibility',
+									'status',
+									'category',
+									'topic',
+									'policyFieldBNK',
+									'audience',
+									'fulfillmentDate',
+									'duration',
+									'editorialState',
+									'organizationalUnit'
+								]}
 								container={part}
 								editable={$applicationState.containerDetailView.editable ?? false}
 							/>
