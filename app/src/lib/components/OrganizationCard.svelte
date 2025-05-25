@@ -14,12 +14,7 @@
 		showRelationFilter?: boolean;
 	}
 
-	let {
-		button,
-		container,
-		linkPath = `/${container.payload.type}/${container.guid}`,
-		showRelationFilter = false
-	}: Props = $props();
+	let { button, container, linkPath = '/', showRelationFilter = false }: Props = $props();
 
 	let relatedTo = $derived(page.url.searchParams.get('related-to'));
 
