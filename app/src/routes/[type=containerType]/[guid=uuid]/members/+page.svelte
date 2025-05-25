@@ -9,20 +9,25 @@
 
 <Layout>
 	<svelte:fragment slot="main">
-		<div class="detail-page-content">
-			<header class="content-header">
-				<h2>
-					{'title' in data.container.payload
-						? data.container.payload.title
-						: data.container.payload.name}
-					<button class="button-square quiet" type="button" on:click={() => window.history.back()}>
-						<ChevronLeft />
-					</button>
-				</h2>
-			</header>
-			<div class="content-details masked-overflow">
+		<div class="details details-editable">
+			<h2 class="details-title">
+				{'title' in data.container.payload
+					? data.container.payload.title
+					: data.container.payload.name}
+				<button class="action-button" type="button" on:click={() => window.history.back()}>
+					<ChevronLeft />
+				</button>
+			</h2>
+
+			<div class="details-tab">
 				<Members container={data.container} users={data.users} />
 			</div>
 		</div>
 	</svelte:fragment>
 </Layout>
+
+<style>
+	.details {
+		flex: 1 1;
+	}
+</style>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Trash from '~icons/heroicons/trash';
-	import UserPlus from '~icons/heroicons/user-plus-20-solid';
+	import TrashBin from '~icons/flowbite/trash-bin-solid';
+	import UserAdd from '~icons/flowbite/user-add-outline';
 	import { invalidateAll } from '$app/navigation';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
@@ -147,12 +147,12 @@
 				</td>
 				<td>
 					<button
-						class="quiet"
+						class="action-button"
 						type="button"
 						title={$_('user.remove_relations')}
 						on:click={() => handleRemoveRelations(u, container)}
 					>
-						<Trash />
+						<TrashBin />
 					</button>
 				</td>
 			</tr>
@@ -160,8 +160,8 @@
 	</tbody>
 </table>
 <div class="content-actions">
-	<button class="primary" type="button" on:click={() => dialog.showModal()}>
-		<UserPlus />
+	<button class="button-primary" type="button" on:click={() => dialog.showModal()}>
+		<UserAdd />
 	</button>
 </div>
 
@@ -173,7 +173,7 @@
 			<!-- svelte-ignore a11y-autofocus -->
 			<input type="email" bind:value={email} autofocus required />
 		</label>
-		<button class="primary" type="submit">{$_('invite.submit')}</button>
+		<button class="button-primary" type="submit">{$_('invite.submit')}</button>
 	</form>
 </Dialog>
 
