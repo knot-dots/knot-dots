@@ -3,26 +3,26 @@
 	import { getContext } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import Filter from '~icons/knotdots/filter';
 	import Sort from '~icons/flowbite/sort-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Users from '~icons/flowbite/users-outline';
-	import Filter from '~icons/knotdots/filter';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
-	import Search from '$lib/components/Search.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
 	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
+	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
-	import { paramsFromFragment } from '$lib/models';
-	import { ability, user } from '$lib/stores';
+	import { overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
+	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -146,10 +146,23 @@
 			</button>
 		{/if}
 
-		{#if $ability.can('invite-members', selectedContext)}
+		{#if overlay && $overlayStore?.container && $ability.can('invite-members', $overlayStore.container)}
 			<div class="divider"></div>
 
-			<a href={`/${selectedContext.payload.type}/${selectedContext.guid}/members`}>
+			<a
+				class="action-button action-button--padding-tight"
+				href={overlayURL(page.url, overlayKey.enum.members, $overlayStore.container.guid)}
+			>
+				<Users />
+				<span class="is-visually-hidden">{$_('members')}</span>
+			</a>
+		{:else if !overlay && $ability.can('invite-members', selectedContext)}
+			<div class="divider"></div>
+
+			<a
+				class="action-button action-button--padding-tight"
+				href={`/${selectedContext.payload.type}/${selectedContext.guid}/members`}
+			>
 				<Users />
 				<span class="is-visually-hidden">{$_('members')}</span>
 			</a>
