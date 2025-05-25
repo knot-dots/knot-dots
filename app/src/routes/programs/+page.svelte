@@ -87,7 +87,7 @@
 		flex-direction: row;
 		flex-wrap: wrap;
 		gap: 1.5rem;
-		min-width: calc(100vw - 17rem - 3rem);
+		min-width: calc(100vw - var(--sidebar-max-width) - 3rem);
 	}
 
 	li {

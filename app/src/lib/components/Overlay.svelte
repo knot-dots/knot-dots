@@ -145,7 +145,7 @@
 		}
 
 		.overlay > :global(*) {
-			min-width: calc(100vw * var(--width-factor) - 17rem);
+			min-width: calc(100vw * var(--width-factor) - var(--sidebar-max-width));
 		}
 
 		.overlay > :global(nav) {

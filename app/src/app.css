@@ -213,6 +213,7 @@
 	--form-control-background: var(--color-gray-050);
 
 	--header-height: 63px;
+	--sidebar-max-width: 17rem;
 }
 
 /* Box sizing rules */

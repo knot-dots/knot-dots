@@ -53,6 +53,6 @@
 
 <style>
 	.content-details {
-		min-width: calc(100vw - 17rem - 10rem);
+		min-width: calc(100vw - var(--sidebar-max-width) - 10rem);
 	}
 </style>
