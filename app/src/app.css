@@ -900,6 +900,7 @@ label > input[type='checkbox'].toggle {
 .detail-page-content {
 	background-color: white;
 	display: flex;
+	flex: 1 1;
 	flex-direction: column;
 	height: 100%;
 	overflow: auto;
@@ -1272,10 +1273,8 @@ label > input[type='checkbox'].toggle {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
-	position: absolute;
-	padding: 0;
-	right: 0;
-	top: 0;
+	position: relative;
+	top: calc(var(--nav-height) * -1);
 	width: 100%;
 	z-index: 3;
 }

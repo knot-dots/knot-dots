@@ -20,7 +20,7 @@
 	setContext('createContainerDialog', { getElement: () => dialog });
 </script>
 
-<div in:fly={transitionIn} out:fly={transitionOut}>
+<div class="app-wrapper">
 	<nav>
 		{#if $$slots.sidebar}
 			<slot name="sidebar" />
@@ -28,26 +28,40 @@
 			<Sidebar />
 		{/if}
 	</nav>
-	<main>
+
+	<div class="main-with-overlay-wrapper">
 		{#if $$slots.header}
 			<slot name="header" />
 		{:else}
 			<Header />
 		{/if}
-		<slot name="main" />
-	</main>
-	{#if $overlay}
-		<Overlay data={$overlay} />
-	{/if}
+
+		<main in:fly={transitionIn} out:fly={transitionOut}>
+			<slot name="main" />
+			{#if $overlay}
+				<Overlay data={$overlay} />
+			{/if}
+		</main>
+	</div>
 </div>
+
 <CreateContainerDialog bind:dialog />
 
 <style>
-	div {
+	.app-wrapper {
 		display: flex;
 		flex-direction: row;
 		height: 100vh;
 		width: 100%;
+	}
+
+	.main-with-overlay-wrapper {
+		background-color: white;
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+		min-width: 0;
+		padding: 0;
 	}
 
 	nav {
@@ -61,12 +75,9 @@
 	}
 
 	main {
-		background-color: white;
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		flex-grow: 1;
-		height: 100%;
-		min-width: 0;
-		padding: 0;
+		max-height: calc(100vh - var(--nav-height));
 	}
 </style>

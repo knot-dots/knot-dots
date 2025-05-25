@@ -61,6 +61,7 @@
 
 <style>
 	div {
+		flex: 1 1;
 		overflow-y: auto;
 		padding: 1.5rem;
 	}

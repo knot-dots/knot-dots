@@ -131,33 +131,21 @@
 
 <style>
 	.overlay.overlay-fullscreen {
-		margin-left: -3.875rem;
-		width: 100vw;
-	}
-
-	.overlay > :global(aside) {
-		font-size: 0.875rem;
-		height: calc(100vh - var(--nav-height));
-		min-width: 0;
-		padding: 1.5rem 0.5rem 0.5rem;
+		left: 0;
 		position: absolute;
-		top: var(--nav-height);
-		width: 3.5rem;
-	}
-
-	.overlay > :global(aside ~ *:not(dialog)) {
-		margin-left: 3.5rem;
+		top: 0;
+		width: 100vw;
 	}
 
 	@media (min-width: 768px) {
 		.overlay {
 			--width-factor: 0.65;
 
-			width: calc(100% * var(--width-factor));
+			width: calc(100vw * var(--width-factor));
 		}
 
 		.overlay > :global(*) {
-			min-width: calc(100vw * var(--width-factor) - 3.5rem);
+			min-width: calc(100vw * var(--width-factor) - 17rem);
 		}
 
 		.overlay > :global(nav) {

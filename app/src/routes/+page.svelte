@@ -50,3 +50,9 @@
 		</div>
 	</svelte:fragment>
 </Layout>
+
+<style>
+	.content-details {
+		min-width: calc(100vw - 17rem - 10rem);
+	}
+</style>
