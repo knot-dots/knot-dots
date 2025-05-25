@@ -78,6 +78,6 @@
 		display: flex;
 		flex-direction: row;
 		flex-grow: 1;
-		max-height: calc(100vh - var(--nav-height));
+		max-height: calc(100vh - var(--header-height));
 	}
 </style>

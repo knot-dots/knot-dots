@@ -192,7 +192,7 @@
 		display: flex;
 		flex-direction: row;
 		gap: 0.5rem;
-		height: var(--nav-height);
+		height: var(--header-height);
 		justify-content: space-between;
 		padding: 0.5rem 0.5rem;
 	}

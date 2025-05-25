@@ -223,7 +223,7 @@
 		display: flex;
 		font-size: 0.875rem;
 		gap: 0.5rem;
-		height: var(--nav-height);
+		height: var(--header-height);
 		padding: 0.75rem;
 		z-index: 2;
 	}

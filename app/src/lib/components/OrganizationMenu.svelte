@@ -217,10 +217,10 @@
 
 	.organization-menu-panel {
 		background: white;
-		height: calc(100vh - var(--nav-height));
+		height: calc(100vh - var(--header-height));
 		left: 0;
 		position: absolute;
 		right: 0;
-		top: var(--nav-height);
+		top: var(--header-height);
 	}
 </style>
