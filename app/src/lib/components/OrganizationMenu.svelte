@@ -115,7 +115,7 @@
 <div class="organization-menu">
 	<button class="dropdown-button" type="button" use:popover.button>
 		<img alt={$_('logo')} src={orgLogo} />
-		<span>
+		<span class="truncated">
 			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
 				{$_('all_organizations')}
 			{:else}
@@ -209,6 +209,10 @@
 
 	.dropdown-button img {
 		max-height: 1.5rem;
+	}
+
+	.organization-menu {
+		max-width: 20rem;
 	}
 
 	.organization-menu-panel {
