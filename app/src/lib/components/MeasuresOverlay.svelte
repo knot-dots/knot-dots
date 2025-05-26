@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import {
 		audience,
@@ -31,3 +32,5 @@
 <Header {facets} search {workspaceOptions} />
 
 <Measures {containers} />
+
+<Help slug="measures" />

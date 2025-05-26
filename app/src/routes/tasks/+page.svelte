@@ -6,6 +6,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
@@ -125,5 +126,6 @@
 				{/if}
 			{/each}
 		</Board>
+		<Help slug="tasks" />
 	</svelte:fragment>
 </Layout>

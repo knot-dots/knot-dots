@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Chapters from '$lib/components/Chapters.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import {
 		audience,
 		type Container,
@@ -29,3 +30,5 @@
 <Header {facets} search {workspaceOptions} />
 
 <Chapters {containers} />
+
+<Help slug="all" />

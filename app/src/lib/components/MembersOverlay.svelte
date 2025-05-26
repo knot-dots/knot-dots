@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import type { AnyContainer, User } from '$lib/models';
 
@@ -22,3 +23,4 @@
 		</div>
 	</div>
 </div>
+<Help slug="members" />

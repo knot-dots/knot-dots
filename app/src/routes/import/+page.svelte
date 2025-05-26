@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import type { ActionData, PageData } from './$types';
 	import { displayName } from '$lib/models';
@@ -41,5 +42,7 @@
 				</footer>
 			</form>
 		</div>
+
+		<Help slug="import" />
 	</div>
 </Layout>

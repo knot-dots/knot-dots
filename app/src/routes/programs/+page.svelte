@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
 		audience,
@@ -68,6 +69,7 @@
 				{/each}
 			</ul>
 		</div>
+		<Help slug="strategies" />
 	</svelte:fragment>
 </Layout>
 

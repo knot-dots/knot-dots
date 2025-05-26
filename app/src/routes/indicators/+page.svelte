@@ -2,6 +2,7 @@
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
@@ -45,5 +46,6 @@
 
 	<svelte:fragment slot="main">
 		<Indicators containers={data.containers} />
+		<Help slug="indicators" />
 	</svelte:fragment>
 </Layout>

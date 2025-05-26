@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ChevronLeft from '~icons/heroicons/chevron-left';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import type { PageData } from './$types';
@@ -23,6 +24,8 @@
 				<Members container={data.container} users={data.users} />
 			</div>
 		</div>
+
+		<Help slug="members" />
 	</svelte:fragment>
 </Layout>
 

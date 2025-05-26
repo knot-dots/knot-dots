@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import { computeFacetCount, organizationCategories, payloadTypes } from '$lib/models';
@@ -40,6 +41,7 @@
 				{/each}
 			</ul>
 		</div>
+		<Help slug="organizations" />
 	</svelte:fragment>
 </Layout>
 

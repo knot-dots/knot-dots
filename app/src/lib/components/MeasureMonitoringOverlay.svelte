@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
 		type AnyContainer,
@@ -51,3 +52,5 @@
 	indicators={containers.filter(isIndicatorContainer)}
 	showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
 />
+
+<Help slug="measure-monitoring" />

@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
 	import EditableOrganizationDetailView from '$lib/components/EditableOrganizationDetailView.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationDetailView from '$lib/components/OrganizationDetailView.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -48,6 +49,11 @@
 				{/if}
 			</div>
 		</div>
+		<Help
+			slug={isOrganizationContainer(data.container)
+				? 'organization-view'
+				: 'organizational-unit-view'}
+		/>
 	</svelte:fragment>
 </Layout>
 

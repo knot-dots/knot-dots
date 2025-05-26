@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import {
 		type AnyContainer,
@@ -35,3 +36,5 @@
 		.filter(isGoalContainer)
 		.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
 />
+
+<Help slug="tasks" />

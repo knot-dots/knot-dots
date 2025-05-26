@@ -147,6 +147,10 @@
 		.overlay > :global(*) {
 			min-width: calc(100vw * var(--width-factor));
 		}
+
+		.overlay > :global(aside) {
+			min-width: revert;
+		}
 	}
 
 	.resize-handle {

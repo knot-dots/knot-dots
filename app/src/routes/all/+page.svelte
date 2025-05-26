@@ -6,6 +6,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
@@ -117,6 +118,8 @@
 					<MaybeDragZone containers={column.containers} />
 				</BoardColumn>
 			{/each}
+
+			<Help slug="all" />
 		</Board>
 	</svelte:fragment>
 </Layout>

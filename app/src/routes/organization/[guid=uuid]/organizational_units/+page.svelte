@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import { payloadTypes } from '$lib/models';
@@ -46,5 +47,6 @@
 				</BoardColumn>
 			{/each}
 		</Board>
+		<Help slug="organizational-units" />
 	</svelte:fragment>
 </Layout>

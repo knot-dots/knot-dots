@@ -2,6 +2,7 @@
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
@@ -90,5 +91,6 @@
 			indicators={data.containers.filter(isIndicatorContainer)}
 			showMeasures
 		/>
+		<Help slug="measure-monitoring" />
 	</svelte:fragment>
 </Layout>

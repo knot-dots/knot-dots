@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import { mayDeleteContainer } from '$lib/stores';
@@ -48,5 +49,6 @@
 				</div>
 			</footer>
 		</div>
+		<Help slug="organization-edit" />
 	</svelte:fragment>
 </Layout>

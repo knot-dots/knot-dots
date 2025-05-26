@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import type { PageProps } from './$types';
@@ -19,6 +20,7 @@
 
 	<div slot="main">
 		<ProfileView containers={data.containers} />
+		<Help slug="profile" />
 	</div>
 </Layout>
 

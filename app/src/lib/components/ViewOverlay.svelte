@@ -15,6 +15,7 @@
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
 	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
 	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
@@ -503,6 +504,8 @@
 		{/if}
 	</div>
 </footer>
+
+<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
 
 <ConfirmDeleteDialog
 	bind:dialog={confirmDeleteDialog}

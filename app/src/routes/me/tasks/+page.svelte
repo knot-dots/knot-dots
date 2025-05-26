@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import { computeFacetCount, taskCategories } from '$lib/models';
@@ -25,5 +26,8 @@
 
 <Layout>
 	<Header {facets} search sortOptions={[]} {workspaceOptions} slot="header" />
-	<Tasks containers={data.containers} slot="main" />
+	<svelte:fragment slot="main">
+		<Tasks containers={data.containers} />
+		<Help slug="tasks" />
+	</svelte:fragment>
 </Layout>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import {
@@ -36,5 +37,8 @@
 
 <Layout>
 	<Header {facets} search {workspaceOptions} slot="header" />
-	<Measures containers={data.containers} slot="main" />
+	<svelte:fragment slot="main">
+		<Measures containers={data.containers} />
+		<Help slug="measures" />
+	</svelte:fragment>
 </Layout>

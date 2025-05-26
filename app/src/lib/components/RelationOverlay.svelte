@@ -8,6 +8,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
 	import { dragged, overlayHistory } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
@@ -495,6 +496,8 @@
 		</a>
 	</div>
 </footer>
+
+<Help slug="relations" />
 
 <style>
 	.drop-zone-wrapper {

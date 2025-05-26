@@ -9,6 +9,7 @@
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import ContainerForm from '$lib/components/ContainerForm.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
 	import {
 		type AnyContainer,
@@ -150,6 +151,8 @@
 		{/if}
 	</div>
 </footer>
+
+<Help slug={`${container.payload.type.replace('_', '-')}-edit`} />
 
 <ConfirmDeleteDialog
 	bind:dialog={confirmDeleteDialog}
