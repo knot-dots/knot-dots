@@ -1,23 +1,19 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { _ } from 'svelte-i18n';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { page } from '$app/state';
-	import Card from '$lib/components/Card.svelte';
+	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
 		audience,
 		computeFacetCount,
-		payloadTypes,
 		policyFieldBNK,
 		predicates,
 		strategyTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -52,53 +48,7 @@
 	<Header {facets} search slot="header" />
 
 	<svelte:fragment slot="main">
-		<div>
-			{#if $mayCreateContainer(payloadTypes.enum.strategy, data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid)}
-				<p>
-					<a class="button primary" href="#create={payloadTypes.enum.strategy}">
-						<PlusSmall />
-						{$_('strategy')}
-					</a>
-				</p>
-			{/if}
-			<ul>
-				{#each data.containers as container}
-					<li>
-						<Card --height="100%" {container} />
-					</li>
-				{/each}
-			</ul>
-		</div>
+		<Catalog containers={data.containers} />
 		<Help slug="strategies" />
 	</svelte:fragment>
 </Layout>
-
-<style>
-	div {
-		flex: 1 1;
-		overflow-y: auto;
-		padding: 1.5rem;
-	}
-
-	p {
-		margin-bottom: 1.5rem;
-	}
-
-	ul {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 1.5rem;
-		min-width: calc(100vw - var(--sidebar-max-width) - 3rem);
-	}
-
-	li {
-		width: 19.5rem;
-	}
-
-	.button {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.5rem;
-	}
-</style>
