@@ -7,12 +7,15 @@
 	import { page } from '$app/stores';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
 	import { dragged, overlayHistory } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
 
 	export let object: Container;
 	export let relatedContainers: Container[];
+
+	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 
 	let enabledPredicates = (getContext('relationOverlay') as { predicates: Predicate[] }).predicates;
 
@@ -420,6 +423,7 @@
 	}
 </script>
 
+<Header {workspaceOptions} />
 <div class="content-details masked-overflow">
 	<p>
 		{$_('relation_overlay.help', {
