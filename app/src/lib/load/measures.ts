@@ -6,7 +6,7 @@ import {
 } from '$lib/server/db';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
-import type { PageServerLoad } from '../../routes/implementation/$types';
+import type { PageServerLoad } from '../../routes/measures/$types';
 
 export default (async function load({ locals, url, parent }) {
 	let containers;

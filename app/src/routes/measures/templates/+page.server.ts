@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, filterOrganizationalUnits, payloadTypes } from '$lib/models';
+import { filterOrganizationalUnits, payloadTypes } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 

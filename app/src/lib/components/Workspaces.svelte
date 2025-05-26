@@ -22,12 +22,12 @@
 			{ label: $_('workspace.all'), value: '/all' },
 			{ label: $_('workspace.programs'), value: '/programs' },
 			{ label: $_('workspace.programs_by_level'), value: '/programs-by-level' },
-			{ label: $_('workspace.measures'), value: '/implementation' },
+			{ label: $_('workspace.measures'), value: '/measures/status' },
 			...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 				? [{ label: $_('workspace.tasks'), value: '/tasks' }]
 				: []),
-			{ label: $_('workspace.measure_monitoring'), value: '/measure-monitoring' },
-			{ label: $_('workspace.measure_templates'), value: '/measure-templates' },
+			{ label: $_('workspace.measure_monitoring'), value: '/measures/monitoring' },
+			{ label: $_('workspace.measure_templates'), value: '/measures/templates' },
 			{ label: $_('workspace.resolutions'), value: '/resolutions' },
 			...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
 				? [
