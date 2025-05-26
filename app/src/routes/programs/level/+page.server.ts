@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, type Container, filterOrganizationalUnits, predicates } from '$lib/models';
+import { type Container, filterOrganizationalUnits, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,

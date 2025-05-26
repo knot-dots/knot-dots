@@ -20,8 +20,8 @@
 	let {
 		options = [
 			{ label: $_('workspace.all'), value: '/all' },
-			{ label: $_('workspace.programs'), value: '/programs' },
-			{ label: $_('workspace.programs_by_level'), value: '/programs-by-level' },
+			{ label: $_('workspace.programs'), value: '/programs/catalog' },
+			{ label: $_('workspace.programs_by_level'), value: '/programs/level' },
 			{ label: $_('workspace.measures'), value: '/measures/status' },
 			...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 				? [{ label: $_('workspace.tasks'), value: '/tasks' }]

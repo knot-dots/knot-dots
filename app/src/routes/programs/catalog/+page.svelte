@@ -9,5 +9,5 @@
 
 <ProgramsPage {data}>
 	<Catalog containers={data.containers} />
-	<Help slug="strategies" />
+	<Help slug="programs-catalog" />
 </ProgramsPage>

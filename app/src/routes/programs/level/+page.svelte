@@ -86,6 +86,6 @@
 				</BoardColumn>
 			{/each}
 		</Board>
-		<Help slug="programs-by-level" />
+		<Help slug="programs-level" />
 	</svelte:fragment>
 </Layout>
