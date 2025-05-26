@@ -8,6 +8,7 @@
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
+	import ResolutionStatusDropdown from '$lib/components/ResolutionStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
@@ -72,6 +73,8 @@
 			<StatusDropdown {editable} bind:value={container.payload.status} />
 		{:else if 'taskStatus' in container.payload}
 			<TaskStatusDropdown {editable} bind:value={container.payload.taskStatus} />
+		{:else if 'resolutionStatus' in container.payload}
+			<ResolutionStatusDropdown {editable} bind:value={container.payload.resolutionStatus} />
 		{/if}
 	</div>
 {/if}
