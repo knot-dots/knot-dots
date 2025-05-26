@@ -35,6 +35,5 @@
 			</BoardColumn>
 		{/each}
 	</Board>
-
-	<Help slug="resolutions" />
+	<Help slug="resolutions-status" />
 </ResolutionsPage>

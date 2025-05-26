@@ -28,7 +28,7 @@
 				: []),
 			{ label: $_('workspace.measure_monitoring'), value: '/measures/monitoring' },
 			{ label: $_('workspace.measure_templates'), value: '/measures/templates' },
-			{ label: $_('workspace.resolutions'), value: '/resolutions' },
+			{ label: $_('workspace.resolutions'), value: '/resolutions/status' },
 			...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
 				? [
 						{ label: $_('workspace.indicators'), value: '/indicators' },
