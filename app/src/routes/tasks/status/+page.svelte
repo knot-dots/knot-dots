@@ -89,6 +89,5 @@
 			{/if}
 		{/each}
 	</Board>
-
-	<Help slug="tasks" />
+	<Help slug="tasks-status" />
 </TasksPage>
