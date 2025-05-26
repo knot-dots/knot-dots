@@ -29,6 +29,7 @@
 		['measureType', 'measure_type'],
 		['type', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],
+		['relationType', 'relation_filter.label'],
 		['strategyType', 'strategy_type.label'],
 		['taskCategory', 'task_category.label']
 	]);

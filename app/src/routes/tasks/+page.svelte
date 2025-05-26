@@ -34,6 +34,18 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
+			...((page.url.searchParams.has('related-to')
+				? [
+						[
+							'relationType',
+							new Map([
+								[predicates.enum['is-part-of'], 0],
+								[predicates.enum['is-prerequisite-for'], 0],
+								[predicates.enum['is-subtask-of'], 0]
+							])
+						]
+					]
+				: []) as Array<[string, Map<string, number>]>),
 			...((!page.data.currentOrganization.payload.default
 				? [['included', new Map()]]
 				: []) as Array<[string, Map<string, number>]>),

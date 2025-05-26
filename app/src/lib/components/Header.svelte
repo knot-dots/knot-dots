@@ -18,6 +18,7 @@
 	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
+	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
@@ -202,6 +203,8 @@
 					<AssigneeFilterDropDown {options} />
 				{:else if key === 'included'}
 					<OrganizationIncludedFilterDropDown />
+				{:else if key === 'relationType'}
+					<RelationTypeFilterDropDown {options} />
 				{:else if options.filter(({ count }) => count > 0).length > 0}
 					<FilterDropDown {key} {options} />
 				{/if}
