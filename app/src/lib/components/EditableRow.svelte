@@ -10,6 +10,7 @@
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
+	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
@@ -69,6 +70,8 @@
 	<div class="cell">
 		{#if 'status' in container.payload}
 			<StatusDropdown {editable} bind:value={container.payload.status} />
+		{:else if 'taskStatus' in container.payload}
+			<TaskStatusDropdown {editable} bind:value={container.payload.taskStatus} />
 		{/if}
 	</div>
 {/if}
