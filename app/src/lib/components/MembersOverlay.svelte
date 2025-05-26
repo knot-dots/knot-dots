@@ -16,5 +16,9 @@
 
 <Header {workspaceOptions} />
 <div class="content-details masked-overflow">
-	<Members {container} {users} />
+	<div class="details details-editable">
+		<div class="details-tab">
+			<Members {container} {users} />
+		</div>
+	</div>
 </div>
