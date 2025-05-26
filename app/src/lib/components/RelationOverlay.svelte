@@ -425,64 +425,66 @@
 
 <Header {workspaceOptions} />
 <div class="content-details masked-overflow">
-	<p>
-		{$_('relation_overlay.help', {
-			values: {
-				type: $_(object.payload.type),
-				nameOrTitle: object.payload.title
-			}
-		})}
-	</p>
+	<div class="details details-editable">
+		<p>
+			{$_('relation_overlay.help', {
+				values: {
+					type: $_(object.payload.type),
+					nameOrTitle: object.payload.title
+				}
+			})}
+		</p>
 
-	{#each dropZones as zone, i (i)}
-		<div class="drop-zone-wrapper">
-			<p>
-				<svelte:component this={predicateIcons.get(zone.predicate)} />
-				{zone.help}
-			</p>
-			<ul
-				class="carousel drop-zone drop-zone--{zone.predicate}"
-				class:drop-zone--is-active={i === activeDropZoneIndex}
-				class:drop-zone--has-received={zone.active}
-				use:dndzone={{
-					dragDisabled: true,
-					dropTargetStyle: {},
-					items: zone.items,
-					morphDisabled: true
-				}}
-				on:consider={(e) => handleDndConsider(i, e)}
-				on:finalize={(e) => handleDndFinalize(i, e)}
-			>
-				{#each zone.items as item (item.guid)}
-					<li>
-						<Card container={item.container}>
-							{#snippet button()}
-								{#if object.relation.find((r) => zone.predicate === r.predicate && item.container.guid === r.object && object.guid === r.subject)}
-									<button
-										class="button-square"
-										type="button"
-										on:click|stopPropagation={() =>
-											removeRelation(object, zone.predicate, item.container)}
-									>
-										<Minus />
-									</button>
-								{:else}
-									<button
-										class="button-square"
-										type="button"
-										on:click|stopPropagation={() =>
-											removeRelation(item.container, zone.predicate, object)}
-									>
-										<Minus />
-									</button>
-								{/if}
-							{/snippet}
-						</Card>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/each}
+		{#each dropZones as zone, i (i)}
+			<div class="drop-zone-wrapper">
+				<p>
+					<svelte:component this={predicateIcons.get(zone.predicate)} />
+					{zone.help}
+				</p>
+				<ul
+					class="carousel drop-zone drop-zone--{zone.predicate}"
+					class:drop-zone--is-active={i === activeDropZoneIndex}
+					class:drop-zone--has-received={zone.active}
+					use:dndzone={{
+						dragDisabled: true,
+						dropTargetStyle: {},
+						items: zone.items,
+						morphDisabled: true
+					}}
+					on:consider={(e) => handleDndConsider(i, e)}
+					on:finalize={(e) => handleDndFinalize(i, e)}
+				>
+					{#each zone.items as item (item.guid)}
+						<li>
+							<Card container={item.container}>
+								{#snippet button()}
+									{#if object.relation.find((r) => zone.predicate === r.predicate && item.container.guid === r.object && object.guid === r.subject)}
+										<button
+											class="button-square"
+											type="button"
+											on:click|stopPropagation={() =>
+												removeRelation(object, zone.predicate, item.container)}
+										>
+											<Minus />
+										</button>
+									{:else}
+										<button
+											class="button-square"
+											type="button"
+											on:click|stopPropagation={() =>
+												removeRelation(item.container, zone.predicate, object)}
+										>
+											<Minus />
+										</button>
+									{/if}
+								{/snippet}
+							</Card>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
+	</div>
 </div>
 
 <footer class="content-footer">
@@ -495,25 +497,8 @@
 </footer>
 
 <style>
-	.content-details,
-	.content-footer {
-		padding-left: 1.5rem;
-	}
-
-	.content-details {
-		display: flex;
-		flex-direction: column;
-		gap: 2rem;
-		overflow-y: auto;
-	}
-
-	.content-details > p {
-		padding: 0 1.5rem;
-	}
-
 	.drop-zone-wrapper {
 		color: var(--color-gray-500);
-		margin: 0 1.5rem;
 		stroke: var(--color-gray-500);
 	}
 
