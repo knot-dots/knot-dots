@@ -9,6 +9,7 @@
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
@@ -92,6 +93,14 @@
 	<div class="cell">
 		{#if 'policyFieldBNK' in container.payload}
 			<PolicyFieldBNKDropdown compact {editable} bind:value={container.payload.policyFieldBNK} />
+		{/if}
+	</div>
+{/if}
+
+{#if columns.includes('taskCategory')}
+	<div class="cell">
+		{#if 'taskCategory' in container.payload}
+			<TaskCategoryDropdown compact {editable} bind:value={container.payload.taskCategory} />
 		{/if}
 	</div>
 {/if}
