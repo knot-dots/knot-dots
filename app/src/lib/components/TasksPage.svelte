@@ -8,9 +8,10 @@
 	interface Props {
 		children: Snippet;
 		data: { containers: Container[] };
+		sortOptions?: [string, string][];
 	}
 
-	let { children, data }: Props = $props();
+	let { children, data, sortOptions }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -43,7 +44,7 @@
 </script>
 
 <Layout>
-	<Header {facets} search sortOptions={[]} slot="header" />
+	<Header {facets} search {sortOptions} slot="header" />
 
 	<svelte:fragment slot="main">
 		{@render children()}
