@@ -14,6 +14,8 @@
 			{ heading: $_('title'), key: 'title' },
 			{ heading: $_('description'), key: 'description' },
 			{ heading: $_('visibility.label'), key: 'visibility' },
+			{ heading: $_('task_status.label'), key: 'status' },
+			{ heading: $_('task_category.label'), key: 'taskCategory' },
 			{ heading: $_('fulfillment_date'), key: 'fulfillmentDate' },
 			{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
 		]}
