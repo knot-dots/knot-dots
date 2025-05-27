@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ChevronLeft from '~icons/heroicons/chevron-left';
+	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Members from '$lib/components/Members.svelte';
@@ -9,6 +10,8 @@
 </script>
 
 <Layout>
+	<Header workspaceOptions={[]} slot="header" />
+
 	<svelte:fragment slot="main">
 		<div class="details details-editable">
 			<h2 class="details-title">
