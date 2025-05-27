@@ -93,6 +93,7 @@
 <style>
 	.dropdown {
 		flex-shrink: 0;
+		margin-left: auto;
 	}
 
 	.dropdown-button {
