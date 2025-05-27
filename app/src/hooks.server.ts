@@ -1,7 +1,7 @@
 import Keycloak from '@auth/core/providers/keycloak';
 import { SvelteKitAuth } from '@auth/sveltekit';
 import { type Span, trace } from '@opentelemetry/api';
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { type Handle, type HandleServerError, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
@@ -140,6 +140,13 @@ export const handle = sequence(tracing, authentication, async ({ event, resolve 
 			roles: [],
 			settings: {}
 		};
+	}
+
+	if (
+		event.locals.user.isAuthenticated &&
+		event.url.searchParams.has('redirectToProfileIfLoggedIn')
+	) {
+		redirect(302, '/me');
 	}
 
 	event.locals.features = event.locals.user.settings.features ?? [
