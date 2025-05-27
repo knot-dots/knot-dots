@@ -1,3 +1,5 @@
-import programs from '$lib/load/programs';
+import { error } from '@sveltejs/kit';
 
-export const load = programs;
+export const load = async () => {
+	error(404);
+};

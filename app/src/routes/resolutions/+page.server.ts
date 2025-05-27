@@ -1,3 +1,5 @@
-import resolutions from '$lib/load/resolutions';
+import { error } from '@sveltejs/kit';
 
-export const load = resolutions;
+export const load = async () => {
+	error(404);
+};

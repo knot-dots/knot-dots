@@ -1,3 +1,5 @@
-import measures from '$lib/load/measures';
+import { error } from '@sveltejs/kit';
 
-export const load = measures;
+export const load = async () => {
+	error(404);
+};

@@ -1,3 +1,5 @@
-import tasks from '$lib/load/tasks';
+import { error } from '@sveltejs/kit';
 
-export const load = tasks('priority');
+export const load = async () => {
+	error(404);
+};
