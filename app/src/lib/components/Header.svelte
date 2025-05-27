@@ -21,6 +21,7 @@
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
+	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
@@ -113,7 +114,11 @@
 		<OrganizationMenu />
 	{/if}
 
-	<Workspaces options={workspaceOptions} />
+	{#if workspaceOptions}
+		<Workspaces options={workspaceOptions} />
+	{:else}
+		<WorkspacesMenu />
+	{/if}
 
 	<form class="commands" data-sveltekit-keepfocus>
 		{#if search}
