@@ -115,7 +115,7 @@
 <div class="organization-menu">
 	<button class="dropdown-button" type="button" use:popover.button>
 		<img alt={$_('logo')} src={orgLogo} />
-		<span class="truncated">
+		<span class="is-visually-hidden is-visually-hidden--mobile-only truncated">
 			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
 				{$_('all_organizations')}
 			{:else}

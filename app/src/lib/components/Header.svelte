@@ -365,17 +365,4 @@
 		background-color: var(--color-primary-100);
 		color: var(--color-primary-700);
 	}
-
-	@container (min-width: 768px) {
-		.is-visually-hidden.is-visually-hidden--mobile-only {
-			border: revert;
-			clip: revert;
-			height: revert;
-			margin: revert;
-			overflow: revert;
-			padding: revert;
-			position: revert;
-			width: revert;
-		}
-	}
 </style>

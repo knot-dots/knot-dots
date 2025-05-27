@@ -1514,6 +1514,19 @@ label > input[type='checkbox'].toggle {
 	width: 1px;
 }
 
+@container (min-width: 768px) {
+	.is-visually-hidden.is-visually-hidden--mobile-only {
+		border: revert;
+		clip: revert;
+		height: revert;
+		margin: revert;
+		overflow: revert;
+		padding: revert;
+		position: revert;
+		width: revert;
+	}
+}
+
 .truncated {
 	overflow: hidden;
 	text-overflow: ellipsis;
