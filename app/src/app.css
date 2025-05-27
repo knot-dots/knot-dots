@@ -1393,9 +1393,10 @@ label > input[type='checkbox'].toggle {
 	padding: 0.125rem 0.5rem;
 }
 
-.dropdown-button > svg {
+.dropdown-button > svg, .dropdown-button > img {
 	color: var(--color-gray-500);
 	flex-shrink: 0;
+	max-width: none;
 }
 
 .dropdown-button[aria-expanded='true'] {
