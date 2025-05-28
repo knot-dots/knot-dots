@@ -7,6 +7,7 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import ColumnSolid from '~icons/flowbite/column-solid';
+	import Grid from '~icons/flowbite/grid-solid';
 	import TableRow from '~icons/flowbite/table-row-solid';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
@@ -160,6 +161,15 @@
 						icon: Compass,
 						label: $_('workspace.view.monitoring'),
 						value: workspacesRight.monitoring[selectedItem[0]]
+					}
+				]
+			: []),
+		...(selectedItem[0] in workspacesRight.catalog
+			? [
+					{
+						icon: Grid,
+						label: $_('workspace.view.catalog'),
+						value: workspacesRight.catalog[selectedItem[0]]
 					}
 				]
 			: []),
