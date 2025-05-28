@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
@@ -23,11 +22,9 @@
 		['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
 		['assignee', new Map()]
 	]);
-
-	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Header {facets} search {workspaceOptions} />
+<Header {facets} search />
 
 <Tasks
 	{container}

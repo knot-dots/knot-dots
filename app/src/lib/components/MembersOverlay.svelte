@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Members from '$lib/components/Members.svelte';
@@ -11,11 +10,9 @@
 	}
 
 	let { container, users }: Props = $props();
-
-	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Header {workspaceOptions} />
+<Header workspaceOptions={[]} />
 <div class="content-details masked-overflow">
 	<div class="details details-editable">
 		<div class="details-tab">

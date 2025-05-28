@@ -43,6 +43,7 @@
 		isOrganizationalUnitContainer,
 		isResolutionContainer,
 		isResourceContainer,
+		isSimpleMeasureContainer,
 		isStrategyContainer,
 		isTaskContainer,
 		isTextContainer,
@@ -79,8 +80,6 @@
 		(getContext('relationOverlay') as { enabled: boolean }).enabled;
 
 	let saveAsIndicatorTemplateDisabled = $state(false);
-
-	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 
 	function saveIndicatorAsTemplate(c: IndicatorContainer) {
 		return async () => {
@@ -343,10 +342,11 @@
 			)
 		)}
 		search
-		{workspaceOptions}
 	/>
+{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+	<Header />
 {:else}
-	<Header {workspaceOptions} sortOptions={[]} />
+	<Header sortOptions={[]} workspaceOptions={[]} />
 {/if}
 
 {#if !createFeatureDecisions(page.data.features).useEditableDetailView() && isIndicatorContainer(container)}

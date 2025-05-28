@@ -16,8 +16,6 @@
 	export let object: Container;
 	export let relatedContainers: Container[];
 
-	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
-
 	let enabledPredicates = (getContext('relationOverlay') as { predicates: Predicate[] }).predicates;
 
 	type DropZone = {
@@ -424,7 +422,7 @@
 	}
 </script>
 
-<Header {workspaceOptions} />
+<Header workspaceOptions={[]} />
 <div class="content-details masked-overflow">
 	<div class="details details-editable">
 		<p>

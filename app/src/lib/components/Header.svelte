@@ -12,18 +12,27 @@
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
+	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
 	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
+	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
-	import { overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
+	import {
+		isMeasureContainer,
+		isSimpleMeasureContainer,
+		isStrategyContainer,
+		overlayKey,
+		overlayURL,
+		paramsFromFragment
+	} from '$lib/models';
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
@@ -116,6 +125,12 @@
 
 	{#if workspaceOptions}
 		<Workspaces options={workspaceOptions} />
+	{:else if overlay && $overlayStore?.container}
+		{#if isStrategyContainer($overlayStore.container)}
+			<ProgramWorkspaces container={$overlayStore.container} />
+		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
+			<MeasureWorkspaces container={$overlayStore.container} />
+		{/if}
 	{:else}
 		<WorkspacesMenu />
 	{/if}

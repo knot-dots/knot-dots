@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditHelpOverlay from '$lib/components/EditHelpOverlay.svelte';
 	import EditOverlay from '$lib/components/EditOverlay.svelte';
@@ -14,7 +12,7 @@
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
-	import { isContainerWithEffect, isStrategyContainer, overlayKey, overlayURL } from '$lib/models';
+	import { overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
 	interface Props {
@@ -24,44 +22,6 @@
 	let { data }: Props = $props();
 
 	setContext('overlay', true);
-
-	let workspaceOptions = $derived.by(() => {
-		if (isStrategyContainer(data.container)) {
-			return [
-				{
-					label: $_('workspace.strategy'),
-					value: overlayURL(page.url, overlayKey.enum.chapters, data.container.guid)
-				},
-				{
-					label: $_('workspace.measures'),
-					value: overlayURL(page.url, overlayKey.enum.measures, data.container.guid)
-				},
-				{
-					label: $_('workspace.measure_monitoring'),
-					value: overlayURL(page.url, overlayKey.enum['measure-monitoring'], data.container.guid)
-				},
-				{
-					label: $_('workspace.indicators'),
-					value: overlayURL(page.url, overlayKey.enum.indicators, data.container.guid)
-				}
-			];
-		} else if (isContainerWithEffect(data.container)) {
-			return [
-				{
-					label: $_('workspace.measure_monitoring'),
-					value: overlayURL(page.url, overlayKey.enum['measure-monitoring'], data.container.guid)
-				},
-				{
-					label: $_('workspace.tasks'),
-					value: overlayURL(page.url, overlayKey.enum.tasks, data.container.guid)
-				}
-			];
-		} else {
-			return [];
-		}
-	});
-
-	setContext('workspaceOptions', workspaceOptions);
 
 	let fullScreen = $state({ enabled: false });
 

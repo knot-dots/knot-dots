@@ -11,7 +11,6 @@
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import { getContext } from 'svelte';
 
 	interface Props {
 		containers: Container[];
@@ -27,11 +26,9 @@
 		['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 	]);
-
-	let workspaceOptions = getContext<Array<{ label: string; value: string }>>('workspaceOptions');
 </script>
 
-<Header {facets} search {workspaceOptions} />
+<Header {facets} search />
 
 <Indicators {containers} />
 

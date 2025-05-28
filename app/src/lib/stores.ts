@@ -329,6 +329,23 @@ if (browser) {
 					relatedContainers,
 					revisions
 				});
+				if (hashParams.has('table')) {
+					applicationState.update((state) => ({
+						...state,
+						containerDetailView: {
+							...state.containerDetailView,
+							mode: 'view_mode.table'
+						}
+					}));
+				} else {
+					applicationState.update((state) => ({
+						...state,
+						containerDetailView: {
+							...state.containerDetailView,
+							mode: 'view_mode.preview'
+						}
+					}));
+				}
 			} else {
 				const relatedContainers = await fetchRelatedContainers(container.guid, {
 					organization: [container.organization],
