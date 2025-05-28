@@ -57,7 +57,7 @@
 			status: '/measures/status',
 			table: '/measures/table'
 		},
-		objectives_and_effects: {
+		'objectives-and-effects': {
 			catalog: '/objectives-and-effects',
 			level: '/objectives-and-effects',
 			monitoring: '/objectives-and-effects',
@@ -105,7 +105,7 @@
 			all: '/all/level',
 			programs: '/programs/level',
 			goals: '/goals/level',
-			objectives_and_effects: '/objectives-and-effects'
+			'objectives-and-effects': '/objectives-and-effects'
 		},
 		monitoring: { measures: '/measures/monitoring' },
 		status: {
@@ -185,7 +185,7 @@
 					{
 						icon: ChartMixed,
 						label: $_('workspace.type.objectives_and_effects'),
-						value: workspacesLeft.objectives_and_effects[selectedItem[1] ?? 'level']
+						value: workspacesLeft['objectives-and-effects'][selectedItem[1] ?? 'level']
 					}
 				]
 			: [])
