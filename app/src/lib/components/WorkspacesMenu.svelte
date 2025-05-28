@@ -75,11 +75,11 @@
 		},
 		resolutions: {
 			catalog: '/resolutions/catalog',
-			level: '/resolution/status',
+			level: '/resolutions/status',
 			monitoring: '/resolutions/status',
 			page: '/resolutions/status',
 			status: '/resolutions/status',
-			table: '/resolution/table'
+			table: '/resolutions/table'
 		},
 		tasks: {
 			catalog: '/tasks/catalog',
@@ -95,7 +95,7 @@
 		catalog: {
 			all: '/all/catalog',
 			goals: '/goals/catalog',
-			indicators: '/indicators/catalog',
+			indicators: '/indicators',
 			measures: '/measures/catalog',
 			programs: '/programs/catalog',
 			resolutions: '/resolutions/catalog',
