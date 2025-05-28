@@ -7,7 +7,7 @@
 
 	let timer: ReturnType<typeof setTimeout>;
 	let overlay = getContext('overlay');
-	let terms = $derived(
+	let terms = $state(
 		overlay
 			? (new URLSearchParams(page.url.hash.substring(1)).get('terms') ?? '')
 			: (page.url.searchParams.get('terms') ?? '')
