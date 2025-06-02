@@ -492,15 +492,17 @@
 	textarea {
 		background-color: white;
 		border: none;
-		border-radius: 0;
+		border-radius: 8px;
 		color: var(--color-gray-900);
 		font-size: 2.25rem;
 		font-weight: 700;
 		line-height: 1.25;
+		margin: 0 -0.5rem;
 		min-height: revert;
 		overflow: hidden;
-		padding: 0;
+		padding: 0.5rem;
 		resize: none;
+		width: calc(100% + 1rem);
 	}
 
 	textarea:invalid {
