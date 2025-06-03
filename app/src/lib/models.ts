@@ -522,10 +522,6 @@ const measurePayload = basePayload
 		annotation: z.string().trim().optional(),
 		comment: z.string().trim().optional(),
 		endDate: z.string().date().optional(),
-		indicatorContribution: z.record(z.string().uuid(), z.coerce.number().nonnegative()).optional(),
-		indicatorContributionAchieved: z
-			.record(z.string().uuid(), z.coerce.number().nonnegative())
-			.optional(),
 		measureType: z.array(measureTypes).default([]),
 		resource: z
 			.array(
