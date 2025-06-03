@@ -28,5 +28,5 @@
 			)
 			.slice(0, browser ? undefined : 20)}
 	/>
-	<Help slug="all" />
+	<Help slug="all-catalog" />
 </AllPage>

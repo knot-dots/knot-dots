@@ -79,5 +79,5 @@
 			</BoardColumn>
 		{/each}
 	</Board>
-	<Help slug="all" />
+	<Help slug="all-level" />
 </AllPage>

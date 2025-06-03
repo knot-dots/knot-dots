@@ -50,4 +50,4 @@
 	showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
 />
 
-<Help slug="measure-monitoring" />
+<Help slug="measures-monitoring" />
