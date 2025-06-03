@@ -65,7 +65,6 @@
 	.dropdown-panel {
 		border: solid 1px var(--color-gray-300);
 		border-radius: 0.5rem;
-		white-space: wrap;
-		width: 50%;
+		width: min(80vw, 44rem);
 	}
 </style>

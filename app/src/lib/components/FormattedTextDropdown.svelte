@@ -72,7 +72,7 @@
 		border: solid 1px var(--color-gray-300);
 		border-radius: 0.5rem;
 		overflow: visible;
-		width: 50%;
+		width: min(80vw, 44rem);
 	}
 
 	.dropdown-panel > :global(*) {
