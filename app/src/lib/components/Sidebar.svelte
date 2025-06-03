@@ -30,6 +30,7 @@
 
 	const platformMenu = createDisclosure({ label: $_('platform_menu') });
 
+	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
 	function toggleSidebar() {

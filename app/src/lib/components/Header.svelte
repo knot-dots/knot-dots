@@ -113,6 +113,7 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y_no_redundant_roles -->
 <header class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover" role="banner">
 	{#if overlay}
 		<OverlayCloseButton />

@@ -8,6 +8,7 @@
 
 	export let data: LayoutData;
 
+	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
 	overrideItemIdKeyNameBeforeInitialisingDndZones('guid');

@@ -280,6 +280,7 @@
 		};
 	}
 
+	// svelte-ignore non_reactive_update
 	let confirmDeleteDialog: HTMLDialogElement;
 
 	async function handleDelete(c: AnyContainer) {

@@ -40,6 +40,7 @@
 
 	let { container, relatedContainers }: Props = $props();
 
+	// svelte-ignore non_reactive_update
 	let confirmDeleteDialog: HTMLDialogElement;
 
 	let hashParams = $derived(paramsFromFragment(page.url));
