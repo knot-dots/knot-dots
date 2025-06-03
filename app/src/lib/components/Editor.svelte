@@ -129,7 +129,7 @@
 
 	@container style(--editor-style: new) {
 		.label {
-			margin-bottom: 2rem;
+			margin-bottom: 1rem;
 		}
 
 		:global(.milkdown) {

@@ -22,6 +22,6 @@
 
 <style>
 	.label {
-		margin-bottom: 2rem;
+		margin-bottom: 1rem;
 	}
 </style>
