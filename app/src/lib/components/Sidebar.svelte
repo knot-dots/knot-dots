@@ -1,3 +1,7 @@
+<script module>
+	let sidebarExpanded = $state(true);
+</script>
+
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
 	import { cubicInOut } from 'svelte/easing';
@@ -20,7 +24,6 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-
 	import { user } from '$lib/stores';
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
@@ -28,8 +31,6 @@
 	const platformMenu = createDisclosure({ label: $_('platform_menu') });
 
 	let dialog: HTMLDialogElement;
-
-	let sidebarExpanded = $state(true);
 
 	function toggleSidebar() {
 		sidebarExpanded = !sidebarExpanded;
