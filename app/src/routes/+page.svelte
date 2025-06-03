@@ -20,22 +20,18 @@
 					{#if isOrganizationContainer(data.container)}
 						<EditableOrganizationDetailView
 							container={data.container}
-							relatedContainers={[
-								...data.indicators,
-								...data.containersRelatedToIndicators,
-								...data.strategies,
-								...data.measures
-							]}
+							containersRelatedToIndicators={data.containersRelatedToIndicators}
+							indicators={data.indicators}
+							measures={data.measures}
+							strategies={data.strategies}
 						/>
 					{:else if isOrganizationalUnitContainer(data.container)}
 						<EditableOrganizationalUnitDetailView
 							container={data.container}
-							relatedContainers={[
-								...data.indicators,
-								...data.containersRelatedToIndicators,
-								...data.strategies,
-								...data.measures
-							]}
+							containersRelatedToIndicators={data.containersRelatedToIndicators}
+							indicators={data.indicators}
+							measures={data.measures}
+							strategies={data.strategies}
 						/>
 					{/if}
 				{:else}

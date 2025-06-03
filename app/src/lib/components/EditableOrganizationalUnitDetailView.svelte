@@ -12,14 +12,16 @@
 	import {
 		type Container,
 		isContainerWithEffect,
-		isIndicatorContainer,
-		isStrategyContainer,
+		isContainerWithObjective,
 		type OrganizationalUnitContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	export let container: OrganizationalUnitContainer;
-	export let relatedContainers: Container[];
+	export let containersRelatedToIndicators: Container[] = [];
+	export let indicators: Container[] = [];
+	export let measures: Container[] = [];
+	export let strategies: Container[] = [];
 
 	const handleSubmit = autoSave(container, 2000);
 </script>
@@ -31,7 +33,6 @@
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.image}
 			/>
-			<div class="spacer"></div>
 			{#if $applicationState.containerDetailView.editable}
 				<h2
 					class="details-title"
@@ -92,9 +93,16 @@
 			<div class="details-tab" id="indicators">
 				<h3>{$_('indicators')}</h3>
 				<ul class="carousel">
-					{#each relatedContainers.filter(isIndicatorContainer) as indicator}
+					{#each indicators as indicator}
+						{@const relatedContainers = [
+							...containersRelatedToIndicators.filter(({ relation }) =>
+								relation.some(({ object }) => object === indicator.guid)
+							),
+							...containersRelatedToIndicators.filter(isContainerWithEffect),
+							...containersRelatedToIndicators.filter(isContainerWithObjective)
+						]}
 						<li>
-							<Card container={indicator} />
+							<Card container={indicator} {relatedContainers} />
 						</li>
 					{/each}
 				</ul>
@@ -104,7 +112,7 @@
 		<div class="details-tab" id="strategies">
 			<h3>{$_('strategies')}</h3>
 			<ul class="carousel">
-				{#each relatedContainers.filter(isStrategyContainer) as strategy}
+				{#each strategies as strategy}
 					<li>
 						<Card container={strategy} />
 					</li>
@@ -115,7 +123,7 @@
 		<div class="details-tab" id="measures">
 			<h3>{$_('measures')}</h3>
 			<ul class="carousel">
-				{#each relatedContainers.filter(isContainerWithEffect) as measure}
+				{#each measures as measure}
 					<li>
 						<Card container={measure} />
 					</li>

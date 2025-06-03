@@ -378,7 +378,7 @@
 			{/await}
 		{:else if isOrganizationalUnitContainer(container)}
 			{#await import('./EditableOrganizationalUnitDetailView.svelte') then { default: EditableOrganizationalUnitDetailView }}
-				<EditableOrganizationalUnitDetailView {container} {relatedContainers} />
+				<EditableOrganizationalUnitDetailView {container} />
 			{/await}
 		{:else if isResolutionContainer(container)}
 			{#await import('./EditableResolutionDetailView.svelte') then { default: EditableResolutionDetailView }}
