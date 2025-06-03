@@ -196,6 +196,13 @@
 			</div>
 		{/if}
 
+		{#if 'hierarchyLevel' in container.payload && container.payload.hierarchyLevel}
+			<div class="meta">
+				<h3 class="meta-key">{$_('goal.hierarchy_level')}</h3>
+				<p class="meta-value">{container.payload.hierarchyLevel}</p>
+			</div>
+		{/if}
+
 		<slot name="meta">
 			{#if 'fulfillmentDate' in container.payload && container.payload.fulfillmentDate}
 				<div class="meta">

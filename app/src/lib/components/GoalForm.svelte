@@ -79,6 +79,11 @@
 	<GoalTypeSelector bind:value={container.payload.goalType} />
 
 	<label class="meta">
+		<span class="meta-key">{$_('goal.hierarchy_level')}</span>
+		<input class="meta-value" type="number" bind:value={container.payload.hierarchyLevel} />
+	</label>
+
+	<label class="meta">
 		<span class="meta-key">{$_('fulfillment_date')}</span>
 		<input class="meta-value" type="date" bind:value={container.payload.fulfillmentDate} />
 	</label>
