@@ -71,6 +71,7 @@
 		overlayURL,
 		payloadTypes,
 		predicates,
+		status,
 		type User
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
@@ -440,21 +441,39 @@
 					</button>
 				</div>
 
-				<div class="details-tab">
-					{#if isContainerWithDescription($newContainer)}
-						<EditableFormattedText
-							editable
-							label={$_('description')}
-							bind:value={$newContainer.payload.description}
-						/>
-					{:else if isContainerWithBody($newContainer)}
-						<EditableFormattedText
-							editable
-							label={$_('body')}
-							bind:value={$newContainer.payload.body}
-						/>
-					{/if}
-				</div>
+				{#if isContainerWithDescription($newContainer)}
+					<EditableFormattedText
+						editable
+						label={$_('description')}
+						bind:value={$newContainer.payload.description}
+					/>
+				{:else if isContainerWithBody($newContainer)}
+					<EditableFormattedText
+						editable
+						label={$_('body')}
+						bind:value={$newContainer.payload.body}
+					/>
+				{/if}
+
+				{#if (isMeasureContainer($newContainer) && $newContainer.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer($newContainer)}
+					<EditableFormattedText
+						editable
+						label={$_('annotation')}
+						bind:value={$newContainer.payload.annotation}
+					/>
+				{:else if isMeasureContainer($newContainer) && $newContainer.payload.status === status.enum['status.in_implementation']}
+					<EditableFormattedText
+						editable
+						label={$_('comment')}
+						bind:value={$newContainer.payload.comment}
+					/>
+				{:else if isMeasureContainer($newContainer) && ($newContainer.payload.status === status.enum['status.in_operation'] || $newContainer.payload.status === status.enum['status.done'])}
+					<EditableFormattedText
+						editable
+						label={$_('result')}
+						bind:value={$newContainer.payload.result}
+					/>
+				{/if}
 			</article>
 		</form>
 	{/if}
