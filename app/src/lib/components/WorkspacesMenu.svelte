@@ -29,7 +29,6 @@
 		all: {
 			catalog: '/all/catalog',
 			level: '/all/level',
-			monitoring: '/all/level',
 			page: '/',
 			status: '/all/level',
 			table: '/all/table'
@@ -37,64 +36,37 @@
 		goals: {
 			catalog: '/goals/catalog',
 			level: '/goals/level',
-			monitoring: '/goals/level',
-			page: '/goals/level',
-			status: '/goals/level',
 			table: '/goals/table'
 		},
 		indicators: {
-			catalog: '/indicators',
-			level: '/indicators',
-			monitoring: '/indicators',
-			page: '/indicators',
-			status: '/indicators',
-			table: '/indicators'
+			catalog: '/indicators'
 		},
 		knowledge: {
 			catalog: '/knowledge/catalog',
 			level: '/knowledge/level',
-			monitoring: '/knowledge/level',
-			page: '/knowledge/level',
-			status: '/knowledge/level',
 			table: '/knowledge/table'
 		},
 		measures: {
 			catalog: '/measures/catalog',
-			level: '/measures/status',
 			monitoring: '/measures/monitoring',
-			page: '/measures/status',
 			status: '/measures/status',
 			table: '/measures/table'
 		},
 		'objectives-and-effects': {
-			level: '/objectives-and-effects',
-			catalog: '/objectives-and-effects',
-			monitoring: '/objectives-and-effects',
-			page: '/objectives-and-effects',
-			status: '/objectives-and-effects',
-			table: '/objectives-and-effects'
+			level: '/objectives-and-effects'
 		},
 		programs: {
 			catalog: '/programs/catalog',
 			level: '/programs/level',
-			monitoring: '/programs/catalog',
-			page: '/programs/catalog',
-			status: '/programs/catalog',
 			table: '/programs/table'
 		},
 		resolutions: {
 			catalog: '/resolutions/catalog',
-			level: '/resolutions/status',
-			monitoring: '/resolutions/status',
-			page: '/resolutions/status',
 			status: '/resolutions/status',
 			table: '/resolutions/table'
 		},
 		tasks: {
 			catalog: '/tasks/catalog',
-			level: '/tasks/status',
-			monitoring: '/tasks/status',
-			page: '/tasks/status',
 			status: '/tasks/status',
 			table: '/tasks/table'
 		}
@@ -156,39 +128,39 @@
 		{
 			icon: Dots,
 			label: $_('workspace.type.all'),
-			value: workspacesLeft.all[selectedItem[1] ?? 'level']
+			value: workspacesLeft.all[selectedItem[1]] ?? '/all/level'
 		},
 		{
 			icon: Strategy,
 			label: $_('workspace.type.programs'),
-			value: workspacesLeft.programs[selectedItem[1] ?? 'catalog']
+			value: workspacesLeft.programs[selectedItem[1]] ?? '/programs/catalog'
 		},
 		{
 			icon: Goal,
 			label: $_('workspace.type.goals'),
-			value: workspacesLeft.goals[selectedItem[1] ?? 'level']
+			value: workspacesLeft.goals[selectedItem[1]] ?? '/programs/level'
 		},
 		{
 			icon: Gavel,
 			label: $_('workspace.type.resolutions'),
-			value: workspacesLeft.resolutions[selectedItem[1] ?? 'status']
+			value: workspacesLeft.resolutions[selectedItem[1]] ?? '/resolutions/status'
 		},
 		{
 			icon: Clipboard,
 			label: $_('workspace.type.measures'),
-			value: workspacesLeft.measures[selectedItem[1] ?? 'status']
+			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
 		{
 			icon: GraduationCap,
 			label: $_('workspace.type.knowledge'),
-			value: workspacesLeft.knowledge[selectedItem[1] ?? 'level']
+			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [
 					{
 						icon: ClipboardCheck,
 						label: $_('workspace.type.tasks'),
-						value: workspacesLeft.tasks[selectedItem[1] ?? 'status']
+						value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
 					}
 				]
 			: []),
@@ -197,72 +169,49 @@
 					{
 						icon: ChartBar,
 						label: $_('workspace.type.indicators'),
-						value: workspacesLeft.indicators[selectedItem[1] ?? 'catalog']
+						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators'
 					},
 					{
 						icon: ChartMixed,
 						label: $_('workspace.type.objectives_and_effects'),
-						value: workspacesLeft['objectives-and-effects'][selectedItem[1] ?? 'level']
+						value:
+							workspacesLeft['objectives-and-effects'][selectedItem[1]] ?? '/objectives-and-effects'
 					}
 				]
 			: [])
 	]);
 
 	let rightOptions: Option[] = $derived([
-		...(selectedItem[0] in workspacesRight.page
-			? [
-					{
-						icon: LandingPage,
-						label: $_('workspace.view.page'),
-						value: workspacesRight.page[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.status
-			? [
-					{
-						icon: ColumnSolid,
-						label: $_('workspace.view.status'),
-						value: workspacesRight.status[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.level
-			? [
-					{
-						icon: Level,
-						label: $_('workspace.view.level'),
-						value: workspacesRight.level[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.monitoring
-			? [
-					{
-						icon: Compass,
-						label: $_('workspace.view.monitoring'),
-						value: workspacesRight.monitoring[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.catalog
-			? [
-					{
-						icon: Grid,
-						label: $_('workspace.view.catalog'),
-						value: workspacesRight.catalog[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.table
-			? [
-					{
-						icon: TableRow,
-						label: $_('workspace.view.table'),
-						value: workspacesRight.table[selectedItem[0]]
-					}
-				]
-			: [])
+		{
+			icon: LandingPage,
+			label: $_('workspace.view.page'),
+			value: workspacesRight.page[selectedItem[0]] ?? '/'
+		},
+		{
+			icon: ColumnSolid,
+			label: $_('workspace.view.status'),
+			value: workspacesRight.status[selectedItem[0]] ?? '/measures/status'
+		},
+		{
+			icon: Level,
+			label: $_('workspace.view.level'),
+			value: workspacesRight.level[selectedItem[0]] ?? '/all/level'
+		},
+		{
+			icon: Compass,
+			label: $_('workspace.view.monitoring'),
+			value: workspacesRight.monitoring[selectedItem[0]] ?? '/measures/monitoring'
+		},
+		{
+			icon: Grid,
+			label: $_('workspace.view.catalog'),
+			value: workspacesRight.catalog[selectedItem[0]] ?? '/all/catalog'
+		},
+		{
+			icon: TableRow,
+			label: $_('workspace.view.table'),
+			value: workspacesRight.table[selectedItem[0]] ?? '/all/table'
+		}
 	]);
 
 	const leftMenu = createMenu({

@@ -7,24 +7,13 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import ColumnSolid from '~icons/flowbite/column-solid';
-	import Grid from '~icons/flowbite/grid-solid';
-	import TableRow from '~icons/flowbite/table-row-solid';
-	import ChartBar from '~icons/knotdots/chart-bar';
-	import Clipboard from '~icons/knotdots/clipboard-simple';
+	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Compass from '~icons/knotdots/compass';
 	import Dots from '~icons/knotdots/dots';
 	import LandingPage from '~icons/knotdots/landing-page';
-	import Level from '~icons/knotdots/level';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import {
-		type AnyContainer,
-		boards,
-		overlayKey,
-		overlayURL,
-		paramsFromFragment
-	} from '$lib/models';
-	import ClipboardCheck from '~icons/knotdots/clipboard-check';
+	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 
 	interface Props {
 		container: AnyContainer;
@@ -35,12 +24,9 @@
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
 			monitoring: '/all/monitoring',
-			page: '/',
-			status: '/all/monitoring'
+			page: '/'
 		},
 		tasks: {
-			monitoring: '/tasks/status',
-			page: '/tasks/status',
 			status: '/tasks/status'
 		}
 	};
@@ -56,8 +42,6 @@
 			all: '/'
 		}
 	};
-
-	let selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
 
 	let selectedItem = $derived.by(() => {
 		const params = paramsFromFragment(page.url);
@@ -81,43 +65,33 @@
 		{
 			icon: Dots,
 			label: $_('workspace.type.all'),
-			value: workspacesLeft.all[selectedItem[1] ?? 'monitoring']
+			value: workspacesLeft.all[selectedItem[1]] ?? '/all/monitoring'
 		},
 		{
 			icon: ClipboardCheck,
 			label: $_('workspace.type.tasks'),
-			value: workspacesLeft.tasks[selectedItem[1] ?? 'status']
+			value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
 		}
 	]);
 
 	let rightOptions: Option[] = $derived([
-		...(selectedItem[0] in workspacesRight.page
-			? [
-					{
-						icon: LandingPage,
-						label: $_('workspace.view.page'),
-						value: workspacesRight.page[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.status
-			? [
-					{
-						icon: ColumnSolid,
-						label: $_('workspace.view.status'),
-						value: workspacesRight.status[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.monitoring
-			? [
-					{
-						icon: Compass,
-						label: $_('workspace.view.monitoring'),
-						value: workspacesRight.monitoring[selectedItem[0]]
-					}
-				]
-			: [])
+		{
+			icon: LandingPage,
+			label: $_('workspace.view.page'),
+			value: workspacesRight.page[selectedItem[0]] ?? '/all/page'
+		},
+
+		{
+			icon: ColumnSolid,
+			label: $_('workspace.view.status'),
+			value: workspacesRight.status[selectedItem[0]] ?? '/tasks/status'
+		},
+
+		{
+			icon: Compass,
+			label: $_('workspace.view.monitoring'),
+			value: workspacesRight.monitoring[selectedItem[0]] ?? '/all/monitoring'
+		}
 	]);
 
 	function pathFromParams(params: URLSearchParams) {

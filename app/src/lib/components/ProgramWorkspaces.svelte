@@ -33,28 +33,16 @@
 
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
-			catalog: '/all/level',
 			level: '/all/level',
-			monitoring: '/all/level',
 			page: '/',
-			status: '/all/level',
 			table: '/all/table'
 		},
 		indicators: {
-			catalog: '/indicators/catalog',
-			level: '/indicators/catalog',
-			monitoring: '/indicators/catalog',
-			page: '/indicators/catalog',
-			status: '/indicators/catalog',
-			table: '/indicators/catalog'
+			catalog: '/indicators/catalog'
 		},
 		measures: {
-			catalog: '/measures/status',
-			level: '/measures/status',
 			monitoring: '/measures/monitoring',
-			page: '/measures/status',
-			status: '/measures/status',
-			table: '/measures/status'
+			status: '/measures/status'
 		}
 	};
 
@@ -109,79 +97,60 @@
 		{
 			icon: Dots,
 			label: $_('workspace.type.all'),
-			value: workspacesLeft.all[selectedItem[1] ?? 'level']
+			value: workspacesLeft.all[selectedItem[1]] ?? '/all/level'
 		},
 		{
 			icon: Clipboard,
 			label: $_('workspace.type.measures'),
-			value: workspacesLeft.measures[selectedItem[1] ?? 'status']
+			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
 		...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
 			? [
 					{
 						icon: ChartBar,
 						label: $_('workspace.type.indicators'),
-						value: workspacesLeft.indicators[selectedItem[1] ?? 'catalog']
+						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators/catalog'
 					}
 				]
 			: [])
 	]);
 
 	let rightOptions: Option[] = $derived([
-		...(selectedItem[0] in workspacesRight.page
-			? [
-					{
-						icon: LandingPage,
-						label: $_('workspace.view.page'),
-						value: workspacesRight.page[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.status
-			? [
-					{
-						icon: ColumnSolid,
-						label: $_('workspace.view.status'),
-						value: workspacesRight.status[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.level
-			? [
-					{
-						icon: Level,
-						label: $_('workspace.view.level'),
-						value: workspacesRight.level[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.monitoring
-			? [
-					{
-						icon: Compass,
-						label: $_('workspace.view.monitoring'),
-						value: workspacesRight.monitoring[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.catalog
-			? [
-					{
-						icon: Grid,
-						label: $_('workspace.view.catalog'),
-						value: workspacesRight.catalog[selectedItem[0]]
-					}
-				]
-			: []),
-		...(selectedItem[0] in workspacesRight.table
-			? [
-					{
-						icon: TableRow,
-						label: $_('workspace.view.table'),
-						value: workspacesRight.table[selectedItem[0]]
-					}
-				]
-			: [])
+		{
+			icon: LandingPage,
+			label: $_('workspace.view.page'),
+			value: workspacesRight.page[selectedItem[0]] ?? '/'
+		},
+
+		{
+			icon: ColumnSolid,
+			label: $_('workspace.view.status'),
+			value: workspacesRight.status[selectedItem[0]] ?? '/measures/status'
+		},
+
+		{
+			icon: Level,
+			label: $_('workspace.view.level'),
+			value: workspacesRight.level[selectedItem[0]] ?? '/all/level'
+		},
+
+		{
+			icon: Compass,
+			label: $_('workspace.view.monitoring'),
+			value: workspacesRight.monitoring[selectedItem[0]] ?? '/measures/monitoring'
+		},
+
+		{
+			icon: Grid,
+			label: $_('workspace.view.catalog'),
+			value: workspacesRight.catalog[selectedItem[0]] ?? '/indicators/catalog'
+		},
+
+		{
+			icon: TableRow,
+			label: $_('workspace.view.table'),
+			value: workspacesRight.table[selectedItem[0]] ?? '/all/table'
+		}
 	]);
 
 	function pathFromParams(params: URLSearchParams) {
