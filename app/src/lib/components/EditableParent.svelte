@@ -31,7 +31,10 @@
 		} else if (strategyGuid) {
 			return fetchContainers({
 				isPartOfStrategy: [strategyGuid],
-				payloadType: [payloadTypes.enum.goal]
+				payloadType:
+					payloadType == payloadTypes.enum.knowledge
+						? [payloadTypes.enum.knowledge]
+						: [payloadTypes.enum.goal]
 			}) as Promise<Container[]>;
 		} else if (payloadType == payloadTypes.enum.task) {
 			return fetchContainers({

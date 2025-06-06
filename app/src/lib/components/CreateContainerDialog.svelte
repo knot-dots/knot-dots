@@ -56,6 +56,7 @@
 		isContainerWithTitle,
 		isContainerWithTopic,
 		isGoalContainer,
+		isKnowledgeContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -268,6 +269,14 @@
 								{:else}
 									<EditableStrategy editable bind:container={$newContainer} />
 								{/if}
+							{:else if isKnowledgeContainer($newContainer)}
+								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
+									<EditableEditorialState
+										editable={$ability.can('update', $newContainer, 'payload.editorialState')}
+										bind:value={$newContainer.payload.editorialState}
+									/>
+								{/if}
+								<EditableStrategy editable bind:container={$newContainer} />
 							{:else if isMeasureContainer($newContainer)}
 								{#if $ability.can('read', $newContainer, 'payload.editorialState')}
 									<EditableEditorialState
