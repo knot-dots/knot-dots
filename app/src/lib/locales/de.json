@@ -202,6 +202,7 @@
 		"submit": "Einladung abschicken"
 	},
 	"knowledge": "Wissen",
+	"knowledge.level": "Ebene {level}",
 	"label": {
 		"unit": "Einheit"
 	},
@@ -645,6 +646,7 @@
 	"vision": "Vision",
 	"visions": "Visionen",
 	"workspace.indicators": "Indikatoren",
+	"workspace.knowledge": "Wissen",
 	"workspace.measure_monitoring": "Maßnahmen-Monitoring",
 	"workspace.measure_templates": "Maßnahmen-Vorlagen",
 	"workspace.measures": "Maßnahmen Status-Board",

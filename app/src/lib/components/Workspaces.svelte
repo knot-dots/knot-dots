@@ -17,7 +17,8 @@
 			heading: $_('board.programs'),
 			items: [
 				{ text: $_('workspace.programs'), value: '/programs' },
-				{ text: $_('workspace.programs_by_level'), value: '/programs-by-level' }
+				{ text: $_('workspace.programs_by_level'), value: '/programs-by-level' },
+				{ text: $_('workspace.knowledge'), value: '/knowledge' }
 			]
 		},
 		{
