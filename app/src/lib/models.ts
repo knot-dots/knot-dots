@@ -62,6 +62,7 @@ const payloadTypeValues = [
 	'goal',
 	'indicator',
 	'indicator_template',
+	'knowledge',
 	'measure',
 	'objective',
 	'organization',
@@ -86,6 +87,7 @@ export function isPayloadType(value: unknown): value is PayloadType {
 
 export const chapterTypeOptions = [
 	payloadTypes.enum.goal,
+	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.resolution,
 	payloadTypes.enum.simple_measure,
@@ -517,6 +519,12 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	unit: true
 });
 
+const knowledgePayload = basePayload
+	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
+	.strict();
+
+const initialKnowledgePayload = knowledgePayload.partial({ title: true });
+
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().trim().optional(),
@@ -725,6 +733,7 @@ const payload = z.discriminatedUnion('type', [
 	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
+	knowledgePayload,
 	measurePayload,
 	objectivePayload,
 	pagePayload,
@@ -759,6 +768,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
+	knowledgePayload,
 	measurePayload,
 	objectivePayload,
 	organizationPayload,
@@ -857,6 +867,18 @@ export function isIndicatorTemplateContainer(
 	container: AnyContainer | EmptyContainer
 ): container is IndicatorTemplateContainer {
 	return container.payload.type === payloadTypes.enum.indicator_template;
+}
+
+const knowledgeContainer = container.extend({
+	payload: knowledgePayload
+});
+
+export type KnowledgeContainer = z.infer<typeof knowledgeContainer>;
+
+export function isKnowledgeContainer(
+	container: AnyContainer | EmptyContainer
+): container is KnowledgeContainer {
+	return container.payload.type === payloadTypes.enum.knowledge;
 }
 
 const measureContainer = container.extend({
@@ -1145,6 +1167,7 @@ export const emptyContainer = newContainer.extend({
 		initialGoalPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
+		initialKnowledgePayload,
 		initialMeasurePayload,
 		initialObjectivePayload,
 		initialOrganizationPayload,
@@ -1168,17 +1191,23 @@ const emptyEffectContainer = emptyContainer.extend({
 
 export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
 
-const emptyIndicatorContainer = emptyContainer.extend({
-	payload: initialIndicatorPayload
-});
-
 const emptyGoalContainer = emptyContainer.extend({
 	payload: initialGoalPayload
 });
 
 export type EmptyGoalContainer = z.infer<typeof emptyGoalContainer>;
 
+const emptyIndicatorContainer = emptyContainer.extend({
+	payload: initialIndicatorPayload
+});
+
 export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
+
+const emptyKnowledgeContainer = emptyContainer.extend({
+	payload: initialKnowledgePayload
+});
+
+export type EmptyKnowledgeContainer = z.infer<typeof emptyKnowledgeContainer>;
 
 const emptyMeasureContainer = emptyContainer.extend({
 	payload: initialMeasurePayload
