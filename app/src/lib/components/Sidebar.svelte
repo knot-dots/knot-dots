@@ -38,8 +38,10 @@
 	}
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
+		const url = new URL(env.PUBLIC_BASE_URL);
+
 		if ('default' in container.payload && container.payload.default) {
-			return '/';
+			return url.toString();
 		} else {
 			const url = new URL(env.PUBLIC_BASE_URL);
 			url.hostname = `${container.guid}.${url.hostname}`;
@@ -78,7 +80,7 @@
 		<a
 			class="sidebar-menu-item"
 			class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
-				page.url.pathname}
+				page.url.toString()}
 			href={landingPageURL(page.data.currentOrganization)}
 		>
 			<Home />
@@ -92,7 +94,7 @@
 			<a
 				class="sidebar-menu-item"
 				class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
-					page.url.pathname}
+					page.url.toString()}
 				href={landingPageURL(page.data.currentOrganizationalUnit)}
 			>
 				<OrganizationalUnit />
