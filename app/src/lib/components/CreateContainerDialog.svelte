@@ -68,7 +68,8 @@
 		type NewContainer,
 		overlayKey,
 		overlayURL,
-		predicates
+		predicates,
+		strategyTypes
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 	import {
@@ -176,11 +177,13 @@
 					{/if}
 
 					<ul class="badges">
-						<li class="badge badge--purple">
-							{'goalType' in $newContainer.payload && $newContainer.payload.goalType
-								? $_($newContainer.payload.goalType)
-								: $_($newContainer.payload.type)}
-						</li>
+						{#if 'goalType' in $newContainer.payload && $newContainer.payload.goalType}
+							{$_($newContainer.payload.goalType)}
+						{:else if 'strategyType' in $newContainer.payload && $newContainer.payload.strategyType !== strategyTypes.enum['strategy_type.misc']}
+							{$_($newContainer.payload.strategyType)}
+						{:else}
+							{$_($newContainer.payload.type)}
+						{/if}
 						{#if isContainerWithStatus($newContainer)}
 							{@const StatusIcon = statusIcons.get($newContainer.payload.status)}
 							{#key $newContainer.payload.status}
