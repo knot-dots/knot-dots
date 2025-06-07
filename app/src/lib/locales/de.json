@@ -528,12 +528,17 @@
 	"strategies": "Strategien",
 	"strategy": "Strategie",
 	"strategy_type": {
+		"funding_program": "Förderprogramm",
+		"guide": "Leitfaden",
 		"isek": "ISEK",
 		"label": "Art der Strategie",
 		"misc": "Sonstige",
-		"mobility": "Mobilität",
-		"smart_city": "Smart City",
-		"sustainability": "Nachhaltigkeit"
+		"mobility": "Mobilitätsstrategie",
+		"package_of_measures": "Maßnahmenpaket",
+		"report": "Bericht",
+		"set_of_rules": "Regelwerk",
+		"smart_city": "Smart City Strategie",
+		"sustainability": "Nachhaltigkeitsstrategie"
 	},
 	"summary": "Zusammenfassung",
 	"superordinate_chapters": "Übergeordnete Kapitel",

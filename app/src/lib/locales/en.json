@@ -527,12 +527,17 @@
 	"strategies": "Strategies",
 	"strategy": "Strategy",
 	"strategy_type": {
+		"funding_program": "Funding program",
+		"guide": "Guide",
 		"isek": "Integrated urban development concept",
 		"label": "Strategy type",
 		"misc": "Miscellaneous",
-		"mobility": "Mobility",
-		"smart_city": "Smart city",
-		"sustainability": "Sustainability"
+		"mobility": "Mobility strategy",
+		"package_of_measures": "Package of measures",
+		"report": "Report",
+		"set_of_rules": "Set of rules",
+		"smart_city": "Smart city strategy",
+		"sustainability": "Sustainability strategy"
 	},
 	"summary": "Summary",
 	"superordinate_chapters": "Superordinate chapters",

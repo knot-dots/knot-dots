@@ -181,7 +181,12 @@ const strategyTypeValues = [
 	'strategy_type.mobility',
 	'strategy_type.sustainability',
 	'strategy_type.smart_city',
-	'strategy_type.isek'
+	'strategy_type.isek',
+	'strategy_type.report',
+	'strategy_type.set_of_rules',
+	'strategy_type.package_of_measures',
+	'strategy_type.funding_program',
+	'strategy_type.guide'
 ] as const;
 
 export const strategyTypes = z.enum(strategyTypeValues);
