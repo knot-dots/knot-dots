@@ -24,7 +24,8 @@
 		isHeadOf,
 		isResolutionContainer,
 		isSuggestedByAI,
-		isTaskContainer
+		isTaskContainer,
+		strategyTypes
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import {
@@ -79,9 +80,13 @@
 
 			<ul class="badges">
 				<li class="badge badge--purple">
-					{'goalType' in container.payload && container.payload.goalType
-						? $_(container.payload.goalType)
-						: $_(container.payload.type)}
+					{#if 'goalType' in container.payload && container.payload.goalType}
+						{$_(container.payload.goalType)}
+					{:else if 'strategyType' in container.payload && container.payload.strategyType !== strategyTypes.enum['strategy_type.misc']}
+						{$_(container.payload.strategyType)}
+					{:else}
+						{$_(container.payload.type)}
+					{/if}
 				</li>
 				{#if isSuggestedByAI(container)}
 					<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
