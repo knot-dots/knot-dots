@@ -7,6 +7,7 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import ColumnSolid from '~icons/flowbite/column-solid';
+	import GraduationCap from '~icons/flowbite/graduation-cap-outline';
 	import Grid from '~icons/flowbite/grid-solid';
 	import TableRow from '~icons/flowbite/table-row-solid';
 	import ChartBar from '~icons/knotdots/chart-bar';
@@ -49,6 +50,14 @@
 			status: '/indicators',
 			table: '/indicators'
 		},
+		knowledge: {
+			catalog: '/knowledge/catalog',
+			level: '/knowledge/level',
+			monitoring: '/knowledge/level',
+			page: '/knowledge/level',
+			status: '/knowledge/level',
+			table: '/knowledge/table'
+		},
 		measures: {
 			catalog: '/measures/catalog',
 			level: '/measures/status',
@@ -58,8 +67,8 @@
 			table: '/measures/table'
 		},
 		'objectives-and-effects': {
-			catalog: '/objectives-and-effects',
 			level: '/objectives-and-effects',
+			catalog: '/objectives-and-effects',
 			monitoring: '/objectives-and-effects',
 			page: '/objectives-and-effects',
 			status: '/objectives-and-effects',
@@ -96,6 +105,7 @@
 			all: '/all/catalog',
 			goals: '/goals/catalog',
 			indicators: '/indicators',
+			knowledge: '/knowledge/catalog',
 			measures: '/measures/catalog',
 			programs: '/programs/catalog',
 			resolutions: '/resolutions/catalog',
@@ -103,9 +113,10 @@
 		},
 		level: {
 			all: '/all/level',
-			programs: '/programs/level',
+			knowledge: '/knowledge/level',
 			goals: '/goals/level',
-			'objectives-and-effects': '/objectives-and-effects'
+			'objectives-and-effects': '/objectives-and-effects',
+			programs: '/programs/level'
 		},
 		monitoring: { measures: '/measures/monitoring' },
 		status: {
@@ -119,6 +130,7 @@
 		table: {
 			all: '/all/table',
 			goals: '/goals/table',
+			knowledge: '/knowledge/table',
 			measures: '/measures/table',
 			programs: '/programs/table',
 			resolutions: '/resolutions/table',
@@ -165,6 +177,11 @@
 			icon: Clipboard,
 			label: $_('workspace.type.measures'),
 			value: workspacesLeft.measures[selectedItem[1] ?? 'status']
+		},
+		{
+			icon: GraduationCap,
+			label: $_('workspace.type.knowledge'),
+			value: workspacesLeft.knowledge[selectedItem[1] ?? 'level']
 		},
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [

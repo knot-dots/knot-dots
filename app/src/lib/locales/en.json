@@ -203,6 +203,7 @@
 		"submit": "Send invitation"
 	},
 	"knowledge": "Knowledge",
+	"knowledge.level": "Level {level}",
 	"label": {
 		"unit": "Unit"
 	},
@@ -663,6 +664,7 @@
 	"workspace.type.all": "All",
 	"workspace.type.goals": "Goals",
 	"workspace.type.indicators": "Indicators",
+	"workspace.type.knowledge": "Knowledge",
 	"workspace.type.measures": "Measures",
 	"workspace.type.objectives_and_effects": "Objectives and effects",
 	"workspace.type.programs": "Programs",

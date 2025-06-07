@@ -204,6 +204,7 @@
 		"submit": "Einladung abschicken"
 	},
 	"knowledge": "Wissen",
+	"knowledge.level": "Ebene {level}",
 	"label": {
 		"unit": "Einheit"
 	},
@@ -664,6 +665,7 @@
 	"workspace.type.all": "Alle",
 	"workspace.type.goals": "Ziele",
 	"workspace.type.indicators": "Indikatoren",
+	"workspace.type.knowledge": "Wissen",
 	"workspace.type.measures": "Maßnahmen",
 	"workspace.type.objectives_and_effects": "Wirkung",
 	"workspace.type.programs": "Programme",
