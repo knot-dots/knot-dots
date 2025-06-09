@@ -178,7 +178,7 @@
 				<Users />
 				<span class="is-visually-hidden">{$_('members')}</span>
 			</a>
-		{:else if !overlay && $ability.can('invite-members', selectedContext)}
+		{:else if !overlay && !$overlayStore?.key && $ability.can('invite-members', selectedContext)}
 			<div class="divider"></div>
 
 			<a
@@ -191,12 +191,14 @@
 		{/if}
 	</form>
 
-	{#if $user.isAuthenticated}
-		<EditModeToggle />
-	{:else}
-		<button class="button-primary button-xs" onclick={() => signIn('keycloak')} type="button">
-			{$_('login')}
-		</button>
+	{#if (!overlay && !$overlayStore?.key) || overlay}
+		{#if $user.isAuthenticated}
+			<EditModeToggle />
+		{:else}
+			<button class="button-primary button-xs" onclick={() => signIn('keycloak')} type="button">
+				{$_('login')}
+			</button>
+		{/if}
 	{/if}
 </header>
 
@@ -258,6 +260,7 @@
 		color: var(--color-gray-700);
 		container-type: inline-size;
 		display: flex;
+		flex-shrink: 0;
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		height: var(--header-height);

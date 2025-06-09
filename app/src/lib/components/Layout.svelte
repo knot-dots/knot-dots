@@ -29,7 +29,7 @@
 		{/if}
 	</nav>
 
-	<div class="main-with-overlay-wrapper">
+	<div class="main-with-header-wrapper">
 		{#if $$slots.header}
 			<slot name="header" />
 		{:else}
@@ -38,11 +38,12 @@
 
 		<main in:fly={transitionIn} out:fly={transitionOut}>
 			<slot name="main" />
-			{#if $overlay}
-				<Overlay data={$overlay} />
-			{/if}
 		</main>
 	</div>
+
+	{#if $overlay}
+		<Overlay data={$overlay} />
+	{/if}
 </div>
 
 <CreateContainerDialog bind:dialog />
@@ -55,11 +56,11 @@
 		width: 100%;
 	}
 
-	.main-with-overlay-wrapper {
+	.main-with-header-wrapper {
 		background-color: white;
 		display: flex;
 		flex-direction: column;
-		flex-grow: 1;
+		flex: 1;
 		min-width: 0;
 		padding: 0;
 	}
@@ -75,9 +76,7 @@
 	}
 
 	main {
-		display: flex;
-		flex-direction: row;
-		flex-grow: 1;
-		max-height: calc(100vh - var(--header-height));
+		flex: 1;
+		min-height: 0;
 	}
 </style>

@@ -63,7 +63,7 @@
 
 <style>
 	div {
-		flex: 1 1;
+		height: 100%;
 		overflow-y: auto;
 		padding: 1.5rem;
 	}

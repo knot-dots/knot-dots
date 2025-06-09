@@ -26,7 +26,6 @@
 
 <style>
 	div {
-		flex: 1 1;
 		height: 100%;
 		overflow: auto;
 	}
