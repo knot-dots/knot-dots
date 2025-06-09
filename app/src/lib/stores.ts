@@ -218,12 +218,20 @@ export const overlay = writable<OverlayData | undefined>();
 export const overlayHistory = writable<URLSearchParams[]>([]);
 
 if (browser) {
+	let previousHashState = '';
+
 	page.subscribe(async (values) => {
 		if (!values.url) {
 			return;
 		}
 
 		const hashParams = paramsFromFragment(values.url);
+
+		if (hashParams.toString() == previousHashState) {
+			return;
+		}
+
+		previousHashState = hashParams.toString();
 
 		if (hashParams.size > 0) {
 			if (!hashParams.has(overlayKey.enum.edit) && !hashParams.has(overlayKey.enum.create)) {
