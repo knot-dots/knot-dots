@@ -7,13 +7,17 @@
 	import { type AnyContainer, type Container, type ResourceContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container: ResourceContainer;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: ResourceContainer;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
+	}
+
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		<EditableAmount
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={container.payload.amount}
@@ -29,5 +33,5 @@
 			label={$_('fulfillment_date')}
 			bind:value={container.payload.fulfillmentDate}
 		/>
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>

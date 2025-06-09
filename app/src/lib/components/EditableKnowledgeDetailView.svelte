@@ -13,13 +13,17 @@
 	import { type KnowledgeContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export let container: KnowledgeContainer;
-	export let relatedContainers: any[];
-	export let revisions: any[];
+	interface Props {
+		container: KnowledgeContainer;
+		relatedContainers: any[];
+		revisions: any[];
+	}
+
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState
 				editable={$applicationState.containerDetailView.editable &&
@@ -64,14 +68,14 @@
 			organization={container.organization}
 			bind:value={container.organizational_unit}
 		/>
-	</svelte:fragment>
+	{/snippet}
 
-	<svelte:fragment slot="extra">
+	{#snippet extra()}
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.description}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>

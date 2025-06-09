@@ -5,12 +5,16 @@
 	import type { AnyContainer, PageContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container: PageContainer;
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: PageContainer;
+		revisions: AnyContainer[];
+	}
+
+	let { container = $bindable(), revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container relatedContainers={[]} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable}
@@ -18,5 +22,5 @@
 				bind:value={container.payload.body}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>

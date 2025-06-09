@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import Card from '$lib/components/Card.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
@@ -26,41 +26,33 @@
 		isObjectiveContainer,
 		isRelatedTo,
 		isStrategyContainer,
-		type ObjectiveContainer,
 		paramsFromFragment
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { tab } from './IndicatorTabs.svelte';
 
-	export let container: IndicatorContainer;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
-
-	let currentTab: IndicatorTab = tab.enum.all;
-	let showEffects = true;
-	let showObjectives = true;
-	let viewMode = 'chart';
-
-	$: {
-		const parseResult = tab.safeParse(paramsFromURL($page.url).get('tab'));
-		if (parseResult.success) {
-			currentTab = parseResult.data;
-		}
-
-		if (currentTab == tab.enum.historical_values) {
-			showEffects = false;
-			showObjectives = false;
-		} else if (currentTab == tab.enum.objectives) {
-			showEffects = false;
-			showObjectives = true;
-		} else if (currentTab == tab.enum.measures) {
-			showEffects = true;
-			showObjectives = false;
-		} else {
-			showEffects = true;
-			showObjectives = true;
-		}
+	interface Props {
+		container: IndicatorContainer;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
 	}
+
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+
+	let currentTab: IndicatorTab = $derived.by(() => {
+		const parseResult = tab.safeParse(paramsFromURL(page.url).get('tab'));
+		if (parseResult.success) {
+			return parseResult.data;
+		} else {
+			return tab.enum.all;
+		}
+	});
+
+	let showEffects = $derived(currentTab == tab.enum.measures || currentTab == tab.enum.all);
+
+	let showObjectives = $derived(currentTab == tab.enum.objectives || currentTab == tab.enum.all);
+
+	let viewMode = $state('chart');
 
 	function tabURL(params: URLSearchParams, tab: IndicatorTab) {
 		const query = new URLSearchParams(params);
@@ -68,15 +60,11 @@
 		return `#${query.toString()}`;
 	}
 
-	let overallObjective: ObjectiveContainer | undefined;
-
-	$: {
-		overallObjective = findOverallObjective(container, relatedContainers);
-	}
+	let overallObjective = $derived(findOverallObjective(container, relatedContainers));
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		<EditableIndicatorUnit
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={container.payload.unit}
@@ -113,14 +101,14 @@
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={container.payload.audience}
 		/>
-	</svelte:fragment>
+	{/snippet}
 
-	<svelte:fragment slot="extra">
+	{#snippet extra()}
 		<div class="details-tab">
 			<ul class="button-group">
 				{#each tab.options as option}
 					<li class:is-active={option === currentTab}>
-						<a class="button" href={tabURL(paramsFromFragment($page.url), option)}>
+						<a class="button" href={tabURL(paramsFromFragment(page.url), option)}>
 							{$_(`indicator.tab.${option}`)}
 						</a>
 					</li>
@@ -197,7 +185,7 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>
 
 <style>

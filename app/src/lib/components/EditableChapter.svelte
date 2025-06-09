@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -30,7 +30,6 @@
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		type Relation,
 		status,
 		type StrategyContainer
 	} from '$lib/models';
@@ -44,20 +43,32 @@
 		taskStatusIcons
 	} from '$lib/theme/models';
 
-	export let container: Container;
-	export let editable = false;
-	export let headingTag: string;
-	export let isPartOf: StrategyContainer;
-	export let relatedContainers: Container[];
+	interface Props {
+		container: Container;
+		editable?: boolean;
+		headingTag: string;
+		isPartOf: StrategyContainer;
+		relatedContainers: Container[];
+	}
 
-	let isPartOfRelation: Relation[];
+	let {
+		container = $bindable(),
+		editable = false,
+		headingTag,
+		isPartOf,
+		relatedContainers
+	}: Props = $props();
 
-	$: isPartOfRelation = isPartOf.relation.filter(
-		({ object, predicate }) =>
-			predicate == predicates.enum['is-part-of-strategy'] && object == isPartOf.guid
+	let isPartOfRelation = $derived(
+		isPartOf.relation.filter(
+			({ object, predicate }) =>
+				predicate == predicates.enum['is-part-of-strategy'] && object == isPartOf.guid
+		)
 	);
 
-	$: currentIndex = isPartOfRelation.findIndex(({ subject }) => container.guid == subject);
+	let currentIndex = $derived(
+		isPartOfRelation.findIndex(({ subject }) => container.guid == subject)
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -111,13 +122,13 @@
 </script>
 
 {#if editable}
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<svelte:element
 		this={headingTag}
 		class="chapter-title"
 		contenteditable="plaintext-only"
 		bind:textContent={container.payload.title}
-		on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+		onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 	>
 		{container.payload.title}
 	</svelte:element>
@@ -228,12 +239,12 @@
 {/if}
 
 <footer class="content-actions">
-	<a class="button" href={viewInOverlayURL($page.url)}>
+	<a class="button" href={viewInOverlayURL(page.url)}>
 		{$_('read_more')}
 	</a>
 
-	{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
-		{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+	{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
+		{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
 			<DropDownMenu
 				handleChange={createContainerAt(currentIndex + 1)}
 				label={$_('chapter')}
@@ -242,7 +253,7 @@
 				{#snippet icon()}<PlusSmall />{/snippet}
 			</DropDownMenu>
 		{:else}
-			<a class="button" href={addChapterURL($page.url, currentIndex + 1)}>
+			<a class="button" href={addChapterURL(page.url, currentIndex + 1)}>
 				<PlusSmall />
 				{$_('chapter')}
 			</a>

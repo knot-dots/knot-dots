@@ -20,23 +20,29 @@
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container: ObjectiveContainer;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: ObjectiveContainer;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
+	}
+
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
 	const disclosure = createDisclosure({});
 
-	$: indicator = relatedContainers
-		.filter(isIndicatorContainer)
-		.find(
-			({ guid }) =>
-				container.relation.findIndex(
-					({ object, predicate }) =>
-						predicate == predicates.enum['is-objective-for'] && object == guid
-				) > -1
-		);
+	let indicator = $derived(
+		relatedContainers
+			.filter(isIndicatorContainer)
+			.find(
+				({ guid }) =>
+					container.relation.findIndex(
+						({ object, predicate }) =>
+							predicate == predicates.enum['is-objective-for'] && object == guid
+					) > -1
+			)
+	);
 
-	let newRowKey = 0;
+	let newRowKey = $state(0);
 
 	function append() {
 		const today = new Date();
@@ -82,7 +88,7 @@
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="extra">
+	{#snippet extra()}
 		{#if indicator}
 			{#if $applicationState.containerDetailView.editable}
 				{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
@@ -172,7 +178,7 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>
 
 <style>

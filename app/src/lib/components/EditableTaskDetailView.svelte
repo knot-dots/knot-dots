@@ -22,21 +22,25 @@
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export let container: TaskContainer;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: TaskContainer;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
+	}
 
-	$: managedBy = container.managed_by;
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
-	$: assigneeCandidatesPromise = fetchMembers(managedBy);
+	let managedBy = $derived(container.managed_by);
 
-	$: measure = relatedContainers.find(isContainerWithEffect);
+	let assigneeCandidatesPromise = $derived(fetchMembers(managedBy));
 
-	$: goal = relatedContainers.find(isContainerWithObjective);
+	let measure = $derived(relatedContainers.find(isContainerWithEffect));
+
+	let goal = $derived(relatedContainers.find(isContainerWithObjective));
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		<EditableTaskStatus
 			editable={$applicationState.containerDetailView.editable}
 			bind:value={container.payload.taskStatus}
@@ -88,9 +92,9 @@
 			organization={container.organization}
 			bind:value={container.organizational_unit}
 		/>
-	</svelte:fragment>
+	{/snippet}
 
-	<svelte:fragment slot="extra">
+	{#snippet extra()}
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable}
@@ -98,5 +102,5 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>

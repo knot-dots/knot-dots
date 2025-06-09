@@ -75,7 +75,9 @@
 		revisions?: AnyContainer[];
 	}
 
-	let { container, relatedContainers, revisions = [] }: Props = $props();
+	let { container: originalContainer, relatedContainers, revisions = [] }: Props = $props();
+
+	let container = $state(originalContainer);
 
 	let mayShowRelationButton =
 		hasContext('relationOverlay') &&
@@ -361,55 +363,55 @@
 	{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
 		{#if isEffectContainer(container)}
 			{#await import('./EditableEffectDetailView.svelte') then { default: EditableEffectDetailView }}
-				<EditableEffectDetailView {container} {relatedContainers} {revisions} />
+				<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isGoalContainer(container)}
 			{#await import('./EditableGoalDetailView.svelte') then { default: EditableGoalDetailView }}
-				<EditableGoalDetailView {container} {relatedContainers} {revisions} />
+				<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isIndicatorContainer(container)}
 			{#await import('./EditableIndicatorDetailView.svelte') then { default: EditableIndicatorDetailView }}
-				<EditableIndicatorDetailView {container} {relatedContainers} {revisions} />
+				<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isKnowledgeContainer(container)}
 			{#await import('./EditableKnowledgeDetailView.svelte') then { default: EditableKnowledgeDetailView }}
-				<EditableKnowledgeDetailView {container} {relatedContainers} {revisions} />
+				<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isContainerWithEffect(container)}
 			{#await import('./EditableMeasureDetailView.svelte') then { default: EditableMeasureDetailView }}
-				<EditableMeasureDetailView {container} {relatedContainers} {revisions} />
+				<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isObjectiveContainer(container)}
 			{#await import('./EditableObjectiveDetailView.svelte') then { default: EditableObjectiveDetailView }}
-				<EditableObjectiveDetailView {container} {relatedContainers} {revisions} />
+				<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isOrganizationalUnitContainer(container)}
 			{#await import('./EditableOrganizationalUnitDetailView.svelte') then { default: EditableOrganizationalUnitDetailView }}
-				<EditableOrganizationalUnitDetailView {container} />
+				<EditableOrganizationalUnitDetailView bind:container />
 			{/await}
 		{:else if isOrganizationContainer(container)}
 			{#await import('./EditableOrganizationDetailView.svelte') then { default: EditableOrganizationDetailView }}
-				<EditableOrganizationDetailView {container} />
+				<EditableOrganizationDetailView bind:container />
 			{/await}
 		{:else if isResolutionContainer(container)}
 			{#await import('./EditableResolutionDetailView.svelte') then { default: EditableResolutionDetailView }}
-				<EditableResolutionDetailView {container} {relatedContainers} {revisions} />
+				<EditableResolutionDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isResourceContainer(container)}
 			{#await import('./EditableResourceDetailView.svelte') then { default: EditableResourceDetailView }}
-				<EditableResourceDetailView {container} {relatedContainers} {revisions} />
+				<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isStrategyContainer(container)}
 			{#await import('./EditableStrategyDetailView.svelte') then { default: EditableStrategyDetailView }}
-				<EditableStrategyDetailView {container} {relatedContainers} {revisions} />
+				<EditableStrategyDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isTaskContainer(container)}
 			{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}
-				<EditableTaskDetailView {container} {relatedContainers} {revisions} />
+				<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isTextContainer(container)}
 			{#await import('./EditableTextDetailView.svelte') then { default: EditableTextDetailView }}
-				<EditableTextDetailView {container} {relatedContainers} {revisions} />
+				<EditableTextDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{/if}
 	{:else if isEffectContainer(container)}
@@ -487,7 +489,7 @@
 					class="button-ai"
 					class:is-active={isThinking}
 					type="button"
-					onclick={() => askAI(container)}
+					onclick={() => askAI(container as StrategyContainer)}
 				>
 					<AskAI />
 					{$_('ask_ai')}

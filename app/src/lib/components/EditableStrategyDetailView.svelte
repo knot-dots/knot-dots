@@ -4,7 +4,7 @@
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
@@ -39,18 +39,24 @@
 	} from '$lib/models';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 
-	export let container: StrategyContainer;
-	export let relatedContainers: Container[] = [];
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: StrategyContainer;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
+	}
 
-	$: parts = relatedContainers
-		.filter(({ guid, relation }) =>
-			relation.some(
-				({ predicate }) =>
-					predicate === predicates.enum['is-part-of-strategy'] && guid != container.guid
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+
+	let parts = $state(
+		relatedContainers
+			.filter(({ guid, relation }) =>
+				relation.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-strategy'] && guid != container.guid
+				)
 			)
-		)
-		.filter(({ payload }) => byPayloadType(payload.type, $page.url));
+			.filter(({ payload }) => byPayloadType(payload.type, page.url))
+	);
 
 	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
 		parts = event.detail.items;
@@ -121,11 +127,18 @@
 		const params = paramsFromFragment(url);
 		return !params.has('type') || params.getAll('type').includes(payloadType);
 	}
+
+	function stopPropagation(fn: (event: Event) => void) {
+		return function (this: Event, event: Event) {
+			event.stopPropagation();
+			fn.call(this, event);
+		};
+	}
 </script>
 
 {#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
 	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-		<svelte:fragment slot="data">
+		{#snippet data()}
 			{#if $ability.can('read', container, 'payload.editorialState')}
 				<EditableEditorialState
 					editable={$applicationState.containerDetailView.editable &&
@@ -192,19 +205,19 @@
 				organization={container.organization}
 				bind:value={container.organizational_unit}
 			/>
-		</svelte:fragment>
+		{/snippet}
 
-		<svelte:fragment slot="extra">
+		{#snippet extra()}
 			<div class="chapters">
-				{#each parts as part}
+				{#each parts as part, i (part.guid)}
 					<form
 						class="chapter"
-						on:input|stopPropagation={requestSubmit}
-						on:submit={autoSave(part, 2000)}
+						oninput={stopPropagation(requestSubmit)}
+						onsubmit={autoSave(part, 2000)}
 						novalidate
 					>
 						<EditableChapter
-							container={part}
+							bind:container={parts[i]}
 							editable={$applicationState.containerDetailView.editable}
 							headingTag="h3"
 							isPartOf={container}
@@ -212,8 +225,8 @@
 						/>
 					</form>
 				{:else}
-					{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, $page.data.currentOrganization.guid, $page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
-						{#if createFeatureDecisions($page.data.features).useEditableDetailView()}
+					{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
+						{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
 							<DropDownMenu
 								handleChange={createContainer}
 								label={$_('chapter')}
@@ -222,7 +235,7 @@
 								{#snippet icon()}<PlusSmall />{/snippet}
 							</DropDownMenu>
 						{:else}
-							<a class="button" href={addChapterURL($page.url, container.guid)}>
+							<a class="button" href={addChapterURL(page.url, container.guid)}>
 								<PlusSmall />
 								{$_('chapter')}
 							</a>
@@ -230,7 +243,7 @@
 					{/if}
 				{/each}
 			</div>
-		</svelte:fragment>
+		{/snippet}
 	</EditableContainerDetailView>
 {:else if $applicationState.containerDetailView.mode === 'view_mode.table'}
 	<article class="details">
@@ -264,15 +277,15 @@
 				<div
 					class="table-body"
 					use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
-					on:consider={handleDndConsider}
-					on:finalize={handleDndFinalize}
+					onconsider={handleDndConsider}
+					onfinalize={handleDndFinalize}
 				>
-					{#each parts as part (part.guid)}
+					{#each parts as part, i (part.guid)}
 						<form
 							class="row"
 							animate:flip={{ duration: 100 }}
-							on:input={requestSubmit}
-							on:submit={autoSave(part, 2000)}
+							oninput={requestSubmit}
+							onsubmit={autoSave(part, 2000)}
 							novalidate
 						>
 							<EditableRow
@@ -292,7 +305,7 @@
 									'editorialState',
 									'organizationalUnit'
 								]}
-								container={part}
+								bind:container={parts[i]}
 								editable={$applicationState.containerDetailView.editable}
 							/>
 						</form>

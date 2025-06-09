@@ -35,27 +35,33 @@
 	} from '$lib/models';
 	import { ability, addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
 
-	export let container: GoalContainer;
-	export let relatedContainers: any[];
-	export let revisions: any[];
+	interface Props {
+		container: GoalContainer;
+		relatedContainers: any[];
+		revisions: any[];
+	}
 
-	$: measure = relatedContainers
-		.filter(isContainerWithEffect)
-		.find((rc) => isPartOfMeasure(rc)(container));
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
-	$: strategy = relatedContainers
-		.filter(isStrategyContainer)
-		.find(
-			(candidate) =>
-				container.relation.findIndex(
-					(r) =>
-						r.predicate === predicates.enum['is-part-of-strategy'] &&
-						r.object === candidate.guid &&
-						candidate.guid !== container.guid
-				) > -1
-		);
+	let measure = $derived(
+		relatedContainers.filter(isContainerWithEffect).find((rc) => isPartOfMeasure(rc)(container))
+	);
 
-	$: effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container));
+	let strategy = $derived(
+		relatedContainers
+			.filter(isStrategyContainer)
+			.find(
+				(candidate) =>
+					container.relation.findIndex(
+						(r) =>
+							r.predicate === predicates.enum['is-part-of-strategy'] &&
+							r.object === candidate.guid &&
+							candidate.guid !== container.guid
+					) > -1
+			)
+	);
+
+	let effect = $derived(relatedContainers.filter(isEffectContainer).find(isPartOf(container)));
 
 	async function addEffect(target: Container, measure: ContainerWithEffect) {
 		const params = new URLSearchParams([
@@ -82,7 +88,7 @@
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState
 				editable={$applicationState.containerDetailView.editable &&
@@ -147,9 +153,9 @@
 			organization={container.organization}
 			bind:value={container.organizational_unit}
 		/>
-	</svelte:fragment>
+	{/snippet}
 
-	<svelte:fragment slot="extra">
+	{#snippet extra()}
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable}
@@ -170,8 +176,8 @@
 							<button
 								aria-label={$_('add_item')}
 								class="card"
+								onclick={() => addEffect(container, measure)}
 								type="button"
-								on:click={() => addEffect(container, measure)}
 							>
 								<PlusSmall />
 							</button>
@@ -196,7 +202,7 @@
 			<h3>{$_('tasks')}</h3>
 			<EditableTaskCarousel {container} editable={$applicationState.containerDetailView.editable} />
 		</div>
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>
 
 <style>

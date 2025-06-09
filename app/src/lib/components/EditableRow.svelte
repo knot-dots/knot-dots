@@ -24,9 +24,13 @@
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
-	export let columns: string[];
-	export let container: Container;
-	export let editable = false;
+	interface Props {
+		columns: string[];
+		container: Container;
+		editable?: boolean;
+	}
+
+	let { columns, container = $bindable(), editable = false }: Props = $props();
 </script>
 
 {#if columns.includes('action')}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
@@ -6,7 +7,7 @@
 	import ArrowDown from '~icons/heroicons/arrow-down-16-solid';
 	import ArrowUp from '~icons/heroicons/arrow-up-16-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import requestSubmit from '$lib/client/requestSubmit';
@@ -37,32 +38,40 @@
 		taskStatusIcons
 	} from '$lib/theme/models';
 
-	export let container: Container;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: Container;
+		data?: Snippet;
+		extra?: Snippet;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
+	}
+
+	let { container = $bindable(), data, extra, relatedContainers, revisions }: Props = $props();
 
 	const disclosure = createDisclosure();
 
-	let disclosure_expanded = $disclosure.expanded;
+	let disclosureExpanded = $state($disclosure.expanded);
 
 	const handleSubmit = autoSave(container, 2000);
 
-	$: managedBy = getManagedBy(container, [
-		...$page.data.organizations,
-		...$page.data.organizationalUnits,
-		...relatedContainers
-	]) as AnyContainer;
+	let managedBy = $derived(
+		getManagedBy(container, [
+			...page.data.organizations,
+			...page.data.organizationalUnits,
+			...relatedContainers
+		]) as AnyContainer
+	);
 
-	$: managedByGuid = managedBy.guid;
+	let managedByGuid = $derived(managedBy.guid);
 
-	$: teamPromise = fetchMembers(managedByGuid);
+	let teamPromise = $derived(fetchMembers(managedByGuid));
 
-	$: organization = container.organization;
+	let organization = $derived(container.organization);
 
-	$: organizationMembersPromise = fetchMembers(organization);
+	let organizationMembersPromise = $derived(fetchMembers(organization));
 </script>
 
-<form on:input={requestSubmit} on:submit={handleSubmit} novalidate>
+<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<div class="details-tab" id="basic-data">
 			{#if $applicationState.containerDetailView.editable}
@@ -70,7 +79,7 @@
 					class="details-title"
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.title}
-					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">
@@ -206,21 +215,21 @@
 			{#if $disclosure.expanded}
 				<div
 					class="data-grid"
+					onintroend={() => {
+						disclosureExpanded = true;
+					}}
+					onoutroend={() => {
+						disclosureExpanded = false;
+					}}
 					transition:slide={{ duration: 125, easing: cubicInOut }}
-					on:introend={() => {
-						disclosure_expanded = true;
-					}}
-					on:outroend={() => {
-						disclosure_expanded = false;
-					}}
 					use:disclosure.panel
 				>
-					<slot name="data" />
+					{@render data?.()}
 				</div>
 			{/if}
 
 			<button type="button" use:disclosure.button>
-				{#if disclosure_expanded}
+				{#if disclosureExpanded}
 					<ArrowUp /> {$_('properties.hide')}
 				{:else}
 					<ArrowDown /> {$_('properties.show_all')}
@@ -228,7 +237,7 @@
 			</button>
 		</div>
 
-		<slot name="extra" />
+		{@render extra?.()}
 	</article>
 </form>
 

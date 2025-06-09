@@ -15,13 +15,17 @@
 	import { type AnyContainer, type Container, type ResolutionContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export let container: ResolutionContainer;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: ResolutionContainer;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
+	}
+
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState
 				editable={$applicationState.containerDetailView.editable &&
@@ -71,9 +75,9 @@
 			organization={container.organization}
 			bind:value={container.organizational_unit}
 		/>
-	</svelte:fragment>
+	{/snippet}
 
-	<svelte:fragment slot="extra">
+	{#snippet extra()}
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable}
@@ -81,5 +85,5 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>

@@ -11,11 +11,11 @@
 		revisions: AnyContainer[];
 	}
 
-	let { container, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="data">
+	{#snippet data()}
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable}
@@ -23,5 +23,5 @@
 				bind:value={container.payload.body}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>

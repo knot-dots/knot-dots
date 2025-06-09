@@ -19,23 +19,29 @@
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
-	export let container: EffectContainer;
-	export let relatedContainers: Container[];
-	export let revisions: AnyContainer[];
+	interface Props {
+		container: EffectContainer;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
+	}
+
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
 	const disclosure = createDisclosure({});
 
-	$: indicator = relatedContainers
-		.filter(isIndicatorContainer)
-		.find(
-			({ guid }) =>
-				container.relation.findIndex(
-					({ object, predicate }) =>
-						predicate == predicates.enum['is-measured-by'] && object == guid
-				) > -1
-		);
+	let indicator = $derived(
+		relatedContainers
+			.filter(isIndicatorContainer)
+			.find(
+				({ guid }) =>
+					container.relation.findIndex(
+						({ object, predicate }) =>
+							predicate == predicates.enum['is-measured-by'] && object == guid
+					) > -1
+			)
+	);
 
-	let newRowKey = 0;
+	let newRowKey = $state(0);
 
 	function appendYear() {
 		const today = new Date();
@@ -96,7 +102,7 @@
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	<svelte:fragment slot="extra">
+	{#snippet extra()}
 		{#if indicator}
 			{#if $applicationState.containerDetailView.editable}
 				<div class="disclosure">
@@ -186,7 +192,7 @@
 
 			<EffectChart {container} {relatedContainers} showLegend />
 		{/if}
-	</svelte:fragment>
+	{/snippet}
 </EditableContainerDetailView>
 
 <style>
