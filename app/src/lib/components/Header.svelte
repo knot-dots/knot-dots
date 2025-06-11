@@ -331,6 +331,7 @@
 		font-size: 0.875rem;
 		gap: 0.25rem;
 		height: 3rem;
+		justify-content: safe center;
 		overflow: auto;
 		padding: 0 0 0 1rem;
 	}
