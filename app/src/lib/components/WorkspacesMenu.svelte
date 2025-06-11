@@ -301,7 +301,7 @@
 			{#if selected?.icon}
 				<selected.icon />
 			{/if}
-			<span class="is-visually-hidden is-visually-hidden--mobile-only">
+			<span class="is-visually-hidden">
 				{selected?.label ?? $_('workspaces')}
 			</span>
 			{#if menuExpanded}<ChevronUp />{:else}<ChevronDown />{/if}
@@ -389,9 +389,15 @@
 	}
 
 	.dropdown-group {
-		display: flex;
+		display: none;
 		flex-direction: row;
 		margin-left: auto;
+	}
+
+	@container (min-width: 24rem) {
+		.dropdown-group {
+			display: flex;
+		}
 	}
 
 	.dropdown-group > .dropdown:first-child > .dropdown-button {
@@ -402,5 +408,13 @@
 	.dropdown-group > .dropdown:last-child > .dropdown-button {
 		border-bottom-left-radius: 0;
 		border-top-left-radius: 0;
+	}
+
+	@layer visually-hidden {
+		@container (min-width: 60rem) {
+			.is-visually-hidden {
+				all: revert-layer;
+			}
+		}
 	}
 </style>

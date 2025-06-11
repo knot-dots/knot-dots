@@ -1512,12 +1512,6 @@ label > input[type='checkbox'].toggle {
 		position: absolute;
 		width: 1px;
 	}
-
-	@container (min-width: 768px) {
-		.is-visually-hidden.is-visually-hidden--mobile-only {
-			all: revert-layer;
-		}
-	}
 }
 
 .truncated {

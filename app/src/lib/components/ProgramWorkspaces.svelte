@@ -350,9 +350,15 @@
 	}
 
 	.dropdown-group {
-		display: flex;
+		display: none;
 		flex-direction: row;
 		margin-left: auto;
+	}
+
+	@container (min-width: 40rem) {
+		.dropdown-group {
+			display: flex;
+		}
 	}
 
 	.dropdown-group > .dropdown:first-child > .dropdown-button {
@@ -363,5 +369,13 @@
 	.dropdown-group > .dropdown:last-child > .dropdown-button {
 		border-bottom-left-radius: 0;
 		border-top-left-radius: 0;
+	}
+
+	@layer visually-hidden {
+		@container (min-width: 60rem) {
+			.is-visually-hidden {
+				all: revert-layer;
+			}
+		}
 	}
 </style>

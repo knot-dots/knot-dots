@@ -115,7 +115,7 @@
 <div class="organization-menu">
 	<button class="dropdown-button" type="button" use:popover.button>
 		<img alt={$_('logo')} src={orgLogo} />
-		<span class="is-visually-hidden is-visually-hidden--mobile-only truncated">
+		<span class="is-visually-hidden truncated">
 			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
 				{$_('all_organizations')}
 			{:else}
@@ -212,7 +212,14 @@
 	}
 
 	.organization-menu {
+		display: none;
 		max-width: 20rem;
+	}
+
+	@container (min-width: 30rem) {
+		.organization-menu {
+			display: revert;
+		}
 	}
 
 	.organization-menu-panel {
@@ -222,5 +229,13 @@
 		position: absolute;
 		right: 0;
 		top: var(--header-height);
+	}
+
+	@layer visually-hidden {
+		@container (min-width: 60rem) {
+			.is-visually-hidden {
+				all: revert-layer;
+			}
+		}
 	}
 </style>

@@ -281,6 +281,10 @@
 		margin: 0 0.75rem 0 auto;
 	}
 
+	.commands:last-child {
+		margin-right: 0;
+	}
+
 	.commands > * {
 		width: fit-content;
 	}
