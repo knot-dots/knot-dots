@@ -7,7 +7,7 @@
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import paramsFromURL from '$lib/client/paramsFromURL';
+	import { paramsFromFragment } from '$lib/models';
 
 	interface Props {
 		initialValue?: string[];
@@ -34,11 +34,17 @@
 		['taskCategory', 'task_category.label']
 	]);
 
-	let selected = $derived(
-		initialValue.length == 0 || paramsFromURL(page.url).has(changeKey)
-			? paramsFromURL(page.url).getAll(key)
-			: initialValue
-	);
+	let selected = $derived.by(() => {
+		if (overlay) {
+			return initialValue.length == 0 || paramsFromFragment(page.url).has(changeKey)
+				? paramsFromFragment(page.url).getAll(key)
+				: initialValue;
+		} else {
+			return initialValue.length == 0 || page.url.searchParams.has(changeKey)
+				? page.url.searchParams.getAll(key)
+				: initialValue;
+		}
+	});
 
 	const popover = createPopover({ label });
 
