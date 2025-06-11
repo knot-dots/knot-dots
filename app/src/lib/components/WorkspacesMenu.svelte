@@ -277,7 +277,9 @@
 		const detail = (event as CustomEvent).detail;
 
 		if (detail.selected && detail.selected !== page.url.pathname) {
-			goto(detail.selected);
+			const url = page.url;
+			url.pathname = detail.selected;
+			goto(url);
 		}
 	}
 </script>
