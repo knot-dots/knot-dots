@@ -509,6 +509,36 @@ button.button-copycat > svg {
 	width: 1.5rem;
 }
 
+button.button-relation,
+.button.button-relation {
+	--button-active-background: linear-gradient(62deg, rgba(28, 100, 242, 0.40) 17.85%, rgba(22, 189, 202, 0.40) 74.26%), white;
+	--button-background: transparent;
+	--button-border-color: var(--color-primary-700);
+	--button-hover-background: linear-gradient(62deg, rgba(28, 100, 242, 0.20) 17.85%, rgba(22, 189, 202, 0.20) 74.26%), white;
+	--button-hover-border-color: var(--button-border-color);
+
+	color: var(--color-primary-700);
+	padding: 0.5rem 1rem;
+}
+
+.button-relation.button-relation--square {
+	padding: 0.25rem;
+}
+
+button.button-relation > svg,
+.button.button-relation > svg {
+	height: 1.5rem;
+	width: 1.5rem;
+}
+
+.button-relation > svg #full {
+	display: none;
+}
+
+.button-relation:hover > svg #full {
+	display: revert;
+}
+
 button.button-xs,
 .button.button-xs {
 	--padding-x: 0.75rem;
@@ -637,35 +667,6 @@ button.button-square,
 
 .button-group.button-group-nav {
 	--button-border-color: var(--color-gray-900);
-}
-
-.relation-button {
-	--padding-x: 0;
-	--padding-y: 0;
-
-	background-image: url(/src/lib/assets/relate.svg);
-	background-position: top left;
-	background-repeat: no-repeat;
-	background-size: 2.5rem 8.125rem;
-	border: none;
-	color: var(--color-primary);
-	display: inline-block;
-	flex: 0 0 2.5rem;
-	font-size: 0;
-	height: 2.5rem;
-	margin-left: auto;
-}
-
-.relation-button:hover {
-	background-image: url(/src/lib/assets/relate.svg);
-	background-color: white;
-	background-position: center left;
-}
-
-.relation-button.is-active {
-	background-image: url(/src/lib/assets/relate.svg);
-	background-color: white;
-	background-position: center bottom;
 }
 
 /* Form controls */

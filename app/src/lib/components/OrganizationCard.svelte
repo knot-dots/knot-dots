@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -64,12 +65,13 @@
 		{#snippet button()}
 			{#if showRelationFilter}
 				<button
-					class="relation-button"
+					class="button-relation button-relation--square"
 					aria-label={$_('show_related_objects')}
 					type="button"
 					class:is-active={relatedTo === container.guid}
 					onclick={toggleRelatedTo(page.url.searchParams)}
 				>
+					<Relation />
 				</button>
 			{/if}
 		{/snippet}

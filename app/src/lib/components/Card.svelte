@@ -3,6 +3,7 @@
 	import { _, date } from 'svelte-i18n';
 	import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
 	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
+	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import EffectChart from '$lib/components/EffectChart.svelte';
@@ -339,11 +340,12 @@
 			{@render button()}
 		{:else if showRelationFilter}
 			<button
-				class="relation-button"
+				class="button-relation button-relation--square"
 				aria-label={$_('show_relations')}
 				class:is-active={relatedTo === container.guid}
 				onclick={applyRelationFilter(page.url)}
 			>
+				<Relation />
 			</button>
 		{/if}
 	</footer>
@@ -434,6 +436,10 @@
 
 	footer :global(.progress) {
 		flex-grow: 1;
+	}
+
+	footer :global(button) {
+		flex-shrink: 0;
 	}
 
 	@container style(--card-style: carousel) {

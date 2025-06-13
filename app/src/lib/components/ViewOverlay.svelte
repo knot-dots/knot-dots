@@ -6,6 +6,7 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import CopyCat from '~icons/knotdots/copycat';
+	import Relation from '~icons/knotdots/relation';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import createObjective from '$lib/client/createObjective';
@@ -457,8 +458,9 @@
 			</button>
 		{/if}
 		{#if mayShowRelationButton && $ability.can('relate', container)}
-			<a class="button" href="#relations={container.guid}">
-				{$_('establish_relations')}
+			<a class="button button-relation" href="#relations={container.guid}">
+				<Relation />
+				{$_('relations')}
 			</a>
 		{/if}
 		{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
