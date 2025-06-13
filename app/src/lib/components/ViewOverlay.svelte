@@ -478,11 +478,11 @@
 			{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
 				<button
 					class="button-copycat"
-					title={$_('copy')}
 					type="button"
 					onclick={() => createCopy(container)}
 				>
 					<CopyCat />
+					{$_('copy')}
 				</button>
 			{/if}
 			{#if createFeatureDecisions(page.data.features).useAI() && isStrategyContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
