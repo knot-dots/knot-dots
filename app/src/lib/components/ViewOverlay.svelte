@@ -441,7 +441,7 @@
 	class:bottom-actions-bar={createFeatureDecisions(page.data.features).useEditableDetailView()}
 >
 	<div class="content-actions">
-		{#if createFeatureDecisions(page.data.features).useEditableDetailView() && isMeasureContainer(container)}
+		{#if createFeatureDecisions(page.data.features).useEditableDetailView() && $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
 			<label>
 				<input
 					class="toggle"
@@ -478,11 +478,7 @@
 				</button>
 			{/if}
 			{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
-				<button
-					class="button-copycat"
-					type="button"
-					onclick={() => createCopy(container)}
-				>
+				<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
 					<CopyCat />
 					{$_('copy')}
 				</button>
