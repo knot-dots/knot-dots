@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Close from '~icons/flowbite/close-outline';
 	import Upload from '~icons/flowbite/upload-outline';
+	import Close from '~icons/knotdots/close';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 
