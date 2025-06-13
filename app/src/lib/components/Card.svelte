@@ -372,6 +372,11 @@
 		background-color: var(--color-gray-100);
 	}
 
+	.card.is-active {
+		background-color: var(--color-primary-050);
+		border-color: var(--color-primary-700);
+	}
+
 	.card.is-highlighted {
 		border-color: var(--highlight-color, var(--color-gray-200));
 		border-width: 3px;
