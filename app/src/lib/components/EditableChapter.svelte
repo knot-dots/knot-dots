@@ -262,6 +262,10 @@
 </footer>
 
 <style>
+	.button {
+		padding: 0.375rem 0.75rem;
+	}
+
 	.badges {
 		display: flex;
 		gap: 0.5rem;
