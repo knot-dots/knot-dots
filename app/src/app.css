@@ -935,6 +935,13 @@ label > input[type='checkbox'].toggle {
 	padding: 0 1.5rem 1.5rem;
 }
 
+.content-footer.bottom-actions-bar {
+	background: var(--color-gray-050);
+	border-top: 1px solid var(--color-gray-200);
+	box-shadow: 0px -1px 2px 0px rgba(0, 0, 0, 0.08);
+	padding: 0.75rem 5rem;
+}
+
 .content-actions {
 	display: flex;
 	flex-wrap: wrap;
@@ -942,9 +949,32 @@ label > input[type='checkbox'].toggle {
 	margin-top: 1.5rem;
 }
 
+.content-footer.bottom-actions-bar .content-actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	margin-top: 0;
+}
+
 .content-actions .delete {
 	color: var(--color-red-500);
 	margin-left: auto;
+}
+
+.bottom-actions-bar button,
+.bottom-actions-bar .button {
+	--padding-x: 1rem;
+	--padding-y: 0.5rem;
+
+	font-size: 0.875rem;
+}
+
+.bottom-actions-bar .dropdown-button {
+	color: var(--color-primary-700);
+}
+
+.bottom-actions-bar .dropdown-button svg {
+	color: var(--color-primary-700);
 }
 
 .icons {
