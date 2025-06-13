@@ -2,8 +2,8 @@
 	import type { Snippet } from 'svelte';
 	import { createMenu } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 
 	interface Props {
 		handleChange: (event: Event) => void;
@@ -27,7 +27,12 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button onchange={handleChange} type="button" use:menu.button>
+	<button
+		class="dropdown-button dropdown-button--menu"
+		onchange={handleChange}
+		type="button"
+		use:menu.button
+	>
 		{#if icon}{@render icon()}{/if}
 		<span>{label}</span>
 		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
@@ -48,6 +53,24 @@
 </div>
 
 <style>
+	.dropdown-button.dropdown-button--menu {
+		--button-background: transparent;
+		--button-hover-border-color: var(--button-border-color);
+
+		align-items: center;
+		border: solid 1px var(--button-border-color);
+		border-radius: 8px;
+		height: 100%;
+	}
+
+	.dropdown-button.dropdown-button--menu > :global(svg) {
+		color: inherit;
+	}
+
+	.dropdown-panel {
+		max-width: revert;
+	}
+
 	.menu-item > button {
 		--button-active-background: transparent;
 		--button-hover-background: var(--color-gray-100);

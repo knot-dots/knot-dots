@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext, hasContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import CodeMerge from '~icons/flowbite/code-merge-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
@@ -467,7 +468,7 @@
 					label={$_('create_another')}
 					options={createAnotherOptions}
 				>
-					{#snippet icon()}<PlusSmall />{/snippet}
+					{#snippet icon()}<CodeMerge />{/snippet}
 				</DropDownMenu>
 			{:else}
 				<button class="primary" type="button" onclick={() => createAnother(container)}>

@@ -51,7 +51,7 @@
 	"copy": "Kopieren",
 	"copy_of": "Kopie: {title}",
 	"cover": "Titelbild",
-	"create_another": "Weiteres Objekt",
+	"create_another": "Weiteres Objekt ableiten",
 	"create_container_dialog.title": "Neues Objekt erstellen",
 	"created_by": "{date, date, long} von {creator}",
 	"created_date": "Erstellt am",
