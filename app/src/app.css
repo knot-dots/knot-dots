@@ -531,12 +531,21 @@ button.button-relation > svg,
 	width: 1.5rem;
 }
 
+.button-relation.is-active {
+	--button-active-background: linear-gradient(62deg, #1c64f2 17.85%, #16bdca 74.26%);
+}
+
 .button-relation > svg #full {
 	display: none;
 }
 
 .button-relation:hover > svg #full {
-	display: revert;
+	display: initial;
+}
+
+.button-relation.is-active > svg #full {
+	display: initial;
+	fill: white;
 }
 
 button.button-xs,
