@@ -3,10 +3,10 @@
 	import { getContext } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import Filter from '~icons/knotdots/filter';
 	import Sort from '~icons/flowbite/sort-outline';
-	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Users from '~icons/flowbite/users-outline';
+	import Close from '~icons/knotdots/close';
+	import Filter from '~icons/knotdots/filter';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
@@ -210,7 +210,7 @@
 			{/if}
 
 			<button class="button-outline button-xs" onclick={resetFilters} type="button">
-				<TrashBin />
+				<Close />
 			</button>
 
 			{#each facets.entries() as [key, foci] (key)}
