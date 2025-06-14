@@ -445,6 +445,7 @@
 
 	footer :global(button) {
 		flex-shrink: 0;
+		margin-left: auto;
 	}
 
 	@container style(--card-style: carousel) {
