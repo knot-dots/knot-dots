@@ -261,12 +261,13 @@
 			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 				<ul class="menu">
 					{#each options as option}
-						{@const active = option.value === menuActive}
-						<li class="menu-item">
-							<button class:active type="button" use:menu.item={{ value: option.value }}>
-								{#if 'icon' in option}
-									<option.icon />
-								{/if}
+						<li
+							class="menu-item"
+							class:menu-item--active={option.value === menuActive}
+							class:menu-item--selected={option.value === selected?.value}
+						>
+							<button type="button" use:menu.item={{ value: option.value }}>
+								<option.icon />
 								<span>{option.label}</span>
 							</button>
 						</li>
@@ -283,23 +284,16 @@
 </div>
 
 <style>
-	.dropdown {
-		flex-shrink: 0;
-	}
-
 	.dropdown-button {
 		--button-background: var(--color-gray-050);
 
 		align-items: center;
 		border-radius: 8px;
 		box-shadow: var(--shadow-sm);
-		height: 2.25rem;
-		padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-	}
-
-	.dropdown-button {
 		color: var(--color-gray-900);
 		font-weight: 500;
+		height: 2.25rem;
+		padding: 0.5rem 0.5rem 0.5rem 0.75rem;
 	}
 
 	.dropdown-button:global([aria-expanded='true']) {
@@ -331,12 +325,25 @@
 		white-space: nowrap;
 	}
 
-	.menu-item > button.active {
+	.menu-item:nth-child(n + 2) {
+		margin-top: 0.25rem;
+	}
+
+	.menu-item.menu-item--active > button {
 		background-color: var(--color-gray-100);
 	}
 
+	.menu-item.menu-item--selected > button {
+		--icon-color: var(--color-primary-700);
+
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
+	}
+
 	.menu-item > button > :global(svg) {
+		height: 1.5rem;
 		max-width: none;
+		width: 1.5rem;
 	}
 
 	.dropdown-group {
