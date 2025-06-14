@@ -20,6 +20,7 @@
 	import Goal from '~icons/knotdots/goal';
 	import LandingPage from '~icons/knotdots/landing-page';
 	import Level from '~icons/knotdots/level';
+	import Star from '~icons/knotdots/star';
 	import Strategy from '~icons/knotdots/strategy';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -119,47 +120,63 @@
 	);
 
 	interface Option {
+		exists: boolean;
 		icon: Component<SvelteHTMLElements['svg']>;
 		label: string;
+		recommended: boolean;
 		value: string;
 	}
 
 	let leftOptions: Option[] = $derived([
 		{
+			exists: selectedItem[1] in workspacesLeft.all,
 			icon: Dots,
 			label: $_('workspace.type.all'),
+			recommended: selectedItem[1] == 'level',
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/level'
 		},
 		{
+			exists: selectedItem[1] in workspacesLeft.programs,
 			icon: Strategy,
 			label: $_('workspace.type.programs'),
+			recommended: selectedItem[1] == 'catalog',
 			value: workspacesLeft.programs[selectedItem[1]] ?? '/programs/catalog'
 		},
 		{
+			exists: selectedItem[1] in workspacesLeft.goals,
 			icon: Goal,
 			label: $_('workspace.type.goals'),
+			recommended: selectedItem[1] == 'level',
 			value: workspacesLeft.goals[selectedItem[1]] ?? '/programs/level'
 		},
 		{
+			exists: selectedItem[1] in workspacesLeft.resolutions,
 			icon: Gavel,
 			label: $_('workspace.type.resolutions'),
+			recommended: selectedItem[1] == 'status',
 			value: workspacesLeft.resolutions[selectedItem[1]] ?? '/resolutions/status'
 		},
 		{
+			exists: selectedItem[1] in workspacesLeft.measures,
 			icon: Clipboard,
 			label: $_('workspace.type.measures'),
+			recommended: selectedItem[1] == 'status',
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
 		{
+			exists: selectedItem[1] in workspacesLeft.knowledge,
 			icon: GraduationCap,
 			label: $_('workspace.type.knowledge'),
+			recommended: selectedItem[1] == 'level',
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [
 					{
+						exists: selectedItem[1] in workspacesLeft.tasks,
 						icon: ClipboardCheck,
 						label: $_('workspace.type.tasks'),
+						recommended: selectedItem[1] == 'status',
 						value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
 					}
 				]
@@ -167,13 +184,17 @@
 		...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
 			? [
 					{
+						exists: selectedItem[1] in workspacesLeft.indicators,
 						icon: ChartBar,
 						label: $_('workspace.type.indicators'),
+						recommended: selectedItem[1] == 'catalog',
 						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators'
 					},
 					{
+						exists: selectedItem[1] in workspacesLeft['objectives-and-effects'],
 						icon: ChartMixed,
 						label: $_('workspace.type.objectives_and_effects'),
+						recommended: selectedItem[1] == 'level',
 						value:
 							workspacesLeft['objectives-and-effects'][selectedItem[1]] ?? '/objectives-and-effects'
 					}
@@ -183,33 +204,47 @@
 
 	let rightOptions: Option[] = $derived([
 		{
+			exists: selectedItem[0] in workspacesRight.page,
 			icon: LandingPage,
 			label: $_('workspace.view.page'),
+			recommended: false,
 			value: workspacesRight.page[selectedItem[0]] ?? '/'
 		},
 		{
+			exists: selectedItem[0] in workspacesRight.status,
 			icon: ColumnSolid,
 			label: $_('workspace.view.status'),
+			recommended: ['measures', 'resolutions', 'tasks'].includes(selectedItem[0]),
 			value: workspacesRight.status[selectedItem[0]] ?? '/measures/status'
 		},
 		{
+			exists: selectedItem[0] in workspacesRight.level,
 			icon: Level,
 			label: $_('workspace.view.level'),
+			recommended: ['all', 'goals', 'knowledge', 'objectives-and-effects'].includes(
+				selectedItem[0]
+			),
 			value: workspacesRight.level[selectedItem[0]] ?? '/all/level'
 		},
 		{
+			exists: selectedItem[0] in workspacesRight.monitoring,
 			icon: Compass,
 			label: $_('workspace.view.monitoring'),
+			recommended: selectedItem[0] == 'measures',
 			value: workspacesRight.monitoring[selectedItem[0]] ?? '/measures/monitoring'
 		},
 		{
+			exists: selectedItem[0] in workspacesRight.catalog,
 			icon: Grid,
 			label: $_('workspace.view.catalog'),
+			recommended: selectedItem[0] == 'indicators',
 			value: workspacesRight.catalog[selectedItem[0]] ?? '/all/catalog'
 		},
 		{
+			exists: selectedItem[0] in workspacesRight.table,
 			icon: TableRow,
 			label: $_('workspace.view.table'),
+			recommended: false,
 			value: workspacesRight.table[selectedItem[0]] ?? '/all/table'
 		}
 	]);
@@ -264,10 +299,16 @@
 						<li
 							class="menu-item"
 							class:menu-item--active={option.value === menuActive}
+							class:menu-item--muted={!option.exists}
 							class:menu-item--selected={option.value === selected?.value}
 						>
 							<button type="button" use:menu.item={{ value: option.value }}>
 								<option.icon />
+								{#if option.recommended}
+									<span class="recommendation">
+										<Star />
+									</span>
+								{/if}
 								<span>{option.label}</span>
 							</button>
 						</li>
@@ -321,12 +362,20 @@
 		border: none;
 		display: flex;
 		font-weight: 500;
+		position: relative;
 		width: 100%;
 		white-space: nowrap;
 	}
 
 	.menu-item:nth-child(n + 2) {
 		margin-top: 0.25rem;
+	}
+
+	.menu-item.menu-item--muted > button {
+		--icon-color: var(--color-gray-400);
+
+		color: var(--color-gray-400);
+		gap: 0.625rem;
 	}
 
 	.menu-item.menu-item--active > button {
@@ -344,6 +393,16 @@
 		height: 1.5rem;
 		max-width: none;
 		width: 1.5rem;
+	}
+
+	.recommendation {
+		--icon-color: var(--color-primary-500);
+
+		height: 0.5rem;
+		left: 2.125rem;
+		position: absolute;
+		top: 0;
+		width: 0.5rem;
 	}
 
 	.dropdown-group {
