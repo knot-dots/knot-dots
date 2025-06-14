@@ -261,7 +261,7 @@
 		const detail = (event as CustomEvent).detail;
 
 		if (detail.selected && detail.selected !== page.url.pathname) {
-			const url = page.url;
+			const url = new URL(page.url);
 			url.pathname = detail.selected;
 			goto(url);
 		}
