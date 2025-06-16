@@ -216,7 +216,7 @@
 		max-width: 20rem;
 	}
 
-	@container (min-width: 30rem) {
+	@container (min-width: 40rem) {
 		.organization-menu {
 			display: revert;
 		}
