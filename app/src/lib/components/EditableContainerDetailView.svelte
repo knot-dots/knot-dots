@@ -1,11 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { cubicInOut } from 'svelte/easing';
-	import { slide } from 'svelte/transition';
-	import { createDisclosure } from 'svelte-headlessui';
 	import { _, date } from 'svelte-i18n';
-	import ArrowDown from '~icons/heroicons/arrow-down-16-solid';
-	import ArrowUp from '~icons/heroicons/arrow-up-16-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
@@ -13,6 +8,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -47,10 +43,6 @@
 	}
 
 	let { container = $bindable(), data, extra, relatedContainers, revisions }: Props = $props();
-
-	const disclosure = createDisclosure();
-
-	let disclosureExpanded = $state($disclosure.expanded);
 
 	const handleSubmit = autoSave(container, 2000);
 
@@ -138,9 +130,10 @@
 					compact
 				/>
 			{/if}
+		</div>
 
-			<p class="section-label" id="properties-label">{$_('properties')}</p>
-			<section class="data-grid" aria-labelledby="properties-label">
+		<PropertyGrid>
+			{#snippet top()}
 				<div class="label">{$_('managed_by')}</div>
 				<div class="value value--read-only">
 					{#await teamPromise}
@@ -210,65 +203,22 @@
 						bind:value={container.payload.visibility}
 					/>
 				{/if}
-			</section>
+			{/snippet}
 
-			{#if $disclosure.expanded}
-				<div
-					class="data-grid"
-					onintroend={() => {
-						disclosureExpanded = true;
-					}}
-					onoutroend={() => {
-						disclosureExpanded = false;
-					}}
-					transition:slide={{ duration: 125, easing: cubicInOut }}
-					use:disclosure.panel
-				>
-					{@render data?.()}
-				</div>
-			{/if}
-
-			<button type="button" use:disclosure.button>
-				{#if disclosureExpanded}
-					<ArrowUp /> {$_('properties.hide')}
-				{:else}
-					<ArrowDown /> {$_('properties.show_all')}
-				{/if}
-			</button>
-		</div>
+			{#snippet bottom()}
+				{@render data?.()}
+			{/snippet}
+		</PropertyGrid>
 
 		{@render extra?.()}
 	</article>
 </form>
 
 <style>
-	.section-label {
-		color: var(--color-gray-600);
-		font-size: 1.25rem;
-		font-weight: 600;
-		line-height: 1.25;
-		margin: 1.5rem 0 1rem;
-	}
-
-	button {
-		--button-border-color: var(--color-primary-700);
-		--button-hover-background: var(--color-primary-700);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		color: var(--color-primary-700);
-		display: flex;
-		margin: 0.75rem auto 0;
-	}
-
-	button:hover {
-		color: white;
-	}
-
 	.badges {
 		display: flex;
 		gap: 0.5rem;
-		margin-bottom: 0.75rem;
+		margin-bottom: 0.5rem;
 		padding: 0.375rem 0 0.75rem;
 	}
 </style>

@@ -56,7 +56,7 @@
 
 <style>
 	div {
-		padding-bottom: 0.75rem;
+		padding-bottom: 0.5rem;
 	}
 
 	input[type='range'] {
