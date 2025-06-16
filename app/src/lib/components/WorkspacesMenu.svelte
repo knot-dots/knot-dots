@@ -351,26 +351,6 @@
 		max-width: revert;
 	}
 
-	.menu-item > button {
-		--button-active-background: transparent;
-		--button-hover-background: var(--color-gray-100);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		align-items: center;
-		color: var(--color-gray-900);
-		border: none;
-		display: flex;
-		font-weight: 500;
-		position: relative;
-		width: 100%;
-		white-space: nowrap;
-	}
-
-	.menu-item:nth-child(n + 2) {
-		margin-top: 0.25rem;
-	}
-
 	.menu-item.menu-item--muted > button {
 		--icon-color: var(--color-gray-400);
 
@@ -378,21 +358,11 @@
 		gap: 0.625rem;
 	}
 
-	.menu-item.menu-item--active > button {
-		background-color: var(--color-gray-100);
-	}
-
 	.menu-item.menu-item--selected > button {
 		--icon-color: var(--color-primary-700);
 
 		background-color: var(--color-primary-100);
 		color: var(--color-primary-700);
-	}
-
-	.menu-item > button > :global(svg) {
-		height: 1.5rem;
-		max-width: none;
-		width: 1.5rem;
 	}
 
 	.recommendation {

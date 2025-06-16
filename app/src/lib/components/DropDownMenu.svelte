@@ -70,14 +70,4 @@
 	.dropdown-panel {
 		max-width: revert;
 	}
-
-	.menu-item > button {
-		--button-active-background: transparent;
-		--button-hover-background: var(--color-gray-100);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		border: none;
-		width: 100%;
-	}
 </style>
