@@ -8,9 +8,15 @@
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/heroicons/plus-small-solid';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
+	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
+	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
+	import ManagedBy from '$lib/components/ManagedBy.svelte';
+	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -18,7 +24,7 @@
 		type ObjectiveContainer,
 		predicates
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ObjectiveContainer;
@@ -88,88 +94,118 @@
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-	{#snippet extra()}
-		{#if indicator}
-			{#if $applicationState.containerDetailView.editable}
-				{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
-				<div class="disclosure">
-					<button class="disclosure-button" type="button" use:disclosure.button>
-						<span>
-							<small>{$_('indicator.table.edit')}</small>
-							<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
-						</span>
-						{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-					</button>
+	{#snippet data()}
+		<PropertyGrid>
+			{#snippet bottom()}
+				{#if $ability.can('update', container, 'visibility')}
+					<EditableVisibility
+						editable={$applicationState.containerDetailView.editable}
+						bind:value={container.payload.visibility}
+					/>
+				{/if}
 
-					{#if $disclosure.expanded}
-						<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
-							<table>
-								<thead>
-									<tr>
-										<th>{$_('indicator.table.year')}</th>
-										<th>{$_('indicator.wanted_values')}</th>
-										<th>{$_('indicator.table.historical_values')}</th>
-										<th></th>
-									</tr>
-								</thead>
-								<tbody>
-									{#if container.payload.wantedValues.length > 0}
+				<ManagedBy {container} {relatedContainers} />
+
+				<EditableOrganizationalUnit
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container.payload.type, 'organizational_unit')}
+					organization={container.organization}
+					bind:value={container.organizational_unit}
+				/>
+
+				<EditableOrganization
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container.payload.type, 'organization')}
+					bind:value={container.organization}
+				/>
+
+				<AuthoredBy {container} {revisions} />
+			{/snippet}
+		</PropertyGrid>
+
+		<div class="details-tab">
+			{#if indicator}
+				{#if $applicationState.containerDetailView.editable}
+					{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
+					<div class="disclosure">
+						<button class="disclosure-button" type="button" use:disclosure.button>
+							<span>
+								<small>{$_('indicator.table.edit')}</small>
+								<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
+							</span>
+							{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+						</button>
+
+						{#if $disclosure.expanded}
+							<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
+								<table>
+									<thead>
+										<tr>
+											<th>{$_('indicator.table.year')}</th>
+											<th>{$_('indicator.wanted_values')}</th>
+											<th>{$_('indicator.table.historical_values')}</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										{#if container.payload.wantedValues.length > 0}
+											<tr>
+												<td colspan="4">
+													<button aria-label={$_('append_row')} onclick={prepend} type="button">
+														<Plus />
+													</button>
+												</td>
+											</tr>
+										{/if}
+
+										{#each container.payload.wantedValues as [key], index (key)}
+											<tr>
+												<td class="year">
+													{container.payload.wantedValues[index][0]}
+												</td>
+												<td class="focus-indicator">
+													<input
+														inputmode="decimal"
+														onchange={update(index)}
+														type="text"
+														value={container.payload.wantedValues[index][1]}
+														use:init={key === newRowKey}
+													/>
+												</td>
+												<td class="historical-values">
+													{historicalValuesByYear.get(container.payload.wantedValues[index][0])}
+												</td>
+												<td>
+													{#if index === 0 || index === container.payload.wantedValues.length - 1}
+														<button
+															aria-label={$_('delete_row')}
+															onclick={remove(index)}
+															type="button"
+														>
+															<Minus />
+														</button>
+													{/if}
+												</td>
+											</tr>
+										{/each}
+
 										<tr>
 											<td colspan="4">
-												<button aria-label={$_('append_row')} onclick={prepend} type="button">
+												<button aria-label={$_('append_row')} onclick={append} type="button">
 													<Plus />
 												</button>
 											</td>
 										</tr>
-									{/if}
+									</tbody>
+								</table>
+							</div>
+						{/if}
+					</div>
+				{/if}
 
-									{#each container.payload.wantedValues as [key], index (key)}
-										<tr>
-											<td class="year">
-												{container.payload.wantedValues[index][0]}
-											</td>
-											<td class="focus-indicator">
-												<input
-													inputmode="decimal"
-													onchange={update(index)}
-													type="text"
-													value={container.payload.wantedValues[index][1]}
-													use:init={key === newRowKey}
-												/>
-											</td>
-											<td class="historical-values">
-												{historicalValuesByYear.get(container.payload.wantedValues[index][0])}
-											</td>
-											<td>
-												{#if index === 0 || index === container.payload.wantedValues.length - 1}
-													<button
-														aria-label={$_('delete_row')}
-														onclick={remove(index)}
-														type="button"
-													>
-														<Minus />
-													</button>
-												{/if}
-											</td>
-										</tr>
-									{/each}
-
-									<tr>
-										<td colspan="4">
-											<button aria-label={$_('append_row')} onclick={append} type="button">
-												<Plus />
-											</button>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					{/if}
-				</div>
+				<ObjectiveChart {container} {relatedContainers} />
 			{/if}
-
-			<ObjectiveChart {container} {relatedContainers} />
-		{/if}
+		</div>
 
 		{#key container.guid}
 			<EditableFormattedText

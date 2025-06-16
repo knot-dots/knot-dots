@@ -1,24 +1,15 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { _, date } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import AskAI from '~icons/knotdots/ask-ai';
-	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
-	import fetchMembers from '$lib/client/fetchMembers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
 		type AnyContainer,
 		type Container,
-		displayName,
-		getCreator,
-		getManagedBy,
-		isAdminOf,
 		isContainerWithProgress,
 		isContainerWithStatus,
-		isHeadOf,
 		isResolutionContainer,
 		isSuggestedByAI,
 		isTaskContainer,
@@ -45,22 +36,6 @@
 	let { container = $bindable(), data, extra, relatedContainers, revisions }: Props = $props();
 
 	const handleSubmit = autoSave(container, 2000);
-
-	let managedBy = $derived(
-		getManagedBy(container, [
-			...page.data.organizations,
-			...page.data.organizationalUnits,
-			...relatedContainers
-		]) as AnyContainer
-	);
-
-	let managedByGuid = $derived(managedBy.guid);
-
-	let teamPromise = $derived(fetchMembers(managedByGuid));
-
-	let organization = $derived(container.organization);
-
-	let organizationMembersPromise = $derived(fetchMembers(organization));
 </script>
 
 <form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -132,83 +107,7 @@
 			{/if}
 		</div>
 
-		<PropertyGrid>
-			{#snippet top()}
-				<div class="label">{$_('managed_by')}</div>
-				<div class="value value--read-only">
-					{#await teamPromise}
-						&nbsp;
-					{:then members}
-						{@const headsOf = members
-							.filter((m) => isHeadOf(m, managedBy))
-							.map((m) => displayName(m))
-							.join(', ')}
-						{@const adminsOf = members
-							.filter((m) => isAdminOf(m, managedBy))
-							.map((m) => displayName(m))
-							.join(', ')}
-						{#if headsOf}{headsOf}{:else if adminsOf}{adminsOf}{:else}&nbsp;{/if}
-					{/await}
-				</div>
-
-				<div class="label">{$_('created_date')}</div>
-				<div class="value value--read-only">
-					{#await organizationMembersPromise}
-						{$date(revisions[0].valid_from, { format: 'long' })}
-					{:then organizationMembers}
-						{@const organizationMembersByGuid = new Map(
-							organizationMembers.map((m) => [m.guid, m])
-						)}
-						{getCreator(revisions[0]).some((guid) => organizationMembersByGuid.has(guid))
-							? $_('created_by', {
-									values: {
-										date: revisions[0].valid_from,
-										creator: getCreator(revisions[0])
-											.map((guid) => organizationMembersByGuid.get(guid))
-											.filter((m) => m !== undefined)
-											.map((m) => displayName(m))
-											.join(', ')
-									}
-								})
-							: $date(revisions[0].valid_from, { format: 'long' })}
-					{/await}
-				</div>
-
-				<div class="label">{$_('modified_date')}</div>
-				<div class="value value--read-only">
-					{#await organizationMembersPromise}
-						{$date(container.valid_from, { format: 'long' })}
-					{:then organizationMembers}
-						{@const organizationMembersByGuid = new Map(
-							organizationMembers.map((m) => [m.guid, m])
-						)}
-						{getCreator(container).some((guid) => organizationMembersByGuid.has(guid))
-							? $_('created_by', {
-									values: {
-										date: container.valid_from,
-										creator: getCreator(container)
-											.map((guid) => organizationMembersByGuid.get(guid))
-											.filter((m) => m !== undefined)
-											.map((m) => displayName(m))
-											.join(', ')
-									}
-								})
-							: $date(container.valid_from, { format: 'long' })}
-					{/await}
-				</div>
-
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-			{/snippet}
-
-			{#snippet bottom()}
-				{@render data?.()}
-			{/snippet}
-		</PropertyGrid>
+		{@render data?.()}
 
 		{@render extra?.()}
 	</article>

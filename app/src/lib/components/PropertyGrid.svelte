@@ -1,7 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { cubicInOut } from 'svelte/easing';
-	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import ArrowDown from '~icons/flowbite/arrow-down-outline';
@@ -9,7 +7,7 @@
 
 	interface Props {
 		bottom: Snippet;
-		top: Snippet;
+		top?: Snippet;
 	}
 
 	let { bottom, top }: Props = $props();
@@ -22,28 +20,16 @@
 <div class="details-tab">
 	<p class="section-label" id="properties-label">{$_('properties')}</p>
 
-	<div class="data-grid" aria-labelledby="properties-label">
-		{@render top()}
+	<div class="data-grid" use:disclosure.panel>
+		{#if $disclosure.expanded}
+			{@render bottom()}
+		{:else}
+			{@render top?.()}
+		{/if}
 	</div>
 
-	{#if $disclosure.expanded}
-		<div
-			class="data-grid"
-			onintroend={() => {
-				disclosureExpanded = true;
-			}}
-			onoutroend={() => {
-				disclosureExpanded = false;
-			}}
-			transition:slide={{ duration: 125, easing: cubicInOut }}
-			use:disclosure.panel
-		>
-			{@render bottom?.()}
-		</div>
-	{/if}
-
 	<button type="button" use:disclosure.button>
-		{#if disclosureExpanded}
+		{#if $disclosure.expanded}
 			<ArrowUp /> {$_('properties.hide')}
 		{:else}
 			<ArrowDown /> {$_('properties.show_all')}

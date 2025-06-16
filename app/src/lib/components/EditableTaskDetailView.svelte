@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import fetchMembers from '$lib/client/fetchMembers';
+	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableAssignee from '$lib/components/EditableAssignee.svelte';
 	import EditableBenefit from '$lib/components/EditableBenefit.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -13,6 +14,9 @@
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableTaskCategory from '$lib/components/EditableTaskCategory.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
+	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import ManagedBy from '$lib/components/ManagedBy.svelte';
+	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -41,60 +45,96 @@
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<EditableTaskStatus
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.taskStatus}
-		/>
+		<PropertyGrid>
+			{#snippet top()}
+				<EditableTaskCategory
+					editable={$applicationState.containerDetailView.editable}
+					bind:value={container.payload.taskCategory}
+				/>
 
-		{#if $ability.can('read', container, 'assignee')}
-			<EditableAssignee
-				editable={$applicationState.containerDetailView.editable}
-				candidatesPromise={assigneeCandidatesPromise}
-				bind:value={container.payload.assignee}
-			/>
-		{/if}
+				<EditableDate
+					editable={$applicationState.containerDetailView.editable}
+					label={$_('fulfillment_date')}
+					bind:value={container.payload.fulfillmentDate}
+				/>
 
-		<EditableTaskCategory
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.taskCategory}
-		/>
+				{#if $ability.can('read', container, 'assignee')}
+					<EditableAssignee
+						editable={$applicationState.containerDetailView.editable}
+						candidatesPromise={assigneeCandidatesPromise}
+						bind:value={container.payload.assignee}
+					/>
+				{/if}
 
-		<EditableDate
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('fulfillment_date')}
-			bind:value={container.payload.fulfillmentDate}
-		/>
+				<AuthoredBy {container} {revisions} />
+			{/snippet}
 
-		<EditableBenefit
-			editable={$applicationState.containerDetailView.editable}
-			bind:value={container.payload.benefit}
-		/>
+			{#snippet bottom()}
+				<EditableTaskCategory
+					editable={$applicationState.containerDetailView.editable}
+					bind:value={container.payload.taskCategory}
+				/>
 
-		<EditablePlainText
-			editable={$applicationState.containerDetailView.editable}
-			label={$_('effort')}
-			bind:value={container.payload.effort}
-		/>
+				<EditableBenefit
+					editable={$applicationState.containerDetailView.editable}
+					bind:value={container.payload.benefit}
+				/>
 
-		<EditableMeasure editable={$applicationState.containerDetailView.editable} bind:container />
+				<EditablePlainText
+					editable={$applicationState.containerDetailView.editable}
+					label={$_('effort')}
+					bind:value={container.payload.effort}
+				/>
 
-		<EditableParent editable={$applicationState.containerDetailView.editable} bind:container />
+				<EditableTaskStatus
+					editable={$applicationState.containerDetailView.editable}
+					bind:value={container.payload.taskStatus}
+				/>
 
-		<EditableOrganization
-			editable={$applicationState.containerDetailView.editable &&
-				$ability.can('update', container.payload.type, 'organization')}
-			bind:value={container.organization}
-		/>
+				<EditableDate
+					editable={$applicationState.containerDetailView.editable}
+					label={$_('fulfillment_date')}
+					bind:value={container.payload.fulfillmentDate}
+				/>
 
-		<EditableOrganizationalUnit
-			editable={$applicationState.containerDetailView.editable &&
-				$ability.can('update', container.payload.type, 'organizational_unit')}
-			organization={container.organization}
-			bind:value={container.organizational_unit}
-		/>
-	{/snippet}
+				{#if $ability.can('read', container, 'assignee')}
+					<EditableAssignee
+						editable={$applicationState.containerDetailView.editable}
+						candidatesPromise={assigneeCandidatesPromise}
+						bind:value={container.payload.assignee}
+					/>
+				{/if}
 
-	{#snippet extra()}
+				<EditableMeasure editable={$applicationState.containerDetailView.editable} bind:container />
+
+				<EditableParent editable={$applicationState.containerDetailView.editable} bind:container />
+
+				{#if $ability.can('update', container, 'visibility')}
+					<EditableVisibility
+						editable={$applicationState.containerDetailView.editable}
+						bind:value={container.payload.visibility}
+					/>
+				{/if}
+
+				<ManagedBy {container} {relatedContainers} />
+
+				<EditableOrganizationalUnit
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container.payload.type, 'organizational_unit')}
+					organization={container.organization}
+					bind:value={container.organizational_unit}
+				/>
+
+				<EditableOrganization
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container.payload.type, 'organization')}
+					bind:value={container.organization}
+				/>
+
+				<AuthoredBy {container} {revisions} />
+			{/snippet}
+		</PropertyGrid>
+
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable}
