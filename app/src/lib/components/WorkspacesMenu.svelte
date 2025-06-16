@@ -129,54 +129,54 @@
 
 	let leftOptions: Option[] = $derived([
 		{
-			exists: selectedItem[1] in workspacesLeft.all,
+			exists: true,
 			icon: Dots,
 			label: $_('workspace.type.all'),
-			recommended: selectedItem[1] == 'level',
+			recommended: false,
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/level'
 		},
 		{
-			exists: selectedItem[1] in workspacesLeft.programs,
+			exists: true,
 			icon: Strategy,
 			label: $_('workspace.type.programs'),
-			recommended: selectedItem[1] == 'catalog',
+			recommended: false,
 			value: workspacesLeft.programs[selectedItem[1]] ?? '/programs/catalog'
 		},
 		{
-			exists: selectedItem[1] in workspacesLeft.goals,
+			exists: true,
 			icon: Goal,
 			label: $_('workspace.type.goals'),
-			recommended: selectedItem[1] == 'level',
+			recommended: false,
 			value: workspacesLeft.goals[selectedItem[1]] ?? '/programs/level'
 		},
 		{
-			exists: selectedItem[1] in workspacesLeft.resolutions,
+			exists: true,
 			icon: Gavel,
 			label: $_('workspace.type.resolutions'),
-			recommended: selectedItem[1] == 'status',
+			recommended: false,
 			value: workspacesLeft.resolutions[selectedItem[1]] ?? '/resolutions/status'
 		},
 		{
-			exists: selectedItem[1] in workspacesLeft.measures,
+			exists: true,
 			icon: Clipboard,
 			label: $_('workspace.type.measures'),
-			recommended: selectedItem[1] == 'status',
+			recommended: false,
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
 		{
-			exists: selectedItem[1] in workspacesLeft.knowledge,
+			exists: true,
 			icon: GraduationCap,
 			label: $_('workspace.type.knowledge'),
-			recommended: selectedItem[1] == 'level',
+			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [
 					{
-						exists: selectedItem[1] in workspacesLeft.tasks,
+						exists: true,
 						icon: ClipboardCheck,
 						label: $_('workspace.type.tasks'),
-						recommended: selectedItem[1] == 'status',
+						recommended: false,
 						value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
 					}
 				]
@@ -184,17 +184,17 @@
 		...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
 			? [
 					{
-						exists: selectedItem[1] in workspacesLeft.indicators,
+						exists: true,
 						icon: ChartBar,
 						label: $_('workspace.type.indicators'),
-						recommended: selectedItem[1] == 'catalog',
+						recommended: false,
 						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators'
 					},
 					{
-						exists: selectedItem[1] in workspacesLeft['objectives-and-effects'],
+						exists: true,
 						icon: ChartMixed,
 						label: $_('workspace.type.objectives_and_effects'),
-						recommended: selectedItem[1] == 'level',
+						recommended: false,
 						value:
 							workspacesLeft['objectives-and-effects'][selectedItem[1]] ?? '/objectives-and-effects'
 					}
