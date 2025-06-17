@@ -17,13 +17,7 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import {
-		type AnyContainer,
-		type Container,
-		type GoalContainer,
-		isContainerWithEffect,
-		isPartOfMeasure
-	} from '$lib/models';
+	import { type AnyContainer, type Container, type GoalContainer, predicates } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -35,8 +29,8 @@
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
 
-	let measure = $derived(
-		relatedContainers.filter(isContainerWithEffect).find((rc) => isPartOfMeasure(rc)(container))
+	let isPartOfMeasure = $derived(
+		container.relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
 	);
 </script>
 
@@ -46,7 +40,7 @@
 
 		<EditableHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 
-		{#if measure}
+		{#if isPartOfMeasure}
 			<EditableMeasure {container} {editable} />
 		{:else}
 			<EditableStrategy {container} {editable} />
@@ -79,7 +73,7 @@
 			bind:value={container.payload.fulfillmentDate}
 		/>
 
-		{#if measure}
+		{#if isPartOfMeasure}
 			<EditableMeasure {container} {editable} />
 		{:else}
 			<EditableStrategy {container} {editable} />
