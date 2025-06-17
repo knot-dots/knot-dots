@@ -396,4 +396,12 @@
 		background-color: var(--color-primary-100);
 		color: var(--color-primary-700);
 	}
+
+	@layer visually-hidden {
+		@container (min-width: 60rem) {
+			.is-visually-hidden.is-visually-hidden--mobile-only {
+				all: revert-layer;
+			}
+		}
+	}
 </style>
