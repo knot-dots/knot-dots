@@ -318,6 +318,9 @@
 	"programs_by_level_filter.only_related": "Only related programs",
 	"progress": "Progress",
 	"properties": "Properties",
+	"properties.subheading.categories": "Categories",
+	"properties.subheading.general": "General",
+	"properties.subheading.ownership": "Ownership",
 	"properties.hide": "Hide properties",
 	"properties.show_all": "Show all properties",
 	"quantity": {

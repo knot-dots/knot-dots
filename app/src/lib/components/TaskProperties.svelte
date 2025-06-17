@@ -53,7 +53,7 @@
 		<AuthoredBy {container} {revisions} />
 	{/snippet}
 
-	{#snippet bottom()}
+	{#snippet general()}
 		<EditableTaskCategory {editable} bind:value={container.payload.taskCategory} />
 
 		<EditableBenefit {editable} bind:value={container.payload.benefit} />
@@ -83,7 +83,9 @@
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
+	{/snippet}
 
+	{#snippet ownership()}
 		<ManagedBy {container} {relatedContainers} />
 
 		<EditableOrganizationalUnit

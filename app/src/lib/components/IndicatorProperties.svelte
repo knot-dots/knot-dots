@@ -37,7 +37,7 @@
 		{/if}
 	{/snippet}
 
-	{#snippet bottom()}
+	{#snippet general()}
 		<EditableIndicatorType {editable} bind:value={container.payload.indicatorType} />
 
 		<EditableIndicatorUnit {editable} bind:value={container.payload.unit} />
@@ -57,7 +57,9 @@
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
+	{/snippet}
 
+	{#snippet categories()}
 		<EditableCategory {editable} bind:value={container.payload.category} />
 
 		<EditableTopic {editable} bind:value={container.payload.topic} />
@@ -65,7 +67,9 @@
 		<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
 
 		<EditableAudience {editable} bind:value={container.payload.audience} />
+	{/snippet}
 
+	{#snippet ownership()}
 		<ManagedBy {container} {relatedContainers} />
 
 		<EditableOrganizationalUnit

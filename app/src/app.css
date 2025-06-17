@@ -1125,6 +1125,12 @@ label > input[type='checkbox'].toggle {
 	color: var(--color-gray-400);
 }
 
+.data-grid-subheading {
+	font-size: 1rem;
+	font-weight: 600;
+	margin-top: 1rem;
+}
+
 @container (min-inline-size: 40rem) {
 	.data-grid {
 		grid-template-columns: 12rem minmax(0, 1fr);
@@ -1140,6 +1146,10 @@ label > input[type='checkbox'].toggle {
 
 	.data-grid > .label + * {
 		grid-column: 2 / 3;
+	}
+
+	.data-grid-subheading {
+		grid-column: span 2;
 	}
 }
 

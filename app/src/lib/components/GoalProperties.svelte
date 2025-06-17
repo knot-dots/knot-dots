@@ -55,7 +55,7 @@
 		/>
 	{/snippet}
 
-	{#snippet bottom()}
+	{#snippet general()}
 		<EditableGoalType {editable} bind:value={container.payload.goalType} />
 
 		<EditableHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
@@ -84,7 +84,9 @@
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
+	{/snippet}
 
+	{#snippet categories()}
 		<EditableCategory {editable} bind:value={container.payload.category} />
 
 		<EditableTopic {editable} bind:value={container.payload.topic} />
@@ -92,7 +94,9 @@
 		<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
 
 		<EditableAudience {editable} bind:value={container.payload.audience} />
+	{/snippet}
 
+	{#snippet ownership()}
 		<ManagedBy {container} {relatedContainers} />
 
 		<EditableOrganizationalUnit

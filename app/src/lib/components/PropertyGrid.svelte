@@ -6,11 +6,13 @@
 	import ArrowUp from '~icons/flowbite/arrow-up-outline';
 
 	interface Props {
-		bottom: Snippet;
+		categories?: Snippet;
+		general?: Snippet;
+		ownership?: Snippet;
 		top?: Snippet;
 	}
 
-	let { bottom, top }: Props = $props();
+	let { categories, general, ownership, top }: Props = $props();
 
 	const disclosure = createDisclosure();
 
@@ -22,7 +24,20 @@
 
 	<div class="data-grid" use:disclosure.panel>
 		{#if $disclosure.expanded}
-			{@render bottom()}
+			{#if general}
+				<div class="data-grid-subheading">{$_('properties.subheading.general')}</div>
+				{@render general()}
+			{/if}
+
+			{#if categories}
+				<div class="data-grid-subheading">{$_('properties.subheading.categories')}</div>
+				{@render categories()}
+			{/if}
+
+			{#if ownership}
+				<div class="data-grid-subheading">{$_('properties.subheading.ownership')}</div>
+				{@render ownership()}
+			{/if}
 		{:else}
 			{@render top?.()}
 		{/if}

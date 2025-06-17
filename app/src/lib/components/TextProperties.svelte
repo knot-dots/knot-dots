@@ -23,11 +23,13 @@
 		<AuthoredBy {container} {revisions} />
 	{/snippet}
 
-	{#snippet bottom()}
+	{#snippet general()}
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
+	{/snippet}
 
+	{#snippet ownership()}
 		<ManagedBy {container} {relatedContainers} />
 
 		<EditableOrganizationalUnit

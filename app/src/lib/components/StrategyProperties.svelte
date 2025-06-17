@@ -44,7 +44,7 @@
 		/>
 	{/snippet}
 
-	{#snippet bottom()}
+	{#snippet general()}
 		<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
 
 		<EditablePDF {editable} bind:value={container.payload.pdf} />
@@ -63,7 +63,9 @@
 		{/if}
 
 		<EditableVisibility {editable} bind:value={container.payload.visibility} />
+	{/snippet}
 
+	{#snippet categories()}
 		<EditableCategory {editable} bind:value={container.payload.category} />
 
 		<EditableTopic {editable} bind:value={container.payload.topic} />
@@ -71,7 +73,9 @@
 		<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
 
 		<EditableAudience {editable} bind:value={container.payload.audience} />
+	{/snippet}
 
+	{#snippet ownership()}
 		<ManagedBy {container} {relatedContainers} />
 
 		<EditableOrganizationalUnit

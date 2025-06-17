@@ -319,6 +319,9 @@
 	"programs_by_level_filter.only_related": "Nur verknüpfte Programme",
 	"progress": "Fortschritt",
 	"properties": "Eigenschaften",
+	"properties.subheading.categories": "Kategorien",
+	"properties.subheading.general": "Allgemein",
+	"properties.subheading.ownership": "Zuständigkeit",
 	"properties.hide": "Eigenschaften verbergen",
 	"properties.show_all": "Alle Eigenschaften zeigen",
 	"quantity": {

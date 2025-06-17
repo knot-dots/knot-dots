@@ -35,7 +35,7 @@
 		/>
 	{/snippet}
 
-	{#snippet bottom()}
+	{#snippet general()}
 		<EditableAmount {editable} bind:value={container.payload.amount} />
 
 		<EditableUnit {editable} bind:value={container.payload.unit} />
@@ -49,7 +49,9 @@
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
+	{/snippet}
 
+	{#snippet ownership()}
 		<ManagedBy {container} {relatedContainers} />
 
 		<EditableOrganizationalUnit
