@@ -6,6 +6,7 @@
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import type { AnyContainer, PageContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -28,6 +29,8 @@
 						bind:value={container.payload.visibility}
 					/>
 				{/if}
+
+				<ManagedBy {container} {relatedContainers} />
 
 				<EditableOrganizationalUnit
 					editable={$applicationState.containerDetailView.editable &&

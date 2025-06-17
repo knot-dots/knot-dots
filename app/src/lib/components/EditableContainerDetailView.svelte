@@ -15,7 +15,7 @@
 		isTaskContainer,
 		strategyTypes
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 	import {
 		resolutionStatusColors,
 		resolutionStatusIcons,
@@ -28,12 +28,11 @@
 	interface Props {
 		container: Container;
 		data?: Snippet;
-		extra?: Snippet;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), data, extra, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), data, relatedContainers, revisions }: Props = $props();
 
 	const handleSubmit = autoSave(container, 2000);
 </script>
@@ -108,8 +107,6 @@
 		</div>
 
 		{@render data?.()}
-
-		{@render extra?.()}
 	</article>
 </form>
 
