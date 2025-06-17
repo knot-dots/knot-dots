@@ -9,8 +9,8 @@
 	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
+	import Organization from '~icons/knotdots/organization';
 	import { page } from '$app/state';
-	import logo from '$lib/assets/logo.svg';
 	import paramsFromURL from '$lib/client/paramsFromURL';
 	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
 	import OrganizationMenuCard from '$lib/components/OrganizationMenuCard.svelte';
@@ -89,32 +89,11 @@
 
 		return organizationalUnitsByLevel;
 	});
-
-	let orgLogo = $derived.by(() => {
-		let orgLogo = logo;
-
-		if (currentContext.payload.image) {
-			orgLogo = currentContext.payload.image;
-		} else if (isOrganizationalUnitContainer(currentContext)) {
-			const firstAncestorWithImage = findAncestors<OrganizationalUnitContainer>(
-				currentContext,
-				page.data.organizationalUnits,
-				predicates.enum['is-part-of']
-			).find(({ payload }) => payload.image);
-			if (firstAncestorWithImage?.payload.image) {
-				orgLogo = firstAncestorWithImage.payload.image;
-			} else if (page.data.currentOrganization.payload.image) {
-				orgLogo = page.data.currentOrganization.payload.image;
-			}
-		}
-
-		return orgLogo;
-	});
 </script>
 
 <div class="organization-menu">
 	<button class="dropdown-button" type="button" use:popover.button>
-		<img alt={$_('logo')} src={orgLogo} />
+		<Organization />
 		<span class="is-visually-hidden truncated">
 			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
 				{$_('all_organizations')}
@@ -207,8 +186,9 @@
 		padding: 0.375rem 0.75rem;
 	}
 
-	.dropdown-button img {
-		max-height: 1.5rem;
+	.dropdown-button :global(svg:first-child) {
+		height: 1.5rem;
+		width: 1.5rem;
 	}
 
 	.organization-menu {
