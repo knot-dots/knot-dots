@@ -25,14 +25,14 @@ export const load = (async ({ locals, parent }) => {
 	const [strategies, measures, indicators] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
-				[container.organization],
+				'default' in container.payload && container.payload.default ? [] : [container.organization],
 				{ organizationalUnits, type: [payloadTypes.enum.strategy] },
 				''
 			)
 		),
 		locals.pool.connect(
 			getManyContainers(
-				[container.organization],
+				'default' in container.payload && container.payload.default ? [] : [container.organization],
 				{
 					organizationalUnits,
 					type: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
