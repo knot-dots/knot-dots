@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import AllPage from '$lib/components/AllPage.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
 		computeColumnTitleForGoals,
 		goalsByHierarchyLevel,
 		isGoalContainer,
-		isStrategyContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -41,7 +39,7 @@
 	);
 </script>
 
-<AllPage {data}>
+<GoalsPage {data}>
 	<Board>
 		{#each columns as column (column.key)}
 			<BoardColumn
@@ -59,4 +57,4 @@
 		{/each}
 	</Board>
 	<Help slug="goals-level" />
-</AllPage>
+</GoalsPage>
