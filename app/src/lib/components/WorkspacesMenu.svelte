@@ -30,7 +30,7 @@
 		all: {
 			catalog: '/all/catalog',
 			level: '/all/level',
-			page: '/',
+			page: '/all/page',
 			status: '/all/level',
 			table: '/all/table'
 		},
@@ -98,7 +98,7 @@
 			tasks: '/tasks/status'
 		},
 		page: {
-			all: '/'
+			all: '/all/page'
 		},
 		table: {
 			all: '/all/table',

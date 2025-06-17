@@ -16,7 +16,6 @@
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Cog from '~icons/flowbite/cog-outline';
 	import Grid from '~icons/flowbite/grid-solid';
-	import Home from '~icons/flowbite/home-solid';
 	import Favicon from '~icons/knotdots/favicon';
 	import OrganizationalUnit from '~icons/knotdots/organizational-unit';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
@@ -41,10 +40,11 @@
 		const url = new URL(env.PUBLIC_BASE_URL);
 
 		if ('default' in container.payload && container.payload.default) {
+			url.pathname = '/all/page';
 			return url.toString();
 		} else {
-			const url = new URL(env.PUBLIC_BASE_URL);
 			url.hostname = `${container.guid}.${url.hostname}`;
+			url.pathname = '/all/page';
 			return url.toString();
 		}
 	}
@@ -52,8 +52,12 @@
 
 <header transition:slide={{ duration: 125, easing: cubicInOut }}>
 	{#if sidebarExpanded}
-		<a href={env.PUBLIC_BASE_URL} title="knotdots.net">
-			<img class="logo" src={logo} alt="knot dots Logo" />
+		<a href={landingPageURL(page.data.currentOrganization)}>
+			<img
+				class="logo"
+				src={page.data.currentOrganization.payload.image ?? logo}
+				alt={page.data.currentOrganization.payload.name}
+			/>
 		</a>
 		<button
 			class="action-button action-button--size-s action-button--padding-tight"
@@ -75,48 +79,37 @@
 	{/if}
 </header>
 
-<ul class="sidebar-menu sidebar-menu--navigation" data-sveltekit-preload-data="hover">
-	<li>
-		<a
-			class="sidebar-menu-item"
-			class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
-				page.url.toString()}
-			href={landingPageURL(page.data.currentOrganization)}
-		>
-			<Home />
-			<span class:is-visually-hidden={!sidebarExpanded}>
-				{page.data.currentOrganization.payload.name}
-			</span>
-		</a>
-	</li>
-	{#if page.data.currentOrganizationalUnit}
-		<li>
-			<a
-				class="sidebar-menu-item"
-				class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
-					page.url.toString()}
-				href={landingPageURL(page.data.currentOrganizationalUnit)}
-			>
-				<OrganizationalUnit />
-				<span class:is-visually-hidden={!sidebarExpanded}>
-					{page.data.currentOrganizationalUnit.payload.name}
-				</span>
-			</a>
-		</li>
-	{/if}
-	{#if $user.isAuthenticated}
-		<li>
-			<a
-				class="sidebar-menu-item"
-				class:sidebar-menu-item--active={'/me' === page.url.pathname}
-				href="/me"
-			>
-				<Grid />
-				<span class:is-visually-hidden={!sidebarExpanded}>{$_('workspace.profile')}</span>
-			</a>
-		</li>
-	{/if}
-</ul>
+{#if page.data.currentOrganizationalUnit || $user.isAuthenticated}
+	<ul class="sidebar-menu sidebar-menu--navigation" data-sveltekit-preload-data="hover">
+		{#if page.data.currentOrganizationalUnit}
+			<li>
+				<a
+					class="sidebar-menu-item"
+					class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
+						page.url.toString()}
+					href={landingPageURL(page.data.currentOrganizationalUnit)}
+				>
+					<OrganizationalUnit />
+					<span class:is-visually-hidden={!sidebarExpanded}>
+						{page.data.currentOrganizationalUnit.payload.name}
+					</span>
+				</a>
+			</li>
+		{/if}
+		{#if $user.isAuthenticated}
+			<li>
+				<a
+					class="sidebar-menu-item"
+					class:sidebar-menu-item--active={'/me' === page.url.pathname}
+					href="/me"
+				>
+					<Grid />
+					<span class:is-visually-hidden={!sidebarExpanded}>{$_('workspace.profile')}</span>
+				</a>
+			</li>
+		{/if}
+	</ul>
+{/if}
 
 <ul class="sidebar-menu sidebar-menu--about">
 	{#if sidebarExpanded}
