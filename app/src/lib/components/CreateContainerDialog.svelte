@@ -141,13 +141,15 @@
 					{/if}
 
 					<ul class="badges">
-						{#if 'goalType' in $newContainer.payload && $newContainer.payload.goalType}
-							{$_($newContainer.payload.goalType)}
-						{:else if 'strategyType' in $newContainer.payload && $newContainer.payload.strategyType !== strategyTypes.enum['strategy_type.misc']}
-							{$_($newContainer.payload.strategyType)}
-						{:else}
-							{$_($newContainer.payload.type)}
-						{/if}
+						<li class="badge badge--purple">
+							{#if 'goalType' in $newContainer.payload && $newContainer.payload.goalType}
+								{$_($newContainer.payload.goalType)}
+							{:else if 'strategyType' in $newContainer.payload && $newContainer.payload.strategyType !== strategyTypes.enum['strategy_type.misc']}
+								{$_($newContainer.payload.strategyType)}
+							{:else}
+								{$_($newContainer.payload.type)}
+							{/if}
+						</li>
 						{#if isContainerWithStatus($newContainer)}
 							{@const StatusIcon = statusIcons.get($newContainer.payload.status)}
 							{#key $newContainer.payload.status}
@@ -295,12 +297,12 @@
 <style>
 	article {
 		overflow: auto;
-		padding: 1px 1.5rem 1.5rem;
+		padding: 1.5rem 0;
 	}
 
 	@media (min-width: 768px) {
 		article {
-			padding: 1px 5rem 3rem;
+			padding: 3rem 0;
 		}
 	}
 
