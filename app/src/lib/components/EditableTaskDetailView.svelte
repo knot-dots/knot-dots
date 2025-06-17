@@ -1,30 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import fetchMembers from '$lib/client/fetchMembers';
-	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAssignee from '$lib/components/EditableAssignee.svelte';
-	import EditableBenefit from '$lib/components/EditableBenefit.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
-	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
-	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableParent from '$lib/components/EditableParent.svelte';
-	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
-	import EditableTaskCategory from '$lib/components/EditableTaskCategory.svelte';
-	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import ManagedBy from '$lib/components/ManagedBy.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import {
-		type AnyContainer,
-		type Container,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		type TaskContainer
-	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import TaskProperties from '$lib/components/TaskProperties.svelte';
+	import { type AnyContainer, type Container, type TaskContainer } from '$lib/models';
+	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		container: TaskContainer;
@@ -33,107 +13,16 @@
 	}
 
 	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
-
-	let managedBy = $derived(container.managed_by);
-
-	let assigneeCandidatesPromise = $derived(fetchMembers(managedBy));
-
-	let measure = $derived(relatedContainers.find(isContainerWithEffect));
-
-	let goal = $derived(relatedContainers.find(isContainerWithObjective));
 </script>
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<PropertyGrid>
-			{#snippet top()}
-				<EditableTaskCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.taskCategory}
-				/>
-
-				<EditableDate
-					editable={$applicationState.containerDetailView.editable}
-					label={$_('fulfillment_date')}
-					bind:value={container.payload.fulfillmentDate}
-				/>
-
-				{#if $ability.can('read', container, 'assignee')}
-					<EditableAssignee
-						editable={$applicationState.containerDetailView.editable}
-						candidatesPromise={assigneeCandidatesPromise}
-						bind:value={container.payload.assignee}
-					/>
-				{/if}
-
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-
-			{#snippet bottom()}
-				<EditableTaskCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.taskCategory}
-				/>
-
-				<EditableBenefit
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.benefit}
-				/>
-
-				<EditablePlainText
-					editable={$applicationState.containerDetailView.editable}
-					label={$_('effort')}
-					bind:value={container.payload.effort}
-				/>
-
-				<EditableTaskStatus
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.taskStatus}
-				/>
-
-				<EditableDate
-					editable={$applicationState.containerDetailView.editable}
-					label={$_('fulfillment_date')}
-					bind:value={container.payload.fulfillmentDate}
-				/>
-
-				{#if $ability.can('read', container, 'assignee')}
-					<EditableAssignee
-						editable={$applicationState.containerDetailView.editable}
-						candidatesPromise={assigneeCandidatesPromise}
-						bind:value={container.payload.assignee}
-					/>
-				{/if}
-
-				<EditableMeasure editable={$applicationState.containerDetailView.editable} bind:container />
-
-				<EditableParent editable={$applicationState.containerDetailView.editable} bind:container />
-
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-
-				<ManagedBy {container} {relatedContainers} />
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-
-				<EditableOrganization
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organization')}
-					bind:value={container.organization}
-				/>
-
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-		</PropertyGrid>
+		<TaskProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+			{relatedContainers}
+			{revisions}
+		/>
 
 		{#key container.guid}
 			<EditableFormattedText

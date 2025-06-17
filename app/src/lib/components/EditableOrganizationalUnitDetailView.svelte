@@ -5,17 +5,14 @@
 	import Card from '$lib/components/Card.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
-	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
-	import EditableNumber from '$lib/components/EditableNumber.svelte';
-	import EditableSuperordinateOrganizationalUnit from '$lib/components/EditableSuperordinateOrganizationalUnit.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import {
 		type Container,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		type OrganizationalUnitContainer
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 
 	export let container: OrganizationalUnitContainer;
 	export let containersRelatedToIndicators: Container[] = [];
@@ -47,39 +44,10 @@
 			{/if}
 		</header>
 
-		<div class="details-tab" id="basic-data">
-			<div class="data-grid">
-				{#if $ability.can('update', container)}
-					<EditableNumber
-						editable={$applicationState.containerDetailView.editable}
-						label={$_('organizational_unit.level')}
-						bind:value={container.payload.level}
-					/>
-				{/if}
-
-				<EditableSuperordinateOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable}
-					bind:container
-				/>
-
-				<EditableMultipleChoice
-					editable={$applicationState.containerDetailView.editable}
-					label={$_('boards')}
-					options={['board.indicators'].map((o) => ({
-						value: o,
-						label: $_(o)
-					}))}
-					bind:value={container.payload.boards}
-				/>
-
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-			</div>
-		</div>
+		<OrganizationalUnitProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+		/>
 
 		{#key container.guid}
 			<EditableFormattedText

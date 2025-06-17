@@ -2,28 +2,12 @@
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { goto } from '$app/navigation';
-	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableDate from '$lib/components/EditableDate.svelte';
-	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableGoalType from '$lib/components/EditableGoalType.svelte';
-	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
-	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
-	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
-	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableParent from '$lib/components/EditableParent.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTaskCarousel from '$lib/components/EditableTaskCarousel.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import ManagedBy from '$lib/components/ManagedBy.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import {
 		type Container,
 		type ContainerWithEffect,
@@ -32,12 +16,10 @@
 		isEffectContainer,
 		isPartOf,
 		isPartOfMeasure,
-		isStrategyContainer,
 		overlayKey,
-		payloadTypes,
-		predicates
+		payloadTypes
 	} from '$lib/models';
-	import { ability, addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
+	import { addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: GoalContainer;
@@ -49,20 +31,6 @@
 
 	let measure = $derived(
 		relatedContainers.filter(isContainerWithEffect).find((rc) => isPartOfMeasure(rc)(container))
-	);
-
-	let strategy = $derived(
-		relatedContainers
-			.filter(isStrategyContainer)
-			.find(
-				(candidate) =>
-					container.relation.findIndex(
-						(r) =>
-							r.predicate === predicates.enum['is-part-of-strategy'] &&
-							r.object === candidate.guid &&
-							candidate.guid !== container.guid
-					) > -1
-			)
 	);
 
 	let effect = $derived(relatedContainers.filter(isEffectContainer).find(isPartOf(container)));
@@ -93,115 +61,12 @@
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<PropertyGrid>
-			{#snippet top()}
-				<EditableGoalType
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.goalType}
-				/>
-
-				<EditableHierarchyLevel
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.hierarchyLevel}
-				/>
-
-				{#if measure}
-					<EditableMeasure {container} editable={$applicationState.containerDetailView.editable} />
-				{:else}
-					<EditableStrategy {container} editable={$applicationState.containerDetailView.editable} />
-				{/if}
-
-				<EditableCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.category}
-				/>
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-			{/snippet}
-
-			{#snippet bottom()}
-				<EditableGoalType
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.goalType}
-				/>
-
-				<EditableHierarchyLevel
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.hierarchyLevel}
-				/>
-
-				{#if $ability.can('read', container, 'payload.editorialState')}
-					<EditableEditorialState
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container, 'payload.editorialState')}
-						bind:value={container.payload.editorialState}
-					/>
-				{/if}
-
-				<EditableDate
-					editable={$applicationState.containerDetailView.editable}
-					label={$_('fulfillment_date')}
-					bind:value={container.payload.fulfillmentDate}
-				/>
-
-				{#if measure}
-					<EditableMeasure {container} editable={$applicationState.containerDetailView.editable} />
-				{:else}
-					<EditableStrategy {container} editable={$applicationState.containerDetailView.editable} />
-				{/if}
-
-				<EditableParent {container} editable={$applicationState.containerDetailView.editable} />
-
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-
-				<EditableCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.category}
-				/>
-
-				<EditableTopic
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.topic}
-				/>
-
-				<EditablePolicyFieldBNK
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.policyFieldBNK}
-				/>
-
-				<EditableAudience
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.audience}
-				/>
-
-				<ManagedBy {container} {relatedContainers} />
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-
-				<EditableOrganization
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organization')}
-					bind:value={container.organization}
-				/>
-
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-		</PropertyGrid>
+		<GoalProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+			{relatedContainers}
+			{revisions}
+		/>
 
 		{#key container.guid}
 			<EditableFormattedText

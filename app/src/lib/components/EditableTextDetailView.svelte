@@ -1,15 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
-	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import ManagedBy from '$lib/components/ManagedBy.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import TextProperties from '$lib/components/TextProperties.svelte';
 	import type { AnyContainer, Container, TextContainer } from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		container: TextContainer;
@@ -22,37 +17,12 @@
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<PropertyGrid>
-			{#snippet top()}
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-
-			{#snippet bottom()}
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-
-				<ManagedBy {container} {relatedContainers} />
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-
-				<EditableOrganization
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organization')}
-					bind:value={container.organization}
-				/>
-
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-		</PropertyGrid>
+		<TextProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+			{relatedContainers}
+			{revisions}
+		/>
 
 		{#key container.guid}
 			<EditableFormattedText

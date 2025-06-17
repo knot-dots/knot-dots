@@ -5,16 +5,14 @@
 	import Card from '$lib/components/Card.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
-	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
-	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import {
 		type Container,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		type OrganizationContainer
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 
 	export let container: OrganizationContainer;
 	export let containersRelatedToIndicators: Container[] = [];
@@ -46,31 +44,10 @@
 			{/if}
 		</header>
 
-		<div class="details-tab" id="basic-data">
-			<div class="data-grid">
-				<EditableOrganizationCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.organizationCategory}
-				/>
-
-				<EditableMultipleChoice
-					editable={$applicationState.containerDetailView.editable}
-					label={$_('boards')}
-					options={['board.indicators', 'board.organizational_units'].map((o) => ({
-						value: o,
-						label: $_(o)
-					}))}
-					bind:value={container.payload.boards}
-				/>
-
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-			</div>
-		</div>
+		<OrganizationProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+		/>
 
 		{#key container.guid}
 			<EditableFormattedText

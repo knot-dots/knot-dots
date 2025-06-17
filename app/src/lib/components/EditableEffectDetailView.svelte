@@ -8,14 +8,9 @@
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/heroicons/plus-small-solid';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
-	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
-	import ManagedBy from '$lib/components/ManagedBy.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import EffectProperties from '$lib/components/EffectProperties.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -23,7 +18,7 @@
 		isIndicatorContainer,
 		predicates
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		container: EffectContainer;
@@ -109,33 +104,12 @@
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<PropertyGrid>
-			{#snippet bottom()}
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-
-				<ManagedBy {container} {relatedContainers} />
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-
-				<EditableOrganization
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organization')}
-					bind:value={container.organization}
-				/>
-
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-		</PropertyGrid>
+		<EffectProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+			{relatedContainers}
+			{revisions}
+		/>
 
 		{#if indicator}
 			{#if $applicationState.containerDetailView.editable}

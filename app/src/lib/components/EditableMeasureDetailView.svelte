@@ -1,25 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableDuration from '$lib/components/EditableDuration.svelte';
-	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
-	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
-	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
-	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
-	import EditableStatus from '$lib/components/EditableStatus.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import ManagedBy from '$lib/components/ManagedBy.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -29,7 +13,7 @@
 		payloadTypes,
 		status
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ContainerWithEffect;
@@ -42,117 +26,12 @@
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<PropertyGrid>
-			{#snippet top()}
-				<EditableDuration
-					editable={$applicationState.containerDetailView.editable}
-					bind:container
-				/>
-
-				<EditableStrategy
-					editable={$applicationState.containerDetailView.editable}
-					bind:container
-				/>
-
-				<EditableCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.category}
-				/>
-
-				<ManagedBy {container} {relatedContainers} />
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-			{/snippet}
-
-			{#snippet bottom()}
-				{#if isSimpleMeasureContainer(container)}
-					<EditableFile
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.file}
-					/>
-				{/if}
-
-				<EditableMeasureType
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.measureType}
-				/>
-
-				<EditableStatus
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.status}
-				/>
-
-				{#if $ability.can('read', container, 'payload.editorialState')}
-					<EditableEditorialState
-						aiSuggestion={container.payload.aiSuggestion}
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container, 'payload.editorialState')}
-						bind:value={container.payload.editorialState}
-					/>
-				{/if}
-
-				<EditableDuration
-					editable={$applicationState.containerDetailView.editable}
-					bind:container
-				/>
-
-				<EditableStrategy
-					editable={$applicationState.containerDetailView.editable}
-					bind:container
-				/>
-
-				<EditableParent editable={$applicationState.containerDetailView.editable} bind:container />
-
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-
-				<EditableCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.category}
-				/>
-
-				<EditableTopic
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.topic}
-				/>
-
-				<EditablePolicyFieldBNK
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.policyFieldBNK}
-				/>
-
-				<EditableAudience
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.audience}
-				/>
-
-				<ManagedBy {container} {relatedContainers} />
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-
-				<EditableOrganization
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organization')}
-					bind:value={container.organization}
-				/>
-
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-		</PropertyGrid>
+		<MeasureProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+			{relatedContainers}
+			{revisions}
+		/>
 
 		{#key container.guid}
 			<EditableFormattedText

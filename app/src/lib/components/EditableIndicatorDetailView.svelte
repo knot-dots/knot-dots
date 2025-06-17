@@ -2,27 +2,14 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableHistoricalValues from '$lib/components/EditableHistoricalValues.svelte';
-	import EditableIndicatorCategory from '$lib/components/EditableIndicatorCategory.svelte';
-	import EditableIndicatorType from '$lib/components/EditableIndicatorType.svelte';
-	import EditableIndicatorUnit from '$lib/components/EditableIndicatorUnit.svelte';
-	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
-	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import type { IndicatorTab } from '$lib/components/IndicatorTabs.svelte';
 	import IndicatorTable from '$lib/components/IndicatorTable.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import ManagedBy from '$lib/components/ManagedBy.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -35,7 +22,7 @@
 		isStrategyContainer,
 		paramsFromFragment
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 	import { tab } from './IndicatorTabs.svelte';
 
 	interface Props {
@@ -72,98 +59,12 @@
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<PropertyGrid>
-			{#snippet top()}
-				<EditableIndicatorType
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.indicatorType}
-				/>
-
-				<EditableIndicatorUnit
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.unit}
-				/>
-
-				{#if $ability.can('update', container, 'indicatorCategory')}
-					<EditableIndicatorCategory
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.indicatorCategory}
-					/>
-				{/if}
-			{/snippet}
-
-			{#snippet bottom()}
-				<EditableIndicatorType
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.indicatorType}
-				/>
-
-				<EditableIndicatorUnit
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.unit}
-				/>
-
-				{#if $ability.can('update', container, 'indicatorCategory')}
-					<EditableIndicatorCategory
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.indicatorCategory}
-					/>
-				{/if}
-
-				{#if $ability.can('read', container, 'payload.editorialState')}
-					<EditableEditorialState
-						aiSuggestion={container.payload.aiSuggestion}
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container, 'payload.editorialState')}
-						bind:value={container.payload.editorialState}
-					/>
-				{/if}
-
-				{#if $ability.can('update', container, 'visibility')}
-					<EditableVisibility
-						editable={$applicationState.containerDetailView.editable}
-						bind:value={container.payload.visibility}
-					/>
-				{/if}
-
-				<EditableCategory
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.category}
-				/>
-
-				<EditableTopic
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.topic}
-				/>
-
-				<EditablePolicyFieldBNK
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.policyFieldBNK}
-				/>
-
-				<EditableAudience
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.audience}
-				/>
-
-				<ManagedBy {container} {relatedContainers} />
-
-				<EditableOrganizationalUnit
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organizational_unit')}
-					organization={container.organization}
-					bind:value={container.organizational_unit}
-				/>
-
-				<EditableOrganization
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container.payload.type, 'organization')}
-					bind:value={container.organization}
-				/>
-
-				<AuthoredBy {container} {revisions} />
-			{/snippet}
-		</PropertyGrid>
+		<IndicatorProperties
+			bind:container
+			editable={$applicationState.containerDetailView.editable}
+			{relatedContainers}
+			{revisions}
+		/>
 
 		<div class="details-tab">
 			<ul class="button-group">
