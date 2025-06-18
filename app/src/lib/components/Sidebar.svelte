@@ -16,8 +16,8 @@
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Cog from '~icons/flowbite/cog-outline';
 	import Grid from '~icons/flowbite/grid-solid';
+	import Home from '~icons/flowbite/home-solid';
 	import Favicon from '~icons/knotdots/favicon';
-	import OrganizationalUnit from '~icons/knotdots/organizational-unit';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -82,42 +82,39 @@
 	</button>
 </header>
 
-{#if page.data.currentOrganizationalUnit || $user.isAuthenticated}
-	<ul
-		class="sidebar-menu sidebar-menu--navigation"
-		class:collapsed={sidebarExpanded === false}
-		class:expanded={sidebarExpanded === true}
-		data-sveltekit-preload-data="hover"
-	>
-		{#if page.data.currentOrganizationalUnit}
-			<li>
-				<a
-					class="sidebar-menu-item"
-					class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
-						page.url.toString()}
-					href={landingPageURL(page.data.currentOrganizationalUnit)}
-				>
-					<OrganizationalUnit />
-					<span>
-						{page.data.currentOrganizationalUnit.payload.name}
-					</span>
-				</a>
-			</li>
-		{/if}
-		{#if $user.isAuthenticated}
-			<li>
-				<a
-					class="sidebar-menu-item"
-					class:sidebar-menu-item--active={'/me' === page.url.pathname}
-					href="/me"
-				>
-					<Grid />
-					<span>{$_('workspace.profile')}</span>
-				</a>
-			</li>
-		{/if}
-	</ul>
-{/if}
+<ul
+	class="sidebar-menu sidebar-menu--navigation"
+	class:collapsed={sidebarExpanded === false}
+	class:expanded={sidebarExpanded === true}
+	data-sveltekit-preload-data="hover"
+>
+	<li>
+		<a
+			class="sidebar-menu-item"
+			class:sidebar-menu-item--active={landingPageURL(
+				page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+			) === page.url.toString()}
+			href={landingPageURL(page.data.currentOrganizationalUnit ?? page.data.currentOrganization)}
+		>
+			<Home />
+			<span>
+				{(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).payload.name}
+			</span>
+		</a>
+	</li>
+	{#if $user.isAuthenticated}
+		<li>
+			<a
+				class="sidebar-menu-item"
+				class:sidebar-menu-item--active={'/me' === page.url.pathname}
+				href="/me"
+			>
+				<Grid />
+				<span>{$_('workspace.profile')}</span>
+			</a>
+		</li>
+	{/if}
+</ul>
 
 <ul
 	class="sidebar-menu sidebar-menu--about"
@@ -138,7 +135,15 @@
 			<ul class="sidebar-menu">
 				<li>
 					<a class="sidebar-menu-item sidebar-menu-item--secondary" href={env.PUBLIC_BASE_URL}>
-						knotdots.net Homepage
+						{$_('homepage')}
+					</a>
+				</li>
+				<li>
+					<a
+						class="sidebar-menu-item sidebar-menu-item--secondary"
+						href="{env.PUBLIC_BASE_URL}/impressum"
+					>
+						{$_('imprint')}
 					</a>
 				</li>
 			</ul>
@@ -147,7 +152,7 @@
 	<li>
 		<a class="sidebar-menu-item" href={env.PUBLIC_BASE_URL}>
 			<Favicon />
-			<span>knotdots.net Homepage</span>
+			<span>{$_('homepage')}</span>
 		</a>
 	</li>
 </ul>

@@ -12,7 +12,7 @@ test('navigation contains expected elements', async ({ page, viewport }) => {
 
 	if (viewport && viewport.width >= 480) {
 		await expect(
-			page.getByRole('navigation').getByRole('link', { name: 'knotdots.net' })
+			page.getByRole('navigation').locator('header').getByRole('link', { name: 'knotdots.net' })
 		).toBeVisible();
 		await expect(
 			page

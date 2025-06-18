@@ -130,6 +130,7 @@
 	"goals_by_hierarchy_level": "Zielebene {level}",
 	"help": "Hilfe",
 	"home": "Startseite",
+	"homepage": "knotdots.net Homepage",
 	"import.csv_file": "CSV-Datei",
 	"import.error.invalid_record": "Fehler in Zeile {line}: {errors}",
 	"import.error.missing": "Die CSV-Datei fehlt",
