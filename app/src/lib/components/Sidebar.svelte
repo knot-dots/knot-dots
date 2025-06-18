@@ -129,8 +129,8 @@
 			<Favicon />
 			<span>
 				{$_('about')}
-				{#if $platformMenu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 			</span>
+			{#if $platformMenu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
 	</li>
 	{#if $platformMenu.expanded}
@@ -290,6 +290,7 @@
 		display: flex;
 		flex-direction: row;
 		gap: 0.5rem;
+		line-height: 1.2;
 		padding: 0.5rem;
 		width: 100%;
 	}
@@ -324,7 +325,7 @@
 		color: var(--icon-color);
 	}
 
-	.sidebar-menu-item > :global(svg) {
+	.sidebar-menu-item > :global(svg:first-child) {
 		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
@@ -333,11 +334,6 @@
 	.sidebar-menu-item.sidebar-menu-item--about span {
 		flex-grow: 1;
 		text-align: left;
-	}
-
-	.sidebar-menu-item.sidebar-menu-item--about :global(svg) {
-		float: right;
-		vertical-align: middle;
 	}
 
 	@media (min-width: 60rem) {
