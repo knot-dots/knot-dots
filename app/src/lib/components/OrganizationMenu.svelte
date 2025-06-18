@@ -186,6 +186,11 @@
 		padding: 0.375rem 0.75rem;
 	}
 
+	.dropdown-button:global([aria-expanded='true']) {
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
+	}
+
 	.dropdown-button :global(svg:first-child) {
 		height: 1.5rem;
 		width: 1.5rem;
