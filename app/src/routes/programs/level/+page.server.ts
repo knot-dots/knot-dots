@@ -55,52 +55,6 @@ export const load = (async ({ locals, url, parent }) => {
 				)
 			)
 		);
-	} else if (
-		!url.searchParams.has('programsChanged') ||
-		url.searchParams.get('programs') == 'only_related'
-	) {
-		containers = await filterOrganizationalUnitsAsync(
-			locals.pool.connect(
-				getManyContainers(
-					[currentOrganization.guid],
-					{
-						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						strategyTypes: url.searchParams.getAll('strategyType'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: ['strategy']
-					},
-					url.searchParams.get('sort') ?? ''
-				)
-			)
-		);
-		const relatedContainers = await Promise.all(
-			containers.map(({ guid }) =>
-				locals.pool.connect(
-					getAllRelatedContainers(
-						[],
-						guid,
-						url.searchParams.getAll('relationType').length == 0
-							? [
-									predicates.enum['is-consistent-with'],
-									predicates.enum['is-equivalent-to'],
-									predicates.enum['is-inconsistent-with'],
-									predicates.enum['is-superordinate-of']
-								]
-							: url.searchParams.getAll('relationType'),
-						{},
-						url.searchParams.get('sort') ?? ''
-					)
-				)
-			)
-		);
-		relatedContainers.flat().forEach((c) => {
-			if (containers.findIndex(({ guid }) => guid == c.guid) == -1) {
-				containers.push(c);
-			}
-		});
 	} else {
 		containers = await filterOrganizationalUnitsAsync(
 			locals.pool.connect(
