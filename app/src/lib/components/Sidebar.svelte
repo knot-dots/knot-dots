@@ -1,5 +1,5 @@
-<script module>
-	let sidebarExpanded = $state(true);
+<script lang="ts" module>
+	let sidebarExpanded: boolean | undefined = $state(undefined);
 </script>
 
 <script lang="ts">
@@ -32,8 +32,12 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
-	function toggleSidebar() {
-		sidebarExpanded = !sidebarExpanded;
+	function expandSidebar() {
+		sidebarExpanded = true;
+	}
+
+	function collapseSidebar() {
+		sidebarExpanded = false;
 	}
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
@@ -50,37 +54,41 @@
 	}
 </script>
 
-<header transition:slide={{ duration: 125, easing: cubicInOut }}>
-	{#if sidebarExpanded}
-		<a href={landingPageURL(page.data.currentOrganization)}>
-			<img
-				class="logo"
-				src={page.data.currentOrganization.payload.image ?? logo}
-				alt={page.data.currentOrganization.payload.name}
-			/>
-		</a>
-		<button
-			class="action-button action-button--size-s action-button--padding-tight"
-			onclick={toggleSidebar}
-			type="button"
-		>
-			<ChevronDoubleLeft />
-			<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
-		</button>
-	{:else}
-		<button
-			class="action-button action-button--size-s action-button--padding-tight"
-			onclick={toggleSidebar}
-			type="button"
-		>
-			<Bars />
-			<span class="is-visually-hidden">{$_('expand_sidebar')}</span>
-		</button>
-	{/if}
+<header class:collapsed={sidebarExpanded === false} class:expanded={sidebarExpanded === true}>
+	<a href={landingPageURL(page.data.currentOrganization)}>
+		<img
+			class="logo"
+			src={page.data.currentOrganization.payload.image ?? logo}
+			alt={page.data.currentOrganization.payload.name}
+		/>
+	</a>
+
+	<button
+		class="action-button action-button--size-s action-button--padding-tight"
+		onclick={collapseSidebar}
+		type="button"
+	>
+		<ChevronDoubleLeft />
+		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
+	</button>
+
+	<button
+		class="action-button action-button--size-s action-button--padding-tight"
+		onclick={expandSidebar}
+		type="button"
+	>
+		<Bars />
+		<span class="is-visually-hidden">{$_('expand_sidebar')}</span>
+	</button>
 </header>
 
 {#if page.data.currentOrganizationalUnit || $user.isAuthenticated}
-	<ul class="sidebar-menu sidebar-menu--navigation" data-sveltekit-preload-data="hover">
+	<ul
+		class="sidebar-menu sidebar-menu--navigation"
+		class:collapsed={sidebarExpanded === false}
+		class:expanded={sidebarExpanded === true}
+		data-sveltekit-preload-data="hover"
+	>
 		{#if page.data.currentOrganizationalUnit}
 			<li>
 				<a
@@ -90,7 +98,7 @@
 					href={landingPageURL(page.data.currentOrganizationalUnit)}
 				>
 					<OrganizationalUnit />
-					<span class:is-visually-hidden={!sidebarExpanded}>
+					<span>
 						{page.data.currentOrganizationalUnit.payload.name}
 					</span>
 				</a>
@@ -104,55 +112,60 @@
 					href="/me"
 				>
 					<Grid />
-					<span class:is-visually-hidden={!sidebarExpanded}>{$_('workspace.profile')}</span>
+					<span>{$_('workspace.profile')}</span>
 				</a>
 			</li>
 		{/if}
 	</ul>
 {/if}
 
-<ul class="sidebar-menu sidebar-menu--about">
-	{#if sidebarExpanded}
-		<li>
-			<button class="sidebar-menu-item sidebar-menu-item--about" use:platformMenu.button>
-				<Favicon />
-				<span>
-					{$_('about')}
-					{#if $platformMenu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-				</span>
-			</button>
-		</li>
-		{#if $platformMenu.expanded}
-			<li use:platformMenu.panel>
-				<ul class="sidebar-menu">
-					<li>
-						<a class="sidebar-menu-item sidebar-menu-item--secondary" href={env.PUBLIC_BASE_URL}>
-							knotdots.net Homepage
-						</a>
-					</li>
-				</ul>
-			</li>
-		{/if}
-	{:else}
-		<li>
-			<a class="sidebar-menu-item" href={env.PUBLIC_BASE_URL}>
-				<Favicon />
-				<span class="is-visually-hidden">knotdots.net Homepage</span>
-			</a>
+<ul
+	class="sidebar-menu sidebar-menu--about"
+	class:collapsed={sidebarExpanded === false}
+	class:expanded={sidebarExpanded === true}
+>
+	<li>
+		<button class="sidebar-menu-item sidebar-menu-item--about" use:platformMenu.button>
+			<Favicon />
+			<span>
+				{$_('about')}
+				{#if $platformMenu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+			</span>
+		</button>
+	</li>
+	{#if $platformMenu.expanded}
+		<li use:platformMenu.panel>
+			<ul class="sidebar-menu">
+				<li>
+					<a class="sidebar-menu-item sidebar-menu-item--secondary" href={env.PUBLIC_BASE_URL}>
+						knotdots.net Homepage
+					</a>
+				</li>
+			</ul>
 		</li>
 	{/if}
+	<li>
+		<a class="sidebar-menu-item" href={env.PUBLIC_BASE_URL}>
+			<Favicon />
+			<span>knotdots.net Homepage</span>
+		</a>
+	</li>
 </ul>
 
 {#if $userMenu.expanded}
 	<ul
 		class="sidebar-menu"
+		class:collapsed={sidebarExpanded === false}
+		class:expanded={sidebarExpanded === true}
 		transition:slide={{ duration: 125, easing: cubicInOut }}
 		use:userMenu.panel
 	>
 		<li>
 			<button class="sidebar-menu-item" onclick={() => dialog.showModal()} type="button">
 				<Cog />
-				<span class:is-visually-hidden={!sidebarExpanded}>{$_('profile.settings')}</span>
+				<span>
+					{$_('profile.settings')}
+				</span>
 			</button>
 		</li>
 		<li>
@@ -162,7 +175,7 @@
 				type="button"
 			>
 				<ArrowRightToBracket />
-				<span class:is-visually-hidden={!sidebarExpanded}>{$_('logout')}</span>
+				<span>{$_('logout')}</span>
 			</button>
 		</li>
 	</ul>
@@ -170,13 +183,15 @@
 
 {#if $user.isAuthenticated}
 	<button class="dropdown-button" type="button" use:userMenu.button>
-		<span class="avatar avatar-s">
+		<span
+			class="avatar avatar-s"
+			class:collapsed={sidebarExpanded === false}
+			class:expanded={sidebarExpanded === true}
+		>
 			{$user.givenName.at(0)}{$user.familyName.at(0)}
 		</span>
-		{#if sidebarExpanded}
-			<strong class="truncated">{$user.givenName} {$user.familyName}</strong>
-			<ChevronSort />
-		{/if}
+		<strong class="truncated">{$user.givenName} {$user.familyName}</strong>
+		<ChevronSort />
 	</button>
 {/if}
 
@@ -194,12 +209,28 @@
 		padding: 0.5rem 0.5rem;
 	}
 
+	header:not(.expanded) a {
+		display: none;
+	}
+
 	header img {
 		margin-left: 0.25rem;
 	}
 
+	header:not(.expanded) > button:first-of-type {
+		display: none;
+	}
+
+	header.expanded > button:last-of-type {
+		display: none;
+	}
+
 	.avatar {
 		background-color: var(--color-gray-100);
+	}
+
+	.avatar:not(.expanded) ~ :global(*) {
+		display: none;
 	}
 
 	.dropdown-button {
@@ -228,6 +259,14 @@
 		gap: 0.25rem;
 		margin-top: auto;
 		padding: 0.75rem 0.5rem;
+	}
+
+	.sidebar-menu.sidebar-menu--about.expanded > li:last-child {
+		display: none;
+	}
+
+	.sidebar-menu.sidebar-menu--about:not(.expanded) > li:not(:last-child) {
+		display: none;
 	}
 
 	.sidebar-menu.sidebar-menu--about .sidebar-menu {
@@ -277,6 +316,10 @@
 		background-color: var(--color-gray-100);
 	}
 
+	.sidebar-menu:not(.expanded) .sidebar-menu-item > span {
+		display: none;
+	}
+
 	.sidebar-menu-item :global(svg) {
 		color: var(--icon-color);
 	}
@@ -295,5 +338,35 @@
 	.sidebar-menu-item.sidebar-menu-item--about :global(svg) {
 		float: right;
 		vertical-align: middle;
+	}
+
+	@media (min-width: 60rem) {
+		header:not(.collapsed) a {
+			display: block;
+		}
+
+		header:not(.collapsed) > button:first-of-type {
+			display: block;
+		}
+
+		header:not(.collapsed) > button:last-of-type {
+			display: none;
+		}
+
+		.sidebar-menu:not(.collapsed) .sidebar-menu-item > span {
+			display: revert;
+		}
+
+		.sidebar-menu.sidebar-menu--about:not(.collapsed) > li:not(:last-child) {
+			display: block;
+		}
+
+		.sidebar-menu.sidebar-menu--about:not(.collapsed) > li:last-child {
+			display: none;
+		}
+
+		.avatar:not(.collapsed) ~ :global(*) {
+			display: revert;
+		}
 	}
 </style>
