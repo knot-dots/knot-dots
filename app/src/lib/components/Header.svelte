@@ -209,11 +209,11 @@
 		<fieldset use:filterBar.panel>
 			{#if activeFilters > 0}
 				<span>{$_('active_filters', { values: { count: activeFilters } })}</span>
-			{/if}
 
-			<button class="button-outline button-xs" onclick={resetFilters} type="button">
-				<Close />
-			</button>
+				<button class="button-outline button-xs" onclick={resetFilters} type="button">
+					<Close />
+				</button>
+			{/if}
 
 			{#each facets.entries() as [key, foci] (key)}
 				{@const options = [...foci.entries()]
