@@ -31,6 +31,7 @@ services:
         condition: service_healthy
     env_file:
       - ./app/.env
+    image: knot-dots-migrate:latest
     volumes:
       - ./migrate/sql:/srv/migrations
     working_dir: /srv/migrations
