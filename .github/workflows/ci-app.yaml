@@ -34,7 +34,8 @@ jobs:
           cache-dependency-path: ./app/package-lock.json
       - run: npm clean-install
       - run: npx playwright install --with-deps
-      - run: env
+      - run: docker compose up -d preview
+      - run: docker compose --profile=qa stop preview
       - run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: failure()
