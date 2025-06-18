@@ -124,6 +124,7 @@
 		--button-hover-background: transparent;
 
 		border: none;
+		padding: 0;
 	}
 
 	.dropdown-button:global([aria-expanded]) {
