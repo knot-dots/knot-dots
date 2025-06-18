@@ -53,6 +53,10 @@
 </div>
 
 <style>
+	.dropdown {
+		display: inline-block;
+	}
+
 	.dropdown-button.dropdown-button--menu {
 		--button-background: transparent;
 		--button-hover-border-color: var(--button-border-color);
