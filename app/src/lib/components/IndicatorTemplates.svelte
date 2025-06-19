@@ -8,10 +8,12 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type IndicatorContainer,
 		type IndicatorTemplateContainer,
 		isIndicatorContainer,
+		overlayKey,
 		paramsFromFragment,
 		payloadTypes
 	} from '$lib/models';
@@ -48,14 +50,32 @@
 		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
 				const effect = await createEffect($addEffectState.target, container);
+				const params = new URLSearchParams([
+					[overlayKey.enum.view, effect.guid],
+					...(createFeatureDecisions($page.data.features).useEditableDetailView()
+						? []
+						: [[overlayKey.enum.edit, '']])
+				]);
 				$addEffectState = {};
-				await goto(`#view=${effect.guid}&edit`);
+				await goto(`#${params.toString()}`);
 			} else if ($addObjectiveState.target) {
 				const objective = await createObjective($addObjectiveState.target, container);
-				$addEffectState = {};
-				await goto(`#view=${objective.guid}&edit`);
+				const params = new URLSearchParams([
+					[overlayKey.enum.view, objective.guid],
+					...(createFeatureDecisions($page.data.features).useEditableDetailView()
+						? []
+						: [[overlayKey.enum.edit, '']])
+				]);
+				$addObjectiveState = {};
+				await goto(`#${params.toString()}`);
 			} else {
-				await goto(`#view=${container.guid}&edit`);
+				const params = new URLSearchParams([
+					[overlayKey.enum.view, container.guid],
+					...(createFeatureDecisions($page.data.features).useEditableDetailView()
+						? []
+						: [[overlayKey.enum.edit, '']])
+				]);
+				await goto(`#${params.toString()}`);
 			}
 		} else {
 			value = container;
