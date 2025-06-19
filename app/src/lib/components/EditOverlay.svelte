@@ -38,7 +38,9 @@
 		relatedContainers: Container[];
 	}
 
-	let { container, relatedContainers }: Props = $props();
+	let { container: originalContainer, relatedContainers }: Props = $props();
+
+	let container = $state(originalContainer);
 
 	// svelte-ignore non_reactive_update
 	let confirmDeleteDialog: HTMLDialogElement;
