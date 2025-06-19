@@ -76,11 +76,13 @@
 </script>
 
 {#if !container.payload.quantity}
-	<button class="template-category" type="button" on:click={() => createCustomIndicator()}>
-		<PlusSmall />
-		{$_('indicator_form.create_custom')}
-	</button>
-	<IndicatorTemplates bind:value={indicatorTemplate} />
+	<div class="form-tab">
+		<button class="template-category" type="button" on:click={() => createCustomIndicator()}>
+			<PlusSmall />
+			{$_('indicator_form.create_custom')}
+		</button>
+		<IndicatorTemplates bind:value={indicatorTemplate} />
+	</div>
 {:else}
 	<fieldset class="form-tab" id="basic-data">
 		<UnitSelector bind:value={container.payload.unit} />

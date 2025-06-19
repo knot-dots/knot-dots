@@ -111,95 +111,97 @@
 			{revisions}
 		/>
 
-		{#if indicator}
-			{#if $applicationState.containerDetailView.editable}
-				<div class="disclosure">
-					<button class="disclosure-button" type="button" use:disclosure.button>
-						<span>
-							<small>{$_('indicator.table.edit')}</small>
-							<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
-						</span>
-						{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-					</button>
+		<div class="details-tab">
+			{#if indicator}
+				{#if $applicationState.containerDetailView.editable}
+					<div class="disclosure">
+						<button class="disclosure-button" type="button" use:disclosure.button>
+							<span>
+								<small>{$_('indicator.table.edit')}</small>
+								<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
+							</span>
+							{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+						</button>
 
-					{#if $disclosure.expanded}
-						<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
-							<table>
-								<thead>
-									<tr>
-										<th>{$_('indicator.table.year')}</th>
-										<th>{$_('indicator.effect.planned_values')}</th>
-										<th>{$_('indicator.effect.achieved_values')}</th>
-										<th></th>
-									</tr>
-								</thead>
-								<tbody>
-									{#if container.payload.plannedValues.length > 0}
+						{#if $disclosure.expanded}
+							<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
+								<table>
+									<thead>
+										<tr>
+											<th>{$_('indicator.table.year')}</th>
+											<th>{$_('indicator.effect.planned_values')}</th>
+											<th>{$_('indicator.effect.achieved_values')}</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										{#if container.payload.plannedValues.length > 0}
+											<tr>
+												<td colspan="4">
+													<button aria-label={$_('append_row')} onclick={prependYear} type="button">
+														<Plus />
+													</button>
+												</td>
+											</tr>
+										{/if}
+
+										{#each container.payload.plannedValues as [key], index (key)}
+											<tr>
+												<td class="year">
+													{container.payload.plannedValues[index][0]}
+												</td>
+												<td class="focus-indicator">
+													{#if $applicationState.containerDetailView.editable}
+														<input
+															inputmode="decimal"
+															onchange={updatePlannedValues(index)}
+															type="text"
+															value={container.payload.plannedValues[index][1]}
+															use:init={key === newRowKey}
+														/>
+													{:else}
+														{container.payload.plannedValues[index][1]}
+													{/if}
+												</td>
+												<td class="focus-indicator">
+													<input
+														inputmode="decimal"
+														onchange={updateAchievedValues(index)}
+														type="text"
+														value={container.payload.achievedValues[index][1]}
+													/>
+												</td>
+												<td>
+													{#if index === 0 || index === container.payload.plannedValues.length - 1}
+														<button
+															aria-label={$_('delete_row')}
+															onclick={removeYear(index)}
+															type="button"
+														>
+															<Minus />
+														</button>
+													{/if}
+												</td>
+											</tr>
+										{/each}
+
 										<tr>
 											<td colspan="4">
-												<button aria-label={$_('append_row')} onclick={prependYear} type="button">
+												<button aria-label={$_('append_row')} onclick={appendYear} type="button">
 													<Plus />
 												</button>
 											</td>
 										</tr>
-									{/if}
+									</tbody>
+								</table>
+							</div>
+						{/if}
+					</div>
+				{/if}
 
-									{#each container.payload.plannedValues as [key], index (key)}
-										<tr>
-											<td class="year">
-												{container.payload.plannedValues[index][0]}
-											</td>
-											<td class="focus-indicator">
-												{#if $applicationState.containerDetailView.editable}
-													<input
-														inputmode="decimal"
-														onchange={updatePlannedValues(index)}
-														type="text"
-														value={container.payload.plannedValues[index][1]}
-														use:init={key === newRowKey}
-													/>
-												{:else}
-													{container.payload.plannedValues[index][1]}
-												{/if}
-											</td>
-											<td class="focus-indicator">
-												<input
-													inputmode="decimal"
-													onchange={updateAchievedValues(index)}
-													type="text"
-													value={container.payload.achievedValues[index][1]}
-												/>
-											</td>
-											<td>
-												{#if index === 0 || index === container.payload.plannedValues.length - 1}
-													<button
-														aria-label={$_('delete_row')}
-														onclick={removeYear(index)}
-														type="button"
-													>
-														<Minus />
-													</button>
-												{/if}
-											</td>
-										</tr>
-									{/each}
-
-									<tr>
-										<td colspan="4">
-											<button aria-label={$_('append_row')} onclick={appendYear} type="button">
-												<Plus />
-											</button>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					{/if}
-				</div>
+				<EffectChart {container} {relatedContainers} showLegend />
 			{/if}
-
-			<EffectChart {container} {relatedContainers} showLegend />
-		{/if}
+		</div>
 	{/snippet}
 </EditableContainerDetailView>
 
