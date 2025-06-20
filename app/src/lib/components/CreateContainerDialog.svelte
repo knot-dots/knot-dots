@@ -6,6 +6,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
+	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
@@ -23,6 +24,7 @@
 		isContainerWithStatus,
 		isContainerWithTitle,
 		isGoalContainer,
+		isIndicatorContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
@@ -190,6 +192,13 @@
 
 				{#if isGoalContainer($newContainer)}
 					<GoalProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isIndicatorContainer($newContainer)}
+					<IndicatorProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

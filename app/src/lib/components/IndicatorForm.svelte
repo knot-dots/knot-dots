@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
 	import AudienceSelector from '$lib/components/AudienceSelector.svelte';
 	import CategorySelector from '$lib/components/CategorySelector.svelte';
 	import Editor from '$lib/components/Editor.svelte';
@@ -11,13 +14,21 @@
 	import PolicyFieldBNKSelector from '$lib/components/PolicyFieldBNKSelector.svelte';
 	import TopicSelector from '$lib/components/TopicSelector.svelte';
 	import UnitSelector from '$lib/components/UnitSelector.svelte';
-	import { hasHistoricalValues, indicatorCategories, quantities } from '$lib/models';
+	import { createFeatureDecisions } from '$lib/features';
+	import {
+		containerOfType,
+		hasHistoricalValues,
+		indicatorCategories,
+		type NewContainer,
+		payloadTypes,
+		quantities
+	} from '$lib/models';
 	import type {
 		EmptyIndicatorContainer,
 		IndicatorContainer,
 		IndicatorTemplateContainer
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, newContainer } from '$lib/stores';
 
 	export let container: IndicatorContainer | EmptyIndicatorContainer;
 
@@ -41,10 +52,32 @@
 		};
 	}
 
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
 	function createCustomIndicator() {
-		container.payload.quantity = quantities.enum['quantity.custom'];
-		container.payload.title = '';
-		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
+		if (createFeatureDecisions(page.data.features).useEditableDetailView()) {
+			const container = containerOfType(
+				payloadTypes.enum.indicator,
+				page.data.currentOrganization.guid,
+				page.data.currentOrganizationalUnit?.guid ?? null,
+				page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+				env.PUBLIC_KC_REALM as string
+			) as NewContainer & EmptyIndicatorContainer;
+
+			container.payload.quantity = quantities.enum['quantity.custom'];
+			container.payload.title = '';
+			container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
+
+			$newContainer = container;
+
+			createContainerDialog.getElement().showModal();
+		} else {
+			container.payload.quantity = quantities.enum['quantity.custom'];
+			container.payload.title = '';
+			container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
+		}
 	}
 
 	function updateHistoricalValues(index: number) {
