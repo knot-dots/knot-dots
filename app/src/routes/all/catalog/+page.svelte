@@ -8,7 +8,8 @@
 		isMeasureContainer,
 		isResolutionContainer,
 		isSimpleMeasureContainer,
-		isStrategyContainer
+		isStrategyContainer,
+		payloadTypes
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -27,6 +28,12 @@
 					isStrategyContainer(c)
 			)
 			.slice(0, browser ? undefined : 20)}
+		payloadType={[
+			payloadTypes.enum.goal,
+			payloadTypes.enum.measure,
+			payloadTypes.enum.simple_measure,
+			payloadTypes.enum.strategy
+		]}
 	/>
 	<Help slug="all-catalog" />
 </AllPage>

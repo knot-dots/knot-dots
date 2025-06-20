@@ -10,16 +10,16 @@
 		type Container,
 		containerOfType,
 		type NewContainer,
-		overlayKey,
 		type PayloadType
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		containers: Container[];
+		payloadType: PayloadType[];
 	}
 
-	let { containers }: Props = $props();
+	let { containers, payloadType }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -41,17 +41,16 @@
 </script>
 
 <div>
-	{#if [...distinctPayloadTypes.values()].some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
-		{#if distinctPayloadTypes.size === 1}
-			{@const payloadType = distinctPayloadTypes.values().next().value as PayloadType}
+	{#if payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
+		{#if payloadType.length === 1}
 			<p>
 				<button
 					class="button button-primary button-xs"
-					onclick={() => createContainer(payloadType)}
+					onclick={() => createContainer(payloadType[0])}
 					type="button"
 				>
 					<Plus />
-					{$_(distinctPayloadTypes.values().next().value as string)}
+					{$_(payloadType[0])}
 				</button>
 			</p>
 		{:else}
