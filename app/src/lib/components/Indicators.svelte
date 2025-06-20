@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent, Item } from 'svelte-dnd-action';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import Plus from '~icons/flowbite/plus-outline';
 	import Card from '$lib/components/Card.svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
@@ -88,8 +88,8 @@
 <div class="indicators">
 	{#if $ability.can('create', payloadTypes.enum.indicator)}
 		<p>
-			<a class="button primary" href="#create={payloadTypes.enum.indicator}">
-				<PlusSmall />
+			<a class="button button-xs button-primary" href="#create={payloadTypes.enum.indicator}">
+				<Plus />
 				{$_('indicator')}
 			</a>
 		</p>
