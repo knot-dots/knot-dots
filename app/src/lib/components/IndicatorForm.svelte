@@ -21,7 +21,8 @@
 		indicatorCategories,
 		type NewContainer,
 		payloadTypes,
-		quantities
+		quantities,
+		units
 	} from '$lib/models';
 	import type {
 		EmptyIndicatorContainer,
@@ -68,6 +69,7 @@
 
 			container.payload.quantity = quantities.enum['quantity.custom'];
 			container.payload.title = '';
+			container.payload.unit = units.enum['unit.cubic_meter'];
 			container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
 
 			$newContainer = container;
