@@ -11,6 +11,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Visibility from '$lib/components/Visibility.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		audience,
@@ -133,27 +134,29 @@
 <div class="content-details masked-overflow">
 	<ContainerForm bind:container on:submitSuccessful={(e) => afterSubmit(e, container)} />
 </div>
-<footer class="content-footer">
-	{#if container.payload.type !== payloadTypes.enum.undefined}
-		<Visibility {container} />
-	{/if}
-	<div class="content-actions">
+{#if !isIndicatorContainer(container) || container.payload.quantity}
+	<footer class="content-footer">
 		{#if container.payload.type !== payloadTypes.enum.undefined}
-			<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+			<Visibility {container} />
 		{/if}
-		<a class="button" href={cancelURL()}>{$_('cancel')}</a>
-		{#if $mayDeleteContainer(container)}
-			<button
-				class="delete quiet"
-				title={$_('delete')}
-				type="button"
-				onclick={() => confirmDeleteDialog.showModal()}
-			>
-				<Trash />
-			</button>
-		{/if}
-	</div>
-</footer>
+		<div class="content-actions">
+			{#if container.payload.type !== payloadTypes.enum.undefined}
+				<button class="primary" form="container-form" type="submit">{$_('save')}</button>
+			{/if}
+			<a class="button" href={cancelURL()}>{$_('cancel')}</a>
+			{#if $mayDeleteContainer(container)}
+				<button
+					class="delete quiet"
+					title={$_('delete')}
+					type="button"
+					onclick={() => confirmDeleteDialog.showModal()}
+				>
+					<Trash />
+				</button>
+			{/if}
+		</div>
+	</footer>
+{/if}
 
 <Help slug={`${container.payload.type.replace('_', '-')}-edit`} />
 
