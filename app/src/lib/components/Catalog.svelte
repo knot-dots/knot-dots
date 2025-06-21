@@ -57,7 +57,7 @@
 			<DropDownMenu
 				handleChange={(e) =>
 					e instanceof CustomEvent && e.detail.selected && createContainer(e.detail.selected)}
-				label={$_('add_item')}
+				label={$_('object')}
 				options={[
 					...distinctPayloadTypes
 						.values()
@@ -69,7 +69,11 @@
 						)
 						.map((t) => ({ label: $_(t), value: t }))
 				]}
-			/>
+			>
+				{#snippet icon()}
+					<Plus />
+				{/snippet}
+			</DropDownMenu>
 		{/if}
 	{/if}
 	<ul>
@@ -86,6 +90,23 @@
 		height: 100%;
 		overflow-y: auto;
 		padding: 1.5rem;
+	}
+
+	div :global(.dropdown-button.dropdown-button--menu) {
+		--button-active-background: var(--color-primary-900);
+		--button-background: var(--color-primary-700);
+		--button-hover-background: var(--color-primary-800);
+		--padding-x: 0.75rem;
+		--padding-y: 0.5rem;
+
+		border: none;
+		color: white;
+		font-size: 0.75rem;
+	}
+
+	div :global(.dropdown-button.dropdown-button--menu svg) {
+		height: 0.875rem;
+		width: 0.875rem;
 	}
 
 	ul {
