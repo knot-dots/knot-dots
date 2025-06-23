@@ -56,7 +56,7 @@
 		}
 	}
 
-	function isActiveItem(item: { value: string }) {
+	function isSelectedItem(item: { value: string }) {
 		if (overlay) {
 			return page.url.hash === item.value;
 		} else {
@@ -66,10 +66,11 @@
 </script>
 
 {#if options.length > 1}
+	{@const selected = options.find(isSelectedItem)}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" onchange={onChange} type="button" use:menu.button>
 			<span>
-				{options.find(isActiveItem)?.label ?? $_('workspaces')}
+				{selected?.label ?? $_('workspaces')}
 			</span>
 			{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
@@ -78,7 +79,11 @@
 			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 				<ul class="menu">
 					{#each options as option}
-						<li class="menu-item">
+						<li
+							class="menu-item"
+							class:menu-item--active={option.value === $menu.active}
+							class:menu-item--selected={option.value === selected?.value}
+						>
 							<button use:menu.item={{ value: option.value }}>
 								{option.label}
 							</button>
@@ -93,16 +98,19 @@
 <style>
 	.dropdown {
 		flex-shrink: 0;
-		margin-left: auto;
+		margin-left: 1rem;
 	}
 
 	.dropdown-button {
-		--button-background: transparent;
+		--button-background: var(--color-gray-050);
 
 		align-items: center;
 		border-radius: 8px;
-		height: 2rem;
-		padding: 0 0.25rem 0 0.5rem;
+		box-shadow: var(--shadow-sm);
+		color: var(--color-gray-900);
+		font-weight: 500;
+		height: 2.25rem;
+		padding: 0.5rem 0.5rem 0.5rem 0.75rem;
 	}
 
 	.dropdown-button:global([aria-expanded='true']) {
@@ -111,7 +119,7 @@
 	}
 
 	.dropdown-button:global([aria-expanded='true'] svg) {
-		color: var(--color-primary-400);
+		color: var(--color-primary-700);
 	}
 
 	.dropdown-panel {
@@ -119,14 +127,10 @@
 		max-width: revert;
 	}
 
-	.menu-item > button {
-		--button-active-background: transparent;
-		--button-hover-background: var(--color-gray-100);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
+	.menu-item.menu-item--selected > button {
+		--icon-color: var(--color-primary-700);
 
-		border: none;
-		width: 100%;
-		white-space: nowrap;
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
 	}
 </style>

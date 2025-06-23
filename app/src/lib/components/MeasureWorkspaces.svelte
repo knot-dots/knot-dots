@@ -56,6 +56,7 @@
 	});
 
 	interface Option {
+		exists: boolean;
 		icon: Component<SvelteHTMLElements['svg']>;
 		label: string;
 		value: string;
@@ -63,11 +64,13 @@
 
 	let leftOptions: Option[] = $derived([
 		{
+			exists: true,
 			icon: Dots,
 			label: $_('workspace.type.all'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/monitoring'
 		},
 		{
+			exists: true,
 			icon: ClipboardCheck,
 			label: $_('workspace.type.tasks'),
 			value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
@@ -76,18 +79,21 @@
 
 	let rightOptions: Option[] = $derived([
 		{
+			exists: selectedItem[0] in workspacesRight.page,
 			icon: LandingPage,
 			label: $_('workspace.view.page'),
 			value: workspacesRight.page[selectedItem[0]] ?? '/all/page'
 		},
 
 		{
+			exists: selectedItem[0] in workspacesRight.status,
 			icon: ColumnSolid,
 			label: $_('workspace.view.status'),
 			value: workspacesRight.status[selectedItem[0]] ?? '/tasks/status'
 		},
 
 		{
+			exists: selectedItem[0] in workspacesRight.monitoring,
 			icon: Compass,
 			label: $_('workspace.view.monitoring'),
 			value: workspacesRight.monitoring[selectedItem[0]] ?? '/all/monitoring'
@@ -167,9 +173,13 @@
 			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 				<ul class="menu">
 					{#each options as option}
-						{@const active = option.value === menuActive}
-						<li class="menu-item">
-							<button class:active type="button" use:menu.item={{ value: option.value }}>
+						<li
+							class="menu-item"
+							class:menu-item--active={option.value === menuActive}
+							class:menu-item--muted={!option.exists}
+							class:menu-item--selected={option.value === selected?.value}
+						>
+							<button type="button" use:menu.item={{ value: option.value }}>
 								{#if 'icon' in option}
 									<option.icon />
 								{/if}
@@ -222,27 +232,18 @@
 		max-width: revert;
 	}
 
-	.menu-item > button {
-		--button-active-background: transparent;
-		--button-hover-background: var(--color-gray-100);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
+	.menu-item.menu-item--muted > button {
+		--icon-color: var(--color-gray-400);
 
-		align-items: center;
-		color: var(--color-gray-900);
-		border: none;
-		display: flex;
-		font-weight: 500;
-		width: 100%;
-		white-space: nowrap;
+		color: var(--color-gray-400);
+		gap: 0.625rem;
 	}
 
-	.menu-item > button.active {
-		background-color: var(--color-gray-100);
-	}
+	.menu-item.menu-item--selected > button {
+		--icon-color: var(--color-primary-700);
 
-	.menu-item > button > :global(svg) {
-		max-width: none;
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
 	}
 
 	.dropdown-group {
