@@ -52,7 +52,10 @@
 
 {#if columns.includes('title')}
 	<div class="cell">
-		<TitleDropdown {editable} bind:value={container.payload.title} />
+		<TitleDropdown
+			editable={editable && $ability.can('update', container)}
+			bind:value={container.payload.title}
+		/>
 	</div>
 {/if}
 
@@ -65,25 +68,40 @@
 {#if columns.includes('description')}
 	<div class="cell">
 		{#if isContainerWithDescription(container)}
-			<FormattedTextDropdown {editable} bind:value={container.payload.description} />
+			<FormattedTextDropdown
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.description}
+			/>
 		{/if}
 	</div>
 {/if}
 
 {#if columns.includes('visibility')}
 	<div class="cell">
-		<VisibilityDropdown {editable} bind:value={container.payload.visibility} />
+		<VisibilityDropdown
+			editable={editable && $ability.can('update', container, 'payload.visibility')}
+			bind:value={container.payload.visibility}
+		/>
 	</div>
 {/if}
 
 {#if columns.includes('status')}
 	<div class="cell">
 		{#if 'status' in container.payload}
-			<StatusDropdown {editable} bind:value={container.payload.status} />
+			<StatusDropdown
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.status}
+			/>
 		{:else if 'taskStatus' in container.payload}
-			<TaskStatusDropdown {editable} bind:value={container.payload.taskStatus} />
+			<TaskStatusDropdown
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.taskStatus}
+			/>
 		{:else if 'resolutionStatus' in container.payload}
-			<ResolutionStatusDropdown {editable} bind:value={container.payload.resolutionStatus} />
+			<ResolutionStatusDropdown
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.resolutionStatus}
+			/>
 		{/if}
 	</div>
 {/if}
@@ -91,7 +109,11 @@
 {#if columns.includes('category')}
 	<div class="cell">
 		{#if 'category' in container.payload}
-			<CategoryDropdown compact {editable} bind:value={container.payload.category} />
+			<CategoryDropdown
+				compact
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.category}
+			/>
 		{/if}
 	</div>
 {/if}
@@ -99,7 +121,11 @@
 {#if columns.includes('topic')}
 	<div class="cell">
 		{#if 'topic' in container.payload}
-			<TopicDropdown compact {editable} bind:value={container.payload.topic} />
+			<TopicDropdown
+				compact
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.topic}
+			/>
 		{/if}
 	</div>
 {/if}
@@ -107,7 +133,11 @@
 {#if columns.includes('policyFieldBNK')}
 	<div class="cell">
 		{#if 'policyFieldBNK' in container.payload}
-			<PolicyFieldBNKDropdown compact {editable} bind:value={container.payload.policyFieldBNK} />
+			<PolicyFieldBNKDropdown
+				compact
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.policyFieldBNK}
+			/>
 		{/if}
 	</div>
 {/if}
@@ -115,7 +145,11 @@
 {#if columns.includes('taskCategory')}
 	<div class="cell">
 		{#if 'taskCategory' in container.payload}
-			<TaskCategoryDropdown compact {editable} bind:value={container.payload.taskCategory} />
+			<TaskCategoryDropdown
+				compact
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.taskCategory}
+			/>
 		{/if}
 	</div>
 {/if}
@@ -123,7 +157,10 @@
 {#if columns.includes('audience')}
 	<div class="cell">
 		{#if 'audience' in container.payload}
-			<AudienceDropdown {editable} bind:value={container.payload.audience} />
+			<AudienceDropdown
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.audience}
+			/>
 		{/if}
 	</div>
 {/if}
@@ -131,7 +168,7 @@
 {#if columns.includes('fulfillmentDate')}
 	<div class="cell">
 		{#if isContainerWithFulfillmentDate(container)}
-			{#if editable}
+			{#if editable && $ability.can('update', container)}
 				<input type="date" bind:value={container.payload.fulfillmentDate} />
 			{:else if container.payload.fulfillmentDate}
 				<time datetime={container.payload.fulfillmentDate}>
@@ -149,7 +186,7 @@
 {#if columns.includes('duration')}
 	<div class="cell">
 		{#if isContainerWithDuration(container)}
-			{#if editable}
+			{#if editable && $ability.can('update', container)}
 				<fieldset>
 					<input type="date" bind:value={container.payload.startDate} />–<input
 						type="date"
@@ -185,10 +222,10 @@
 
 {#if columns.includes('editorialState')}
 	<div class="cell">
-		{#if isContainerWithEditorialState(container)}
+		{#if isContainerWithEditorialState(container) && $ability.can('read', container, 'payload.editorialState')}
 			<EditorialStateDropdown
 				aiSuggestion={'aiSuggestion' in container.payload && container.payload.aiSuggestion}
-				{editable}
+				editable={editable && $ability.can('update', container, 'payload.editorialState')}
 				bind:value={container.payload.editorialState}
 			/>
 		{/if}
