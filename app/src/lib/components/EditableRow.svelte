@@ -80,7 +80,7 @@
 {#if columns.includes('visibility')}
 	<div
 		class="cell"
-		class:cell--locked={editable && $ability.can('update', container, 'payload.visibility')}
+		class:cell--locked={editable && $ability.cannot('update', container, 'payload.visibility')}
 	>
 		<VisibilityDropdown
 			editable={editable && $ability.can('update', container, 'payload.visibility')}
