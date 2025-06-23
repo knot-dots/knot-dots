@@ -2,9 +2,13 @@
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 
-	export let editable = false;
-	export let label: string = '';
-	export let value: string | undefined = undefined;
+	interface Props {
+		editable?: boolean;
+		label?: string;
+		value?: string;
+	}
+
+	let { editable = false, label, value = $bindable() }: Props = $props();
 </script>
 
 {#if editable}
