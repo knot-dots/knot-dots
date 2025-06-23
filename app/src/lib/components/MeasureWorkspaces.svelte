@@ -9,8 +9,8 @@
 	import ColumnSolid from '~icons/flowbite/column-solid';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Compass from '~icons/knotdots/compass';
-	import Dots from '~icons/knotdots/dots';
 	import LandingPage from '~icons/knotdots/landing-page';
+	import Objects from '~icons/knotdots/objects';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
@@ -65,7 +65,7 @@
 	let leftOptions: Option[] = $derived([
 		{
 			exists: true,
-			icon: Dots,
+			icon: Objects,
 			label: $_('workspace.type.all'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/monitoring'
 		},

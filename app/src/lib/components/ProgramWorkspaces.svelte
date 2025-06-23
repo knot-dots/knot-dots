@@ -12,9 +12,9 @@
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import Compass from '~icons/knotdots/compass';
-	import Dots from '~icons/knotdots/dots';
 	import LandingPage from '~icons/knotdots/landing-page';
 	import Level from '~icons/knotdots/level';
+	import Objects from '~icons/knotdots/objects';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
@@ -97,7 +97,7 @@
 	let leftOptions: Option[] = $derived([
 		{
 			exists: true,
-			icon: Dots,
+			icon: Objects,
 			label: $_('workspace.type.all'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/level'
 		},
