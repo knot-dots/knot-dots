@@ -761,14 +761,14 @@ textarea:active {
 	border-color: var(--color-blue-600);
 }
 
-input[type='date']:invalid,
-input[type='email']:invalid,
-input[type='number']:invalid,
-input[type='password']:invalid,
-input[type='search']:invalid,
-input[type='text']:invalid,
-select:invalid,
-textarea:invalid {
+input[type='date']:user-invalid,
+input[type='email']:user-invalid,
+input[type='number']:user-invalid,
+input[type='password']:user-invalid,
+input[type='search']:user-invalid,
+input[type='text']:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
 	background-color: var(--color-red-050);
 	border-color: var(--color-red-500);
 	color: var(--color-red-700);
