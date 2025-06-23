@@ -2,18 +2,28 @@
 	import { passwordStrength } from 'check-password-strength';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { signIn } from '@auth/sveltekit/client';
 
-	export let dialog: HTMLDialogElement;
+	interface Props {
+		dialog: HTMLDialogElement;
+	}
 
-	let password = '';
+	let { dialog = $bindable() }: Props = $props();
+
+	let password = $state('');
+
+	let passwordConfirm = $state('');
+
+	let givenName = $state('');
+
+	let familyName = $state('');
+
+	let error = $state('');
+
 	let passwordInput: HTMLInputElement;
-	let passwordConfirm = '';
+
 	let passwordConfirmInput: HTMLInputElement;
-	let givenName = '';
-	let familyName = '';
-	let error = '';
 
 	async function checkPasswordsMatch(event: { currentTarget: HTMLInputElement }) {
 		if (password != passwordConfirm) {
@@ -36,7 +46,7 @@
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
-		const response = await fetch(`/user/${$page.url.searchParams.get('signup')}/signup`, {
+		const response = await fetch(`/user/${page.url.searchParams.get('signup')}/signup`, {
 			body: JSON.stringify({ familyName, givenName, password }),
 			headers: { 'Content-Type': 'application/json' },
 			method: 'POST'
@@ -65,7 +75,8 @@
 </script>
 
 <dialog bind:this={dialog}>
-	<form method="dialog" on:keydown={handleKeyDown} on:submit={handleSubmit}>
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<form method="dialog" onkeydown={handleKeyDown} onsubmit={handleSubmit}>
 		<p class="dialog-actions">
 			<span>{$_('signup_dialog.heading')}</span>
 			<button class="action-button" formnovalidate type="submit">
@@ -74,7 +85,7 @@
 			</button>
 		</p>
 
-		<input type="hidden" name="email" autocomplete="username" value={$page.data.user?.email} />
+		<input type="hidden" name="email" autocomplete="username" value={page.data.user?.email} />
 
 		<div>
 			<p>
@@ -119,7 +130,7 @@
 					autocomplete="new-password"
 					bind:this={passwordInput}
 					bind:value={password}
-					on:change={checkPasswordStrength}
+					onchange={checkPasswordStrength}
 					required
 				/>
 
@@ -134,7 +145,7 @@
 					autocomplete="new-password"
 					bind:this={passwordConfirmInput}
 					bind:value={passwordConfirm}
-					on:change={checkPasswordsMatch}
+					onchange={checkPasswordsMatch}
 					required
 				/>
 			</fieldset>
