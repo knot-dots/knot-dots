@@ -12,7 +12,6 @@
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
-	import Search from '$lib/components/Search.svelte';
 	import StrategyProperties from '$lib/components/StrategyProperties.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -180,84 +179,69 @@
 		{/snippet}
 	</EditableContainerDetailView>
 {:else if $applicationState.containerDetailView.mode === 'view_mode.table'}
-	<article class="details">
-		<div class="details-tab" id="basic-data">
-			<h2 class="details-title">
-				{container.payload.title}
-				<Search />
-			</h2>
-		</div>
-
-		<div class="details-tab details-tab--table" id="chapters">
-			<div class="table">
-				<div class="table-head">
-					<div class="row">
-						<div class="cell cell--action"></div>
-						<div class="cell">{$_('title')}</div>
-						<div class="cell">{$_('object')}</div>
-						<div class="cell">{$_('description')}</div>
-						<div class="cell">{$_('visibility.label')}</div>
-						<div class="cell">{$_('status')}</div>
-						<div class="cell">{$_('category')}</div>
-						<div class="cell">{$_('topic')}</div>
-						<div class="cell">{$_('policy_field_bnk')}</div>
-						<div class="cell">{$_('audience')}</div>
-						<div class="cell">{$_('fulfillment_date')}</div>
-						<div class="cell">{$_('planned_duration')}</div>
-						<div class="cell">{$_('editorial_state')}</div>
-						<div class="cell">{$_('organizational_unit')}</div>
-					</div>
-				</div>
-				<div
-					class="table-body"
-					use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
-					onconsider={handleDndConsider}
-					onfinalize={handleDndFinalize}
-				>
-					{#each parts as part, i (part.guid)}
-						<form
-							class="row"
-							animate:flip={{ duration: 100 }}
-							oninput={requestSubmit}
-							onsubmit={autoSave(part, 2000)}
-							novalidate
-						>
-							<!-- svelte-ignore binding_property_non_reactive -->
-							<EditableRow
-								columns={[
-									'action',
-									'title',
-									'type',
-									'description',
-									'visibility',
-									'status',
-									'category',
-									'topic',
-									'policyFieldBNK',
-									'audience',
-									'fulfillmentDate',
-									'duration',
-									'editorialState',
-									'organizationalUnit'
-								]}
-								bind:container={parts[i]}
-								editable={$applicationState.containerDetailView.editable}
-							/>
-						</form>
-					{/each}
+	<div class="table-wrapper">
+		<div class="table">
+			<div class="table-head">
+				<div class="row">
+					<div class="cell cell--action"></div>
+					<div class="cell">{$_('title')}</div>
+					<div class="cell">{$_('object')}</div>
+					<div class="cell">{$_('description')}</div>
+					<div class="cell">{$_('visibility.label')}</div>
+					<div class="cell">{$_('status')}</div>
+					<div class="cell">{$_('category')}</div>
+					<div class="cell">{$_('topic')}</div>
+					<div class="cell">{$_('policy_field_bnk')}</div>
+					<div class="cell">{$_('audience')}</div>
+					<div class="cell">{$_('fulfillment_date')}</div>
+					<div class="cell">{$_('planned_duration')}</div>
+					<div class="cell">{$_('editorial_state')}</div>
+					<div class="cell">{$_('organizational_unit')}</div>
 				</div>
 			</div>
+			<div
+				class="table-body"
+				use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
+				onconsider={handleDndConsider}
+				onfinalize={handleDndFinalize}
+			>
+				{#each parts as part, i (part.guid)}
+					<form
+						class="row"
+						animate:flip={{ duration: 100 }}
+						oninput={requestSubmit}
+						onsubmit={autoSave(part, 2000)}
+						novalidate
+					>
+						<!-- svelte-ignore binding_property_non_reactive -->
+						<EditableRow
+							columns={[
+								'action',
+								'title',
+								'type',
+								'description',
+								'visibility',
+								'status',
+								'category',
+								'topic',
+								'policyFieldBNK',
+								'audience',
+								'fulfillmentDate',
+								'duration',
+								'editorialState',
+								'organizationalUnit'
+							]}
+							bind:container={parts[i]}
+							editable={$applicationState.containerDetailView.editable}
+						/>
+					</form>
+				{/each}
+			</div>
 		</div>
-	</article>
+	</div>
 {/if}
 
 <style>
-	h2 :global(.search) {
-		flex-basis: 24rem;
-		font-size: 1rem;
-		font-weight: normal;
-	}
-
 	.chapter {
 		display: flex;
 		flex-direction: column;
@@ -266,8 +250,10 @@
 		max-width: 50rem;
 	}
 
-	.details-tab.details-tab--table {
-		overflow-x: auto;
+	.table-wrapper {
+		height: 100%;
+		margin: 1.5rem 0 1.5rem 1.5rem;
+		overflow: auto;
 	}
 
 	.table {
