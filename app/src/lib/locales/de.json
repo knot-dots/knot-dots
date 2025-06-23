@@ -506,7 +506,7 @@
 	"signup_dialog.family_name": "Name",
 	"signup_dialog.given_name": "Vorname",
 	"signup_dialog.heading": "Willkommen bei knotdots.net",
-	"signup_dialog.message": "Sie können knotdots.net gleich nutzen. Zur Aktivierung Ihres Benutzerkontos geben Sie bitte Ihren Namen und Vornahmen ein und wählen ein Passwort.",
+	"signup_dialog.message": "Sie können knotdots.net gleich nutzen. Zur Aktivierung Ihres Benutzerkontos geben Sie bitte Ihren Namen und Vornamen ein und wählen ein Passwort.",
 	"signup_dialog.password": "Passwort",
 	"signup_dialog.password_confirm": "Passwort bestätigen",
 	"signup_dialog.password_mismatch": "Die Passwörter stimmen nicht überein",
