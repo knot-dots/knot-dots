@@ -60,13 +60,13 @@
 {/if}
 
 {#if columns.includes('type')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable}>
 		<span>{$_(container.payload.type)}</span>
 	</div>
 {/if}
 
 {#if columns.includes('description')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if isContainerWithDescription(container)}
 			<FormattedTextDropdown
 				editable={editable && $ability.can('update', container)}
@@ -77,7 +77,10 @@
 {/if}
 
 {#if columns.includes('visibility')}
-	<div class="cell">
+	<div
+		class="cell"
+		class:cell--locked={editable && $ability.can('update', container, 'payload.visibility')}
+	>
 		<VisibilityDropdown
 			editable={editable && $ability.can('update', container, 'payload.visibility')}
 			bind:value={container.payload.visibility}
@@ -86,7 +89,7 @@
 {/if}
 
 {#if columns.includes('status')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if 'status' in container.payload}
 			<StatusDropdown
 				editable={editable && $ability.can('update', container)}
@@ -107,7 +110,7 @@
 {/if}
 
 {#if columns.includes('category')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if 'category' in container.payload}
 			<CategoryDropdown
 				compact
@@ -119,7 +122,7 @@
 {/if}
 
 {#if columns.includes('topic')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if 'topic' in container.payload}
 			<TopicDropdown
 				compact
@@ -131,7 +134,7 @@
 {/if}
 
 {#if columns.includes('policyFieldBNK')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if 'policyFieldBNK' in container.payload}
 			<PolicyFieldBNKDropdown
 				compact
@@ -143,7 +146,7 @@
 {/if}
 
 {#if columns.includes('taskCategory')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if 'taskCategory' in container.payload}
 			<TaskCategoryDropdown
 				compact
@@ -155,7 +158,7 @@
 {/if}
 
 {#if columns.includes('audience')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if 'audience' in container.payload}
 			<AudienceDropdown
 				editable={editable && $ability.can('update', container)}
@@ -166,7 +169,7 @@
 {/if}
 
 {#if columns.includes('fulfillmentDate')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if isContainerWithFulfillmentDate(container)}
 			{#if editable && $ability.can('update', container)}
 				<input type="date" bind:value={container.payload.fulfillmentDate} />
@@ -184,7 +187,7 @@
 {/if}
 
 {#if columns.includes('duration')}
-	<div class="cell">
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if isContainerWithDuration(container)}
 			{#if editable && $ability.can('update', container)}
 				<fieldset>
@@ -221,7 +224,10 @@
 {/if}
 
 {#if columns.includes('editorialState')}
-	<div class="cell">
+	<div
+		class="cell"
+		class:cell--locked={editable && $ability.cannot('update', container, 'payload.editorialState')}
+	>
 		{#if isContainerWithEditorialState(container) && $ability.can('read', container, 'payload.editorialState')}
 			<EditorialStateDropdown
 				aiSuggestion={'aiSuggestion' in container.payload && container.payload.aiSuggestion}
@@ -233,7 +239,10 @@
 {/if}
 
 {#if columns.includes('organizationalUnit')}
-	<div class="cell">
+	<div
+		class="cell"
+		class:cell--locked={editable && $ability.cannot('update', container, 'organizational_unit')}
+	>
 		<OrganizationalUnitDropdown
 			editable={editable && $ability.can('update', container, 'organizational_unit')}
 			organization={container.organization}
@@ -278,6 +287,12 @@
 
 	.cell.cell--action :global(svg) {
 		max-width: none;
+	}
+
+	.cell.cell--locked {
+		background: repeating-linear-gradient(45deg, #fff5f5, #fff5f5 2px, #ffebeb 2px, #ffebeb 4px);
+		color: #666;
+		cursor: not-allowed;
 	}
 
 	:global(.row:hover input) {
