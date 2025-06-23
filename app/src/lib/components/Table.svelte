@@ -20,6 +20,7 @@
 	<div class="table">
 		<div class="table-head">
 			<div class="row">
+				<div class="cell cell--action"></div>
 				{#each columns as { heading, key } (key)}
 					<div class="cell">{heading}</div>
 				{/each}

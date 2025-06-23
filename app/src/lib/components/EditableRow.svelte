@@ -38,18 +38,16 @@
 	let { columns, container = $bindable(), dragEnabled = false, editable = false }: Props = $props();
 </script>
 
-{#if columns.includes('action')}
-	<div class="cell cell--action">
-		{#if editable && dragEnabled}
-			<span use:dragHandle>
-				<DragHandle />
-			</span>
-		{/if}
-		<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
-			<Overlay />
-		</a>
-	</div>
-{/if}
+<div class="cell cell--action">
+	{#if editable && dragEnabled}
+		<span use:dragHandle>
+			<DragHandle />
+		</span>
+	{/if}
+	<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
+		<Overlay />
+	</a>
+</div>
 
 {#if columns.includes('title')}
 	<div class="cell">
