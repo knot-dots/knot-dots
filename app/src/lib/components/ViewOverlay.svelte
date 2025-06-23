@@ -331,20 +331,19 @@
 </script>
 
 {#if isStrategyContainer(container)}
-	{@const facets = new Map([
-		['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
-		['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-		['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-		['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-	])}
 	<Header
 		facets={computeFacetCount(
-			facets,
+			new Map([
+				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
+				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+			]),
 			relatedContainers.filter(({ guid, relation }) =>
 				relation.some(
 					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-strategy'] && guid != container.guid
+						predicate === predicates.enum['is-part-of-strategy'] && guid !== container.guid
 				)
 			)
 		)}
