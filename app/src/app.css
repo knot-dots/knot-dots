@@ -1543,9 +1543,6 @@ label > input[type='checkbox'].toggle {
 	width: 1.5rem;
 }
 
-.menu-item.menu-item--active > button {
-	background-color: var(--color-gray-100);
-}
 
 /* Loader */
 .loader {
