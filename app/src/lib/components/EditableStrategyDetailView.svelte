@@ -34,9 +34,15 @@
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+	let {
+		container = $bindable(),
+		relatedContainers: originalRelatedContainers,
+		revisions
+	}: Props = $props();
 
-	let parts = $state(
+	let relatedContainers = $state(originalRelatedContainers);
+
+	let parts = $derived(
 		relatedContainers
 			.filter(({ guid, relation }) =>
 				relation.some(
@@ -143,6 +149,7 @@
 						onsubmit={autoSave(part, 2000)}
 						novalidate
 					>
+						<!-- svelte-ignore binding_property_non_reactive -->
 						<EditableChapter
 							bind:container={parts[i]}
 							editable={$applicationState.containerDetailView.editable}
@@ -215,6 +222,7 @@
 							onsubmit={autoSave(part, 2000)}
 							novalidate
 						>
+							<!-- svelte-ignore binding_property_non_reactive -->
 							<EditableRow
 								columns={[
 									'action',
