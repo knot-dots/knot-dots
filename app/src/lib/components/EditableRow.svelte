@@ -31,15 +31,16 @@
 	interface Props {
 		columns: string[];
 		container: Container;
+		dragEnabled?: boolean;
 		editable?: boolean;
 	}
 
-	let { columns, container = $bindable(), editable = false }: Props = $props();
+	let { columns, container = $bindable(), dragEnabled = false, editable = false }: Props = $props();
 </script>
 
 {#if columns.includes('action')}
 	<div class="cell cell--action">
-		{#if editable}
+		{#if editable && dragEnabled}
 			<span use:dragHandle>
 				<DragHandle />
 			</span>

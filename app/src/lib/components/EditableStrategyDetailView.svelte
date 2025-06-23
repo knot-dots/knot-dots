@@ -130,6 +130,41 @@
 	}
 </script>
 
+{#snippet row(parts: Container[], dragEnabled: boolean)}
+	{#each parts as part, i (part.guid)}
+		<form
+			class="row"
+			animate:flip={{ duration: 100 }}
+			oninput={requestSubmit}
+			onsubmit={autoSave(part, 2000)}
+			novalidate
+		>
+			<!-- svelte-ignore binding_property_non_reactive -->
+			<EditableRow
+				columns={[
+					'action',
+					'title',
+					'type',
+					'description',
+					'visibility',
+					'status',
+					'category',
+					'topic',
+					'policyFieldBNK',
+					'audience',
+					'fulfillmentDate',
+					'duration',
+					'editorialState',
+					'organizationalUnit'
+				]}
+				bind:container={parts[i]}
+				{dragEnabled}
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		</form>
+	{/each}
+{/snippet}
+
 {#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
 	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		{#snippet data()}
@@ -199,44 +234,20 @@
 					<div class="cell">{$_('organizational_unit')}</div>
 				</div>
 			</div>
-			<div
-				class="table-body"
-				use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
-				onconsider={handleDndConsider}
-				onfinalize={handleDndFinalize}
-			>
-				{#each parts as part, i (part.guid)}
-					<form
-						class="row"
-						animate:flip={{ duration: 100 }}
-						oninput={requestSubmit}
-						onsubmit={autoSave(part, 2000)}
-						novalidate
-					>
-						<!-- svelte-ignore binding_property_non_reactive -->
-						<EditableRow
-							columns={[
-								'action',
-								'title',
-								'type',
-								'description',
-								'visibility',
-								'status',
-								'category',
-								'topic',
-								'policyFieldBNK',
-								'audience',
-								'fulfillmentDate',
-								'duration',
-								'editorialState',
-								'organizationalUnit'
-							]}
-							bind:container={parts[i]}
-							editable={$applicationState.containerDetailView.editable}
-						/>
-					</form>
-				{/each}
-			</div>
+			{#if $ability.cannot('update', container)}
+				<div class="table-body">
+					{@render row(parts, false)}
+				</div>
+			{:else}
+				<div
+					class="table-body"
+					use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
+					onconsider={handleDndConsider}
+					onfinalize={handleDndFinalize}
+				>
+					{@render row(parts, true)}
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}
