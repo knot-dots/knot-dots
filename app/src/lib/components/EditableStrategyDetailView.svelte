@@ -234,7 +234,7 @@
 					<div class="cell">{$_('organizational_unit')}</div>
 				</div>
 			</div>
-			{#if $ability.cannot('update', container)}
+			{#if $ability.cannot('update', container) || paramsFromFragment(page.url).has('type')}
 				<div class="table-body">
 					{@render row(parts, false)}
 				</div>
