@@ -51,10 +51,21 @@
 			error = $_('signup_dialog.unexpected_error');
 		}
 	}
+
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			(
+				(event.currentTarget as HTMLFormElement)?.querySelector(
+					'.button-primary'
+				) as HTMLButtonElement | null
+			)?.click();
+		}
+	}
 </script>
 
 <dialog bind:this={dialog}>
-	<form method="dialog" on:submit={handleSubmit}>
+	<form method="dialog" on:keydown={handleKeyDown} on:submit={handleSubmit}>
 		<p class="dialog-actions">
 			<span>{$_('signup_dialog.heading')}</span>
 			<button class="action-button" formnovalidate type="submit">
