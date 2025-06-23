@@ -2,6 +2,8 @@
 	import { dragHandle } from 'svelte-dnd-action';
 	import { _, date } from 'svelte-i18n';
 	import DragHandle from '~icons/knotdots/draghandle';
+	import Overlay from '~icons/knotdots/overlay';
+	import { page } from '$app/state';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
@@ -20,7 +22,9 @@
 		isContainerWithDescription,
 		isContainerWithDuration,
 		isContainerWithEditorialState,
-		isContainerWithFulfillmentDate
+		isContainerWithFulfillmentDate,
+		overlayKey,
+		overlayURL
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -39,9 +43,10 @@
 			<span use:dragHandle>
 				<DragHandle />
 			</span>
-		{:else}
-			<span></span>
 		{/if}
+		<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
+			<Overlay />
+		</a>
 	</div>
 {/if}
 
@@ -222,12 +227,20 @@
 		font-size: 0.875rem;
 		height: 55px;
 		max-width: 20rem;
-		vertical-align: middle;
 	}
 
 	.cell.cell--action {
 		color: var(--color-gray-500);
-		min-width: calc(20px + 2 * 0.5rem);
+		line-height: 1;
+		white-space: nowrap;
+	}
+
+	.cell.cell--action > * {
+		display: inline-block;
+	}
+
+	.cell.cell--action :global(svg) {
+		max-width: none;
 	}
 
 	:global(.row:hover input) {
