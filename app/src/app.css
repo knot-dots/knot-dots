@@ -1325,6 +1325,7 @@ label > input[type='checkbox'].toggle {
 	box-shadow: var(--shadow-lg);
 	display: flex;
 	flex-direction: column;
+	height: 100%;
 	position: relative;
 	width: 100%;
 	z-index: 3;
