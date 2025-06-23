@@ -11,7 +11,9 @@
 		rows: Container[];
 	}
 
-	let { columns, rows }: Props = $props();
+	let { columns, rows: originalRows }: Props = $props();
+
+	let rows = $state(originalRows);
 </script>
 
 <div class="table-wrapper">
@@ -25,7 +27,7 @@
 		</div>
 
 		<div class="table-body">
-			{#each rows as row (row.guid)}
+			{#each rows as row, i (row.guid)}
 				<form
 					animate:flip={{ duration: 100 }}
 					class="row"
@@ -35,7 +37,7 @@
 				>
 					<EditableRow
 						columns={columns.map(({ key }) => key)}
-						container={row}
+						bind:container={rows[i]}
 						editable={$applicationState.containerDetailView.editable}
 					/>
 				</form>
