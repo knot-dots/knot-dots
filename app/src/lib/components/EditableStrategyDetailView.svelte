@@ -170,7 +170,8 @@
 		{#snippet data()}
 			<StrategyProperties
 				bind:container
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				{relatedContainers}
 				{revisions}
 			/>
@@ -186,7 +187,8 @@
 						<!-- svelte-ignore binding_property_non_reactive -->
 						<EditableChapter
 							bind:container={parts[i]}
-							editable={$applicationState.containerDetailView.editable}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', part)}
 							headingTag="h3"
 							isPartOf={container}
 							{relatedContainers}

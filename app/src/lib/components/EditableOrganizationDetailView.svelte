@@ -12,7 +12,7 @@
 		isContainerWithObjective,
 		type OrganizationContainer
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	export let container: OrganizationContainer;
 	export let containersRelatedToIndicators: Container[] = [];
@@ -46,12 +46,13 @@
 
 		<OrganizationProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 		/>
 
 		{#key container.guid}
 			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				label={$_('description')}
 				bind:value={container.payload.description}
 			/>

@@ -4,7 +4,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import type { AnyContainer, PageContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: PageContainer;
@@ -18,14 +18,15 @@
 	{#snippet data()}
 		<PageProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			relatedContainers={[]}
 			{revisions}
 		/>
 
 		{#key container.guid}
 			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				label={$_('body')}
 				bind:value={container.payload.body}
 			/>

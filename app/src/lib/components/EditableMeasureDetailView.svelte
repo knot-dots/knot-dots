@@ -13,7 +13,7 @@
 		payloadTypes,
 		status
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ContainerWithEffect;
@@ -28,33 +28,37 @@
 	{#snippet data()}
 		<MeasureProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
 
 		{#key container.guid}
 			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				label={$_('measure.description')}
 				bind:value={container.payload.description}
 			/>
 
 			{#if (isMeasureContainer(container) && container.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer(container)}
 				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable}
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
 					label={$_('annotation')}
 					bind:value={container.payload.annotation}
 				/>
 			{:else if isMeasureContainer(container) && container.payload.status === status.enum['status.in_implementation']}
 				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable}
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
 					label={$_('comment')}
 					bind:value={container.payload.comment}
 				/>
 			{:else if isMeasureContainer(container) && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
 				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable}
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
 					label={$_('result')}
 					bind:value={container.payload.result}
 				/>

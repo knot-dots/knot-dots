@@ -19,7 +19,7 @@
 		type ObjectiveContainer,
 		predicates
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ObjectiveContainer;
@@ -92,14 +92,14 @@
 	{#snippet data()}
 		<ObjectiveProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
 
 		<div class="details-tab">
 			{#if indicator}
-				{#if $applicationState.containerDetailView.editable}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
 					<div class="disclosure">
 						<button class="disclosure-button" type="button" use:disclosure.button>
@@ -183,7 +183,8 @@
 
 		{#key container.guid}
 			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				label={$_('description')}
 				bind:value={container.payload.description}
 			/>

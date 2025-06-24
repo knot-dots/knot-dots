@@ -18,7 +18,7 @@
 		isIndicatorContainer,
 		predicates
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: EffectContainer;
@@ -106,14 +106,14 @@
 	{#snippet data()}
 		<EffectProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
 
 		<div class="details-tab">
 			{#if indicator}
-				{#if $applicationState.containerDetailView.editable}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					<div class="disclosure">
 						<button class="disclosure-button" type="button" use:disclosure.button>
 							<span>

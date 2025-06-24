@@ -19,7 +19,7 @@
 		overlayKey,
 		payloadTypes
 	} from '$lib/models';
-	import { addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
+	import { ability, addEffectState, applicationState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: GoalContainer;
@@ -63,14 +63,15 @@
 	{#snippet data()}
 		<GoalProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
 
 		{#key container.guid}
 			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				bind:value={container.payload.description}
 			/>
 		{/key}
@@ -83,7 +84,7 @@
 						<li>
 							<Card container={effect} {relatedContainers} />
 						</li>
-					{:else if $applicationState.containerDetailView.editable}
+					{:else if $applicationState.containerDetailView.editable && $mayCreateContainer(payloadTypes.enum.effect, container.managed_by)}
 						<li>
 							<button
 								aria-label={$_('add_item')}

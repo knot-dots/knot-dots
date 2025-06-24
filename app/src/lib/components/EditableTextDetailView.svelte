@@ -4,7 +4,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import type { AnyContainer, Container, TextContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: TextContainer;
@@ -19,14 +19,15 @@
 	{#snippet data()}
 		<TextProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
 
 		{#key container.guid}
 			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				label={$_('body')}
 				bind:value={container.payload.body}
 			/>

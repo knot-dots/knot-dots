@@ -2,7 +2,7 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import { type AnyContainer, type Container, type ResourceContainer } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ResourceContainer;
@@ -17,7 +17,7 @@
 	{#snippet data()}
 		<ResourceProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>

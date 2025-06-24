@@ -22,7 +22,7 @@
 		isStrategyContainer,
 		paramsFromFragment
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import { tab } from './IndicatorTabs.svelte';
 
 	interface Props {
@@ -61,7 +61,7 @@
 	{#snippet data()}
 		<IndicatorProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
@@ -82,7 +82,7 @@
 				<option value="table">{$_('indicator.view_mode.table')}</option>
 			</select>
 
-			{#if $applicationState.containerDetailView.editable}
+			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 				<EditableHistoricalValues editable bind:container />
 			{/if}
 
@@ -142,7 +142,8 @@
 
 		{#key container.guid}
 			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
 				label={$_('description')}
 				bind:value={container.payload.description}
 			/>
