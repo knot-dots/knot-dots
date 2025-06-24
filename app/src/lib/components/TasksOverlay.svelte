@@ -4,6 +4,7 @@
 	import Tasks from '$lib/components/Tasks.svelte';
 	import {
 		type AnyContainer,
+		computeFacetCount,
 		type Container,
 		isGoalContainer,
 		isPartOf,
@@ -18,10 +19,15 @@
 
 	let { container, containers }: Props = $props();
 
-	const facets = new Map([
-		['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-		['assignee', new Map()]
-	]);
+	let facets = $derived(
+		computeFacetCount(
+			new Map([
+				['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+				['assignee', new Map()]
+			]),
+			containers
+		)
+	);
 </script>
 
 <Header {facets} search />

@@ -4,6 +4,7 @@
 	import Indicators from '$lib/components/Indicators.svelte';
 	import {
 		audience,
+		computeFacetCount,
 		type Container,
 		indicatorCategories,
 		indicatorTypes,
@@ -18,14 +19,19 @@
 
 	let { containers }: Props = $props();
 
-	const facets = new Map([
-		['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-		['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-		['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-		['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-		['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-		['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-	]);
+	let facets = $derived(
+		computeFacetCount(
+			new Map([
+				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
+				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
+				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+			]),
+			containers
+		)
+	);
 </script>
 
 <Header {facets} search />
