@@ -218,7 +218,7 @@ if (browser) {
 
 		const hashParams = paramsFromFragment(values.url);
 
-		if (hashParams.toString() == previousHashState) {
+		if (hashParams.toString() == previousHashState && !hashParams.has(overlayKey.enum.members)) {
 			return;
 		}
 
