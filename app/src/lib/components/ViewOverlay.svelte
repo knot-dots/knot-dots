@@ -40,6 +40,7 @@
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
@@ -373,6 +374,10 @@
 		{:else if isIndicatorContainer(container)}
 			{#await import('./EditableIndicatorDetailView.svelte') then { default: EditableIndicatorDetailView }}
 				<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
+			{/await}
+		{:else if isIndicatorTemplateContainer(container)}
+			{#await import('./EditableIndicatorTemplateDetailView.svelte') then { default: EditableIndicatorTemplateDetailView }}
+				<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
 			{/await}
 		{:else if isKnowledgeContainer(container)}
 			{#await import('./EditableKnowledgeDetailView.svelte') then { default: EditableKnowledgeDetailView }}

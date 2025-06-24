@@ -13,11 +13,16 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyContainer, type Container, type IndicatorContainer } from '$lib/models';
+	import {
+		type AnyContainer,
+		type Container,
+		type IndicatorContainer,
+		type IndicatorTemplateContainer
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: IndicatorContainer;
+		container: IndicatorContainer | IndicatorTemplateContainer;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
