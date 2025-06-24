@@ -5,7 +5,6 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchContainers from '$lib/client/fetchContainers';
-import fetchContainersByUser from '$lib/client/fetchContainersByUser';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -98,14 +97,6 @@ export const user = derived(
 export const ability = derived(user, defineAbilityFor);
 
 export const dragged = writable<Container | undefined>();
-
-export const getOrganization = derived(page, (values) => {
-	return (guid: string) => values.data.organizations.find((o) => guid == o.guid);
-});
-
-export const getOrganizationalUnit = derived(page, (values) => {
-	return (guid: string) => values.data.organizationalUnits.find((o) => guid == o.guid);
-});
 
 export const mayCreateContainer = derived([page, ability], (values) => {
 	return (payloadType: PayloadType, managedBy: string): boolean => {
