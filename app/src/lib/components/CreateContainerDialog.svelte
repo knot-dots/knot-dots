@@ -316,16 +316,7 @@
 	}
 
 	dialog {
-		border: none;
-		border-radius: 8px;
-		box-shadow: var(--shadow-2xl);
-		margin: auto;
-		padding: 0;
 		width: calc(min(54rem, 100vw));
-	}
-
-	dialog::backdrop {
-		background: hsla(0, 0%, 50%, 0.3);
 	}
 
 	dialog > * {
