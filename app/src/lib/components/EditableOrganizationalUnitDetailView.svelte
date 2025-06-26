@@ -14,16 +14,26 @@
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export let container: OrganizationalUnitContainer;
-	export let containersRelatedToIndicators: Container[] = [];
-	export let indicators: Container[] = [];
-	export let measures: Container[] = [];
-	export let strategies: Container[] = [];
+	interface Props {
+		container: OrganizationalUnitContainer;
+		containersRelatedToIndicators?: Container[];
+		indicators?: Container[];
+		measures?: Container[];
+		strategies?: Container[];
+	}
+
+	let {
+		container = $bindable(),
+		containersRelatedToIndicators = [],
+		indicators = [],
+		measures = [],
+		strategies = []
+	}: Props = $props();
 
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form on:input={requestSubmit} on:submit={handleSubmit} novalidate>
+<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 	<article class="details details-editable">
 		<header>
 			<EditableLogo
@@ -35,7 +45,7 @@
 					class="details-title"
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.name}
-					on:keydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 				></h2>
 			{:else}
 				<h2 class="details-title" contenteditable="false">
