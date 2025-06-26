@@ -1451,10 +1451,11 @@ label > input[type='checkbox'].toggle {
 }
 
 .dropdown-button[aria-expanded='true'] > svg {
-	color: var(--color-primary-600);
+	color: var(--color-primary-800);
 }
 
 .dropdown-button.dropdown-button--badge > svg {
+	color: var(--color-primary-700);
 	margin: 0;
 }
 
