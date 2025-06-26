@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Dialog from '$lib/components/Dialog.svelte';
+	import Close from '~icons/knotdots/close';
 	import { type AnyContainer, type Container, findDescendants, predicates } from '$lib/models';
 
 	interface Props {
@@ -11,24 +11,27 @@
 	}
 
 	let { dialog = $bindable(), handleSubmit, container, relatedContainers }: Props = $props();
-
-	function preventDefault(fn: (event: SubmitEvent) => void) {
-		return function (this: HTMLDialogElement, event: SubmitEvent) {
-			event.preventDefault();
-			fn.call(this, event);
-		};
-	}
 </script>
 
-<Dialog bind:dialog>
-	<form onsubmit={preventDefault(handleSubmit)}>
-		<h3>
+<dialog bind:this={dialog}>
+	<form method="dialog" onsubmit={handleSubmit}>
+		<button
+			class="action-button action-button--size-s"
+			onclick={() => dialog.close()}
+			type="button"
+		>
+			<Close />
+			<span class="is-visually-hidden">{$_('cancel')}</span>
+		</button>
+
+		<h2>
 			{$_('confirm_delete_dialog.heading', {
 				values: {
 					title: 'title' in container.payload ? container.payload.title : container.payload.name
 				}
 			})}
-		</h3>
+		</h2>
+
 		<p>
 			{$_('confirm_delete_dialog.message', {
 				values: {
@@ -37,7 +40,8 @@
 				}
 			})}
 		</p>
-		<button class="primary" type="submit">
+
+		<button class="button-primary button-xs" type="submit">
 			{$_('confirm_delete_dialog.button', {
 				values: {
 					title: 'title' in container.payload ? container.payload.title : container.payload.name
@@ -45,18 +49,34 @@
 			})}
 		</button>
 	</form>
-</Dialog>
+</dialog>
 
 <style>
-	h3 {
-		margin: 0 0 1rem;
+	form {
+		max-width: 30rem;
+		padding: 3rem;
+	}
+
+	h2 {
+		color: var(--color-gray-600);
+		font-size: 1.25rem;
+		font-weight: 600;
+		line-height: 1.25;
+		margin: 0 0 0.5rem;
 	}
 
 	p {
-		margin-bottom: 1rem;
+		color: var(--color-gray-500);
+		margin: 0 0 1.5rem;
 	}
 
-	button {
+	.action-button {
+		position: absolute;
+		right: 0.5rem;
+		top: 0.5rem;
+	}
+
+	.button-primary {
 		display: block;
 		width: 100%;
 	}
