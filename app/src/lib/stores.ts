@@ -316,6 +316,7 @@ if (browser) {
 				});
 			} else if (isStrategyContainer(container)) {
 				const relatedContainers = (await fetchContainers({
+					audience: hashParams.getAll('audience'),
 					category: hashParams.getAll('category'),
 					isPartOfStrategy: [container.guid],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),

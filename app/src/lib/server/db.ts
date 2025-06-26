@@ -993,6 +993,7 @@ export function getAllContainersRelatedToIndicators(
 export function getAllContainersRelatedToStrategy(
 	guid: string,
 	filters: {
+		audience?: string[];
 		categories?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
