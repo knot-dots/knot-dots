@@ -230,7 +230,7 @@
 					<OrganizationIncludedFilterDropDown />
 				{:else if key === 'relationType'}
 					<RelationTypeFilterDropDown {options} />
-				{:else if options.filter(({ count }) => count > 0).length > 0}
+				{:else if options.filter(({ count }) => count > 0).length > 0 || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 					<FilterDropDown {key} {options} />
 				{/if}
 			{/each}
