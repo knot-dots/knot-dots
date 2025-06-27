@@ -1,7 +1,7 @@
 import { boolean, z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import { keycloakUser, type NewUser, type User } from '$lib/models';
+import { keycloakUser, type User } from '$lib/models';
 
 const data = new URLSearchParams([['grant_type', 'client_credentials']]);
 const credentials = btoa(`${env.PUBLIC_KC_CLIENT_ID}:${privateEnv.KC_CLIENT_SECRET}`);
@@ -96,24 +96,6 @@ export async function addUserToGroup(user: User, group: string) {
 	);
 	if (!response.ok) {
 		throw new Error(`Failed to add user to group. Keycloak responded with ${response.status}`);
-	}
-}
-
-export async function sendVerificationEmail(user: User, redirectURI: string) {
-	const token = await getToken();
-	const url = new URL(
-		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/users/${user.guid}/send-verify-email`
-	);
-	url.searchParams.set('client_id', env.PUBLIC_KC_CLIENT_ID ?? '');
-	url.searchParams.set('redirect_uri', redirectURI);
-	const response = await fetch(url, {
-		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-		method: 'PUT'
-	});
-	if (!response.ok) {
-		throw new Error(
-			`Failed to send verification email. Keycloak responded with ${response.status}`
-		);
 	}
 }
 
