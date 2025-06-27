@@ -1,9 +1,4 @@
-export const featureFlags = [
-	'ImportFromCsv',
-	'NewEditingExperience',
-	'TableViewMode',
-	'AI'
-] as const;
+export const featureFlags = ['ImportFromCsv', 'NewEditingExperience', 'AI'] as const;
 
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
 	return {
@@ -12,9 +7,6 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useEditableDetailView() {
 			return features.includes('NewEditingExperience');
-		},
-		useViewModes() {
-			return features.includes('TableViewMode');
 		},
 		useAI() {
 			return features.includes('AI');
