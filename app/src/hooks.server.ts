@@ -149,7 +149,7 @@ export const handle = sequence(tracing, authentication, async ({ event, resolve 
 		redirect(302, '/me');
 	}
 
-	event.locals.features = event.locals.user.settings.features ?? ['NewEditingExperience'];
+	event.locals.features = event.locals.user.settings.features ?? [];
 
 	return resolve(event);
 }) satisfies Handle;

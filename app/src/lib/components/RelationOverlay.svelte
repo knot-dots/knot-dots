@@ -9,7 +9,6 @@
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
 	import { dragged, overlayHistory } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
@@ -487,10 +486,7 @@
 	</div>
 </div>
 
-<footer
-	class="content-footer"
-	class:bottom-actions-bar={createFeatureDecisions($page.data.features).useEditableDetailView()}
->
+<footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
 		<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
 		<a class="button" href={`?related-to=${object.guid}`}>

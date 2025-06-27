@@ -10,8 +10,6 @@
 	import { commonmark } from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
-	import { createFeatureDecisions } from '$lib/features';
 	import { placeholderConfig, placeholderPlugin } from '$lib/milkdown/placeholder';
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
 	import uploader from '$lib/milkdown/uploader';
@@ -83,38 +81,27 @@
 	}
 </script>
 
-<div
-	class={createFeatureDecisions(page.data.features).useEditableDetailView()
-		? 'details-tab'
-		: undefined}
-	use:makeEditor
->
+<div class="details-tab" use:makeEditor>
 	{#if label}
-		{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-			<p class="label">
-				<span class="badge badge--purple">{label}</span>
-			</p>
-		{:else}
-			<h3 id={labelId}>{label}</h3>
-		{/if}
+		<p class="label">
+			<span class="badge badge--purple">{label}</span>
+		</p>
 	{/if}
 </div>
 
 <style>
-	h3 {
-		color: inherit;
-		margin-bottom: 0;
+	.label {
+		margin-bottom: 1rem;
 	}
 
 	:global(.milkdown) {
-		background-color: var(--form-control-background);
-		border: solid 1px var(--color-gray-300);
+		background-color: transparent;
+		border: none;
 		border-radius: 8px;
-		padding: 0.75rem 1rem;
+		padding: 0;
 	}
 
 	:global([contenteditable]) {
-		min-height: 6.25rem;
 		padding: 0;
 		white-space: pre-wrap;
 	}
@@ -125,21 +112,5 @@
 
 	:global([contenteditable] .placeholder::before) {
 		content: attr(data-placeholder);
-	}
-
-	@container style(--editor-style: new) {
-		.label {
-			margin-bottom: 1rem;
-		}
-
-		:global(.milkdown) {
-			background-color: transparent;
-			border: none;
-			padding: 0;
-		}
-
-		:global([contenteditable]) {
-			min-height: revert;
-		}
 	}
 </style>

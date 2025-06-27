@@ -1061,8 +1061,6 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-editable {
-	--editor-style: new;
-
 	container-type: inline-size;
 	font-size: 0.875rem;
 }

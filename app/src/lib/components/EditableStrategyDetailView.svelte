@@ -13,7 +13,6 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import StrategyProperties from '$lib/components/StrategyProperties.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -107,16 +106,6 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	function addChapterURL(url: URL, strategyGuid: string) {
-		const params = paramsFromFragment(url);
-		params.set('create', payloadTypes.enum.undefined);
-		params.set('is-part-of-strategy', strategyGuid);
-		for (const payloadType of container.payload.chapterType) {
-			params.append('payloadType', payloadType);
-		}
-		return `#${params.toString()}`;
-	}
-
 	function byPayloadType(payloadType: PayloadType, url: URL) {
 		const params = paramsFromFragment(url);
 		return !params.has('type') || params.getAll('type').includes(payloadType);
@@ -196,20 +185,13 @@
 					</form>
 				{:else}
 					{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
-						{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-							<DropDownMenu
-								handleChange={createContainer}
-								label={$_('chapter')}
-								options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
-							>
-								{#snippet icon()}<PlusSmall />{/snippet}
-							</DropDownMenu>
-						{:else}
-							<a class="button" href={addChapterURL(page.url, container.guid)}>
-								<PlusSmall />
-								{$_('chapter')}
-							</a>
-						{/if}
+						<DropDownMenu
+							handleChange={createContainer}
+							label={$_('chapter')}
+							options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+						>
+							{#snippet icon()}<PlusSmall />{/snippet}
+						</DropDownMenu>
 					{/if}
 				{/each}
 			</div>

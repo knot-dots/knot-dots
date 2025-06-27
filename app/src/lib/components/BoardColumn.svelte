@@ -4,7 +4,6 @@
 	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import { env } from '$env/dynamic/public';
 	import { page } from '$app/state';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		containerOfType,
 		isGoalContainer,
@@ -17,10 +16,8 @@
 		type PartialRelation,
 		type PayloadType,
 		predicates,
-		resolutionStatus,
 		type ResolutionStatus,
 		type Status,
-		taskStatus,
 		type TaskStatus
 	} from '$lib/models';
 	import { newContainer } from '$lib/stores';
@@ -88,11 +85,7 @@
 			{title}
 		</h2>
 		{#if addItemUrl}
-			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-				<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><PlusSmall /></a>
-			{:else}
-				<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
-			{/if}
+			<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><PlusSmall /></a>
 		{/if}
 	</header>
 
@@ -100,11 +93,7 @@
 
 	{#if addItemUrl}
 		<footer>
-			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-				<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<PlusSmall /></a>
-			{:else}
-				<a href={addItemUrl}>{$_('add_item')}<PlusSmall /></a>
-			{/if}
+			<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<PlusSmall /></a>
 		</footer>
 	{/if}
 </section>

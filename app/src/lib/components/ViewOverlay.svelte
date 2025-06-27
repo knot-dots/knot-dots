@@ -13,19 +13,9 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import ContainerDetailView from '$lib/components/ContainerDetailView.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
-	import EffectDetailView from '$lib/components/EffectDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import IndicatorDetailView from '$lib/components/IndicatorDetailView.svelte';
-	import IndicatorTabs from '$lib/components/IndicatorTabs.svelte';
-	import MeasureDetailView from '$lib/components/MeasureDetailView.svelte';
-	import ObjectiveDetailView from '$lib/components/ObjectiveDetailView.svelte';
-	import ResolutionDetailView from '$lib/components/ResolutionDetailView.svelte';
-	import ResourceDetailView from '$lib/components/ResourceDetailView.svelte';
-	import StrategyDetailView from '$lib/components/StrategyDetailView.svelte';
-	import TaskDetailView from '$lib/components/TaskDetailView.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
@@ -35,7 +25,6 @@
 		containerOfType,
 		findOverallObjective,
 		type IndicatorContainer,
-		isContainer,
 		isContainerWithEffect,
 		isEffectContainer,
 		isGoalContainer,
@@ -54,7 +43,6 @@
 		isTextContainer,
 		type NewContainer,
 		newIndicatorTemplateFromIndicator,
-		overlayKey,
 		payloadTypes,
 		policyFieldBNK,
 		predicates,
@@ -150,49 +138,6 @@
 
 		return createAnotherOptions;
 	});
-
-	async function createAnother(container: AnyContainer) {
-		const isPartOfStrategyRelation = container.relation.find(
-			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
-		);
-		const isPartOfMeasureRelation = container.relation.find(
-			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
-		);
-
-		const params = new URLSearchParams();
-		params.append(overlayKey.enum.create, 'undefined');
-
-		if (isStrategyContainer(container)) {
-			params.append(predicates.enum['is-part-of-strategy'], container.guid);
-			for (const payloadType of container.payload.chapterType ?? []) {
-				params.append('payloadType', payloadType);
-			}
-		} else if (isPartOfStrategyRelation) {
-			const strategy = relatedContainers
-				.filter(isStrategyContainer)
-				.find(({ relation }) =>
-					relation.some(
-						({ predicate, object }) =>
-							object == isPartOfStrategyRelation.object &&
-							predicate == isPartOfStrategyRelation.predicate
-					)
-				);
-			params.append(
-				predicates.enum['is-part-of-strategy'],
-				String(isPartOfStrategyRelation.object)
-			);
-			params.append('position', String(isPartOfStrategyRelation.position + 1));
-			for (const payloadType of strategy?.payload.chapterType ?? []) {
-				params.append('payloadType', payloadType);
-			}
-		} else if (isPartOfMeasureRelation) {
-			params.append(predicates.enum['is-part-of-measure'], String(isPartOfMeasureRelation.object));
-			params.append('payloadType', payloadTypes.enum.goal);
-			params.append('payloadType', payloadTypes.enum.task);
-		}
-
-		await goto(`#${params.toString()}`, { state: { derivedFrom: container } });
-	}
 
 	function createContainerDerivedFrom(container: AnyContainer) {
 		return (event: Event) => {
@@ -356,96 +301,68 @@
 	<Header sortOptions={[]} workspaceOptions={[]} />
 {/if}
 
-{#if !createFeatureDecisions(page.data.features).useEditableDetailView() && isIndicatorContainer(container)}
-	<header class="content-header">
-		<IndicatorTabs {container} />
-	</header>
-{/if}
 <div class="content-details masked-overflow">
-	{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-		{#if isEffectContainer(container)}
-			{#await import('./EditableEffectDetailView.svelte') then { default: EditableEffectDetailView }}
-				<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isGoalContainer(container)}
-			{#await import('./EditableGoalDetailView.svelte') then { default: EditableGoalDetailView }}
-				<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isIndicatorContainer(container)}
-			{#await import('./EditableIndicatorDetailView.svelte') then { default: EditableIndicatorDetailView }}
-				<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isIndicatorTemplateContainer(container)}
-			{#await import('./EditableIndicatorTemplateDetailView.svelte') then { default: EditableIndicatorTemplateDetailView }}
-				<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isKnowledgeContainer(container)}
-			{#await import('./EditableKnowledgeDetailView.svelte') then { default: EditableKnowledgeDetailView }}
-				<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isContainerWithEffect(container)}
-			{#await import('./EditableMeasureDetailView.svelte') then { default: EditableMeasureDetailView }}
-				<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isObjectiveContainer(container)}
-			{#await import('./EditableObjectiveDetailView.svelte') then { default: EditableObjectiveDetailView }}
-				<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isOrganizationalUnitContainer(container)}
-			{#await import('./EditableOrganizationalUnitDetailView.svelte') then { default: EditableOrganizationalUnitDetailView }}
-				<EditableOrganizationalUnitDetailView bind:container />
-			{/await}
-		{:else if isOrganizationContainer(container)}
-			{#await import('./EditableOrganizationDetailView.svelte') then { default: EditableOrganizationDetailView }}
-				<EditableOrganizationDetailView bind:container />
-			{/await}
-		{:else if isResolutionContainer(container)}
-			{#await import('./EditableResolutionDetailView.svelte') then { default: EditableResolutionDetailView }}
-				<EditableResolutionDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isResourceContainer(container)}
-			{#await import('./EditableResourceDetailView.svelte') then { default: EditableResourceDetailView }}
-				<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isStrategyContainer(container)}
-			{#await import('./EditableStrategyDetailView.svelte') then { default: EditableStrategyDetailView }}
-				<EditableStrategyDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isTaskContainer(container)}
-			{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}
-				<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{:else if isTextContainer(container)}
-			{#await import('./EditableTextDetailView.svelte') then { default: EditableTextDetailView }}
-				<EditableTextDetailView bind:container {relatedContainers} {revisions} />
-			{/await}
-		{/if}
-	{:else if isEffectContainer(container)}
-		<EffectDetailView {container} {relatedContainers} {revisions} />
+	{#if isEffectContainer(container)}
+		{#await import('./EditableEffectDetailView.svelte') then { default: EditableEffectDetailView }}
+			<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
+	{:else if isGoalContainer(container)}
+		{#await import('./EditableGoalDetailView.svelte') then { default: EditableGoalDetailView }}
+			<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
 	{:else if isIndicatorContainer(container)}
-		<IndicatorDetailView {container} {relatedContainers} {revisions} />
+		{#await import('./EditableIndicatorDetailView.svelte') then { default: EditableIndicatorDetailView }}
+			<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
+	{:else if isIndicatorTemplateContainer(container)}
+		{#await import('./EditableIndicatorTemplateDetailView.svelte') then { default: EditableIndicatorTemplateDetailView }}
+			<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
+	{:else if isKnowledgeContainer(container)}
+		{#await import('./EditableKnowledgeDetailView.svelte') then { default: EditableKnowledgeDetailView }}
+			<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
 	{:else if isContainerWithEffect(container)}
-		<MeasureDetailView {container} {relatedContainers} {revisions} />
+		{#await import('./EditableMeasureDetailView.svelte') then { default: EditableMeasureDetailView }}
+			<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
 	{:else if isObjectiveContainer(container)}
-		<ObjectiveDetailView {container} {relatedContainers} {revisions} />
+		{#await import('./EditableObjectiveDetailView.svelte') then { default: EditableObjectiveDetailView }}
+			<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
+	{:else if isOrganizationalUnitContainer(container)}
+		{#await import('./EditableOrganizationalUnitDetailView.svelte') then { default: EditableOrganizationalUnitDetailView }}
+			<EditableOrganizationalUnitDetailView bind:container />
+		{/await}
+	{:else if isOrganizationContainer(container)}
+		{#await import('./EditableOrganizationDetailView.svelte') then { default: EditableOrganizationDetailView }}
+			<EditableOrganizationDetailView bind:container />
+		{/await}
 	{:else if isResolutionContainer(container)}
-		<ResolutionDetailView {container} {relatedContainers} {revisions} />
+		{#await import('./EditableResolutionDetailView.svelte') then { default: EditableResolutionDetailView }}
+			<EditableResolutionDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
 	{:else if isResourceContainer(container)}
-		<ResourceDetailView {container} {relatedContainers} {revisions} />
+		{#await import('./EditableResourceDetailView.svelte') then { default: EditableResourceDetailView }}
+			<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
 	{:else if isStrategyContainer(container)}
-		<StrategyDetailView {container} {relatedContainers} {revisions} />
+		{#await import('./EditableStrategyDetailView.svelte') then { default: EditableStrategyDetailView }}
+			<EditableStrategyDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
 	{:else if isTaskContainer(container)}
-		<TaskDetailView {container} {relatedContainers} {revisions} />
-	{:else if isContainer(container)}
-		<ContainerDetailView {container} {relatedContainers} {revisions} />
+		{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}
+			<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
+	{:else if isTextContainer(container)}
+		{#await import('./EditableTextDetailView.svelte') then { default: EditableTextDetailView }}
+			<EditableTextDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
 	{/if}
 </div>
-<footer
-	class="content-footer"
-	class:bottom-actions-bar={createFeatureDecisions(page.data.features).useEditableDetailView()}
->
+<footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
-		{#if createFeatureDecisions(page.data.features).useEditableDetailView() && $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
+		{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
 			<label>
 				<input
 					class="toggle"
@@ -468,19 +385,13 @@
 			</a>
 		{/if}
 		{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
-			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-				<DropDownMenu
-					handleChange={createContainerDerivedFrom(container)}
-					label={$_('create_another')}
-					options={createAnotherOptions}
-				>
-					{#snippet icon()}<CodeMerge />{/snippet}
-				</DropDownMenu>
-			{:else}
-				<button class="primary" type="button" onclick={() => createAnother(container)}>
-					<PlusSmall />{$_('create_another')}
-				</button>
-			{/if}
+			<DropDownMenu
+				handleChange={createContainerDerivedFrom(container)}
+				label={$_('create_another')}
+				options={createAnotherOptions}
+			>
+				{#snippet icon()}<CodeMerge />{/snippet}
+			</DropDownMenu>
 			{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
 				<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
 					<CopyCat />
@@ -508,7 +419,7 @@
 				{$_('indicator.save_as_template')}
 			</button>
 		{/if}
-		{#if createFeatureDecisions(page.data.features).useEditableDetailView() && $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+		{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
 			<button
 				aria-label={$_('delete')}
 				class="delete quiet"

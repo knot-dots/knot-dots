@@ -8,7 +8,6 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import Card from '$lib/components/Card.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type IndicatorContainer,
 		type IndicatorTemplateContainer,
@@ -50,31 +49,16 @@
 		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
 				const effect = await createEffect($addEffectState.target, container);
-				const params = new URLSearchParams([
-					[overlayKey.enum.view, effect.guid],
-					...(createFeatureDecisions($page.data.features).useEditableDetailView()
-						? []
-						: [[overlayKey.enum.edit, '']])
-				]);
+				const params = new URLSearchParams([[overlayKey.enum.view, effect.guid]]);
 				$addEffectState = {};
 				await goto(`#${params.toString()}`);
 			} else if ($addObjectiveState.target) {
 				const objective = await createObjective($addObjectiveState.target, container);
-				const params = new URLSearchParams([
-					[overlayKey.enum.view, objective.guid],
-					...(createFeatureDecisions($page.data.features).useEditableDetailView()
-						? []
-						: [[overlayKey.enum.edit, '']])
-				]);
+				const params = new URLSearchParams([[overlayKey.enum.view, objective.guid]]);
 				$addObjectiveState = {};
 				await goto(`#${params.toString()}`);
 			} else {
-				const params = new URLSearchParams([
-					[overlayKey.enum.view, container.guid],
-					...(createFeatureDecisions($page.data.features).useEditableDetailView()
-						? []
-						: [[overlayKey.enum.edit, '']])
-				]);
+				const params = new URLSearchParams([[overlayKey.enum.view, container.guid]]);
 				await goto(`#${params.toString()}`);
 			}
 		} else {

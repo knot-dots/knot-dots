@@ -10,7 +10,6 @@
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type Container,
 		containerOfType,
@@ -96,19 +95,6 @@
 
 			createContainerDialog.getElement().showModal();
 		};
-	}
-
-	function addChapterURL(url: URL, position: number) {
-		const params = paramsFromFragment(url);
-		params.set('create', payloadTypes.enum.undefined);
-		params.set('is-part-of-strategy', String(isPartOf.guid));
-		params.set('managed-by', isPartOf.managed_by);
-		params.set('position', String(position));
-		params.delete('payloadType');
-		for (const payloadType of isPartOf.payload.chapterType) {
-			params.append('payloadType', payloadType);
-		}
-		return `#${params.toString()}`;
 	}
 
 	function viewInOverlayURL(url: URL) {
@@ -244,20 +230,13 @@
 	</a>
 
 	{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
-		{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-			<DropDownMenu
-				handleChange={createContainerAt(currentIndex + 1)}
-				label={$_('chapter')}
-				options={isPartOf.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
-			>
-				{#snippet icon()}<PlusSmall />{/snippet}
-			</DropDownMenu>
-		{:else}
-			<a class="button" href={addChapterURL(page.url, currentIndex + 1)}>
-				<PlusSmall />
-				{$_('chapter')}
-			</a>
-		{/if}
+		<DropDownMenu
+			handleChange={createContainerAt(currentIndex + 1)}
+			label={$_('chapter')}
+			options={isPartOf.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+		>
+			{#snippet icon()}<PlusSmall />{/snippet}
+		</DropDownMenu>
 	{/if}
 </footer>
 

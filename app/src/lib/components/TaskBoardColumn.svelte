@@ -9,7 +9,6 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import Card from '$lib/components/Card.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		containerOfType,
 		isTaskContainer,
@@ -18,8 +17,7 @@
 		payloadTypes,
 		predicates,
 		type TaskContainer,
-		type TaskStatus,
-		taskStatus
+		type TaskStatus
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 
@@ -103,11 +101,7 @@
 			{$_(status)}
 		</h2>
 		{#if addItemUrl}
-			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-				<a href={addItemUrl} on:click={createContainer} title={$_('add_item')}><PlusSmall /></a>
-			{:else}
-				<a href={addItemUrl} title={$_('add_item')}><PlusSmall /></a>
-			{/if}
+			<a href={addItemUrl} on:click={createContainer} title={$_('add_item')}><PlusSmall /></a>
 		{/if}
 	</header>
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
@@ -134,11 +128,7 @@
 	{/if}
 	{#if addItemUrl}
 		<footer>
-			{#if createFeatureDecisions(page.data.features).useEditableDetailView()}
-				<a href={addItemUrl} on:click={createContainer}>{$_('add_item')}<PlusSmall /></a>
-			{:else}
-				<a href={addItemUrl}>{$_('add_item')}<PlusSmall /></a>
-			{/if}
+			<a href={addItemUrl} on:click={createContainer}>{$_('add_item')}<PlusSmall /></a>
 		</footer>
 	{/if}
 </section>
