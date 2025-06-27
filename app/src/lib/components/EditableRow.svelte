@@ -40,7 +40,7 @@
 
 <div class="cell cell--action">
 	{#if editable && dragEnabled}
-		<span use:dragHandle>
+		<span class="drag-handle" use:dragHandle>
 			<DragHandle />
 		</span>
 	{/if}
@@ -305,5 +305,15 @@
 	.cell > :global(span),
 	.cell > fieldset {
 		white-space: nowrap;
+	}
+
+	.drag-handle {
+		display: none !important;
+	}
+
+	@container (min-inline-size: 90rem) {
+		.drag-handle {
+			display: inline-block !important;
+		}
 	}
 </style>

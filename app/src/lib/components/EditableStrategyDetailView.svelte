@@ -264,6 +264,7 @@
 	}
 
 	.table-wrapper {
+		container-type: inline-size;
 		height: 100%;
 		margin: 1.5rem 0 1.5rem 1.5rem;
 		overflow: auto;
