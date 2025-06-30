@@ -54,10 +54,13 @@
 			{/if}
 		</header>
 
-		<OrganizationalUnitProperties
-			bind:container
-			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-		/>
+		{#if $ability.can('update', container)}
+			<OrganizationalUnitProperties
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+			/>
+		{/if}
 
 		{#key container.guid}
 			<EditableFormattedText
