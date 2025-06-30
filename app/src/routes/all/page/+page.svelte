@@ -7,23 +7,25 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let container = $state(data.container);
 </script>
 
 <Layout>
 	<svelte:fragment slot="main">
 		<div class="detail-page-content">
 			<div class="content-details masked-overflow">
-				{#if isOrganizationContainer(data.container)}
+				{#if isOrganizationContainer(container)}
 					<EditableOrganizationDetailView
-						container={data.container}
+						bind:container
 						containersRelatedToIndicators={data.containersRelatedToIndicators}
 						indicators={data.indicators}
 						measures={data.measures}
 						strategies={data.strategies}
 					/>
-				{:else if isOrganizationalUnitContainer(data.container)}
+				{:else if isOrganizationalUnitContainer(container)}
 					<EditableOrganizationalUnitDetailView
-						container={data.container}
+						bind:container
 						containersRelatedToIndicators={data.containersRelatedToIndicators}
 						indicators={data.indicators}
 						measures={data.measures}
@@ -33,9 +35,7 @@
 			</div>
 		</div>
 		<Help
-			slug={isOrganizationContainer(data.container)
-				? 'organization-view'
-				: 'organizational-unit-view'}
+			slug={isOrganizationContainer(container) ? 'organization-view' : 'organizational-unit-view'}
 		/>
 	</svelte:fragment>
 </Layout>
