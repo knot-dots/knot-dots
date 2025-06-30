@@ -124,5 +124,6 @@
 
 	h2 {
 		margin: 0;
+		min-height: 3rem;
 	}
 </style>
