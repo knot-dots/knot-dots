@@ -1,5 +1,5 @@
 {
-	"about": "Über knot dots",
+	"about": "knot dots",
 	"active_filters": "{count, plural, one {1 aktiv} other {# aktiv}}",
 	"add_item": "Hinzufügen",
 	"ai_feedback": "KI-Feedback",
@@ -130,7 +130,7 @@
 	"goals_by_hierarchy_level": "Zielebene {level}",
 	"help": "Hilfe",
 	"home": "Startseite",
-	"homepage": "knotdots.net Homepage",
+	"homepage": "Homepage",
 	"import.csv_file": "CSV-Datei",
 	"import.error.invalid_record": "Fehler in Zeile {line}: {errors}",
 	"import.error.missing": "Die CSV-Datei fehlt",
