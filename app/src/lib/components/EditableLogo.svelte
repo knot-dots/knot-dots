@@ -133,6 +133,7 @@
 
 	.dropdown-panel {
 		border-radius: 16px;
+		max-width: revert;
 	}
 
 	.dropdown-panel button {
@@ -142,9 +143,11 @@
 		--padding-x: 1rem;
 
 		border: none;
+		white-space: nowrap;
 	}
 
 	.dropdown-panel button > :global(svg) {
 		color: var(--color-gray-800);
+		max-width: none;
 	}
 </style>
