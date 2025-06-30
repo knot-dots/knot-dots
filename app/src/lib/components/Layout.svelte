@@ -71,7 +71,6 @@
 		flex-direction: column;
 		flex-shrink: 0;
 		font-size: 0.875rem;
-		max-width: var(--sidebar-max-width);
 		min-width: 0;
 	}
 

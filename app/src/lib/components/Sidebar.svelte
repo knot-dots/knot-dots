@@ -214,6 +214,10 @@
 		padding: 0.5rem 0.5rem;
 	}
 
+	header.expanded {
+		width: var(--sidebar-max-width);
+	}
+
 	header:not(.expanded) a {
 		display: none;
 	}
@@ -342,6 +346,10 @@
 	}
 
 	@media (min-width: 60rem) {
+		header:not(.collapsed) {
+			width: var(--sidebar-max-width);
+		}
+
 		header:not(.collapsed) a {
 			display: block;
 		}
