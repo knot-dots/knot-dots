@@ -26,6 +26,6 @@
 	/>
 {:else}
 	<div class="value">
-		{value ? $_(value) : $_('empty')}
+		{value ? $_(value, { values: { aiSuggestion: aiSuggestion ? 'yes' : 'no' } }) : $_('empty')}
 	</div>
 {/if}
