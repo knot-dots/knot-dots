@@ -19,9 +19,15 @@
 		]) as AnyContainer
 	);
 
-	let managedByGuid = $derived(managedBy.guid);
+	let managedByGuid = $derived(managedBy?.guid);
 
-	let teamPromise = $derived(fetchMembers(managedByGuid));
+	let teamPromise = $derived.by(() => {
+		if (managedByGuid) {
+			return fetchMembers(managedByGuid);
+		} else {
+			return Promise.resolve([]);
+		}
+	});
 </script>
 
 <div class="label">{$_('managed_by')}</div>
