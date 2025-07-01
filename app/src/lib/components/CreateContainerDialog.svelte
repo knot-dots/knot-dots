@@ -225,6 +225,7 @@
 				{:else if isResolutionContainer($newContainer)}
 					<ResolutionProperties
 						bind:container={$newContainer}
+						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
