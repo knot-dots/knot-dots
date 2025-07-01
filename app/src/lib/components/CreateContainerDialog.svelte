@@ -12,9 +12,12 @@
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import ResolutionProperties from '$lib/components/ResolutionProperties.svelte';
+	import ResolutionStatusDropdown from '$lib/components/ResolutionStatusDropdown.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
+	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import StrategyProperties from '$lib/components/StrategyProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
+	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
 		isContainerWithBody,
@@ -42,14 +45,6 @@
 		strategyTypes
 	} from '$lib/models';
 	import { newContainer } from '$lib/stores';
-	import {
-		resolutionStatusColors,
-		resolutionStatusIcons,
-		statusColors,
-		statusIcons,
-		taskStatusColors,
-		taskStatusIcons
-	} from '$lib/theme/models';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -153,35 +148,29 @@
 							{/if}
 						</li>
 						{#if isContainerWithStatus($newContainer)}
-							{@const StatusIcon = statusIcons.get($newContainer.payload.status)}
-							{#key $newContainer.payload.status}
-								<li class="badge badge--{statusColors.get($newContainer.payload.status)}">
-									<StatusIcon />
-									{$_($newContainer.payload.status)}
-								</li>
-							{/key}
+							<li>
+								<StatusDropdown
+									buttonStyle="badge"
+									editable
+									bind:value={$newContainer.payload.status}
+								/>
+							</li>
 						{:else if isTaskContainer($newContainer)}
-							{@const TaskStatusIcon = taskStatusIcons.get($newContainer.payload.taskStatus)}
-							{#key $newContainer.payload.taskStatus}
-								<li class="badge badge--{taskStatusColors.get($newContainer.payload.taskStatus)}">
-									<TaskStatusIcon />
-									{$_($newContainer.payload.taskStatus)}
-								</li>
-							{/key}
+							<li>
+								<TaskStatusDropdown
+									buttonStyle="badge"
+									editable
+									bind:value={$newContainer.payload.taskStatus}
+								/>
+							</li>
 						{:else if isResolutionContainer($newContainer)}
-							{@const ResolutionStatusIcon = resolutionStatusIcons.get(
-								$newContainer.payload.resolutionStatus
-							)}
-							{#key $newContainer.payload.resolutionStatus}
-								<li
-									class="badge badge--{resolutionStatusColors.get(
-										$newContainer.payload.resolutionStatus
-									)}"
-								>
-									<ResolutionStatusIcon />
-									{$_($newContainer.payload.resolutionStatus)}
-								</li>
-							{/key}
+							<li>
+								<ResolutionStatusDropdown
+									buttonStyle="badge"
+									editable
+									bind:value={$newContainer.payload.resolutionStatus}
+								/>
+							</li>
 						{/if}
 					</ul>
 

@@ -5,6 +5,9 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import ResolutionStatusDropdown from '$lib/components/ResolutionStatusDropdown.svelte';
+	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -16,14 +19,6 @@
 		strategyTypes
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
-	import {
-		resolutionStatusColors,
-		resolutionStatusIcons,
-		statusColors,
-		statusIcons,
-		taskStatusColors,
-		taskStatusIcons
-	} from '$lib/theme/models';
 
 	interface Props {
 		container: Container;
@@ -67,33 +62,29 @@
 					<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
 				{/if}
 				{#if isContainerWithStatus(container)}
-					{@const StatusIcon = statusIcons.get(container.payload.status)}
-					{#key container.payload.status}
-						<li class="badge badge--{statusColors.get(container.payload.status)}">
-							<StatusIcon />
-							{$_(container.payload.status)}
-						</li>
-					{/key}
+					<li>
+						<StatusDropdown
+							buttonStyle="badge"
+							editable={$applicationState.containerDetailView.editable}
+							bind:value={container.payload.status}
+						/>
+					</li>
 				{:else if isTaskContainer(container)}
-					{@const TaskStatusIcon = taskStatusIcons.get(container.payload.taskStatus)}
-					{#key container.payload.taskStatus}
-						<li class="badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
-							<TaskStatusIcon />
-							{$_(container.payload.taskStatus)}
-						</li>
-					{/key}
+					<li>
+						<TaskStatusDropdown
+							buttonStyle="badge"
+							editable={$applicationState.containerDetailView.editable}
+							bind:value={container.payload.taskStatus}
+						/>
+					</li>
 				{:else if isResolutionContainer(container)}
-					{@const ResolutionStatusIcon = resolutionStatusIcons.get(
-						container.payload.resolutionStatus
-					)}
-					{#key container.payload.resolutionStatus}
-						<li
-							class="badge badge--{resolutionStatusColors.get(container.payload.resolutionStatus)}"
-						>
-							<ResolutionStatusIcon />
-							{$_(container.payload.resolutionStatus)}
-						</li>
-					{/key}
+					<li>
+						<ResolutionStatusDropdown
+							buttonStyle="badge"
+							editable={$applicationState.containerDetailView.editable}
+							bind:value={container.payload.resolutionStatus}
+						/>
+					</li>
 				{/if}
 			</ul>
 

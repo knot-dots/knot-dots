@@ -92,16 +92,19 @@
 		{#if 'status' in container.payload}
 			<StatusDropdown
 				editable={editable && $ability.can('update', container)}
+				offset={[-41, -41]}
 				bind:value={container.payload.status}
 			/>
 		{:else if 'taskStatus' in container.payload}
 			<TaskStatusDropdown
 				editable={editable && $ability.can('update', container)}
+				offset={[-41, -41]}
 				bind:value={container.payload.taskStatus}
 			/>
 		{:else if 'resolutionStatus' in container.payload}
 			<ResolutionStatusDropdown
 				editable={editable && $ability.can('update', container)}
+				offset={[-41, -41]}
 				bind:value={container.payload.resolutionStatus}
 			/>
 		{/if}

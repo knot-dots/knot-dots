@@ -9,12 +9,18 @@
 	import { resolutionStatus } from '$lib/models.js';
 
 	interface Props {
-		compact?: boolean;
+		buttonStyle?: 'badge' | 'default';
 		editable?: boolean;
+		offset?: [number, number];
 		value: ResolutionStatus;
 	}
 
-	let { compact = false, editable = false, value = $bindable() } = $props();
+	let {
+		buttonStyle = 'default',
+		editable = false,
+		offset = [0, 4],
+		value = $bindable()
+	}: Props = $props();
 
 	const popover = createPopover({ label: $_('status') });
 
@@ -23,21 +29,28 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [-41, -41] } }]
-	};
+	const extraOpts = { modifiers: [{ name: 'offset', options: { offset } }] };
 
 	const StatusIcon = $derived(resolutionStatusIcons.get(value));
 </script>
 
 {#if editable}
 	<div class="dropdown" use:popperRef>
-		<button class="dropdown-button" type="button" use:popover.button>
-			<span class="badge badge--{resolutionStatusColors.get(value)}">
-				<StatusIcon />{$_(value)}
-			</span>
-			{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-		</button>
+		{#if buttonStyle === 'badge'}
+			<button class="dropdown-button dropdown-button--badge" type="button" use:popover.button>
+				<span class="badge badge--{resolutionStatusColors.get(value)}">
+					<StatusIcon />{$_(value)}
+					{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+				</span>
+			</button>
+		{:else}
+			<button class="dropdown-button" type="button" use:popover.button>
+				<span class="badge badge--{resolutionStatusColors.get(value)}">
+					<StatusIcon />{$_(value)}
+				</span>
+				{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+			</button>
+		{/if}
 
 		{#if $popover.expanded}
 			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
@@ -67,5 +80,19 @@
 <style>
 	.badge {
 		float: left;
+	}
+
+	.dropdown-button.dropdown-button--badge {
+		all: initial;
+		display: block;
+		line-height: inherit;
+	}
+
+	.dropdown-button.dropdown-button--badge > :global(svg) {
+		color: inherit;
+	}
+
+	.dropdown-panel {
+		max-width: revert;
 	}
 </style>
