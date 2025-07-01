@@ -37,7 +37,7 @@
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
-				label={$_('measure.description')}
+				label={$_('description')}
 				bind:value={container.payload.description}
 			/>
 

@@ -64,7 +64,7 @@
 
 		{#if 'description' in container.payload}
 			<div class="description">
-				<h3>{isMeasureContainer(container) ? $_('measure.description') : $_('description')}</h3>
+				<h3>{$_('description')}</h3>
 				<Viewer value={selectedRevision.payload.description} />
 			</div>
 		{/if}
