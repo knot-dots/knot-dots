@@ -39,6 +39,6 @@
 	<Header {facets} search {workspaceOptions} slot="header" />
 	<svelte:fragment slot="main">
 		<Measures containers={data.containers} />
-		<Help slug="measures" />
+		<Help slug="measures-status" />
 	</svelte:fragment>
 </Layout>

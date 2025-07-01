@@ -35,5 +35,5 @@
 			</BoardColumn>
 		{/each}
 	</Board>
-	<Help slug="measures-table" />
+	<Help slug="measures-status" />
 </MeasuresPage>

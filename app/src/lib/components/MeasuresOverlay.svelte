@@ -36,4 +36,4 @@
 
 <Measures {containers} />
 
-<Help slug="measures" />
+<Help slug="measures-status" />

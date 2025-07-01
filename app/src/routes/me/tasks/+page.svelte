@@ -28,6 +28,6 @@
 	<Header {facets} search sortOptions={[]} {workspaceOptions} slot="header" />
 	<svelte:fragment slot="main">
 		<Tasks containers={data.containers} />
-		<Help slug="tasks" />
+		<Help slug="tasks-status" />
 	</svelte:fragment>
 </Layout>

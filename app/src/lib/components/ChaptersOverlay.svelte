@@ -34,4 +34,4 @@
 
 <Chapters {containers} />
 
-<Help slug="all" />
+<Help slug="all-level" />

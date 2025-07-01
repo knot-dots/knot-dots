@@ -57,7 +57,7 @@
 				{/each}
 			</ul>
 		</div>
-		<Help slug="measure-templates" />
+		<Help slug="measures-templates" />
 	</svelte:fragment>
 </Layout>
 

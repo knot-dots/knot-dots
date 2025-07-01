@@ -40,4 +40,4 @@
 		.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
 />
 
-<Help slug="tasks" />
+<Help slug="tasks-status" />
