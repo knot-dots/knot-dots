@@ -1692,7 +1692,7 @@ export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicat
 }
 
 export function createCopyOf(
-	container: Container,
+	container: AnyContainer,
 	organization: string,
 	organizationalUnit: string | null
 ) {
@@ -1723,7 +1723,13 @@ export function createCopyOf(
 	copy.payload = {
 		...copy.payload,
 		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
-		title: unwrapFunctionStore(_)('copy_of', { values: { title: copy.payload.title } })
+		...('title' in copy.payload
+			? {
+					title: unwrapFunctionStore(_)('copy_of', {
+						values: { title: copy.payload.title }
+					})
+				}
+			: undefined)
 	};
 
 	copy.relation.push({

@@ -23,6 +23,7 @@
 		computeFacetCount,
 		type Container,
 		containerOfType,
+		createCopyOf,
 		findOverallObjective,
 		type IndicatorContainer,
 		isContainerWithEffect,
@@ -221,13 +222,30 @@
 	}
 
 	async function createCopy(container: AnyContainer) {
-		await goto(`#create=${container.payload.type}&copy-of=${container.guid}`);
+		const organizationalUnit = page.data.organizationalUnits.find(
+			(o) => $user.adminOf[0] == o.guid
+		);
+		let organization;
+		if (organizationalUnit) {
+			organization = organizationalUnit.organization;
+		} else {
+			organization = page.data.organizations.find((o) => $user.adminOf[0] == o.guid)
+				?.guid as string;
+		}
+
+		$newContainer = createCopyOf(
+			container as Container,
+			organization,
+			organizationalUnit?.guid ?? null
+		) as NewContainer;
+
+		createContainerDialog.getElement().showModal();
 	}
 
 	function createOverallObjective(c: IndicatorContainer) {
 		return async () => {
 			const objective = await createObjective(c, c);
-			await goto(`#view=${objective.guid}&edit`, { invalidateAll: true });
+			await goto(`#view=${objective.guid}`, { invalidateAll: true });
 		};
 	}
 
