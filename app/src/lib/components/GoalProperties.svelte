@@ -40,6 +40,12 @@
 
 		<EditableHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 
+		<EditableDate
+			{editable}
+			label={$_('fulfillment_date')}
+			bind:value={container.payload.fulfillmentDate}
+		/>
+
 		{#if isPartOfMeasure}
 			<EditableMeasure {container} {editable} />
 		{:else}
