@@ -14,8 +14,12 @@
 		predicates
 	} from '$lib/models';
 
-	export let container: Container | EmptyContainer;
-	export let editable = false;
+	interface Props {
+		container: Container | EmptyContainer;
+		editable?: boolean;
+	}
+
+	let { container = $bindable(), editable = false }: Props = $props();
 
 	function createIsPartOfOptionsRequest(
 		payloadType: PayloadType,
@@ -48,36 +52,43 @@
 		return Promise.resolve([]);
 	}
 
-	$: organization = container.organization;
+	let organization = $derived(container.organization);
 
-	$: organizationalUnit = container.organizational_unit;
+	let organizationalUnit = $derived(container.organizational_unit);
 
-	$: strategyGuid = container.relation.find(
-		({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
-	)?.object;
-
-	$: measureGuid = container.relation.find(
-		({ object, predicate }) =>
-			predicate === predicates.enum['is-part-of-measure'] &&
-			(!('guid' in container) || object !== container.guid)
-	)?.object;
-
-	$: payloadType = container.payload.type;
-
-	$: isPartOfOptionsRequest = createIsPartOfOptionsRequest(
-		payloadType,
-		organization,
-		organizationalUnit,
-		measureGuid,
-		strategyGuid
+	let strategyGuid = $derived(
+		container.relation.find(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+			?.object
 	);
 
-	$: isPartOfObject = (options: Array<{ value: string }>) =>
+	let measureGuid = $derived(
 		container.relation.find(
-			(r) =>
-				r.predicate === predicates.enum['is-part-of'] &&
-				options.some(({ value }) => value === r.object)
-		)?.object ?? '';
+			({ object, predicate }) =>
+				predicate === predicates.enum['is-part-of-measure'] &&
+				(!('guid' in container) || object !== container.guid)
+		)?.object
+	);
+
+	let payloadType = $derived(container.payload.type);
+
+	let isPartOfOptionsRequest = $derived(
+		createIsPartOfOptionsRequest(
+			payloadType,
+			organization,
+			organizationalUnit,
+			measureGuid,
+			strategyGuid
+		)
+	);
+
+	let isPartOfObject = $derived(
+		(options: Array<{ value: string }>) =>
+			container.relation.find(
+				(r) =>
+					r.predicate === predicates.enum['is-part-of'] &&
+					options.some(({ value }) => value === r.object)
+			)?.object ?? ''
+	);
 
 	async function set(value: string) {
 		const isPartOfIndex = container.relation.findIndex(
