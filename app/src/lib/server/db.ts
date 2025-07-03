@@ -740,9 +740,9 @@ export function getAllRelatedContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
 			? await connection.any(sql.typeAlias('relationPath')`
-				WITH RECURSIVE is_part_of_relation(path) AS (
+				WITH RECURSIVE is_part_of_relation(path, is_cycle) AS (
 					--Top level items (roots)
-					SELECT array[c.guid] as path, c.guid as subject
+					SELECT array[c.guid] as path, false, c.guid as subject
 					FROM container c
 					WHERE c.valid_currently
 						AND NOT EXISTS(
@@ -755,13 +755,13 @@ export function getAllRelatedContainers(
 								AND NOT parent_test.deleted
 						)
 					UNION ALL
-					SELECT array_append(r.path, c.guid), c.guid
+					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 					FROM container c
 					JOIN container_relation cr ON c.guid = cr.subject
 						AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-strategy']})
 					  AND cr.valid_currently
 						AND NOT cr.deleted
-					JOIN is_part_of_relation r ON cr.object = r.subject
+					JOIN is_part_of_relation r ON cr.object = r.subject AND NOT r.is_cycle
 					WHERE c.valid_currently
 				)
 				SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${guid} = ANY(path)
@@ -937,9 +937,9 @@ export function getAllContainersRelatedToIndicators(
 		const isPartOfResult =
 			objectiveAndEffectResult.length > 0
 				? await connection.any(sql.typeAlias('guid')`
-					WITH RECURSIVE is_part_of_relation(path) AS (
+					WITH RECURSIVE is_part_of_relation(path, is_cycle) AS (
 						--Top level items (roots)
-						SELECT array[c.guid] AS path, c.guid, c.payload
+						SELECT array[c.guid] AS path, false, c.guid AS subject
 						FROM container c
 						WHERE c.valid_currently
 							AND NOT deleted
@@ -953,13 +953,13 @@ export function getAllContainersRelatedToIndicators(
 									AND NOT parent_test.deleted
 							)
 							UNION ALL
-							SELECT array_append(r.path, c.guid), c.guid, c.payload
+							SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
 							FROM container c
 							JOIN container_relation cr ON c.guid = cr.subject
 								AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
 							  AND cr.valid_currently
 							  AND NOT cr.deleted
-							JOIN is_part_of_relation r ON cr.object = r.guid
+							JOIN is_part_of_relation r ON cr.object = r.subject AND NOT r.is_cycle
 							WHERE c.valid_currently
 								AND NOT c.deleted
 							)
@@ -1009,9 +1009,9 @@ export function getAllContainersRelatedToStrategy(
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
-			WITH RECURSIVE relation(path) AS (
+			WITH RECURSIVE relation(path, is_cycle) AS (
 				--Top level items (roots)
-				SELECT array[c.guid] as path, c.guid AS subject
+				SELECT array[c.guid] AS path, false, c.guid AS subject
 				FROM container c
 				WHERE c.valid_currently
 					AND NOT EXISTS(
@@ -1024,13 +1024,13 @@ export function getAllContainersRelatedToStrategy(
 							AND NOT parent_test.deleted
 					)
 				UNION ALL
-				SELECT array_append(r.path, c.guid), c.guid
+				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.subject
 					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				JOIN relation r ON cr.object = r.subject
+				JOIN relation r ON cr.object = r.subject AND NOT r.is_cycle
 				WHERE c.valid_currently
 			)
 			SELECT DISTINCT unnest(path) FROM relation r WHERE ${guid} = ANY(path)
@@ -1107,9 +1107,9 @@ export function getAllContainersRelatedToMeasure(
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
-			WITH RECURSIVE relation(path) AS (
+			WITH RECURSIVE relation(path, is_cycle) AS (
 				--Top level items (roots)
-				SELECT array[c.guid] as path, c.guid as subject
+				SELECT array[c.guid] AS path, false, c.guid as subject
 				FROM container c
 				WHERE c.valid_currently
 					AND NOT EXISTS(
@@ -1122,13 +1122,13 @@ export function getAllContainersRelatedToMeasure(
 							AND NOT parent_test.deleted
 					)
 				UNION ALL
-				SELECT array_append(r.path, c.guid), c.guid
+				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.subject
 					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				JOIN relation r ON cr.object = r.subject
+				JOIN relation r ON cr.object = r.subject AND NOT r.is_cycle
 				WHERE c.valid_currently
 			)
 			SELECT DISTINCT unnest(path) FROM relation r WHERE ${guid} = ANY(path)
