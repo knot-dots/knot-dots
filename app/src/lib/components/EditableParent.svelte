@@ -43,11 +43,6 @@
 				organizationalUnit: organizational_unit ? [organizational_unit] : [],
 				payloadType: [payloadTypes.enum.goal]
 			}) as Promise<Container[]>;
-		} else if (payloadType == payloadTypes.enum.organizational_unit) {
-			return fetchContainers({
-				organization: [organization],
-				payloadType: [payloadTypes.enum.organizational_unit]
-			}) as Promise<Container[]>;
 		}
 
 		return Promise.resolve([]);
