@@ -1527,19 +1527,30 @@ export function findAncestors<T extends AnyContainer>(
 	containers: T[],
 	predicate: Predicate
 ): T[] {
-	const parentGuid = container.relation.find(
-		(r) => r.predicate == predicate && r.subject == container.guid
-	)?.object;
-	if (!parentGuid) {
-		return [];
+	const ancestors = new Map<string, T>();
+
+	function traverse(container: T) {
+		const parentGuid = container.relation.find(
+			(r) => r.predicate == predicate && r.subject == container.guid
+		)?.object;
+
+		if (!parentGuid) {
+			return;
+		}
+
+		if (ancestors.has(parentGuid)) {
+			return;
+		}
+
+		const parent = containers.find(({ guid }) => guid == parentGuid);
+		if (parent) {
+			ancestors.set(parent.guid, parent);
+			traverse(parent);
+		}
 	}
 
-	const parent = containers.find(({ guid }) => guid == parentGuid);
-	if (!parent) {
-		return [];
-	}
-
-	return [parent, ...findAncestors(parent, containers, predicate)];
+	traverse(container);
+	return Array.from(ancestors.values());
 }
 
 export function findDescendants<T extends AnyContainer>(
@@ -1547,20 +1558,24 @@ export function findDescendants<T extends AnyContainer>(
 	containers: T[],
 	predicate: Predicate
 ): T[] {
-	const children = containers.filter(
-		({ relation, guid }) =>
-			relation.findIndex(
-				(r) => r.predicate == predicate && r.object == container.guid && r.object != guid
-			) > -1
-	);
+	const descendants = new Map<string, T>();
 
-	const descendants = [...children];
+	function traverse(current: T) {
+		const children = containers.filter(
+			({ relation, guid }) =>
+				relation.findIndex(
+					(r) => r.predicate == predicate && r.object == current.guid && r.object != guid
+				) > -1 && !descendants.has(guid)
+		);
 
-	for (const child of children) {
-		descendants.push(...findDescendants(child, containers, predicate));
+		for (const child of children) {
+			descendants.set(child.guid, child);
+			traverse(child);
+		}
 	}
 
-	return descendants;
+	traverse(container);
+	return Array.from(descendants.values());
 }
 
 export function findParentObjectives(containers: Container[]): ObjectiveContainer[] {
