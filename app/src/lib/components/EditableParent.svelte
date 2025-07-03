@@ -6,6 +6,7 @@
 	import {
 		type Container,
 		type EmptyContainer,
+		findDescendants,
 		overlayKey,
 		overlayURL,
 		type PayloadType,
@@ -114,6 +115,13 @@
 		{ label: $_('empty'), value: '' },
 		...isPartOfOptions
 			.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+			.filter(
+				({ guid }) =>
+					!('guid' in container) ||
+					!findDescendants(container, isPartOfOptions, predicates.enum['is-part-of'])
+						.map((c) => c.guid)
+						.includes(guid)
+			)
 			.filter(({ relation }) =>
 				strategyGuid
 					? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
