@@ -263,6 +263,7 @@
 		if (detail.selected && detail.selected !== page.url.pathname) {
 			const url = new URL(page.url);
 			url.pathname = detail.selected;
+			url.searchParams.delete('related-to');
 			goto(url);
 		}
 	}
