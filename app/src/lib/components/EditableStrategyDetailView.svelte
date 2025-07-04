@@ -32,15 +32,9 @@
 		revisions: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		relatedContainers: originalRelatedContainers,
-		revisions
-	}: Props = $props();
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
-	let relatedContainers = $state(originalRelatedContainers);
-
-	let parts = $derived(
+	let parts = $state(
 		relatedContainers
 			.filter(({ guid, relation }) =>
 				relation.some(
