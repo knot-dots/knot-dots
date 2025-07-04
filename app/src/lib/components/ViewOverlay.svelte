@@ -366,7 +366,9 @@
 		{/await}
 	{:else if isStrategyContainer(container)}
 		{#await import('./EditableStrategyDetailView.svelte') then { default: EditableStrategyDetailView }}
-			<EditableStrategyDetailView bind:container {relatedContainers} {revisions} />
+			{#key relatedContainers}
+				<EditableStrategyDetailView bind:container {relatedContainers} {revisions} />
+			{/key}
 		{/await}
 	{:else if isTaskContainer(container)}
 		{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}
