@@ -1,34 +1,47 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
+	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
+		type Container,
 		findAncestors,
 		findLeafObjectives,
+		type IndicatorContainer,
 		isContainerWithEffect,
 		isEffectContainer,
 		isObjectiveContainer,
 		predicates,
 		status
 	} from '$lib/models';
-	import type { Container, IndicatorContainer } from '$lib/models';
 
-	export let container: IndicatorContainer;
-	export let relatedContainers: Container[] = [];
-	export let showEffects = false;
-	export let showObjectives = false;
-	export let showLegend = false;
+	interface Props {
+		container: IndicatorContainer;
+		relatedContainers?: Container[];
+		showEffects?: boolean;
+		showObjectives?: boolean;
+		showLegend?: boolean;
+	}
 
-	let div: HTMLElement;
+	let {
+		container,
+		relatedContainers = [],
+		showEffects = false,
+		showObjectives = false,
+		showLegend = false
+	}: Props = $props();
 
-	$: {
-		const unit = $_(container.payload.unit);
+	let unit = $derived($_(container.payload.unit));
 
-		const historicalValuesByYear = new Map(container.payload.historicalValues);
-		const trend = container.payload.historicalValues.map(([key, value]) => ({
+	let historicalValuesByYear = $derived(new Map(container.payload.historicalValues));
+
+	let trend = $derived(
+		container.payload.historicalValues.map(([key, value]) => ({
 			date: new Date(key, 0),
 			value
-		}));
+		}))
+	);
 
+	let objectives = $derived.by(() => {
 		let objectives = [] as Array<{ date: Date; value: number }>;
 
 		if (showObjectives) {
@@ -63,6 +76,10 @@
 			];
 		}
 
+		return objectives;
+	});
+
+	let effects = $derived.by(() => {
 		let effects = [] as Array<{ date: Date; value: number; status: string }>;
 
 		if (showEffects) {
@@ -117,26 +134,31 @@
 			});
 		}
 
-		const trendWithEffects =
-			effects[0]?.value < 0
-				? [
-						...effects.map(({ date, value, status }) => ({ date, value: Math.abs(value), status })),
-						...container.payload.historicalValues.map(([key, value]) => ({
-							date: new Date(key, 0),
-							value:
-								value -
-								Math.abs(
-									effects
-										.filter(({ date }) => date.getFullYear() == key)
-										.reduce((accumulator, currentValue) => accumulator + currentValue.value, 0)
-								),
-							status: 'trend'
-						}))
-					]
-				: [...effects, ...trend.map((t) => ({ ...t, status: 'trend' }))];
+		return effects;
+	});
 
-		div?.firstChild?.remove();
-		div?.append(
+	let trendWithEffects = $derived(
+		effects[0]?.value < 0
+			? [
+					...effects.map(({ date, value, status }) => ({ date, value: Math.abs(value), status })),
+					...container.payload.historicalValues.map(([key, value]) => ({
+						date: new Date(key, 0),
+						value:
+							value -
+							Math.abs(
+								effects
+									.filter(({ date }) => date.getFullYear() == key)
+									.reduce((accumulator, currentValue) => accumulator + currentValue.value, 0)
+							),
+						status: 'trend'
+					}))
+				]
+			: [...effects, ...trend.map((t) => ({ ...t, status: 'trend' }))]
+	);
+
+	const chart: Attachment = (element) => {
+		element?.firstChild?.remove();
+		element?.append(
 			Plot.plot({
 				color: {
 					domain: [
@@ -202,19 +224,9 @@
 				y: { label: $_(unit), tickFormat: (d) => $number(d) }
 			})
 		);
-	}
+	};
 </script>
 
 <figure>
-	{#if $$slots.caption}
-		<figcaption><slot name="caption" /></figcaption>
-	{/if}
-	<div bind:this={div} role="img"></div>
+	<div role="img" {@attach chart}></div>
 </figure>
-
-<style>
-	figcaption {
-		font-size: inherit;
-		margin-bottom: 0.875rem;
-	}
-</style>

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
+	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import {
 		type Container,
 		findDescendants,
@@ -15,12 +16,14 @@
 		predicates
 	} from '$lib/models';
 
-	export let container: ObjectiveContainer;
-	export let relatedContainers: Container[] = [];
+	interface Props {
+		container: ObjectiveContainer;
+		relatedContainers?: Container[];
+	}
 
-	let div: HTMLElement;
+	let { container, relatedContainers = [] }: Props = $props();
 
-	$: {
+	const chart: Attachment = (element) => {
 		const indicator = relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container));
 
 		if (indicator) {
@@ -46,8 +49,8 @@
 				}))
 			);
 
-			div?.firstChild?.remove();
-			div?.append(
+			element?.firstChild?.remove();
+			element?.append(
 				Plot.plot({
 					color: { scheme: 'Blues' },
 					marks: [
@@ -56,7 +59,7 @@
 							x: 'date',
 							y: 'value',
 							fill: 'guid',
-							href: ({ guid }) => overlayURL($page.url, overlayKey.enum.view, guid),
+							href: ({ guid }) => overlayURL(page.url, overlayKey.enum.view, guid),
 							title: ({ title }) => title
 						})
 					],
@@ -64,19 +67,9 @@
 				})
 			);
 		}
-	}
+	};
 </script>
 
 <figure>
-	{#if $$slots.caption}
-		<figcaption><slot name="caption" /></figcaption>
-	{/if}
-	<div bind:this={div} role="img"></div>
+	<div role="img" {@attach chart}></div>
 </figure>
-
-<style>
-	figcaption {
-		font-size: inherit;
-		margin-bottom: 0.875rem;
-	}
-</style>

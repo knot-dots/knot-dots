@@ -1,23 +1,26 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
+	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
 		type Container,
 		type EffectContainer,
+		findAncestors,
 		isContainerWithEffect,
 		isIndicatorContainer,
 		isRelatedTo,
 		predicates
 	} from '$lib/models';
-	import { findAncestors } from '$lib/models.js';
 
-	export let container: EffectContainer;
-	export let relatedContainers: Container[] = [];
-	export let showLegend = false;
+	interface Props {
+		container: EffectContainer;
+		relatedContainers?: Container[];
+		showLegend?: boolean;
+	}
 
-	let div: HTMLElement;
+	let { container, relatedContainers = [], showLegend = false }: Props = $props();
 
-	$: {
+	const chart: Attachment = (element) => {
 		const indicator = relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container));
 		const measure = findAncestors(container, relatedContainers, predicates.enum['is-part-of']).find(
 			isContainerWithEffect
@@ -41,8 +44,8 @@
 				}))
 			];
 
-			div?.firstChild?.remove();
-			div?.append(
+			element?.firstChild?.remove();
+			element?.append(
 				Plot.plot({
 					color: {
 						legend: showLegend,
@@ -56,19 +59,9 @@
 				})
 			);
 		}
-	}
+	};
 </script>
 
 <figure>
-	{#if $$slots.caption}
-		<figcaption><slot name="caption" /></figcaption>
-	{/if}
-	<div bind:this={div} role="img"></div>
+	<div role="img" {@attach chart}></div>
 </figure>
-
-<style>
-	figcaption {
-		font-size: inherit;
-		margin-bottom: 0.875rem;
-	}
-</style>
