@@ -49,7 +49,7 @@
 
 <style>
 	.table-wrapper {
-		height: 100%;
+		height: calc(100% - 3rem);
 		margin: 1.5rem 0 1.5rem 1.5rem;
 		overflow: auto;
 	}
