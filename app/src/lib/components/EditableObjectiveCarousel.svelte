@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/heroicons/plus-solid';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
@@ -16,11 +16,15 @@
 	} from '$lib/models';
 	import { addObjectiveState, mayCreateContainer } from '$lib/stores';
 
-	export let container: Container;
-	export let editable = false;
-	export let relatedContainers: Container[];
+	interface Props {
+		container: Container;
+		editable?: boolean;
+		relatedContainers: Container[];
+	}
 
-	$: parts = relatedContainers.filter(isObjectiveContainer).filter(isPartOf(container));
+	let { container, editable = false, relatedContainers }: Props = $props();
+
+	let parts = $derived(relatedContainers.filter(isObjectiveContainer).filter(isPartOf(container)));
 
 	function addItemURL(url: URL) {
 		const params = paramsFromFragment(url);
@@ -75,9 +79,9 @@
 			<li>
 				<a
 					class="card"
-					href={addItemURL($page.url)}
+					href={addItemURL(page.url)}
 					title={$_('add_item')}
-					on:click={(event) => {
+					onclick={(event) => {
 						event.preventDefault();
 						addObjective(container);
 					}}

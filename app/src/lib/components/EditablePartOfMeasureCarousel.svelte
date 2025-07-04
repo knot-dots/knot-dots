@@ -16,14 +16,20 @@
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
-	export let container: ContainerWithEffect;
-	export let editable = false;
-	export let payloadType: PayloadType;
-	export let relatedContainers: Container[];
+	interface Props {
+		container: ContainerWithEffect;
+		editable?: boolean;
+		payloadType: PayloadType;
+		relatedContainers: Container[];
+	}
 
-	$: parts = relatedContainers
-		.filter(({ payload }) => payload.type == payloadType)
-		.filter((rc) => isPartOfMeasure(container)(rc) || isPartOf(container)(rc));
+	let { container, editable = false, payloadType, relatedContainers }: Props = $props();
+
+	let parts = $derived(
+		relatedContainers
+			.filter(({ payload }) => payload.type == payloadType)
+			.filter((rc) => isPartOfMeasure(container)(rc) || isPartOf(container)(rc))
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
