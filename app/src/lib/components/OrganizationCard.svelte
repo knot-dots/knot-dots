@@ -38,7 +38,10 @@
 		return () => {
 			const url = new URL(env.PUBLIC_BASE_URL ?? '');
 			url.hostname = `${container.guid}.${url.hostname}`;
-			url.pathname = linkPath;
+			url.pathname = linkPath
+				.replace('/me/measures', '/measures/status')
+				.replace('/me/tasks', '/tasks/status')
+				.replace('/me', '/all/page');
 			return url.toString();
 		};
 	}
