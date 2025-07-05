@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { Editor, defaultValueCtx, editorViewOptionsCtx, rootCtx } from '@milkdown/core';
+	import { clipboard } from '@milkdown/plugin-clipboard';
 	import { history } from '@milkdown/plugin-history';
 	import { listener, listenerCtx } from '@milkdown/plugin-listener';
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
@@ -62,6 +63,7 @@
 			})
 			.use(commonmark)
 			.use(gfm)
+			.use(clipboard)
 			.use(history)
 			.use(listener)
 			.use(placeholderConfig)
