@@ -39,7 +39,7 @@
 					.filter((o) => value.includes(o))
 					.slice(0, value.length > 1 && compact ? 1 : value.length)
 					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
-					<span class="badge badge--gray">{selectedOption.label}</span>
+					<span class="badge badge--gray truncated">{selectedOption.label}</span>
 				{:else}
 					{$_('empty')}
 				{/each}
@@ -83,7 +83,7 @@
 			.filter((o) => value.includes(o))
 			.slice(0, compact ? 1 : value.length)
 			.map((o) => ({ label: $_(o), value: o })) as selectedOption}
-			<span class="badge badge--gray">{selectedOption.label}</span>
+			<span class="badge badge--gray truncated">{selectedOption.label}</span>
 		{:else}
 			{$_('empty')}
 		{/each}
@@ -101,15 +101,14 @@
 	}
 
 	.badge {
-		float: left;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		display: inline;
 	}
 
 	.value {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		min-width: 0;
 	}
 
 	.value.value--compact {
