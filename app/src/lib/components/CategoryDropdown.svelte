@@ -35,7 +35,7 @@
 {#if editable || (value.length > 6 && compact)}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" type="button" use:popover.button>
-			<span class="value">
+			<span class="value" class:value--compact={compact}>
 				{#each sustainableDevelopmentGoals.options
 					.filter((o) => value.includes(o))
 					.slice(0, value.length > 6 && compact ? 5 : value.length)
@@ -70,7 +70,7 @@
 				</fieldset>
 			{:else if value.length > 0}
 				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-					<ul class="value">
+					<ul class="value" class:value--compact={compact}>
 						{#each value as category}
 							<li>
 								<img
@@ -88,7 +88,7 @@
 		{/if}
 	</div>
 {:else}
-	<ul class="value">
+	<ul class="value" class:value--compact={compact}>
 		{#each value as category}
 			<li>
 				<img
@@ -106,8 +106,9 @@
 {/if}
 
 <style>
-	.dropdown-panel {
-		padding: 0.75rem;
+	.dropdown {
+		--dropdown-button-align-items: start;
+		--dropdown-panel-padding: 0.75rem;
 	}
 
 	.more-indicator {
@@ -129,10 +130,11 @@
 		gap: 0.5rem;
 	}
 
-	@container style(--drop-down-style: table) {
-		.dropdown-button,
-		.value {
-			width: 13.75rem;
-		}
+	.value.value--compact {
+		flex-wrap: nowrap;
+	}
+
+	.value > img {
+		max-width: none;
 	}
 </style>

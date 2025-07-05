@@ -177,26 +177,11 @@
 </div>
 
 <style>
-	.dropdown-button {
-		align-items: center;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		color: var(--color-gray-900);
-		gap: 0.5rem;
-		padding: 0.375rem 0.75rem;
-	}
-
-	.dropdown-button:global([aria-expanded='true']) {
-		background-color: var(--color-primary-100);
-		color: var(--color-primary-700);
-	}
-
-	.dropdown-button :global(svg:first-child) {
-		height: 1.5rem;
-		width: 1.5rem;
-	}
-
 	.organization-menu {
+		--dropdown-button-default-color: var(--color-gray-900);
+		--dropdown-button-box-shadow: var(--shadow-sm);
+		--dropdown-button-min-height: 2.25rem;
+
 		display: none;
 		max-width: 20rem;
 	}

@@ -4,15 +4,17 @@
 	import { audience } from '$lib/models';
 
 	interface Props {
+		compact?: boolean;
 		editable?: boolean;
 		value: string[];
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { compact = false, editable = false, value = $bindable() }: Props = $props();
 </script>
 
 {#if editable}
 	<MultipleChoiceDropdown
+		{compact}
 		offset={[-41, -39]}
 		options={audience.options.map((o) => ({ value: o, label: $_(o) }))}
 		bind:value

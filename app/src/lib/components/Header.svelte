@@ -253,6 +253,10 @@
 
 <style>
 	header {
+		--dropdown-button-expanded-background: var(--color-primary-100);
+		--dropdown-button-expanded-color: var(--color-primary-700);
+		--dropdown-button-border-radius: 8px;
+
 		--icon-color: var(--color-gray-500);
 		--indicator-background-color: var(--color-primary-700);
 
@@ -301,18 +305,11 @@
 	}
 
 	.dropdown-button.dropdown-button--command {
-		--button-background: transparent;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-padding: 0 0.5rem 0 0.375rem;
 
-		align-items: center;
-		border-radius: 8px;
 		height: 2rem;
-		padding: 0 0.5rem 0 0.375rem;
 		position: relative;
-	}
-
-	.dropdown-button.dropdown-button--command:global([aria-expanded='true']) {
-		background-color: var(--color-primary-100);
-		color: var(--color-primary-700);
 	}
 
 	.dropdown-button.dropdown-button--command :global(svg) {

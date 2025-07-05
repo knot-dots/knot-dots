@@ -163,6 +163,7 @@
 	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 		{#if 'audience' in container.payload}
 			<AudienceDropdown
+				compact
 				editable={editable && $ability.can('update', container)}
 				bind:value={container.payload.audience}
 			/>
@@ -268,7 +269,13 @@
 	}
 
 	.cell {
-		--drop-down-style: table;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-gray-700);
+		--dropdown-button-active-background: var(--dropdown-button-default-background);
+		--dropdown-button-hover-background: var(--dropdown-button-default-background);
+		--dropdown-button-border-width: 0;
+		--dropdown-button-padding: 0;
+		--dropdown-button-chevron-display: none;
 		--form-control-background: white;
 
 		font-size: 0.875rem;

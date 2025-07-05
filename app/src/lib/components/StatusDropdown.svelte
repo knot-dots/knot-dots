@@ -35,21 +35,19 @@
 
 {#if editable}
 	<div class="dropdown" use:popperRef>
-		{#if buttonStyle === 'badge'}
-			<button class="dropdown-button dropdown-button--badge" type="button" use:popover.button>
+		<button class="dropdown-button dropdown-button--badge" type="button" use:popover.button>
+			{#if buttonStyle === 'badge'}
 				<span class="badge badge--{statusColors.get(value)}">
 					<StatusIcon />{$_(value)}
 					{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 				</span>
-			</button>
-		{:else}
-			<button class="dropdown-button" type="button" use:popover.button>
+			{:else}
 				<span class="badge badge--{statusColors.get(value)}">
 					<StatusIcon />{$_(value)}
 				</span>
 				{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-			</button>
-		{/if}
+			{/if}
+		</button>
 
 		{#if $popover.expanded}
 			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
@@ -75,23 +73,3 @@
 		</span>
 	</div>
 {/if}
-
-<style>
-	.badge {
-		float: left;
-	}
-
-	.dropdown-button.dropdown-button--badge {
-		all: initial;
-		display: block;
-		line-height: inherit;
-	}
-
-	.dropdown-button.dropdown-button--badge > :global(svg) {
-		color: inherit;
-	}
-
-	.dropdown-panel {
-		max-width: revert;
-	}
-</style>
