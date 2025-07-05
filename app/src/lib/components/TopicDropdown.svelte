@@ -34,12 +34,12 @@
 {#if editable || (value.length > 1 && compact)}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" type="button" use:popover.button>
-			<span class="value">
+			<span class="value" class:value--compact={compact}>
 				{#each topics.options
 					.filter((o) => value.includes(o))
 					.slice(0, value.length > 1 && compact ? 1 : value.length)
 					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
-					<span class="badge badge--gray">{selectedOption.label}</span>
+					<span class="badge badge--gray truncated">{selectedOption.label}</span>
 				{:else}
 					{$_('empty')}
 				{/each}
@@ -78,12 +78,12 @@
 		{/if}
 	</div>
 {:else}
-	<div class="value">
+	<div class="value" class:value--compact={compact}>
 		{#each topics.options
 			.filter((o) => value.includes(o))
 			.slice(0, compact ? 1 : value.length)
 			.map((o) => ({ label: $_(o), value: o })) as selectedOption}
-			<span class="badge badge--gray">{selectedOption.label}</span>
+			<span class="badge badge--gray truncated">{selectedOption.label}</span>
 		{:else}
 			{$_('empty')}
 		{/each}
@@ -91,26 +91,27 @@
 {/if}
 
 <style>
+	.dropdown {
+		--dropdown-button-align-items: start;
+	}
+
 	li {
 		display: flex;
 		padding: 0.5rem 0.75rem;
 	}
 
 	.badge {
-		float: left;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		display: inline;
 	}
 
 	.value {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		min-width: 0;
 	}
 
-	@container style(--drop-down-style: table) {
-		.value {
-			flex-wrap: nowrap;
-		}
+	.value.value--compact {
+		flex-wrap: nowrap;
 	}
 </style>

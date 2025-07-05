@@ -341,6 +341,9 @@
 	}
 
 	.badges {
+		--dropdown-button-border-radius: 6px;
+		--dropdown-button-padding: 0;
+
 		display: flex;
 		gap: 0.5rem;
 		margin-bottom: 0.75rem;

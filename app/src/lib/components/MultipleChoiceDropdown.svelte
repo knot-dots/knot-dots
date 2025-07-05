@@ -6,12 +6,13 @@
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 
 	interface Props {
+		compact?: boolean;
 		offset?: [number, number];
 		options: Array<{ label: string; value: string }>;
 		value: string[];
 	}
 
-	let { offset = [0, 4], options, value = $bindable() }: Props = $props();
+	let { compact = false, offset = [0, 4], options, value = $bindable() }: Props = $props();
 
 	const popover = createPopover({});
 
@@ -27,9 +28,9 @@
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
-		<span class="selected">
+		<span class="selected" class:truncated={compact}>
 			{#each options.filter((o) => value.includes(o.value)) as selectedOption}
-				<span class="value">{selectedOption.label}</span>
+				<span class="value" class:value--compact={compact}>{selectedOption.label}</span>
 			{:else}
 				{$_('empty')}
 			{/each}
@@ -51,6 +52,10 @@
 </div>
 
 <style>
+	.dropdown {
+		--dropdown-button-align-items: start;
+	}
+
 	.selected {
 		display: block;
 	}
@@ -61,19 +66,11 @@
 		text-align: left;
 	}
 
-	@container style(--drop-down-style: table) {
-		.selected {
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
+	.value.value--compact {
+		display: inline;
+	}
 
-		.value {
-			display: revert;
-		}
-
-		.value:not(:last-child)::after {
-			content: ', ';
-		}
+	.value.value--compact:not(:last-child)::after {
+		content: ', ';
 	}
 </style>

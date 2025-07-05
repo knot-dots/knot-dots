@@ -4,6 +4,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import ArrowsUpDown from '~icons/heroicons/arrows-up-down-16-solid';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
+	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 
 	interface Props {
 		options: Array<{ href?: string; label: string; value: string | undefined }>;
@@ -27,7 +28,8 @@
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button dropdown-button--badge" type="button" use:popover.button>
-		<ArrowsUpDown />{#if selected}{selected.label}{:else}&nbsp;{/if}<ChevronDown />
+		<ArrowsUpDown />{#if selected}{selected.label}{:else}&nbsp;{/if}
+		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>

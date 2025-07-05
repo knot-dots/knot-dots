@@ -326,30 +326,11 @@
 </div>
 
 <style>
-	.dropdown-button {
-		--button-background: var(--color-gray-050);
-
-		align-items: center;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		color: var(--color-gray-900);
-		font-weight: 500;
-		height: 2.25rem;
-		padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-	}
-
-	.dropdown-button:global([aria-expanded='true']) {
-		background-color: var(--color-primary-100);
-		color: var(--color-primary-700);
-	}
-
-	.dropdown-button:global([aria-expanded='true'] svg) {
-		color: var(--color-primary-700);
-	}
-
-	.dropdown-panel {
-		max-height: calc(100vh - 8rem);
-		max-width: revert;
+	.dropdown {
+		--dropdown-button-default-color: var(--color-gray-900);
+		--dropdown-button-box-shadow: var(--shadow-sm);
+		--dropdown-button-padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+		--dropdown-button-min-height: 2.25rem;
 	}
 
 	.menu-item.menu-item--muted > button {
