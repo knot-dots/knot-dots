@@ -1,0 +1,70 @@
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import AskAI from '~icons/knotdots/ask-ai';
+	import ResolutionStatusDropdown from '$lib/components/ResolutionStatusDropdown.svelte';
+	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
+	import {
+		type Container,
+		isContainerWithStatus,
+		isResolutionContainer,
+		isSuggestedByAI,
+		isTaskContainer,
+		strategyTypes
+	} from '$lib/models';
+
+	interface Props {
+		container: Container;
+		editable?: boolean;
+	}
+
+	let { container = $bindable(), editable = false }: Props = $props();
+</script>
+
+<ul class="badges">
+	<li class="badge badge--purple">
+		{#if 'goalType' in container.payload && container.payload.goalType}
+			{$_(container.payload.goalType)}
+		{:else if 'strategyType' in container.payload && container.payload.strategyType !== strategyTypes.enum['strategy_type.misc']}
+			{$_(container.payload.strategyType)}
+		{:else}
+			{$_(container.payload.type)}
+		{/if}
+	</li>
+	{#if isSuggestedByAI(container)}
+		<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
+	{/if}
+	{#if isContainerWithStatus(container)}
+		<li>
+			<StatusDropdown buttonStyle="badge" {editable} bind:value={container.payload.status} />
+		</li>
+	{:else if isTaskContainer(container)}
+		<li>
+			<TaskStatusDropdown
+				buttonStyle="badge"
+				{editable}
+				bind:value={container.payload.taskStatus}
+			/>
+		</li>
+	{:else if isResolutionContainer(container)}
+		<li>
+			<ResolutionStatusDropdown
+				buttonStyle="badge"
+				{editable}
+				bind:value={container.payload.resolutionStatus}
+			/>
+		</li>
+	{/if}
+</ul>
+
+<style>
+	.badges {
+		--dropdown-button-border-radius: 6px;
+		--dropdown-button-padding: 0;
+
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+		padding: 0.375rem 0 0.75rem;
+	}
+</style>

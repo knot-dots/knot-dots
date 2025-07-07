@@ -3,6 +3,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
+	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
@@ -12,19 +13,16 @@
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import ResolutionProperties from '$lib/components/ResolutionProperties.svelte';
-	import ResolutionStatusDropdown from '$lib/components/ResolutionStatusDropdown.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
-	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import StrategyProperties from '$lib/components/StrategyProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
-	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
+		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithName,
 		isContainerWithProgress,
-		isContainerWithStatus,
 		isContainerWithTitle,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -41,8 +39,7 @@
 		type NewContainer,
 		overlayKey,
 		overlayURL,
-		status,
-		strategyTypes
+		status
 	} from '$lib/models';
 	import { newContainer } from '$lib/stores';
 
@@ -137,42 +134,9 @@
 						></textarea>
 					{/if}
 
-					<ul class="badges">
-						<li class="badge badge--purple">
-							{#if 'goalType' in $newContainer.payload && $newContainer.payload.goalType}
-								{$_($newContainer.payload.goalType)}
-							{:else if 'strategyType' in $newContainer.payload && $newContainer.payload.strategyType !== strategyTypes.enum['strategy_type.misc']}
-								{$_($newContainer.payload.strategyType)}
-							{:else}
-								{$_($newContainer.payload.type)}
-							{/if}
-						</li>
-						{#if isContainerWithStatus($newContainer)}
-							<li>
-								<StatusDropdown
-									buttonStyle="badge"
-									editable
-									bind:value={$newContainer.payload.status}
-								/>
-							</li>
-						{:else if isTaskContainer($newContainer)}
-							<li>
-								<TaskStatusDropdown
-									buttonStyle="badge"
-									editable
-									bind:value={$newContainer.payload.taskStatus}
-								/>
-							</li>
-						{:else if isResolutionContainer($newContainer)}
-							<li>
-								<ResolutionStatusDropdown
-									buttonStyle="badge"
-									editable
-									bind:value={$newContainer.payload.resolutionStatus}
-								/>
-							</li>
-						{/if}
-					</ul>
+					{#if isContainer($newContainer)}
+						<Badges bind:container={$newContainer} editable />
+					{/if}
 
 					{#if isContainerWithProgress($newContainer)}
 						<EditableProgress compact editable bind:value={$newContainer.payload.progress} />
@@ -338,16 +302,6 @@
 		--padding-y: 0.5rem;
 
 		margin-left: auto;
-	}
-
-	.badges {
-		--dropdown-button-border-radius: 6px;
-		--dropdown-button-padding: 0;
-
-		display: flex;
-		gap: 0.5rem;
-		margin-bottom: 0.75rem;
-		padding: 0.375rem 0 0.75rem;
 	}
 
 	.dialog-actions {
