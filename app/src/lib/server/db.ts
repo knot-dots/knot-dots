@@ -868,25 +868,6 @@ export function getAllRelatedContainersByStrategyType(
 	};
 }
 
-export function getAllContainersWithIndicatorContributions(organizations: string[]) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT c.*
-			FROM container c
-			WHERE ${prepareWhereCondition({ organizations })}
-				AND (
-					c.payload->>'indicatorContribution' IS NOT NULL
-					OR c.payload->>'indicatorContribution' != '{}'
-				)
-		`);
-		return containerResult.map((c) => ({
-			...c,
-			relation: [],
-			user: []
-		}));
-	};
-}
-
 export function getAllContainersRelatedToIndicators(
 	containers: IndicatorContainer[],
 	filters: { organizationalUnits?: string[] }

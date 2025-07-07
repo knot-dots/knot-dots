@@ -378,27 +378,6 @@ const unitValues = [
 
 export const units = z.enum(unitValues);
 
-export type Unit = z.infer<typeof units>;
-
-export const unitByQuantity = new Map<Quantity, Unit>([
-	[quantities.enum['quantity.broadband_coverage'], units.enum['unit.percent']],
-	[quantities.enum['quantity.charging_stations'], units.enum['unit.per_1000']],
-	[quantities.enum['quantity.co2'], units.enum['unit.ton']],
-	[quantities.enum['quantity.co2_emissions_households'], units.enum['unit.ton']],
-	[quantities.enum['quantity.co2_emissions_industry'], units.enum['unit.ton']],
-	[quantities.enum['quantity.co2_emissions_transport'], units.enum['unit.ton']],
-	[quantities.enum['quantity.cycle_path'], units.enum['unit.kilometer']],
-	[quantities.enum['quantity.organic_farming'], units.enum['unit.percent']],
-	[quantities.enum['quantity.doctor_ratio'], units.enum['unit.per_100000']],
-	[quantities.enum['quantity.funding_culture_and_education'], units.enum['unit.euro']],
-	[quantities.enum['quantity.women_in_elective_office'], units.enum['unit.percent']],
-	[quantities.enum['quantity.women_in_leadership'], units.enum['unit.percent']],
-	[quantities.enum['quantity.renewable_energy'], units.enum['unit.kilowatt']],
-	[quantities.enum['quantity.solar_energy'], units.enum['unit.kilowatt_hour']],
-	[quantities.enum['quantity.waste_generation'], units.enum['unit.ton']],
-	[quantities.enum['quantity.water_consumption'], units.enum['unit.cubic_meter']]
-]);
-
 const audienceValues = [
 	'audience.administration',
 	'audience.citizens',
