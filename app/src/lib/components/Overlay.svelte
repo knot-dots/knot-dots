@@ -2,8 +2,6 @@
 	import { setContext } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
-	import EditHelpOverlay from '$lib/components/EditHelpOverlay.svelte';
-	import EditOverlay from '$lib/components/EditOverlay.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
@@ -61,12 +59,8 @@
 >
 	<!--svelte-ignore a11y_no_static_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand}></div>
-	{#if data.key === overlayKey.enum['edit-help']}
-		<EditHelpOverlay container={data.container} />
-	{:else if data.key === overlayKey.enum['view-help']}
+	{#if data.key === overlayKey.enum['view-help']}
 		<ViewHelpOverlay container={data.container} />
-	{:else if data.key === overlayKey.enum['create'] || data.key === overlayKey.enum['edit']}
-		<EditOverlay container={data.container} relatedContainers={data.relatedContainers} />
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}

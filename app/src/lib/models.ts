@@ -12,8 +12,6 @@ export type ApplicationState = {
 export const overlayKey = z.enum([
 	'chapters',
 	'create',
-	'edit',
-	'edit-help',
 	'indicator-catalog',
 	'indicators',
 	'measure-monitoring',

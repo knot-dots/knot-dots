@@ -1,7 +1,6 @@
 import { derived, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { page } from '$app/stores';
-import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchContainers from '$lib/client/fetchContainers';
@@ -13,7 +12,6 @@ import {
 	type ApplicationState,
 	type Container,
 	containerOfType,
-	createCopyOf,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	isIndicatorContainer,
@@ -27,12 +25,6 @@ import {
 	type PayloadType,
 	payloadTypes,
 	predicates,
-	resolutionStatus,
-	type ResolutionStatus,
-	type Status,
-	status,
-	type TaskStatus,
-	taskStatus,
 	type User as UserRecord
 } from '$lib/models';
 
@@ -151,20 +143,6 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
-			key: 'create';
-			container: AnyContainer;
-			relatedContainers: Container[];
-	  }
-	| {
-			key: 'edit';
-			container: AnyContainer;
-			relatedContainers: Container[];
-	  }
-	| {
-			key: 'edit-help';
-			container: PageContainer;
-	  }
-	| {
 			key: 'indicator-catalog';
 			container: undefined;
 			indicators: IndicatorContainer[];
@@ -232,74 +210,19 @@ if (browser) {
 		previousHashState = hashParams.toString();
 
 		if (hashParams.size > 0) {
-			if (!hashParams.has(overlayKey.enum.edit) && !hashParams.has(overlayKey.enum.create)) {
-				overlayHistory.update((value) =>
-					hashParams.toString() == (value[value.length - 1]?.toString() ?? '')
-						? value
-						: [...value, hashParams]
-				);
-			}
+			overlayHistory.update((value) =>
+				hashParams.toString() == (value[value.length - 1]?.toString() ?? '')
+					? value
+					: [...value, hashParams]
+			);
 		} else {
 			overlayHistory.set([]);
 		}
 
-		if (hashParams.has(overlayKey.enum.create)) {
-			let newContainer = containerOfType(
-				hashParams.get('create') as PayloadType,
-				values.data.currentOrganization.guid,
-				values.data.currentOrganizationalUnit?.guid ?? null,
-				hashParams.has('managed-by')
-					? (hashParams.get('managed-by') as string)
-					: (values.data.currentOrganizationalUnit?.guid ?? values.data.currentOrganization.guid),
-				env.PUBLIC_KC_REALM as string
-			);
-			if (newContainer.payload.type == payloadTypes.enum.organizational_unit) {
-				newContainer.payload.level = parseInt(hashParams.get('level') ?? '1');
-			} else if (newContainer.payload.type == payloadTypes.enum.measure) {
-				newContainer.payload.status =
-					(hashParams.get('status') as Status) ?? status.enum['status.idea'];
-			} else if (newContainer.payload.type == payloadTypes.enum.resolution) {
-				newContainer.payload.resolutionStatus =
-					(hashParams.get('resolutionStatus') as ResolutionStatus) ??
-					resolutionStatus.enum['resolution_status.draft'];
-			} else if (newContainer.payload.type == payloadTypes.enum.task) {
-				newContainer.payload.taskStatus =
-					(hashParams.get('taskStatus') as TaskStatus) ?? taskStatus.enum['task_status.idea'];
-			}
-			if (hashParams.has('copy-of')) {
-				const revisions = await fetchContainerRevisions(hashParams.get('copy-of') as string);
-				const organizationalUnit = values.data.organizationalUnits.find(
-					(o) => values.data.session?.user.adminOf[0] == o.guid
-				);
-				let organization;
-				if (organizationalUnit) {
-					organization = organizationalUnit.organization;
-				} else {
-					organization = values.data.organizations.find(
-						(o) => values.data.session?.user.adminOf[0] == o.guid
-					)?.guid as string;
-				}
-				newContainer = createCopyOf(
-					revisions[revisions.length - 1] as Container,
-					organization,
-					organizationalUnit?.guid ?? null
-				);
-			}
-			applicationState.update((state) => ({
-				...state,
-				containerDetailView: { ...state.containerDetailView, editable: true }
-			}));
-			overlay.set({
-				key: overlayKey.enum.create,
-				container: newContainer as AnyContainer,
-				relatedContainers: []
-			});
-		} else if (hashParams.has(overlayKey.enum['view-help'])) {
+		if (hashParams.has(overlayKey.enum['view-help'])) {
 			const help = await fetchHelpBySlug(hashParams.get(overlayKey.enum['view-help']) as string);
 			overlay.set({
-				key: hashParams.has(overlayKey.enum['edit-help'])
-					? overlayKey.enum['edit-help']
-					: overlayKey.enum['view-help'],
+				key: overlayKey.enum['view-help'],
 				container: help
 			});
 		} else if (hashParams.has(overlayKey.enum.view)) {
@@ -316,7 +239,7 @@ if (browser) {
 						: undefined)
 				});
 				overlay.set({
-					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
+					key: overlayKey.enum.view,
 					container,
 					relatedContainers,
 					revisions
@@ -331,7 +254,7 @@ if (browser) {
 					topic: hashParams.getAll('topic')
 				})) as Container[];
 				overlay.set({
-					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
+					key: overlayKey.enum.view,
 					container,
 					relatedContainers,
 					revisions
@@ -366,7 +289,7 @@ if (browser) {
 					]
 				});
 				overlay.set({
-					key: hashParams.has(overlayKey.enum.edit) ? overlayKey.enum.edit : overlayKey.enum.view,
+					key: overlayKey.enum.view,
 					container,
 					relatedContainers,
 					revisions
