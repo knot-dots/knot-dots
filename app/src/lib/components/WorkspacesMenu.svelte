@@ -147,7 +147,7 @@
 			icon: Goal,
 			label: $_('workspace.type.goals'),
 			recommended: false,
-			value: workspacesLeft.goals[selectedItem[1]] ?? '/programs/level'
+			value: workspacesLeft.goals[selectedItem[1]] ?? '/goals/level'
 		},
 		{
 			exists: true,
