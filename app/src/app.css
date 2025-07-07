@@ -388,22 +388,6 @@ th,
 	outline: none;
 }
 
-/* Forms and fieldsets */
-.form-tab {
-	border: none;
-	display: flex;
-	flex-direction: column;
-	gap: 1.5rem;
-	padding: 0;
-}
-
-.form-tab > legend {
-	color: var(--color-gray-800, #1f2a37);
-	font-weight: 700;
-	line-height: 1.5;
-	margin-bottom: 1.5rem;
-}
-
 /* Button styles */
 button,
 .button {
@@ -475,19 +459,6 @@ button.button-alternative,
 button.button-alternative:hover,
 .button.button-alternative:hover {
 	color: var(--color-primary-700);
-}
-
-button.fully-rounded,
-.button.fully-rounded {
-	border-radius: calc(1.5rem + var(--padding-y));
-}
-
-button.button-nav,
-.button.button-nav {
-	--button-border-color: var(--color-gray-900);
-	--button-active-background: var(--color-gray-900);
-	--button-hover-background: var(--button-active-background);
-	--button-hover-border-color: var(--button-border-color);
 }
 
 button.button-ai {
@@ -586,23 +557,11 @@ button.quiet:hover,
 	--button-hover-border-color: transparent;
 }
 
-button.button-nav:hover,
-.button.button-nav:hover {
-	color: var(--color-gray-300);
-}
-
 button:active,
 .button:active,
 button.is-active,
 .button.is-active {
 	background: var(--button-active-background);
-}
-
-button.button-nav:active,
-button.button-nav.is-active,
-.button.button-nav:active,
-.button.button-nav.is-active {
-	color: var(--color-gray-300);
 }
 
 button:disabled,
@@ -866,39 +825,6 @@ label > input[type='checkbox'].toggle {
 	vertical-align: middle;
 }
 
-/* Spreadsheet style inputs */
-.spreadsheet {
-	width: auto;
-}
-
-.spreadsheet thead {
-	text-transform: none;
-}
-
-.spreadsheet th {
-	padding: 0.25rem 0.5rem;
-}
-
-.spreadsheet td {
-	padding: 0;
-}
-
-.spreadsheet input {
-	border: none;
-	border-radius: 0;
-	line-height: 1.5;
-	padding: 0.25rem 0.5rem;
-}
-
-.spreadsheet button {
-	--padding-x: 0;
-	--padding-y: 0;
-
-	margin: 0.25rem;
-	vertical-align: middle;
-	width: 1.5rem;
-}
-
 /* Avatars */
 .avatar {
 	border-radius: 50%;
@@ -914,11 +840,6 @@ label > input[type='checkbox'].toggle {
 .avatar.avatar-s {
 	--radius: 1rem;
 	--font-size: 0.75rem;
-}
-
-.avatar.avatar-m {
-	--radius: 1.5rem;
-	--font-size: 1rem;
 }
 
 /* Logos of organizations */
@@ -994,26 +915,6 @@ label > input[type='checkbox'].toggle {
 	font-size: 0.875rem;
 }
 
-.icons {
-	display: flex;
-	flex-shrink: 0;
-	gap: 1rem;
-	margin-left: auto;
-}
-
-.icons-element {
-	--padding-x: 0;
-	--padding-y: 0;
-
-	border: none;
-}
-
-.icons-element:hover {
-	--button-hover-background: transparent;
-
-	color: var(--color-gray-500);
-}
-
 .details {
 	color: var(--color-gray-500);
 	display: flex;
@@ -1081,32 +982,6 @@ label > input[type='checkbox'].toggle {
 	font-weight: 600;
 	line-height: 1.25;
 	margin-bottom: 0.5rem;
-}
-
-.meta {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-}
-
-.meta-key {
-	flex: 0 1 calc(40rem * 999 - 100% * 999);
-	min-width: 10rem;
-}
-
-.meta-value {
-	flex: 1 1 calc(40rem * 999 - 100% * 999);
-}
-
-.meta-value--category {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.25rem;
-}
-
-.meta-value > svg {
-	display: inline;
-	vertical-align: top;
 }
 
 .data-grid {
