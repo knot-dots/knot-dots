@@ -1195,29 +1195,11 @@ const emptyEffectContainer = emptyContainer.extend({
 
 export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
 
-const emptyGoalContainer = emptyContainer.extend({
-	payload: initialGoalPayload
-});
-
-export type EmptyGoalContainer = z.infer<typeof emptyGoalContainer>;
-
 const emptyIndicatorContainer = emptyContainer.extend({
 	payload: initialIndicatorPayload
 });
 
 export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
-
-const emptyKnowledgeContainer = emptyContainer.extend({
-	payload: initialKnowledgePayload
-});
-
-export type EmptyKnowledgeContainer = z.infer<typeof emptyKnowledgeContainer>;
-
-const emptyMeasureContainer = emptyContainer.extend({
-	payload: initialMeasurePayload
-});
-
-export type EmptyMeasureContainer = z.infer<typeof emptyMeasureContainer>;
 
 const emptyObjectiveContainer = emptyContainer.extend({
 	payload: initialObjectivePayload
@@ -1225,59 +1207,17 @@ const emptyObjectiveContainer = emptyContainer.extend({
 
 export type EmptyObjectiveContainer = z.infer<typeof emptyObjectiveContainer>;
 
-const emptyOrganizationContainer = newContainer.extend({
-	payload: initialOrganizationPayload
-});
-
-export type EmptyOrganizationContainer = z.infer<typeof emptyOrganizationContainer>;
-
 const emptyOrganizationalUnitContainer = newContainer.extend({
 	payload: initialOrganizationalUnitPayload
 });
 
 export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
 
-const emptyPageContainer = newContainer.extend({
-	payload: initialPagePayload
-});
-
-export type EmptyPageContainer = z.infer<typeof emptyPageContainer>;
-
 const emptyResolutionContainer = emptyContainer.extend({
 	payload: initialResolutionPayload
 });
 
 export type EmptyResolutionContainer = z.infer<typeof emptyResolutionContainer>;
-
-const emptyResourceContainer = emptyContainer.extend({
-	payload: initialResourcePayload
-});
-
-export type EmptyResourceContainer = z.infer<typeof emptyResourceContainer>;
-
-const emptySimpleMeasureContainer = emptyContainer.extend({
-	payload: initialSimpleMeasurePayload
-});
-
-export type EmptySimpleMeasureContainer = z.infer<typeof emptySimpleMeasureContainer>;
-
-const emptyStrategyContainer = emptyContainer.extend({
-	payload: initialStrategyPayload
-});
-
-export type EmptyStrategyContainer = z.infer<typeof emptyStrategyContainer>;
-
-const emptyTextContainer = emptyContainer.extend({
-	payload: initialTextPayload
-});
-
-export type EmptyTextContainer = z.infer<typeof emptyTextContainer>;
-
-const emptyTaskContainer = emptyContainer.extend({
-	payload: initialTaskPayload
-});
-
-export type EmptyTaskContainer = z.infer<typeof emptyTaskContainer>;
 
 export const modifiedContainer = anyContainer.omit({
 	revision: true,
@@ -1286,17 +1226,6 @@ export const modifiedContainer = anyContainer.omit({
 });
 
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
-
-export interface CustomEventMap {
-	containerSaved: {
-		event: Event;
-		result: AnyContainer;
-	};
-	submitSuccessful: {
-		event: SubmitEvent;
-		result: AnyContainer;
-	};
-}
 
 export const user = z.object({
 	email: z.string().email().optional(),
