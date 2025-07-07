@@ -331,6 +331,7 @@
 		--dropdown-button-box-shadow: var(--shadow-sm);
 		--dropdown-button-padding: 0.5rem 0.5rem 0.5rem 0.75rem;
 		--dropdown-button-min-height: 2.25rem;
+		--dropdown-panel-max-height: calc(100vh - 8rem);
 	}
 
 	.menu-item.menu-item--muted > button {
