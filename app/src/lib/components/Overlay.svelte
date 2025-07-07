@@ -4,6 +4,7 @@
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditHelpOverlay from '$lib/components/EditHelpOverlay.svelte';
 	import EditOverlay from '$lib/components/EditOverlay.svelte';
+	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
@@ -78,6 +79,11 @@
 		<MeasureMonitoringOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['tasks']}
 		<TasksOverlay container={data.container} containers={data.containers} />
+	{:else if data.key === overlayKey.enum['indicator-catalog']}
+		<IndicatorCatalogOverlay
+			indicatorTemplates={data.indicatorTemplates}
+			indicators={data.indicators}
+		/>
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}

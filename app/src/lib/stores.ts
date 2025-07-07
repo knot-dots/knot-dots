@@ -15,12 +15,14 @@ import {
 	containerOfType,
 	createCopyOf,
 	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	isIndicatorContainer,
 	isStrategyContainer,
 	mayDelete,
 	type MeasureContainer,
-	type PageContainer,
+	type NewContainer,
 	overlayKey,
+	type PageContainer,
 	paramsFromFragment,
 	type PayloadType,
 	payloadTypes,
@@ -31,8 +33,7 @@ import {
 	status,
 	type TaskStatus,
 	taskStatus,
-	type User as UserRecord,
-	type NewContainer
+	type User as UserRecord
 } from '$lib/models';
 
 export const applicationState = writable<ApplicationState>({
@@ -162,6 +163,12 @@ export type OverlayData =
 	| {
 			key: 'edit-help';
 			container: PageContainer;
+	  }
+	| {
+			key: 'indicator-catalog';
+			container: undefined;
+			indicators: IndicatorContainer[];
+			indicatorTemplates: IndicatorTemplateContainer[];
 	  }
 	| {
 			key: 'indicators';
@@ -498,6 +505,30 @@ if (browser) {
 				key: overlayKey.enum.indicators,
 				container,
 				containers: relatedContainers
+			});
+		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
+			const indicatorTemplates = (await fetchContainers({
+				category: hashParams.getAll('category'),
+				indicatorCategory: hashParams.getAll('indicatorCategory'),
+				indicatorType: hashParams.getAll('indicatorType'),
+				measureType: hashParams.getAll('measureType'),
+				payloadType: [payloadTypes.enum.indicator_template],
+				topic: hashParams.getAll('topic')
+			})) as IndicatorTemplateContainer[];
+			const indicators = (await fetchContainers({
+				category: hashParams.getAll('category'),
+				indicatorCategory: hashParams.getAll('indicatorCategory'),
+				indicatorType: hashParams.getAll('indicatorType'),
+				measureType: hashParams.getAll('measureType'),
+				organization: [values.data.currentOrganization.guid],
+				payloadType: [payloadTypes.enum.indicator],
+				topic: hashParams.getAll('topic')
+			})) as IndicatorContainer[];
+			overlay.set({
+				key: overlayKey.enum['indicator-catalog'],
+				container: undefined,
+				indicators,
+				indicatorTemplates
 			});
 		} else {
 			overlay.set(undefined);

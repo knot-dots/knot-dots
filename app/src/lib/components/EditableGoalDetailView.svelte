@@ -37,7 +37,7 @@
 
 	async function addEffect(target: Container, measure: ContainerWithEffect) {
 		const params = new URLSearchParams([
-			[overlayKey.enum.create, payloadTypes.enum.indicator],
+			[overlayKey.enum['indicator-catalog'], ''],
 			['alreadyInUse', '']
 		]);
 

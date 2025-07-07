@@ -41,7 +41,7 @@
 
 	async function addObjective(target: Container) {
 		const params = new URLSearchParams([
-			[overlayKey.enum.create, payloadTypes.enum.indicator],
+			[overlayKey.enum['indicator-catalog'], ''],
 			['alreadyInUse', '']
 		]);
 
