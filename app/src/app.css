@@ -1373,6 +1373,7 @@ label > input[type='checkbox'].toggle {
 	--dropdown-button-border-radius: calc(infinity * 1px);
 	--dropdown-button-border-width: 1px;
 	--dropdown-button-padding: 0.125rem 0.5rem;
+	--dropdown-button-icon-default-color: var(--color-primary-700);
 	--dropdown-button-chevron-default-color: var(--color-primary-700);
 	--dropdown-button-chevron-expanded-color: var(--color-primary-800);
 
