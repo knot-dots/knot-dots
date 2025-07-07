@@ -1391,17 +1391,6 @@ export function etag(container: AnyContainer) {
 	return `"${container.revision}"`;
 }
 
-export function owners<T extends OrganizationContainer | OrganizationalUnitContainer>(
-	container: Container,
-	candidates: Array<T>
-) {
-	return (
-		candidates.filter(
-			({ guid }) => container.organization == guid || container.organizational_unit == guid
-		) ?? []
-	);
-}
-
 export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 	return (
 		container.user.findIndex(
