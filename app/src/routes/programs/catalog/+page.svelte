@@ -9,6 +9,6 @@
 </script>
 
 <ProgramsPage {data}>
-	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.strategy]} />
+	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.program]} />
 	<Help slug="programs-catalog" />
 </ProgramsPage>

@@ -10,7 +10,7 @@
 		isResolutionContainer,
 		isSuggestedByAI,
 		isTaskContainer,
-		strategyTypes
+		programTypes
 	} from '$lib/models';
 
 	interface Props {
@@ -25,8 +25,8 @@
 	<li class="badge badge--purple">
 		{#if 'goalType' in container.payload && container.payload.goalType}
 			{$_(container.payload.goalType)}
-		{:else if 'strategyType' in container.payload && container.payload.strategyType !== strategyTypes.enum['strategy_type.misc']}
-			{$_(container.payload.strategyType)}
+		{:else if 'programType' in container.payload && container.payload.programType !== programTypes.enum['program_type.misc']}
+			{$_(container.payload.programType)}
 		{:else}
 			{$_(container.payload.type)}
 		{/if}

@@ -10,7 +10,7 @@
 		overlayURL,
 		payloadTypes,
 		predicates,
-		type StrategyContainer
+		type ProgramContainer
 	} from '$lib/models';
 
 	export let container: Container | EmptyContainer;
@@ -20,60 +20,60 @@
 
 	$: organizationalUnit = container.organizational_unit;
 
-	$: strategyCandidatesRequest = fetchContainers({
+	$: programCandidatesRequest = fetchContainers({
 		organization: [organization],
 		...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
-		payloadType: [payloadTypes.enum.strategy]
-	}) as Promise<StrategyContainer[]>;
+		payloadType: [payloadTypes.enum.program]
+	}) as Promise<ProgramContainer[]>;
 
-	$: isPartOfStrategyObject =
-		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-strategy'])
-			?.object ?? '';
+	$: isPartOfProgramObject =
+		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-program'])?.object ??
+		'';
 
 	async function set(value: string) {
-		const isPartOfStrategyIndex = container.relation.findIndex(
+		const isPartOfProgramIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
-				predicate === predicates.enum['is-part-of-strategy'] &&
+				predicate === predicates.enum['is-part-of-program'] &&
 				('guid' in container ? subject == container.guid : true)
 		);
 
-		const isPartOfStrategyOptions = await strategyCandidatesRequest;
+		const isPartOfProgramOptions = await programCandidatesRequest;
 
 		container.managed_by =
-			isPartOfStrategyOptions.find(({ guid }) => guid == value)?.managed_by ??
+			isPartOfProgramOptions.find(({ guid }) => guid == value)?.managed_by ??
 			container.organizational_unit ??
 			container.organization;
 		container.relation = [
-			...container.relation.slice(0, isPartOfStrategyIndex),
+			...container.relation.slice(0, isPartOfProgramIndex),
 			...(value
 				? [
 						{
 							object: value,
 							position: 0,
-							predicate: predicates.enum['is-part-of-strategy'],
+							predicate: predicates.enum['is-part-of-program'],
 							...('guid' in container ? { subject: container.guid } : undefined)
 						}
 					]
 				: []),
-			...container.relation.slice(isPartOfStrategyIndex + 1)
+			...container.relation.slice(isPartOfProgramIndex + 1)
 		];
 	}
 </script>
 
-{#await strategyCandidatesRequest}
-	<EditableSingleChoice {editable} label={$_('strategy')} options={[]} value="" />
-{:then strategyCandidates}
+{#await programCandidatesRequest}
+	<EditableSingleChoice {editable} label={$_('program')} options={[]} value="" />
+{:then programCandidates}
 	<EditableSingleChoice
 		{editable}
-		label={$_('strategy')}
+		label={$_('program')}
 		options={[
 			{ label: $_('empty'), value: '' },
-			...strategyCandidates.map(({ guid, payload }) => ({
+			...programCandidates.map(({ guid, payload }) => ({
 				href: overlayURL($page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))
 		]}
-		bind:value={() => isPartOfStrategyObject, set}
+		bind:value={() => isPartOfProgramObject, set}
 	/>
 {/await}

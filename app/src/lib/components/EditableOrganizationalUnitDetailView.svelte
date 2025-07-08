@@ -19,7 +19,7 @@
 		containersRelatedToIndicators?: Container[];
 		indicators?: Container[];
 		measures?: Container[];
-		strategies?: Container[];
+		programs?: Container[];
 	}
 
 	let {
@@ -27,7 +27,7 @@
 		containersRelatedToIndicators = [],
 		indicators = [],
 		measures = [],
-		strategies = []
+		programs = []
 	}: Props = $props();
 
 	const handleSubmit = autoSave(container, 2000);
@@ -91,12 +91,12 @@
 			</div>
 		{/if}
 
-		<div class="details-tab" id="strategies">
-			<h3>{$_('strategies')}</h3>
+		<div class="details-tab" id="programs">
+			<h3>{$_('programs')}</h3>
 			<ul class="carousel">
-				{#each strategies as strategy}
+				{#each programs as program}
 					<li>
-						<Card container={strategy} />
+						<Card container={program} />
 					</li>
 				{/each}
 			</ul>

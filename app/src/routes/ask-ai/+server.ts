@@ -7,7 +7,7 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	editorialState,
 	emptyContainer,
-	isStrategyContainer,
+	isProgramContainer,
 	type NewContainer,
 	payloadTypes,
 	predicates
@@ -43,15 +43,15 @@ export const POST = (async ({ locals, request }) => {
 	}
 
 	const formData = await request.formData();
-	const parsedFormData = z.string().uuid().safeParse(formData.get('strategy'));
+	const parsedFormData = z.string().uuid().safeParse(formData.get('program'));
 	if (parsedFormData.error) {
 		error(400, { message: parsedFormData.error.message });
 	}
 
 	const container = await locals.pool.connect(
-		getContainerByGuid(formData.get('strategy') as string)
+		getContainerByGuid(formData.get('program') as string)
 	);
-	if (!isStrategyContainer(container)) {
+	if (!isProgramContainer(container)) {
 		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
 	}
 
@@ -92,7 +92,7 @@ export const POST = (async ({ locals, request }) => {
 					{
 						object: container.guid,
 						position: i,
-						predicate: predicates.enum['is-part-of-strategy']
+						predicate: predicates.enum['is-part-of-program']
 					}
 				],
 				user: [

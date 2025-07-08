@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
-	import { type Container, payloadTypes, predicates, type StrategyContainer } from '$lib/models';
+	import { type Container, payloadTypes, predicates, type ProgramContainer } from '$lib/models';
 
 	interface Props {
 		container: Container;
@@ -11,66 +11,66 @@
 	let { container = $bindable() }: Props = $props();
 	let organization = $derived(container.organization);
 	let organizationalUnit = $derived(container.organizational_unit);
-	let strategyCandidatesRequest = $derived.by(
+	let programCandidatesRequest = $derived.by(
 		() =>
 			fetchContainers({
 				organization: [organization],
 				...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
-				payloadType: [payloadTypes.enum.strategy]
-			}) as Promise<StrategyContainer[]>
+				payloadType: [payloadTypes.enum.program]
+			}) as Promise<ProgramContainer[]>
 	);
 
-	let isPartOfStrategyObject = $derived(
-		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-strategy'])?.object
+	let isPartOfProgramObject = $derived(
+		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-program'])?.object
 	);
 
 	async function handleChange(event: Event) {
-		const isPartOfStrategyIndex = container.relation.findIndex(
+		const isPartOfProgramIndex = container.relation.findIndex(
 			({ predicate, subject }) =>
-				predicate === predicates.enum['is-part-of-strategy'] &&
+				predicate === predicates.enum['is-part-of-program'] &&
 				('guid' in container ? subject == container.guid : true)
 		);
 
 		const target = event.target as HTMLInputElement;
 		const value = target.value;
 
-		const isPartOfStrategyOptions = await strategyCandidatesRequest;
+		const isPartOfProgramOptions = await programCandidatesRequest;
 
 		container.managed_by =
-			isPartOfStrategyOptions.find(({ guid }) => guid == value)?.managed_by ??
+			isPartOfProgramOptions.find(({ guid }) => guid == value)?.managed_by ??
 			container.organizational_unit ??
 			container.organization;
 		container.relation = [
-			...container.relation.slice(0, isPartOfStrategyIndex),
+			...container.relation.slice(0, isPartOfProgramIndex),
 			...(value
 				? [
 						{
 							subject: container.guid,
 							object: value,
 							position: 0,
-							predicate: predicates.enum['is-part-of-strategy'],
+							predicate: predicates.enum['is-part-of-program'],
 							...('guid' in container ? { subject: container.guid } : undefined)
 						}
 					]
 				: []),
-			...container.relation.slice(isPartOfStrategyIndex + 1)
+			...container.relation.slice(isPartOfProgramIndex + 1)
 		];
 
 		target.closest('form')?.requestSubmit();
 	}
 </script>
 
-{#await strategyCandidatesRequest}
+{#await programCandidatesRequest}
 	<SingleChoiceDropdown options={[]} value="" />
-{:then strategyCandidates}
+{:then programCandidates}
 	<SingleChoiceDropdown
 		options={[
 			{ value: '', label: $_('empty') },
-			...strategyCandidates.map(({ payload, revision }) => ({
+			...programCandidates.map(({ payload, revision }) => ({
 				label: payload.title,
 				value: String(revision)
 			}))
 		]}
-		value={isPartOfStrategyObject ? String(isPartOfStrategyObject) : ''}
+		value={isPartOfProgramObject ? String(isPartOfProgramObject) : ''}
 	/>
 {/await}

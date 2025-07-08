@@ -10,15 +10,15 @@ export default async function fetchContainers(
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		isPartOfMeasure?: string[];
-		isPartOfStrategy?: string[];
+		isPartOfProgram?: string[];
 		measureType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: PayloadType[];
 		policyFieldBNK?: string[];
+		programType?: string[];
 		relatedTo?: string[];
 		relationType?: string[];
-		strategyType?: string[];
 		taskCategory?: string[];
 		terms?: string;
 		topic?: string[];
@@ -44,8 +44,8 @@ export default async function fetchContainers(
 	for (const value of filters.isPartOfMeasure ?? []) {
 		params.append('isPartOfMeasure', String(value));
 	}
-	for (const value of filters.isPartOfStrategy ?? []) {
-		params.append('isPartOfStrategy', String(value));
+	for (const value of filters.isPartOfProgram ?? []) {
+		params.append('isPartOfProgram', String(value));
 	}
 	for (const value of filters.measureType ?? []) {
 		params.append('measureType', String(value));
@@ -71,8 +71,8 @@ export default async function fetchContainers(
 	if (sort) {
 		params.append('sort', sort);
 	}
-	for (const value of filters.strategyType ?? []) {
-		params.append('strategyType', value);
+	for (const value of filters.programType ?? []) {
+		params.append('programType', value);
 	}
 	for (const value of filters.taskCategory ?? []) {
 		params.append('taskCategory', value);

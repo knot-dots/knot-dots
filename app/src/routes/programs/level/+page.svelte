@@ -15,7 +15,7 @@
 		payloadTypes,
 		policyFieldBNK,
 		predicates,
-		strategyTypes,
+		programTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
@@ -56,7 +56,7 @@
 			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['strategyType', new Map(strategyTypes.options.map((v) => [v as string, 0]))]
+			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
 		]);
 
 		return computeFacetCount(facets, data.containers);
@@ -71,10 +71,10 @@
 			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
 				<BoardColumn
 					addItemUrl={$mayCreateContainer(
-						payloadTypes.enum.strategy,
+						payloadTypes.enum.program,
 						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
 					)
-						? `#create=strategy&level=${levelOption}`
+						? `#create=program&level=${levelOption}`
 						: undefined}
 					title={$_(levelOption)}
 				>

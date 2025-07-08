@@ -25,9 +25,9 @@ export default (async function load({ locals, url, parent }) {
 					audience: url.searchParams.getAll('audience'),
 					categories: url.searchParams.getAll('category'),
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
-					strategyTypes: url.searchParams.getAll('strategyType'),
+					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
+					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.knowledge]
 				},
 				url.searchParams.get('sort') ?? ''

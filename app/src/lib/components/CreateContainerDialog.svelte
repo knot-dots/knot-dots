@@ -12,9 +12,9 @@
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
+	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import ResolutionProperties from '$lib/components/ResolutionProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
-	import StrategyProperties from '$lib/components/StrategyProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
@@ -30,10 +30,10 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isProgramContainer,
 		isResolutionContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
-		isStrategyContainer,
 		isTaskContainer,
 		isTextContainer,
 		type NewContainer,
@@ -196,8 +196,8 @@
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isStrategyContainer($newContainer)}
-					<StrategyProperties
+				{:else if isProgramContainer($newContainer)}
+					<ProgramProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

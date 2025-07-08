@@ -160,16 +160,16 @@ export function createContainer(container: NewContainer) {
 			}));
 			const relationResult = await createManyContainerRelations(relations)(txConnection);
 
-			const isPartOfStrategyRelation = relationResult.find(
-				({ predicate }) => predicate == predicates.enum['is-part-of-strategy']
+			const isPartOfProgramRelation = relationResult.find(
+				({ predicate }) => predicate == predicates.enum['is-part-of-program']
 			);
-			if (isPartOfStrategyRelation) {
+			if (isPartOfProgramRelation) {
 				await txConnection.any(sql.typeAlias(`void`)`
 					UPDATE container_relation SET position = position + 1
-					WHERE predicate = ${predicates.enum['is-part-of-strategy']}
-						AND object = ${isPartOfStrategyRelation.object}
+					WHERE predicate = ${predicates.enum['is-part-of-program']}
+						AND object = ${isPartOfProgramRelation.object}
 						AND subject != ${containerResult.guid}
-						AND position >= ${isPartOfStrategyRelation.position}
+						AND position >= ${isPartOfProgramRelation.position}
 				`);
 			}
 
@@ -225,7 +225,7 @@ export function updateContainer(container: ModifiedContainer) {
 			await deleteManyContainerRelations(deletedRelations)(txConnection);
 			await updateManyContainerRelations(container.relation)(txConnection);
 
-			if (container.payload.type == payloadTypes.enum.strategy) {
+			if (container.payload.type == payloadTypes.enum.program) {
 				if (
 					container.organizational_unit &&
 					previousRevision.organizational_unit != container.organizational_unit
@@ -415,7 +415,7 @@ function prepareWhereCondition(filters: {
 	organizations?: string[];
 	organizationalUnits?: string[];
 	policyFieldsBNK?: string[];
-	strategyTypes?: string[];
+	programTypes?: string[];
 	taskCategories?: string[];
 	template?: boolean;
 	terms?: string;
@@ -474,10 +474,10 @@ function prepareWhereCondition(filters: {
 			sql.fragment`c.payload->'policyFieldBNK' ?| ${sql.array(filters.policyFieldsBNK, 'text')}`
 		);
 	}
-	if (filters.strategyTypes?.length) {
+	if (filters.programTypes?.length) {
 		conditions.push(
-			sql.fragment`c.payload->>'strategyType' IN (${sql.join(
-				filters.strategyTypes,
+			sql.fragment`c.payload->>'programType' IN (${sql.join(
+				filters.programTypes,
 				sql.fragment`, `
 			)})`
 		);
@@ -582,7 +582,7 @@ export function getManyContainers(
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
-		strategyTypes?: string[];
+		programTypes?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
@@ -729,7 +729,7 @@ export function getAllRelatedContainers(
 		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
-		strategyTypes?: string[];
+		programTypes?: string[];
 		taskCategories?: string[];
 		terms?: string;
 		topics?: string[];
@@ -750,7 +750,7 @@ export function getAllRelatedContainers(
 							SELECT *
 							FROM container_relation parent_test
 							WHERE c.guid = parent_test.subject
-							  AND parent_test.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-strategy']})
+							  AND parent_test.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
 								AND parent_test.valid_currently
 								AND NOT parent_test.deleted
 						)
@@ -758,7 +758,7 @@ export function getAllRelatedContainers(
 					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 					FROM container c
 					JOIN container_relation cr ON c.guid = cr.subject
-						AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-strategy']})
+						AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
 					  AND cr.valid_currently
 						AND NOT cr.deleted
 					JOIN is_part_of_relation r ON cr.object = r.subject AND NOT r.is_cycle
@@ -823,9 +823,9 @@ export function getAllRelatedContainers(
 	};
 }
 
-export function getAllRelatedContainersByStrategyType(
+export function getAllRelatedContainersByProgramType(
 	organizations: string[],
-	strategyTypes: string[],
+	programTypes: string[],
 	filters: {
 		audience?: string[];
 		categories?: string[];
@@ -843,11 +843,11 @@ export function getAllRelatedContainersByStrategyType(
 			SELECT co.guid, cr.subject
 			FROM container co
 			JOIN container_relation cr ON co.guid = cr.object
-				AND cr.predicate = ${predicates.enum['is-part-of-strategy']}
+				AND cr.predicate = ${predicates.enum['is-part-of-program']}
 				AND cr.valid_currently
 				AND NOT cr.deleted
 			WHERE co.organization IN (${sql.join(organizations, sql.fragment`, `)})
-				AND co.payload->>'strategyType' IN (${sql.join(strategyTypes, sql.fragment`, `)})
+				AND co.payload->>'programType' IN (${sql.join(programTypes, sql.fragment`, `)})
 		`);
 
 		const containerResult =
@@ -929,7 +929,7 @@ export function getAllContainersRelatedToIndicators(
 								SELECT *
 								FROM container_relation parent_test
 								WHERE c.guid = parent_test.subject
-								  AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
+								  AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-program')
 									AND parent_test.valid_currently
 									AND NOT parent_test.deleted
 							)
@@ -937,7 +937,7 @@ export function getAllContainersRelatedToIndicators(
 							SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
 							FROM container c
 							JOIN container_relation cr ON c.guid = cr.subject
-								AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-strategy')
+								AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-program')
 							  AND cr.valid_currently
 							  AND NOT cr.deleted
 							JOIN is_part_of_relation r ON cr.object = r.subject AND NOT r.is_cycle
@@ -971,7 +971,7 @@ export function getAllContainersRelatedToIndicators(
 	};
 }
 
-export function getAllContainersRelatedToStrategy(
+export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
 		audience?: string[];
@@ -986,7 +986,7 @@ export function getAllContainersRelatedToStrategy(
 		const predicate = [
 			predicates.enum['is-part-of'],
 			predicates.enum['is-part-of-measure'],
-			predicates.enum['is-part-of-strategy']
+			predicates.enum['is-part-of-program']
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
@@ -1023,7 +1023,7 @@ export function getAllContainersRelatedToStrategy(
 					SELECT c.*
 					FROM container c
 					LEFT JOIN container_relation cr ON c.guid = cr.subject
-						AND cr.predicate = 'is-part-of-strategy'
+						AND cr.predicate = 'is-part-of-program'
 						AND cr.object = ${guid}
 						AND cr.valid_currently
 						AND NOT cr.deleted
@@ -1084,7 +1084,7 @@ export function getAllContainersRelatedToMeasure(
 		const predicate = [
 			predicates.enum['is-part-of'],
 			predicates.enum['is-part-of-measure'],
-			predicates.enum['is-part-of-strategy']
+			predicates.enum['is-part-of-program']
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
@@ -1370,8 +1370,8 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			const containerResult =
-				container.payload.type == payloadTypes.enum.strategy
-					? await getAllContainersRelatedToStrategy(container.guid, {
+				container.payload.type == payloadTypes.enum.program
+					? await getAllContainersRelatedToProgram(container.guid, {
 							categories: [],
 							topics: [],
 							type: [

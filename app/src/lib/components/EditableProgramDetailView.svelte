@@ -12,7 +12,7 @@
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
-	import StrategyProperties from '$lib/components/StrategyProperties.svelte';
+	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -22,12 +22,12 @@
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		type StrategyContainer
+		type ProgramContainer
 	} from '$lib/models';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: StrategyContainer;
+		container: ProgramContainer;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
@@ -39,7 +39,7 @@
 			.filter(({ guid, relation }) =>
 				relation.some(
 					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-strategy'] && guid != container.guid
+						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
 				)
 			)
 			.filter(({ payload }) => byPayloadType(payload.type, page.url))
@@ -55,11 +55,11 @@
 			...parts.map(({ guid }, index) => ({
 				object: container.guid,
 				position: index,
-				predicate: predicates.enum['is-part-of-strategy'],
+				predicate: predicates.enum['is-part-of-program'],
 				subject: guid
 			})),
 			...container.relation.filter(
-				({ predicate }) => predicate !== predicates.enum['is-part-of-strategy']
+				({ predicate }) => predicate !== predicates.enum['is-part-of-program']
 			)
 		];
 
@@ -92,7 +92,7 @@
 		) as NewContainer;
 
 		chapter.relation = [
-			{ object: container.guid, predicate: predicates.enum['is-part-of-strategy'], position: 0 }
+			{ object: container.guid, predicate: predicates.enum['is-part-of-program'], position: 0 }
 		];
 
 		$newContainer = chapter;
@@ -151,7 +151,7 @@
 {#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
 	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		{#snippet data()}
-			<StrategyProperties
+			<ProgramProperties
 				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}

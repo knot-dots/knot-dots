@@ -13,8 +13,8 @@ export default async function fetchRelatedContainers(
 		payloadType?: string[];
 		policyFieldBNK?: string[];
 		relationType?: string[];
-		strategy?: string[];
-		strategyType?: string[];
+		program?: string[];
+		programType?: string[];
 		taskCategory?: string[];
 		terms?: string;
 		topic?: string[];
@@ -46,17 +46,17 @@ export default async function fetchRelatedContainers(
 	for (const value of filters.policyFieldBNK ?? []) {
 		params.append('policyFieldBNK', value);
 	}
+	for (const value of filters.program ?? []) {
+		params.append('program', value);
+	}
+	for (const value of filters.programType ?? []) {
+		params.append('programType', value);
+	}
 	for (const value of filters.relationType ?? []) {
 		params.append('relationType', value);
 	}
 	if (sort) {
 		params.append('sort', sort);
-	}
-	for (const value of filters.strategy ?? []) {
-		params.append('strategy', value);
-	}
-	for (const value of filters.strategyType ?? []) {
-		params.append('strategyType', value);
 	}
 	for (const value of filters.taskCategory ?? []) {
 		params.append('taskCategory', value);

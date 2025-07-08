@@ -21,7 +21,7 @@
 						containersRelatedToIndicators={data.containersRelatedToIndicators}
 						indicators={data.indicators}
 						measures={data.measures}
-						strategies={data.strategies}
+						programs={data.programs}
 					/>
 				{:else if isOrganizationalUnitContainer(container)}
 					<EditableOrganizationalUnitDetailView
@@ -29,7 +29,7 @@
 						containersRelatedToIndicators={data.containersRelatedToIndicators}
 						indicators={data.indicators}
 						measures={data.measures}
-						strategies={data.strategies}
+						programs={data.programs}
 					/>
 				{/if}
 			</div>

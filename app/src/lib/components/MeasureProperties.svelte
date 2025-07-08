@@ -10,7 +10,7 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
+	import EditableProgram from '$lib/components/EditableProgram.svelte';
 	import EditableStatus from '$lib/components/EditableStatus.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -33,7 +33,7 @@
 	{#snippet top()}
 		<EditableDuration {editable} bind:container />
 
-		<EditableStrategy {editable} bind:container />
+		<EditableProgram {editable} bind:container />
 
 		<EditableCategory {editable} bind:value={container.payload.category} />
 
@@ -65,7 +65,7 @@
 
 		<EditableDuration {editable} bind:container />
 
-		<EditableStrategy {editable} bind:container />
+		<EditableProgram {editable} bind:container />
 
 		<EditableParent {editable} bind:container />
 

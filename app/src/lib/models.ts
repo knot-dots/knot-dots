@@ -17,9 +17,9 @@ export const overlayKey = z.enum([
 	'measure-monitoring',
 	'measures',
 	'members',
+	'program',
 	'relate',
 	'relations',
-	'strategy',
 	'table',
 	'tasks',
 	'view',
@@ -67,10 +67,10 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'program',
 	'resolution',
 	'resource',
 	'simple_measure',
-	'strategy',
 	'task',
 	'text',
 	'undefined'
@@ -128,7 +128,7 @@ const predicateValues = [
 	'is-objective-for',
 	'is-part-of',
 	'is-part-of-measure',
-	'is-part-of-strategy',
+	'is-part-of-program',
 	'is-prerequisite-for',
 	'is-sub-target-of',
 	'is-subtask-of',
@@ -175,22 +175,22 @@ export const taskStatus = z.enum(taskStatusValues);
 
 export type TaskStatus = z.infer<typeof taskStatus>;
 
-const strategyTypeValues = [
-	'strategy_type.misc',
-	'strategy_type.mobility',
-	'strategy_type.sustainability',
-	'strategy_type.smart_city',
-	'strategy_type.isek',
-	'strategy_type.report',
-	'strategy_type.set_of_rules',
-	'strategy_type.package_of_measures',
-	'strategy_type.funding_program',
-	'strategy_type.guide'
+const programTypeValues = [
+	'program_type.misc',
+	'program_type.mobility',
+	'program_type.sustainability',
+	'program_type.smart_city',
+	'program_type.isek',
+	'program_type.report',
+	'program_type.set_of_rules',
+	'program_type.package_of_measures',
+	'program_type.funding_program',
+	'program_type.guide'
 ] as const;
 
-export const strategyTypes = z.enum(strategyTypeValues);
+export const programTypes = z.enum(programTypeValues);
 
-export type StrategyType = z.infer<typeof strategyTypes>;
+export type ProgramType = z.infer<typeof programTypes>;
 
 const measureTypeValues = [
 	'measure_type.app',
@@ -585,7 +585,7 @@ const simpleMeasurePayload = basePayload
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
-const strategyPayload = basePayload
+const programPayload = basePayload
 	.omit({
 		description: true,
 		summary: true
@@ -595,12 +595,12 @@ const strategyPayload = basePayload
 		image: z.string().url().optional(),
 		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
-		strategyType: strategyTypes.default(strategyTypes.enum['strategy_type.misc']),
-		type: z.literal(payloadTypes.enum.strategy)
+		programType: programTypes.default(programTypes.enum['program_type.misc']),
+		type: z.literal(payloadTypes.enum.program)
 	})
 	.strict();
 
-const initialStrategyPayload = strategyPayload.partial({
+const initialProgramPayload = programPayload.partial({
 	title: true
 });
 
@@ -723,7 +723,7 @@ const payload = z.discriminatedUnion('type', [
 	resolutionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
-	strategyPayload,
+	programPayload,
 	taskPayload,
 	textPayload
 ]);
@@ -760,7 +760,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	resolutionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
-	strategyPayload,
+	programPayload,
 	taskPayload,
 	textPayload,
 	undefinedPayload
@@ -960,16 +960,16 @@ export function isSimpleMeasureContainer(
 	return container.payload.type === payloadTypes.enum.simple_measure;
 }
 
-const strategyContainer = container.extend({
-	payload: strategyPayload
+const programContainer = container.extend({
+	payload: programPayload
 });
 
-export type StrategyContainer = z.infer<typeof strategyContainer>;
+export type ProgramContainer = z.infer<typeof programContainer>;
 
-export function isStrategyContainer(
+export function isProgramContainer(
 	container: AnyContainer | EmptyContainer
-): container is StrategyContainer {
-	return container.payload.type === payloadTypes.enum.strategy;
+): container is ProgramContainer {
+	return container.payload.type === payloadTypes.enum.program;
 }
 
 const textContainer = container.extend({
@@ -1159,7 +1159,7 @@ export const emptyContainer = newContainer.extend({
 		initialResolutionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,
-		initialStrategyPayload,
+		initialProgramPayload,
 		initialTextPayload,
 		initialTaskPayload,
 		initialUndefinedPayload

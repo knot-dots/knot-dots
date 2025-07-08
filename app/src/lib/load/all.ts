@@ -3,7 +3,7 @@ import { filterVisible } from '$lib/authorization';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
-	getAllRelatedContainersByStrategyType,
+	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
@@ -46,31 +46,31 @@ export default (async function load({ locals, url, parent }) {
 							payloadTypes.enum.goal,
 							payloadTypes.enum.indicator,
 							payloadTypes.enum.measure,
-							payloadTypes.enum.simple_measure,
-							payloadTypes.enum.strategy
+							payloadTypes.enum.program,
+							payloadTypes.enum.simple_measure
 						]
 					},
 					url.searchParams.get('sort') ?? ''
 				)
 			);
-		} else if (url.searchParams.has('strategyType')) {
+		} else if (url.searchParams.has('programType')) {
 			containers = await locals.pool.connect(
-				getAllRelatedContainersByStrategyType(
+				getAllRelatedContainersByProgramType(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					url.searchParams.getAll('strategyType'),
+					url.searchParams.getAll('programType'),
 					{
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
 						terms: url.searchParams.get('terms') ?? '',
+						topics: url.searchParams.getAll('topic'),
 						type: [
 							payloadTypes.enum.effect,
 							payloadTypes.enum.goal,
 							payloadTypes.enum.indicator,
 							payloadTypes.enum.measure,
-							payloadTypes.enum.simple_measure,
-							payloadTypes.enum.strategy
+							payloadTypes.enum.program,
+							payloadTypes.enum.simple_measure
 						]
 					},
 					url.searchParams.get('sort') ?? ''
@@ -84,17 +84,17 @@ export default (async function load({ locals, url, parent }) {
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						strategyTypes: url.searchParams.getAll('strategyType'),
+						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
+						topics: url.searchParams.getAll('topic'),
 						type: [
 							payloadTypes.enum.effect,
 							payloadTypes.enum.goal,
 							payloadTypes.enum.indicator,
 							payloadTypes.enum.measure,
+							payloadTypes.enum.program,
 							payloadTypes.enum.resolution,
-							payloadTypes.enum.simple_measure,
-							payloadTypes.enum.strategy
+							payloadTypes.enum.simple_measure
 						]
 					},
 					url.searchParams.get('sort') ?? ''

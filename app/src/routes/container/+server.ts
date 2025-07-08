@@ -23,7 +23,7 @@ import {
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	strategyTypes,
+	programTypes,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -31,7 +31,7 @@ import {
 import {
 	createContainer,
 	getAllContainersRelatedToMeasure,
-	getAllContainersRelatedToStrategy,
+	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getManyContainers,
 	getManyOrganizationalUnitContainers
@@ -46,16 +46,16 @@ export const GET = (async ({ locals, url }) => {
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		isPartOfMeasure: z.array(z.string().uuid()).default([]),
-		isPartOfStrategy: z.array(z.string().uuid()).default([]),
+		isPartOfProgram: z.array(z.string().uuid()).default([]),
 		measureType: z.array(measureTypes).default([]),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
 		policyFieldBNK: z.array(policyFieldBNK).default([]),
+		programType: z.array(programTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
-		strategyType: z.array(strategyTypes).default([]),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
 		topic: z.array(topics).default([])
@@ -75,9 +75,9 @@ export const GET = (async ({ locals, url }) => {
 
 	let containers: AnyContainer[];
 
-	if (parseResult.data.isPartOfStrategy.length > 0) {
+	if (parseResult.data.isPartOfProgram.length > 0) {
 		containers = await locals.pool.connect(
-			getAllContainersRelatedToStrategy(parseResult.data.isPartOfStrategy[0], {
+			getAllContainersRelatedToProgram(parseResult.data.isPartOfProgram[0], {
 				audience: parseResult.data.audience,
 				categories: parseResult.data.category,
 				policyFieldsBNK: parseResult.data.policyFieldBNK,
@@ -129,7 +129,7 @@ export const GET = (async ({ locals, url }) => {
 					measureTypes: parseResult.data.measureType,
 					organizationalUnits: parseResult.data.organizationalUnit,
 					policyFieldsBNK: parseResult.data.policyFieldBNK,
-					strategyTypes: parseResult.data.strategyType,
+					programTypes: parseResult.data.programType,
 					terms: parseResult.data.terms[0],
 					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType

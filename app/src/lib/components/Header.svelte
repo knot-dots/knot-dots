@@ -28,8 +28,8 @@
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import {
 		isMeasureContainer,
+		isProgramContainer,
 		isSimpleMeasureContainer,
-		isStrategyContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment
@@ -129,7 +129,7 @@
 	{#if workspaceOptions}
 		<Workspaces options={workspaceOptions} />
 	{:else if overlay && $overlayStore?.container}
-		{#if isStrategyContainer($overlayStore.container)}
+		{#if isProgramContainer($overlayStore.container)}
 			<ProgramWorkspaces container={$overlayStore.container} />
 		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
 			<MeasureWorkspaces container={$overlayStore.container} />

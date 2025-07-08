@@ -48,8 +48,8 @@ export const actions = {
 				organization: organization.guid
 			})
 		);
-		const strategies = await locals.pool.connect(
-			getManyContainers([organization.guid], { type: ['strategy'] }, '')
+		const programs = await locals.pool.connect(
+			getManyContainers([organization.guid], { type: [payloadTypes.enum.program] }, '')
 		);
 
 		const data = await request.formData();
@@ -74,7 +74,7 @@ export const actions = {
 					'description',
 					'status',
 					'organizationalUnit',
-					'strategy',
+					'program',
 					'topic',
 					'category',
 					'startDate',
@@ -96,7 +96,7 @@ export const actions = {
 					const organizationalUnit = organizationalUnits.find(
 						({ payload }) => payload.name == record.organizationalUnit
 					);
-					const strategy = strategies.find(({ payload }) => payload.title == record.strategy);
+					const program = programs.find(({ payload }) => payload.title == record.program);
 					const container = emptyContainer.parse({
 						managed_by: organizationalUnit?.guid ?? organization.guid,
 						organization: organization.guid,
@@ -128,12 +128,12 @@ export const actions = {
 							type: reverseTranslationMap.get(record.type)
 						},
 						realm: env.PUBLIC_KC_REALM,
-						relation: strategy
+						relation: program
 							? [
 									{
-										object: strategy.guid,
+										object: program.guid,
 										position: parseInt(record.position),
-										predicate: predicates.enum['is-part-of-strategy']
+										predicate: predicates.enum['is-part-of-program']
 									}
 								]
 							: [],
@@ -184,7 +184,7 @@ export const load = (async ({ locals, parent }) => {
 		!defineAbilityFor(locals.user).can(
 			'create',
 			containerOfType(
-				payloadTypes.enum.strategy,
+				payloadTypes.enum.program,
 				currentOrganization.guid,
 				currentOrganizationalUnit?.guid ?? null,
 				currentOrganizationalUnit?.guid ?? currentOrganization.guid,

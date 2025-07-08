@@ -11,16 +11,16 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditablePDF from '$lib/components/EditablePDF.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableStrategyType from '$lib/components/EditableStrategyType.svelte';
+	import EditableProgramType from '$lib/components/EditableProgramType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyContainer, type Container, type StrategyContainer } from '$lib/models';
+	import { type AnyContainer, type Container, type ProgramContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: StrategyContainer;
+		container: ProgramContainer;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
@@ -49,7 +49,7 @@
 
 		<EditablePDF {editable} bind:value={container.payload.pdf} />
 
-		<EditableStrategyType {editable} bind:value={container.payload.strategyType} />
+		<EditableProgramType {editable} bind:value={container.payload.programType} />
 
 		<EditableChapterType {editable} bind:value={container.payload.chapterType} />
 

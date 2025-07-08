@@ -10,7 +10,7 @@
 		computeColumnTitleForGoals,
 		goalsByHierarchyLevel,
 		isGoalContainer,
-		isStrategyContainer,
+		isProgramContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -31,8 +31,8 @@
 
 	let columns = $derived([
 		{
-			addItemUrl: '#create=strategy',
-			containers: data.containers.filter(isStrategyContainer).slice(0, browser ? undefined : 10),
+			addItemUrl: '#create=program',
+			containers: data.containers.filter(isProgramContainer).slice(0, browser ? undefined : 10),
 			key: 'programs',
 			title: $_('programs')
 		},
@@ -68,7 +68,7 @@
 			<BoardColumn
 				addItemUrl={column.addItemUrl &&
 				$mayCreateContainer(
-					payloadTypes.enum.strategy,
+					payloadTypes.enum.program,
 					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
 				)
 					? column.addItemUrl

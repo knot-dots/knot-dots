@@ -2,7 +2,7 @@ import { filterVisible } from '$lib/authorization';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
-	getAllRelatedContainersByStrategyType,
+	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
@@ -43,18 +43,18 @@ export default (async function load({ locals, url, parent }) {
 				)
 			)
 		]);
-	} else if (url.searchParams.has('strategyType')) {
+	} else if (url.searchParams.has('programType')) {
 		[containers] = await Promise.all([
 			locals.pool.connect(
-				getAllRelatedContainersByStrategyType(
+				getAllRelatedContainersByProgramType(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					url.searchParams.getAll('strategyType'),
+					url.searchParams.getAll('programType'),
 					{
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
 						terms: url.searchParams.get('terms') ?? '',
+						topics: url.searchParams.getAll('topic'),
 						type: [payloadTypes.enum.goal]
 					},
 					url.searchParams.get('sort') ?? ''
@@ -70,8 +70,8 @@ export default (async function load({ locals, url, parent }) {
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+						programTypes: url.searchParams.getAll('programType'),
 						topics: url.searchParams.getAll('topic'),
-						strategyTypes: url.searchParams.getAll('strategyType'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [payloadTypes.enum.goal]
 					},

@@ -20,8 +20,8 @@
 	import LandingPage from '~icons/knotdots/landing-page';
 	import Level from '~icons/knotdots/level';
 	import Objects from '~icons/knotdots/objects';
+	import Program from '~icons/knotdots/program';
 	import Star from '~icons/knotdots/star';
-	import Strategy from '~icons/knotdots/strategy';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { boards } from '$lib/models';
@@ -137,7 +137,7 @@
 		},
 		{
 			exists: true,
-			icon: Strategy,
+			icon: Program,
 			label: $_('workspace.type.programs'),
 			recommended: false,
 			value: workspacesLeft.programs[selectedItem[1]] ?? '/programs/catalog'

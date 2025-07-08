@@ -13,11 +13,11 @@
 		isMemberOf,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
-		isStrategyContainer,
+		isProgramContainer,
 		isTaskContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
-		type StrategyContainer,
+		type ProgramContainer,
 		type TaskContainer,
 		type TaskStatus,
 		taskStatus
@@ -127,14 +127,14 @@
 		</ul>
 	</div>
 
-	<div class="strategies">
-		<h3>{$_('profile.my_strategies')}</h3>
+	<div class="programs">
+		<h3>{$_('profile.my_programs')}</h3>
 		<ul class="carousel">
 			{#each containers
-				.filter(isStrategyContainer)
-				.filter((c: StrategyContainer) => isMemberOf($user, c)) as strategy}
+				.filter(isProgramContainer)
+				.filter((c: ProgramContainer) => isMemberOf($user, c)) as program}
 				<li>
-					<Card container={strategy} />
+					<Card container={program} />
 				</li>
 			{/each}
 		</ul>

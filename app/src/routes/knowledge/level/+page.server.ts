@@ -2,7 +2,7 @@ import { filterVisible } from '$lib/authorization';
 import { type Container, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
-	getAllRelatedContainersByStrategyType,
+	getAllRelatedContainersByProgramType,
 	getManyContainers
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -11,7 +11,7 @@ function isRelatedToSome(containers: Container[]) {
 	return ({ relation }: Container) =>
 		relation.some(
 			({ predicate, subject }) =>
-				predicate == predicates.enum['is-part-of-strategy'] &&
+				predicate == predicates.enum['is-part-of-program'] &&
 				containers.find(({ guid }) => guid == subject)
 		);
 }
@@ -30,11 +30,11 @@ export const load = (async ({ locals, url, parent }) => {
 				url.searchParams.get('sort') ?? ''
 			)
 		);
-	} else if (url.searchParams.has('strategyType')) {
+	} else if (url.searchParams.has('programType')) {
 		containers = await locals.pool.connect(
-			getAllRelatedContainersByStrategyType(
+			getAllRelatedContainersByProgramType(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.getAll('strategyType'),
+				url.searchParams.getAll('programType'),
 				{
 					audience: url.searchParams.getAll('audience'),
 					categories: url.searchParams.getAll('category'),
@@ -55,7 +55,7 @@ export const load = (async ({ locals, url, parent }) => {
 					categories: url.searchParams.getAll('category'),
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					topics: url.searchParams.getAll('topic'),
-					strategyTypes: url.searchParams.getAll('strategyType'),
+					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.knowledge]
 				},
@@ -64,16 +64,16 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	}
 
-	const strategies = await locals.pool.connect(
+	const programs = await locals.pool.connect(
 		getManyContainers(
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
-			{ type: [payloadTypes.enum.strategy] },
+			{ type: [payloadTypes.enum.program] },
 			url.searchParams.get('sort') ?? ''
 		)
 	);
 
 	return {
 		containers: filterVisible(containers, locals.user),
-		strategies: filterVisible(strategies.filter(isRelatedToSome(containers)), locals.user)
+		programs: filterVisible(programs.filter(isRelatedToSome(containers)), locals.user)
 	};
 }) satisfies PageServerLoad;

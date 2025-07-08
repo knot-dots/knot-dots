@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { type Container, filterOrganizationalUnits, predicates } from '$lib/models';
+import { type Container, filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
@@ -64,10 +64,10 @@ export const load = (async ({ locals, url, parent }) => {
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						strategyTypes: url.searchParams.getAll('strategyType'),
+						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
-						type: ['strategy']
+						topics: url.searchParams.getAll('topic'),
+						type: [payloadTypes.enum.program]
 					},
 					url.searchParams.get('sort') ?? ''
 				)

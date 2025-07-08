@@ -12,7 +12,7 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
+	import EditableProgram from '$lib/components/EditableProgram.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
@@ -49,7 +49,7 @@
 		{#if isPartOfMeasure}
 			<EditableMeasure {container} {editable} />
 		{:else}
-			<EditableStrategy {container} {editable} />
+			<EditableProgram {container} {editable} />
 		{/if}
 
 		<EditableCategory {editable} bind:value={container.payload.category} />
@@ -82,7 +82,7 @@
 		{#if isPartOfMeasure}
 			<EditableMeasure {container} {editable} />
 		{:else}
-			<EditableStrategy {container} {editable} />
+			<EditableProgram {container} {editable} />
 		{/if}
 
 		<EditableParent {container} {editable} />

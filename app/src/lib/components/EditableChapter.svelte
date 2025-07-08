@@ -25,8 +25,8 @@
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		status,
-		type StrategyContainer
+		type ProgramContainer,
+		status
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 
@@ -34,7 +34,7 @@
 		container: Container;
 		editable?: boolean;
 		headingTag: string;
-		isPartOf: StrategyContainer;
+		isPartOf: ProgramContainer;
 		relatedContainers: Container[];
 	}
 
@@ -49,7 +49,7 @@
 	let isPartOfRelation = $derived(
 		isPartOf.relation.filter(
 			({ object, predicate }) =>
-				predicate == predicates.enum['is-part-of-strategy'] && object == isPartOf.guid
+				predicate == predicates.enum['is-part-of-program'] && object == isPartOf.guid
 		)
 	);
 
@@ -76,7 +76,7 @@
 			) as NewContainer;
 
 			chapter.relation = [
-				{ object: isPartOf.guid, predicate: predicates.enum['is-part-of-strategy'], position }
+				{ object: isPartOf.guid, predicate: predicates.enum['is-part-of-program'], position }
 			];
 
 			$newContainer = chapter;

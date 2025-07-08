@@ -112,7 +112,7 @@
 			return '#';
 		} else if (hashParams.has('indicators')) {
 			return overlayURL(url, 'view', container.guid, [
-				['strategy', hashParams.get('indicators') as string]
+				['program', hashParams.get('indicators') as string]
 			]);
 		} else {
 			return overlayURL(url, 'view', container.guid);
@@ -330,8 +330,8 @@
 			</span>
 		{:else if 'progress' in container.payload}
 			<Progress value={container.payload.progress} compact />
-		{:else if 'strategyType' in container.payload}
-			<span class="badge">{$_(container.payload.strategyType)}</span>
+		{:else if 'programType' in container.payload}
+			<span class="badge">{$_(container.payload.programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>
 		{/if}

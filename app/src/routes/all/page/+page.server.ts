@@ -22,11 +22,11 @@ export const load = (async ({ locals, parent }) => {
 			.concat(container.guid);
 	}
 
-	const [strategies, measures, indicators] = await Promise.all([
+	const [programs, measures, indicators] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
 				'default' in container.payload && container.payload.default ? [] : [container.organization],
-				{ organizationalUnits, type: [payloadTypes.enum.strategy] },
+				{ organizationalUnits, type: [payloadTypes.enum.program] },
 				''
 			)
 		),
@@ -58,6 +58,6 @@ export const load = (async ({ locals, parent }) => {
 		indicators: filterVisible(indicators, locals.user),
 		containersRelatedToIndicators: filterVisible(relatedContainers, locals.user),
 		measures: filterVisible(measures, locals.user),
-		strategies: filterVisible(strategies, locals.user)
+		programs: filterVisible(programs, locals.user)
 	};
 }) satisfies PageServerLoad;

@@ -9,12 +9,12 @@
 		type Container,
 		isGoalContainer,
 		isMeasureContainer,
+		isProgramContainer,
 		isResolutionContainer,
 		isSimpleMeasureContainer,
-		isStrategyContainer,
 		policyFieldBNK,
 		predicates,
-		strategyTypes,
+		programTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
@@ -59,7 +59,7 @@
 			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['strategyType', new Map(strategyTypes.options.map((v) => [v as string, 0]))]
+			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
 		]);
 
 		return computeFacetCount(
@@ -70,7 +70,7 @@
 					isMeasureContainer(c) ||
 					isResolutionContainer(c) ||
 					isSimpleMeasureContainer(c) ||
-					isStrategyContainer(c)
+					isProgramContainer(c)
 			)
 		);
 	});

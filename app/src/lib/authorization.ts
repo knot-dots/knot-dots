@@ -15,7 +15,7 @@ type Actions =
 	| 'prioritize';
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
-const strategyChapterTypes = [
+const programChapterTypes = [
 	payloadTypes.enum.goal,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
@@ -41,11 +41,7 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('relate', [
-			payloadTypes.enum.indicator,
-			payloadTypes.enum.strategy,
-			...strategyChapterTypes
-		]);
+		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...programChapterTypes]);
 		can(['delete-recursively', 'relate'], measureMonitoringTypes);
 		can('delete-recursively', payloadTypes.enum.measure);
 		can('invite-members', payloadTypes.options);
@@ -53,10 +49,10 @@ export default function defineAbilityFor(user: User) {
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can(
 			'update',
-			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
+			[payloadTypes.enum.program, ...programChapterTypes, ...measureMonitoringTypes],
 			['organization', 'organizational_unit']
 		);
-		can('update', payloadTypes.enum.strategy, ['chapterType']);
+		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
 		can('update', payloadTypes.enum.organization, {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
@@ -69,12 +65,12 @@ export default function defineAbilityFor(user: User) {
 		});
 		can(
 			['create', 'update', 'delete'],
-			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
+			[payloadTypes.enum.program, ...programChapterTypes, ...measureMonitoringTypes],
 			{ organization: { $in: [...user.adminOf, ...user.headOf] } }
 		);
 		can(
 			['create', 'update', 'delete'],
-			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
+			[payloadTypes.enum.program, ...programChapterTypes, ...measureMonitoringTypes],
 			{ organizational_unit: { $in: [...user.adminOf, ...user.headOf] } }
 		);
 		can('invite-members', payloadTypes.options, {
@@ -83,21 +79,19 @@ export default function defineAbilityFor(user: User) {
 		can('invite-members', payloadTypes.options, {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can('create', [...strategyChapterTypes, ...measureMonitoringTypes], {
+		can('create', [...programChapterTypes, ...measureMonitoringTypes], {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
-		can(
-			'update',
-			[payloadTypes.enum.strategy, ...strategyChapterTypes, ...measureMonitoringTypes],
-			{ managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
-		);
-		can(['delete'], [...strategyChapterTypes, ...measureMonitoringTypes], {
+		can('update', [payloadTypes.enum.program, ...programChapterTypes, ...measureMonitoringTypes], {
+			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+		});
+		can(['delete'], [...programChapterTypes, ...measureMonitoringTypes], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can(['create', 'update', 'delete'], payloadTypes.enum.indicator, {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can('update', payloadTypes.enum.strategy, ['chapterType'], {
+		can('update', payloadTypes.enum.program, ['chapterType'], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can('invite-members', payloadTypes.options, {
@@ -107,8 +101,8 @@ export default function defineAbilityFor(user: User) {
 			'relate',
 			[
 				payloadTypes.enum.indicator,
-				payloadTypes.enum.strategy,
-				...strategyChapterTypes,
+				payloadTypes.enum.program,
+				...programChapterTypes,
 				...measureMonitoringTypes
 			],
 			{ managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
@@ -117,8 +111,8 @@ export default function defineAbilityFor(user: User) {
 			'relate',
 			[
 				payloadTypes.enum.indicator,
-				payloadTypes.enum.strategy,
-				...strategyChapterTypes,
+				payloadTypes.enum.program,
+				...programChapterTypes,
 				...measureMonitoringTypes
 			],
 			{ organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
@@ -127,8 +121,8 @@ export default function defineAbilityFor(user: User) {
 			'relate',
 			[
 				payloadTypes.enum.indicator,
-				payloadTypes.enum.strategy,
-				...strategyChapterTypes,
+				payloadTypes.enum.program,
+				...programChapterTypes,
 				...measureMonitoringTypes
 			],
 			{ organizatioal_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] } }
@@ -205,5 +199,5 @@ export function filterVisible<T extends AnyContainer>(containers: Array<T>, user
 }
 
 export function mayImportFromCSV(user: User) {
-	return defineAbilityFor(user).can('create', payloadTypes.enum.strategy);
+	return defineAbilityFor(user).can('create', payloadTypes.enum.program);
 }

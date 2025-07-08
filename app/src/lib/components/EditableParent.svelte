@@ -26,16 +26,16 @@
 		organization: string,
 		organizational_unit: string | null,
 		measureGuid?: string,
-		strategyGuid?: string
+		programGuid?: string
 	): Promise<Container[]> {
 		if (measureGuid) {
 			return fetchContainers({
 				isPartOfMeasure: [measureGuid],
 				payloadType: [payloadTypes.enum.goal]
 			}) as Promise<Container[]>;
-		} else if (strategyGuid) {
+		} else if (programGuid) {
 			return fetchContainers({
-				isPartOfStrategy: [strategyGuid],
+				isPartOfProgram: [programGuid],
 				payloadType:
 					payloadType == payloadTypes.enum.knowledge
 						? [payloadTypes.enum.knowledge]
@@ -56,8 +56,8 @@
 
 	let organizationalUnit = $derived(container.organizational_unit);
 
-	let strategyGuid = $derived(
-		container.relation.find(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+	let programGuid = $derived(
+		container.relation.find(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
 			?.object
 	);
 
@@ -77,7 +77,7 @@
 			organization,
 			organizationalUnit,
 			measureGuid,
-			strategyGuid
+			programGuid
 		)
 	);
 
@@ -129,8 +129,8 @@
 						.includes(guid)
 			)
 			.filter(({ relation }) =>
-				strategyGuid
-					? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-strategy'])
+				programGuid
+					? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
 					: measureGuid
 						? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
 						: true

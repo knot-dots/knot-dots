@@ -6,8 +6,8 @@
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
+	import EditableProgram from '$lib/components/EditableProgram.svelte';
 	import EditableResolutionStatus from '$lib/components/EditableResolutionStatus.svelte';
-	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableValidFrom from '$lib/components/EditableValidFrom.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -53,7 +53,7 @@
 
 		<EditableValidFrom editable bind:container />
 
-		<EditableStrategy {editable} bind:container />
+		<EditableProgram {editable} bind:container />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />

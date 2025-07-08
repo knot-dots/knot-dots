@@ -7,7 +7,7 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableStrategy from '$lib/components/EditableStrategy.svelte';
+	import EditableProgram from '$lib/components/EditableProgram.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
@@ -34,7 +34,7 @@
 			/>
 		{/if}
 
-		<EditableStrategy {editable} bind:container />
+		<EditableProgram {editable} bind:container />
 
 		<EditableParent {container} {editable} />
 

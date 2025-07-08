@@ -18,8 +18,8 @@
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isObjectiveContainer,
+		isProgramContainer,
 		isRelatedTo,
-		isStrategyContainer,
 		paramsFromFragment
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -129,12 +129,12 @@
 			</div>
 		{/if}
 
-		<div class="details-tab" id="strategies">
-			<h3>{$_('strategies')}</h3>
+		<div class="details-tab" id="programs">
+			<h3>{$_('programs')}</h3>
 			<ul class="carousel">
-				{#each relatedContainers.filter(isStrategyContainer) as strategy}
+				{#each relatedContainers.filter(isProgramContainer) as program}
 					<li>
-						<Card container={strategy} />
+						<Card container={program} />
 					</li>
 				{/each}
 			</ul>

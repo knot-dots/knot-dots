@@ -10,7 +10,7 @@
 		measureTypes,
 		policyFieldBNK,
 		predicates,
-		strategyTypes,
+		programTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
@@ -55,7 +55,7 @@
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
 			['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
-			['strategyType', new Map(strategyTypes.options.map((v) => [v as string, 0]))]
+			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
 		]);
 
 		return computeFacetCount(facets, data.containers);

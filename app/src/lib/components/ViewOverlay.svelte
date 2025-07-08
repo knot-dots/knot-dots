@@ -36,10 +36,10 @@
 		isObjectiveContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isProgramContainer,
 		isResolutionContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
-		isStrategyContainer,
 		isTaskContainer,
 		isTextContainer,
 		type NewContainer,
@@ -47,8 +47,8 @@
 		payloadTypes,
 		policyFieldBNK,
 		predicates,
+		type ProgramContainer,
 		quantities,
-		type StrategyContainer,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
@@ -86,12 +86,12 @@
 
 	function mayDeriveFrom(container: AnyContainer) {
 		return (
-			isStrategyContainer(container) ||
+			isProgramContainer(container) ||
 			container.relation
 				.filter(({ object }) => object !== container.guid)
 				.some(
 					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-strategy'] ||
+						predicate === predicates.enum['is-part-of-program'] ||
 						predicate === predicates.enum['is-part-of-measure']
 				)
 		);
@@ -104,29 +104,29 @@
 	let createAnotherOptions = $derived.by(() => {
 		let createAnotherOptions: { label: string; value: string }[] = [];
 
-		const isPartOfStrategyRelation = container.relation.find(
-			({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
+		const isPartOfProgramRelation = container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-part-of-program']
 		);
 		const isPartOfMeasureRelation = container.relation.find(
 			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
 		);
 
-		if (isStrategyContainer(container)) {
+		if (isProgramContainer(container)) {
 			createAnotherOptions = [...container.payload.chapterType].map((p) => ({
 				label: $_(p),
 				value: p
 			}));
-		} else if (isPartOfStrategyRelation) {
-			const strategy = relatedContainers
-				.filter(isStrategyContainer)
+		} else if (isPartOfProgramRelation) {
+			const program = relatedContainers
+				.filter(isProgramContainer)
 				.find(({ relation }) =>
 					relation.some(
 						({ predicate, object }) =>
-							object == isPartOfStrategyRelation.object &&
-							predicate == isPartOfStrategyRelation.predicate
+							object == isPartOfProgramRelation.object &&
+							predicate == isPartOfProgramRelation.predicate
 					)
 				);
-			createAnotherOptions = [...(strategy?.payload.chapterType ?? [])].map((p) => ({
+			createAnotherOptions = [...(program?.payload.chapterType ?? [])].map((p) => ({
 				label: $_(p),
 				value: p
 			}));
@@ -185,24 +185,24 @@
 					: undefined)
 			};
 
-			const isPartOfStrategyRelation = container.relation.find(
-				({ predicate }) => predicate === predicates.enum['is-part-of-strategy']
+			const isPartOfProgramRelation = container.relation.find(
+				({ predicate }) => predicate === predicates.enum['is-part-of-program']
 			);
 
 			const isPartOfMeasureRelation = container.relation.find(
 				({ predicate }) => predicate === predicates.enum['is-part-of-measure']
 			);
 
-			if (isStrategyContainer(container)) {
+			if (isProgramContainer(container)) {
 				derived.relation = [
-					{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-strategy'] }
+					{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 				];
-			} else if (isPartOfStrategyRelation) {
+			} else if (isPartOfProgramRelation) {
 				derived.relation = [
 					{
-						object: isPartOfStrategyRelation.object,
-						position: isPartOfStrategyRelation.position + 1,
-						predicate: predicates.enum['is-part-of-strategy']
+						object: isPartOfProgramRelation.object,
+						position: isPartOfProgramRelation.position + 1,
+						predicate: predicates.enum['is-part-of-program']
 					}
 				];
 			} else if (isPartOfMeasureRelation) {
@@ -268,13 +268,13 @@
 
 	let isThinking = $state(false);
 
-	async function askAI(container: StrategyContainer) {
+	async function askAI(container: ProgramContainer) {
 		isThinking = true;
 
 		try {
 			const response = await fetch('/ask-ai', {
 				credentials: 'include',
-				body: new URLSearchParams({ strategy: container.guid }),
+				body: new URLSearchParams({ program: container.guid }),
 				method: 'POST'
 			});
 
@@ -294,7 +294,7 @@
 	}
 </script>
 
-{#if isStrategyContainer(container)}
+{#if isProgramContainer(container)}
 	<Header
 		facets={computeFacetCount(
 			new Map([
@@ -307,7 +307,7 @@
 			relatedContainers.filter(({ guid, relation }) =>
 				relation.some(
 					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-strategy'] && guid !== container.guid
+						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
 				)
 			)
 		)}
@@ -356,6 +356,12 @@
 		{#await import('./EditableOrganizationDetailView.svelte') then { default: EditableOrganizationDetailView }}
 			<EditableOrganizationDetailView bind:container />
 		{/await}
+	{:else if isProgramContainer(container)}
+		{#await import('./EditableProgramDetailView.svelte') then { default: EditableProgramDetailView }}
+			{#key relatedContainers}
+				<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
+			{/key}
+		{/await}
 	{:else if isResolutionContainer(container)}
 		{#await import('./EditableResolutionDetailView.svelte') then { default: EditableResolutionDetailView }}
 			<EditableResolutionDetailView bind:container {relatedContainers} {revisions} />
@@ -363,12 +369,6 @@
 	{:else if isResourceContainer(container)}
 		{#await import('./EditableResourceDetailView.svelte') then { default: EditableResourceDetailView }}
 			<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isStrategyContainer(container)}
-		{#await import('./EditableStrategyDetailView.svelte') then { default: EditableStrategyDetailView }}
-			{#key relatedContainers}
-				<EditableStrategyDetailView bind:container {relatedContainers} {revisions} />
-			{/key}
 		{/await}
 	{:else if isTaskContainer(container)}
 		{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}
@@ -418,12 +418,12 @@
 					{$_('copy')}
 				</button>
 			{/if}
-			{#if createFeatureDecisions(page.data.features).useAI() && isStrategyContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
+			{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
 				<button
 					class="button-ai"
 					class:is-active={isThinking}
 					type="button"
-					onclick={() => askAI(container as StrategyContainer)}
+					onclick={() => askAI(container as ProgramContainer)}
 				>
 					<AskAI />
 					{$_('ask_ai')}

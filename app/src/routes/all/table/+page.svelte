@@ -10,7 +10,7 @@
 		isMeasureContainer,
 		isResolutionContainer,
 		isSimpleMeasureContainer,
-		isStrategyContainer
+		isProgramContainer
 	} from '$lib/models';
 
 	let { data }: PageProps = $props();
@@ -39,7 +39,7 @@
 					isMeasureContainer(c) ||
 					isResolutionContainer(c) ||
 					isSimpleMeasureContainer(c) ||
-					isStrategyContainer(c)
+					isProgramContainer(c)
 			)
 			.slice(0, browser ? undefined : 20)}
 	/>

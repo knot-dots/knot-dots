@@ -38,77 +38,77 @@ function initializeNewContainer(
 test('containers can be related to each other', async ({ connection }: Fixtures) => {
 	const expectedRelations: Relation[] = [];
 
-	const strategy = await createContainer(
+	const program = await createContainer(
 		initializeNewContainer(
 			{
 				title: 'Lorem ipsum',
-				type: payloadTypes.enum.strategy
+				type: payloadTypes.enum.program
 			},
 			[]
 		)
 	)(connection);
 
-	const partOfStrategyTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
-	for (const payloadType of partOfStrategyTypes) {
-		const i = partOfStrategyTypes.indexOf(payloadType);
-		const partOfStrategy = await createContainer(
+	for (const payloadType of partOfProgramTypes) {
+		const i = partOfProgramTypes.indexOf(payloadType);
+		const partOfProgram = await createContainer(
 			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
 				{
-					object: strategy.guid,
+					object: program.guid,
 					position: i,
-					predicate: predicates.enum['is-part-of-strategy']
+					predicate: predicates.enum['is-part-of-program']
 				}
 			])
 		)(connection);
-		expectedRelations.push(...partOfStrategy.relation);
+		expectedRelations.push(...partOfProgram.relation);
 	}
 
-	const strategyWithRelations = await getContainerByGuid(strategy.guid)(connection);
-	expect(strategyWithRelations.relation).toEqual(expectedRelations);
+	const programWithRelations = await getContainerByGuid(program.guid)(connection);
+	expect(programWithRelations.relation).toEqual(expectedRelations);
 });
 
 test('relation positions can be updated', async ({ connection }: Fixtures) => {
-	const expectedRelationsOfStrategy: Relation[] = [];
+	const expectedRelationsOfProgram: Relation[] = [];
 
-	const strategy = await createContainer(
+	const program = await createContainer(
 		initializeNewContainer(
 			{
 				title: 'Lorem ipsum',
-				type: payloadTypes.enum.strategy
+				type: payloadTypes.enum.program
 			},
 			[]
 		)
 	)(connection);
 
-	const partOfStrategyTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
-	for (const payloadType of partOfStrategyTypes) {
-		const i = partOfStrategyTypes.indexOf(payloadType);
-		const partOfStrategy = await createContainer(
+	for (const payloadType of partOfProgramTypes) {
+		const i = partOfProgramTypes.indexOf(payloadType);
+		const partOfProgram = await createContainer(
 			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
 				{
-					object: strategy.guid,
+					object: program.guid,
 					position: i,
-					predicate: predicates.enum['is-part-of-strategy']
+					predicate: predicates.enum['is-part-of-program']
 				}
 			])
 		)(connection);
-		expectedRelationsOfStrategy.push(...partOfStrategy.relation);
+		expectedRelationsOfProgram.push(...partOfProgram.relation);
 	}
 
-	const strategyWithRelations = await getContainerByGuid(strategy.guid)(connection);
-	expect(strategyWithRelations.relation).toEqual(expectedRelationsOfStrategy);
+	const programWithRelations = await getContainerByGuid(program.guid)(connection);
+	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
 
 	await updateManyContainerRelations(
-		[...strategyWithRelations.relation.slice(1), strategyWithRelations.relation[0]].map(
+		[...programWithRelations.relation.slice(1), programWithRelations.relation[0]].map(
 			(r, index) => ({ ...r, position: index })
 		)
 	)(connection);
 
-	const strategyWithModifiedRelations = await getContainerByGuid(strategy.guid)(connection);
-	expect(strategyWithModifiedRelations.relation).toEqual(
-		[...expectedRelationsOfStrategy.slice(1), expectedRelationsOfStrategy[0]].map((r, index) => ({
+	const programWithModifiedRelations = await getContainerByGuid(program.guid)(connection);
+	expect(programWithModifiedRelations.relation).toEqual(
+		[...expectedRelationsOfProgram.slice(1), expectedRelationsOfProgram[0]].map((r, index) => ({
 			...r,
 			position: index
 		}))
@@ -118,99 +118,99 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 test('relations are added or removed when updating a container', async ({
 	connection
 }: Fixtures) => {
-	const expectedRelationsOfStrategy: Relation[] = [];
+	const expectedRelationsOfProgram: Relation[] = [];
 
-	const strategy = await createContainer(
+	const program = await createContainer(
 		initializeNewContainer(
 			{
 				title: 'Lorem ipsum',
-				type: payloadTypes.enum.strategy
+				type: payloadTypes.enum.program
 			},
 			[]
 		)
 	)(connection);
 
-	const partOfStrategyTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
-	for (const payloadType of partOfStrategyTypes) {
-		const i = partOfStrategyTypes.indexOf(payloadType);
-		const partOfStrategy = await createContainer(
+	for (const payloadType of partOfProgramTypes) {
+		const i = partOfProgramTypes.indexOf(payloadType);
+		const partOfProgram = await createContainer(
 			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
 				{
-					object: strategy.guid,
+					object: program.guid,
 					position: i,
-					predicate: predicates.enum['is-part-of-strategy']
+					predicate: predicates.enum['is-part-of-program']
 				}
 			])
 		)(connection);
-		expectedRelationsOfStrategy.push(...partOfStrategy.relation);
+		expectedRelationsOfProgram.push(...partOfProgram.relation);
 	}
 
-	const strategyWithRelations = await getContainerByGuid(strategy.guid)(connection);
-	expect(strategyWithRelations.relation).toEqual(expectedRelationsOfStrategy);
+	const programWithRelations = await getContainerByGuid(program.guid)(connection);
+	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
 
 	const anotherContainer = await createContainer(
 		initializeNewContainer({ title: 'Lorem ipsum', type: payloadTypes.enum.measure }, [])
 	)(connection);
 
 	const newRelation = {
-		object: strategy.guid,
+		object: program.guid,
 		position: 0,
-		predicate: predicates.enum['is-part-of-strategy'],
+		predicate: predicates.enum['is-part-of-program'],
 		subject: anotherContainer.guid
 	};
 
 	await updateContainer(
 		modifiedContainer.parse({
-			...strategyWithRelations,
-			relation: [newRelation, ...strategyWithRelations.relation.slice(1)]
+			...programWithRelations,
+			relation: [newRelation, ...programWithRelations.relation.slice(1)]
 		})
 	)(connection);
 
-	const strategyWithModifiedRelations = await getContainerByGuid(strategy.guid)(connection);
-	expect(strategyWithModifiedRelations.relation).toEqual([
+	const programWithModifiedRelations = await getContainerByGuid(program.guid)(connection);
+	expect(programWithModifiedRelations.relation).toEqual([
 		newRelation,
-		...expectedRelationsOfStrategy.slice(1)
+		...expectedRelationsOfProgram.slice(1)
 	]);
 
 	const anotherContainerWitRelations = await getContainerByGuid(anotherContainer.guid)(connection);
 	expect(anotherContainerWitRelations.relation).toEqual([newRelation]);
 
-	const formerFirstPartOfStrategy = await getContainerByGuid(
-		expectedRelationsOfStrategy[0].subject
-	)(connection);
-	expect(formerFirstPartOfStrategy.relation).toEqual([]);
+	const formerFirstPartOfProgram = await getContainerByGuid(expectedRelationsOfProgram[0].subject)(
+		connection
+	);
+	expect(formerFirstPartOfProgram.relation).toEqual([]);
 });
 
 test('adding more relations does not interfere with existing relations', async ({
 	connection
 }: Fixtures) => {
-	const expectedRelationsOfStrategy: Relation[] = [];
+	const expectedRelationsOfProgram: Relation[] = [];
 
-	const strategy = await createContainer(
+	const program = await createContainer(
 		initializeNewContainer(
 			{
 				title: 'Lorem ipsum',
-				type: payloadTypes.enum.strategy
+				type: payloadTypes.enum.program
 			},
 			[]
 		)
 	)(connection);
 
-	const partOfStrategyTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
-	for (const payloadType of partOfStrategyTypes) {
-		const i = partOfStrategyTypes.indexOf(payloadType);
-		const partOfStrategy = await createContainer(
+	for (const payloadType of partOfProgramTypes) {
+		const i = partOfProgramTypes.indexOf(payloadType);
+		const partOfProgram = await createContainer(
 			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
 				{
-					object: strategy.guid,
+					object: program.guid,
 					position: i,
-					predicate: predicates.enum['is-part-of-strategy']
+					predicate: predicates.enum['is-part-of-program']
 				}
 			])
 		)(connection);
-		expectedRelationsOfStrategy.push(...partOfStrategy.relation);
+		expectedRelationsOfProgram.push(...partOfProgram.relation);
 	}
 
 	const task = await createContainer(
@@ -221,7 +221,7 @@ test('adding more relations does not interfere with existing relations', async (
 			},
 			[
 				{
-					object: expectedRelationsOfStrategy[2].subject,
+					object: expectedRelationsOfProgram[2].subject,
 					position: 0,
 					predicate: predicates.enum['is-part-of']
 				}
@@ -230,13 +230,13 @@ test('adding more relations does not interfere with existing relations', async (
 	)(connection);
 	expect(task.relation).toEqual([
 		{
-			object: expectedRelationsOfStrategy[2].subject,
+			object: expectedRelationsOfProgram[2].subject,
 			position: 0,
 			predicate: predicates.enum['is-part-of'],
 			subject: task.guid
 		}
 	]);
 
-	const strategyWithRelations = await getContainerByGuid(strategy.guid)(connection);
-	expect(strategyWithRelations.relation).toEqual(expectedRelationsOfStrategy);
+	const programWithRelations = await getContainerByGuid(program.guid)(connection);
+	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
 });

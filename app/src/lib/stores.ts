@@ -15,7 +15,7 @@ import {
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	isIndicatorContainer,
-	isStrategyContainer,
+	isProgramContainer,
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
@@ -234,8 +234,8 @@ if (browser) {
 			if (isIndicatorContainer(container)) {
 				const relatedContainers = await fetchRelatedContainers(container.guid, {
 					organization: [container.organization],
-					...(hashParams.has('strategy')
-						? { strategy: [hashParams.get('strategy') as string] }
+					...(hashParams.has('program')
+						? { program: [hashParams.get('program') as string] }
 						: undefined)
 				});
 				overlay.set({
@@ -244,11 +244,11 @@ if (browser) {
 					relatedContainers,
 					revisions
 				});
-			} else if (isStrategyContainer(container)) {
+			} else if (isProgramContainer(container)) {
 				const relatedContainers = (await fetchContainers({
 					audience: hashParams.getAll('audience'),
 					category: hashParams.getAll('category'),
-					isPartOfStrategy: [container.guid],
+					isPartOfProgram: [container.guid],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
@@ -364,7 +364,7 @@ if (browser) {
 					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
-					relationType: [predicates.enum['is-part-of-strategy']],
+					relationType: [predicates.enum['is-part-of-program']],
 					terms: hashParams.get('terms') ?? '',
 					topic: hashParams.getAll('topic')
 				},
@@ -422,7 +422,7 @@ if (browser) {
 			)) as Container[];
 			const container = revisions[revisions.length - 1];
 			const relatedContainers = (await fetchContainers({
-				isPartOfStrategy: [container.guid]
+				isPartOfProgram: [container.guid]
 			})) as Container[];
 			overlay.set({
 				key: overlayKey.enum.indicators,

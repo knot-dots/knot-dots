@@ -1,0 +1,14 @@
+UPDATE container SET payload = jsonb_set(payload, '{type}', '"program"') WHERE payload->>'type' = 'strategy';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', payload->'strategyType', true) WHERE payload->>'type' = 'program';
+UPDATE container SET payload = payload - 'strategyType' WHERE payload->>'type' = 'program';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.misc"') WHERE payload->>'programType' = 'strategy_type.misc';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.mobility"') WHERE payload->>'programType' = 'strategy_type.mobility';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.sustainability"') WHERE payload->>'programType' = 'strategy_type.sustainability';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.smart_city"') WHERE payload->>'programType' = 'strategy_type.smart_city';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.isek"') WHERE payload->>'programType' = 'strategy_type.isek';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.report"') WHERE payload->>'programType' = 'strategy_type.report';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.set_of_rules"') WHERE payload->>'programType' = 'strategy_type.set_of_rules';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.package_of_measures"') WHERE payload->>'programType' = 'strategy_type.package_of_measures';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.funding_program"') WHERE payload->>'programType' = 'strategy_type.funding_program';
+UPDATE container SET payload = jsonb_set(payload, '{programType}', '"program_type.guide"') WHERE payload->>'programType' = 'strategy_type.guide';
+UPDATE container_relation SET predicate = 'is-part-of-program' WHERE predicate = 'is-part-of-strategy';

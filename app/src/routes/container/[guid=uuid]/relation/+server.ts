@@ -16,7 +16,7 @@ import {
 	policyFieldBNK,
 	predicates,
 	relation,
-	strategyTypes,
+	programTypes,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -24,7 +24,7 @@ import {
 import {
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
-	getAllContainersRelatedToStrategy,
+	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
@@ -45,10 +45,10 @@ export const GET = (async ({ locals, params, url }) => {
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
 		policyFieldBNK: z.array(policyFieldBNK).default([]),
+		program: z.array(z.string()).default([]),
+		programType: z.array(programTypes).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
-		strategy: z.array(z.string()).default([]),
-		strategyType: z.array(strategyTypes).default([]),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
 		topic: z.array(topics).default([])
@@ -72,13 +72,13 @@ export const GET = (async ({ locals, params, url }) => {
 		let containers;
 
 		if (isIndicatorContainer(container)) {
-			if (parseResult.data.strategy.length > 0) {
-				const [containersRelatedToStrategy, containersRelatedToIndicator] = await Promise.all([
-					locals.pool.connect(getAllContainersRelatedToStrategy(parseResult.data.strategy[0], {})),
+			if (parseResult.data.program.length > 0) {
+				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
+					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
 					locals.pool.connect(getAllContainersRelatedToIndicators([container], {}))
 				]);
 
-				containers = containersRelatedToStrategy.filter(({ guid }) =>
+				containers = containersRelatedToProgram.filter(({ guid }) =>
 					containersRelatedToIndicator.some(
 						({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
 					)
@@ -167,7 +167,7 @@ export const GET = (async ({ locals, params, url }) => {
 						measureTypes: parseResult.data.measureType,
 						organizationalUnits: parseResult.data.organizationalUnit,
 						policyFieldsBNK: parseResult.data.policyFieldBNK,
-						strategyTypes: parseResult.data.strategyType,
+						programTypes: parseResult.data.programType,
 						taskCategories: parseResult.data.taskCategory,
 						terms: parseResult.data.terms[0],
 						topics: parseResult.data.topic,
