@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Help from '$lib/components/Help.svelte';
-	import ResolutionsPage from '$lib/components/ResolutionsPage.svelte';
+	import RulesPage from '$lib/components/RulesPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<ResolutionsPage {data}>
+<RulesPage {data}>
 	<Table
 		columns={[
 			{ heading: $_('title'), key: 'title' },
 			{ heading: $_('description'), key: 'description' },
 			{ heading: $_('visibility.label'), key: 'visibility' },
-			{ heading: $_('resolution_status'), key: 'status' },
+			{ heading: $_('rule_status'), key: 'status' },
 			{ heading: $_('category'), key: 'category' },
 			{ heading: $_('topic'), key: 'topic' },
 			{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
@@ -23,5 +23,5 @@
 		]}
 		rows={data.containers}
 	/>
-	<Help slug="resolutions-table" />
-</ResolutionsPage>
+	<Help slug="rules-table" />
+</RulesPage>

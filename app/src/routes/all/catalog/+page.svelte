@@ -6,7 +6,7 @@
 	import {
 		isGoalContainer,
 		isMeasureContainer,
-		isResolutionContainer,
+		isRuleContainer,
 		isSimpleMeasureContainer,
 		isProgramContainer,
 		payloadTypes
@@ -23,7 +23,7 @@
 				(c) =>
 					isGoalContainer(c) ||
 					isMeasureContainer(c) ||
-					isResolutionContainer(c) ||
+					isRuleContainer(c) ||
 					isSimpleMeasureContainer(c) ||
 					isProgramContainer(c)
 			)

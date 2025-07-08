@@ -1378,7 +1378,7 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 								payloadTypes.enum.goal,
 								payloadTypes.enum.measure,
 								payloadTypes.enum.objective,
-								payloadTypes.enum.resolution,
+								payloadTypes.enum.rule,
 								payloadTypes.enum.simple_measure,
 								payloadTypes.enum.text
 							]

@@ -7,17 +7,17 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
-	import EditableResolutionStatus from '$lib/components/EditableResolutionStatus.svelte';
+	import EditableRuleStatus from '$lib/components/EditableRuleStatus.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableValidFrom from '$lib/components/EditableValidFrom.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyContainer, type Container, type ResolutionContainer } from '$lib/models';
+	import { type AnyContainer, type Container, type RuleContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ResolutionContainer;
+		container: RuleContainer;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
@@ -28,7 +28,7 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<EditableResolutionStatus {editable} bind:value={container.payload.resolutionStatus} />
+		<EditableRuleStatus {editable} bind:value={container.payload.ruleStatus} />
 
 		<EditableValidFrom editable bind:container />
 
@@ -42,7 +42,7 @@
 	{/snippet}
 
 	{#snippet general()}
-		<EditableResolutionStatus {editable} bind:value={container.payload.resolutionStatus} />
+		<EditableRuleStatus {editable} bind:value={container.payload.ruleStatus} />
 
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState

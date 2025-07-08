@@ -13,8 +13,8 @@
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
-	import ResolutionProperties from '$lib/components/ResolutionProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
+	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
@@ -31,8 +31,8 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramContainer,
-		isResolutionContainer,
 		isResourceContainer,
+		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
 		isTextContainer,
@@ -175,15 +175,15 @@
 					<OrganizationProperties bind:container={$newContainer} editable />
 				{:else if isOrganizationalUnitContainer($newContainer)}
 					<OrganizationalUnitProperties bind:container={$newContainer} editable />
-				{:else if isResolutionContainer($newContainer)}
-					<ResolutionProperties
+				{:else if isResourceContainer($newContainer)}
+					<ResourceProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isResourceContainer($newContainer)}
-					<ResourceProperties
+				{:else if isRuleContainer($newContainer)}
+					<RuleProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

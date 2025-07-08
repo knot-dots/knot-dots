@@ -353,12 +353,6 @@
 		"selected_is_superordinate_of_dragged": "“{selected}” is superordinate of …"
 	},
 	"relations": "Relations",
-	"resolution": "Resolution",
-	"resolution_status": "Status",
-	"resolution_status.draft": "Draft",
-	"resolution_status.in_force": "In force",
-	"resolution_status.invalid": "Invalid",
-	"resolution_status.rejected": "Rejected",
 	"resource": "Resource",
 	"resources": "Resources",
 	"role": {
@@ -367,6 +361,12 @@
 		"head": "Head",
 		"observer": "Observer"
 	},
+	"rule": "Rule",
+	"rule_status": "Status",
+	"rule_status.draft": "Draft",
+	"rule_status.in_force": "In force",
+	"rule_status.invalid": "Invalid",
+	"rule_status.rejected": "Rejected",
 	"save": "Save",
 	"sdg": {
 		"01": "No poverty",
@@ -529,7 +529,7 @@
 	"workspace.profile.tasks": "My Tasks",
 	"workspace.programs": "Programs",
 	"workspace.programs_by_level": "Programs by level",
-	"workspace.resolutions": "Resolutions",
+	"workspace.rules": "Rules",
 	"workspace.tasks": "Tasks status board",
 	"workspace.type.all": "All",
 	"workspace.type.goals": "Goals",
@@ -538,7 +538,7 @@
 	"workspace.type.measures": "Measures",
 	"workspace.type.objectives_and_effects": "Objectives and effects",
 	"workspace.type.programs": "Programs",
-	"workspace.type.resolutions": "Resolutions",
+	"workspace.type.rules": "Rules",
 	"workspace.type.tasks": "Tasks",
 	"workspace.view.catalog": "Catalog",
 	"workspace.view.level": "Level board",

@@ -8,7 +8,7 @@
 	import {
 		isGoalContainer,
 		isMeasureContainer,
-		isResolutionContainer,
+		isRuleContainer,
 		isSimpleMeasureContainer,
 		isProgramContainer
 	} from '$lib/models';
@@ -37,7 +37,7 @@
 				(c) =>
 					isGoalContainer(c) ||
 					isMeasureContainer(c) ||
-					isResolutionContainer(c) ||
+					isRuleContainer(c) ||
 					isSimpleMeasureContainer(c) ||
 					isProgramContainer(c)
 			)

@@ -6,7 +6,7 @@ import {
 } from '$lib/server/db';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
-import type { PageServerLoad } from '../../routes/resolutions/$types';
+import type { PageServerLoad } from '../../routes/rules/$types';
 
 export default (async function load({ locals, parent, url }) {
 	let containers;
@@ -49,7 +49,7 @@ export default (async function load({ locals, parent, url }) {
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					terms: url.searchParams.get('terms') ?? '',
 					topics: url.searchParams.getAll('topic'),
-					type: [payloadTypes.enum.resolution]
+					type: [payloadTypes.enum.rule]
 				},
 				url.searchParams.get('sort') ?? ''
 			)
@@ -65,7 +65,7 @@ export default (async function load({ locals, parent, url }) {
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
 					topics: url.searchParams.getAll('topic'),
-					type: [payloadTypes.enum.resolution]
+					type: [payloadTypes.enum.rule]
 				},
 				url.searchParams.get('sort') ?? ''
 			)

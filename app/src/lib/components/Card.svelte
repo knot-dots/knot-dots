@@ -32,8 +32,8 @@
 	import { overlay, overlayHistory } from '$lib/stores';
 	import {
 		predicateIcons,
-		resolutionStatusColors,
-		resolutionStatusIcons,
+		ruleStatusColors,
+		ruleStatusIcons,
 		statusColors,
 		statusIcons,
 		taskStatusColors,
@@ -309,12 +309,11 @@
 	<footer>
 		{#if footer}
 			{@render footer()}
-		{:else if 'resolutionStatus' in container.payload}
-			{@const ResolutionStatusIcon =
-				resolutionStatusIcons.get(container.payload.resolutionStatus) ?? Cog8Tooth}
-			<span class="badge badge--{resolutionStatusColors.get(container.payload.resolutionStatus)}">
-				<ResolutionStatusIcon />
-				{$_(container.payload.resolutionStatus)}
+		{:else if 'ruleStatus' in container.payload}
+			{@const RuleStatusIcon = ruleStatusIcons.get(container.payload.ruleStatus) ?? Cog8Tooth}
+			<span class="badge badge--{ruleStatusColors.get(container.payload.ruleStatus)}">
+				<RuleStatusIcon />
+				{$_(container.payload.ruleStatus)}
 			</span>
 		{:else if 'status' in container.payload}
 			{@const StatusIcon = statusIcons.get(container.payload.status) ?? LightBulb}

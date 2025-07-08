@@ -37,8 +37,8 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramContainer,
-		isResolutionContainer,
 		isResourceContainer,
+		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
 		isTextContainer,
@@ -165,8 +165,8 @@
 				...('category' in container.payload && 'category' in derived.payload
 					? { category: container.payload.category }
 					: undefined),
-				...('resolutionStatus' in container.payload && 'resolutionStatus' in derived.payload
-					? { resolutionStatus: container.payload.resolutionStatus }
+				...('ruleStatus' in container.payload && 'ruleStatus' in derived.payload
+					? { ruleStatus: container.payload.ruleStatus }
 					: undefined),
 				...('status' in container.payload && 'status' in derived.payload
 					? { status: container.payload.status }
@@ -362,13 +362,13 @@
 				<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
 			{/key}
 		{/await}
-	{:else if isResolutionContainer(container)}
-		{#await import('./EditableResolutionDetailView.svelte') then { default: EditableResolutionDetailView }}
-			<EditableResolutionDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
 	{:else if isResourceContainer(container)}
 		{#await import('./EditableResourceDetailView.svelte') then { default: EditableResourceDetailView }}
 			<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+		{/await}
+	{:else if isRuleContainer(container)}
+		{#await import('./EditableRuleDetailView.svelte') then { default: EditableRuleDetailView }}
+			<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
 		{/await}
 	{:else if isTaskContainer(container)}
 		{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}

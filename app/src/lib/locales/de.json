@@ -353,12 +353,6 @@
 		"selected_is_superordinate_of_dragged": "„{selected}“ ist … übergeordnet"
 	},
 	"relations": "Beziehungen",
-	"resolution": "Beschluss",
-	"resolution_status": "Status",
-	"resolution_status.draft": "In Ausarbeitung",
-	"resolution_status.in_force": "Gültig",
-	"resolution_status.invalid": "Ungültig",
-	"resolution_status.rejected": "Verworfen",
 	"resource": "Ressource",
 	"resources": "Ressourcen",
 	"role": {
@@ -367,6 +361,12 @@
 		"head": "Leitung",
 		"observer": "Beobachtung"
 	},
+	"rule": "Regel",
+	"rule_status": "Status",
+	"rule_status.draft": "In Ausarbeitung",
+	"rule_status.in_force": "Gültig",
+	"rule_status.invalid": "Ungültig",
+	"rule_status.rejected": "Verworfen",
 	"save": "Speichern",
 	"sdg": {
 		"01": "1 - Keine Armut",
@@ -529,7 +529,7 @@
 	"workspace.profile.tasks": "Meine Aufgaben",
 	"workspace.programs": "Programme",
 	"workspace.programs_by_level": "Föderales Programme-Board",
-	"workspace.resolutions": "Beschlüsse",
+	"workspace.rules": "Regeln",
 	"workspace.tasks": "Aufgaben Status-Board",
 	"workspace.type.all": "Alle",
 	"workspace.type.goals": "Ziele",
@@ -538,7 +538,7 @@
 	"workspace.type.measures": "Maßnahmen",
 	"workspace.type.objectives_and_effects": "Wirkung",
 	"workspace.type.programs": "Programme",
-	"workspace.type.resolutions": "Beschlüsse",
+	"workspace.type.rules": "Regeln",
 	"workspace.type.tasks": "Aufgaben",
 	"workspace.view.catalog": "Katalog",
 	"workspace.view.level": "Ebenen-Board",

@@ -10,7 +10,7 @@
 		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
-		isResolutionContainer,
+		isRuleContainer,
 		isSimpleMeasureContainer,
 		policyFieldBNK,
 		predicates,
@@ -68,7 +68,7 @@
 				(c) =>
 					isGoalContainer(c) ||
 					isMeasureContainer(c) ||
-					isResolutionContainer(c) ||
+					isRuleContainer(c) ||
 					isSimpleMeasureContainer(c) ||
 					isProgramContainer(c)
 			)

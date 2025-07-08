@@ -9,14 +9,14 @@
 		isGoalContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
-		isResolutionContainer,
+		isRuleContainer,
 		isTaskContainer,
 		type NewContainer,
 		overlayKey,
 		type PartialRelation,
 		type PayloadType,
 		predicates,
-		type ResolutionStatus,
+		type RuleStatus,
 		type Status,
 		type TaskStatus
 	} from '$lib/models';
@@ -46,8 +46,8 @@
 
 		if (isOrganizationalUnitContainer(container) && params.has('level')) {
 			container.payload.level = parseInt(params.get('level') as string);
-		} else if (isResolutionContainer(container) && params.has('resolutionStatus')) {
-			container.payload.resolutionStatus = params.get('resolutionStatus') as ResolutionStatus;
+		} else if (isRuleContainer(container) && params.has('ruleStatus')) {
+			container.payload.ruleStatus = params.get('ruleStatus') as RuleStatus;
 		} else if (isMeasureContainer(container) && params.has('status')) {
 			container.payload.status = params.get('status') as Status;
 		} else if (isTaskContainer(container) && params.has('taskStatus')) {

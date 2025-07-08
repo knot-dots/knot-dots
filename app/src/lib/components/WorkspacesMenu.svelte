@@ -61,10 +61,10 @@
 			level: '/programs/level',
 			table: '/programs/table'
 		},
-		resolutions: {
-			catalog: '/resolutions/catalog',
-			status: '/resolutions/status',
-			table: '/resolutions/table'
+		rules: {
+			catalog: '/rules/catalog',
+			status: '/rules/status',
+			table: '/rules/table'
 		},
 		tasks: {
 			catalog: '/tasks/catalog',
@@ -81,7 +81,7 @@
 			knowledge: '/knowledge/catalog',
 			measures: '/measures/catalog',
 			programs: '/programs/catalog',
-			resolutions: '/resolutions/catalog',
+			rules: '/rules/catalog',
 			tasks: '/tasks/catalog'
 		},
 		level: {
@@ -94,7 +94,7 @@
 		monitoring: { measures: '/measures/monitoring' },
 		status: {
 			measures: '/measures/status',
-			resolutions: '/resolutions/status',
+			rules: '/rules/status',
 			tasks: '/tasks/status'
 		},
 		page: {
@@ -106,7 +106,7 @@
 			knowledge: '/knowledge/table',
 			measures: '/measures/table',
 			programs: '/programs/table',
-			resolutions: '/resolutions/table',
+			rules: '/rules/table',
 			tasks: '/tasks/table'
 		}
 	};
@@ -152,9 +152,9 @@
 		{
 			exists: true,
 			icon: Gavel,
-			label: $_('workspace.type.resolutions'),
+			label: $_('workspace.type.rules'),
 			recommended: false,
-			value: workspacesLeft.resolutions[selectedItem[1]] ?? '/resolutions/status'
+			value: workspacesLeft.rules[selectedItem[1]] ?? '/rules/status'
 		},
 		{
 			exists: true,
@@ -214,7 +214,7 @@
 			exists: selectedItem[0] in workspacesRight.status,
 			icon: ColumnSolid,
 			label: $_('workspace.view.status'),
-			recommended: ['measures', 'resolutions', 'tasks'].includes(selectedItem[0]),
+			recommended: ['measures', 'rules', 'tasks'].includes(selectedItem[0]),
 			value: workspacesRight.status[selectedItem[0]] ?? '/measures/status'
 		},
 		{

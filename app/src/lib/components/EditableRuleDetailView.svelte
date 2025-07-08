@@ -2,12 +2,12 @@
 	import { _ } from 'svelte-i18n';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import ResolutionProperties from '$lib/components/ResolutionProperties.svelte';
-	import { type AnyContainer, type Container, type ResolutionContainer } from '$lib/models';
+	import RuleProperties from '$lib/components/RuleProperties.svelte';
+	import { type AnyContainer, type Container, type RuleContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ResolutionContainer;
+		container: RuleContainer;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
@@ -17,7 +17,7 @@
 
 <EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 	{#snippet data()}
-		<ResolutionProperties
+		<RuleProperties
 			bind:container
 			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}

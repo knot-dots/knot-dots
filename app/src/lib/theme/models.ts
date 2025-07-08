@@ -36,8 +36,8 @@ import sdg16 from '$lib/assets/sdg/sdg-16.svg';
 import sdg17 from '$lib/assets/sdg/sdg-17.svg';
 import {
 	predicates,
-	type ResolutionStatus,
-	resolutionStatus,
+	type RuleStatus,
+	ruleStatus,
 	type Status,
 	status,
 	type SustainableDevelopmentGoal,
@@ -153,33 +153,30 @@ export const taskStatusIcons = new Map<TaskStatus, Component<SvelteHTMLElements[
 	[taskStatus.enum['task_status.rejected'], HandThumbDown]
 ]);
 
-export const resolutionStatusColors = new Map<ResolutionStatus, string>([
-	[resolutionStatus.enum['resolution_status.draft'], 'yellow'],
-	[resolutionStatus.enum['resolution_status.in_force'], 'green'],
-	[resolutionStatus.enum['resolution_status.invalid'], 'red'],
-	[resolutionStatus.enum['resolution_status.rejected'], 'purple']
+export const ruleStatusColors = new Map<RuleStatus, string>([
+	[ruleStatus.enum['rule_status.draft'], 'yellow'],
+	[ruleStatus.enum['rule_status.in_force'], 'green'],
+	[ruleStatus.enum['rule_status.invalid'], 'red'],
+	[ruleStatus.enum['rule_status.rejected'], 'purple']
 ]);
 
-export const resolutionStatusBackgrounds = new Map<ResolutionStatus, string>([
-	[resolutionStatus.enum['resolution_status.draft'], 'var(--gradient-in-implementation)'],
-	[resolutionStatus.enum['resolution_status.in_force'], 'var(--gradient-done)'],
-	[resolutionStatus.enum['resolution_status.invalid'], 'var(--gradient-idea)'],
-	[resolutionStatus.enum['resolution_status.rejected'], 'var(--gradient-rejected)']
+export const ruleStatusBackgrounds = new Map<RuleStatus, string>([
+	[ruleStatus.enum['rule_status.draft'], 'var(--gradient-in-implementation)'],
+	[ruleStatus.enum['rule_status.in_force'], 'var(--gradient-done)'],
+	[ruleStatus.enum['rule_status.invalid'], 'var(--gradient-idea)'],
+	[ruleStatus.enum['rule_status.rejected'], 'var(--gradient-rejected)']
 ]);
 
-export const resolutionStatusHoverColors = new Map<ResolutionStatus, string>([
-	[resolutionStatus.enum['resolution_status.draft'], 'var(--color-hover-in-implementation)'],
-	[resolutionStatus.enum['resolution_status.in_force'], 'var(--color-hover-done)'],
-	[resolutionStatus.enum['resolution_status.invalid'], 'var(--color-hover-idea)'],
-	[resolutionStatus.enum['resolution_status.rejected'], 'var(--color-hover-rejected)']
+export const ruleStatusHoverColors = new Map<RuleStatus, string>([
+	[ruleStatus.enum['rule_status.draft'], 'var(--color-hover-in-implementation)'],
+	[ruleStatus.enum['rule_status.in_force'], 'var(--color-hover-done)'],
+	[ruleStatus.enum['rule_status.invalid'], 'var(--color-hover-idea)'],
+	[ruleStatus.enum['rule_status.rejected'], 'var(--color-hover-rejected)']
 ]);
 
-export const resolutionStatusIcons = new Map<
-	ResolutionStatus,
-	Component<SvelteHTMLElements['svg']>
->([
-	[resolutionStatus.enum['resolution_status.draft'], Cog8Tooth],
-	[resolutionStatus.enum['resolution_status.in_force'], Flag],
-	[resolutionStatus.enum['resolution_status.invalid'], XCircle],
-	[resolutionStatus.enum['resolution_status.rejected'], HandThumbDown]
+export const ruleStatusIcons = new Map<RuleStatus, Component<SvelteHTMLElements['svg']>>([
+	[ruleStatus.enum['rule_status.draft'], Cog8Tooth],
+	[ruleStatus.enum['rule_status.in_force'], Flag],
+	[ruleStatus.enum['rule_status.invalid'], XCircle],
+	[ruleStatus.enum['rule_status.rejected'], HandThumbDown]
 ]);

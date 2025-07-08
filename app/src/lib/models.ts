@@ -68,8 +68,8 @@ const payloadTypeValues = [
 	'organizational_unit',
 	'page',
 	'program',
-	'resolution',
 	'resource',
+	'rule',
 	'simple_measure',
 	'task',
 	'text',
@@ -88,7 +88,7 @@ export const chapterTypeOptions = [
 	payloadTypes.enum.goal,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
-	payloadTypes.enum.resolution,
+	payloadTypes.enum.rule,
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.text
 ];
@@ -152,16 +152,16 @@ export const status = z.enum(statusValues);
 
 export type Status = z.infer<typeof status>;
 
-const resolutionStatusValues = [
-	'resolution_status.draft',
-	'resolution_status.in_force',
-	'resolution_status.invalid',
-	'resolution_status.rejected'
+const ruleStatusValues = [
+	'rule_status.draft',
+	'rule_status.in_force',
+	'rule_status.invalid',
+	'rule_status.rejected'
 ] as const;
 
-export const resolutionStatus = z.enum(resolutionStatusValues);
+export const ruleStatus = z.enum(ruleStatusValues);
 
-export type ResolutionStatus = z.infer<typeof resolutionStatus>;
+export type RuleStatus = z.infer<typeof ruleStatus>;
 
 const taskStatusValues = [
 	'task_status.idea',
@@ -541,9 +541,9 @@ const objectivePayload = basePayload.omit({ category: true, summary: true, topic
 
 const initialObjectivePayload = objectivePayload.partial({ title: true });
 
-const resolutionPayload = basePayload.extend({
-	resolutionStatus: resolutionStatus.default(resolutionStatus.enum['resolution_status.draft']),
-	type: z.literal(payloadTypes.enum.resolution),
+const rulePayload = basePayload.extend({
+	ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.draft']),
+	type: z.literal(payloadTypes.enum.rule),
 	validFrom: z
 		.string()
 		.refine((v) => z.coerce.date().safeParse(v))
@@ -554,7 +554,7 @@ const resolutionPayload = basePayload.extend({
 		.optional()
 });
 
-const initialResolutionPayload = resolutionPayload.partial({ title: true });
+const initialRulePayload = rulePayload.partial({ title: true });
 
 const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
@@ -720,7 +720,7 @@ const payload = z.discriminatedUnion('type', [
 	measurePayload,
 	objectivePayload,
 	pagePayload,
-	resolutionPayload,
+	rulePayload,
 	resourcePayload,
 	simpleMeasurePayload,
 	programPayload,
@@ -757,7 +757,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	organizationPayload,
 	organizationalUnitPayload,
 	pagePayload,
-	resolutionPayload,
+	rulePayload,
 	resourcePayload,
 	simpleMeasurePayload,
 	programPayload,
@@ -924,16 +924,16 @@ export function isPageContainer(
 	return container.payload.type === payloadTypes.enum.page;
 }
 
-const resolutionContainer = container.extend({
-	payload: resolutionPayload
+const ruleContainer = container.extend({
+	payload: rulePayload
 });
 
-export type ResolutionContainer = z.infer<typeof resolutionContainer>;
+export type RuleContainer = z.infer<typeof ruleContainer>;
 
-export function isResolutionContainer(
+export function isRuleContainer(
 	container: AnyContainer | EmptyContainer
-): container is ResolutionContainer {
-	return container.payload.type === payloadTypes.enum.resolution;
+): container is RuleContainer {
+	return container.payload.type === payloadTypes.enum.rule;
 }
 
 const resourceContainer = container.extend({
@@ -1156,7 +1156,7 @@ export const emptyContainer = newContainer.extend({
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
-		initialResolutionPayload,
+		initialRulePayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,
 		initialProgramPayload,
@@ -1192,11 +1192,11 @@ const emptyOrganizationalUnitContainer = newContainer.extend({
 
 export type EmptyOrganizationalUnitContainer = z.infer<typeof emptyOrganizationalUnitContainer>;
 
-const emptyResolutionContainer = emptyContainer.extend({
-	payload: initialResolutionPayload
+const emptyRuleContainer = emptyContainer.extend({
+	payload: initialRulePayload
 });
 
-export type EmptyResolutionContainer = z.infer<typeof emptyResolutionContainer>;
+export type EmptyRuleContainer = z.infer<typeof emptyRuleContainer>;
 
 export const modifiedContainer = anyContainer.omit({
 	revision: true,

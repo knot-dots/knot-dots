@@ -51,7 +51,7 @@
 					(c) =>
 						[
 							payloadTypes.enum.measure,
-							payloadTypes.enum.resolution,
+							payloadTypes.enum.rule,
 							payloadTypes.enum.simple_measure
 						].findIndex((payloadType) => payloadType === c.payload.type) > -1
 				)

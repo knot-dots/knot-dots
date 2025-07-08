@@ -20,7 +20,7 @@ const programChapterTypes = [
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.objective,
-	payloadTypes.enum.resolution,
+	payloadTypes.enum.rule,
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.text,
 	payloadTypes.enum.undefined

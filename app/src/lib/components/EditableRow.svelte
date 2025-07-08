@@ -10,7 +10,7 @@
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
-	import ResolutionStatusDropdown from '$lib/components/ResolutionStatusDropdown.svelte';
+	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
@@ -101,11 +101,11 @@
 				offset={[-41, -41]}
 				bind:value={container.payload.taskStatus}
 			/>
-		{:else if 'resolutionStatus' in container.payload}
-			<ResolutionStatusDropdown
+		{:else if 'ruleStatus' in container.payload}
+			<RuleStatusDropdown
 				editable={editable && $ability.can('update', container)}
 				offset={[-41, -41]}
-				bind:value={container.payload.resolutionStatus}
+				bind:value={container.payload.ruleStatus}
 			/>
 		{/if}
 	</div>

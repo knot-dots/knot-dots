@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
-	import type { EmptyResolutionContainer, ResolutionContainer } from '$lib/models';
+	import type { EmptyRuleContainer, RuleContainer } from '$lib/models';
 
 	interface Props {
-		container: ResolutionContainer | EmptyResolutionContainer;
+		container: RuleContainer | EmptyRuleContainer;
 		editable?: boolean;
 	}
 

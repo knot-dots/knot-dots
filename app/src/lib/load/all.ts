@@ -93,7 +93,7 @@ export default (async function load({ locals, url, parent }) {
 							payloadTypes.enum.indicator,
 							payloadTypes.enum.measure,
 							payloadTypes.enum.program,
-							payloadTypes.enum.resolution,
+							payloadTypes.enum.rule,
 							payloadTypes.enum.simple_measure
 						]
 					},
