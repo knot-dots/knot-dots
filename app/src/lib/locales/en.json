@@ -20,7 +20,6 @@
 	"audience.urban_society": "Urban society",
 	"audience.voluntary_work_associations_ngos": "Voluntary work, Associations, NGOs",
 	"back": "Back",
-	"basic_data": "Basic data",
 	"benefit": "Benefit",
 	"benefit.high": "High",
 	"benefit.low": "Low",
@@ -90,13 +89,6 @@
 	"filter": "Filter",
 	"filter.all_organizational_units": "All organizational units",
 	"filter.no_results": "No results",
-	"form": {
-		"basic_data": "Basic data",
-		"effects": "Effects",
-		"historical_values": "Historical values",
-		"metadata": "Metadata",
-		"with_progress": "Use progress bar"
-	},
 	"fulfillment_date": "Fulfillment date",
 	"given_name": "Given name",
 	"goal": "Goal",
@@ -194,7 +186,6 @@
 	"indicator_type.key": "Key indicator",
 	"indicator_type.performance": "Performance indicator",
 	"indicators": "Indicators",
-	"information": "Information",
 	"invite": {
 		"email": "Email",
 		"email_text": "Welcome to knotdots.net!\n\nPlease verify your email address:\n{link}",
@@ -221,12 +212,7 @@
 	"logo": "Logo",
 	"logout": "Log out",
 	"managed_by": "Managed by",
-	"map": "Map",
 	"measure": "Measure",
-	"measure.summary": "Short description",
-	"measure_result": "Measure result",
-	"measure_results": "Measure results",
-	"measure_results_and_milestones": "Results and milestones",
 	"measure_type": "Measure type",
 	"measure_type.app": "App",
 	"measure_type.artificial_intelligence": "Artificial intelligence",
@@ -254,7 +240,6 @@
 	"objectives": "Objectives",
 	"off": "off",
 	"on": "on",
-	"open_sidebar": "Open sidebar",
 	"operational_goal": "Operational goal",
 	"operational_goals": "Operational goals",
 	"organization": "Organization",
@@ -312,7 +297,6 @@
 	"profile_settings.change_password": "Change password",
 	"profile_settings.title": "Account settings",
 	"programs": "Programs",
-	"programs_by_level_filter.only_related": "Only related programs",
 	"progress": "Progress",
 	"properties": "Properties",
 	"properties.subheading.categories": "Categories",
@@ -320,104 +304,6 @@
 	"properties.subheading.ownership": "Ownership",
 	"properties.hide": "Hide properties",
 	"properties.show_all": "Show all properties",
-	"quantity": {
-		"broadband_coverage": {
-			"description": "{contribution, number} % of private households have access to broadband internet.",
-			"input_prompt": "How many private households will have access to broadband internet?",
-			"label": "broadband coverage — private households"
-		},
-		"charging_stations": {
-			"description": "There are {contribution, number} charging stations per 1.000 citizens.",
-			"input_prompt": "How many charging stations per 1.000 citizens will be there?",
-			"label": "charging stations"
-		},
-		"co2": {
-			"description": "{contribution, plural, one {# ton of CO₂ emissions will be saved.} other {# tons of CO₂ emissions will be saved.}}",
-			"input_prompt": "How many tons of CO₂ will be saved?",
-			"label": "CO₂"
-		},
-		"co2_emissions_households": {
-			"description": "{contribution, number} tons of CO₂ are emitted per capita by private households.",
-			"input_prompt": "How many tons of CO₂ will be emitted per capita by private households?",
-			"label": "CO₂ emissions by private households"
-		},
-		"co2_emissions_industry": {
-			"description": "{contribution, number} tons of CO₂ are emitted per capita by industry, trade and services.",
-			"input_prompt": "How many tons of CO₂ will be emitted per capita by industry, trade and services?",
-			"label": "CO₂ emissions by industry, trade and services"
-		},
-		"co2_emissions_transport": {
-			"description": "{contribution, number} tons of CO₂ are emitted per capita by the transport sector.",
-			"input_prompt": "How many tons of CO₂ will be emitted per capita by the transport sector?",
-			"label": "CO₂ emissions by transport"
-		},
-		"custom": {
-			"label": "Custom quantity"
-		},
-		"cycle_path": {
-			"description": "{contribution, plural, one {# kilometer of cycle paths will be built.} other {# kilometers of cycle paths will be built.}}",
-			"input_prompt": "How many kilometers of cycle paths will be built?",
-			"label": "cycle path"
-		},
-		"doctor_ratio": {
-			"description": "There are {contribution, number} doctors per 100,000 citizens.",
-			"input_prompt": "How much will the doctor ratio increase?",
-			"label": "doctor ratio"
-		},
-		"funding_culture_and_education": {
-			"description": "Cultural and educational institutions are funded with {contribution, number, ::currency/EUR} per citizen.",
-			"input_prompt": "How much is the funding for cultural and educational institutions?",
-			"label": "Funding of cultural and educational institutions per capita"
-		},
-		"general": {
-			"input_prompt_achieved": "Current achievement"
-		},
-		"organic_farming": {
-			"description": "{contribution, number} % of the total utilized agricultural area is used for organic farming.",
-			"input_prompt": "How much of the total utilized agricultural area will be used for organic farming.",
-			"label": "organic farming"
-		},
-		"parking_space": {
-			"description": "{contribution, plural, one {# parking spaces will be repurposed.} other {# parking spaces will be repurposed.}}",
-			"input_prompt": "How many parking spaces will be repurposed?",
-			"label": "repurposed parking spaces"
-		},
-		"renewable_energy": {
-			"description": "{contribution, number} kilowatt of renewable energy are generated per capita.",
-			"input_prompt": "How many kilowatt of renewable energy will be generated?",
-			"label": "renewable energy"
-		},
-		"social_housing": {
-			"description": "The number of social housing units is {contribution, number}.",
-			"input_prompt": "How many units of social housing will be created?",
-			"label": "social housing"
-		},
-		"solar_energy": {
-			"description": "{contribution, plural, one {# kilowatt hour  of solar energy has been generated.} other {# kilowatt hours of solar energy have been generated.}}",
-			"input_prompt": "How many kilowatt hours of solar energy will be generated?",
-			"label": "solar energy"
-		},
-		"waste_generation": {
-			"description": "{contribution, number} tons of wate are generated per capita.",
-			"input_prompt": "How much waste per capita will be generated?",
-			"label": "generation of municipal waste per capita"
-		},
-		"water_consumption": {
-			"description": "The water consumption per capita is {contribution, number} cubic meters.",
-			"input_prompt": "How many cubic meters of water will be consumed?",
-			"label": "water consumption per capita"
-		},
-		"women_in_elective_office": {
-			"description": "The proportion of women in elective office is {contribution, number} %.",
-			"input_prompt": "What is the proportion of women in elective office?",
-			"label": "proportion of women in elective office"
-		},
-		"women_in_leadership": {
-			"description": "The proportion of women in leading positions within the administration is {contribution, number} %.",
-			"input_prompt": "What is the proportion of women in leading positions within the administration?",
-			"label": "proportion of women in leading positions within the administration"
-		}
-	},
 	"read_more": "Read more",
 	"register": "Register",
 	"relation_filter.label": "Relations",
@@ -468,14 +354,6 @@
 		"observer": "Observer"
 	},
 	"save": "Save",
-	"save_and_create_measure": "Save and add measure",
-	"save_and_create_model": "Save and add model",
-	"save_and_create_milestone": "Save and add milestone",
-	"save_and_create_operational_goal": "Save and add operational goal",
-	"save_and_create_strategic_goal": "Save and add strategic goal",
-	"save_and_create_task": "Save and add task",
-	"save_and_create_vision": "Save and add vision",
-	"save_and_next": "Save and next",
 	"sdg": {
 		"01": "No poverty",
 		"02": "Zero hunger",
@@ -540,16 +418,8 @@
 		"sustainability": "Sustainability strategy"
 	},
 	"summary": "Summary",
-	"superordinate_chapters": "Superordinate chapters",
 	"superordinate_element": "Superordinate element",
-	"superordinate_internal_strategies": "Superordinate internal strategies",
-	"superordinate_models": "Superordinate models",
-	"superordinate_milestones": "Superordinate milestones",
-	"superordinate_operational_goals": "Superordinate operational goals",
 	"superordinate_organizational_unit": "Superordinate organizational unit",
-	"superordinate_strategic_goals": "Superordinate strategic goals",
-	"superordinate_strategies": "Superordinate strategies",
-	"superordinate_visions": "Superordinate visions",
 	"task": "Task",
 	"task_category": {
 		"bugfix": "Bug fix",
@@ -639,9 +509,6 @@
 	},
 	"valid_from": "Valid from",
 	"valid_until": "Valid until",
-	"view_mode": "View mode",
-	"view_mode.preview": "Preview",
-	"view_mode.table": "Table",
 	"visible_for": "Visible for",
 	"visibility": {
 		"creator": "Creator only",
@@ -664,7 +531,6 @@
 	"workspace.programs": "Programs",
 	"workspace.programs_by_level": "Programs by level",
 	"workspace.resolutions": "Resolutions",
-	"workspace.strategy": "Strategy board",
 	"workspace.tasks": "Tasks status board",
 	"workspace.type.all": "All",
 	"workspace.type.goals": "Goals",

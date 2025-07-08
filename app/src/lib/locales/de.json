@@ -20,7 +20,6 @@
 	"audience.urban_society": "Stadtgesellschaft",
 	"audience.voluntary_work_associations_ngos": "Ehrenamt, Vereine & NGOs",
 	"back": "Zurück",
-	"basic_data": "Allgemeine Angaben",
 	"benefit": "Nutzen",
 	"benefit.high": "Groß",
 	"benefit.low": "Klein",
@@ -90,14 +89,6 @@
 	"filter": "Filtern",
 	"filter.all_organizational_units": "Alle Organisations-Ebenen",
 	"filter.no_results": "Keine Ergebnisse",
-	"form": {
-		"basic_data": "Allgemeine Angaben",
-		"effects": "Wirkungsplanung",
-		"historical_values": "Ist-Werte und Prognose ohne Intervention",
-		"metadata": "Angaben zum Element",
-		"resources": "Ressourcenplanung",
-		"with_progress": "Mit Fortschrittsanzeige"
-	},
 	"fulfillment_date": "Erfüllungsdatum",
 	"given_name": "Vorname",
 	"goal": "Ziel",
@@ -195,7 +186,6 @@
 	"indicator_type.key": "Schlüsselindikator",
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
-	"information": "Information",
 	"invite": {
 		"email": "E-Mail-Adresse",
 		"email_text": "Willkommen bei knotdots.net!\n\nBitte bestätigen Sie Ihre E-Mail-Adresse:\n{link}",
@@ -222,12 +212,7 @@
 	"logo": "Logo",
 	"logout": "Abmelden",
 	"managed_by": "Verantwortlich für die Ausarbeitung",
-	"map": "Karte",
 	"measure": "Maßnahme",
-	"measure.summary": "Kurze Projektbeschreibung",
-	"measure_result": "Maßnahmenergebnis",
-	"measure_results": "Ergebnis der Maßnahme",
-	"measure_results_and_milestones": "Ergebnisse und Meilensteine",
 	"measure_type": "Art der Maßnahme",
 	"measure_type.app": "App",
 	"measure_type.artificial_intelligence": "Künstliche Intelligenz",
@@ -255,7 +240,6 @@
 	"objectives": "Gewünschte Entwicklung",
 	"off": "aus",
 	"on": "an",
-	"open_sidebar": "Seitenleiste öffnen",
 	"operational_goal": "Operatives Ziel",
 	"operational_goals": "Operative Ziele",
 	"organization": "Organisation",
@@ -313,7 +297,6 @@
 	"profile_settings.change_password": "Passwort ändern",
 	"profile_settings.title": "Account-Einstellungen",
 	"programs": "Programme",
-	"programs_by_level_filter.only_related": "Nur verknüpfte Programme",
 	"progress": "Fortschritt",
 	"properties": "Eigenschaften",
 	"properties.subheading.categories": "Kategorien",
@@ -321,104 +304,6 @@
 	"properties.subheading.ownership": "Zuständigkeit",
 	"properties.hide": "Eigenschaften verbergen",
 	"properties.show_all": "Alle Eigenschaften zeigen",
-	"quantity": {
-		"broadband_coverage": {
-			"description": "{contribution, number} % der privaten Haushalte haben Zugang zu Breitbandinternet.",
-			"input_prompt": "Wie viele private Haushalte sollen Zugang zu Breitband-Internet haben?",
-			"label": "Zugang zu Breitband-Anschluss - private Haushalte"
-		},
-		"charging_stations": {
-			"description": "Es gibt {contribution, number} Ladestationen pro 1.000 Einwohner*innen.",
-			"input_prompt": "Wie viele Ladestationen sollen pro 1.000 Einwohner*innen erreicht werden?",
-			"label": "Ladestationen"
-		},
-		"co2": {
-			"description": "{contribution, plural, one {Es soll # Tonne CO₂ eingespart werden.} other {Es sollen # Tonnen CO₂ eingespart werden.}} ",
-			"input_prompt": "Wie viele Tonnen CO₂ sollen eingespart werden?",
-			"label": "CO₂"
-		},
-		"co2_emissions_households": {
-			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr in privaten Haushalten beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viele Tonnen CO₂ werden durch private Haushalte zusätzlich ausgestoßen?",
-			"label": "CO₂-Ausstoß — private Haushalte"
-		},
-		"co2_emissions_industry": {
-			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr in Industrie, Gewerbe, Handel und Dienstleistungen beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viel CO₂ wird durch Industrie, Gewerbe, Handel und Dienstleistungen zusätzlich ausgestoßen?",
-			"label": "CO₂-Ausstoß — Industrie, Gewerbe, Handel und Dienstleistungen"
-		},
-		"co2_emissions_transport": {
-			"description": "Der Pro-Kopf-Ausstoß von CO₂ pro Jahr im Verkehr beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viel CO₂ wird durch Verkehr zusätzlich ausgestoßen?",
-			"label": "CO₂-Ausstoß — Verkehr"
-		},
-		"custom": {
-			"label": "Benutzerdefinierte Größe"
-		},
-		"cycle_path": {
-			"description": "{contribution, plural, one {Es wurde # Kilometer Radweg geschaffen.} other {Es wurden # Kilometer Radweg geschaffen.}}",
-			"input_prompt": "Wie viele Kilometer Radweg sollen gebaut werden?",
-			"label": "Radweg"
-		},
-		"doctor_ratio": {
-			"description": "Die Ärzteversorgung beträgt {contribution, number} pro 100.000 Einwohner*innen.",
-			"input_prompt": "Wie viele Allgemeinärzte sollen sich zusätzliche niederlassen?",
-			"label": "Ärzteversorgung"
-		},
-		"funding_culture_and_education": {
-			"description": "Der Zuschussbetrag für Kultur- und Bildungseinrichtungen beträgt {contribution, number, ::currency/EUR} pro Einwohner*in.",
-			"input_prompt": "In welcher Höhe werden Kultur- und Bildungseinrichtungen zusätzlich gefördert?",
-			"label": "Zuschussbetrag Kultur- und Bildungseinrichtung pro Einwohner*in"
-		},
-		"general": {
-			"input_prompt_achieved": "Das haben wir bisher erreicht"
-		},
-		"organic_farming": {
-			"description": "Der Anteil ökologischer an der gesamten Landwirtschaftsfläche beträgt {contribution, number} %.",
-			"input_prompt": "Wie viel ökologische Landwirtschaftsfläche wird geschaffen?",
-			"label": "ökologische Landwirtschaft"
-		},
-		"parking_space": {
-			"description": "{contribution, plural, one {Es wurde # Parkplatz umgewidmet.} other {Es werden # Parkplätze umgewidmet.}}",
-			"input_prompt": "Wie viele Parkplätze sollen umgewidmet werden?",
-			"label": "umgewidmete Parkplätze"
-		},
-		"renewable_energy": {
-			"description": "Der Pro-Kopf-Ertrag erneuerbarer Energien beträgt {contribution, number} Kilowatt.",
-			"input_prompt": "Wie viele Kilowatt Strom aus erneuerbaren Energien werden zusätzlich erzeugt?",
-			"label": "Strom aus erneuerbaren Energien"
-		},
-		"social_housing": {
-			"description": "Die Anzahl öffentlich geförderter Mietwohneinheiten beträgt {contribution, number}.",
-			"input_prompt": "Wie viele öffentlich geförderte Mietwohneinheiten wurden zusätzlich geschaffen?",
-			"label": "sozialer Wohnungsbau"
-		},
-		"solar_energy": {
-			"description": "{contribution, plural, one {Es wurde # Kilowattstunde Solarenergie erzeugt.} other {Es wurden # Kilowattstunden Solarenergie erzeugt.}}",
-			"input_prompt": "Wie viele Kilowattstunden an Solarenergie sollen erzeugt werden?",
-			"label": "Solarenergie"
-		},
-		"waste_generation": {
-			"description": "Die Abfallmenge pro Einwohner*in beträgt {contribution, number} Tonnen.",
-			"input_prompt": "Wie viel Abfall entsteht durch die Maßnahme?",
-			"label": "Abfallmenge je Einwohner*in"
-		},
-		"water_consumption": {
-			"description": "Der Wasserverbrauch pro Einwohner*in beträgt {contribution, number} Kubikmeter.",
-			"input_prompt": "Wie viel Kubikmeter Wasser werden verbraucht?",
-			"label": "Wasserverbrauch pro Einwohner*in"
-		},
-		"women_in_elective_office": {
-			"description": "Der Frauenanteil im Stadtrat beträgt {contribution, number} %.",
-			"input_prompt": "Wie viele Frauen sind im Stadtrat?",
-			"label": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag"
-		},
-		"women_in_leadership": {
-			"description": "Der Anteil von Frauen in Führungspositionen in der Verwaltung beträgt {contribution, number} %.",
-			"input_prompt": "Wie viele der Führungspositionen in der Verwaltung sind von Frauen besetzt?",
-			"label": "Anteil Frauen in Führungspositionen in der Verwaltung"
-		}
-	},
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relation_filter.label": "Beziehungen",
@@ -469,14 +354,6 @@
 		"observer": "Beobachtung"
 	},
 	"save": "Speichern",
-	"save_and_create_measure": "Speichern und neue Maßnahme hinzufügen",
-	"save_and_create_model": "Speichern und neues Leitbild hinzufügen",
-	"save_and_create_milestone": "Speichern und neuen Meilenstein hinzufügen",
-	"save_and_create_operational_goal": "Speichern und neues operatives Ziel hinzufügen",
-	"save_and_create_strategic_goal": "Speichern und neues strategisches Ziel hinzufügen",
-	"save_and_create_task": "Speichern und neue Aufgabe hinzufügen",
-	"save_and_create_vision": "Speichern und neue Vision hinzufügen",
-	"save_and_next": "Speichern und weiter",
 	"sdg": {
 		"01": "1 - Keine Armut",
 		"02": "2 - Kein Hunger",
@@ -541,16 +418,8 @@
 		"sustainability": "Nachhaltigkeitsstrategie"
 	},
 	"summary": "Zusammenfassung",
-	"superordinate_chapters": "Übergeordnete Kapitel",
 	"superordinate_element": "Übergeordnetes Element",
-	"superordinate_internal_strategies": "Übergeordnete interne Strategien",
-	"superordinate_models": "Übergeordnete Vision",
-	"superordinate_milestones": "Übergeordnete Meilensteine",
-	"superordinate_operational_goals": "Übergeordnete operative Ziele",
 	"superordinate_organizational_unit": "Übergeordnete Organisationseinheit",
-	"superordinate_strategic_goals": "Übergeordnete strategische Ziele",
-	"superordinate_strategies": "Übergeordnete Strategien",
-	"superordinate_visions": "Übergeordnete Visionen",
 	"task": "Aufgabe",
 	"task_category": {
 		"bugfix": "Fehler",
@@ -648,9 +517,6 @@
 	},
 	"valid_from": "Gültig ab",
 	"valid_until": "Gültig bis",
-	"view_mode": "Ansicht",
-	"view_mode.preview": "Vorschau",
-	"view_mode.table": "Tabelle",
 	"vision": "Vision",
 	"visions": "Visionen",
 	"workspace.all": "Überblick",
@@ -665,7 +531,6 @@
 	"workspace.programs": "Programme",
 	"workspace.programs_by_level": "Föderales Programme-Board",
 	"workspace.resolutions": "Beschlüsse",
-	"workspace.strategy": "Strategie-Board",
 	"workspace.tasks": "Aufgaben Status-Board",
 	"workspace.type.all": "Alle",
 	"workspace.type.goals": "Ziele",
