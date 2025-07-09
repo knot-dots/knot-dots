@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import AskAI from '~icons/knotdots/ask-ai';
+	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
 	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import {
 		type Container,
 		isContainerWithStatus,
+		isGoalContainer,
 		isRuleContainer,
 		isSuggestedByAI,
 		isTaskContainer,
@@ -52,6 +54,14 @@
 				buttonStyle="badge"
 				{editable}
 				bind:value={container.payload.ruleStatus}
+			/>
+		</li>
+	{:else if isGoalContainer(container)}
+		<li>
+			<GoalStatusDropdown
+				buttonStyle="badge"
+				{editable}
+				bind:value={container.payload.goalStatus}
 			/>
 		</li>
 	{/if}
