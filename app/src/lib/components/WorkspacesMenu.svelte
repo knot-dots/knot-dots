@@ -37,6 +37,7 @@
 		goals: {
 			catalog: '/goals/catalog',
 			level: '/goals/level',
+			status: '/goals/status',
 			table: '/goals/table'
 		},
 		indicators: {
@@ -93,6 +94,7 @@
 		},
 		monitoring: { measures: '/measures/monitoring' },
 		status: {
+			goals: '/goals/status',
 			measures: '/measures/status',
 			rules: '/rules/status',
 			tasks: '/tasks/status'
