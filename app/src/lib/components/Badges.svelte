@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
+	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
 	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
@@ -9,6 +10,7 @@
 		type Container,
 		isContainerWithStatus,
 		isGoalContainer,
+		isProgramContainer,
 		isRuleContainer,
 		isSuggestedByAI,
 		isTaskContainer,
@@ -62,6 +64,14 @@
 				buttonStyle="badge"
 				{editable}
 				bind:value={container.payload.goalStatus}
+			/>
+		</li>
+	{:else if isProgramContainer(container)}
+		<li>
+			<ProgramStatusDropdown
+				buttonStyle="badge"
+				{editable}
+				bind:value={container.payload.programStatus}
 			/>
 		</li>
 	{/if}

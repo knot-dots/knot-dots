@@ -38,6 +38,8 @@ import {
 	goalStatus,
 	type GoalStatus,
 	predicates,
+	type ProgramStatus,
+	programStatus,
 	type RuleStatus,
 	ruleStatus,
 	type Status,
@@ -217,4 +219,40 @@ export const goalStatusIcons = new Map<GoalStatus, Component<SvelteHTMLElements[
 	[goalStatus.enum['goal_status.adopted'], CheckCircle],
 	[goalStatus.enum['goal_status.achieved'], BadgeCheck],
 	[goalStatus.enum['goal_status.rejected'], ThumbsDown]
+]);
+
+export const programStatusColors = new Map<ProgramStatus, string>([
+	[programStatus.enum['program_status.idea'], 'pink'],
+	[programStatus.enum['program_status.in_planning'], 'orange'],
+	[programStatus.enum['program_status.adopted'], 'teal'],
+	[programStatus.enum['program_status.in_implementation'], 'yellow'],
+	[programStatus.enum['program_status.done'], 'green'],
+	[programStatus.enum['program_status.rejected'], 'purple']
+]);
+
+export const programStatusBackgrounds = new Map<ProgramStatus, string>([
+	[programStatus.enum['program_status.idea'], 'var(--gradient-idea)'],
+	[programStatus.enum['program_status.in_planning'], 'var(--gradient-in-planning)'],
+	[programStatus.enum['program_status.adopted'], 'var(--gradient-adopted)'],
+	[programStatus.enum['program_status.in_implementation'], 'var(--gradient-in-implementation)'],
+	[programStatus.enum['program_status.done'], 'var(--gradient-done)'],
+	[programStatus.enum['program_status.rejected'], 'var(--gradient-rejected)']
+]);
+
+export const programStatusHoverColors = new Map<ProgramStatus, string>([
+	[programStatus.enum['program_status.idea'], 'var(--color-hover-idea)'],
+	[programStatus.enum['program_status.in_planning'], 'var(--color-hover-in-planning)'],
+	[programStatus.enum['program_status.adopted'], 'var(--color-hover-adopted)'],
+	[programStatus.enum['program_status.in_implementation'], 'var(--color-hover-in-implementation)'],
+	[programStatus.enum['program_status.done'], 'var(--color-hover-done)'],
+	[programStatus.enum['program_status.rejected'], 'var(--color-hover-rejected)']
+]);
+
+export const programStatusIcons = new Map<ProgramStatus, Component<SvelteHTMLElements['svg']>>([
+	[programStatus.enum['program_status.idea'], Lightbulb],
+	[programStatus.enum['program_status.in_planning'], Pen],
+	[programStatus.enum['program_status.adopted'], CheckCircle],
+	[programStatus.enum['program_status.in_implementation'], Cog],
+	[programStatus.enum['program_status.done'], BadgeCheck],
+	[programStatus.enum['program_status.rejected'], ThumbsDown]
 ]);
