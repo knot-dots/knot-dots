@@ -1,6 +1,7 @@
 import type { Component } from 'svelte';
 import type { SvelteHTMLElements, SVGAttributes } from 'svelte/elements';
 import ArrowSortLetters from '~icons/flowbite/arrow-sort-letters-outline';
+import CheckCircle from '~icons/flowbite/check-circle-outline';
 import Clock from '~icons/flowbite/clock-outline';
 import ArrowTrendingUp from '~icons/heroicons/arrow-trending-up-solid';
 import Bars2 from '~icons/heroicons/bars-2-solid';
@@ -16,7 +17,6 @@ import Pencil from '~icons/heroicons/pencil-16-solid';
 import Plus from '~icons/heroicons/plus-solid';
 import ShieldCheck from '~icons/heroicons/shield-check-16-solid';
 import Square2Stack from '~icons/heroicons/square-2-stack';
-import XCircle from '~icons/heroicons/x-circle-16-solid';
 import sdg01 from '$lib/assets/sdg/sdg-01.svg';
 import sdg02 from '$lib/assets/sdg/sdg-02.svg';
 import sdg03 from '$lib/assets/sdg/sdg-03.svg';
@@ -154,29 +154,29 @@ export const taskStatusIcons = new Map<TaskStatus, Component<SvelteHTMLElements[
 ]);
 
 export const ruleStatusColors = new Map<RuleStatus, string>([
-	[ruleStatus.enum['rule_status.draft'], 'yellow'],
-	[ruleStatus.enum['rule_status.in_force'], 'green'],
-	[ruleStatus.enum['rule_status.invalid'], 'red'],
+	[ruleStatus.enum['rule_status.idea'], 'pink'],
+	[ruleStatus.enum['rule_status.in_planning'], 'orange'],
+	[ruleStatus.enum['rule_status.adopted'], 'green'],
 	[ruleStatus.enum['rule_status.rejected'], 'purple']
 ]);
 
 export const ruleStatusBackgrounds = new Map<RuleStatus, string>([
-	[ruleStatus.enum['rule_status.draft'], 'var(--gradient-in-implementation)'],
-	[ruleStatus.enum['rule_status.in_force'], 'var(--gradient-done)'],
-	[ruleStatus.enum['rule_status.invalid'], 'var(--gradient-idea)'],
+	[ruleStatus.enum['rule_status.idea'], 'var(--gradient-idea)'],
+	[ruleStatus.enum['rule_status.in_planning'], 'var(--gradient-in-planning)'],
+	[ruleStatus.enum['rule_status.adopted'], 'var(--gradient-done)'],
 	[ruleStatus.enum['rule_status.rejected'], 'var(--gradient-rejected)']
 ]);
 
 export const ruleStatusHoverColors = new Map<RuleStatus, string>([
-	[ruleStatus.enum['rule_status.draft'], 'var(--color-hover-in-implementation)'],
-	[ruleStatus.enum['rule_status.in_force'], 'var(--color-hover-done)'],
-	[ruleStatus.enum['rule_status.invalid'], 'var(--color-hover-idea)'],
+	[ruleStatus.enum['rule_status.idea'], 'var(--color-hover-idea)'],
+	[ruleStatus.enum['rule_status.in_planning'], 'var(--color-hover-in-planning)'],
+	[ruleStatus.enum['rule_status.adopted'], 'var(--color-hover-done)'],
 	[ruleStatus.enum['rule_status.rejected'], 'var(--color-hover-rejected)']
 ]);
 
 export const ruleStatusIcons = new Map<RuleStatus, Component<SvelteHTMLElements['svg']>>([
-	[ruleStatus.enum['rule_status.draft'], Cog8Tooth],
-	[ruleStatus.enum['rule_status.in_force'], Flag],
-	[ruleStatus.enum['rule_status.invalid'], XCircle],
+	[ruleStatus.enum['rule_status.idea'], LightBulb],
+	[ruleStatus.enum['rule_status.in_planning'], Pencil],
+	[ruleStatus.enum['rule_status.adopted'], CheckCircle],
 	[ruleStatus.enum['rule_status.rejected'], HandThumbDown]
 ]);

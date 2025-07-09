@@ -153,9 +153,9 @@ export const status = z.enum(statusValues);
 export type Status = z.infer<typeof status>;
 
 const ruleStatusValues = [
-	'rule_status.draft',
-	'rule_status.in_force',
-	'rule_status.invalid',
+	'rule_status.idea',
+	'rule_status.in_planning',
+	'rule_status.adopted',
 	'rule_status.rejected'
 ] as const;
 
@@ -542,7 +542,7 @@ const objectivePayload = basePayload.omit({ category: true, summary: true, topic
 const initialObjectivePayload = objectivePayload.partial({ title: true });
 
 const rulePayload = basePayload.extend({
-	ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.draft']),
+	ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
 	type: z.literal(payloadTypes.enum.rule),
 	validFrom: z
 		.string()

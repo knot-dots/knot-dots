@@ -1178,6 +1178,11 @@ label > input[type='checkbox'].toggle {
 	--badge-color: var(--color-green-800);
 }
 
+.badge.badge--teal {
+	--badge-background-color: var(--color-teal-100);
+	--badge-color: var(--color-teal-800);
+}
+
 .badge > svg {
 	height: 1rem;
 	max-width: initial;

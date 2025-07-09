@@ -363,9 +363,9 @@
 	},
 	"rule": "Rule",
 	"rule_status": "Status",
-	"rule_status.draft": "Draft",
-	"rule_status.in_force": "In force",
-	"rule_status.invalid": "Invalid",
+	"rule_status.idea": "Idea",
+	"rule_status.in_planning": "In planning",
+	"rule_status.adopted": "Adopted",
 	"rule_status.rejected": "Rejected",
 	"save": "Save",
 	"sdg": {

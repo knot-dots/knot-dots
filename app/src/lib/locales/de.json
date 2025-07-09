@@ -363,9 +363,9 @@
 	},
 	"rule": "Regel",
 	"rule_status": "Status",
-	"rule_status.draft": "In Ausarbeitung",
-	"rule_status.in_force": "Gültig",
-	"rule_status.invalid": "Ungültig",
+	"rule_status.idea": "Idee",
+	"rule_status.in_planning": "In Planung",
+	"rule_status.adopted": "Beschlossen",
 	"rule_status.rejected": "Verworfen",
 	"save": "Speichern",
 	"sdg": {
