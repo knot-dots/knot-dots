@@ -564,6 +564,7 @@ const goalPayload = basePayload.extend({
 		.string()
 		.refine((v) => z.coerce.date().safeParse(v))
 		.optional(),
+	goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
 	goalType: goalType.optional(),
 	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 	progress: z.number().nonnegative().optional(),

@@ -35,6 +35,8 @@ import sdg15 from '$lib/assets/sdg/sdg-15.svg';
 import sdg16 from '$lib/assets/sdg/sdg-16.svg';
 import sdg17 from '$lib/assets/sdg/sdg-17.svg';
 import {
+	goalStatus,
+	type GoalStatus,
 	predicates,
 	type RuleStatus,
 	ruleStatus,
@@ -183,4 +185,36 @@ export const ruleStatusIcons = new Map<RuleStatus, Component<SvelteHTMLElements[
 	[ruleStatus.enum['rule_status.in_planning'], Pen],
 	[ruleStatus.enum['rule_status.adopted'], CheckCircle],
 	[ruleStatus.enum['rule_status.rejected'], ThumbsDown]
+]);
+
+export const goalStatusColors = new Map<GoalStatus, string>([
+	[goalStatus.enum['goal_status.idea'], 'pink'],
+	[goalStatus.enum['goal_status.in_planning'], 'orange'],
+	[goalStatus.enum['goal_status.adopted'], 'teal'],
+	[goalStatus.enum['goal_status.achieved'], 'green'],
+	[goalStatus.enum['goal_status.rejected'], 'purple']
+]);
+
+export const goalStatusBackgrounds = new Map<GoalStatus, string>([
+	[goalStatus.enum['goal_status.idea'], 'var(--gradient-idea)'],
+	[goalStatus.enum['goal_status.in_planning'], 'var(--gradient-in-planning)'],
+	[goalStatus.enum['goal_status.adopted'], 'var(--gradient-adopted)'],
+	[goalStatus.enum['goal_status.achieved'], 'var(--gradient-done)'],
+	[goalStatus.enum['goal_status.rejected'], 'var(--gradient-rejected)']
+]);
+
+export const goalStatusHoverColors = new Map<GoalStatus, string>([
+	[goalStatus.enum['goal_status.idea'], 'var(--color-hover-idea)'],
+	[goalStatus.enum['goal_status.in_planning'], 'var(--color-hover-in-planning)'],
+	[goalStatus.enum['goal_status.adopted'], 'var(--color-hover-adopted)'],
+	[goalStatus.enum['goal_status.achieved'], 'var(--color-hover-done)'],
+	[goalStatus.enum['goal_status.rejected'], 'var(--color-hover-rejected)']
+]);
+
+export const goalStatusIcons = new Map<GoalStatus, Component<SvelteHTMLElements['svg']>>([
+	[goalStatus.enum['goal_status.idea'], Lightbulb],
+	[goalStatus.enum['goal_status.in_planning'], Pen],
+	[goalStatus.enum['goal_status.adopted'], CheckCircle],
+	[goalStatus.enum['goal_status.achieved'], BadgeCheck],
+	[goalStatus.enum['goal_status.rejected'], ThumbsDown]
 ]);
