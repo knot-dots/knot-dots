@@ -23,7 +23,7 @@
 					payloadTypes.enum.measure,
 					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
 				)
-					? `#create=measure& status=${statusOption}`
+					? `#create=measure&status=${statusOption}`
 					: undefined}
 				title={$_(statusOption)}
 			>
