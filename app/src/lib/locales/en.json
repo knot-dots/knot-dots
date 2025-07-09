@@ -452,6 +452,7 @@
 	"sort_modified": "Last modified",
 	"start_date": "start",
 	"status": "Status",
+	"status.adopted": "Adopted",
 	"status.done": "Done",
 	"status.idea": "Idea",
 	"status.in_implementation": "In implementation",
