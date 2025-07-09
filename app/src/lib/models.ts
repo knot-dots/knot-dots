@@ -179,6 +179,19 @@ export const status = z.enum(statusValues);
 
 export type Status = z.infer<typeof status>;
 
+const programStatusValues = [
+	'program_status.idea',
+	'program_status.in_planning',
+	'program_status.adopted',
+	'program_status.in_implementation',
+	'program_status.done',
+	'program_status.rejected'
+] as const;
+
+export const programStatus = z.enum(programStatusValues);
+
+export type ProgramStatus = z.infer<typeof programStatus>;
+
 const ruleStatusValues = [
 	'rule_status.idea',
 	'rule_status.in_planning',
@@ -763,6 +776,7 @@ const programPayload = basePayload
 		image: z.string().url().optional(),
 		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
+		programStatus: programStatus.default(programStatus.enum['program_status.idea']),
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
 	})

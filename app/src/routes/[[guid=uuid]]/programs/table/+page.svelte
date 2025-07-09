@@ -14,6 +14,7 @@
 			{ heading: $_('title'), key: 'title' },
 			{ heading: $_('description'), key: 'description' },
 			{ heading: $_('visibility.label'), key: 'visibility' },
+			{ heading: $_('program_status'), key: 'status' },
 			{ heading: $_('category'), key: 'category' },
 			{ heading: $_('topic'), key: 'topic' },
 			{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },

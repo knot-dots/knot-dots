@@ -11,6 +11,7 @@
 	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
+	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
 	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
@@ -113,6 +114,12 @@
 				editable={editable && $ability.can('update', container)}
 				offset={[-41, -41]}
 				bind:value={container.payload.goalStatus}
+			/>
+		{:else if 'programStatus' in container.payload}
+			<ProgramStatusDropdown
+				editable={editable && $ability.can('update', container)}
+				offset={[-41, -41]}
+				bind:value={container.payload.programStatus}
 			/>
 		{/if}
 	</div>
