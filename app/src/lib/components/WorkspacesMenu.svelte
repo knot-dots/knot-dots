@@ -60,6 +60,7 @@
 		programs: {
 			catalog: '/programs/catalog',
 			level: '/programs/level',
+			status: '/programs/status',
 			table: '/programs/table'
 		},
 		rules: {
@@ -96,6 +97,7 @@
 		status: {
 			goals: '/goals/status',
 			measures: '/measures/status',
+			programs: '/programs/status',
 			rules: '/rules/status',
 			tasks: '/tasks/status'
 		},

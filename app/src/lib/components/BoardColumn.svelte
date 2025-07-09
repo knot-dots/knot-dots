@@ -10,13 +10,16 @@
 		isGoalContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
+		isProgramContainer,
 		isRuleContainer,
 		isTaskContainer,
+		type Level,
 		type NewContainer,
 		overlayKey,
 		type PartialRelation,
 		type PayloadType,
 		predicates,
+		type ProgramStatus,
 		type RuleStatus,
 		type Status,
 		type TaskStatus
@@ -64,6 +67,13 @@
 			}
 			if (params.has('goalStatus')) {
 				container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
+			}
+		} else if (isProgramContainer(container)) {
+			if (params.has('level')) {
+				container.payload.level = params.get('level') as Level;
+			}
+			if (params.has('programStatus')) {
+				container.payload.programStatus = params.get('programStatus') as ProgramStatus;
 			}
 		}
 
