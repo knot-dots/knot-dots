@@ -88,6 +88,7 @@ export const sortIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>
 export const statusColors = new Map<Status, string>([
 	[status.enum['status.idea'], 'pink'],
 	[status.enum['status.in_planning'], 'orange'],
+	[status.enum['status.adopted'], 'teal'],
 	[status.enum['status.in_implementation'], 'yellow'],
 	[status.enum['status.in_operation'], 'blue'],
 	[status.enum['status.done'], 'green'],
@@ -97,6 +98,7 @@ export const statusColors = new Map<Status, string>([
 export const statusBackgrounds = new Map<Status, string>([
 	[status.enum['status.idea'], 'var(--gradient-idea)'],
 	[status.enum['status.in_planning'], 'var(--gradient-in-planning)'],
+	[status.enum['status.adopted'], 'var(--gradient-adopted)'],
 	[status.enum['status.in_implementation'], 'var(--gradient-in-implementation)'],
 	[status.enum['status.in_operation'], 'var(--gradient-in-operation)'],
 	[status.enum['status.done'], 'var(--gradient-done)'],
@@ -106,6 +108,7 @@ export const statusBackgrounds = new Map<Status, string>([
 export const statusHoverColors = new Map<Status, string>([
 	[status.enum['status.idea'], 'var(--color-hover-idea)'],
 	[status.enum['status.in_planning'], 'var(--color-hover-in-planning)'],
+	[status.enum['status.adopted'], 'var(--color-hover-adopted)'],
 	[status.enum['status.in_implementation'], 'var(--color-hover-in-implementation)'],
 	[status.enum['status.in_operation'], 'var(--color-hover-in-operation)'],
 	[status.enum['status.done'], 'var(--color-hover-done)'],
@@ -116,6 +119,7 @@ export const statusIcons = new Map<Status, Component<SvelteHTMLElements['svg']>>
 	[status.enum['status.idea'], Lightbulb],
 	[status.enum['status.in_planning'], Pen],
 	[status.enum['status.in_implementation'], Cog],
+	[status.enum['status.adopted'], CheckCircle],
 	[status.enum['status.in_operation'], Flag],
 	[status.enum['status.done'], BadgeCheck],
 	[status.enum['status.rejected'], ThumbsDown]

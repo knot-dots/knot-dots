@@ -452,6 +452,7 @@
 	"slug": "Slug",
 	"start_date": "Beginn",
 	"status": "Status",
+	"status.adopted": "Beschlossen",
 	"status.done": "Erledigt",
 	"status.idea": "Idee",
 	"status.in_implementation": "In Umsetzung",
