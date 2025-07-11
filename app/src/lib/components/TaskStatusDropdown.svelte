@@ -73,3 +73,9 @@
 		</span>
 	</div>
 {/if}
+
+<style>
+	.badge {
+		float: left;
+	}
+</style>
