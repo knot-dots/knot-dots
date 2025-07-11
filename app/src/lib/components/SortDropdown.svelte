@@ -27,7 +27,7 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button class="dropdown-button dropdown-button--badge" type="button" use:popover.button>
+	<button class="dropdown-button" type="button" use:popover.button>
 		<ArrowsUpDown />{#if selected}{selected.label}{:else}&nbsp;{/if}
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
