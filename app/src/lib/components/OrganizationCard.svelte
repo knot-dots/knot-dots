@@ -41,7 +41,7 @@
 			url.pathname = linkPath
 				.replace('/me/measures', '/measures/status')
 				.replace('/me/tasks', '/tasks/status')
-				.replace('/me', '/all/page');
+				.replace(/\/me$/, '/all/page');
 			return url.toString();
 		};
 	}
