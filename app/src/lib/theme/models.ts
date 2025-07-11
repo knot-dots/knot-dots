@@ -1,21 +1,22 @@
 import type { Component } from 'svelte';
 import type { SvelteHTMLElements, SVGAttributes } from 'svelte/elements';
 import ArrowSortLetters from '~icons/flowbite/arrow-sort-letters-outline';
+import BadgeCheck from '~icons/flowbite/badge-check-solid';
 import CheckCircle from '~icons/flowbite/check-circle-outline';
 import Clock from '~icons/flowbite/clock-outline';
+import Cog from '~icons/flowbite/cog-solid';
+import Flag from '~icons/flowbite/flag-outline';
+import Lightbulb from '~icons/flowbite/lightbulb-solid';
+import Pen from '~icons/flowbite/pen-solid';
+import ThumbsDown from '~icons/flowbite/thumbs-down-solid';
 import ArrowTrendingUp from '~icons/heroicons/arrow-trending-up-solid';
 import Bars2 from '~icons/heroicons/bars-2-solid';
 import ChartPie from '~icons/heroicons/chart-pie';
 import ChevronDoubleUp from '~icons/heroicons/chevron-double-up-solid';
 import ChevronDoubleRight from '~icons/heroicons/chevron-double-right-solid';
-import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
-import Flag from '~icons/heroicons/flag-16-solid';
-import HandThumbDown from '~icons/heroicons/hand-thumb-down-16-solid';
-import LightBulb from '~icons/heroicons/light-bulb-16-solid';
 import Minus from '~icons/heroicons/minus-solid';
 import Pencil from '~icons/heroicons/pencil-16-solid';
 import Plus from '~icons/heroicons/plus-solid';
-import ShieldCheck from '~icons/heroicons/shield-check-16-solid';
 import Square2Stack from '~icons/heroicons/square-2-stack';
 import sdg01 from '$lib/assets/sdg/sdg-01.svg';
 import sdg02 from '$lib/assets/sdg/sdg-02.svg';
@@ -113,12 +114,12 @@ export const statusHoverColors = new Map<Status, string>([
 ]);
 
 export const statusIcons = new Map<Status, Component<SvelteHTMLElements['svg']>>([
-	[status.enum['status.idea'], LightBulb],
-	[status.enum['status.in_planning'], Pencil],
-	[status.enum['status.in_implementation'], Cog8Tooth],
+	[status.enum['status.idea'], Lightbulb],
+	[status.enum['status.in_planning'], Pen],
+	[status.enum['status.in_implementation'], Cog],
 	[status.enum['status.in_operation'], Flag],
-	[status.enum['status.done'], ShieldCheck],
-	[status.enum['status.rejected'], HandThumbDown]
+	[status.enum['status.done'], BadgeCheck],
+	[status.enum['status.rejected'], ThumbsDown]
 ]);
 
 export const taskStatusColors = new Map<TaskStatus, string>([
@@ -146,11 +147,11 @@ export const taskStatusHoverColors = new Map<TaskStatus, string>([
 ]);
 
 export const taskStatusIcons = new Map<TaskStatus, Component<SvelteHTMLElements['svg']>>([
-	[taskStatus.enum['task_status.idea'], LightBulb],
-	[taskStatus.enum['task_status.in_planning'], Pencil],
-	[taskStatus.enum['task_status.in_progress'], Cog8Tooth],
+	[taskStatus.enum['task_status.idea'], Lightbulb],
+	[taskStatus.enum['task_status.in_planning'], Pen],
+	[taskStatus.enum['task_status.in_progress'], Cog],
 	[taskStatus.enum['task_status.done'], Flag],
-	[taskStatus.enum['task_status.rejected'], HandThumbDown]
+	[taskStatus.enum['task_status.rejected'], ThumbsDown]
 ]);
 
 export const ruleStatusColors = new Map<RuleStatus, string>([
@@ -175,8 +176,8 @@ export const ruleStatusHoverColors = new Map<RuleStatus, string>([
 ]);
 
 export const ruleStatusIcons = new Map<RuleStatus, Component<SvelteHTMLElements['svg']>>([
-	[ruleStatus.enum['rule_status.idea'], LightBulb],
-	[ruleStatus.enum['rule_status.in_planning'], Pencil],
+	[ruleStatus.enum['rule_status.idea'], Lightbulb],
+	[ruleStatus.enum['rule_status.in_planning'], Pen],
 	[ruleStatus.enum['rule_status.adopted'], CheckCircle],
-	[ruleStatus.enum['rule_status.rejected'], HandThumbDown]
+	[ruleStatus.enum['rule_status.rejected'], ThumbsDown]
 ]);
