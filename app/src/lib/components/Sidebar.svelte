@@ -134,7 +134,11 @@
 		<li use:platformMenu.panel>
 			<ul class="sidebar-menu">
 				<li>
-					<a class="sidebar-menu-item sidebar-menu-item--secondary" href={env.PUBLIC_BASE_URL}>
+					<a
+						class="sidebar-menu-item sidebar-menu-item--secondary"
+						href={env.PUBLIC_BASE_URL}
+						rel="external"
+					>
 						{$_('homepage')}
 					</a>
 				</li>
@@ -142,6 +146,7 @@
 					<a
 						class="sidebar-menu-item sidebar-menu-item--secondary"
 						href="{env.PUBLIC_BASE_URL}/impressum"
+						rel="external"
 					>
 						{$_('imprint')}
 					</a>
