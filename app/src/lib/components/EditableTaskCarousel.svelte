@@ -14,15 +14,21 @@
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
-	export let container: Container;
-	export let editable = false;
+	interface Props {
+		container: Container;
+		editable?: boolean;
+	}
 
-	$: guid = container.guid;
+	let { container, editable = false }: Props = $props();
 
-	$: tasksRequest = fetchRelatedContainers(guid, {
-		payloadType: [payloadTypes.enum.task],
-		relationType: [predicates.enum['is-part-of']]
-	}) as Promise<TaskContainer[]>;
+	let guid = $derived(container.guid);
+
+	let tasksRequest = $derived(
+		fetchRelatedContainers(guid, {
+			payloadType: [payloadTypes.enum.task],
+			relationType: [predicates.enum['is-part-of']]
+		}) as Promise<TaskContainer[]>
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

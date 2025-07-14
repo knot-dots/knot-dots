@@ -13,25 +13,32 @@
 		type ProgramContainer
 	} from '$lib/models';
 
-	export let container: Container | EmptyContainer;
-	export let editable = false;
+	interface Props {
+		container: Container | EmptyContainer;
+		editable?: boolean;
+	}
 
-	$: organization = container.organization;
+	let { container = $bindable(), editable = false }: Props = $props();
 
-	$: organizationalUnit = container.organizational_unit;
+	let organization = $derived(container.organization);
 
-	$: programCandidatesRequest = fetchContainers(
-		{
-			organization: [organization],
-			...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
-			payloadType: [payloadTypes.enum.program]
-		},
-		'alpha'
-	) as Promise<ProgramContainer[]>;
+	let organizationalUnit = $derived(container.organizational_unit);
 
-	$: isPartOfProgramObject =
+	let programCandidatesRequest = $derived(
+		fetchContainers(
+			{
+				organization: [organization],
+				...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
+				payloadType: [payloadTypes.enum.program]
+			},
+			'alpha'
+		) as Promise<ProgramContainer[]>
+	);
+
+	let isPartOfProgramObject = $derived(
 		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-program'])?.object ??
-		'';
+			''
+	);
 
 	async function set(value: string) {
 		const isPartOfProgramIndex = container.relation.findIndex(

@@ -2,12 +2,16 @@
 	import { _ } from 'svelte-i18n';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 
-	export let editable = false;
-	export let label: string;
-	export let options: Array<{ href?: string; label: string; value: string | undefined }>;
-	export let value: string | undefined;
+	interface Props {
+		editable?: boolean;
+		label: string;
+		options: Array<{ href?: string; label: string; value: string | undefined }>;
+		value: string | undefined;
+	}
 
-	$: selected = options.find((o) => o.value == value);
+	let { editable = false, label, options, value = $bindable() }: Props = $props();
+
+	let selected = $derived(options.find((o) => o.value == value));
 </script>
 
 <div class="label">{label}</div>
