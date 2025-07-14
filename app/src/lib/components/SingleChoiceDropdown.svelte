@@ -7,7 +7,7 @@
 
 	interface Props {
 		offset?: [number, number];
-		options: Array<{ href?: string; label: string; value: string | undefined }>;
+		options: Array<{ href?: string; label: string; value: string | null | undefined }>;
 		value: string | null | undefined;
 	}
 

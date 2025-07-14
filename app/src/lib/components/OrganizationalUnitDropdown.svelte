@@ -11,14 +11,15 @@
 
 	let { editable = false, organization, value = $bindable() }: Props = $props();
 
-	let options = $derived(
-		page.data.organizationalUnits
+	let options = $derived([
+		{ label: $_('empty'), value: null },
+		...page.data.organizationalUnits
 			.filter((ou) => ou.organization == organization)
 			.map(({ guid, payload }) => ({
 				value: guid,
 				label: payload.name
 			}))
-	);
+	]);
 </script>
 
 {#if editable}
