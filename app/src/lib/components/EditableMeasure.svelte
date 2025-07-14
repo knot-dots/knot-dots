@@ -20,11 +20,14 @@
 
 	$: organizationalUnit = container.organizational_unit;
 
-	$: measureCandidatesRequest = fetchContainers({
-		organization: [organization],
-		...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
-		payloadType: [payloadTypes.enum.measure]
-	}) as Promise<ContainerWithEffect[]>;
+	$: measureCandidatesRequest = fetchContainers(
+		{
+			organization: [organization],
+			...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
+			payloadType: [payloadTypes.enum.measure]
+		},
+		'alpha'
+	) as Promise<ContainerWithEffect[]>;
 
 	$: isPartOfMeasureObject =
 		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-measure'])?.object ??

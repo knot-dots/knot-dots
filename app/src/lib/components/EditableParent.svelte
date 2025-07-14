@@ -29,24 +29,33 @@
 		programGuid?: string
 	): Promise<Container[]> {
 		if (measureGuid) {
-			return fetchContainers({
-				isPartOfMeasure: [measureGuid],
-				payloadType: [payloadTypes.enum.goal]
-			}) as Promise<Container[]>;
+			return fetchContainers(
+				{
+					isPartOfMeasure: [measureGuid],
+					payloadType: [payloadTypes.enum.goal]
+				},
+				'alpha'
+			) as Promise<Container[]>;
 		} else if (programGuid) {
-			return fetchContainers({
-				isPartOfProgram: [programGuid],
-				payloadType:
-					payloadType == payloadTypes.enum.knowledge
-						? [payloadTypes.enum.knowledge]
-						: [payloadTypes.enum.goal]
-			}) as Promise<Container[]>;
+			return fetchContainers(
+				{
+					isPartOfProgram: [programGuid],
+					payloadType:
+						payloadType == payloadTypes.enum.knowledge
+							? [payloadTypes.enum.knowledge]
+							: [payloadTypes.enum.goal]
+				},
+				'alpha'
+			) as Promise<Container[]>;
 		} else if (payloadType == payloadTypes.enum.task) {
-			return fetchContainers({
-				organization: [organization],
-				organizationalUnit: organizational_unit ? [organizational_unit] : [],
-				payloadType: [payloadTypes.enum.goal]
-			}) as Promise<Container[]>;
+			return fetchContainers(
+				{
+					organization: [organization],
+					organizationalUnit: organizational_unit ? [organizational_unit] : [],
+					payloadType: [payloadTypes.enum.goal]
+				},
+				'alpha'
+			) as Promise<Container[]>;
 		}
 
 		return Promise.resolve([]);

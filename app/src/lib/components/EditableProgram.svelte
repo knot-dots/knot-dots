@@ -20,11 +20,14 @@
 
 	$: organizationalUnit = container.organizational_unit;
 
-	$: programCandidatesRequest = fetchContainers({
-		organization: [organization],
-		...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
-		payloadType: [payloadTypes.enum.program]
-	}) as Promise<ProgramContainer[]>;
+	$: programCandidatesRequest = fetchContainers(
+		{
+			organization: [organization],
+			...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
+			payloadType: [payloadTypes.enum.program]
+		},
+		'alpha'
+	) as Promise<ProgramContainer[]>;
 
 	$: isPartOfProgramObject =
 		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-program'])?.object ??
