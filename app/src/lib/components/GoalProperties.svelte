@@ -47,9 +47,9 @@
 		/>
 
 		{#if isPartOfMeasure}
-			<EditableMeasure {container} {editable} />
+			<EditableMeasure bind:container {editable} />
 		{:else}
-			<EditableProgram {container} {editable} />
+			<EditableProgram bind:container {editable} />
 		{/if}
 
 		<EditableCategory {editable} bind:value={container.payload.category} />
