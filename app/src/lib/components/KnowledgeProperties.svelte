@@ -36,7 +36,7 @@
 
 		<EditableProgram {editable} bind:container />
 
-		<EditableParent {container} {editable} />
+		<EditableParent bind:container {editable} />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />

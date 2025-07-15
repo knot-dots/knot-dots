@@ -80,12 +80,12 @@
 		/>
 
 		{#if isPartOfMeasure}
-			<EditableMeasure {container} {editable} />
+			<EditableMeasure bind:container {editable} />
 		{:else}
-			<EditableProgram {container} {editable} />
+			<EditableProgram bind:container {editable} />
 		{/if}
 
-		<EditableParent {container} {editable} />
+		<EditableParent bind:container {editable} />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
