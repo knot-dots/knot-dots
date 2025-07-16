@@ -33,6 +33,7 @@
 			.config((ctx) => {
 				ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
 					value = markdown;
+					node.dispatchEvent(new InputEvent('input', { bubbles: true }));
 				});
 			})
 			.config((ctx) => {
