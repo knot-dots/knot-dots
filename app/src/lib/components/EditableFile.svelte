@@ -27,10 +27,12 @@
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
 				uploadInProgress = true;
-				value = await Promise.all(
-					Array.from(input.files)
-						.filter((f) => f instanceof File && f.size > 0)
-						.map(async (f) => [await uploadAsFormData(f), f.name])
+				value = value.concat(
+					await Promise.all(
+						Array.from(input.files)
+							.filter((f) => f instanceof File && f.size > 0)
+							.map(async (f) => [await uploadAsFormData(f), f.name])
+					)
 				);
 				requestSubmit(event);
 			} catch (e) {
@@ -77,6 +79,7 @@
 			accept="application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 			class="is-visually-hidden"
 			id="file"
+			multiple
 			onchange={upload}
 			type="file"
 		/>
