@@ -285,7 +285,8 @@ if (browser) {
 						predicates.enum['is-inconsistent-with'],
 						predicates.enum['is-measured-by'],
 						predicates.enum['is-objective-for'],
-						predicates.enum['is-part-of']
+						predicates.enum['is-part-of'],
+						predicates.enum['is-section-of']
 					]
 				});
 				overlay.set({

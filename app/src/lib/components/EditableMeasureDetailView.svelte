@@ -8,10 +8,7 @@
 		type AnyContainer,
 		type Container,
 		type ContainerWithEffect,
-		isMeasureContainer,
-		isSimpleMeasureContainer,
-		payloadTypes,
-		status
+		payloadTypes
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -40,29 +37,6 @@
 				label={$_('description')}
 				bind:value={container.payload.description}
 			/>
-
-			{#if (isMeasureContainer(container) && container.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer(container)}
-				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					label={$_('annotation')}
-					bind:value={container.payload.annotation}
-				/>
-			{:else if isMeasureContainer(container) && container.payload.status === status.enum['status.in_implementation']}
-				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					label={$_('comment')}
-					bind:value={container.payload.comment}
-				/>
-			{:else if isMeasureContainer(container) && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
-				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					label={$_('result')}
-					bind:value={container.payload.result}
-				/>
-			{/if}
 		{/key}
 
 		<div class="details-tab" id="resources">

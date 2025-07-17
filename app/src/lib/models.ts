@@ -130,6 +130,7 @@ const predicateValues = [
 	'is-part-of-measure',
 	'is-part-of-program',
 	'is-prerequisite-for',
+	'is-section-of',
 	'is-sub-target-of',
 	'is-subtask-of',
 	'is-superordinate-of'
