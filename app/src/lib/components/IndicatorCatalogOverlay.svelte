@@ -21,6 +21,7 @@
 		type IndicatorTemplateContainer,
 		indicatorTypes,
 		isIndicatorContainer,
+		measureTypes,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -124,12 +125,13 @@
 	let facets = $derived(
 		computeFacetCount(
 			new Map([
-				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
 				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
 				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
+				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
+				['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
+				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
+				['topic', new Map(topics.options.map((v) => [v as string, 0]))]
 			]),
 			[
 				...indicatorTemplates.filter((c) => !alreadyInUse(c, indicators)),
