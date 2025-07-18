@@ -23,6 +23,7 @@
 	}
 
 	async function upload(event: Event) {
+		event.stopPropagation();
 		const input = event.currentTarget as HTMLInputElement;
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
@@ -34,7 +35,7 @@
 							.map(async (f) => [await uploadAsFormData(f), f.name])
 					)
 				);
-				requestSubmit(event);
+				input.form?.requestSubmit();
 			} catch (e) {
 				console.log(e);
 			} finally {
@@ -80,7 +81,7 @@
 			class="is-visually-hidden"
 			id="file"
 			multiple
-			onchange={upload}
+			oninput={upload}
 			type="file"
 		/>
 

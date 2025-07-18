@@ -31,12 +31,13 @@
 	}
 
 	async function upload(event: Event) {
+		event.stopPropagation();
 		const input = event.currentTarget as HTMLInputElement;
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
 				uploadInProgress = true;
 				value = await uploadAsFormData(input.files[0]);
-				requestSubmit(event);
+				input.form?.requestSubmit();
 			} catch (e) {
 				console.log(e);
 			} finally {
@@ -72,7 +73,7 @@
 			accept="image/png,image/jpeg"
 			class="is-visually-hidden"
 			id="image"
-			onchange={upload}
+			oninput={upload}
 			type="file"
 		/>
 	{/if}
