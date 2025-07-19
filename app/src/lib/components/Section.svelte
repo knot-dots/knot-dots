@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { dragHandle } from 'svelte-dnd-action';
+	import DragHandle from '~icons/knotdots/draghandle';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
@@ -24,6 +26,12 @@
 </script>
 
 <section>
+	{#if $applicationState.containerDetailView.editable}
+		<span class="drag-handle" use:dragHandle>
+			<DragHandle />
+		</span>
+	{/if}
+
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit} novalidate>
 		{#if isTextContainer(container)}
 			<EditableTextSection
@@ -51,13 +59,26 @@
 		top: 1.375rem;
 	}
 
+	.drag-handle {
+		background-color: white;
+		border-radius: 8px;
+		box-shadow: var(--shadow-sm);
+		color: var(--color-gray-700);
+		left: -3.25rem;
+		padding: 0.75rem;
+		position: absolute;
+		top: 1.375rem;
+	}
+
 	@media (hover: hover) {
-		section :global(.dropdown) {
+		section :global(.dropdown),
+		section .drag-handle {
 			visibility: hidden;
 		}
 
 		section:hover :global(.dropdown),
-		section :global(:has(.dropdown-panel)) {
+		section :global(:has(.dropdown-panel)),
+		section:hover .drag-handle {
 			visibility: visible;
 		}
 	}

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { flip } from 'svelte/animate';
+	import { dragHandleZone } from 'svelte-dnd-action';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
@@ -11,7 +13,8 @@
 		type Container,
 		isContainerWithProgress,
 		isGoalContainer,
-		isMeasureContainer
+		isMeasureContainer,
+		predicates
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { applicationState } from '$lib/stores';
@@ -27,7 +30,42 @@
 
 	const handleSubmit = autoSave(container, 2000);
 
-	let sections = $derived(hasSection(container, relatedContainers));
+	let sections = $derived(
+		hasSection(container, relatedContainers).toSorted(
+			(a, b) =>
+				container.relation.findIndex(({ subject }) => subject === a.guid) -
+				container.relation.findIndex(({ subject }) => subject === b.guid)
+		)
+	);
+
+	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
+		sections = event.detail.items;
+	}
+
+	async function handleDndFinalize(event: CustomEvent<DndEvent<Container>>) {
+		sections = event.detail.items;
+		const relation = [
+			...sections.map(({ guid }, index) => ({
+				object: container.guid,
+				position: index,
+				predicate: predicates.enum['is-section-of'],
+				subject: guid
+			})),
+			...container.relation.filter(
+				({ predicate }) => predicate !== predicates.enum['is-section-of']
+			)
+		];
+
+		const url = `/container/${container.guid}/relation`;
+		await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(relation),
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+	}
 </script>
 
 <form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -69,17 +107,23 @@
 					</div>
 				{/if}
 
-				{#each sections as sectionContainer, i (sectionContainer.guid)}
-					<div class="section-wrapper">
-						<Section bind:relatedContainers bind:container={sections[i]} />
+				<ul
+					use:dragHandleZone={{ items: sections, flipDurationMs: 100 }}
+					onconsider={handleDndConsider}
+					onfinalize={handleDndFinalize}
+				>
+					{#each sections as sectionContainer, i (sectionContainer.guid)}
+						<li animate:flip={{ duration: 100 }} class="section-wrapper">
+							<Section bind:relatedContainers bind:container={sections[i]} />
 
-						{#if $applicationState.containerDetailView.editable}
-							<div class="add-section-wrapper">
-								<AddSectionMenu bind:relatedContainers parentContainer={container} position={i} />
-							</div>
-						{/if}
-					</div>
-				{/each}
+							{#if $applicationState.containerDetailView.editable}
+								<div class="add-section-wrapper">
+									<AddSectionMenu bind:relatedContainers parentContainer={container} position={i} />
+								</div>
+							{/if}
+						</li>
+					{/each}
+				</ul>
 			</div>
 		{/if}
 	</article>
