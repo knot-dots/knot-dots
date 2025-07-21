@@ -60,6 +60,7 @@ const payloadTypeValues = [
 	'effect',
 	'effect_collection',
 	'goal',
+	'goal_collection',
 	'indicator',
 	'indicator_template',
 	'knowledge',
@@ -71,6 +72,7 @@ const payloadTypeValues = [
 	'page',
 	'program',
 	'resource',
+	'resource_collection',
 	'rule',
 	'simple_measure',
 	'task',
@@ -479,6 +481,16 @@ const initialGoalPayload = goalPayload.partial({
 	title: true
 });
 
+const goalCollectionPayload = z
+	.object({
+		title: z.string().readonly().default(''),
+		type: z.literal(payloadTypes.enum.goal_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialGoalCollectionPayload = goalCollectionPayload;
+
 const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
@@ -663,6 +675,16 @@ const initialResourcePayload = resourcePayload.partial({
 	unit: true
 });
 
+const resourceCollectionPayload = z
+	.object({
+		title: z.string().readonly().default(''),
+		type: z.literal(payloadTypes.enum.resource_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialResourceCollectionPayload = resourceCollectionPayload;
+
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -748,6 +770,7 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 const payload = z.discriminatedUnion('type', [
 	effectCollectionPayload,
 	effectPayload,
+	goalCollectionPayload,
 	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
@@ -758,6 +781,7 @@ const payload = z.discriminatedUnion('type', [
 	pagePayload,
 	programPayload,
 	rulePayload,
+	resourceCollectionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
@@ -786,6 +810,7 @@ export type Container = z.infer<typeof container>;
 const anyPayload = z.discriminatedUnion('type', [
 	effectCollectionPayload,
 	effectPayload,
+	goalCollectionPayload,
 	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
@@ -798,6 +823,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	pagePayload,
 	programPayload,
 	rulePayload,
+	resourceCollectionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
@@ -878,6 +904,18 @@ export function isGoalContainer(
 	container: AnyContainer | EmptyContainer
 ): container is GoalContainer {
 	return container.payload.type === payloadTypes.enum.goal;
+}
+
+const goalCollectionContainer = container.extend({
+	payload: goalCollectionPayload
+});
+
+export type GoalCollectionContainer = z.infer<typeof goalCollectionContainer>;
+
+export function isGoalCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is GoalCollectionContainer {
+	return container.payload.type === payloadTypes.enum.goal_collection;
 }
 
 const indicatorContainer = container.extend({
@@ -1010,6 +1048,18 @@ export function isResourceContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceContainer {
 	return container.payload.type === payloadTypes.enum.resource;
+}
+
+const resourceCollectionContainer = container.extend({
+	payload: resourceCollectionPayload
+});
+
+export type ResourceCollectionContainer = z.infer<typeof resourceCollectionContainer>;
+
+export function isResourceCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceCollectionContainer {
+	return container.payload.type === payloadTypes.enum.resource_collection;
 }
 
 const simpleMeasureContainer = container.extend({
@@ -1224,6 +1274,7 @@ export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialEffectCollectionPayload,
 		initialEffectPayload,
+		initialGoalCollectionPayload,
 		initialGoalPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
@@ -1236,6 +1287,7 @@ export const emptyContainer = newContainer.extend({
 		initialPagePayload,
 		initialProgramPayload,
 		initialRulePayload,
+		initialResourceCollectionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,
 		initialTextPayload,

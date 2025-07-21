@@ -5,13 +5,17 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
+	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
+	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import {
 		type AnyContainer,
 		isEffectCollectionContainer,
+		isGoalCollectionContainer,
 		isObjectiveCollectionContainer,
+		isResourceCollectionContainer,
 		isTaskCollectionContainer,
 		isTextContainer
 	} from '$lib/models';
@@ -50,8 +54,20 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
+		{:else if isGoalCollectionContainer(container)}
+			<EditableGoalCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
 		{:else if isObjectiveCollectionContainer(container)}
 			<EditableObjectiveCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isResourceCollectionContainer(container)}
+			<EditableResourceCollection
 				bind:container
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}

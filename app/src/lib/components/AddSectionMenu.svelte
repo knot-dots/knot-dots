@@ -2,10 +2,12 @@
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
+	import Cash from '~icons/flowbite/cash-outline';
 	import Plus from '~icons/flowbite/plus-outline';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
+	import Goal from '~icons/knotdots/goal';
 	import Text from '~icons/knotdots/text';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
@@ -14,8 +16,11 @@
 		containerOfType,
 		isContainerWithTitle,
 		isEffectCollectionContainer,
+		isGoalCollectionContainer,
 		isGoalContainer,
+		isMeasureContainer,
 		isObjectiveCollectionContainer,
+		isResourceCollectionContainer,
 		isTaskCollectionContainer,
 		type NewContainer,
 		payloadTypes,
@@ -62,6 +67,16 @@
 			)
 	);
 
+	let mayAddGoalCollection = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isGoalCollectionContainer)
+	);
+
+	let mayAddResultCollection = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -89,6 +104,24 @@
 							icon: ChartLine,
 							label: $_('objectives'),
 							value: payloadTypes.enum.objective_collection
+						}
+					]
+				: []),
+			...(mayAddGoalCollection
+				? [
+						{
+							icon: Goal,
+							label: $_('goals'),
+							value: payloadTypes.enum.goal_collection
+						}
+					]
+				: []),
+			...(mayAddResultCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resources'),
+							value: payloadTypes.enum.resource_collection
 						}
 					]
 				: [])

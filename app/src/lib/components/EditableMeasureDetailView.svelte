@@ -2,14 +2,8 @@
 	import { _ } from 'svelte-i18n';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
-	import {
-		type AnyContainer,
-		type Container,
-		type ContainerWithEffect,
-		payloadTypes
-	} from '$lib/models';
+	import { type AnyContainer, type Container, type ContainerWithEffect } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -38,25 +32,5 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
-
-		<div class="details-tab" id="resources">
-			<h3>{$_('resources')}</h3>
-			<EditablePartOfMeasureCarousel
-				{container}
-				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
-				payloadType={payloadTypes.enum.resource}
-			/>
-		</div>
-
-		<div class="details-tab" id="goals">
-			<h3>{$_('goals')}</h3>
-			<EditablePartOfMeasureCarousel
-				{container}
-				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
-				payloadType={payloadTypes.enum.goal}
-			/>
-		</div>
 	{/snippet}
 </EditableContainerDetailView>
