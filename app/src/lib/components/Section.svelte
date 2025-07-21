@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dragHandle } from 'svelte-dnd-action';
+	import { dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
@@ -9,11 +9,13 @@
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
 		relatedContainers: AnyContainer[];
 	}
 
 	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
+
+	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 
 	const handleSubmit = autoSave(container, 2000);
 
@@ -36,7 +38,7 @@
 		{#if isTextContainer(container)}
 			<EditableTextSection
 				bind:container
-				editable={$applicationState.containerDetailView.editable}
+				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 			/>
 		{/if}
 	</form>
