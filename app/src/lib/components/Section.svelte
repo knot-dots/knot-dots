@@ -4,8 +4,17 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
+	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
+	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
-	import { type AnyContainer, isTextContainer } from '$lib/models';
+	import {
+		type AnyContainer,
+		isEffectCollectionContainer,
+		isObjectiveCollectionContainer,
+		isTaskCollectionContainer,
+		isTextContainer
+	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
@@ -35,7 +44,25 @@
 	{/if}
 
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit} novalidate>
-		{#if isTextContainer(container)}
+		{#if isEffectCollectionContainer(container)}
+			<EditableEffectCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isObjectiveCollectionContainer(container)}
+			<EditableObjectiveCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isTaskCollectionContainer(container)}
+			<EditableTaskCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isTextContainer(container)}
 			<EditableTextSection
 				bind:container
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}

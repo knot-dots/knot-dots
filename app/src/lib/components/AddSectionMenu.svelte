@@ -3,6 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Plus from '~icons/flowbite/plus-outline';
+	import ChartBar from '~icons/knotdots/chart-bar';
+	import ChartLine from '~icons/knotdots/chart-line';
+	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Text from '~icons/knotdots/text';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
@@ -10,10 +13,15 @@
 		type AnyContainer,
 		containerOfType,
 		isContainerWithTitle,
+		isEffectCollectionContainer,
+		isGoalContainer,
+		isObjectiveCollectionContainer,
+		isTaskCollectionContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
+	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
@@ -33,7 +41,59 @@
 
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 
-	const options = [{ icon: Text, label: $_('text'), value: payloadTypes.enum.text }];
+	let mayAddTaskCollection = $derived(
+		isGoalContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
+	);
+
+	let mayAddObjectiveCollection = $derived(
+		isGoalContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isObjectiveCollectionContainer) &&
+			!parentContainer.relation.some(
+				({ predicate }) => predicate == predicates.enum['is-part-of-measure']
+			)
+	);
+
+	let mayAddEffectCollection = $derived(
+		isGoalContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isEffectCollectionContainer) &&
+			parentContainer.relation.some(
+				({ predicate }) => predicate == predicates.enum['is-part-of-measure']
+			)
+	);
+
+	let options = $derived(
+		[
+			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddTaskCollection
+				? [
+						{
+							icon: ClipboardCheck,
+							label: $_('tasks'),
+							value: payloadTypes.enum.task_collection
+						}
+					]
+				: []),
+			...(mayAddEffectCollection
+				? [
+						{
+							icon: ChartBar,
+							label: $_('effect'),
+							value: payloadTypes.enum.effect_collection
+						}
+					]
+				: []),
+			...(mayAddObjectiveCollection
+				? [
+						{
+							icon: ChartLine,
+							label: $_('objectives'),
+							value: payloadTypes.enum.objective_collection
+						}
+					]
+				: [])
+		].toSorted((a, b) => a.label.localeCompare(b.label))
+	);
 
 	function addSection(to: AnyContainer, position: number) {
 		return async (event: Event) => {
