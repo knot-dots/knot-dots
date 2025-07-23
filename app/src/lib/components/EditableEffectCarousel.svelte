@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Plus from '~icons/heroicons/plus-solid';
+	import Plus from '~icons/flowbite/circle-plus-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
@@ -15,7 +15,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { addObjectiveState, mayCreateContainer } from '$lib/stores';
+	import { addEffectState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container;
@@ -40,7 +40,7 @@
 		return `#${newParams.toString()}`;
 	}
 
-	async function addObjective(target: Container) {
+	async function addEffect(target: Container) {
 		const params = new URLSearchParams([
 			[overlayKey.enum['indicator-catalog'], ''],
 			['alreadyInUse', '']
@@ -58,13 +58,13 @@
 			}
 		}
 
-		$addObjectiveState = { target };
+		$addEffectState = { target };
 
 		await goto(`#${params.toString()}`);
 	}
 </script>
 
-{#if parts.length > 0 || $mayCreateContainer(payloadTypes.enum.objective, container.managed_by)}
+{#if parts.length > 0 || $mayCreateContainer(payloadTypes.enum.effect, container.managed_by)}
 	<ul class="carousel" class:editable>
 		{#each parts as container}
 			<li>
@@ -84,7 +84,7 @@
 					title={$_('add_item')}
 					onclick={(event) => {
 						event.preventDefault();
-						addObjective(container);
+						addEffect(container);
 					}}
 				>
 					<Plus />
@@ -109,7 +109,7 @@
 	}
 
 	.card :global(svg) {
-		height: 4rem;
-		width: 4rem;
+		height: 2.25rem;
+		width: 2.25rem;
 	}
 </style>
