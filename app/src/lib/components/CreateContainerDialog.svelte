@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import createEffect from '$lib/client/createEffect';
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -41,7 +42,7 @@
 		overlayURL,
 		status
 	} from '$lib/models';
-	import { newContainer } from '$lib/stores';
+	import { addEffectState, newContainer } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -53,8 +54,14 @@
 		const response = await saveContainer(container);
 		if (response.ok) {
 			const savedContainer = await response.json();
+			if (isIndicatorContainer(savedContainer) && $addEffectState.target) {
+				const effect = await createEffect($addEffectState.target, savedContainer);
+				$addEffectState = {};
+				await goto(`#view=${effect.guid}`);
+			} else {
+				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
+			}
 			await invalidateAll();
-			await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
 		} else {
 			const error = await response.json();
 			alert(error.message);
