@@ -86,7 +86,7 @@ export default function defineAbilityFor(user: User) {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 		can(['delete'], [...programChapterTypes, ...measureMonitoringTypes], {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
+			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 		});
 		can(['create', 'update', 'delete'], payloadTypes.enum.indicator, {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
