@@ -7,7 +7,7 @@
 		dialog: HTMLDialogElement;
 		handleSubmit: (event: SubmitEvent) => void;
 		container: AnyContainer;
-		relatedContainers: Container[];
+		relatedContainers: AnyContainer[];
 	}
 
 	let { dialog = $bindable(), handleSubmit, container, relatedContainers }: Props = $props();

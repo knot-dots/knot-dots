@@ -46,7 +46,7 @@
 		container: AnyContainer;
 		footer?: Snippet;
 		href?: () => string;
-		relatedContainers?: Container[];
+		relatedContainers?: AnyContainer[];
 		showRelationFilter?: boolean;
 		titleOverride?: boolean;
 	}
