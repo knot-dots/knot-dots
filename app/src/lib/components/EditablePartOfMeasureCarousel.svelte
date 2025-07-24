@@ -4,7 +4,7 @@
 	import Plus from '~icons/heroicons/plus-solid';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		type AnyContainer,
+		type Container,
 		containerOfType,
 		type ContainerWithEffect,
 		isPartOf,
@@ -20,7 +20,7 @@
 		container: ContainerWithEffect;
 		editable?: boolean;
 		payloadType: PayloadType;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container[];
 	}
 
 	let { container, editable = false, payloadType, relatedContainers }: Props = $props();

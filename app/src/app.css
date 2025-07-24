@@ -600,15 +600,11 @@ button.button-square,
 }
 
 .action-button.action-button--padding-tight {
-	padding: 0.25rem;
+	padding: 0.375rem;
 }
 
 .action-button.action-button--size-s {
 	border-radius: 4px;
-}
-
-.action-button.action-button--size-s.action-button--padding-tight {
-	padding: 0.375rem;
 }
 
 /* Button group */

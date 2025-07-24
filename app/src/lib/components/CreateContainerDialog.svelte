@@ -232,6 +232,26 @@
 						bind:value={$newContainer.payload.body}
 					/>
 				{/if}
+
+				{#if (isMeasureContainer($newContainer) && $newContainer.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer($newContainer)}
+					<EditableFormattedText
+						editable
+						label={$_('annotation')}
+						bind:value={$newContainer.payload.annotation}
+					/>
+				{:else if isMeasureContainer($newContainer) && $newContainer.payload.status === status.enum['status.in_implementation']}
+					<EditableFormattedText
+						editable
+						label={$_('comment')}
+						bind:value={$newContainer.payload.comment}
+					/>
+				{:else if isMeasureContainer($newContainer) && ($newContainer.payload.status === status.enum['status.in_operation'] || $newContainer.payload.status === status.enum['status.done'])}
+					<EditableFormattedText
+						editable
+						label={$_('result')}
+						bind:value={$newContainer.payload.result}
+					/>
+				{/if}
 			</article>
 		</form>
 	{/if}

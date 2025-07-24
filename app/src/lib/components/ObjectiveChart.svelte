@@ -4,7 +4,7 @@
 	import { _, number } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import {
-		type AnyContainer,
+		type Container,
 		findDescendants,
 		findLeafObjectives,
 		isIndicatorContainer,
@@ -18,7 +18,7 @@
 
 	interface Props {
 		container: ObjectiveContainer;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container[];
 	}
 
 	let { container, relatedContainers = [] }: Props = $props();

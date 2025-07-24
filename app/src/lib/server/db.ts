@@ -1121,8 +1121,7 @@ export function getAllContainersRelatedToMeasure(
 			predicates.enum['is-duplicate-of'],
 			predicates.enum['is-equivalent-to'],
 			predicates.enum['is-inconsistent-with'],
-			predicates.enum['is-prerequisite-for'],
-			predicates.enum['is-section-of']
+			predicates.enum['is-prerequisite-for']
 		];
 		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
 			SELECT cr.subject, cr.object
