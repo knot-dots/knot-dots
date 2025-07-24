@@ -36,8 +36,6 @@
 
 		createContainerDialog.getElement().showModal();
 	}
-
-	const distinctPayloadTypes = $derived(new Set(containers.map(({ payload }) => payload.type)));
 </script>
 
 <div>
@@ -59,8 +57,7 @@
 					e instanceof CustomEvent && e.detail.selected && createContainer(e.detail.selected)}
 				label={$_('object')}
 				options={[
-					...distinctPayloadTypes
-						.values()
+					...payloadType
 						.filter((t) =>
 							$mayCreateContainer(
 								t,
