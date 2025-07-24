@@ -233,7 +233,11 @@ const goalTypeValues = [
 	'goal_type.key_result',
 	'goal_type.key_performance_indicator',
 	'goal_type.operational_goal',
-	'goal_type.milestone'
+	'goal_type.milestone',
+	'goal_type.input',
+	'goal_type.output',
+	'goal_type.outcome',
+	'goal_type.impact'
 ] as const;
 
 export const goalType = z.enum(goalTypeValues);
