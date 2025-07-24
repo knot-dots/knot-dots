@@ -387,6 +387,7 @@ const audienceValues = [
 	'audience.citizens',
 	'audience.companies',
 	'audience.entire_group',
+	'audience.science',
 	'audience.urban_society',
 	'audience.voluntary_work_associations_ngos'
 ] as const;
