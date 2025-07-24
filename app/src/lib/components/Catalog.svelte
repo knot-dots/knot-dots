@@ -90,11 +90,13 @@
 	}
 
 	div :global(.dropdown-button.dropdown-button--menu) {
-		--button-active-background: var(--color-primary-900);
-		--button-background: var(--color-primary-700);
-		--button-hover-background: var(--color-primary-800);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
+		--dropdown-button-default-background: var(--color-primary-700);
+		--dropdown-button-active-background: var(--color-primary-900);
+		--dropdown-button-hover-background: var(--color-primary-800);
+		--dropdown-button-expanded-background: var(--color-primary-700);
+		--dropdown-button-default-color: white;
+		--dropdown-button-expanded-color: white;
+		--dropdown-button-padding: 0.5rem 0.75rem;
 
 		border: none;
 		color: white;
