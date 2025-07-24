@@ -3,7 +3,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
-		type AnyContainer,
+		type Container,
 		findAncestors,
 		findLeafObjectives,
 		type IndicatorContainer,
@@ -16,7 +16,7 @@
 
 	interface Props {
 		container: IndicatorContainer;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container[];
 		showEffects?: boolean;
 		showObjectives?: boolean;
 		showLegend?: boolean;

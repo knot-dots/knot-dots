@@ -5,7 +5,6 @@
 	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		type AnyContainer,
 		type Container,
 		isObjectiveContainer,
 		isOverlayKey,
@@ -20,7 +19,7 @@
 	interface Props {
 		container: Container;
 		editable?: boolean;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container[];
 	}
 
 	let { container, editable = false, relatedContainers }: Props = $props();

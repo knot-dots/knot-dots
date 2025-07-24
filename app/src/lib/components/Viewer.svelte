@@ -7,27 +7,21 @@
 	import { _ } from 'svelte-i18n';
 	import { unified } from 'unified';
 
-	interface Props {
-		value?: string;
-	}
-
-	let { value = '' }: Props = $props();
-
-	let content = $derived(
-		unified()
-			.use(remarkParse)
-			.use(remarkGfm)
-			.use(remarkRehype)
-			.use(rehypeSanitize)
-			.use(rehypeStringify)
-			.processSync(value)
-	);
+	export let value = '';
 </script>
 
-<div class="markdown-body">
-	{#if content.value}
-		{@html content.value}
-	{:else}
-		{$_('empty')}
-	{/if}
-</div>
+{#await unified()
+	.use(remarkParse)
+	.use(remarkGfm)
+	.use(remarkRehype)
+	.use(rehypeSanitize)
+	.use(rehypeStringify)
+	.process(value) then content}
+	<div class="markdown-body">
+		{#if content.value}
+			{@html content.value}
+		{:else}
+			{$_('empty')}
+		{/if}
+	</div>
+{/await}

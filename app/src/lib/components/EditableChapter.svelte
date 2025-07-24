@@ -126,6 +126,23 @@
 	<EditableFormattedText {editable} bind:value={container.payload.description} />
 {/if}
 
+{#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
+	<div class="annotation">
+		<h4 class="chapter-subtitle">{$_('annotation')}</h4>
+		<EditableFormattedText {editable} bind:value={container.payload.annotation} />
+	</div>
+{:else if 'comment' in container.payload && container.payload.status === status.enum['status.in_implementation']}
+	<div class="comment">
+		<h4 class="chapter-subtitle">{$_('comment')}</h4>
+		<EditableFormattedText {editable} bind:value={container.payload.comment} />
+	</div>
+{:else if 'result' in container.payload && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
+	<div class="result">
+		<h4 class="chapter-subtitle">{$_('result')}</h4>
+		<EditableFormattedText {editable} bind:value={container.payload.result} />
+	</div>
+{/if}
+
 {#if isContainerWithObjective(container) && relatedContainers
 		.filter(isObjectiveContainer)
 		.filter(isPartOfFilter(container)).length > 0}

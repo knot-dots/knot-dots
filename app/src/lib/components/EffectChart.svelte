@@ -3,7 +3,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
-		type AnyContainer,
+		type Container,
 		type EffectContainer,
 		findAncestors,
 		isContainerWithEffect,
@@ -14,7 +14,7 @@
 
 	interface Props {
 		container: EffectContainer;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container[];
 		showLegend?: boolean;
 	}
 

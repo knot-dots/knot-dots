@@ -2,8 +2,17 @@
 	import { _ } from 'svelte-i18n';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
-	import { type AnyContainer, type Container, type ContainerWithEffect } from '$lib/models';
+	import {
+		type AnyContainer,
+		type Container,
+		type ContainerWithEffect,
+		isMeasureContainer,
+		isSimpleMeasureContainer,
+		payloadTypes,
+		status
+	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -31,6 +40,49 @@
 				label={$_('description')}
 				bind:value={container.payload.description}
 			/>
+
+			{#if (isMeasureContainer(container) && container.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer(container)}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('annotation')}
+					bind:value={container.payload.annotation}
+				/>
+			{:else if isMeasureContainer(container) && container.payload.status === status.enum['status.in_implementation']}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('comment')}
+					bind:value={container.payload.comment}
+				/>
+			{:else if isMeasureContainer(container) && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('result')}
+					bind:value={container.payload.result}
+				/>
+			{/if}
 		{/key}
+
+		<div class="details-tab" id="resources">
+			<h3>{$_('resources')}</h3>
+			<EditablePartOfMeasureCarousel
+				{container}
+				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
+				payloadType={payloadTypes.enum.resource}
+			/>
+		</div>
+
+		<div class="details-tab" id="goals">
+			<h3>{$_('goals')}</h3>
+			<EditablePartOfMeasureCarousel
+				{container}
+				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
+				payloadType={payloadTypes.enum.goal}
+			/>
+		</div>
 	{/snippet}
 </EditableContainerDetailView>
