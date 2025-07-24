@@ -150,6 +150,7 @@
 		flex-grow: 1;
 		gap: 0.5rem;
 		justify-content: space-between;
+		min-height: 2.25rem;
 		padding: 0.375rem 0.5rem;
 	}
 
