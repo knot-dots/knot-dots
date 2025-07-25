@@ -11,6 +11,7 @@
 </script>
 
 {#if editable}
+	<!-- svelte-ignore binding_property_non_reactive -->
 	<h3
 		class="details-title"
 		contenteditable="plaintext-only"
@@ -23,4 +24,5 @@
 	</h3>
 {/if}
 
+<!-- svelte-ignore binding_property_non_reactive -->
 <EditableFormattedText {editable} bind:value={container.payload.body} />

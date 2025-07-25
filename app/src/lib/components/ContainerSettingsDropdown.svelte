@@ -58,6 +58,7 @@
 				</p>
 				{#each visibility.options.map( (o) => ({ value: o, label: $_(`visibility.${o}`) }) ) as option (option.value)}
 					<label>
+						<!-- svelte-ignore binding_property_non_reactive -->
 						<input type="radio" value={option.value} bind:group={container.payload.visibility} />
 						<span class="truncated">{option.label}</span>
 					</label>
