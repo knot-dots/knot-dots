@@ -102,7 +102,11 @@
 				{#if $applicationState.containerDetailView.editable}
 					<div class="section-wrapper">
 						<div class="add-section-wrapper">
-							<AddSectionMenu bind:relatedContainers parentContainer={container} position={0} />
+							<AddSectionMenu
+								bind:relatedContainers
+								bind:parentContainer={container}
+								position={0}
+							/>
 						</div>
 					</div>
 				{/if}
@@ -118,7 +122,11 @@
 
 							{#if $applicationState.containerDetailView.editable}
 								<div class="add-section-wrapper">
-									<AddSectionMenu bind:relatedContainers parentContainer={container} position={i} />
+									<AddSectionMenu
+										bind:relatedContainers
+										bind:parentContainer={container}
+										position={i}
+									/>
 								</div>
 							{/if}
 						</li>

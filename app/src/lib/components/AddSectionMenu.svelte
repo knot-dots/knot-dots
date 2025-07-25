@@ -35,7 +35,11 @@
 		relatedContainers: AnyContainer[];
 	}
 
-	let { parentContainer, position, relatedContainers = $bindable() }: Props = $props();
+	let {
+		parentContainer = $bindable(),
+		position,
+		relatedContainers = $bindable()
+	}: Props = $props();
 
 	let menu = createMenu({ label: $_('add_section') });
 
