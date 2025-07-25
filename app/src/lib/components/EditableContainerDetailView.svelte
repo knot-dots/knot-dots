@@ -184,6 +184,7 @@
 				>
 					{#each sections as sectionContainer, i (sectionContainer.guid)}
 						<li animate:flip={{ duration: 100 }} class="section-wrapper">
+							<!-- svelte-ignore binding_property_non_reactive -->
 							<Section bind:relatedContainers bind:container={sections[i]} />
 
 							{#if $applicationState.containerDetailView.editable}

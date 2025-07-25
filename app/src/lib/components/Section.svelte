@@ -51,32 +51,32 @@
 		{#if isEffectCollectionContainer(container)}
 			<EditableEffectCollection
 				bind:container
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
 			/>
 		{:else if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
 				bind:container
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
 			/>
 		{:else if isObjectiveCollectionContainer(container)}
 			<EditableObjectiveCollection
 				bind:container
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
 				bind:container
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
 			/>
 		{:else if isTaskCollectionContainer(container)}
 			<EditableTaskCollection
 				bind:container
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{relatedContainers}
 			/>
 		{:else if isTextContainer(container)}
 			<EditableTextSection

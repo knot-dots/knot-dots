@@ -10,11 +10,7 @@
 		relatedContainers: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		editable = false,
-		relatedContainers = $bindable()
-	}: Props = $props();
+	let { container = $bindable(), editable = false, relatedContainers }: Props = $props();
 
 	let parentContainer = $derived(sectionOf(container, relatedContainers));
 </script>
