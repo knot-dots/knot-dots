@@ -110,7 +110,7 @@
 
 	async function handleDndFinalize(event: CustomEvent<DndEvent<Container>>) {
 		sections = event.detail.items;
-		const relation = [
+		container.relation = [
 			...sections.map(({ guid }, index) => ({
 				object: container.guid,
 				position: index,
@@ -125,7 +125,7 @@
 		const url = `/container/${container.guid}/relation`;
 		await fetch(url, {
 			method: 'POST',
-			body: JSON.stringify(relation),
+			body: JSON.stringify(container.relation),
 			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json'
