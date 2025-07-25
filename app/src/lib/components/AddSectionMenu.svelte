@@ -9,12 +9,8 @@
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
 	import Text from '~icons/knotdots/text';
-	import saveContainer from '$lib/client/saveContainer';
 	import {
-		anyContainer,
 		type AnyContainer,
-		containerOfType,
-		isContainerWithTitle,
 		isEffectCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
@@ -22,7 +18,6 @@
 		isObjectiveCollectionContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
-		type NewContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -30,14 +25,14 @@
 	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
+		handleAddSection: (event: Event) => void;
 		parentContainer: AnyContainer;
-		position: number;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
+		handleAddSection,
 		parentContainer = $bindable(),
-		position,
 		relatedContainers = $bindable()
 	}: Props = $props();
 
@@ -131,56 +126,10 @@
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
-
-	function addSection(to: AnyContainer, position: number) {
-		return async (event: Event) => {
-			const payloadType = payloadTypes.safeParse((event as CustomEvent).detail.selected).data;
-
-			if (!payloadType) {
-				return;
-			}
-
-			const newContainer = containerOfType(
-				payloadType,
-				to.organization,
-				to.organizational_unit,
-				to.managed_by,
-				to.realm
-			) as NewContainer;
-
-			newContainer.relation = [
-				{
-					object: to.guid,
-					position,
-					predicate: predicates.enum['is-section-of']
-				}
-			];
-
-			if (isContainerWithTitle(newContainer)) {
-				newContainer.payload.title = '';
-			}
-
-			const response = await saveContainer(newContainer);
-			const result = anyContainer.safeParse(await response.json());
-			if (result.success) {
-				parentContainer.relation.push(
-					...result.data.relation.filter(
-						({ predicate }) => predicate == predicates.enum['is-section-of']
-					)
-				);
-				relatedContainers = [...relatedContainers, result.data];
-			}
-		};
-	}
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button
-		class="dropdown-button"
-		onchange={addSection(parentContainer, position)}
-		type="button"
-		use:menu.button
-	>
+	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
 		<Plus />
 		<span class="is-visually-hidden">{$_('add_section')}</span>
 	</button>

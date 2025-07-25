@@ -4,16 +4,22 @@
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import {
+		container as containerSchema,
 		type AnyContainer,
 		type Container,
+		containerOfType,
 		isContainerWithProgress,
+		isContainerWithTitle,
 		isGoalContainer,
 		isMeasureContainer,
+		type NewContainer,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
@@ -37,6 +43,66 @@
 				container.relation.findIndex(({ subject }) => subject === b.guid)
 		)
 	);
+
+	function createAddSectionHandler(position: number) {
+		return async (event: Event) => {
+			const payloadType = payloadTypes.safeParse((event as CustomEvent).detail.selected).data;
+
+			if (!payloadType) {
+				return;
+			}
+
+			const newContainer = containerOfType(
+				payloadType,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
+
+			newContainer.relation = [
+				{
+					object: container.guid,
+					position: position,
+					predicate: predicates.enum['is-section-of']
+				}
+			];
+
+			if (isContainerWithTitle(newContainer)) {
+				newContainer.payload.title = '';
+			}
+
+			const response = await saveContainer(newContainer);
+			const result = containerSchema.safeParse(await response.json());
+			if (!result.success) {
+				return;
+			}
+
+			relatedContainers = [...relatedContainers, result.data];
+			sections = [...sections.slice(0, position), result.data, ...sections.slice(position)];
+			container.relation = [
+				...sections.map(({ guid }, index) => ({
+					object: container.guid,
+					position: index,
+					predicate: predicates.enum['is-section-of'],
+					subject: guid
+				})),
+				...container.relation.filter(
+					({ predicate }) => predicate !== predicates.enum['is-section-of']
+				)
+			];
+
+			const url = `/container/${container.guid}/relation`;
+			await fetch(url, {
+				method: 'POST',
+				body: JSON.stringify(container.relation),
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+		};
+	}
 
 	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
 		sections = event.detail.items;
@@ -105,7 +171,7 @@
 							<AddSectionMenu
 								bind:relatedContainers
 								bind:parentContainer={container}
-								position={0}
+								handleAddSection={createAddSectionHandler(0)}
 							/>
 						</div>
 					</div>
@@ -125,7 +191,7 @@
 									<AddSectionMenu
 										bind:relatedContainers
 										bind:parentContainer={container}
-										position={i}
+										handleAddSection={createAddSectionHandler(i + 1)}
 									/>
 								</div>
 							{/if}
