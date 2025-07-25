@@ -214,7 +214,6 @@
 		left: -3.25rem;
 		position: absolute;
 		width: calc(100% + 3.5rem);
-		z-index: 1;
 	}
 
 	.add-section-wrapper::after {
