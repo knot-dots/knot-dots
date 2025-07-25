@@ -168,7 +168,7 @@
 						({ predicate }) => predicate == predicates.enum['is-section-of']
 					)
 				);
-				relatedContainers.push(result.data);
+				relatedContainers = [...relatedContainers, result.data];
 			}
 		};
 	}
