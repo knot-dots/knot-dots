@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
 	let counter = 0;
 </script>
 
@@ -15,8 +15,12 @@
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
 	import uploader from '$lib/milkdown/uploader';
 
-	export let value = '';
-	export let label = '';
+	interface Props {
+		value?: string;
+		label?: string;
+	}
+
+	let { value = $bindable(), label }: Props = $props();
 
 	const labelId = `label-${counter + 1}`;
 
@@ -28,7 +32,7 @@
 				ctx.set(rootCtx, node);
 			})
 			.config((ctx) => {
-				ctx.set(defaultValueCtx, value);
+				ctx.set(defaultValueCtx, value ?? '');
 			})
 			.config((ctx) => {
 				ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
