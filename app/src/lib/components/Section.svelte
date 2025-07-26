@@ -40,7 +40,7 @@
 	}
 </script>
 
-<section>
+<section class="details-section">
 	{#if $applicationState.containerDetailView.editable}
 		<span class="drag-handle" use:dragHandle>
 			<DragHandle />
@@ -92,16 +92,10 @@
 </section>
 
 <style>
-	section {
-		border-radius: 24px;
-		margin: 0 -1.5rem;
-		padding: 1.5rem;
-	}
-
 	section :global(.dropdown) {
 		position: absolute;
-		right: -3.25rem;
-		top: 1.375rem;
+		right: -1.75rem;
+		top: 1rem;
 	}
 
 	.drag-handle {
@@ -109,10 +103,20 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-sm);
 		color: var(--color-gray-700);
-		left: -3.25rem;
-		padding: 0.75rem;
+		left: -1.75rem;
+		padding: 0.25rem;
 		position: absolute;
-		top: 1.375rem;
+	}
+
+	.drag-handle > :global(svg) {
+		border-radius: 8px;
+		height: 2rem;
+		padding: 0.375rem;
+		width: 2rem;
+	}
+
+	.drag-handle:hover > :global(svg) {
+		background-color: var(--dropdown-button-hover-background);
 	}
 
 	@media (hover: hover) {

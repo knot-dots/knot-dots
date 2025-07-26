@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import Plus from '~icons/heroicons/plus-solid';
+	import Plus from '~icons/flowbite/circle-plus-solid';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
@@ -92,7 +92,7 @@
 	}
 
 	.card :global(svg) {
-		height: 4rem;
-		width: 4rem;
+		height: 2.25rem;
+		width: 2.25rem;
 	}
 </style>

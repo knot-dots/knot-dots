@@ -16,12 +16,6 @@
 </script>
 
 {#if parentContainer && isContainer(parentContainer)}
-	<h3>{$_('effects')}</h3>
+	<h2 class="details-heading">{$_('effects')}</h2>
 	<EditableEffectCarousel container={parentContainer} {editable} {relatedContainers} />
 {/if}
-
-<style>
-	h3 {
-		margin: 0;
-	}
-</style>

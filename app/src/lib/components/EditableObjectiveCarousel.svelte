@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Plus from '~icons/heroicons/plus-solid';
+	import Plus from '~icons/flowbite/circle-plus-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
@@ -109,7 +109,7 @@
 	}
 
 	.card :global(svg) {
-		height: 4rem;
-		width: 4rem;
+		height: 2.25rem;
+		width: 2.25rem;
 	}
 </style>

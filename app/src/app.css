@@ -191,6 +191,8 @@
 	--color-hover-done: rgba(110, 218, 166, 0.35);
 	--color-hover-rejected: rgba(40, 169, 231, 0.35);
 
+	--content-width: 100%;
+
 	--indicator-background-color: var(--color-gray-700);
 	--indicator-color: white;
 	--indicator-font-size: 0.625rem;
@@ -920,72 +922,43 @@ label > input[type='checkbox'].toggle {
 }
 
 .details {
+	--details-max-width: 51.5rem;
+	--details-padding-left: 3.5rem;
+	--details-padding-right: max(3.5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
+	--details-section-padding-y: 1rem;
+	--details-section-padding-x: 1.5rem;
+	--carousel-margin-left: calc((var(--details-padding-left) + var(--details-section-padding-x)) * -1);
+	--carousel-margin-right: calc(var(--details-padding-right) * -1 - var(--details-section-padding-x));
+
 	color: var(--color-gray-500);
-	display: flex;
-	flex-direction: column;
-	gap: 2rem;
-	padding: 4rem 0;
+	container-type: inline-size;
+	font-size: 0.875rem;
+	height: 100%;
+	min-width: min(var(--details-max-width), calc(100% - 8rem));
+	padding: 3rem var(--details-padding-right) 3rem var(--details-padding-left);
+	position: relative;
 }
 
-.details > * {
-	padding: 0 max(5rem, calc(100% - 52rem)) 0 5rem;
-}
-
-.details > *:has(> .carousel) {
-	padding: 0 0 0 5rem;
-}
-
-.details-tab {
-	display: flex;
-	flex-direction: column;
-	gap: 1.5rem;
+.details-section {
+	padding: var(--details-section-padding-y) var(--details-section-padding-x);
 }
 
 .details-title {
-	align-items: center;
-	color: var(--color-gray-800);
-	display: flex;
-	font-size: 1.125rem;
-	font-weight: 600;
-	gap: 0.5rem;
-	justify-content: space-between;
-}
-
-.details-title > a, .details-title > button {
-	flex-shrink: 0
-}
-
-.details h3 {
-	color: var(--color-gray-800);
-	font-size: inherit;
-	font-weight: 500;
-	margin-bottom: 0.875rem;
-}
-
-.details-editable {
-	container-type: inline-size;
-	font-size: 0.875rem;
-}
-
-.details-editable .details-tab {
-	display: block;
-}
-
-.details-editable h2 {
 	color: var(--color-gray-900);
 	font-size: 2.25rem;
 	font-weight: 700;
 	line-height: 1.25;
 	margin-bottom: 0.75rem;
-	min-height: calc(1.25 * 2.25rem);
 }
 
-.details-editable h3 {
+.details-heading {
 	color: var(--color-gray-700);
 	font-size: 1.5rem;
 	font-weight: 600;
 	line-height: 1.25;
 	margin-bottom: 0.5rem;
+	min-height: 2.5rem;
+	padding: 0.25rem 0;
 }
 
 .data-grid {
@@ -1228,15 +1201,20 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Carousel */
+:root {
+	--carousel-margin-left: 0rem;
+	--carousel-margin-right: 0rem;
+}
+
 .carousel {
 	display: grid;
 	gap: 1rem;
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
-	min-height: calc(6rem + 2 * 1.5rem);
+	margin: 1.5rem var(--carousel-margin-right) 0.5rem var(--carousel-margin-left);
 	overflow-x: auto;
-	padding: 1.5rem 0;
+	padding-left: calc(var(--carousel-margin-left) * -1);
 }
 
 .carousel > li {
@@ -1263,7 +1241,7 @@ label > input[type='checkbox'].toggle {
 
 	display: flex;
 	gap: 0.5rem;
-	padding: 0.375rem 0;
+	padding: 0.25rem 0;
 }
 
 /* Disclosure */

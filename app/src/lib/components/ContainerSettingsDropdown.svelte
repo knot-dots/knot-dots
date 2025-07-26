@@ -100,7 +100,7 @@
 		color: var(--color-gray-700);
 		display: flex;
 		gap: 0.375rem;
-		padding: 0.375rem;
+		padding: 0.25rem;
 		width: fit-content;
 	}
 

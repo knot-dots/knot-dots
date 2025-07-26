@@ -84,7 +84,7 @@
 	}
 </script>
 
-<div class="details-tab" use:makeEditor>
+<div use:makeEditor>
 	{#if label}
 		<p class="label">
 			<span class="badge badge--purple">{label}</span>
@@ -94,7 +94,7 @@
 
 <style>
 	.label {
-		margin-bottom: 1rem;
+		margin: 1rem 0;
 	}
 
 	:global(.milkdown) {

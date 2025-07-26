@@ -30,6 +30,8 @@
 
 	let { containers } = $props();
 
+	let w = $state(0);
+
 	let taskStatusFilter: TaskStatus[] = $state([
 		taskStatus.enum['task_status.in_planning'],
 		taskStatus.enum['task_status.in_progress']
@@ -74,13 +76,13 @@
 	}
 </script>
 
-<article class="details details-editable">
-	<header>
-		<h2 class="details-title">{$_('workspace.profile')}</h2>
+<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+	<header class="details-section">
+		<h1 class="details-title">{$_('workspace.profile')}</h1>
 	</header>
 
-	<div class="tasks">
-		<h3>{$_('profile.my_tasks')}</h3>
+	<div class="details-section">
+		<h2 class="details-heading">{$_('profile.my_tasks')}</h2>
 
 		<div class="carousel-toolbar">
 			<SortDropdown options={sortOptions} bind:value={sort} />
@@ -101,8 +103,8 @@
 		</ul>
 	</div>
 
-	<div class="measures">
-		<h3>{$_('profile.my_measures')}</h3>
+	<div class="details-section">
+		<h2 class="details-heading">{$_('profile.my_measures')}</h2>
 		<ul class="carousel">
 			{#each containers
 				.filter(isContainerWithEffect)
@@ -114,8 +116,8 @@
 		</ul>
 	</div>
 
-	<div class="organizations">
-		<h3>{$_('profile.my_organizations')}</h3>
+	<div class="details-section">
+		<h2 class="details-heading">{$_('profile.my_organizations')}</h2>
 		<ul class="carousel">
 			{#each containers
 				.filter((c: AnyContainer) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c))
@@ -127,8 +129,8 @@
 		</ul>
 	</div>
 
-	<div class="programs">
-		<h3>{$_('profile.my_programs')}</h3>
+	<div class="details-section">
+		<h2 class="details-heading">{$_('profile.my_programs')}</h2>
 		<ul class="carousel">
 			{#each containers
 				.filter(isProgramContainer)

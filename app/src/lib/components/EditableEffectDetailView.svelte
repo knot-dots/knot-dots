@@ -111,7 +111,7 @@
 			{revisions}
 		/>
 
-		<div class="details-tab">
+		<div class="details-section">
 			{#if indicator}
 				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					<div class="disclosure">

@@ -14,8 +14,8 @@
 
 <Header workspaceOptions={[]} />
 <div class="content-details masked-overflow">
-	<div class="details details-editable">
-		<div class="details-tab">
+	<div class="details">
+		<div class="details-section">
 			<Members {container} {users} />
 		</div>
 	</div>

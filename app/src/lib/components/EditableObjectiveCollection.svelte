@@ -16,12 +16,6 @@
 </script>
 
 {#if parentContainer && isContainer(parentContainer)}
-	<h3>{$_('objectives')}</h3>
+	<h2 class="details-heading">{$_('objectives')}</h2>
 	<EditableObjectiveCarousel container={parentContainer} {editable} {relatedContainers} />
 {/if}
-
-<style>
-	h3 {
-		margin: 0;
-	}
-</style>

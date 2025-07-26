@@ -14,7 +14,7 @@
 	let { container = $bindable(), editable = false }: Props = $props();
 </script>
 
-<div class="details-tab" id="basic-data">
+<div class="details-section">
 	<div class="data-grid">
 		<EditableOrganizationCategory {editable} bind:value={container.payload.organizationCategory} />
 

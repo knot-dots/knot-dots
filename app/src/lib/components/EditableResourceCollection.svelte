@@ -22,7 +22,7 @@
 </script>
 
 {#if parentContainer && isContainer(parentContainer)}
-	<h3>{$_('resources')}</h3>
+	<h2 class="details-heading">{$_('resources')}</h2>
 	<EditablePartOfMeasureCarousel
 		container={parentContainer}
 		{editable}
@@ -30,9 +30,3 @@
 		{relatedContainers}
 	/>
 {/if}
-
-<style>
-	h3 {
-		margin: 0;
-	}
-</style>

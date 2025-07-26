@@ -11,21 +11,21 @@
 	let { editable = false, label, value = $bindable() }: Props = $props();
 </script>
 
-{#if editable}
-	<Editor {label} bind:value />
-{:else}
-	<div class="details-tab">
+<div class="details-section">
+	{#if editable}
+		<Editor {label} bind:value />
+	{:else}
 		{#if label}
 			<p class="label">
 				<span class="badge badge--purple">{label}</span>
 			</p>
 		{/if}
 		<Viewer {value} />
-	</div>
-{/if}
+	{/if}
+</div>
 
 <style>
 	.label {
-		margin-bottom: 1rem;
+		margin: 1rem 0;
 	}
 </style>

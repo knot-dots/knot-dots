@@ -16,6 +16,8 @@
 	export let object: Container;
 	export let relatedContainers: Container[];
 
+	let w = 0;
+
 	let enabledPredicates = (getContext('relationOverlay') as { predicates: Predicate[] }).predicates;
 
 	type DropZone = {
@@ -424,8 +426,8 @@
 
 <Header workspaceOptions={[]} />
 <div class="content-details masked-overflow">
-	<div class="details details-editable">
-		<p>
+	<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+		<p class="details-section">
 			{$_('relation_overlay.help', {
 				values: {
 					type: $_(object.payload.type),
@@ -435,7 +437,7 @@
 		</p>
 
 		{#each dropZones as zone, i (i)}
-			<div class="drop-zone-wrapper">
+			<div class="details-section drop-zone-wrapper">
 				<p>
 					<svelte:component this={predicateIcons.get(zone.predicate)} />
 					{zone.help}
@@ -499,6 +501,8 @@
 
 <style>
 	.drop-zone-wrapper {
+		--carousel-margin-left: 0;
+
 		color: var(--color-gray-500);
 		stroke: var(--color-gray-500);
 	}

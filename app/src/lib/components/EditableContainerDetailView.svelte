@@ -34,6 +34,8 @@
 
 	let { container = $bindable(), data, relatedContainers, revisions }: Props = $props();
 
+	let w = $state(0);
+
 	const handleSubmit = autoSave(container, 2000);
 
 	let sections = $derived(
@@ -135,19 +137,19 @@
 </script>
 
 <form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-	<article class="details details-editable">
-		<div class="details-tab" id="basic-data">
+	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+		<header class="details-section">
 			{#if $applicationState.containerDetailView.editable}
-				<h2
+				<h1
 					class="details-title"
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.title}
 					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-				></h2>
+				></h1>
 			{:else}
-				<h2 class="details-title" contenteditable="false">
+				<h1 class="details-title" contenteditable="false">
 					{container.payload.title}
-				</h2>
+				</h1>
 			{/if}
 
 			<Badges bind:container editable={$applicationState.containerDetailView.editable} />
@@ -159,7 +161,7 @@
 					compact
 				/>
 			{/if}
-		</div>
+		</header>
 
 		{@render data?.()}
 
@@ -211,9 +213,9 @@
 
 	.add-section-wrapper {
 		bottom: -1.5rem;
-		left: -3.25rem;
+		left: -1.75rem;
 		position: absolute;
-		width: calc(100% + 3.5rem);
+		width: calc(100% + 1.75rem);
 	}
 
 	.add-section-wrapper::after {
@@ -224,7 +226,7 @@
 		height: 3px;
 		left: 3.25rem;
 		position: absolute;
-		right: 0;
+		right: 1.5rem;
 		top: calc(50% - 1px);
 	}
 

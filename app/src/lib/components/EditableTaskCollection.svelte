@@ -10,22 +10,12 @@
 		relatedContainers: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		editable = false,
-		relatedContainers = $bindable()
-	}: Props = $props();
+	let { container = $bindable(), editable = false, relatedContainers }: Props = $props();
 
 	let parentContainer = $derived(sectionOf(container, relatedContainers));
 </script>
 
 {#if parentContainer && isContainer(parentContainer)}
-	<h3>{$_('tasks')}</h3>
+	<h2 class="details-heading">{$_('tasks')}</h2>
 	<EditableTaskCarousel container={parentContainer} {editable} />
 {/if}
-
-<style>
-	h3 {
-		margin: 0;
-	}
-</style>
