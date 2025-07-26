@@ -22,7 +22,7 @@
 
 	let { value = $bindable(), label }: Props = $props();
 
-	const labelId = `label-${counter + 1}`;
+	const labelledBy = `editor-label-${counter + 1}`;
 
 	let editor: Editor;
 
@@ -47,10 +47,12 @@
 				}));
 			})
 			.config((ctx) => {
-				ctx.update(editorViewOptionsCtx, (prev) => ({
-					...prev,
-					attributes: { 'aria-labelledby': labelId }
-				}));
+				if (label) {
+					ctx.update(editorViewOptionsCtx, (prev) => ({
+						...prev,
+						attributes: { 'aria-labelledby': labelledBy }
+					}));
+				}
 			})
 			.config((ctx) => {
 				ctx.update(placeholderConfig.key, (prev) => {
@@ -90,7 +92,7 @@
 
 <div use:makeEditor>
 	{#if label}
-		<p class="label">
+		<p class="label" id={labelledBy}>
 			<span class="badge badge--purple">{label}</span>
 		</p>
 	{/if}
