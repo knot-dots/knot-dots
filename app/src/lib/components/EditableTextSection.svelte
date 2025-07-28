@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { type TextContainer } from '$lib/models';
@@ -9,6 +10,12 @@
 	}
 
 	let { container = $bindable(), editable = false }: Props = $props();
+
+	const init: Attachment = (element) => {
+		if (container.payload.title == '') {
+			(element as HTMLElement).focus();
+		}
+	};
 </script>
 
 {#if editable}
@@ -18,6 +25,7 @@
 		class="details-heading"
 		contenteditable="plaintext-only"
 		onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+		{@attach init}
 	></h2>
 {:else}
 	<h2 class="details-heading" contenteditable="false">
