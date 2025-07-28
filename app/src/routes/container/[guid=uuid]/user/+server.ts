@@ -58,14 +58,24 @@ export const POST = (async ({ locals, params, request }) => {
 		error(422, parseResult.error);
 	}
 
+	const updatedUserRelation = parseResult.data.filter(
+		({ predicate }) => predicate != predicates.enum['is-creator-of']
+	);
+
 	await locals.pool.connect(
 		updateContainer({
 			...container,
 			managed_by:
-				container.managed_by == container.guid && parseResult.data.length == 0
+				container.managed_by == container.guid && updatedUserRelation.length == 0
 					? (container.organizational_unit ?? container.organization)
 					: container.managed_by,
-			user: parseResult.data
+			user: [
+				{
+					predicate: predicates.enum['is-creator-of'],
+					subject: locals.user.guid
+				},
+				...updatedUserRelation
+			]
 		})
 	);
 
