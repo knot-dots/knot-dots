@@ -944,7 +944,8 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-section {
-	padding: var(--details-section-padding-y) var(--details-section-padding-x);
+	border-radius: 24px;
+	padding: var(--details-section-padding-y, 1rem) var(--details-section-padding-x, 1.5rem);
 }
 
 .details-title {
@@ -963,6 +964,11 @@ label > input[type='checkbox'].toggle {
 	margin-bottom: 0.5rem;
 	min-height: 2.5rem;
 	padding: 0.25rem 0;
+}
+
+#dnd-action-dragged-el .details-section {
+	background: var(--color-primary-050);
+	outline: solid 1px var(--color-primary-700);
 }
 
 .data-grid {
