@@ -367,26 +367,30 @@ th,
 }
 
 /* Focus styles */
-:is(a, button, input, select, summary, textarea, [contenteditable], .focus-indicator) {
+:is(a, button, input, select, summary, textarea, .focus-indicator) {
 	--outline-color: var(--focus-color, currentColor);
 	--outline-offset: -1px;
 	--outline-size: max(2px, 0.067em);
 	--outline-style: solid;
 }
 
-:is(a, button, input, select, summary, textarea, [contenteditable]):focus,
+:is(a, button, input, select, summary, textarea):focus,
 .focus-indicator:focus-within {
 	outline: var(--outline-size) var(--outline-style) var(--outline-color);
 	outline-offset: var(--outline-offset);
 }
 
-:is(a, button, input, select, summary, textarea, [contenteditable]):focus-visible {
+:is(a, button, input, select, summary, textarea):focus-visible {
 	outline: var(--outline-size) var(--outline-style) var(--outline-color);
 	outline-offset: var(--outline-offset);
 }
 
-:is(a, button, input, select, summary, textarea, [contenteditable]):focus:not(:focus-visible) {
+:is(a, button, input, select, summary, textarea):focus:not(:focus-visible) {
 	/* Removes the regular focus styles for browsers that support :focus-visible */
+	outline: none;
+}
+
+[contenteditable]:focus {
 	outline: none;
 }
 
@@ -1018,6 +1022,18 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Markdown editor and viewer */
+.milkdown {
+	background-color: transparent;
+	border: none;
+	border-radius: 8px;
+	padding: 0;
+}
+
+.milkdown .editor {
+	padding: 0;
+	white-space: pre-wrap;
+}
+
 .markdown-body, .milkdown .editor {
 	font-size: 1rem;
 	line-height: 1.5;
@@ -1054,16 +1070,20 @@ label > input[type='checkbox'].toggle {
 	text-decoration: underline;
 }
 
-.milkdown-tooltip {
-	position: absolute;
-}
-
 .milkdown [data-show='true'] {
 	display: block;
 }
 
 .milkdown [data-show='false'] {
 	display: none;
+}
+
+.milkdown .placeholder::before {
+	content: attr(data-placeholder);
+}
+
+.milkdown-tooltip {
+	position: absolute;
 }
 
 /* Fade out overflow effect */

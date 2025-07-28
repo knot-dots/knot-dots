@@ -102,24 +102,4 @@
 	.label {
 		margin: 1rem 0;
 	}
-
-	:global(.milkdown) {
-		background-color: transparent;
-		border: none;
-		border-radius: 8px;
-		padding: 0;
-	}
-
-	:global([contenteditable]) {
-		padding: 0;
-		white-space: pre-wrap;
-	}
-
-	:global([contenteditable]:focus) {
-		outline: none;
-	}
-
-	:global([contenteditable] .placeholder::before) {
-		content: attr(data-placeholder);
-	}
 </style>
