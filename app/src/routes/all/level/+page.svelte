@@ -31,7 +31,12 @@
 
 	let columns = $derived([
 		{
-			addItemUrl: '#create=program',
+			addItemUrl: $mayCreateContainer(
+				payloadTypes.enum.program,
+				data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
+			)
+				? '#create=program'
+				: undefined,
 			containers: data.containers.filter(isProgramContainer).slice(0, browser ? undefined : 10),
 			key: 'programs',
 			title: $_('programs')
@@ -39,7 +44,12 @@
 		...Array.from(goals.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => ({
-				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
+				addItemUrl: $mayCreateContainer(
+					payloadTypes.enum.goal,
+					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
+				)
+					? `#create=goal&hierarchyLevel=${hierarchyLevel}`
+					: undefined,
 				containers: containers.slice(0, browser ? undefined : 10),
 				key: `goals-${hierarchyLevel}`,
 				title: computeColumnTitleForGoals(containers)
@@ -65,16 +75,7 @@
 <AllPage {data}>
 	<Board>
 		{#each columns as column (column.key)}
-			<BoardColumn
-				addItemUrl={column.addItemUrl &&
-				$mayCreateContainer(
-					payloadTypes.enum.program,
-					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-				)
-					? column.addItemUrl
-					: undefined}
-				title={column.title}
-			>
+			<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
 				<MaybeDragZone containers={column.containers} />
 			</BoardColumn>
 		{/each}

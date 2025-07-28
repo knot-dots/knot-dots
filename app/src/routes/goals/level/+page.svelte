@@ -45,7 +45,7 @@
 			<BoardColumn
 				addItemUrl={column.addItemUrl &&
 				$mayCreateContainer(
-					payloadTypes.enum.program,
+					payloadTypes.enum.goal,
 					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
 				)
 					? column.addItemUrl
