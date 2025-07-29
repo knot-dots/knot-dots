@@ -128,6 +128,7 @@
 		section:hover :global(.dropdown),
 		section :global(:has(.dropdown-panel)),
 		section:hover .drag-handle {
+			transition: visibility 0s 0.3s linear;
 			visibility: visible;
 		}
 	}
