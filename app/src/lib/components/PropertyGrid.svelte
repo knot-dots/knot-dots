@@ -19,8 +19,8 @@
 	let disclosureExpanded = $state($disclosure.expanded);
 </script>
 
-<div class="details-tab">
-	<p class="section-label" id="properties-label">{$_('properties')}</p>
+<div class="details-section">
+	<p class="label" id="properties-label">{$_('properties')}</p>
 
 	<div class="data-grid" use:disclosure.panel>
 		{#if $disclosure.expanded}
@@ -53,7 +53,7 @@
 </div>
 
 <style>
-	.section-label {
+	.label {
 		color: var(--color-gray-600);
 		font-size: 1.25rem;
 		font-weight: 600;

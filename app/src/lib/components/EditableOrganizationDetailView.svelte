@@ -30,27 +30,29 @@
 		programs = []
 	}: Props = $props();
 
+	let w = $state();
+
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
 <form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-	<article class="details details-editable">
-		<header>
+	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+		<header class="details-section">
 			<EditableLogo
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.image}
 			/>
 			{#if $applicationState.containerDetailView.editable}
-				<h2
+				<h1
 					class="details-title"
 					contenteditable="plaintext-only"
 					bind:textContent={container.payload.name}
 					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-				></h2>
+				></h1>
 			{:else}
-				<h2 class="details-title" contenteditable="false">
+				<h1 class="details-title" contenteditable="false">
 					{container.payload.name}
-				</h2>
+				</h1>
 			{/if}
 		</header>
 
@@ -72,8 +74,8 @@
 		{/key}
 
 		{#if container.payload.boards.includes('board.indicators')}
-			<div class="details-tab" id="indicators">
-				<h3>{$_('indicators')}</h3>
+			<div class="details-section">
+				<h2 class="details-heading">{$_('indicators')}</h2>
 				<ul class="carousel">
 					{#each indicators as indicator}
 						{@const relatedContainers = [
@@ -91,8 +93,8 @@
 			</div>
 		{/if}
 
-		<div class="details-tab" id="programs">
-			<h3>{$_('programs')}</h3>
+		<div class="details-section">
+			<h2 class="details-heading">{$_('programs')}</h2>
 			<ul class="carousel">
 				{#each programs as program}
 					<li>
@@ -102,8 +104,8 @@
 			</ul>
 		</div>
 
-		<div class="details-tab" id="measures">
-			<h3>{$_('measures')}</h3>
+		<div class="details-section">
+			<h2 class="details-heading">{$_('measures')}</h2>
 			<ul class="carousel">
 				{#each measures as measure}
 					<li>
@@ -122,7 +124,7 @@
 		gap: 0.75rem;
 	}
 
-	h2 {
+	h1 {
 		margin: 0;
 		min-height: 3rem;
 	}

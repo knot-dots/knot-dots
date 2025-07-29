@@ -13,17 +13,17 @@
 	<Header workspaceOptions={[]} slot="header" />
 
 	<svelte:fragment slot="main">
-		<div class="details details-editable">
-			<h2 class="details-title">
+		<div class="details">
+			<h1 class="details-title">
 				{'title' in data.container.payload
 					? data.container.payload.title
 					: data.container.payload.name}
 				<button class="action-button" type="button" on:click={() => window.history.back()}>
 					<ChevronLeft />
 				</button>
-			</h2>
+			</h1>
 
-			<div class="details-tab">
+			<div class="details-section">
 				<Members container={data.container} users={data.users} />
 			</div>
 		</div>

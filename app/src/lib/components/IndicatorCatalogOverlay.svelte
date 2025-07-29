@@ -144,15 +144,15 @@
 <Header {facets} workspaceOptions={[]} />
 
 <div class="content-details masked-overflow">
-	<div class="details details-editable">
-		<p>
+	<div class="details">
+		<p class="details-section">
 			<button class="template-category" type="button" onclick={() => createCustomIndicator()}>
 				<PlusSmall />
 				{$_('indicator_form.create_custom')}
 			</button>
 		</p>
 
-		<ul>
+		<ul class="details-section">
 			{#if params.has('alreadyInUse')}
 				{#each indicators as indicator}
 					<li>

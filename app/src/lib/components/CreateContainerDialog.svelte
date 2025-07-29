@@ -117,8 +117,8 @@
 				</button>
 			</p>
 
-			<article class="details details-editable">
-				<div class="details-tab" id="basic-data">
+			<article class="details">
+				<header class="details-section">
 					{#if isContainerWithName($newContainer)}
 						<textarea
 							onkeydown={handleKeyDown}
@@ -148,7 +148,7 @@
 					{#if isContainerWithProgress($newContainer)}
 						<EditableProgress compact editable bind:value={$newContainer.payload.progress} />
 					{/if}
-				</div>
+				</header>
 
 				{#if isGoalContainer($newContainer)}
 					<GoalProperties
@@ -239,43 +239,12 @@
 						bind:value={$newContainer.payload.body}
 					/>
 				{/if}
-
-				{#if (isMeasureContainer($newContainer) && $newContainer.payload.status === status.enum['status.in_planning']) || isSimpleMeasureContainer($newContainer)}
-					<EditableFormattedText
-						editable
-						label={$_('annotation')}
-						bind:value={$newContainer.payload.annotation}
-					/>
-				{:else if isMeasureContainer($newContainer) && $newContainer.payload.status === status.enum['status.in_implementation']}
-					<EditableFormattedText
-						editable
-						label={$_('comment')}
-						bind:value={$newContainer.payload.comment}
-					/>
-				{:else if isMeasureContainer($newContainer) && ($newContainer.payload.status === status.enum['status.in_operation'] || $newContainer.payload.status === status.enum['status.done'])}
-					<EditableFormattedText
-						editable
-						label={$_('result')}
-						bind:value={$newContainer.payload.result}
-					/>
-				{/if}
 			</article>
 		</form>
 	{/if}
 </dialog>
 
 <style>
-	article {
-		overflow: auto;
-		padding: 1.5rem 0;
-	}
-
-	@media (min-width: 768px) {
-		article {
-			padding: 3rem 0;
-		}
-	}
-
 	dialog {
 		width: calc(min(54rem, 100vw));
 	}

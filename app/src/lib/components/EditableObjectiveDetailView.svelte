@@ -97,7 +97,7 @@
 			{revisions}
 		/>
 
-		<div class="details-tab">
+		<div class="details-section">
 			{#if indicator}
 				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}

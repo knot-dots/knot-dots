@@ -58,20 +58,25 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 
 const payloadTypeValues = [
 	'effect',
+	'effect_collection',
 	'goal',
+	'goal_collection',
 	'indicator',
 	'indicator_template',
 	'knowledge',
 	'measure',
 	'objective',
+	'objective_collection',
 	'organization',
 	'organizational_unit',
 	'page',
 	'program',
 	'resource',
+	'resource_collection',
 	'rule',
 	'simple_measure',
 	'task',
+	'task_collection',
 	'text',
 	'undefined'
 ] as const;
@@ -130,6 +135,7 @@ const predicateValues = [
 	'is-part-of-measure',
 	'is-part-of-program',
 	'is-prerequisite-for',
+	'is-section-of',
 	'is-sub-target-of',
 	'is-subtask-of',
 	'is-superordinate-of'
@@ -480,6 +486,16 @@ const initialGoalPayload = goalPayload.partial({
 	title: true
 });
 
+const goalCollectionPayload = z
+	.object({
+		title: z.string().readonly().default(''),
+		type: z.literal(payloadTypes.enum.goal_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialGoalCollectionPayload = goalCollectionPayload;
+
 const indicatorPayload = basePayload.extend({
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
@@ -545,6 +561,16 @@ const objectivePayload = basePayload.omit({ category: true, summary: true, topic
 });
 
 const initialObjectivePayload = objectivePayload.partial({ title: true });
+
+const objectiveCollectionPayload = z
+	.object({
+		title: z.string().readonly().default(''),
+		type: z.literal(payloadTypes.enum.objective_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 const rulePayload = basePayload.extend({
 	ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
@@ -627,6 +653,16 @@ const effectPayload = measureMonitoringBasePayload
 
 const initialEffectPayload = effectPayload.partial({ title: true });
 
+const effectCollectionPayload = z
+	.object({
+		title: z.string().readonly().default(''),
+		type: z.literal(payloadTypes.enum.effect_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialEffectCollectionPayload = effectCollectionPayload;
+
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
@@ -644,6 +680,16 @@ const initialResourcePayload = resourcePayload.partial({
 	unit: true
 });
 
+const resourceCollectionPayload = z
+	.object({
+		title: z.string().readonly().default(''),
+		type: z.literal(payloadTypes.enum.resource_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialResourceCollectionPayload = resourceCollectionPayload;
+
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -658,6 +704,16 @@ const taskPayload = measureMonitoringBasePayload
 	.strict();
 
 const initialTaskPayload = taskPayload.partial({ title: true });
+
+const taskCollectionPayload = z
+	.object({
+		title: z.string().readonly().default(''),
+		type: z.literal(payloadTypes.enum.task_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
 	boards: z.array(boards).default([]),
@@ -717,18 +773,23 @@ const undefinedPayload = z
 const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 
 const payload = z.discriminatedUnion('type', [
+	effectCollectionPayload,
 	effectPayload,
+	goalCollectionPayload,
 	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
 	measurePayload,
+	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
+	programPayload,
 	rulePayload,
+	resourceCollectionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
-	programPayload,
+	taskCollectionPayload,
 	taskPayload,
 	textPayload
 ]);
@@ -752,20 +813,25 @@ export const container = z.object({
 export type Container = z.infer<typeof container>;
 
 const anyPayload = z.discriminatedUnion('type', [
+	effectCollectionPayload,
 	effectPayload,
+	goalCollectionPayload,
 	goalPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
 	measurePayload,
+	objectiveCollectionPayload,
 	objectivePayload,
 	organizationPayload,
 	organizationalUnitPayload,
 	pagePayload,
+	programPayload,
 	rulePayload,
+	resourceCollectionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
-	programPayload,
+	taskCollectionPayload,
 	taskPayload,
 	textPayload,
 	undefinedPayload
@@ -821,6 +887,18 @@ export function isEffectContainer(
 	return container.payload.type === payloadTypes.enum.effect;
 }
 
+const effectCollectionContainer = container.extend({
+	payload: effectCollectionPayload
+});
+
+export type EffectCollectionContainer = z.infer<typeof effectCollectionContainer>;
+
+export function isEffectCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is EffectCollectionContainer {
+	return container.payload.type === payloadTypes.enum.effect_collection;
+}
+
 const goalContainer = container.extend({
 	payload: goalPayload
 });
@@ -831,6 +909,18 @@ export function isGoalContainer(
 	container: AnyContainer | EmptyContainer
 ): container is GoalContainer {
 	return container.payload.type === payloadTypes.enum.goal;
+}
+
+const goalCollectionContainer = container.extend({
+	payload: goalCollectionPayload
+});
+
+export type GoalCollectionContainer = z.infer<typeof goalCollectionContainer>;
+
+export function isGoalCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is GoalCollectionContainer {
+	return container.payload.type === payloadTypes.enum.goal_collection;
 }
 
 const indicatorContainer = container.extend({
@@ -893,6 +983,18 @@ export function isObjectiveContainer(
 	return container.payload.type === payloadTypes.enum.objective;
 }
 
+const objectiveCollectionContainer = container.extend({
+	payload: objectiveCollectionPayload
+});
+
+export type ObjectiveCollectionContainer = z.infer<typeof objectiveCollectionContainer>;
+
+export function isObjectiveCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ObjectiveCollectionContainer {
+	return container.payload.type === payloadTypes.enum.objective_collection;
+}
+
 export const organizationContainer = container.extend({
 	payload: organizationPayload
 });
@@ -953,6 +1055,18 @@ export function isResourceContainer(
 	return container.payload.type === payloadTypes.enum.resource;
 }
 
+const resourceCollectionContainer = container.extend({
+	payload: resourceCollectionPayload
+});
+
+export type ResourceCollectionContainer = z.infer<typeof resourceCollectionContainer>;
+
+export function isResourceCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceCollectionContainer {
+	return container.payload.type === payloadTypes.enum.resource_collection;
+}
+
 const simpleMeasureContainer = container.extend({
 	payload: simpleMeasurePayload
 });
@@ -999,6 +1113,18 @@ export function isTaskContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TaskContainer {
 	return container.payload.type === payloadTypes.enum.task;
+}
+
+const taskCollectionContainer = container.extend({
+	payload: taskCollectionPayload
+});
+
+export type TaskCollectionContainer = z.infer<typeof taskCollectionContainer>;
+
+export function isTaskCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is TaskCollectionContainer {
+	return container.payload.type === payloadTypes.enum.task_collection;
 }
 
 export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
@@ -1151,21 +1277,26 @@ export type NewContainer = z.infer<typeof newContainer>;
 
 export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
+		initialEffectCollectionPayload,
 		initialEffectPayload,
+		initialGoalCollectionPayload,
 		initialGoalPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialKnowledgePayload,
 		initialMeasurePayload,
+		initialObjectiveCollectionPayload,
 		initialObjectivePayload,
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
+		initialProgramPayload,
 		initialRulePayload,
+		initialResourceCollectionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,
-		initialProgramPayload,
 		initialTextPayload,
+		initialTaskCollectionPayload,
 		initialTaskPayload,
 		initialUndefinedPayload
 	])

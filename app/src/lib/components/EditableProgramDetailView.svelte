@@ -162,7 +162,7 @@
 			<div class="chapters">
 				{#each parts as part, i (part.guid)}
 					<form
-						class="chapter"
+						class="details-section"
 						oninput={stopPropagation(requestSubmit)}
 						onsubmit={autoSave(part, 2000)}
 						novalidate
@@ -172,7 +172,6 @@
 							bind:container={parts[i]}
 							editable={$applicationState.containerDetailView.editable &&
 								$ability.can('update', part)}
-							headingTag="h3"
 							isPartOf={container}
 							{relatedContainers}
 						/>
@@ -231,12 +230,8 @@
 {/if}
 
 <style>
-	.chapter {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin-bottom: 1.5rem;
-		max-width: 50rem;
+	.details-section {
+		--details-section-padding-y: 1.5rem;
 	}
 
 	.table-wrapper {

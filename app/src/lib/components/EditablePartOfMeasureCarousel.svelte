@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import Plus from '~icons/heroicons/plus-solid';
+	import Plus from '~icons/flowbite/circle-plus-solid';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		type Container,
+		type AnyContainer,
 		containerOfType,
 		type ContainerWithEffect,
 		isPartOf,
@@ -20,7 +20,7 @@
 		container: ContainerWithEffect;
 		editable?: boolean;
 		payloadType: PayloadType;
-		relatedContainers: Container[];
+		relatedContainers: AnyContainer[];
 	}
 
 	let { container, editable = false, payloadType, relatedContainers }: Props = $props();
@@ -94,7 +94,7 @@
 	}
 
 	.card :global(svg) {
-		height: 4rem;
-		width: 4rem;
+		height: 2.25rem;
+		width: 2.25rem;
 	}
 </style>

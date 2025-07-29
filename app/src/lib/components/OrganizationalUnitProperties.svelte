@@ -15,7 +15,7 @@
 	let { container = $bindable(), editable = false }: Props = $props();
 </script>
 
-<div class="details-tab" id="basic-data">
+<div class="details-section">
 	<div class="data-grid">
 		{#if $ability.can('update', container)}
 			<EditableNumber

@@ -6,10 +6,11 @@
 	import { env } from '$env/dynamic/public';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
-	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import Editor from '$lib/components/Editor.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		type Container,
 		containerOfType,
@@ -18,33 +19,24 @@
 		isContainerWithProgress,
 		isObjectiveContainer,
 		isPartOf as isPartOfFilter,
-		isSimpleMeasureContainer,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		type ProgramContainer,
-		status
+		type ProgramContainer
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container;
 		editable?: boolean;
-		headingTag: string;
 		isPartOf: ProgramContainer;
 		relatedContainers: Container[];
 	}
 
-	let {
-		container = $bindable(),
-		editable = false,
-		headingTag,
-		isPartOf,
-		relatedContainers
-	}: Props = $props();
+	let { container = $bindable(), editable = false, isPartOf, relatedContainers }: Props = $props();
 
 	let isPartOfRelation = $derived(
 		isPartOf.relation.filter(
@@ -97,19 +89,16 @@
 
 {#if editable}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<svelte:element
-		this={headingTag}
-		class="chapter-title"
+	<h2
+		class="details-heading"
 		contenteditable="plaintext-only"
 		bind:textContent={container.payload.title}
 		onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 	>
 		{container.payload.title}
-	</svelte:element>
+	</h2>
 {:else}
-	<svelte:element this={headingTag} class="chapter-title" contenteditable="false">
-		{container.payload.title}
-	</svelte:element>
+	<h2 class="details-heading" contenteditable="false">{container.payload.title}</h2>
 {/if}
 
 <Badges bind:container {editable} />
@@ -119,66 +108,51 @@
 {/if}
 
 {#if 'body' in container.payload}
-	<EditableFormattedText {editable} bind:value={container.payload.body} />
+	{#if editable}
+		<Editor bind:value={container.payload.body} />
+	{:else}
+		<Viewer value={container.payload.body} />
+	{/if}
 {/if}
 
 {#if 'description' in container.payload}
-	<EditableFormattedText {editable} bind:value={container.payload.description} />
-{/if}
-
-{#if 'annotation' in container.payload && (container.payload.status === status.enum['status.in_planning'] || isSimpleMeasureContainer(container))}
-	<div class="annotation">
-		<h4 class="chapter-subtitle">{$_('annotation')}</h4>
-		<EditableFormattedText {editable} bind:value={container.payload.annotation} />
-	</div>
-{:else if 'comment' in container.payload && container.payload.status === status.enum['status.in_implementation']}
-	<div class="comment">
-		<h4 class="chapter-subtitle">{$_('comment')}</h4>
-		<EditableFormattedText {editable} bind:value={container.payload.comment} />
-	</div>
-{:else if 'result' in container.payload && (container.payload.status === status.enum['status.in_operation'] || container.payload.status === status.enum['status.done'])}
-	<div class="result">
-		<h4 class="chapter-subtitle">{$_('result')}</h4>
-		<EditableFormattedText {editable} bind:value={container.payload.result} />
-	</div>
+	{#if editable}
+		<Editor bind:value={container.payload.description} />
+	{:else}
+		<Viewer value={container.payload.description} />
+	{/if}
 {/if}
 
 {#if isContainerWithObjective(container) && relatedContainers
 		.filter(isObjectiveContainer)
 		.filter(isPartOfFilter(container)).length > 0}
-	<div class="objectives">
-		<h4 class="chapter-subtitle">{$_('objectives')}</h4>
-		<EditableObjectiveCarousel {container} {editable} {relatedContainers} />
-	</div>
+	<h3 class="details-subheading">{$_('objectives')}</h3>
+	<EditableObjectiveCarousel {container} {editable} {relatedContainers} />
 {/if}
 
 {#if isContainerWithEffect(container)}
 	{#if relatedContainers
 		.filter(({ payload }) => payload.type === payloadTypes.enum.resource)
 		.filter(isPartOfFilter(container)).length > 0}
-		<div class="resources">
-			<h4 class="chapter-subtitle">{$_('resources')}</h4>
-			<EditablePartOfMeasureCarousel
-				{container}
-				{editable}
-				payloadType={payloadTypes.enum.resource}
-				{relatedContainers}
-			/>
-		</div>
+		<h3 class="details-subheading">{$_('resources')}</h3>
+		<EditablePartOfMeasureCarousel
+			{container}
+			{editable}
+			payloadType={payloadTypes.enum.resource}
+			{relatedContainers}
+		/>
 	{/if}
 
 	{#if relatedContainers
 		.filter(({ payload }) => payload.type === payloadTypes.enum.goal)
 		.filter(isPartOfFilter(container)).length > 0}
-		<div class="measure-results">
-			<h4 class="chapter-subtitle">{$_('goals')}</h4>
-			<EditablePartOfMeasureCarousel
-				{container}
-				{editable}
-				payloadType={payloadTypes.enum.goal}
-				{relatedContainers}
-			/>
-		</div>
+		<h3 class="details-subheading">{$_('goals')}</h3>
+		<EditablePartOfMeasureCarousel
+			{container}
+			{editable}
+			payloadType={payloadTypes.enum.goal}
+			{relatedContainers}
+		/>
 	{/if}
 {/if}
 
@@ -203,24 +177,21 @@
 		padding: 0.375rem 0.75rem;
 	}
 
-	.chapter-title {
-		color: var(--color-gray-800);
-		font-size: 1.875rem;
-		font-weight: 600;
-		margin-bottom: 0;
-		min-height: 1em;
+	.content-actions {
+		margin: 0.5rem 0 0;
 	}
 
-	.chapter-subtitle {
+	.details-heading {
+		color: var(--color-gray-800);
+		font-size: 30px;
+	}
+
+	.details-subheading {
 		color: var(--color-gray-700);
 		font-size: 1.5rem;
 		font-weight: 600;
 		line-height: 1.25;
 		margin-bottom: 0.5rem;
-		margin-top: 2rem;
-	}
-
-	.content-actions {
-		margin: 0;
+		margin-top: 1.5rem;
 	}
 </style>

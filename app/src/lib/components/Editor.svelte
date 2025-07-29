@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
 	let counter = 0;
 </script>
 
@@ -15,10 +15,14 @@
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
 	import uploader from '$lib/milkdown/uploader';
 
-	export let value = '';
-	export let label = '';
+	interface Props {
+		value?: string;
+		label?: string;
+	}
 
-	const labelId = `label-${counter + 1}`;
+	let { value = $bindable(), label }: Props = $props();
+
+	const labelledBy = `editor-label-${counter + 1}`;
 
 	let editor: Editor;
 
@@ -28,7 +32,7 @@
 				ctx.set(rootCtx, node);
 			})
 			.config((ctx) => {
-				ctx.set(defaultValueCtx, value);
+				ctx.set(defaultValueCtx, value ?? '');
 			})
 			.config((ctx) => {
 				ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
@@ -43,10 +47,12 @@
 				}));
 			})
 			.config((ctx) => {
-				ctx.update(editorViewOptionsCtx, (prev) => ({
-					...prev,
-					attributes: { 'aria-labelledby': labelId }
-				}));
+				if (label) {
+					ctx.update(editorViewOptionsCtx, (prev) => ({
+						...prev,
+						attributes: { 'aria-labelledby': labelledBy }
+					}));
+				}
 			})
 			.config((ctx) => {
 				ctx.update(placeholderConfig.key, (prev) => {
@@ -84,9 +90,9 @@
 	}
 </script>
 
-<div class="details-tab" use:makeEditor>
+<div use:makeEditor>
 	{#if label}
-		<p class="label">
+		<p class="label" id={labelledBy}>
 			<span class="badge badge--purple">{label}</span>
 		</p>
 	{/if}
@@ -94,26 +100,6 @@
 
 <style>
 	.label {
-		margin-bottom: 1rem;
-	}
-
-	:global(.milkdown) {
-		background-color: transparent;
-		border: none;
-		border-radius: 8px;
-		padding: 0;
-	}
-
-	:global([contenteditable]) {
-		padding: 0;
-		white-space: pre-wrap;
-	}
-
-	:global([contenteditable]:focus) {
-		outline: none;
-	}
-
-	:global([contenteditable] .placeholder::before) {
-		content: attr(data-placeholder);
+		margin: 1rem 0;
 	}
 </style>

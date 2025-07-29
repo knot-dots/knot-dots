@@ -64,7 +64,6 @@
 
 		display: flex;
 		gap: 0.5rem;
-		margin-bottom: 0.5rem;
 		padding: 0.375rem 0 0.75rem;
 	}
 </style>

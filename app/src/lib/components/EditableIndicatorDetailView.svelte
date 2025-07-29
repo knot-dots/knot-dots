@@ -66,7 +66,7 @@
 			{revisions}
 		/>
 
-		<div class="details-tab">
+		<div class="details-section">
 			<ul class="button-group">
 				{#each tab.options as option}
 					<li class:is-active={option === currentTab}>
@@ -94,8 +94,8 @@
 		</div>
 
 		{#if showEffects}
-			<div class="details-tab" id="measures">
-				<h3>{$_('measures')}</h3>
+			<div class="details-section">
+				<h2 class="details-heading">{$_('measures')}</h2>
 				<ul class="carousel">
 					{#each relatedContainers.filter((c) => isContainerWithEffect(c)) as measure}
 						<li>
@@ -107,8 +107,8 @@
 		{/if}
 
 		{#if showObjectives}
-			<div class="details-tab" id="goals">
-				<h3>{$_('goals')}</h3>
+			<div class="details-section">
+				<h2 class="details-heading">{$_('goals')}</h2>
 				<ul class="carousel">
 					{#if overallObjective}
 						<li>
@@ -129,8 +129,8 @@
 			</div>
 		{/if}
 
-		<div class="details-tab" id="programs">
-			<h3>{$_('programs')}</h3>
+		<div class="details-section">
+			<h2 class="details-heading">{$_('programs')}</h2>
 			<ul class="carousel">
 				{#each relatedContainers.filter(isProgramContainer) as program}
 					<li>
