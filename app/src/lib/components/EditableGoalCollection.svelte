@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import {
 		type AnyContainer,
@@ -16,13 +17,28 @@
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), editable = false, relatedContainers }: Props = $props();
+	let {
+		container = $bindable(),
+		editable = false,
+		relatedContainers = $bindable()
+	}: Props = $props();
 
 	let parentContainer = $derived(sectionOf(container, relatedContainers)) as MeasureContainer;
 </script>
 
 {#if parentContainer && isContainer(parentContainer)}
-	<h2 class="details-heading">{$_('goals')}</h2>
+	<header>
+		<h2 class="details-heading">{$_('goals')}</h2>
+
+		{#if editable}
+			<ul class="inline-actions is-visible-on-hover">
+				<li>
+					<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				</li>
+			</ul>
+		{/if}
+	</header>
+
 	<EditablePartOfMeasureCarousel
 		container={parentContainer}
 		{editable}

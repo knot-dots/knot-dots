@@ -3,7 +3,6 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
@@ -51,53 +50,44 @@
 		{#if isEffectCollectionContainer(container)}
 			<EditableEffectCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isObjectiveCollectionContainer(container)}
 			<EditableObjectiveCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isTaskCollectionContainer(container)}
 			<EditableTaskCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isTextContainer(container)}
 			<EditableTextSection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 			/>
 		{/if}
 	</form>
-
-	{#if $applicationState.containerDetailView.editable}
-		<ContainerSettingsDropdown bind:container bind:relatedContainers />
-	{/if}
 </section>
 
 <style>
-	section :global(.dropdown) {
-		position: absolute;
-		right: -1.75rem;
-		top: 1rem;
-	}
-
 	.drag-handle {
 		background-color: white;
 		border-radius: 8px;

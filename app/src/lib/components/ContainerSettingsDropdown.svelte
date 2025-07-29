@@ -44,7 +44,7 @@
 	}
 </script>
 
-<div class="dropdown is-visible-on-hover" use:popperRef>
+<div class="dropdown" use:popperRef>
 	<button class="dropdown-button" use:popover.button>
 		<Ellipsis />
 	</button>
@@ -87,23 +87,6 @@
 />
 
 <style>
-	.dropdown {
-		--dropdown-button-default-background: transparent;
-		--dropdown-button-expanded-background: transparent;
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-padding: 0.375rem;
-
-		align-items: center;
-		background-color: white;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.375rem;
-		padding: 0.25rem;
-		width: fit-content;
-	}
-
 	.dropdown-panel {
 		border-radius: 16px;
 	}
