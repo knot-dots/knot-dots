@@ -44,7 +44,7 @@
 	}
 </script>
 
-<div class="dropdown" use:popperRef>
+<div class="dropdown is-visible-on-hover" use:popperRef>
 	<button class="dropdown-button" use:popover.button>
 		<Ellipsis />
 	</button>

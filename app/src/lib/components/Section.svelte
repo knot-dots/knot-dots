@@ -42,7 +42,7 @@
 
 <section class="details-section">
 	{#if $applicationState.containerDetailView.editable}
-		<span class="drag-handle" use:dragHandle>
+		<span class="drag-handle is-visible-on-hover" use:dragHandle>
 			<DragHandle />
 		</span>
 	{/if}
@@ -120,16 +120,9 @@
 	}
 
 	@media (hover: hover) {
-		section :global(.dropdown),
-		section .drag-handle {
-			visibility: hidden;
-		}
-
-		section:hover :global(.dropdown),
-		section :global(:has(.dropdown-panel)),
-		section:hover .drag-handle {
-			transition: visibility 0s 0.3s linear;
-			visibility: visible;
+		section:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
 		}
 	}
 </style>

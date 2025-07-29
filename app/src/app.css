@@ -600,7 +600,7 @@ button.button-square,
 	background-color: var(--color-gray-200);
 }
 
-.action-button-focus,
+.action-button:focus,
 .action-button:hover {
 	background-color: var(--color-gray-100);
 }
@@ -1482,6 +1482,13 @@ label > input[type='checkbox'].toggle {
 		padding: 0;
 		position: absolute;
 		width: 1px;
+	}
+}
+
+@media (hover: hover) {
+	.is-visible-on-hover {
+		transition: var(--is-visible-on-hover-transition, none);
+		visibility: var(--is-visible-on-hover-visibility, hidden);
 	}
 }
 
