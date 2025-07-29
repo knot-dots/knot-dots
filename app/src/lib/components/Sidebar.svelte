@@ -63,20 +63,12 @@
 		/>
 	</a>
 
-	<button
-		class="action-button action-button--size-s action-button--padding-tight"
-		onclick={collapseSidebar}
-		type="button"
-	>
+	<button class="action-button" onclick={collapseSidebar} type="button">
 		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
 
-	<button
-		class="action-button action-button--size-s action-button--padding-tight"
-		onclick={expandSidebar}
-		type="button"
-	>
+	<button class="action-button" onclick={expandSidebar} type="button">
 		<Bars />
 		<span class="is-visually-hidden">{$_('expand_sidebar')}</span>
 	</button>

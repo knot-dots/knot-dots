@@ -174,7 +174,7 @@
 			<div class="divider"></div>
 
 			<a
-				class="action-button action-button--padding-tight"
+				class="action-button action-button--size-l"
 				href={overlayURL(page.url, overlayKey.enum.members, $overlayStore.container.guid)}
 			>
 				<Users />
@@ -184,7 +184,7 @@
 			<div class="divider"></div>
 
 			<a
-				class="action-button action-button--padding-tight"
+				class="action-button action-button--size-l"
 				href={`/${selectedContext.payload.type}/${selectedContext.guid}/members`}
 			>
 				<Users />
@@ -310,12 +310,6 @@
 
 		height: 2rem;
 		position: relative;
-	}
-
-	.dropdown-button.dropdown-button--command :global(svg) {
-		height: 1rem;
-		margin: 0.125rem;
-		width: 1rem;
 	}
 
 	.filter-and-sort fieldset {

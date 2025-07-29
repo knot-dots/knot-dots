@@ -8,7 +8,7 @@
 </script>
 
 <button
-	class="action-button action-button--padding-tight"
+	class="action-button"
 	onclick={() => (fullScreen.enabled = !fullScreen.enabled)}
 	aria-label={$_('full_screen')}
 >
