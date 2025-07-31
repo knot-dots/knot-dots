@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Plus from '~icons/knotdots/plus';
 	import { goto } from '$app/navigation';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
@@ -69,6 +70,19 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
+			{#if $mayCreateContainer(payloadTypes.enum.objective, container.managed_by)}
+				<li>
+					<button
+						aria-label={$_('add_item')}
+						class="action-button action-button--size-l"
+						onclick={addItem}
+						type="button"
+					>
+						<Plus />
+					</button>
+				</li>
+			{/if}
+
 			<li>
 				<ContainerSettingsDropdown bind:container bind:relatedContainers />
 			</li>
