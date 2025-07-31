@@ -1,15 +1,22 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import Card from '$lib/components/Card.svelte';
+	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
-	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import {
 		type AnyContainer,
-		isContainer,
 		type GoalCollectionContainer,
-		type MeasureContainer,
-		payloadTypes
+		payloadTypes,
+		isPartOfMeasure,
+		isPartOf,
+		containerOfType,
+		type NewContainer,
+		predicates,
+		isMeasureContainer
 	} from '$lib/models';
 	import { sectionOf } from '$lib/relations';
+	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: GoalCollectionContainer;
@@ -23,26 +30,75 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let parentContainer = $derived(sectionOf(container, relatedContainers)) as MeasureContainer;
+	let parentContainer = $derived(
+		sectionOf(container, relatedContainers.filter(isMeasureContainer))
+	);
+
+	let items = $derived(
+		parentContainer
+			? relatedContainers
+					.filter(({ payload }) => payload.type == payloadTypes.enum.goal)
+					.filter((rc) => isPartOfMeasure(parentContainer)(rc) || isPartOf(parentContainer)(rc))
+			: []
+	);
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function addItem() {
+		if (!parentContainer) {
+			return;
+		}
+
+		const item = containerOfType(
+			payloadTypes.enum.goal,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as NewContainer;
+
+		item.relation = [
+			{ object: parentContainer.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+			{
+				object: parentContainer.guid,
+				position: 0,
+				predicate: predicates.enum['is-part-of-measure']
+			}
+		];
+
+		$newContainer = item;
+
+		createContainerDialog.getElement().showModal();
+	}
 </script>
 
-{#if parentContainer && isContainer(parentContainer)}
-	<header>
-		<h2 class="details-heading">{$_('goals')}</h2>
+<header>
+	<h2 class="details-heading">{$_('goals')}</h2>
 
-		{#if editable}
-			<ul class="inline-actions is-visible-on-hover">
-				<li>
-					<ContainerSettingsDropdown bind:container bind:relatedContainers />
-				</li>
-			</ul>
-		{/if}
-	</header>
+	{#if editable}
+		<ul class="inline-actions is-visible-on-hover">
+			<li>
+				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+			</li>
+		</ul>
+	{/if}
+</header>
 
-	<EditablePartOfMeasureCarousel
-		container={parentContainer}
-		{editable}
-		payloadType={payloadTypes.enum.goal}
-		{relatedContainers}
-	/>
-{/if}
+<Carousel
+	{addItem}
+	{items}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.goal, container.managed_by) && editable}
+>
+	{#snippet itemSnippet(item)}
+		<Card
+			container={item}
+			relatedContainers={relatedContainers.filter(
+				({ payload, relation }) =>
+					payload.type === payloadTypes.enum.indicator ||
+					relation.some(({ object, subject }) => [object, subject].includes(item.guid))
+			)}
+		/>
+	{/snippet}
+</Carousel>
