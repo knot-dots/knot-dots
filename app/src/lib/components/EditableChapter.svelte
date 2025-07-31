@@ -6,19 +6,17 @@
 	import { env } from '$env/dynamic/public';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
-	import EditableObjectiveCarousel from '$lib/components/EditableObjectiveCarousel.svelte';
-	import EditablePartOfMeasureCarousel from '$lib/components/EditablePartOfMeasureCarousel.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Editor from '$lib/components/Editor.svelte';
+	import Subsection from '$lib/components/Subsection.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		type Container,
 		containerOfType,
-		isContainerWithEffect,
-		isContainerWithObjective,
 		isContainerWithProgress,
-		isObjectiveContainer,
-		isPartOf as isPartOfFilter,
+		isGoalCollectionContainer,
+		isObjectiveCollectionContainer,
+		isResourceCollectionContainer,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -27,6 +25,7 @@
 		predicates,
 		type ProgramContainer
 	} from '$lib/models';
+	import { hasSection } from '$lib/relations';
 	import { ability, newContainer } from '$lib/stores';
 
 	interface Props {
@@ -37,6 +36,15 @@
 	}
 
 	let { container = $bindable(), editable = false, isPartOf, relatedContainers }: Props = $props();
+
+	let subsections = $derived(
+		hasSection(container, relatedContainers).filter(
+			(s) =>
+				isGoalCollectionContainer(s) ||
+				isObjectiveCollectionContainer(s) ||
+				isResourceCollectionContainer(s)
+		)
+	);
 
 	let isPartOfRelation = $derived(
 		isPartOf.relation.filter(
@@ -123,38 +131,9 @@
 	{/if}
 {/if}
 
-{#if isContainerWithObjective(container) && relatedContainers
-		.filter(isObjectiveContainer)
-		.filter(isPartOfFilter(container)).length > 0}
-	<h3 class="details-subheading">{$_('objectives')}</h3>
-	<EditableObjectiveCarousel {container} {editable} {relatedContainers} />
-{/if}
-
-{#if isContainerWithEffect(container)}
-	{#if relatedContainers
-		.filter(({ payload }) => payload.type === payloadTypes.enum.resource)
-		.filter(isPartOfFilter(container)).length > 0}
-		<h3 class="details-subheading">{$_('resources')}</h3>
-		<EditablePartOfMeasureCarousel
-			{container}
-			{editable}
-			payloadType={payloadTypes.enum.resource}
-			{relatedContainers}
-		/>
-	{/if}
-
-	{#if relatedContainers
-		.filter(({ payload }) => payload.type === payloadTypes.enum.goal)
-		.filter(isPartOfFilter(container)).length > 0}
-		<h3 class="details-subheading">{$_('goals')}</h3>
-		<EditablePartOfMeasureCarousel
-			{container}
-			{editable}
-			payloadType={payloadTypes.enum.goal}
-			{relatedContainers}
-		/>
-	{/if}
-{/if}
+{#each subsections as { guid }, i (guid)}
+	<Subsection bind:container={subsections[i]} bind:relatedContainers />
+{/each}
 
 <footer class="content-actions">
 	<a class="button" href={viewInOverlayURL(page.url)}>
@@ -183,15 +162,6 @@
 
 	.details-heading {
 		color: var(--color-gray-800);
-		font-size: 30px;
-	}
-
-	.details-subheading {
-		color: var(--color-gray-700);
-		font-size: 1.5rem;
-		font-weight: 600;
-		line-height: 1.25;
-		margin-bottom: 0.5rem;
-		margin-top: 1.5rem;
+		font-size: 1.875rem;
 	}
 </style>

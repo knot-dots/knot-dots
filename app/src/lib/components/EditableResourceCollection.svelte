@@ -23,12 +23,14 @@
 		container: ResourceCollectionContainer;
 		editable?: boolean;
 		relatedContainers: AnyContainer[];
+		subsection?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		subsection = false
 	}: Props = $props();
 
 	let parentContainer = $derived(
@@ -76,7 +78,11 @@
 </script>
 
 <header>
-	<h2 class="details-heading">{$_('resources')}</h2>
+	{#if subsection}
+		<h3 class="details-heading">{$_('resources')}</h3>
+	{:else}
+		<h2 class="details-heading">{$_('resources')}</h2>
+	{/if}
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
