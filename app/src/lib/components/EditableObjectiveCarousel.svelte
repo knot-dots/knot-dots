@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
-	import Plus from '~icons/flowbite/circle-plus-solid';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
+	import Carousel from '$lib/components/Carousel.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -64,52 +62,17 @@
 	}
 </script>
 
-{#if parts.length > 0 || $mayCreateContainer(payloadTypes.enum.objective, container.managed_by)}
-	<ul class="carousel" class:editable>
-		{#each parts as container}
-			<li>
-				<Card
-					{container}
-					relatedContainers={relatedContainers.filter(({ relation }) =>
-						relation.some(({ object, subject }) => [object, subject].includes(container.guid))
-					)}
-				/>
-			</li>
-		{/each}
-		{#if $mayCreateContainer(payloadTypes.enum.objective, container.managed_by) && editable}
-			<li>
-				<a
-					class="card"
-					href={addItemURL(page.url)}
-					title={$_('add_item')}
-					onclick={(event) => {
-						event.preventDefault();
-						addObjective(container);
-					}}
-				>
-					<Plus />
-				</a>
-			</li>
-		{/if}
-	</ul>
-{/if}
-
-<style>
-	.card {
-		align-items: center;
-		background: #ffffff;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		cursor: pointer;
-		display: grid;
-		grid-row: 1 / 4;
-		min-height: 6rem;
-		justify-content: center;
-	}
-
-	.card :global(svg) {
-		height: 2.25rem;
-		width: 2.25rem;
-	}
-</style>
+<Carousel
+	addItem={() => addObjective(container)}
+	items={parts}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.objective, container.managed_by) && editable}
+>
+	{#snippet itemSnippet(item)}
+		<Card
+			{container}
+			relatedContainers={relatedContainers.filter(({ relation }) =>
+				relation.some(({ object, subject }) => [object, subject].includes(container.guid))
+			)}
+		/>
+	{/snippet}
+</Carousel>
