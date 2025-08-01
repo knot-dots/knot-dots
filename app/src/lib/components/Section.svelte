@@ -25,10 +25,13 @@
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
+	let { container: originalContainer, relatedContainers = $bindable() }: Props = $props();
+
+	let container = $state(originalContainer);
 
 	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 
+	/* svelte-ignore state_referenced_locally */
 	const handleSubmit = autoSave(container, 2000);
 
 	function stopPropagation(fn: (event: Event) => void) {
