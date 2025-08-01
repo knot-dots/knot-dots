@@ -54,6 +54,8 @@
 
 <style>
 	.dropdown {
+		--dropdown-button-icon-size: 1rem;
+
 		display: inline-block;
 	}
 

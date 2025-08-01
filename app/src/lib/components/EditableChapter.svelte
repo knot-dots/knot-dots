@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import Badges from '$lib/components/Badges.svelte';
@@ -146,7 +146,7 @@
 			label={$_('chapter')}
 			options={isPartOf.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
 		>
-			{#snippet icon()}<PlusSmall />{/snippet}
+			{#snippet icon()}<Plus />{/snippet}
 		</DropDownMenu>
 	{/if}
 </footer>

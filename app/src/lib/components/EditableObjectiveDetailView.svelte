@@ -6,7 +6,7 @@
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import Minus from '~icons/heroicons/minus-small-solid';
-	import Plus from '~icons/heroicons/plus-small-solid';
+	import Plus from '~icons/knotdots/plus';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';

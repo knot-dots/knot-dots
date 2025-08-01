@@ -3,9 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import CodeMerge from '~icons/flowbite/code-merge-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import CopyCat from '~icons/knotdots/copycat';
+	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
@@ -395,7 +395,7 @@
 		{/if}
 		{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
 			<button type="button" onclick={createOverallObjective(container)}>
-				<PlusSmall />{$_('overall_objective')}
+				<Plus />{$_('overall_objective')}
 			</button>
 		{/if}
 		{#if mayShowRelationButton && $ability.can('relate', container)}

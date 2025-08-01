@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import Plus from '~icons/heroicons/plus-solid';
+	import Plus from '~icons/knotdots/plus';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';

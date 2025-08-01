@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent, Item } from 'svelte-dnd-action';
-	import Plus from '~icons/flowbite/plus-outline';
+	import Plus from '~icons/knotdots/plus';
 	import Card from '$lib/components/Card.svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';

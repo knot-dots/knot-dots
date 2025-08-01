@@ -3,11 +3,11 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
-	import Plus from '~icons/flowbite/plus-outline';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
+	import Plus from '~icons/knotdots/plus';
 	import Text from '~icons/knotdots/text';
 	import {
 		type AnyContainer,

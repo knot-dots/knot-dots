@@ -8,7 +8,7 @@
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
+	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Organization from '~icons/knotdots/organization';
 	import { page } from '$app/state';
 	import paramsFromURL from '$lib/client/paramsFromURL';

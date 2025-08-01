@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { getContext, type Snippet } from 'svelte';
 	import { _, date } from 'svelte-i18n';
-	import Cog8Tooth from '~icons/heroicons/cog-8-tooth-16-solid';
-	import LightBulb from '~icons/heroicons/light-bulb-16-solid';
+	import Lightbulb from '~icons/flowbite/lightbulb-solid';
+	import Cog from '~icons/knotdots/cog';
 	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -310,19 +310,19 @@
 		{#if footer}
 			{@render footer()}
 		{:else if 'ruleStatus' in container.payload}
-			{@const RuleStatusIcon = ruleStatusIcons.get(container.payload.ruleStatus) ?? Cog8Tooth}
+			{@const RuleStatusIcon = ruleStatusIcons.get(container.payload.ruleStatus) ?? Cog}
 			<span class="badge badge--{ruleStatusColors.get(container.payload.ruleStatus)}">
 				<RuleStatusIcon />
 				{$_(container.payload.ruleStatus)}
 			</span>
 		{:else if 'status' in container.payload}
-			{@const StatusIcon = statusIcons.get(container.payload.status) ?? LightBulb}
+			{@const StatusIcon = statusIcons.get(container.payload.status) ?? Lightbulb}
 			<span class="badge badge--{statusColors.get(container.payload.status)}">
 				<StatusIcon />
 				{$_(container.payload.status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
-			{@const TaskStatusIcon = taskStatusIcons.get(container.payload.taskStatus) ?? LightBulb}
+			{@const TaskStatusIcon = taskStatusIcons.get(container.payload.taskStatus) ?? Lightbulb}
 			<span class="badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
 				<TaskStatusIcon />
 				{$_(container.payload.taskStatus)}

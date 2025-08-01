@@ -1371,6 +1371,7 @@ label > input[type='checkbox'].toggle {
 	--dropdown-button-chevron-display: block;
 	--dropdown-button-chevron-default-color: var(--color-gray-500);
 	--dropdown-button-chevron-expanded-color: var(--color-primary-600);
+	--dropdown-button-chevron-icon-size: 1.25rem;
 	--dropdown-button-align-items: center;
 	--dropdown-panel-max-height: 20rem;
 	--dropdown-panel-max-width: none;
@@ -1429,6 +1430,8 @@ label > input[type='checkbox'].toggle {
 .dropdown-button > svg:last-child {
 	color: var(--dropdown-button-chevron-default-color);
 	display: var(--dropdown-button-chevron-display);
+	height: var(--dropdown-button-chevron-icon-size);
+	width: var(--dropdown-button-chevron-icon-size);
 }
 
 .dropdown-button[aria-expanded='true'] > svg:last-child {
