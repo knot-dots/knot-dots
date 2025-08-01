@@ -181,7 +181,7 @@
 				{/if}
 
 				<ul
-					use:dragHandleZone={{ items: sections, flipDurationMs: 100 }}
+					use:dragHandleZone={{ dropTargetStyle: {}, items: sections, flipDurationMs: 100 }}
 					onconsider={handleDndConsider}
 					onfinalize={handleDndFinalize}
 				>
