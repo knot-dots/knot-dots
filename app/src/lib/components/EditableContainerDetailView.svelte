@@ -20,7 +20,8 @@
 		isMeasureContainer,
 		type NewContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		isSimpleMeasureContainer
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { applicationState } from '$lib/stores';
@@ -165,7 +166,7 @@
 
 		{@render data?.()}
 
-		{#if isGoalContainer(container) || isMeasureContainer(container)}
+		{#if isGoalContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)}
 			<div class="sections">
 				{#if $applicationState.containerDetailView.editable}
 					<div class="section-wrapper">
