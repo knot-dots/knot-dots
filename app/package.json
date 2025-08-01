@@ -80,7 +80,7 @@
 		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.2",
 		"roarr": "^7.21.1",
-		"slonik": "^46.8.0",
+		"slonik": "^47.3.2",
 		"unified": "^11.0.5",
 		"zod": "^3.25.76"
 	},
