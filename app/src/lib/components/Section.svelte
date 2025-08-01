@@ -3,7 +3,6 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
@@ -26,10 +25,13 @@
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
+	let { container: originalContainer, relatedContainers = $bindable() }: Props = $props();
+
+	let container = $state(originalContainer);
 
 	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 
+	/* svelte-ignore state_referenced_locally */
 	const handleSubmit = autoSave(container, 2000);
 
 	function stopPropagation(fn: (event: Event) => void) {
@@ -42,7 +44,7 @@
 
 <section class="details-section">
 	{#if $applicationState.containerDetailView.editable}
-		<span class="drag-handle" use:dragHandle>
+		<span class="drag-handle is-visible-on-hover" use:dragHandle>
 			<DragHandle />
 		</span>
 	{/if}
@@ -51,53 +53,44 @@
 		{#if isEffectCollectionContainer(container)}
 			<EditableEffectCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isObjectiveCollectionContainer(container)}
 			<EditableObjectiveCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isTaskCollectionContainer(container)}
 			<EditableTaskCollection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{relatedContainers}
 			/>
 		{:else if isTextContainer(container)}
 			<EditableTextSection
 				bind:container
+				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 			/>
 		{/if}
 	</form>
-
-	{#if $applicationState.containerDetailView.editable}
-		<ContainerSettingsDropdown bind:container bind:relatedContainers />
-	{/if}
 </section>
 
 <style>
-	section :global(.dropdown) {
-		position: absolute;
-		right: -1.75rem;
-		top: 1rem;
-	}
-
 	.drag-handle {
 		background-color: white;
 		border-radius: 8px;
@@ -120,16 +113,9 @@
 	}
 
 	@media (hover: hover) {
-		section :global(.dropdown),
-		section .drag-handle {
-			visibility: hidden;
-		}
-
-		section:hover :global(.dropdown),
-		section :global(:has(.dropdown-panel)),
-		section:hover .drag-handle {
-			transition: visibility 0s 0.3s linear;
-			visibility: visible;
+		section:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
 		}
 	}
 </style>

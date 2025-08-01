@@ -12,11 +12,7 @@
 </script>
 
 {#if $overlayHistory.length > 1}
-	<button
-		aria-label={$_('back')}
-		class="action-button action-button--padding-tight"
-		onclick={navigateBack}
-	>
+	<button aria-label={$_('back')} class="action-button" onclick={navigateBack}>
 		<ChevronLeft />
 	</button>
 {/if}

@@ -20,7 +20,8 @@
 		isMeasureContainer,
 		type NewContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		isSimpleMeasureContainer
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { applicationState } from '$lib/stores';
@@ -165,7 +166,7 @@
 
 		{@render data?.()}
 
-		{#if isGoalContainer(container) || isMeasureContainer(container)}
+		{#if isGoalContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)}
 			<div class="sections">
 				{#if $applicationState.containerDetailView.editable}
 					<div class="section-wrapper">
@@ -180,14 +181,13 @@
 				{/if}
 
 				<ul
-					use:dragHandleZone={{ items: sections, flipDurationMs: 100 }}
+					use:dragHandleZone={{ dropTargetStyle: {}, items: sections, flipDurationMs: 100 }}
 					onconsider={handleDndConsider}
 					onfinalize={handleDndFinalize}
 				>
 					{#each sections as sectionContainer, i (sectionContainer.guid)}
 						<li animate:flip={{ duration: 100 }} class="section-wrapper">
-							<!-- svelte-ignore binding_property_non_reactive -->
-							<Section bind:relatedContainers bind:container={sections[i]} />
+							<Section bind:relatedContainers container={sectionContainer} />
 
 							{#if $applicationState.containerDetailView.editable}
 								<div class="add-section-wrapper">

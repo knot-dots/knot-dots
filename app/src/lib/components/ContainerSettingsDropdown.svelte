@@ -58,7 +58,6 @@
 				</p>
 				{#each visibility.options.map( (o) => ({ value: o, label: $_(`visibility.${o}`) }) ) as option (option.value)}
 					<label>
-						<!-- svelte-ignore binding_property_non_reactive -->
 						<input type="radio" value={option.value} bind:group={container.payload.visibility} />
 						<span class="truncated">{option.label}</span>
 					</label>
@@ -87,23 +86,6 @@
 />
 
 <style>
-	.dropdown {
-		--dropdown-button-default-background: transparent;
-		--dropdown-button-expanded-background: transparent;
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-padding: 0.375rem;
-
-		align-items: center;
-		background-color: white;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.375rem;
-		padding: 0.25rem;
-		width: fit-content;
-	}
-
 	.dropdown-panel {
 		border-radius: 16px;
 	}

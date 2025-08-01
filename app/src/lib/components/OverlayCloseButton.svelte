@@ -10,7 +10,7 @@
 	}
 </script>
 
-<a class="action-button action-button--padding-tight" href={closeURL(page.url)} title={$_('close')}>
+<a class="action-button" href={closeURL(page.url)} title={$_('close')}>
 	<ChevronDoubleRight />
 </a>
 

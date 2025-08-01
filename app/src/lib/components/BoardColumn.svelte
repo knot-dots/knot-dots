@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import Plus from '~icons/knotdots/plus';
 	import { env } from '$env/dynamic/public';
 	import { page } from '$app/state';
 	import {
@@ -85,7 +85,7 @@
 			{title}
 		</h2>
 		{#if addItemUrl}
-			<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><PlusSmall /></a>
+			<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><Plus /></a>
 		{/if}
 	</header>
 
@@ -93,7 +93,7 @@
 
 	{#if addItemUrl}
 		<footer>
-			<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<PlusSmall /></a>
+			<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<Plus /></a>
 		</footer>
 	{/if}
 </section>

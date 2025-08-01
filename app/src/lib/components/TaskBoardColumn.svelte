@@ -2,7 +2,7 @@
 	import { getContext } from 'svelte';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
-	import PlusSmall from '~icons/heroicons/plus-small-solid';
+	import Plus from '~icons/knotdots/plus';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -101,7 +101,7 @@
 			{$_(status)}
 		</h2>
 		{#if addItemUrl}
-			<a href={addItemUrl} on:click={createContainer} title={$_('add_item')}><PlusSmall /></a>
+			<a href={addItemUrl} on:click={createContainer} title={$_('add_item')}><Plus /></a>
 		{/if}
 	</header>
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
@@ -128,7 +128,7 @@
 	{/if}
 	{#if addItemUrl}
 		<footer>
-			<a href={addItemUrl} on:click={createContainer}>{$_('add_item')}<PlusSmall /></a>
+			<a href={addItemUrl} on:click={createContainer}>{$_('add_item')}<Plus /></a>
 		</footer>
 	{/if}
 </section>

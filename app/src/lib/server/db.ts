@@ -986,7 +986,8 @@ export function getAllContainersRelatedToProgram(
 		const predicate = [
 			predicates.enum['is-part-of'],
 			predicates.enum['is-part-of-measure'],
-			predicates.enum['is-part-of-program']
+			predicates.enum['is-part-of-program'],
+			predicates.enum['is-section-of']
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`

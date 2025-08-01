@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import PlusSmall from '~icons/flowbite/plus-outline';
+	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import { goto } from '$app/navigation';
@@ -147,7 +147,7 @@
 	<div class="details">
 		<p class="details-section">
 			<button class="template-category" type="button" onclick={() => createCustomIndicator()}>
-				<PlusSmall />
+				<Plus />
 				{$_('indicator_form.create_custom')}
 			</button>
 		</p>
@@ -164,7 +164,7 @@
 									type="button"
 									onclick={stopPropagation(() => select(indicator))}
 								>
-									<PlusSmall />
+									<Plus />
 								</button>
 							{/snippet}
 						</Card>
@@ -181,7 +181,7 @@
 								type="button"
 								onclick={stopPropagation(() => select(template))}
 							>
-								<PlusSmall />
+								<Plus />
 							</button>
 						{/snippet}
 					</IndicatorTemplateCard>

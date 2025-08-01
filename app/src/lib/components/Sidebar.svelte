@@ -12,11 +12,11 @@
 	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
-	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
-	import Cog from '~icons/flowbite/cog-outline';
 	import Grid from '~icons/flowbite/grid-solid';
 	import Home from '~icons/flowbite/home-solid';
+	import Cog from '~icons/knotdots/cog';
+	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Favicon from '~icons/knotdots/favicon';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import { page } from '$app/state';
@@ -63,20 +63,12 @@
 		/>
 	</a>
 
-	<button
-		class="action-button action-button--size-s action-button--padding-tight"
-		onclick={collapseSidebar}
-		type="button"
-	>
+	<button class="action-button" onclick={collapseSidebar} type="button">
 		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
 
-	<button
-		class="action-button action-button--size-s action-button--padding-tight"
-		onclick={expandSidebar}
-		type="button"
-	>
+	<button class="action-button" onclick={expandSidebar} type="button">
 		<Bars />
 		<span class="is-visually-hidden">{$_('expand_sidebar')}</span>
 	</button>
@@ -248,7 +240,9 @@
 	}
 
 	.dropdown-button {
-		--button-background: transparent;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-icon-size: 1rem;
+		--dropdown-button-chevron-icon-size: 1rem;
 
 		align-items: center;
 		border-radius: 0;
@@ -337,11 +331,9 @@
 
 	.sidebar-menu-item :global(svg) {
 		color: var(--icon-color);
-	}
-
-	.sidebar-menu-item > :global(svg:first-child) {
 		flex-shrink: 0;
 		height: 1rem;
+		max-width: none;
 		width: 1rem;
 	}
 

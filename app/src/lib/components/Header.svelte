@@ -4,9 +4,9 @@
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
-	import Users from '~icons/flowbite/users-outline';
 	import Close from '~icons/knotdots/close';
 	import Filter from '~icons/knotdots/filter';
+	import Users from '~icons/knotdots/users';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
@@ -174,7 +174,7 @@
 			<div class="divider"></div>
 
 			<a
-				class="action-button action-button--padding-tight"
+				class="action-button action-button--size-l"
 				href={overlayURL(page.url, overlayKey.enum.members, $overlayStore.container.guid)}
 			>
 				<Users />
@@ -184,7 +184,7 @@
 			<div class="divider"></div>
 
 			<a
-				class="action-button action-button--padding-tight"
+				class="action-button action-button--size-l"
 				href={`/${selectedContext.payload.type}/${selectedContext.guid}/members`}
 			>
 				<Users />
@@ -256,6 +256,7 @@
 		--dropdown-button-expanded-background: var(--color-primary-100);
 		--dropdown-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
+		--dropdown-button-chevron-icon-size: 1rem;
 
 		--icon-color: var(--color-gray-500);
 		--indicator-background-color: var(--color-primary-700);
@@ -310,12 +311,6 @@
 
 		height: 2rem;
 		position: relative;
-	}
-
-	.dropdown-button.dropdown-button--command :global(svg) {
-		height: 1rem;
-		margin: 0.125rem;
-		width: 1rem;
 	}
 
 	.filter-and-sort fieldset {
