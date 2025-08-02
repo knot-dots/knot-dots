@@ -4,6 +4,7 @@
 	import Upload from '~icons/flowbite/upload-outline';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
+	import transformFileURL from '$lib/transformFileURL.js';
 
 	interface Props {
 		editable?: boolean;
@@ -45,7 +46,7 @@
 			{#if uploadInProgress}
 				<span class="loader"></span>
 			{:else if value}
-				<img alt={$_('image')} src={value} />
+				<img alt={$_('image')} src={transformFileURL(value)} />
 				<button
 					aria-label={$_('upload.image.remove')}
 					class="button button-remove"
@@ -76,7 +77,7 @@
 	<div>
 		<span class="value">
 			{#if value}
-				<img alt={$_('image')} src={value} />
+				<img alt={$_('image')} src={transformFileURL(value)} />
 			{:else}
 				{$_('empty')}
 			{/if}

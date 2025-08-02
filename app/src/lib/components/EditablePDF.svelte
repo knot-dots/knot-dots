@@ -4,6 +4,7 @@
 	import Close from '~icons/knotdots/close';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		editable?: boolean;
@@ -93,7 +94,7 @@
 		<ul class="value">
 			{#each value as pdf, i}
 				<li>
-					<a class="badge badge--gray" href={pdf[0]}>
+					<a class="badge badge--gray" href={transformFileURL(pdf[0])}>
 						<span class="badge-text">{pdf[1]}</span>
 					</a>
 				</li>
