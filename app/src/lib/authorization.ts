@@ -41,8 +41,12 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...programChapterTypes]);
-		can(['delete-recursively', 'relate'], measureMonitoringTypes);
+		can('relate', [
+			payloadTypes.enum.indicator,
+			payloadTypes.enum.program,
+			...programChapterTypes,
+			...measureMonitoringTypes
+		]);
 		can('delete-recursively', payloadTypes.enum.measure);
 		can('invite-members', payloadTypes.options);
 		can('prioritize', payloadTypes.enum.task);
