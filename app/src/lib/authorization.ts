@@ -17,11 +17,15 @@ type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const commonTypes = [
 	payloadTypes.enum.effect,
+	payloadTypes.enum.effect_collection,
 	payloadTypes.enum.goal,
+	payloadTypes.enum.goal_collection,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.objective,
+	payloadTypes.enum.objective_collection,
 	payloadTypes.enum.resource,
+	payloadTypes.enum.resource_collection,
 	payloadTypes.enum.rule,
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.task,
