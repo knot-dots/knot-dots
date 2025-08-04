@@ -34,6 +34,7 @@ export const POST = (async ({ request, locals }) => {
 	});
 
 	const data = Object.fromEntries(await request.formData());
+
 	const putCommand = new PutObjectCommand({
 		Bucket: env.S3_BUCKET_NAME,
 		Key: uuidv4(),
@@ -45,16 +46,12 @@ export const POST = (async ({ request, locals }) => {
 
 	const result = await client.send(putCommand);
 
-	return json('', {
-		status: 201,
-		headers: {
-			...(result.ETag ? { ETag: result.ETag } : undefined),
-			Location: objectURL(
-				env.S3_ENDPOINT ?? '',
-				client.config.forcePathStyle,
-				putCommand.input.Bucket as string,
-				putCommand.input.Key as string
-			)
-		}
+	return json({
+		url: objectURL(
+			env.S3_ENDPOINT ?? '',
+			client.config.forcePathStyle,
+			putCommand.input.Bucket as string,
+			putCommand.input.Key as string
+		)
 	});
 }) satisfies RequestHandler;
