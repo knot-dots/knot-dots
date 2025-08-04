@@ -4,6 +4,7 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
+	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
@@ -12,6 +13,7 @@
 	import {
 		type AnyContainer,
 		isEffectCollectionContainer,
+		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isObjectiveCollectionContainer,
 		isResourceCollectionContainer,
@@ -52,6 +54,12 @@
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit} novalidate>
 		{#if isEffectCollectionContainer(container)}
 			<EditableEffectCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isFileCollectionContainer(container)}
+			<EditableFileCollection
 				bind:container
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
