@@ -5,7 +5,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 
-	export let compact = false;
 	export let editable = false;
 	export let value = 0;
 
@@ -44,12 +43,8 @@
 					: value > 0.3
 						? 'var(--color-yellow-300)'
 						: 'var(--color-red-600)'}
-				class:compact
 				{value}
 			></progress>
-			{#if !compact}
-				{value * 100} %
-			{/if}
 		</p>
 	{/if}
 </div>
@@ -65,7 +60,7 @@
 		width: 100%;
 	}
 
-	.compact {
+	progress {
 		width: 100%;
 	}
 </style>
