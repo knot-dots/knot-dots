@@ -7,7 +7,7 @@
 	import File from '~icons/flowbite/file-solid';
 	import FileDoc from '~icons/flowbite/file-doc-solid';
 	import FilePDF from '~icons/flowbite/file-pdf-solid';
-	import CloseCircle from '~icons/flowbite/close-circle-solid';
+	import Close from '~icons/knotdots/close';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
@@ -102,8 +102,8 @@
 				{/if}
 			</span>
 
-			<button class="action-button" onclick={remove(i)} type="button">
-				<CloseCircle />
+			<button class="action-button action-button--size-l" onclick={remove(i)} type="button">
+				<Close />
 			</button>
 		</li>
 	{/each}
@@ -111,17 +111,21 @@
 
 <style>
 	header {
-		margin-bottom: 1.5rem;
+		margin-bottom: 1rem;
 	}
 
 	.file-list {
-		margin-top: 1.5rem;
+		margin-top: 1rem;
 	}
 
 	.file-list > li {
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
+	}
+
+	.file-list > li:nth-child(n + 2) {
+		margin-top: 0.5rem;
 	}
 
 	.file-list > li > span {
@@ -140,11 +144,11 @@
 		color: var(--color-gray-400);
 	}
 
-	.file-list > li:nth-child(n + 2) {
-		margin-top: 1rem;
-	}
-
 	.file-name {
 		color: var(--color-gray-900);
+	}
+
+	.action-button {
+		color: var(--color-gray-700);
 	}
 </style>
