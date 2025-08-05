@@ -289,7 +289,7 @@
 				<ObjectiveChart {container} {relatedContainers} />
 			{/if}
 		{:else if isSimpleMeasureContainer(container)}
-			<Progress value={container.payload.progress} compact />
+			<Progress value={container.payload.progress} />
 		{:else if isResourceContainer(container)}
 			<Summary {container} />
 			<p>
@@ -328,7 +328,7 @@
 				{$_(container.payload.taskStatus)}
 			</span>
 		{:else if 'progress' in container.payload}
-			<Progress value={container.payload.progress} compact />
+			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}
 			<span class="badge">{$_(container.payload.programType)}</span>
 		{:else if 'indicatorType' in container.payload}

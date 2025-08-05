@@ -146,7 +146,7 @@
 					{/if}
 
 					{#if isContainerWithProgress($newContainer)}
-						<EditableProgress compact editable bind:value={$newContainer.payload.progress} />
+						<EditableProgress editable bind:value={$newContainer.payload.progress} />
 					{/if}
 				</header>
 
