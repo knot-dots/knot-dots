@@ -65,30 +65,6 @@
 		width: 100%;
 	}
 
-	progress {
-		--height: 0.5rem;
-
-		appearance: none;
-		background-color: var(--color-gray-200);
-		border: none;
-		border-radius: calc(var(--height) * 0.5);
-		height: var(--height);
-		overflow: hidden;
-		vertical-align: middle;
-	}
-
-	progress::-webkit-progress-bar {
-		background-color: inherit;
-	}
-
-	progress::-webkit-progress-value {
-		background-color: var(--color, var(--color-gray-200));
-	}
-
-	progress::-moz-progress-bar {
-		background-color: var(--color, var(--color-gray-200));
-	}
-
 	.compact {
 		width: 100%;
 	}
