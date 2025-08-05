@@ -57,7 +57,8 @@ const createResultParserInterceptor = (): Interceptor => {
 			}
 
 			return validationResult.data as QueryResultRow;
-		}
+		},
+		name: 'result-parser-interceptor'
 	};
 };
 

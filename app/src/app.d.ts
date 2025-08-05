@@ -1,4 +1,4 @@
-import type { Session } from '@auth/core/types';
+import SvelteKitAuth, { type DefaultSession } from '@auth/sveltekit';
 import type { DatabasePool } from 'slonik';
 import type { KeycloakUser, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import type { User } from '$lib/stores';
@@ -26,14 +26,7 @@ declare global {
 	}
 }
 
-declare module '@auth/core/types' {
-	interface User {
-		email: string;
-		familyName: string;
-		givenName: string;
-		id: string;
-	}
-
+declare module '@auth/sveltekit' {
 	interface Session {
 		user: {
 			adminOf: string[];
@@ -46,7 +39,7 @@ declare module '@auth/core/types' {
 			memberOf: string[];
 			roles: string[];
 			settings: { features?: string[] };
-		};
+		} & DefaultSession['user'];
 	}
 }
 

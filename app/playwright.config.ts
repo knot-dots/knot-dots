@@ -1,8 +1,5 @@
 import { devices } from '@playwright/test';
 import type { PlaywrightTestConfig } from '@playwright/test';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const config: PlaywrightTestConfig = {
 	projects: [
