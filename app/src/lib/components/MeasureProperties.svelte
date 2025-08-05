@@ -47,10 +47,6 @@
 	{/snippet}
 
 	{#snippet general()}
-		{#if isSimpleMeasureContainer(container)}
-			<EditableFile {editable} bind:value={container.payload.file} />
-		{/if}
-
 		<EditableMeasureType {editable} bind:value={container.payload.measureType} />
 
 		<EditableStatus {editable} bind:value={container.payload.status} />
