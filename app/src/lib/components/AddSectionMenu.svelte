@@ -70,12 +70,12 @@
 	);
 
 	let mayAddGoalCollection = $derived(
-		isMeasureContainer(parentContainer) &&
+		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isGoalCollectionContainer)
 	);
 
 	let mayAddResultCollection = $derived(
-		isMeasureContainer(parentContainer) &&
+		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
 	);
 
