@@ -59,6 +59,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'effect',
 	'effect_collection',
+	'file_collection',
 	'goal',
 	'goal_collection',
 	'indicator',
@@ -470,6 +471,26 @@ const basePayload = z
 	})
 	.strict();
 
+const fileCollectionPayload = z
+	.object({
+		file: z
+			.array(
+				z.object({
+					name: z.string(),
+					size: z.number().int().nonnegative(),
+					type: z.string(),
+					url: z.string().url()
+				})
+			)
+			.default([]),
+		title: z.string().default(''),
+		type: z.literal(payloadTypes.enum.file_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialFileCollectionPayload = fileCollectionPayload;
+
 const goalPayload = basePayload.extend({
 	fulfillmentDate: z
 		.string()
@@ -775,6 +796,7 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 const payload = z.discriminatedUnion('type', [
 	effectCollectionPayload,
 	effectPayload,
+	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
 	indicatorPayload,
@@ -815,6 +837,7 @@ export type Container = z.infer<typeof container>;
 const anyPayload = z.discriminatedUnion('type', [
 	effectCollectionPayload,
 	effectPayload,
+	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
 	indicatorPayload,
@@ -897,6 +920,18 @@ export function isEffectCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is EffectCollectionContainer {
 	return container.payload.type === payloadTypes.enum.effect_collection;
+}
+
+const fileCollectionContainer = container.extend({
+	payload: fileCollectionPayload
+});
+
+export type FileCollectionContainer = z.infer<typeof fileCollectionContainer>;
+
+export function isFileCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is FileCollectionContainer {
+	return container.payload.type === payloadTypes.enum.file_collection;
 }
 
 const goalContainer = container.extend({
@@ -1279,6 +1314,7 @@ export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialEffectCollectionPayload,
 		initialEffectPayload,
+		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
 		initialIndicatorPayload,

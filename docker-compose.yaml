@@ -74,3 +74,10 @@ services:
     image: axllent/mailpit
     ports:
       - "8081:8025"
+  storage:
+    environment:
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: upload
+    hostname: upload.storage
+    image: adobe/s3mock
+    ports:
+      - "8082:9090"

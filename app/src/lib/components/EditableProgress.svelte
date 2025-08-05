@@ -5,7 +5,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 
-	export let compact = false;
 	export let editable = false;
 	export let value = 0;
 
@@ -44,12 +43,8 @@
 					: value > 0.3
 						? 'var(--color-yellow-300)'
 						: 'var(--color-red-600)'}
-				class:compact
 				{value}
 			></progress>
-			{#if !compact}
-				{value * 100} %
-			{/if}
 		</p>
 	{/if}
 </div>
@@ -66,30 +61,6 @@
 	}
 
 	progress {
-		--height: 0.5rem;
-
-		appearance: none;
-		background-color: var(--color-gray-200);
-		border: none;
-		border-radius: calc(var(--height) * 0.5);
-		height: var(--height);
-		overflow: hidden;
-		vertical-align: middle;
-	}
-
-	progress::-webkit-progress-bar {
-		background-color: inherit;
-	}
-
-	progress::-webkit-progress-value {
-		background-color: var(--color, var(--color-gray-200));
-	}
-
-	progress::-moz-progress-bar {
-		background-color: var(--color, var(--color-gray-200));
-	}
-
-	.compact {
 		width: 100%;
 	}
 </style>

@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
+	import File from '~icons/flowbite/file-solid';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
@@ -12,11 +13,13 @@
 	import {
 		type AnyContainer,
 		isEffectCollectionContainer,
+		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
 		isResourceCollectionContainer,
+		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
 		payloadTypes,
 		predicates
@@ -67,18 +70,32 @@
 	);
 
 	let mayAddGoalCollection = $derived(
-		isMeasureContainer(parentContainer) &&
+		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isGoalCollectionContainer)
 	);
 
-	let mayAddResultCollection = $derived(
-		isMeasureContainer(parentContainer) &&
+	let mayAddResourceCollection = $derived(
+		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
+	);
+
+	let mayAddFileCollection = $derived(
+		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
 	);
 
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddFileCollection
+				? [
+						{
+							icon: File,
+							label: $_('files'),
+							value: payloadTypes.enum.file_collection
+						}
+					]
+				: []),
 			...(mayAddTaskCollection
 				? [
 						{
@@ -115,7 +132,7 @@
 						}
 					]
 				: []),
-			...(mayAddResultCollection
+			...(mayAddResourceCollection
 				? [
 						{
 							icon: Cash,

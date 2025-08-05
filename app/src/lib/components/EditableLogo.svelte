@@ -7,6 +7,7 @@
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
+	import transformFileURL from '$lib/transformFileURL.js';
 
 	interface Props {
 		editable?: boolean;
@@ -51,7 +52,7 @@
 	{#if value}
 		<div class="dropdown" use:popperRef>
 			<button class="dropdown-button" type="button" use:popover.button>
-				<img alt={$_('logo')} class="logo" src={value} />
+				<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
 			</button>
 			{#if $popover.expanded}
 				<div class="dropdown-panel" use:popperContent use:popover.panel>
@@ -78,7 +79,7 @@
 		/>
 	{/if}
 {:else if value}
-	<img alt={$_('image')} class="logo" src={value} />
+	<img alt={$_('image')} class="logo" src={transformFileURL(value)} />
 {/if}
 
 <style>

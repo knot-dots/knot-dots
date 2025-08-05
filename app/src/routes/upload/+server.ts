@@ -5,6 +5,19 @@ import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 
+function objectURL(endpoint: string, forcePathStyle: boolean, bucket: string, key: string) {
+	const url = new URL(endpoint);
+
+	if (forcePathStyle) {
+		url.pathname = `/${bucket}/${key}`;
+	} else {
+		url.hostname = `${bucket}.${url.hostname}`;
+		url.pathname = `/${key}`;
+	}
+
+	return url.toString();
+}
+
 export const POST = (async ({ request, locals }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
@@ -12,16 +25,18 @@ export const POST = (async ({ request, locals }) => {
 
 	const client = new S3Client({
 		credentials: {
-			accessKeyId: env.SCW_API_ACCESS_KEY as string,
-			secretAccessKey: env.SCW_API_SECRET_KEY as string
+			accessKeyId: env.SCW_API_ACCESS_KEY ?? '',
+			secretAccessKey: env.SCW_API_SECRET_KEY ?? ''
 		},
-		endpoint: `https://s3.${env.SCW_REGION}.scw.cloud`,
+		endpoint: env.S3_ENDPOINT ?? '',
+		forcePathStyle: Boolean(env.S3_FORCE_PATH_STYLE),
 		region: env.SCW_REGION
 	});
 
 	const data = Object.fromEntries(await request.formData());
+
 	const putCommand = new PutObjectCommand({
-		Bucket: env.SCW_BUCKET_NAME,
+		Bucket: env.S3_BUCKET_NAME,
 		Key: uuidv4(),
 		ACL: 'public-read',
 		Body: Buffer.from(await (data.upload as Blob).arrayBuffer()),
@@ -31,11 +46,12 @@ export const POST = (async ({ request, locals }) => {
 
 	const result = await client.send(putCommand);
 
-	return json('', {
-		status: 201,
-		headers: {
-			...(result.ETag ? { ETag: result.ETag } : undefined),
-			Location: `https://${env.SCW_BUCKET_NAME}.s3.${env.SCW_REGION}.scw.cloud/${putCommand.input.Key}`
-		}
+	return json({
+		url: objectURL(
+			env.S3_ENDPOINT ?? '',
+			client.config.forcePathStyle,
+			putCommand.input.Bucket as string,
+			putCommand.input.Key as string
+		)
 	});
 }) satisfies RequestHandler;

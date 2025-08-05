@@ -112,7 +112,7 @@
 <Badges bind:container {editable} />
 
 {#if isContainerWithProgress(container)}
-	<EditableProgress {editable} bind:value={container.payload.progress} compact />
+	<EditableProgress {editable} bind:value={container.payload.progress} />
 {/if}
 
 {#if 'body' in container.payload}

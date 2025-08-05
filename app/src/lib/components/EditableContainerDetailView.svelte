@@ -159,7 +159,6 @@
 				<EditableProgress
 					editable={$applicationState.containerDetailView.editable}
 					bind:value={container.payload.progress}
-					compact
 				/>
 			{/if}
 		</header>

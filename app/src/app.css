@@ -259,12 +259,17 @@ html:focus-within {
 body {
 	color: var(--color-gray-800);
 	font-family: 'Inter', sans-serif;
+	font-feature-settings: 'liga' 1, 'calt' 1;
 	font-size: 100%;
 	font-style: normal;
 	font-weight: 400;
 	line-height: 1.5;
 	min-height: 100vh;
 	text-rendering: optimizeSpeed;
+}
+
+@supports (font-variation-settings: normal) {
+	body { font-family: InterVariable, sans-serif; }
 }
 
 /* Links */
@@ -301,6 +306,31 @@ textarea,
 select {
 	color: inherit;
 	font: inherit;
+}
+
+/* Progress bars */
+progress {
+	--height: 0.375rem;
+
+	appearance: none;
+	background-color: var(--color-gray-200);
+	border: none;
+	border-radius: calc(var(--height) * 0.5);
+	height: var(--height);
+	overflow: hidden;
+	vertical-align: middle;
+}
+
+progress::-webkit-progress-bar {
+	background-color: inherit;
+}
+
+progress::-webkit-progress-value {
+	background-color: var(--color, var(--color-gray-200));
+}
+
+progress::-moz-progress-bar {
+	background-color: var(--color, var(--color-gray-200));
 }
 
 /* Tables */
