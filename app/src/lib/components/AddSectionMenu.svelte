@@ -74,7 +74,7 @@
 			!hasSection(parentContainer, relatedContainers).some(isGoalCollectionContainer)
 	);
 
-	let mayAddResultCollection = $derived(
+	let mayAddResourceCollection = $derived(
 		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
 	);
@@ -132,7 +132,7 @@
 						}
 					]
 				: []),
-			...(mayAddResultCollection
+			...(mayAddResourceCollection
 				? [
 						{
 							icon: Cash,
