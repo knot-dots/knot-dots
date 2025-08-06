@@ -70,7 +70,7 @@
 				</fieldset>
 			{:else if value.length > 0}
 				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-					<ul class="value" class:value--compact={compact}>
+					<ul class="value">
 						{#each value as category}
 							<li>
 								<img
@@ -134,7 +134,11 @@
 		flex-wrap: nowrap;
 	}
 
-	.value > img {
+	.value img {
 		max-width: none;
+	}
+
+	.dropdown-panel .value {
+		width: calc(6 * 30px + 5 * 0.5rem);
 	}
 </style>
