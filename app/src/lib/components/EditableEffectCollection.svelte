@@ -8,8 +8,8 @@
 	import {
 		type AnyContainer,
 		type EffectCollectionContainer,
+		isEffectContainer,
 		isGoalContainer,
-		isObjectiveContainer,
 		isPartOf,
 		overlayKey,
 		payloadTypes
@@ -33,7 +33,7 @@
 
 	let items = $derived(
 		parentContainer
-			? relatedContainers.filter(isObjectiveContainer).filter(isPartOf(parentContainer))
+			? relatedContainers.filter(isEffectContainer).filter(isPartOf(parentContainer))
 			: []
 	);
 

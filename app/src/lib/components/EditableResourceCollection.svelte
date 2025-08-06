@@ -40,7 +40,7 @@
 	let items = $derived(
 		parentContainer
 			? relatedContainers
-					.filter(({ payload }) => payload.type == payloadTypes.enum.goal)
+					.filter(({ payload }) => payload.type == payloadTypes.enum.resource)
 					.filter((rc) => isPartOfMeasure(parentContainer)(rc) || isPartOf(parentContainer)(rc))
 			: []
 	);
