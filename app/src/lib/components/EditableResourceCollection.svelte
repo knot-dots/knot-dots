@@ -11,6 +11,7 @@
 		isMeasureContainer,
 		isPartOf,
 		isPartOfMeasure,
+		isSimpleMeasureContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates,
@@ -34,7 +35,10 @@
 	}: Props = $props();
 
 	let parentContainer = $derived(
-		sectionOf(container, relatedContainers.filter(isMeasureContainer))
+		sectionOf(
+			container,
+			relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+		)
 	);
 
 	let items = $derived(

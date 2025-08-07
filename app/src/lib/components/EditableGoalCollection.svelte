@@ -7,14 +7,15 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
-		type GoalCollectionContainer,
-		payloadTypes,
-		isPartOfMeasure,
-		isPartOf,
 		containerOfType,
+		type GoalCollectionContainer,
+		isMeasureContainer,
+		isPartOf,
+		isPartOfMeasure,
+		isSimpleMeasureContainer,
 		type NewContainer,
-		predicates,
-		isMeasureContainer
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
@@ -34,7 +35,10 @@
 	}: Props = $props();
 
 	let parentContainer = $derived(
-		sectionOf(container, relatedContainers.filter(isMeasureContainer))
+		sectionOf(
+			container,
+			relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+		)
 	);
 
 	let items = $derived(
