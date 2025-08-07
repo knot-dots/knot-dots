@@ -5,18 +5,53 @@
 	import { _ } from 'svelte-i18n';
 	import Upload from '~icons/flowbite/upload-solid';
 
-	const { getRootProps, getInputProps } = useDropzone({});
+	const { getRootProps, getInputProps } = useDropzone({
+		onDragOver: () => (dropZoneIsActive = true),
+		onDragLeave: () => (dropZoneIsActive = false),
+		onDrop: () => (dropZoneIsActive = false)
+	});
 
-	const { progress, status } = getContext<UppyContext>('uppy-context');
+	const { progress, status, uppy } = getContext<UppyContext>('uppy-context');
+
+	let dropZoneIsActive = $state(false);
+
+	let errorMessage = $state('');
+
+	uppy?.on('restriction-failed', (file, error) => {
+		errorMessage = error.message;
+		setTimeout(() => {
+			errorMessage = '';
+		}, 3000);
+	});
+
+	uppy?.on('upload-error', (file, error) => {
+		errorMessage = error.message;
+		setTimeout(() => {
+			errorMessage = '';
+		}, 3000);
+	});
 </script>
 
-<div {...getRootProps()} oninput={(e) => e.stopPropagation()}>
+<div
+	class="drop-zone"
+	class:drop-zone--is-dragged-over={dropZoneIsActive}
+	class:drop-zone--is-uploading={status === 'uploading'}
+	class:drop-zone--has-error={errorMessage}
+	{...getRootProps()}
+	oninput={(e) => e.stopPropagation()}
+>
 	<input {...getInputProps()} class="is-visually-hidden" />
 	<Upload />
 	<p>
-		{@html $_('upload.drop_here', {
-			values: { or_browse: `<br><span class="link">${$_('upload.or_browse')}</span>` }
-		})}
+		{#if status === 'uploading'}
+			{$_('upload.uploading')}
+		{:else if errorMessage}
+			{errorMessage}
+		{:else}
+			{@html $_('upload.drop_here', {
+				values: { or_browse: `<br><span class="link">${$_('upload.or_browse')}</span>` }
+			})}
+		{/if}
 	</p>
 </div>
 
@@ -27,7 +62,7 @@
 {/if}
 
 <style>
-	div {
+	.drop-zone {
 		align-items: center;
 		background: var(--color-gray-050);
 		border-radius: 8px;
@@ -42,8 +77,29 @@
 		width: 100%;
 	}
 
-	div > p {
+	.drop-zone.drop-zone--has-error {
+		background: var(--color-red-050);
+		border: 2px dashed var(--color-red-600);
+		color: var(--color-red-700);
+	}
+
+	.drop-zone.drop-zone--is-dragged-over {
+		background: var(--color-gray-100);
+		border: 2px dashed var(--color-primary-600);
+	}
+
+	.drop-zone.drop-zone--is-uploading {
+		background: var(--color-primary-050);
+		border: 2px dashed var(--color-primary-600);
+		color: var(--color-primary-700);
+	}
+
+	.drop-zone > p {
 		max-width: 12rem;
+	}
+
+	.drop-zone > :global(svg) {
+		color: var(--color-gray-500);
 	}
 
 	:global(.link) {
