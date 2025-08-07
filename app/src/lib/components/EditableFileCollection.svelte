@@ -109,7 +109,12 @@
 			{/if}
 
 			<span>
-				<a class="file-name truncated" href={transformFileURL(url)}>{name}</a>
+				<a
+					class="file-name truncated"
+					href={transformFileURL(url)}
+					rel={type === 'application/pdf' ? 'noopener noreferrer' : undefined}
+					target={type === 'application/pdf' ? '_blank' : undefined}>{name}</a
+				>
 				{#if size}
 					<span class="file-size">{prettierBytes(size)}</span>
 				{/if}

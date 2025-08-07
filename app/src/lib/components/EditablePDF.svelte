@@ -94,7 +94,12 @@
 		<ul class="value">
 			{#each value as pdf, i}
 				<li>
-					<a class="badge badge--gray" href={transformFileURL(pdf[0])}>
+					<a
+						class="badge badge--gray"
+						href={transformFileURL(pdf[0])}
+						rel="noopener noreferrer"
+						target="_blank"
+					>
 						<span class="badge-text">{pdf[1]}</span>
 					</a>
 				</li>
