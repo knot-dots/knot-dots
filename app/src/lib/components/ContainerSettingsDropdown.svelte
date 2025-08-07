@@ -8,6 +8,7 @@
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import { type AnyContainer, visibility } from '$lib/models';
 	import { sectionOf } from '$lib/relations';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: AnyContainer;
@@ -44,46 +45,57 @@
 	}
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" use:popover.button>
-		<Ellipsis />
-	</button>
+{#if $ability.can('update', container, 'visibility') || $ability.can('delete', container)}
+	<div class="dropdown" use:popperRef>
+		<button class="dropdown-button" use:popover.button>
+			<Ellipsis />
+		</button>
 
-	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			<div>
-				<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>
-				<p class="dropdown-panel-group-title">
-					{$_('container_settings_dropdown.visibility.title')}
-				</p>
-				{#each visibility.options.map( (o) => ({ value: o, label: $_(`visibility.${o}`) }) ) as option (option.value)}
-					<label>
-						<input type="radio" value={option.value} bind:group={container.payload.visibility} />
-						<span class="truncated">{option.label}</span>
-					</label>
-				{/each}
-				<p class="dropdown-panel-group-title">
-					{$_('container_settings_dropdown.delete.title')}
-				</p>
-				<button
-					class="action-button action-button--padding-tight"
-					onclick={() => dialog.showModal()}
-					type="button"
-				>
-					<TrashBin />
-					<span>{$_('delete')}</span>
-				</button>
-			</div>
-		</fieldset>
-	{/if}
-</div>
+		{#if $popover.expanded}
+			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<div>
+					{#if $ability.can('update', container, 'visibility')}
+						<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>
+						<p class="dropdown-panel-group-title">
+							{$_('container_settings_dropdown.visibility.title')}
+						</p>
+						{#each visibility.options.map( (o) => ({ value: o, label: $_(`visibility.${o}`) }) ) as option (option.value)}
+							<label>
+								<input
+									type="radio"
+									value={option.value}
+									bind:group={container.payload.visibility}
+								/>
+								<span class="truncated">{option.label}</span>
+							</label>
+						{/each}
+					{/if}
 
-<ConfirmDeleteDialog
-	bind:dialog
-	{container}
-	handleSubmit={() => handleDelete(container)}
-	{relatedContainers}
-/>
+					{#if $ability.can('delete', container)}
+						<p class="dropdown-panel-group-title">
+							{$_('container_settings_dropdown.delete.title')}
+						</p>
+						<button
+							class="action-button action-button--padding-tight"
+							onclick={() => dialog.showModal()}
+							type="button"
+						>
+							<TrashBin />
+							<span>{$_('delete')}</span>
+						</button>
+					{/if}
+				</div>
+			</fieldset>
+		{/if}
+	</div>
+
+	<ConfirmDeleteDialog
+		bind:dialog
+		{container}
+		handleSubmit={() => handleDelete(container)}
+		{relatedContainers}
+	/>
+{/if}
 
 <style>
 	.dropdown-panel {

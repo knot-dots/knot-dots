@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
+	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import { type AnyContainer, type TextContainer } from '$lib/models';
-	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: TextContainer;
@@ -25,7 +26,7 @@
 </script>
 
 <header>
-	{#if editable}
+	{#if editable && $ability.can('update', container)}
 		<!-- svelte-ignore binding_property_non_reactive -->
 		<h2
 			bind:textContent={container.payload.title}
@@ -47,7 +48,7 @@
 	{/if}
 </header>
 
-{#if editable}
+{#if editable && $ability.can('update', container)}
 	<!-- svelte-ignore binding_property_non_reactive -->
 	<Editor bind:value={container.payload.body} />
 {:else}

@@ -1,10 +1,28 @@
 WITH measures AS (
     SELECT *
     FROM container m
-    WHERE payload->>'type' IN ('measure', 'simple_measure') AND payload->>'annotation' <> '' AND valid_currently
+    WHERE payload->>'type' = 'simple_measure' AND payload->'file' <> '[]'::jsonb AND valid_currently
 ), sections AS (
     INSERT INTO container_relation (object, position, predicate, subject)
         SELECT m.guid, 0, 'is-section-of', gen_random_uuid()
+        FROM measures m
+        RETURNING object, subject
+)
+INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
+SELECT source.subject,jsonb_build_object('file', jsonb_agg(jsonb_build_object('name', f->1, 'size', 0, 'type', 'application/octet-stream', 'url', f->0)), 'title', 'Dateien', 'type', 'file_collection', 'visibility', source.visibility), source.realm, source.organization, source.organizational_unit, source.managed_by
+FROM (
+         SELECT s.subject, m.payload, m.payload->>'visibility' AS visibility, m.realm, m.organization, m.organizational_unit, m.managed_by
+         FROM measures m JOIN sections s ON m.guid = s.object
+     ) AS source, jsonb_array_elements(source.payload->'file') AS f
+GROUP BY source.subject, source.visibility, source.realm, source.organization, source.organizational_unit, source.managed_by;
+
+WITH measures AS (
+    SELECT *
+    FROM container m
+    WHERE payload->>'type' IN ('measure', 'simple_measure') AND payload->>'annotation' <> '' AND valid_currently
+), sections AS (
+    INSERT INTO container_relation (object, position, predicate, subject)
+        SELECT m.guid, 1, 'is-section-of', gen_random_uuid()
         FROM measures m
         RETURNING object, subject
 )
@@ -18,7 +36,7 @@ WITH measures AS (
     WHERE payload->>'type' IN ('measure', 'simple_measure') AND payload->>'comment' <> '' AND valid_currently
 ), sections AS (
     INSERT INTO container_relation (object, position, predicate, subject)
-        SELECT m.guid, 1, 'is-section-of', gen_random_uuid()
+        SELECT m.guid, 2, 'is-section-of', gen_random_uuid()
         FROM measures m
         RETURNING object, subject
 )
@@ -32,7 +50,7 @@ WITH measures AS (
     WHERE payload->>'type' IN ('measure', 'simple_measure') AND payload->>'result' <> '' AND valid_currently
 ), sections AS (
     INSERT INTO container_relation (object, position, predicate, subject)
-        SELECT m.guid, 2, 'is-section-of', gen_random_uuid()
+        SELECT m.guid, 3, 'is-section-of', gen_random_uuid()
         FROM measures m
         RETURNING object, subject
 )
@@ -53,12 +71,12 @@ WITH measures AS (
     )
 ), sections AS (
     INSERT INTO container_relation (object, position, predicate, subject)
-        SELECT m.guid, 3, 'is-section-of', gen_random_uuid()
+        SELECT m.guid, 4, 'is-section-of', gen_random_uuid()
         FROM measures m
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject, jsonb_build_object('title', '', 'type', 'resource_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
+SELECT s.subject, jsonb_build_object('title', 'Ressourcen', 'type', 'resource_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
 FROM measures m JOIN sections s ON m.guid = s.object;
 
 WITH measures AS (
@@ -74,12 +92,12 @@ WITH measures AS (
     )
 ), sections AS (
     INSERT INTO container_relation (object, position, predicate, subject)
-        SELECT m.guid, 4, 'is-section-of', gen_random_uuid()
+        SELECT m.guid, 5, 'is-section-of', gen_random_uuid()
         FROM measures m
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject, jsonb_build_object('title', '', 'type', 'goal_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
+SELECT s.subject, jsonb_build_object('title', 'Ziele', 'type', 'goal_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
 FROM measures m JOIN sections s ON m.guid = s.object;
 
 WITH goals AS (
@@ -100,7 +118,7 @@ WITH goals AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject,jsonb_build_object('title', '', 'type', 'effect_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
+SELECT s.subject,jsonb_build_object('title', 'Wirkung', 'type', 'effect_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
 FROM goals g JOIN sections s ON g.guid = s.object;
 
 WITH goals AS (
@@ -121,7 +139,7 @@ WITH goals AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject,jsonb_build_object('title', '', 'type', 'objective_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
+SELECT s.subject,jsonb_build_object('title', 'Gewünschte Entwicklung', 'type', 'objective_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
 FROM goals g JOIN sections s ON g.guid = s.object;
 
 WITH goals AS (
@@ -142,5 +160,5 @@ WITH goals AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject, jsonb_build_object('title', '', 'type', 'task_collection', 'visibility', g.payload->>'visibility'), g.realm, g.organization, g.organizational_unit, g.managed_by
+SELECT s.subject, jsonb_build_object('title', 'Aufgaben', 'type', 'task_collection', 'visibility', g.payload->>'visibility'), g.realm, g.organization, g.organizational_unit, g.managed_by
 FROM goals g JOIN sections s ON g.guid = s.object;

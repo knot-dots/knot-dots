@@ -513,6 +513,7 @@
 	"upload.pdf.choose": "PDF wählen",
 	"upload.pdf.help": "PDF-Dateien, maximal 100 MB",
 	"upload.pdf.remove": "PDF löschen",
+	"upload.uploading": "Wird hochgeladen …",
 	"user": {
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",

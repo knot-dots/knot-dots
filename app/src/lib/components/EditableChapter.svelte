@@ -95,19 +95,21 @@
 	}
 </script>
 
-{#if editable}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<h2
-		class="details-heading"
-		contenteditable="plaintext-only"
-		bind:textContent={container.payload.title}
-		onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-	>
-		{container.payload.title}
-	</h2>
-{:else}
-	<h2 class="details-heading" contenteditable="false">{container.payload.title}</h2>
-{/if}
+<header>
+	{#if editable}
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<h2
+			class="details-heading"
+			contenteditable="plaintext-only"
+			bind:textContent={container.payload.title}
+			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+		>
+			{container.payload.title}
+		</h2>
+	{:else}
+		<h2 class="details-heading" contenteditable="false">{container.payload.title}</h2>
+	{/if}
+</header>
 
 <Badges bind:container {editable} />
 

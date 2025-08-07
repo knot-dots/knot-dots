@@ -483,7 +483,10 @@ const fileCollectionPayload = z
 				})
 			)
 			.default([]),
-		title: z.string().default(''),
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('files')),
 		type: z.literal(payloadTypes.enum.file_collection),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
@@ -509,7 +512,10 @@ const initialGoalPayload = goalPayload.partial({
 
 const goalCollectionPayload = z
 	.object({
-		title: z.string().readonly().default(''),
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('goals')),
 		type: z.literal(payloadTypes.enum.goal_collection),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
@@ -585,7 +591,10 @@ const initialObjectivePayload = objectivePayload.partial({ title: true });
 
 const objectiveCollectionPayload = z
 	.object({
-		title: z.string().readonly().default(''),
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('objectives')),
 		type: z.literal(payloadTypes.enum.objective_collection),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
@@ -676,7 +685,10 @@ const initialEffectPayload = effectPayload.partial({ title: true });
 
 const effectCollectionPayload = z
 	.object({
-		title: z.string().readonly().default(''),
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('effects')),
 		type: z.literal(payloadTypes.enum.effect_collection),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
@@ -703,7 +715,10 @@ const initialResourcePayload = resourcePayload.partial({
 
 const resourceCollectionPayload = z
 	.object({
-		title: z.string().readonly().default(''),
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('resources')),
 		type: z.literal(payloadTypes.enum.resource_collection),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
@@ -728,7 +743,10 @@ const initialTaskPayload = taskPayload.partial({ title: true });
 
 const taskCollectionPayload = z
 	.object({
-		title: z.string().readonly().default(''),
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('tasks')),
 		type: z.literal(payloadTypes.enum.task_collection),
 		visibility: visibility.default(visibility.enum['organization'])
 	})

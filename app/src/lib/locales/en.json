@@ -503,7 +503,7 @@
 	"unit.ton_per_capita": "t per capita",
 	"unit.watt_per_capita": "W per capita",
 	"upload.or_browse": "or browse",
-	"upload.drop_here_or": "Drop here {or_browse}",
+	"upload.drop_here": "Drop here {or_browse}",
 	"upload.image.choose": "Choose image",
 	"upload.image.help": "JPG, PNG, max 100 MB",
 	"upload.image.remove": "Remove image",
@@ -513,6 +513,7 @@
 	"upload.pdf.choose": "Choose PDF",
 	"upload.pdf.help": "PDF, max 100 MB",
 	"upload.pdf.remove": "Remove PDF",
+	"upload.uploading": "Uploading…",
 	"user": {
 		"display_name": "Name",
 		"email": "Email",
