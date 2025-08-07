@@ -142,12 +142,18 @@
 
 	.file-list > li {
 		align-items: center;
+		border-radius: 8px;
 		display: flex;
 		gap: 0.75rem;
+		padding: 0.25rem;
 	}
 
 	.file-list > li:nth-child(n + 2) {
 		margin-top: 0.5rem;
+	}
+
+	.file-list > li:hover {
+		background-color: var(--color-gray-100);
 	}
 
 	.file-list > li > span {
