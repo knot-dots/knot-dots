@@ -44,7 +44,13 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
 		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...commonTypes]);
 		can('delete-recursively', payloadTypes.enum.measure);
-		can('invite-members', payloadTypes.options);
+		can('invite-members', [
+			payloadTypes.enum.measure,
+			payloadTypes.enum.organization,
+			payloadTypes.enum.organizational_unit,
+			payloadTypes.enum.program,
+			payloadTypes.enum.simple_measure
+		]);
 		can('prioritize', payloadTypes.enum.task);
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can(
@@ -69,12 +75,31 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can('invite-members', payloadTypes.options, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('invite-members', payloadTypes.options, {
-			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		can(
+			'invite-members',
+			[
+				payloadTypes.enum.measure,
+				payloadTypes.enum.organization,
+				payloadTypes.enum.organizational_unit,
+				payloadTypes.enum.program,
+				payloadTypes.enum.simple_measure
+			],
+			{
+				organization: { $in: [...user.adminOf, ...user.headOf] }
+			}
+		);
+		can(
+			'invite-members',
+			[
+				payloadTypes.enum.measure,
+				payloadTypes.enum.organizational_unit,
+				payloadTypes.enum.program,
+				payloadTypes.enum.simple_measure
+			],
+			{
+				organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+			}
+		);
 		can('create', commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
@@ -90,9 +115,13 @@ export default function defineAbilityFor(user: User) {
 		can('update', payloadTypes.enum.program, ['chapterType'], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can('invite-members', payloadTypes.options, {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		can(
+			'invite-members',
+			[payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
+			{
+				managed_by: { $in: [...user.adminOf, ...user.headOf] }
+			}
+		);
 		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...commonTypes], {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
