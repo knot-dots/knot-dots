@@ -46,7 +46,7 @@
 		responseType: 'json'
 	});
 
-	uppy.on('upload-success', (file, response) => {
+	uppy.on('upload-success', async (file, response) => {
 		if (file && response.uploadURL) {
 			container.payload.file.push({
 				name: file.name ?? response.uploadURL,
@@ -54,6 +54,16 @@
 				type: file.type,
 				url: response.uploadURL
 			});
+
+			const res = await saveContainer(container);
+			if (res.ok) {
+				const updatedContainer = await res.json();
+				container.revision = updatedContainer.revision;
+				await invalidateAll();
+			} else {
+				const error = await res.json();
+				alert(error.message);
+			}
 		} else {
 			console.error('upload failed', response);
 		}
