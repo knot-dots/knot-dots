@@ -9,7 +9,7 @@ WITH measures AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT source.subject,jsonb_build_object('file', jsonb_agg(jsonb_build_object('name', f->1, 'size', 0, 'type', 'application/octet-stream', 'url', f->0)), 'title', '', 'type', 'file_collection', 'visibility', source.visibility), source.realm, source.organization, source.organizational_unit, source.managed_by
+SELECT source.subject,jsonb_build_object('file', jsonb_agg(jsonb_build_object('name', f->1, 'size', 0, 'type', 'application/octet-stream', 'url', f->0)), 'title', 'Dateien', 'type', 'file_collection', 'visibility', source.visibility), source.realm, source.organization, source.organizational_unit, source.managed_by
 FROM (
          SELECT s.subject, m.payload, m.payload->>'visibility' AS visibility, m.realm, m.organization, m.organizational_unit, m.managed_by
          FROM measures m JOIN sections s ON m.guid = s.object
@@ -76,7 +76,7 @@ WITH measures AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject, jsonb_build_object('title', '', 'type', 'resource_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
+SELECT s.subject, jsonb_build_object('title', 'Ressourcen', 'type', 'resource_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
 FROM measures m JOIN sections s ON m.guid = s.object;
 
 WITH measures AS (
@@ -97,7 +97,7 @@ WITH measures AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject, jsonb_build_object('title', '', 'type', 'goal_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
+SELECT s.subject, jsonb_build_object('title', 'Ziele', 'type', 'goal_collection', 'visibility', m.payload->>'visibility'), m.realm, m.organization, m.organizational_unit, m.managed_by
 FROM measures m JOIN sections s ON m.guid = s.object;
 
 WITH goals AS (
@@ -118,7 +118,7 @@ WITH goals AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject,jsonb_build_object('title', '', 'type', 'effect_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
+SELECT s.subject,jsonb_build_object('title', 'Wirkung', 'type', 'effect_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
 FROM goals g JOIN sections s ON g.guid = s.object;
 
 WITH goals AS (
@@ -139,7 +139,7 @@ WITH goals AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject,jsonb_build_object('title', '', 'type', 'objective_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
+SELECT s.subject,jsonb_build_object('title', 'Gewünschte Entwicklung', 'type', 'objective_collection', 'visibility', g.payload->> 'visibility'),g.realm,g.organization,g.organizational_unit,g.managed_by
 FROM goals g JOIN sections s ON g.guid = s.object;
 
 WITH goals AS (
@@ -160,5 +160,5 @@ WITH goals AS (
         RETURNING object, subject
 )
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
-SELECT s.subject, jsonb_build_object('title', '', 'type', 'task_collection', 'visibility', g.payload->>'visibility'), g.realm, g.organization, g.organizational_unit, g.managed_by
+SELECT s.subject, jsonb_build_object('title', 'Aufgaben', 'type', 'task_collection', 'visibility', g.payload->>'visibility'), g.realm, g.organization, g.organizational_unit, g.managed_by
 FROM goals g JOIN sections s ON g.guid = s.object;

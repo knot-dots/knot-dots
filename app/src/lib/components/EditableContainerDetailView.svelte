@@ -15,7 +15,6 @@
 		type Container,
 		containerOfType,
 		isContainerWithProgress,
-		isContainerWithTitle,
 		isGoalContainer,
 		isMeasureContainer,
 		type NewContainer,
@@ -70,10 +69,6 @@
 					predicate: predicates.enum['is-section-of']
 				}
 			];
-
-			if (isContainerWithTitle(newContainer)) {
-				newContainer.payload.title = '';
-			}
 
 			const response = await saveContainer(newContainer);
 			const result = containerSchema.safeParse(await response.json());
