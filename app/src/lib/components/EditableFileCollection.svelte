@@ -8,11 +8,14 @@
 	import FileDoc from '~icons/flowbite/file-doc-solid';
 	import FilePDF from '~icons/flowbite/file-pdf-solid';
 	import Close from '~icons/knotdots/close';
+	import { invalidateAll } from '$app/navigation';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import saveContainer from '$lib/client/saveContainer';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import type { AnyContainer, FileCollectionContainer } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: FileCollectionContainer;
@@ -78,7 +81,7 @@
 	{/if}
 </header>
 
-{#if editable}
+{#if editable && $ability.can('update', container)}
 	<UppyContextProvider {uppy}>
 		<FileUpload />
 	</UppyContextProvider>
@@ -102,9 +105,11 @@
 				{/if}
 			</span>
 
-			<button class="action-button action-button--size-l" onclick={remove(i)} type="button">
-				<Close />
-			</button>
+			{#if editable && $ability.can('update', container)}
+				<button class="action-button action-button--size-l" onclick={remove(i)} type="button">
+					<Close />
+				</button>
+			{/if}
 		</li>
 	{/each}
 </ul>
