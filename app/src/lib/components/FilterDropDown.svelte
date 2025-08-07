@@ -138,6 +138,10 @@
 		position: static;
 	}
 
+	.dropdown-panel {
+		z-index: 2;
+	}
+
 	.dropdown-panel > div > p:last-child {
 		display: none;
 	}
