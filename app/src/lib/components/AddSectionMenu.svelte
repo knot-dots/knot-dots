@@ -49,8 +49,7 @@
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 
 	let mayAddTaskCollection = $derived(
-		isGoalContainer(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
+		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
 	);
 
 	let mayAddObjectiveCollection = $derived(
@@ -80,8 +79,7 @@
 	);
 
 	let mayAddFileCollection = $derived(
-		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
+		!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
 	);
 
 	let options = $derived(
