@@ -1,9 +1,10 @@
 <script lang="ts">
 	import prettierBytes from '@transloadit/prettier-bytes';
 	import Uppy from '@uppy/core';
+	import German from '@uppy/locales/lib/de_DE';
 	import { UppyContextProvider } from '@uppy/svelte';
 	import XHRUpload from '@uppy/xhr-upload';
-	import { _ } from 'svelte-i18n';
+	import { _, locale } from 'svelte-i18n';
 	import File from '~icons/flowbite/file-solid';
 	import FileDoc from '~icons/flowbite/file-doc-solid';
 	import FilePDF from '~icons/flowbite/file-pdf-solid';
@@ -31,6 +32,7 @@
 
 	let uppy = new Uppy({
 		autoProceed: true,
+		locale: $locale?.startsWith('de') ? German : undefined,
 		restrictions: {
 			allowedFileTypes: [
 				'application/pdf',
