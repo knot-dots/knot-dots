@@ -39,7 +39,7 @@
 				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 				'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 			],
-			maxTotalFileSize: 100000000
+			maxTotalFileSize: 105 * 1024 * 1024 // bytes
 		}
 	}).use(XHRUpload, {
 		bundle: false,
