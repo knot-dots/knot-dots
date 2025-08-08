@@ -1,0 +1,1849 @@
+---
+openapi: 3.0.3
+info:
+  title: Bertelsmann Stiftung - Wegweiser Kommune - Data API
+  description: "Bietet eine offene Schnittstelle, um die statistischen Daten des Wegweiser\
+    \ Kommune nebst deren Metadaten zu erhalten."
+  version: "${project.version}"
+servers:
+- url: /data-api
+paths:
+  /rest/demographicTypes:
+    get:
+      description: Findet alle Demografietypen.
+      responses:
+        "200":
+          description: Alle bekannten Demografietypen mit ihrer Beschreibung.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DemographicType'
+  /rest/demographicTypes/{number}:
+    get:
+      description: Findet den Demografietyp mit der angegebenen Nummer.
+      parameters:
+      - name: number
+        in: path
+        description: Die Nummer des gesuchten Demografietypen.
+        required: true
+        schema:
+          format: int32
+          type: integer
+      responses:
+        "200":
+          description: Liefert den Demografietyp mit seiner Beschreibung.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemographicType'
+        "404":
+          description: Falls der Demografietyp nicht existiert.
+  /rest/export/{friendlyUrl}.{format}:
+    get:
+      description: Exportiert die Statistikdaten für die angegebene "Friendly URL"
+        im gewünschten Format.
+      parameters:
+      - name: format
+        in: path
+        description: Das gewünschte Exportformat. Je nach Format wird nicht jede Darstellungsart
+          unterstüzt. Die Darstellungsart wird daher eventuell passend gewählt.
+        required: true
+        schema:
+          $ref: '#/components/schemas/ExportFormat'
+        example: csv
+      - name: friendlyUrl
+        in: path
+        description: "Beschreibt die gewünschten Themen/Indikatoren, Kommunen, Jahre\
+          \ und die Darstellungsart. Das Format der URL ist das gleiche, wie auf der\
+          \ Statistikseite nach dem letzten '/'."
+        required: true
+        schema:
+          type: string
+        example: demografische-entwicklung+berlin+muenchen+2006-2019+tabelle
+      - name: charset
+        in: query
+        description: "Der Zeichensatz der Datei, falls ein Textformat (CSV oder JSON)\
+          \ gewählt wurde. Der Standardwert ist UTF-8 für JSON und ISO-8859-1 für\
+          \ CSV Dateien."
+        schema:
+          type: string
+        example: UTF-8
+      - name: download
+        in: query
+        description: "Gibt an, ob der Browser die Datei zum Download anbieten soll.\
+          \ Anderfalls wird dem Browser der Hinweis zum \"Einbetten\" mitgeteilt,\
+          \ wodurch zum Beispiel Bilder direkt angezeigt werden."
+        schema:
+          default: false
+          type: boolean
+        example: "true"
+      - name: highlight
+        in: query
+        description: "Falls ein Bild exportiert wird, die kommaseparierte Liste der\
+          \ Elemente, die hervorgehoben werden sollen. Die Elementbezeichnungen leiten\
+          \ sich aus der jeweiligen Legende ab."
+        schema:
+          type: string
+        example: "2015, 2016"
+      - name: raw
+        in: query
+        description: Steuert die Anzeige der Überschriften und Anmerkungen. Mit "true"
+          werden diese unterdrückt und es wird die reine Tabelle bzw. Grafik ausgegeben.
+        schema:
+          default: false
+          type: boolean
+        example: "true"
+      - name: width
+        in: query
+        description: "Falls ein Bild exportiert wird, die Breite des Bildes in Pixel.\
+          \ Die Höhe des Bildes ist abhängig davon und vom gewählten Inhalt."
+        schema:
+          format: int32
+          default: 1024
+          maximum: 2048
+          minimum: 256
+          type: integer
+        example: "800"
+      responses:
+        "200":
+          description: Liefert die angeforderten Statistikdaten
+  /rest/indicator/export/{friendlyUrl}.{format}:
+    get:
+      description: Exportiert die Indikatorbeschreibungen für die angegebene "Friendly-URL".
+      parameters:
+      - name: format
+        in: path
+        description: Das gewünschte Exportformat. Bildformate werden nicht unterstützt.
+        required: true
+        schema:
+          $ref: '#/components/schemas/ExportFormat'
+        example: csv
+      - name: friendlyUrl
+        in: path
+        description: "Beschreibt die gewünschten Themen/Indikatoren (das Format der\
+          \ URL ist das gleiche, wie auf der Statistikseite nach dem letzten '/')."
+        required: true
+        schema:
+          type: string
+        example: demografische-entwicklung
+      - name: charset
+        in: query
+        description: "Der Zeichensatz der Datei, falls ein reines Textformat (CSV\
+          \ oder JSON) gewählt wurde. Der Standardwert ist UTF-8 für JSON und ISO-8859-1\
+          \ für CSV Dateien."
+        schema:
+          type: string
+        example: UTF-8
+      - name: download
+        in: query
+        description: "Gibt an, ob der Browser die Datei zum Download anbieten soll.\
+          \ Anderfalls wird dem Browser der Hinweis zum \"Einbetten\" mitgeteilt,\
+          \ wodurch zum Beispiel PDFs direkt angezeigt werden können."
+        schema:
+          default: false
+          type: boolean
+        example: "true"
+      responses:
+        "200":
+          description: Liefert das Dokument mit den Indikatorbeschreibungen.
+  /rest/indicator/get/{friendlyUrl}:
+    get:
+      description: Sucht einen Indikator anhand seiner "Friendly URL".
+      parameters:
+      - name: friendlyUrl
+        in: path
+        description: "Der URL-Teil von der Statistikseite, der den Indikator beschreibt."
+        required: true
+        schema:
+          type: string
+        example: geburten
+      responses:
+        "200":
+          description: Liefert den Indikator mit seiner Beschreibung.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Indicator'
+        "404":
+          description: Falls der Indikator nicht existiert.
+  /rest/indicator/list:
+    get:
+      description: Sucht die vorhandenen Indikatoren.
+      parameters:
+      - name: exclude
+        in: query
+        description: Indikatoren mit der angegebene ID werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            format: int64
+            type: integer
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Indikatoren, die zurückgegeben werden\
+          \ sollen."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: "Ein optionaler Suchtext, mit dem passende Indikatoren gewählt\
+          \ werden."
+        schema:
+          type: string
+        example: Frauen
+      responses:
+        "200":
+          description: Liefert alle gefundenen Indikatoren.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Indicator'
+  /rest/indicator/orTopic:
+    get:
+      description: Sucht gleichzeitig nach verfügbaren Themen und Indikatoren.
+      parameters:
+      - name: excludeIndicator
+        in: query
+        description: Indikatoren mit der angegebene ID werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            format: int64
+            type: integer
+      - name: excludeTopic
+        in: query
+        description: Themen mit der angegebene ID werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            format: int64
+            type: integer
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Themen und Indikatoren, die zurückgegeben\
+          \ werden sollen."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: "Ein optionaler Suchtext, mit dem passende Themen und Indikatoren\
+          \ gewählt werden."
+        schema:
+          type: string
+        example: Alter
+      responses:
+        "200":
+          description: Liefert die Liste der gefundenen Themen und Indikatoren.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatisticTyped'
+  /rest/map/bbox:
+    post:
+      description: Berechnet die Koordinaten des umgebenden Rechtecks der angegebenen
+        Kommunen.
+      parameters:
+      - name: outline
+        in: query
+        description: Beschreibt den Kommunentyp der aktuell dargestellten Umrisse.
+        schema:
+          $ref: '#/components/schemas/MapOutlineType'
+        example: BUNDESLAND
+      requestBody:
+        description: Die IDs der im Rechteck enthaltenen Kommunen.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                format: int64
+                type: integer
+      responses:
+        "200":
+          description: "Die Koordinaten des Rechtecks in EPSG:4326 in der Reihenfolge:\
+            \ links, unten, rechts, oben."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  format: double
+                  type: number
+        "400":
+          description: Eine der angegebenen Kommunen war nicht bekannt.
+  /rest/map/data:
+    post:
+      description: "Sucht die Geometrien für alle Kommunen im angegeben Ausschnitt.\
+        \ Falls ein Thema oder Indikator angegeben wird, enthalten die zurückgegebenen\
+        \ Geometrien auch die Statistikdaten und Klassifizierungen der Kommunen fü\
+        r die angeforderten Jahre. Falls kein Ausschnitt angegeben wurde, wird ein\
+        \ passender berechnet."
+      requestBody:
+        description: Beschreibt die gewünschten Geometrien.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapRequest'
+      responses:
+        "200":
+          description: "Liefert die gefundenen Geometrien in EPSG:4326, nebst Metadaten."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticMap'
+        "400":
+          description: Falls eine der angegebenen IDs nicht gefunden oder doppelt
+            angegeben wurde.
+  /rest/map/data/{friendlyUrl}:
+    get:
+      description: Sucht die Geometrien für alle Kommunen im angegeben Ausschnitt.
+      parameters:
+      - name: friendlyUrl
+        in: path
+        description: "Beschreibt die aktuell gewählten Kommunen. Falls ein Thema oder\
+          \ Indikator angegeben wird, enthalten die zurückgegebenen Geometrien auch\
+          \ die Statistikdaten und Klassifizierungen der Kommunen für die angeforderten\
+          \ Jahre. Das Format der URL ist das gleiche, wie auf der Statistikseite\
+          \ nach dem letzten '/'."
+        required: true
+        schema:
+          type: string
+        example: demografische-entwicklung+geburten+guetersloh-gt+2019+karte
+      - name: bbox
+        in: query
+        description: "Die Koordinaten des gewünschten Ausschnitts in EPSG:4326 (links,\
+          \ unten, rechts, oben - jeweils mit ',' getrennt). Nur Kommunen, die zumindest\
+          \ teilweise innerhalb des Ausschnitts liegen, werden zurückgegeben. Falls\
+          \ kein Ausschnitt angegeben wurde, wird ein passender berechnet."
+        schema:
+          type: string
+        example: "5.509,49.855,9.602,52.796"
+      - name: layer
+        in: query
+        description: "Die Ebene der zurückgegebenen Geometrien. Wird aus den gewä\
+          hlten Kommunen berechnet, falls nicht angegeben."
+        schema:
+          $ref: '#/components/schemas/LayerType'
+        example: DISTRICT
+      - name: outline
+        in: query
+        description: Beschreibt den Typ der übergeordneten Kommunen der aktuell gewählten
+          Kommunen. Nur Kommunen aus den so gewählten übergeordneten Kommunen werden
+          zurückgegeben. Außerdem werden die Geometrien der übergeordneten Kommunen
+          gesondert zurückgegeben.
+        schema:
+          $ref: '#/components/schemas/MapOutlineType'
+      responses:
+        "200":
+          description: "Liefert die gefundenen Geometrien in EPSG:4326, nebst Metadaten."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticMap'
+  /rest/region/filter:
+    post:
+      description: Sucht Kommunen und erzeugt den Titel und die "Friendy URL" für
+        die angegebenen Filterwerte.
+      requestBody:
+        description: Die Filterwerte der Kommunensuche.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegionFilterRequest'
+      responses:
+        "200":
+          description: Liefert die gefundenen Kommunen und die Beschreibung des Filters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionFilter'
+  /rest/region/get/{friendlyUrl}:
+    get:
+      description: Sucht eine Kommune mit Hilfe ihrer "Friendly URL".
+      parameters:
+      - name: friendlyUrl
+        in: path
+        description: "Die \"Friendly URL\" der Kommune, die wir suchen."
+        required: true
+        schema:
+          type: string
+        example: guetersloh-gt
+      responses:
+        "200":
+          description: Liefert die gefundene Kommune.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Region'
+        "404":
+          description: Falls keine solche Kommune gefunden wurde.
+  /rest/region/list:
+    get:
+      description: Suche die verfügbaren Kommunen.
+      parameters:
+      - name: exclude
+        in: query
+        description: Kommunen mit der angegebene ID werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            format: int64
+            type: integer
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Kommunen, die zurückgegeben werden sollen."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: "Ein optionaler Suchtext, mit dem passende Kommunen gewählt werden."
+        schema:
+          type: string
+      - name: types
+        in: query
+        description: "Die Typen der gesuchten Kommunen, eine leere Liste bedeutet\
+          \ \"alle unterstützten Kommunen\"."
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionType'
+      responses:
+        "200":
+          description: Liefert die gefundenen Kommunen.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Region'
+  /rest/statistics/analyze/{friendlyUrl}:
+    get:
+      description: Analysiert die angegebene "Friendly URL" und gibt deren einzelne
+        Bestandteile zurück.
+      parameters:
+      - name: friendlyUrl
+        in: path
+        description: "Beschreibt die gewünschten Themen/Indikatoren, Kommunen, Jahre\
+          \ und die Darstellungsart. Das Format der URL ist das gleiche, wie auf der\
+          \ Statistikseite nach dem letzten '/'."
+        required: true
+        schema:
+          type: string
+        example: demografische-entwicklung+berlin+muenchen+2006-2019+tabelle
+      responses:
+        "200":
+          description: Liefert die einzelnen Bestandteile der "Friendly URL"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticSelection'
+  /rest/statistics/data:
+    post:
+      description: "Sucht die Statistikdaten für die angegebenen Themen, Indikatoren,\
+        \ Kommunen und Jahre."
+      requestBody:
+        description: Enthält die IDs der gesuchten Daten.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataRequest'
+      responses:
+        "200":
+          description: Liefert die gesuchten Statistikdaten.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/DataResponse'
+                - $ref: '#/components/schemas/GeographicMigrationDataResponse'
+                discriminator:
+                  propertyName: type
+                  mapping:
+                    GEOGRAPHIC_MIGRATION: '#/components/schemas/GeographicMigrationDataResponse'
+                    COMMUNAL_DATA: '#/components/schemas/DataResponse'
+                    POPULATION_FORECAST: '#/components/schemas/DataResponse'
+                    CARE_FORECAST: '#/components/schemas/DataResponse'
+                    AGE_MIGRATION: '#/components/schemas/DataResponse'
+                    DEMOGRAPHIC_TYPES: '#/components/schemas/DataResponse'
+                    POPULATION_PYRAMID: '#/components/schemas/DataResponse'
+                    AGE_STRUCTURE: '#/components/schemas/DataResponse'
+                    AGE_STRUCTURE_FORECAST: '#/components/schemas/DataResponse'
+        "400":
+          description: Falls eine der angegebenen IDs nicht gefunden oder doppelt
+            angegeben wurde.
+  /rest/statistics/data/{friendlyUrl}:
+    get:
+      description: "Sucht die Statistikdaten für die angegebenen Indikatoren, Kommunen\
+        \ und Jahre."
+      parameters:
+      - name: friendlyUrl
+        in: path
+        description: "Beschreibt die gewünschten Themen/Indikatoren, Kommunen, Jahre\
+          \ und die aktuelle Darstellungsart. Das Format ist das gleiche, wie auf\
+          \ der Statistikseite nach dem letzten '/'."
+        required: true
+        schema:
+          type: string
+        example: demografische-entwicklung+berlin+muenchen+2006-2019+tabelle
+      responses:
+        "200":
+          description: Liefert die gesuchten Statistikdaten.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/DataResponse'
+                - $ref: '#/components/schemas/GeographicMigrationDataResponse'
+                discriminator:
+                  propertyName: type
+                  mapping:
+                    GEOGRAPHIC_MIGRATION: '#/components/schemas/GeographicMigrationDataResponse'
+                    COMMUNAL_DATA: '#/components/schemas/DataResponse'
+                    POPULATION_FORECAST: '#/components/schemas/DataResponse'
+                    CARE_FORECAST: '#/components/schemas/DataResponse'
+                    AGE_MIGRATION: '#/components/schemas/DataResponse'
+                    DEMOGRAPHIC_TYPES: '#/components/schemas/DataResponse'
+                    POPULATION_PYRAMID: '#/components/schemas/DataResponse'
+                    AGE_STRUCTURE: '#/components/schemas/DataResponse'
+                    AGE_STRUCTURE_FORECAST: '#/components/schemas/DataResponse'
+  /rest/statistics/types:
+    get:
+      description: Generiert die Beschreibung für alle verfügbaren Statistikdaten.
+      responses:
+        "200":
+          description: Liefert die Beschreibung der Statistikdaten.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatisticTypeDescription'
+  /rest/statistics/version:
+    get:
+      description: "Gibt die Version der bereitgestellten Statistikdaten an. Falls\
+        \ diese Version sich ändert, können sich auch die IDs der Indikatoren, Themen\
+        \ und Kommunen ändern."
+      responses:
+        "200":
+          description: "Liefert das Datum, zu dem die aktuellen Statistikdaten eingespielt\
+            \ wurden."
+          content:
+            application/json:
+              schema:
+                type: string
+  /rest/suggest/ags:
+    get:
+      description: Stellt passende Gemeinde- und Regionalschlüssel zum Erstellen eines
+        Filterwerts zur Verfügung.
+      parameters:
+      - name: exclude
+        in: query
+        description: Die angegebenen AGS / ARS werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: includeARS
+        in: query
+        description: "Gibt an, ob nur der 8-stellige AGS oder auch der 12-stellige\
+          \ ARS gesucht werden soll."
+        schema:
+          default: true
+          type: boolean
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Schlüsseln, die zurückgegeben werden."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: Das Präfix des gesuchten Schlüssels
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Liefert die passenden Schlüssel für die Verwendung in /rest/region/filter
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuggestItem'
+  /rest/suggest/demographicType:
+    get:
+      description: Sucht die Demografietypen mit dem angegebenen Text zum Erstellen
+        eines Filterwerts.
+      parameters:
+      - name: exclude
+        in: query
+        description: Demografietypen mit dem angegebenen "value" werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Demografietypen, die zurückgegeben werden\
+          \ sollen."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: "Ein optionaler Suchtext, mit dem passende Demografietypen gewä\
+          hlt werden."
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Liefert die passenden Demografietypen für die Verwendung in
+            /rest/region/filter
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuggestItem'
+  /rest/suggest/populationRange:
+    get:
+      description: Stellt passende Bevölkerungsbereiche zum Erstellen eines Filterwerts
+        zur Verfügung.
+      parameters:
+      - name: exclude
+        in: query
+        description: Die angegebenen Bereiche werden nicht zurückgegeben
+        schema:
+          type: array
+          items:
+            type: string
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Vorschlägen, die zurückgegeben werden."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: Das Präfix des gewünschten Bevölkerungsbereiches.
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Liefert Vorschläge für Einwohnerbereiche für die Verwendung
+            in /rest/region/filter
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuggestItem'
+  /rest/suggest/regionType:
+    get:
+      description: Stellt passende Verwaltungstypen zum Erstellen eines Filterwerts
+        zur Verfügung.
+      parameters:
+      - name: exclude
+        in: query
+        description: Verwaltungstypen mit dem angegebenen "value" werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Verwaltungstypen, die zurückgegeben\
+          \ werden sollen."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: "Ein optionaler Suchtext, mit dem passende Verwaltungstypen gewä\
+          hlt werden."
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Liefert die Verwaltungstypen für die Verwendung in /rest/region/filter
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuggestItem'
+  /rest/topic/get/{friendlyUrl}:
+    get:
+      description: Sucht ein Thema anhand seiner "Friendly URL".
+      parameters:
+      - name: friendlyUrl
+        in: path
+        description: "Der URL-Teil von der Statistikseite, der das Thema beschreibt."
+        required: true
+        schema:
+          type: string
+        example: demografische-entwicklung
+      responses:
+        "200":
+          description: Liefert das Thema mit seiner Beschreibung.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        "404":
+          description: Falls das Thema nicht existiert.
+  /rest/topic/list:
+    get:
+      description: Sucht die vorhandenen Themen.
+      parameters:
+      - name: exclude
+        in: query
+        description: Themen mit der angegebene ID werden nicht zurückgegeben.
+        schema:
+          type: array
+          items:
+            format: int64
+            type: integer
+      - name: max
+        in: query
+        description: "Die maximale Anzahl von Themen, die zurückgegeben werden sollen."
+        schema:
+          format: int32
+          default: 10
+          type: integer
+      - name: search
+        in: query
+        description: "Ein optionaler Suchtext, mit dem passende Themen gewählt werden."
+        schema:
+          type: string
+        example: Alter
+      responses:
+        "200":
+          description: Liefert alle gefundenen Themen.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Topic'
+  /rest/topic/sets:
+    get:
+      description: Sucht die vorhandenen Themensets mit ihren Themen.
+      responses:
+        "200":
+          description: Liefert die Basis-Themensets und alle direkt enthaltenen Themen.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TopicSet'
+components:
+  schemas:
+    IndicatorColorSchema:
+      description: Definiert die möglichen Farbschemas in der Karte.
+      enum:
+      - BLUE_TO_RED
+      - DEMOGRAPHIC_TYPE
+      - GREEN_DARK_TO_LIGHT
+      - GREEN_LIGHT_TO_DARK
+      - RED_TO_BLUE
+      type: string
+    MapOutlineType:
+      description: "Definiert, welche Karte als Gesamtumriss verwendet wird."
+      enum:
+      - BUND
+      - BUNDESLAND
+      - LANDKREIS
+      type: string
+    RegionFeature:
+      description: Eine Kommune mit ihren Kartendaten im GeoJSON format.
+      type: object
+      properties:
+        geometry:
+          description: Die Koordinaten des Umriss dieser Kommune in EPSG:4326.
+          type: string
+        id:
+          format: int64
+          description: Die ID dieser Kommune in der Datenbank. Kann sich bei unterschiedlichen
+            Versionen der Datenbank ändern.
+          type: integer
+        properties:
+          description: "Die Metadaten dieser Kommune, abhängig von den angefragten\
+            \ Daten."
+          type: object
+          additionalProperties: {}
+        type:
+          description: "Der Typ dieses Objekts laut RFC 7946: Feature."
+          type: string
+          example: Feature
+    RegionType:
+      description: "Definert alle möglichen Verwaltungstypen. 'KLEINE_GEMEINDE' sind\
+        \ Gemeinden mit weniger als 5.000 Einwohnern. Diese sind zwar vorhanden, enthalten\
+        \ aber so gut wie keine Daten und werden daher gesondert behandelt und in\
+        \ den meisten Fällen ignoriert."
+      enum:
+      - BUND
+      - BUNDESLAND
+      - GEMEINDE
+      - KLEINE_GEMEINDE
+      - KREISFREIE_STADT
+      - LANDKREIS
+      type: string
+    SuggestItem:
+      description: Ein Eintrag für die Vorschlagsliste bei den Filterwerten der Kommunen.
+      required:
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          description: "Der zu verwendene Wert für den Filter, falls dieser Eintrag\
+            \ gewählt wird."
+          type: string
+          nullable: false
+        name:
+          description: "Die dargestellte Beschriftung, falls dieser Eintrag gewählt\
+            \ wird."
+          type: string
+          nullable: false
+        title:
+          description: "Die Beschriftung dieses Eintrags in der Vorschlagsliste (nur\
+            \ enthalten, falls unterschiedlich von \"name\")."
+          type: string
+    ExportFormat:
+      description: Die verfügbaren Formate für den Export.
+      enum:
+      - csv
+      - gif
+      - jpg
+      - json
+      - pdf
+      - png
+      - svg
+      - xls
+      - xlsx
+      type: string
+    FeatureCollection:
+      description: Eine Liste der Geometrien von Kommunen im GeoJSON Format.
+      type: object
+      properties:
+        bbox:
+          description: "Die Koordinaten des umgebenden Rechtecks in EPSG:4326 in der\
+            \ Reihenfolge: links, unten, rechts, oben."
+          type: array
+          items:
+            format: double
+            type: number
+        features:
+          description: "Die Koordinaten der Kommunen, nebst deren Metadaten."
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionFeature'
+        type:
+          description: "Der Typ dieses Objekts laut RFC 7946: FeatureCollection."
+          type: string
+          example: FeatureCollection
+    GeographicMigrationDataResponse:
+      description: Beschreibt die statistischen Daten aus dem Thema "Wanderungen nach
+        Ziel und Herkunft".
+      type: object
+      properties:
+        indicators:
+          description: Enthält die Indikatoren und die statistischen Daten je Indikator.
+          type: array
+          items:
+            $ref: '#/components/schemas/IndicatorData'
+        regions:
+          description: "Beschreibt die Kommunen der zurückgegebenen Daten. Dies kö\
+            nnen weniger sein, als ursprünglich angefordert, falls die Kommunen aus\
+            \ Platzgründen abgeschnitten wurden."
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+        remark:
+          description: "Ein optionaler Hinweis, falls die Daten zum Beispiel abgeschnitten\
+            \ wurden oder veraltet sind."
+          type: string
+        source:
+          description: Beschreibt die Quelle der zurückgegebenen Daten.
+          type: string
+          example: Statistische Ämter der Länder
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StatisticType'
+          - description: Der Statistiktyp der zurückgegebenen Daten.
+        mainRegion:
+          allOf:
+          - $ref: '#/components/schemas/Region'
+          - description: Die erste gewählte Kommune aus der ursprünglichen Anfrage.
+              Diese Kommune beschreibt die Quelle bzw. das Ziel der "Wanderungen".
+    IndicatorData:
+      description: Enthält die angeforderten Daten für einen Indikator.
+      required:
+      - name
+      type: object
+      properties:
+        friendlyUrl:
+          description: "Der Teil der \"Friendly URL\" der Statstikseite, der diesen\
+            \ Indikator identifiziert. Eindeutig auch über verschiedene Versionen\
+            \ des Wegweiser Kommune."
+          type: string
+          example: geburten
+        id:
+          format: int64
+          description: Die ID dieses Indikators in der Datenbank.Kann sich bei unterschiedlichen
+            Versionen der Datenbank ändern.
+          type: integer
+        maxValue:
+          format: double
+          description: Der maximale Wert dieses Indikators über alle Jahre (nicht
+            nur die angeforderten) für alle verglichenen Kommunen.
+          type: number
+        minValue:
+          format: double
+          description: Der minimale Wert dieses Indikators über alle Jahre (nicht
+            nur die angeforderten) für alle verglichenen Kommunen.
+          type: number
+        name:
+          description: Der Name dieses Indikators.
+          type: string
+          example: Geburten
+          nullable: false
+        regionYearValues:
+          description: "Die Werte dieses Indikators für jede angeforderte Kommune\
+            \ und Jahr.\n Für jede Kommune gibt es ein Array mit den Werten für jedes\
+            \ Jahr, in der Reihenfolge, wie diese angefordert und auch in DataResponse\
+            \ angegeben werden.\n Falls es sich um die Daten der Bevölkerungspyramiden\
+            \ handelt, sind die Werte erneut Arrays, die die Werte für jedes Alter\
+            \ enhalten (von 0 Jahren angefangen)."
+          type: object
+          oneOf:
+          - type: array
+            items:
+              type: array
+              items:
+                format: double
+                type: number
+          - type: array
+            items:
+              type: array
+              items:
+                type: array
+                items:
+                  format: double
+                  type: number
+        remark:
+          description: "Enthält einen optionalen Hinweis, falls keine passenden Daten\
+            \ gefunden wurden, wie man die Anfrage anpassen könnte, um Daten zu erhalten\
+            \ (andere Jahre, übergeordnete Kommune, ...)"
+          type: string
+        unit:
+          description: Die Einheit der Daten dieses Indikators.
+          type: string
+          example: je 1.000 Einwohner:innen
+    Region:
+      description: Enthält die Beschreibung einer Kommune.
+      required:
+      - friendlyUrl
+      - name
+      - ags
+      - ars
+      - type
+      type: object
+      properties:
+        friendlyUrl:
+          description: "Der Teil der \"Friendly URL\" der Statstikseite, der diese\
+            \ Kommune bzw. diesen Filter identifiziert. Eindeutig auch über verschiedene\
+            \ Versionen des Wegweiser Kommune."
+          type: string
+          example: guetersloh-gt
+          nullable: false
+        name:
+          description: Die Kurzbezeichnung dieser Kommune bzw. dieses Filters.
+          type: string
+          example: Gütersloh (GT)
+          nullable: false
+        title:
+          description: Die Langbezeichnung dieser Kommune bzw. dieses Filters.
+          type: string
+          example: Gütersloh (im Landkreis Gütersloh)
+        ags:
+          description: "Der eindeutige achtstellige Amtliche Gemeindeschlüssel der\
+            \ Kommune (früher auch Amtliche Gemeindekennzahl - GKZ - genannt). Fü\
+            r Kommunen ohne AGS, wie Landkreise, Bundesländer oder Verbandsgemeinden\
+            \ wird dieser Schlüssel aus anderen Schlüsseln gebildet und ist dann nur\
+            \ eindeutig innerhalb des Wegweiser Kommune."
+          type: string
+          externalDocs:
+            description: Beschreibung des AGS auf Wikipedia
+            url: https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel
+          example: "05754008"
+          nullable: false
+        ars:
+          description: Der eindeutige 12-stellige Amtliche Regionalschlüssel der Kommune.
+          type: string
+          externalDocs:
+            description: Beschreibung des ARS auf Wikipedia
+            url: https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel#Regionalschl%C3%BCssel
+          example: "057540008008"
+          nullable: false
+        demographicType:
+          format: int32
+          description: "Die Nummer des Demografietyps der Kommune. 0 für Kommunen\
+            \ ohne Demografietyp, wie Landkreise oder Bundesländer."
+          type: integer
+          example: 6
+        id:
+          format: int64
+          description: Die ID dieser Kommune in der Datenbank. Kann sich bei unterschiedlichen
+            Versionen der Datenbank ändern.
+          type: integer
+        parent:
+          description: Der Titel der überbeordneten Kommune.
+          type: string
+          example: "Gütersloh, Landkreis"
+        smallRegionReplacement:
+          description: "Gibt an, ob diese Kommune als Ersatz für eine gefundene zu\
+            \ kleine Gemeinde zurückgegeben wird. Dies wird dann auch im Titel angedeutet,\
+            \ zum Beispiel bei der Suche nach \"Zinnowitz\": Vorpommern-Greifswald,\
+            \ Landkreis (mit Zinnowitz)"
+          type: boolean
+        type:
+          allOf:
+          - $ref: '#/components/schemas/RegionType'
+          - description: Der Verwaltungstyp der Kommune.
+            example: LANDKREIS
+            nullable: false
+    StatisticType:
+      description: Definiert alle aktuell möglichen Statistiktypen. Es können nur
+        Daten des gleichen Statistiktypen miteinander kombiniert werden.
+      enum:
+      - AGE_MIGRATION
+      - AGE_STRUCTURE
+      - AGE_STRUCTURE_FORECAST
+      - CARE_FORECAST
+      - COMMUNAL_DATA
+      - DEMOGRAPHIC_TYPES
+      - GEOGRAPHIC_MIGRATION
+      - POPULATION_FORECAST
+      - POPULATION_PYRAMID
+      type: string
+    MapClassLegend:
+      description: Beschreibt eine Klasse aus den Klassifizierungen. Wird hauptsächlich
+        für die Karten verwendet.
+      type: object
+      properties:
+        classIndex:
+          format: int32
+          description: "Der Index dieser Klasse, mit der sie in den Kommunengeometrien\
+            \ referenziert wird."
+          type: integer
+        label:
+          description: Die Beschriftung dieser Klasse in der Legende.
+          type: string
+        title:
+          description: Der Titel (bzw. Tooltip) dieser Klasse in der Legende.
+          type: string
+    DataRequest:
+      description: Verknüpft die IDs der angefragten Daten. Wird als platzsparende
+        Alternative zu den kombinierten "Friendly URLs" verwendet.
+      required:
+      - regionIds
+      type: object
+      properties:
+        indicatorIds:
+          description: Die IDs der gewählten Indikatoren.
+          type: array
+          items:
+            format: int64
+            type: integer
+        lowRegionsCount:
+          format: int32
+          description: Die angegebene Anzahl von Kommunen mit den niedrigsten Werten
+            wird zum Vergleich zurückgegeben.
+          type: integer
+        regionIds:
+          description: Die IDs der gewählten Kommunen.
+          minItems: 1
+          type: array
+          items:
+            format: int64
+            type: integer
+          nullable: false
+        topRegionsCount:
+          format: int32
+          description: Die angegebene Anzahl von Kommunen mit den höchsten Werten
+            wird zum Vergleich zurückgegeben.
+          type: integer
+        topicIds:
+          description: Die IDs der gewählten Themen.
+          type: array
+          items:
+            format: int64
+            type: integer
+        years:
+          description: Die gewählten Jahre.
+          type: array
+          items:
+            format: int32
+            type: integer
+    DataResponse:
+      description: Enthält die statistischen Daten für ein gegebene Set von Kommunen
+        und Indikatoren.
+      type: object
+      properties:
+        indicators:
+          description: Enthält die Indikatoren und die statistischen Daten je Indikator.
+          type: array
+          items:
+            $ref: '#/components/schemas/IndicatorData'
+        regions:
+          description: "Beschreibt die Kommunen der zurückgegebenen Daten. Dies kö\
+            nnen weniger sein, als ursprünglich angefordert, falls die Kommunen aus\
+            \ Platzgründen abgeschnitten wurden."
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+        remark:
+          description: "Ein optionaler Hinweis, falls die Daten zum Beispiel abgeschnitten\
+            \ wurden oder veraltet sind."
+          type: string
+        source:
+          description: Beschreibt die Quelle der zurückgegebenen Daten.
+          type: string
+          example: Statistische Ämter der Länder
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StatisticType'
+          - description: Der Statistiktyp der zurückgegebenen Daten.
+    DemographicType:
+      description: Enthält die verfügbaren Metadaten für einen Demografietypen.
+      required:
+      - name
+      - number
+      - title
+      type: object
+      properties:
+        descriptionFile:
+          description: "Pfad zum Dokument, welches die Handlungsempfehlungen für den\
+            \ Demografietypen enthält."
+          type: string
+          example: Typ+7.pdf
+        name:
+          description: Der Name des Demografietypens.
+          type: string
+          example: Typ 7
+          nullable: false
+        number:
+          format: int32
+          description: Die Nummer des Demografietypens.
+          type: integer
+          example: 7
+          nullable: false
+        regionsFile:
+          description: "Pfad zum Dokument, welches alle Kommunen des Demografietypen\
+            \ enthält."
+          type: string
+          example: /rest/export/bevoelkerung+gemeinden-und-staedte-im-demografietyp-7+2020+tabelle.xlsx
+        title:
+          description: "Die Beschreibung, was die Kommunen dieses Demografietypen\
+            \ auszeichnet."
+          type: string
+          example: Großstädte und Hochschulstandorte mit heterogener sozioökonomischer
+            Dynamik
+          nullable: false
+    Indicator:
+      description: Enthält die Beschreibung eines Indikators.
+      required:
+      - calculation
+      - colorSchema
+      - explanation
+      - friendlyUrl
+      - hint
+      - maximumRegionType
+      - minimumRegionType
+      - name
+      - source
+      - title
+      - topics
+      - type
+      - years
+      type: object
+      properties:
+        calculation:
+          description: Beschreibt die Berechnung des Indikators.
+          type: string
+          example: Lebendgeburten / Bevölkerung * 1.000
+          nullable: false
+        colorSchema:
+          allOf:
+          - $ref: '#/components/schemas/IndicatorColorSchema'
+          - description: "Das Farbschema, mit dem die Klassifizierung dieses Indikators\
+              \ in den Karten dargestellt wird."
+            nullable: false
+        decimalPlaces:
+          format: int32
+          description: "Die Anzahl der Nachkommastellen, mit denen die Daten zurü\
+            ckgegeben werden."
+          type: integer
+          example: 1
+        explanation:
+          description: Beschreibt die Aussage des Indikators.
+          type: string
+          example: Innerhalb des Jahres wurden in der betrachteten Kommune x Personen
+            auf je 1.000 Einwohner:innen geboren.
+          nullable: false
+        friendlyUrl:
+          description: "Der Teil der \"Friendly URL\" der Statstikseite, der diesen\
+            \ Indikator identifiziert. Eindeutig auch über verschiedene Versionen\
+            \ des Wegweiser Kommune."
+          type: string
+          example: geburten
+          nullable: false
+        hint:
+          description: Ein zusätzlicher Hinweis zum Indikator.
+          type: string
+          nullable: false
+        id:
+          format: int64
+          description: Die ID dieses Indikators in der Datenbank. Kann sich bei unterschiedlichen
+            Versionen der Datenbank ändern.
+          type: integer
+        maximumClassification:
+          format: double
+          description: Gibt die oberere Grenze der Klassifizierung an. Siehe minimumClassification.
+          type: number
+        maximumRegionType:
+          allOf:
+          - $ref: '#/components/schemas/RegionType'
+          - description: "Gibt den maximalen Verwaltungstyp an, für den dieser Indikator\
+              \ Daten zur Verfügung stellt."
+            example: LANDKREIS
+            nullable: false
+        minimumClassification:
+          format: double
+          description: "Gibt die untere Grenze der Klassifizierung an. Falls minimumClassification\
+            \ und maximumClassification gesetzt sind, bilden die Werte dieses Indikators\
+            \ jeweils einen Bereich (eine Klassifizierung). Alle Werte kleiner als\
+            \ minimumClassification implizieren  \"aus dem Bereich unterhalb der Grenze\"\
+            , alle Werte größer als maximumClassification implizieren  \"aus dem Bereich\
+            \ obererhalb der Grenze\", alle anderen Werte geben die Mitte des jeweiligen\
+            \ Bereiches an.\nBeispiel mit minimumClassification = 4 und maximumClassification\
+            \ = 6:\n  3.5 bedeutet < 4\n  4.5 bedeutet 4 - 5\n  5.5 bedeutet 5 - 6\n\
+            \  6.5 bedeutet > 6"
+          type: number
+        minimumRegionType:
+          allOf:
+          - $ref: '#/components/schemas/RegionType'
+          - description: "Gibt die minimalen Verwaltungstyp an, für den dieser Indikator\
+              \ Daten zur Verfügung stellt."
+            example: GEMEINDE
+            nullable: false
+        name:
+          description: Der Name dieses Indikators.
+          type: string
+          example: Geburten
+          nullable: false
+        source:
+          description: Nennt den Bereitsteller der Daten dieses Indikators.
+          type: string
+          example: "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+          nullable: false
+        title:
+          description: "Der Titel dieses Indikators (normalerweise: Name - Name des\
+            \ Typs)."
+          type: string
+          example: Geburten - Ist-Daten
+          nullable: false
+        topLowRegionsAvailable:
+          description: "Gibt an, ob für diesen Indikator die Kommunen mit den niedrigsten\
+            \ und höchsten Werten ausgegeben werden können."
+          default: "false"
+          type: boolean
+        topics:
+          description: "Die Namen aller Themen, in denen dieser Indikator enthalten\
+            \ ist."
+          type: array
+          items:
+            type: string
+          example: Demografische Entwicklung
+          nullable: false
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StatisticType'
+          - description: Der Typ der Daten dieses Indikators. Es können immer nur
+              Indikatoren des gleichen Typs für eine Statistik kombiniert werden.
+            example: COMMUNAL_DATA
+            nullable: false
+        unit:
+          description: Die Einheit der Daten dieses Indikators.
+          type: string
+          example: je 1.000 Einwohner:innen
+        years:
+          description: "Gibt alle Jahre an, für die dieser Indikator Daten zur Verfü\
+            gung stellt."
+          type: array
+          items:
+            format: int32
+            type: integer
+          example: 2020
+          nullable: false
+    MapRequest:
+      description: Beschreibt die Anfrage für Kartengeometrien.
+      required:
+      - regionIds
+      type: object
+      properties:
+        bbox:
+          description: "Die Koordinaten des gewünschten Ausschnitts in EPSG:4326 (links,\
+            \ unten, rechts, oben - jeweils mit ',' getrennt). Nur Kommunen, die zumindest\
+            \ teilweise innerhalb des Ausschnitts liegen, werden zurückgegeben. Falls\
+            \ kein Ausschnitt angegeben wurde, wird ein passender berechnet."
+          type: string
+          example: "5.509,49.855,9.602,52.796"
+        indicatorId:
+          format: int64
+          description: "Die ID des Indikators, dessen Daten angefordert werden. Falls\
+            \ weder ein Indikator oder Thema gewählt wird, werden Geometrien ohne\
+            \ Daten oder Klassifizierungen geliefert."
+          type: integer
+        layer:
+          allOf:
+          - $ref: '#/components/schemas/LayerType'
+          - description: "Die Ebene der zurückgegebenen Geometrien. Wird aus den gewä\
+              hlten Kommunen berechnet, falls nicht angegeben."
+            example: DISTRICT
+        outline:
+          allOf:
+          - $ref: '#/components/schemas/MapOutlineType'
+          - description: Beschreibt den Typ der übergeordneten Kommunen der aktuell
+              gewählten Kommunen. Nur Kommunen aus den so gewählten übergeordneten
+              Kommunen werden zurückgegeben. Außerdem werden die Geometrien der übergeordneten
+              Kommunen gesondert zurückgegeben.
+        regionIds:
+          description: "Die IDs der aktuell gewählten Kommunen. Die gewählten Kommunen\
+            \ werden in den Geometrien gesondert markiert und helfen auch bei der\
+            \ Bestimmung von \"bbox\", \"outline\" und \"layer\", falls diese nicht\
+            \ angegeben wurden."
+          type: array
+          items:
+            format: int64
+            type: integer
+          nullable: false
+        topicId:
+          format: int64
+          description: "Die ID des Themas, dessen Daten angefordert werden. Falls\
+            \ weder ein Indikator oder Thema gewählt wird, werden Geometrien ohne\
+            \ Daten oder Klassifizierungen geliefert."
+          type: integer
+        years:
+          description: "Die Jahre, deren Daten angefordert werden. Es werden die Daten\
+            \ für alle diese Jahre zurückgegeben."
+          type: array
+          items:
+            format: int32
+            type: integer
+    LayerType:
+      description: "Definiert alle aktuell möglichen Ebenen in der Karte, in denen\
+        \ die Umrisse der Kommunen gespeichert werden."
+      enum:
+      - COMMUNE
+      - DISTRICT
+      - STATE
+      type: string
+    RegionFilter:
+      description: Enthält alle Werte aus denen ein Filter für Kommunen gebildet wird.
+      required:
+      - friendlyUrl
+      - name
+      type: object
+      properties:
+        friendlyUrl:
+          description: "Der Teil der \"Friendly URL\" der Statstikseite, der diese\
+            \ Kommune bzw. diesen Filter identifiziert. Eindeutig auch über verschiedene\
+            \ Versionen des Wegweiser Kommune."
+          type: string
+          example: guetersloh-gt
+          nullable: false
+        name:
+          description: Die Kurzbezeichnung dieser Kommune bzw. dieses Filters.
+          type: string
+          example: Gütersloh (GT)
+          nullable: false
+        title:
+          description: Die Langbezeichnung dieser Kommune bzw. dieses Filters.
+          type: string
+          example: Gütersloh (im Landkreis Gütersloh)
+        ags:
+          description: Die Liste der AGS bzw. ARS (Amtlicher Gemeinde- bzw. Regionalschlüssel)
+            der gesuchten Kommunen. Es wird der Platzhalter '*' für eine beliebige
+            Anzahl von Ziffern unterstützt.
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestItem'
+        demographicTypes:
+          description: "Die Demografietypen der gesuchten Kommunen, als Vorbelegung\
+            \ für das entsprechende Eingabefeld."
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestItem'
+        parents:
+          description: Die übergeordenten Kommunen der gesuchten Kommunen.
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+        populations:
+          description: "Die Bevölkerung der gesuchten Kommunen, als Vorbelegung fü\
+            r das entsprechende Eingabefeld."
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestItem'
+        regionTypes:
+          description: "Die Verwaltungstypen der gesuchten Kommunen, als Vorbelegung\
+            \ für das entsprechende Eingabefeld."
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestItem'
+        regions:
+          description: Die Liste der für diese Filterwerte gefundenen Kommunen.
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+    RegionFilterRequest:
+      description: Enthält die Werte zum Erstellen eines Filters nebst der gefundenen
+        Kommunen.
+      type: object
+      properties:
+        ags:
+          description: Die Liste der AGS bzw. ARS (Amtlicher Gemeinde- bzw. Regionalschlüssel)
+            der gesuchten Kommunen. Es wird der Platzhalter '*' für eine beliebige
+            Anzahl von Ziffern unterstützt.
+          type: array
+          items:
+            type: string
+          example: 05*
+        demographicTypes:
+          description: Die Nummern der Demografietypen der gesuchten Kommunen.
+          type: array
+          items:
+            format: int32
+            type: integer
+        parentIds:
+          description: Die IDs der übergeordenten Kommunen der gesuchten Kommunen.
+          type: array
+          items:
+            format: int64
+            type: integer
+        populations:
+          description: "Die Bevölkerung der gesuchten Kommunen, entweder als einzelne\
+            \ Zahl oder als Bereich für die Suche nach Kommunen die zwischen den beiden\
+            \ angegebenen Grenzen liegen (beide Grenzen sind inklusive)."
+          type: array
+          items:
+            type: string
+          example: 50000-100000
+        regionTypes:
+          description: Die Verwaltungstypen der gesuchten Kommunen.
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionType'
+    RegionSelection:
+      description: "Basistyp für \"Region\" und \"RegionFilter\", welche beide verwendet\
+        \ werden um einzelne oder eine Liste von Kommunen auszuwählen."
+      required:
+      - friendlyUrl
+      - name
+      type: object
+      properties:
+        friendlyUrl:
+          description: "Der Teil der \"Friendly URL\" der Statstikseite, der diese\
+            \ Kommune bzw. diesen Filter identifiziert. Eindeutig auch über verschiedene\
+            \ Versionen des Wegweiser Kommune."
+          type: string
+          example: guetersloh-gt
+          nullable: false
+        name:
+          description: Die Kurzbezeichnung dieser Kommune bzw. dieses Filters.
+          type: string
+          example: Gütersloh (GT)
+          nullable: false
+        title:
+          description: Die Langbezeichnung dieser Kommune bzw. dieses Filters.
+          type: string
+          example: Gütersloh (im Landkreis Gütersloh)
+    StatisticMap:
+      description: Enthält die Geometrien und die (optionalen) statistischen Daten
+        für einen bestimmten Kartenausschnitt.
+      required:
+      - regions
+      type: object
+      properties:
+        classes:
+          description: "Die Klassifizierungen, die für den angeforderten Indikator\
+            \ hinterlegt sind."
+          type: array
+          items:
+            $ref: '#/components/schemas/MapClassLegend'
+        containerRegions:
+          allOf:
+          - $ref: '#/components/schemas/FeatureCollection'
+          - description: Die nächste Ebene von Geometrien unter den "outlineRegions"
+              und über den zurückgegebenen Kommunen.
+        indicator:
+          allOf:
+          - $ref: '#/components/schemas/Indicator'
+          - description: "Die Beschreibung des Indikators, dessen statistische Daten\
+              \ zurückgegeben werden. Nur vorhanden, falls statistische Daten angefordert\
+              \ wurden."
+        layerType:
+          allOf:
+          - $ref: '#/components/schemas/LayerType'
+          - description: Die Ebene der zurückgegebenen Geometrien. Nur Kommunen mit
+              Geometrien auf dieser Ebene werden zurückgegeben.
+        outlineRegions:
+          allOf:
+          - $ref: '#/components/schemas/FeatureCollection'
+          - description: "Die Geometrien für alle übergeordneten Kommunen, falls ein\
+              \ \"OutlineType\" angegeben wurde."
+        regions:
+          allOf:
+          - $ref: '#/components/schemas/FeatureCollection'
+          - description: |-
+              Die Kommunen innerhalb des Kartenausschnitts mit ihren Geometrien und statistischen Daten. Jede enthaltene Kommune hat eine der folgenden Eigenschaften (abhängig von den angeforderten Daten):
+                * name - Der Name der Kommune
+                * ags - Der Amtlicher Gemeindeschlüssel der Kommune
+                * type - Der Verwaltungstyp der Kommune
+                * friendlyUrl - Die "Friendly-URL" der Kommune
+                * demographicType - Der Demografietyp der Kommune
+                * parent - Der Titel der übergeordneten Kommune
+                * values - Die Werte der Kommune für den angeforderten Indikator und die angeforderten Jahre
+                * classIndices - Die Klassifizierungen der Kommune für den angeforderten Indikator und die angeforderten Jahre
+            nullable: false
+        remark:
+          description: "Ein optionaler Hinweis, falls die Daten zum Beispiel veraltet\
+            \ sind."
+          type: string
+        source:
+          description: Beschreibt die Quelle der zurückgegebenen statistischen Daten.
+          type: string
+          example: Statistische Ämter der Länder
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StatisticType'
+          - description: Der Typ der zurückgegebenen Statistikdaten.
+        years:
+          description: "Die Jahre, für die die statistischen Daten angefragt wurden.\
+            \ Für jedes Jahr enthaltenen die zurückgegebenen Geometrien einen Wert\
+            \ in der Eigenschaft \"values\" und eine Klassifizierung in der Eigenschaft\
+            \ \"classIndices\"."
+          type: array
+          items:
+            format: int32
+            type: integer
+    StatisticResponse:
+      description: Enthält die statistischen Daten und die Beschreibungen für eine
+        Anfrage.
+      type: object
+      properties:
+        activeSelection:
+          allOf:
+          - $ref: '#/components/schemas/StatisticTyped'
+          - description: "Der aktuell gewählte Indikator bzw. das aktuell gewählte\
+              \ Thema (aus der Liste von \"indicatorsAndTopics\") falls eine entsprechende\
+              \ Darstellungsart gewählt wurde, in dem nur eins gewählt werden darf."
+        compareGenerations:
+          description: "Gibt an, ob verschiedene Generationen verglichen werden sollen.\
+            \ Ist nur relevant für die Darstellungsart 'Pyramidendiagramm'."
+          type: boolean
+        highlightedElements:
+          description: Die hervorgehobenen Elemente in den Grafiken.
+          type: array
+          items:
+            type: string
+        includeComparisonYear:
+          description: "Gibt an, ob auch ein Vergleichsjahr gewählt wurde.Ist nur\
+            \ relevant, falls das Thema ein Vergleichsjahr unterstützt."
+          type: boolean
+        indicatorsAndTopics:
+          description: Die gewählten Indikatoren und Themen.
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticTyped'
+        lowRegionsCount:
+          format: int32
+          description: Die angegebene Anzahl von Kommunen mit den niedrigsten Werten
+            wird zum Vergleich zurückgegeben.
+          type: integer
+        mapOutline:
+          allOf:
+          - $ref: '#/components/schemas/MapOutlineType'
+          - description: "Beschreibt den gewählten Kartenausschnitt, falls eine Karte\
+              \ dargestellt wird."
+        regionsAndRegionFilters:
+          description: Die gewählten Kommunen und Filter für Kommunen.
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionSelection'
+        renderer:
+          allOf:
+          - $ref: '#/components/schemas/RendererType'
+          - description: Die gewählte Darstellungsart.
+        topRegionsCount:
+          format: int32
+          description: Die angegebene Anzahl von Kommunen mit den höchsten Werten
+            wird zum Vergleich zurückgegeben.
+          type: integer
+        years:
+          description: Die gewählten Jahre bzw. das gewählte Jahr.
+          type: array
+          items:
+            format: int32
+            type: integer
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DataResponse'
+          - description: Die statistischen Daten für die Anfrage.
+    StatisticTyped:
+      description: "Basis für Themen und Indikatoren. Nur Themen und Indikatoren des\
+        \ selben Statistiktyps können in einer Anfrage kombiniert werden. Um zwischen\
+        \ Themen und Indikatoren zu unterschieden, kann die Eigenschaft \"indicators\"\
+        \ geprüft werden, welche nur für Themen existiert."
+      required:
+      - friendlyUrl
+      - name
+      - type
+      type: object
+      properties:
+        friendlyUrl:
+          description: "Der Teil der \"Friendly URL\" der Statstikseite, der dieses\
+            \ Thema bzw. diesen Indikator identifiziert. Eindeutig auch über verschiedene\
+            \ Versionen des Wegweiser Kommune."
+          type: string
+          example: geburten
+          nullable: false
+        id:
+          format: int64
+          description: Die ID dieses Themas bzw. Indikators in der Datenbank. Kann
+            sich bei unterschiedlichen Versionen der Datenbank ändern.
+          type: integer
+        name:
+          description: Der Name dieses Themas bzw. Indikators.
+          type: string
+          example: Geburten
+          nullable: false
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StatisticType'
+          - description: Der Typ der Daten dieses Themas bzw. Indikators. Nur Themen
+              und Indikatoren des selben Statistiktyps können in einer Anfrage kombiniert
+              werden.
+            nullable: false
+    RendererType:
+      description: Definiert alle aktuell möglichen Darstellungsarten.
+      enum:
+      - BAR_CHART
+      - DISTRIBUTION_CHART
+      - LINE_CHART
+      - MAP
+      - MIGRATION_CHART
+      - PYRAMID_CHART
+      - RADAR_CHART
+      - TABLE
+      type: string
+    StatisticSelection:
+      description: Beschreibt die Auswahl von statistischen Daten.
+      type: object
+      properties:
+        activeSelection:
+          allOf:
+          - $ref: '#/components/schemas/StatisticTyped'
+          - description: "Der aktuell gewählte Indikator bzw. das aktuell gewählte\
+              \ Thema (aus der Liste von \"indicatorsAndTopics\") falls eine entsprechende\
+              \ Darstellungsart gewählt wurde, in dem nur eins gewählt werden darf."
+        compareGenerations:
+          description: "Gibt an, ob verschiedene Generationen verglichen werden sollen.\
+            \ Ist nur relevant für die Darstellungsart 'Pyramidendiagramm'."
+          type: boolean
+        highlightedElements:
+          description: Die hervorgehobenen Elemente in den Grafiken.
+          type: array
+          items:
+            type: string
+        includeComparisonYear:
+          description: "Gibt an, ob auch ein Vergleichsjahr gewählt wurde.Ist nur\
+            \ relevant, falls das Thema ein Vergleichsjahr unterstützt."
+          type: boolean
+        indicatorsAndTopics:
+          description: Die gewählten Indikatoren und Themen.
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticTyped'
+        lowRegionsCount:
+          format: int32
+          description: Die angegebene Anzahl von Kommunen mit den niedrigsten Werten
+            wird zum Vergleich zurückgegeben.
+          type: integer
+        mapOutline:
+          allOf:
+          - $ref: '#/components/schemas/MapOutlineType'
+          - description: "Beschreibt den gewählten Kartenausschnitt, falls eine Karte\
+              \ dargestellt wird."
+        regionsAndRegionFilters:
+          description: Die gewählten Kommunen und Filter für Kommunen.
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionSelection'
+        renderer:
+          allOf:
+          - $ref: '#/components/schemas/RendererType'
+          - description: Die gewählte Darstellungsart.
+        topRegionsCount:
+          format: int32
+          description: Die angegebene Anzahl von Kommunen mit den höchsten Werten
+            wird zum Vergleich zurückgegeben.
+          type: integer
+        years:
+          description: Die gewählten Jahre bzw. das gewählte Jahr.
+          type: array
+          items:
+            format: int32
+            type: integer
+    StatisticTypeDescription:
+      description: Beschreibt einen Statistiktypen. Es können nur Daten des gleichen
+        Statistiktypen miteinander kombiniert werden.
+      type: object
+      properties:
+        indicatorsAvailable:
+          description: "Gibt an, ob dieser Statistiktyp nur Themen anbietet oder auch\
+            \ Indikatoren."
+          type: boolean
+        name:
+          description: Der Titel des Statistiktypen.
+          type: string
+          example: Ist-Daten
+        rendererTypes:
+          description: Alle unterstützten Darstellungsarten für diesen Statistiktypen.
+          type: array
+          items:
+            $ref: '#/components/schemas/RendererType'
+          example: "[ TABLE, BAR_CHART, LINE_CHART ]"
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StatisticType'
+          - description: Die ID des beschriebenen Statistiktypen.
+            example: COMMUNAL_DATA
+        years:
+          description: Alle verfügbaren Jahre für diesen Statistiktypen.
+          type: array
+          items:
+            format: int32
+            type: integer
+          example:
+          - 2018
+          - 2019
+          - 2020
+    Topic:
+      description: "Ein Thema ist eine von Menge von Indikatoren oder von anderen\
+        \ Themen, das ausgewählt werden kann um statistische Daten zu erhalten."
+      required:
+      - friendlyUrl
+      - indicators
+      - name
+      - title
+      - topics
+      - type
+      type: object
+      properties:
+        comparisonYear:
+          format: int32
+          description: "Ein optionales Jahr, mit dem die Daten dieses Themas verglichen\
+            \ werden können."
+          type: integer
+        comparisonYearTitle:
+          description: "Die Beschriftung des optionalen Jahres, mit dem die Daten\
+            \ dieses Themas verglichen werden können."
+          type: string
+        explanation:
+          description: Beschreibt die Aussage des Themas als HTML-Text.
+          type: string
+          example: "<p>Die Altersstruktur der Bevölkerung wird grafisch - getrennt\
+            \ nach Frauen und Männern - abgebildet. Während die junge Bevölkerung\
+            \ den Sockel der Bevölkerungspyramide formt, findet sich die ältere Bevö\
+            lkerung an der Spitze wieder.</p>"
+        friendlyUrl:
+          description: "Der Teil der \"Friendly URL\" der Statstikseite, der dieses\
+            \ Thema identifiziert. Eindeutig auch über verschiedene Versionen des\
+            \ Wegweiser Kommune."
+          type: string
+          example: demografische-entwicklung
+          nullable: false
+        id:
+          format: int64
+          description: Die ID dieses Themas in der Datenbank. Kann sich bei unterschiedlichen
+            Versionen der Datenbank ändern.
+          type: integer
+        indicators:
+          description: "Alle Indikatoren, die direkt zu diesem Indikator gehören (die\
+            \ Indikatoren in Unterthemen werden hier nicht aufgelistet)."
+          type: array
+          items:
+            $ref: '#/components/schemas/Indicator'
+          nullable: false
+        name:
+          description: Der Name dieses Themas.
+          type: string
+          example: Demografische Entwicklung
+          nullable: false
+        title:
+          description: "Der Titel dieses Themas (normalerweise: Name - Name des Typs)."
+          type: string
+          example: Demografische Entwicklung - Ist-Daten
+          nullable: false
+        topics:
+          description: Die Unterthemen dieses Themas.
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+          nullable: false
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StatisticType'
+          - description: Der Typ der Daten dieses Themas. Es können immer nur Themen
+              und Indikatoren des gleichen Typs für eine Statistik kombiniert werden.
+            example: COMMUNAL_DATA
+            nullable: false
+    TopicSet:
+      description: "Ein Themenset, welches eine Menge von Themen enthält."
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Die ID dieses Themensets in der Datenbank. Kann sich bei unterschiedlichen
+            Versionen der Datenbank ändern.
+          type: integer
+        name:
+          description: Der Name dieses Themensets.
+          type: string
+          example: Ist-Daten
+        topics:
+          description: Die Liste der enthaltenen Themen.
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'

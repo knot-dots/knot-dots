@@ -1,0 +1,103 @@
+{
+  "aiSuggestion": false,
+  "audience": [
+    "audience.citizens"
+  ],
+  "category": [
+    "sdg.11"
+  ],
+  "title": "Einwohnerzahl Lemgo",
+  "description": "Gesamtbevölkerung von Lemgo am 31.12. des jeweiligen Jahres. Datenquelle: Wegweiser Kommune (Bertelsmann Stiftung)",
+  "topic": [
+    "topic.demographics"
+  ],
+  "visibility": "public",
+  "historicalValues": [
+    [
+      2006,
+      41958
+    ],
+    [
+      2007,
+      41867
+    ],
+    [
+      2008,
+      41811
+    ],
+    [
+      2009,
+      41619
+    ],
+    [
+      2010,
+      41424
+    ],
+    [
+      2011,
+      40949
+    ],
+    [
+      2012,
+      40808
+    ],
+    [
+      2013,
+      40717
+    ],
+    [
+      2014,
+      40709
+    ],
+    [
+      2015,
+      41276
+    ],
+    [
+      2016,
+      41087
+    ],
+    [
+      2017,
+      40871
+    ],
+    [
+      2018,
+      40696
+    ],
+    [
+      2019,
+      40619
+    ],
+    [
+      2020,
+      40456
+    ],
+    [
+      2021,
+      40345
+    ],
+    [
+      2022,
+      40594
+    ],
+    [
+      2023,
+      40531
+    ]
+  ],
+  "indicatorCategory": [
+    "indicator_category.custom"
+  ],
+  "indicatorType": [
+    "indicator_type.key"
+  ],
+  "measureType": [],
+  "quantity": "wegweiser.bevoelkerung.05766044",
+  "type": "indicator",
+  "unit": "unit.count",
+  "source": "Wegweiser Kommune (Bertelsmann Stiftung)",
+  "regionAgs": "05766044",
+  "regionName": "Lemgo",
+  "regionType": "GEMEINDE"
+}

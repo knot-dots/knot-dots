@@ -1,0 +1,108 @@
+{
+  "aiSuggestion": false,
+  "audience": [
+    "audience.citizens"
+  ],
+  "category": [
+    "sdg.11"
+  ],
+  "title": "Einwohnerzahl Berlin",
+  "description": "Gesamtbevölkerung von Berlin am 31.12. des jeweiligen Jahres. Als Stadtstaat ist Berlin sowohl Bundesland als auch Kommune. Datenquelle: Wegweiser Kommune (Bertelsmann Stiftung)",
+  "topic": [
+    "topic.demographics",
+    "topic.urban"
+  ],
+  "visibility": "public",
+  "historicalValues": [
+    [
+      2006,
+      3404037
+    ],
+    [
+      2007,
+      3416255
+    ],
+    [
+      2008,
+      3431675
+    ],
+    [
+      2009,
+      3442675
+    ],
+    [
+      2010,
+      3460725
+    ],
+    [
+      2011,
+      3326002
+    ],
+    [
+      2012,
+      3375222
+    ],
+    [
+      2013,
+      3421829
+    ],
+    [
+      2014,
+      3469849
+    ],
+    [
+      2015,
+      3520031
+    ],
+    [
+      2016,
+      3574830
+    ],
+    [
+      2017,
+      3613495
+    ],
+    [
+      2018,
+      3644826
+    ],
+    [
+      2019,
+      3669491
+    ],
+    [
+      2020,
+      3664088
+    ],
+    [
+      2021,
+      3677472
+    ],
+    [
+      2022,
+      3755251
+    ],
+    [
+      2023,
+      3782202
+    ]
+  ],
+  "indicatorCategory": [
+    "indicator_category.custom",
+    "indicator_category.kpi"
+  ],
+  "indicatorType": [
+    "indicator_type.key"
+  ],
+  "measureType": [],
+  "quantity": "wegweiser.bevoelkerung.11000000",
+  "type": "indicator",
+  "unit": "unit.count",
+  "source": "Wegweiser Kommune (Bertelsmann Stiftung)",
+  "regionAgs": "11000000",
+  "regionName": "Berlin",
+  "regionType": "KREISFREIE_STADT",
+  "isCapitalCity": true,
+  "isCityState": true,
+  "demographicType": 7
+}

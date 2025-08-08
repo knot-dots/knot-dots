@@ -1,0 +1,48 @@
+{
+      "aiSuggestion": false,
+      "audience": [
+        "audience.citizens"
+      ],
+      "category": [
+        "sdg.11"
+      ],
+      "policyFieldBNK": [],
+      "title": "(FB 4) Anteil der per Rad zurückgelegten Strecken an der Gesamtmobilität",
+      "topic": [
+        "topic.mobility",
+        "topic.living",
+        "topic.environment"
+      ],
+      "visibility": "public",
+      "historicalValues": [
+        [2015, 13],
+        [2016, 13],
+        [2017, 16],
+        [2018, 17],
+        [2019, 18],
+        [2020, 20],
+        [2021, 19],
+        [2022, 20],
+        [2023, 21],
+        [2024, 23],
+        [2025, 23],
+        [2026, 23],
+        [2027, 23],
+        [2028, 23],
+        [2029, 23],
+        [2030, 23]
+      ],
+      "indicatorCategory": [
+        "indicator_category.kpi",
+        "indicator_category.sdg",
+        "indicator_category.custom"
+      ],
+      "indicatorType": [
+        "indicator_type.key",
+        "indicator_type.performance"
+      ],
+      "measureType": [],
+      "quantity": "quantity.custom",
+      "type": "indicator",
+      "unit": "unit.percent"
+    },
