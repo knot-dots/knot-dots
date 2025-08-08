@@ -326,11 +326,11 @@ progress::-webkit-progress-bar {
 }
 
 progress::-webkit-progress-value {
-	background-color: var(--color, var(--color-gray-200));
+	background-color: var(--color, var(--color-primary-600));
 }
 
 progress::-moz-progress-bar {
-	background-color: var(--color, var(--color-gray-200));
+	background-color: var(--color, var(--color-primary-600));
 }
 
 /* Tables */

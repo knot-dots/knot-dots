@@ -11,7 +11,7 @@
 		onDrop: () => (dropZoneIsActive = false)
 	});
 
-	const { progress, status, uppy } = getContext<UppyContext>('uppy-context');
+	const { progress, status, uppy } = $derived(getContext<UppyContext>('uppy-context'));
 
 	let dropZoneIsActive = $state(false);
 

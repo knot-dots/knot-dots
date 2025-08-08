@@ -39,7 +39,7 @@
 				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 				'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 			],
-			maxTotalFileSize: 100000000
+			maxTotalFileSize: 105 * 1024 * 1024 // bytes
 		}
 	}).use(XHRUpload, {
 		bundle: false,
@@ -56,18 +56,20 @@
 				type: file.type,
 				url: response.uploadURL
 			});
-
-			const res = await saveContainer(container);
-			if (res.ok) {
-				const updatedContainer = await res.json();
-				container.revision = updatedContainer.revision;
-				await invalidateAll();
-			} else {
-				const error = await res.json();
-				alert(error.message);
-			}
 		} else {
 			console.error('upload failed', response);
+		}
+	});
+
+	uppy.on('complete', async () => {
+		const res = await saveContainer(container);
+		if (res.ok) {
+			const updatedContainer = await res.json();
+			container.revision = updatedContainer.revision;
+			await invalidateAll();
+		} else {
+			const error = await res.json();
+			alert(error.message);
 		}
 	});
 
@@ -85,7 +87,7 @@
 <header>
 	<h2 class="details-heading">{$_('files')}</h2>
 	{#if editable}
-		<ul class="inline-actions">
+		<ul class="inline-actions is-visible-on-hover">
 			<li>
 				<ContainerSettingsDropdown bind:container bind:relatedContainers />
 			</li>

@@ -10,17 +10,18 @@
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import {
-		container as containerSchema,
 		type AnyContainer,
+		container as containerSchema,
 		type Container,
 		containerOfType,
 		isContainerWithProgress,
+		isContainerWithTitle,
 		isGoalContainer,
 		isMeasureContainer,
+		isSimpleMeasureContainer,
 		type NewContainer,
 		payloadTypes,
-		predicates,
-		isSimpleMeasureContainer
+		predicates
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { applicationState } from '$lib/stores';
@@ -69,6 +70,10 @@
 					predicate: predicates.enum['is-section-of']
 				}
 			];
+
+			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
+				newContainer.payload.title = '';
+			}
 
 			const response = await saveContainer(newContainer);
 			const result = containerSchema.safeParse(await response.json());
