@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import { type SustainableDevelopmentGoal, sustainableDevelopmentGoals } from '$lib/models';
@@ -17,23 +18,19 @@
 
 	const popover = createPopover({ label: $_('category') });
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [
+			offset({ mainAxis: compact ? -43 : 4, crossAxis: compact ? (editable ? -45 : -13) : 0 }),
+			flip(),
+			shift()
+		],
 		placement: 'bottom-start',
 		strategy: 'absolute'
-	});
-
-	const extraOpts = $derived({
-		modifiers: [
-			{
-				name: 'offset',
-				options: { offset: [compact ? (editable ? -45 : -13) : 0, compact ? -43 : 4] }
-			}
-		]
 	});
 </script>
 
 {#if editable || (value.length > 6 && compact)}
-	<div class="dropdown" use:popperRef>
+	<div class="dropdown" use:floatingRef>
 		<button class="dropdown-button" type="button" use:popover.button>
 			<span class="value" class:value--compact={compact}>
 				{#each sustainableDevelopmentGoals.options
@@ -56,7 +53,7 @@
 
 		{#if $popover.expanded}
 			{#if editable}
-				<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset class="dropdown-panel" use:floatingContent use:popover.panel>
 					<div>
 						{#each sustainableDevelopmentGoals.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
 							{@const sdgIcon = sdgIcons.get(option.value)}
@@ -69,7 +66,7 @@
 					</div>
 				</fieldset>
 			{:else if value.length > 0}
-				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<div class="dropdown-panel" use:floatingContent use:popover.panel>
 					<ul class="value">
 						{#each value as category}
 							<li>

@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
 	import BasicData from '~icons/knotdots/basic-data';
@@ -59,12 +60,11 @@
 
 	let menu = createMenu({ label: $_('add_section') });
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [offset({ mainAxis: 4 }), flip(), shift()],
 		placement: 'bottom-start',
 		strategy: 'absolute'
 	});
-
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 
 	let mayAddTaskCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
@@ -244,14 +244,14 @@
 	);
 </script>
 
-<div class="dropdown" use:popperRef>
+<div class="dropdown" use:floatingRef>
 	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
 		<Plus />
 		<span class="is-visually-hidden">{$_('add_section')}</span>
 	</button>
 
 	{#if $menu.expanded}
-		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
+		<div class="dropdown-panel" use:menu.items use:floatingContent>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
 				{#each options as option}

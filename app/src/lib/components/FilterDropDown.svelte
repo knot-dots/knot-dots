@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import { goto } from '$app/navigation';
@@ -55,19 +56,11 @@
 
 	const popover = createPopover({ label });
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [offset({ mainAxis: 4 }), flip(), shift()],
 		placement: 'bottom-start',
 		strategy: 'absolute'
 	});
-
-	const extraOpts = {
-		modifiers: [
-			{
-				name: 'offset',
-				options: { offset: [0, 4] }
-			}
-		]
-	};
 
 	function apply() {
 		if (overlay) {
@@ -90,7 +83,7 @@
 	}
 </script>
 
-<div class="dropdown" use:popperRef>
+<div class="dropdown" use:floatingRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		<span>{$_(labelForKey.get(key) ?? key)}</span>
 		{#if selected.length > 0}
@@ -100,7 +93,7 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<fieldset class="dropdown-panel" use:floatingContent use:popover.panel>
 			<div>
 				{#each options.filter(({ count }) => count === undefined || count > 0) as option (option.value)}
 					<label>

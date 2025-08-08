@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
+	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -26,12 +27,11 @@
 
 	let popover = createPopover({ label: $_('settings') });
 
-	let [popperRef, popperContent] = createPopperActions({
+	let [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [offset({ mainAxis: 4 }), flip(), shift()],
 		placement: 'bottom-start',
 		strategy: 'absolute'
 	});
-
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -55,13 +55,13 @@
 </script>
 
 {#if $ability.can('update', container, 'visibility') || $ability.can('delete', container)}
-	<div class="dropdown" use:popperRef>
+	<div class="dropdown" use:floatingRef>
 		<button class="dropdown-button" use:popover.button>
 			<Ellipsis />
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="dropdown-panel" use:floatingContent use:popover.panel>
 				<div>
 					{#if $ability.can('update', container, 'visibility')}
 						<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>

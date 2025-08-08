@@ -6,9 +6,10 @@
 	import remarkParse from 'remark-parse';
 	import remarkRehype from 'remark-rehype';
 	import stripMarkdown from 'strip-markdown';
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import { unified } from 'unified';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -22,17 +23,14 @@
 
 	const popover = createPopover();
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [offset({ mainAxis: -39, crossAxis: -24 }), flip(), shift()],
 		placement: 'bottom-start',
 		strategy: 'absolute'
 	});
-
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [-24, -39] } }]
-	};
 </script>
 
-<div class="dropdown" use:popperRef>
+<div class="dropdown" use:floatingRef>
 	{#await unified()
 		.use(remarkParse)
 		.use(remarkGfm)
@@ -52,7 +50,7 @@
 	{/await}
 
 	{#if $popover.expanded}
-		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<div class="dropdown-panel" use:floatingContent use:popover.panel>
 			{#if editable}
 				<Editor bind:value />
 			{:else}

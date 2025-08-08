@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
 
 	interface Props {
 		editable?: boolean;
@@ -11,26 +12,23 @@
 
 	const popover = createPopover();
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [offset({ mainAxis: -39, crossAxis: -24 }), flip(), shift()],
 		placement: 'bottom-start',
 		strategy: 'absolute'
 	});
-
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [-24, -39] } }]
-	};
 
 	function init(element: HTMLElement) {
 		element.focus();
 	}
 </script>
 
-<div class="dropdown" use:popperRef>
+<div class="dropdown" use:floatingRef>
 	<button class="dropdown-button truncated" type="button" use:popover.button>
 		{value}
 	</button>
 	{#if $popover.expanded}
-		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<div class="dropdown-panel" use:floatingContent use:popover.panel>
 			{#if editable}
 				<h3
 					contenteditable="plaintext-only"

@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { flip, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Plus from '~icons/knotdots/plus';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
@@ -22,7 +23,8 @@
 
 	const popover = createPopover({});
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [flip(), shift()],
 		placement: 'top-start',
 		strategy: 'absolute'
 	});
@@ -53,12 +55,12 @@
 
 {#if editable}
 	{#if value}
-		<div class="dropdown" use:popperRef>
+		<div class="dropdown" use:floatingRef>
 			<button class="dropdown-button" type="button" use:popover.button>
 				<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
 			</button>
 			{#if $popover.expanded}
-				<div class="dropdown-panel" use:popperContent use:popover.panel>
+				<div class="dropdown-panel" use:floatingContent use:popover.panel>
 					<button onclick={remove} type="button"><TrashBin />{$_('upload.image.remove')}</button>
 				</div>
 			{/if}

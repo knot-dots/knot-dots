@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import { policyFieldBNK } from '$lib/models';
@@ -16,23 +17,19 @@
 
 	const popover = createPopover({ label: $_('policy_field_bnk') });
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [
+			offset({ mainAxis: compact ? -41 : 4, crossAxis: compact ? (editable ? -41 : -21) : 0 }),
+			flip(),
+			shift()
+		],
 		placement: 'bottom-start',
 		strategy: 'absolute'
-	});
-
-	const extraOpts = $derived({
-		modifiers: [
-			{
-				name: 'offset',
-				options: { offset: [compact ? (editable ? -41 : -21) : 0, compact ? -41 : 4] }
-			}
-		]
 	});
 </script>
 
 {#if editable || (value.length > 1 && compact)}
-	<div class="dropdown" use:popperRef>
+	<div class="dropdown" use:floatingRef>
 		<button class="dropdown-button" type="button" use:popover.button>
 			<span class="value" class:value--compact={compact}>
 				{#each policyFieldBNK.options
@@ -54,7 +51,7 @@
 
 		{#if $popover.expanded}
 			{#if editable}
-				<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset class="dropdown-panel" use:floatingContent use:popover.panel>
 					<div>
 						{#each policyFieldBNK.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
 							<label>
@@ -65,7 +62,7 @@
 					</div>
 				</fieldset>
 			{:else}
-				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<div class="dropdown-panel" use:floatingContent use:popover.panel>
 					<ul>
 						{#each value as topic}
 							<li>

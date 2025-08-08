@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { flip, offset, shift } from 'svelte-floating-ui/dom';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import { type GoalStatus, goalStatus } from '$lib/models';
@@ -17,24 +18,23 @@
 	let {
 		buttonStyle = 'default',
 		editable = false,
-		offset = [0, 4],
+		offset: offsetArgs = [0, 4],
 		value = $bindable()
 	}: Props = $props();
 
 	const popover = createPopover({ label: $_('status') });
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [offset({ mainAxis: offsetArgs[1], crossAxis: offsetArgs[0] }), flip(), shift()],
 		placement: 'bottom-start',
 		strategy: 'absolute'
 	});
-
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset } }] };
 
 	const StatusIcon = $derived(goalStatusIcons.get(value));
 </script>
 
 {#if editable}
-	<div class="dropdown" use:popperRef>
+	<div class="dropdown" use:floatingRef>
 		<button class="dropdown-button" type="button" use:popover.button>
 			{#if buttonStyle === 'badge'}
 				<span class="badge badge--{goalStatusColors.get(value)}">
@@ -50,7 +50,7 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="dropdown-panel" use:floatingContent use:popover.panel>
 				{#each goalStatus.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
 					{@const StatusIcon = goalStatusIcons.get(option.value)}
 					<label>

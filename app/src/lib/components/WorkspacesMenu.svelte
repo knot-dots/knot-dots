@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
 	import type { SvelteHTMLElements } from 'svelte/elements';
+	import { createFloatingActions } from 'svelte-floating-ui';
+	import { offset, flip, shift } from 'svelte-floating-ui/dom';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import ColumnSolid from '~icons/flowbite/column-solid';
@@ -295,15 +296,13 @@
 	menuActive: string,
 	options: Option[]
 )}
-	{@const [popperRef, popperContent] = createPopperActions({
+	{@const [floatingRef, floatingContent] = createFloatingActions({
+		middleware: [offset({ mainAxis: 4 }), flip(), shift()],
 		placement: 'bottom',
 		strategy: 'absolute'
 	})}
-	{@const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
-	}}
 	{@const selected = options.find(({ value }) => value === pathnameWithoutContextSegment)}
-	<div class="dropdown" use:popperRef>
+	<div class="dropdown" use:floatingRef>
 		<button class="dropdown-button" onchange={handleChange} type="button" use:menu.button>
 			{#if selected?.icon}
 				<selected.icon />
@@ -314,7 +313,7 @@
 			{#if menuExpanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
 		{#if menuExpanded}
-			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
+			<div class="dropdown-panel" use:menu.items use:floatingContent>
 				<ul class="menu">
 					{#each options as option}
 						<li
