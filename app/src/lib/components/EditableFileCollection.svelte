@@ -87,7 +87,7 @@
 <header>
 	<h2 class="details-heading">{$_('files')}</h2>
 	{#if editable}
-		<ul class="inline-actions">
+		<ul class="inline-actions is-visible-on-hover">
 			<li>
 				<ContainerSettingsDropdown bind:container bind:relatedContainers />
 			</li>
