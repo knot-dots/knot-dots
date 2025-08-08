@@ -270,6 +270,7 @@
 	>
 		<OrganizationalUnitDropdown
 			editable={editable && $ability.can('update', container, 'organizational_unit')}
+			offset={[0, -39]}
 			organization={container.organization}
 			bind:value={container.organizational_unit}
 		/>

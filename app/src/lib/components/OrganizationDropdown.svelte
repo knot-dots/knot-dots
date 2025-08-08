@@ -13,7 +13,6 @@
 
 {#if editable}
 	<SingleChoiceDropdown
-		offset={[-41, -39]}
 		options={page.data.organizations.map(({ guid, payload }) => ({
 			value: guid,
 			label: payload.name
