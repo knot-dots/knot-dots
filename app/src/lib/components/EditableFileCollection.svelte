@@ -56,18 +56,20 @@
 				type: file.type,
 				url: response.uploadURL
 			});
-
-			const res = await saveContainer(container);
-			if (res.ok) {
-				const updatedContainer = await res.json();
-				container.revision = updatedContainer.revision;
-				await invalidateAll();
-			} else {
-				const error = await res.json();
-				alert(error.message);
-			}
 		} else {
 			console.error('upload failed', response);
+		}
+	});
+
+	uppy.on('complete', async () => {
+		const res = await saveContainer(container);
+		if (res.ok) {
+			const updatedContainer = await res.json();
+			container.revision = updatedContainer.revision;
+			await invalidateAll();
+		} else {
+			const error = await res.json();
+			alert(error.message);
 		}
 	});
 
