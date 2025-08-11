@@ -1574,6 +1574,29 @@ label > input[type='checkbox'].toggle {
 	width: 1.5rem;
 }
 
+/* Tooltip */
+.tooltip {
+	background-color: var(--color-gray-900);
+	border-radius: 4px;
+	color: white;
+	font-size: 0.875rem;
+	font-weight: 500;
+	padding: 0.375rem 0.75rem;
+	position: absolute;
+	transition: visibility 0s linear 0.5s;
+	visibility: hidden;
+	white-space: nowrap;
+	z-index: 3;
+}
+
+.tooltip-arrow {
+	background-color: var(--color-gray-900);
+	height: 8px;
+	position: absolute;
+	transform: rotate(45deg);
+	width: 8px;
+}
+
 /* Loader */
 .loader {
 	animation: rotation 1.5s linear infinite;
