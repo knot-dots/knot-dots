@@ -22,11 +22,8 @@
 
 	const chart: Attachment = (element) => {
 		const indicator = relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container));
-		const measure = findAncestors(container, relatedContainers, predicates.enum['is-part-of']).find(
-			isContainerWithEffect
-		);
 
-		if (indicator && measure) {
+		if (indicator) {
 			let unit = $_(indicator.payload.unit);
 
 			const data = [
