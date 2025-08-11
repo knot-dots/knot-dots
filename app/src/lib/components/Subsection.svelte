@@ -17,11 +17,8 @@
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container: originalContainer, relatedContainers = $bindable() }: Props = $props();
+	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
 
-	let container = $state(originalContainer);
-
-	/* svelte-ignore state_referenced_locally */
 	const handleSubmit = autoSave(container, 2000);
 
 	function stopPropagation(fn: (event: Event) => void) {

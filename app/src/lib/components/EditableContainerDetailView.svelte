@@ -39,7 +39,7 @@
 
 	const handleSubmit = autoSave(container, 2000);
 
-	let sections = $derived(
+	let sections = $state(
 		hasSection(container, relatedContainers).toSorted(
 			(a, b) =>
 				container.relation.findIndex(({ subject }) => subject === a.guid) -
@@ -184,9 +184,9 @@
 					onconsider={handleDndConsider}
 					onfinalize={handleDndFinalize}
 				>
-					{#each sections as sectionContainer, i (sectionContainer.guid)}
+					{#each sections as { guid }, i (guid)}
 						<li animate:flip={{ duration: 100 }} class="section-wrapper">
-							<Section bind:relatedContainers container={sectionContainer} />
+							<Section bind:relatedContainers bind:container={sections[i]} />
 
 							{#if $applicationState.containerDetailView.editable}
 								<div class="add-section-wrapper">

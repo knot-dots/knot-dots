@@ -37,7 +37,7 @@
 
 	let { container = $bindable(), editable = false, isPartOf, relatedContainers }: Props = $props();
 
-	let subsections = $derived(
+	let subsections = $state(
 		hasSection(container, relatedContainers).filter(
 			(s) =>
 				isGoalCollectionContainer(s) ||
@@ -133,8 +133,8 @@
 	{/if}
 {/if}
 
-{#each subsections as subsectionContainer, i (subsectionContainer.guid)}
-	<Subsection bind:relatedContainers container={subsectionContainer} />
+{#each subsections as { guid }, i (guid)}
+	<Subsection bind:relatedContainers bind:container={subsections[i]} />
 {/each}
 
 <footer class="content-actions">
