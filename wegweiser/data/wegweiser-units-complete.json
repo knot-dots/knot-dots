@@ -1,0 +1,346 @@
+{
+  "extraction_date": "2025-08-08",
+  "total_indicators": 393,
+  "unique_units": 36,
+  "units": [
+    {
+      "rank": 1,
+      "unit": "%",
+      "count": 255,
+      "percentage": 64.8854961832061,
+      "examples": [
+        "3- bis 5-Jährige in Tageseinrichtungen",
+        "3- bis 5-Jährige in Tageseinrichtungen - 25 bis 35 h Betreuung",
+        "3- bis 5-Jährige in Tageseinrichtungen - bis 25 h Betreuung"
+      ]
+    },
+    {
+      "rank": 2,
+      "unit": "Einwohner:innen",
+      "count": 47,
+      "percentage": 11.959287531806616,
+      "examples": [
+        "Ausländer:innen",
+        "Bevölkerung",
+        "Bevölkerung 0- bis 2-Jährige"
+      ]
+    },
+    {
+      "rank": 3,
+      "unit": "Euro je Einwohner:in",
+      "count": 26,
+      "percentage": 6.615776081424936,
+      "examples": [
+        "Allgemeine Deckungsmittel",
+        "Auszahlungen lfd. Verwaltung",
+        "Einkommensteuer"
+      ]
+    },
+    {
+      "rank": 4,
+      "unit": "je 1.000 Einwohner:innen",
+      "count": 24,
+      "percentage": 6.106870229007633,
+      "examples": [
+        "Alterswanderung",
+        "Bildungswanderung",
+        "Familienwanderung"
+      ]
+    },
+    {
+      "rank": 5,
+      "unit": "Jahre",
+      "count": 4,
+      "percentage": 1.0178117048346056,
+      "examples": [
+        "Durchschnittsalter",
+        "Durchschnittsalter",
+        "Medianalter"
+      ]
+    },
+    {
+      "rank": 6,
+      "unit": "Meter",
+      "count": 4,
+      "percentage": 1.0178117048346056,
+      "examples": [
+        "Wohnungsnahe Grundversorgung - Apotheke",
+        "Wohnungsnahe Grundversorgung - Grundschule",
+        "Wohnungsnahe Grundversorgung - Hausarzt"
+      ]
+    },
+    {
+      "rank": 7,
+      "unit": "ab 65-Jährige je 100 Pers. der AG 20-64",
+      "count": 2,
+      "percentage": 0.5089058524173028,
+      "examples": [
+        "Altenquotient",
+        "Altenquotient"
+      ]
+    },
+    {
+      "rank": 8,
+      "unit": "v.H.",
+      "count": 2,
+      "percentage": 0.5089058524173028,
+      "examples": [
+        "Hebesatz Gewerbesteuer",
+        "Hebesatz Grundsteuer B"
+      ]
+    },
+    {
+      "rank": 9,
+      "unit": "unter 20-Jährige je 100 Pers. der AG 20-64",
+      "count": 2,
+      "percentage": 0.5089058524173028,
+      "examples": [
+        "Jugendquotient",
+        "Jugendquotient"
+      ]
+    },
+    {
+      "rank": 10,
+      "unit": "t je Einwohner:in",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Abfallmenge"
+      ]
+    },
+    {
+      "rank": 11,
+      "unit": "",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Arbeitsplatzzentralität"
+      ]
+    },
+    {
+      "rank": 12,
+      "unit": "Anzahl",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Bevölkerung"
+      ]
+    },
+    {
+      "rank": 13,
+      "unit": "Euro je Einwohner",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Bruttoinlandsprodukt"
+      ]
+    },
+    {
+      "rank": 14,
+      "unit": "Einwohner:innen je Hektar",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Einwohner:innendichte"
+      ]
+    },
+    {
+      "rank": 15,
+      "unit": "Neuerrichtungen je 1.000 Einwohner:innen",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Existenzgründungen"
+      ]
+    },
+    {
+      "rank": 16,
+      "unit": "qm/Einwohner:in",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Flächennutzungsintensität"
+      ]
+    },
+    {
+      "rank": 17,
+      "unit": "je 1.000 Einwohnerinnen",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Geringfügig Beschäftigte - Frauen (Wohnort)"
+      ]
+    },
+    {
+      "rank": 18,
+      "unit": "je 1.000 Einwohner",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Geringfügig Beschäftigte - Männer (Wohnort)"
+      ]
+    },
+    {
+      "rank": 19,
+      "unit": "unter 20-/ab 65-Jährige je 100 Pers. der AG 20-64",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Gesamtquotient"
+      ]
+    },
+    {
+      "rank": 20,
+      "unit": "Euro/Haushalt",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Kaufkraft"
+      ]
+    },
+    {
+      "rank": 21,
+      "unit": "Ladepunkte je Einwohner:in",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Ladesäuleninfrastruktur"
+      ]
+    },
+    {
+      "rank": 22,
+      "unit": "Hemerobiewert",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Landschaftsqualität"
+      ]
+    },
+    {
+      "rank": 23,
+      "unit": "μg / m³",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Luftschadstoffbelastung"
+      ]
+    },
+    {
+      "rank": 24,
+      "unit": "Euro je m²",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Mietpreise"
+      ]
+    },
+    {
+      "rank": 25,
+      "unit": "m² je Einwohner:in",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Naherholungsflächen"
+      ]
+    },
+    {
+      "rank": 26,
+      "unit": "Vollzeitäquivalente je 1.000 Pflegebedürftige",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Personal in Pflegeheimen"
+      ]
+    },
+    {
+      "rank": 27,
+      "unit": "Anzahl PKW je 1.000 Ew.",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "PKW-Dichte"
+      ]
+    },
+    {
+      "rank": 28,
+      "unit": "kg/ha",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Stickstoffüberschuss der Landwirtschaft"
+      ]
+    },
+    {
+      "rank": 29,
+      "unit": "Straftaten je 1.000 Einwohner:innen",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Straftaten"
+      ]
+    },
+    {
+      "rank": 30,
+      "unit": "kW je Einwohner:in",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Strom aus erneuerbaren Quellen"
+      ]
+    },
+    {
+      "rank": 31,
+      "unit": "Geburten je 13-49-jährige Frau",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Total Fertility Rate (TFR)"
+      ]
+    },
+    {
+      "rank": 32,
+      "unit": "l je Einwohner:in und Tag",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Trinkwasserverbrauch"
+      ]
+    },
+    {
+      "rank": 33,
+      "unit": "Verunglückte je 1.000 Einwohner:innen",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Verunglückte im Verkehr"
+      ]
+    },
+    {
+      "rank": 34,
+      "unit": "Todesfälle je 1.000 Einwohner:innen",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Vorzeitige Sterblichkeit - Gesamt"
+      ]
+    },
+    {
+      "rank": 35,
+      "unit": "m²",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Wohnfläche pro Person"
+      ]
+    },
+    {
+      "rank": 36,
+      "unit": "Minuten",
+      "count": 1,
+      "percentage": 0.2544529262086514,
+      "examples": [
+        "Wohnungsnahe Grundversorgung - Krankenhaus"
+      ]
+    }
+  ]
+}

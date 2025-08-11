@@ -1,0 +1,959 @@
+{
+  "extraction_date": "2025-08-08",
+  "topic_name": "Nachhaltigkeit / SDGs",
+  "total_indicators": 53,
+  "indicators": [
+    {
+      "rank": 1,
+      "name": "SGB II-/SGB XII-Quote",
+      "unit": "%",
+      "explanation": "Der Anteil der Leistungsberechtigten nach SGB II und der Leistungsberechtigten nach SGB XII (im Alter von unter 65 Jahren) an der Bevölkerung (im Alter von unter 65 Jahren) beträgt x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 202,
+      "friendlyUrl": "sgb-ii-sgb-xii-quote",
+      "years": 18,
+      "source": "Bundesagentur für Arbeit, Statistische Ämter der Länder"
+    },
+    {
+      "rank": 2,
+      "name": "Kinderarmut",
+      "unit": "%",
+      "explanation": "X Prozent der Bevölkerung unter 15 Jahren erhalten - selbst (NEF) oder indirekt (NLB) durch die Bedarfsgemeinschaft - Sozialgeld nach SGB II. In diesem Zusammenhang erfolgte rückwirkend bis 2006 eine Anpassung der Wegweiser-Daten an die zum 28.04.2016 erfolgte Revision der SGB II-Statistik durch die Bundesagentur für Arbeit. Bezieher von Kinderzuschlag sind nicht erfasst. Anmerkung: Ab dem Jahrgang 2019 konnte die Gruppe der Nicht Leistungsberechtigten (NLB) unter 15 Jahren aufgrund von Erfassungsproblemen nicht oder nicht vollständig in die Berechnung mit einbezogen werden. Daher wird in diesen Jahrgängen die Gruppe der von Armut betroffenen Kinder leider nicht vollständig abgebildet.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 181,
+      "friendlyUrl": "kinderarmut",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 3,
+      "name": "Jugendarmut",
+      "unit": "%",
+      "explanation": "X % der Jugendlichen von 15 bis 17 Jahren erhalten - selbst (NEF, ELB) oder indirekt (NLB) durch die Bedarfsgemeinschaft - Leistungen nach SGB II. In diesem Zusammenhang erfolgte rückwirkend bis 2006 eine Anpassung der Wegweiser-Daten an die zum 28.04.2016 erfolgte Revision der SGB II-Statistik durch die Bundesagentur für Arbeit. Anmerkung: Ab dem Jahrgang 2019 konnte die Gruppe der Nicht Leistungsberechtigten (NLB) von 15 bis unter 18 Jahren aufgrund von Erfassungsproblemen nicht oder nicht vollständig in die Berechnung mit einbezogen werden. Daher wird in diesen Jahrgängen die Gruppe der von Armut betroffenen Jugendlichen leider nicht vollständig abgebildet.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 182,
+      "friendlyUrl": "jugendarmut",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 4,
+      "name": "Altersarmut",
+      "unit": "%",
+      "explanation": "X Prozent der Bevölkerung ab 65 Jahren erhalten Leistungen zur Grundsicherung im Alter nach SGB XII. Seit 2016 werden diese Daten durch das Statistische Bundesamt (DESTATIS) herausgegeben.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 183,
+      "friendlyUrl": "altersarmut",
+      "years": 18,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 5,
+      "name": "Wohnungslosigkeit",
+      "unit": "%",
+      "explanation": "Ein Anteil von x % der Bevölkerung ist wohnungslos.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 210,
+      "friendlyUrl": "wohnungslosigkeit",
+      "years": 2,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 6,
+      "name": "Stickstoffüberschuss der Landwirtschaft",
+      "unit": "kg/ha",
+      "explanation": "Der Stickstoffüberschuss liegt bei x kg pro Hektar landwirtschaftlich genutzter Fläche.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 304,
+      "friendlyUrl": "stickstoffueberschuss-der-landwirtschaft",
+      "years": 16,
+      "source": "Universität Gießen, Umweltbundesamt"
+    },
+    {
+      "rank": 7,
+      "name": "Vorzeitige Sterblichkeit - Gesamt",
+      "unit": "Todesfälle je 1.000 Einwohner:innen",
+      "explanation": "Von 1.000 Menschen unter 70 Jahren sind x vorzeitig gestorben. Hinweis: Der SDG-Indikator für Kommunen 'Vorzeitige Sterblichkeit' entspricht nicht dem in der Gesundheitsberichterstattung etablierten gleichnamigen Indikator.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 208,
+      "friendlyUrl": "vorzeitige-sterblichkeit-gesamt",
+      "years": 18,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 8,
+      "name": "Wohnungsnahe Grundversorgung - Apotheke",
+      "unit": "Meter",
+      "explanation": "Die einwohnergewichtete Luftliniendistanz zur nächsten Apotheke beträgt x Meter.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 299,
+      "friendlyUrl": "wohnungsnahe-grundversorgung-apotheke",
+      "years": 1,
+      "source": "Bundesapothekenregister, Bundesinstitut für Bau- Stadt- und Raumforschung"
+    },
+    {
+      "rank": 9,
+      "name": "Wohnungsnahe Grundversorgung - Hausarzt",
+      "unit": "Meter",
+      "explanation": "Die einwohnergewichtete Luftliniendistanz zum nächsten Hausarzt beträgt x Meter.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 301,
+      "friendlyUrl": "wohnungsnahe-grundversorgung-hausarzt",
+      "years": 1,
+      "source": "Bundesinstitut für Bau-, Stadt- und Raumforschung"
+    },
+    {
+      "rank": 10,
+      "name": "Wohnungsnahe Grundversorgung - Krankenhaus",
+      "unit": "Minuten",
+      "explanation": "Die einwohnergewichtete PKW-Fahrzeit zum nächsten Krankenhaus der Grundversorgung beträgt x Minuten.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 305,
+      "friendlyUrl": "wohnungsnahe-grundversorgung-krankenhaus",
+      "years": 1,
+      "source": "Bundesinstitut für Bau-, Stadt- und Raumforschung, Statistische Ämter der Länder"
+    },
+    {
+      "rank": 11,
+      "name": "Personal in Pflegediensten",
+      "unit": "%",
+      "explanation": "In ambulanten Pflegediensten sind x Beschäftigte (Vollzeitstellen) je pflegebedürftige Person beschäftigt.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 285,
+      "friendlyUrl": "personal-in-pflegediensten",
+      "years": 17,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 12,
+      "name": "Plätze in Pflegeheimen",
+      "unit": "je 1.000 Einwohner:innen",
+      "explanation": "In Pflegeheimen sind x stationäre Plätze je 100.000 Einwohner:innen ab 65 Jahren vorhanden.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 284,
+      "friendlyUrl": "plaetze-in-pflegeheimen",
+      "years": 17,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 13,
+      "name": "Luftschadstoffbelastung",
+      "unit": "μg / m³",
+      "explanation": "Die durchschnittliche Konzentration von Feinstaub (PM2,5) in der Luft beträgt x μg / m³.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 273,
+      "friendlyUrl": "luftschadstoffbelastung",
+      "years": 18,
+      "source": "Umweltbundesamt"
+    },
+    {
+      "rank": 14,
+      "name": "Wohnungsnahe Grundversorgung - Grundschule",
+      "unit": "Meter",
+      "explanation": "Die einwohnergewichtete Luftliniendistanz zur nächsten Grundschule beträgt x Meter.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 300,
+      "friendlyUrl": "wohnungsnahe-grundversorgung-grundschule",
+      "years": 2,
+      "source": "Bundesinstitut für Bau-, Stadt- und Raumforschung"
+    },
+    {
+      "rank": 15,
+      "name": "Schulabgänger:innen allgmb. Schulen ohne Hauptschulabschluss - Gesamt",
+      "unit": "%",
+      "explanation": "X Prozent der Schulabgänger:innen allgmb. Schulen besitzen keinen Hauptschulabschluss. Berücksichtigt werden die Abgänger:innen des Schuljahres, das vor dem Stichtag endet, und die in der betrachteten Kommune eine Schule besucht haben, auch wenn sie in einer anderen Kommune leben. Für einige Bundesländer liegen die Daten nicht oder nur auf Kreisebene vor.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 212,
+      "friendlyUrl": "schulabgaenger-ohne-hauptschulabschluss-gesamt",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 16,
+      "name": "Unter 3-Jährige in Tageseinrichtungen",
+      "unit": "%",
+      "explanation": "X % der unter 3-Jährigen werden in Tageseinrichtungen betreut. Für einige Bundesländer liegen die Daten nur auf Kreisebene vor.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 226,
+      "friendlyUrl": "unter-3-jaehrige-in-tageseinrichtungen",
+      "years": 16,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 17,
+      "name": "Integrative Kindertageseinrichtungen",
+      "unit": "%",
+      "explanation": "Ein Anteil von x % der Kindertageseinrichtungen ist integrativ.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 297,
+      "friendlyUrl": "integrative-kindertageseinrichtungen",
+      "years": 16,
+      "source": "Bundesinstitut für Bau-, Stadt- und Raumforschung"
+    },
+    {
+      "rank": 18,
+      "name": "Verhältnis der Beschäftigungsquote von Frauen und Männern",
+      "unit": "%",
+      "explanation": "Die Frauenbeschäftigungsquote beträgt x % der Männerbeschäftigungsquote. Sind mehr Frauen als Männer sozialversicherungspflichtig beschäftigt (SvB), liegt der Wert bei über 100%. Bei einem Wert von unter 100% sind mehr Männer als Frauen in den Arbeitsmarkt integriert.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 161,
+      "friendlyUrl": "verhaeltnis-der-beschaeftigungsquote-von-frauen-und-maennern",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 19,
+      "name": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag",
+      "unit": "%",
+      "explanation": "Ein Anteil von x % der Mandate im Stadtrat, Gemeinderat bzw. Kreistag ist mit Frauen besetzt.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 306,
+      "friendlyUrl": "frauenanteil-in-stadtrat-gemeinderat-bzw-kreistag",
+      "years": 4,
+      "source": "Bundesinstitut für Bau-, Stadt- und Raumforschung"
+    },
+    {
+      "rank": 20,
+      "name": "Abwasserbehandlung",
+      "unit": "%",
+      "explanation": "Ein Anteil von x % des Abwassers wird mit den Techniken Denitrifikation und Phosphorelimination behandelt.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 196,
+      "friendlyUrl": "abwasserbehandlung",
+      "years": 6,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 21,
+      "name": "Strom aus erneuerbaren Quellen",
+      "unit": "kW je Einwohner:in",
+      "explanation": "Es sind erneuerbare Energieträger mit einer Nettonennleistung von insgesamt x Kilowattstunden installiert worden.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 205,
+      "friendlyUrl": "strom-aus-erneuerbaren-quellen",
+      "years": 6,
+      "source": "Bundesnetzagentur, Statistische Ämter der Länder"
+    },
+    {
+      "rank": 22,
+      "name": "Ladesäuleninfrastruktur",
+      "unit": "Ladepunkte je Einwohner:in",
+      "explanation": "Es gibt x öffentliche Normal- und Schnellladepunkte ab 3,7 kW je Einwohner:in.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 199,
+      "friendlyUrl": "ladesaeuleninfrastruktur",
+      "years": 17,
+      "source": "Bundesnetzagentur, Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 23,
+      "name": "Bruttoinlandsprodukt",
+      "unit": "Euro je Einwohner",
+      "explanation": "Das Bruttoinlandsprodukt je Einwohner:in beträgt x Euro.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 295,
+      "friendlyUrl": "bruttoinlandsprodukt",
+      "years": 17,
+      "source": "Bundesagentur für Arbeit, Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 24,
+      "name": "Langzeitarbeitslosenquote",
+      "unit": "%",
+      "explanation": "Ein Anteil von x % der Erwerbspersonen ist länger als 1 Jahr arbeitslos.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 200,
+      "friendlyUrl": "langzeitarbeitslosenquote",
+      "years": 16,
+      "source": "Statistische Ämter des Bundes und der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 25,
+      "name": "Beschäftigungsquote",
+      "unit": "%",
+      "explanation": "x % der Bevölkerung im erwerbsfähigen Alter von 15 bis 64 Jahren sind am Wohnort als sozialversicherungspflichtig beschäftigt (SvB) gemeldet.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 159,
+      "friendlyUrl": "beschaeftigungsquote",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 26,
+      "name": "Beschäftigungsquote 55- bis 64-Jährige",
+      "unit": "%",
+      "explanation": "Der Anteil der am Wohnort sozialversicherungspflichtig beschäftigt (SvB)  gemeldeten Personen im Alter von 55 Jahren und mehr an der Bevölkerung im Alter von 55 bis 64 Jahren beträgt x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 153,
+      "friendlyUrl": "beschaeftigungsquote-55-bis-64-jaehrige",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 27,
+      "name": "Erwerbstätige Aufstocker:innen - Gesamt",
+      "unit": "%",
+      "explanation": "X % der erwerbsfähigen Leistungsbezieher:innen (ELB) sind erwerbstätig und erhalten zusätzlich ALG II, da ihr Einkommen nicht ausreicht um das Existenzminimum zu decken. Die Bundesagentur für Arbeit bezeichnet diese Leistungsempfänger als Ergänzer oder erwerbstätige erwerbsfähige Leistungsberechtigte. Es erfolgte rückwirkend bis 2006 eine Anpassung der Wegweiser-Daten an die zum 28.04.2016 erfolgte Revision der SGB II-Statistik durch die Bundesagentur für Arbeit.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 15,
+      "friendlyUrl": "aufstocker-gesamt",
+      "years": 18,
+      "source": "Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 28,
+      "name": "Existenzgründungen",
+      "unit": "Neuerrichtungen je 1.000 Einwohner:innen",
+      "explanation": "Je 1.000 Einwohner:innen werden x Gewerbebetriebe neu errichtet.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 198,
+      "friendlyUrl": "existenzgruendungen",
+      "years": 18,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 29,
+      "name": "Hochqualifizierte am Arbeitsort",
+      "unit": "%",
+      "explanation": "X % der sozialversicherungspflichtig Beschäftigten (SvB) haben einen akademischen Berufsabschluss.  Veränderung der Erhebung von Schul- und Berufsabschlüssen. Bis 2011 wurden die SvB mit (Fach-) Hochschulabschluss erfasst, seit 2012 die SvB mit akademischen Berufsabschluss. Im Jahr 2012 weicht der Stichtag einmalig auf den 31.12. ab.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 158,
+      "friendlyUrl": "hochqualifizierte-am-arbeitsort",
+      "years": 18,
+      "source": "Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 30,
+      "name": "Breitbandversorgung - Private Haushalte",
+      "unit": "%",
+      "explanation": "Der Anteil der Haushalte, die eine Bandbreite von 100 Mbit/s nutzen können, beträgt x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 296,
+      "friendlyUrl": "breitbandversorgung-private-haushalte",
+      "years": 4,
+      "source": "Bundesministerium  für Verkehr und digitale Infrastruktur"
+    },
+    {
+      "rank": 31,
+      "name": "Verhältnis der Beschäftigungsquote von Ausländer:innen zur Beschäftigungsquote gesamt",
+      "unit": "%",
+      "explanation": "Im Jahr z betrug das Verhältnis der Beschäftigungsquote von Ausländer:innen zur Beschäftigungsquote in der Gesamtbevölkerung x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 206,
+      "friendlyUrl": "verhaltnis-beschaftigungsquote-von-auslandern-zur-beschaftigungsquote-gesamt",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, Bundesagentur für Arbeit, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 32,
+      "name": "Verhältnis der Schulabbrecher:innenquote von Ausländer:innen zur Schulabbrecher:innenquote gesamt",
+      "unit": "%",
+      "explanation": "Im Jahr z betrug das Verhältnis der Schulabbrecher:innenquote von Ausländerinnen und Ausländern zur Schulabbrecherquote innerhalb der Gesamtbevölkerung x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 270,
+      "friendlyUrl": "verhaltnis-schulabbrecherquote-von-auslandern-zu-schulabbrecherquote-gesamt",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 33,
+      "name": "Eingebürgerte im Jahr",
+      "unit": "%",
+      "explanation": "X Prozent der ausländischen Bevölkerung haben innerhalb eines Jahres die deutsche Staatsbürgerschaft erhalten. Für die Jahrgänge 2006 und 2007 sind keine Daten abrufbar. Für einige Bundesländer liegen die Daten nur auf Kreisebene vor. Für Berlin sind keine Daten verfügbar.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 36,
+      "friendlyUrl": "eingebuergerte-im-jahr",
+      "years": 17,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 34,
+      "name": "Mietpreise",
+      "unit": "Euro je m²",
+      "explanation": "Die durchschnittliche Nettokaltmiete beträgt x Euro je Quadratmeter.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 298,
+      "friendlyUrl": "mietpreise",
+      "years": 13,
+      "source": "Bundesinstitut für Bau-, Stadt- und Raumforschung"
+    },
+    {
+      "rank": 35,
+      "name": "Wohnfläche pro Person",
+      "unit": "m²",
+      "explanation": "Pro Person stehen im Durchschnitt x Quadratmeter Wohnfläche zur Verfügung. Ohne die Wohnfläche in Wohnheimen.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 151,
+      "friendlyUrl": "wohnflaeche-pro-person",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 36,
+      "name": "Wohnungsnahe Grundversorgung - Supermarkt",
+      "unit": "Meter",
+      "explanation": "Die einwohnergewichtete Luftliniendistanz zum nächsten Supermarkt oder Discounter beträgt x Meter.\nDiscounter und größere Supermärkte sind nahezu vollständig erfasst, Supermärkte mit einer Verkaufsfläche unter 400 Quadratmeter nur zu 25 %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 302,
+      "friendlyUrl": "wohnungsnahe-grundversorgung-supermarkt",
+      "years": 1,
+      "source": "Bundesinstitut für Bau-, Stadt- und Raumforschung"
+    },
+    {
+      "rank": 37,
+      "name": "PKW-Dichte",
+      "unit": "Anzahl PKW je 1.000 Ew.",
+      "explanation": "Die PKW-Dichte liegt bei x PKW je 1.000 Einwohner:innen. Anzahl der Personenkraftwagen, die zum Zeitpunkt der Zählung an einem festgelegten Stichtag mit einem amtlichen Kennzeichen zum Verkehr zugelassen und im Zentralen Fahrzeugregister des Kraftfahrtbundesamtes gespeichert sind. Die Daten sind nur auf Ebene der Kreise und kreisfreien Städte verfügbar.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 201,
+      "friendlyUrl": "pkw-dichte",
+      "years": 18,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 38,
+      "name": "PKW mit Elektroantrieb",
+      "unit": "%",
+      "explanation": "Der Anteil zugelassener Personenkraftwagen mit Elektroantrieb an allen zugelassenen Personenkraftwagen liegt bei x %. Die Daten sind nur auf Ebene der Kreise und kreisfreien Städte verfügbar.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 197,
+      "friendlyUrl": "pkw-mit-elektroantrieb",
+      "years": 4,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 39,
+      "name": "Verunglückte im Verkehr",
+      "unit": "Verunglückte je 1.000 Einwohner:innen",
+      "explanation": "Je 1.000 Einwohner:innen werden x Personen in Verkehrsunfällen verletzt oder getötet.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 207,
+      "friendlyUrl": "verunglueckte-im-verkehr",
+      "years": 18,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 40,
+      "name": "Flächeninanspruchnahme",
+      "unit": "%",
+      "explanation": "Der Anteil der Siedlungs- und Verkehrsfläche an der Gesamtfläche beträgt x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 268,
+      "friendlyUrl": "flaecheninanspruchnahme",
+      "years": 16,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 41,
+      "name": "Flächenneuinanspruchnahme",
+      "unit": "%",
+      "explanation": "Die prozentuale Änderungsrate von Siedlungs- und Verkehrsflächen beträgt im Vergleich zum Vorjahr x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 266,
+      "friendlyUrl": "flaechenneuinanspruchnahme",
+      "years": 15,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 42,
+      "name": "Flächennutzungsintensität",
+      "unit": "qm/Einwohner:in",
+      "explanation": "In der Kommune stehen x qm Siedlungsfläche (ohne \"Bergbaubetrieb\" und \"Tagebau, Grube, Steinbruch\") und Verkehrsfläche pro Einwohner:in zur Verfügung. Der Indikator beruht auf Daten der \"Flächenerhebung nach Art der tatsächlichen Nutzung\" sowie der \"Statistik der Fortschreibung des Bevölkerungsstandes\".",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 267,
+      "friendlyUrl": "flaechennutzungsintensitaet",
+      "years": 15,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 43,
+      "name": "Naherholungsflächen",
+      "unit": "m² je Einwohner:in",
+      "explanation": "Auf eine/n Einwohner:in kommen x m² Erholungsfläche.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 269,
+      "friendlyUrl": "naherholungsflaechen",
+      "years": 16,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 44,
+      "name": "Fertiggestellte Wohngebäude mit erneuerbarer Energie",
+      "unit": "%",
+      "explanation": "Der Anteil fertiggestellter Wohngebäude mit erneuerbarer Heizenergie an neu errichteten Wohngebäuden beträgt x %.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 209,
+      "friendlyUrl": "fertiggestellte-wohngebaeude-mit-erneuerbarer-energie",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 45,
+      "name": "Trinkwasserverbrauch",
+      "unit": "l je Einwohner:in und Tag",
+      "explanation": "Je Einwohner:in und Tag wurden durchschnittlich x Liter Wasser verbraucht.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 271,
+      "friendlyUrl": "trinkwasserverbrauch",
+      "years": 18,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 46,
+      "name": "Abfallmenge",
+      "unit": "t je Einwohner:in",
+      "explanation": "Die entsorgte Abfallmenge beträgt x Tonnen je Einwohner:in.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 293,
+      "friendlyUrl": "abfallmenge",
+      "years": 17,
+      "source": "Statistische Ämter des Bundes und der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 47,
+      "name": "Siedlungslast im Überschwemmungsgebiet",
+      "unit": "%",
+      "explanation": "In der Kommune liegt ein Anteil von x % der baulich geprägten Siedlungs- und Verkehrsfläche im amtlich festgesetzten Überschwemmungsgebiet an der Fläche des festgesetzten Überschwemmungsgebietes.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 203,
+      "friendlyUrl": "siedlungslast-im-ueberschwemmungsgebiet",
+      "years": 17,
+      "source": "Leibniz-Institut für Ökologische Raumentwicklung, jeweils zuständige Landesbehörden"
+    },
+    {
+      "rank": 48,
+      "name": "Naturschutzflächen",
+      "unit": "%",
+      "explanation": "Natura 2000-Gebiete, Naturschutzgebiete oder Nationalparks sind auf x % der Gesamtfläche der Kommune ausgewiesen.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 294,
+      "friendlyUrl": "naturschutzflaechen",
+      "years": 14,
+      "source": "Leibniz-Institut für ökologische Raumentwicklung e.V."
+    },
+    {
+      "rank": 49,
+      "name": "Landschaftsqualität",
+      "unit": "Hemerobiewert",
+      "explanation": "Das Maß des menschlichen Eingriffes auf den Naturhaushalt der Kommune wird mit Stufe x des Hemerobieindex bewertet. 1 (nicht kulturbeeinflusst) - 7 (übermäßig stark beeinflusst)",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 303,
+      "friendlyUrl": "landschaftsqualitaet",
+      "years": 6,
+      "source": "Leibnitz-Institut für ökologische Raumentwicklung e.V."
+    },
+    {
+      "rank": 50,
+      "name": "Straftaten",
+      "unit": "Straftaten je 1.000 Einwohner:innen",
+      "explanation": "Je 1.000 Einwohner:innen sind x Straftaten polizeilich bekannt.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 204,
+      "friendlyUrl": "straftaten",
+      "years": 11,
+      "source": "Bundeskriminalamt, Statistische Ämter der Länder, ZEFIR, eigene Berechnungen"
+    },
+    {
+      "rank": 51,
+      "name": "Finanzmittelsaldo",
+      "unit": "Euro je Einwohner:in",
+      "explanation": "Die Kommune x konnte im Jahr z je Einwohner:in ihre gesamten Aufgaben mit einem Überschuss/Defizit in Höhe von y Euro abschließen. Der Finanzmittelsaldo bildet das Ergebnis der Finanzrechnung des kommunalen Handelns im Kernhaushalt ab. Die besonderen Finanzierungsvorgänge fließen in diesen Saldo nicht ein (z.B. Schuldenaufnahme/Tilgung, Gewährung/Rückfluss von Darlehen, Entnahmen/Zuführung aus/zu Rücklagen).",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 317,
+      "friendlyUrl": "finanzmittelsaldo",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, FORA mbH, eigene Berechnungen"
+    },
+    {
+      "rank": 52,
+      "name": "Steuereinnahmen pro Einwohner:in",
+      "unit": "Euro je Einwohner:in",
+      "explanation": "Die über die letzten 4 Jahre gemittelten Steuereinnahmen einer Kommune betragen im Durchschnitt x Euro pro Einwohner:in. Die Steuereinnahmen der Gemeinde (Grundsteuer, Gewerbesteuer, Gemeindeanteil an der Einkommenssteuer und Gemeindeanteil an der Umsatzsteuer) pro Einwohner:in bezeichnen die Steuerkraft einer Gemeinde. Die Steuerkraft ist ein Einflussfaktor für den finanziellen Handlungsspielraum der Kommune.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 225,
+      "friendlyUrl": "steuereinnahmen-pro-einwohner-in",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, FORA mbH, eigene Berechnungen"
+    },
+    {
+      "rank": 53,
+      "name": "Liquiditätskredite",
+      "unit": "Euro je Einwohner:in",
+      "explanation": "Die Kommune x hatte im Kernhaushalt im Jahr z je Einwohner:in Kassenkredite /Liquiditätskredite in Höhe von y Euro zur Finanzierung laufender Ausgaben. Diese Kredite sind der Intention nach „Überziehungskredite“ zur Überbrückung kurzfristiger Liquiditätsengpässe. Sie werden von zahlreichen Kommunen mit dauerhaften Haushaltsdefiziten zur Finanzierung laufender Aufgaben zweckentfremdet. Hohe Liquiditätskredite stellen ein besonderes Krisenphänomen und Risiko dar.",
+      "topics": [
+        "Nachhaltigkeit / SDGs"
+      ],
+      "id": 319,
+      "friendlyUrl": "liquiditaetskredite",
+      "years": 18,
+      "source": "Statistische Ämter der Länder, FORA mbH, eigene Berechnungen"
+    }
+  ],
+  "statistics": {
+    "units_distribution": {
+      "%": 27,
+      "kg/ha": 1,
+      "Todesfälle je 1.000 Einwohner:innen": 1,
+      "Meter": 4,
+      "Minuten": 1,
+      "je 1.000 Einwohner:innen": 1,
+      "μg / m³": 1,
+      "kW je Einwohner:in": 1,
+      "Ladepunkte je Einwohner:in": 1,
+      "Euro je Einwohner": 1,
+      "Neuerrichtungen je 1.000 Einwohner:innen": 1,
+      "Euro je m²": 1,
+      "m²": 1,
+      "Anzahl PKW je 1.000 Ew.": 1,
+      "Verunglückte je 1.000 Einwohner:innen": 1,
+      "qm/Einwohner:in": 1,
+      "m² je Einwohner:in": 1,
+      "l je Einwohner:in und Tag": 1,
+      "t je Einwohner:in": 1,
+      "Hemerobiewert": 1,
+      "Straftaten je 1.000 Einwohner:innen": 1,
+      "Euro je Einwohner:in": 3
+    },
+    "themes_distribution": {
+      "Nachhaltigkeit / SDGs": 53
+    }
+  },
+  "categories": {
+    "Armut/Soziales": [
+      {
+        "name": "SGB II-/SGB XII-Quote",
+        "unit": "%"
+      },
+      {
+        "name": "Kinderarmut",
+        "unit": "%"
+      },
+      {
+        "name": "Jugendarmut",
+        "unit": "%"
+      },
+      {
+        "name": "Altersarmut",
+        "unit": "%"
+      },
+      {
+        "name": "Wohnungslosigkeit",
+        "unit": "%"
+      }
+    ],
+    "Gesundheit/Pflege": [
+      {
+        "name": "Vorzeitige Sterblichkeit - Gesamt",
+        "unit": "Todesfälle je 1.000 Einwohner:innen"
+      },
+      {
+        "name": "Wohnungsnahe Grundversorgung - Apotheke",
+        "unit": "Meter"
+      },
+      {
+        "name": "Wohnungsnahe Grundversorgung - Hausarzt",
+        "unit": "Meter"
+      },
+      {
+        "name": "Wohnungsnahe Grundversorgung - Krankenhaus",
+        "unit": "Minuten"
+      },
+      {
+        "name": "Personal in Pflegediensten",
+        "unit": "%"
+      },
+      {
+        "name": "Plätze in Pflegeheimen",
+        "unit": "je 1.000 Einwohner:innen"
+      }
+    ],
+    "Bildung": [
+      {
+        "name": "Wohnungsnahe Grundversorgung - Grundschule",
+        "unit": "Meter"
+      },
+      {
+        "name": "Schulabgänger:innen allgmb. Schulen ohne Hauptschulabschluss - Gesamt",
+        "unit": "%"
+      },
+      {
+        "name": "Verhältnis der Schulabbrecher:innenquote von Ausländer:innen zur Schulabbrecher:innenquote gesamt",
+        "unit": "%"
+      }
+    ],
+    "Umwelt/Klima": [
+      {
+        "name": "Stickstoffüberschuss der Landwirtschaft",
+        "unit": "kg/ha"
+      },
+      {
+        "name": "Luftschadstoffbelastung",
+        "unit": "μg / m³"
+      },
+      {
+        "name": "Abwasserbehandlung",
+        "unit": "%"
+      },
+      {
+        "name": "Wohnfläche pro Person",
+        "unit": "m²"
+      },
+      {
+        "name": "Flächeninanspruchnahme",
+        "unit": "%"
+      },
+      {
+        "name": "Flächenneuinanspruchnahme",
+        "unit": "%"
+      },
+      {
+        "name": "Flächennutzungsintensität",
+        "unit": "qm/Einwohner:in"
+      },
+      {
+        "name": "Naherholungsflächen",
+        "unit": "m² je Einwohner:in"
+      },
+      {
+        "name": "Abfallmenge",
+        "unit": "t je Einwohner:in"
+      },
+      {
+        "name": "Naturschutzflächen",
+        "unit": "%"
+      },
+      {
+        "name": "Landschaftsqualität",
+        "unit": "Hemerobiewert"
+      }
+    ],
+    "Wirtschaft/Arbeit": [
+      {
+        "name": "Verhältnis der Beschäftigungsquote von Frauen und Männern",
+        "unit": "%"
+      },
+      {
+        "name": "Bruttoinlandsprodukt",
+        "unit": "Euro je Einwohner"
+      },
+      {
+        "name": "Langzeitarbeitslosenquote",
+        "unit": "%"
+      },
+      {
+        "name": "Beschäftigungsquote",
+        "unit": "%"
+      },
+      {
+        "name": "Beschäftigungsquote 55- bis 64-Jährige",
+        "unit": "%"
+      },
+      {
+        "name": "Existenzgründungen",
+        "unit": "Neuerrichtungen je 1.000 Einwohner:innen"
+      },
+      {
+        "name": "Hochqualifizierte am Arbeitsort",
+        "unit": "%"
+      },
+      {
+        "name": "Verhältnis der Beschäftigungsquote von Ausländer:innen zur Beschäftigungsquote gesamt",
+        "unit": "%"
+      }
+    ],
+    "Verkehr/Mobilität": [
+      {
+        "name": "PKW-Dichte",
+        "unit": "Anzahl PKW je 1.000 Ew."
+      },
+      {
+        "name": "PKW mit Elektroantrieb",
+        "unit": "%"
+      },
+      {
+        "name": "Verunglückte im Verkehr",
+        "unit": "Verunglückte je 1.000 Einwohner:innen"
+      }
+    ],
+    "Wohnen/Infrastruktur": [
+      {
+        "name": "Breitbandversorgung - Private Haushalte",
+        "unit": "%"
+      },
+      {
+        "name": "Mietpreise",
+        "unit": "Euro je m²"
+      },
+      {
+        "name": "Wohnungsnahe Grundversorgung - Supermarkt",
+        "unit": "Meter"
+      },
+      {
+        "name": "Fertiggestellte Wohngebäude mit erneuerbarer Energie",
+        "unit": "%"
+      },
+      {
+        "name": "Steuereinnahmen pro Einwohner:in",
+        "unit": "Euro je Einwohner:in"
+      }
+    ],
+    "Energie": [
+      {
+        "name": "Strom aus erneuerbaren Quellen",
+        "unit": "kW je Einwohner:in"
+      }
+    ],
+    "Integration": [
+      {
+        "name": "Integrative Kindertageseinrichtungen",
+        "unit": "%"
+      },
+      {
+        "name": "Eingebürgerte im Jahr",
+        "unit": "%"
+      }
+    ],
+    "Sonstige": [
+      {
+        "name": "Unter 3-Jährige in Tageseinrichtungen",
+        "unit": "%"
+      },
+      {
+        "name": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag",
+        "unit": "%"
+      },
+      {
+        "name": "Ladesäuleninfrastruktur",
+        "unit": "Ladepunkte je Einwohner:in"
+      },
+      {
+        "name": "Erwerbstätige Aufstocker:innen - Gesamt",
+        "unit": "%"
+      },
+      {
+        "name": "Trinkwasserverbrauch",
+        "unit": "l je Einwohner:in und Tag"
+      },
+      {
+        "name": "Siedlungslast im Überschwemmungsgebiet",
+        "unit": "%"
+      },
+      {
+        "name": "Straftaten",
+        "unit": "Straftaten je 1.000 Einwohner:innen"
+      },
+      {
+        "name": "Finanzmittelsaldo",
+        "unit": "Euro je Einwohner:in"
+      },
+      {
+        "name": "Liquiditätskredite",
+        "unit": "Euro je Einwohner:in"
+      }
+    ]
+  }
+}

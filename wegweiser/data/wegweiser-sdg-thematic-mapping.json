@@ -1,0 +1,4918 @@
+{
+  "extraction_date": "2025-08-08",
+  "method": "thematic_keyword_mapping",
+  "total_indicators": 393,
+  "assigned_indicators": 302,
+  "coverage_percent": 76.84478371501272,
+  "assigned_sdgs": [
+    4,
+    3,
+    10,
+    12,
+    6,
+    1,
+    8,
+    11,
+    5,
+    14,
+    7,
+    15,
+    2,
+    16
+  ],
+  "sdg_assignments": {
+    "4": [
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 227,
+        "indicator_name": "3- bis 5-Jährige in Tageseinrichtungen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 254,
+        "indicator_name": "3- bis 5-Jährige in Tageseinrichtungen - 25 bis 35 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 253,
+        "indicator_name": "3- bis 5-Jährige in Tageseinrichtungen - bis 25 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 255,
+        "indicator_name": "3- bis 5-Jährige in Tageseinrichtungen - mehr als 35 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 230,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 260,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege - 25 bis 35 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 259,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege - bis 25 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 261,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege - mehr als 35 h Betreuung"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: schule",
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 228,
+        "indicator_name": "5- bis 10-Jährige in Tageseinrichtungen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 231,
+        "indicator_name": "6- bis 10-Jährige in Tagespflege"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: betreuung"
+        ],
+        "indicator_id": 354,
+        "indicator_name": "Anteil 0- bis 2-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bildung"
+        ],
+        "indicator_id": 369,
+        "indicator_name": "Anteil 19- bis 24-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: betreuung"
+        ],
+        "indicator_id": 357,
+        "indicator_name": "Anteil 3- bis 5-Jährige"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: bildung",
+          "keyword: ausbildung",
+          "keyword: abschluss",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 237,
+        "indicator_name": "Ausbildungsbeginner:innen mit Fachhoch-/Hochschulabschluss"
+      },
+      {
+        "score": 7,
+        "matches": [
+          "keyword: bildung",
+          "keyword: schule",
+          "keyword: ausbildung",
+          "keyword: abschluss",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 238,
+        "indicator_name": "Ausbildungsbeginner:innen mit Förderschulabschluss"
+      },
+      {
+        "score": 7,
+        "matches": [
+          "keyword: bildung",
+          "keyword: schule",
+          "keyword: ausbildung",
+          "keyword: abschluss",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 239,
+        "indicator_name": "Ausbildungsbeginner:innen mit Hauptschulabschluss"
+      },
+      {
+        "score": 7,
+        "matches": [
+          "keyword: bildung",
+          "keyword: schule",
+          "keyword: ausbildung",
+          "keyword: abschluss",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 241,
+        "indicator_name": "Ausbildungsbeginner:innen mit Realschulabschluss"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: bildung",
+          "keyword: ausbildung",
+          "keyword: abschluss",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 240,
+        "indicator_name": "Ausbildungsbeginner:innen ohne Hauptschulabschluss"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 186,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Ältere"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 187,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Frauen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 188,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Gesamt"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 189,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Jugendliche"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 190,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: betreuung"
+        ],
+        "indicator_id": 352,
+        "indicator_name": "Bevölkerung 0- bis 2-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bildung"
+        ],
+        "indicator_id": 367,
+        "indicator_name": "Bevölkerung 19- bis 24-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: betreuung"
+        ],
+        "indicator_id": 355,
+        "indicator_name": "Bevölkerung 3- bis 5-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bildung"
+        ],
+        "indicator_id": 219,
+        "indicator_name": "Bildungswanderung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 191,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Ältere"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 192,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Frauen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 193,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Gesamt"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 194,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Jugendliche"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: bildung",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 195,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: betreuung"
+        ],
+        "indicator_id": 353,
+        "indicator_name": "Entwicklung 0- bis 2-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bildung"
+        ],
+        "indicator_id": 368,
+        "indicator_name": "Entwicklung 19- bis 24-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: betreuung"
+        ],
+        "indicator_id": 356,
+        "indicator_name": "Entwicklung 3- bis 5-Jährige"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: bildung",
+          "keyword: ausbildung",
+          "keyword: abschluss",
+          "theme: Aus- und Weiterbildung"
+        ],
+        "indicator_id": 272,
+        "indicator_name": "Erfolgsquote beim Abschluss beruflicher Bildungsgänge"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 213,
+        "indicator_name": "Förderschüler:innen - Ausländer:innen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: abschluss"
+        ],
+        "indicator_id": 158,
+        "indicator_name": "Hochqualifizierte am Arbeitsort"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: abschluss"
+        ],
+        "indicator_id": 162,
+        "indicator_name": "Hochqualifizierte am Wohnort"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: betreuung"
+        ],
+        "indicator_id": 335,
+        "indicator_name": "Jugendhilfe"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: bildung",
+          "keyword: ausbildung",
+          "keyword: betreuung"
+        ],
+        "indicator_id": 389,
+        "indicator_name": "Jugendquotient"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: bildung",
+          "keyword: ausbildung",
+          "keyword: betreuung"
+        ],
+        "indicator_id": 142,
+        "indicator_name": "Jugendquotient"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: abschluss",
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 245,
+        "indicator_name": "Personal mit Fachschulabschluss in Tageseinrichtungen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: abschluss",
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 246,
+        "indicator_name": "Personal mit Hochschulabschluss in Tageseinrichtungen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: schule",
+          "keyword: abschluss"
+        ],
+        "indicator_id": 232,
+        "indicator_name": "Schulabgänger:innen allgmb./berufsb. Schulen mit Fachhoch-/Hochschulreife - Gesamt"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: schule",
+          "keyword: abschluss"
+        ],
+        "indicator_id": 235,
+        "indicator_name": "Schulabgänger:innen allgmb./berufsb. Schulen ohne Hauptschulabschluss - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 214,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen mit Fachhoch-/Hochschulreife - Ausländer:innen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 211,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen mit Fachhoch-/Hochschulreife - Gesamt"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: schule",
+          "keyword: abschluss"
+        ],
+        "indicator_id": 215,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen ohne Hauptschulabschluss - Ausländer:innen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: schule",
+          "keyword: abschluss"
+        ],
+        "indicator_id": 212,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen ohne Hauptschulabschluss - Gesamt"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: schule",
+          "keyword: abschluss"
+        ],
+        "indicator_id": 233,
+        "indicator_name": "Schulabgänger:innen mit Förderschulabschluss - Gesamt"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: schule",
+          "keyword: abschluss"
+        ],
+        "indicator_id": 234,
+        "indicator_name": "Schulabgänger:innen mit Hauptschulabschluss - Gesamt"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: bildung",
+          "keyword: schule",
+          "keyword: abschluss"
+        ],
+        "indicator_id": 236,
+        "indicator_name": "Schulabgänger:innen mit Realschulabschluss - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 248,
+        "indicator_name": "Schüler an Förderschulen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: bildung",
+          "keyword: schule"
+        ],
+        "indicator_id": 247,
+        "indicator_name": "Schüler:innen an Abendschulen/Kollegs"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 243,
+        "indicator_name": "Schüler:innen an Berufsoberschulen/Techn. Oberschulen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: bildung",
+          "keyword: schule"
+        ],
+        "indicator_id": 242,
+        "indicator_name": "Schüler:innen an Berufsschulen/Berufsfachschulen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 244,
+        "indicator_name": "Schüler:innen an Fachschulen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 250,
+        "indicator_name": "Schüler:innen an Gesamtschulen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 251,
+        "indicator_name": "Schüler:innen an Grundschulen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 274,
+        "indicator_name": "Schüler:innen an Hauptschulen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 275,
+        "indicator_name": "Schüler:innen an Realschulen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: bildung",
+          "keyword: schule"
+        ],
+        "indicator_id": 276,
+        "indicator_name": "Schüler:innen an Schularten mit mehreren Bildungsgängen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 249,
+        "indicator_name": "Schüler:innen an Waldorfschulen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 226,
+        "indicator_name": "Unter 3-Jährige in Tageseinrichtungen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 257,
+        "indicator_name": "Unter 3-Jährige in Tageseinrichtungen - 25 bis 35 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 256,
+        "indicator_name": "Unter 3-Jährige in Tageseinrichtungen - bis 25 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 258,
+        "indicator_name": "Unter 3-Jährige in Tageseinrichtungen - mehr als 35 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 229,
+        "indicator_name": "Unter 3-Jährige in Tagespflege"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 263,
+        "indicator_name": "Unter 3-Jährige in Tagespflege - 25 bis 35 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 262,
+        "indicator_name": "Unter 3-Jährige in Tagespflege - bis 25 h Betreuung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: betreuung",
+          "theme: Kinderbetreuung"
+        ],
+        "indicator_id": 264,
+        "indicator_name": "Unter 3-Jährige in Tagespflege - mehr als 35 h Betreuung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: schule"
+        ],
+        "indicator_id": 300,
+        "indicator_name": "Wohnungsnahe Grundversorgung - Grundschule"
+      }
+    ],
+    "3": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 230,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 260,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege - 25 bis 35 h Betreuung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 259,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege - bis 25 h Betreuung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 261,
+        "indicator_name": "3- bis 5-Jährige in Tagespflege - mehr als 35 h Betreuung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 231,
+        "indicator_name": "6- bis 10-Jährige in Tagespflege"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 411,
+        "indicator_name": "Bevölkerung (Pflege)"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 285,
+        "indicator_name": "Personal in Pflegediensten"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 286,
+        "indicator_name": "Personal in Pflegeheimen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 278,
+        "indicator_name": "Pflegebedürftige - Ambulant"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 265,
+        "indicator_name": "Pflegebedürftige an der älteren Bevölkerung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 277,
+        "indicator_name": "Pflegebedürftige an der Gesamtbevölkerung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 281,
+        "indicator_name": "Pflegebedürftige - Dauerhaft vollstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 282,
+        "indicator_name": "Pflegebedürftige - Kurzzeitig vollstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 279,
+        "indicator_name": "Pflegebedürftige - Teilstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 280,
+        "indicator_name": "Pflegebedürftige - Vollstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 283,
+        "indicator_name": "Pflegegeldempfänger:innen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 284,
+        "indicator_name": "Plätze in Pflegeheimen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: sterb"
+        ],
+        "indicator_id": 339,
+        "indicator_name": "Sterbefälle"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: sterb"
+        ],
+        "indicator_id": 146,
+        "indicator_name": "Sterbefälle"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 229,
+        "indicator_name": "Unter 3-Jährige in Tagespflege"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 263,
+        "indicator_name": "Unter 3-Jährige in Tagespflege - 25 bis 35 h Betreuung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 262,
+        "indicator_name": "Unter 3-Jährige in Tagespflege - bis 25 h Betreuung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: pflege"
+        ],
+        "indicator_id": 264,
+        "indicator_name": "Unter 3-Jährige in Tagespflege - mehr als 35 h Betreuung"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: gesundheit",
+          "keyword: sterb"
+        ],
+        "indicator_id": 208,
+        "indicator_name": "Vorzeitige Sterblichkeit - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arzt"
+        ],
+        "indicator_id": 301,
+        "indicator_name": "Wohnungsnahe Grundversorgung - Hausarzt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: kranken"
+        ],
+        "indicator_id": 305,
+        "indicator_name": "Wohnungsnahe Grundversorgung - Krankenhaus"
+      }
+    ],
+    "10": [
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: migration",
+          "theme: Integration"
+        ],
+        "indicator_id": 217,
+        "indicator_name": "3-Jährige mit Migrationshintergrund in Tageseinrichtungen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 37,
+        "indicator_name": "Altersarmut - Ausländer:innen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 28,
+        "indicator_name": "Anteil Ausländer:innen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 29,
+        "indicator_name": "Anteil Ausländer:innen 15- bis 24-Jährige"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 30,
+        "indicator_name": "Anteil Ausländer:innen 25- bis 64-Jährige"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 31,
+        "indicator_name": "Anteil Ausländer:innen ab 65-Jährige"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 32,
+        "indicator_name": "Anteil Ausländer:innen unter 15-Jährige"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 27,
+        "indicator_name": "Arbeitslose an der Gesamtbevölkerung"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 25,
+        "indicator_name": "Arbeitslose Ausländer:innen an der ausländischen Bevölkerung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 26,
+        "indicator_name": "Arbeitslose ausländische Jugendliche an der ausländischen Bevölkerung 15 bis 24 Jahre"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 24,
+        "indicator_name": "Arbeitslose Jugendliche  an der Bevölkerung 15 bis 24 Jahre"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 40,
+        "indicator_name": "Ausländer:innen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 33,
+        "indicator_name": "Ausländische Auszubildende an den ausländischen SvB"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 34,
+        "indicator_name": "Auszubildende an den SvB"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 36,
+        "indicator_name": "Eingebürgerte im Jahr"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 213,
+        "indicator_name": "Förderschüler:innen - Ausländer:innen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 35,
+        "indicator_name": "Geduldete Personen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 39,
+        "indicator_name": "Kinderarmut - Ausländer:innen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: migration",
+          "theme: Integration"
+        ],
+        "indicator_id": 216,
+        "indicator_name": "Kinder mit Migrationshintergrund in Tageseinrichtungen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 214,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen mit Fachhoch-/Hochschulreife - Ausländer:innen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 211,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen mit Fachhoch-/Hochschulreife - Gesamt"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 215,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen ohne Hauptschulabschluss - Ausländer:innen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: integration",
+          "theme: Integration"
+        ],
+        "indicator_id": 212,
+        "indicator_name": "Schulabgänger:innen allgmb. Schulen ohne Hauptschulabschluss - Gesamt"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 38,
+        "indicator_name": "SGB II-Quote - Ausländer:innen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 206,
+        "indicator_name": "Verhältnis der Beschäftigungsquote von Ausländer:innen zur Beschäftigungsquote gesamt"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: integration",
+          "keyword: ausländer",
+          "theme: Integration"
+        ],
+        "indicator_id": 270,
+        "indicator_name": "Verhältnis der Schulabbrecher:innenquote von Ausländer:innen zur Schulabbrecher:innenquote gesamt"
+      }
+    ],
+    "12": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: abfall"
+        ],
+        "indicator_id": 293,
+        "indicator_name": "Abfallmenge"
+      }
+    ],
+    "6": [
+      {
+        "score": 2,
+        "matches": [
+          "keyword: wasser",
+          "keyword: abwasser"
+        ],
+        "indicator_id": 196,
+        "indicator_name": "Abwasserbehandlung"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: wasser",
+          "keyword: trink"
+        ],
+        "indicator_id": 271,
+        "indicator_name": "Trinkwasserverbrauch"
+      }
+    ],
+    "1": [
+      {
+        "score": 4,
+        "matches": [
+          "keyword: sgb",
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 185,
+        "indicator_name": "ALG II-Quote"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: armut",
+          "keyword: sgb",
+          "keyword: grundsicherung",
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 183,
+        "indicator_name": "Altersarmut"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: armut",
+          "keyword: sgb",
+          "keyword: grundsicherung"
+        ],
+        "indicator_id": 37,
+        "indicator_name": "Altersarmut - Ausländer:innen"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 179,
+        "indicator_name": "Arbeitslose an den ausländischen SvB"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 178,
+        "indicator_name": "Arbeitslose an den SvB"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 180,
+        "indicator_name": "Arbeitslose an den SvB unter 25 Jahren"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 296,
+        "indicator_name": "Breitbandversorgung - Private Haushalte"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 291,
+        "indicator_name": "Einpersonen-Haushalte"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: sgb"
+        ],
+        "indicator_id": 17,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: sgb"
+        ],
+        "indicator_id": 15,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: sgb"
+        ],
+        "indicator_id": 16,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Männer"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 290,
+        "indicator_name": "Haushalte mit hohem Einkommen"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 292,
+        "indicator_name": "Haushalte mit Kindern"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 288,
+        "indicator_name": "Haushalte mit mittlerem Einkommen"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 289,
+        "indicator_name": "Haushalte mit niedrigem Einkommen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: armut",
+          "keyword: sgb",
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 182,
+        "indicator_name": "Jugendarmut"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 287,
+        "indicator_name": "Kaufkraft"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: armut",
+          "keyword: sgb",
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 181,
+        "indicator_name": "Kinderarmut"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: armut",
+          "keyword: sgb"
+        ],
+        "indicator_id": 39,
+        "indicator_name": "Kinderarmut - Ausländer:innen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: grundsicherung"
+        ],
+        "indicator_id": 329,
+        "indicator_name": "Kostenerstattung für Sozialausgaben"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 285,
+        "indicator_name": "Personal in Pflegediensten"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 286,
+        "indicator_name": "Personal in Pflegeheimen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 278,
+        "indicator_name": "Pflegebedürftige - Ambulant"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 265,
+        "indicator_name": "Pflegebedürftige an der älteren Bevölkerung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 277,
+        "indicator_name": "Pflegebedürftige an der Gesamtbevölkerung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 281,
+        "indicator_name": "Pflegebedürftige - Dauerhaft vollstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 282,
+        "indicator_name": "Pflegebedürftige - Kurzzeitig vollstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 279,
+        "indicator_name": "Pflegebedürftige - Teilstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 280,
+        "indicator_name": "Pflegebedürftige - Vollstationär"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: bedürftig"
+        ],
+        "indicator_id": 283,
+        "indicator_name": "Pflegegeldempfänger:innen"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: sgb",
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 184,
+        "indicator_name": "SGB II-Quote"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: sgb"
+        ],
+        "indicator_id": 38,
+        "indicator_name": "SGB II-Quote - Ausländer:innen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: sgb"
+        ],
+        "indicator_id": 202,
+        "indicator_name": "SGB II-/SGB XII-Quote"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 151,
+        "indicator_name": "Wohnfläche pro Person"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Soziale Lage"
+        ],
+        "indicator_id": 152,
+        "indicator_name": "Wohnungen in Ein-/Zweifamilienhäusern"
+      }
+    ],
+    "8": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 185,
+        "indicator_name": "ALG II-Quote"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 23,
+        "indicator_name": "Anteil Unterbeschäftigte -  Frauen"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 21,
+        "indicator_name": "Anteil Unterbeschäftigte - Gesamt"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 22,
+        "indicator_name": "Anteil Unterbeschäftigte -  Männer"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 179,
+        "indicator_name": "Arbeitslose an den ausländischen SvB"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 178,
+        "indicator_name": "Arbeitslose an den SvB"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 180,
+        "indicator_name": "Arbeitslose an den SvB unter 25 Jahren"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 27,
+        "indicator_name": "Arbeitslose an der Gesamtbevölkerung"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 25,
+        "indicator_name": "Arbeitslose Ausländer:innen an der ausländischen Bevölkerung"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 26,
+        "indicator_name": "Arbeitslose ausländische Jugendliche an der ausländischen Bevölkerung 15 bis 24 Jahre"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 24,
+        "indicator_name": "Arbeitslose Jugendliche  an der Bevölkerung 15 bis 24 Jahre"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: wirtschaft",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 155,
+        "indicator_name": "Arbeitsplatzentwicklung der vergangenen 5 Jahre"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 154,
+        "indicator_name": "Arbeitsplatzzentralität"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 33,
+        "indicator_name": "Ausländische Auszubildende an den ausländischen SvB"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 167,
+        "indicator_name": "Auspendler:innen an den SvB - Frauen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 166,
+        "indicator_name": "Auspendler:innen an den SvB - Gesamt"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 168,
+        "indicator_name": "Auspendler:innen an den SvB - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 176,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 175,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 177,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 34,
+        "indicator_name": "Auszubildende an den SvB"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: wirtschaft",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 18,
+        "indicator_name": "Beschäftigungsanteil im 1. Sektor"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: wirtschaft",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 19,
+        "indicator_name": "Beschäftigungsanteil im 2. Sektor"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: wirtschaft",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 20,
+        "indicator_name": "Beschäftigungsanteil im 3. Sektor"
+      },
+      {
+        "score": 7,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: unternehmen",
+          "keyword: wirtschaft",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 156,
+        "indicator_name": "Beschäftigungsanteil im Dienstleistungssektor"
+      },
+      {
+        "score": 7,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: unternehmen",
+          "keyword: wirtschaft",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 157,
+        "indicator_name": "Beschäftigungsentwicklung im Dienstleistungssektor"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 159,
+        "indicator_name": "Beschäftigungsquote"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 153,
+        "indicator_name": "Beschäftigungsquote 55- bis 64-Jährige"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 186,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Ältere"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 187,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Frauen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 188,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Gesamt"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 189,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Jugendliche"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 190,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 191,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Ältere"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 192,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 193,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 194,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Jugendliche"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 195,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: einkommen"
+        ],
+        "indicator_id": 323,
+        "indicator_name": "Einkommensteuer"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 164,
+        "indicator_name": "Einpendler:innen an den SvB - Frauen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 163,
+        "indicator_name": "Einpendler:innen an den SvB - Gesamt"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 165,
+        "indicator_name": "Einpendler:innen an den SvB - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 173,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 172,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 174,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Männer"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: einkommen",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 17,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Frauen"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: einkommen",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 15,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Gesamt"
+      },
+      {
+        "score": 6,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "keyword: einkommen",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 16,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Männer"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 198,
+        "indicator_name": "Existenzgründungen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wirtschaft"
+        ],
+        "indicator_id": 310,
+        "indicator_name": "Finanzeinzahlungen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: unternehmen",
+          "keyword: wirtschaft"
+        ],
+        "indicator_id": 312,
+        "indicator_name": "Finanzsaldo"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 160,
+        "indicator_name": "Frauenbeschäftigungsquote"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 42,
+        "indicator_name": "Geringfügig Beschäftigte - 15- bis 64-Jährige (Wohnort)"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 43,
+        "indicator_name": "Geringfügig Beschäftigte - ab 65 Jahre (Wohnort)"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 46,
+        "indicator_name": "Geringfügig Beschäftigte - Frauen (Wohnort)"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 45,
+        "indicator_name": "Geringfügig Beschäftigte - Männer (Wohnort)"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 44,
+        "indicator_name": "Geringfügig Beschäftigte (Wohnort)"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wirtschaft"
+        ],
+        "indicator_id": 322,
+        "indicator_name": "Gewerbesteuer (netto)"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: einkommen"
+        ],
+        "indicator_id": 290,
+        "indicator_name": "Haushalte mit hohem Einkommen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: einkommen"
+        ],
+        "indicator_id": 288,
+        "indicator_name": "Haushalte mit mittlerem Einkommen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: einkommen"
+        ],
+        "indicator_id": 289,
+        "indicator_name": "Haushalte mit niedrigem Einkommen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wirtschaft"
+        ],
+        "indicator_id": 334,
+        "indicator_name": "Hebesatz Gewerbesteuer"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 158,
+        "indicator_name": "Hochqualifizierte am Arbeitsort"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 162,
+        "indicator_name": "Hochqualifizierte am Wohnort"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 182,
+        "indicator_name": "Jugendarmut"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: wirtschaft",
+          "keyword: einkommen",
+          "keyword: lohn"
+        ],
+        "indicator_id": 287,
+        "indicator_name": "Kaufkraft"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 181,
+        "indicator_name": "Kinderarmut"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 39,
+        "indicator_name": "Kinderarmut - Ausländer:innen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 200,
+        "indicator_name": "Langzeitarbeitslosenquote"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: unternehmen"
+        ],
+        "indicator_id": 318,
+        "indicator_name": "nachrichtlich: Vermögenssaldo"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 170,
+        "indicator_name": "Pendlersaldo an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 169,
+        "indicator_name": "Pendlersaldo an der Bevölkerung - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 171,
+        "indicator_name": "Pendlersaldo an der Bevölkerung - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 285,
+        "indicator_name": "Personal in Pflegediensten"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: arbeit"
+        ],
+        "indicator_id": 286,
+        "indicator_name": "Personal in Pflegeheimen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wirtschaft"
+        ],
+        "indicator_id": 242,
+        "indicator_name": "Schüler:innen an Berufsschulen/Berufsfachschulen"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 184,
+        "indicator_name": "SGB II-Quote"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: arbeitslos"
+        ],
+        "indicator_id": 38,
+        "indicator_name": "SGB II-Quote - Ausländer:innen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: einkommen"
+        ],
+        "indicator_id": 225,
+        "indicator_name": "Steuereinnahmen pro Einwohner:in"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wirtschaft"
+        ],
+        "indicator_id": 304,
+        "indicator_name": "Stickstoffüberschuss der Landwirtschaft"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: beschäftig"
+        ],
+        "indicator_id": 206,
+        "indicator_name": "Verhältnis der Beschäftigungsquote von Ausländer:innen zur Beschäftigungsquote gesamt"
+      },
+      {
+        "score": 5,
+        "matches": [
+          "keyword: arbeit",
+          "keyword: beschäftig",
+          "theme: Beschäftigung / Arbeitsmarkt"
+        ],
+        "indicator_id": 161,
+        "indicator_name": "Verhältnis der Beschäftigungsquote von Frauen und Männern"
+      }
+    ],
+    "11": [
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 140,
+        "indicator_name": "Altenquotient"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 221,
+        "indicator_name": "Alterswanderung"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: infrastruktur",
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 139,
+        "indicator_name": "Anteil 65- bis 79-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 378,
+        "indicator_name": "Anteil 65- bis 79-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 381,
+        "indicator_name": "Anteil ab 80-Jährige"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: infrastruktur",
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 150,
+        "indicator_name": "Anteil ab 80-Jährige"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 143,
+        "indicator_name": "Anteil Elternjahrgänge"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 141,
+        "indicator_name": "Anteil unter 18-Jährige"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: gemeinde",
+          "keyword: wohnen"
+        ],
+        "indicator_id": 154,
+        "indicator_name": "Arbeitsplatzzentralität"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 40,
+        "indicator_name": "Ausländer:innen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 167,
+        "indicator_name": "Auspendler:innen an den SvB - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 166,
+        "indicator_name": "Auspendler:innen an den SvB - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 168,
+        "indicator_name": "Auspendler:innen an den SvB - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 176,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 175,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 177,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 308,
+        "indicator_name": "Auszahlungen lfd. Verwaltung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: verkehr"
+        ],
+        "indicator_id": 20,
+        "indicator_name": "Beschäftigungsanteil im 3. Sektor"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 13,
+        "indicator_name": "Bevölkerung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 376,
+        "indicator_name": "Bevölkerung 65- bis 79-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 379,
+        "indicator_name": "Bevölkerung ab 80-Jährige"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 138,
+        "indicator_name": "Bevölkerungsentwicklung seit 2011"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 137,
+        "indicator_name": "Bevölkerungsentwicklung über die letzten 5 Jahre"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 219,
+        "indicator_name": "Bildungswanderung"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 148,
+        "indicator_name": "Durchschnittsalter"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 323,
+        "indicator_name": "Einkommensteuer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 164,
+        "indicator_name": "Einpendler:innen an den SvB - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 163,
+        "indicator_name": "Einpendler:innen an den SvB - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 165,
+        "indicator_name": "Einpendler:innen an den SvB - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 173,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 172,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Gesamt"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wohnen"
+        ],
+        "indicator_id": 174,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Männer"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 41,
+        "indicator_name": "Einwohner:innendichte"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 307,
+        "indicator_name": "Einzahlungen lfd. Verwaltung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 377,
+        "indicator_name": "Entwicklung 65- bis 79-Jährige"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 380,
+        "indicator_name": "Entwicklung ab 80-Jährige"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 218,
+        "indicator_name": "Familienwanderung"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: verkehr"
+        ],
+        "indicator_id": 268,
+        "indicator_name": "Flächeninanspruchnahme"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: verkehr"
+        ],
+        "indicator_id": 266,
+        "indicator_name": "Flächenneuinanspruchnahme"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: verkehr"
+        ],
+        "indicator_id": 267,
+        "indicator_name": "Flächennutzungsintensität"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 343,
+        "indicator_name": "Fortzüge"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: stadt",
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 445,
+        "indicator_name": "Fortzüge"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: gemeinde",
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 223,
+        "indicator_name": "Fortzüge"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: stadt",
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 306,
+        "indicator_name": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 145,
+        "indicator_name": "Geburten"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 144,
+        "indicator_name": "Gesamtquotient"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 322,
+        "indicator_name": "Gewerbesteuer (netto)"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 321,
+        "indicator_name": "Grundsteuer B"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 334,
+        "indicator_name": "Hebesatz Gewerbesteuer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 333,
+        "indicator_name": "Hebesatz Grundsteuer B"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 335,
+        "indicator_name": "Jugendhilfe"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 142,
+        "indicator_name": "Jugendquotient"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 199,
+        "indicator_name": "Ladesäuleninfrastruktur"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 149,
+        "indicator_name": "Medianalter"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 147,
+        "indicator_name": "Natürlicher Saldo"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: verkehr"
+        ],
+        "indicator_id": 201,
+        "indicator_name": "PKW-Dichte"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: infrastruktur"
+        ],
+        "indicator_id": 314,
+        "indicator_name": "Sachinvestitionen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: verkehr"
+        ],
+        "indicator_id": 203,
+        "indicator_name": "Siedlungslast im Überschwemmungsgebiet"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 146,
+        "indicator_name": "Sterbefälle"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 225,
+        "indicator_name": "Steuereinnahmen pro Einwohner:in"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 326,
+        "indicator_name": "Umlage an Gemeindeverbände"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 327,
+        "indicator_name": "Verfügbare Deckungsmittel"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: verkehr"
+        ],
+        "indicator_id": 207,
+        "indicator_name": "Verunglückte im Verkehr"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 447,
+        "indicator_name": "Wanderungssaldo"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 224,
+        "indicator_name": "Wanderungssaldo"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 220,
+        "indicator_name": "Wanderung zu Beginn der 2. Lebenshälfte"
+      },
+      {
+        "score": 4,
+        "matches": [
+          "keyword: gemeinde",
+          "theme: Demografische Entwicklung"
+        ],
+        "indicator_id": 222,
+        "indicator_name": "Zuzüge"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: stadt",
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 446,
+        "indicator_name": "Zuzüge"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: gemeinde"
+        ],
+        "indicator_id": 342,
+        "indicator_name": "Zuzüge"
+      }
+    ],
+    "5": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 78,
+        "indicator_name": "Anteil 0- bis 2-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 79,
+        "indicator_name": "Anteil 0- bis 2-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 87,
+        "indicator_name": "Anteil 10- bis 15-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 88,
+        "indicator_name": "Anteil 10- bis 15-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 90,
+        "indicator_name": "Anteil 16- bis 18-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 91,
+        "indicator_name": "Anteil 16- bis 18-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 93,
+        "indicator_name": "Anteil 19- bis 24-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 94,
+        "indicator_name": "Anteil 19- bis 24-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 96,
+        "indicator_name": "Anteil 25- bis 44-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 97,
+        "indicator_name": "Anteil 25- bis 44-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 81,
+        "indicator_name": "Anteil 3- bis 5-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 82,
+        "indicator_name": "Anteil 3- bis 5-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 99,
+        "indicator_name": "Anteil 45- bis 64-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 100,
+        "indicator_name": "Anteil 45- bis 64-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 396,
+        "indicator_name": "Anteil 65- bis 79-Jährige - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 394,
+        "indicator_name": "Anteil 65- bis 79-Jährige - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 102,
+        "indicator_name": "Anteil 65- bis 79-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 103,
+        "indicator_name": "Anteil 65- bis 79-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 84,
+        "indicator_name": "Anteil 6- bis 9-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 85,
+        "indicator_name": "Anteil 6- bis 9-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 397,
+        "indicator_name": "Anteil ab 80-Jährige - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 395,
+        "indicator_name": "Anteil ab 80-Jährige - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 105,
+        "indicator_name": "Anteil ab 80-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 106,
+        "indicator_name": "Anteil ab 80-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 385,
+        "indicator_name": "Anteil Elternjahrgänge - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 384,
+        "indicator_name": "Anteil Elternjahrgänge - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 23,
+        "indicator_name": "Anteil Unterbeschäftigte -  Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 22,
+        "indicator_name": "Anteil Unterbeschäftigte -  Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 167,
+        "indicator_name": "Auspendler:innen an den SvB - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 168,
+        "indicator_name": "Auspendler:innen an den SvB - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 176,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 177,
+        "indicator_name": "Auspendler:innen an der Bevölkerung - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 187,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 190,
+        "indicator_name": "Beteiligung an Weiterbildungsmaßnahmen - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 48,
+        "indicator_name": "Bevölkerung 0- bis 2-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 49,
+        "indicator_name": "Bevölkerung 0- bis 2-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 57,
+        "indicator_name": "Bevölkerung 10- bis 15-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 58,
+        "indicator_name": "Bevölkerung 10- bis 15-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 60,
+        "indicator_name": "Bevölkerung 16- bis 18-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 61,
+        "indicator_name": "Bevölkerung 16- bis 18-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 63,
+        "indicator_name": "Bevölkerung 19- bis 24-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 64,
+        "indicator_name": "Bevölkerung 19- bis 24-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 66,
+        "indicator_name": "Bevölkerung 25- bis 44-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 67,
+        "indicator_name": "Bevölkerung 25- bis 44-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 51,
+        "indicator_name": "Bevölkerung 3- bis 5-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 52,
+        "indicator_name": "Bevölkerung 3- bis 5-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 69,
+        "indicator_name": "Bevölkerung 45- bis 64-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 70,
+        "indicator_name": "Bevölkerung 45- bis 64-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 72,
+        "indicator_name": "Bevölkerung 65- bis 79-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 73,
+        "indicator_name": "Bevölkerung 65- bis 79-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 54,
+        "indicator_name": "Bevölkerung 6- bis 9-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 55,
+        "indicator_name": "Bevölkerung 6- bis 9-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 75,
+        "indicator_name": "Bevölkerung ab 80-Jährige - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 76,
+        "indicator_name": "Bevölkerung ab 80-Jährige - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 393,
+        "indicator_name": "Bevölkerungsanteil - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 392,
+        "indicator_name": "Bevölkerungsanteil - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 192,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 195,
+        "indicator_name": "Eingliederung durch Weiterbildungsmaßnahmen - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 164,
+        "indicator_name": "Einpendler:innen an den SvB - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 165,
+        "indicator_name": "Einpendler:innen an den SvB - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 173,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 174,
+        "indicator_name": "Einpendler:innen an der Bevölkerung - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 108,
+        "indicator_name": "Entwicklung 0- bis 2-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 109,
+        "indicator_name": "Entwicklung 0- bis 2-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 117,
+        "indicator_name": "Entwicklung 10- bis 15-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 118,
+        "indicator_name": "Entwicklung 10- bis 15-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 120,
+        "indicator_name": "Entwicklung 16- bis 18-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 121,
+        "indicator_name": "Entwicklung 16- bis 18-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 123,
+        "indicator_name": "Entwicklung 19- bis 24-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 124,
+        "indicator_name": "Entwicklung 19- bis 24-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 126,
+        "indicator_name": "Entwicklung 25- bis 44-Jährige seit 2011- männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 127,
+        "indicator_name": "Entwicklung 25- bis 44-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 111,
+        "indicator_name": "Entwicklung 3- bis 5-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 112,
+        "indicator_name": "Entwicklung 3- bis 5-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 129,
+        "indicator_name": "Entwicklung 45- bis 64-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 130,
+        "indicator_name": "Entwicklung 45- bis 64-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 132,
+        "indicator_name": "Entwicklung 65- bis 79-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 133,
+        "indicator_name": "Entwicklung 65- bis 79-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 114,
+        "indicator_name": "Entwicklung 6- bis 9-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 115,
+        "indicator_name": "Entwicklung 6- bis 9-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 135,
+        "indicator_name": "Entwicklung ab 80-Jährige seit 2011 - männlich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: geschlecht"
+        ],
+        "indicator_id": 136,
+        "indicator_name": "Entwicklung ab 80-Jährige seit 2011 - weiblich"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 17,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 16,
+        "indicator_name": "Erwerbstätige Aufstocker:innen - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 306,
+        "indicator_name": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 160,
+        "indicator_name": "Frauenbeschäftigungsquote"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 46,
+        "indicator_name": "Geringfügig Beschäftigte - Frauen (Wohnort)"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 45,
+        "indicator_name": "Geringfügig Beschäftigte - Männer (Wohnort)"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 170,
+        "indicator_name": "Pendlersaldo an der Bevölkerung - Frauen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: männer"
+        ],
+        "indicator_id": 171,
+        "indicator_name": "Pendlersaldo an der Bevölkerung - Männer"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: frauen"
+        ],
+        "indicator_id": 341,
+        "indicator_name": "Total Fertility Rate (TFR)"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: frauen",
+          "keyword: männer"
+        ],
+        "indicator_id": 161,
+        "indicator_name": "Verhältnis der Beschäftigungsquote von Frauen und Männern"
+      }
+    ],
+    "14": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fischerei"
+        ],
+        "indicator_id": 18,
+        "indicator_name": "Beschäftigungsanteil im 1. Sektor"
+      }
+    ],
+    "7": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: energie"
+        ],
+        "indicator_id": 19,
+        "indicator_name": "Beschäftigungsanteil im 2. Sektor"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: energie",
+          "keyword: erneuerbar"
+        ],
+        "indicator_id": 209,
+        "indicator_name": "Fertiggestellte Wohngebäude mit erneuerbarer Energie"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: energie",
+          "keyword: strom",
+          "keyword: erneuerbar"
+        ],
+        "indicator_id": 205,
+        "indicator_name": "Strom aus erneuerbaren Quellen"
+      }
+    ],
+    "15": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 41,
+        "indicator_name": "Einwohner:innendichte"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 268,
+        "indicator_name": "Flächeninanspruchnahme"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 266,
+        "indicator_name": "Flächenneuinanspruchnahme"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 267,
+        "indicator_name": "Flächennutzungsintensität"
+      },
+      {
+        "score": 2,
+        "matches": [
+          "keyword: natur",
+          "keyword: landschaft"
+        ],
+        "indicator_id": 303,
+        "indicator_name": "Landschaftsqualität"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 269,
+        "indicator_name": "Naherholungsflächen"
+      },
+      {
+        "score": 3,
+        "matches": [
+          "keyword: natur",
+          "keyword: naturschutz",
+          "keyword: fläche"
+        ],
+        "indicator_id": 294,
+        "indicator_name": "Naturschutzflächen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: wald"
+        ],
+        "indicator_id": 249,
+        "indicator_name": "Schüler:innen an Waldorfschulen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 203,
+        "indicator_name": "Siedlungslast im Überschwemmungsgebiet"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 304,
+        "indicator_name": "Stickstoffüberschuss der Landwirtschaft"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: landschaft"
+        ],
+        "indicator_id": 326,
+        "indicator_name": "Umlage an Gemeindeverbände"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 151,
+        "indicator_name": "Wohnfläche pro Person"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: fläche"
+        ],
+        "indicator_id": 302,
+        "indicator_name": "Wohnungsnahe Grundversorgung - Supermarkt"
+      }
+    ],
+    "2": [
+      {
+        "score": 1,
+        "matches": [
+          "keyword: landwirtschaft"
+        ],
+        "indicator_id": 242,
+        "indicator_name": "Schüler:innen an Berufsschulen/Berufsfachschulen"
+      },
+      {
+        "score": 1,
+        "matches": [
+          "keyword: landwirtschaft"
+        ],
+        "indicator_id": 304,
+        "indicator_name": "Stickstoffüberschuss der Landwirtschaft"
+      }
+    ],
+    "16": [
+      {
+        "score": 2,
+        "matches": [
+          "keyword: straftat",
+          "keyword: polizei"
+        ],
+        "indicator_id": 204,
+        "indicator_name": "Straftaten"
+      }
+    ]
+  },
+  "indicator_sdg_map": {
+    "227": [
+      4
+    ],
+    "254": [
+      4
+    ],
+    "253": [
+      4
+    ],
+    "255": [
+      4
+    ],
+    "230": [
+      3,
+      4
+    ],
+    "260": [
+      3,
+      4
+    ],
+    "259": [
+      3,
+      4
+    ],
+    "261": [
+      3,
+      4
+    ],
+    "217": [
+      10
+    ],
+    "228": [
+      4
+    ],
+    "231": [
+      3,
+      4
+    ],
+    "293": [
+      12
+    ],
+    "196": [
+      6
+    ],
+    "185": [
+      8,
+      1
+    ],
+    "140": [
+      11
+    ],
+    "183": [
+      1
+    ],
+    "37": [
+      1,
+      10
+    ],
+    "221": [
+      11
+    ],
+    "354": [
+      4
+    ],
+    "78": [
+      5
+    ],
+    "79": [
+      5
+    ],
+    "87": [
+      5
+    ],
+    "88": [
+      5
+    ],
+    "90": [
+      5
+    ],
+    "91": [
+      5
+    ],
+    "369": [
+      4
+    ],
+    "93": [
+      5
+    ],
+    "94": [
+      5
+    ],
+    "96": [
+      5
+    ],
+    "97": [
+      5
+    ],
+    "357": [
+      4
+    ],
+    "81": [
+      5
+    ],
+    "82": [
+      5
+    ],
+    "99": [
+      5
+    ],
+    "100": [
+      5
+    ],
+    "139": [
+      11
+    ],
+    "378": [
+      11
+    ],
+    "396": [
+      5
+    ],
+    "394": [
+      5
+    ],
+    "102": [
+      5
+    ],
+    "103": [
+      5
+    ],
+    "84": [
+      5
+    ],
+    "85": [
+      5
+    ],
+    "381": [
+      11
+    ],
+    "150": [
+      11
+    ],
+    "397": [
+      5
+    ],
+    "395": [
+      5
+    ],
+    "105": [
+      5
+    ],
+    "106": [
+      5
+    ],
+    "28": [
+      10
+    ],
+    "29": [
+      10
+    ],
+    "30": [
+      10
+    ],
+    "31": [
+      10
+    ],
+    "32": [
+      10
+    ],
+    "143": [
+      11
+    ],
+    "385": [
+      5
+    ],
+    "384": [
+      5
+    ],
+    "141": [
+      11
+    ],
+    "23": [
+      8,
+      5
+    ],
+    "21": [
+      8
+    ],
+    "22": [
+      8,
+      5
+    ],
+    "179": [
+      8,
+      1
+    ],
+    "178": [
+      8,
+      1
+    ],
+    "180": [
+      8,
+      1
+    ],
+    "27": [
+      8,
+      10
+    ],
+    "25": [
+      8,
+      10
+    ],
+    "26": [
+      8,
+      10
+    ],
+    "24": [
+      8,
+      10
+    ],
+    "155": [
+      8
+    ],
+    "154": [
+      8,
+      11
+    ],
+    "237": [
+      4
+    ],
+    "238": [
+      4
+    ],
+    "239": [
+      4
+    ],
+    "241": [
+      4
+    ],
+    "240": [
+      4
+    ],
+    "40": [
+      10,
+      11
+    ],
+    "33": [
+      8,
+      10
+    ],
+    "167": [
+      8,
+      11,
+      5
+    ],
+    "166": [
+      8,
+      11
+    ],
+    "168": [
+      8,
+      11,
+      5
+    ],
+    "176": [
+      8,
+      11,
+      5
+    ],
+    "175": [
+      8,
+      11
+    ],
+    "177": [
+      8,
+      11,
+      5
+    ],
+    "308": [
+      11
+    ],
+    "34": [
+      8,
+      10
+    ],
+    "18": [
+      8,
+      14
+    ],
+    "19": [
+      8,
+      7
+    ],
+    "20": [
+      8,
+      11
+    ],
+    "156": [
+      8
+    ],
+    "157": [
+      8
+    ],
+    "159": [
+      8
+    ],
+    "153": [
+      8
+    ],
+    "186": [
+      8,
+      4
+    ],
+    "187": [
+      8,
+      4,
+      5
+    ],
+    "188": [
+      8,
+      4
+    ],
+    "189": [
+      8,
+      4
+    ],
+    "190": [
+      8,
+      4,
+      5
+    ],
+    "13": [
+      11
+    ],
+    "352": [
+      4
+    ],
+    "48": [
+      5
+    ],
+    "49": [
+      5
+    ],
+    "57": [
+      5
+    ],
+    "58": [
+      5
+    ],
+    "60": [
+      5
+    ],
+    "61": [
+      5
+    ],
+    "367": [
+      4
+    ],
+    "63": [
+      5
+    ],
+    "64": [
+      5
+    ],
+    "66": [
+      5
+    ],
+    "67": [
+      5
+    ],
+    "355": [
+      4
+    ],
+    "51": [
+      5
+    ],
+    "52": [
+      5
+    ],
+    "69": [
+      5
+    ],
+    "70": [
+      5
+    ],
+    "376": [
+      11
+    ],
+    "72": [
+      5
+    ],
+    "73": [
+      5
+    ],
+    "54": [
+      5
+    ],
+    "55": [
+      5
+    ],
+    "379": [
+      11
+    ],
+    "75": [
+      5
+    ],
+    "76": [
+      5
+    ],
+    "411": [
+      3
+    ],
+    "393": [
+      5
+    ],
+    "392": [
+      5
+    ],
+    "138": [
+      11
+    ],
+    "137": [
+      11
+    ],
+    "219": [
+      11,
+      4
+    ],
+    "296": [
+      1
+    ],
+    "148": [
+      11
+    ],
+    "36": [
+      10
+    ],
+    "191": [
+      8,
+      4
+    ],
+    "192": [
+      8,
+      4,
+      5
+    ],
+    "193": [
+      8,
+      4
+    ],
+    "194": [
+      8,
+      4
+    ],
+    "195": [
+      8,
+      4,
+      5
+    ],
+    "323": [
+      8,
+      11
+    ],
+    "164": [
+      8,
+      11,
+      5
+    ],
+    "163": [
+      8,
+      11
+    ],
+    "165": [
+      8,
+      11,
+      5
+    ],
+    "173": [
+      8,
+      11,
+      5
+    ],
+    "172": [
+      8,
+      11
+    ],
+    "174": [
+      8,
+      11,
+      5
+    ],
+    "291": [
+      1
+    ],
+    "41": [
+      11,
+      15
+    ],
+    "307": [
+      11
+    ],
+    "353": [
+      4
+    ],
+    "108": [
+      5
+    ],
+    "109": [
+      5
+    ],
+    "117": [
+      5
+    ],
+    "118": [
+      5
+    ],
+    "120": [
+      5
+    ],
+    "121": [
+      5
+    ],
+    "368": [
+      4
+    ],
+    "123": [
+      5
+    ],
+    "124": [
+      5
+    ],
+    "126": [
+      5
+    ],
+    "127": [
+      5
+    ],
+    "356": [
+      4
+    ],
+    "111": [
+      5
+    ],
+    "112": [
+      5
+    ],
+    "129": [
+      5
+    ],
+    "130": [
+      5
+    ],
+    "377": [
+      11
+    ],
+    "132": [
+      5
+    ],
+    "133": [
+      5
+    ],
+    "114": [
+      5
+    ],
+    "115": [
+      5
+    ],
+    "380": [
+      11
+    ],
+    "135": [
+      5
+    ],
+    "136": [
+      5
+    ],
+    "272": [
+      4
+    ],
+    "17": [
+      8,
+      1,
+      5
+    ],
+    "15": [
+      8,
+      1
+    ],
+    "16": [
+      8,
+      1,
+      5
+    ],
+    "198": [
+      8
+    ],
+    "218": [
+      11
+    ],
+    "209": [
+      7
+    ],
+    "310": [
+      8
+    ],
+    "312": [
+      8
+    ],
+    "268": [
+      11,
+      15
+    ],
+    "266": [
+      11,
+      15
+    ],
+    "267": [
+      11,
+      15
+    ],
+    "213": [
+      10,
+      4
+    ],
+    "343": [
+      11
+    ],
+    "445": [
+      11
+    ],
+    "223": [
+      11
+    ],
+    "306": [
+      11,
+      5
+    ],
+    "160": [
+      8,
+      5
+    ],
+    "145": [
+      11
+    ],
+    "35": [
+      10
+    ],
+    "42": [
+      8
+    ],
+    "43": [
+      8
+    ],
+    "46": [
+      8,
+      5
+    ],
+    "45": [
+      8,
+      5
+    ],
+    "44": [
+      8
+    ],
+    "144": [
+      11
+    ],
+    "322": [
+      8,
+      11
+    ],
+    "321": [
+      11
+    ],
+    "290": [
+      8,
+      1
+    ],
+    "292": [
+      1
+    ],
+    "288": [
+      8,
+      1
+    ],
+    "289": [
+      8,
+      1
+    ],
+    "334": [
+      8,
+      11
+    ],
+    "333": [
+      11
+    ],
+    "158": [
+      8,
+      4
+    ],
+    "162": [
+      8,
+      4
+    ],
+    "182": [
+      8,
+      1
+    ],
+    "335": [
+      11,
+      4
+    ],
+    "389": [
+      4
+    ],
+    "142": [
+      11,
+      4
+    ],
+    "287": [
+      8,
+      1
+    ],
+    "181": [
+      8,
+      1
+    ],
+    "39": [
+      8,
+      1,
+      10
+    ],
+    "216": [
+      10
+    ],
+    "329": [
+      1
+    ],
+    "199": [
+      11
+    ],
+    "303": [
+      15
+    ],
+    "200": [
+      8
+    ],
+    "149": [
+      11
+    ],
+    "318": [
+      8
+    ],
+    "269": [
+      15
+    ],
+    "147": [
+      11
+    ],
+    "294": [
+      15
+    ],
+    "170": [
+      8,
+      5
+    ],
+    "169": [
+      8
+    ],
+    "171": [
+      8,
+      5
+    ],
+    "285": [
+      8,
+      1,
+      3
+    ],
+    "286": [
+      8,
+      1,
+      3
+    ],
+    "245": [
+      4
+    ],
+    "246": [
+      4
+    ],
+    "278": [
+      1,
+      3
+    ],
+    "265": [
+      1,
+      3
+    ],
+    "277": [
+      1,
+      3
+    ],
+    "281": [
+      1,
+      3
+    ],
+    "282": [
+      1,
+      3
+    ],
+    "279": [
+      1,
+      3
+    ],
+    "280": [
+      1,
+      3
+    ],
+    "283": [
+      1,
+      3
+    ],
+    "201": [
+      11
+    ],
+    "284": [
+      3
+    ],
+    "314": [
+      11
+    ],
+    "232": [
+      4
+    ],
+    "235": [
+      4
+    ],
+    "214": [
+      10,
+      4
+    ],
+    "211": [
+      10,
+      4
+    ],
+    "215": [
+      10,
+      4
+    ],
+    "212": [
+      10,
+      4
+    ],
+    "233": [
+      4
+    ],
+    "234": [
+      4
+    ],
+    "236": [
+      4
+    ],
+    "248": [
+      4
+    ],
+    "247": [
+      4
+    ],
+    "243": [
+      4
+    ],
+    "242": [
+      8,
+      2,
+      4
+    ],
+    "244": [
+      4
+    ],
+    "250": [
+      4
+    ],
+    "251": [
+      4
+    ],
+    "274": [
+      4
+    ],
+    "275": [
+      4
+    ],
+    "276": [
+      4
+    ],
+    "249": [
+      4,
+      15
+    ],
+    "184": [
+      8,
+      1
+    ],
+    "38": [
+      8,
+      1,
+      10
+    ],
+    "202": [
+      1
+    ],
+    "203": [
+      11,
+      15
+    ],
+    "339": [
+      3
+    ],
+    "146": [
+      11,
+      3
+    ],
+    "225": [
+      8,
+      11
+    ],
+    "304": [
+      8,
+      2,
+      15
+    ],
+    "204": [
+      16
+    ],
+    "205": [
+      7
+    ],
+    "341": [
+      5
+    ],
+    "271": [
+      6
+    ],
+    "326": [
+      11,
+      15
+    ],
+    "226": [
+      4
+    ],
+    "257": [
+      4
+    ],
+    "256": [
+      4
+    ],
+    "258": [
+      4
+    ],
+    "229": [
+      3,
+      4
+    ],
+    "263": [
+      3,
+      4
+    ],
+    "262": [
+      3,
+      4
+    ],
+    "264": [
+      3,
+      4
+    ],
+    "327": [
+      11
+    ],
+    "206": [
+      8,
+      10
+    ],
+    "161": [
+      8,
+      5
+    ],
+    "270": [
+      10
+    ],
+    "207": [
+      11
+    ],
+    "208": [
+      3
+    ],
+    "447": [
+      11
+    ],
+    "224": [
+      11
+    ],
+    "220": [
+      11
+    ],
+    "151": [
+      1,
+      15
+    ],
+    "152": [
+      1
+    ],
+    "300": [
+      4
+    ],
+    "301": [
+      3
+    ],
+    "305": [
+      3
+    ],
+    "302": [
+      15
+    ],
+    "222": [
+      11
+    ],
+    "446": [
+      11
+    ],
+    "342": [
+      11
+    ]
+  },
+  "assignment_rules": {
+    "1": {
+      "keywords": [
+        "armut",
+        "sgb",
+        "hartz",
+        "grundsicherung",
+        "sozialhilfe",
+        "bedürftig"
+      ],
+      "themes": [
+        "Soziale Lage"
+      ]
+    },
+    "2": {
+      "keywords": [
+        "landwirtschaft",
+        "ernährung",
+        "nahrung"
+      ],
+      "themes": []
+    },
+    "3": {
+      "keywords": [
+        "gesundheit",
+        "kranken",
+        "pflege",
+        "medizin",
+        "arzt",
+        "sterb",
+        "lebenserwartung"
+      ],
+      "themes": [
+        "Gesundheit"
+      ]
+    },
+    "4": {
+      "keywords": [
+        "bildung",
+        "schule",
+        "hochschule",
+        "ausbildung",
+        "student",
+        "abschluss",
+        "betreuung",
+        "kita"
+      ],
+      "themes": [
+        "Aus- und Weiterbildung",
+        "Kinderbetreuung"
+      ]
+    },
+    "5": {
+      "keywords": [
+        "frauen",
+        "männer",
+        "geschlecht",
+        "gleichstellung"
+      ],
+      "themes": []
+    },
+    "6": {
+      "keywords": [
+        "wasser",
+        "trink",
+        "abwasser",
+        "gewässer"
+      ],
+      "themes": []
+    },
+    "7": {
+      "keywords": [
+        "energie",
+        "strom",
+        "erneuerbar",
+        "solar",
+        "wind"
+      ],
+      "themes": []
+    },
+    "8": {
+      "keywords": [
+        "arbeit",
+        "beschäftig",
+        "arbeitslos",
+        "unternehmen",
+        "wirtschaft",
+        "einkommen",
+        "lohn"
+      ],
+      "themes": [
+        "Beschäftigung / Arbeitsmarkt",
+        "Wirtschaft & Innovation"
+      ]
+    },
+    "9": {
+      "keywords": [
+        "innovation",
+        "technologie",
+        "industrie",
+        "patent",
+        "forschung"
+      ],
+      "themes": [
+        "Wirtschaft & Innovation"
+      ]
+    },
+    "10": {
+      "keywords": [
+        "ungleichheit",
+        "integration",
+        "migration",
+        "ausländer"
+      ],
+      "themes": [
+        "Integration"
+      ]
+    },
+    "11": {
+      "keywords": [
+        "stadt",
+        "gemeinde",
+        "urban",
+        "verkehr",
+        "mobilität",
+        "wohnen",
+        "infrastruktur"
+      ],
+      "themes": [
+        "Wohnen",
+        "Verkehr",
+        "Demografische Entwicklung"
+      ]
+    },
+    "12": {
+      "keywords": [
+        "konsum",
+        "abfall",
+        "recycling",
+        "müll"
+      ],
+      "themes": []
+    },
+    "13": {
+      "keywords": [
+        "klima",
+        "co2",
+        "emission",
+        "treibhaus",
+        "umwelt"
+      ],
+      "themes": []
+    },
+    "14": {
+      "keywords": [
+        "meer",
+        "ozean",
+        "fischerei"
+      ],
+      "themes": []
+    },
+    "15": {
+      "keywords": [
+        "wald",
+        "natur",
+        "biodiversität",
+        "landschaft",
+        "naturschutz",
+        "fläche"
+      ],
+      "themes": []
+    },
+    "16": {
+      "keywords": [
+        "sicherheit",
+        "kriminal",
+        "straftat",
+        "verbrechen",
+        "polizei"
+      ],
+      "themes": [
+        "Sicherheit"
+      ]
+    },
+    "17": {
+      "keywords": [
+        "kooperation",
+        "partnerschaft",
+        "zusammenarbeit"
+      ],
+      "themes": []
+    }
+  }
+}
