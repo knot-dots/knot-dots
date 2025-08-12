@@ -1622,10 +1622,6 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Utility classes */
-.is-hidden {
-	display: none;
-}
-
 @layer visually-hidden {
 	.is-visually-hidden {
 		border: 0;
