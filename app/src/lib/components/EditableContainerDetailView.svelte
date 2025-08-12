@@ -33,13 +33,20 @@
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), data, relatedContainers, revisions }: Props = $props();
+	let {
+		container = $bindable(),
+		data,
+		relatedContainers: originalRelatedContainers,
+		revisions
+	}: Props = $props();
 
 	let w = $state(0);
 
 	const handleSubmit = autoSave(container, 2000);
 
-	let sections = $state(
+	let relatedContainers = $state(originalRelatedContainers);
+
+	let sections = $derived(
 		hasSection(container, relatedContainers).toSorted(
 			(a, b) =>
 				container.relation.findIndex(({ subject }) => subject === a.guid) -
