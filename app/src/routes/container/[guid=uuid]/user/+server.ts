@@ -1,4 +1,6 @@
 import { error, json } from '@sveltejs/kit';
+import { Roarr as log } from 'roarr';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { z } from 'zod';
 import { predicates, userRelation } from '$lib/models';
@@ -18,14 +20,18 @@ export const GET = (async ({ locals, params }) => {
 		locals.pool.connect(getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']]))
 	]);
 
-	const members = await getMembers(container.organization);
-
-	return json(
-		users.map((u) => ({
-			...u,
-			email: members.find(({ id }) => id == u.guid)?.username
-		}))
-	);
+	try {
+		const members = await getMembers(container.organization);
+		return json(
+			users.map((u) => ({
+				...u,
+				email: members.find(({ id }) => id == u.guid)?.username
+			}))
+		);
+	} catch (error) {
+		log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+		return json(users);
+	}
 }) satisfies RequestHandler;
 
 export const POST = (async ({ locals, params, request }) => {
