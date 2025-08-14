@@ -1,0 +1,146 @@
+[
+  {
+    "name": "Amberg",
+    "bundesland": "Bayern",
+    "ags": "09361000",
+    "demographicType": "Alternde Städte und Gemeinden mit sozioökonomischen Herausforderungen",
+    "kommunaltyp": "Kreisfreie Stadt",
+    "verwaltungstyp": "Kreisfreie Stadt"
+  },
+  {
+    "name": "Ansbach",
+    "bundesland": "Bayern",
+    "ags": "09561000",
+    "demographicType": "Städte / Wirtschaftsstandorte mit sozioökonomischen Herausforderungen",
+    "kommunaltyp": "Kreisfreie Stadt",
+    "verwaltungstyp": "Kreisfreie Stadt"
+  },
+  {
+    "name": "Aschaffenburg",
+    "bundesland": "Bayern",
+    "ags": "09661000",
+    "demographicType": "Städte / Wirtschaftsstandorte mit sozioökonomischen Herausforderungen",
+    "kommunaltyp": "Kreisfreie Stadt",
+    "verwaltungstyp": "Kreisfreie Stadt"
+  },
+  {
+    "name": "Augsburg",
+    "bundesland": "Bayern",
+    "ags": "09761000",
+    "demographicType": "Großstädte und Hochschulstandorte mit heterogener sozioökonomischer Dynamik",
+    "kommunaltyp": "Kreisfreie Stadt",
+    "verwaltungstyp": "Kreisfreie Stadt"
+  },
+  {
+    "name": "Baden-Baden",
+    "bundesland": "Baden-Württemberg",
+    "ags": "08211000",
+    "demographicType": "Wohlhabende Städte und Gemeinden im Umfeld von Wirtschaftszentren",
+    "kommunaltyp": "Kreisfreie Stadt",
+    "verwaltungstyp": "Kreisfreie Stadt"
+  },
+  {
+    "name": "Bamberg",
+    "bundesland": "Bayern",
+    "ags": "09461000",
+    "demographicType": "Großstädte und Hochschulstandorte mit heterogener sozioökonomischer Dynamik",
+    "kommunaltyp": "Kreisfreie Stadt",
+    "verwaltungstyp": "Kreisfreie Stadt"
+  },
+  {
+    "name": "Städteregion Aachen",
+    "bundesland": "Nordrhein-Westfalen",
+    "ags": "05334000",
+    "demographicType": "Keine Zuordnung",
+    "kommunaltyp": "Landkreis",
+    "verwaltungstyp": "Städteregion"
+  },
+  {
+    "name": "Ahrweiler, LK",
+    "bundesland": "Rheinland-Pfalz",
+    "ags": "07131000",
+    "demographicType": "Keine Zuordnung",
+    "kommunaltyp": "Landkreis",
+    "verwaltungstyp": "Landkreis"
+  },
+  {
+    "name": "Aichach-Friedberg, LK",
+    "bundesland": "Bayern",
+    "ags": "09771000",
+    "demographicType": "Keine Zuordnung",
+    "kommunaltyp": "Landkreis",
+    "verwaltungstyp": "Landkreis"
+  },
+  {
+    "name": "Alb-Donau-Kreis, LK",
+    "bundesland": "Baden-Württemberg",
+    "ags": "08425000",
+    "demographicType": "Keine Zuordnung",
+    "kommunaltyp": "Landkreis",
+    "verwaltungstyp": "Landkreis"
+  },
+  {
+    "name": "Altenburger Land, LK",
+    "bundesland": "Thüringen",
+    "ags": "16077000",
+    "demographicType": "Keine Zuordnung",
+    "kommunaltyp": "Landkreis",
+    "verwaltungstyp": "Landkreis"
+  },
+  {
+    "name": "Altenkirchen (Westerwald), LK",
+    "bundesland": "Rheinland-Pfalz",
+    "ags": "07132000",
+    "demographicType": "Keine Zuordnung",
+    "kommunaltyp": "Landkreis",
+    "verwaltungstyp": "Landkreis"
+  },
+  {
+    "name": "Aachen",
+    "bundesland": "Nordrhein-Westfalen",
+    "ags": "05334002",
+    "demographicType": "Großstädte und Hochschulstandorte mit heterogener sozioökonomischer Dynamik",
+    "kommunaltyp": "Gemeinde",
+    "verwaltungstyp": "Kreisangehörige Stadt"
+  },
+  {
+    "name": "Aalen",
+    "bundesland": "Baden-Württemberg",
+    "ags": "08136088",
+    "demographicType": "Moderat wachsende Städte und Gemeinden mit regionaler Bedeutung",
+    "kommunaltyp": "Gemeinde",
+    "verwaltungstyp": "Kreisangehörige Stadt"
+  },
+  {
+    "name": "Aarbergen",
+    "bundesland": "Hessen",
+    "ags": "06439001",
+    "demographicType": "Kleine und mittlere Gemeinden mit moderater Alterung und Schrumpfung",
+    "kommunaltyp": "Gemeinde",
+    "verwaltungstyp": "Kreisangehörige Gemeinde"
+  },
+  {
+    "name": "Aar-Einrich",
+    "bundesland": "Rheinland-Pfalz",
+    "ags": "07141911",
+    "demographicType": "Keine Zuordnung",
+    "kommunaltyp": "Gemeinde",
+    "verwaltungstyp": "Verbandsgemeinde"
+  },
+  {
+    "name": "Abenberg",
+    "bundesland": "Bayern",
+    "ags": "09576111",
+    "demographicType": "Wohlhabende Städte und Gemeinden in wirtschaftlich dynamischen Regionen",
+    "kommunaltyp": "Gemeinde",
+    "verwaltungstyp": "Kreisangehörige Stadt"
+  },
+  {
+    "name": "Abensberg",
+    "bundesland": "Bayern",
+    "ags": "09273111",
+    "demographicType": "Wachsende familiengeprägte ländliche Städte und Gemeinden",
+    "kommunaltyp": "Gemeinde",
+    "verwaltungstyp": "Kreisangehörige Stadt"
+  }
+]

@@ -1,0 +1,117 @@
+{
+  "metadata": {
+    "extraction_date": "2025-08-13T16:41:56.004250",
+    "source": "Wegweiser Kommune API /rest/demographicTypes",
+    "total_demographic_types": 11,
+    "analysis": {
+      "demographic_type_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "demographic_type_descriptions": [
+        "Wachsende familiengeprägte ländliche Städte und Gemeinden",
+        "Keine Zuordnung",
+        "Städte / Wirtschaftsstandorte mit sozioökonomischen Herausforderungen",
+        "Alternde Städte und Gemeinden mit sozioökonomischen Herausforderungen",
+        "Moderat wachsende Städte und Gemeinden mit regionaler Bedeutung",
+        "Wohlhabende Städte und Gemeinden im Umfeld von Wirtschaftszentren",
+        "Wohlhabende Städte und Gemeinden in wirtschaftlich dynamischen Regionen",
+        "Großstädte und Hochschulstandorte mit heterogener sozioökonomischer Dynamik",
+        "Kleine und mittlere Gemeinden mit moderater Alterung und Schrumpfung"
+      ],
+      "kommunaltyp_stats": {
+        "Kreisfreie Stadt": 6,
+        "Landkreis": 6,
+        "Gemeinde": 6
+      }
+    }
+  },
+  "demographic_types": [
+    {
+      "number": 1,
+      "name": "Typ 1",
+      "title": "Stark schrumpfende und alternde Gemeinden in strukturschwachen Regionen",
+      "descriptionFile": "/documents/20125/132144/Typ+1.pdf/b9043e20-d836-e199-f04b-9dad2e604efc",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-1+2023+tabelle.xlsx"
+    },
+    {
+      "number": 2,
+      "name": "Typ 2",
+      "title": "Alternde Städte und Gemeinden mit sozioökonomischen Herausforderungen",
+      "descriptionFile": "/documents/20125/132144/Typ+2.pdf/91e26766-afbc-1baf-a40e-58c6d1f844fb",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-2+2023+tabelle.xlsx"
+    },
+    {
+      "number": 3,
+      "name": "Typ 3",
+      "title": "Kleine und mittlere Gemeinden mit moderater Alterung und Schrumpfung",
+      "descriptionFile": "/documents/20125/132144/Typ+3.pdf/8846ff9d-7b26-3c78-7c64-07c717c7508e",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-3+2023+tabelle.xlsx"
+    },
+    {
+      "number": 4,
+      "name": "Typ 4",
+      "title": "Stabile Städte und Gemeinden in ländlichen Regionen",
+      "descriptionFile": "/documents/20125/132144/Typ+4.pdf/8759ee19-b579-cf2c-430e-e40a3ded6632",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-4+2023+tabelle.xlsx"
+    },
+    {
+      "number": 5,
+      "name": "Typ 5",
+      "title": "Moderat wachsende Städte und Gemeinden mit regionaler Bedeutung",
+      "descriptionFile": "/documents/20125/132144/Typ+5.pdf/574602ca-11f4-379b-1c3e-9868e9c1094a",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-5+2023+tabelle.xlsx"
+    },
+    {
+      "number": 6,
+      "name": "Typ 6",
+      "title": "Städte/Wirtschaftsstandorte mit sozioökonomischen Herausforderungen",
+      "descriptionFile": "/documents/20125/132144/Typ+6.pdf/6b1e2d01-5e43-6493-5c79-8a3e616a51fb",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-6+2023+tabelle.xlsx"
+    },
+    {
+      "number": 7,
+      "name": "Typ 7",
+      "title": "Großstädte und Hochschulstandorte mit heterogener sozioökonomischer Dynamik",
+      "descriptionFile": "/documents/20125/132144/Typ+7.pdf/0c94ae19-d800-f091-6b69-74d955bc08f0",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-7+2023+tabelle.xlsx"
+    },
+    {
+      "number": 8,
+      "name": "Typ 8",
+      "title": "Wohlhabende Städte und Gemeinden in wirtschaftlich dynamischen Regionen",
+      "descriptionFile": "/documents/20125/132144/Typ+8.pdf/39beb170-61db-e3dc-78c3-6b1f7ca7d62d",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-8+2023+tabelle.xlsx"
+    },
+    {
+      "number": 9,
+      "name": "Typ 9",
+      "title": "Wachsende familiengeprägte ländliche Städte und Gemeinden",
+      "descriptionFile": "/documents/20125/132144/Typ+9.pdf/4b7c5ff1-7779-6525-d433-b6c388b328ac",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-9+2023+tabelle.xlsx"
+    },
+    {
+      "number": 10,
+      "name": "Typ 10",
+      "title": "Wohlhabende Städte und Gemeinden im Umfeld von Wirtschaftszentren",
+      "descriptionFile": "/documents/20125/132144/Typ+10.pdf/8f415526-f18e-67fb-904c-526cba59be5b",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-10+2023+tabelle.xlsx"
+    },
+    {
+      "number": 11,
+      "name": "Typ 11",
+      "title": "Sehr wohlhabende Städte und Gemeinden in Regionen der Wissensgesellschaft",
+      "descriptionFile": "/documents/20125/132144/Typ+11.pdf/b79590e8-dc6c-51da-1d93-55998b1bbd06",
+      "regionsFile": "/data-api/rest/export/bevoelkerung+kommunen-im-demografietyp-11+2023+tabelle.xlsx"
+    }
+  ]
+}
