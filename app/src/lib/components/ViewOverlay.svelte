@@ -308,7 +308,19 @@
 		}
 
 		$newContainer = createCopyOf(
-			container as Container,
+			{
+				...container,
+				payload: {
+					...container.payload,
+					...('title' in container.payload
+						? {
+								title: $_('copy_of', {
+									values: { title: container.payload.title }
+								})
+							}
+						: undefined)
+				}
+			} as Container,
 			organization,
 			organizationalUnit?.guid ?? null
 		) as NewContainer;
