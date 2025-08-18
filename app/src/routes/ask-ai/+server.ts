@@ -13,7 +13,7 @@ import {
 	type NewContainer,
 	predicates
 } from '$lib/models';
-import { pollJobStatus, startJob } from '$lib/server/ai';
+import { pollJobStatus, startGoalsJob, startJob } from '$lib/server/ai';
 import { createContainer, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -51,91 +51,102 @@ export const POST = (async ({ locals, request }) => {
 
 	const pdfResponse = await fetch(container.payload.pdf[0][0]);
 	const pdfFile = new File([await pdfResponse.blob()], 'document.pdf', { type: 'application/pdf' });
-	const parsedResponse = await startJob(pdfFile);
 
-	if (parsedResponse.error) {
-		error(422, { message: parsedResponse.error.message });
+	const startJobResponse = await startJob(pdfFile);
+	if (startJobResponse.error) {
+		error(422, { message: startJobResponse.error.message });
+	}
+
+	const startGoalsJobResponse = await startGoalsJob(pdfFile);
+	if (startGoalsJobResponse.error) {
+		error(422, { message: startGoalsJobResponse.error.message });
 	}
 
 	const extracted = new Set();
 
 	return produce(
 		async ({ emit, lock }) => {
-			let status = 'processing';
 			let position = 0;
 
-			log.info(`start processing job ${parsedResponse.data.job_id}`);
+			for (const job of [startGoalsJobResponse.data.job_id, startJobResponse.data.job_id]) {
+				log.info(`start processing job ${job}`);
+				let status = 'processing';
 
-			while (status === 'processing') {
-				log.debug(`polling status of job ${parsedResponse.data.job_id}`);
+				while (status === 'processing') {
+					log.debug(`polling status of job ${job}`);
 
-				const parsedPollResponse = await pollJobStatus(parsedResponse.data.job_id);
+					const parsedPollResponse = await pollJobStatus(job);
 
-				if (parsedPollResponse.error) {
-					log.error(parsedPollResponse.error.message);
-					return;
-				}
+					if (parsedPollResponse.error) {
+						log.error(parsedPollResponse.error.message);
+						return;
+					}
 
-				status = parsedPollResponse.data.status;
+					status = parsedPollResponse.data.status;
 
-				log.debug(`job ${parsedResponse.data.job_id} is ${status}`);
+					log.debug(`job ${job} is ${status}`);
 
-				for (const { id, project } of parsedPollResponse.data.completed_projects) {
-					if (!extracted.has(id)) {
-						try {
-							const newContainer = emptyContainer.parse({
-								managed_by: container.managed_by,
-								organization: container.organization,
-								organizational_unit: container.organizational_unit,
-								payload: {
-									aiSuggestion: true,
-									category: project.sdg,
-									description: project.description,
-									editorialState: editorialState.enum['editorial_state.draft'],
-									status: project.status,
-									title: project.title,
-									topic: project.topicArea,
-									type: project.type
-								},
-								realm: env.PUBLIC_KC_REALM,
-								relation: [
-									{
-										object: container.guid,
-										position: position++,
-										predicate: predicates.enum['is-part-of-program']
-									}
-								],
-								user: [
-									{
-										predicate: predicates.enum['is-creator-of'],
-										subject: locals.user.guid
-									}
-								]
-							}) as NewContainer;
-							await locals.pool.connect(createContainer(newContainer));
-						} catch (error) {
-							log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
-						} finally {
-							extracted.add(id);
+					for (const { id, project } of parsedPollResponse.data.completed_projects) {
+						if (!extracted.has(id)) {
+							try {
+								const newContainer = emptyContainer.parse({
+									managed_by: container.managed_by,
+									organization: container.organization,
+									organizational_unit: container.organizational_unit,
+									payload: {
+										aiSuggestion: true,
+										category: project.sdg,
+										description: project.description,
+										editorialState: editorialState.enum['editorial_state.draft'],
+										...('goalType' in project ? { goalType: project.goalType } : undefined),
+										...('status' in project ? { status: project.status } : undefined),
+										title: project.title,
+										topic: project.topicArea,
+										type: project.type
+									},
+									realm: env.PUBLIC_KC_REALM,
+									relation: [
+										{
+											object: container.guid,
+											position: position++,
+											predicate: predicates.enum['is-part-of-program']
+										}
+									],
+									user: [
+										{
+											predicate: predicates.enum['is-creator-of'],
+											subject: locals.user.guid
+										}
+									]
+								}) as NewContainer;
+								await locals.pool.connect(createContainer(newContainer));
+							} catch (error) {
+								log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+							} finally {
+								extracted.add(id);
+							}
 						}
 					}
-				}
 
-				const { error } = emit(
-					'message',
-					status == 'processing' ? `${status} ${position}` : status
-				);
-				if (error) {
-					log.error(serializeError(error), String(error));
-				}
+					if (status === 'processing') {
+						const { error } = emit('message', `${status} ${position}`);
+						if (error) {
+							log.error(serializeError(error), String(error));
+						}
+					} else if (status === 'complete') {
+						log.info(`job ${job} complete`);
+					}
 
-				if (status === 'complete') {
-					log.info(`job ${parsedResponse.data.job_id} complete`);
-					lock.set(false);
+					await delay(10000);
 				}
-
-				await delay(10000);
 			}
+
+			const { error } = emit('message', 'complete');
+			if (error) {
+				log.error(serializeError(error), String(error));
+			}
+
+			lock.set(false);
 		},
 		{
 			stop() {
