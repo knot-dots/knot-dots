@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { getContext, hasContext } from 'svelte';
+	import { getContext, hasContext, setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { source } from 'sveltekit-sse';
 	import CodeMerge from '~icons/flowbite/code-merge-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import CopyCat from '~icons/knotdots/copycat';
 	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import createObjective from '$lib/client/createObjective';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -88,6 +89,10 @@
 	}
 
 	let { container: originalContainer, revisions = [] }: Props = $props();
+
+	let isThinking = $state(false);
+
+	setContext('isThinking', () => isThinking);
 
 	let container = $state(originalContainer);
 
@@ -332,31 +337,31 @@
 		confirmDeleteDialog.close();
 	}
 
-	let isThinking = $state(false);
-
 	async function askAI(container: ProgramContainer) {
 		isThinking = true;
 
-		try {
-			const response = await fetch('/ask-ai', {
-				credentials: 'include',
-				body: new URLSearchParams({ program: container.guid }),
-				method: 'POST'
-			});
+		alert($_('ai_status.job_started'));
 
-			if (response.ok) {
-				await invalidateAll();
-			} else if (response.status === 422) {
-				const { message } = await response.json();
-				alert(message);
-			} else {
-				alert($_('error_asking_ai'));
+		const stream = source('/ask-ai', {
+			options: {
+				body: new URLSearchParams([['program', container.guid]]),
+				headers: { 'content-type': 'application/x-www-form-urlencoded' }
 			}
-		} catch (e) {
-			alert($_('error_asking_ai'));
-		} finally {
-			isThinking = false;
-		}
+		}).select('message');
+		stream.subscribe((message) => {
+			console.log(message);
+			switch (message) {
+				case 'error':
+					isThinking = false;
+					alert($_('ai_status.error'));
+				case 'complete':
+					isThinking = false;
+					alert($_('ai_status.completed'));
+				default:
+					fetchContainersRelatedToProgram({ guid: container.guid, params }).refresh();
+					break;
+			}
+		});
 	}
 </script>
 
