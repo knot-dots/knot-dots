@@ -14,6 +14,20 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
+	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
+	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
+	import EditableIndicatorDetailView from '$lib/components/EditableIndicatorDetailView.svelte';
+	import EditableIndicatorTemplateDetailView from '$lib/components/EditableIndicatorTemplateDetailView.svelte';
+	import EditableKnowledgeDetailView from '$lib/components/EditableKnowledgeDetailView.svelte';
+	import EditableMeasureDetailView from '$lib/components/EditableMeasureDetailView.svelte';
+	import EditableOrganizationDetailView from '$lib/components/EditableOrganizationDetailView.svelte';
+	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
+	import EditableObjectiveDetailView from '$lib/components/EditableObjectiveDetailView.svelte';
+	import EditableProgramDetailView from '$lib/components/EditableProgramDetailView.svelte';
+	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
+	import EditableRuleDetailView from '$lib/components/EditableRuleDetailView.svelte';
+	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
+	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -44,6 +58,7 @@
 		isTextContainer,
 		type NewContainer,
 		newIndicatorTemplateFromIndicator,
+		paramsFromFragment,
 		payloadTypes,
 		policyFieldBNK,
 		predicates,
@@ -60,16 +75,67 @@
 		overlayHistory,
 		user
 	} from '$lib/stores';
+	import {
+		fetchContainersRelatedToIndicators,
+		fetchContainersRelatedToMeasure,
+		fetchContainersRelatedToProgram,
+		fetchRelatedContainers
+	} from '$lib/remote/data.remote';
 
 	interface Props {
 		container: AnyContainer;
-		relatedContainers: Container[];
 		revisions?: AnyContainer[];
 	}
 
-	let { container: originalContainer, relatedContainers, revisions = [] }: Props = $props();
+	let { container: originalContainer, revisions = [] }: Props = $props();
 
 	let container = $state(originalContainer);
+
+	let guid = $derived(container.guid);
+
+	let organization = $derived(container.organization);
+
+	let params = $derived.by(() => {
+		if (isIndicatorContainer(container)) {
+			return {
+				organization: [container.organization],
+				...(paramsFromFragment(page.url).has('program')
+					? { program: [paramsFromFragment(page.url).get('program') as string] }
+					: undefined)
+			};
+		} else if (isProgramContainer(container)) {
+			return {
+				audience: paramsFromFragment(page.url).getAll('audience'),
+				category: paramsFromFragment(page.url).getAll('category'),
+				policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
+				terms: paramsFromFragment(page.url).get('terms') ?? '',
+				topic: paramsFromFragment(page.url).getAll('topic')
+			};
+		} else {
+			return {
+				organization: [organization],
+				relationType: [
+					predicates.enum['is-consistent-with'],
+					predicates.enum['is-equivalent-to'],
+					predicates.enum['is-inconsistent-with'],
+					predicates.enum['is-measured-by'],
+					predicates.enum['is-objective-for'],
+					predicates.enum['is-part-of'],
+					predicates.enum['is-section-of']
+				]
+			};
+		}
+	});
+
+	let relatedContainersPromise = $derived(
+		isIndicatorContainer(container)
+			? fetchContainersRelatedToIndicators({ guid, params })
+			: isMeasureContainer(container)
+				? fetchContainersRelatedToMeasure({ guid, params })
+				: isProgramContainer(container)
+					? fetchContainersRelatedToProgram({ guid, params })
+					: fetchRelatedContainers({ guid, params })
+	);
 
 	let mayShowRelationButton =
 		hasContext('relationOverlay') &&
@@ -101,7 +167,7 @@
 		'createContainerDialog'
 	);
 
-	let createAnotherOptions = $derived.by(() => {
+	function createAnotherOptions(container: AnyContainer, relatedContainers: Container[]) {
 		let createAnotherOptions: { label: string; value: string }[] = [];
 
 		const isPartOfProgramRelation = container.relation.find(
@@ -138,7 +204,7 @@
 		}
 
 		return createAnotherOptions;
-	});
+	}
 
 	function createContainerDerivedFrom(container: AnyContainer) {
 		return (event: Event) => {
@@ -294,172 +360,191 @@
 	}
 </script>
 
-{#if isProgramContainer(container)}
-	<Header
-		facets={computeFacetCount(
-			new Map([
-				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-			]),
-			relatedContainers.filter(({ guid, relation }) =>
-				relation.some(
-					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
-				)
-			)
-		)}
-		search
-	/>
-{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
-	<Header />
-{:else}
-	<Header sortOptions={[]} workspaceOptions={[]} />
-{/if}
+{#await relatedContainersPromise}
+	{@const relatedContainers = [] as Container[]}
 
-<div class="content-details masked-overflow">
-	{#if isEffectContainer(container)}
-		{#await import('./EditableEffectDetailView.svelte') then { default: EditableEffectDetailView }}
+	{#if isProgramContainer(container)}
+		<Header facets={new Map()} search />
+	{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+		<Header />
+	{:else}
+		<Header sortOptions={[]} workspaceOptions={[]} />
+	{/if}
+
+	<div class="content-details masked-overflow">
+		{#if isEffectContainer(container)}
 			<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isGoalContainer(container)}
-		{#await import('./EditableGoalDetailView.svelte') then { default: EditableGoalDetailView }}
+		{:else if isGoalContainer(container)}
 			<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isIndicatorContainer(container)}
-		{#await import('./EditableIndicatorDetailView.svelte') then { default: EditableIndicatorDetailView }}
+		{:else if isIndicatorContainer(container)}
 			<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isIndicatorTemplateContainer(container)}
-		{#await import('./EditableIndicatorTemplateDetailView.svelte') then { default: EditableIndicatorTemplateDetailView }}
+		{:else if isIndicatorTemplateContainer(container)}
 			<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isKnowledgeContainer(container)}
-		{#await import('./EditableKnowledgeDetailView.svelte') then { default: EditableKnowledgeDetailView }}
+		{:else if isKnowledgeContainer(container)}
 			<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isContainerWithEffect(container)}
-		{#await import('./EditableMeasureDetailView.svelte') then { default: EditableMeasureDetailView }}
+		{:else if isContainerWithEffect(container)}
 			<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isObjectiveContainer(container)}
-		{#await import('./EditableObjectiveDetailView.svelte') then { default: EditableObjectiveDetailView }}
+		{:else if isObjectiveContainer(container)}
 			<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isOrganizationalUnitContainer(container)}
-		{#await import('./EditableOrganizationalUnitDetailView.svelte') then { default: EditableOrganizationalUnitDetailView }}
+		{:else if isOrganizationalUnitContainer(container)}
 			<EditableOrganizationalUnitDetailView bind:container />
-		{/await}
-	{:else if isOrganizationContainer(container)}
-		{#await import('./EditableOrganizationDetailView.svelte') then { default: EditableOrganizationDetailView }}
+		{:else if isOrganizationContainer(container)}
 			<EditableOrganizationDetailView bind:container />
-		{/await}
-	{:else if isProgramContainer(container)}
-		{#await import('./EditableProgramDetailView.svelte') then { default: EditableProgramDetailView }}
+		{:else if isProgramContainer(container)}
 			{#key relatedContainers}
 				<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
 			{/key}
-		{/await}
-	{:else if isResourceContainer(container)}
-		{#await import('./EditableResourceDetailView.svelte') then { default: EditableResourceDetailView }}
+		{:else if isResourceContainer(container)}
 			<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isRuleContainer(container)}
-		{#await import('./EditableRuleDetailView.svelte') then { default: EditableRuleDetailView }}
+		{:else if isRuleContainer(container)}
 			<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isTaskContainer(container)}
-		{#await import('./EditableTaskDetailView.svelte') then { default: EditableTaskDetailView }}
+		{:else if isTaskContainer(container)}
 			<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{:else if isTextContainer(container)}
-		{#await import('./EditableTextDetailView.svelte') then { default: EditableTextDetailView }}
+		{:else if isTextContainer(container)}
 			<EditableTextDetailView bind:container {relatedContainers} {revisions} />
-		{/await}
-	{/if}
-</div>
-<footer class="content-footer bottom-actions-bar">
-	<div class="content-actions">
-		{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
-			<label>
-				<input
-					class="toggle"
-					name="template"
-					type="checkbox"
-					bind:checked={container.payload.template}
-				/>
-				{$_('template')}
-			</label>
-		{/if}
-		{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
-			<button type="button" onclick={createOverallObjective(container)}>
-				<Plus />{$_('overall_objective')}
-			</button>
-		{/if}
-		{#if mayShowRelationButton && $ability.can('relate', container)}
-			<a class="button button-relation" href="#relations={container.guid}">
-				<Relation />
-				{$_('relations')}
-			</a>
-		{/if}
-		{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
-			<DropDownMenu
-				handleChange={createContainerDerivedFrom(container)}
-				label={$_('create_another')}
-				options={createAnotherOptions}
-			>
-				{#snippet icon()}<CodeMerge />{/snippet}
-			</DropDownMenu>
-			{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
-				<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
-					<CopyCat />
-					{$_('copy')}
-				</button>
-			{/if}
-			{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
-				<button
-					class="button-ai"
-					class:is-active={isThinking}
-					type="button"
-					onclick={() => askAI(container as ProgramContainer)}
-				>
-					<AskAI />
-					{$_('ask_ai')}
-				</button>
-			{/if}
-		{/if}
-		{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
-			<button
-				type="button"
-				onclick={saveIndicatorAsTemplate(container)}
-				disabled={saveAsIndicatorTemplateDisabled}
-			>
-				{$_('indicator.save_as_template')}
-			</button>
-		{/if}
-		{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
-			<button
-				aria-label={$_('delete')}
-				class="delete quiet"
-				type="button"
-				onclick={() => confirmDeleteDialog.showModal()}
-			>
-				<TrashBin />
-			</button>
 		{/if}
 	</div>
-</footer>
+{:then relatedContainers}
+	{#if isProgramContainer(container)}
+		<Header
+			facets={computeFacetCount(
+				new Map([
+					['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
+					['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+					['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+					['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+					['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+				]),
+				relatedContainers.filter(({ guid, relation }) =>
+					relation.some(
+						({ predicate }) =>
+							predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
+					)
+				)
+			)}
+			search
+		/>
+	{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+		<Header />
+	{:else}
+		<Header sortOptions={[]} workspaceOptions={[]} />
+	{/if}
 
-<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
+	<div class="content-details masked-overflow">
+		{#if isEffectContainer(container)}
+			<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isGoalContainer(container)}
+			<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isIndicatorContainer(container)}
+			<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isIndicatorTemplateContainer(container)}
+			<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isKnowledgeContainer(container)}
+			<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isContainerWithEffect(container)}
+			<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isObjectiveContainer(container)}
+			<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isOrganizationalUnitContainer(container)}
+			<EditableOrganizationalUnitDetailView bind:container />
+		{:else if isOrganizationContainer(container)}
+			<EditableOrganizationDetailView bind:container />
+		{:else if isProgramContainer(container)}
+			{#key relatedContainers}
+				<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
+			{/key}
+		{:else if isResourceContainer(container)}
+			<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isRuleContainer(container)}
+			<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isTaskContainer(container)}
+			<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isTextContainer(container)}
+			<EditableTextDetailView bind:container {relatedContainers} {revisions} />
+		{/if}
+	</div>
 
-<ConfirmDeleteDialog
-	bind:dialog={confirmDeleteDialog}
-	handleSubmit={() => handleDelete(container)}
-	{container}
-	{relatedContainers}
-/>
+	<footer class="content-footer bottom-actions-bar">
+		<div class="content-actions">
+			{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
+				<label>
+					<input
+						class="toggle"
+						name="template"
+						type="checkbox"
+						bind:checked={container.payload.template}
+					/>
+					{$_('template')}
+				</label>
+			{/if}
+			{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
+				<button type="button" onclick={createOverallObjective(container)}>
+					<Plus />{$_('overall_objective')}
+				</button>
+			{/if}
+			{#if mayShowRelationButton && $ability.can('relate', container)}
+				<a class="button button-relation" href="#relations={container.guid}">
+					<Relation />
+					{$_('relations')}
+				</a>
+			{/if}
+			{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
+				<DropDownMenu
+					handleChange={createContainerDerivedFrom(container)}
+					label={$_('create_another')}
+					options={createAnotherOptions(container, relatedContainers)}
+				>
+					{#snippet icon()}<CodeMerge />{/snippet}
+				</DropDownMenu>
+				{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+					<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
+						<CopyCat />
+						{$_('copy')}
+					</button>
+				{/if}
+				{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
+					<button
+						class="button-ai"
+						class:is-active={isThinking}
+						type="button"
+						onclick={() => askAI(container as ProgramContainer)}
+					>
+						<AskAI />
+						{$_('ask_ai')}
+					</button>
+				{/if}
+			{/if}
+			{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
+				<button
+					type="button"
+					onclick={saveIndicatorAsTemplate(container)}
+					disabled={saveAsIndicatorTemplateDisabled}
+				>
+					{$_('indicator.save_as_template')}
+				</button>
+			{/if}
+			{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+				<button
+					aria-label={$_('delete')}
+					class="delete quiet"
+					type="button"
+					onclick={() => confirmDeleteDialog.showModal()}
+				>
+					<TrashBin />
+				</button>
+			{/if}
+		</div>
+	</footer>
+
+	<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
+
+	<ConfirmDeleteDialog
+		bind:dialog={confirmDeleteDialog}
+		handleSubmit={() => handleDelete(container)}
+		{container}
+		{relatedContainers}
+	/>
+{/await}
 
 <style>
 	.toggle {
