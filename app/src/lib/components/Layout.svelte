@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { overlay } from '$lib/stores';
 
 	const duration = 300;
@@ -18,6 +20,18 @@
 	let dialog: HTMLDialogElement;
 
 	setContext('createContainerDialog', { getElement: () => dialog });
+
+	let toasts = $state([] as ToastProps[]);
+
+	function addToast(toast: ToastProps) {
+		toasts = [...toasts, toast];
+	}
+
+	function removeToast(index: number) {
+		toasts = toasts.filter((_, i) => i !== index);
+	}
+
+	setToastContext(addToast);
 </script>
 
 <div class="app-wrapper">
@@ -30,6 +44,12 @@
 	</nav>
 
 	<div class="main-with-header-wrapper">
+		<div class="toasts">
+			{#each toasts as toast, index (index)}
+				<Toast {...toast} onclose={() => removeToast(index)} />
+			{/each}
+		</div>
+
 		{#if $$slots.header}
 			<slot name="header" />
 		{:else}
@@ -77,5 +97,16 @@
 	main {
 		flex: 1;
 		min-height: 0;
+	}
+
+	.toasts {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		position: fixed;
+		right: 3rem;
+		top: 6rem;
+		width: min(20rem, 80%);
+		z-index: 1000;
 	}
 </style>
