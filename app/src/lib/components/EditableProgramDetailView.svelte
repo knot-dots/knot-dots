@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { flip } from 'svelte/animate';
+	import type { Attachment } from 'svelte/attachments';
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -100,6 +101,14 @@
 		createContainerDialog.getElement().showModal();
 	}
 
+	let isThinking = getContext<() => boolean>('isThinking');
+
+	const init: Attachment = (element) => {
+		if (isThinking() && element.nextElementSibling == null) {
+			element.scrollIntoView();
+		}
+	};
+
 	function byPayloadType(payloadType: PayloadType, url: URL) {
 		const params = paramsFromFragment(url);
 		return !params.has('type') || params.getAll('type').includes(payloadType);
@@ -121,6 +130,7 @@
 			oninput={requestSubmit}
 			onsubmit={autoSave(part, 2000)}
 			novalidate
+			{@attach init}
 		>
 			<!-- svelte-ignore binding_property_non_reactive -->
 			<EditableRow
@@ -166,6 +176,7 @@
 						oninput={stopPropagation(requestSubmit)}
 						onsubmit={autoSave(part, 2000)}
 						novalidate
+						{@attach init}
 					>
 						<!-- svelte-ignore binding_property_non_reactive -->
 						<EditableChapter

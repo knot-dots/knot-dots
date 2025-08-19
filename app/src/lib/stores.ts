@@ -14,7 +14,6 @@ import {
 	containerOfType,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
-	isIndicatorContainer,
 	isProgramContainer,
 	mayDelete,
 	type MeasureContainer,
@@ -182,7 +181,6 @@ export type OverlayData =
 			key: 'view';
 			container: AnyContainer;
 			revisions: AnyContainer[];
-			relatedContainers: Container[];
 	  }
 	| {
 			key: 'view-help';
@@ -231,34 +229,7 @@ if (browser) {
 			);
 			const container = revisions[revisions.length - 1];
 
-			if (isIndicatorContainer(container)) {
-				const relatedContainers = await fetchRelatedContainers(container.guid, {
-					organization: [container.organization],
-					...(hashParams.has('program')
-						? { program: [hashParams.get('program') as string] }
-						: undefined)
-				});
-				overlay.set({
-					key: overlayKey.enum.view,
-					container,
-					relatedContainers,
-					revisions
-				});
-			} else if (isProgramContainer(container)) {
-				const relatedContainers = (await fetchContainers({
-					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
-					isPartOfProgram: [container.guid],
-					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
-					terms: hashParams.get('terms') ?? '',
-					topic: hashParams.getAll('topic')
-				})) as Container[];
-				overlay.set({
-					key: overlayKey.enum.view,
-					container,
-					relatedContainers,
-					revisions
-				});
+			if (isProgramContainer(container)) {
 				if (hashParams.has('table')) {
 					applicationState.update((state) => ({
 						...state,
@@ -276,26 +247,12 @@ if (browser) {
 						}
 					}));
 				}
-			} else {
-				const relatedContainers = await fetchRelatedContainers(container.guid, {
-					organization: [container.organization],
-					relationType: [
-						predicates.enum['is-consistent-with'],
-						predicates.enum['is-equivalent-to'],
-						predicates.enum['is-inconsistent-with'],
-						predicates.enum['is-measured-by'],
-						predicates.enum['is-objective-for'],
-						predicates.enum['is-part-of'],
-						predicates.enum['is-section-of']
-					]
-				});
-				overlay.set({
-					key: overlayKey.enum.view,
-					container,
-					relatedContainers,
-					revisions
-				});
 			}
+			overlay.set({
+				key: overlayKey.enum.view,
+				container,
+				revisions
+			});
 		} else if (hashParams.has(overlayKey.enum.members)) {
 			const [revisions, users] = (await Promise.all([
 				fetchContainerRevisions(hashParams.get(overlayKey.enum.members) as string),

@@ -1,7 +1,9 @@
 import { error } from '@sveltejs/kit';
+import { Roarr as log } from 'roarr';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { produce } from 'sveltekit-sse';
 import { z } from 'zod';
-import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { createFeatureDecisions } from '$lib/features';
 import {
@@ -9,25 +11,17 @@ import {
 	emptyContainer,
 	isProgramContainer,
 	type NewContainer,
-	payloadTypes,
 	predicates
 } from '$lib/models';
+import { pollJobStatus, startGoalsJob, startJob } from '$lib/server/ai';
 import { createContainer, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-const aiResponseSchema = z.union([
-	z.object({
-		projects: z.array(
-			z.object({
-				Content: z.string(),
-				Status: z.string(),
-				'Short Description': z.string(),
-				Title: z.string()
-			})
-		)
-	}),
-	z.object({ detail: z.string() }).strict()
-]);
+function delay(milliseconds: number) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, milliseconds);
+	});
+}
 
 export const POST = (async ({ locals, request }) => {
 	if (!createFeatureDecisions(locals.features).useAI()) {
@@ -56,59 +50,108 @@ export const POST = (async ({ locals, request }) => {
 	}
 
 	const pdfResponse = await fetch(container.payload.pdf[0][0]);
-	const payload = new FormData();
-	payload.append('file', await pdfResponse.blob());
-	const aiResponse = await fetch(privateEnv.AI_URL as string, {
-		body: payload,
-		method: 'POST'
-	});
+	const pdfFile = new File([await pdfResponse.blob()], 'document.pdf', { type: 'application/pdf' });
 
-	if (!aiResponse.ok) {
-		error(500, { message: unwrapFunctionStore(_)('error.internal_server_error') });
+	const startJobResponse = await startJob(pdfFile);
+	if (startJobResponse.error) {
+		error(422, { message: startJobResponse.error.message });
 	}
 
-	const parsedAiResponse = aiResponseSchema.parse(await aiResponse.json());
-
-	if ('detail' in parsedAiResponse) {
-		error(422, { message: parsedAiResponse.detail });
+	const startGoalsJobResponse = await startGoalsJob(pdfFile);
+	if (startGoalsJobResponse.error) {
+		error(422, { message: startGoalsJobResponse.error.message });
 	}
 
-	const containers = parsedAiResponse.projects.map(
-		(p, i) =>
-			emptyContainer.parse({
-				managed_by: container.managed_by,
-				organization: container.organization,
-				organizational_unit: container.organizational_unit,
-				payload: {
-					aiSuggestion: true,
-					description: p.Content,
-					editorialState: editorialState.enum['editorial_state.draft'],
-					summary: p['Short Description'].substring(0, 200),
-					title: p.Title,
-					type: payloadTypes.enum.measure
-				},
-				realm: env.PUBLIC_KC_REALM,
-				relation: [
-					{
-						object: container.guid,
-						position: i,
-						predicate: predicates.enum['is-part-of-program']
-					}
-				],
-				user: [
-					{
-						predicate: predicates.enum['is-creator-of'],
-						subject: locals.user.guid
-					}
-				]
-			}) as NewContainer
-	);
+	const extracted = new Set();
 
-	await locals.pool.transaction(async (connection) => {
-		for (const container of containers) {
-			await createContainer(container)(connection);
+	return produce(
+		async ({ emit, lock }) => {
+			let position = 0;
+
+			for (const job of [startGoalsJobResponse.data.job_id, startJobResponse.data.job_id]) {
+				log.info(`start processing job ${job}`);
+				let status = 'processing';
+
+				while (status === 'processing') {
+					log.debug(`polling status of job ${job}`);
+
+					const parsedPollResponse = await pollJobStatus(job);
+
+					if (parsedPollResponse.error) {
+						log.error(parsedPollResponse.error.message);
+						return;
+					}
+
+					status = parsedPollResponse.data.status;
+
+					log.debug(`job ${job} is ${status}`);
+
+					for (const { id, project } of parsedPollResponse.data.completed_projects) {
+						if (!extracted.has(id)) {
+							try {
+								const newContainer = emptyContainer.parse({
+									managed_by: container.managed_by,
+									organization: container.organization,
+									organizational_unit: container.organizational_unit,
+									payload: {
+										aiSuggestion: true,
+										category: project.sdg,
+										description: project.description,
+										editorialState: editorialState.enum['editorial_state.draft'],
+										...('goalType' in project ? { goalType: project.goalType } : undefined),
+										...('status' in project ? { status: project.status } : undefined),
+										title: project.title,
+										topic: project.topicArea,
+										type: project.type
+									},
+									realm: env.PUBLIC_KC_REALM,
+									relation: [
+										{
+											object: container.guid,
+											position: position++,
+											predicate: predicates.enum['is-part-of-program']
+										}
+									],
+									user: [
+										{
+											predicate: predicates.enum['is-creator-of'],
+											subject: locals.user.guid
+										}
+									]
+								}) as NewContainer;
+								await locals.pool.connect(createContainer(newContainer));
+							} catch (error) {
+								log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+							} finally {
+								extracted.add(id);
+							}
+						}
+					}
+
+					if (status === 'processing') {
+						const { error } = emit('message', `${status} ${position}`);
+						if (error) {
+							log.error(serializeError(error), String(error));
+						}
+					} else if (status === 'complete') {
+						log.info(`job ${job} complete`);
+					}
+
+					await delay(10000);
+				}
+			}
+
+			const { error } = emit('message', 'complete');
+			if (error) {
+				log.error(serializeError(error), String(error));
+			}
+
+			lock.set(false);
+		},
+		{
+			stop() {
+				log.info('client disconnected');
+			}
 		}
-	});
-
-	return new Response(null, { status: 204 });
+	);
 }) satisfies RequestHandler;

@@ -57,38 +57,38 @@
 	transition:slide={{ axis: 'x' }}
 	style="--width-factor: {$overlayWidth}"
 >
-	<!--svelte-ignore a11y_no_static_element_interactions -->
-	<div class="resize-handle" onmousedown={startExpand}></div>
-	{#if data.key === overlayKey.enum['view-help']}
-		<ViewHelpOverlay container={data.container} />
-	{:else if data.key === overlayKey.enum['members']}
-		<MembersOverlay container={data.container} users={data.users} />
-	{:else if data.key === overlayKey.enum['chapters']}
-		<ChaptersOverlay containers={data.containers} />
-	{:else if data.key === overlayKey.enum['relations']}
-		<RelationOverlay object={data.container} relatedContainers={data.relatedContainers} />
-	{:else if data.key === overlayKey.enum['measures']}
-		<MeasuresOverlay containers={data.containers} />
-	{:else if data.key === overlayKey.enum['measure-monitoring']}
-		<MeasureMonitoringOverlay container={data.container} containers={data.containers} />
-	{:else if data.key === overlayKey.enum['tasks']}
-		<TasksOverlay container={data.container} containers={data.containers} />
-	{:else if data.key === overlayKey.enum['indicator-catalog']}
-		<IndicatorCatalogOverlay
-			indicatorTemplates={data.indicatorTemplates}
-			indicators={data.indicators}
-		/>
-	{:else if data.key === overlayKey.enum['indicators']}
-		<IndicatorsOverlay containers={data.containers} />
-	{:else if data.key === overlayKey.enum['view']}
-		{#key data.container.guid}
-			<ViewOverlay
-				container={data.container}
-				relatedContainers={data.relatedContainers}
-				revisions={data.revisions}
+	<svelte:boundary>
+		<!--svelte-ignore a11y_no_static_element_interactions -->
+		<div class="resize-handle" onmousedown={startExpand}></div>
+		{#if data.key === overlayKey.enum['view-help']}
+			<ViewHelpOverlay container={data.container} />
+		{:else if data.key === overlayKey.enum['members']}
+			<MembersOverlay container={data.container} users={data.users} />
+		{:else if data.key === overlayKey.enum['chapters']}
+			<ChaptersOverlay containers={data.containers} />
+		{:else if data.key === overlayKey.enum['relations']}
+			<RelationOverlay object={data.container} relatedContainers={data.relatedContainers} />
+		{:else if data.key === overlayKey.enum['measures']}
+			<MeasuresOverlay containers={data.containers} />
+		{:else if data.key === overlayKey.enum['measure-monitoring']}
+			<MeasureMonitoringOverlay container={data.container} containers={data.containers} />
+		{:else if data.key === overlayKey.enum['tasks']}
+			<TasksOverlay container={data.container} containers={data.containers} />
+		{:else if data.key === overlayKey.enum['indicator-catalog']}
+			<IndicatorCatalogOverlay
+				indicatorTemplates={data.indicatorTemplates}
+				indicators={data.indicators}
 			/>
-		{/key}
-	{/if}
+		{:else if data.key === overlayKey.enum['indicators']}
+			<IndicatorsOverlay containers={data.containers} />
+		{:else if data.key === overlayKey.enum['view']}
+			{#key data.container.guid}
+				<ViewOverlay container={data.container} revisions={data.revisions} />
+			{/key}
+		{/if}
+
+		{#snippet pending()}{/snippet}
+	</svelte:boundary>
 </section>
 
 <style>
