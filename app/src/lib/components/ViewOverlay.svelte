@@ -2,7 +2,9 @@
 	import { getContext, hasContext, setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { source } from 'sveltekit-sse';
+	import Check from '~icons/flowbite/check-outline';
 	import CodeMerge from '~icons/flowbite/code-merge-outline';
+	import Rotate from '~icons/flowbite/rotate-solid';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import CopyCat from '~icons/knotdots/copycat';
@@ -31,6 +33,7 @@
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
+	import { getToastContext } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
@@ -337,10 +340,17 @@
 		confirmDeleteDialog.close();
 	}
 
+	const toast = getToastContext();
+
 	async function askAI(container: ProgramContainer) {
 		isThinking = true;
 
-		alert($_('ai_status.job_started'));
+		toast({
+			icon: Rotate,
+			heading: $_('toast.ai_job_started.heading'),
+			message: $_('toast.ai_job_started.message'),
+			status: 'info'
+		});
 
 		const stream = source('/ask-ai', {
 			options: {
@@ -356,7 +366,7 @@
 					alert($_('ai_status.error'));
 				case 'complete':
 					isThinking = false;
-					alert($_('ai_status.completed'));
+					toast({ icon: Check, heading: $_('toast.ai_job_completed.heading'), status: 'success' });
 				default:
 					fetchContainersRelatedToProgram({ guid: container.guid, params }).refresh();
 					break;
