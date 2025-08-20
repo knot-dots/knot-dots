@@ -50,7 +50,14 @@
 						range: ['#ca1d61', '#6edaa6'],
 						tickFormat: (v) => $_(v)
 					},
-					marks: [Plot.barY(data, { x: 'date', y: 'value', fill: 'status' })],
+					marks: [
+						Plot.barY(data, {
+							x: 'date',
+							y: 'value',
+							fill: 'status',
+							order: ['indicator.effect.achieved_values', 'indicator.effect.planned_values']
+						})
+					],
 					x: { type: 'band' },
 					y: { label: $_(unit), tickFormat: (d) => $number(d) }
 				})
