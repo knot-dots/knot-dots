@@ -80,7 +80,7 @@
 		/>
 	{/if}
 {:else if value}
-	<img alt={$_('image')} class="logo" src={transformFileURL(value)} />
+	<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
 {/if}
 
 <style>
