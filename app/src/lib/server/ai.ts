@@ -56,34 +56,13 @@ Page X, Section Y: [Exact German text]
 Classification: [MEASURE/GOAL/UNCLEAR]
 Action Verb: [umsetzen/durchführen/erstellen/etc. or NONE]
 Concrete Object: [Schule/System/Konzept/etc. or NONE]
-Numbering: [4.3.1/A.2/III.5/etc. or NONE]
 \`\`\`
-
-### STEP 1.1: Numbering Detection (MANDATORY)
-For each candidate measure, actively search for numbering patterns:
-
-#### **Direct Numbering Patterns:**
-- **Hierarchical**: "4.3.1 Maßnahmentitel", "2.5 Projekttitel"
-- **Alphabetical**: "A.2 Titel", "III.5 Maßnahme"
-- **Simple**: "1. Titel", "15) Maßnahme"
-
-#### **Table-based Numbering:**
-- Check if measure appears in table with separate numbering column
-- Look for headers like "Nr.", "Nummer", "Maßnahmen-Nr.", "ID"
-- Extract numbering from corresponding table cell
-
-#### **Numbering Extraction Rules:**
-- **Include in title**: Always prefix the measure title with the numbering if found
-- **Format**: "[Numbering] [Original Title]" → "4.3.1 Klimaschutzkonzept umsetzen"
-- **Preserve original format**: Keep dots, dashes, parentheses as in source
-- **No numbering found**: Use title without numbering prefix
 
 ### STEP 2: Apply STRICT Classification Rules
 
 #### ✅ EXTRACT AS MEASURE (Use action verb form):
 - **Has action verb**: "durchführen", "umsetzen", "erstellen", "entwickeln", "etablieren", "sanieren", "bauen", "einrichten"
 - **Format requirement**: Always use infinitive verb form: "XYZ umsetzen" NOT "Umsetzung von XYZ"
-- **Numbering integration**: "[Number] XYZ umsetzen" if numbering exists
 - **Concrete activities**: Installing, building, conducting, establishing something specific
 - **Specific projects**: Named initiatives with clear deliverables
 - **Operational tasks**: Day-to-day activities or programs
@@ -98,7 +77,6 @@ For each candidate measure, actively search for numbering patterns:
 For each measure, extract core semantic elements:
 \`\`\`
 SEMANTIC FINGERPRINT:
-NUMBERING: [4.3.1/A.2/etc. or NONE]
 WHO: [Organization/Department]
 WHAT: [Core action - normalized]
 WHERE: [Location - if specified]
@@ -107,17 +85,15 @@ OBJECT: [What is being acted upon]
 \`\`\`
 
 **Duplicate Detection Rules:**
-- Same NUMBERING = DUPLICATE (keep most detailed version)
-- Same WHO + WHAT + OBJECT (without numbering) = DUPLICATE (keep version with numbering if available)
+- Same WHO + WHAT + OBJECT = DUPLICATE (keep most detailed version)
 - Different specific objects = SEPARATE (Schule A ≠ Schule B)
 - Same concept, different wording = DUPLICATE
 
 **Examples:**
 \`\`\`
 "Umsetzung des Klimaschutzkonzepts" → "Klimaschutzkonzept umsetzen"
-"4.3.1 Umsetzung des Klimaschutzkonzepts" → "4.3.1 Klimaschutzkonzept umsetzen"
 "Durchführung von Bürgerbefragungen" → "Bürgerbefragungen durchführen"
-"A.5 BNE-Zertifizierung der VHS" → "A.5 VHS nach BNE-Standards zertifizieren"
+"BNE-Zertifizierung der VHS" → "VHS nach BNE-Standards zertifizieren"
 \`\`\`
 
 ### STEP 4: Quality Control Checklist
@@ -127,8 +103,6 @@ Before finalizing, verify EACH measure:
 - [ ] Is NOT an abstract goal or outcome?
 - [ ] Is semantically unique (no duplicates)?
 - [ ] Uses original German terminology?
-- [ ] Includes numbering prefix if found in source document?
-- [ ] Numbering format preserved as in original?
 
 ## OUTPUT FORMAT REQUIREMENTS
 
@@ -138,7 +112,7 @@ Before finalizing, verify EACH measure:
   "output": {
     "projects": [
       {
-        "title": "Exact German measure in infinitive verb form (with numbering prefix if available)"
+        "title": "Exact German measure in infinitive verb form"
       }
     ]
   }
@@ -151,15 +125,12 @@ Before finalizing, verify EACH measure:
 - **ALWAYS use action verb form**: "Konzept umsetzen" NOT "Umsetzung des Konzepts"
 - **ALWAYS preserve exact German terminology** from source
 - **ALWAYS use infinitive verbs**: umsetzen, durchführen, erstellen, entwickeln
-- **ALWAYS include numbering prefix** when found: "4.3.1 Konzept umsetzen"
 - **NO paraphrasing or interpretation** - use source wording
 
 ### Common Verb Normalizations:
 \`\`\`
 "Umsetzung von X" → "X umsetzen"
-"4.3.1 Umsetzung von X" → "4.3.1 X umsetzen"
 "Durchführung von X" → "X durchführen"
-"A.2 Durchführung von X" → "A.2 X durchführen"
 "Erstellung eines X" → "X erstellen"
 "Entwicklung von X" → "X entwickeln"
 "Etablierung einer X" → "X etablieren"
@@ -168,7 +139,6 @@ Before finalizing, verify EACH measure:
 ### Quality Targets (for self-assessment):
 - Action verb rate: >50% of measures should contain action verbs
 - Concrete object rate: >30% should reference specific objects/systems
-- Numbering preservation: 100% of found numberings should be included
 - Zero semantic duplicates allowed
 - Zero abstract goals allowed
 
@@ -179,14 +149,11 @@ Before finalizing, verify EACH measure:
 2. **Goal extraction**: "Verbesserung der Luftqualität" (goal) vs "Luftmessstationen installieren" (measure)
 3. **Semantic duplicates**: Same concept with different wording
 4. **Vague actions**: "Maßnahmen ergreifen" instead of specific action
-5. **Missing numbering**: Forgetting to include document numbering in title
-6. **Wrong numbering format**: Altering the original numbering format
 
 ### Self-Check Questions:
 - Could another person execute this measure based on the title alone?
 - Does it describe WHAT to do, not WHAT to achieve?
 - Is it written as a concrete action using German infinitive verbs?
-- Is the original document numbering (if any) preserved in the title?
 
 ## REPRODUCIBILITY REQUIREMENT
 Another AI given this same prompt and document should produce an identical JSON output. Any deviation suggests prompt non-compliance.
@@ -220,7 +187,7 @@ Convert the provided list of identified measures into structured JSON objects. C
 \`\`\`json
 [
   {
-    "title": "4.3.1 Installation von 500 öffentlichen E-Ladestationen",
+    "title": "Installation von 500 öffentlichen E-Ladestationen",
     "summary": "Aufbau eines flächendeckenden Netzes von Elektrofahrzeug-Ladestationen im Stadtgebiet",
     "description": "Vollständige, wörtliche Beschreibung der Maßnahme aus dem Dokument...",
     "status": "status.in_planning",
@@ -231,7 +198,7 @@ Convert the provided list of identified measures into structured JSON objects. C
     "type": "measure"
   },
   {
-    "title": "A.2 Energetische Sanierung der Grundschulen",
+    "title": "Energetische Sanierung der Grundschulen",
     "summary": "Umfassende energetische Modernisierung aller 15 städtischen Grundschulgebäude",
     "description": "Vollständige Beschreibung aus dem Dokument...",
     "status": "status.in_implementation",
@@ -248,7 +215,7 @@ Convert the provided list of identified measures into structured JSON objects. C
 
 | Field | Type | Required | Rules |
 |-------|------|----------|-------|
-| \`title\` | String | ✅ | Exact German title of the measure **including numbering prefix if present** |
+| \`title\` | String | ✅ | Exact German title of the measure |
 | \`summary\` | String | ✅ | Short summary (1-2 sentences) |
 | \`description\` | String | ✅ | Complete, verbatim description |
 | \`status\` | String | ⚪ | Current implementation status |
@@ -257,22 +224,6 @@ Convert the provided list of identified measures into structured JSON objects. C
 | \`startDate\` | String | ⚪ | Format: "YYYY-MM-DD" |
 | \`endDate\` | String | ⚪ | Format: "YYYY-MM-DD" |
 | \`type\` | String | ✅ | Always \`"measure"\` |
-
-## TITLE HANDLING WITH NUMBERING
-
-### Numbering Preservation Rules:
-- **ALWAYS preserve** the complete numbering prefix from the input title
-- **Format examples**:
-  - Input: "4.3.1 Klimaschutzkonzept umsetzen" → Output: "4.3.1 Klimaschutzkonzept umsetzen"
-  - Input: "A.5 BNE-Zertifizierung durchführen" → Output: "A.5 BNE-Zertifizierung durchführen"
-  - Input: "III.2 Bürgerbeteiligung etablieren" → Output: "III.2 Bürgerbeteiligung etablieren"
-  - Input: "15) Radwege ausbauen" → Output: "15) Radwege ausbauen"
-
-### Title Quality Control:
-- [ ] Original numbering format preserved exactly
-- [ ] No additional formatting or modification of numbering
-- [ ] Space between numbering and title maintained
-- [ ] German measure title follows numbering without duplication
 
 ## MAPPING TABLES
 
@@ -321,27 +272,24 @@ Convert the provided list of identified measures into structured JSON objects. C
 
 ### 🚫 DUPLICATE AVOIDANCE (CRITICAL)
 
-**Before the final output:** Actively check for and remove duplicates!
+**Before the final output:** Actively check for and remove duplicates\\!
 
   - **Same measure, mentioned multiple times**: Extract only once, use the most detailed version.
   - **Similar titles**: If 2+ measures have very similar titles → check if they are the same.
-  - **Numbering-based deduplication**: Measures with same numbering are duplicates
   - **Sub-projects vs. Main project**: Extract only the main project, not the sub-activities.
   - **Merge rule**: For similar measures, take the version with the most complete description.
 
 **What is a separate measure?**
 
-  - ✅ Different numbering: "4.3.1 Maßnahme" vs. "4.3.2 Maßnahme"
   - ✅ Different activities: "Bau Radweg A" vs. "Bau Radweg B"
   - ✅ Different objects: "Sanierung Schule 1" vs. "Sanierung Schule 2"
-  - ❌ Same numbering mentioned in different sections
   - ❌ Same activity mentioned in different sections
   - ❌ General + specific description of the same measure
 
+
 ## QUALITY CONTROL
 
-  - [ ] **ALWAYS keep the given project title from the projects json as "Title"** including any numbering prefix.
-  - [ ] **NUMBERING PRESERVATION**: All original document numbering is maintained in titles.
+  - [ ] ALWAYS keep the given project title from the projects json as "Title".
   - [ ] **NO DUPLICATES**: Each measure appears only once in the array.
   - [ ] All objects describe concrete measures (not goals).
   - [ ] \`description\` is verbatim from the document.
@@ -385,27 +333,7 @@ Page X, Section Y: [Exact German text]
 Classification: [GOAL/MEASURE/UNCLEAR]
 Outcome Indicator: [Reduktion/Erhöhung/Verbesserung/etc. or NONE]
 Target Object: [CO2-Ausstoß/Lebensqualität/Rate/etc. or NONE]
-Numbering: [4.3.1/A.2/III.5/etc. or NONE]
 \`\`\`
-
-### STEP 1.1: Numbering Detection (MANDATORY)
-For each candidate goal, actively search for numbering patterns:
-
-#### **Direct Numbering Patterns:**
-- **Hierarchical**: "4.3.1 Zieltitel", "2.5 Klimaziel"
-- **Alphabetical**: "A.2 Titel", "III.5 Ziel"
-- **Simple**: "1. Titel", "15) Ziel"
-
-#### **Table-based Numbering:**
-- Check if goal appears in table with separate numbering column
-- Look for headers like "Nr.", "Nummer", "Ziel-Nr.", "ID"
-- Extract numbering from corresponding table cell
-
-#### **Numbering Extraction Rules:**
-- **Include in title**: Always prefix the goal title with the numbering if found
-- **Format**: "[Numbering] [Original Title]" → "4.3.1 CO2-Emissionen um 50% reduzieren"
-- **Preserve original format**: Keep dots, dashes, parentheses as in source
-- **No numbering found**: Use title without numbering prefix
 
 ### STEP 2: Apply STRICT Classification Rules
 
@@ -415,7 +343,6 @@ For each candidate goal, actively search for numbering patterns:
 - **State descriptions**: "Eine nachhaltige Stadt", "Klimaneutralität", "Lebensqualität"
 - **General intentions**: "Verbesserung der...", "Steigerung der...", "Erhöhung der..."
 - **Vision statements**: "Klimaneutrale Kommune bis 2030"
-- **Numbering integration**: "[Number] CO2-neutral werden" if numbering exists
 
 #### ❌ EXCLUDE (Measures, not goals):
 - **Action verbs**: "durchführen", "umsetzen", "erstellen", "entwickeln", "etablieren", "sanieren", "bauen", "einrichten"
@@ -427,7 +354,6 @@ For each candidate goal, actively search for numbering patterns:
 For each goal, extract core semantic elements:
 \`\`\`
 SEMANTIC FINGERPRINT:
-NUMBERING: [4.3.1/A.2/etc. or NONE]
 WHO: [Organization/Department]
 WHAT: [Core outcome - normalized]
 WHERE: [Location - if specified]
@@ -436,17 +362,15 @@ OBJECT: [What is being achieved]
 \`\`\`
 
 **Duplicate Detection Rules:**
-- Same NUMBERING = DUPLICATE (keep most detailed version)
-- Same WHO + WHAT + OBJECT (without numbering) = DUPLICATE (keep version with numbering if available)
+- Same WHO + WHAT + OBJECT = DUPLICATE (keep most detailed version)
 - Different specific targets = SEPARATE (50% Reduktion ≠ 80% Reduktion)
 - Same concept, different wording = DUPLICATE
 
 **Examples:**
 \`\`\`
 "Klimaneutralität erreichen" → "Klimaneutralität erreichen"
-"4.3.1 Klimaneutralität erreichen" → "4.3.1 Klimaneutralität erreichen"
 "CO2-Emissionen um 50% reduzieren" → "CO2-Emissionen um 50% reduzieren"
-"A.5 Verbesserung der Luftqualität" → "A.5 Luftqualität verbessern"
+"Verbesserung der Luftqualität" → "Luftqualität verbessern"
 \`\`\`
 
 ### STEP 4: Quality Control Checklist
@@ -456,8 +380,6 @@ Before finalizing, verify EACH goal:
 - [ ] Is NOT a concrete action or measure?
 - [ ] Is semantically unique (no duplicates)?
 - [ ] Uses original German terminology?
-- [ ] Includes numbering prefix if found in source document?
-- [ ] Numbering format preserved as in original?
 
 ## OUTPUT FORMAT REQUIREMENTS
 
@@ -467,7 +389,7 @@ Before finalizing, verify EACH goal:
   "output": {
     "projects": [
       {
-        "title": "Exact German goal description (with numbering prefix if available)"
+        "title": "Exact German goal description"
       }
     ]
   }
@@ -480,15 +402,12 @@ Before finalizing, verify EACH goal:
 - **ALWAYS use outcome/state form**: "CO2-neutral werden" NOT "CO2-Neutralität umsetzen"
 - **ALWAYS preserve exact German terminology** from source
 - **ALWAYS use outcome verbs**: erreichen, werden, verbessern, reduzieren, steigern
-- **ALWAYS include numbering prefix** when found: "4.3.1 CO2-neutral werden"
 - **NO paraphrasing or interpretation** - use source wording
 
 ### Common Outcome Normalizations:
 \`\`\`
 "Erreichung von X" → "X erreichen"
-"4.3.1 Erreichung von X" → "4.3.1 X erreichen"
 "Verbesserung von X" → "X verbessern"
-"A.2 Verbesserung von X" → "A.2 X verbessern"
 "Reduktion des X" → "X reduzieren"
 "Steigerung von X" → "X steigern"
 "Erhöhung der X" → "X erhöhen"
@@ -497,7 +416,6 @@ Before finalizing, verify EACH goal:
 ### Quality Targets (for self-assessment):
 - Outcome indicator rate: >50% of goals should contain outcome indicators
 - Target object rate: >30% should reference specific outcomes/states
-- Numbering preservation: 100% of found numberings should be included
 - Zero semantic duplicates allowed
 - Zero concrete measures allowed
 
@@ -508,14 +426,11 @@ Before finalizing, verify EACH goal:
 2. **Measure extraction**: "Sanierung durchführen" (measure) vs "Energieeffizienz verbessern" (goal)
 3. **Semantic duplicates**: Same outcome with different wording
 4. **Vague outcomes**: "Verbesserungen erzielen" instead of specific target
-5. **Missing numbering**: Forgetting to include document numbering in title
-6. **Wrong numbering format**: Altering the original numbering format
 
 ### Self-Check Questions:
 - Does this describe WHAT to achieve, not WHAT to do?
 - Is it a desired end state or outcome?
 - Is it written as a target using German outcome verbs?
-- Is the original document numbering (if any) preserved in the title?
 
 ## REPRODUCIBILITY REQUIREMENT
 Another AI given this same prompt and document should produce an identical JSON output. Any deviation suggests prompt non-compliance.
@@ -549,7 +464,7 @@ Convert the provided list of identified goals into structured JSON objects. Crea
 \`\`\`json
 [
   {
-    "title": "4.3.1 CO2-Emissionen um 50% bis 2030 reduzieren",
+    "title": "CO2-Emissionen um 50% bis 2030 reduzieren",
     "summary": "Halbierung der städtischen Treibhausgasemissionen gegenüber dem Basisjahr 2020",
     "description": "Vollständige, wörtliche Beschreibung des Ziels aus dem Dokument...",
     "topicArea": ["topic.climate_change_mitigation_and_adaptation", "topic.environment"],
@@ -558,7 +473,7 @@ Convert the provided list of identified goals into structured JSON objects. Crea
     "type": "goal"
   },
   {
-    "title": "A.2 Klimaneutralität bis 2035 erreichen",
+    "title": "Klimaneutralität bis 2035 erreichen",
     "summary": "Vollständige Klimaneutralität der kommunalen Verwaltung und des Stadtgebiets",
     "description": "Vollständige Beschreibung aus dem Dokument...",
     "topicArea": ["topic.climate_change_mitigation_and_adaptation", "topic.energy"],
@@ -573,7 +488,7 @@ Convert the provided list of identified goals into structured JSON objects. Crea
 
 | Field | Type | Required | Rules |
 |-------|------|----------|-------|
-| \`title\` | String | ✅ | Exact German title of the goal **including numbering prefix if present** |
+| \`title\` | String | ✅ | Exact German title of the goal |
 | \`summary\` | String | ✅ | Short summary (1-2 sentences) |
 | \`description\` | String | ✅ | Complete, verbatim description |
 | \`status\` | String | ⚪ | Current achievement status |
@@ -582,22 +497,6 @@ Convert the provided list of identified goals into structured JSON objects. Crea
 | \`startDate\` | String | ⚪ | Format: "YYYY-MM-DD" |
 | \`fulfillmentDate\` | String | ⚪ | Format: "YYYY-MM-DD" |
 | \`type\` | String | ✅ | Always \`"goal"\` |
-
-## TITLE HANDLING WITH NUMBERING
-
-### Numbering Preservation Rules:
-- **ALWAYS preserve** the complete numbering prefix from the input title
-- **Format examples**:
-  - Input: "4.3.1 Klimaneutralität erreichen" → Output: "4.3.1 Klimaneutralität erreichen"
-  - Input: "A.5 CO2-Emissionen um 50% reduzieren" → Output: "A.5 CO2-Emissionen um 50% reduzieren"
-  - Input: "III.2 Lebensqualität verbessern" → Output: "III.2 Lebensqualität verbessern"
-  - Input: "15) Energieeffizienz steigern" → Output: "15) Energieeffizienz steigern"
-
-### Title Quality Control:
-- [ ] Original numbering format preserved exactly
-- [ ] No additional formatting or modification of numbering
-- [ ] Space between numbering and title maintained
-- [ ] German goal title follows numbering without duplication
 
 ## Topic Area Mapping
 
@@ -633,20 +532,17 @@ Convert the provided list of identified goals into structured JSON objects. Crea
 
 ### 🚫 DUPLICATE AVOIDANCE (CRITICAL)
 
-**Before the final output:** Actively check for and remove duplicates!
+**Before the final output:** Actively check for and remove duplicates\\!
 
   - **Same goal, mentioned multiple times**: Extract only once, use the most detailed version.
   - **Similar titles**: If 2+ goals have very similar titles → check if they are the same.
-  - **Numbering-based deduplication**: Goals with same numbering are duplicates
   - **Sub-goals vs. Main goal**: Extract only the main goal, not the sub-targets.
   - **Merge rule**: For similar goals, take the version with the most complete description.
 
 **What is a separate goal?**
 
-  - ✅ Different numbering: "4.3.1 Ziel" vs. "4.3.2 Ziel"
   - ✅ Different outcomes: "50% CO2-Reduktion" vs. "80% CO2-Reduktion"
   - ✅ Different target areas: "Klimaneutralität Verwaltung" vs. "Klimaneutralität Stadtgebiet"
-  - ❌ Same numbering mentioned in different sections
   - ❌ Same outcome mentioned in different sections
   - ❌ General + specific description of the same goal
 
@@ -655,15 +551,14 @@ Convert the provided list of identified goals into structured JSON objects. Crea
 \`\`\`
 Found in the document:
 1. "Klimaneutralität erreichen" (brief mention)
-2. "4.3.1 Klimaneutralität der Stadt bis 2035 erreichen" (detailed)
+2. "Klimaneutralität der Stadt bis 2035 erreichen" (detailed)
 
 → Only extract: #2 (the most detailed version)
 \`\`\`
 
 ## QUALITY CONTROL
 
-  - [ ] **ALWAYS keep the given project title from the projects json as "Title"** including any numbering prefix.
-  - [ ] **NUMBERING PRESERVATION**: All original document numbering is maintained in titles.
+  - [ ] ALWAYS keep the given project title from the projects json as "Title".
   - [ ] **NO DUPLICATES**: Each goal appears only once in the array.
   - [ ] All objects describe concrete goals (not measures).
   - [ ] \`description\` is verbatim from the document.
