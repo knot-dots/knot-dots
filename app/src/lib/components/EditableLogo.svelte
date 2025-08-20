@@ -34,11 +34,12 @@
 	async function upload(event: Event) {
 		event.stopPropagation();
 		const input = event.currentTarget as HTMLInputElement;
+		const form = input.form;
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
 				uploadInProgress = true;
 				value = await uploadAsFormData(input.files[0]);
-				input.form?.requestSubmit();
+				form?.requestSubmit();
 			} catch (e) {
 				console.log(e);
 			} finally {
