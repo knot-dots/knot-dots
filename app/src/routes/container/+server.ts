@@ -222,6 +222,7 @@ async function copyIndicatorsFromOriginal(
 async function copyEffectsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originals: Container[],
+	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	indicators: IndicatorContainer[],
 	userGuid: string,
 	txConnection: any
@@ -233,11 +234,12 @@ async function copyEffectsFromOriginal(
 			createdMeasure.organizational_unit
 		);
 
-		copy.relation.push({
-			object: createdMeasure.guid,
-			predicate: predicates.enum['is-part-of'],
-			position: 0
-		});
+		copy.relation.push(
+			...mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-part-of'],
+				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
+			})
+		);
 
 		copy.relation.push(
 			...mapRelationsByPredicate(copyFrom, {
@@ -428,6 +430,7 @@ export const POST = (async ({ locals, request }) => {
 					await copyEffectsFromOriginal(
 						createdContainer,
 						containersRelatedToOriginal,
+						isPartOfObjects,
 						indicators,
 						locals.user.guid,
 						txConnection
