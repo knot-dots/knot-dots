@@ -1086,7 +1086,8 @@ export function getAllContainersRelatedToMeasure(
 		const predicate = [
 			predicates.enum['is-part-of'],
 			predicates.enum['is-part-of-measure'],
-			predicates.enum['is-part-of-program']
+			predicates.enum['is-part-of-program'],
+			predicates.enum['is-section-of']
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
@@ -1123,8 +1124,7 @@ export function getAllContainersRelatedToMeasure(
 			predicates.enum['is-duplicate-of'],
 			predicates.enum['is-equivalent-to'],
 			predicates.enum['is-inconsistent-with'],
-			predicates.enum['is-prerequisite-for'],
-			predicates.enum['is-section-of']
+			predicates.enum['is-prerequisite-for']
 		];
 		const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
 			SELECT cr.subject, cr.object

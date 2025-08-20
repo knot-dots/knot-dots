@@ -257,6 +257,40 @@ async function copyEffectsFromOriginal(
 	}
 }
 
+async function copySectionsFromOriginal(
+	createdMeasure: MeasureContainer,
+	originals: Container[],
+	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	userGuid: string,
+	txConnection: any
+) {
+	for (const copyFrom of originals.filter(({ guid, relation }) =>
+		relation.some(
+			({ predicate, subject }) => predicate === predicates.enum['is-section-of'] && subject === guid
+		)
+	)) {
+		const copy = createCopyOf(
+			copyFrom,
+			createdMeasure.organization,
+			createdMeasure.organizational_unit
+		);
+
+		copy.relation.push(
+			...mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-section-of'],
+				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
+			})
+		);
+
+		copy.user.push({
+			predicate: predicates.enum['is-creator-of'],
+			subject: userGuid
+		});
+
+		await createContainer(copy as NewContainer)(txConnection);
+	}
+}
+
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
@@ -432,6 +466,14 @@ export const POST = (async ({ locals, request }) => {
 						containersRelatedToOriginal,
 						isPartOfObjects,
 						indicators,
+						locals.user.guid,
+						txConnection
+					);
+
+					await copySectionsFromOriginal(
+						createdContainer,
+						containersRelatedToOriginal,
+						isPartOfObjects,
 						locals.user.guid,
 						txConnection
 					);
