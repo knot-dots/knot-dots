@@ -12,27 +12,27 @@ const jobStatusResponseSchema = z.object({
 	completed_projects: z.array(
 		z.object({
 			id: z.string().uuid(),
-			project: z.discriminatedUnion('type', [
+			project: z.union([
 				z.object({
-					description: z.string(),
+					description: z.string().optional(),
 					endDate: z.string().optional(),
 					sdg: z.array(z.string()),
 					startDate: z.string().optional(),
-					status: z.string(),
-					summary: z.string(),
+					status: z.string().optional(),
+					summary: z.string().optional(),
 					title: z.string(),
 					topicArea: z.array(z.string()),
-					type: z.literal(payloadTypes.enum.measure)
+					type: z.string().optional()
 				}),
 				z.object({
-					description: z.string(),
+					description: z.string().optional(),
 					fulfillmentDate: z.string().optional(),
 					goalType: z.string().optional(),
 					sdg: z.array(z.string()),
-					summary: z.string(),
+					summary: z.string().optional(),
 					title: z.string(),
 					topicArea: z.array(z.string()),
-					type: z.literal(payloadTypes.enum.goal)
+					type: z.string().optional()
 				})
 			])
 		})
