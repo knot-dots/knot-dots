@@ -215,11 +215,9 @@
 						{goal.payload.title} ({container.payload.title})
 					{/if}
 				{:else if titleOverride && isEffectContainer(container)}
-					{@const measure = findAncestors(
-						container,
-						relatedContainers,
+					{@const measure = findAncestors(container, relatedContainers, [
 						predicates.enum['is-part-of']
-					).find(isContainerWithEffect)}
+					]).find(isContainerWithEffect)}
 					{#if measure}
 						{measure.payload.title} ({container.payload.title})
 					{/if}

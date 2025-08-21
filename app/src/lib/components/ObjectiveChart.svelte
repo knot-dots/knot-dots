@@ -35,11 +35,9 @@
 			}));
 
 			const subTargets = findLeafObjectives(
-				findDescendants(
-					container,
-					relatedContainers.filter(isObjectiveContainer),
+				findDescendants(container, relatedContainers.filter(isObjectiveContainer), [
 					predicates.enum['is-sub-target-of']
-				)
+				])
 			).flatMap(({ guid, payload }) =>
 				payload.wantedValues.map(([year, value]) => ({
 					date: new Date(year, 0),

@@ -36,7 +36,8 @@
 			{$_('confirm_delete_dialog.message', {
 				values: {
 					count:
-						1 + findDescendants(container, relatedContainers, predicates.enum['is-part-of']).length
+						1 +
+						findDescendants(container, relatedContainers, [predicates.enum['is-part-of']]).length
 				}
 			})}
 		</p>

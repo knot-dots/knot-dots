@@ -259,6 +259,20 @@ export function updateContainer(container: ModifiedContainer) {
 export function deleteContainer(container: AnyContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
+			const sections = await getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				[predicates.enum['is-section-of']],
+				{},
+				''
+			)(txConnection);
+
+			for (const section of findDescendants(container, sections, [
+				predicates.enum['is-section-of']
+			])) {
+				await deleteContainer({ ...section, user: container.user })(txConnection);
+			}
+
 			await txConnection.query(sql.typeAlias('void')`
 				UPDATE container
 				SET valid_currently = false
@@ -291,14 +305,17 @@ export function deleteContainerRecursively(container: AnyContainer) {
 			const parts = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				[predicates.enum['is-part-of']],
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
 				{},
 				''
 			)(txConnection);
 
 			await deleteContainer(container)(txConnection);
 
-			for (const part of findDescendants(container, parts, predicates.enum['is-part-of'])) {
+			for (const part of findDescendants(container, parts, [
+				predicates.enum['is-part-of'],
+				predicates.enum['is-part-of-program']
+			])) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}
 		});

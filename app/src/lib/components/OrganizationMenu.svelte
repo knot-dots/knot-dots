@@ -73,8 +73,8 @@
 		if (selectedContext && isOrganizationalUnitContainer(selectedContext)) {
 			organizationalUnits = [
 				selectedContext,
-				...findAncestors(selectedContext, organizationalUnits, predicates.enum['is-part-of']),
-				...findDescendants(selectedContext, organizationalUnits, predicates.enum['is-part-of'])
+				...findAncestors(selectedContext, organizationalUnits, [predicates.enum['is-part-of']]),
+				...findDescendants(selectedContext, organizationalUnits, [predicates.enum['is-part-of']])
 			];
 		}
 

@@ -28,7 +28,7 @@
 		let knowledgeByLevel = new Map<number, Container[]>();
 
 		for (const container of data.containers) {
-			const ancestors = findAncestors(container, data.containers, predicates.enum['is-part-of']);
+			const ancestors = findAncestors(container, data.containers, [predicates.enum['is-part-of']]);
 			const level = ancestors.length;
 
 			if (knowledgeByLevel.has(level)) {

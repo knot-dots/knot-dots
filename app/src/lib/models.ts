@@ -1611,13 +1611,13 @@ export function findConnected<T extends AnyContainer>(
 export function findAncestors<T extends AnyContainer>(
 	container: T,
 	containers: T[],
-	predicate: Predicate
+	predicate: Predicate[]
 ): T[] {
 	const ancestors = new Map<string, T>();
 
 	function traverse(container: T) {
 		const parentGuid = container.relation.find(
-			(r) => r.predicate == predicate && r.subject == container.guid
+			(r) => predicate.some((p) => p == r.predicate) && r.subject == container.guid
 		)?.object;
 
 		if (!parentGuid) {
@@ -1642,7 +1642,7 @@ export function findAncestors<T extends AnyContainer>(
 export function findDescendants<T extends AnyContainer>(
 	container: T,
 	containers: T[],
-	predicate: Predicate
+	predicate: Predicate[]
 ): T[] {
 	const descendants = new Map<string, T>();
 
@@ -1650,7 +1650,8 @@ export function findDescendants<T extends AnyContainer>(
 		const children = containers.filter(
 			({ relation, guid }) =>
 				relation.findIndex(
-					(r) => r.predicate == predicate && r.object == current.guid && r.object != guid
+					(r) =>
+						predicate.some((p) => p == r.predicate) && r.object == current.guid && r.object != guid
 				) > -1 && !descendants.has(guid)
 		);
 
@@ -1669,7 +1670,7 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 	const parentObjectives = [] as ObjectiveContainer[];
 
 	for (const container of containers) {
-		const ancestors = findAncestors(container, containers, predicates.enum['is-part-of']);
+		const ancestors = findAncestors(container, containers, [predicates.enum['is-part-of']]);
 
 		if (ancestors.length > 0) {
 			roots.add(ancestors[ancestors.length - 1]);
@@ -1677,7 +1678,7 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 	}
 
 	for (const container of roots) {
-		const descendants = findDescendants(container, containers, predicates.enum['is-part-of']);
+		const descendants = findDescendants(container, containers, [predicates.enum['is-part-of']]);
 		const objectives = descendants.filter(isPartOf(container)).filter(isObjectiveContainer);
 
 		if (objectives.length > 0) {
