@@ -37,7 +37,10 @@
 				values: {
 					count:
 						1 +
-						findDescendants(container, relatedContainers, [predicates.enum['is-part-of']]).length
+						findDescendants(container, relatedContainers, [
+							predicates.enum['is-part-of'],
+							predicates.enum['is-part-of-program']
+						]).length
 				}
 			})}
 		</p>
