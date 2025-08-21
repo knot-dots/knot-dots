@@ -43,7 +43,7 @@ export default function defineAbilityFor(user: User) {
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
 		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...commonTypes]);
-		can('delete-recursively', payloadTypes.enum.measure);
+		can('delete-recursively', [payloadTypes.enum.measure, payloadTypes.enum.program]);
 		can('invite-members', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.organization,

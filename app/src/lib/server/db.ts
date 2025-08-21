@@ -305,14 +305,17 @@ export function deleteContainerRecursively(container: AnyContainer) {
 			const parts = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				[predicates.enum['is-part-of']],
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
 				{},
 				''
 			)(txConnection);
 
 			await deleteContainer(container)(txConnection);
 
-			for (const part of findDescendants(container, parts, [predicates.enum['is-part-of']])) {
+			for (const part of findDescendants(container, parts, [
+				predicates.enum['is-part-of'],
+				predicates.enum['is-part-of-program']
+			])) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}
 		});
