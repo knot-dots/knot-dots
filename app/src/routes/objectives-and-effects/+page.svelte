@@ -61,22 +61,16 @@
 						...(indicator ? [indicator] : []),
 						...findLeafObjectives([
 							selectedContainer,
-							...findDescendants(
-								selectedContainer,
-								data.containers.filter(isObjectiveContainer),
+							...findDescendants(selectedContainer, data.containers.filter(isObjectiveContainer), [
 								predicates.enum['is-sub-target-of']
-							)
+							])
 						]).flatMap((c) => data.containers.filter(isEffectContainer).filter(isRelatedTo(c))),
-						...findAncestors(
-							selectedContainer,
-							data.containers,
+						...findAncestors(selectedContainer, data.containers, [
 							predicates.enum['is-sub-target-of']
-						),
-						...findDescendants(
-							selectedContainer,
-							data.containers,
+						]),
+						...findDescendants(selectedContainer, data.containers, [
 							predicates.enum['is-sub-target-of']
-						)
+						])
 					]);
 				} else if (isEffectContainer(selectedContainer)) {
 					const objective = data.containers
@@ -91,7 +85,9 @@
 						...(objective
 							? [
 									objective,
-									...findAncestors(objective, data.containers, predicates.enum['is-sub-target-of'])
+									...findAncestors(objective, data.containers, [
+										predicates.enum['is-sub-target-of']
+									])
 								]
 							: [])
 					]);
@@ -108,11 +104,9 @@
 		let objectivesByLevel = new Map<number, Container[]>();
 
 		for (const container of data.containers.filter(isObjectiveContainer)) {
-			const ancestors = findAncestors(
-				container,
-				data.containers.filter(isObjectiveContainer),
+			const ancestors = findAncestors(container, data.containers.filter(isObjectiveContainer), [
 				predicates.enum['is-sub-target-of']
-			);
+			]);
 			const level = ancestors.length;
 
 			if (objectivesByLevel.has(level)) {

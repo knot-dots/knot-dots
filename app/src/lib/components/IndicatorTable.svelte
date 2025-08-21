@@ -111,7 +111,7 @@
 
 		effects = effectContainers
 			.map((c) => {
-				const measure = findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+				const measure = findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
 					isContainerWithEffect
 				);
 				return {
@@ -274,7 +274,7 @@
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
-								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+								findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>
@@ -302,7 +302,7 @@
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
-								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+								findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>
@@ -330,7 +330,7 @@
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
-								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+								findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>
@@ -358,7 +358,7 @@
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
-								findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+								findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>

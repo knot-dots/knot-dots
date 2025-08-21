@@ -84,7 +84,7 @@
 
 		if (showEffects) {
 			effects = relatedContainers.filter(isEffectContainer).flatMap((c) => {
-				const measure = findAncestors(c, relatedContainers, predicates.enum['is-part-of']).find(
+				const measure = findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
 					isContainerWithEffect
 				);
 				if (measure?.payload.status == status.enum['status.done']) {
