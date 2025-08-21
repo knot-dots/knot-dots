@@ -20,6 +20,7 @@
 			{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
 			{ heading: $_('audience'), key: 'audience' },
 			{ heading: $_('planned_duration'), key: 'duration' },
+			{ heading: $_('editorial_state'), key: 'editorialState' },
 			{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
 		]}
 		rows={data.containers}

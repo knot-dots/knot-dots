@@ -19,6 +19,7 @@
 			{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
 			{ heading: $_('audience'), key: 'audience' },
 			{ heading: $_('fulfillment_date'), key: 'fulfillmentDate' },
+			{ heading: $_('editorial_state'), key: 'editorialState' },
 			{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
 		]}
 		rows={data.containers}
