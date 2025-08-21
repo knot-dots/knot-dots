@@ -308,7 +308,19 @@
 		}
 
 		$newContainer = createCopyOf(
-			container as Container,
+			{
+				...container,
+				payload: {
+					...container.payload,
+					...('title' in container.payload
+						? {
+								title: $_('copy_of', {
+									values: { title: container.payload.title }
+								})
+							}
+						: undefined)
+				}
+			} as Container,
 			organization,
 			organizationalUnit?.guid ?? null
 		) as NewContainer;
@@ -466,23 +478,23 @@
 			>
 				{#snippet icon()}<CodeMerge />{/snippet}
 			</DropDownMenu>
-			{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
-				<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
-					<CopyCat />
-					{$_('copy')}
-				</button>
-			{/if}
-			{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
-				<button
-					class="button-ai"
-					class:is-active={isThinking}
-					type="button"
-					onclick={() => askAI(container as ProgramContainer)}
-				>
-					<AskAI />
-					{$_('ask_ai')}
-				</button>
-			{/if}
+		{/if}
+		{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+			<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
+				<CopyCat />
+				{$_('copy')}
+			</button>
+		{/if}
+		{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
+			<button
+				class="button-ai"
+				class:is-active={isThinking}
+				type="button"
+				onclick={() => askAI(container as ProgramContainer)}
+			>
+				<AskAI />
+				{$_('ask_ai')}
+			</button>
 		{/if}
 		{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
 			<button

@@ -13,25 +13,32 @@
 		predicates
 	} from '$lib/models';
 
-	export let container: Container | EmptyContainer;
-	export let editable = false;
+	interface Props {
+		container: Container | EmptyContainer;
+		editable?: boolean;
+	}
 
-	$: organization = container.organization;
+	let { container = $bindable(), editable = false }: Props = $props();
 
-	$: organizationalUnit = container.organizational_unit;
+	let organization = $derived(container.organization);
 
-	$: measureCandidatesRequest = fetchContainers(
-		{
-			organization: [organization],
-			...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
-			payloadType: [payloadTypes.enum.measure]
-		},
-		'alpha'
-	) as Promise<ContainerWithEffect[]>;
+	let organizationalUnit = $derived(container.organizational_unit);
 
-	$: isPartOfMeasureObject =
+	let measureCandidatesRequest = $derived(
+		fetchContainers(
+			{
+				organization: [organization],
+				...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : undefined),
+				payloadType: [payloadTypes.enum.measure]
+			},
+			'alpha'
+		) as Promise<ContainerWithEffect[]>
+	);
+
+	let isPartOfMeasureObject = $derived(
 		container.relation.find((r) => r.predicate === predicates.enum['is-part-of-measure'])?.object ??
-		'';
+			''
+	);
 
 	async function set(value: string) {
 		const isPartOfMeasureIndex = container.relation.findIndex(

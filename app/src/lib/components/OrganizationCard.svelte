@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
@@ -6,7 +7,7 @@
 	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-	import type { Snippet } from 'svelte';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		button?: Snippet;
@@ -48,8 +49,8 @@
 </script>
 
 {#snippet body()}
-	{#if 'image' in container.payload}
-		<img alt={$_('image')} src={container.payload.image} />
+	{#if 'image' in container.payload && container.payload.image}
+		<img alt={$_('image')} src={transformFileURL(container.payload.image)} />
 	{/if}
 {/snippet}
 

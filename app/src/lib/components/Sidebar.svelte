@@ -24,6 +24,7 @@
 	import logo from '$lib/assets/logo.svg';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 	import { user } from '$lib/stores';
+	import transformFileURL from '$lib/transformFileURL';
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
 
@@ -58,7 +59,9 @@
 	<a href={landingPageURL(page.data.currentOrganization)}>
 		<img
 			class="logo"
-			src={page.data.currentOrganization.payload.image ?? logo}
+			src={page.data.currentOrganization.payload.image
+				? transformFileURL(page.data.currentOrganization.payload.image)
+				: logo}
 			alt={page.data.currentOrganization.payload.name}
 		/>
 	</a>

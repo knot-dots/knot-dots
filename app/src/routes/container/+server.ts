@@ -6,6 +6,7 @@ import { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	audience,
+	type Container,
 	createCopyOf,
 	type GoalContainer,
 	indicatorCategories,
@@ -37,6 +38,258 @@ import {
 	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
+
+function findCopiedTargetGuid(
+	originalTargetGuid: string,
+	copied: Array<GoalContainer | MeasureContainer | IndicatorContainer>
+): string {
+	return copied.find(({ relation }) =>
+		relation.some(
+			({ predicate, object }) =>
+				predicate === predicates.enum['is-copy-of'] && object === originalTargetGuid
+		)
+	)?.guid as string;
+}
+
+function mapRelationsByPredicate<T extends { relation: any[]; guid: string }>(
+	copyFrom: T,
+	opts: {
+		predicate: string;
+		subjectMustBeSelf?: boolean;
+		resolveObject: (originalObjectGuid: string) => string;
+	}
+) {
+	const { predicate, subjectMustBeSelf = true, resolveObject } = opts;
+
+	return copyFrom.relation
+		.filter(
+			({ predicate: p, subject }: { predicate: string; subject?: string }) =>
+				p === predicate && (!subjectMustBeSelf || subject === copyFrom.guid)
+		)
+		.map(
+			({
+				position,
+				predicate: p,
+				object: originalObjectGuid
+			}: {
+				position: number;
+				predicate: string;
+				object: string;
+			}) => ({
+				position,
+				predicate: p,
+				object: resolveObject(originalObjectGuid)
+			})
+		)
+		.filter(({ object }) => object !== undefined);
+}
+
+async function copyGoalsFromOriginal(
+	createdMeasure: MeasureContainer,
+	originals: Container[],
+	userGuid: string,
+	txConnection: any
+) {
+	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
+
+	const originalsGoalsSorted = originals
+		.filter(isGoalContainer)
+		.toSorted((a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel);
+
+	for (const copyFrom of originalsGoalsSorted) {
+		const copy = createCopyOf(
+			copyFrom,
+			createdMeasure.organization,
+			createdMeasure.organizational_unit
+		);
+
+		copy.relation.push({
+			object: createdMeasure.guid,
+			predicate: predicates.enum['is-part-of'],
+			position: 0
+		});
+
+		copy.relation.push({
+			object: createdMeasure.guid,
+			predicate: predicates.enum['is-part-of-measure'],
+			position: 0
+		});
+
+		copy.relation.push(
+			...mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-part-of'],
+				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
+			})
+		);
+
+		copy.user.push({
+			predicate: predicates.enum['is-creator-of'],
+			subject: userGuid
+		});
+
+		isPartOfObjects.push(
+			(await createContainer(copy as NewContainer)(txConnection)) as GoalContainer
+		);
+	}
+
+	return isPartOfObjects;
+}
+
+async function copyTasksFromOriginal(
+	createdMeasure: MeasureContainer,
+	originals: Container[],
+	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	userGuid: string,
+	txConnection: any
+) {
+	for (const copyFrom of originals.filter(isTaskContainer)) {
+		const copy = createCopyOf(
+			copyFrom,
+			createdMeasure.organization,
+			createdMeasure.organizational_unit
+		);
+
+		copy.relation.push({
+			object: createdMeasure.guid,
+			predicate: predicates.enum['is-part-of-measure'],
+			position: 0
+		});
+
+		copy.relation.push(
+			...mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-part-of'],
+				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
+			})
+		);
+
+		copy.user.push({
+			predicate: predicates.enum['is-creator-of'],
+			subject: userGuid
+		});
+
+		await createContainer(copy as NewContainer)(txConnection);
+	}
+}
+
+async function copyIndicatorsFromOriginal(
+	createdMeasure: MeasureContainer,
+	originals: Container[],
+	userGuid: string,
+	txConnection: any
+) {
+	const measuredByObjects: IndicatorContainer[] = [];
+
+	const organizationIndicators = (await getManyContainers(
+		[createdMeasure.organization],
+		{ type: [payloadTypes.enum.indicator] },
+		''
+	)(txConnection)) as IndicatorContainer[];
+
+	for (const copyFrom of originals.filter(isIndicatorContainer)) {
+		const match = organizationIndicators.find(
+			({ payload }) => payload.quantity === copyFrom.payload.quantity
+		);
+		if (match) {
+			measuredByObjects.push({
+				...match,
+				relation: [
+					...match.relation,
+					{
+						object: copyFrom.guid,
+						position: 0,
+						predicate: predicates.enum['is-copy-of'],
+						subject: match.guid
+					}
+				]
+			});
+		} else {
+			const copy = createCopyOf(copyFrom, createdMeasure.organization, null);
+
+			copy.user.push({
+				predicate: predicates.enum['is-creator-of'],
+				subject: userGuid
+			});
+
+			measuredByObjects.push(
+				(await createContainer(copy as NewContainer)(txConnection)) as IndicatorContainer
+			);
+		}
+	}
+
+	return measuredByObjects;
+}
+
+async function copyEffectsFromOriginal(
+	createdMeasure: MeasureContainer,
+	originals: Container[],
+	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	indicators: IndicatorContainer[],
+	userGuid: string,
+	txConnection: any
+) {
+	for (const copyFrom of originals.filter(isEffectContainer)) {
+		const copy = createCopyOf(
+			copyFrom,
+			createdMeasure.organization,
+			createdMeasure.organizational_unit
+		);
+
+		copy.relation.push(
+			...mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-part-of'],
+				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
+			})
+		);
+
+		copy.relation.push(
+			...mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-measured-by'],
+				resolveObject: (origIndicatorGuid) => findCopiedTargetGuid(origIndicatorGuid, indicators)
+			})
+		);
+
+		copy.user.push({
+			predicate: predicates.enum['is-creator-of'],
+			subject: userGuid
+		});
+
+		await createContainer(copy as NewContainer)(txConnection);
+	}
+}
+
+async function copySectionsFromOriginal(
+	createdMeasure: MeasureContainer,
+	originals: Container[],
+	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	userGuid: string,
+	txConnection: any
+) {
+	for (const copyFrom of originals.filter(({ guid, relation }) =>
+		relation.some(
+			({ predicate, subject }) => predicate === predicates.enum['is-section-of'] && subject === guid
+		)
+	)) {
+		const copy = createCopyOf(
+			copyFrom,
+			createdMeasure.organization,
+			createdMeasure.organizational_unit
+		);
+
+		copy.relation.push(
+			...mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-section-of'],
+				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
+			})
+		);
+
+		copy.user.push({
+			predicate: predicates.enum['is-creator-of'],
+			subject: userGuid
+		});
+
+		await createContainer(copy as NewContainer)(txConnection);
+	}
+}
 
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
@@ -175,6 +428,7 @@ export const POST = (async ({ locals, request }) => {
 					({ object, predicate }) =>
 						predicate === predicates.enum['is-copy-of'] && object !== undefined
 				);
+
 				if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
 					const containersRelatedToOriginal = filterVisible(
 						await getAllContainersRelatedToMeasure(
@@ -185,175 +439,44 @@ export const POST = (async ({ locals, request }) => {
 						locals.user
 					);
 
-					const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdContainer];
+					const isPartOfObjects = await copyGoalsFromOriginal(
+						createdContainer,
+						containersRelatedToOriginal,
+						locals.user.guid,
+						txConnection
+					);
 
-					for (const copyFrom of containersRelatedToOriginal
-						.filter(isGoalContainer)
-						.toSorted((a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel)) {
-						const copyContainer = createCopyOf(
-							copyFrom,
-							createdContainer.organization,
-							createdContainer.organizational_unit
-						);
+					await copyTasksFromOriginal(
+						createdContainer,
+						containersRelatedToOriginal,
+						isPartOfObjects,
+						locals.user.guid,
+						txConnection
+					);
 
-						copyContainer.relation.push({
-							object: createdContainer.guid,
-							predicate: predicates.enum['is-part-of'],
-							position: 0
-						});
-						copyContainer.relation.push({
-							object: createdContainer.guid,
-							predicate: predicates.enum['is-part-of-measure'],
-							position: 0
-						});
-						copyContainer.relation.push(
-							...copyFrom.relation
-								.filter(
-									({ predicate, subject }) =>
-										predicate == predicates.enum['is-part-of'] && subject == copyFrom.guid
-								)
-								.map(({ position, predicate, object: originalIsPartOfObject }) => ({
-									position,
-									predicate,
-									object: isPartOfObjects.find(({ relation }) =>
-										relation.find(
-											({ predicate, object }) =>
-												predicate == predicates.enum['is-copy-of'] &&
-												originalIsPartOfObject == object
-										)
-									)?.guid as string
-								}))
-								.filter(({ object }) => object !== undefined)
-						);
+					const indicators = await copyIndicatorsFromOriginal(
+						createdContainer,
+						containersRelatedToOriginal,
+						locals.user.guid,
+						txConnection
+					);
 
-						copyContainer.user.push({
-							predicate: predicates.enum['is-creator-of'],
-							subject: locals.user.guid
-						});
+					await copyEffectsFromOriginal(
+						createdContainer,
+						containersRelatedToOriginal,
+						isPartOfObjects,
+						indicators,
+						locals.user.guid,
+						txConnection
+					);
 
-						isPartOfObjects.push(
-							(await createContainer(copyContainer as NewContainer)(txConnection)) as GoalContainer
-						);
-					}
-
-					for (const copyFrom of containersRelatedToOriginal.filter(isTaskContainer)) {
-						const copyContainer = createCopyOf(
-							copyFrom,
-							createdContainer.organization,
-							createdContainer.organizational_unit
-						);
-
-						copyContainer.relation.push({
-							object: createdContainer.guid,
-							predicate: predicates.enum['is-part-of-measure'],
-							position: 0
-						});
-						copyContainer.relation.push(
-							...copyFrom.relation
-								.filter(
-									({ predicate, subject }) =>
-										predicate == predicates.enum['is-part-of'] && subject == copyFrom.guid
-								)
-								.map(({ position, predicate, object: originalIsPartOfObject }) => ({
-									position,
-									predicate,
-									object: isPartOfObjects.find(({ relation }) =>
-										relation.find(
-											({ predicate, object }) =>
-												predicate == predicates.enum['is-copy-of'] &&
-												originalIsPartOfObject == object
-										)
-									)?.guid as string
-								}))
-								.filter(({ object }) => object !== undefined)
-						);
-
-						copyContainer.user.push({
-							predicate: predicates.enum['is-creator-of'],
-							subject: locals.user.guid
-						});
-
-						await createContainer(copyContainer as NewContainer)(txConnection);
-					}
-
-					const measuredByObjects = [] as IndicatorContainer[];
-
-					const organizationIndicators = (await getManyContainers(
-						[createdContainer.organization],
-						{ type: [payloadTypes.enum.indicator] },
-						''
-					)(txConnection)) as IndicatorContainer[];
-
-					for (const copyFrom of containersRelatedToOriginal.filter(isIndicatorContainer)) {
-						const match = organizationIndicators.find(
-							({ payload }) => payload.quantity == copyFrom.payload.quantity
-						);
-						if (match) {
-							measuredByObjects.push({
-								...match,
-								relation: [
-									...match.relation,
-									{
-										object: copyFrom.guid,
-										position: 0,
-										predicate: predicates.enum['is-copy-of'],
-										subject: match.guid
-									}
-								]
-							});
-						} else {
-							const copyContainer = createCopyOf(copyFrom, createdContainer.organization, null);
-							copyContainer.user.push({
-								predicate: predicates.enum['is-creator-of'],
-								subject: locals.user.guid
-							});
-							measuredByObjects.push(
-								(await createContainer(copyContainer as NewContainer)(
-									txConnection
-								)) as IndicatorContainer
-							);
-						}
-					}
-
-					for (const copyFrom of containersRelatedToOriginal.filter(isEffectContainer)) {
-						const copyContainer = createCopyOf(
-							copyFrom,
-							createdContainer.organization,
-							createdContainer.organizational_unit
-						);
-
-						copyContainer.relation.push({
-							object: createdContainer.guid,
-							predicate: predicates.enum['is-part-of'],
-							position: 0
-						});
-						copyContainer.relation.push(
-							...copyFrom.relation
-								.filter(
-									({ predicate, subject }) =>
-										predicate == predicates.enum['is-measured-by'] && subject == copyFrom.guid
-								)
-								.map(({ position, predicate, object: originalIsMeasuredByObject }) => ({
-									position,
-									predicate,
-									object: measuredByObjects.find(({ relation }) =>
-										relation.find(
-											({ predicate, object }) =>
-												predicate == predicates.enum['is-copy-of'] &&
-												originalIsMeasuredByObject == object
-										)
-									)?.guid as string
-								}))
-								.filter(({ object }) => object !== undefined)
-						);
-
-						copyContainer.user.push({
-							predicate: predicates.enum['is-creator-of'],
-							subject: locals.user.guid
-						});
-
-						await createContainer(copyContainer as NewContainer)(txConnection);
-					}
+					await copySectionsFromOriginal(
+						createdContainer,
+						containersRelatedToOriginal,
+						isPartOfObjects,
+						locals.user.guid,
+						txConnection
+					);
 				}
 
 				return createdContainer;

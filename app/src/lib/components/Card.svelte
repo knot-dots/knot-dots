@@ -39,6 +39,7 @@
 		taskStatusColors,
 		taskStatusIcons
 	} from '$lib/theme/models';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		body?: Snippet;
@@ -299,8 +300,8 @@
 					? $date(new Date(container.payload.fulfillmentDate), { format: 'medium' })
 					: ''}
 			</p>
-		{:else if 'image' in container.payload}
-			<img alt={$_('cover_image')} src={container.payload.image} />
+		{:else if 'image' in container.payload && container.payload.image}
+			<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}

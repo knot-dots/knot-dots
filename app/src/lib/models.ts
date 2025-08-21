@@ -1823,14 +1823,7 @@ export function createCopyOf(
 
 	copy.payload = {
 		...copy.payload,
-		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
-		...('title' in copy.payload
-			? {
-					title: unwrapFunctionStore(_)('copy_of', {
-						values: { title: copy.payload.title }
-					})
-				}
-			: undefined)
+		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
 	};
 
 	copy.relation.push({
