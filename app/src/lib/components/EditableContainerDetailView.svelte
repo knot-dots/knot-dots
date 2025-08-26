@@ -218,38 +218,31 @@
 	}
 
 	.add-section-wrapper {
-		bottom: -1.5rem;
-		left: -1.75rem;
+		bottom: -1.25rem;
 		position: absolute;
-		width: calc(100% + 1.75rem);
+		width: 100%;
+		z-index: 1;
 	}
 
-	.add-section-wrapper::after {
-		background-color: var(--color-primary-700);
+	.add-section-wrapper::before {
+		background-color: var(--color-primary-200);
+		border: 12px solid white;
 		border-radius: calc(infinity * 1px);
 		content: '';
 		display: block;
-		height: 3px;
-		left: 3.25rem;
+		height: 27px;
+		left: 0.75rem;
 		position: absolute;
-		right: 1.5rem;
-		top: calc(50% - 1px);
+		right: 0.75rem;
+		top: calc(50% - 13px);
 	}
 
-	@media (hover: hover) {
-		.add-section-wrapper > :global(*),
-		.add-section-wrapper::after {
-			visibility: hidden;
-		}
+	.add-section-wrapper:hover::before {
+		background-color: var(--color-primary-700);
+		border-color: var(--color-primary-050);
+	}
 
-		.add-section-wrapper:has(:global(.dropdown-panel)) {
-			z-index: 2;
-		}
-
-		.add-section-wrapper:hover > :global(*),
-		.add-section-wrapper > :global(*:has(.dropdown-panel)),
-		.add-section-wrapper:hover::after {
-			visibility: visible;
-		}
+	.add-section-wrapper:has(:global(.dropdown-panel)) {
+		z-index: 2;
 	}
 </style>

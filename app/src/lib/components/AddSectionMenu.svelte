@@ -170,11 +170,11 @@
 
 <style>
 	.dropdown {
-		--dropdown-button-default-background: var(--color-primary-700);
+		--dropdown-button-default-background: white;
 		--dropdown-button-expanded-background: var(--color-primary-900);
 		--dropdown-button-hover-background: var(--color-primary-800);
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-icon-default-color: white;
+		--dropdown-button-icon-default-color: var(--color-primary-700);
 		--dropdown-button-icon-expanded-color: white;
 
 		align-items: center;
@@ -184,8 +184,13 @@
 		color: var(--color-gray-700);
 		display: flex;
 		gap: 0.375rem;
+		margin: 0 auto;
 		padding: 0.25rem;
 		width: fit-content;
+	}
+
+	.dropdown:hover {
+		--dropdown-button-icon-default-color: white;
 	}
 
 	.dropdown-panel {
