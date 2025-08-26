@@ -8,7 +8,11 @@ import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
 	try {
-		return json(await locals.pool.connect(getContainerByGuid(params.guid)));
+		const container = await locals.pool.connect(getContainerByGuid(params.guid));
+		if (!defineAbilityFor(locals.user).can('read', container)) {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		}
+		return json(container);
 	} catch (e) {
 		if (e instanceof NotFoundError) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });

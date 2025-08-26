@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { filterVisible } from '$lib/authorization';
 import { etag, modifiedContainer, predicates } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
@@ -11,7 +12,12 @@ import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
 	try {
-		return json(await locals.pool.connect(getAllContainerRevisionsByGuid(params.guid)));
+		return json(
+			filterVisible(
+				await locals.pool.connect(getAllContainerRevisionsByGuid(params.guid)),
+				locals.user
+			)
+		);
 	} catch (e) {
 		if (e instanceof NotFoundError) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
