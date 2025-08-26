@@ -95,8 +95,6 @@
 
 	let isThinking = $state(false);
 
-	setContext('isThinking', () => isThinking);
-
 	let container = $state(originalContainer);
 
 	let guid = $derived(container.guid);
