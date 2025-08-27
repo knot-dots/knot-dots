@@ -20,6 +20,7 @@ const commonTypes = [
 	payloadTypes.enum.effect_collection,
 	payloadTypes.enum.goal,
 	payloadTypes.enum.goal_collection,
+	payloadTypes.enum.file_collection,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.objective,
