@@ -6,7 +6,7 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import { type OrganizationalUnitContainer, type OrganizationContainer } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
@@ -16,7 +16,7 @@
 		showRelationFilter?: boolean;
 	}
 
-	let { button, container, linkPath = '/', showRelationFilter = false }: Props = $props();
+	let { button, container, linkPath = '/all/page', showRelationFilter = false }: Props = $props();
 
 	let relatedTo = $derived(page.url.searchParams.get('related-to'));
 
@@ -38,8 +38,8 @@
 	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return () => {
 			const url = new URL(env.PUBLIC_BASE_URL ?? '');
-			url.hostname = `${container.guid}.${url.hostname}`;
-			url.pathname = linkPath
+			url.hostname = `${container.organization}.${url.hostname}`;
+			url.pathname = `/${container.guid}${linkPath}`
 				.replace('/me/measures', '/measures/status')
 				.replace('/me/tasks', '/tasks/status')
 				.replace(/\/me$/, '/all/page');

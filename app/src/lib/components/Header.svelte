@@ -8,6 +8,7 @@
 	import Filter from '~icons/knotdots/filter';
 	import Users from '~icons/knotdots/users';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
@@ -185,7 +186,7 @@
 
 			<a
 				class="action-button action-button--size-l"
-				href={`/${selectedContext.payload.type}/${selectedContext.guid}/members`}
+				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
 			>
 				<Users />
 				<span class="is-visually-hidden">{$_('members')}</span>

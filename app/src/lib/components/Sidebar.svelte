@@ -18,11 +18,12 @@
 	import Cog from '~icons/knotdots/cog';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Favicon from '~icons/knotdots/favicon';
-	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
+	import { type OrganizationalUnitContainer, type OrganizationContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
@@ -45,13 +46,13 @@
 		const url = new URL(env.PUBLIC_BASE_URL);
 
 		if ('default' in container.payload && container.payload.default) {
-			url.pathname = '/all/page';
-			return url.toString();
+			url.pathname = resolve('/[guid=uuid]/all/page', { guid: container.guid });
 		} else {
-			url.hostname = `${container.guid}.${url.hostname}`;
-			url.pathname = '/all/page';
-			return url.toString();
+			url.hostname = `${container.organization}.${url.hostname}`;
+			url.pathname = resolve('/[guid=uuid]/all/page', { guid: container.guid });
 		}
+
+		return url.toString();
 	}
 </script>
 

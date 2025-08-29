@@ -1,6 +1,8 @@
 import { redirect } from '@sveltejs/kit';
+import { resolve } from '$app/paths';
 import type { PageServerLoad } from './$types';
 
-export const load = (async () => {
-	redirect(308, '/all/page');
+export const load = (async ({ parent }) => {
+	const { currentOrganization } = await parent();
+	redirect(308, resolve('/[guid=uuid]/all/page', { guid: currentOrganization.guid }));
 }) satisfies PageServerLoad;
