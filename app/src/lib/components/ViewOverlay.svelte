@@ -133,14 +133,14 @@
 		}
 	});
 
-	let relatedContainers = $derived(
+	let relatedContainersPromise = $derived(
 		isIndicatorContainer(container)
-			? await fetchContainersRelatedToIndicators({ guid, params })
+			? fetchContainersRelatedToIndicators({ guid, params })
 			: isMeasureContainer(container)
-				? await fetchContainersRelatedToMeasure({ guid, params })
+				? fetchContainersRelatedToMeasure({ guid, params })
 				: isProgramContainer(container)
-					? await fetchContainersRelatedToProgram({ guid, params })
-					: await fetchRelatedContainers({ guid, params })
+					? fetchContainersRelatedToProgram({ guid, params })
+					: fetchRelatedContainers({ guid, params })
 	);
 
 	let mayShowRelationButton =
@@ -395,12 +395,12 @@
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 			]),
-			relatedContainers.filter(({ guid, relation }) =>
+			relatedContainersPromise.current?.filter(({ guid, relation }) =>
 				relation.some(
 					({ predicate }) =>
 						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
 				)
-			)
+			) ?? []
 		)}
 		search
 	/>
@@ -410,120 +410,123 @@
 	<Header sortOptions={[]} workspaceOptions={[]} />
 {/if}
 
-<div class="content-details masked-overflow">
-	{#if isEffectContainer(container)}
-		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isGoalContainer(container)}
-		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isIndicatorContainer(container)}
-		<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isIndicatorTemplateContainer(container)}
-		<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isKnowledgeContainer(container)}
-		<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isContainerWithEffect(container)}
-		<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isObjectiveContainer(container)}
-		<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isOrganizationalUnitContainer(container)}
-		<EditableOrganizationalUnitDetailView bind:container />
-	{:else if isOrganizationContainer(container)}
-		<EditableOrganizationDetailView bind:container />
-	{:else if isProgramContainer(container)}
-		{#key relatedContainers}
-			<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
-		{/key}
-	{:else if isResourceContainer(container)}
-		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isRuleContainer(container)}
-		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isTaskContainer(container)}
-		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
-	{:else if isTextContainer(container)}
-		<EditableTextDetailView bind:container {relatedContainers} {revisions} />
-	{/if}
-</div>
-
-<footer class="content-footer bottom-actions-bar">
-	<div class="content-actions">
-		{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
-			<label>
-				<input
-					class="toggle"
-					name="template"
-					type="checkbox"
-					bind:checked={container.payload.template}
-				/>
-				{$_('template')}
-			</label>
-		{/if}
-		{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
-			<button type="button" onclick={createOverallObjective(container)}>
-				<Plus />{$_('overall_objective')}
-			</button>
-		{/if}
-		{#if mayShowRelationButton && $ability.can('relate', container)}
-			<a class="button button-relation" href="#relations={container.guid}">
-				<Relation />
-				{$_('relations')}
-			</a>
-		{/if}
-		{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
-			<DropDownMenu
-				handleChange={createContainerDerivedFrom(container)}
-				label={$_('create_another')}
-				options={createAnotherOptions(container, relatedContainers)}
-			>
-				{#snippet icon()}<CodeMerge />{/snippet}
-			</DropDownMenu>
-		{/if}
-		{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
-			<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
-				<CopyCat />
-				{$_('copy')}
-			</button>
-		{/if}
-		{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
-			<button
-				class="button-ai"
-				class:is-active={isThinking}
-				type="button"
-				onclick={() => askAI(container as ProgramContainer)}
-			>
-				<AskAI />
-				{$_('ask_ai')}
-			</button>
-		{/if}
-		{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
-			<button
-				type="button"
-				onclick={saveIndicatorAsTemplate(container)}
-				disabled={saveAsIndicatorTemplateDisabled}
-			>
-				{$_('indicator.save_as_template')}
-			</button>
-		{/if}
-		{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
-			<button
-				aria-label={$_('delete')}
-				class="delete quiet"
-				type="button"
-				onclick={() => confirmDeleteDialog.showModal()}
-			>
-				<TrashBin />
-			</button>
+{#if relatedContainersPromise.current}
+	{@const relatedContainers = relatedContainersPromise.current}
+	<div class="content-details masked-overflow">
+		{#if isEffectContainer(container)}
+			<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isGoalContainer(container)}
+			<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isIndicatorContainer(container)}
+			<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isIndicatorTemplateContainer(container)}
+			<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isKnowledgeContainer(container)}
+			<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isContainerWithEffect(container)}
+			<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isObjectiveContainer(container)}
+			<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isOrganizationalUnitContainer(container)}
+			<EditableOrganizationalUnitDetailView bind:container />
+		{:else if isOrganizationContainer(container)}
+			<EditableOrganizationDetailView bind:container />
+		{:else if isProgramContainer(container)}
+			{#key relatedContainers}
+				<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
+			{/key}
+		{:else if isResourceContainer(container)}
+			<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isRuleContainer(container)}
+			<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isTaskContainer(container)}
+			<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+		{:else if isTextContainer(container)}
+			<EditableTextDetailView bind:container {relatedContainers} {revisions} />
 		{/if}
 	</div>
-</footer>
 
-<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
+	<footer class="content-footer bottom-actions-bar">
+		<div class="content-actions">
+			{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
+				<label>
+					<input
+						class="toggle"
+						name="template"
+						type="checkbox"
+						bind:checked={container.payload.template}
+					/>
+					{$_('template')}
+				</label>
+			{/if}
+			{#if isIndicatorContainer(container) && !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
+				<button type="button" onclick={createOverallObjective(container)}>
+					<Plus />{$_('overall_objective')}
+				</button>
+			{/if}
+			{#if mayShowRelationButton && $ability.can('relate', container)}
+				<a class="button button-relation" href="#relations={container.guid}">
+					<Relation />
+					{$_('relations')}
+				</a>
+			{/if}
+			{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
+				<DropDownMenu
+					handleChange={createContainerDerivedFrom(container)}
+					label={$_('create_another')}
+					options={createAnotherOptions(container, relatedContainers)}
+				>
+					{#snippet icon()}<CodeMerge />{/snippet}
+				</DropDownMenu>
+			{/if}
+			{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+				<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
+					<CopyCat />
+					{$_('copy')}
+				</button>
+			{/if}
+			{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container) && container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
+				<button
+					class="button-ai"
+					class:is-active={isThinking}
+					type="button"
+					onclick={() => askAI(container as ProgramContainer)}
+				>
+					<AskAI />
+					{$_('ask_ai')}
+				</button>
+			{/if}
+			{#if isIndicatorContainer(container) && container.payload.quantity === quantities.enum['quantity.custom'] && $ability.can('create', payloadTypes.enum.indicator_template)}
+				<button
+					type="button"
+					onclick={saveIndicatorAsTemplate(container)}
+					disabled={saveAsIndicatorTemplateDisabled}
+				>
+					{$_('indicator.save_as_template')}
+				</button>
+			{/if}
+			{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+				<button
+					aria-label={$_('delete')}
+					class="delete quiet"
+					type="button"
+					onclick={() => confirmDeleteDialog.showModal()}
+				>
+					<TrashBin />
+				</button>
+			{/if}
+		</div>
+	</footer>
 
-<ConfirmDeleteDialog
-	bind:dialog={confirmDeleteDialog}
-	handleSubmit={() => handleDelete(container)}
-	{container}
-	{relatedContainers}
-/>
+	<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
+
+	<ConfirmDeleteDialog
+		bind:dialog={confirmDeleteDialog}
+		handleSubmit={() => handleDelete(container)}
+		{container}
+		{relatedContainers}
+	/>
+{/if}
 
 <style>
 	.toggle {
