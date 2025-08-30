@@ -88,7 +88,7 @@
 	}
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container>
 	{#snippet data()}
 		<ObjectiveProperties
 			bind:container

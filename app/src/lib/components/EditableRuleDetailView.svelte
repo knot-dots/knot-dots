@@ -15,7 +15,7 @@
 	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container>
 	{#snippet data()}
 		<RuleProperties
 			bind:container

@@ -102,7 +102,7 @@
 	}
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container>
 	{#snippet data()}
 		<EffectProperties
 			bind:container

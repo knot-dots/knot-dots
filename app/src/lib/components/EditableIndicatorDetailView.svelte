@@ -57,7 +57,7 @@
 	let overallObjective = $derived(findOverallObjective(container, relatedContainers));
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container>
 	{#snippet data()}
 		<IndicatorProperties
 			bind:container
