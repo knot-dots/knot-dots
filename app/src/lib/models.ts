@@ -254,6 +254,12 @@ export const goalType = z.enum(goalTypeValues);
 
 export type GoalType = z.infer<typeof goalType>;
 
+const organizationalUnitTypeValues = ['organizational_unit_type.administrative_area'] as const;
+
+export const organizationalUnitType = z.enum(organizationalUnitTypeValues);
+
+export type OrganizationalUnitType = z.infer<typeof organizationalUnitType>;
+
 const topicValues = [
 	'topic.citizen_participation',
 	'topic.cityscape',
@@ -815,6 +821,7 @@ const organizationalUnitPayload = z.object({
 	image: z.string().url().optional(),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
+	organizationalUnitType: organizationalUnitType.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
 	visibility: visibility.default(visibility.enum['organization'])
 });
