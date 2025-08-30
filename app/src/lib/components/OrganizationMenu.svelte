@@ -11,7 +11,6 @@
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Organization from '~icons/knotdots/organization';
 	import { page } from '$app/state';
-	import paramsFromURL from '$lib/client/paramsFromURL';
 	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
 	import OrganizationMenuCard from '$lib/components/OrganizationMenuCard.svelte';
 	import Board from '$lib/components/Board.svelte';
@@ -28,8 +27,8 @@
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
-	$effect(() => {
-		if (paramsFromURL(page.url).has('create')) {
+	$effect.pre(() => {
+		if (page.url) {
 			popover.close();
 		}
 	});
@@ -89,6 +88,21 @@
 
 		return organizationalUnitsByLevel;
 	});
+
+	let pathnameWithoutContextSegment = $derived.by(() => {
+		const pathnameSegments = page.url.pathname.split('/');
+
+		if (
+			pathnameSegments.length > 1 &&
+			[...page.data.organizations, ...page.data.organizationalUnits].some(
+				({ guid }) => guid === pathnameSegments[1]
+			)
+		) {
+			return [pathnameSegments.slice(0, 1), ...pathnameSegments.slice(2)].join('/');
+		} else {
+			return page.url.pathname;
+		}
+	});
 </script>
 
 <div class="organization-menu">
@@ -128,7 +142,7 @@
 								<OrganizationMenuCard
 									--height="100%"
 									{container}
-									linkPath={page.url.pathname}
+									linkPath={pathnameWithoutContextSegment}
 									bind:selectedContext
 								/>
 							{/each}
@@ -137,11 +151,11 @@
 								<OrganizationMenuCard
 									--height="100%"
 									{container}
-									linkPath={page.url.pathname}
+									linkPath={pathnameWithoutContextSegment}
 									bind:selectedContext
 								/>
 							{/each}
-							<AllOrganizationsCard --height="100%" linkPath={page.url.pathname} />
+							<AllOrganizationsCard --height="100%" linkPath={pathnameWithoutContextSegment} />
 						{/if}
 					</div>
 				</BoardColumn>
@@ -164,7 +178,7 @@
 							{#each containers as container}
 								<OrganizationMenuCard
 									{container}
-									linkPath={page.url.pathname}
+									linkPath={pathnameWithoutContextSegment}
 									bind:selectedContext
 								/>
 							{/each}

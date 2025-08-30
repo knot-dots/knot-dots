@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
-	import { type AnyContainer, type Container, findDescendants, predicates } from '$lib/models';
+	import { type AnyContainer, findDescendants, predicates } from '$lib/models';
 
 	interface Props {
 		dialog: HTMLDialogElement;

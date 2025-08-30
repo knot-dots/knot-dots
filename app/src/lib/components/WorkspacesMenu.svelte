@@ -115,8 +115,22 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
+	let pathnamePrefix = $derived(`/${selectedContext.guid}`);
+
+	let pathnameWithoutContextSegment = $derived.by(() => {
+		const pathnameSegments = page.url.pathname.split('/');
+
+		if (pathnameSegments.length > 1 && pathnameSegments[1] == selectedContext.guid) {
+			return [pathnameSegments.slice(0, 1), ...pathnameSegments.slice(2)].join('/');
+		} else {
+			return page.url.pathname;
+		}
+	});
+
 	let selectedItem = $derived(
-		page.url.pathname === '/' ? ['all', 'page'] : page.url.pathname.split('/').slice(1, 3)
+		pathnameWithoutContextSegment === '/'
+			? ['all', 'page']
+			: pathnameWithoutContextSegment.split('/').slice(1, 3)
 	);
 
 	interface Option {
@@ -250,17 +264,17 @@
 	]);
 
 	const leftMenu = createMenu({
-		selected: page.url.pathname
+		selected: pathnameWithoutContextSegment
 	});
 
 	const rightMenu = createMenu({
-		selected: page.url.pathname
+		selected: pathnameWithoutContextSegment
 	});
 
 	function handleChange(event: Event) {
 		const detail = (event as CustomEvent).detail;
 
-		if (detail.selected && detail.selected !== page.url.pathname) {
+		if (detail.selected && detail.selected !== pathnameWithoutContextSegment) {
 			const url = new URL(page.url);
 			url.pathname = detail.selected;
 			url.searchParams.delete('related-to');
@@ -282,7 +296,7 @@
 	{@const extraOpts = {
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	}}
-	{@const selected = options.find(({ value }) => value === page.url.pathname)}
+	{@const selected = options.find(({ value }) => value === pathnameWithoutContextSegment)}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" onchange={handleChange} type="button" use:menu.button>
 			{#if selected?.icon}
@@ -303,7 +317,7 @@
 							class:menu-item--muted={!option.exists}
 							class:menu-item--selected={option.value === selected?.value}
 						>
-							<button type="button" use:menu.item={{ value: option.value }}>
+							<button type="button" use:menu.item={{ value: pathnamePrefix + option.value }}>
 								<option.icon />
 								{#if option.recommended}
 									<span class="recommendation">

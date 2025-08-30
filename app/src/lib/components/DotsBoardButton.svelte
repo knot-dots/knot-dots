@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Dots from '~icons/knotdots/dots';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+
+	let context = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
 </script>
 
-<a class="button" href="/all/level">
+<a class="button" href={resolve('/[guid=uuid]/all/level', { guid: context.guid })}>
 	<Dots />
 	<span class="is-visually-hidden">{$_('dots')}</span>
 </a>
