@@ -63,6 +63,7 @@
 		type NewContainer,
 		newIndicatorTemplateFromIndicator,
 		paramsFromFragment,
+		type PayloadType,
 		payloadTypes,
 		policyFieldBNK,
 		predicates,
@@ -383,6 +384,11 @@
 			}
 		});
 	}
+
+	function byPayloadType(payloadType: PayloadType, url: URL) {
+		const params = paramsFromFragment(url);
+		return !params.has('type') || params.getAll('type').includes(payloadType);
+	}
 </script>
 
 {#if isProgramContainer(container)}
@@ -411,7 +417,9 @@
 {/if}
 
 {#if relatedContainersPromise.current}
-	{@const relatedContainers = relatedContainersPromise.current}
+	{@const relatedContainers = relatedContainersPromise.current.filter(({ payload }) =>
+		byPayloadType(payload.type, page.url)
+	)}
 	<div class="content-details masked-overflow">
 		{#if isEffectContainer(container)}
 			<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
