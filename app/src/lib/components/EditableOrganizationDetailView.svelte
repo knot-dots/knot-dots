@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Ellipsis from '~icons/knotdots/ellipsis';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Card from '$lib/components/Card.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
+	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import {
 		type Container,
 		isContainerWithEffect,
@@ -23,15 +25,21 @@
 	}
 
 	let {
-		container = $bindable(),
+		container: originalContainer = $bindable(),
 		containersRelatedToIndicators = [],
 		indicators = [],
 		measures = [],
 		programs = []
 	}: Props = $props();
 
+	let container = $state(originalContainer);
+
 	let w = $state();
 
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
+
+	// svelte-ignore state_referenced_locally
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
@@ -42,6 +50,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.image}
 			/>
+
 			{#if $applicationState.containerDetailView.editable}
 				<h1
 					class="details-title"
@@ -54,15 +63,13 @@
 					{container.payload.name}
 				</h1>
 			{/if}
-		</header>
 
-		{#if $ability.can('update', container)}
-			<OrganizationProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-			/>
-		{/if}
+			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+				<button class="action-button" onclick={() => dialog.showModal()} type="button">
+					<Ellipsis />
+				</button>
+			{/if}
+		</header>
 
 		{#key container.guid}
 			<EditableFormattedText
@@ -115,6 +122,10 @@
 			</ul>
 		</div>
 	</article>
+
+	<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
+		<OrganizationProperties bind:container editable />
+	</PropertiesDialog>
 </form>
 
 <style>
@@ -122,6 +133,10 @@
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
+	}
+
+	header button {
+		margin-left: auto;
 	}
 
 	h1 {
