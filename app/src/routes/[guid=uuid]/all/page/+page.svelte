@@ -43,7 +43,7 @@
 </Layout>
 
 <style>
-	.content-details {
-		min-width: calc(100vw - var(--sidebar-max-width) - 10rem);
+	.detail-page-content {
+		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
 	}
 </style>
