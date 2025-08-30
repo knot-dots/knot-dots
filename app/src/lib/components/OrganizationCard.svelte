@@ -50,7 +50,7 @@
 
 {#snippet body()}
 	{#if 'image' in container.payload && container.payload.image}
-		<img alt={$_('image')} src={transformFileURL(container.payload.image)} />
+		<img alt={$_('image')} loading="lazy" src={transformFileURL(container.payload.image)} />
 	{/if}
 {/snippet}
 
