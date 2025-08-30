@@ -10,7 +10,7 @@
 </script>
 
 <Layout>
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		{#key data.container.guid}
 			<div class="detail-page-content">
 				<div class="content-details masked-overflow">
@@ -33,13 +33,14 @@
 					{/if}
 				</div>
 			</div>
+
 			<Help
 				slug={isOrganizationContainer(data.container)
 					? 'organization-view'
 					: 'organizational-unit-view'}
 			/>
 		{/key}
-	</svelte:fragment>
+	{/snippet}
 </Layout>
 
 <style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { env } from '$env/dynamic/public';
@@ -24,10 +24,11 @@
 
 	interface Props {
 		addItemUrl?: string;
+		children: Snippet;
 		title: string;
 	}
 
-	let { addItemUrl, title }: Props = $props();
+	let { addItemUrl, children, title }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -93,7 +94,7 @@
 		{/if}
 	</header>
 
-	<slot />
+	{@render children()}
 
 	{#if addItemUrl}
 		<footer>

@@ -1,19 +1,22 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import XMark from '~icons/heroicons/x-mark-20-solid';
 
 	interface Props {
+		children: Snippet;
 		dialog: HTMLDialogElement;
 	}
 
-	let { dialog = $bindable() }: Props = $props();
+	let { children, dialog = $bindable() }: Props = $props();
 </script>
 
 <dialog bind:this={dialog}>
 	<button tabindex="-1" title={$_('close_modal')} type="button" onclick={() => dialog.close()}>
 		<XMark />
 	</button>
-	<slot />
+
+	{@render children()}
 </dialog>
 
 <style>

@@ -45,9 +45,11 @@
 </script>
 
 <Layout>
-	<Header {facets} search slot="header" />
+	{#snippet header()}
+		<Header {facets} search />
+	{/snippet}
 
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		<div>
 			<ul>
 				{#each data.containers as container}
@@ -57,8 +59,9 @@
 				{/each}
 			</ul>
 		</div>
+
 		<Help slug="measures-templates" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>
 
 <style>

@@ -70,9 +70,10 @@
 				: undefined}
 			items={containers.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 			status={taskStatusOption}
-			let:container
 		>
-			<TaskCard {container} showRelationFilter />
+			{#snippet itemSnippet(container)}
+				<TaskCard {container} showRelationFilter />
+			{/snippet}
 		</TaskBoardColumn>
 	{/each}
 </Board>

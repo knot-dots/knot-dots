@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -23,11 +23,12 @@
 
 	interface Props {
 		addItemUrl?: string;
+		itemSnippet: Snippet<[TaskContainer]>;
 		items: TaskContainer[];
 		status: TaskStatus;
 	}
 
-	let { addItemUrl, items = [], status }: Props = $props();
+	let { addItemUrl, itemSnippet, items = [], status }: Props = $props();
 
 	function handleDndConsider(e: CustomEvent<DndEvent<TaskContainer>>) {
 		items = e.detail.items;
@@ -116,17 +117,21 @@
 			onfinalize={handleDndFinalize}
 		>
 			{#each items as container (container.guid)}
-				<slot {container}>
+				{#if itemSnippet}
+					{@render itemSnippet(container)}
+				{:else}
 					<Card {container} />
-				</slot>
+				{/if}
 			{/each}
 		</div>
 	{:else}
 		<div class="vertical-scroll-wrapper masked-overflow">
 			{#each items as container (container.guid)}
-				<slot {container}>
+				{#if itemSnippet}
+					{@render itemSnippet(container)}
+				{:else}
 					<Card {container} />
-				</slot>
+				{/if}
 			{/each}
 		</div>
 	{/if}

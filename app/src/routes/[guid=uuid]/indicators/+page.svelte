@@ -42,10 +42,12 @@
 </script>
 
 <Layout>
-	<Header {facets} search slot="header" />
+	{#snippet header()}
+		<Header {facets} search />
+	{/snippet}
 
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		<Indicators containers={data.containers} />
 		<Help slug="indicators" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>

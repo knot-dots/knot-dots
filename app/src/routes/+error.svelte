@@ -1,18 +1,18 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import ArrowLongRight from '~icons/heroicons/arrow-long-right';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Layout from '$lib/components/Layout.svelte';
 </script>
 
 <Layout>
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		<div>
-			<h2>{$page.status}</h2>
-			<p>{$page.status === 404 ? $_('error.not_found') : $page.error?.message}</p>
+			<h2>{page.status}</h2>
+			<p>{page.status === 404 ? $_('error.not_found') : page.error?.message}</p>
 			<p><a href="/"><ArrowLongRight />{$_('home')}</a></p>
 		</div>
-	</svelte:fragment>
+	{/snippet}
 </Layout>
 
 <style>

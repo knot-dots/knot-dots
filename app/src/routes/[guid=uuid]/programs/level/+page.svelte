@@ -64,9 +64,11 @@
 </script>
 
 <Layout>
-	<Header {facets} search slot="header" />
+	{#snippet header()}
+		<Header {facets} search />
+	{/snippet}
 
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		<Board>
 			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
 				<BoardColumn
@@ -86,6 +88,7 @@
 				</BoardColumn>
 			{/each}
 		</Board>
+
 		<Help slug="programs-level" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>

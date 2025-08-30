@@ -10,9 +10,11 @@
 </script>
 
 <Layout>
-	<Header workspaceOptions={[]} slot="header" />
+	{#snippet header()}
+		<Header workspaceOptions={[]} />
+	{/snippet}
 
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		<div class="details">
 			<h1 class="details-title">
 				{'title' in data.container.payload
@@ -29,7 +31,7 @@
 		</div>
 
 		<Help slug="members" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>
 
 <style>

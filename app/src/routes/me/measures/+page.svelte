@@ -36,9 +36,12 @@
 </script>
 
 <Layout>
-	<Header {facets} search {workspaceOptions} slot="header" />
-	<svelte:fragment slot="main">
+	{#snippet header()}
+		<Header {facets} search {workspaceOptions} />
+	{/snippet}
+
+	{#snippet main()}
 		<Measures containers={data.containers} />
 		<Help slug="measures-status" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>

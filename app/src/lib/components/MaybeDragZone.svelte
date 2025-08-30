@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent, Item } from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
@@ -10,9 +11,10 @@
 
 	interface Props {
 		containers: Container[];
+		itemSnippet?: Snippet<[Container]>;
 	}
 
-	let { containers }: Props = $props();
+	let { containers, itemSnippet }: Props = $props();
 
 	let items = $derived(containers.map((container) => ({ guid: container.guid, container })));
 
@@ -57,7 +59,9 @@
 	>
 		{#each items as { guid, container } (guid)}
 			<div>
-				<slot {container}>
+				{#if itemSnippet}
+					{@render itemSnippet(container)}
+				{:else}
 					<Card
 						{container}
 						relatedContainers={page.data.containersWithIndicatorContributions?.filter(
@@ -65,14 +69,16 @@
 						) ?? []}
 						showRelationFilter
 					/>
-				</slot>
+				{/if}
 			</div>
 		{/each}
 	</div>
 {:else}
 	<div class="vertical-scroll-wrapper masked-overflow">
 		{#each items as { container }}
-			<slot {container}>
+			{#if itemSnippet}
+				{@render itemSnippet(container)}
+			{:else}
 				<Card
 					{container}
 					relatedContainers={page.data.containersWithIndicatorContributions?.filter(
@@ -80,7 +86,7 @@
 					) ?? []}
 					showRelationFilter
 				/>
-			</slot>
+			{/if}
 		{/each}
 	</div>
 {/if}

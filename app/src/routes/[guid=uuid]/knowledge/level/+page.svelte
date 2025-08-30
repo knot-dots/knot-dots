@@ -55,9 +55,11 @@
 </script>
 
 <Layout>
-	<Header {facets} search slot="header" />
+	{#snippet header()}
+		<Header {facets} search />
+	{/snippet}
 
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		<Board>
 			<BoardColumn title={$_('programs')}>
 				<div class="vertical-scroll-wrapper masked-overflow">
@@ -77,13 +79,15 @@
 						: undefined}
 					title={$_('knowledge.level', { values: { level: key + 1 } })}
 				>
-					<MaybeDragZone containers={value} let:container>
-						<Card {container} showRelationFilter />
+					<MaybeDragZone containers={value}>
+						{#snippet itemSnippet(container)}
+							<Card {container} showRelationFilter />
+						{/snippet}
 					</MaybeDragZone>
 				</BoardColumn>
 			{/each}
 		</Board>
 
 		<Help slug="knowledge-level" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>

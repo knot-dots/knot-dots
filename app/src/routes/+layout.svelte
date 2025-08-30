@@ -5,9 +5,9 @@
 	import { env } from '$env/dynamic/public';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
 	import '../app.css';
-	import type { LayoutData } from './$types';
+	import type { LayoutProps } from './$types';
 
-	export let data: LayoutData;
+	let { children, data }: LayoutProps = $props();
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -36,6 +36,6 @@
 	{/if}
 </svelte:head>
 
-<slot />
+{@render children()}
 
 <SignupDialog bind:dialog />
