@@ -1,38 +1,38 @@
-import { SchemaValidationError, createPool, createSqlTag } from 'slonik';
-import type {
-	DatabaseConnection,
-	DatabasePool,
-	Interceptor,
-	QueryResultRow,
-	SerializableValue
+import {
+	createPool,
+	createSqlTag,
+	type DatabaseConnection,
+	type DatabasePool,
+	type Interceptor,
+	type QueryResultRow,
+	SchemaValidationError,
+	type SerializableValue
 } from 'slonik';
 import { z } from 'zod';
 import {
+	type AnyContainer,
 	anyContainer,
+	type Container,
 	container,
 	findDescendants,
+	type IndicatorContainer,
+	type ModifiedContainer,
+	type NewContainer,
+	type OrganizationalUnitContainer,
 	organizationalUnitContainer,
+	type OrganizationContainer,
 	organizationContainer,
+	type PayloadType,
 	payloadTypes,
+	type Predicate,
 	predicates,
+	type Relation,
 	relation,
+	type TaskPriority,
+	type User,
 	user,
 	userRelation,
 	visibility
-} from '$lib/models';
-import type {
-	AnyContainer,
-	Container,
-	IndicatorContainer,
-	ModifiedContainer,
-	NewContainer,
-	OrganizationContainer,
-	OrganizationalUnitContainer,
-	PayloadType,
-	Predicate,
-	Relation,
-	TaskPriority,
-	User
 } from '$lib/models';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
