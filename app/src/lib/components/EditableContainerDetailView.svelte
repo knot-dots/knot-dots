@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { dragHandleZone } from 'svelte-dnd-action';
+	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';

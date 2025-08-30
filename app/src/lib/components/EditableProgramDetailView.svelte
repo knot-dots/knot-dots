@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { dragHandleZone } from 'svelte-dnd-action';
+	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
