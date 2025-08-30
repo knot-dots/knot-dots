@@ -22,8 +22,12 @@
 	} from '$lib/models';
 	import { newContainer } from '$lib/stores';
 
-	export let title: string;
-	export let addItemUrl: string | undefined = undefined;
+	interface Props {
+		addItemUrl?: string;
+		title: string;
+	}
+
+	let { addItemUrl, title }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

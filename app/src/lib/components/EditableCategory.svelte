@@ -3,8 +3,12 @@
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import type { SustainableDevelopmentGoal } from '$lib/models';
 
-	export let editable = false;
-	export let value: SustainableDevelopmentGoal[];
+	interface Props {
+		editable?: boolean;
+		value: SustainableDevelopmentGoal[];
+	}
+
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
 <div class="label">{$_('category')}</div>

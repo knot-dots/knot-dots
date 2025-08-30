@@ -3,9 +3,13 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import { displayName, type User } from '$lib/models';
 
-	export let candidatesPromise: Promise<User[]>;
-	export let editable = false;
-	export let value: string[];
+	interface Props {
+		candidatesPromise: Promise<User[]>;
+		editable: boolean;
+		value: string[];
+	}
+
+	let { candidatesPromise, editable = false, value = $bindable() }: Props = $props();
 </script>
 
 {#await candidatesPromise}

@@ -2,12 +2,16 @@
 	import { _ } from 'svelte-i18n';
 	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
 
-	export let editable = false;
-	export let label: string;
-	export let options: Array<{ label: string; value: string }>;
-	export let value: string[];
+	interface Props {
+		editable?: boolean;
+		label: string;
+		options: Array<{ label: string; value: string }>;
+		value: string[];
+	}
 
-	$: selected = options.filter((o) => value.includes(o.value)).map(({ label }) => label);
+	let { editable = false, label, options, value = $bindable() }: Props = $props();
+
+	let selected = $derived(options.filter((o) => value.includes(o.value)).map(({ label }) => label));
 </script>
 
 <div class="label">{label}</div>

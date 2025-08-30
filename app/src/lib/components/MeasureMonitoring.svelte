@@ -20,21 +20,27 @@
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
-	export let measure: MeasureContainer | SimpleMeasureContainer | undefined = undefined;
-	export let measures: Array<MeasureContainer | SimpleMeasureContainer>;
-	export let containers: MeasureMonitoringContainer[];
-	export let indicators: IndicatorContainer[];
-	export let showMeasures = false;
+	interface Props {
+		measure?: MeasureContainer | SimpleMeasureContainer;
+		measures: Array<MeasureContainer | SimpleMeasureContainer>;
+		containers: MeasureMonitoringContainer[];
+		indicators: IndicatorContainer[];
+		showMeasures?: boolean;
+	}
 
-	$: goals = goalsByHierarchyLevel(
-		containers
-			.filter(isGoalContainer)
-			.filter(({ relation }) =>
-				relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
-			)
+	let { measure, measures, containers, indicators, showMeasures = false }: Props = $props();
+
+	let goals = $derived(
+		goalsByHierarchyLevel(
+			containers
+				.filter(isGoalContainer)
+				.filter(({ relation }) =>
+					relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+				)
+		)
 	);
 
-	$: columns = [
+	let columns = $derived([
 		...Array.from(goals.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => ({
@@ -64,9 +70,9 @@
 			key: 'tasks',
 			title: 'tasks'
 		}
-	];
+	]);
 
-	$: indicatorsByGuid = new Map(indicators.map((i) => [i.guid, i]));
+	let indicatorsByGuid = $derived(new Map(indicators.map((i) => [i.guid, i])));
 
 	function addItemUrl(init: string[][]) {
 		const params = new URLSearchParams(init);

@@ -12,7 +12,7 @@
 		status: 'error' | 'info' | 'success' | 'warning';
 	}
 
-	let { icon, heading, message, onclose, status }: Props = $props();
+	let { icon: Icon, heading, message, onclose, status }: Props = $props();
 </script>
 
 <div class="toast" role="status">
@@ -21,9 +21,9 @@
 		<span class="is-visually-hidden">{$_('cancel')}</span>
 	</button>
 
-	{#if icon}
+	{#if Icon}
 		<div class="toast-icon toast-icon--{status}">
-			<svelte:component this={icon} />
+			<Icon />
 		</div>
 	{/if}
 

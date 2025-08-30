@@ -3,20 +3,24 @@
 	import { type DndEvent, dndzone, TRIGGERS } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Minus from '~icons/heroicons/minus-solid';
-	import { goto, invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
-	import { dragged, overlayHistory } from '$lib/stores';
+	import { dragged } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
 
-	export let object: Container;
-	export let relatedContainers: Container[];
+	interface Props {
+		object: Container;
+		relatedContainers: Container[];
+	}
 
-	let w = 0;
+	let { object, relatedContainers }: Props = $props();
+
+	let w = $state(0);
 
 	let enabledPredicates = (getContext('relationOverlay') as { predicates: Predicate[] }).predicates;
 
@@ -37,351 +41,343 @@
 		};
 	}
 
-	let dropZones: DropZone[] = [];
+	let dropZones: DropZone[] = $derived(
+		[
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									(r.object == object.guid || r.subject == object.guid) &&
+									r.predicate == predicates.enum['is-consistent-with']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.is_consistent_with'),
+				predicate: predicates.enum['is-consistent-with'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									(r.object == object.guid || r.subject == object.guid) &&
+									r.predicate == predicates.enum['is-inconsistent-with']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.is_inconsistent_with'),
+				predicate: predicates.enum['is-inconsistent-with'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									(r.object == object.guid || r.subject == object.guid) &&
+									r.predicate == predicates.enum['is-equivalent-to']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.is_equivalent_to'),
+				predicate: predicates.enum['is-equivalent-to'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									r.subject == object.guid && r.predicate == predicates.enum['is-superordinate-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_is_superordinate_of_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-superordinate-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									r.object == object.guid && r.predicate == predicates.enum['is-superordinate-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_is_superordinate_of_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-superordinate-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									r.subject == object.guid && r.predicate == predicates.enum['is-prerequisite-for']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_is_prerequisite_for_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-prerequisite-for'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									r.object == object.guid && r.predicate == predicates.enum['is-prerequisite-for']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_is_prerequisite_for_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-prerequisite-for'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) => r.subject == object.guid && r.predicate == predicates.enum['contributes-to']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_contributes_to_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['contributes-to'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) => r.object == object.guid && r.predicate == predicates.enum['contributes-to']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_contributes_to_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['contributes-to'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									r.subject == object.guid && r.predicate == predicates.enum['is-sub-target-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_is_sub_target_of_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-sub-target-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) => r.object == object.guid && r.predicate == predicates.enum['is-sub-target-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_is_sub_target_of_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-sub-target-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									r.subject == object.guid &&
+									r.predicate == predicates.enum['is-concrete-target-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_is_concrete_target_of_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-concrete-target-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) =>
+									r.object == object.guid && r.predicate == predicates.enum['is-concrete-target-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_is_concrete_target_of_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-concrete-target-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) => r.subject == object.guid && r.predicate == predicates.enum['is-affected-by']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_is_affected_by_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-affected-by'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) => r.object == object.guid && r.predicate == predicates.enum['is-affected-by']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_is_affected_by_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-affected-by'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) => r.subject == object.guid && r.predicate == predicates.enum['is-subtask-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_is_subtask_of_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-subtask-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						({ relation }) =>
+							relation.findIndex(
+								(r) => r.object == object.guid && r.predicate == predicates.enum['is-subtask-of']
+							) > -1
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_is_subtask_of_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['is-subtask-of'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			}
+		].filter(({ predicate }) => enabledPredicates.includes(predicate))
+	);
 
-	$: dropZones = [
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								(r.object == object.guid || r.subject == object.guid) &&
-								r.predicate == predicates.enum['is-consistent-with']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.is_consistent_with'),
-			predicate: predicates.enum['is-consistent-with'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								(r.object == object.guid || r.subject == object.guid) &&
-								r.predicate == predicates.enum['is-inconsistent-with']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.is_inconsistent_with'),
-			predicate: predicates.enum['is-inconsistent-with'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								(r.object == object.guid || r.subject == object.guid) &&
-								r.predicate == predicates.enum['is-equivalent-to']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.is_equivalent_to'),
-			predicate: predicates.enum['is-equivalent-to'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								r.subject == object.guid && r.predicate == predicates.enum['is-superordinate-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.selected_is_superordinate_of_dragged', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-superordinate-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(selected, this.predicate, dragged);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								r.object == object.guid && r.predicate == predicates.enum['is-superordinate-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.dragged_is_superordinate_of_selected', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-superordinate-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								r.subject == object.guid && r.predicate == predicates.enum['is-prerequisite-for']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.selected_is_prerequisite_for_dragged', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-prerequisite-for'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(selected, this.predicate, dragged);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								r.object == object.guid && r.predicate == predicates.enum['is-prerequisite-for']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.dragged_is_prerequisite_for_selected', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-prerequisite-for'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.subject == object.guid && r.predicate == predicates.enum['contributes-to']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.selected_contributes_to_dragged', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['contributes-to'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(selected, this.predicate, dragged);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.object == object.guid && r.predicate == predicates.enum['contributes-to']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.dragged_contributes_to_selected', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['contributes-to'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.subject == object.guid && r.predicate == predicates.enum['is-sub-target-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.selected_is_sub_target_of_dragged', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-sub-target-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(selected, this.predicate, dragged);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.object == object.guid && r.predicate == predicates.enum['is-sub-target-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.dragged_is_sub_target_of_selected', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-sub-target-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								r.subject == object.guid && r.predicate == predicates.enum['is-concrete-target-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.selected_is_concrete_target_of_dragged', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-concrete-target-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(selected, this.predicate, dragged);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) =>
-								r.object == object.guid && r.predicate == predicates.enum['is-concrete-target-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.dragged_is_concrete_target_of_selected', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-concrete-target-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.subject == object.guid && r.predicate == predicates.enum['is-affected-by']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.selected_is_affected_by_dragged', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-affected-by'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(selected, this.predicate, dragged);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.object == object.guid && r.predicate == predicates.enum['is-affected-by']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.dragged_is_affected_by_selected', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-affected-by'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.subject == object.guid && r.predicate == predicates.enum['is-subtask-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.selected_is_subtask_of_dragged', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-subtask-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(selected, this.predicate, dragged);
-			}
-		},
-		{
-			active: false,
-			items: relatedContainers
-				.filter(({ guid }) => guid != object.guid)
-				.filter(
-					({ relation }) =>
-						relation.findIndex(
-							(r) => r.object == object.guid && r.predicate == predicates.enum['is-subtask-of']
-						) > -1
-				)
-				.map((container) => ({ guid: container.guid, container })),
-			help: $_('relation_overlay.dragged_is_subtask_of_selected', {
-				values: { selected: object.payload.title }
-			}),
-			predicate: predicates.enum['is-subtask-of'],
-			createRelation: function (selected: Container, dragged: Container) {
-				return createRelation(dragged, this.predicate, selected);
-			}
-		}
-	].filter(({ predicate }) => enabledPredicates.includes(predicate));
-
-	async function close() {
-		if ($overlayHistory.length > 1) {
-			$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-			const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-			await goto(`#${newParams.toString()}`);
-		} else {
-			await goto(`#`);
-		}
-	}
-
-	let activeDropZoneIndex = -1;
+	let activeDropZoneIndex = $state(-1);
 
 	function handleDndConsider(
 		index: number,
@@ -411,16 +407,20 @@
 		}
 	}
 
-	async function removeRelation(subject: Container, predicate: Predicate, object: Container) {
-		object.relation = object.relation.filter(
-			(r) => r.object != object.guid || r.predicate != predicate || r.subject != subject.guid
-		);
-		subject.relation = subject.relation.filter(
-			(r) => r.object != object.guid || r.predicate != predicate || r.subject != subject.guid
-		);
+	function removeRelation(subject: Container, predicate: Predicate, object: Container) {
+		return async (event: Event) => {
+			event.stopPropagation();
 
-		await saveContainer(subject);
-		await invalidateAll();
+			object.relation = object.relation.filter(
+				(r) => r.object != object.guid || r.predicate != predicate || r.subject != subject.guid
+			);
+			subject.relation = subject.relation.filter(
+				(r) => r.object != object.guid || r.predicate != predicate || r.subject != subject.guid
+			);
+
+			await saveContainer(subject);
+			await invalidateAll();
+		};
 	}
 </script>
 
@@ -437,9 +437,10 @@
 		</p>
 
 		{#each dropZones as zone, i (i)}
+			{@const PredicateIcon = predicateIcons.get(zone.predicate)}
 			<div class="details-section drop-zone-wrapper">
 				<p>
-					<svelte:component this={predicateIcons.get(zone.predicate)} />
+					<PredicateIcon />
 					{zone.help}
 				</p>
 				<ul
@@ -452,8 +453,8 @@
 						items: zone.items,
 						morphDisabled: true
 					}}
-					on:consider={(e) => handleDndConsider(i, e)}
-					on:finalize={(e) => handleDndFinalize(i, e)}
+					onconsider={(e) => handleDndConsider(i, e)}
+					onfinalize={(e) => handleDndFinalize(i, e)}
 				>
 					{#each zone.items as item (item.guid)}
 						<li>
@@ -463,8 +464,7 @@
 										<button
 											class="button-square"
 											type="button"
-											on:click|stopPropagation={() =>
-												removeRelation(object, zone.predicate, item.container)}
+											onclick={removeRelation(object, zone.predicate, item.container)}
 										>
 											<Minus />
 										</button>
@@ -472,8 +472,7 @@
 										<button
 											class="button-square"
 											type="button"
-											on:click|stopPropagation={() =>
-												removeRelation(item.container, zone.predicate, object)}
+											onclick={removeRelation(item.container, zone.predicate, object)}
 										>
 											<Minus />
 										</button>
@@ -490,7 +489,7 @@
 
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
-		<a class="button" href={$page.url.pathname}>{$_('relation_overlay.close')}</a>
+		<a class="button" href={page.url.pathname}>{$_('relation_overlay.close')}</a>
 		<a class="button" href={`?related-to=${object.guid}`}>
 			{$_('relation_overlay.close_and_show_relations')}
 		</a>

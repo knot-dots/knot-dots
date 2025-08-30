@@ -1,12 +1,16 @@
-<script context="module">
+<script module>
 	let counter = 0;
 </script>
 
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 
-	export let editable = false;
-	export let value = 0;
+	interface Props {
+		editable?: boolean;
+		value?: number;
+	}
+
+	let { editable = false, value = $bindable() }: Props = $props();
 
 	let id = `date-${counter++}`;
 </script>
@@ -38,9 +42,9 @@
 		<p class="label">{$_('progress')}</p>
 		<p class="value">
 			<progress
-				style:--color={value > 0.7
+				style:--color={value && value > 0.7
 					? 'var(--color-green-500)'
-					: value > 0.3
+					: value && value > 0.3
 						? 'var(--color-yellow-300)'
 						: 'var(--color-red-600)'}
 				{value}

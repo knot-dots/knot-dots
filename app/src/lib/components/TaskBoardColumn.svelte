@@ -21,9 +21,13 @@
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 
-	export let addItemUrl: string | undefined = undefined;
-	export let items: TaskContainer[] = [];
-	export let status: TaskStatus;
+	interface Props {
+		addItemUrl?: string;
+		items: TaskContainer[];
+		status: TaskStatus;
+	}
+
+	let { addItemUrl, items = [], status }: Props = $props();
 
 	function handleDndConsider(e: CustomEvent<DndEvent<TaskContainer>>) {
 		items = e.detail.items;
@@ -101,15 +105,15 @@
 			{$_(status)}
 		</h2>
 		{#if addItemUrl}
-			<a href={addItemUrl} on:click={createContainer} title={$_('add_item')}><Plus /></a>
+			<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><Plus /></a>
 		{/if}
 	</header>
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper masked-overflow"
 			use:dndzone={{ items }}
-			on:consider={handleDndConsider}
-			on:finalize={handleDndFinalize}
+			onconsider={handleDndConsider}
+			onfinalize={handleDndFinalize}
 		>
 			{#each items as container (container.guid)}
 				<slot {container}>
@@ -128,7 +132,7 @@
 	{/if}
 	{#if addItemUrl}
 		<footer>
-			<a href={addItemUrl} on:click={createContainer}>{$_('add_item')}<Plus /></a>
+			<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<Plus /></a>
 		</footer>
 	{/if}
 </section>

@@ -13,18 +13,24 @@
 		predicates
 	} from '$lib/models';
 
-	export let containers: Container[];
-	export let containersWithIndicatorContributions: Container[] = [];
+	interface Props {
+		containers: Container[];
+		containersWithIndicatorContributions?: Container[];
+	}
 
-	$: goals = goalsByHierarchyLevel(
-		containers
-			.filter(isGoalContainer)
-			.filter(({ relation }) =>
-				relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
-			)
+	let { containers, containersWithIndicatorContributions = [] }: Props = $props();
+
+	let goals = $derived(
+		goalsByHierarchyLevel(
+			containers
+				.filter(isGoalContainer)
+				.filter(({ relation }) =>
+					relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+				)
+		)
 	);
 
-	$: columns = [
+	let columns = $derived([
 		...Array.from(goals.entries()).map(([hierarchyLevel, containers]) => ({
 			addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
 			containers,
@@ -44,7 +50,7 @@
 			key: 'implementation',
 			title: $_('payload_group.implementation')
 		}
-	];
+	]);
 </script>
 
 <Board>

@@ -18,11 +18,16 @@
 	} from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
 
-	export let container: AnyContainer;
-	export let users: Readonly<Array<User>>;
+	interface Props {
+		container: AnyContainer;
+		users: Readonly<Array<User>>;
+	}
+
+	let { container, users }: Props = $props();
 
 	let dialog: HTMLDialogElement;
-	let email: string;
+
+	let email: string = $state('');
 
 	function handleChangeRole(user: User, container: AnyContainer) {
 		return async (event: { currentTarget: HTMLSelectElement }) => {
@@ -100,16 +105,21 @@
 		await invalidateAll();
 	}
 
-	async function handleInvite(container: AnyContainer) {
-		try {
-			await saveUser({ email, container });
-			email = '';
-			await invalidateAll();
-		} catch (error) {
-			console.log(error);
-			alert($_('invite.failure'));
-		}
-		dialog.close();
+	function handleInvite(container: AnyContainer) {
+		return async (event: Event) => {
+			event.preventDefault();
+
+			try {
+				await saveUser({ email, container });
+				email = '';
+				await invalidateAll();
+			} catch (error) {
+				console.log(error);
+				alert($_('invite.failure'));
+			}
+
+			dialog.close();
+		};
 	}
 </script>
 
@@ -127,7 +137,7 @@
 				<td>{displayName(u)}</td>
 				<td>
 					{#key container.user}
-						<select name="role" on:change={handleChangeRole(u, container)}>
+						<select name="role" onchange={handleChangeRole(u, container)}>
 							<option value="role.observer" selected={isObserverOf(u, container)}>
 								{$_('role.observer')}
 							</option>
@@ -150,7 +160,7 @@
 						class="action-button"
 						type="button"
 						title={$_('user.remove_relations')}
-						on:click={() => handleRemoveRelations(u, container)}
+						onclick={() => handleRemoveRelations(u, container)}
 					>
 						<TrashBin />
 					</button>
@@ -160,17 +170,17 @@
 	</tbody>
 </table>
 <div class="content-actions">
-	<button class="button-primary" type="button" on:click={() => dialog.showModal()}>
+	<button class="button-primary" type="button" onclick={() => dialog.showModal()}>
 		<UserAdd />
 	</button>
 </div>
 
 <Dialog bind:dialog>
-	<form on:submit|preventDefault={() => handleInvite(container)}>
+	<form onsubmit={handleInvite(container)}>
 		<h3>{$_('invite.heading')}</h3>
 		<label>
 			{$_('invite.email')}
-			<!-- svelte-ignore a11y-autofocus -->
+			<!-- svelte-ignore a11y_autofocus -->
 			<input type="email" bind:value={email} autofocus required />
 		</label>
 		<button class="button-primary" type="submit">{$_('invite.submit')}</button>

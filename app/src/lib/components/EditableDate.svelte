@@ -1,13 +1,17 @@
-<script context="module">
+<script module>
 	let counter = 0;
 </script>
 
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
 
-	export let editable = false;
-	export let label: string;
-	export let value: string | undefined;
+	interface Props {
+		editable?: boolean;
+		label: string;
+		value?: string;
+	}
+
+	let { editable = false, label, value = $bindable() }: Props = $props();
 
 	let id = `date-${counter++}`;
 </script>

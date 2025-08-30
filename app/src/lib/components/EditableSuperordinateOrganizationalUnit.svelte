@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
@@ -12,20 +12,25 @@
 		predicates
 	} from '$lib/models';
 
-	export let container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
-	export let editable = false;
+	interface Props {
+		container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
+		editable?: boolean;
+	}
 
-	$: organization = container.organization;
+	let { container = $bindable(), editable = false }: Props = $props();
 
-	$: organizationalUnit = container.organizational_unit;
+	let organization = $derived(container.organization);
 
-	$: isPartOfOptionsRequest = fetchContainers({
-		organization: [organization],
-		payloadType: [payloadTypes.enum.organizational_unit]
-	}) as Promise<OrganizationalUnitContainer[]>;
+	let isPartOfOptionsRequest = $derived(
+		fetchContainers({
+			organization: [organization],
+			payloadType: [payloadTypes.enum.organizational_unit]
+		}) as Promise<OrganizationalUnitContainer[]>
+	);
 
-	$: isPartOfObject =
-		container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object ?? '';
+	let isPartOfObject = $derived(
+		container.relation.find((r) => r.predicate === predicates.enum['is-part-of'])?.object ?? ''
+	);
 
 	async function set(value: string | undefined) {
 		const isPartOfIndex = container.relation.findIndex(
@@ -67,7 +72,7 @@
 			...isPartOfOptions
 				.filter(({ payload }) => container.payload.level === payload.level + 1)
 				.map(({ guid, payload }) => ({
-					href: overlayURL($page.url, overlayKey.enum.view, guid),
+					href: overlayURL(page.url, overlayKey.enum.view, guid),
 					label: payload.name,
 					value: guid
 				}))
