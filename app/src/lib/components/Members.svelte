@@ -25,6 +25,7 @@
 
 	let { container, users }: Props = $props();
 
+	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
 	let email: string = $state('');

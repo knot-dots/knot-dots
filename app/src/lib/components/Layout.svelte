@@ -25,6 +25,7 @@
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
 
+	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
 	setContext('createContainerDialog', { getElement: () => dialog });
