@@ -1,7 +1,13 @@
 import { filterVisible } from '$lib/authorization';
-import { type IndicatorContainer, isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
+import {
+	type IndicatorContainer,
+	isOrganizationalUnitContainer,
+	payloadTypes,
+	predicates
+} from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
+	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
@@ -22,7 +28,7 @@ export const load = (async ({ locals, parent }) => {
 			.concat(container.guid);
 	}
 
-	const [programs, measures, indicators] = await Promise.all([
+	const [programs, measures, indicators, sections] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
 				'default' in container.payload && container.payload.default ? [] : [container.organization],
@@ -46,6 +52,24 @@ export const load = (async ({ locals, parent }) => {
 				{ organizationalUnits, type: [payloadTypes.enum.indicator] },
 				''
 			)
+		),
+		locals.pool.connect(
+			getAllRelatedContainers(
+				[container.organization],
+				container.guid,
+				[predicates.enum['is-section-of']],
+				{
+					type: [
+						payloadTypes.enum.file_collection,
+						payloadTypes.enum.indicator_collection,
+						payloadTypes.enum.measure_collection,
+						payloadTypes.enum.program_collection,
+						payloadTypes.enum.task_collection,
+						payloadTypes.enum.text
+					]
+				},
+				''
+			)
 		)
 	]);
 
@@ -58,6 +82,7 @@ export const load = (async ({ locals, parent }) => {
 		indicators: filterVisible(indicators, locals.user),
 		containersRelatedToIndicators: filterVisible(relatedContainers, locals.user),
 		measures: filterVisible(measures, locals.user),
-		programs: filterVisible(programs, locals.user)
+		programs: filterVisible(programs, locals.user),
+		sections: filterVisible(sections, locals.user)
 	};
 }) satisfies PageServerLoad;

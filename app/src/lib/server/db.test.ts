@@ -48,7 +48,7 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 		)
 	)(connection);
 
-	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
@@ -81,7 +81,7 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 		)
 	)(connection);
 
-	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
@@ -130,7 +130,7 @@ test('relations are added or removed when updating a container', async ({
 		)
 	)(connection);
 
-	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
@@ -197,7 +197,7 @@ test('adding more relations does not interfere with existing relations', async (
 		)
 	)(connection);
 
-	const partOfProgramTypes: PayloadType[] = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);

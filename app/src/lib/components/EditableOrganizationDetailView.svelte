@@ -3,17 +3,12 @@
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import Card from '$lib/components/Card.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
-	import {
-		type Container,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		type OrganizationContainer
-	} from '$lib/models';
+	import Sections from '$lib/components/Sections.svelte';
+	import { type Container, type OrganizationContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -22,6 +17,7 @@
 		indicators?: Container[];
 		measures?: Container[];
 		programs?: Container[];
+		sections?: Container[];
 	}
 
 	let {
@@ -29,10 +25,22 @@
 		containersRelatedToIndicators = [],
 		indicators = [],
 		measures = [],
-		programs = []
+		programs = [],
+		sections: originalSections = []
 	}: Props = $props();
 
 	let container = $state(originalContainer);
+
+	let sections = $state(originalSections);
+
+	let relatedContainers = $derived([
+		container,
+		...containersRelatedToIndicators,
+		...indicators,
+		...measures,
+		...programs,
+		...sections
+	]);
 
 	let w = $state();
 
@@ -43,8 +51,8 @@
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 		<header class="details-section">
 			<EditableLogo
 				editable={$applicationState.containerDetailView.editable}
@@ -71,6 +79,10 @@
 			{/if}
 		</header>
 
+		<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
+			<OrganizationProperties bind:container editable />
+		</PropertiesDialog>
+
 		{#key container.guid}
 			<EditableFormattedText
 				editable={$applicationState.containerDetailView.editable &&
@@ -79,54 +91,10 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
+	</form>
 
-		{#if container.payload.boards.includes('board.indicators')}
-			<div class="details-section">
-				<h2 class="details-heading">{$_('indicators')}</h2>
-				<ul class="carousel">
-					{#each indicators as indicator}
-						{@const relatedContainers = [
-							...containersRelatedToIndicators.filter(({ relation }) =>
-								relation.some(({ object }) => object === indicator.guid)
-							),
-							...containersRelatedToIndicators.filter(isContainerWithEffect),
-							...containersRelatedToIndicators.filter(isContainerWithObjective)
-						]}
-						<li>
-							<Card container={indicator} {relatedContainers} />
-						</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
-
-		<div class="details-section">
-			<h2 class="details-heading">{$_('programs')}</h2>
-			<ul class="carousel">
-				{#each programs as program}
-					<li>
-						<Card container={program} />
-					</li>
-				{/each}
-			</ul>
-		</div>
-
-		<div class="details-section">
-			<h2 class="details-heading">{$_('measures')}</h2>
-			<ul class="carousel">
-				{#each measures as measure}
-					<li>
-						<Card container={measure} />
-					</li>
-				{/each}
-			</ul>
-		</div>
-	</article>
-
-	<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
-		<OrganizationProperties bind:container editable />
-	</PropertiesDialog>
-</form>
+	<Sections bind:container bind:relatedContainers />
+</article>
 
 <style>
 	header {

@@ -21,6 +21,7 @@
 							indicators={data.indicators}
 							measures={data.measures}
 							programs={data.programs}
+							sections={data.sections}
 						/>
 					{:else if isOrganizationalUnitContainer(data.container)}
 						<EditableOrganizationalUnitDetailView
@@ -29,6 +30,7 @@
 							indicators={data.indicators}
 							measures={data.measures}
 							programs={data.programs}
+							sections={data.sections}
 						/>
 					{/if}
 				</div>

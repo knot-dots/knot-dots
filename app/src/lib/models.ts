@@ -63,15 +63,18 @@ const payloadTypeValues = [
 	'goal',
 	'goal_collection',
 	'indicator',
+	'indicator_collection',
 	'indicator_template',
 	'knowledge',
 	'measure',
+	'measure_collection',
 	'objective',
 	'objective_collection',
 	'organization',
 	'organizational_unit',
 	'page',
 	'program',
+	'program_collection',
 	'resource',
 	'resource_collection',
 	'rule',
@@ -539,6 +542,19 @@ const initialIndicatorPayload = indicatorPayload.partial({
 	unit: true
 });
 
+const indicatorCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('indicators')),
+		type: z.literal(payloadTypes.enum.indicator_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialIndicatorCollectionPayload = indicatorCollectionPayload;
+
 const indicatorTemplatePayload = indicatorPayload
 	.extend({
 		type: z.literal(payloadTypes.enum.indicator_template)
@@ -581,6 +597,19 @@ const measurePayload = basePayload
 	.strict();
 
 const initialMeasurePayload = measurePayload.partial({ title: true });
+
+const measureCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('measures')),
+		type: z.literal(payloadTypes.enum.measure_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialMeasureCollectionPayload = measureCollectionPayload;
 
 const objectivePayload = basePayload.omit({ category: true, summary: true, topic: true }).extend({
 	type: z.literal(payloadTypes.enum.objective),
@@ -664,6 +693,19 @@ const programPayload = basePayload
 const initialProgramPayload = programPayload.partial({
 	title: true
 });
+
+const programCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('programs')),
+		type: z.literal(payloadTypes.enum.program_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialProgramCollectionPayload = programCollectionPayload;
 
 const measureMonitoringBasePayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
@@ -817,13 +859,16 @@ const payload = z.discriminatedUnion('type', [
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
+	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
+	measureCollectionPayload,
 	measurePayload,
 	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
+	programCollectionPayload,
 	programPayload,
 	rulePayload,
 	resourceCollectionPayload,
@@ -858,15 +903,18 @@ const anyPayload = z.discriminatedUnion('type', [
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
+	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
+	measureCollectionPayload,
 	measurePayload,
 	objectiveCollectionPayload,
 	objectivePayload,
 	organizationPayload,
 	organizationalUnitPayload,
 	pagePayload,
+	programCollectionPayload,
 	programPayload,
 	rulePayload,
 	resourceCollectionPayload,
@@ -988,6 +1036,18 @@ export function isIndicatorContainer(
 	return container.payload.type === payloadTypes.enum.indicator;
 }
 
+const indicatorCollectionContainer = container.extend({
+	payload: indicatorCollectionPayload
+});
+
+export type IndicatorCollectionContainer = z.infer<typeof indicatorCollectionContainer>;
+
+export function isIndicatorCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is IndicatorCollectionContainer {
+	return container.payload.type === payloadTypes.enum.indicator_collection;
+}
+
 const indicatorTemplateContainer = container.extend({
 	payload: indicatorTemplatePayload
 });
@@ -1022,6 +1082,18 @@ export function isMeasureContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureContainer {
 	return container.payload.type === payloadTypes.enum.measure;
+}
+
+const measureCollectionContainer = container.extend({
+	payload: measureCollectionPayload
+});
+
+export type MeasureCollectionContainer = z.infer<typeof measureCollectionContainer>;
+
+export function isMeasureCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is MeasureCollectionContainer {
+	return container.payload.type === payloadTypes.enum.measure_collection;
 }
 
 const objectiveContainer = container.extend({
@@ -1142,6 +1214,18 @@ export function isProgramContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ProgramContainer {
 	return container.payload.type === payloadTypes.enum.program;
+}
+
+const programCollectionContainer = container.extend({
+	payload: programCollectionPayload
+});
+
+export type ProgramCollectionContainer = z.infer<typeof programCollectionContainer>;
+
+export function isProgramCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ProgramCollectionContainer {
+	return container.payload.type === payloadTypes.enum.program_collection;
 }
 
 const textContainer = container.extend({
@@ -1335,15 +1419,18 @@ export const emptyContainer = newContainer.extend({
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
+		initialIndicatorCollectionPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialKnowledgePayload,
+		initialMeasureCollectionPayload,
 		initialMeasurePayload,
 		initialObjectiveCollectionPayload,
 		initialObjectivePayload,
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
+		initialProgramCollectionPayload,
 		initialProgramPayload,
 		initialRulePayload,
 		initialResourceCollectionPayload,
