@@ -7,6 +7,7 @@
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
+	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
@@ -20,6 +21,7 @@
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isIndicatorCollectionContainer,
+		isMapContainer,
 		isMeasureCollectionContainer,
 		isAdministrativeAreaBasicDataContainer,
 		isObjectiveCollectionContainer,
@@ -77,6 +79,12 @@
 			/>
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isMapContainer(container)}
+			<EditableMapSection
 				bind:container
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}

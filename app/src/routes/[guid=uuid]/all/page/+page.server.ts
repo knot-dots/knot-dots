@@ -62,6 +62,7 @@ export const load = (async ({ locals, parent }) => {
 					type: [
 						payloadTypes.enum.file_collection,
 						payloadTypes.enum.indicator_collection,
+						payloadTypes.enum.map,
 						payloadTypes.enum.measure_collection,
 						payloadTypes.enum.administrative_area_basic_data,
 						payloadTypes.enum.program_collection,

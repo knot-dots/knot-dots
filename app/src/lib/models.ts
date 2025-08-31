@@ -67,6 +67,7 @@ const payloadTypeValues = [
 	'indicator_collection',
 	'indicator_template',
 	'knowledge',
+	'map',
 	'measure',
 	'measure_collection',
 	'objective',
@@ -596,6 +597,28 @@ const knowledgePayload = basePayload
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
+const mapPayload = z
+	.object({
+		geometry: z
+			.object({
+				type: z.enum([
+					'LineString',
+					'MultiLineString',
+					'Point',
+					'MultiPoint',
+					'Polygon',
+					'MultiPolygon'
+				])
+			})
+			.passthrough(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.map),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialMapPayload = mapPayload.partial({ geometry: true, title: true });
+
 const measurePayload = basePayload
 	.extend({
 		annotation: z.string().trim().optional(),
@@ -894,6 +917,7 @@ const payload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
+	mapPayload,
 	measureCollectionPayload,
 	measurePayload,
 	objectiveCollectionPayload,
@@ -939,6 +963,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
+	mapPayload,
 	measureCollectionPayload,
 	measurePayload,
 	objectiveCollectionPayload,
@@ -1116,6 +1141,18 @@ export function isKnowledgeContainer(
 	container: AnyContainer | EmptyContainer
 ): container is KnowledgeContainer {
 	return container.payload.type === payloadTypes.enum.knowledge;
+}
+
+const mapContainer = container.extend({
+	payload: mapPayload
+});
+
+export type MapContainer = z.infer<typeof mapContainer>;
+
+export function isMapContainer(
+	container: AnyContainer | EmptyContainer
+): container is MapContainer {
+	return container.payload.type === payloadTypes.enum.map;
 }
 
 const measureContainer = container.extend({
@@ -1470,6 +1507,7 @@ export const emptyContainer = newContainer.extend({
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialKnowledgePayload,
+		initialMapPayload,
 		initialMeasureCollectionPayload,
 		initialMeasurePayload,
 		initialObjectiveCollectionPayload,
