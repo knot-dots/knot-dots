@@ -461,6 +461,12 @@ export const boards = z.enum([
 	'board.tasks'
 ]);
 
+export const administrativeTypes = z.enum([
+	'administrative_type.municipality',
+	'administrative_type.rural_district',
+	'administrative_type.urban_district'
+]);
+
 export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high']);
 
 export type Benefit = z.infer<typeof benefit>;
@@ -816,11 +822,16 @@ const organizationPayload = z.object({
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 const organizationalUnitPayload = z.object({
+	administrativeType: administrativeTypes.optional(),
 	boards: z.array(boards).default([]),
+	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
+	federalState: z.string().optional(),
 	image: z.string().url().optional(),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
+	officialMunicipalityKey: z.string().length(8).optional(),
+	officialRegionalKey: z.string().max(12).optional(),
 	organizationalUnitType: organizationalUnitType.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
 	visibility: visibility.default(visibility.enum['organization'])
