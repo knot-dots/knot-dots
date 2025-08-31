@@ -42,7 +42,7 @@
 		...sections
 	]);
 
-	let w = $state();
+	let w = $state(0);
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
