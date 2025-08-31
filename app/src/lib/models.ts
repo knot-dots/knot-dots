@@ -57,6 +57,7 @@ export const sustainableDevelopmentGoals = z.enum(sdgValues);
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
 
 const payloadTypeValues = [
+	'administrative_area_basic_data',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -486,6 +487,17 @@ const basePayload = z
 	})
 	.strict();
 
+const administrativeAreaBasicDataPayload = z.object({
+	title: z
+		.string()
+		.readonly()
+		.default(() => unwrapFunctionStore(_)('administrative_area.basic_data')),
+	type: z.literal(payloadTypes.enum.administrative_area_basic_data),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
+
 const fileCollectionPayload = z
 	.object({
 		file: z
@@ -872,6 +884,7 @@ const undefinedPayload = z
 const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 
 const payload = z.discriminatedUnion('type', [
+	administrativeAreaBasicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -916,6 +929,7 @@ export const container = z.object({
 export type Container = z.infer<typeof container>;
 
 const anyPayload = z.discriminatedUnion('type', [
+	administrativeAreaBasicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -980,6 +994,20 @@ export function isContainerWithEffect(
 	container: AnyContainer | EmptyContainer
 ): container is ContainerWithEffect {
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
+}
+
+const administrativeAreaBasicDataContainer = container.extend({
+	payload: administrativeAreaBasicDataPayload
+});
+
+export type AdministrativeAreaBasicDataContainer = z.infer<
+	typeof administrativeAreaBasicDataContainer
+>;
+
+export function isAdministrativeAreaBasicDataContainer(
+	container: AnyContainer | EmptyContainer
+): container is AdministrativeAreaBasicDataContainer {
+	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
 
 const effectContainer = container.extend({
@@ -1432,6 +1460,7 @@ export type NewContainer = z.infer<typeof newContainer>;
 
 export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
+		initialAdministrativeAreaBasicDataPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
 		initialFileCollectionPayload,
