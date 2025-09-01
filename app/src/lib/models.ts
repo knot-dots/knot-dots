@@ -1779,6 +1779,12 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 			});
 }
 
+export function filterMembers<T extends AnyContainer>(containers: T[], members: string[]) {
+	return members.length == 0
+		? containers
+		: containers.filter((container) => members.some((guid) => hasMember({ guid })(container)));
+}
+
 export function getCreator(revision: AnyContainer) {
 	return revision.user
 		.filter(({ predicate }) => predicate == predicates.enum['is-creator-of'])

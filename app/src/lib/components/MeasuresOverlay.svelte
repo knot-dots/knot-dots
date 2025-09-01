@@ -5,9 +5,12 @@
 	import {
 		audience,
 		computeFacetCount,
+		isMeasureContainer,
+		isSimpleMeasureContainer,
 		type MeasureContainer,
 		measureTypes,
 		policyFieldBNK,
+		predicates,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
@@ -18,6 +21,24 @@
 
 	let { containers }: Props = $props();
 
+	let memberFacet = $derived(
+		containers
+			.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+			.flatMap(({ user }) =>
+				user
+					.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+					.map(({ subject }) => subject)
+			)
+			.reduce((accumulator, currentValue) => {
+				if (accumulator.has(currentValue)) {
+					accumulator.set(currentValue, accumulator.get(currentValue)! + 1);
+				} else {
+					accumulator.set(currentValue, 1);
+				}
+				return accumulator;
+			}, new Map())
+	);
+
 	let facets = $derived(
 		computeFacetCount(
 			new Map([
@@ -25,7 +46,8 @@
 				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-				['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]
+				['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
+				['member', memberFacet]
 			]),
 			containers
 		)

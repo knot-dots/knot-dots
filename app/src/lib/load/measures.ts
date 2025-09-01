@@ -4,7 +4,7 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
+import { filterOrganizationalUnits, filterMembers, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
 import type { PageServerLoad } from '../../routes/measures/$types';
 
@@ -75,11 +75,14 @@ export default (async function load({ locals, url, parent }) {
 	}
 
 	return {
-		containers: filterOrganizationalUnits(
-			filterVisible(containers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
+		containers: filterMembers(
+			filterOrganizationalUnits(
+				filterVisible(containers, locals.user),
+				url,
+				subordinateOrganizationalUnits,
+				currentOrganizationalUnit
+			),
+			url.searchParams.getAll('member')
 		)
 	};
 } satisfies PageServerLoad);
