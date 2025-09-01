@@ -7,6 +7,8 @@
 		audience,
 		computeFacetCount,
 		type Container,
+		isMeasureContainer,
+		isSimpleMeasureContainer,
 		measureTypes,
 		policyFieldBNK,
 		predicates,
@@ -32,6 +34,24 @@
 		]
 	});
 
+	let memberFacet = $derived(
+		data.containers
+			.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+			.flatMap(({ user }) =>
+				user
+					.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+					.map(({ subject }) => subject)
+			)
+			.reduce((accumulator, currentValue) => {
+				if (accumulator.has(currentValue)) {
+					accumulator.set(currentValue, accumulator.get(currentValue)! + 1);
+				} else {
+					accumulator.set(currentValue, 1);
+				}
+				return accumulator;
+			}, new Map())
+	);
+
 	let facets = $derived.by(() => {
 		const facets = new Map([
 			...((page.url.searchParams.has('related-to')
@@ -55,7 +75,8 @@
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
 			['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
-			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
+			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))],
+			['member', memberFacet]
 		]);
 
 		return computeFacetCount(facets, data.containers);

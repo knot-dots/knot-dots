@@ -35,14 +35,12 @@
 	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
 	let parts = $state(
-		relatedContainers
-			.filter(({ guid, relation }) =>
-				relation.some(
-					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
-				)
+		relatedContainers.filter(({ guid, relation }) =>
+			relation.some(
+				({ predicate }) =>
+					predicate === predicates.enum['is-part-of-program'] && guid != container.guid
 			)
-			.filter(({ payload }) => byPayloadType(payload.type, page.url))
+		)
 	);
 
 	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
@@ -98,11 +96,6 @@
 		$newContainer = chapter;
 
 		createContainerDialog.getElement().showModal();
-	}
-
-	function byPayloadType(payloadType: PayloadType, url: URL) {
-		const params = paramsFromFragment(url);
-		return !params.has('type') || params.getAll('type').includes(payloadType);
 	}
 
 	function stopPropagation(fn: (event: Event) => void) {

@@ -27,6 +27,7 @@
 		['indicatorType', 'indicator_type'],
 		['indicatorCategory', 'indicator_category'],
 		['measureType', 'measure_type'],
+		['member', 'member_filter.label'],
 		['type', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],
 		['programType', 'program_type.label'],

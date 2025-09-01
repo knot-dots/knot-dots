@@ -12,6 +12,7 @@ import {
 	type ApplicationState,
 	type Container,
 	containerOfType,
+	filterMembers,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	isProgramContainer,
@@ -328,7 +329,11 @@ if (browser) {
 				},
 				hashParams.get('sort') ?? 'alpha'
 			)) as MeasureContainer[];
-			overlay.set({ key: overlayKey.enum.measures, container, containers });
+			overlay.set({
+				key: overlayKey.enum.measures,
+				container,
+				containers: filterMembers(containers, hashParams.getAll('member'))
+			});
 		} else if (hashParams.has(overlayKey.enum['measure-monitoring'])) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum['measure-monitoring']) as string

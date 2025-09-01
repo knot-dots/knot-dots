@@ -14,6 +14,7 @@
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
+	import MemberFilterDropDown from '$lib/components/MemberFilterDropDown.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
@@ -230,6 +231,8 @@
 					<OrganizationIncludedFilterDropDown />
 				{:else if key === 'relationType'}
 					<RelationTypeFilterDropDown {options} />
+				{:else if key === 'member'}
+					<MemberFilterDropDown {options} />
 				{:else if options.filter(({ count }) => count > 0).length > 0 || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 					<FilterDropDown {key} {options} />
 				{/if}
