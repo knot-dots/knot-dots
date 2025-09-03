@@ -646,15 +646,49 @@ export function getManyOrganizationContainers(
 	};
 }
 
-export function getManyOrganizationalUnitContainers(filters: { organization?: string }) {
+export function getManyOrganizationalUnitContainers(filters: {
+	administrativeType?: string[];
+	cityAndMunicipalityTypeBBSR?: string[];
+	federalState?: string[];
+	level?: number;
+	organization?: string;
+	terms?: string;
+}) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
 		const conditions = [
 			sql.fragment`valid_currently`,
 			sql.fragment`NOT deleted`,
 			sql.fragment`payload->>'type' = ${payloadTypes.enum.organizational_unit}`
 		];
+		if (filters.administrativeType?.length) {
+			conditions.push(
+				sql.fragment`payload->>'administrativeType' = ANY (${sql.array(filters.administrativeType, 'text')})`
+			);
+		}
+		if (filters.cityAndMunicipalityTypeBBSR?.length) {
+			conditions.push(
+				sql.fragment`payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.cityAndMunicipalityTypeBBSR, 'text')})`
+			);
+		}
+		if (filters.federalState?.length) {
+			conditions.push(
+				sql.fragment`payload->>'federalState' = ANY (${sql.array(filters.federalState, 'text')})`
+			);
+		}
+		if (filters.level) {
+			conditions.push(sql.fragment`(payload->'level')::int = ${filters.level}`);
+		}
 		if (filters.organization) {
 			conditions.push(sql.fragment`organization = ${filters.organization}`);
+		}
+		if (filters.terms) {
+			conditions.push(
+				sql.fragment`to_tsquery('german', ${filters.terms
+					.trim()
+					.split(' ')
+					.map((t) => `${t}:*`)
+					.join(' & ')}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+			);
 		}
 
 		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`

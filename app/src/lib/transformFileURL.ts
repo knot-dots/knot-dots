@@ -5,6 +5,10 @@ function parse(url: string) {
 }
 
 export default function transformFileURL(originURL: string) {
-	const fileURL = new URL(parse(originURL).pathname, env.PUBLIC_CDN_URL);
-	return fileURL.toString();
+	if (parse(originURL).hostname == 'upload.wikimedia.org') {
+		return originURL;
+	} else {
+		const fileURL = new URL(parse(originURL).pathname, env.PUBLIC_CDN_URL);
+		return fileURL.toString();
+	}
 }

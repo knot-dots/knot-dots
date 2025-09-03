@@ -1,5 +1,5 @@
-<script lang="ts">
-	import { getContext } from 'svelte';
+<script lang="ts" generics="T extends AnyContainer">
+	import { getContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
@@ -7,7 +7,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
-		type Container,
+		type AnyContainer,
 		containerOfType,
 		type NewContainer,
 		type PayloadType
@@ -15,11 +15,12 @@
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
-		containers: Container[];
+		containers: T[];
+		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
 	}
 
-	let { containers, payloadType }: Props = $props();
+	let { containers, item, payloadType }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -76,7 +77,11 @@
 	<ul>
 		{#each containers as container}
 			<li>
-				<Card --height="100%" {container} />
+				{#if item}
+					{@render item(container)}
+				{:else}
+					<Card --height="100%" {container} />
+				{/if}
 			</li>
 		{/each}
 	</ul>
