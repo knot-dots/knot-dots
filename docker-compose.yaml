@@ -17,6 +17,8 @@ services:
     volumes:
       - ./app/src:/srv/app/src
   db:
+    build:
+      context: db
     env_file:
       - ./app/.env
     healthcheck:
@@ -24,7 +26,6 @@ services:
       interval: 3s
       timeout: 3s
       retries: 3
-    image: postgres:16
   migrate:
     build:
       context: migrate
