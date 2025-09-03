@@ -26,6 +26,18 @@ services:
       interval: 3s
       timeout: 3s
       retries: 3
+  import:
+    build:
+      context: import
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./app/.env
+    profiles:
+      - import
+    volumes:
+      - ./import/src:/srv/app/src
   migrate:
     build:
       context: migrate
