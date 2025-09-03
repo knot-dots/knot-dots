@@ -20,7 +20,7 @@
 
 	function href() {
 		const url = new URL(env.PUBLIC_BASE_URL ?? '');
-		url.pathname = linkPath;
+		url.pathname = `/${defaultOrganization.guid}${linkPath}`;
 		return url.toString();
 	}
 </script>

@@ -1,39 +1,38 @@
-import { SchemaValidationError, createPool, createSqlTag } from 'slonik';
-import type {
-	DatabaseConnection,
-	DatabasePool,
-	Interceptor,
-	QueryResultRow,
-	SerializableValue
+import {
+	createPool,
+	createSqlTag,
+	type DatabaseConnection,
+	type DatabasePool,
+	type Interceptor,
+	type QueryResultRow,
+	SchemaValidationError,
+	type SerializableValue
 } from 'slonik';
-import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 import {
+	type AnyContainer,
 	anyContainer,
+	type Container,
 	container,
 	findDescendants,
+	type IndicatorContainer,
+	type ModifiedContainer,
+	type NewContainer,
+	type OrganizationalUnitContainer,
 	organizationalUnitContainer,
+	type OrganizationContainer,
 	organizationContainer,
+	type PayloadType,
 	payloadTypes,
+	type Predicate,
 	predicates,
+	type Relation,
 	relation,
+	type TaskPriority,
+	type User,
 	user,
 	userRelation,
 	visibility
-} from '$lib/models';
-import type {
-	AnyContainer,
-	Container,
-	IndicatorContainer,
-	ModifiedContainer,
-	NewContainer,
-	OrganizationContainer,
-	OrganizationalUnitContainer,
-	PayloadType,
-	Predicate,
-	Relation,
-	TaskPriority,
-	User
 } from '$lib/models';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -96,14 +95,10 @@ export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection): Promise<AnyContainer> => {
 		return connection.transaction(async (txConnection) => {
 			let organizationGuid;
-			let organizationalUnitGuid;
 
 			if (container.payload.type === payloadTypes.enum.organization) {
 				organizationGuid = await createGroup(container.payload.name);
 				await updateAccessSettings(organizationGuid);
-			} else if (container.payload.type === payloadTypes.enum.organizational_unit) {
-				organizationalUnitGuid = uuid();
-				await updateAccessSettings(organizationalUnitGuid);
 			}
 
 			const containerResult = organizationGuid
@@ -118,29 +113,17 @@ export function createContainer(container: NewContainer) {
 					)
 					RETURNING *
 				`)
-				: organizationalUnitGuid
-					? await txConnection.one(sql.typeAlias('anyContainer')`
-						INSERT INTO container (guid, managed_by, organization, payload, realm)
-						VALUES (
-							${organizationalUnitGuid},
-              ${container.managed_by},
-							${container.organization},
-							${sql.jsonb(<SerializableValue>container.payload)},
-							${container.realm}
-						)
-						RETURNING *
-					`)
-					: await txConnection.one(sql.typeAlias('anyContainer')`
-						INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
-						VALUES (
-							${container.managed_by},
-							${container.organization},
-							${container.organizational_unit},
-							${sql.jsonb(<SerializableValue>container.payload)},
-							${container.realm}
-						)
-						RETURNING *
-					`);
+				: await txConnection.one(sql.typeAlias('anyContainer')`
+					INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
+					VALUES (
+						${container.managed_by},
+						${container.organization},
+						${container.organizational_unit},
+						${sql.jsonb(<SerializableValue>container.payload)},
+						${container.realm}
+					)
+					RETURNING *
+				`);
 
 			const userValues = container.user.map((u) => [
 				containerResult.revision,
