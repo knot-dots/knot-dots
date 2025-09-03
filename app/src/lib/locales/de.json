@@ -257,6 +257,7 @@
 	"operational_goal": "Operatives Ziel",
 	"operational_goals": "Operative Ziele",
 	"organization": "Organisation",
+	"organization.properties.title": "Einstellungen",
 	"organization_category": {
 		"business": "Unternehmen",
 		"government": "Verwaltung",
@@ -266,6 +267,7 @@
 	},
 	"organizational_unit": "Organisations-Ebene",
 	"organizational_unit.level": "Ebene",
+	"organizational_unit.properties.title": "Einstellungen",
 	"organizational_unit_level": "Ebene {level, number}",
 	"organizational_units": "Organisations-Ebenen",
 	"organizations": "Organisationen",

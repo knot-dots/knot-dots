@@ -1,17 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Ellipsis from '~icons/knotdots/ellipsis';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import Card from '$lib/components/Card.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
-	import {
-		type Container,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		type OrganizationalUnitContainer
-	} from '$lib/models';
+	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
+	import Sections from '$lib/components/Sections.svelte';
+	import { type Container, type OrganizationalUnitContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -20,28 +17,48 @@
 		indicators?: Container[];
 		measures?: Container[];
 		programs?: Container[];
+		sections?: Container[];
 	}
 
 	let {
-		container = $bindable(),
+		container: originalContainer = $bindable(),
 		containersRelatedToIndicators = [],
 		indicators = [],
 		measures = [],
-		programs = []
+		programs = [],
+		sections: originalSections = []
 	}: Props = $props();
+
+	let container = $state(originalContainer);
+
+	let sections = $state(originalSections);
+
+	let relatedContainers = $derived([
+		container,
+		...containersRelatedToIndicators,
+		...indicators,
+		...measures,
+		...programs,
+		...sections
+	]);
 
 	let w = $state();
 
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
+
+	// svelte-ignore state_referenced_locally
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 		<header class="details-section">
 			<EditableLogo
 				editable={$applicationState.containerDetailView.editable}
 				bind:value={container.payload.image}
 			/>
+
 			{#if $applicationState.containerDetailView.editable}
 				<h1
 					class="details-title"
@@ -54,15 +71,17 @@
 					{container.payload.name}
 				</h1>
 			{/if}
+
+			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+				<button class="action-button" onclick={() => dialog.showModal()} type="button">
+					<Ellipsis />
+				</button>
+			{/if}
 		</header>
 
-		{#if $ability.can('update', container)}
-			<OrganizationalUnitProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-			/>
-		{/if}
+		<PropertiesDialog bind:dialog title={$_('organizational_unit.properties.title')}>
+			<OrganizationalUnitProperties bind:container editable />
+		</PropertiesDialog>
 
 		{#key container.guid}
 			<EditableFormattedText
@@ -72,56 +91,20 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
+	</form>
 
-		{#if container.payload.boards.includes('board.indicators')}
-			<div class="details-section">
-				<h2 class="details-heading">{$_('indicators')}</h2>
-				<ul class="carousel">
-					{#each indicators as indicator}
-						{@const relatedContainers = [
-							...containersRelatedToIndicators.filter(({ relation }) =>
-								relation.some(({ object }) => object === indicator.guid)
-							),
-							...containersRelatedToIndicators.filter(isContainerWithEffect),
-							...containersRelatedToIndicators.filter(isContainerWithObjective)
-						]}
-						<li>
-							<Card container={indicator} {relatedContainers} />
-						</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
-
-		<div class="details-section">
-			<h2 class="details-heading">{$_('programs')}</h2>
-			<ul class="carousel">
-				{#each programs as program}
-					<li>
-						<Card container={program} />
-					</li>
-				{/each}
-			</ul>
-		</div>
-
-		<div class="details-section">
-			<h2 class="details-heading">{$_('measures')}</h2>
-			<ul class="carousel">
-				{#each measures as measure}
-					<li>
-						<Card container={measure} />
-					</li>
-				{/each}
-			</ul>
-		</div>
-	</article>
-</form>
+	<Sections bind:container bind:relatedContainers />
+</article>
 
 <style>
 	header {
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
+	}
+
+	header button {
+		margin-left: auto;
 	}
 
 	h1 {

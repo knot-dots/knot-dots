@@ -142,7 +142,7 @@
 {/snippet}
 
 {#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
-	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
+	<EditableContainerDetailView bind:container>
 		{#snippet data()}
 			<ProgramProperties
 				bind:container

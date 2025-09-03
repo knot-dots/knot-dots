@@ -6,18 +6,27 @@
 	import File from '~icons/flowbite/file-solid';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
+	import ChartMixed from '~icons/knotdots/chart-mixed';
+	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
 	import Plus from '~icons/knotdots/plus';
+	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
 	import {
 		type AnyContainer,
+		boards,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
+		isIndicatorCollectionContainer,
+		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
+		isProgramCollectionContainer,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -82,6 +91,22 @@
 		!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
 	);
 
+	let mayAddIndicatorCollection = $derived(
+		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
+			parentContainer.payload.boards.includes(boards.enum['board.indicators']) &&
+			!hasSection(parentContainer, relatedContainers).some(isIndicatorCollectionContainer)
+	);
+
+	let mayAddMeasureCollection = $derived(
+		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isMeasureCollectionContainer)
+	);
+
+	let mayAddProgramCollection = $derived(
+		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isProgramCollectionContainer)
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -136,6 +161,33 @@
 							icon: Cash,
 							label: $_('resources'),
 							value: payloadTypes.enum.resource_collection
+						}
+					]
+				: []),
+			...(mayAddIndicatorCollection
+				? [
+						{
+							icon: ChartMixed,
+							label: $_('indicators'),
+							value: payloadTypes.enum.indicator_collection
+						}
+					]
+				: []),
+			...(mayAddMeasureCollection
+				? [
+						{
+							icon: Clipboard,
+							label: $_('measures'),
+							value: payloadTypes.enum.measure_collection
+						}
+					]
+				: []),
+			...(mayAddProgramCollection
+				? [
+						{
+							icon: Program,
+							label: $_('programs'),
+							value: payloadTypes.enum.program_collection
 						}
 					]
 				: [])

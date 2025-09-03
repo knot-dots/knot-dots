@@ -6,7 +6,10 @@
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
+	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
+	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
+	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
@@ -15,7 +18,10 @@
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
+		isIndicatorCollectionContainer,
+		isMeasureCollectionContainer,
 		isObjectiveCollectionContainer,
+		isProgramCollectionContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
 		isTextContainer
@@ -67,8 +73,26 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
+		{:else if isIndicatorCollectionContainer(container)}
+			<EditableIndicatorCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isMeasureCollectionContainer(container)}
+			<EditableMeasureCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
 		{:else if isObjectiveCollectionContainer(container)}
 			<EditableObjectiveCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isProgramCollectionContainer(container)}
+			<EditableProgramCollection
 				bind:container
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}

@@ -3,6 +3,7 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
+	import Sections from '$lib/components/Sections.svelte';
 	import { type GoalContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -12,10 +13,16 @@
 		revisions: any[];
 	}
 
-	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+	let {
+		container = $bindable(),
+		relatedContainers: originalRelatedContainers,
+		revisions
+	}: Props = $props();
+
+	let relatedContainers = $state(originalRelatedContainers);
 </script>
 
-<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
+<EditableContainerDetailView bind:container>
 	{#snippet data()}
 		<GoalProperties
 			bind:container
@@ -32,5 +39,7 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
+
+		<Sections bind:container bind:relatedContainers />
 	{/snippet}
 </EditableContainerDetailView>
