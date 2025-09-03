@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
@@ -10,6 +10,14 @@
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { overlay } from '$lib/stores';
 
+	interface Props {
+		header?: Snippet;
+		main: Snippet;
+		sidebar?: Snippet;
+	}
+
+	let { header, main, sidebar }: Props = $props();
+
 	const duration = 300;
 	const delay = duration + 100;
 	const y = 10;
@@ -17,6 +25,7 @@
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
 
+	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
 	setContext('createContainerDialog', { getElement: () => dialog });
@@ -36,8 +45,8 @@
 
 <div class="app-wrapper">
 	<nav>
-		{#if $$slots.sidebar}
-			<slot name="sidebar" />
+		{#if sidebar}
+			{@render sidebar()}
 		{:else}
 			<Sidebar />
 		{/if}
@@ -50,14 +59,14 @@
 			{/each}
 		</div>
 
-		{#if $$slots.header}
-			<slot name="header" />
+		{#if header}
+			{@render header()}
 		{:else}
 			<Header />
 		{/if}
 
 		<main in:fly={transitionIn} out:fly={transitionOut}>
-			<slot name="main" />
+			{@render main()}
 		</main>
 	</div>
 

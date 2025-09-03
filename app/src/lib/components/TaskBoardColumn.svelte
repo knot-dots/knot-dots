@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -21,9 +21,14 @@
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
 
-	export let addItemUrl: string | undefined = undefined;
-	export let items: TaskContainer[] = [];
-	export let status: TaskStatus;
+	interface Props {
+		addItemUrl?: string;
+		itemSnippet: Snippet<[TaskContainer]>;
+		items: TaskContainer[];
+		status: TaskStatus;
+	}
+
+	let { addItemUrl, itemSnippet, items = [], status }: Props = $props();
 
 	function handleDndConsider(e: CustomEvent<DndEvent<TaskContainer>>) {
 		items = e.detail.items;
@@ -101,34 +106,38 @@
 			{$_(status)}
 		</h2>
 		{#if addItemUrl}
-			<a href={addItemUrl} on:click={createContainer} title={$_('add_item')}><Plus /></a>
+			<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><Plus /></a>
 		{/if}
 	</header>
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper masked-overflow"
 			use:dndzone={{ items }}
-			on:consider={handleDndConsider}
-			on:finalize={handleDndFinalize}
+			onconsider={handleDndConsider}
+			onfinalize={handleDndFinalize}
 		>
 			{#each items as container (container.guid)}
-				<slot {container}>
+				{#if itemSnippet}
+					{@render itemSnippet(container)}
+				{:else}
 					<Card {container} />
-				</slot>
+				{/if}
 			{/each}
 		</div>
 	{:else}
 		<div class="vertical-scroll-wrapper masked-overflow">
 			{#each items as container (container.guid)}
-				<slot {container}>
+				{#if itemSnippet}
+					{@render itemSnippet(container)}
+				{:else}
 					<Card {container} />
-				</slot>
+				{/if}
 			{/each}
 		</div>
 	{/if}
 	{#if addItemUrl}
 		<footer>
-			<a href={addItemUrl} on:click={createContainer}>{$_('add_item')}<Plus /></a>
+			<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<Plus /></a>
 		</footer>
 	{/if}
 </section>

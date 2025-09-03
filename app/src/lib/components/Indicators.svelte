@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
-	import type { DndEvent, Item } from 'svelte-dnd-action';
+	import {
+		type DndEvent,
+		dndzone,
+		type Item,
+		SHADOW_ITEM_MARKER_PROPERTY_NAME,
+		TRIGGERS
+	} from 'svelte-dnd-action';
 	import Plus from '~icons/knotdots/plus';
-	import Card from '$lib/components/Card.svelte';
 	import { browser } from '$app/environment';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
+	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
 		findConnected,
@@ -19,37 +24,41 @@
 	} from '$lib/models';
 	import { ability, dragged, overlay } from '$lib/stores';
 
-	export let containers: Container[];
-
-	let selectedContainer: IndicatorContainer | undefined = undefined;
-
-	$: if ($page.url.searchParams.has('related-to')) {
-		selectedContainer = containers
-			.filter(isIndicatorContainer)
-			.find(({ guid }) => guid === $page.url.searchParams.get('related-to'));
-	} else {
-		selectedContainer = undefined;
+	interface Props {
+		containers: Container[];
 	}
 
-	let items: Array<{ guid: string; container: IndicatorContainer }> = [];
+	let { containers }: Props = $props();
 
-	$: if (selectedContainer) {
-		const connectedContainers = findConnected(
-			selectedContainer,
-			containers.filter(isIndicatorContainer),
-			[predicates.enum['is-affected-by']]
-		);
-		items = containers
-			.filter(isIndicatorContainer)
-			.filter((c) => connectedContainers.has(c))
-			.map((container) => ({ guid: container.guid, container }));
-	} else {
-		items = containers
-			.filter(isIndicatorContainer)
-			.map((container) => ({ guid: container.guid, container }));
-	}
+	let selectedContainer = $derived.by(() => {
+		if (page.url.searchParams.has('related-to')) {
+			return containers
+				.filter(isIndicatorContainer)
+				.find(({ guid }) => guid === page.url.searchParams.get('related-to'));
+		} else {
+			return undefined;
+		}
+	});
 
-	let shouldIgnoreDndEvents = false;
+	let items = $derived.by(() => {
+		if (selectedContainer) {
+			const connectedContainers = findConnected(
+				selectedContainer,
+				containers.filter(isIndicatorContainer),
+				[predicates.enum['is-affected-by']]
+			);
+			return containers
+				.filter(isIndicatorContainer)
+				.filter((c) => connectedContainers.has(c))
+				.map((container) => ({ guid: container.guid, container }));
+		} else {
+			return containers
+				.filter(isIndicatorContainer)
+				.map((container) => ({ guid: container.guid, container }));
+		}
+	});
+
+	let shouldIgnoreDndEvents = $state(false);
 
 	function handleDndConsider(
 		event: CustomEvent<DndEvent<{ guid: string; container: IndicatorContainer }>>
@@ -98,8 +107,8 @@
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relations && $ability.can('relate', $overlay.container)}
 		<ul
 			use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
-			on:consider={handleDndConsider}
-			on:finalize={handleDndFinalize}
+			onconsider={handleDndConsider}
+			onfinalize={handleDndFinalize}
 		>
 			{#each items as { guid, container } (guid)}
 				{@const relatedContainers = [

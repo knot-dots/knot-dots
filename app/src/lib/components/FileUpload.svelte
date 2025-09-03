@@ -17,6 +17,7 @@
 
 	let errorMessage = $state('');
 
+	// svelte-ignore state_referenced_locally
 	uppy?.on('restriction-failed', (file, error) => {
 		errorMessage = error.message;
 		setTimeout(() => {
@@ -24,6 +25,7 @@
 		}, 3000);
 	});
 
+	// svelte-ignore state_referenced_locally
 	uppy?.on('upload-error', (file, error) => {
 		errorMessage = error.message;
 		setTimeout(() => {

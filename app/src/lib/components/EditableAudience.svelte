@@ -3,8 +3,12 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import { audience } from '$lib/models';
 
-	export let editable = false;
-	export let value: string[];
+	interface Props {
+		editable?: boolean;
+		value: string[];
+	}
+
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
 <EditableMultipleChoice

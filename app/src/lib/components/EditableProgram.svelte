@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
@@ -79,7 +79,7 @@
 		options={[
 			{ label: $_('empty'), value: '' },
 			...programCandidates.map(({ guid, payload }) => ({
-				href: overlayURL($page.url, overlayKey.enum.view, guid),
+				href: overlayURL(page.url, overlayKey.enum.view, guid),
 				label: payload.title,
 				value: guid
 			}))

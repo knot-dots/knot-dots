@@ -2,8 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import {
 		type Container,
-		type ContainerWithEffect,
-		type EffectContainer,
 		findAncestors,
 		findLeafObjectives,
 		findOverallObjective,
@@ -17,36 +15,33 @@
 		status
 	} from '$lib/models';
 
-	export let container: IndicatorContainer;
-	export let relatedContainers: Container[] = [];
-	export let showEffects = false;
-	export let showObjectives = false;
+	interface Props {
+		container: IndicatorContainer;
+		relatedContainers?: Container[];
+		showEffects?: boolean;
+		showObjectives?: boolean;
+	}
 
-	let effects = [] as Array<{ Year: number; Value: number; Status: string }>;
-	let objectives = [] as Array<{ Year: number; Value: number }>;
-	let objectivesMinYear = 0;
+	let {
+		container,
+		relatedContainers = [],
+		showEffects = false,
+		showObjectives = false
+	}: Props = $props();
+
 	let overallObjective = [] as Array<{ Year: number; Value: number }>;
-	let overallObjectiveByYear: Map<number, number>;
-	let overallObjectiveMinYear = 0;
-	let objectivesByYear: Map<number, number>;
-	let ideasByYear: Map<number, number>;
-	let inPlanningByYear: Map<number, number>;
-	let inImplementationByYear: Map<number, number>;
-	let doneByYear: Map<number, number>;
 
-	let effectContainers = [] as EffectContainer[];
-	let measureContainers = [] as ContainerWithEffect[];
+	let historicalValuesByYear = $derived(new Map(container.payload.historicalValues));
 
-	$: historicalValuesByYear = new Map(container.payload.historicalValues);
-
-	$: {
+	let overallObjectiveByYear = $derived.by(() => {
 		overallObjective =
 			findOverallObjective(container, relatedContainers)?.payload.wantedValues.map(
 				([Year, Value]) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value })
 			) ?? [];
-		overallObjectiveMinYear =
+		let overallObjectiveMinYear =
 			overallObjective.length > 0 ? Math.min(...overallObjective.map(({ Year }) => Year)) : 0;
-		overallObjectiveByYear = new Map(
+
+		return new Map(
 			[
 				...(overallObjective.length > 0
 					? [
@@ -59,8 +54,10 @@
 				...overallObjective
 			].map(({ Year, Value }) => [Year, Value])
 		);
+	});
 
-		objectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer))
+	let objectivesByYear = $derived.by(() => {
+		let objectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer))
 			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
 			.reduce(
@@ -87,7 +84,7 @@
 			)
 			.map(({ Year, Value }) => ({ Year, Value: (historicalValuesByYear.get(Year) ?? 0) + Value }));
 
-		objectivesMinYear =
+		let objectivesMinYear =
 			objectives.length == 0 ? 0 : Math.min(...objectives.map(({ Year }) => Year));
 
 		objectives = [
@@ -102,14 +99,15 @@
 			...objectives
 		];
 
-		objectivesByYear = new Map(objectives.map(({ Year, Value }) => [Year, Value]));
-	}
+		return new Map(objectives.map(({ Year, Value }) => [Year, Value]));
+	});
 
-	$: {
-		effectContainers = relatedContainers.filter(isEffectContainer);
-		measureContainers = relatedContainers.filter(isContainerWithEffect);
+	let effectContainers = $derived(relatedContainers.filter(isEffectContainer));
 
-		effects = effectContainers
+	let measureContainers = $derived(relatedContainers.filter(isContainerWithEffect));
+
+	let effects = $derived.by(() => {
+		return effectContainers
 			.map((c) => {
 				const measure = findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
 					isContainerWithEffect
@@ -163,39 +161,49 @@
 				},
 				[] as Array<{ Year: number; Value: number; Status: string }>
 			);
+	});
 
-		ideasByYear = new Map(
+	let ideasByYear = $derived(
+		new Map(
 			effects
 				.filter(({ Status }) => Status == status.enum['status.idea'])
 				.map(({ Year, Value }) => [Year, Value])
-		);
+		)
+	);
 
-		inPlanningByYear = new Map(
+	let inPlanningByYear = $derived(
+		new Map(
 			effects
 				.filter(({ Status }) => Status == status.enum['status.in_planning'])
 				.map(({ Year, Value }) => [Year, Value])
-		);
+		)
+	);
 
-		inImplementationByYear = new Map(
+	let inImplementationByYear = $derived(
+		new Map(
 			effects
 				.filter(({ Status }) => Status == status.enum['status.in_implementation'])
 				.map(({ Year, Value }) => [Year, Value])
-		);
+		)
+	);
 
-		doneByYear = new Map(
+	let doneByYear = $derived(
+		new Map(
 			effects
 				.filter(({ Status }) => Status == status.enum['status.done'])
 				.map(({ Year, Value }) => [Year, Value])
-		);
-	}
+		)
+	);
 
-	$: years = Array.from(
-		new Set([
-			...historicalValuesByYear.keys(),
-			...overallObjectiveByYear.keys(),
-			...objectivesByYear.keys(),
-			...effects.map(({ Year }) => Year)
-		])
+	let years = $derived(
+		Array.from(
+			new Set([
+				...historicalValuesByYear.keys(),
+				...overallObjectiveByYear.keys(),
+				...objectivesByYear.keys(),
+				...effects.map(({ Year }) => Year)
+			])
+		)
 	);
 </script>
 
@@ -278,7 +286,7 @@
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>
-												predicate == predicates.enum['is-part-of'] && object == measure.guid
+												predicate === predicates.enum['is-part-of'] && object === measure.guid
 										) > -1
 								)
 							)
@@ -306,7 +314,7 @@
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>
-												predicate == predicates.enum['is-part-of'] && object == measure.guid
+												predicate === predicates.enum['is-part-of'] && object === measure.guid
 										) > -1
 								)
 							)
@@ -334,7 +342,7 @@
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>
-												predicate == predicates.enum['is-part-of'] && object == measure.guid
+												predicate === predicates.enum['is-part-of'] && object === measure.guid
 										) > -1
 								)
 							)
@@ -362,7 +370,7 @@
 									({ relation }) =>
 										relation.findIndex(
 											({ object, predicate }) =>
-												predicate == predicates.enum['is-part-of'] && object == measure.guid
+												predicate === predicates.enum['is-part-of'] && object === measure.guid
 										) > -1
 								)
 							)

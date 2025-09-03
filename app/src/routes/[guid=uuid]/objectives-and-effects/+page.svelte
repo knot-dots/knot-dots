@@ -134,9 +134,11 @@
 </script>
 
 <Layout>
-	<Header {facets} search slot="header" />
+	{#snippet header()}
+		<Header {facets} search />
+	{/snippet}
 
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		{#key page.url.searchParams}
 			<Board>
 				<BoardColumn title={$_('indicators')}>
@@ -150,35 +152,38 @@
 				</BoardColumn>
 				{#each [...objectivesByLevel.entries()].toSorted() as [key, value] (key)}
 					<BoardColumn title={`${$_('objectives')} ${key + 1}`}>
-						<MaybeDragZone containers={value.filter((c) => containers.has(c))} let:container>
-							<Card
-								{container}
-								relatedContainers={data.containers}
-								showRelationFilter
-								titleOverride
-							/>
+						<MaybeDragZone containers={value.filter((c) => containers.has(c))}>
+							{#snippet itemSnippet(container)}
+								<Card
+									{container}
+									relatedContainers={data.containers}
+									showRelationFilter
+									titleOverride
+								/>
+							{/snippet}
 						</MaybeDragZone>
 					</BoardColumn>
 				{/each}
 				<BoardColumn title={$_('effects')}>
 					<MaybeDragZone
 						containers={data.containers.filter(isEffectContainer).filter((c) => containers.has(c))}
-						let:container
 					>
-						<Card
-							{container}
-							relatedContainers={[
-								...data.containers.filter(isRelatedTo(container)),
-								...data.containers.filter(isContainerWithEffect)
-							]}
-							showRelationFilter
-							titleOverride
-						/>
+						{#snippet itemSnippet(container)}
+							<Card
+								{container}
+								relatedContainers={[
+									...data.containers.filter(isRelatedTo(container)),
+									...data.containers.filter(isContainerWithEffect)
+								]}
+								showRelationFilter
+								titleOverride
+							/>
+						{/snippet}
 					</MaybeDragZone>
 				</BoardColumn>
 			</Board>
 		{/key}
 
 		<Help slug="objectives-and-effects" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>

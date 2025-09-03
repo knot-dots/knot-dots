@@ -1,16 +1,22 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent, Item } from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { isPartOf, overlayKey } from '$lib/models';
 	import type { Container } from '$lib/models';
 	import Card from '$lib/components/Card.svelte';
 	import { ability, dragged, overlay } from '$lib/stores';
 
-	export let containers: Container[];
+	interface Props {
+		containers: Container[];
+		itemSnippet?: Snippet<[Container]>;
+	}
 
-	$: items = containers.map((container) => ({ guid: container.guid, container }));
+	let { containers, itemSnippet }: Props = $props();
+
+	let items = $derived(containers.map((container) => ({ guid: container.guid, container })));
 
 	let shouldIgnoreDndEvents = false;
 
@@ -48,35 +54,39 @@
 	<div
 		class="vertical-scroll-wrapper masked-overflow"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
-		on:consider={handleDndConsider}
-		on:finalize={handleDndFinalize}
+		onconsider={handleDndConsider}
+		onfinalize={handleDndFinalize}
 	>
 		{#each items as { guid, container } (guid)}
 			<div>
-				<slot {container}>
+				{#if itemSnippet}
+					{@render itemSnippet(container)}
+				{:else}
 					<Card
 						{container}
-						relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
+						relatedContainers={page.data.containersWithIndicatorContributions?.filter(
 							isPartOf(container)
 						) ?? []}
 						showRelationFilter
 					/>
-				</slot>
+				{/if}
 			</div>
 		{/each}
 	</div>
 {:else}
 	<div class="vertical-scroll-wrapper masked-overflow">
 		{#each items as { container }}
-			<slot {container}>
+			{#if itemSnippet}
+				{@render itemSnippet(container)}
+			{:else}
 				<Card
 					{container}
-					relatedContainers={$page.data.containersWithIndicatorContributions?.filter(
+					relatedContainers={page.data.containersWithIndicatorContributions?.filter(
 						isPartOf(container)
 					) ?? []}
 					showRelationFilter
 				/>
-			</slot>
+			{/if}
 		{/each}
 	</div>
 {/if}

@@ -16,9 +16,13 @@
 	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 
-	export let container: AnyContainer | undefined = undefined;
-	export let containers: TaskContainer[];
-	export let relatedContainers: GoalContainer[] = [];
+	interface Props {
+		container?: AnyContainer;
+		containers: TaskContainer[];
+		relatedContainers?: GoalContainer[];
+	}
+
+	let { container, containers, relatedContainers = [] }: Props = $props();
 
 	function sortByTitle(a: Container, b: Container) {
 		const titleA = a.payload.title.toUpperCase();
@@ -66,9 +70,10 @@
 				: undefined}
 			items={containers.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 			status={taskStatusOption}
-			let:container
 		>
-			<TaskCard {container} showRelationFilter />
+			{#snippet itemSnippet(container)}
+				<TaskCard {container} showRelationFilter />
+			{/snippet}
 		</TaskBoardColumn>
 	{/each}
 </Board>

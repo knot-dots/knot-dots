@@ -44,9 +44,11 @@
 </script>
 
 <Layout>
-	<Header {facets} search {sortOptions} slot="header" />
+	{#snippet header()}
+		<Header {facets} search {sortOptions} />
+	{/snippet}
 
-	<svelte:fragment slot="main">
+	{#snippet main()}
 		{@render children()}
-	</svelte:fragment>
+	{/snippet}
 </Layout>

@@ -9,7 +9,11 @@
 	import rehypeExtractExcerpt from 'rehype-extract-excerpt';
 	import type { Container, EmptyContainer } from '$lib/models';
 
-	export let container: Container | EmptyContainer;
+	interface Props {
+		container: Container | EmptyContainer;
+	}
+
+	let { container }: Props = $props();
 </script>
 
 {#if 'summary' in container.payload && container.payload.summary}

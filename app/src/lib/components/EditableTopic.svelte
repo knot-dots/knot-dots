@@ -2,8 +2,12 @@
 	import { _ } from 'svelte-i18n';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 
-	export let editable = false;
-	export let value: string[];
+	interface Props {
+		editable?: boolean;
+		value: string[];
+	}
+
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
 <div class="label">{$_('topic')}</div>

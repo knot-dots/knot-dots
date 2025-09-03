@@ -263,10 +263,12 @@
 		}
 	]);
 
+	// svelte-ignore state_referenced_locally
 	const leftMenu = createMenu({
 		selected: pathnameWithoutContextSegment
 	});
 
+	// svelte-ignore state_referenced_locally
 	const rightMenu = createMenu({
 		selected: pathnameWithoutContextSegment
 	});

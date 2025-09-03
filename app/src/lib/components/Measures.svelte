@@ -6,7 +6,11 @@
 	import { type ContainerWithEffect, status } from '$lib/models';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 
-	export let containers: ContainerWithEffect[];
+	interface Props {
+		containers: ContainerWithEffect[];
+	}
+
+	let { containers }: Props = $props();
 </script>
 
 <Board>

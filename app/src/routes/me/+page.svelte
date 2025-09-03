@@ -16,12 +16,16 @@
 </script>
 
 <Layout>
-	<Header sortOptions={[]} {workspaceOptions} slot="header" />
+	{#snippet header()}
+		<Header sortOptions={[]} {workspaceOptions} />
+	{/snippet}
 
-	<div slot="main">
-		<ProfileView containers={data.containers} />
-		<Help slug="profile" />
-	</div>
+	{#snippet main()}
+		<div>
+			<ProfileView containers={data.containers} />
+			<Help slug="profile" />
+		</div>
+	{/snippet}
 </Layout>
 
 <style>

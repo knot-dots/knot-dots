@@ -25,9 +25,12 @@
 </script>
 
 <Layout>
-	<Header {facets} search sortOptions={[]} {workspaceOptions} slot="header" />
-	<svelte:fragment slot="main">
+	{#snippet header()}
+		<Header {facets} search sortOptions={[]} {workspaceOptions} />
+	{/snippet}
+
+	{#snippet main()}
 		<Tasks containers={data.containers} />
 		<Help slug="tasks-status" />
-	</svelte:fragment>
+	{/snippet}
 </Layout>

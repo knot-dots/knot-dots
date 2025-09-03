@@ -1,5 +1,9 @@
 <script lang="ts">
-	export let value = 0;
+	interface Props {
+		value?: number;
+	}
+
+	let { value = 0 }: Props = $props();
 </script>
 
 <progress

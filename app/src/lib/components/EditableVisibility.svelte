@@ -3,8 +3,12 @@
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import { visibility } from '$lib/models';
 
-	export let editable = false;
-	export let value: string;
+	interface Props {
+		editable?: boolean;
+		value: string;
+	}
+
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
 <EditableSingleChoice
