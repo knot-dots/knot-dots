@@ -92,7 +92,7 @@
 		height: 100%;
 		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
 		overflow-y: auto;
-		padding: 1.5rem;
+		padding: 3.5rem 5rem;
 	}
 
 	div :global(.dropdown-button.dropdown-button--menu) {
