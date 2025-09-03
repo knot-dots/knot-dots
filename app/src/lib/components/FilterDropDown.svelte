@@ -23,9 +23,15 @@
 	const changeKey = `${key}Changed`;
 
 	const labelForKey = new Map([
+		['administrativeType', 'administrative_area.basic_data.administrative_type'],
+		[
+			'cityAndMunicipalityTypeBBSR',
+			'administrative_area.basic_data.city_and_municipality_type_bbsr'
+		],
 		['included', 'included.label'],
 		['indicatorType', 'indicator_type'],
 		['indicatorCategory', 'indicator_category'],
+		['federalState', 'administrative_area.basic_data.federal_state'],
 		['measureType', 'measure_type'],
 		['member', 'member_filter.label'],
 		['type', 'payload_type'],

@@ -1,0 +1,26 @@
+{
+  "name": "knotdots-import",
+  "version": "1.0.0",
+  "scripts": {
+    "administrative-areas-from-open-street-map": "tsx src/importAdministrativeAreasFromOpenStreetMap.ts",
+    "administrative-areas-from-wikidata": "tsx src/importAdministrativeAreasFromWikidata.ts",
+    "administrative-areas-from-bbsr": "tsx src/importAdministrativeAreasFromBBSR.ts",
+    "administrative-areas-from-wegweiser-kommune": "tsx src/importAdministrativeAreasFromWegweiserKommune.ts"
+  },
+  "author": "",
+  "license": "AGPL-3.0-or-later",
+  "description": "",
+  "dependencies": {
+    "csv-parse": "^6.1.0",
+    "osmtogeojson": "^3.0.0-beta.5",
+    "overpass-ql-ts": "^1.11.0",
+    "rxjs": "^7.8.2",
+    "slonik": "^47.3.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.4"
+  }
+}

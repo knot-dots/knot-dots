@@ -57,6 +57,7 @@ export const sustainableDevelopmentGoals = z.enum(sdgValues);
 export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
 
 const payloadTypeValues = [
+	'administrative_area_basic_data',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -66,6 +67,7 @@ const payloadTypeValues = [
 	'indicator_collection',
 	'indicator_template',
 	'knowledge',
+	'map',
 	'measure',
 	'measure_collection',
 	'objective',
@@ -253,6 +255,12 @@ const goalTypeValues = [
 export const goalType = z.enum(goalTypeValues);
 
 export type GoalType = z.infer<typeof goalType>;
+
+const organizationalUnitTypeValues = ['organizational_unit_type.administrative_area'] as const;
+
+export const organizationalUnitType = z.enum(organizationalUnitTypeValues);
+
+export type OrganizationalUnitType = z.infer<typeof organizationalUnitType>;
 
 const topicValues = [
 	'topic.citizen_participation',
@@ -455,6 +463,12 @@ export const boards = z.enum([
 	'board.tasks'
 ]);
 
+export const administrativeTypes = z.enum([
+	'administrative_type.municipality',
+	'administrative_type.rural_district',
+	'administrative_type.urban_district'
+]);
+
 export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high']);
 
 export type Benefit = z.infer<typeof benefit>;
@@ -473,6 +487,17 @@ const basePayload = z
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
+
+const administrativeAreaBasicDataPayload = z.object({
+	title: z
+		.string()
+		.readonly()
+		.default(() => unwrapFunctionStore(_)('administrative_area.basic_data')),
+	type: z.literal(payloadTypes.enum.administrative_area_basic_data),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
 
 const fileCollectionPayload = z
 	.object({
@@ -571,6 +596,28 @@ const knowledgePayload = basePayload
 	.strict();
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
+
+const mapPayload = z
+	.object({
+		geometry: z
+			.object({
+				type: z.enum([
+					'LineString',
+					'MultiLineString',
+					'Point',
+					'MultiPoint',
+					'Polygon',
+					'MultiPolygon'
+				])
+			})
+			.passthrough(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.map),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialMapPayload = mapPayload.partial({ geometry: true, title: true });
 
 const measurePayload = basePayload
 	.extend({
@@ -810,11 +857,17 @@ const organizationPayload = z.object({
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 const organizationalUnitPayload = z.object({
+	administrativeType: administrativeTypes.optional(),
 	boards: z.array(boards).default([]),
+	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
+	federalState: z.string().optional(),
 	image: z.string().url().optional(),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
+	officialMunicipalityKey: z.string().length(8).optional(),
+	officialRegionalKey: z.string().max(12).optional(),
+	organizationalUnitType: organizationalUnitType.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
 	visibility: visibility.default(visibility.enum['organization'])
 });
@@ -854,6 +907,7 @@ const undefinedPayload = z
 const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 
 const payload = z.discriminatedUnion('type', [
+	administrativeAreaBasicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -863,6 +917,7 @@ const payload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
+	mapPayload,
 	measureCollectionPayload,
 	measurePayload,
 	objectiveCollectionPayload,
@@ -898,6 +953,7 @@ export const container = z.object({
 export type Container = z.infer<typeof container>;
 
 const anyPayload = z.discriminatedUnion('type', [
+	administrativeAreaBasicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -907,6 +963,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	knowledgePayload,
+	mapPayload,
 	measureCollectionPayload,
 	measurePayload,
 	objectiveCollectionPayload,
@@ -962,6 +1019,20 @@ export function isContainerWithEffect(
 	container: AnyContainer | EmptyContainer
 ): container is ContainerWithEffect {
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
+}
+
+const administrativeAreaBasicDataContainer = container.extend({
+	payload: administrativeAreaBasicDataPayload
+});
+
+export type AdministrativeAreaBasicDataContainer = z.infer<
+	typeof administrativeAreaBasicDataContainer
+>;
+
+export function isAdministrativeAreaBasicDataContainer(
+	container: AnyContainer | EmptyContainer
+): container is AdministrativeAreaBasicDataContainer {
+	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
 
 const effectContainer = container.extend({
@@ -1070,6 +1141,18 @@ export function isKnowledgeContainer(
 	container: AnyContainer | EmptyContainer
 ): container is KnowledgeContainer {
 	return container.payload.type === payloadTypes.enum.knowledge;
+}
+
+const mapContainer = container.extend({
+	payload: mapPayload
+});
+
+export type MapContainer = z.infer<typeof mapContainer>;
+
+export function isMapContainer(
+	container: AnyContainer | EmptyContainer
+): container is MapContainer {
+	return container.payload.type === payloadTypes.enum.map;
 }
 
 const measureContainer = container.extend({
@@ -1414,6 +1497,7 @@ export type NewContainer = z.infer<typeof newContainer>;
 
 export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
+		initialAdministrativeAreaBasicDataPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
 		initialFileCollectionPayload,
@@ -1423,6 +1507,7 @@ export const emptyContainer = newContainer.extend({
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialKnowledgePayload,
+		initialMapPayload,
 		initialMeasureCollectionPayload,
 		initialMeasurePayload,
 		initialObjectiveCollectionPayload,

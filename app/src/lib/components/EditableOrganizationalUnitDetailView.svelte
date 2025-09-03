@@ -8,7 +8,11 @@
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type Container, type OrganizationalUnitContainer } from '$lib/models';
+	import {
+		type Container,
+		type OrganizationalUnitContainer,
+		organizationalUnitType
+	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -42,7 +46,7 @@
 		...sections
 	]);
 
-	let w = $state();
+	let w = $state(0);
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -83,14 +87,16 @@
 			<OrganizationalUnitProperties bind:container editable />
 		</PropertiesDialog>
 
-		{#key container.guid}
-			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				label={$_('description')}
-				bind:value={container.payload.description}
-			/>
-		{/key}
+		{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
+		{/if}
 	</form>
 
 	<Sections bind:container bind:relatedContainers />

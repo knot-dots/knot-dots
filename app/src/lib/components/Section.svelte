@@ -7,19 +7,23 @@
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
+	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
+	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
 	import {
 		type AnyContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isIndicatorCollectionContainer,
+		isMapContainer,
 		isMeasureCollectionContainer,
+		isAdministrativeAreaBasicDataContainer,
 		isObjectiveCollectionContainer,
 		isProgramCollectionContainer,
 		isResourceCollectionContainer,
@@ -79,12 +83,20 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
+		{:else if isMapContainer(container)}
+			<EditableMapSection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
 		{:else if isMeasureCollectionContainer(container)}
 			<EditableMeasureCollection
 				bind:container
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
+		{:else if isAdministrativeAreaBasicDataContainer(container)}
+			<ReadonlyAdministrativeAreaBasicDataSection {container} {relatedContainers} />
 		{:else if isObjectiveCollectionContainer(container)}
 			<EditableObjectiveCollection
 				bind:container
