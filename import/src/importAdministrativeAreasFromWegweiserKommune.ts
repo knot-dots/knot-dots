@@ -6,7 +6,7 @@ import {
 	getAdministrativeAreaWikidata,
 	getPool,
 	mapContainer,
-	municipalBasicDataContainer,
+	administrativeAreaBasicDataContainer,
 	organizationalUnitContainer
 } from './db';
 import { fromFetch } from 'rxjs/fetch';
@@ -97,83 +97,92 @@ fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] 
 	.subscribe({
 		next: async (regions) => {
 			for (const region of regions) {
-				const osm = await pool.maybeOne(getAdministrativeAreaOpenStreetMap(region.ags));
+				try {
+					const osm = await pool.maybeOne(getAdministrativeAreaOpenStreetMap(region.ags));
 
-				const bbsr = await pool.maybeOne(getAdministrativeAreaBBSR(region.ars));
+					const bbsr = await pool.maybeOne(getAdministrativeAreaBBSR(region.ars));
 
-				const wikidata = osm?.wikidata_id
-					? await pool.maybeOne(getAdministrativeAreaWikidata(osm.wikidata_id))
-					: undefined;
+					const wikidata = osm?.wikidata_id
+						? await pool.maybeOne(getAdministrativeAreaWikidata(osm.wikidata_id))
+						: undefined;
 
-				const maybeOrganizationalUnitContainer = organizationalUnitContainer.safeParse({
-					managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
-					organization: process.env.IMPORT_ORGANIZATION,
-					organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
-					payload: {
-						administrativeType: administrativeTypeFromRegionType.get(region.type),
-						...(bbsr
-							? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
-							: undefined),
-						federalState: stateFromAGS.get(region.ags.substring(0, 2)),
-						...(wikidata?.coat_of_arms ? { image: wikidata.coat_of_arms } : undefined),
-						level: process.env.IMPORT_ORGANIZATIONAL_UNIT_LEVEL,
-						name: region.title,
-						officialMunicipalityKey: region.ags,
-						officialRegionalCode: region.ars
-					},
-					realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
-					user: [
-						{
-							predicate: 'is-creator-of',
-							subject: process.env.IMPORT_USER
-						}
-					]
-				});
+					const newOrganizationalUnitContainer = organizationalUnitContainer.parse({
+						managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
+						organization: process.env.IMPORT_ORGANIZATION,
+						organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
+						payload: {
+							administrativeType: administrativeTypeFromRegionType.get(region.type),
+							...(bbsr
+								? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
+								: undefined),
+							federalState: stateFromAGS.get(region.ags.substring(0, 2)),
+							...(wikidata?.coat_of_arms ? { image: wikidata.coat_of_arms } : undefined),
+							level: process.env.IMPORT_ORGANIZATIONAL_UNIT_LEVEL,
+							name: region.title,
+							officialMunicipalityKey: region.ags,
+							officialRegionalCode: region.ars
+						},
+						realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
+						user: [
+							{
+								predicate: 'is-creator-of',
+								subject: process.env.IMPORT_USER
+							}
+						]
+					});
 
-				const maybeMapContainer = mapContainer.safeParse({
-					managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
-					organization: process.env.IMPORT_ORGANIZATION,
-					organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
-					payload: { geometry: osm?.boundary },
-					realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
-					user: [
-						{
-							predicate: 'is-creator-of',
-							subject: process.env.IMPORT_USER
-						}
-					]
-				});
+					const newMapContainer = mapContainer.parse({
+						managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
+						organization: process.env.IMPORT_ORGANIZATION,
+						organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
+						payload: { geometry: osm?.boundary },
+						realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
+						user: [
+							{
+								predicate: 'is-creator-of',
+								subject: process.env.IMPORT_USER
+							}
+						]
+					});
 
-				const maybeMunicipalBasicDataContainer = municipalBasicDataContainer.safeParse({
-					managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
-					organization: process.env.IMPORT_ORGANIZATION,
-					organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
-					payload: {},
-					realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
-					user: [
-						{
-							predicate: 'is-creator-of',
-							subject: process.env.IMPORT_USER
-						}
-					]
-				});
+					const newAdministrativeAreaBasicDataContainer =
+						administrativeAreaBasicDataContainer.parse({
+							managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
+							organization: process.env.IMPORT_ORGANIZATION,
+							organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
+							payload: {},
+							realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
+							user: [
+								{
+									predicate: 'is-creator-of',
+									subject: process.env.IMPORT_USER
+								}
+							]
+						});
 
-				if (maybeOrganizationalUnitContainer.success && maybeMunicipalBasicDataContainer.success) {
 					await pool.transaction(async (tx: DatabaseTransactionConnection) => {
 						const savedOrganizationalUnitContainer = await createContainer(
-							maybeOrganizationalUnitContainer.data
+							newOrganizationalUnitContainer
 						)(tx);
 
-						const savedMunicipalBasicDataContainer = await createContainer(
-							maybeMunicipalBasicDataContainer.data
+						const savedAdministrativeAreaBasicDataContainer = await createContainer(
+							newAdministrativeAreaBasicDataContainer
 						)(tx);
+
+						const savedMapContainer = await createContainer(newMapContainer)(tx);
 
 						const relations = [
 							{
 								object: savedOrganizationalUnitContainer.guid,
 								position: 0,
 								predicate: 'is-section-of' as 'is-section-of',
-								subject: savedMunicipalBasicDataContainer.guid
+								subject: savedAdministrativeAreaBasicDataContainer.guid
+							},
+							{
+								object: savedOrganizationalUnitContainer.guid,
+								position: 1,
+								predicate: 'is-section-of' as 'is-section-of',
+								subject: savedMapContainer.guid
 							},
 							...(process.env.IMPORT_ORGANIZATIONAL_UNIT
 								? [
@@ -187,27 +196,12 @@ fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] 
 								: [])
 						];
 
-						if (maybeMapContainer.success) {
-							const savedMapContainer = await createContainer(maybeMapContainer.data)(tx);
-							relations.push({
-								object: savedOrganizationalUnitContainer.guid,
-								position: 1,
-								predicate: 'is-section-of' as 'is-section-of',
-								subject: savedMapContainer.guid
-							});
-						}
-
 						await createRelation(relations)(tx);
 
 						console.log(`created ${region.title} (${savedOrganizationalUnitContainer.guid})`);
-						console.log(pool.state());
 					});
-				} else {
-					console.error(
-						`failed to create containers for ${region.title}`,
-						maybeOrganizationalUnitContainer.error,
-						maybeMunicipalBasicDataContainer.error
-					);
+				} catch (error) {
+					console.error(`failed to create containers for ${region.title}`, error);
 				}
 			}
 		},

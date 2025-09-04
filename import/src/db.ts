@@ -178,7 +178,7 @@ export type Container<P extends Payload = Payload> = z.infer<
 
 export const mapContainer = createContainerSchema(mapPayload);
 
-export const municipalBasicDataContainer = createContainerSchema(
+export const administrativeAreaBasicDataContainer = createContainerSchema(
 	administrativeAreaBasicDataPayload
 );
 
