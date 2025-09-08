@@ -10,7 +10,13 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		experimental: {
-			remoteFunctions: true
+			instrumentation: {
+				server: true
+			},
+			remoteFunctions: true,
+			tracing: {
+				server: true
+			}
 		}
 	}
 };
