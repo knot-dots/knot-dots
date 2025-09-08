@@ -7,6 +7,7 @@ import {
 	getPool,
 	insertIntoAdministrativeAreaOpenStreetMap
 } from './db';
+import * as z from 'zod';
 
 type State = {
 	relId: number;
@@ -15,15 +16,27 @@ type State = {
 	name: string;
 };
 
-type FetchOptions = {
-	timeoutSeconds?: number;
-	throttleMs?: number;
-	levelsPerState?: string[];
-};
-
 const DEFAULT_TIMEOUT = 240;
 const DEFAULT_THROTTLE_MS = 60000;
-const DEFAULT_LEVELS_PER_STATE = ['4', '5', '6', '8'];
+const DEFAULT_LEVELS_PER_STATE = [4, 5, 6, 8];
+
+const envSchema = z
+	.object({
+		TIMEOUT_SECONDS: z.coerce.number().int().default(DEFAULT_TIMEOUT),
+		THROTTLE_MS: z.coerce.number().int().default(DEFAULT_THROTTLE_MS),
+		LEVELS_PER_STATE: z
+			.string()
+			.transform((value) => value.split(','))
+			.pipe(z.coerce.number().array())
+			.default(DEFAULT_LEVELS_PER_STATE.join(','))
+	})
+	.transform((value) => ({
+		timeoutSeconds: value.TIMEOUT_SECONDS,
+		throttleMs: value.THROTTLE_MS,
+		levelsPerState: value.LEVELS_PER_STATE
+	}));
+
+type FetchOptions = z.infer<typeof envSchema>;
 
 function qlStates(timeout: number) {
 	return `
@@ -33,7 +46,7 @@ out ids tags;
 `;
 }
 
-function qlLevelInArea(areaId: number, timeout: number, level: string) {
+function qlLevelInArea(areaId: number, timeout: number, level: number) {
 	return `
 [out:json][timeout:${timeout}];
 area(${areaId})->.st;
@@ -62,7 +75,7 @@ async function fetchStates(timeoutSeconds: number): Promise<State[]> {
 		});
 }
 
-async function fetchLevelForState(state: State, level: string, timeoutSeconds: number) {
+async function fetchLevelForState(state: State, level: number, timeoutSeconds: number) {
 	const query = qlLevelInArea(state.areaId, timeoutSeconds, level);
 	return DefaultOverpassApi().execQuery(query);
 }
@@ -107,7 +120,7 @@ export function extractAdministrativeAreas(opts: FetchOptions = {}) {
 	);
 }
 
-extractAdministrativeAreas()
+extractAdministrativeAreas(envSchema.parse(process.env))
 	.pipe(
 		map((e) => osmtogeojson(e)),
 		concatMap((fc) => fc.features),
