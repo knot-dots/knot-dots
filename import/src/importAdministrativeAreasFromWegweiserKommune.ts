@@ -7,11 +7,14 @@ import {
 	getPool,
 	mapContainer,
 	administrativeAreaBasicDataContainer,
-	organizationalUnitContainer
+	organizationalUnitContainer,
+	insertIntoAdministrativeAreaWegweiserKommune,
+	Json,
+	administrativeAreaWegweiserKommune
 } from './db';
 import { fromFetch } from 'rxjs/fetch';
-import { mergeMap, tap } from 'rxjs/operators';
-import { DatabasePool, DatabaseTransactionConnection } from 'slonik';
+import { map, mergeMap, tap } from 'rxjs/operators';
+import { DatabaseTransactionConnection } from 'slonik';
 import * as z from 'zod';
 
 const regionType = z.enum([
@@ -62,6 +65,7 @@ const region = z
 		id: z.number().int(),
 		name: z.string(),
 		parentId: z.number().int().nullable().optional(),
+		smallRegionReplacement: z.boolean().optional(),
 		title: z.string(),
 		type: regionType.or(z.string())
 	})
@@ -85,22 +89,42 @@ function fetchRegion$(params: { max?: number; types?: RegionType[] }) {
 	return fromFetch(url.toString());
 }
 
-let pool: DatabasePool;
-
-getPool().then((p) => (pool = p));
-
 fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] })
 	.pipe(
 		mergeMap(async (res) => res.json() as Promise<Region[]>),
+		map((regions) =>
+			regions.map((region) =>
+				administrativeAreaWegweiserKommune.parse({
+					demographic_type: region.demographicType,
+					friendly_url: region.friendlyUrl,
+					id: region.id,
+					name: region.name,
+					official_municipality_key: region.ags,
+					official_regional_code: region.ars,
+					parent: region.parent,
+					small_region_replacement: region.smallRegionReplacement,
+					title: region.title,
+					type: region.type
+				})
+			)
+		),
 		tap((regions) => console.log(`fetched ${regions.length} regions from Wegweiser Kommune`))
 	)
 	.subscribe({
 		next: async (regions) => {
+			const pool = await getPool();
+
+			await pool.query(insertIntoAdministrativeAreaWegweiserKommune(regions as Json));
+
 			for (const region of regions) {
 				try {
-					const osm = await pool.maybeOne(getAdministrativeAreaOpenStreetMap(region.ags));
+					const osm = await pool.maybeOne(
+						getAdministrativeAreaOpenStreetMap(region.official_municipality_key)
+					);
 
-					const bbsr = await pool.maybeOne(getAdministrativeAreaBBSR(region.ars));
+					const bbsr = await pool.maybeOne(
+						getAdministrativeAreaBBSR(region.official_regional_code)
+					);
 
 					const wikidata = osm?.wikidata_id
 						? await pool.maybeOne(getAdministrativeAreaWikidata(osm.wikidata_id))
@@ -115,12 +139,12 @@ fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] 
 							...(bbsr
 								? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
 								: undefined),
-							federalState: stateFromAGS.get(region.ags.substring(0, 2)),
+							federalState: stateFromAGS.get(region.official_municipality_key.substring(0, 2)),
 							...(wikidata?.coat_of_arms ? { image: wikidata.coat_of_arms } : undefined),
 							level: process.env.IMPORT_ORGANIZATIONAL_UNIT_LEVEL,
 							name: region.title,
-							officialMunicipalityKey: region.ags,
-							officialRegionalCode: region.ars
+							officialMunicipalityKey: region.official_municipality_key,
+							officialRegionalCode: region.official_regional_code
 						},
 						realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
 						user: [

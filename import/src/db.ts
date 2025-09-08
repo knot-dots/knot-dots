@@ -52,7 +52,7 @@ const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
 type Literal = z.infer<typeof literalSchema>;
 
-type Json = Literal | { [key: string]: Json } | Json[];
+export type Json = Literal | { [key: string]: Json } | Json[];
 
 const jsonSchema: z.ZodType<Json> = z.lazy(() =>
 	z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
@@ -95,6 +95,21 @@ export const administrativeAreaWikidata = z.object({
 });
 
 export type AdministrativeAreaWikidata = z.infer<typeof administrativeAreaWikidata>;
+
+export const administrativeAreaWegweiserKommune = z.object({
+	demographic_type: z.number().int(),
+	friendly_url: z.string(),
+	id: z.number().int(),
+	name: z.string(),
+	official_municipality_key: z.string(),
+	official_regional_code: z.string(),
+	parent: z.string().nullable(),
+	small_region_replacement: z.boolean().optional().nullable(),
+	title: z.string(),
+	type: z.string()
+});
+
+export type AdministrativeAreaWegweiserKommune = z.infer<typeof administrativeAreaWegweiserKommune>;
 
 export const mapPayload = z.object({
 	geometry: jsonSchema,
@@ -215,6 +230,8 @@ export function getAdministrativeAreaOpenStreetMap(officialMunicipalityKey: stri
 	return sql.type(administrativeAreaOpenStreetMap)`
 		SELECT boundary::jsonb, name, official_municipality_key, official_regional_code, relation_id, wikidata_id
 		FROM administrative_area_open_street_map WHERE official_municipality_key = ${officialMunicipalityKey}
+		ORDER BY valid_from DESC
+		LIMIT 1
 	`;
 }
 
@@ -230,6 +247,16 @@ export function insertIntoAdministrativeAreaWikidata(data: Json) {
 export function getAdministrativeAreaWikidata(id: string) {
 	return sql.type(administrativeAreaWikidata)`
 		SELECT * FROM administrative_area_wikidata WHERE id = ${id}
+		ORDER BY valid_from DESC
+		LIMIT 1
+	`;
+}
+
+export function insertIntoAdministrativeAreaWegweiserKommune(data: Json) {
+	return sql.type(empty)`
+		INSERT INTO administrative_area_wegweiser_kommune (demographic_type, friendly_url, id, name, official_municipality_key, official_regional_code, parent, small_region_replacement, title, type)
+		SELECT *
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(demographic_type int, friendly_url text, id int, name text, official_municipality_key text, official_regional_code text, parent text, small_region_replacement bool, title text, type text)
 	`;
 }
 
