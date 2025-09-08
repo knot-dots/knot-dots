@@ -19,6 +19,24 @@ type State = {
 const DEFAULT_TIMEOUT = 240;
 const DEFAULT_THROTTLE_MS = 60000;
 const DEFAULT_LEVELS_PER_STATE = [4, 5, 6, 8];
+const DEFAULT_INCLUDED_STATES = [
+	'DE-BB',
+	'DE-BE',
+	'DE-BW',
+	'DE-BY',
+	'DE-HB',
+	'DE-HE',
+	'DE-HH',
+	'DE-MV',
+	'DE-NI',
+	'DE-NW',
+	'DE-RP',
+	'DE-SH',
+	'DE-SL',
+	'DE-SN',
+	'DE-ST',
+	'DE-TH'
+];
 
 const envSchema = z
 	.object({
@@ -28,12 +46,18 @@ const envSchema = z
 			.string()
 			.transform((value) => value.split(','))
 			.pipe(z.coerce.number().array())
-			.default(DEFAULT_LEVELS_PER_STATE.join(','))
+			.default(DEFAULT_LEVELS_PER_STATE.join(',')),
+		INCLUDED_STATES: z
+			.string()
+			.transform((value) => value.split(','))
+			.pipe(z.string().array())
+			.default(DEFAULT_INCLUDED_STATES.join(','))
 	})
 	.transform((value) => ({
 		timeoutSeconds: value.TIMEOUT_SECONDS,
 		throttleMs: value.THROTTLE_MS,
-		levelsPerState: value.LEVELS_PER_STATE
+		levelsPerState: value.LEVELS_PER_STATE,
+		includedStates: value.INCLUDED_STATES
 	}));
 
 type FetchOptions = z.infer<typeof envSchema>;
@@ -94,16 +118,15 @@ function retryOnError<T>(delayMs: number) {
 	);
 }
 
-export function extractAdministrativeAreas(opts: FetchOptions = {}) {
-	const timeoutSeconds = opts.timeoutSeconds ?? DEFAULT_TIMEOUT;
-	const throttleMs = opts.throttleMs ?? DEFAULT_THROTTLE_MS;
-	const levelsPerState = opts.levelsPerState ?? DEFAULT_LEVELS_PER_STATE;
+export function extractAdministrativeAreas(opts: FetchOptions) {
+	const { timeoutSeconds, throttleMs, levelsPerState, includedStates } = opts;
 
 	return from(fetchStates(timeoutSeconds)).pipe(
 		retryOnError(throttleMs),
 		delay(throttleMs),
 		concatMap((states) =>
 			from(states).pipe(
+				filter((state) => includedStates.includes(state.iso)),
 				concatMap((state) =>
 					from(levelsPerState).pipe(
 						concatMap((level) =>
