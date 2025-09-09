@@ -1995,7 +1995,10 @@ export function createCopyOf(
 	} else if (isIndicatorContainer(container)) {
 		copy.payload = { ...container.payload, historicalValues: [] };
 	} else if (isEffectContainer(container)) {
-		copy.payload = { ...container.payload, achievedValues: [] };
+		copy.payload = {
+			...container.payload,
+			achievedValues: container.payload.achievedValues.map(([year]) => [year, 0])
+		};
 	} else {
 		copy.payload = { ...container.payload };
 	}
