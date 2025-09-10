@@ -26,21 +26,6 @@
 		if (indicator) {
 			let unit = $_(indicator.payload.unit);
 
-			const data = [
-				...container.payload.plannedValues.map(([year, value], index) => ({
-					date: new Date(year, 0),
-					status: 'indicator.effect.planned_values',
-					value: container.payload.achievedValues[index]
-						? value - container.payload.achievedValues[index][1]
-						: value
-				})),
-				...container.payload.achievedValues.map(([year, value]) => ({
-					date: new Date(year, 0),
-					status: 'indicator.effect.achieved_values',
-					value
-				}))
-			];
-
 			element?.firstChild?.remove();
 			element?.append(
 				Plot.plot({
@@ -51,12 +36,30 @@
 						tickFormat: (v) => $_(v)
 					},
 					marks: [
-						Plot.barY(data, {
-							x: 'date',
-							y: 'value',
-							fill: 'status',
-							order: ['indicator.effect.achieved_values', 'indicator.effect.planned_values']
-						})
+						Plot.barY(
+							container.payload.plannedValues.map(([year, value]) => ({
+								date: new Date(year, 0),
+								status: 'indicator.effect.planned_values',
+								value
+							})),
+							{
+								x: 'date',
+								y: 'value',
+								fill: 'status'
+							}
+						),
+						Plot.barY(
+							container.payload.achievedValues.map(([year, value]) => ({
+								date: new Date(year, 0),
+								status: 'indicator.effect.achieved_values',
+								value
+							})),
+							{
+								x: 'date',
+								y: 'value',
+								fill: 'status'
+							}
+						)
 					],
 					x: { type: 'band' },
 					y: { label: $_(unit), tickFormat: (d) => $number(d) }

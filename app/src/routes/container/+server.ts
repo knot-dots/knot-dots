@@ -86,17 +86,17 @@ function mapRelationsByPredicate<T extends { relation: any[]; guid: string }>(
 
 async function copyGoalsFromOriginal(
 	createdMeasure: MeasureContainer,
-	originals: Container[],
+	originalGoals: GoalContainer[],
 	userGuid: string,
 	txConnection: any
 ) {
 	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
 
-	const originalsGoalsSorted = originals
-		.filter(isGoalContainer)
-		.toSorted((a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel);
+	const originalGoalsSorted = originalGoals.toSorted(
+		(a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel
+	);
 
-	for (const copyFrom of originalsGoalsSorted) {
+	for (const copyFrom of originalGoalsSorted) {
 		const copy = createCopyOf(
 			copyFrom,
 			createdMeasure.organization,
@@ -441,7 +441,14 @@ export const POST = (async ({ locals, request }) => {
 
 					const isPartOfObjects = await copyGoalsFromOriginal(
 						createdContainer,
-						containersRelatedToOriginal,
+						containersRelatedToOriginal
+							.filter(isGoalContainer)
+							.filter(({ relation }) =>
+								relation.some(
+									({ predicate, object }) =>
+										predicate == predicates.enum['is-part-of'] && object == isCopyOfRelation.object
+								)
+							),
 						locals.user.guid,
 						txConnection
 					);
