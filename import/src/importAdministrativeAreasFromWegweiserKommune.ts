@@ -119,7 +119,7 @@ fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] 
 			for (const region of regions) {
 				try {
 					const osm = await pool.maybeOne(
-						getAdministrativeAreaOpenStreetMap(region.official_municipality_key)
+						getAdministrativeAreaOpenStreetMap(region.official_regional_code)
 					);
 
 					const bbsr = await pool.maybeOne(

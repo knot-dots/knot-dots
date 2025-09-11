@@ -231,10 +231,10 @@ export function insertIntoAdministrativeAreaOpenStreetMap(data: Json) {
 	`;
 }
 
-export function getAdministrativeAreaOpenStreetMap(officialMunicipalityKey: string) {
+export function getAdministrativeAreaOpenStreetMap(officialRegionalCode: string) {
 	return sql.type(administrativeAreaOpenStreetMap)`
-		SELECT boundary::jsonb, name, official_municipality_key, official_regional_code, relation_id, wikidata_id
-		FROM administrative_area_open_street_map WHERE official_municipality_key = ${officialMunicipalityKey}
+		SELECT *
+		FROM administrative_area_open_street_map WHERE official_regional_code = ${officialRegionalCode}
 		ORDER BY valid_from DESC
 		LIMIT 1
 	`;
