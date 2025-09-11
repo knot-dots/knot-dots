@@ -1,7 +1,7 @@
 import osmtogeojson from 'osmtogeojson';
 import { DefaultOverpassApi, type OverpassJsonOutput } from 'overpass-ql-ts';
-import { from, iif, of, throwError } from 'rxjs';
-import { bufferCount, concatMap, delay, filter, map, retryWhen, tap } from 'rxjs/operators';
+import { from, iif, of, throwError, withLatestFrom } from 'rxjs';
+import { concatMap, delay, filter, map, retryWhen, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import * as z from 'zod';
 import {
@@ -148,36 +148,43 @@ export function extractAdministrativeAreas(opts: FetchOptions) {
 
 extractAdministrativeAreas(envSchema.parse(process.env))
 	.pipe(
-		map((e) => osmtogeojson(e)),
-		concatMap((fc) => fc.features),
-		filter((f) => f.properties?.type === 'boundary'),
-		filter((f) => f.properties?.boundary === 'administrative'),
-		map((f) => {
-			const guid = uuidv4();
-			return {
-				spatialFeature: spatialFeature.parse({ geom: f.geometry, guid }),
-				administrativeArea: administrativeAreaOpenStreetMap.parse({
-					boundary: guid,
-					name: f.properties?.name,
-					official_municipality_key: f.properties?.['de:amtlicher_gemeindeschluessel'],
-					official_regional_code: f.properties?.['de:regionalschluessel'],
-					relation_id: (f.id as string).split('/')[1],
-					wikidata_id: f.properties?.wikidata
+		map((e) =>
+			osmtogeojson(e)
+				.features.filter((f) => f.properties?.type === 'boundary')
+				.filter((f) => f.properties?.boundary === 'administrative')
+				.map((f) => {
+					const guid = uuidv4();
+					return {
+						spatialFeature: spatialFeature.parse({ geom: f.geometry, guid }),
+						administrativeArea: administrativeAreaOpenStreetMap.parse({
+							boundary: guid,
+							name: f.properties?.name,
+							official_municipality_key: f.properties?.['de:amtlicher_gemeindeschluessel'],
+							official_regional_code: f.properties?.['de:regionalschluessel'],
+							relation_id: (f.id as string).split('/')[1],
+							wikidata_id: f.properties?.wikidata
+						})
+					};
 				})
-			};
-		}),
-		bufferCount(1)
+		),
+		withLatestFrom(from(getPool()))
 	)
 	.subscribe({
-		next: async (data) => {
-			const pool = await getPool();
+		next: async ([data, pool]) => {
 			await pool.transaction(async (tx) => {
-				await tx.query(insertIntoSpatialFeature(data.map(({ spatialFeature }) => spatialFeature)));
-				await tx.query(
-					insertIntoAdministrativeAreaOpenStreetMap(
-						data.map(({ administrativeArea }) => administrativeArea)
-					)
-				);
+				const chunkSize = 1000;
+				for (let i = 0; i < data.length; i += chunkSize) {
+					await tx.query(
+						insertIntoSpatialFeature(
+							data.slice(i, i + chunkSize).map(({ spatialFeature }) => spatialFeature)
+						)
+					);
+					await tx.query(
+						insertIntoAdministrativeAreaOpenStreetMap(
+							data.slice(i, i + chunkSize).map(({ administrativeArea }) => administrativeArea)
+						)
+					);
+				}
 			});
 		},
 		error: (err) => {
