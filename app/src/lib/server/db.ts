@@ -81,6 +81,10 @@ const typeAliases = {
 	relation,
 	relationPath: z.object({}).catchall(z.string().uuid()),
 	revision: z.object({ revision: z.number().int().positive() }),
+	spatialFeature: z.object({
+		geom: z.object({ type: z.string() }).passthrough(),
+		guid: z.string().uuid()
+	}),
 	user,
 	userRelation,
 	userRelationWithObject: userRelation.extend({
@@ -1460,6 +1464,14 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 				FROM ${sql.unnest(taskPriorityValues, ['int4', 'uuid'])}
 			`);
 		});
+	};
+}
+
+export function getManySpatialFeatures(guid: string[]) {
+	return async (connection: DatabaseConnection) => {
+		return connection.any(sql.typeAlias('spatialFeature')`
+			SELECT geom::json, guid FROM spatial_feature WHERE guid IN (${sql.join(guid, sql.fragment`, `)})
+		`);
 	};
 }
 

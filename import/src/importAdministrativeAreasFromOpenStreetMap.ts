@@ -2,12 +2,15 @@ import osmtogeojson from 'osmtogeojson';
 import { DefaultOverpassApi, type OverpassJsonOutput } from 'overpass-ql-ts';
 import { from, iif, of, throwError } from 'rxjs';
 import { bufferCount, concatMap, delay, filter, map, retryWhen, tap } from 'rxjs/operators';
+import { v4 as uuidv4 } from 'uuid';
+import * as z from 'zod';
 import {
 	administrativeAreaOpenStreetMap,
 	getPool,
-	insertIntoAdministrativeAreaOpenStreetMap
+	insertIntoAdministrativeAreaOpenStreetMap,
+	insertIntoSpatialFeature,
+	spatialFeature
 } from './db';
-import * as z from 'zod';
 
 type State = {
 	relId: number;
@@ -149,22 +152,33 @@ extractAdministrativeAreas(envSchema.parse(process.env))
 		concatMap((fc) => fc.features),
 		filter((f) => f.properties?.type === 'boundary'),
 		filter((f) => f.properties?.boundary === 'administrative'),
-		map((f) =>
-			administrativeAreaOpenStreetMap.parse({
-				boundary: f.geometry,
-				name: f.properties?.name,
-				official_municipality_key: f.properties?.['de:amtlicher_gemeindeschluessel'],
-				official_regional_code: f.properties?.['de:regionalschluessel'],
-				relation_id: (f.id as string).split('/')[1],
-				wikidata_id: f.properties?.wikidata
-			})
-		),
+		map((f) => {
+			const guid = uuidv4();
+			return {
+				spatialFeature: spatialFeature.parse({ geom: f.geometry, guid }),
+				administrativeArea: administrativeAreaOpenStreetMap.parse({
+					boundary: guid,
+					name: f.properties?.name,
+					official_municipality_key: f.properties?.['de:amtlicher_gemeindeschluessel'],
+					official_regional_code: f.properties?.['de:regionalschluessel'],
+					relation_id: (f.id as string).split('/')[1],
+					wikidata_id: f.properties?.wikidata
+				})
+			};
+		}),
 		bufferCount(1)
 	)
 	.subscribe({
 		next: async (data) => {
 			const pool = await getPool();
-			await pool.query(insertIntoAdministrativeAreaOpenStreetMap(data));
+			await pool.transaction(async (tx) => {
+				await tx.query(insertIntoSpatialFeature(data.map(({ spatialFeature }) => spatialFeature)));
+				await tx.query(
+					insertIntoAdministrativeAreaOpenStreetMap(
+						data.map(({ administrativeArea }) => administrativeArea)
+					)
+				);
+			});
 		},
 		error: (err) => {
 			console.error(err);

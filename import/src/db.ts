@@ -70,7 +70,7 @@ export const administrativeAreaBBSR = z.object({
 export type AdministrativeAreaBBSR = z.infer<typeof administrativeAreaBBSR>;
 
 export const administrativeAreaOpenStreetMap = z.object({
-	boundary: jsonSchema,
+	boundary: z.string().uuid(),
 	name: z.string(),
 	official_municipality_key: z
 		.string()
@@ -111,8 +111,13 @@ export const administrativeAreaWegweiserKommune = z.object({
 
 export type AdministrativeAreaWegweiserKommune = z.infer<typeof administrativeAreaWegweiserKommune>;
 
+export const spatialFeature = z.object({
+	geom: jsonSchema,
+	guid: z.string().uuid()
+});
+
 export const mapPayload = z.object({
-	geometry: jsonSchema,
+	geometry: z.string().uuid(),
 	title: z.string().default('Gebietsgrenze'),
 	type: z.literal('map').default('map'),
 	visibility: z.literal('organization').default('organization')
@@ -222,7 +227,7 @@ export function insertIntoAdministrativeAreaOpenStreetMap(data: Json) {
 	return sql.type(administrativeAreaOpenStreetMap)`
 		INSERT INTO administrative_area_open_street_map (boundary, name, official_municipality_key, official_regional_code, relation_id, wikidata_id)
 		SELECT *
-		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(boundary geometry, name text, official_municipality_key text, official_regional_code text, relation_id int, wikidata_id text)
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(boundary uuid, name text, official_municipality_key text, official_regional_code text, relation_id int, wikidata_id text)
 	`;
 }
 
@@ -257,6 +262,14 @@ export function insertIntoAdministrativeAreaWegweiserKommune(data: Json) {
 		INSERT INTO administrative_area_wegweiser_kommune (demographic_type, friendly_url, id, name, official_municipality_key, official_regional_code, parent, small_region_replacement, title, type)
 		SELECT *
 		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(demographic_type int, friendly_url text, id int, name text, official_municipality_key text, official_regional_code text, parent text, small_region_replacement bool, title text, type text)
+	`;
+}
+
+export function insertIntoSpatialFeature(data: Json) {
+	return sql.type(spatialFeature)`
+		INSERT INTO spatial_feature (geom, guid)
+		SELECT *
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(geom geometry, guid uuid)
 	`;
 }
 

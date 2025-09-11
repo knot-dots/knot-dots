@@ -599,18 +599,7 @@ const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 const mapPayload = z
 	.object({
-		geometry: z
-			.object({
-				type: z.enum([
-					'LineString',
-					'MultiLineString',
-					'Point',
-					'MultiPoint',
-					'Polygon',
-					'MultiPolygon'
-				])
-			})
-			.passthrough(),
+		geometry: z.string().uuid(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.map),
 		visibility: visibility.default(visibility.enum['organization'])
