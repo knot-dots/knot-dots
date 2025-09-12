@@ -3,6 +3,7 @@
 	"active_filters": "{count, plural, one {1 active} other {# active}}",
 	"add_item": "Add item",
 	"add_section": "Add section",
+	"administrative_area": "Administrative area",
 	"administrative_area.basic_data": "Basic data",
 	"administrative_area.basic_data.administrative_type": "Administrative type",
 	"administrative_area.basic_data.city_and_municipality_type_bbsr": "City and municipality type (BBSR)",

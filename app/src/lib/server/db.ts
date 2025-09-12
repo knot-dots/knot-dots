@@ -1475,6 +1475,36 @@ export function getManySpatialFeatures(guid: string[]) {
 	};
 }
 
+export function getAdministrativeAreas(name: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.any(sql.type(
+			z
+				.object({
+					city_and_municipality_type: z.string(),
+					geom: z.object({}).passthrough(),
+					guid: z.string().uuid(),
+					name: z.string(),
+					official_municipality_key: z.string(),
+					official_regional_code: z.string()
+				})
+				.transform((v) => ({
+					boundary: { geometry: v.geom, id: v.guid, type: 'Feature' },
+					cityAndMunicipalityTypeBBSR: v.city_and_municipality_type,
+					nameBBSR: v.name,
+					officialMunicipalityKey: v.official_municipality_key,
+					officialRegionalCode: v.official_regional_code
+				}))
+		)`
+			SELECT sf.geom::jsonb, sf.guid, bbsr.name, bbsr.city_and_municipality_type, bbsr.official_municipality_key, bbsr.official_regional_code
+			FROM administrative_area_bbsr bbsr
+			JOIN administrative_area_open_street_map osm USING (official_regional_code)
+			JOIN spatial_feature sf ON osm.boundary = sf.guid
+			WHERE bbsr.name ILIKE ${name + '%'}
+			ORDER BY bbsr.name
+		`);
+	};
+}
+
 export function setUp(name: string, realm: string) {
 	return async (connection: DatabaseConnection) => {
 		return await createContainer({
