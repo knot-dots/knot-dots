@@ -136,7 +136,7 @@ export const mapPayload = z.object({
 });
 
 export const administrativeAreaBasicDataPayload = z.object({
-	title: z.string().readonly().default('Basisdaten'),
+	title: z.string().readonly().default('Basisinformationen'),
 	type: z.literal('administrative_area_basic_data').default('administrative_area_basic_data'),
 	visibility: z.literal('organization').default('organization')
 });
