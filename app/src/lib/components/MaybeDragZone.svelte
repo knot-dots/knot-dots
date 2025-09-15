@@ -3,8 +3,7 @@
 	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
 	import type { DndEvent, Item } from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
-	import { page } from '$app/state';
-	import { isPartOf, overlayKey } from '$lib/models';
+	import { overlayKey } from '$lib/models';
 	import type { Container } from '$lib/models';
 	import Card from '$lib/components/Card.svelte';
 	import { ability, dragged, overlay } from '$lib/stores';
@@ -62,13 +61,7 @@
 				{#if itemSnippet}
 					{@render itemSnippet(container)}
 				{:else}
-					<Card
-						{container}
-						relatedContainers={page.data.containersWithIndicatorContributions?.filter(
-							isPartOf(container)
-						) ?? []}
-						showRelationFilter
-					/>
+					<Card {container} showRelationFilter />
 				{/if}
 			</div>
 		{/each}
@@ -79,13 +72,7 @@
 			{#if itemSnippet}
 				{@render itemSnippet(container)}
 			{:else}
-				<Card
-					{container}
-					relatedContainers={page.data.containersWithIndicatorContributions?.filter(
-						isPartOf(container)
-					) ?? []}
-					showRelationFilter
-				/>
+				<Card {container} showRelationFilter />
 			{/if}
 		{/each}
 	</div>
