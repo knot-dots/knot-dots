@@ -6,10 +6,18 @@ import { getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, params }) => {
+export const load = (async ({ locals, parent }) => {
+	const { currentOrganization, currentOrganizationalUnit } = await parent();
+
 	const [container, users] = await Promise.all([
-		locals.pool.connect(getContainerByGuid(params.guid)),
-		locals.pool.connect(getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']]))
+		locals.pool.connect(
+			getContainerByGuid(currentOrganizationalUnit?.guid ?? currentOrganization.guid)
+		),
+		locals.pool.connect(
+			getAllRelatedUsers(currentOrganizationalUnit?.guid ?? currentOrganization.guid, [
+				predicates.enum['is-member-of']
+			])
+		)
 	]);
 
 	if (!isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)) {

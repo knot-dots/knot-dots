@@ -187,7 +187,7 @@
 
 			<a
 				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
+				href={resolve('/[[guid=uuid]]/members', { guid: selectedContext.guid })}
 			>
 				<Users />
 				<span class="is-visually-hidden">{$_('members')}</span>

@@ -6,7 +6,7 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import type { PageServerLoad } from '../../routes/[guid=uuid]/goals/$types';
+import type { PageServerLoad } from '../../routes/[[guid=uuid]]/goals/$types';
 
 export default (async function load({ locals, url, parent }) {
 	let containers;

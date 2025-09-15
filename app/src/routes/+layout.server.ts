@@ -5,7 +5,7 @@ import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
 import { type AnyContainer, type KeycloakUser } from '$lib/models';
-import type { OrganizationContainer } from '$lib/models';
+import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import {
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
@@ -16,6 +16,7 @@ import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
 	let currentOrganization;
+	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 	let user: KeycloakUser | undefined = undefined;
 
 	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
@@ -40,6 +41,16 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	}
 
 	if (!currentOrganization) {
+		currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
+			url.hostname.startsWith(`${guid}.`)
+		);
+
+		currentOrganization = organizations.find(
+			({ guid }) => guid === currentOrganizationalUnit?.organization
+		);
+	}
+
+	if (!currentOrganization) {
 		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 
@@ -56,6 +67,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
 	return {
 		currentOrganization,
+		currentOrganizationalUnit,
 		features: locals.features,
 		organizations,
 		organizationalUnits,

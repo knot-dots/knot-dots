@@ -46,10 +46,10 @@
 		const url = new URL(env.PUBLIC_BASE_URL);
 
 		if ('default' in container.payload && container.payload.default) {
-			url.pathname = resolve('/[guid=uuid]/all/page', { guid: container.guid });
+			url.pathname = resolve('/[[guid=uuid]]/all/page', { guid: container.guid });
 		} else {
 			url.hostname = `${container.organization}.${url.hostname}`;
-			url.pathname = resolve('/[guid=uuid]/all/page', { guid: container.guid });
+			url.pathname = resolve('/[[guid=uuid]]/all/page', { guid: container.guid });
 		}
 
 		return url.toString();
