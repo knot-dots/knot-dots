@@ -77,7 +77,11 @@ export const administrativeAreaOpenStreetMap = z.object({
 		.transform((v) => v.padEnd(8, '0'))
 		.optional()
 		.nullable(),
-	official_regional_code: z.string().optional().nullable(),
+	official_regional_code: z
+		.string()
+		.transform((v) => v.padEnd(12, '0'))
+		.optional()
+		.nullable(),
 	relation_id: z.coerce.number(),
 	wikidata_id: z.string().optional().nullable()
 });
@@ -89,9 +93,17 @@ export const administrativeAreaWikidata = z.object({
 	country: z.string(),
 	id: z.string(),
 	name: z.string().optional(),
-	official_municipality_key: z.string().optional().nullable(),
-	official_regional_code: z.string().optional().nullable(),
-	open_street_map_relation_id: z.number().nullable()
+	official_municipality_key: z
+		.string()
+		.transform((v) => v.padEnd(8, '0'))
+		.optional()
+		.nullable(),
+	official_regional_code: z
+		.string()
+		.transform((v) => v.padEnd(12, '0'))
+		.optional()
+		.nullable(),
+	open_street_map_relation_id: z.coerce.number().nullable()
 });
 
 export type AdministrativeAreaWikidata = z.infer<typeof administrativeAreaWikidata>;

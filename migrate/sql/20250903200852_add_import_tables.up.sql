@@ -3,8 +3,8 @@ CREATE EXTENSION postgis;
 CREATE TABLE administrative_area_bbsr (
       area float NOT NULL,
       name varchar(1000) NOT NULL,
-      official_municipality_key varchar(8) NOT NULL,
-      official_regional_code varchar(12) NOT NULL,
+      official_municipality_key char(8) NOT NULL,
+      official_regional_code char(12) NOT NULL,
       population int NOT NULL,
       city_and_municipality_type varchar(20) NOT NULL,
       valid_from timestamp with time zone default now()
@@ -16,8 +16,8 @@ CREATE UNIQUE INDEX administrative_area_bbsr_orc_key ON administrative_area_bbsr
 CREATE TABLE administrative_area_open_street_map (
      boundary geometry,
      name varchar(1000) NOT NULL,
-     official_municipality_key varchar(8),
-     official_regional_code varchar(12),
+     official_municipality_key char(8),
+     official_regional_code char(12),
      relation_id int NOT NULL,
      wikidata_id varchar(100),
      valid_from timestamp with time zone default now()
@@ -34,8 +34,8 @@ CREATE TABLE administrative_area_wikidata (
       country char(2) NOT NULL,
       id varchar(100) NOT NULL,
       name varchar(1000) NOT NULL,
-      official_municipality_key varchar(8),
-      official_regional_code varchar(12),
+      official_municipality_key char(8),
+      official_regional_code char(12),
       open_street_map_relation_id int NOT NULL,
       population int,
       valid_from timestamp with time zone default now()

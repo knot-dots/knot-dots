@@ -2,7 +2,12 @@ import { createHash } from 'node:crypto';
 import { Observable, timer, throwError } from 'rxjs';
 import { mergeMap, catchError, map, tap } from 'rxjs/operators';
 import { fromFetch } from 'rxjs/fetch';
-import { AdministrativeAreaWikidata, getPool, insertIntoAdministrativeAreaWikidata } from './db';
+import {
+	administrativeAreaWikidata,
+	AdministrativeAreaWikidata,
+	getPool,
+	insertIntoAdministrativeAreaWikidata
+} from './db';
 
 type WdqsValue = { type: string; value: string };
 
@@ -118,7 +123,7 @@ function mapBindingToAdministrativeArea(binding: WdqsBinding): AdministrativeAre
 	const wikidataId = extractQid(wikidataUri);
 	const coatOfArms = stringOrUndefined(binding.coatOfArms);
 
-	return {
+	return administrativeAreaWikidata.parse({
 		country: stringOrUndefined(binding.country) as string,
 		...(coatOfArms ? { coat_of_arms: coatOfArmsUrl(coatOfArms) } : undefined),
 		id: wikidataId,
@@ -126,7 +131,7 @@ function mapBindingToAdministrativeArea(binding: WdqsBinding): AdministrativeAre
 		official_regional_code: stringOrUndefined(binding.officialRegionalCode),
 		official_municipality_key: stringOrUndefined(binding.officialMunicipalityKey) as string,
 		open_street_map_relation_id: numberOrUndefined(binding.openStreetMapRelationId) as number
-	};
+	});
 }
 
 fetchWdqs$(buildQuery())
