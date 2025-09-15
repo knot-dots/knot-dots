@@ -1,1 +1,0 @@
-DROP TABLE administrative_area_wegweiser_kommune;
