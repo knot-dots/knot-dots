@@ -1,11 +1,15 @@
 import osmtogeojson from 'osmtogeojson';
 import { DefaultOverpassApi, type OverpassJsonOutput } from 'overpass-ql-ts';
-import { from, iif, of, throwError } from 'rxjs';
-import { bufferCount, concatMap, delay, filter, map, retryWhen, tap } from 'rxjs/operators';
+import { from, iif, of, throwError, withLatestFrom } from 'rxjs';
+import { concatMap, delay, filter, map, retryWhen, tap } from 'rxjs/operators';
+import { v4 as uuidv4 } from 'uuid';
+import * as z from 'zod';
 import {
 	administrativeAreaOpenStreetMap,
 	getPool,
-	insertIntoAdministrativeAreaOpenStreetMap
+	insertIntoAdministrativeAreaOpenStreetMap,
+	insertIntoSpatialFeature,
+	spatialFeature
 } from './db';
 
 type State = {
@@ -15,15 +19,51 @@ type State = {
 	name: string;
 };
 
-type FetchOptions = {
-	timeoutSeconds?: number;
-	throttleMs?: number;
-	levelsPerState?: string[];
-};
-
 const DEFAULT_TIMEOUT = 240;
 const DEFAULT_THROTTLE_MS = 60000;
-const DEFAULT_LEVELS_PER_STATE = ['4', '5', '6', '8'];
+const DEFAULT_LEVELS_PER_STATE = [4, 5, 6, 8];
+const DEFAULT_INCLUDED_STATES = [
+	'DE-BB',
+	'DE-BE',
+	'DE-BW',
+	'DE-BY',
+	'DE-HB',
+	'DE-HE',
+	'DE-HH',
+	'DE-MV',
+	'DE-NI',
+	'DE-NW',
+	'DE-RP',
+	'DE-SH',
+	'DE-SL',
+	'DE-SN',
+	'DE-ST',
+	'DE-TH'
+];
+
+const envSchema = z
+	.object({
+		TIMEOUT_SECONDS: z.coerce.number().int().default(DEFAULT_TIMEOUT),
+		THROTTLE_MS: z.coerce.number().int().default(DEFAULT_THROTTLE_MS),
+		LEVELS_PER_STATE: z
+			.string()
+			.transform((value) => value.split(','))
+			.pipe(z.coerce.number().array())
+			.default(DEFAULT_LEVELS_PER_STATE.join(',')),
+		INCLUDED_STATES: z
+			.string()
+			.transform((value) => value.split(','))
+			.pipe(z.string().array())
+			.default(DEFAULT_INCLUDED_STATES.join(','))
+	})
+	.transform((value) => ({
+		timeoutSeconds: value.TIMEOUT_SECONDS,
+		throttleMs: value.THROTTLE_MS,
+		levelsPerState: value.LEVELS_PER_STATE,
+		includedStates: value.INCLUDED_STATES
+	}));
+
+type FetchOptions = z.infer<typeof envSchema>;
 
 function qlStates(timeout: number) {
 	return `
@@ -33,7 +73,7 @@ out ids tags;
 `;
 }
 
-function qlLevelInArea(areaId: number, timeout: number, level: string) {
+function qlLevelInArea(areaId: number, timeout: number, level: number) {
 	return `
 [out:json][timeout:${timeout}];
 area(${areaId})->.st;
@@ -62,7 +102,7 @@ async function fetchStates(timeoutSeconds: number): Promise<State[]> {
 		});
 }
 
-async function fetchLevelForState(state: State, level: string, timeoutSeconds: number) {
+async function fetchLevelForState(state: State, level: number, timeoutSeconds: number) {
 	const query = qlLevelInArea(state.areaId, timeoutSeconds, level);
 	return DefaultOverpassApi().execQuery(query);
 }
@@ -81,16 +121,15 @@ function retryOnError<T>(delayMs: number) {
 	);
 }
 
-export function extractAdministrativeAreas(opts: FetchOptions = {}) {
-	const timeoutSeconds = opts.timeoutSeconds ?? DEFAULT_TIMEOUT;
-	const throttleMs = opts.throttleMs ?? DEFAULT_THROTTLE_MS;
-	const levelsPerState = opts.levelsPerState ?? DEFAULT_LEVELS_PER_STATE;
+export function extractAdministrativeAreas(opts: FetchOptions) {
+	const { timeoutSeconds, throttleMs, levelsPerState, includedStates } = opts;
 
 	return from(fetchStates(timeoutSeconds)).pipe(
 		retryOnError(throttleMs),
 		delay(throttleMs),
 		concatMap((states) =>
 			from(states).pipe(
+				filter((state) => includedStates.includes(state.iso)),
 				concatMap((state) =>
 					from(levelsPerState).pipe(
 						concatMap((level) =>
@@ -107,28 +146,46 @@ export function extractAdministrativeAreas(opts: FetchOptions = {}) {
 	);
 }
 
-extractAdministrativeAreas()
+extractAdministrativeAreas(envSchema.parse(process.env))
 	.pipe(
-		map((e) => osmtogeojson(e)),
-		concatMap((fc) => fc.features),
-		filter((f) => f.properties?.type === 'boundary'),
-		filter((f) => f.properties?.boundary === 'administrative'),
-		map((f) =>
-			administrativeAreaOpenStreetMap.parse({
-				boundary: f.geometry,
-				name: f.properties?.name,
-				official_municipality_key: f.properties?.['de:amtlicher_gemeindeschluessel'],
-				official_regional_code: f.properties?.['de:regionalschluessel'],
-				relation_id: (f.id as string).split('/')[1],
-				wikidata_id: f.properties?.wikidata
-			})
+		map((e) =>
+			osmtogeojson(e)
+				.features.filter((f) => f.properties?.type === 'boundary')
+				.filter((f) => f.properties?.boundary === 'administrative')
+				.map((f) => {
+					const guid = uuidv4();
+					return {
+						spatialFeature: spatialFeature.parse({ geom: f.geometry, guid }),
+						administrativeArea: administrativeAreaOpenStreetMap.parse({
+							boundary: guid,
+							name: f.properties?.name,
+							official_municipality_key: f.properties?.['de:amtlicher_gemeindeschluessel'],
+							official_regional_code: f.properties?.['de:regionalschluessel'],
+							relation_id: (f.id as string).split('/')[1],
+							wikidata_id: f.properties?.wikidata
+						})
+					};
+				})
 		),
-		bufferCount(1)
+		withLatestFrom(from(getPool()))
 	)
 	.subscribe({
-		next: async (data) => {
-			const pool = await getPool();
-			await pool.query(insertIntoAdministrativeAreaOpenStreetMap(data));
+		next: async ([data, pool]) => {
+			await pool.transaction(async (tx) => {
+				const chunkSize = 1000;
+				for (let i = 0; i < data.length; i += chunkSize) {
+					await tx.query(
+						insertIntoSpatialFeature(
+							data.slice(i, i + chunkSize).map(({ spatialFeature }) => spatialFeature)
+						)
+					);
+					await tx.query(
+						insertIntoAdministrativeAreaOpenStreetMap(
+							data.slice(i, i + chunkSize).map(({ administrativeArea }) => administrativeArea)
+						)
+					);
+				}
+			});
 		},
 		error: (err) => {
 			console.error(err);

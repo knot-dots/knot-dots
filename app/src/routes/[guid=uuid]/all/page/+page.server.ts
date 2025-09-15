@@ -1,6 +1,8 @@
+import type { GeoJsonObject } from 'geojson';
 import { filterVisible } from '$lib/authorization';
 import {
 	type IndicatorContainer,
+	isMapContainer,
 	isOrganizationalUnitContainer,
 	payloadTypes,
 	predicates
@@ -9,7 +11,8 @@ import {
 	getAllContainersRelatedToIndicators,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getManySpatialFeatures
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -79,12 +82,27 @@ export const load = (async ({ locals, parent }) => {
 		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[], { organizationalUnits })
 	);
 
+	let spatialFeatures: Array<GeoJsonObject & { id: string }> = [];
+
+	if (sections.filter(isMapContainer).length > 0) {
+		const result = await locals.pool.connect(
+			getManySpatialFeatures(sections.filter(isMapContainer).map(({ payload }) => payload.geometry))
+		);
+
+		spatialFeatures = result.map(({ geom, guid }) => ({
+			geometry: geom,
+			id: guid,
+			type: 'Feature'
+		}));
+	}
+
 	return {
 		container,
 		indicators: filterVisible(indicators, locals.user),
 		containersRelatedToIndicators: filterVisible(relatedContainers, locals.user),
 		measures: filterVisible(measures, locals.user),
 		programs: filterVisible(programs, locals.user),
-		sections: filterVisible(sections, locals.user)
+		sections: filterVisible(sections, locals.user),
+		spatialFeatures
 	};
 }) satisfies PageServerLoad;

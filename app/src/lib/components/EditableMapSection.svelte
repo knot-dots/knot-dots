@@ -1,6 +1,7 @@
 <script lang="ts">
-	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import { page } from '$app/state';
 	import { createMapWithGeoJsonObject } from '$lib/attachments/map';
+	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import type { AnyContainer, MapContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import 'leaflet/dist/leaflet.css';
@@ -16,6 +17,10 @@
 		editable = false,
 		relatedContainers = $bindable()
 	}: Props = $props();
+
+	let feature = $derived(
+		page.data.spatialFeatures?.find(({ id }: { id: string }) => id === container.payload.geometry)
+	);
 </script>
 
 <header>
@@ -40,7 +45,7 @@
 	{/if}
 </header>
 
-<div {@attach createMapWithGeoJsonObject(container.payload.geometry)} class="map"></div>
+<div {@attach createMapWithGeoJsonObject(feature)} class="map"></div>
 
 <style>
 	.map {

@@ -52,7 +52,7 @@ const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
 type Literal = z.infer<typeof literalSchema>;
 
-type Json = Literal | { [key: string]: Json } | Json[];
+export type Json = Literal | { [key: string]: Json } | Json[];
 
 const jsonSchema: z.ZodType<Json> = z.lazy(() =>
 	z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
@@ -70,14 +70,18 @@ export const administrativeAreaBBSR = z.object({
 export type AdministrativeAreaBBSR = z.infer<typeof administrativeAreaBBSR>;
 
 export const administrativeAreaOpenStreetMap = z.object({
-	boundary: jsonSchema,
+	boundary: z.string().uuid(),
 	name: z.string(),
 	official_municipality_key: z
 		.string()
 		.transform((v) => v.padEnd(8, '0'))
 		.optional()
 		.nullable(),
-	official_regional_code: z.string().optional().nullable(),
+	official_regional_code: z
+		.string()
+		.transform((v) => v.padEnd(12, '0'))
+		.optional()
+		.nullable(),
 	relation_id: z.coerce.number(),
 	wikidata_id: z.string().optional().nullable()
 });
@@ -89,22 +93,50 @@ export const administrativeAreaWikidata = z.object({
 	country: z.string(),
 	id: z.string(),
 	name: z.string().optional(),
-	official_municipality_key: z.string().optional().nullable(),
-	official_regional_code: z.string().optional().nullable(),
-	open_street_map_relation_id: z.number().nullable()
+	official_municipality_key: z
+		.string()
+		.transform((v) => v.padEnd(8, '0'))
+		.optional()
+		.nullable(),
+	official_regional_code: z
+		.string()
+		.transform((v) => v.padEnd(12, '0'))
+		.optional()
+		.nullable(),
+	open_street_map_relation_id: z.coerce.number().nullable()
 });
 
 export type AdministrativeAreaWikidata = z.infer<typeof administrativeAreaWikidata>;
 
+export const administrativeAreaWegweiserKommune = z.object({
+	demographic_type: z.number().int(),
+	friendly_url: z.string(),
+	id: z.number().int(),
+	name: z.string(),
+	official_municipality_key: z.string(),
+	official_regional_code: z.string(),
+	parent: z.string().nullable(),
+	small_region_replacement: z.boolean().optional().nullable(),
+	title: z.string(),
+	type: z.string()
+});
+
+export type AdministrativeAreaWegweiserKommune = z.infer<typeof administrativeAreaWegweiserKommune>;
+
+export const spatialFeature = z.object({
+	geom: jsonSchema,
+	guid: z.string().uuid()
+});
+
 export const mapPayload = z.object({
-	geometry: jsonSchema,
+	geometry: z.string().uuid(),
 	title: z.string().default('Gebietsgrenze'),
 	type: z.literal('map').default('map'),
 	visibility: z.literal('organization').default('organization')
 });
 
 export const administrativeAreaBasicDataPayload = z.object({
-	title: z.string().readonly().default('Basisdaten'),
+	title: z.string().readonly().default('Basisinformationen'),
 	type: z.literal('administrative_area_basic_data').default('administrative_area_basic_data'),
 	visibility: z.literal('organization').default('organization')
 });
@@ -207,14 +239,16 @@ export function insertIntoAdministrativeAreaOpenStreetMap(data: Json) {
 	return sql.type(administrativeAreaOpenStreetMap)`
 		INSERT INTO administrative_area_open_street_map (boundary, name, official_municipality_key, official_regional_code, relation_id, wikidata_id)
 		SELECT *
-		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(boundary geometry, name text, official_municipality_key text, official_regional_code text, relation_id int, wikidata_id text)
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(boundary uuid, name text, official_municipality_key text, official_regional_code text, relation_id int, wikidata_id text)
 	`;
 }
 
-export function getAdministrativeAreaOpenStreetMap(officialMunicipalityKey: string) {
+export function getAdministrativeAreaOpenStreetMap(officialRegionalCode: string) {
 	return sql.type(administrativeAreaOpenStreetMap)`
-		SELECT boundary::jsonb, name, official_municipality_key, official_regional_code, relation_id, wikidata_id
-		FROM administrative_area_open_street_map WHERE official_municipality_key = ${officialMunicipalityKey}
+		SELECT *
+		FROM administrative_area_open_street_map WHERE official_regional_code = ${officialRegionalCode}
+		ORDER BY valid_from DESC
+		LIMIT 1
 	`;
 }
 
@@ -230,6 +264,24 @@ export function insertIntoAdministrativeAreaWikidata(data: Json) {
 export function getAdministrativeAreaWikidata(id: string) {
 	return sql.type(administrativeAreaWikidata)`
 		SELECT * FROM administrative_area_wikidata WHERE id = ${id}
+		ORDER BY valid_from DESC
+		LIMIT 1
+	`;
+}
+
+export function insertIntoAdministrativeAreaWegweiserKommune(data: Json) {
+	return sql.type(empty)`
+		INSERT INTO administrative_area_wegweiser_kommune (demographic_type, friendly_url, id, name, official_municipality_key, official_regional_code, parent, small_region_replacement, title, type)
+		SELECT *
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(demographic_type int, friendly_url text, id int, name text, official_municipality_key text, official_regional_code text, parent text, small_region_replacement bool, title text, type text)
+	`;
+}
+
+export function insertIntoSpatialFeature(data: Json) {
+	return sql.type(spatialFeature)`
+		INSERT INTO spatial_feature (geom, guid)
+		SELECT *
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(geom geometry, guid uuid)
 	`;
 }
 
