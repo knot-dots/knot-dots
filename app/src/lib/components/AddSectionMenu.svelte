@@ -15,6 +15,8 @@
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
+	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		boards,
@@ -112,13 +114,15 @@
 	);
 
 	let mayAddAdministrativeAreaBasicData = $derived(
-		isOrganizationalUnitContainer(parentContainer) &&
+		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
+			isOrganizationalUnitContainer(parentContainer) &&
 			parentContainer.payload.officialRegionalCode &&
 			!hasSection(parentContainer, relatedContainers).some(isAdministrativeAreaBasicDataContainer)
 	);
 
 	let mayAddMap = $derived(
-		isOrganizationalUnitContainer(parentContainer) &&
+		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
+			isOrganizationalUnitContainer(parentContainer) &&
 			parentContainer.payload.geometry &&
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);

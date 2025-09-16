@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
 	import EditableSuperordinateOrganizationalUnit from '$lib/components/EditableSuperordinateOrganizationalUnit.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -69,20 +71,22 @@
 
 <div class="details-section">
 	<div class="data-grid">
-		{#if editable}
-			<label class="label" for="administrativeArea">{$_('administrative_area')}</label>
-			<AdministrativeAreaCombobox
-				{onchange}
-				value={container.payload.nameBBSR && container.payload.officialRegionalCode
-					? {
-							nameBBSR: container.payload.nameBBSR,
-							officialRegionalCode: container.payload.officialRegionalCode
-						}
-					: undefined}
-			/>
-		{:else}
-			<span class="label">{$_('administrative_area')}</span>
-			<span class="value"></span>
+		{#if createFeatureDecisions(page.data.features).useAdministrativeArea()}
+			{#if editable}
+				<label class="label" for="administrativeArea">{$_('administrative_area')}</label>
+				<AdministrativeAreaCombobox
+					{onchange}
+					value={container.payload.nameBBSR && container.payload.officialRegionalCode
+						? {
+								nameBBSR: container.payload.nameBBSR,
+								officialRegionalCode: container.payload.officialRegionalCode
+							}
+						: undefined}
+				/>
+			{:else}
+				<span class="label">{$_('administrative_area')}</span>
+				<span class="value"></span>
+			{/if}
 		{/if}
 
 		<EditableNumber
