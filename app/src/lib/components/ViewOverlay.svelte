@@ -107,7 +107,7 @@
 			return {
 				organization: [container.organization],
 				...(paramsFromFragment(page.url).has('program')
-					? { program: [paramsFromFragment(page.url).get('program') as string] }
+					? { program: paramsFromFragment(page.url).get('program') as string }
 					: undefined)
 			};
 		} else if (isProgramContainer(container)) {
