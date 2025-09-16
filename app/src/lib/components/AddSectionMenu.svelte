@@ -4,6 +4,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
+	import BasicData from '~icons/knotdots/basic-data';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
@@ -17,6 +18,7 @@
 	import {
 		type AnyContainer,
 		boards,
+		isAdministrativeAreaBasicDataContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -109,6 +111,12 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgramCollectionContainer)
 	);
 
+	let mayAddAdministrativeAreaBasicData = $derived(
+		isOrganizationalUnitContainer(parentContainer) &&
+			parentContainer.payload.officialRegionalCode &&
+			!hasSection(parentContainer, relatedContainers).some(isAdministrativeAreaBasicDataContainer)
+	);
+
 	let mayAddMap = $derived(
 		isOrganizationalUnitContainer(parentContainer) &&
 			parentContainer.payload.geometry &&
@@ -196,6 +204,15 @@
 							icon: Program,
 							label: $_('programs'),
 							value: payloadTypes.enum.program_collection
+						}
+					]
+				: []),
+			...(mayAddAdministrativeAreaBasicData
+				? [
+						{
+							icon: BasicData,
+							label: $_('administrative_area.basic_data'),
+							value: payloadTypes.enum.administrative_area_basic_data
 						}
 					]
 				: []),

@@ -27,7 +27,7 @@
 
 {#if parentContainer}
 	<dl>
-		{#if parentContainer.payload.officialMunicipalityKey}
+		{#if parentContainer.payload.federalState}
 			<div>
 				<dt>{$_('administrative_area.basic_data.federal_state')}</dt>
 				<dd>{parentContainer.payload.federalState}</dd>
