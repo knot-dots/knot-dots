@@ -599,14 +599,17 @@ const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 const mapPayload = z
 	.object({
-		geometry: z.string().uuid(),
-		title: z.string().trim(),
+		geometry: z.string().uuid().optional(),
+		title: z
+			.string()
+			.trim()
+			.default(() => unwrapFunctionStore(_)('administrative_area.boundary')),
 		type: z.literal(payloadTypes.enum.map),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
-const initialMapPayload = mapPayload.partial({ geometry: true, title: true });
+const initialMapPayload = mapPayload;
 
 const measurePayload = basePayload
 	.extend({

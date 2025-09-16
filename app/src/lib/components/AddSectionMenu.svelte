@@ -10,6 +10,7 @@
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
+	import Map from '~icons/knotdots/map';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
@@ -21,6 +22,7 @@
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isIndicatorCollectionContainer,
+		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
@@ -107,6 +109,12 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgramCollectionContainer)
 	);
 
+	let mayAddMap = $derived(
+		isOrganizationalUnitContainer(parentContainer) &&
+			parentContainer.payload.geometry &&
+			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -190,6 +198,9 @@
 							value: payloadTypes.enum.program_collection
 						}
 					]
+				: []),
+			...(mayAddMap
+				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);

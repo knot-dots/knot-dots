@@ -2,7 +2,8 @@
 	import { page } from '$app/state';
 	import { createMapWithGeoJsonObject } from '$lib/attachments/map';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
-	import type { AnyContainer, MapContainer } from '$lib/models';
+	import { type AnyContainer, isOrganizationalUnitContainer, type MapContainer } from '$lib/models';
+	import { sectionOf } from '$lib/relations';
 	import { ability } from '$lib/stores';
 	import 'leaflet/dist/leaflet.css';
 
@@ -18,8 +19,15 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
+	let parentContainer = $derived(
+		sectionOf(container, relatedContainers.filter(isOrganizationalUnitContainer))
+	);
+
 	let feature = $derived(
-		page.data.spatialFeatures?.find(({ id }: { id: string }) => id === container.payload.geometry)
+		page.data.spatialFeatures?.find(
+			({ id }: { id: string }) =>
+				id === container.payload.geometry || id === parentContainer?.payload.geometry
+		)
 	);
 </script>
 

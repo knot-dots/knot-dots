@@ -9,6 +9,7 @@
 	"administrative_area.basic_data.city_and_municipality_type_bbsr": "Kommunaltyp nach BBSR",
 	"administrative_area.basic_data.federal_state": "Bundesland",
 	"administrative_area.basic_data.official_municipality_key": "Amtlicher Gemeindeschlüssel",
+	"administrative_area.boundary": "Gebietsgrenze",
 	"administrative_type.municipality": "Gemeinde",
 	"administrative_type.rural_district": "Landkreis",
 	"administrative_type.urban_district": "Kreisfreie Stadt",
