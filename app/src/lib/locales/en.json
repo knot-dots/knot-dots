@@ -521,7 +521,7 @@
 	"upload.or_browse": "or browse",
 	"upload.drop_here": "Drop here {or_browse}",
 	"upload.image.choose": "Choose image",
-	"upload.image.help": "JPG, PNG, max 100 MB",
+	"upload.image.help": "JPG, PNG, SVG, max 100 MB",
 	"upload.image.remove": "Remove image",
 	"upload.file.choose": "Choose file",
 	"upload.file.help": "PDF, Word, Excel, max 100 MB",

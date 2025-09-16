@@ -74,7 +74,7 @@
 			<Plus />
 		</label>
 		<input
-			accept="image/png,image/jpeg"
+			accept="image/png,image/jpeg,image/svg+xml"
 			class="is-visually-hidden"
 			{id}
 			oninput={upload}
