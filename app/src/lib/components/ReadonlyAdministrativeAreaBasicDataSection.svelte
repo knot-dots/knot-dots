@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
 		isOrganizationalUnitContainer,
@@ -9,10 +10,15 @@
 
 	interface Props {
 		container: AdministrativeAreaBasicDataContainer;
+		editable?: boolean;
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container, relatedContainers }: Props = $props();
+	let {
+		container = $bindable(),
+		editable = false,
+		relatedContainers = $bindable()
+	}: Props = $props();
 
 	let parentContainer = $derived(
 		sectionOf(container, relatedContainers.filter(isOrganizationalUnitContainer))
@@ -23,6 +29,12 @@
 	<h2 class="details-heading" contenteditable="false">
 		{container.payload.title}
 	</h2>
+
+	{#if editable}
+		<ul class="inline-actions is-visible-on-hover">
+			<li><ContainerSettingsDropdown bind:container bind:relatedContainers /></li>
+		</ul>
+	{/if}
 </header>
 
 {#if parentContainer}
