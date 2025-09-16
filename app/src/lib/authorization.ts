@@ -16,6 +16,7 @@ type Actions =
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const commonTypes = [
+	payloadTypes.enum.administrative_area_basic_data,
 	payloadTypes.enum.effect,
 	payloadTypes.enum.effect_collection,
 	payloadTypes.enum.file_collection,
@@ -23,6 +24,7 @@ const commonTypes = [
 	payloadTypes.enum.goal_collection,
 	payloadTypes.enum.indicator_collection,
 	payloadTypes.enum.knowledge,
+	payloadTypes.enum.map,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.measure_collection,
 	payloadTypes.enum.objective,
