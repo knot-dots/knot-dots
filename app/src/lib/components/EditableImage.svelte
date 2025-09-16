@@ -12,9 +12,11 @@
 		value: string | undefined;
 	}
 
-	let { editable = false, label, value = $bindable() } = $props();
+	let { editable = false, label, value = $bindable() }: Props = $props();
 
 	let uploadInProgress = $state(false);
+
+	const id = crypto.randomUUID();
 
 	function remove(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
@@ -58,14 +60,14 @@
 			{/if}
 		</span>
 
-		<label class="button button-upload" for="image">
+		<label class="button button-upload" for={id}>
 			<Upload />
 			{$_('upload.image.choose')}
 		</label>
 		<input
 			accept="image/png,image/jpeg"
 			class="is-visually-hidden"
-			id="image"
+			{id}
 			oninput={upload}
 			type="file"
 		/>
