@@ -84,9 +84,10 @@
 
 		if (showEffects) {
 			effects = relatedContainers.filter(isEffectContainer).flatMap((c) => {
-				const measure = findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
-					isContainerWithEffect
-				);
+				const measure = findAncestors(c, relatedContainers, [
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-measure']
+				]).find(isContainerWithEffect);
 				if (measure?.payload.status == status.enum['status.done']) {
 					return c.payload.achievedValues.map(([year, value]) => ({
 						date: new Date(year, 0),
