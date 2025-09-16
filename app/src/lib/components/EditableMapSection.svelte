@@ -53,10 +53,17 @@
 	{/if}
 </header>
 
-<div {@attach createMapWithGeoJsonObject(feature)} class="map"></div>
+<div class="map">
+	<div {@attach createMapWithGeoJsonObject(feature)}></div>
+</div>
 
 <style>
 	.map {
+		position: relative;
+		z-index: 0;
+	}
+
+	.map > div {
 		border-radius: 8px;
 		height: 388px;
 	}
