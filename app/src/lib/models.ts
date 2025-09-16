@@ -599,14 +599,17 @@ const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 const mapPayload = z
 	.object({
-		geometry: z.string().uuid(),
-		title: z.string().trim(),
+		geometry: z.string().uuid().optional(),
+		title: z
+			.string()
+			.trim()
+			.default(() => unwrapFunctionStore(_)('administrative_area.boundary')),
 		type: z.literal(payloadTypes.enum.map),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
-const initialMapPayload = mapPayload.partial({ geometry: true, title: true });
+const initialMapPayload = mapPayload;
 
 const measurePayload = basePayload
 	.extend({
@@ -851,9 +854,11 @@ const organizationalUnitPayload = z.object({
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	federalState: z.string().optional(),
+	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
+	nameBBSR: z.string().optional(),
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationalUnitType: organizationalUnitType.optional(),

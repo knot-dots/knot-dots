@@ -15,10 +15,9 @@
 
 	interface Props {
 		containers: Container[];
-		containersWithIndicatorContributions?: Container[];
 	}
 
-	let { containers, containersWithIndicatorContributions = [] }: Props = $props();
+	let { containers }: Props = $props();
 
 	let goals = $derived(
 		goalsByHierarchyLevel(
@@ -58,11 +57,7 @@
 		<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
 			<div class="vertical-scroll-wrapper masked-overflow">
 				{#each column.containers as container}
-					<Card
-						{container}
-						relatedContainers={containersWithIndicatorContributions.filter(isPartOf)}
-						showRelationFilter
-					/>
+					<Card {container} showRelationFilter />
 				{/each}
 			</div>
 		</BoardColumn>

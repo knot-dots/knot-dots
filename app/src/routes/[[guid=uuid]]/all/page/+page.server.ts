@@ -84,9 +84,17 @@ export const load = (async ({ locals, parent }) => {
 
 	let spatialFeatures: Array<GeoJsonObject & { id: string }> = [];
 
-	if (sections.filter(isMapContainer).length > 0) {
+	if (sections.filter(isMapContainer).length > 0 || 'geometry' in container.payload) {
 		const result = await locals.pool.connect(
-			getManySpatialFeatures(sections.filter(isMapContainer).map(({ payload }) => payload.geometry))
+			getManySpatialFeatures([
+				...('geometry' in container.payload && container.payload.geometry
+					? [container.payload.geometry]
+					: []),
+				...sections
+					.filter(isMapContainer)
+					.map(({ payload }) => payload.geometry)
+					.filter((geom) => geom !== undefined)
+			])
 		);
 
 		spatialFeatures = result.map(({ geom, guid }) => ({

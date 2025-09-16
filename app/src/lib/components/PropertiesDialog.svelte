@@ -31,6 +31,8 @@
 
 <style>
 	dialog {
+		--content-width: 100%;
+
 		width: calc(min(54rem, 100vw));
 	}
 

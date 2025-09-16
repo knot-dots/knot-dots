@@ -4,23 +4,29 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
+	import BasicData from '~icons/knotdots/basic-data';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
+	import Map from '~icons/knotdots/map';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
+	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		boards,
+		isAdministrativeAreaBasicDataContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isIndicatorCollectionContainer,
+		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
@@ -107,6 +113,20 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgramCollectionContainer)
 	);
 
+	let mayAddAdministrativeAreaBasicData = $derived(
+		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
+			isOrganizationalUnitContainer(parentContainer) &&
+			parentContainer.payload.officialRegionalCode &&
+			!hasSection(parentContainer, relatedContainers).some(isAdministrativeAreaBasicDataContainer)
+	);
+
+	let mayAddMap = $derived(
+		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
+			isOrganizationalUnitContainer(parentContainer) &&
+			parentContainer.payload.geometry &&
+			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -190,6 +210,18 @@
 							value: payloadTypes.enum.program_collection
 						}
 					]
+				: []),
+			...(mayAddAdministrativeAreaBasicData
+				? [
+						{
+							icon: BasicData,
+							label: $_('administrative_area.basic_data'),
+							value: payloadTypes.enum.administrative_area_basic_data
+						}
+					]
+				: []),
+			...(mayAddMap
+				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);

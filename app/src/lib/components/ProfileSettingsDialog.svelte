@@ -96,21 +96,28 @@
 				/>
 			</fieldset>
 
-			{#if $user.roles.includes('sysadmin')}
-				<fieldset>
-					<legend>{$_('feature_flags')}</legend>
-					<ul>
-						{#each featureFlags as flag}
+			<fieldset>
+				<legend>{$_('feature_flags')}</legend>
+				<ul>
+					{#each featureFlags.entries() as [key, value] (key)}
+						{#if (key == 'alpha' && $user.roles.includes('sysadmin')) || key == 'beta'}
 							<li>
-								<label>
-									<input type="checkbox" name="feature" value={flag} bind:group={features} />
-									{flag}
-								</label>
+								<p><strong>{key}</strong></p>
+								<ul>
+									{#each value as flag}
+										<li>
+											<label>
+												<input type="checkbox" name="feature" value={flag} bind:group={features} />
+												{flag}
+											</label>
+										</li>
+									{/each}
+								</ul>
 							</li>
-						{/each}
-					</ul>
-				</fieldset>
-			{/if}
+						{/if}
+					{/each}
+				</ul>
+			</fieldset>
 
 			<footer>
 				<a class="button button-xs button-alternative" href={changePasswordURL(page.url.href)}>

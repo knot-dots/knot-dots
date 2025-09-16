@@ -96,7 +96,11 @@
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isAdministrativeAreaBasicDataContainer(container)}
-			<ReadonlyAdministrativeAreaBasicDataSection {container} {relatedContainers} />
+			<ReadonlyAdministrativeAreaBasicDataSection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
 		{:else if isObjectiveCollectionContainer(container)}
 			<EditableObjectiveCollection
 				bind:container
