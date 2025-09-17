@@ -9,6 +9,7 @@
 		container as containerSchema,
 		containerOfType,
 		isContainerWithTitle,
+		isOrganizationalUnitContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates
@@ -42,8 +43,8 @@
 			const newContainer = containerOfType(
 				payloadType,
 				container.organization,
-				container.organizational_unit,
-				container.managed_by,
+				isOrganizationalUnitContainer(container) ? container.guid : container.organizational_unit,
+				isOrganizationalUnitContainer(container) ? container.guid : container.managed_by,
 				container.realm
 			) as NewContainer;
 

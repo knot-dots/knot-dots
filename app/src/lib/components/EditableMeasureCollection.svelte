@@ -9,13 +9,11 @@
 		type AnyContainer,
 		containerOfType,
 		isMeasureContainer,
-		isOrganizationContainer,
 		isSimpleMeasureContainer,
 		type MeasureCollectionContainer,
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
@@ -42,7 +40,7 @@
 
 	function addItem() {
 		$newContainer = containerOfType(
-			payloadTypes.enum.goal,
+			payloadTypes.enum.measure,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,

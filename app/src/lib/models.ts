@@ -1714,9 +1714,10 @@ export function containerOfType(
 	realm: string
 ) {
 	return emptyContainer.parse({
-		managed_by: managedBy,
+		managed_by: payloadType == payloadTypes.enum.organizational_unit ? organization : managedBy,
 		organization,
-		organizational_unit: organizationalUnit,
+		organizational_unit:
+			payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
 		payload: { type: payloadType },
 		realm
 	}) as EmptyContainer;

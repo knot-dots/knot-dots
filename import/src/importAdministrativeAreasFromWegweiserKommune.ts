@@ -131,9 +131,9 @@ fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] 
 						: undefined;
 
 					const newOrganizationalUnitContainer = organizationalUnitContainer.parse({
-						managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
+						managed_by: process.env.IMPORT_ORGANIZATION,
 						organization: process.env.IMPORT_ORGANIZATION,
-						organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
+						organizational_unit: null,
 						payload: {
 							administrativeType: administrativeTypeFromRegionType.get(region.type),
 							...(bbsr
@@ -155,26 +155,31 @@ fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] 
 						]
 					});
 
-					const newMapContainer = mapContainer.parse({
-						managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
-						organization: process.env.IMPORT_ORGANIZATION,
-						organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
-						payload: { geometry: osm?.boundary },
-						realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
-						user: [
-							{
-								predicate: 'is-creator-of',
-								subject: process.env.IMPORT_USER
-							}
-						]
-					});
+					await pool.transaction(async (tx: DatabaseTransactionConnection) => {
+						const savedOrganizationalUnitContainer = await createContainer(
+							newOrganizationalUnitContainer
+						)(tx);
 
-					const newAdministrativeAreaBasicDataContainer =
-						administrativeAreaBasicDataContainer.parse({
-							managed_by: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? process.env.IMPORT_ORGANIZATION,
+						const newAdministrativeAreaBasicDataContainer =
+							administrativeAreaBasicDataContainer.parse({
+								managed_by: savedOrganizationalUnitContainer.guid,
+								organization: process.env.IMPORT_ORGANIZATION,
+								organizational_unit: savedOrganizationalUnitContainer.guid,
+								payload: {},
+								realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
+								user: [
+									{
+										predicate: 'is-creator-of',
+										subject: process.env.IMPORT_USER
+									}
+								]
+							});
+
+						const newMapContainer = mapContainer.parse({
+							managed_by: savedOrganizationalUnitContainer.guid,
 							organization: process.env.IMPORT_ORGANIZATION,
-							organizational_unit: process.env.IMPORT_ORGANIZATIONAL_UNIT ?? null,
-							payload: {},
+							organizational_unit: savedOrganizationalUnitContainer.guid,
+							payload: { geometry: osm?.boundary },
 							realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
 							user: [
 								{
@@ -183,11 +188,6 @@ fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] 
 								}
 							]
 						});
-
-					await pool.transaction(async (tx: DatabaseTransactionConnection) => {
-						const savedOrganizationalUnitContainer = await createContainer(
-							newOrganizationalUnitContainer
-						)(tx);
 
 						const savedAdministrativeAreaBasicDataContainer = await createContainer(
 							newAdministrativeAreaBasicDataContainer
