@@ -42,7 +42,7 @@
 
 	function addItem() {
 		$newContainer = containerOfType(
-			payloadTypes.enum.goal,
+			payloadTypes.enum.measure,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,
