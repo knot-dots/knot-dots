@@ -521,7 +521,7 @@
 	"upload.or_browse": "oder Dateien auswählen",
 	"upload.drop_here": "Zum Hochladen, Dateien hierher ziehen {or_browse}",
 	"upload.image.choose": "Bild wählen",
-	"upload.image.help": "JPG, PNG-Dateien, maximal 100 MB",
+	"upload.image.help": "JPG, PNG, SVG-Dateien, maximal 100 MB",
 	"upload.image.remove": "Bild löschen",
 	"upload.file.choose": "Datei wählen",
 	"upload.file.help": "PDF-, Word-, Excel-Dateien, maximal 100 MB",

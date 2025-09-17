@@ -11,9 +11,11 @@
 		value: string[][];
 	}
 
-	let { editable = false, value = $bindable() } = $props();
+	let { editable = false, value = $bindable() }: Props = $props();
 
 	let uploadInProgress = $state(false);
+
+	const id = crypto.randomUUID();
 
 	function remove(index: number) {
 		return (event: Event) => {
@@ -73,14 +75,14 @@
 			{/if}
 		</span>
 
-		<label class="button button-upload" for="pdf">
+		<label class="button button-upload" for={id}>
 			<Upload />
 			{$_('upload.pdf.choose')}
 		</label>
 		<input
 			accept="application/pdf"
 			class="is-visually-hidden"
-			id="pdf"
+			{id}
 			multiple
 			oninput={upload}
 			type="file"

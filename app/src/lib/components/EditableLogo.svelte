@@ -14,9 +14,11 @@
 		value: string | undefined;
 	}
 
-	let { editable = false, value = $bindable() } = $props();
+	let { editable = false, value = $bindable() }: Props = $props();
 
 	let uploadInProgress = $state(false);
+
+	const id = crypto.randomUUID();
 
 	const popover = createPopover({});
 
@@ -66,15 +68,15 @@
 			<span class="loader" role="status"></span>
 		</div>
 	{:else}
-		<label class="logo-upload" for="image">
+		<label class="logo-upload" for={id}>
 			<span class="is-visually-hidden">{$_('upload.image.choose')}</span>
 			<PlaceholderImage />
 			<Plus />
 		</label>
 		<input
-			accept="image/png,image/jpeg"
+			accept="image/png,image/jpeg,image/svg+xml"
 			class="is-visually-hidden"
-			id="image"
+			{id}
 			oninput={upload}
 			type="file"
 		/>
