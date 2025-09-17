@@ -2,7 +2,6 @@
 	import { setContext } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
-	import Header from '$lib/components/Header.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';

@@ -8,13 +8,11 @@
 	import {
 		type AnyContainer,
 		containerOfType,
-		isOrganizationContainer,
 		isProgramContainer,
 		type NewContainer,
 		payloadTypes,
 		type ProgramCollectionContainer
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {

@@ -9,13 +9,11 @@
 		type AnyContainer,
 		containerOfType,
 		isMeasureContainer,
-		isOrganizationContainer,
 		isSimpleMeasureContainer,
 		type MeasureCollectionContainer,
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
