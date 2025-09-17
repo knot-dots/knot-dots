@@ -77,7 +77,7 @@ const typeAliases = {
 	container: container.omit({ relation: true, user: true }),
 	guid: z.object({ guid: z.string().uuid() }),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
-	organizationalUnitContainer: organizationalUnitContainer.omit({ relation: true, user: true }),
+	organizationalUnitContainer,
 	relation,
 	relationPath: z.object({}).catchall(z.string().uuid()),
 	revision: z.object({ revision: z.number().int().positive() }),
@@ -660,30 +660,30 @@ export function getManyOrganizationalUnitContainers(filters: {
 }) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
 		const conditions = [
-			sql.fragment`valid_currently`,
-			sql.fragment`NOT deleted`,
-			sql.fragment`payload->>'type' = ${payloadTypes.enum.organizational_unit}`
+			sql.fragment`c.valid_currently`,
+			sql.fragment`NOT c.deleted`,
+			sql.fragment`c.payload->>'type' = ${payloadTypes.enum.organizational_unit}`
 		];
 		if (filters.administrativeType?.length) {
 			conditions.push(
-				sql.fragment`payload->>'administrativeType' = ANY (${sql.array(filters.administrativeType, 'text')})`
+				sql.fragment`c.payload->>'administrativeType' = ANY (${sql.array(filters.administrativeType, 'text')})`
 			);
 		}
 		if (filters.cityAndMunicipalityTypeBBSR?.length) {
 			conditions.push(
-				sql.fragment`payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.cityAndMunicipalityTypeBBSR, 'text')})`
+				sql.fragment`c.payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.cityAndMunicipalityTypeBBSR, 'text')})`
 			);
 		}
 		if (filters.federalState?.length) {
 			conditions.push(
-				sql.fragment`payload->>'federalState' = ANY (${sql.array(filters.federalState, 'text')})`
+				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.federalState, 'text')})`
 			);
 		}
 		if (filters.level) {
-			conditions.push(sql.fragment`(payload->'level')::int = ${filters.level}`);
+			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.level}`);
 		}
 		if (filters.organization) {
-			conditions.push(sql.fragment`organization = ${filters.organization}`);
+			conditions.push(sql.fragment`c.organization = ${filters.organization}`);
 		}
 		if (filters.terms) {
 			conditions.push(
@@ -691,18 +691,21 @@ export function getManyOrganizationalUnitContainers(filters: {
 					.trim()
 					.split(' ')
 					.map((t) => `${t}:*`)
-					.join(' & ')}) @@ jsonb_to_tsvector('german', payload, '["string", "numeric"]')`
+					.join(' & ')}) @@ jsonb_to_tsvector('german', c.payload, '["string", "numeric"]')`
 			);
 		}
 
-		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
-			SELECT *
-			FROM container
+		return (await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			SELECT c.*,
+			  coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation,
+				coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+			FROM container c
+			LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
+			LEFT JOIN container_user cu ON c.revision = cu.object
 			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			ORDER BY payload->>'level', payload->>'name'
-    `);
-
-		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
+			GROUP BY c.revision
+			ORDER BY payload ->> 'level', payload ->> 'name'
+		`)) as OrganizationalUnitContainer[];
 	};
 }
 
