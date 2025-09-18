@@ -68,10 +68,9 @@ WHERE {
 
   ?entity wdt:P17           wd:Q183.
   ?entity wdt:P31/wdt:P279* wd:Q387917.
-  ?entity wdt:P402          ?openStreetMapRelationId.
 
   OPTIONAL { ?entity wdt:P439  ?officialMunicipalityKey. }
-  OPTIONAL {  }
+  OPTIONAL { ?entity wdt:P402  ?openStreetMapRelationId. }
   OPTIONAL { ?entity wdt:P94   ?coatOfArms. }
   OPTIONAL { ?entity wdt:P1388 ?officialRegionalCode. }
 
