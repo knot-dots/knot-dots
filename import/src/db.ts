@@ -92,7 +92,7 @@ export const administrativeAreaWikidata = z.object({
 	coat_of_arms: z.string().url().optional().nullable(),
 	country: z.string(),
 	id: z.string(),
-	name: z.string().optional(),
+	name: z.string(),
 	official_municipality_key: z
 		.string()
 		.transform((v) => v.padEnd(8, '0'))
