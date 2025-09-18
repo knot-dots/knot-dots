@@ -221,6 +221,8 @@ const persistedContainer = createContainerSchema(anyPayload).extend({
 	revision: z.number().int().positive()
 });
 
+export type PersistedContainer = z.infer<typeof persistedContainer>;
+
 export function insertIntoAdministrativeAreaBBSR(data: Json) {
 	return sql.type(administrativeAreaOpenStreetMap)`
 		INSERT INTO administrative_area_bbsr (area, city_and_municipality_type, name, official_municipality_key, official_regional_code, population)
@@ -308,6 +310,62 @@ export function createContainer(container: Container) {
 		`);
 
 		return result;
+	};
+}
+
+export function updateContainer(container: PersistedContainer) {
+	return async (tx: DatabaseTransactionConnection) => {
+		await tx.query(sql.type(persistedContainer)`
+			UPDATE container
+			SET valid_currently = false
+			WHERE guid = ${container.guid}
+		`);
+
+		const result = await tx.one(sql.type(persistedContainer)`
+			INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
+			VALUES (
+				${container.guid},
+				${container.managed_by},
+				${container.organization},
+				${container.organizational_unit},
+				${sql.jsonb(<SerializableValue>container.payload)},
+				${container.realm}
+			)
+			RETURNING *
+		`);
+
+		const user = container.user.map((u) => ({ ...u, object: result.revision }));
+
+		await tx.query(sql.type(empty)`
+			INSERT INTO container_user (object, predicate, subject)
+			SELECT *
+			FROM jsonb_to_recordset(${sql.jsonb(user)}) AS t(object int, predicate text, subject uuid)
+		`);
+
+		return result;
+	};
+}
+
+export function getContainer(
+	organization: string,
+	organizationalUnit: string | null,
+	officialRegionalCode: string
+) {
+	return async (tx: DatabaseTransactionConnection) => {
+		const conditions = [
+			sql.fragment`organization = ${organization}`,
+			sql.fragment`organizational_unit = ${organizationalUnit}`,
+			sql.fragment`payload->>'officialRegionalCode' = ${officialRegionalCode}`,
+			sql.fragment`valid_currently`,
+			sql.fragment`NOT deleted`
+		];
+
+		return await tx.maybeOne(sql.type(persistedContainer)`
+			SELECT *
+			FROM container
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
+			LIMIT 1
+		`);
 	};
 }
 

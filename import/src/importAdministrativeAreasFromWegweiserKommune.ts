@@ -1,17 +1,20 @@
 import {
+	administrativeAreaBasicDataContainer,
+	administrativeAreaWegweiserKommune,
 	createContainer,
 	createRelation,
 	getAdministrativeAreaBBSR,
 	getAdministrativeAreaOpenStreetMap,
 	getAdministrativeAreaWikidata,
+	getContainer,
 	getPool,
-	mapContainer,
-	administrativeAreaBasicDataContainer,
-	organizationalUnitContainer,
 	insertIntoAdministrativeAreaWegweiserKommune,
 	Json,
-	administrativeAreaWegweiserKommune
+	mapContainer,
+	organizationalUnitContainer,
+	updateContainer
 } from './db';
+import assert from 'node:assert';
 import { fromFetch } from 'rxjs/fetch';
 import { map, mergeMap, tap } from 'rxjs/operators';
 import { DatabaseTransactionConnection } from 'slonik';
@@ -113,6 +116,15 @@ function fetchRegion$(params: { max?: number; types?: RegionType[] }) {
 	return fromFetch(url.toString());
 }
 
+function isSame<T>(a: T, b: T) {
+	try {
+		assert.deepEqual(a, b);
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
+
 (function main() {
 	const { max, organization, organizationalUnit, organizationalUnitLevel, realm, types, user } =
 		envSchema.parse(process.env);
@@ -179,6 +191,34 @@ function fetchRegion$(params: { max?: number; types?: RegionType[] }) {
 						});
 
 						await pool.transaction(async (tx: DatabaseTransactionConnection) => {
+							const foundOrganizationalUnitContainer = await getContainer(
+								organization,
+								organizationalUnit,
+								newOrganizationalUnitContainer.payload.officialRegionalCode ?? ''
+							)(tx);
+
+							if (foundOrganizationalUnitContainer) {
+								if (
+									!isSame(
+										foundOrganizationalUnitContainer.payload,
+										newOrganizationalUnitContainer.payload
+									)
+								) {
+									const updatedOrganizationalUnitContainer = await updateContainer({
+										...foundOrganizationalUnitContainer,
+										payload: newOrganizationalUnitContainer.payload
+									})(tx);
+
+									console.log(
+										`updated ${region.title} (${updatedOrganizationalUnitContainer.guid})`
+									);
+								}
+
+								console.log(`ignored ${region.title} (${foundOrganizationalUnitContainer.guid})`);
+
+								return;
+							}
+
 							const savedOrganizationalUnitContainer = await createContainer(
 								newOrganizationalUnitContainer
 							)(tx);
@@ -238,7 +278,7 @@ function fetchRegion$(params: { max?: number; types?: RegionType[] }) {
 							console.log(`created ${region.title} (${savedOrganizationalUnitContainer.guid})`);
 						});
 					} catch (error) {
-						console.error(`failed to create containers for ${region.title}`, error);
+						console.error(`failed to save ${region.title}`, error);
 					}
 				}
 			},
