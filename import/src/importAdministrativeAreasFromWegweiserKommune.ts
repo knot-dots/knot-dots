@@ -196,7 +196,9 @@ function isSame<T>(a: T, b: T) {
 								organizationalUnit: null,
 								payload: {
 									officialRegionalCode:
-										newOrganizationalUnitContainer.payload.officialRegionalCode ?? ''
+										newOrganizationalUnitContainer.payload.officialRegionalCode ?? '',
+									organizationalUnitType: 'organizational_unit_type.administrative_area',
+									type: 'organizational_unit'
 								}
 							})(tx);
 

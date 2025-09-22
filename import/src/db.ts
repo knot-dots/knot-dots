@@ -351,6 +351,8 @@ export function getContainer(criteria: {
 	organizationalUnit: string | null;
 	payload: {
 		officialRegionalCode?: string;
+		organizationalUnitType?: string;
+		type?: string;
 	};
 }) {
 	return async (tx: DatabaseTransactionConnection) => {
@@ -370,6 +372,16 @@ export function getContainer(criteria: {
 			conditions.push(
 				sql.fragment`payload->>'officialRegionalCode' = ${criteria.payload.officialRegionalCode}`
 			);
+		}
+
+		if (criteria.payload.organizationalUnitType) {
+			conditions.push(
+				sql.fragment`payload->>'organizationalUnitType' = ${criteria.payload.organizationalUnitType}`
+			);
+		}
+
+		if (criteria.payload.type) {
+			conditions.push(sql.fragment`payload->>'type' = ${criteria.payload.type}`);
 		}
 
 		return await tx.maybeOne(sql.type(persistedContainer)`
