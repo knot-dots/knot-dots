@@ -346,19 +346,26 @@ export function updateContainer(container: PersistedContainer) {
 	};
 }
 
-export function getContainer(
-	organization: string,
-	organizationalUnit: string | null,
-	officialRegionalCode: string
-) {
+export function getContainer(criteria: {
+	organization: string;
+	organizationalUnit: string | null;
+	payload: {
+		officialRegionalCode?: string;
+	};
+}) {
 	return async (tx: DatabaseTransactionConnection) => {
 		const conditions = [
-			sql.fragment`organization = ${organization}`,
-			sql.fragment`organizational_unit = ${organizationalUnit}`,
-			sql.fragment`payload->>'officialRegionalCode' = ${officialRegionalCode}`,
+			sql.fragment`organization = ${criteria.organization}`,
+			sql.fragment`organizational_unit = ${criteria.organizationalUnit}`,
 			sql.fragment`valid_currently`,
 			sql.fragment`NOT deleted`
 		];
+
+		if (criteria.payload.officialRegionalCode) {
+			conditions.push(
+				sql.fragment`payload->>'officialRegionalCode' = ${criteria.payload.officialRegionalCode}`
+			);
+		}
 
 		return await tx.maybeOne(sql.type(persistedContainer)`
 			SELECT *
