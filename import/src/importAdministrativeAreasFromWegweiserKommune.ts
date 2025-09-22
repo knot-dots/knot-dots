@@ -1,17 +1,20 @@
 import {
+	administrativeAreaBasicDataContainer,
+	administrativeAreaWegweiserKommune,
 	createContainer,
 	createRelation,
 	getAdministrativeAreaBBSR,
 	getAdministrativeAreaOpenStreetMap,
 	getAdministrativeAreaWikidata,
+	getContainer,
 	getPool,
-	mapContainer,
-	administrativeAreaBasicDataContainer,
-	organizationalUnitContainer,
 	insertIntoAdministrativeAreaWegweiserKommune,
 	Json,
-	administrativeAreaWegweiserKommune
+	mapContainer,
+	organizationalUnitContainer,
+	updateContainer
 } from './db';
+import assert from 'node:assert';
 import { fromFetch } from 'rxjs/fetch';
 import { map, mergeMap, tap } from 'rxjs/operators';
 import { DatabaseTransactionConnection } from 'slonik';
@@ -73,6 +76,30 @@ const region = z
 
 type Region = z.infer<typeof region>;
 
+const envSchema = z
+	.object({
+		IMPORT_MAX: z.coerce.number().int().positive().default(10000),
+		IMPORT_ORGANIZATION: z.string().uuid(),
+		IMPORT_ORGANIZATIONAL_UNIT: z.string().uuid().nullable().default(null),
+		IMPORT_ORGANIZATIONAL_UNIT_LEVEL: z.coerce.number().int().positive().default(1),
+		IMPORT_TYPES: z
+			.string()
+			.transform((value) => value.split(','))
+			.pipe(regionType.array())
+			.default('KREISFREIE_STADT,LANDKREIS,GEMEINDE'),
+		IMPORT_USER: z.string().uuid(),
+		PUBLIC_KC_REALM: z.string().default('knot-dots')
+	})
+	.transform((value) => ({
+		max: value.IMPORT_MAX,
+		organization: value.IMPORT_ORGANIZATION,
+		organizationalUnit: value.IMPORT_ORGANIZATIONAL_UNIT,
+		organizationalUnitLevel: value.IMPORT_ORGANIZATIONAL_UNIT_LEVEL,
+		realm: value.PUBLIC_KC_REALM,
+		types: value.IMPORT_TYPES,
+		user: value.IMPORT_USER
+	}));
+
 function fetchRegion$(params: { max?: number; types?: RegionType[] }) {
 	const url = new URL('https://www.wegweiser-kommune.de/data-api/rest/region/list');
 
@@ -89,147 +116,174 @@ function fetchRegion$(params: { max?: number; types?: RegionType[] }) {
 	return fromFetch(url.toString());
 }
 
-fetchRegion$({ max: 10000, types: ['KREISFREIE_STADT', 'LANDKREIS', 'GEMEINDE'] })
-	.pipe(
-		mergeMap(async (res) => res.json() as Promise<Region[]>),
-		map((regions) =>
-			regions.map((region) =>
-				administrativeAreaWegweiserKommune.parse({
-					demographic_type: region.demographicType,
-					friendly_url: region.friendlyUrl,
-					id: region.id,
-					name: region.name,
-					official_municipality_key: region.ags,
-					official_regional_code: region.ars,
-					parent: region.parent,
-					small_region_replacement: region.smallRegionReplacement,
-					title: region.title,
-					type: region.type
-				})
-			)
-		),
-		tap((regions) => console.log(`fetched ${regions.length} regions from Wegweiser Kommune`))
-	)
-	.subscribe({
-		next: async (regions) => {
-			const pool = await getPool();
+function isSame<T>(a: T, b: T) {
+	try {
+		assert.deepEqual(a, b);
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
 
-			await pool.query(insertIntoAdministrativeAreaWegweiserKommune(regions as Json));
+(function main() {
+	const { max, organization, organizationalUnit, organizationalUnitLevel, realm, types, user } =
+		envSchema.parse(process.env);
 
-			for (const region of regions) {
-				try {
-					const osm = await pool.maybeOne(
-						getAdministrativeAreaOpenStreetMap(region.official_regional_code)
-					);
+	fetchRegion$({ max, types })
+		.pipe(
+			mergeMap(async (res) => res.json() as Promise<Region[]>),
+			map((regions) =>
+				regions.map((region) =>
+					administrativeAreaWegweiserKommune.parse({
+						demographic_type: region.demographicType,
+						friendly_url: region.friendlyUrl,
+						id: region.id,
+						name: region.name,
+						official_municipality_key: region.ags,
+						official_regional_code: region.ars,
+						parent: region.parent,
+						small_region_replacement: region.smallRegionReplacement,
+						title: region.title,
+						type: region.type
+					})
+				)
+			),
+			tap((regions) => console.log(`fetched ${regions.length} regions from Wegweiser Kommune`))
+		)
+		.subscribe({
+			next: async (regions) => {
+				const pool = await getPool();
 
-					const bbsr = await pool.maybeOne(
-						getAdministrativeAreaBBSR(region.official_regional_code)
-					);
+				await pool.query(insertIntoAdministrativeAreaWegweiserKommune(regions as Json));
 
-					const wikidata = osm?.wikidata_id
-						? await pool.maybeOne(getAdministrativeAreaWikidata(osm.wikidata_id))
-						: undefined;
+				for (const region of regions) {
+					try {
+						const osm = await pool.maybeOne(
+							getAdministrativeAreaOpenStreetMap(region.official_regional_code)
+						);
 
-					const newOrganizationalUnitContainer = organizationalUnitContainer.parse({
-						managed_by: process.env.IMPORT_ORGANIZATION,
-						organization: process.env.IMPORT_ORGANIZATION,
-						organizational_unit: null,
-						payload: {
-							administrativeType: administrativeTypeFromRegionType.get(region.type),
-							...(bbsr
-								? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
-								: undefined),
-							federalState: stateFromAGS.get(region.official_municipality_key.substring(0, 2)),
-							...(wikidata?.coat_of_arms ? { image: wikidata.coat_of_arms } : undefined),
-							level: process.env.IMPORT_ORGANIZATIONAL_UNIT_LEVEL,
-							name: region.title,
-							officialMunicipalityKey: region.official_municipality_key,
-							officialRegionalCode: region.official_regional_code
-						},
-						realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
-						user: [
-							{
-								predicate: 'is-creator-of',
-								subject: process.env.IMPORT_USER
-							}
-						]
-					});
+						const bbsr = await pool.maybeOne(
+							getAdministrativeAreaBBSR(region.official_regional_code)
+						);
 
-					await pool.transaction(async (tx: DatabaseTransactionConnection) => {
-						const savedOrganizationalUnitContainer = await createContainer(
-							newOrganizationalUnitContainer
-						)(tx);
+						const wikidata = osm?.wikidata_id
+							? await pool.maybeOne(getAdministrativeAreaWikidata(osm.wikidata_id))
+							: undefined;
 
-						const newAdministrativeAreaBasicDataContainer =
-							administrativeAreaBasicDataContainer.parse({
-								managed_by: savedOrganizationalUnitContainer.guid,
-								organization: process.env.IMPORT_ORGANIZATION,
-								organizational_unit: savedOrganizationalUnitContainer.guid,
-								payload: {},
-								realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
-								user: [
-									{
-										predicate: 'is-creator-of',
-										subject: process.env.IMPORT_USER
-									}
-								]
-							});
-
-						const newMapContainer = mapContainer.parse({
-							managed_by: savedOrganizationalUnitContainer.guid,
-							organization: process.env.IMPORT_ORGANIZATION,
-							organizational_unit: savedOrganizationalUnitContainer.guid,
-							payload: { geometry: osm?.boundary },
-							realm: process.env.PUBLIC_KC_REALM ?? 'knot-dots',
-							user: [
-								{
-									predicate: 'is-creator-of',
-									subject: process.env.IMPORT_USER
-								}
-							]
+						const newOrganizationalUnitContainer = organizationalUnitContainer.parse({
+							managed_by: organization,
+							organization: organization,
+							organizational_unit: null,
+							payload: {
+								administrativeType: administrativeTypeFromRegionType.get(region.type),
+								...(bbsr
+									? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
+									: undefined),
+								federalState: stateFromAGS.get(region.official_municipality_key.substring(0, 2)),
+								...(wikidata?.coat_of_arms ? { image: wikidata.coat_of_arms } : undefined),
+								level: organizationalUnitLevel,
+								name: region.title,
+								officialMunicipalityKey: region.official_municipality_key,
+								officialRegionalCode: region.official_regional_code
+							},
+							realm,
+							user: [{ predicate: 'is-creator-of', subject: user }]
 						});
 
-						const savedAdministrativeAreaBasicDataContainer = await createContainer(
-							newAdministrativeAreaBasicDataContainer
-						)(tx);
+						await pool.transaction(async (tx: DatabaseTransactionConnection) => {
+							const foundOrganizationalUnitContainer = await getContainer(
+								organization,
+								organizationalUnit,
+								newOrganizationalUnitContainer.payload.officialRegionalCode ?? ''
+							)(tx);
 
-						const savedMapContainer = await createContainer(newMapContainer)(tx);
+							if (foundOrganizationalUnitContainer) {
+								if (
+									!isSame(
+										foundOrganizationalUnitContainer.payload,
+										newOrganizationalUnitContainer.payload
+									)
+								) {
+									const updatedOrganizationalUnitContainer = await updateContainer({
+										...foundOrganizationalUnitContainer,
+										payload: newOrganizationalUnitContainer.payload
+									})(tx);
 
-						const relations = [
-							{
-								object: savedOrganizationalUnitContainer.guid,
-								position: 0,
-								predicate: 'is-section-of' as 'is-section-of',
-								subject: savedAdministrativeAreaBasicDataContainer.guid
-							},
-							{
-								object: savedOrganizationalUnitContainer.guid,
-								position: 1,
-								predicate: 'is-section-of' as 'is-section-of',
-								subject: savedMapContainer.guid
-							},
-							...(process.env.IMPORT_ORGANIZATIONAL_UNIT
-								? [
-										{
-											object: process.env.IMPORT_ORGANIZATIONAL_UNIT,
-											position: 0,
-											predicate: 'is-part-of' as 'is-part-of',
-											subject: savedOrganizationalUnitContainer.guid
-										}
-									]
-								: [])
-						];
+									console.log(
+										`updated ${region.title} (${updatedOrganizationalUnitContainer.guid})`
+									);
+								}
 
-						await createRelation(relations)(tx);
+								console.log(`ignored ${region.title} (${foundOrganizationalUnitContainer.guid})`);
 
-						console.log(`created ${region.title} (${savedOrganizationalUnitContainer.guid})`);
-					});
-				} catch (error) {
-					console.error(`failed to create containers for ${region.title}`, error);
+								return;
+							}
+
+							const savedOrganizationalUnitContainer = await createContainer(
+								newOrganizationalUnitContainer
+							)(tx);
+
+							const newAdministrativeAreaBasicDataContainer =
+								administrativeAreaBasicDataContainer.parse({
+									managed_by: savedOrganizationalUnitContainer.guid,
+									organization: organization,
+									organizational_unit: savedOrganizationalUnitContainer.guid,
+									payload: {},
+									realm,
+									user: [{ predicate: 'is-creator-of', subject: user }]
+								});
+
+							const newMapContainer = mapContainer.parse({
+								managed_by: savedOrganizationalUnitContainer.guid,
+								organization: organization,
+								organizational_unit: savedOrganizationalUnitContainer.guid,
+								payload: { geometry: osm?.boundary },
+								realm,
+								user: [{ predicate: 'is-creator-of', subject: user }]
+							});
+
+							const savedAdministrativeAreaBasicDataContainer = await createContainer(
+								newAdministrativeAreaBasicDataContainer
+							)(tx);
+
+							const savedMapContainer = await createContainer(newMapContainer)(tx);
+
+							const relations = [
+								{
+									object: savedOrganizationalUnitContainer.guid,
+									position: 0,
+									predicate: 'is-section-of' as 'is-section-of',
+									subject: savedAdministrativeAreaBasicDataContainer.guid
+								},
+								{
+									object: savedOrganizationalUnitContainer.guid,
+									position: 1,
+									predicate: 'is-section-of' as 'is-section-of',
+									subject: savedMapContainer.guid
+								},
+								...(organizationalUnit
+									? [
+											{
+												object: organizationalUnit,
+												position: 0,
+												predicate: 'is-part-of' as 'is-part-of',
+												subject: savedOrganizationalUnitContainer.guid
+											}
+										]
+									: [])
+							];
+
+							await createRelation(relations)(tx);
+
+							console.log(`created ${region.title} (${savedOrganizationalUnitContainer.guid})`);
+						});
+					} catch (error) {
+						console.error(`failed to save ${region.title}`, error);
+					}
 				}
+			},
+			error: (err) => {
+				console.error(err);
 			}
-		},
-		error: (err) => {
-			console.error(err);
-		}
-	});
+		});
+})();
