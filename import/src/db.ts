@@ -356,10 +356,15 @@ export function getContainer(criteria: {
 	return async (tx: DatabaseTransactionConnection) => {
 		const conditions = [
 			sql.fragment`organization = ${criteria.organization}`,
-			sql.fragment`organizational_unit = ${criteria.organizationalUnit}`,
 			sql.fragment`valid_currently`,
 			sql.fragment`NOT deleted`
 		];
+
+		if (criteria.organizationalUnit === null) {
+			conditions.push(sql.fragment`organizational_unit IS NULL`);
+		} else {
+			conditions.push(sql.fragment`organizational_unit = ${criteria.organizationalUnit}`);
+		}
 
 		if (criteria.payload.officialRegionalCode) {
 			conditions.push(
