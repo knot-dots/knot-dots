@@ -129,7 +129,7 @@ function mapBindingToAdministrativeArea(binding: WdqsBinding): AdministrativeAre
 		name: stringOrUndefined(binding.entityLabel),
 		official_regional_code: stringOrUndefined(binding.officialRegionalCode),
 		official_municipality_key: stringOrUndefined(binding.officialMunicipalityKey) as string,
-		open_street_map_relation_id: numberOrUndefined(binding.openStreetMapRelationId) as number
+		open_street_map_relation_id: numberOrUndefined(binding.openStreetMapRelationId)
 	});
 }
 

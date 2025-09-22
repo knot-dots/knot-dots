@@ -103,7 +103,7 @@ export const administrativeAreaWikidata = z.object({
 		.transform((v) => v.padEnd(12, '0'))
 		.optional()
 		.nullable(),
-	open_street_map_relation_id: z.coerce.number().nullable()
+	open_street_map_relation_id: z.coerce.number().optional().nullable()
 });
 
 export type AdministrativeAreaWikidata = z.infer<typeof administrativeAreaWikidata>;
