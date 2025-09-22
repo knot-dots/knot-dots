@@ -340,6 +340,7 @@ const indicatorCategoryValues = [
 	'indicator_category.kpi',
 	'indicator_category.mpsc',
 	'indicator_category.sdg',
+	'indicator_category.wegweiser_kommune',
 	'indicator_category.custom'
 ] as const;
 
@@ -588,6 +589,7 @@ const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
 const indicatorTemplatePayload = indicatorPayload
 	.extend({
+		externalReference: z.string().url().optional(),
 		type: z.literal(payloadTypes.enum.indicator_template)
 	})
 	.omit({ historicalValues: true, quantity: true });

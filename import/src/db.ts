@@ -123,6 +123,30 @@ export const administrativeAreaWegweiserKommune = z.object({
 
 export type AdministrativeAreaWegweiserKommune = z.infer<typeof administrativeAreaWegweiserKommune>;
 
+export const indicatorWegweiserKommune = z.object({
+	calculation: z.string(),
+	color_schema: z.string(),
+	decimal_places: z.number().int().nonnegative(),
+	explanation: z.string(),
+	friendly_url: z.string(),
+	hint: z.string().optional().nullable(),
+	id: z.number().int(),
+	maximum_classification: z.number().optional().nullable(),
+	maximum_region_type: z.string(),
+	minimum_classification: z.number().optional().nullable(),
+	minimum_region_type: z.string(),
+	name: z.string(),
+	source: z.string(),
+	top_low_regions_available: z.boolean(),
+	topics: z.array(z.string()),
+	title: z.string(),
+	type: z.string(),
+	unit: z.string(),
+	years: z.array(z.number().int().nonnegative())
+});
+
+export type IndicatorWegweiserKommune = z.infer<typeof indicatorWegweiserKommune>;
+
 export const spatialFeature = z.object({
 	geom: jsonSchema,
 	guid: z.string().uuid()
@@ -165,10 +189,28 @@ export const organizationalUnitPayload = z.object({
 	visibility: z.literal('organization').default('organization')
 });
 
+export const indicatorTemplatePayload = z.object({
+	aiSuggestion: z.boolean().default(false),
+	audience: z.array(z.string()).default(['audience.citizens']),
+	category: z.array(z.string()).default([]),
+	description: z.string().trim().optional(),
+	editorialState: z.string().optional(),
+	externalReference: z.string().url().optional(),
+	indicatorCategory: z.array(z.string()).default([]),
+	indicatorType: z.array(z.string()).default([]),
+	policyFieldBNK: z.array(z.string()).default([]),
+	title: z.string(),
+	topic: z.array(z.string()).default([]),
+	type: z.literal('indicator_template').default('indicator_template'),
+	unit: z.string(),
+	visibility: z.literal('public').default('public')
+});
+
 const anyPayload = z.discriminatedUnion('type', [
 	mapPayload,
 	administrativeAreaBasicDataPayload,
-	organizationalUnitPayload
+	organizationalUnitPayload,
+	indicatorTemplatePayload
 ]);
 
 export type Payload = z.infer<typeof anyPayload>;
@@ -215,6 +257,8 @@ export const administrativeAreaBasicDataContainer = createContainerSchema(
 );
 
 export const organizationalUnitContainer = createContainerSchema(organizationalUnitPayload);
+
+export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
 
 const persistedContainer = createContainerSchema(anyPayload).extend({
 	guid: z.string().uuid(),
@@ -276,6 +320,14 @@ export function insertIntoAdministrativeAreaWegweiserKommune(data: Json) {
 		INSERT INTO administrative_area_wegweiser_kommune (demographic_type, friendly_url, id, name, official_municipality_key, official_regional_code, parent, small_region_replacement, title, type)
 		SELECT *
 		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(demographic_type int, friendly_url text, id int, name text, official_municipality_key text, official_regional_code text, parent text, small_region_replacement bool, title text, type text)
+	`;
+}
+
+export function insertIntoIndicatorWegweiserKommune(data: IndicatorWegweiserKommune[]) {
+	return sql.type(empty)`
+		INSERT INTO indicator_wegweiser_kommune (calculation, color_schema, decimal_places, explanation, friendly_url, hint, id, maximum_classification, maximum_region_type, minimum_classification, minimum_region_type, name, source, title, top_low_regions_available, topics, type, unit, years)
+		SELECT *
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(calculation text, color_schema text, decimal_places int, explanation text, friendly_url text, hint text, id int, maximum_classification int, maximum_region_type text, minimum_classification int, minimum_region_type text, name text, source text, title text, top_low_regions_available bool, topics text[], type text, unit text, years int[])
 	`;
 }
 
@@ -350,6 +402,7 @@ export function getContainer(criteria: {
 	organization: string;
 	organizationalUnit: string | null;
 	payload: {
+		externalReference?: string;
 		officialRegionalCode?: string;
 		organizationalUnitType?: string;
 		type?: string;
@@ -366,6 +419,12 @@ export function getContainer(criteria: {
 			conditions.push(sql.fragment`organizational_unit IS NULL`);
 		} else {
 			conditions.push(sql.fragment`organizational_unit = ${criteria.organizationalUnit}`);
+		}
+
+		if (criteria.payload.externalReference) {
+			conditions.push(
+				sql.fragment`payload->>'externalReference' = ${criteria.payload.externalReference}`
+			);
 		}
 
 		if (criteria.payload.officialRegionalCode) {

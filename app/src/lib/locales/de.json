@@ -200,6 +200,7 @@
 	"indicator_category.kpi": "KPI",
 	"indicator_category.mpsc": "MPSC",
 	"indicator_category.sdg": "SDG",
+	"indicator_category.wegweiser_kommune": "Wegweiser Kommune",
 	"indicator_form.create_custom": "Eigenen Indikator anlegen",
 	"indicator_form.with_historical_values": "Mit Ist-Werten und Prognose ohne Intervention",
 	"indicator_template": "Indikator-Vorlage",

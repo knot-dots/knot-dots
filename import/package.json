@@ -5,7 +5,8 @@
     "administrative-areas-from-open-street-map": "tsx src/importAdministrativeAreasFromOpenStreetMap.ts",
     "administrative-areas-from-wikidata": "tsx src/importAdministrativeAreasFromWikidata.ts",
     "administrative-areas-from-bbsr": "tsx src/importAdministrativeAreasFromBBSR.ts",
-    "administrative-areas-from-wegweiser-kommune": "tsx src/importAdministrativeAreasFromWegweiserKommune.ts"
+    "administrative-areas-from-wegweiser-kommune": "tsx src/importAdministrativeAreasFromWegweiserKommune.ts",
+    "indicators-from-wegweiser-kommune": "tsx src/importIndicatorsFromWegweiserKommune.ts"
   },
   "author": "",
   "license": "AGPL-3.0-or-later",
