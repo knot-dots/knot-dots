@@ -191,11 +191,16 @@ function isSame<T>(a: T, b: T) {
 						});
 
 						await pool.transaction(async (tx: DatabaseTransactionConnection) => {
-							const foundOrganizationalUnitContainer = await getContainer(
+							const foundOrganizationalUnitContainer = await getContainer({
 								organization,
-								organizationalUnit,
-								newOrganizationalUnitContainer.payload.officialRegionalCode ?? ''
-							)(tx);
+								organizationalUnit: null,
+								payload: {
+									officialRegionalCode:
+										newOrganizationalUnitContainer.payload.officialRegionalCode ?? '',
+									organizationalUnitType: 'organizational_unit_type.administrative_area',
+									type: 'organizational_unit'
+								}
+							})(tx);
 
 							if (foundOrganizationalUnitContainer) {
 								if (

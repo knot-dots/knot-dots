@@ -5,9 +5,11 @@
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"lib": ["es2021"],
+		"module": "nodeNext",
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
+		"target": "es2021"
 	}
 }

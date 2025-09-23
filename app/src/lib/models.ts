@@ -340,6 +340,7 @@ const indicatorCategoryValues = [
 	'indicator_category.kpi',
 	'indicator_category.mpsc',
 	'indicator_category.sdg',
+	'indicator_category.wegweiser_kommune',
 	'indicator_category.custom'
 ] as const;
 
@@ -377,25 +378,31 @@ export function isQuantity(value: unknown): value is Quantity {
 }
 
 const unitValues = [
-	'unit.cubic_meter',
 	'unit.euro',
 	'unit.euro_per_capita',
 	'unit.euro_per_square_meter',
+	'unit.kilogram_per_capita',
 	'unit.kilogram_per_hectare',
 	'unit.kilowatt',
+	'unit.watt_per_capita',
 	'unit.kilowatt_hour',
+	'unit.megawatt_hour_per_year',
+	'unit.meter',
 	'unit.kilometer',
-	'unit.liter_per_capita_per_day',
-	'unit.microgram_per_cubic_meter',
 	'unit.n',
 	'unit.percent',
 	'unit.per_1000',
 	'unit.per_100000',
-	'unit.square_kilometer_per_capita',
 	'unit.square_meter',
+	'unit.square_meter_per_capita',
+	'unit.square_kilometer_per_capita',
+	'unit.cubic_meter',
+	'unit.liter_per_capita_per_day',
+	'unit.microgram_per_cubic_meter',
 	'unit.ton',
 	'unit.ton_per_capita',
-	'unit.watt_per_capita'
+	'unit.minute',
+	'unit.year'
 ] as const;
 
 export const units = z.enum(unitValues);
@@ -552,6 +559,7 @@ const goalCollectionPayload = z
 const initialGoalCollectionPayload = goalCollectionPayload;
 
 const indicatorPayload = basePayload.extend({
+	externalReference: z.string().url().optional(),
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
