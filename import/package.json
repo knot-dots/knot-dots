@@ -6,7 +6,8 @@
     "administrative-areas-from-wikidata": "tsx src/importAdministrativeAreasFromWikidata.ts",
     "administrative-areas-from-bbsr": "tsx src/importAdministrativeAreasFromBBSR.ts",
     "administrative-areas-from-wegweiser-kommune": "tsx src/importAdministrativeAreasFromWegweiserKommune.ts",
-    "indicators-from-wegweiser-kommune": "tsx src/importIndicatorsFromWegweiserKommune.ts"
+    "indicators-from-wegweiser-kommune": "tsx src/importIndicatorsFromWegweiserKommune.ts",
+    "indicator-data-from-wegweiser-kommune": "tsx src/importIndicatorDataFromWegweiserKommune.ts"
   },
   "author": "",
   "license": "AGPL-3.0-or-later",

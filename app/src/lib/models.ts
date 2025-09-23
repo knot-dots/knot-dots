@@ -559,6 +559,7 @@ const goalCollectionPayload = z
 const initialGoalCollectionPayload = goalCollectionPayload;
 
 const indicatorPayload = basePayload.extend({
+	externalReference: z.string().url().optional(),
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
@@ -589,7 +590,6 @@ const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
 const indicatorTemplatePayload = indicatorPayload
 	.extend({
-		externalReference: z.string().url().optional(),
 		type: z.literal(payloadTypes.enum.indicator_template)
 	})
 	.omit({ historicalValues: true, quantity: true });

@@ -147,6 +147,15 @@ export const indicatorWegweiserKommune = z.object({
 
 export type IndicatorWegweiserKommune = z.infer<typeof indicatorWegweiserKommune>;
 
+export const indicatorDataWegweiserKommune = z.object({
+	actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
+	indicator_id: z.number().positive(),
+	official_regional_code: z.string().optional(),
+	spatial_reference: z.string().uuid().optional().nullable()
+});
+
+export type IndicatorDataWegweiserKommune = z.infer<typeof indicatorDataWegweiserKommune>;
+
 export const spatialFeature = z.object({
 	geom: jsonSchema,
 	guid: z.string().uuid()
@@ -206,10 +215,17 @@ export const indicatorTemplatePayload = z.object({
 	visibility: z.literal('public').default('public')
 });
 
+export const indicatorPayload = indicatorTemplatePayload.extend({
+	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	quantity: z.string().uuid(),
+	type: z.literal('indicator').default('indicator')
+});
+
 const anyPayload = z.discriminatedUnion('type', [
 	mapPayload,
 	administrativeAreaBasicDataPayload,
 	organizationalUnitPayload,
+	indicatorPayload,
 	indicatorTemplatePayload
 ]);
 
@@ -259,6 +275,8 @@ export const administrativeAreaBasicDataContainer = createContainerSchema(
 export const organizationalUnitContainer = createContainerSchema(organizationalUnitPayload);
 
 export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
+
+export const indicatorContainer = createContainerSchema(indicatorPayload);
 
 const persistedContainer = createContainerSchema(anyPayload).extend({
 	guid: z.string().uuid(),
@@ -328,6 +346,22 @@ export function insertIntoIndicatorWegweiserKommune(data: IndicatorWegweiserKomm
 		INSERT INTO indicator_wegweiser_kommune (calculation, color_schema, decimal_places, explanation, friendly_url, hint, id, maximum_classification, maximum_region_type, minimum_classification, minimum_region_type, name, source, title, top_low_regions_available, topics, type, unit, years)
 		SELECT *
 		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(calculation text, color_schema text, decimal_places int, explanation text, friendly_url text, hint text, id int, maximum_classification int, maximum_region_type text, minimum_classification int, minimum_region_type text, name text, source text, title text, top_low_regions_available bool, topics text[], type text, unit text, years int[])
+	`;
+}
+
+export function getAllIndicatorWegweiserKommune() {
+	return sql.type(indicatorWegweiserKommune)`SELECT * FROM indicator_wegweiser_kommune`;
+}
+
+export function insertIntoIndicatorDataWegweiserKommune(data: IndicatorDataWegweiserKommune[]) {
+	return sql.type(empty)`
+		WITH current_administrative_area AS (
+			SELECT DISTINCT ON (relation_id) boundary, official_regional_code FROM administrative_area_open_street_map ORDER BY relation_id, valid_from DESC
+		)
+		INSERT INTO indicator_data_wegweiser_kommune (indicator_id, spatial_reference, actual_values)
+		SELECT t.indicator_id, a.boundary, t.actual_values
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(indicator_id int8, official_regional_code text, actual_values jsonb)
+		JOIN current_administrative_area a ON a.official_regional_code = t.official_regional_code
 	`;
 }
 

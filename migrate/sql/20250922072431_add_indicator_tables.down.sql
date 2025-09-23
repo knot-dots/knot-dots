@@ -1,0 +1,2 @@
+DROP TABLE indicator_wegweiser_kommune;
+DROP TABLE indicator_data_wegweiser_kommune;

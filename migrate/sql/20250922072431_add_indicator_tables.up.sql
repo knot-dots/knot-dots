@@ -22,3 +22,12 @@ CREATE TABLE indicator_wegweiser_kommune (
 );
 
 CREATE UNIQUE INDEX indicator_wegweiser_kommune_friendly_url_key ON indicator_wegweiser_kommune (friendly_url, valid_from);
+
+CREATE TABLE indicator_data_wegweiser_kommune (
+    indicator_id int NOT NULL,
+    spatial_reference uuid REFERENCES spatial_feature(guid) ON DELETE SET NULL,
+    actual_values jsonb,
+    valid_from timestamp with time zone DEFAULT now()
+);
+
+CREATE UNIQUE INDEX indicator_data_wegweiser_kommune_key ON indicator_data_wegweiser_kommune (indicator_id, spatial_reference, valid_from);
