@@ -7,6 +7,7 @@ import {
 	createOrUpdateUser,
 	createUser,
 	getContainerByGuid,
+	getManyOrganizationContainers,
 	updateContainer
 } from '$lib/server/db';
 import { sendVerificationEmail } from '$lib/server/email';
@@ -60,7 +61,11 @@ export const POST = (async ({ locals, request }) => {
 			})
 		);
 
-		const signupURL = `${env.PUBLIC_BASE_URL}/all/page?signup=${user.guid}`;
+		const organizations = await locals.pool.connect(
+			getManyOrganizationContainers({ default: true }, 'alpha')
+		);
+
+		const signupURL = `${env.PUBLIC_BASE_URL}/${organizations[0].guid}/all/page?signup=${user.guid}`;
 		await sendVerificationEmail(parseResult.data.email, signupURL);
 	}
 
