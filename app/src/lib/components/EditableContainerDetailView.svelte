@@ -19,7 +19,12 @@
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+<form
+	class="content-details masked-overflow"
+	oninput={requestSubmit}
+	onsubmit={handleSubmit}
+	novalidate
+>
 	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
 		<header class="details-section">
 			{#if $applicationState.containerDetailView.editable}

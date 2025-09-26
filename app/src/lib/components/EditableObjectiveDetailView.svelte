@@ -8,10 +8,12 @@
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import ObjectiveProperties from '$lib/components/ObjectiveProperties.svelte';
+	import RelationButton from '$lib/components/RelationButton.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -191,6 +193,13 @@
 		{/key}
 	{/snippet}
 </EditableContainerDetailView>
+
+<footer class="content-footer bottom-actions-bar">
+	<div class="content-actions">
+		<RelationButton {container} />
+		<DeleteButton {container} {relatedContainers} />
+	</div>
+</footer>
 
 <style>
 	input {

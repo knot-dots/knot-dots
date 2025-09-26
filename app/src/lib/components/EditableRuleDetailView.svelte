@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
+	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import RelationButton from '$lib/components/RelationButton.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import { type AnyContainer, type Container, type RuleContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -34,3 +38,12 @@
 		{/key}
 	{/snippet}
 </EditableContainerDetailView>
+
+<footer class="content-footer bottom-actions-bar">
+	<div class="content-actions">
+		<RelationButton {container} />
+		<CreateAnotherButton {container} {relatedContainers} />
+		<CreateCopyButton {container} />
+		<DeleteButton {container} {relatedContainers} />
+	</div>
+</footer>

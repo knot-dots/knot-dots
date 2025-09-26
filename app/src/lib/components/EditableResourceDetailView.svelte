@@ -1,5 +1,9 @@
 <script lang="ts">
+	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
+	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import RelationButton from '$lib/components/RelationButton.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import { type AnyContainer, type Container, type ResourceContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -23,3 +27,12 @@
 		/>
 	{/snippet}
 </EditableContainerDetailView>
+
+<footer class="content-footer bottom-actions-bar">
+	<div class="content-actions">
+		<RelationButton {container} />
+		<CreateAnotherButton {container} {relatedContainers} />
+		<CreateCopyButton {container} />
+		<DeleteButton {container} {relatedContainers} />
+	</div>
+</footer>

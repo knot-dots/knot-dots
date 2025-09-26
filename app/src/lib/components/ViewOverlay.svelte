@@ -1,11 +1,5 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import AskAIButton from '$lib/components/AskAIButton.svelte';
-	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
-	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
-	import CreateOverallObjectiveButton from '$lib/components/CreateOverallObjectiveButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
 	import EditableIndicatorDetailView from '$lib/components/EditableIndicatorDetailView.svelte';
@@ -22,9 +16,6 @@
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import RelationButton from '$lib/components/RelationButton.svelte';
-	import SaveAsIndicatorTemplateButton from '$lib/components/SaveAsIndicatorTemplateButton.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		audience,
@@ -52,7 +43,6 @@
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
 	import {
 		fetchContainersRelatedToIndicators,
 		fetchContainersRelatedToMeasure,
@@ -150,75 +140,37 @@
 	{@const relatedContainers = relatedContainersPromise.current.filter(({ payload }) =>
 		byPayloadType(payload.type, page.url)
 	)}
-	<div class="content-details masked-overflow">
-		{#if isEffectContainer(container)}
-			<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isGoalContainer(container)}
-			<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isIndicatorContainer(container)}
-			<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isIndicatorTemplateContainer(container)}
-			<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isKnowledgeContainer(container)}
-			<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isContainerWithEffect(container)}
-			<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isObjectiveContainer(container)}
-			<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isOrganizationalUnitContainer(container)}
-			<EditableOrganizationalUnitDetailView bind:container />
-		{:else if isOrganizationContainer(container)}
-			<EditableOrganizationDetailView bind:container />
-		{:else if isProgramContainer(container)}
-			{#key relatedContainers}
-				<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
-			{/key}
-		{:else if isResourceContainer(container)}
-			<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isRuleContainer(container)}
-			<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isTaskContainer(container)}
-			<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
-		{:else if isTextContainer(container)}
-			<EditableTextDetailView bind:container {relatedContainers} {revisions} />
-		{/if}
-	</div>
-
-	<footer class="content-footer bottom-actions-bar">
-		<div class="content-actions">
-			{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
-				<label>
-					<input
-						class="toggle"
-						name="template"
-						type="checkbox"
-						bind:checked={container.payload.template}
-					/>
-					{$_('template')}
-				</label>
-			{/if}
-			{#if isIndicatorContainer(container)}
-				<CreateOverallObjectiveButton {container} {relatedContainers} />
-			{/if}
-			<RelationButton {container} />
-			<CreateAnotherButton {container} {relatedContainers} />
-			<CreateCopyButton {container} />
-			{#if createFeatureDecisions(page.data.features).useAI() && isProgramContainer(container)}
-				<AskAIButton {container} />
-			{/if}
-			{#if isIndicatorContainer(container)}
-				<SaveAsIndicatorTemplateButton {container} {relatedContainers} />
-			{/if}
-			<DeleteButton {container} {relatedContainers} />
-		</div>
-	</footer>
+	{#if isEffectContainer(container)}
+		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isGoalContainer(container)}
+		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isIndicatorContainer(container)}
+		<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isIndicatorTemplateContainer(container)}
+		<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isKnowledgeContainer(container)}
+		<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isContainerWithEffect(container)}
+		<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isObjectiveContainer(container)}
+		<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isOrganizationalUnitContainer(container)}
+		<EditableOrganizationalUnitDetailView bind:container />
+	{:else if isOrganizationContainer(container)}
+		<EditableOrganizationDetailView bind:container />
+	{:else if isProgramContainer(container)}
+		{#key relatedContainers}
+			<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
+		{/key}
+	{:else if isResourceContainer(container)}
+		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isRuleContainer(container)}
+		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isTaskContainer(container)}
+		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isTextContainer(container)}
+		<EditableTextDetailView bind:container {relatedContainers} {revisions} />
+	{/if}
 
 	<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
 {/if}
-
-<style>
-	.toggle {
-		--height: 1rem;
-		--width: 2.25rem;
-	}
-</style>

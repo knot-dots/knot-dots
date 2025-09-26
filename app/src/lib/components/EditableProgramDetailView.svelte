@@ -8,11 +8,17 @@
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import AskAIButton from '$lib/components/AskAIButton.svelte';
+	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
+	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
+	import RelationButton from '$lib/components/RelationButton.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -221,6 +227,18 @@
 		</div>
 	</div>
 {/if}
+
+<footer class="content-footer bottom-actions-bar">
+	<div class="content-actions">
+		<RelationButton {container} />
+		<CreateAnotherButton {container} {relatedContainers} />
+		<CreateCopyButton {container} />
+		{#if createFeatureDecisions(page.data.features).useAI()}
+			<AskAIButton {container} />
+		{/if}
+		<DeleteButton {container} {relatedContainers} />
+	</div>
+</footer>
 
 <style>
 	.details-section {
