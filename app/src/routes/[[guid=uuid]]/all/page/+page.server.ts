@@ -16,7 +16,9 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, parent }) => {
+export const load = (async ({ depends, locals, parent }) => {
+	depends('containers');
+
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 	const container = currentOrganizationalUnit ?? currentOrganization;
 	let organizationalUnits: string[] = [];

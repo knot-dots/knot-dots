@@ -1,11 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import {
-	audience,
-	filterOrganizationalUnits,
-	type IndicatorContainer,
-	indicatorTypes,
-	payloadTypes
-} from '$lib/models';
+import { type IndicatorContainer, payloadTypes } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers,
@@ -13,7 +7,9 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, parent, url }) => {
+export const load = (async ({ depends, locals, parent, url }) => {
+	depends('containers');
+
 	let containers: IndicatorContainer[];
 	let organizationalUnits: string[] = [];
 

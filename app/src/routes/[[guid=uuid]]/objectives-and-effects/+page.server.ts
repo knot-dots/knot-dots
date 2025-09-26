@@ -3,7 +3,9 @@ import { audience, type Container, type IndicatorContainer, payloadTypes } from 
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, parent, url }) => {
+export const load = (async ({ depends, locals, parent, url }) => {
+	depends('containers');
+
 	const { currentOrganization } = await parent();
 	const containers = (await locals.pool.connect(
 		getManyContainers(

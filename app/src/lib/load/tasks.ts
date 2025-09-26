@@ -26,7 +26,9 @@ function filterRelated(
 }
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
-	return (async ({ locals, url, parent }) => {
+	return (async ({ depends, locals, parent, url }) => {
+		depends('containers');
+
 		let taskContainers: TaskContainer[];
 		let otherContainers: GoalContainer[];
 		let subordinateOrganizationalUnits: string[] = [];
