@@ -37,7 +37,6 @@
 		isTaskContainer,
 		isTextContainer,
 		paramsFromFragment,
-		type PayloadType,
 		policyFieldBNK,
 		predicates,
 		sustainableDevelopmentGoals,
@@ -104,11 +103,6 @@
 					? fetchContainersRelatedToProgram({ guid, params })
 					: fetchRelatedContainers({ guid, params })
 	);
-
-	function byPayloadType(payloadType: PayloadType, url: URL) {
-		const params = paramsFromFragment(url);
-		return !params.has('type') || params.getAll('type').includes(payloadType);
-	}
 </script>
 
 {#if isProgramContainer(container)}
@@ -137,9 +131,7 @@
 {/if}
 
 {#if relatedContainersPromise.current}
-	{@const relatedContainers = relatedContainersPromise.current.filter(({ payload }) =>
-		byPayloadType(payload.type, page.url)
-	)}
+	{@const relatedContainers = relatedContainersPromise.current}
 	{#if isEffectContainer(container)}
 		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isGoalContainer(container)}
@@ -159,9 +151,7 @@
 	{:else if isOrganizationContainer(container)}
 		<EditableOrganizationDetailView bind:container />
 	{:else if isProgramContainer(container)}
-		{#key relatedContainers}
-			<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
-		{/key}
+		<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isResourceContainer(container)}
 		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}

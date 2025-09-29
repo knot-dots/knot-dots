@@ -40,14 +40,23 @@
 
 	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
-	let parts = $state(
-		relatedContainers.filter(({ guid, relation }) =>
-			relation.some(
-				({ predicate }) =>
-					predicate === predicates.enum['is-part-of-program'] && guid != container.guid
-			)
-		)
-	);
+	let parts = $state([] as Container[]);
+
+	$effect(() => {
+		parts = relatedContainers
+			.filter(({ payload }) => byPayloadType(payload.type, page.url))
+			.filter(({ guid, relation }) =>
+				relation.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
+				)
+			);
+	});
+
+	function byPayloadType(payloadType: PayloadType, url: URL) {
+		const params = paramsFromFragment(url);
+		return !params.has('type') || params.getAll('type').includes(payloadType);
+	}
 
 	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
 		parts = event.detail.items;
