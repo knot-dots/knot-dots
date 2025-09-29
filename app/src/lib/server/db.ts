@@ -1351,12 +1351,18 @@ export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 
 export function getAllMembershipRelationsOfUser(guid: string) {
 	return async (connection: DatabaseConnection) => {
+		const rolePredicates = [
+			predicates.enum['is-admin-of'],
+			predicates.enum['is-collaborator-of'],
+			predicates.enum['is-head-of'],
+			predicates.enum['is-member-of']
+		];
 		return await connection.any(sql.type(
 			z.object({ predicate: predicates, object: z.string().uuid() })
 		)`
 			SELECT cu.predicate, c.guid AS object
 			FROM container_user cu
-			JOIN container c ON cu.object = c.revision AND c.valid_currently
+			JOIN container c ON cu.object = c.revision AND c.valid_currently AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
 			WHERE subject = ${guid};
 		`);
 	};

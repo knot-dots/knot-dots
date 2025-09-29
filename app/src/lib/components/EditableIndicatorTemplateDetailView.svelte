@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
@@ -34,3 +36,10 @@
 		{/key}
 	{/snippet}
 </EditableContainerDetailView>
+
+<footer class="content-footer bottom-actions-bar">
+	<div class="content-actions">
+		<CreateCopyButton {container} />
+		<DeleteButton {container} {relatedContainers} />
+	</div>
+</footer>

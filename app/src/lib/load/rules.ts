@@ -8,7 +8,9 @@ import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models
 import { filterVisible } from '$lib/authorization';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/rules/$types';
 
-export default (async function load({ locals, parent, url }) {
+export default (async function load({ depends, locals, parent, url }) {
+	depends('containers');
+
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();

@@ -7,7 +7,9 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/programs/$types';
 
-export default (async function load({ locals, url, parent }) {
+export default (async function load({ depends, locals, parent, url }) {
+	depends('containers');
+
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();

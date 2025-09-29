@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { RemoteQuery } from '@sveltejs/kit';
 	import { getContext } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
@@ -8,11 +9,17 @@
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import AskAIButton from '$lib/components/AskAIButton.svelte';
+	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
+	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
+	import RelationButton from '$lib/components/RelationButton.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -28,20 +35,35 @@
 
 	interface Props {
 		container: ProgramContainer;
-		relatedContainers: Container[];
+		relatedContainersQuery: RemoteQuery<Container[]>;
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), relatedContainersQuery, revisions }: Props = $props();
 
-	let parts = $state(
-		relatedContainers.filter(({ guid, relation }) =>
-			relation.some(
-				({ predicate }) =>
-					predicate === predicates.enum['is-part-of-program'] && guid != container.guid
+	let relatedContainers = $state([] as Container[]);
+
+	$effect(() => {
+		if (relatedContainersQuery.current) {
+			relatedContainers = relatedContainersQuery.current;
+		}
+	});
+
+	let parts = $derived(
+		relatedContainers
+			.filter(({ payload }) => byPayloadType(payload.type, page.url))
+			.filter(({ guid, relation }) =>
+				relation.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
+				)
 			)
-		)
 	);
+
+	function byPayloadType(payloadType: PayloadType, url: URL) {
+		const params = paramsFromFragment(url);
+		return !params.has('type') || params.getAll('type').includes(payloadType);
+	}
 
 	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
 		parts = event.detail.items;
@@ -49,7 +71,7 @@
 
 	async function handleDndFinalize(event: CustomEvent<DndEvent<Container>>) {
 		parts = event.detail.items;
-		const relation = [
+		container.relation = [
 			...parts.map(({ guid }, index) => ({
 				object: container.guid,
 				position: index,
@@ -64,12 +86,14 @@
 		const url = `/container/${container.guid}/relation`;
 		await fetch(url, {
 			method: 'POST',
-			body: JSON.stringify(relation),
+			body: JSON.stringify(container.relation),
 			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		});
+
+		await relatedContainersQuery.refresh();
 	}
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
@@ -221,6 +245,18 @@
 		</div>
 	</div>
 {/if}
+
+<footer class="content-footer bottom-actions-bar">
+	<div class="content-actions">
+		<RelationButton {container} />
+		<CreateAnotherButton {container} {relatedContainers} />
+		<CreateCopyButton {container} />
+		{#if createFeatureDecisions(page.data.features).useAI()}
+			<AskAIButton {container} />
+		{/if}
+		<DeleteButton {container} {relatedContainers} />
+	</div>
+</footer>
 
 <style>
 	.details-section {

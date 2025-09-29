@@ -3,7 +3,9 @@ import { payloadTypes, predicates } from '$lib/models';
 import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/knowledge/$types';
 
-export default (async function load({ locals, url, parent }) {
+export default (async function load({ depends, locals, parent, url }) {
+	depends('containers');
+
 	let containers;
 	const { currentOrganization } = await parent();
 

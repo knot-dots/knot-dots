@@ -2,7 +2,10 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import paramsFromURL from '$lib/client/paramsFromURL';
+	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import CreateOverallObjectiveButton from '$lib/components/CreateOverallObjectiveButton.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableHistoricalValues from '$lib/components/EditableHistoricalValues.svelte';
@@ -10,6 +13,8 @@
 	import IndicatorTable from '$lib/components/IndicatorTable.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
+	import RelationButton from '$lib/components/RelationButton.svelte';
+	import SaveAsIndicatorTemplateButton from '$lib/components/SaveAsIndicatorTemplateButton.svelte';
 	import {
 		type AnyContainer,
 		type Container,
@@ -150,6 +155,16 @@
 		{/key}
 	{/snippet}
 </EditableContainerDetailView>
+
+<footer class="content-footer bottom-actions-bar">
+	<div class="content-actions">
+		<CreateOverallObjectiveButton {container} {relatedContainers} />
+		<SaveAsIndicatorTemplateButton {container} {relatedContainers} />
+		<RelationButton {container} />
+		<CreateCopyButton {container} />
+		<DeleteButton {container} {relatedContainers} />
+	</div>
+</footer>
 
 <style>
 	select {
