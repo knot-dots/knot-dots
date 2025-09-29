@@ -130,7 +130,13 @@
 	<Header sortOptions={[]} workspaceOptions={[]} />
 {/if}
 
-{#if relatedContainersPromise.current}
+{#if isProgramContainer(container)}
+	<EditableProgramDetailView
+		bind:container
+		relatedContainersQuery={relatedContainersPromise}
+		{revisions}
+	/>
+{:else if relatedContainersPromise.current}
 	{@const relatedContainers = relatedContainersPromise.current}
 	{#if isEffectContainer(container)}
 		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
@@ -150,8 +156,6 @@
 		<EditableOrganizationalUnitDetailView bind:container />
 	{:else if isOrganizationContainer(container)}
 		<EditableOrganizationDetailView bind:container />
-	{:else if isProgramContainer(container)}
-		<EditableProgramDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isResourceContainer(container)}
 		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}
