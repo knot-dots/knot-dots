@@ -3,10 +3,9 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { keycloakUser, type User } from '$lib/models';
 
-const data = new URLSearchParams([['grant_type', 'client_credentials']]);
-const credentials = btoa(`${env.PUBLIC_KC_CLIENT_ID}:${privateEnv.KC_CLIENT_SECRET}`);
-
 async function getToken() {
+	const data = new URLSearchParams([['grant_type', 'client_credentials']]);
+	const credentials = btoa(`${env.PUBLIC_KC_CLIENT_ID}:${privateEnv.KC_CLIENT_SECRET}`);
 	const response = await fetch(
 		`${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/token`,
 		{
