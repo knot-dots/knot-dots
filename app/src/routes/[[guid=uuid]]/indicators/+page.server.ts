@@ -12,6 +12,8 @@ export const load = (async ({ depends, locals, parent, url }) => {
 
 	let containers;
 	let organizationalUnits: string[] = [];
+	let relatedContainers;
+	let useNewIndicators = false;
 
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
@@ -44,7 +46,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		)
 	)) as IndicatorContainer[];
 
-	const relatedContainers = await locals.pool.connect(
+	relatedContainers = await locals.pool.connect(
 		getAllContainersRelatedToIndicators(
 			containers,
 			url.searchParams.getAll('included').includes('all_organizational_units')
@@ -53,8 +55,41 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		)
 	);
 
+	if (containers.length == 0) {
+		useNewIndicators = true;
+
+		[containers, relatedContainers] = await Promise.all([
+			locals.pool.connect(
+				getManyContainers(
+					[currentOrganization.guid],
+					{
+						audience: url.searchParams.getAll('audience'),
+						categories: url.searchParams.getAll('category'),
+						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
+						indicatorTypes: url.searchParams.getAll('indicatorType'),
+						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+						topics: url.searchParams.getAll('topic'),
+						type: [payloadTypes.enum.indicator_template]
+					},
+					'alpha'
+				)
+			),
+			locals.pool.connect(
+				getManyContainers(
+					[currentOrganization.guid],
+					{
+						organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : [],
+						type: [payloadTypes.enum.actual_data]
+					},
+					'alpha'
+				)
+			)
+		]);
+	}
+
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: filterVisible([...containers, ...relatedContainers], locals.user)
+		containers: filterVisible([...containers, ...relatedContainers], locals.user),
+		useNewIndicators
 	};
 }) satisfies PageServerLoad;

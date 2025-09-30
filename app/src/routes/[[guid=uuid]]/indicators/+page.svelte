@@ -5,6 +5,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Indicators from '$lib/components/Indicators.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import {
 		audience,
 		computeFacetCount,
@@ -47,7 +48,11 @@
 	{/snippet}
 
 	{#snippet main()}
-		<Indicators containers={data.containers} />
+		{#if data.useNewIndicators}
+			<NewIndicators containers={data.containers} />
+		{:else}
+			<Indicators containers={data.containers} />
+		{/if}
 		<Help slug="indicators" />
 	{/snippet}
 </Layout>
