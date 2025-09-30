@@ -4,14 +4,18 @@
 	import { page } from '$app/state';
 
 	let options = $derived(
-		page.data.currentOrganizationalUnit
-			? ['superordinate_organizational_units', 'subordinate_organizational_units']
-			: ['subordinate_organizational_units']
+		page.url.pathname.endsWith('indicators')
+			? ['all_organizational_units']
+			: page.data.currentOrganizationalUnit
+				? ['superordinate_organizational_units', 'subordinate_organizational_units']
+				: ['subordinate_organizational_units']
 	);
 </script>
 
 <FilterDropDown
-	initialValue={['subordinate_organizational_units']}
+	initialValue={page.url.pathname.endsWith('indicators')
+		? undefined
+		: ['subordinate_organizational_units']}
 	key="included"
 	options={options.map((o) => ({ label: $_(`included.options.${o}`), value: o }))}
 />

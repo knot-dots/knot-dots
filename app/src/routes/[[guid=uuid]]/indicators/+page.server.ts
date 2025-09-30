@@ -10,7 +10,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	let containers: IndicatorContainer[];
+	let containers;
 	let organizationalUnits: string[] = [];
 
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
@@ -25,38 +25,36 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			.concat(currentOrganizationalUnit.guid);
 	}
 
-	if (url.searchParams.getAll('included').includes('all-organizational-units')) {
-		containers = (await locals.pool.connect(
-			getManyContainers([currentOrganization.guid], { type: [payloadTypes.enum.indicator] }, '')
-		)) as IndicatorContainer[];
-	} else {
-		containers = (await locals.pool.connect(
-			getManyContainers(
-				[currentOrganization.guid],
-				{
-					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
-					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
-					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					organizationalUnits,
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
-					type: [payloadTypes.enum.indicator]
-				},
-				''
-			)
-		)) as IndicatorContainer[];
-	}
+	containers = (await locals.pool.connect(
+		getManyContainers(
+			[currentOrganization.guid],
+			{
+				audience: url.searchParams.getAll('audience'),
+				categories: url.searchParams.getAll('category'),
+				indicatorCategories: url.searchParams.getAll('indicatorCategory'),
+				indicatorTypes: url.searchParams.getAll('indicatorType'),
+				...(url.searchParams.getAll('included').includes('all_organizational_units')
+					? undefined
+					: { organizationalUnits }),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic'),
+				type: [payloadTypes.enum.indicator]
+			},
+			'alpha'
+		)
+	)) as IndicatorContainer[];
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(containers, { organizationalUnits })
+		getAllContainersRelatedToIndicators(
+			containers,
+			url.searchParams.getAll('included').includes('all_organizational_units')
+				? {}
+				: { organizationalUnits }
+		)
 	);
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: filterVisible(
-			[...containers, ...relatedContainers],
-			locals.user
-		) as IndicatorContainer[]
+		containers: filterVisible([...containers, ...relatedContainers], locals.user)
 	};
 }) satisfies PageServerLoad;
