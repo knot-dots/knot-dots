@@ -179,6 +179,7 @@
 	"indicator.tab.historical_values": "Ist-Daten / Ohne Intervention",
 	"indicator.tab.measures": "Aktuelle Planung",
 	"indicator.tab.objectives": "Gewünschte Entwicklung",
+	"indicator.table.actual_values": "Ist-Werte",
 	"indicator.table.done": "Bereits umgesetzt gesamt",
 	"indicator.table.edit": "Daten bearbeiten",
 	"indicator.table.historical_values": "Ist und Planung ohne Intervention",

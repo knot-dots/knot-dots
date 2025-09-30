@@ -44,6 +44,7 @@
 	} from '$lib/models';
 	import {
 		fetchContainersRelatedToIndicators,
+		fetchContainersRelatedToIndicatorTemplates,
 		fetchContainersRelatedToMeasure,
 		fetchContainersRelatedToProgram,
 		fetchRelatedContainers
@@ -68,8 +69,21 @@
 				guid,
 				params: {
 					organization: [container.organization],
+					...(page.data.currentOrganizationalUnit
+						? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
+						: undefined),
 					...(paramsFromFragment(page.url).has('program')
 						? { program: paramsFromFragment(page.url).get('program') as string }
+						: undefined)
+				}
+			});
+		} else if (isIndicatorTemplateContainer(container)) {
+			return fetchContainersRelatedToIndicatorTemplates({
+				guid,
+				params: {
+					organization: page.data.currentOrganization.guid,
+					...(page.data.currentOrganizationalUnit
+						? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
 						: undefined)
 				}
 			});

@@ -3,14 +3,15 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
 import { filterVisible } from '$lib/authorization';
-import { isIndicatorContainer, isOrganizationalUnitContainer } from '$lib/models';
+import { isIndicatorContainer, isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getContainerByGuid
+	getContainerByGuid,
+	getManyContainers
 } from '$lib/server/db';
 
 export const fetchContainersRelatedToIndicators = query(
@@ -72,6 +73,31 @@ export const fetchContainersRelatedToIndicators = query(
 			);
 		}
 
+		return filterVisible(relatedContainers, locals.user);
+	}
+);
+
+export const fetchContainersRelatedToIndicatorTemplates = query(
+	z.object({
+		guid: z.string().uuid(),
+		params: z.object({
+			organization: z.string().uuid(),
+			organizationalUnit: z.string().uuid().optional()
+		})
+	}),
+	async ({ guid, params }) => {
+		const { locals } = getRequestEvent();
+		let relatedContainers = await locals.pool.connect(
+			getManyContainers(
+				[params.organization],
+				{
+					indicator: guid,
+					organizationalUnits: params.organizationalUnit ? [params.organizationalUnit] : [],
+					type: [payloadTypes.enum.actual_data]
+				},
+				'alpha'
+			)
+		);
 		return filterVisible(relatedContainers, locals.user);
 	}
 );
