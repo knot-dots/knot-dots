@@ -2,26 +2,15 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
-import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
-import {
-	type AnyContainer,
-	isIndicatorContainer,
-	type OrganizationalUnitContainer,
-	type OrganizationContainer,
-	payloadTypes
-} from '$lib/models';
+import { isIndicatorContainer, isOrganizationalUnitContainer } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getContainerByGuid,
-	getManyContainers,
-	getManyOrganizationalUnitContainers,
-	getManyOrganizationContainers,
-	setUp
+	getContainerByGuid
 } from '$lib/server/db';
 
 export const fetchContainersRelatedToIndicators = query(
@@ -29,6 +18,7 @@ export const fetchContainersRelatedToIndicators = query(
 		guid: z.string().uuid(),
 		params: z.object({
 			organization: z.array(z.string().uuid()),
+			organizationalUnit: z.string().uuid().optional(),
 			program: z.string().uuid().optional()
 		})
 	}),
@@ -55,39 +45,17 @@ export const fetchContainersRelatedToIndicators = query(
 				)
 			);
 		} else {
-			let currentOrganization;
-			let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
-
-			async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
-				const containers = await promise;
-				return filterVisible(containers, locals.user);
-			}
-
-			const [organizations, organizationalUnits] = await Promise.all([
-				filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
-				filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
-			]);
-
-			if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
-				currentOrganization = organizations.find(({ payload }) => payload.default);
-				if (!currentOrganization) {
-					currentOrganization = (await locals.pool.connect(
-						setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-					)) as OrganizationContainer;
-				}
-			} else {
-				currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
-			}
-
-			if (!currentOrganization) {
-				currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
-					url.hostname.startsWith(`${guid}.`)
-				);
-			}
-
 			let subordinateOrganizationalUnits: string[] = [];
 
-			if (currentOrganizationalUnit) {
+			if (params.organizationalUnit) {
+				const currentOrganizationalUnit = await locals.pool.connect(
+					getContainerByGuid(params.organizationalUnit)
+				);
+
+				if (!isOrganizationalUnitContainer(currentOrganizationalUnit)) {
+					error(404, unwrapFunctionStore(_)('error.not_found'));
+				}
+
 				const relatedOrganizationalUnits = await locals.pool.connect(
 					getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
 				);
