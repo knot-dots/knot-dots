@@ -215,17 +215,21 @@ export const indicatorTemplatePayload = z.object({
 	visibility: z.literal('public').default('public')
 });
 
-export const indicatorPayload = indicatorTemplatePayload.extend({
-	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	quantity: z.string().uuid(),
-	type: z.literal('indicator').default('indicator')
+export const actualDataPayload = z.object({
+	audience: z.array(z.string()).default(['audience.citizens']),
+	indicator: z.string().uuid(),
+	source: z.string().optional(),
+	title: z.string(),
+	type: z.literal('actual_data').default('actual_data'),
+	values: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	visibility: z.literal('organization').default('organization')
 });
 
 const anyPayload = z.discriminatedUnion('type', [
 	mapPayload,
 	administrativeAreaBasicDataPayload,
 	organizationalUnitPayload,
-	indicatorPayload,
+	actualDataPayload,
 	indicatorTemplatePayload
 ]);
 
@@ -276,7 +280,7 @@ export const organizationalUnitContainer = createContainerSchema(organizationalU
 
 export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
 
-export const indicatorContainer = createContainerSchema(indicatorPayload);
+export const actualDataContainer = createContainerSchema(actualDataPayload);
 
 const persistedContainer = createContainerSchema(anyPayload).extend({
 	guid: z.string().uuid(),
@@ -437,6 +441,7 @@ export function getContainer(criteria: {
 	organizationalUnit: string | null;
 	payload: {
 		externalReference?: string;
+		indicator?: string;
 		officialRegionalCode?: string;
 		organizationalUnitType?: string;
 		type?: string;
@@ -453,6 +458,10 @@ export function getContainer(criteria: {
 			conditions.push(sql.fragment`organizational_unit IS NULL`);
 		} else {
 			conditions.push(sql.fragment`organizational_unit = ${criteria.organizationalUnit}`);
+		}
+
+		if (criteria.payload.indicator) {
+			conditions.push(sql.fragment`payload->>'indicator' = ${criteria.payload.indicator}`);
 		}
 
 		if (criteria.payload.externalReference) {
