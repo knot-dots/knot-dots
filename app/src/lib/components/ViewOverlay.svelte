@@ -44,6 +44,7 @@
 	} from '$lib/models';
 	import {
 		fetchContainersRelatedToIndicators,
+		fetchContainersRelatedToIndicatorTemplates,
 		fetchContainersRelatedToMeasure,
 		fetchContainersRelatedToProgram,
 		fetchRelatedContainers
@@ -62,47 +63,61 @@
 
 	let organization = $derived(container.organization);
 
-	let params = $derived.by(() => {
+	let relatedContainersPromise = $derived.by(() => {
 		if (isIndicatorContainer(container)) {
-			return {
-				organization: [container.organization],
-				...(paramsFromFragment(page.url).has('program')
-					? { program: paramsFromFragment(page.url).get('program') as string }
-					: undefined)
-			};
+			return fetchContainersRelatedToIndicators({
+				guid,
+				params: {
+					organization: [container.organization],
+					...(page.data.currentOrganizationalUnit
+						? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
+						: undefined),
+					...(paramsFromFragment(page.url).has('program')
+						? { program: paramsFromFragment(page.url).get('program') as string }
+						: undefined)
+				}
+			});
+		} else if (isIndicatorTemplateContainer(container)) {
+			return fetchContainersRelatedToIndicatorTemplates({
+				guid,
+				params: {
+					organization: page.data.currentOrganization.guid,
+					...(page.data.currentOrganizationalUnit
+						? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
+						: undefined)
+				}
+			});
+		} else if (isMeasureContainer(container)) {
+			return fetchContainersRelatedToMeasure(guid);
 		} else if (isProgramContainer(container)) {
-			return {
-				audience: paramsFromFragment(page.url).getAll('audience'),
-				category: paramsFromFragment(page.url).getAll('category'),
-				policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
-				terms: paramsFromFragment(page.url).get('terms') ?? '',
-				topic: paramsFromFragment(page.url).getAll('topic')
-			};
+			return fetchContainersRelatedToProgram({
+				guid,
+				params: {
+					audience: paramsFromFragment(page.url).getAll('audience'),
+					category: paramsFromFragment(page.url).getAll('category'),
+					policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
+					terms: paramsFromFragment(page.url).get('terms') ?? '',
+					topic: paramsFromFragment(page.url).getAll('topic')
+				}
+			});
 		} else {
-			return {
-				organization: [organization],
-				relationType: [
-					predicates.enum['is-consistent-with'],
-					predicates.enum['is-equivalent-to'],
-					predicates.enum['is-inconsistent-with'],
-					predicates.enum['is-measured-by'],
-					predicates.enum['is-objective-for'],
-					predicates.enum['is-part-of'],
-					predicates.enum['is-section-of']
-				]
-			};
+			return fetchRelatedContainers({
+				guid,
+				params: {
+					organization: [organization],
+					relationType: [
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-objective-for'],
+						predicates.enum['is-part-of'],
+						predicates.enum['is-section-of']
+					]
+				}
+			});
 		}
 	});
-
-	let relatedContainersPromise = $derived(
-		isIndicatorContainer(container)
-			? fetchContainersRelatedToIndicators({ guid, params })
-			: isMeasureContainer(container)
-				? fetchContainersRelatedToMeasure({ guid, params })
-				: isProgramContainer(container)
-					? fetchContainersRelatedToProgram({ guid, params })
-					: fetchRelatedContainers({ guid, params })
-	);
 </script>
 
 {#if isProgramContainer(container)}

@@ -1,19 +1,19 @@
 import {
+	actualDataContainer,
 	createContainer,
 	getAllIndicatorWegweiserKommune,
 	getContainer,
 	getPool,
-	indicatorContainer,
 	indicatorDataWegweiserKommune,
 	insertIntoIndicatorDataWegweiserKommune,
 	updateContainer
 } from './db';
+import assert from 'node:assert';
 import { from } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import { concatMap, delay, map, retry, switchMap, tap } from 'rxjs/operators';
 import { DatabasePool } from 'slonik';
 import { z } from 'zod';
-import assert from 'node:assert';
 
 const envSchema = z
 	.object({
@@ -48,6 +48,8 @@ const statisticsData = z.object({
 			explanation: z.string(),
 			friendlyUrl: z.string(),
 			name: z.string(),
+			source: z.string(),
+			title: z.string(),
 			unit: z.string()
 		})
 	),
@@ -169,61 +171,51 @@ function isSame<T>(a: T, b: T) {
 								return;
 							}
 
-							const newIndicatorContainer = indicatorContainer.parse({
+							const newActualDataContainer = actualDataContainer.parse({
 								managed_by: organizationalUnit.guid,
 								organization,
 								organizational_unit: organizationalUnit.guid,
 								payload: {
-									description: statistics.indicatorsAndTopics[0].explanation,
-									externalReference,
-									historicalValues: statistics.years
+									indicator: indicatorTemplate.guid,
+									source: statistics.indicatorsAndTopics[0].source,
+									title: statistics.indicatorsAndTopics[0].title,
+									values: statistics.years
 										.map((year, yearIndex) => [
 											year,
 											statistics.data.indicators[0].regionYearValues[regionIndex][yearIndex]
 										])
-										.filter(([, value]) => value !== null),
-									indicatorCategory: [
-										'indicator_category.wegweiser_kommune',
-										...(statistics.indicatorsAndTopics[0].name.includes('Nachhaltigkeit / SDGs')
-											? ['indicator_category.sdg']
-											: [])
-									],
-									quantity: indicatorTemplate.guid,
-									title: statistics.indicatorsAndTopics[0].name,
-									unit:
-										unitMap.get(statistics.indicatorsAndTopics[0].unit) ??
-										statistics.indicatorsAndTopics[0].unit
+										.filter(([, value]) => value !== null)
 								},
 								realm,
 								user: [{ predicate: 'is-creator-of', subject: user }]
 							});
 
-							const foundIndicatorContainer = await getContainer({
+							const foundActualDataContainer = await getContainer({
 								organization,
 								organizationalUnit: organizationalUnit.guid,
-								payload: { externalReference }
+								payload: { indicator: indicatorTemplate.guid, type: 'actual_data' }
 							})(tx);
 
-							if (foundIndicatorContainer) {
-								if (isSame(foundIndicatorContainer.payload, newIndicatorContainer.payload)) {
+							if (foundActualDataContainer) {
+								if (isSame(foundActualDataContainer.payload, newActualDataContainer.payload)) {
 									console.log(
-										`ignored indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${foundIndicatorContainer.guid})`
+										`ignored indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${foundActualDataContainer.guid})`
 									);
 								} else {
-									const updatedIndicatorContainer = await updateContainer({
-										...foundIndicatorContainer,
-										payload: newIndicatorContainer.payload
+									const updatedActualDataContainer = await updateContainer({
+										...foundActualDataContainer,
+										payload: newActualDataContainer.payload
 									})(tx);
 
 									console.log(
-										`updated indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${updatedIndicatorContainer.guid})`
+										`updated indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${updatedActualDataContainer.guid})`
 									);
 								}
 							} else {
-								const savedIndicatorContainer = await createContainer(newIndicatorContainer)(tx);
+								const savedActualDataContainer = await createContainer(newActualDataContainer)(tx);
 
 								console.log(
-									`created indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${savedIndicatorContainer.guid})`
+									`created indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${savedActualDataContainer.guid})`
 								);
 							}
 						});

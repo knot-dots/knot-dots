@@ -1,5 +1,9 @@
-import { env } from '$env/dynamic/public';
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
+import { filterVisible } from '$lib/authorization';
+import { isIndicatorContainer, isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
@@ -7,96 +11,98 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
-	getManyOrganizationalUnitContainers,
-	getManyOrganizationContainers,
-	setUp
+	getManyContainers
 } from '$lib/server/db';
-import { filterVisible } from '$lib/authorization';
-import {
-	type AnyContainer,
-	isIndicatorContainer,
-	type OrganizationalUnitContainer,
-	type OrganizationContainer
-} from '$lib/models';
-import { error } from '@sveltejs/kit';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 
-export const fetchContainersRelatedToIndicators = query('unchecked', async ({ guid, params }) => {
-	const { locals, url } = getRequestEvent();
+export const fetchContainersRelatedToIndicators = query(
+	z.object({
+		guid: z.string().uuid(),
+		params: z.object({
+			organization: z.array(z.string().uuid()),
+			organizationalUnit: z.string().uuid().optional(),
+			program: z.string().uuid().optional()
+		})
+	}),
+	async ({ guid, params }) => {
+		const { locals, url } = getRequestEvent();
 
-	let relatedContainers;
+		let relatedContainers;
 
-	const container = await locals.pool.connect(getContainerByGuid(guid));
+		const container = await locals.pool.connect(getContainerByGuid(guid));
 
-	if (!isIndicatorContainer(container)) {
-		error(404, unwrapFunctionStore(_)('error.not_found'));
+		if (!isIndicatorContainer(container)) {
+			error(404, unwrapFunctionStore(_)('error.not_found'));
+		}
+
+		if (params.program) {
+			const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
+				locals.pool.connect(getAllContainersRelatedToProgram(params.program, {})),
+				locals.pool.connect(getAllContainersRelatedToIndicators([container], {}))
+			]);
+
+			relatedContainers = containersRelatedToProgram.filter(({ guid }) =>
+				containersRelatedToIndicator.some(
+					({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
+				)
+			);
+		} else {
+			let subordinateOrganizationalUnits: string[] = [];
+
+			if (params.organizationalUnit) {
+				const currentOrganizationalUnit = await locals.pool.connect(
+					getContainerByGuid(params.organizationalUnit)
+				);
+
+				if (!isOrganizationalUnitContainer(currentOrganizationalUnit)) {
+					error(404, unwrapFunctionStore(_)('error.not_found'));
+				}
+
+				const relatedOrganizationalUnits = await locals.pool.connect(
+					getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
+				);
+				subordinateOrganizationalUnits = relatedOrganizationalUnits
+					.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
+					.map(({ guid }) => guid)
+					.concat(currentOrganizationalUnit.guid);
+			}
+
+			relatedContainers = await locals.pool.connect(
+				getAllContainersRelatedToIndicators([container], {
+					organizationalUnits: subordinateOrganizationalUnits
+				})
+			);
+		}
+
+		return filterVisible(relatedContainers, locals.user);
 	}
+);
 
-	if (params.program) {
-		const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
-			locals.pool.connect(getAllContainersRelatedToProgram(params.program, {})),
-			locals.pool.connect(getAllContainersRelatedToIndicators([container], {}))
-		]);
-
-		relatedContainers = containersRelatedToProgram.filter(({ guid }) =>
-			containersRelatedToIndicator.some(
-				({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
+export const fetchContainersRelatedToIndicatorTemplates = query(
+	z.object({
+		guid: z.string().uuid(),
+		params: z.object({
+			organization: z.string().uuid(),
+			organizationalUnit: z.string().uuid().optional()
+		})
+	}),
+	async ({ guid, params }) => {
+		const { locals } = getRequestEvent();
+		let relatedContainers = await locals.pool.connect(
+			getManyContainers(
+				[params.organization],
+				{
+					indicator: guid,
+					organizationalUnits: params.organizationalUnit ? [params.organizationalUnit] : [],
+					type: [payloadTypes.enum.actual_data]
+				},
+				'alpha'
 			)
 		);
-	} else {
-		let currentOrganization;
-		let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
-
-		async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
-			const containers = await promise;
-			return filterVisible(containers, locals.user);
-		}
-
-		const [organizations, organizationalUnits] = await Promise.all([
-			filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
-			filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
-		]);
-
-		if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
-			currentOrganization = organizations.find(({ payload }) => payload.default);
-			if (!currentOrganization) {
-				currentOrganization = (await locals.pool.connect(
-					setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-				)) as OrganizationContainer;
-			}
-		} else {
-			currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
-		}
-
-		if (!currentOrganization) {
-			currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
-				url.hostname.startsWith(`${guid}.`)
-			);
-		}
-
-		let subordinateOrganizationalUnits: string[] = [];
-
-		if (currentOrganizationalUnit) {
-			const relatedOrganizationalUnits = await locals.pool.connect(
-				getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-			);
-			subordinateOrganizationalUnits = relatedOrganizationalUnits
-				.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
-				.map(({ guid }) => guid)
-				.concat(currentOrganizationalUnit.guid);
-		}
-
-		relatedContainers = await locals.pool.connect(
-			getAllContainersRelatedToIndicators([container], {
-				organizationalUnits: subordinateOrganizationalUnits
-			})
-		);
+		return filterVisible(relatedContainers, locals.user);
 	}
+);
 
-	return filterVisible(relatedContainers, locals.user);
-});
-
-export const fetchContainersRelatedToMeasure = query('unchecked', async ({ guid, params }) => {
+export const fetchContainersRelatedToMeasure = query(z.string().uuid(), async (guid) => {
 	const { locals } = getRequestEvent();
 	const relatedContainers = await locals.pool.connect(
 		getAllContainersRelatedToMeasure(guid, {}, 'alpha')
@@ -104,24 +110,45 @@ export const fetchContainersRelatedToMeasure = query('unchecked', async ({ guid,
 	return filterVisible(relatedContainers, locals.user);
 });
 
-export const fetchContainersRelatedToProgram = query('unchecked', async ({ guid, params }) => {
-	const { locals } = getRequestEvent();
-	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToProgram(guid, {
-			audience: params.audience,
-			categories: params.category,
-			policyFieldsBNK: params.policyFieldBNK,
-			...(params.terms ? { terms: params.terms } : undefined),
-			topics: params.topic
+export const fetchContainersRelatedToProgram = query(
+	z.object({
+		guid: z.string().uuid(),
+		params: z.object({
+			audience: z.array(z.string()),
+			category: z.array(z.string()),
+			policyFieldBNK: z.array(z.string()),
+			terms: z.string().optional(),
+			topic: z.array(z.string())
 		})
-	);
-	return filterVisible(relatedContainers, locals.user);
-});
+	}),
+	async ({ guid, params }) => {
+		const { locals } = getRequestEvent();
+		const relatedContainers = await locals.pool.connect(
+			getAllContainersRelatedToProgram(guid, {
+				audience: params.audience,
+				categories: params.category,
+				policyFieldsBNK: params.policyFieldBNK,
+				...(params.terms ? { terms: params.terms } : undefined),
+				topics: params.topic
+			})
+		);
+		return filterVisible(relatedContainers, locals.user);
+	}
+);
 
-export const fetchRelatedContainers = query('unchecked', async ({ guid, params }) => {
-	const { locals } = getRequestEvent();
-	const relatedContainers = await locals.pool.connect(
-		getAllRelatedContainers(params.organization, guid, params.relationType, {}, 'alpha')
-	);
-	return filterVisible(relatedContainers, locals.user);
-});
+export const fetchRelatedContainers = query(
+	z.object({
+		guid: z.string().uuid(),
+		params: z.object({
+			organization: z.array(z.string().uuid()),
+			relationType: z.array(z.string())
+		})
+	}),
+	async ({ guid, params }) => {
+		const { locals } = getRequestEvent();
+		const relatedContainers = await locals.pool.connect(
+			getAllRelatedContainers(params.organization, guid, params.relationType, {}, 'alpha')
+		);
+		return filterVisible(relatedContainers, locals.user);
+	}
+);

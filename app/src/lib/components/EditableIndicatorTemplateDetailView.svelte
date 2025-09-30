@@ -5,7 +5,14 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
-	import { type AnyContainer, type Container, type IndicatorTemplateContainer } from '$lib/models';
+	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
+	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
+	import {
+		type AnyContainer,
+		type Container,
+		type IndicatorTemplateContainer,
+		isActualDataContainer
+	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -15,6 +22,12 @@
 	}
 
 	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+
+	let actualDataContainer = $derived(
+		relatedContainers.filter(isActualDataContainer).find(({ payload }) => payload.indicator)
+	);
+
+	let viewMode = $state('chart');
 </script>
 
 <EditableContainerDetailView bind:container>
@@ -34,6 +47,21 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
+
+		{#if actualDataContainer}
+			<div class="details-section">
+				<select class="view-mode" bind:value={viewMode}>
+					<option value="chart">{$_('indicator.view_mode.chart')}</option>
+					<option value="table">{$_('indicator.view_mode.table')}</option>
+				</select>
+
+				{#if viewMode === 'chart'}
+					<NewIndicatorChart {container} relatedContainers={[actualDataContainer]} />
+				{:else}
+					<NewIndicatorTable {container} relatedContainers={[actualDataContainer]} />
+				{/if}
+			</div>
+		{/if}
 	{/snippet}
 </EditableContainerDetailView>
 
@@ -43,3 +71,12 @@
 		<DeleteButton {container} {relatedContainers} />
 	</div>
 </footer>
+
+<style>
+	.view-mode {
+		border: none;
+		box-shadow: var(--shadow-sm);
+		margin: 0 0 1rem;
+		width: fit-content;
+	}
+</style>

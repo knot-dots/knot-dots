@@ -58,10 +58,6 @@
 							<span class="truncated">{value.nameBBSR}</span>
 						</label>
 					</li>
-				{:else}
-					<li>
-						<span>{$_('combobox.no_items_found')}</span>
-					</li>
 				{/each}
 			</ul>
 

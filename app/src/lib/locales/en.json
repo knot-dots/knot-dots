@@ -102,7 +102,6 @@
 	"feature_flags": "Feature flags",
 	"files": "Files",
 	"filter": "Filter",
-	"filter.all_organizational_units": "All organizational units",
 	"filter.no_results": "No results",
 	"fulfillment_date": "Fulfillment date",
 	"given_name": "Given name",
@@ -158,6 +157,7 @@
 	"included": {
 		"label": "Included organization levels",
 		"options": {
+			"all_organizational_units": "All organizational units",
 			"subordinate_organizational_units": "With subordinate units",
 			"superordinate_organizational_units": "With superordinate units"
 		}
@@ -174,10 +174,12 @@
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Quantity",
 	"indicator.save_as_template": "Save as template",
+	"indicator.source": "Source",
 	"indicator.tab.all": "All data",
 	"indicator.tab.historical_values": "Historical values",
 	"indicator.tab.measures": "Measures",
 	"indicator.tab.objectives": "Objectives",
+	"indicator.table.actual_values": "Actual values",
 	"indicator.table.edit": "Edit data",
 	"indicator.table.done": "Done total",
 	"indicator.table.historical_values": "Historical and extrapolated values",
