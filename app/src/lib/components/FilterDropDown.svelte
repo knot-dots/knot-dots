@@ -36,7 +36,7 @@
 		['member', 'member_filter.label'],
 		['type', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],
-		['programType', 'program_type.label'],
+		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
 		['taskCategory', 'task_category.label']
 	]);
