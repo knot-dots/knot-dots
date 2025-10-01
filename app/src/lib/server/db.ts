@@ -998,6 +998,17 @@ export function getAllContainersRelatedToIndicators(
 						objectiveAndEffectResult.map(({ guid }) => guid),
 						sql.fragment`, `
 					)})
+						AND c.payload->>'type' IN (${sql.join(
+							[
+								payloadTypes.enum.effect,
+								payloadTypes.enum.goal,
+								payloadTypes.enum.measure,
+								payloadTypes.enum.objective,
+								payloadTypes.enum.program,
+								payloadTypes.enum.simple_measure
+							],
+							sql.fragment`, `
+						)})
 				`)
 				: [];
 
