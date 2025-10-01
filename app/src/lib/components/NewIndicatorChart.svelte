@@ -38,10 +38,9 @@
 					Plot.areaY(actualValues, {
 						x: 'date',
 						y: 'value',
-						interval: 'year',
 						fill: 'rgb(213, 239, 252)'
 					}),
-					Plot.lineY(actualValues, { x: 'date', y: 'value', interval: 'year' })
+					Plot.lineY(actualValues, { x: 'date', y: 'value' })
 				],
 				y: { label: $_(unit), tickFormat: (d) => $number(d) }
 			})
