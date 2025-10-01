@@ -969,7 +969,18 @@ export function getAllContainersRelatedToIndicators(
 						--Top level items (roots)
 						SELECT array[c.guid] AS path, false, c.guid AS subject
 						FROM container c
-						WHERE c.valid_currently
+						WHERE c.payload->>'type' IN (${sql.join(
+							[
+								payloadTypes.enum.effect,
+								payloadTypes.enum.goal,
+								payloadTypes.enum.measure,
+								payloadTypes.enum.objective,
+								payloadTypes.enum.program,
+								payloadTypes.enum.simple_measure
+							],
+							sql.fragment`, `
+						)})
+							AND c.valid_currently
 							AND NOT deleted
 							AND NOT EXISTS(
 								--No relations with this as the subject.
@@ -998,17 +1009,6 @@ export function getAllContainersRelatedToIndicators(
 						objectiveAndEffectResult.map(({ guid }) => guid),
 						sql.fragment`, `
 					)})
-						AND c.payload->>'type' IN (${sql.join(
-							[
-								payloadTypes.enum.effect,
-								payloadTypes.enum.goal,
-								payloadTypes.enum.measure,
-								payloadTypes.enum.objective,
-								payloadTypes.enum.program,
-								payloadTypes.enum.simple_measure
-							],
-							sql.fragment`, `
-						)})
 				`)
 				: [];
 
