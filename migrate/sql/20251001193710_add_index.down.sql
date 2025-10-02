@@ -1,0 +1,1 @@
+DROP INDEX idx_container_relation_subject_predicate_idx;
