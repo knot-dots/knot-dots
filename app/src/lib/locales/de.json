@@ -331,6 +331,8 @@
 	"profile_settings.title": "Account-Einstellungen",
 	"program": "Programm",
 	"program_type": "Art des Programms",
+	"program_type.agenda": "Agenda",
+	"program_type.agenda.plural": "Agenden",
 	"program_type.funding_program": "Förderprogramm",
 	"program_type.funding_program.plural": "Förderprogramme",
 	"program_type.guide": "Leitfaden",
