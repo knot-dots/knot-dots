@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { type Container, payloadTypes, predicates } from '$lib/models';
+import { type Container, payloadTypes, predicates, type ProgramContainer } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
@@ -64,13 +64,13 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	}
 
-	const programs = await locals.pool.connect(
+	const programs = (await locals.pool.connect(
 		getManyContainers(
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{ type: [payloadTypes.enum.program] },
 			url.searchParams.get('sort') ?? ''
 		)
-	);
+	)) as ProgramContainer[];
 
 	return {
 		containers: filterVisible(containers, locals.user),

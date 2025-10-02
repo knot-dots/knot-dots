@@ -13,7 +13,7 @@
 
 <EditableSingleChoice
 	{editable}
-	label={$_('program_type.label')}
+	label={$_('program_type')}
 	options={programTypes.options.map((o) => ({ label: $_(o), value: o }))}
 	bind:value
 />
