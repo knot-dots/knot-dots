@@ -709,7 +709,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			LEFT JOIN container_user cu ON c.revision = cu.object
 			WHERE ${sql.join(conditions, sql.fragment` AND `)}
 			GROUP BY c.revision
-			ORDER BY payload ->> 'level', payload ->> 'name'
+			ORDER BY payload->>'level', payload->>'name'
 		`)) as OrganizationalUnitContainer[];
 	};
 }
@@ -968,47 +968,24 @@ export function getAllContainersRelatedToIndicators(
 					WITH RECURSIVE is_part_of_relation(path, is_cycle) AS (
 						--Top level items (roots)
 						SELECT array[c.guid] AS path, false, c.guid AS subject
+						FROM unnest(${sql.array(
+							objectiveAndEffectResult.map(({ guid }) => guid),
+							'uuid'
+						)}) AS c(guid)
+						UNION ALL
+						SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
 						FROM container c
-						WHERE c.payload->>'type' IN (${sql.join(
-							[
-								payloadTypes.enum.effect,
-								payloadTypes.enum.goal,
-								payloadTypes.enum.measure,
-								payloadTypes.enum.objective,
-								payloadTypes.enum.program,
-								payloadTypes.enum.simple_measure
-							],
-							sql.fragment`, `
-						)})
-							AND c.valid_currently
-							AND NOT deleted
-							AND NOT EXISTS(
-								--No relations with this as the subject.
-								SELECT *
-								FROM container_relation parent_test
-								WHERE c.guid = parent_test.subject
-								  AND parent_test.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-program')
-									AND parent_test.valid_currently
-									AND NOT parent_test.deleted
-							)
-							UNION ALL
-							SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
-							FROM container c
-							JOIN container_relation cr ON c.guid = cr.subject
-								AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-program')
-							  AND cr.valid_currently
-							  AND NOT cr.deleted
-							JOIN is_part_of_relation r ON cr.object = r.subject AND NOT r.is_cycle
-							WHERE c.valid_currently
-								AND NOT c.deleted
-							)
+						JOIN container_relation cr ON c.guid = cr.object
+							AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-program')
+							AND cr.valid_currently
+							AND NOT cr.deleted
+						JOIN is_part_of_relation r ON cr.subject = r.subject AND NOT r.is_cycle
+						WHERE c.valid_currently
+							AND NOT c.deleted
+					)
 					SELECT DISTINCT unnest(r.path) AS guid
 					FROM is_part_of_relation r
 					JOIN container c ON r.path[array_upper(r.path, 1)] = c.guid
-					WHERE c.guid IN (${sql.join(
-						objectiveAndEffectResult.map(({ guid }) => guid),
-						sql.fragment`, `
-					)})
 				`)
 				: [];
 
