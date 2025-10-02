@@ -334,6 +334,8 @@
 	"program_type.funding_program": "Förderprogramm",
 	"program_type.funding_program.plural": "Förderprogramme",
 	"program_type.guide": "Leitfaden",
+	"program_type.guide.plural": "Leitfäden",
+	"program_type.isek": "ISEK",
 	"program_type.isek.plural": "ISEKs",
 	"program_type.misc": "Sonstige",
 	"program_type.misc.plural": "Sonstige",
