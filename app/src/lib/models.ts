@@ -2069,6 +2069,17 @@ export function goalsByHierarchyLevel(containers: GoalContainer[]) {
 	return goalsByHierarchyLevel;
 }
 
+export function titleForProgramCollection(containers: ProgramContainer[]) {
+	const programTypes = new Set(containers.map(({ payload }) => payload.programType));
+
+	if (programTypes.size == 1) {
+		const programType = programTypes.values().next().value;
+		return unwrapFunctionStore(_)(`${programType}.plural`);
+	} else {
+		return unwrapFunctionStore(_)('programs');
+	}
+}
+
 export function computeColumnTitleForGoals(containers: GoalContainer[]) {
 	const goalTypes = new Set(containers.map((c) => c.payload.goalType));
 

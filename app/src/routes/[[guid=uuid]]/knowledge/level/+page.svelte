@@ -9,6 +9,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
 		audience,
+		titleForProgramCollection,
 		computeFacetCount,
 		type Container,
 		findAncestors,
@@ -61,7 +62,7 @@
 
 	{#snippet main()}
 		<Board>
-			<BoardColumn title={$_('programs')}>
+			<BoardColumn title={titleForProgramCollection(data.programs)}>
 				<div class="vertical-scroll-wrapper masked-overflow">
 					{#each data.programs as container (container.guid)}
 						<Card {container} showRelationFilter />

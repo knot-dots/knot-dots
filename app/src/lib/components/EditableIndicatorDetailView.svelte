@@ -17,6 +17,7 @@
 	import SaveAsIndicatorTemplateButton from '$lib/components/SaveAsIndicatorTemplateButton.svelte';
 	import {
 		type AnyContainer,
+		titleForProgramCollection,
 		type Container,
 		findOverallObjective,
 		type IndicatorContainer,
@@ -135,7 +136,9 @@
 		{/if}
 
 		<div class="details-section">
-			<h2 class="details-heading">{$_('programs')}</h2>
+			<h2 class="details-heading">
+				{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
+			</h2>
 			<ul class="carousel">
 				{#each relatedContainers.filter(isProgramContainer) as program}
 					<li>
