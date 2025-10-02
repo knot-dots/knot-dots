@@ -8,6 +8,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
 		computeColumnTitleForGoals,
+		titleForProgramCollection,
 		goalsByHierarchyLevel,
 		isGoalContainer,
 		isProgramContainer,
@@ -39,7 +40,7 @@
 				: undefined,
 			containers: data.containers.filter(isProgramContainer).slice(0, browser ? undefined : 10),
 			key: 'programs',
-			title: $_('programs')
+			title: titleForProgramCollection(data.containers.filter(isProgramContainer))
 		},
 		...Array.from(goals.entries())
 			.toSorted()

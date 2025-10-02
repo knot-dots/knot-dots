@@ -64,13 +64,13 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	}
 
-	const programs = await locals.pool.connect(
+	const programs = (await locals.pool.connect(
 		getManyContainers(
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{ type: [payloadTypes.enum.program] },
 			url.searchParams.get('sort') ?? ''
 		)
-	);
+	)) as ProgramContainer[];
 
 	return {
 		containers: filterVisible(containers, locals.user),

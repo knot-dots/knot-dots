@@ -7,6 +7,7 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
+		titleForProgramCollection,
 		containerOfType,
 		isProgramContainer,
 		type NewContainer,
@@ -50,9 +51,9 @@
 
 <header>
 	{#if subsection}
-		<h3 class="details-heading">{$_('programs')}</h3>
+		<h3 class="details-heading">{titleForProgramCollection(items)}</h3>
 	{:else}
-		<h2 class="details-heading">{$_('programs')}</h2>
+		<h2 class="details-heading">{titleForProgramCollection(items)}</h2>
 	{/if}
 
 	{#if editable}
