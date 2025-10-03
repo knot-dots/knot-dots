@@ -17,19 +17,13 @@
 					{#if isOrganizationContainer(data.container)}
 						<EditableOrganizationDetailView
 							container={data.container}
-							containersRelatedToIndicators={data.containersRelatedToIndicators}
-							indicators={data.indicators}
-							measures={data.measures}
-							programs={data.programs}
+							otherContainers={data.containers}
 							sections={data.sections}
 						/>
 					{:else if isOrganizationalUnitContainer(data.container)}
 						<EditableOrganizationalUnitDetailView
 							container={data.container}
-							containersRelatedToIndicators={data.containersRelatedToIndicators}
-							indicators={data.indicators}
-							measures={data.measures}
-							programs={data.programs}
+							otherContainers={data.containers}
 							sections={data.sections}
 						/>
 					{/if}

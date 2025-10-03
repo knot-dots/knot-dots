@@ -17,19 +17,13 @@
 
 	interface Props {
 		container: OrganizationalUnitContainer;
-		containersRelatedToIndicators?: Container[];
-		indicators?: Container[];
-		measures?: Container[];
-		programs?: Container[];
+		otherContainers?: Container[];
 		sections?: Container[];
 	}
 
 	let {
 		container: originalContainer = $bindable(),
-		containersRelatedToIndicators = [],
-		indicators = [],
-		measures = [],
-		programs = [],
+		otherContainers = [],
 		sections: originalSections = []
 	}: Props = $props();
 
@@ -37,14 +31,7 @@
 
 	let sections = $state(originalSections);
 
-	let relatedContainers = $derived([
-		container,
-		...containersRelatedToIndicators,
-		...indicators,
-		...measures,
-		...programs,
-		...sections
-	]);
+	let relatedContainers = $derived([container, ...otherContainers, ...sections]);
 
 	let w = $state(0);
 

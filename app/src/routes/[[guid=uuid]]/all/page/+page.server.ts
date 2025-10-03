@@ -1,14 +1,12 @@
 import type { GeoJsonObject } from 'geojson';
 import { filterVisible } from '$lib/authorization';
 import {
-	type IndicatorContainer,
 	isMapContainer,
 	isOrganizationalUnitContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
 import {
-	getAllContainersRelatedToIndicators,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
@@ -33,29 +31,23 @@ export const load = (async ({ depends, locals, parent }) => {
 			.concat(container.guid);
 	}
 
-	const [programs, measures, indicators, sections] = await Promise.all([
-		locals.pool.connect(
-			getManyContainers(
-				'default' in container.payload && container.payload.default ? [] : [container.organization],
-				{ organizationalUnits, type: [payloadTypes.enum.program] },
-				''
-			)
-		),
-		locals.pool.connect(
-			getManyContainers(
-				'default' in container.payload && container.payload.default ? [] : [container.organization],
-				{
-					organizationalUnits,
-					type: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
-				},
-				''
-			)
-		),
+	const [containers, sections] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
 				[container.organization],
-				{ organizationalUnits, type: [payloadTypes.enum.indicator] },
-				''
+				{
+					organizationalUnits,
+					type: [
+						payloadTypes.enum.effect,
+						payloadTypes.enum.goal,
+						payloadTypes.enum.indicator,
+						payloadTypes.enum.measure,
+						payloadTypes.enum.objective,
+						payloadTypes.enum.program,
+						payloadTypes.enum.simple_measure
+					]
+				},
+				'alpha'
 			)
 		),
 		locals.pool.connect(
@@ -79,10 +71,6 @@ export const load = (async ({ depends, locals, parent }) => {
 			)
 		)
 	]);
-
-	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(indicators as IndicatorContainer[], { organizationalUnits })
-	);
 
 	let spatialFeatures: Array<GeoJsonObject & { id: string }> = [];
 
@@ -108,10 +96,7 @@ export const load = (async ({ depends, locals, parent }) => {
 
 	return {
 		container,
-		indicators: filterVisible(indicators, locals.user),
-		containersRelatedToIndicators: filterVisible(relatedContainers, locals.user),
-		measures: filterVisible(measures, locals.user),
-		programs: filterVisible(programs, locals.user),
+		containers: filterVisible(containers, locals.user),
 		sections: filterVisible(sections, locals.user),
 		spatialFeatures
 	};
