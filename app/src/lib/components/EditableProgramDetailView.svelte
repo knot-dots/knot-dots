@@ -41,24 +41,25 @@
 
 	let { container = $bindable(), relatedContainersQuery, revisions }: Props = $props();
 
-	let relatedContainers = $state([] as Container[]);
+	let relatedContainers = $state.raw([]) as Container[];
+
+	let parts = $state([]) as Container[];
+
+	let url = page.url;
 
 	$effect(() => {
 		if (relatedContainersQuery.current) {
 			relatedContainers = relatedContainersQuery.current;
+			parts = relatedContainers
+				.filter(({ payload }) => byPayloadType(payload.type, url))
+				.filter(({ guid, relation }) =>
+					relation.some(
+						({ predicate }) =>
+							predicate === predicates.enum['is-part-of-program'] && guid != container.guid
+					)
+				);
 		}
 	});
-
-	let parts = $derived(
-		relatedContainers
-			.filter(({ payload }) => byPayloadType(payload.type, page.url))
-			.filter(({ guid, relation }) =>
-				relation.some(
-					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
-				)
-			)
-	);
 
 	function byPayloadType(payloadType: PayloadType, url: URL) {
 		const params = paramsFromFragment(url);
