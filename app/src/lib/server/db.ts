@@ -716,52 +716,45 @@ export function getManyOrganizationalUnitContainers(filters: {
 
 export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
-		const relationPathResult = await connection.any(sql.unsafe`
-			WITH RECURSIVE is_part_of_relation(path) AS (
-				--Top level items (roots)
-				SELECT array[c.guid] as path, c.guid as subject
-				FROM container c
-				WHERE c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
-					AND c.valid_currently
-					AND NOT EXISTS(
-						--No relations with this as the subject.
-						SELECT *
-						FROM container_relation parent_test
-						WHERE c.guid = parent_test.subject
-						  AND parent_test.predicate = 'is-part-of'
-							AND parent_test.valid_currently
-							AND NOT parent_test.deleted
-					)
+		return (await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
+				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
 				UNION ALL
-				SELECT array_append(r.path, c.guid), c.guid
+				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.subject
-					AND cr.predicate = 'is-part-of'
+					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				JOIN is_part_of_relation r ON cr.object = r.subject
-				WHERE c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
-				  AND c.valid_currently
+				JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
+				WHERE c.valid_currently
+			), is_part_of_relation_up(path, is_cycle) AS (
+				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS subject
+				UNION ALL
+				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+				FROM container c
+				JOIN container_relation cr ON c.guid = cr.object
+					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+				JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
+				WHERE c.valid_currently
 			)
-			SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${guid} = ANY(path)
-		`);
-
-		const containerResult =
-			relationPathResult.length > 0
-				? await connection.any(sql.typeAlias('organizationalUnitContainer')`
-			SELECT *
-			FROM container
-			WHERE guid IN (${sql.join(
-				relationPathResult.flatMap((r) => Object.values(r)),
-				sql.fragment`, `
-			)})
-				AND valid_currently
-			  AND NOT DELETED
+			SELECT c.*,
+				coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation,
+				coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+			FROM (
+				SELECT path FROM is_part_of_relation_down
+				UNION
+				SELECT path FROM is_part_of_relation_up
+			) AS r
+			JOIN container c ON c.guid = r.path[array_upper(r.path, 1)]
+			LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
+			LEFT JOIN container_user cu ON c.revision = cu.object
+			WHERE c.valid_currently AND NOT c.deleted
+			GROUP BY c.revision
 			ORDER BY payload->>'level', payload->>'name'
-		`)
-				: [];
-
-		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
+		`)) as OrganizationalUnitContainer[];
 	};
 }
 
@@ -1114,31 +1107,34 @@ export function getAllContainersRelatedToMeasure(
 		];
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
-			WITH RECURSIVE relation(path, is_cycle) AS (
-				--Top level items (roots)
-				SELECT array[c.guid] AS path, false, c.guid as subject
-				FROM container c
-				WHERE c.valid_currently
-					AND NOT EXISTS(
-						--No relations with this as the subject.
-						SELECT *
-						FROM container_relation parent_test
-						WHERE c.guid = parent_test.subject
-						  AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
-							AND parent_test.valid_currently
-							AND NOT parent_test.deleted
-					)
+			WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
+				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
 				UNION ALL
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.subject
-					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				JOIN relation r ON cr.object = r.subject AND NOT r.is_cycle
+				JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
+				WHERE c.valid_currently
+			), is_part_of_relation_up(path, is_cycle) AS (
+				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS subject
+				UNION ALL
+				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+				FROM container c
+				JOIN container_relation cr ON c.guid = cr.object
+					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+				JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
 				WHERE c.valid_currently
 			)
-			SELECT DISTINCT unnest(path) FROM relation r WHERE ${guid} = ANY(path)
+			SELECT DISTINCT unnest(path) FROM (
+				SELECT path FROM is_part_of_relation_down
+				UNION
+				SELECT path FROM is_part_of_relation_up
+			) AS is_part_of_relation
 		`);
 
 		const otherPredicate = [
