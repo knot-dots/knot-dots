@@ -555,15 +555,15 @@ button.button-relation > svg,
 	--button-active-background: linear-gradient(62deg, #1c64f2 17.85%, #16bdca 74.26%);
 }
 
-.button-relation > svg #full {
+.button-relation > svg .full {
 	display: none;
 }
 
-.button-relation:hover > svg #full {
+.button-relation:hover > svg .full {
 	display: initial;
 }
 
-.button-relation.is-active > svg #full {
+.button-relation.is-active > svg .full {
 	display: initial;
 	fill: white;
 }
