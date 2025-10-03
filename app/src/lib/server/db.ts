@@ -787,20 +787,8 @@ export function getAllRelatedContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
 			? await connection.any(sql.typeAlias('relationPath')`
-				WITH RECURSIVE is_part_of_relation(path, is_cycle) AS (
-					--Top level items (roots)
-					SELECT array[c.guid] as path, false, c.guid as subject
-					FROM container c
-					WHERE c.valid_currently
-						AND NOT EXISTS(
-							--No relations with this as the subject.
-							SELECT *
-							FROM container_relation parent_test
-							WHERE c.guid = parent_test.subject
-							  AND parent_test.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
-								AND parent_test.valid_currently
-								AND NOT parent_test.deleted
-						)
+				WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
+					SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
 					UNION ALL
 					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 					FROM container c
@@ -808,10 +796,25 @@ export function getAllRelatedContainers(
 						AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
 					  AND cr.valid_currently
 						AND NOT cr.deleted
-					JOIN is_part_of_relation r ON cr.object = r.subject AND NOT r.is_cycle
+					JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
+					WHERE c.valid_currently
+				), is_part_of_relation_up(path, is_cycle) AS (
+					SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS subject
+					UNION ALL
+					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+					FROM container c
+					JOIN container_relation cr ON c.guid = cr.object
+						AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
+						AND cr.valid_currently
+						AND NOT cr.deleted
+					JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
 					WHERE c.valid_currently
 				)
-				SELECT DISTINCT unnest(path) FROM is_part_of_relation r WHERE ${guid} = ANY(path)
+				SELECT DISTINCT unnest(path) AS guid FROM (
+					SELECT path FROM is_part_of_relation_down
+					UNION
+					SELECT path FROM is_part_of_relation_up
+				) AS is_part_of_relation
 			`)
 			: [];
 
@@ -983,9 +986,7 @@ export function getAllContainersRelatedToIndicators(
 						WHERE c.valid_currently
 							AND NOT c.deleted
 					)
-					SELECT DISTINCT unnest(r.path) AS guid
-					FROM is_part_of_relation r
-					JOIN container c ON r.path[array_upper(r.path, 1)] = c.guid
+					SELECT DISTINCT unnest(path) AS guid FROM is_part_of_relation
 				`)
 				: [];
 
@@ -1027,19 +1028,7 @@ export function getAllContainersRelatedToProgram(
 
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
 			WITH RECURSIVE relation(path, is_cycle) AS (
-				--Top level items (roots)
-				SELECT array[c.guid] AS path, false, c.guid AS subject
-				FROM container c
-				WHERE c.valid_currently
-					AND NOT EXISTS(
-						--No relations with this as the subject.
-						SELECT *
-						FROM container_relation parent_test
-						WHERE c.guid = parent_test.subject
-							AND parent_test.predicate IN (${sql.join(predicate, sql.fragment`, `)})
-							AND parent_test.valid_currently
-							AND NOT parent_test.deleted
-					)
+				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
 				UNION ALL
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
@@ -1047,10 +1036,10 @@ export function getAllContainersRelatedToProgram(
 					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				JOIN relation r ON cr.object = r.subject AND NOT r.is_cycle
+				JOIN relation r ON cr.object = r.object AND NOT r.is_cycle
 				WHERE c.valid_currently
 			)
-			SELECT DISTINCT unnest(path) FROM relation r WHERE ${guid} = ANY(path)
+			SELECT DISTINCT unnest(path) FROM relation
 		`);
 
 		const containerResult =
