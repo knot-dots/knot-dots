@@ -701,15 +701,29 @@ export function getManyOrganizationalUnitContainers(filters: {
 		}
 
 		return (await connection.any(sql.typeAlias('organizationalUnitContainer')`
-			SELECT c.*,
-			  coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation,
-				coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+			WITH user_agg AS (
+				SELECT
+					c.guid,
+					coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+				FROM container c
+				LEFT JOIN container_user cu ON c.revision = cu.object
+				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+				GROUP BY c.revision
+			), relation_agg AS (
+				SELECT
+					c.guid,
+					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+				FROM container c
+				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
+				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+				GROUP BY c.revision
+			)
+			SELECT c.*, r.relation, u.user
 			FROM container c
-			LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
-			LEFT JOIN container_user cu ON c.revision = cu.object
-			WHERE ${sql.join(conditions, sql.fragment` AND `)}
-			GROUP BY c.revision
-			ORDER BY payload->>'level', payload->>'name'
+			JOIN relation_agg r ON c.guid = r.guid
+			JOIN user_agg u ON c.guid = u.guid
+			WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+			ORDER BY payload->>'level', payload->>'name';
 		`)) as OrganizationalUnitContainer[];
 	};
 }
@@ -739,20 +753,29 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
 				WHERE c.valid_currently
+			), user_agg AS (
+				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+				FROM container c
+				LEFT JOIN container_user cu ON c.revision = cu.object
+				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+				GROUP BY c.revision
+			), relation_agg AS (
+				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+				FROM container c
+				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
+				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+				GROUP BY c.revision
 			)
-			SELECT c.*,
-				coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation,
-				coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+			SELECT c.*, r.relation, u.user
 			FROM (
 				SELECT path FROM is_part_of_relation_down
 				UNION
 				SELECT path FROM is_part_of_relation_up
-			) AS r
-			JOIN container c ON c.guid = r.path[array_upper(r.path, 1)]
-			LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
-			LEFT JOIN container_user cu ON c.revision = cu.object
+			) AS p
+			JOIN container c ON c.guid = p.path[array_upper(p.path, 1)]
+			JOIN relation_agg r ON c.guid = r.guid
+			JOIN user_agg u ON c.guid = u.guid
 			WHERE c.valid_currently AND NOT c.deleted
-			GROUP BY c.revision
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as OrganizationalUnitContainer[];
 	};
