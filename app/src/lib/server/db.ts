@@ -707,7 +707,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 					coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
 				FROM container c
 				LEFT JOIN container_user cu ON c.revision = cu.object
-				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+				WHERE ${sql.join(conditions, sql.fragment` AND `)}
 				GROUP BY c.revision
 			), relation_agg AS (
 				SELECT
@@ -715,14 +715,14 @@ export function getManyOrganizationalUnitContainers(filters: {
 					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
 				FROM container c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
-				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+				WHERE ${sql.join(conditions, sql.fragment` AND `)}
 				GROUP BY c.revision
 			)
 			SELECT c.*, r.relation, u.user
 			FROM container c
 			JOIN relation_agg r ON c.guid = r.guid
 			JOIN user_agg u ON c.guid = u.guid
-			WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
+			WHERE ${sql.join(conditions, sql.fragment` AND `)}
 			ORDER BY payload->>'level', payload->>'name';
 		`)) as OrganizationalUnitContainer[];
 	};
