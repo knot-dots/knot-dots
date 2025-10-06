@@ -26,6 +26,7 @@ import {
 	policyFieldBNK,
 	predicates,
 	programTypes,
+	type Relation,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -53,7 +54,7 @@ function findCopiedTargetGuid(
 	)?.guid as string;
 }
 
-function mapRelationsByPredicate<T extends { relation: any[]; guid: string }>(
+function mapRelationsByPredicate<T extends { relation: Relation[]; guid: string }>(
 	copyFrom: T,
 	opts: {
 		predicate: string;
@@ -90,7 +91,7 @@ async function copyGoalsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originalGoals: GoalContainer[],
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
 
@@ -142,7 +143,7 @@ async function copyTasksFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	for (const copyFrom of originals.filter(isTaskContainer)) {
 		const copy = createCopyOf(
@@ -177,7 +178,7 @@ async function copyIndicatorsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originals: Container[],
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	const measuredByObjects: IndicatorContainer[] = [];
 
@@ -227,7 +228,7 @@ async function copyEffectsFromOriginal(
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	indicators: IndicatorContainer[],
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	for (const copyFrom of originals.filter(isEffectContainer)) {
 		const copy = createCopyOf(
@@ -264,7 +265,7 @@ async function copySectionsFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	for (const copyFrom of originals.filter(({ guid, relation }) =>
 		relation.some(
