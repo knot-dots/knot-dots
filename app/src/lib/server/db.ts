@@ -701,28 +701,29 @@ export function getManyOrganizationalUnitContainers(filters: {
 		}
 
 		return (await connection.any(sql.typeAlias('organizationalUnitContainer')`
-			WITH user_agg AS (
+			WITH container_result AS (
+				SELECT c.*
+				FROM container c
+				WHERE ${sql.join(conditions, sql.fragment` AND `)}
+			), container_user_result AS (
 				SELECT
 					c.guid,
 					coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
-				FROM container c
+				FROM container_result c
 				LEFT JOIN container_user cu ON c.revision = cu.object
-				WHERE ${sql.join(conditions, sql.fragment` AND `)}
-				GROUP BY c.revision
-			), relation_agg AS (
+				GROUP BY c.guid
+			), container_relation_result AS (
 				SELECT
 					c.guid,
 					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
-				FROM container c
+				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
-				WHERE ${sql.join(conditions, sql.fragment` AND `)}
-				GROUP BY c.revision
+				GROUP BY c.guid
 			)
 			SELECT c.*, r.relation, u.user
-			FROM container c
-			JOIN relation_agg r ON c.guid = r.guid
-			JOIN user_agg u ON c.guid = u.guid
-			WHERE ${sql.join(conditions, sql.fragment` AND `)}
+			FROM container_result c
+			JOIN container_relation_result r ON c.guid = r.guid
+			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name';
 		`)) as OrganizationalUnitContainer[];
 	};
@@ -753,29 +754,30 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
 				WHERE c.valid_currently
-			), user_agg AS (
+			), container_result AS (
+				SELECT c.*
+				FROM (
+					 SELECT path FROM is_part_of_relation_down
+					 UNION
+					 SELECT path FROM is_part_of_relation_up
+				) AS p
+				JOIN container c ON c.guid = p.path[array_upper(p.path, 1)]
+				WHERE c.valid_currently AND NOT c.deleted
+			), container_user_result AS (
 				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
-				FROM container c
+				FROM container_result c
 				LEFT JOIN container_user cu ON c.revision = cu.object
-				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
-				GROUP BY c.revision
-			), relation_agg AS (
+				GROUP BY c.guid
+			), container_relation_result AS (
 				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
-				FROM container c
+				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
-				WHERE c.payload->>'type' = 'organizational_unit' AND c.valid_currently AND NOT c.deleted
-				GROUP BY c.revision
+				GROUP BY c.guid
 			)
 			SELECT c.*, r.relation, u.user
-			FROM (
-				SELECT path FROM is_part_of_relation_down
-				UNION
-				SELECT path FROM is_part_of_relation_up
-			) AS p
-			JOIN container c ON c.guid = p.path[array_upper(p.path, 1)]
-			JOIN relation_agg r ON c.guid = r.guid
-			JOIN user_agg u ON c.guid = u.guid
-			WHERE c.valid_currently AND NOT c.deleted
+			FROM container_result c
+			JOIN container_relation_result r ON c.guid = r.guid
+			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as OrganizationalUnitContainer[];
 	};
