@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import type { DatabaseConnection } from 'slonik';
+import type { CommonQueryMethods, DatabaseConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
@@ -21,6 +21,7 @@ import {
 	measureTypes,
 	type NewContainer,
 	newContainer,
+	type PartialRelation,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
@@ -37,6 +38,7 @@ import {
 	getManyContainers,
 	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
+import type { User } from '$lib/stores';
 import type { RequestHandler } from './$types';
 
 function findCopiedTargetGuid(
@@ -291,6 +293,64 @@ async function copySectionsFromOriginal(
 	}
 }
 
+async function copyMeasure(
+	createdContainer: MeasureContainer,
+	isCopyOfRelation: PartialRelation,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const containersRelatedToOriginal = filterVisible(
+		await getAllContainersRelatedToMeasure(isCopyOfRelation.object as string, {}, '')(txConnection),
+		user
+	);
+
+	const isPartOfObjects = await copyGoalsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal
+			.filter(isGoalContainer)
+			.filter(({ relation }) =>
+				relation.some(
+					({ predicate, object }) =>
+						predicate == predicates.enum['is-part-of'] && object == isCopyOfRelation.object
+				)
+			),
+		user.guid,
+		txConnection
+	);
+
+	await copyTasksFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		isPartOfObjects,
+		user.guid,
+		txConnection
+	);
+
+	const indicators = await copyIndicatorsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		user.guid,
+		txConnection
+	);
+
+	await copyEffectsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		isPartOfObjects,
+		indicators,
+		user.guid,
+		txConnection
+	);
+
+	await copySectionsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		isPartOfObjects,
+		user.guid,
+		txConnection
+	);
+}
+
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
@@ -430,60 +490,7 @@ export const POST = (async ({ locals, request }) => {
 				);
 
 				if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
-					const containersRelatedToOriginal = filterVisible(
-						await getAllContainersRelatedToMeasure(
-							isCopyOfRelation.object as string,
-							{},
-							''
-						)(txConnection),
-						locals.user
-					);
-
-					const isPartOfObjects = await copyGoalsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal
-							.filter(isGoalContainer)
-							.filter(({ relation }) =>
-								relation.some(
-									({ predicate, object }) =>
-										predicate == predicates.enum['is-part-of'] && object == isCopyOfRelation.object
-								)
-							),
-						locals.user.guid,
-						txConnection
-					);
-
-					await copyTasksFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						isPartOfObjects,
-						locals.user.guid,
-						txConnection
-					);
-
-					const indicators = await copyIndicatorsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						locals.user.guid,
-						txConnection
-					);
-
-					await copyEffectsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						isPartOfObjects,
-						indicators,
-						locals.user.guid,
-						txConnection
-					);
-
-					await copySectionsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						isPartOfObjects,
-						locals.user.guid,
-						txConnection
-					);
+					await copyMeasure(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				}
 
 				return createdContainer;
