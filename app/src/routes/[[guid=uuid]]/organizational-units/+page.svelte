@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import AdministrativeAreaCard from '$lib/components/AdministrativeAreaCard.svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -56,7 +57,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		<Catalog containers={data.containers} payloadType={[]}>
+		<Catalog containers={data.containers.slice(0, browser ? undefined : 20)} payloadType={[]}>
 			{#snippet item(container)}
 				<AdministrativeAreaCard {container} />
 			{/snippet}

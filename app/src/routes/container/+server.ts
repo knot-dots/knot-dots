@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import type { DatabaseConnection } from 'slonik';
+import type { CommonQueryMethods, DatabaseConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
@@ -16,32 +16,38 @@ import {
 	isGoalContainer,
 	isIndicatorContainer,
 	isMeasureContainer,
+	isProgramContainer,
 	isTaskContainer,
 	type MeasureContainer,
 	measureTypes,
 	type NewContainer,
 	newContainer,
+	type PartialRelation,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
+	type ProgramContainer,
 	programTypes,
+	type Relation,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
 } from '$lib/models';
 import {
 	createContainer,
+	createManyContainerRelations,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getManyContainers,
 	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
+import type { User } from '$lib/stores';
 import type { RequestHandler } from './$types';
 
-function findCopiedTargetGuid(
+function findCopiedTargetGuid<T extends AnyContainer>(
 	originalTargetGuid: string,
-	copied: Array<GoalContainer | MeasureContainer | IndicatorContainer>
+	copied: Array<GoalContainer | IndicatorContainer | T>
 ): string {
 	return copied.find(({ relation }) =>
 		relation.some(
@@ -51,44 +57,73 @@ function findCopiedTargetGuid(
 	)?.guid as string;
 }
 
-function mapRelationsByPredicate<T extends { relation: any[]; guid: string }>(
+function mapRelationsByPredicate<T extends { relation: Relation[]; guid: string }>(
 	copyFrom: T,
 	opts: {
 		predicate: string;
 		subjectMustBeSelf?: boolean;
 		resolveObject: (originalObjectGuid: string) => string;
+		resolveSubject?: (originalSubjectGuid: string) => string;
 	}
 ) {
-	const { predicate, subjectMustBeSelf = true, resolveObject } = opts;
+	const { predicate, subjectMustBeSelf = true, resolveObject, resolveSubject } = opts;
 
 	return copyFrom.relation
 		.filter(
 			({ predicate: p, subject }: { predicate: string; subject?: string }) =>
 				p === predicate && (!subjectMustBeSelf || subject === copyFrom.guid)
 		)
-		.map(
-			({
-				position,
-				predicate: p,
-				object: originalObjectGuid
-			}: {
-				position: number;
-				predicate: string;
-				object: string;
-			}) => ({
-				position,
-				predicate: p,
-				object: resolveObject(originalObjectGuid)
-			})
-		)
+		.map(({ position, predicate, object: originalObjectGuid, subject: originalSubjectGuid }) => ({
+			position,
+			predicate,
+			object: resolveObject(originalObjectGuid),
+			...(resolveSubject ? { subject: resolveSubject(originalSubjectGuid) } : undefined)
+		}))
 		.filter(({ object }) => object !== undefined);
+}
+
+async function copyMeasureFromOriginal<T extends AnyContainer>(
+	createdContainer: T,
+	originalMeasure: MeasureContainer,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const copy = createCopyOf(
+		originalMeasure,
+		createdContainer.organization,
+		createdContainer.organizational_unit
+	);
+
+	const copiedMeasure = (await createContainer({
+		...copy,
+		user: [{ predicate: predicates.enum['is-creator-of'], subject: user.guid }],
+		relation: [
+			...copy.relation,
+			{
+				object: createdContainer.guid,
+				predicate: predicates.enum['is-part-of-program'],
+				position:
+					originalMeasure.relation.find(
+						({ predicate }) => predicate === predicates.enum['is-part-of-program']
+					)?.position ?? 0
+			}
+		]
+	} as NewContainer)(txConnection)) as MeasureContainer;
+
+	const isCopyOfRelation = copiedMeasure.relation.find(
+		({ object, predicate }) => predicate === predicates.enum['is-copy-of'] && object !== undefined
+	);
+
+	await copyMeasure(copiedMeasure, isCopyOfRelation as PartialRelation, user, txConnection);
+
+	return copiedMeasure;
 }
 
 async function copyGoalsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originalGoals: GoalContainer[],
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
 
@@ -140,7 +175,7 @@ async function copyTasksFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	for (const copyFrom of originals.filter(isTaskContainer)) {
 		const copy = createCopyOf(
@@ -175,7 +210,7 @@ async function copyIndicatorsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originals: Container[],
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	const measuredByObjects: IndicatorContainer[] = [];
 
@@ -225,7 +260,7 @@ async function copyEffectsFromOriginal(
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	indicators: IndicatorContainer[],
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	for (const copyFrom of originals.filter(isEffectContainer)) {
 		const copy = createCopyOf(
@@ -258,11 +293,11 @@ async function copyEffectsFromOriginal(
 }
 
 async function copySectionsFromOriginal(
-	createdMeasure: MeasureContainer,
+	createdContainer: MeasureContainer | ProgramContainer,
 	originals: Container[],
-	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	isPartOfObjects: Array<GoalContainer | MeasureContainer | ProgramContainer>,
 	userGuid: string,
-	txConnection: any
+	txConnection: CommonQueryMethods
 ) {
 	for (const copyFrom of originals.filter(({ guid, relation }) =>
 		relation.some(
@@ -271,8 +306,8 @@ async function copySectionsFromOriginal(
 	)) {
 		const copy = createCopyOf(
 			copyFrom,
-			createdMeasure.organization,
-			createdMeasure.organizational_unit
+			createdContainer.organization,
+			createdContainer.organizational_unit
 		);
 
 		copy.relation.push(
@@ -289,6 +324,123 @@ async function copySectionsFromOriginal(
 
 		await createContainer(copy as NewContainer)(txConnection);
 	}
+}
+
+async function copyMeasure(
+	createdContainer: MeasureContainer,
+	isCopyOfRelation: PartialRelation,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const containersRelatedToOriginal = filterVisible(
+		await getAllContainersRelatedToMeasure(isCopyOfRelation.object as string, {}, '')(txConnection),
+		user
+	);
+
+	const isPartOfObjects = await copyGoalsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal
+			.filter(isGoalContainer)
+			.filter(({ relation }) =>
+				relation.some(
+					({ predicate, object }) =>
+						predicate == predicates.enum['is-part-of'] && object == isCopyOfRelation.object
+				)
+			),
+		user.guid,
+		txConnection
+	);
+
+	await copyTasksFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		isPartOfObjects,
+		user.guid,
+		txConnection
+	);
+
+	const indicators = await copyIndicatorsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		user.guid,
+		txConnection
+	);
+
+	await copyEffectsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		isPartOfObjects,
+		indicators,
+		user.guid,
+		txConnection
+	);
+
+	await copySectionsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		isPartOfObjects,
+		user.guid,
+		txConnection
+	);
+}
+
+async function copyProgram(
+	createdProgram: ProgramContainer,
+	isCopyOfRelation: PartialRelation,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const containersRelatedToOriginal = filterVisible(
+		await getAllContainersRelatedToProgram(isCopyOfRelation.object as string, {})(txConnection),
+		user
+	);
+
+	const originalParts = containersRelatedToOriginal
+		.filter(({ relation }) =>
+			relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+		)
+		.filter(({ guid }) => guid !== isCopyOfRelation.object);
+
+	const isPartOfObjects = [createdProgram] as AnyContainer[];
+
+	for (const copyFrom of originalParts) {
+		if (isMeasureContainer(copyFrom)) {
+			isPartOfObjects.push(
+				await copyMeasureFromOriginal(createdProgram, copyFrom, user, txConnection)
+			);
+		} else {
+			const copy = createCopyOf(
+				copyFrom,
+				createdProgram.organization,
+				createdProgram.organizational_unit
+			);
+
+			copy.relation.push({
+				object: createdProgram.guid,
+				predicate: predicates.enum['is-part-of-program'],
+				position:
+					copyFrom.relation.find(
+						({ predicate }) => predicate === predicates.enum['is-part-of-program']
+					)?.position ?? 0
+			});
+
+			isPartOfObjects.push(await createContainer(copy as NewContainer)(txConnection));
+		}
+	}
+
+	const relations = [];
+
+	for (const copyFrom of containersRelatedToOriginal) {
+		relations.push(
+			...(mapRelationsByPredicate(copyFrom, {
+				predicate: predicates.enum['is-part-of'],
+				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects),
+				resolveSubject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
+			}).filter(({ subject }) => subject !== undefined) as Relation[])
+		);
+	}
+
+	await createManyContainerRelations(relations)(txConnection);
 }
 
 export const GET = (async ({ locals, url }) => {
@@ -430,60 +582,9 @@ export const POST = (async ({ locals, request }) => {
 				);
 
 				if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
-					const containersRelatedToOriginal = filterVisible(
-						await getAllContainersRelatedToMeasure(
-							isCopyOfRelation.object as string,
-							{},
-							''
-						)(txConnection),
-						locals.user
-					);
-
-					const isPartOfObjects = await copyGoalsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal
-							.filter(isGoalContainer)
-							.filter(({ relation }) =>
-								relation.some(
-									({ predicate, object }) =>
-										predicate == predicates.enum['is-part-of'] && object == isCopyOfRelation.object
-								)
-							),
-						locals.user.guid,
-						txConnection
-					);
-
-					await copyTasksFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						isPartOfObjects,
-						locals.user.guid,
-						txConnection
-					);
-
-					const indicators = await copyIndicatorsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						locals.user.guid,
-						txConnection
-					);
-
-					await copyEffectsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						isPartOfObjects,
-						indicators,
-						locals.user.guid,
-						txConnection
-					);
-
-					await copySectionsFromOriginal(
-						createdContainer,
-						containersRelatedToOriginal,
-						isPartOfObjects,
-						locals.user.guid,
-						txConnection
-					);
+					await copyMeasure(createdContainer, isCopyOfRelation, locals.user, txConnection);
+				} else if (isCopyOfRelation && isProgramContainer(createdContainer)) {
+					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				}
 
 				return createdContainer;

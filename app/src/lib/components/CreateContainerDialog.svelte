@@ -104,6 +104,8 @@
 
 	function init(element: HTMLElement) {
 		element.focus();
+		element.style.height = 'auto';
+		element.style.height = `${element.scrollHeight}px`;
 	}
 </script>
 
