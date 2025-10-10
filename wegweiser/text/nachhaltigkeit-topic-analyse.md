@@ -1,6 +1,7 @@
 # Wegweiser Kommune - "Nachhaltigkeit / SDGs" Thema Analyse
 
 **Entdeckt:** 2025-08-08  
+**Aktualisiert:** 2025-08-27  
 **API-Pfad:** `/rest/topic/get/nachhaltigkeit`  
 **Offizielle Bezeichnung:** "Nachhaltigkeit / SDGs"
 
@@ -8,12 +9,12 @@
 
 ✅ **Das Nachhaltigkeit-Thema existiert!** - Es war in der API vorhanden, aber nur über spezifische URL auffindbar  
 📊 **53 SDG-relevante Indikatoren** explizit als "Nachhaltigkeit / SDGs" kategorisiert  
-🇩🇪 **Deutsche SDG-Interpretation** mit Fokus auf kommunale Nachhaltigkeitsindikatoren  
-🎪 **Vollständige Abdeckung** der UN SDG-Themenbereiche in kommunaler Ausprägung
+🇩🇪 **Deutsche SDG-Interpretation** mit Fokus auf kommunale Nachhaltigkeitsindikatoren    
+⚠️ **KEINE expliziten SDG-Metadaten** - API liefert nur Themen-Kategorisierung, SDG-Zuordnung erfolgt durch Interpretation
 
 ## 📊 Vollständige Indikatorenliste (53 Indikatoren)
 
-### SDG-Mapping der Nachhaltigkeit-Indikatoren
+### SDG-Mapping der Nachhaltigkeit-Indikatoren - Mapping durch CLAUDE, nicht aus der API!
 
 | SDG | Thema | Anzahl | Beispiel-Indikatoren |
 |-----|-------|--------|---------------------|
@@ -105,77 +106,90 @@
 - "je Einwohner:in": Euro, Kilowatt, Liter/Tag, Tonnen
 - "je 1.000 Einwohner:innen": Straftaten, Verunglückte, etc.
 
-## 🔄 knot-dots Integration
+## 🔬 API-Struktur und SDG-Metadaten
 
-### Automatische SDG-Zuordnung
-```typescript
-const sustainabilitySDGMapping = {
-  // Direkte Zuordnung für Nachhaltigkeit-Thema
-  'Nachhaltigkeit / SDGs': (indicator: WegweiserIndicator) => {
-    const name = indicator.name.toLowerCase();
-    
-    // Schlüsselwort-basierte Zuordnung
-    if (name.includes('armut') || name.includes('sgb')) return ['sdg.01'];
-    if (name.includes('sterblich') || name.includes('gesundheit')) return ['sdg.03'];
-    if (name.includes('schul') || name.includes('bildung')) return ['sdg.04'];
-    if (name.includes('frauen') || name.includes('geschlecht')) return ['sdg.05'];
-    if (name.includes('wasser')) return ['sdg.06'];
-    if (name.includes('energie') || name.includes('strom')) return ['sdg.07'];
-    if (name.includes('beschäftig') || name.includes('arbeit')) return ['sdg.08'];
-    if (name.includes('breitband')) return ['sdg.09'];
-    if (name.includes('integration') || name.includes('ausländer')) return ['sdg.10'];
-    if (name.includes('wohn') || name.includes('verkehr') || name.includes('fläche')) return ['sdg.11'];
-    if (name.includes('abfall')) return ['sdg.12'];
-    if (name.includes('elektro') || name.includes('überschwemm')) return ['sdg.13'];
-    if (name.includes('natur') || name.includes('landschaft')) return ['sdg.15'];
-    if (name.includes('straftat')) return ['sdg.16'];
-    if (name.includes('steuer') || name.includes('finanz')) return ['sdg.17'];
-    
-    return ['sdg.11']; // Default: Nachhaltige Städte
-  }
-};
+### Verfügbare Kategorisierungen in der API
+
+**✅ Was die API liefert:**
+1. **Topics/Themen** (`/rest/topic/list`, `/rest/topic/get/{friendlyUrl}`)
+   - Beispiele: "Nachhaltigkeit / SDGs", "Beschäftigung / Arbeitsmarkt", "Demografische Entwicklung"
+   - Themen können hierarchische Unterthemen haben
+   - Jeder Indikator ist einem oder mehreren Themen zugeordnet
+
+2. **Topic Sets** (`/rest/topic/sets`)
+   - Übergeordnete Gruppierung von Themen
+   - Beispiel: "Ist-Daten", "Prognose-Daten"
+
+3. **Statistik-Typen** (`/rest/statistics/types`)
+   - Technische Kategorisierung nach Datentyp
+   - Beispiele: `COMMUNAL_DATA`, `POPULATION_FORECAST`, `AGE_STRUCTURE`
+
+**❌ Was die API NICHT liefert:**
+- **Keine SDG-Kategorien** (17 UN-SDGs sind keine API-Kategorien)
+- Keine SDG-Nummern oder -Namen in Indikator-Objekten
+- Keine UN-SDG-Metadaten, Links oder Beschreibungen
+- Keine thematische Untergliederung innerhalb "Nachhaltigkeit / SDGs"
+
+### Flache Struktur des Nachhaltigkeits-Themas
+
+```json
+{
+  "name": "Nachhaltigkeit / SDGs",
+  "indicators": [
+    // Alle 53 Indikatoren in einer flachen Liste
+    // OHNE weitere SDG-Unterkategorisierung
+  ]
+}
 ```
 
-### Hochwertige SDG-Indikatoren für knot-dots
-```typescript
-const premiumSDGIndicators = [
-  // Multi-SDG Indikatoren (höchste Priorität)
-  {
-    name: 'Verhältnis der Beschäftigungsquote von Frauen und Männern',
-    sdgs: ['sdg.05', 'sdg.08'],
-    confidence: 'high'
-  },
-  {
-    name: 'Integrative Kindertageseinrichtungen', 
-    sdgs: ['sdg.04', 'sdg.10'],
-    confidence: 'high'
-  },
-  
-  // Deutsche SDG-Spezialitäten  
-  {
-    name: 'Wohnungsnahe Grundversorgung - Hausarzt',
-    sdgs: ['sdg.03', 'sdg.11'],
-    confidence: 'high',
-    note: 'Deutsches Konzept der Daseinsvorsorge'
-  }
-];
+**Konsequenz:** Die 53 SDG-Indikatoren sind als **ein einheitliches Thema** kategorisiert, nicht nach den 17 UN-SDGs strukturiert. Die SDG-Zuordnung muss durch **externe Interpretation** der Indikator-Namen erfolgen.
+
+## 🧪 Testdatensatz: Lemgo SDG-Indikatoren
+
+### Erstellter Testdatensatz
+**Datei:** `/wegweiser/testdata/lemgo-sdg-indikatoren-2023.json`  
+**Erstellt:** 2025-08-27
+
+**Lemgo-Datenübersicht:**
+- **Region-ID:** 1874 (Lemgo, Landkreis Lippe)
+- **47 SDG-Indikatoren total** im Nachhaltigkeits-Thema
+- **32 Indikatoren mit Daten** für Lemgo verfügbar
+- **15 Datenlücken** (meist nur auf Kreisebene verfügbar)
+- **Zeitraum:** 2021-2023
+
+### Datenstruktur (mit manueller SDG-Zuordnung)
+```json
+{
+  "indicators": [
+    {
+      "id": 202,
+      "name": "SGB II-/SGB XII-Quote", 
+      "friendlyUrl": "sgb-ii-sgb-xii-quote",
+      "sdg": "01",                    // ← MANUELL HINZUGEFÜGT
+      "sdg_name": "Keine Armut",     // ← MANUELL HINZUGEFÜGT
+      "unit": "%",
+      "values": {
+        "2023": 8.0,
+        "2022": 8.1, 
+        "2021": 7.7
+      },
+      "range": {
+        "min": 7.7,
+        "max": 9.6
+      }
+    }
+  ]
+}
 ```
 
-## 📈 Bedeutung für deutsche Nachhaltigkeitsberichterstattung
-
-### Kommunale Ebene als SDG-Labor
-Die 53 Nachhaltigkeit-Indikatoren zeigen: **Deutsche Kommunen sind SDG-Vorreiter** bei:
-
-1. **Sozialer Nachhaltigkeit** - Umfassende Armuts-/Bildungs-/Gesundheitsindikatoren
-2. **Räumlicher Nachhaltigkeit** - Erreichbarkeit als Lebensqualitätsfaktor  
-3. **Demografischer Nachhaltigkeit** - Alterung als Querschnittsthema
-4. **Fiskalischer Nachhaltigkeit** - Kommunale Handlungsfähigkeit
-
-### Internationale Einordnung
-**Stärken:** Präzise, kleinräumige Sozialindikatoren  
-**Schwächen:** Wenig Klimaschutz, keine globale Perspektive  
-**Besonderheit:** "Daseinsvorsorge" als deutsches Nachhaltigkeitskonzept
+### Erkenntnisse aus Lemgo-Daten
+- **Vollständige Zeitreihen** für die meisten Indikatoren verfügbar
+- **Datenlücken dokumentiert** mit Begründung (meist "Auf Landkreisebene verfügbar")
+- **Automatische SDG-Zuordnung funktioniert** basierend auf Indikator-Namen
+- **Min/Max-Ranges** liefern Kontext für Bewertung der Werte
 
 ---
 
 **Fazit:** Das "Nachhaltigkeit / SDGs"-Thema in Wegweiser Kommune ist ein **hochqualitatives Set von 53 SDG-relevanten Indikatoren**, das deutsche Kommunen als Nachhaltigkeits-Akteure positioniert. Für knot-dots bietet es eine direkte Brücke zu international anerkannten Nachhaltigkeitszielen bei gleichzeitiger Bewahrung deutscher Spezifika wie Daseinsvorsorge und demografiebewusster Sozialpolitik.
+
+**⚠️ Wichtiger Hinweis:** Die API liefert **keine expliziten SDG-Metadaten**. Alle SDG-Zuordnungen müssen client-seitig durch Analyse der Indikator-Namen erfolgen, wie im automatischen Mapping-Code demonstriert.

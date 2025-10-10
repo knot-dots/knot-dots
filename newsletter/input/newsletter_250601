@@ -1,0 +1,63 @@
+
+Liebe knotdots Gemeinschaft
+
+Wir haben gute Neuigkeiten zu verkünden! In den letzten Wochen und Monaten haben wir im Hintergrund geschaltet und gewaltet, um die Idee von knotdots weiter zu verbreiten und gleichzeitig intensiv tiefgreifende Weiterentwicklungen umgesetzt. Teilweise hängen diese Updates voneinander ab, weshalb wir länger nichts mehr von uns haben hören lassen, nun können wir euch aber endlich den ersten Schwung an Neuerungen vorstellen! 
+
+In den kommenden Wochen werden nach und nach weitere große Updates released, die die kurz vor der Fertigstellung sind, aber gerade noch auf Herz und Nieren getestet werden. Wie jetzt auch, kündigen wir euch die kommenden Funktionen immer per Mail an und erklären im Detail, worauf ihr euch in der Plattform freuen dürft.
+
+Wir laden euch darüber hinaus herzlich ein, an unserem nächsten Review- und Austauschtreffen „Netzwerk Strategiewissen“ teilzunehmen, wo wir alle bis dahin entwickelten Features live im Tool vorstellen und einen euch Ausblick auf die kommenden Updates geben werden.
+
+Online-Treffen "Netzwerk Strategiewissen“ - am Dienstag, den 17.06. um 9:00 Uhr. Freies Format, kommt gerne auch nur zu dem Teil des Termins, der für euch besonders relevant ist. 
+9:00 Live-Vorstellung aller Weiterentwicklungen im Tool
+9:30 Offene Frage- und Austauschrunde - Dauer nach Bedarf
+
+https://us06web.zoom.us/j/85602816799?pwd=JHyB3oYHa4wv5hzXthPrtKlyjFSEDk.1
+
+
+
+Neuigkeiten
+
+Flexible Zielebenen und Ziel-Bezeichnungen
+Die Praxis hat uns gezeigt, dass ein flexiblerer Umgang mit dem Aufbau von Strategien notwendig ist, um wirklich alle relevanten Inhalte und Beziehungen aus den unterschiedlichen Strategien und Programmen darstellen zu können. Daher haben wir die bisherige, starre und einheitliche Ebenenstruktur (langfristige Ziele, strategische Ziele, messbare Ziele) aufgelöst. Ab sofort können Ziele flexibel einer Zielebenen zugewiesen und benannt werden. Die Ebene der Ziele und ihre Bezeichnung kann jetzt auch im Nachhinein geändert werden. Keine Sorge, die bereits angelegten Strategien bleiben so erhalten, wie sie bisher dargestellt wurden.
+
+Methodenübergreifende Umsetzungsplanung
+Bishe4r hat knotdots.net sehr stark vorgegeben, mit welchen Methoden die Umsetzungsplanung von Maßnahmen gesteuert werden kann. Da wir keine Methode finden konnten (IOOI, OKR, KPI oder Meilensteine), die für alle Nutzer*innen die richtige ist, gehen wir in der Umsetzungsplanung jetzt ähnlich vor, wie bei den oben beschriebenen Zielebenen. In jeder Maßnahme kann frei gewählt werden, mit welcher Methode gearbeitet werden soll, knotdots.net richtet die Arbeitsbereiche automatisch richtig ein. Auch die übergeordneten Bereiche für das Maßnahmen-Monitoring auf Programm- und Organisationsebene richten sich immer so ein, dass das Monitoring von mehreren Maßnahmen auch bei unterschiedlichen Methoden in einer Darstellung möglich ist. 
+
+Neue Status und weitere Schlagwörter
+In Maßnahmen, Beschlüssen und Aufgaben haben wir den zusätzlichen Status „Verworfen“ eingeführt, um Planungsaktivitäten besser nachvollziehen / abbilden zu können.
+Als Mitarbeiter*in kann ich Inhalte mit einem Redaktionsstatus versehen, um deren Qualifizierung zu organisieren
+Wir haben die BNK 2.0 Themenfelder ergänzt, für alle Städte, die als Bezugsrahmen die aktuelle Version des Berichtsrahmens Nachhaltige Kommune verwenden
+Unter „Wirkungsbereich“ können nun mehr und treffendere Kategorien ausgewählt werden: „Richtet sich an“ -> Verwaltung, Bürgerschaft, gesamte Stadtgesellschaft, Unternehmen, Zivilbevölkerung inkl. NGOs, Vereine
+ 
+Ausbau der „Anderen Beziehungen“ 
+In knotdots.net können wir verschiedene Arten von Beziehungen darstellen. In jedem Objekt gibt es nun einen direkten Zugang, alle zugeordneten strategieübergreifenden Beziehungen durch einen Klick in die neue Beziehungen- Karussellansicht anzuzeigen und dort direkt weitere Beziehungen anzulegen.
+
+Neuerungen im eigenen Nutzerprofil
+Aufgaben, die auf der Übersichtsseite im Karussell dargestellt sind, sind ab sofort nach Fälligkeitsdatum sortiert, um meine aktuell wichtigsten Aufgaben, über alle Maßnahmen und Organisationsbereiche hinweg, auf einen Blick sehen zu können
+Das Maßnahmen-Status-Board wurde als neuer Arbeitsbereich in der Nutzer*innenprofil aufgenommen - hier kann man besonders als Verantwortliche*r vieler Maßnahmen einen schnellen Zugang zu allen Maßnahmen finden.
+
+Neuerungen bezüglich Strategien
+In allen Programmen gibt es den neuen Arbeitsbereich „Maßnahmenmonitoring“, um Strategiebezogenes Maßnahmenmonitoring durchführen zu können
+Maßnahmen und Ziele können per Tabellenupload hochgeladen werden. Aktuell ist das nur für uns als Sys-Admins möglich, sprecht uns gerne an. 
+Bugfix: Die alphabetische Sortierung z.B. im dots-Board berücksichtigt (endlich) auch einstellige Zahlen
+
+Neuerungen in Indikatoren
+Bezogen auf die Entwicklung eines Indikators können in knotdots.net Gesamtziele oder Teilziele innerhalb von Strategien angegeben werden, die automatisch kumuliert werden. Mithilfe eines neuen Arbeitsbereichs für Wirkungsebenen können die gewünschten Entwicklungen in Zielen strategie- und organisationsübergreifend feingesteuert werden.
+Als ersten Schritt in Richtung der Darstellung von Wirkungsketten haben wir es ermöglicht, Wirkungsbeziehungen zwischen den Indikatoren anzugeben, die in einer Organisationseinheit bereits verwendet werden.
+Bugfix: Datenzeilen in den Basisdaten von Indikatoren, deren gewünschter Entwicklung oder geplanter Wirkung können nun nicht nur hinzugefügt, sondern auch entfernt werden
+
+Neuerungen in Aufgaben
+Es können nun Beziehungen zwischen Aufgaben angelegt werden, um z.B. Epic Stories und Teilaufgaben darstellen zu können
+Aufgaben können nun mehreren Nutzer*innen zugewiesen werden.
+In Aufgaben können als zusätzliche Felder nun eine Aufwands- und Nutzenseinschätzung angegeben werden
+Das Aufgabenstatusboard in Organisationen oder Maßnahmen kann nun mithilfe des Beziehungsbuttons nach übergeordneten Objekten gefiltert werden (z.B. nach Meilensteinen oder OKRs)
+
+
+Wir sind gespannt auf eure Reaktionen und euer Feedback gegenüber den neuen Features und freuen uns auf eine rege Teilnahme bei der Review am 17.06. :) Wir freuen uns zwar über eine kurze Bekundung des Teilnahmeinteresses, schaltet euch aber gerne auch spontan dazu. 
+
+
+Bei Rückmeldungen, Wünschen oder Fragen, kommt wie immer gerne auf uns zurück. 
+Herzliche Grüße
+
+Euer knotdots Team
+

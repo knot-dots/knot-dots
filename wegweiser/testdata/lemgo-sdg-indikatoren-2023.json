@@ -1,0 +1,791 @@
+{
+  "meta": {
+    "generatedAt": "2025-08-27T10:00:00Z",
+    "description": "SDG-Indikatoren für Stadt Lemgo aus Wegweiser Kommune API",
+    "source": "https://www.wegweiser-kommune.de/data-api/",
+    "region": {
+      "friendlyUrl": "lemgo",
+      "name": "Lemgo",
+      "title": "Lemgo (im Landkreis Lippe)",
+      "id": 1874,
+      "ags": "05766044",
+      "ars": "057660044044",
+      "type": "GEMEINDE",
+      "demographicType": 5,
+      "parent": "Lippe, Landkreis"
+    },
+    "years": [2023, 2022, 2021],
+    "totalIndicators": 47,
+    "availableIndicators": 32,
+    "dataGaps": 15
+  },
+  "indicators": [
+    {
+      "id": 202,
+      "name": "SGB II-/SGB XII-Quote",
+      "friendlyUrl": "sgb-ii-sgb-xii-quote",
+      "sdg": "01",
+      "sdg_name": "Keine Armut",
+      "unit": "%",
+      "values": {
+        "2023": 8.0,
+        "2022": 8.1,
+        "2021": 7.7
+      },
+      "range": {
+        "min": 7.7,
+        "max": 9.6
+      }
+    },
+    {
+      "id": 181,
+      "name": "Kinderarmut",
+      "friendlyUrl": "kinderarmut",
+      "sdg": "01",
+      "sdg_name": "Keine Armut",
+      "unit": "%",
+      "values": {
+        "2023": 10.2,
+        "2022": 10.8,
+        "2021": 10.1
+      },
+      "range": {
+        "min": 10.1,
+        "max": 14.9
+      }
+    },
+    {
+      "id": 182,
+      "name": "Jugendarmut",
+      "friendlyUrl": "jugendarmut",
+      "sdg": "01",
+      "sdg_name": "Keine Armut",
+      "unit": "%",
+      "values": {
+        "2023": 8.3,
+        "2022": 8.8,
+        "2021": 8.8
+      },
+      "range": {
+        "min": 7.9,
+        "max": 11.1
+      }
+    },
+    {
+      "id": 183,
+      "name": "Altersarmut",
+      "friendlyUrl": "altersarmut",
+      "sdg": "01",
+      "sdg_name": "Keine Armut",
+      "unit": "%",
+      "values": {
+        "2023": 3.9,
+        "2022": 4.0,
+        "2021": 3.7
+      },
+      "range": {
+        "min": 2.1,
+        "max": 4.0
+      }
+    },
+    {
+      "id": 208,
+      "name": "Vorzeitige Sterblichkeit - Gesamt",
+      "friendlyUrl": "vorzeitige-sterblichkeit-gesamt",
+      "sdg": "03",
+      "sdg_name": "Gesundheit und Wohlergehen",
+      "unit": "Todesfälle je 1.000 Einwohner:innen",
+      "values": {
+        "2023": 2.6,
+        "2022": 2.8,
+        "2021": 3.1
+      },
+      "range": {
+        "min": 2.6,
+        "max": 3.1
+      }
+    },
+    {
+      "id": 299,
+      "name": "Wohnungsnahe Grundversorgung - Apotheke",
+      "friendlyUrl": "wohnungsnahe-grundversorgung-apotheke",
+      "sdg": "03",
+      "sdg_name": "Gesundheit und Wohlergehen",
+      "unit": "Meter",
+      "values": {
+        "2021": 1584.0
+      },
+      "range": {
+        "min": 1584.0,
+        "max": 1584.0
+      }
+    },
+    {
+      "id": 301,
+      "name": "Wohnungsnahe Grundversorgung - Hausarzt",
+      "friendlyUrl": "wohnungsnahe-grundversorgung-hausarzt",
+      "sdg": "03",
+      "sdg_name": "Gesundheit und Wohlergehen",
+      "unit": "Meter",
+      "values": {
+        "2021": 1239.0
+      },
+      "range": {
+        "min": 1239.0,
+        "max": 1239.0
+      }
+    },
+    {
+      "id": 273,
+      "name": "Luftschadstoffbelastung",
+      "friendlyUrl": "luftschadstoffbelastung",
+      "sdg": "03",
+      "sdg_name": "Gesundheit und Wohlergehen",
+      "unit": "μg / m³",
+      "values": {
+        "2023": 7.24,
+        "2022": 8.5,
+        "2021": 8.97
+      },
+      "range": {
+        "min": 7.24,
+        "max": 14.26
+      }
+    },
+    {
+      "id": 300,
+      "name": "Wohnungsnahe Grundversorgung - Grundschule",
+      "friendlyUrl": "wohnungsnahe-grundversorgung-grundschule",
+      "sdg": "04",
+      "sdg_name": "Hochwertige Bildung",
+      "unit": "Meter",
+      "values": {
+        "2021": 1060.0
+      },
+      "range": {
+        "min": 1060.0,
+        "max": 1070.0
+      }
+    },
+    {
+      "id": 212,
+      "name": "Schulabgänger:innen allgmb. Schulen ohne Hauptschulabschluss - Gesamt",
+      "friendlyUrl": "schulabgaenger-ohne-hauptschulabschluss-gesamt",
+      "sdg": "04",
+      "sdg_name": "Hochwertige Bildung",
+      "unit": "%",
+      "values": {
+        "2023": 2.6,
+        "2022": 1.8,
+        "2021": 1.7
+      },
+      "range": {
+        "min": 0.9,
+        "max": 2.6
+      }
+    },
+    {
+      "id": 226,
+      "name": "Unter 3-Jährige in Tageseinrichtungen",
+      "friendlyUrl": "unter-3-jaehrige-in-tageseinrichtungen",
+      "sdg": "04",
+      "sdg_name": "Hochwertige Bildung",
+      "unit": "%",
+      "values": {
+        "2023": 18.5,
+        "2022": 18.9,
+        "2021": 18.8
+      },
+      "range": {
+        "min": 11.3,
+        "max": 21.4
+      }
+    },
+    {
+      "id": 161,
+      "name": "Verhältnis der Beschäftigungsquote von Frauen und Männern",
+      "friendlyUrl": "verhaeltnis-der-beschaeftigungsquote-von-frauen-und-maennern",
+      "sdg": "05",
+      "sdg_name": "Geschlechtergleichheit",
+      "unit": "%",
+      "values": {
+        "2023": 88.1,
+        "2022": 87.4,
+        "2021": 87.9
+      },
+      "range": {
+        "min": 82.0,
+        "max": 89.4
+      }
+    },
+    {
+      "id": 205,
+      "name": "Strom aus erneuerbaren Quellen",
+      "friendlyUrl": "strom-aus-erneuerbaren-quellen",
+      "sdg": "07",
+      "sdg_name": "Bezahlbare und saubere Energie",
+      "unit": "kW je Einwohner:in",
+      "values": {
+        "2023": 0.7,
+        "2021": 0.48
+      },
+      "range": {
+        "min": 0.08,
+        "max": 0.7
+      }
+    },
+    {
+      "id": 199,
+      "name": "Ladesäuleninfrastruktur",
+      "friendlyUrl": "ladesaeuleninfrastruktur",
+      "sdg": "07",
+      "sdg_name": "Bezahlbare und saubere Energie",
+      "unit": "Ladepunkte je Einwohner:in",
+      "values": {
+        "2023": 1.33,
+        "2022": 0.71,
+        "2021": 0.59
+      },
+      "range": {
+        "min": 0.05,
+        "max": 1.33
+      }
+    },
+    {
+      "id": 200,
+      "name": "Langzeitarbeitslosenquote",
+      "friendlyUrl": "langzeitarbeitslosenquote",
+      "sdg": "08",
+      "sdg_name": "Menschenwürdige Arbeit und Wirtschaftswachstum",
+      "unit": "%",
+      "values": {
+        "2023": 1.9,
+        "2022": 1.9,
+        "2021": 2.4
+      },
+      "range": {
+        "min": 1.9,
+        "max": 3.7
+      }
+    },
+    {
+      "id": 159,
+      "name": "Beschäftigungsquote",
+      "friendlyUrl": "beschaeftigungsquote",
+      "sdg": "08",
+      "sdg_name": "Menschenwürdige Arbeit und Wirtschaftswachstum",
+      "unit": "%",
+      "values": {
+        "2023": 66.0,
+        "2022": 65.8,
+        "2021": 65.1
+      },
+      "range": {
+        "min": 50.1,
+        "max": 66.0
+      }
+    },
+    {
+      "id": 153,
+      "name": "Beschäftigungsquote 55- bis 64-Jährige",
+      "friendlyUrl": "beschaeftigungsquote-55-bis-64-jaehrige",
+      "sdg": "08",
+      "sdg_name": "Menschenwürdige Arbeit und Wirtschaftswachstum",
+      "unit": "%",
+      "values": {
+        "2023": 63.3,
+        "2022": 62.2,
+        "2021": 61.3
+      },
+      "range": {
+        "min": 36.1,
+        "max": 63.3
+      }
+    },
+    {
+      "id": 15,
+      "name": "Erwerbstätige Aufstocker:innen - Gesamt",
+      "friendlyUrl": "aufstocker-gesamt",
+      "sdg": "08",
+      "sdg_name": "Menschenwürdige Arbeit und Wirtschaftswachstum",
+      "unit": "%",
+      "values": {
+        "2023": 22.0,
+        "2022": 22.1,
+        "2021": 26.4
+      },
+      "range": {
+        "min": 22.0,
+        "max": 33.7
+      }
+    },
+    {
+      "id": 198,
+      "name": "Existenzgründungen",
+      "friendlyUrl": "existenzgruendungen",
+      "sdg": "08",
+      "sdg_name": "Menschenwürdige Arbeit und Wirtschaftswachstum",
+      "unit": "Neuerrichtungen je 1.000 Einwohner:innen",
+      "values": {
+        "2023": 6.9,
+        "2022": 6.8
+      },
+      "range": {
+        "min": 6.2,
+        "max": 8.3
+      }
+    },
+    {
+      "id": 158,
+      "name": "Hochqualifizierte am Arbeitsort",
+      "friendlyUrl": "hochqualifizierte-am-arbeitsort",
+      "sdg": "08",
+      "sdg_name": "Menschenwürdige Arbeit und Wirtschaftswachstum",
+      "unit": "%",
+      "values": {
+        "2023": 13.1,
+        "2022": 12.7,
+        "2021": 12.5
+      },
+      "range": {
+        "min": 8.9,
+        "max": 13.1
+      }
+    },
+    {
+      "id": 296,
+      "name": "Breitbandversorgung - Private Haushalte",
+      "friendlyUrl": "breitbandversorgung-private-haushalte",
+      "sdg": "09",
+      "sdg_name": "Industrie, Innovation und Infrastruktur",
+      "unit": "%",
+      "values": {
+        "2022": 90.1,
+        "2021": 90.9
+      },
+      "range": {
+        "min": 75.7,
+        "max": 90.9
+      }
+    },
+    {
+      "id": 206,
+      "name": "Verhältnis der Beschäftigungsquote von Ausländer:innen zur Beschäftigungsquote gesamt",
+      "friendlyUrl": "verhaltnis-beschaftigungsquote-von-auslandern-zur-beschaftigungsquote-gesamt",
+      "sdg": "10",
+      "sdg_name": "Weniger Ungleichheiten",
+      "unit": "%",
+      "values": {
+        "2023": 70.5,
+        "2022": 65.1,
+        "2021": 73.4
+      },
+      "range": {
+        "min": 49.7,
+        "max": 73.4
+      }
+    },
+    {
+      "id": 270,
+      "name": "Verhältnis der Schulabbrecher:innenquote von Ausländer:innen zur Schulabbrecher:innenquote gesamt",
+      "friendlyUrl": "verhaltnis-schulabbrecherquote-von-auslandern-zu-schulabbrecherquote-gesamt",
+      "sdg": "10",
+      "sdg_name": "Weniger Ungleichheiten",
+      "unit": "%",
+      "values": {
+        "2023": 433.3,
+        "2022": 925.0,
+        "2021": 842.9
+      },
+      "range": {
+        "min": 433.3,
+        "max": 925.0
+      }
+    },
+    {
+      "id": 36,
+      "name": "Eingebürgerte im Jahr",
+      "friendlyUrl": "eingebuergerte-im-jahr",
+      "sdg": "10",
+      "sdg_name": "Weniger Ungleichheiten",
+      "unit": "%",
+      "values": {
+        "2023": 5.2,
+        "2022": 1.9,
+        "2021": 0.9
+      },
+      "range": {
+        "min": 0.8,
+        "max": 5.2
+      }
+    },
+    {
+      "id": 151,
+      "name": "Wohnfläche pro Person",
+      "friendlyUrl": "wohnflaeche-pro-person",
+      "sdg": "11",
+      "sdg_name": "Nachhaltige Städte und Gemeinden",
+      "unit": "m²",
+      "values": {
+        "2023": 47.5,
+        "2022": 46.8,
+        "2021": 46.9
+      },
+      "range": {
+        "min": 40.3,
+        "max": 47.5
+      }
+    },
+    {
+      "id": 302,
+      "name": "Wohnungsnahe Grundversorgung - Supermarkt",
+      "friendlyUrl": "wohnungsnahe-grundversorgung-supermarkt",
+      "sdg": "11",
+      "sdg_name": "Nachhaltige Städte und Gemeinden",
+      "unit": "Meter",
+      "values": {
+        "2021": 1164.0
+      },
+      "range": {
+        "min": 1164.0,
+        "max": 1164.0
+      }
+    },
+    {
+      "id": 207,
+      "name": "Verunglückte im Verkehr",
+      "friendlyUrl": "verunglueckte-im-verkehr",
+      "sdg": "11",
+      "sdg_name": "Nachhaltige Städte und Gemeinden",
+      "unit": "Verunglückte je 1.000 Einwohner:innen",
+      "values": {
+        "2023": 3.7,
+        "2022": 4.3,
+        "2021": 3.9
+      },
+      "range": {
+        "min": 2.9,
+        "max": 4.3
+      }
+    },
+    {
+      "id": 268,
+      "name": "Flächeninanspruchnahme",
+      "friendlyUrl": "flaecheninanspruchnahme",
+      "sdg": "11",
+      "sdg_name": "Nachhaltige Städte und Gemeinden",
+      "unit": "%",
+      "values": {
+        "2023": 21.9,
+        "2022": 21.8,
+        "2021": 21.8
+      },
+      "range": {
+        "min": 20.5,
+        "max": 21.9
+      }
+    },
+    {
+      "id": 266,
+      "name": "Flächenneuinanspruchnahme",
+      "friendlyUrl": "flaechenneuinanspruchnahme",
+      "sdg": "11",
+      "sdg_name": "Nachhaltige Städte und Gemeinden",
+      "unit": "%",
+      "values": {
+        "2023": 0.11,
+        "2022": 0.07,
+        "2021": 0.03
+      },
+      "range": {
+        "min": 0.03,
+        "max": 0.35
+      }
+    },
+    {
+      "id": 267,
+      "name": "Flächennutzungsintensität",
+      "friendlyUrl": "flaechennutzungsintensitaet",
+      "sdg": "11",
+      "sdg_name": "Nachhaltige Städte und Gemeinden",
+      "unit": "qm/Einwohner:in",
+      "values": {
+        "2023": 546.0,
+        "2022": 542.4,
+        "2021": 544.1
+      },
+      "range": {
+        "min": 494.8,
+        "max": 546.0
+      }
+    },
+    {
+      "id": 269,
+      "name": "Naherholungsflächen",
+      "friendlyUrl": "naherholungsflaechen",
+      "sdg": "11",
+      "sdg_name": "Nachhaltige Städte und Gemeinden",
+      "unit": "m² je Einwohner:in",
+      "values": {
+        "2023": 52.55,
+        "2022": 54.69,
+        "2021": 56.26
+      },
+      "range": {
+        "min": 45.92,
+        "max": 56.36
+      }
+    },
+    {
+      "id": 209,
+      "name": "Fertiggestellte Wohngebäude mit erneuerbarer Energie",
+      "friendlyUrl": "fertiggestellte-wohngebaeude-mit-erneuerbarer-energie",
+      "sdg": "13",
+      "sdg_name": "Maßnahmen zum Klimaschutz",
+      "unit": "%",
+      "values": {
+        "2023": 63.2,
+        "2022": 54.8,
+        "2021": 40.5
+      },
+      "range": {
+        "min": 0.0,
+        "max": 63.2
+      }
+    },
+    {
+      "id": 271,
+      "name": "Trinkwasserverbrauch",
+      "friendlyUrl": "trinkwasserverbrauch",
+      "sdg": "06",
+      "sdg_name": "Sauberes Wasser und Sanitäreinrichtungen",
+      "unit": "l je Einwohner:in und Tag",
+      "values": {
+        "2023": 118.2,
+        "2022": 118.0
+      },
+      "range": {
+        "min": 118.0,
+        "max": 118.2
+      }
+    },
+    {
+      "id": 203,
+      "name": "Siedlungslast im Überschwemmungsgebiet",
+      "friendlyUrl": "siedlungslast-im-ueberschwemmungsgebiet",
+      "sdg": "13",
+      "sdg_name": "Maßnahmen zum Klimaschutz",
+      "unit": "%",
+      "values": {
+        "2023": 6.3,
+        "2022": 6.3,
+        "2021": 6.3
+      },
+      "range": {
+        "min": 6.3,
+        "max": 6.7
+      }
+    },
+    {
+      "id": 294,
+      "name": "Naturschutzflächen",
+      "friendlyUrl": "naturschutzflaechen",
+      "sdg": "15",
+      "sdg_name": "Leben an Land",
+      "unit": "%",
+      "values": {
+        "2022": 6.8
+      },
+      "range": {
+        "min": 2.1,
+        "max": 6.9
+      }
+    },
+    {
+      "id": 303,
+      "name": "Landschaftsqualität",
+      "friendlyUrl": "landschaftsqualitaet",
+      "sdg": "15",
+      "sdg_name": "Leben an Land",
+      "unit": "Hemerobiewert",
+      "values": {
+        "2021": 4.6
+      },
+      "range": {
+        "min": 4.6,
+        "max": 4.6
+      }
+    },
+    {
+      "id": 317,
+      "name": "Finanzmittelsaldo",
+      "friendlyUrl": "finanzmittelsaldo",
+      "sdg": "17",
+      "sdg_name": "Partnerschaften zur Erreichung der Ziele",
+      "unit": "Euro je Einwohner:in",
+      "values": {
+        "2023": 133.0,
+        "2022": 335.0,
+        "2021": 179.0
+      },
+      "range": {
+        "min": -285.0,
+        "max": 335.0
+      }
+    },
+    {
+      "id": 225,
+      "name": "Steuereinnahmen pro Einwohner:in",
+      "friendlyUrl": "steuereinnahmen-pro-einwohner-in",
+      "sdg": "17",
+      "sdg_name": "Partnerschaften zur Erreichung der Ziele",
+      "unit": "Euro je Einwohner:in",
+      "values": {
+        "2023": 1402.0,
+        "2022": 1345.0,
+        "2021": 1283.0
+      },
+      "range": {
+        "min": 657.0,
+        "max": 1402.0
+      }
+    },
+    {
+      "id": 319,
+      "name": "Liquiditätskredite",
+      "friendlyUrl": "liquiditaetskredite",
+      "sdg": "17",
+      "sdg_name": "Partnerschaften zur Erreichung der Ziele",
+      "unit": "Euro je Einwohner:in",
+      "values": {
+        "2023": 0.0,
+        "2022": 0.0,
+        "2021": 396.0
+      },
+      "range": {
+        "min": 0.0,
+        "max": 859.0
+      }
+    }
+  ],
+  "dataGaps": [
+    {
+      "id": 210,
+      "name": "Wohnungslosigkeit",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 304,
+      "name": "Stickstoffüberschuss der Landwirtschaft",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 305,
+      "name": "Wohnungsnahe Grundversorgung - Krankenhaus",
+      "reason": "Für andere Jahre sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 285,
+      "name": "Personal in Pflegediensten",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 284,
+      "name": "Plätze in Pflegeheimen",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 297,
+      "name": "Integrative Kindertageseinrichtungen",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 306,
+      "name": "Frauenanteil in Stadtrat, Gemeinderat bzw. Kreistag",
+      "reason": "Keine Daten verfügbar."
+    },
+    {
+      "id": 196,
+      "name": "Abwasserbehandlung",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 295,
+      "name": "Bruttoinlandsprodukt",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 298,
+      "name": "Mietpreise",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 201,
+      "name": "PKW-Dichte",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 197,
+      "name": "PKW mit Elektroantrieb",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 293,
+      "name": "Abfallmenge",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    },
+    {
+      "id": 204,
+      "name": "Straftaten",
+      "reason": "Auf Landkreisebene sind Daten für diesen Indikator verfügbar."
+    }
+  ],
+  "summary": {
+    "sdg_coverage": {
+      "SDG 01": 4,
+      "SDG 03": 4,
+      "SDG 04": 3,
+      "SDG 05": 1,
+      "SDG 06": 1,
+      "SDG 07": 2,
+      "SDG 08": 6,
+      "SDG 09": 1,
+      "SDG 10": 3,
+      "SDG 11": 7,
+      "SDG 13": 2,
+      "SDG 15": 2,
+      "SDG 17": 3
+    },
+    "highlights": {
+      "best_performance": [
+        {
+          "name": "Langzeitarbeitslosenquote",
+          "value": "1.9%",
+          "context": "Sehr niedrig - deutlich unter Bundesdurchschnitt"
+        },
+        {
+          "name": "Beschäftigungsquote",
+          "value": "66.0%",
+          "context": "Maximalwert im Vergleichsbereich erreicht"
+        },
+        {
+          "name": "Luftschadstoffbelastung",
+          "value": "7.24 μg/m³",
+          "context": "Deutlich verbessert - Minimalwert erreicht"
+        }
+      ],
+      "areas_of_concern": [
+        {
+          "name": "Schulabbrecher:innenquote Ausländer:innen",
+          "value": "433.3%",
+          "context": "Verhältnis zur Gesamtquote sehr hoch"
+        },
+        {
+          "name": "Schulabgänger ohne Hauptschulabschluss",
+          "value": "2.6%",
+          "context": "Anstieg gegenüber Vorjahren"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,51 @@
+Liebe knotdots Gemeinschaft
+
+Die letzten Wochen waren geprägt von intensiver Entwicklungsarbeit und wir haben wieder einige spannende Neuerungen für euch umgesetzt! Nach vielen Tests und Optimierungen können wir euch heute stolz die neuesten Verbesserungen in der Plattform vorstellen, die eure tägliche Arbeit mit knotdots noch effizienter und benutzerfreundlicher machen werden.
+
+Viele der Updates hängen wieder voneinander ab und bilden zusammen ein stimmiges Gesamtpaket, das die Flexibilität und Benutzerfreundlichkeit der Plattform erheblich steigert.
+
+**Neuigkeiten**
+
+**Neue Abschnitts-Funktionen für strukturiertere Inhalte**
+Wir haben ein komplett neues Abschnitts-System eingeführt, das die Arbeit mit Inhalten deutlich flexibler macht. Ab sofort können in Zielen und Maßnahmen verschiedene Abschnitte angelegt werden, die per Drag-and-Drop neu angeordnet werden können. Dabei bleiben alle Beziehungen und Verknüpfungen automatisch erhalten. 
+
+**Erweiterte Datei-Verwaltung**
+Das Hochladen und Verwalten von Dateien wurde grundlegend überarbeitet. Dateien können jetzt direkt in eigenen Abschnitten organisiert werden und erhalten eine deutlich bessere visuelle Darstellung. Die Upload-Größe wurde erhöht, um auch umfangreichere Dokumente problemlos verarbeiten zu können. PDFs öffnen sich automatisch in einem neuen Tab und alle Dateien werden jetzt mit verbesserter Fehlerbehandlung und Fortschrittsanzeige hochgeladen.
+
+**Intelligente KI-Unterstützung weiter ausgebaut**
+Die "Frag die KI"-Funktion wurde erheblich erweitert und kann jetzt auch bei der Bearbeitung von Zielen unterstützen. Die KI-Antworten sind präziser geworden und das System reagiert deutlich schneller auf eure Anfragen. Zusätzlich haben wir ein neues Benachrichtigungssystem eingeführt, das euch über wichtige Aktionen informiert, ohne dabei störend zu wirken.
+
+**Verbesserte Aufgaben-Verwaltung**
+In der Aufgaben-Verwaltung gibt es mehrere wichtige Neuerungen: Aufgaben können nun mehreren Personen gleichzeitig zugewiesen werden und es lassen sich Beziehungen zwischen Aufgaben anlegen, um komplexere Aufgabenstrukturen abzubilden. Zusätzlich können jetzt Aufwands- und Nutzenseinschätzungen direkt bei den Aufgaben hinterlegt werden.
+
+**Überarbeitete Benutzeroberfläche**
+Die gesamte Benutzeroberfläche wurde modernisiert und auf die neueste Svelte-Version migriert, was zu einer spürbar flüssigeren Bedienung führt. Dropdown-Menüs sind jetzt alphabetisch sortiert und viele kleine Details wurden verbessert, um die tägliche Arbeit angenehmer zu gestalten. Die Sidebar ist jetzt responsive und passt sich automatisch an verschiedene Bildschirmgrößen an.
+
+**Erweiterte Wissens-Bereiche**
+Als komplett neuen Arbeitsbereich haben wir "Wissen" eingeführt. Hier können wichtige Erkenntnisse, Methoden und Erfahrungen strukturiert gesammelt und organisiert werden. Dies ermöglicht es, das in der Organisation vorhandene Wissen besser zu verwalten und zugänglich zu machen.
+
+**Verbesserte Strategien-Darstellung**
+Programme (ehemals Strategien) können jetzt noch flexibler dargestellt werden. Die Hierarchie-Ebenen wurden erweitert und die Darstellung von Beziehungen zwischen verschiedenen Elementen wurde deutlich verbessert. Das Maßnahmen-Monitoring auf Programmebene wurde um neue Funktionen ergänzt.
+
+**Weitere Verbesserungen im Detail:**
+- Beim Kopieren von Maßnahmen werden nun auch alle zugehörigen Abschnitte mitkopiert, was das Erstellen ähnlicher Maßnahmen erheblich vereinfacht
+- Bessere Darstellung von Wirkungs-Diagrammen mit korrigierter Reihenfolge von geplanter und erreichter Wirkungen
+- Erweiterte Filter-Möglichkeiten in verschiedenen Arbeitsbereichen
+- Verbesserte Performance bei der Anzeige umfangreicher Strategien
+- Optimierte Tabellen-Darstellung mit besserer Übersichtlichkeit
+- Neue Icons und verbesserte visuelle Gestaltung
+- Deutsche Übersetzungen für alle neuen Funktionen
+
+**Behobene Probleme:**
+- Alphabetische Sortierung berücksichtigt jetzt auch einstellige Zahlen korrekt
+- Tabellen-Inhalte überlappen nicht mehr mit festen Kopfzeilen
+- Bildschirm-Layout springt nicht mehr unerwünscht
+- Datei-Upload funktioniert jetzt zuverlässiger
+- Berechtigungsprüfungen wurden an allen relevanten Stellen ergänzt
+
+Diese Updates stellen eine solide Basis für die kommenden Weiterentwicklungen dar, die bereits in Planung sind. Wir sind gespannt auf euer Feedback zu den neuen Funktionen und wie sie euren Arbeitsalltag mit der Plattform bereichern.
+
+Bei Rückmeldungen, Wünschen oder Fragen, kommt wie immer gerne auf uns zurück.
+Herzliche Grüße
+
+Euer knotdots Team
