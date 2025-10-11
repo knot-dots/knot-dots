@@ -149,6 +149,11 @@ export type OverlayData =
 			indicatorTemplates: IndicatorTemplateContainer[];
 	  }
 	| {
+			key: 'new-indicator-catalog';
+			container: undefined;
+			containers: IndicatorTemplateContainer[];
+	  }
+	| {
 			key: 'indicators';
 			container: AnyContainer;
 			containers: Container[];
@@ -415,6 +420,20 @@ if (browser) {
 				container: undefined,
 				indicators,
 				indicatorTemplates
+			});
+		} else if (hashParams.has(overlayKey.enum['new-indicator-catalog'])) {
+			const containers = (await fetchContainers({
+				category: hashParams.getAll('category'),
+				indicatorCategory: hashParams.getAll('indicatorCategory'),
+				indicatorType: hashParams.getAll('indicatorType'),
+				measureType: hashParams.getAll('measureType'),
+				payloadType: [payloadTypes.enum.indicator_template],
+				topic: hashParams.getAll('topic')
+			})) as IndicatorTemplateContainer[];
+			overlay.set({
+				key: overlayKey.enum['new-indicator-catalog'],
+				container: undefined,
+				containers
 			});
 		} else {
 			overlay.set(undefined);

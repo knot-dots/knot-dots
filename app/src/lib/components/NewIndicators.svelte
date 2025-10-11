@@ -96,7 +96,7 @@
 <div class="indicators">
 	{#if $ability.can('create', payloadTypes.enum.indicator)}
 		<p>
-			<a class="button button-xs button-primary" href="#indicator-catalog">
+			<a class="button button-xs button-primary" href="#new-indicator-catalog">
 				<Plus />
 				{$_('indicator')}
 			</a>
