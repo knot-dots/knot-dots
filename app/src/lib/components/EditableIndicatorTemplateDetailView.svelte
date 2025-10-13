@@ -7,12 +7,7 @@
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
-	import {
-		type AnyContainer,
-		type Container,
-		type IndicatorTemplateContainer,
-		isActualDataContainer
-	} from '$lib/models';
+	import { type AnyContainer, type Container, type IndicatorTemplateContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -46,7 +41,7 @@
 
 		{#if relatedContainers.length > 0}
 			<div class="details-section">
-				<select class="view-mode" bind:value={viewMode}>
+				<select class="view-mode" oninput={(e) => e.stopPropagation()} bind:value={viewMode}>
 					<option value="chart">{$_('indicator.view_mode.chart')}</option>
 					<option value="table">{$_('indicator.view_mode.table')}</option>
 				</select>

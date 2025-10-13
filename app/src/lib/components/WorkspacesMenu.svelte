@@ -222,7 +222,7 @@
 			icon: LandingPage,
 			label: $_('workspace.view.page'),
 			recommended: false,
-			value: workspacesRight.page[selectedItem[0]] ?? '/'
+			value: workspacesRight.page[selectedItem[0]] ?? '/all/page'
 		},
 		{
 			exists: selectedItem[0] in workspacesRight.status,
