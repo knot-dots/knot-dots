@@ -76,6 +76,12 @@ const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
 	guid: z.object({ guid: z.string().uuid() }),
+	indicatorData: z.object({
+		actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
+		indicator_id: z.number().positive(),
+		spatial_reference: z.string().uuid().optional().nullable(),
+		source: z.string()
+	}),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	organizationalUnitContainer,
 	relation,
@@ -1513,6 +1519,19 @@ export function getAdministrativeAreas(name: string) {
 			JOIN spatial_feature sf ON osm.boundary = sf.guid
 			WHERE bbsr.name ILIKE ${name + '%'}
 			ORDER BY bbsr.name
+		`);
+	};
+}
+
+export function getIndicatorDataWegweiserKommune(spatialReference: string, friendlyUrl: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.maybeOne(sql.typeAlias('indicatorData')`
+			SELECT DISTINCT ON (d.indicator_id) d.*, i.source
+			FROM indicator_data_wegweiser_kommune d
+			JOIN indicator_wegweiser_kommune i ON i.id = d.indicator_id
+			WHERE d.spatial_reference = ${spatialReference}
+			  AND i.friendly_url = ${friendlyUrl}
+			ORDER BY d.indicator_id, d.valid_from DESC
 		`);
 	};
 }

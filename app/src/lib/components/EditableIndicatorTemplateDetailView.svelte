@@ -23,10 +23,6 @@
 
 	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 
-	let actualDataContainer = $derived(
-		relatedContainers.filter(isActualDataContainer).find(({ payload }) => payload.indicator)
-	);
-
 	let viewMode = $state('chart');
 </script>
 
@@ -48,7 +44,7 @@
 			/>
 		{/key}
 
-		{#if actualDataContainer}
+		{#if relatedContainers.length > 0}
 			<div class="details-section">
 				<select class="view-mode" bind:value={viewMode}>
 					<option value="chart">{$_('indicator.view_mode.chart')}</option>
@@ -56,9 +52,13 @@
 				</select>
 
 				{#if viewMode === 'chart'}
-					<NewIndicatorChart {container} relatedContainers={[actualDataContainer]} />
+					<NewIndicatorChart {container} {relatedContainers} />
 				{:else}
-					<NewIndicatorTable {container} relatedContainers={[actualDataContainer]} />
+					<NewIndicatorTable
+						{container}
+						editable={$applicationState.containerDetailView.editable}
+						{relatedContainers}
+					/>
 				{/if}
 			</div>
 		{/if}

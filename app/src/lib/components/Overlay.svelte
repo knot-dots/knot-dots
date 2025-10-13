@@ -7,6 +7,7 @@
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
+	import NewIndicatorCatalogOverlay from '$lib/components/NewIndicatorCatalogOverlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
@@ -78,6 +79,8 @@
 			indicatorTemplates={data.indicatorTemplates}
 			indicators={data.indicators}
 		/>
+	{:else if data.key === overlayKey.enum['new-indicator-catalog']}
+		<NewIndicatorCatalogOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}

@@ -20,13 +20,14 @@
 	let actualDataContainer = $derived(
 		relatedContainers
 			.filter(isActualDataContainer)
-			.find(({ payload }) => payload.indicator === container.guid)
+			.filter(({ payload }) => payload.indicator === container.guid)
+			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
 	);
 
 	let actualValues = $derived(
-		actualDataContainer?.payload.values.map(([key, value]) => ({
+		actualDataContainer[0]?.payload.values.map(([key, value]) => ({
 			date: new Date(key, 0),
-			value
+			value: actualDataContainer[1]?.payload.values.find(([k, v]) => k == key)?.at(1) ?? value
 		})) ?? []
 	);
 
@@ -48,12 +49,12 @@
 	};
 </script>
 
-{#if actualDataContainer}
+{#if actualDataContainer[0]}
 	<figure>
 		<div role="img" {@attach chart}></div>
 
-		{#if actualDataContainer.payload.source}
-			<figcaption>{$_('indicator.source')}: {actualDataContainer.payload.source}</figcaption>
+		{#if actualDataContainer[0].payload.source}
+			<figcaption>{$_('indicator.source')}: {actualDataContainer[0].payload.source}</figcaption>
 		{/if}
 	</figure>
 {/if}

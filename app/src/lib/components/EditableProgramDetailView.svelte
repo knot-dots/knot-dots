@@ -45,19 +45,21 @@
 
 	let parts = $state([]) as Container[];
 
-	let url = page.url;
+	let filteredParts = $derived(
+		parts.filter(({ payload }) => byPayloadType(payload.type, page.url))
+	);
+
+	$inspect(filteredParts);
 
 	$effect(() => {
 		if (relatedContainersQuery.current) {
 			relatedContainers = relatedContainersQuery.current;
-			parts = relatedContainers
-				.filter(({ payload }) => byPayloadType(payload.type, url))
-				.filter(({ guid, relation }) =>
-					relation.some(
-						({ predicate }) =>
-							predicate === predicates.enum['is-part-of-program'] && guid != container.guid
-					)
-				);
+			parts = relatedContainers.filter(({ guid, relation }) =>
+				relation.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
+				)
+			);
 		}
 	});
 
@@ -178,7 +180,7 @@
 			/>
 
 			<div class="chapters">
-				{#each parts as part, i (part.guid)}
+				{#each filteredParts as part, i (part.guid)}
 					<form
 						class="details-section"
 						oninput={stopPropagation(requestSubmit)}
@@ -187,7 +189,7 @@
 					>
 						<!-- svelte-ignore binding_property_non_reactive -->
 						<EditableChapter
-							bind:container={parts[i]}
+							bind:container={filteredParts[i]}
 							editable={$applicationState.containerDetailView.editable &&
 								$ability.can('update', part)}
 							isPartOf={container}
@@ -231,16 +233,16 @@
 			</div>
 			{#if $ability.cannot('update', container) || paramsFromFragment(page.url).has('type')}
 				<div class="table-body">
-					{@render row(parts, false)}
+					{@render row(filteredParts, false)}
 				</div>
 			{:else}
 				<div
 					class="table-body"
-					use:dragHandleZone={{ items: parts, flipDurationMs: 100 }}
+					use:dragHandleZone={{ items: filteredParts, flipDurationMs: 100 }}
 					onconsider={handleDndConsider}
 					onfinalize={handleDndFinalize}
 				>
-					{@render row(parts, true)}
+					{@render row(filteredParts, true)}
 				</div>
 			{/if}
 		</div>

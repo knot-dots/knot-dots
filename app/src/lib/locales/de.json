@@ -163,6 +163,7 @@
 		}
 	},
 	"indicator": "Indikator",
+	"indicator.add_custom_actual_data": "Eigene Ist-Werte hinzufügen",
 	"indicator.contribution": "Beitrag zu operativem Ziel",
 	"indicator.effect.achieved_values": "Bereits erreicht",
 	"indicator.effect.planned_values": "Geplant",
