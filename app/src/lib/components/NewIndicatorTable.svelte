@@ -54,7 +54,7 @@
 		try {
 			const response = await saveContainer(newActualDataContainer);
 			if (response.ok) {
-				actualDataContainer.push(await response.json());
+				actualDataContainer = [...actualDataContainer, await response.json()];
 			} else {
 				const error = await response.json();
 				alert(error.message);
