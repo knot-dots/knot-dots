@@ -35,7 +35,11 @@
 
 	let years = $derived(Array.from(new Set(...actualValuesByYear.flatMap((m) => m.keys()))));
 
+	let addingCustomActualData = $state(false);
+
 	async function addCustomActualData() {
+		addingCustomActualData = true;
+
 		const newActualDataContainer = containerOfType(
 			payloadTypes.enum.actual_data,
 			page.data.currentOrganization.guid,
@@ -149,9 +153,13 @@
 
 		{#if editable}
 			<p>
-				{#if actualDataContainer.some(({ payload }) => payload.source) && actualDataContainer.length == 1}
-					<button onclick={addCustomActualData} type="button">
-						{$_('indicator.add_custom_actual_data')}
+				{#if actualDataContainer.some(({ payload }) => payload.source) && actualDataContainer.length === 1}
+					<button disabled={addingCustomActualData} onclick={addCustomActualData} type="button">
+						{#if addingCustomActualData}
+							<span class="loader"></span>
+						{:else}
+							{$_('indicator.add_custom_actual_data')}
+						{/if}
 					</button>
 				{/if}
 			</p>
