@@ -1,33 +1,114 @@
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
+	import { env } from '$env/dynamic/public';
+	import { invalidate } from '$app/navigation';
+	import { page } from '$app/state';
+	import saveContainer from '$lib/client/saveContainer';
 	import {
+		type ActualDataContainer,
 		type Container,
+		containerOfType,
 		type IndicatorTemplateContainer,
-		isActualDataContainer
+		isActualDataContainer,
+		type NewContainer,
+		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
+		editable?: boolean;
 		relatedContainers?: Container[];
 	}
 
-	let { container, relatedContainers = [] }: Props = $props();
+	let { container, editable = false, relatedContainers = [] }: Props = $props();
 
 	let actualDataContainer = $derived(
 		relatedContainers
 			.filter(isActualDataContainer)
-			.find(({ payload }) => payload.indicator === container.guid)
+			.filter(({ payload }) => payload.indicator === container.guid)
+			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
 	);
 
-	let actualValuesByYear = $derived(new Map(actualDataContainer?.payload.values ?? []));
+	let actualValuesByYear = $derived(
+		actualDataContainer.map(({ payload }) => new Map(payload.values ?? []))
+	);
 
-	let years = $derived(Array.from(actualValuesByYear.keys()));
+	let years = $derived(Array.from(new Set(...actualValuesByYear.flatMap((m) => m.keys()))));
+
+	async function addCustomActualData() {
+		const newActualDataContainer = containerOfType(
+			payloadTypes.enum.actual_data,
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as NewContainer & Pick<ActualDataContainer, 'payload'>;
+
+		newActualDataContainer.payload = {
+			...newActualDataContainer.payload,
+			indicator: container.guid,
+			title: container.payload.title,
+			values: []
+		};
+
+		try {
+			const response = await saveContainer(newActualDataContainer);
+			if (response.ok) {
+				actualDataContainer.push(await response.json());
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		} catch (error: unknown) {
+			console.error(error);
+		}
+	}
+
+	function updateCustomActualData(container: ActualDataContainer, year: number) {
+		let timer: ReturnType<typeof setTimeout>;
+
+		return async (event: Event) => {
+			event.stopPropagation();
+
+			const value = (event.currentTarget as HTMLInputElement).value.replace(',', '.');
+
+			clearTimeout(timer);
+
+			timer = setTimeout(async () => {
+				const index = container.payload.values.findIndex(([y]) => y == year);
+				if (index > -1) {
+					container.payload.values[index] = [year, parseFloat(value)];
+				} else {
+					container.payload.values.push([year, parseFloat(value)]);
+					container.payload.values = container.payload.values.toSorted((a, b) => a[0] - b[0]);
+				}
+
+				const response = await saveContainer(container);
+				if (response.ok) {
+					const updatedContainer = await response.json();
+					container.revision = updatedContainer.revision;
+					await invalidate('containers');
+				} else {
+					const error = await response.json();
+					alert(error.message);
+				}
+			}, 2000);
+		};
+	}
 </script>
 
 {#if actualDataContainer}
 	<div>
 		<table>
-			<caption>{$_('indicator.source')}: {actualDataContainer.payload.source}</caption>
+			{#if actualDataContainer.some(({ payload }) => payload.source)}
+				<caption>
+					{#each actualDataContainer as container, i}
+						{#if container.payload.source}
+							<sup>{i + 1}</sup> {$_('indicator.source')}: {container.payload.source}
+						{/if}
+					{/each}
+				</caption>
+			{/if}
 
 			<thead>
 				<tr>
@@ -39,14 +120,42 @@
 			</thead>
 
 			<tbody>
-				<tr class="actual-values">
-					<th scope="row">{$_('indicator.table.actual_values')}</th>
-					{#each years as year}
-						<td>{$number(actualValuesByYear.get(year) ?? NaN)}</td>
-					{/each}
-				</tr>
+				{#each actualValuesByYear as valuesByYear, i}
+					<tr class="actual-values">
+						<th scope="row">
+							{$_('indicator.table.actual_values')}
+							{#if actualDataContainer[i].payload.source}
+								<sup>{i + 1}</sup>
+							{/if}
+						</th>
+						{#each years as year}
+							<td>
+								{#if editable && !actualDataContainer[i].payload.source}
+									<input
+										inputmode="decimal"
+										oninput={updateCustomActualData(actualDataContainer[i], year)}
+										type="text"
+										value={valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
+									/>
+								{:else}
+									{valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
+								{/if}
+							</td>
+						{/each}
+					</tr>
+				{/each}
 			</tbody>
 		</table>
+
+		{#if editable}
+			<p>
+				{#if actualDataContainer.some(({ payload }) => payload.source) && actualDataContainer.length == 1}
+					<button onclick={addCustomActualData} type="button">
+						{$_('indicator.add_custom_actual_data')}
+					</button>
+				{/if}
+			</p>
+		{/if}
 	</div>
 {/if}
 
@@ -101,7 +210,22 @@
 		background-color: var(--color-gray-100);
 	}
 
+	td:has(input) {
+		padding: 0;
+	}
+
 	.actual-values {
 		--indicator-color: var(--color-gray-200);
+	}
+
+	input {
+		background-color: transparent;
+		border: none;
+		border-radius: 0;
+		display: block;
+		line-height: 1.5;
+		padding: 0.75rem 0.5rem;
+		text-align: right;
+		width: 100%;
 	}
 </style>

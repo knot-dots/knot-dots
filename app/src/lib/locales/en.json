@@ -163,6 +163,7 @@
 		}
 	},
 	"indicator": "Indicator",
+	"indicator.add_custom_actual_data": "Add custom actual data",
 	"indicator.contribution": "Contribution to operative goal",
 	"indicator.effect.achieved_values": "Achieved values",
 	"indicator.effect.planned_values": "Planned values",
