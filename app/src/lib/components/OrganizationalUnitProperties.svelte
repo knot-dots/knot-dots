@@ -52,15 +52,17 @@
 			container.payload.cityAndMunicipalityTypeBBSR = undefined;
 			container.payload.federalState = undefined;
 			container.payload.nameBBSR = undefined;
+			container.payload.nameOSM = undefined;
 			container.payload.officialMunicipalityKey = undefined;
 			container.payload.officialRegionalCode = undefined;
 		} else {
 			container.payload.geometry = selected.boundary.id;
-			container.payload.cityAndMunicipalityTypeBBSR = selected.cityAndMunicipalityTypeBBSR;
+			container.payload.cityAndMunicipalityTypeBBSR =
+				selected.cityAndMunicipalityTypeBBSR ?? undefined;
 			container.payload.federalState = stateFromOfficialRegionalCode.get(
 				selected.officialRegionalCode.substring(0, 2)
 			);
-			container.payload.nameBBSR = selected.nameBBSR;
+			container.payload.nameOSM = selected.nameOSM;
 			container.payload.officialMunicipalityKey = selected.officialMunicipalityKey;
 			container.payload.officialRegionalCode = selected.officialRegionalCode;
 		}
@@ -76,9 +78,9 @@
 				<label class="label" for="administrativeArea">{$_('administrative_area')}</label>
 				<AdministrativeAreaCombobox
 					{onchange}
-					value={container.payload.nameBBSR && container.payload.officialRegionalCode
+					value={container.payload.nameOSM && container.payload.officialRegionalCode
 						? {
-								nameBBSR: container.payload.nameBBSR,
+								nameOSM: container.payload.nameOSM,
 								officialRegionalCode: container.payload.officialRegionalCode
 							}
 						: undefined}

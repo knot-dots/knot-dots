@@ -8,7 +8,7 @@
 	interface Props {
 		onchange: (e: Event) => void;
 		value?: {
-			nameBBSR: string;
+			nameOSM: string;
 			officialRegionalCode: string;
 		};
 	}
@@ -20,7 +20,7 @@
 		selected: value
 	});
 
-	let filterCache = $combobox.filter.substring(0, 2) || value?.nameBBSR.substring(0, 2) || '';
+	let filterCache = $combobox.filter.substring(0, 2) || value?.nameOSM.substring(0, 2) || '';
 
 	let name = $derived.by(() => {
 		if ($combobox.filter.length > 1) {
@@ -38,7 +38,7 @@
 			use:combobox.input
 			{onchange}
 			oninput={(e) => e.stopPropagation()}
-			value={$combobox.selected?.nameBBSR ?? ''}
+			value={$combobox.selected?.nameOSM ?? ''}
 		/>
 		<ChevronSort />
 	</div>
@@ -46,16 +46,16 @@
 	{#if $combobox.expanded}
 		<div class="dropdown-panel">
 			<ul use:combobox.items>
-				{#each administrativeAreasPromise.current?.filter((area) => area.nameBBSR
+				{#each administrativeAreasPromise.current?.filter((area) => area.nameOSM
 						.toLowerCase()
-						.includes($combobox.filter.toLowerCase().replace(/\s+/g, ''))) ?? [] as value}
+						.includes($combobox.filter.toLowerCase().replace(/^\s+/g, ''))) ?? [] as value}
 					{@const active = $combobox.active?.officialRegionalCode === value.officialRegionalCode}
 					{@const selected =
 						$combobox.selected?.officialRegionalCode === value.officialRegionalCode}
 					<li class:active use:combobox.item={{ value }}>
 						<label>
 							<input type="radio" value={value.officialRegionalCode} checked={selected} />
-							<span class="truncated">{value.nameBBSR}</span>
+							<span class="truncated">{value.nameOSM}</span>
 						</label>
 					</li>
 				{/each}

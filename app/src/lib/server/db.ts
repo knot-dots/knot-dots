@@ -1498,27 +1498,27 @@ export function getAdministrativeAreas(name: string) {
 		return connection.any(sql.type(
 			z
 				.object({
-					city_and_municipality_type: z.string(),
+					city_and_municipality_type: z.string().nullable(),
 					geom: z.object({}).passthrough(),
 					guid: z.string().uuid(),
 					name: z.string(),
-					official_municipality_key: z.string(),
+					official_municipality_key: z.string().nullable(),
 					official_regional_code: z.string()
 				})
 				.transform((v) => ({
 					boundary: { geometry: v.geom, id: v.guid, type: 'Feature' },
 					cityAndMunicipalityTypeBBSR: v.city_and_municipality_type,
-					nameBBSR: v.name,
+					nameOSM: v.name,
 					officialMunicipalityKey: v.official_municipality_key,
 					officialRegionalCode: v.official_regional_code
 				}))
 		)`
-			SELECT sf.geom::jsonb, sf.guid, bbsr.name, bbsr.city_and_municipality_type, bbsr.official_municipality_key, bbsr.official_regional_code
-			FROM administrative_area_bbsr bbsr
-			JOIN administrative_area_open_street_map osm USING (official_regional_code)
+			SELECT sf.geom::jsonb, sf.guid, osm.name, bbsr.city_and_municipality_type, osm.official_municipality_key, osm.official_regional_code
+			FROM administrative_area_open_street_map osm
 			JOIN spatial_feature sf ON osm.boundary = sf.guid
-			WHERE bbsr.name ILIKE ${name + '%'}
-			ORDER BY bbsr.name
+			LEFT JOIN administrative_area_bbsr bbsr USING (official_regional_code)
+			WHERE osm.name ILIKE ${name + '%'}
+			ORDER BY osm.name
 		`);
 	};
 }

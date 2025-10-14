@@ -33,7 +33,16 @@
 		actualDataContainer.map(({ payload }) => new Map(payload.values ?? []))
 	);
 
-	let years = $derived(Array.from(new Set(...actualValuesByYear.flatMap((m) => m.keys()))));
+	let years = $derived(
+		Array.from(
+			Array(
+				Math.max(...actualValuesByYear.flatMap((m) => [...m.keys()])) -
+					Math.min(...actualValuesByYear.flatMap((m) => [...m.keys()])) +
+					1
+			).keys(),
+			(_, i) => i + Math.min(...actualValuesByYear.flatMap((m) => [...m.keys()]))
+		)
+	);
 
 	let addingCustomActualData = $state(false);
 
