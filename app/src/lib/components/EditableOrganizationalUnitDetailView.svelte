@@ -17,21 +17,17 @@
 
 	interface Props {
 		container: OrganizationalUnitContainer;
-		otherContainers?: Container[];
-		sections?: Container[];
+		relatedContainers?: Container[];
 	}
 
 	let {
 		container: originalContainer = $bindable(),
-		otherContainers = [],
-		sections: originalSections = []
+		relatedContainers: originalRelatedContainers = []
 	}: Props = $props();
 
 	let container = $state(originalContainer);
 
-	let sections = $state(originalSections);
-
-	let relatedContainers = $derived([container, ...otherContainers, ...sections]);
+	let relatedContainers = $state([originalContainer, ...originalRelatedContainers]);
 
 	let w = $state(0);
 

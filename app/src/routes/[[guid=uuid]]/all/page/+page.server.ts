@@ -96,8 +96,7 @@ export const load = (async ({ depends, locals, parent }) => {
 
 	return {
 		container,
-		containers: filterVisible(containers, locals.user),
-		sections: filterVisible(sections, locals.user),
+		relatedContainers: filterVisible([...containers, ...sections], locals.user),
 		spatialFeatures
 	};
 }) satisfies PageServerLoad;
