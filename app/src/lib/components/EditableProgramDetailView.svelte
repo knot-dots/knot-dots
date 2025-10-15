@@ -49,8 +49,6 @@
 		parts.filter(({ payload }) => byPayloadType(payload.type, page.url))
 	);
 
-	$inspect(filteredParts);
-
 	$effect(() => {
 		if (relatedContainersQuery.current) {
 			relatedContainers = relatedContainersQuery.current;
