@@ -23,7 +23,7 @@
 
 	let container = $state(originalContainer);
 
-	let relatedContainers = $state([originalContainer, ...originalRelatedContainers]);
+	let relatedContainers = $derived([originalContainer, ...originalRelatedContainers]);
 
 	let w = $state(0);
 
@@ -76,7 +76,7 @@
 		{/key}
 	</form>
 
-	<Sections bind:container bind:relatedContainers />
+	<Sections bind:container {relatedContainers} />
 </article>
 
 <style>
