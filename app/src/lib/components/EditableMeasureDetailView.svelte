@@ -22,13 +22,7 @@
 		revisions: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		relatedContainers: originalRelatedContainers,
-		revisions
-	}: Props = $props();
-
-	let relatedContainers = $state(originalRelatedContainers);
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container>
@@ -49,7 +43,7 @@
 			/>
 		{/key}
 
-		<Sections bind:container bind:relatedContainers />
+		<Sections bind:container {relatedContainers} />
 	{/snippet}
 </EditableContainerDetailView>
 

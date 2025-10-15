@@ -273,7 +273,7 @@
 		width: fit-content;
 	}
 
-	.dropdown:hover {
+	.dropdown-button:hover {
 		--dropdown-button-icon-default-color: white;
 	}
 

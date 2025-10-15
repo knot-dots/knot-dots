@@ -13,21 +13,17 @@
 
 	interface Props {
 		container: OrganizationContainer;
-		otherContainers?: Container[];
-		sections?: Container[];
+		relatedContainers?: Container[];
 	}
 
 	let {
 		container: originalContainer = $bindable(),
-		otherContainers = [],
-		sections: originalSections = []
+		relatedContainers: originalRelatedContainers = []
 	}: Props = $props();
 
 	let container = $state(originalContainer);
 
-	let sections = $state(originalSections);
-
-	let relatedContainers = $derived([container, ...sections, ...otherContainers]);
+	let relatedContainers = $derived([originalContainer, ...originalRelatedContainers]);
 
 	let w = $state(0);
 
@@ -80,7 +76,7 @@
 		{/key}
 	</form>
 
-	<Sections bind:container bind:relatedContainers />
+	<Sections bind:container {relatedContainers} />
 </article>
 
 <style>

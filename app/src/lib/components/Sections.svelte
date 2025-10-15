@@ -15,22 +15,34 @@
 		predicates
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
-	import { hasSection } from '$lib/relations';
 
 	interface Props {
 		container: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
+	let { container = $bindable(), relatedContainers }: Props = $props();
 
-	let sections = $derived(
-		hasSection(container, relatedContainers).toSorted(
-			(a, b) =>
-				container.relation.findIndex(({ subject }) => subject === a.guid) -
-				container.relation.findIndex(({ subject }) => subject === b.guid)
-		)
-	);
+	let guid = $derived(container.guid);
+
+	let sections = $state([]) as AnyContainer[];
+
+	$effect(() => {
+		sections = relatedContainers
+			.filter((c) => c.guid != guid)
+			.filter(({ relation }) =>
+				relation.some(
+					({ object, predicate }) => object == guid && predicate == predicates.enum['is-section-of']
+				)
+			)
+			.toSorted(
+				(a, b) =>
+					a.relation.find(({ predicate }) => predicate == predicates.enum['is-section-of'])!
+						.position -
+					b.relation.find(({ predicate }) => predicate == predicates.enum['is-section-of'])!
+						.position
+			);
+	});
 
 	function createAddSectionHandler(position: number) {
 		return async (event: Event) => {
@@ -66,8 +78,6 @@
 				return;
 			}
 
-			relatedContainers = [...relatedContainers, result.data];
-			sections = [...sections.slice(0, position), result.data, ...sections.slice(position)];
 			container.relation = [
 				...sections.map(({ guid }, index) => ({
 					object: container.guid,
@@ -79,6 +89,7 @@
 					({ predicate }) => predicate !== predicates.enum['is-section-of']
 				)
 			];
+			relatedContainers = [...relatedContainers, result.data];
 
 			const url = `/container/${container.guid}/relation`;
 			await fetch(url, {

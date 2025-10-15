@@ -8,22 +8,16 @@
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type GoalContainer } from '$lib/models';
+	import { type AnyContainer, type Container, type GoalContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: GoalContainer;
-		relatedContainers: any[];
-		revisions: any[];
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		relatedContainers: originalRelatedContainers,
-		revisions
-	}: Props = $props();
-
-	let relatedContainers = $state(originalRelatedContainers);
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container>
@@ -44,7 +38,7 @@
 			/>
 		{/key}
 
-		<Sections bind:container bind:relatedContainers />
+		<Sections bind:container {relatedContainers} />
 	{/snippet}
 </EditableContainerDetailView>
 

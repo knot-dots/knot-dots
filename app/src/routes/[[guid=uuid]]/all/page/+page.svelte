@@ -17,14 +17,12 @@
 					{#if isOrganizationContainer(data.container)}
 						<EditableOrganizationDetailView
 							container={data.container}
-							otherContainers={data.containers}
-							sections={data.sections}
+							relatedContainers={data.relatedContainers}
 						/>
 					{:else if isOrganizationalUnitContainer(data.container)}
 						<EditableOrganizationalUnitDetailView
 							container={data.container}
-							otherContainers={data.containers}
-							sections={data.sections}
+							relatedContainers={data.relatedContainers}
 						/>
 					{/if}
 				</div>
