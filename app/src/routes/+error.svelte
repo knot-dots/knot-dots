@@ -22,7 +22,7 @@
 		width: 100%;
 	}
 	h2 {
-		color: var(--color-primary);
+		color: var(--color-primary-700);
 		font-size: 8rem;
 		font-weight: 800;
 		line-height: 1;

@@ -123,17 +123,6 @@
 	--color-primary-800: #1e429f;
 	--color-primary-900: #233876;
 
-	--color-primary: #4dc3c5;
-	--color-red: #ca1d61;
-	--color-red-background: rgba(205, 37, 97, 0.15);
-	--color-orange: #f18c5f;
-	--color-orange-background: rgba(241, 140, 95, 0.15);
-	--color-yellow: #fccd6c;
-	--color-yellow-background: rgba(252, 205, 108, 0.15);
-	--color-green: #6edaa6;
-	--color-green-background: rgba(110, 218, 166, 0.15);
-	--color-blue: #21a5ed;
-	--color-blue-background: rgba(33, 165, 237, 0.15);
 	--color-contributes-to: #7ad0ff;
 	--color-is-affected-by: #7ad0ff;
 	--color-is-concrete-target-of: #7ad0ff;
@@ -444,14 +433,6 @@ button,
 	padding: var(--padding-y) var(--padding-x);
 }
 
-button.primary,
-.button.primary {
-	--button-background: var(--gradient-primary);
-	--button-border-color: var(--color-primary);
-
-	color: white;
-}
-
 button.quiet,
 .button.quiet {
 	--button-background: transparent;
@@ -607,12 +588,6 @@ button:disabled,
 .button:disabled {
 	background: var(--button-disabled-background);
 	border-color: var(--button-disabled-border-color);
-}
-
-button.primary:disabled,
-.button.primary:disabled {
-	--button-disabled-background: var(--color-gray-300);
-	--button-disabled-border-color: var(--color-gray-300);
 }
 
 button.button-square,
@@ -868,7 +843,7 @@ fieldset {
 }
 
 .toggle:checked {
-	background-color: var(--color-primary);
+	background-color: var(--color-primary-600);
 }
 
 .toggle:checked::before {
