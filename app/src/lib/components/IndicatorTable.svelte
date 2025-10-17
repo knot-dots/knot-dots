@@ -478,11 +478,11 @@
 	}
 
 	.objective {
-		--indicator-color: var(--color-blue-200);
+		--indicator-color: var(--color-primary-200);
 	}
 
 	.objective-total {
-		--indicator-color: var(--color-blue-500);
+		--indicator-color: var(--color-primary-500);
 	}
 
 	.overall-objective {
