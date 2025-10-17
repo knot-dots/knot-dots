@@ -92,21 +92,33 @@ export const sortIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>
 export const statusColors = new Map<Status, string>([
 	[status.enum['status.idea'], 'pink'],
 	[status.enum['status.in_planning'], 'orange'],
-	[status.enum['status.adopted'], 'teal'],
-	[status.enum['status.in_implementation'], 'yellow'],
-	[status.enum['status.in_operation'], 'blue'],
+	[status.enum['status.adopted'], 'yellow'],
+	[status.enum['status.in_implementation'], 'amber'],
+	[status.enum['status.in_operation'], 'teal'],
 	[status.enum['status.done'], 'green'],
-	[status.enum['status.rejected'], 'purple']
+	[status.enum['status.rejected'], 'indigo']
 ]);
 
 export const statusBackgrounds = new Map<Status, string>([
-	[status.enum['status.idea'], 'var(--gradient-idea)'],
-	[status.enum['status.in_planning'], 'var(--gradient-in-planning)'],
-	[status.enum['status.adopted'], 'var(--gradient-adopted)'],
-	[status.enum['status.in_implementation'], 'var(--gradient-in-implementation)'],
-	[status.enum['status.in_operation'], 'var(--gradient-in-operation)'],
-	[status.enum['status.done'], 'var(--gradient-done)'],
-	[status.enum['status.rejected'], 'var(--gradient-rejected)']
+	[status.enum['status.idea'], 'var(--color-background-idea)'],
+	[
+		status.enum['status.in_planning'],
+		'var(--gradient-after-idea), var(--color-background-in-planning)'
+	],
+	[
+		status.enum['status.adopted'],
+		'var(--gradient-after-in-planning), var(--color-background-adopted)'
+	],
+	[
+		status.enum['status.in_implementation'],
+		'var(--gradient-after-adopted), var(--color-background-in-implementation)'
+	],
+	[
+		status.enum['status.in_operation'],
+		'var(--gradient-after-in-implementation), var(--color-background-in-operation)'
+	],
+	[status.enum['status.done'], 'var(--gradient-after-in-operation), var(--color-background-done)'],
+	[status.enum['status.rejected'], 'var(--gradient-after-done), var(--color-background-rejected)']
 ]);
 
 export const statusHoverColors = new Map<Status, string>([
@@ -132,17 +144,29 @@ export const statusIcons = new Map<Status, Component<SvelteHTMLElements['svg']>>
 export const taskStatusColors = new Map<TaskStatus, string>([
 	[taskStatus.enum['task_status.idea'], 'pink'],
 	[taskStatus.enum['task_status.in_planning'], 'orange'],
-	[taskStatus.enum['task_status.in_progress'], 'yellow'],
+	[taskStatus.enum['task_status.in_progress'], 'amber'],
 	[taskStatus.enum['task_status.done'], 'green'],
-	[taskStatus.enum['task_status.rejected'], 'purple']
+	[taskStatus.enum['task_status.rejected'], 'indigo']
 ]);
 
 export const taskStatusBackgrounds = new Map<TaskStatus, string>([
-	[taskStatus.enum['task_status.idea'], 'var(--gradient-idea)'],
-	[taskStatus.enum['task_status.in_planning'], 'var(--gradient-in-planning)'],
-	[taskStatus.enum['task_status.in_progress'], 'var(--gradient-in-implementation)'],
-	[taskStatus.enum['task_status.done'], 'var(--gradient-done)'],
-	[taskStatus.enum['task_status.rejected'], 'var(--gradient-rejected)']
+	[taskStatus.enum['task_status.idea'], 'var(--color-background-idea)'],
+	[
+		taskStatus.enum['task_status.in_planning'],
+		'var(--gradient-after-idea), var(--color-background-in-planning)'
+	],
+	[
+		taskStatus.enum['task_status.in_progress'],
+		'var(--gradient-after-in-planning), var(--color-background-in-implementation)'
+	],
+	[
+		taskStatus.enum['task_status.done'],
+		'var(--gradient-after-in-implementation), var(--color-background-done)'
+	],
+	[
+		taskStatus.enum['task_status.rejected'],
+		'var(--gradient-after-done), var(--color-background-rejected)'
+	]
 ]);
 
 export const taskStatusHoverColors = new Map<TaskStatus, string>([
@@ -164,15 +188,24 @@ export const taskStatusIcons = new Map<TaskStatus, Component<SvelteHTMLElements[
 export const ruleStatusColors = new Map<RuleStatus, string>([
 	[ruleStatus.enum['rule_status.idea'], 'pink'],
 	[ruleStatus.enum['rule_status.in_planning'], 'orange'],
-	[ruleStatus.enum['rule_status.adopted'], 'green'],
-	[ruleStatus.enum['rule_status.rejected'], 'purple']
+	[ruleStatus.enum['rule_status.adopted'], 'yellow'],
+	[ruleStatus.enum['rule_status.rejected'], 'indigo']
 ]);
 
 export const ruleStatusBackgrounds = new Map<RuleStatus, string>([
-	[ruleStatus.enum['rule_status.idea'], 'var(--gradient-idea)'],
-	[ruleStatus.enum['rule_status.in_planning'], 'var(--gradient-in-planning)'],
-	[ruleStatus.enum['rule_status.adopted'], 'var(--gradient-done)'],
-	[ruleStatus.enum['rule_status.rejected'], 'var(--gradient-rejected)']
+	[ruleStatus.enum['rule_status.idea'], 'var(--color-background-idea)'],
+	[
+		ruleStatus.enum['rule_status.in_planning'],
+		'var(--gradient-after-idea), var(--color-background-in-planning)'
+	],
+	[
+		ruleStatus.enum['rule_status.adopted'],
+		'var(--gradient-after-in-planning), var(--color-background-adopted)'
+	],
+	[
+		ruleStatus.enum['rule_status.rejected'],
+		'var(--gradient-after-adopted), var(--color-background-rejected)'
+	]
 ]);
 
 export const ruleStatusHoverColors = new Map<RuleStatus, string>([
@@ -192,17 +225,29 @@ export const ruleStatusIcons = new Map<RuleStatus, Component<SvelteHTMLElements[
 export const goalStatusColors = new Map<GoalStatus, string>([
 	[goalStatus.enum['goal_status.idea'], 'pink'],
 	[goalStatus.enum['goal_status.in_planning'], 'orange'],
-	[goalStatus.enum['goal_status.adopted'], 'teal'],
+	[goalStatus.enum['goal_status.adopted'], 'yellow'],
 	[goalStatus.enum['goal_status.achieved'], 'green'],
-	[goalStatus.enum['goal_status.rejected'], 'purple']
+	[goalStatus.enum['goal_status.rejected'], 'indigo']
 ]);
 
 export const goalStatusBackgrounds = new Map<GoalStatus, string>([
-	[goalStatus.enum['goal_status.idea'], 'var(--gradient-idea)'],
-	[goalStatus.enum['goal_status.in_planning'], 'var(--gradient-in-planning)'],
-	[goalStatus.enum['goal_status.adopted'], 'var(--gradient-adopted)'],
-	[goalStatus.enum['goal_status.achieved'], 'var(--gradient-done)'],
-	[goalStatus.enum['goal_status.rejected'], 'var(--gradient-rejected)']
+	[goalStatus.enum['goal_status.idea'], 'var(--color-background-idea)'],
+	[
+		goalStatus.enum['goal_status.in_planning'],
+		'var(--gradient-after-idea), var(--color-background-in-planning)'
+	],
+	[
+		goalStatus.enum['goal_status.adopted'],
+		'var(--gradient-after-in-planning), var(--color-background-adopted)'
+	],
+	[
+		goalStatus.enum['goal_status.achieved'],
+		'var(--gradient-after-adopted), var(--color-background-done)'
+	],
+	[
+		goalStatus.enum['goal_status.rejected'],
+		'var(--gradient-after-done), var(--color-background-rejected)'
+	]
 ]);
 
 export const goalStatusHoverColors = new Map<GoalStatus, string>([
@@ -224,19 +269,34 @@ export const goalStatusIcons = new Map<GoalStatus, Component<SvelteHTMLElements[
 export const programStatusColors = new Map<ProgramStatus, string>([
 	[programStatus.enum['program_status.idea'], 'pink'],
 	[programStatus.enum['program_status.in_planning'], 'orange'],
-	[programStatus.enum['program_status.adopted'], 'teal'],
-	[programStatus.enum['program_status.in_implementation'], 'yellow'],
+	[programStatus.enum['program_status.adopted'], 'yellow'],
+	[programStatus.enum['program_status.in_implementation'], 'amber'],
 	[programStatus.enum['program_status.done'], 'green'],
-	[programStatus.enum['program_status.rejected'], 'purple']
+	[programStatus.enum['program_status.rejected'], 'indigo']
 ]);
 
 export const programStatusBackgrounds = new Map<ProgramStatus, string>([
-	[programStatus.enum['program_status.idea'], 'var(--gradient-idea)'],
-	[programStatus.enum['program_status.in_planning'], 'var(--gradient-in-planning)'],
-	[programStatus.enum['program_status.adopted'], 'var(--gradient-adopted)'],
-	[programStatus.enum['program_status.in_implementation'], 'var(--gradient-in-implementation)'],
-	[programStatus.enum['program_status.done'], 'var(--gradient-done)'],
-	[programStatus.enum['program_status.rejected'], 'var(--gradient-rejected)']
+	[programStatus.enum['program_status.idea'], 'var(--color-background-idea)'],
+	[
+		programStatus.enum['program_status.in_planning'],
+		'var(--gradient-after-idea), var(--color-background-in-planning)'
+	],
+	[
+		programStatus.enum['program_status.adopted'],
+		'var(--gradient-after-in-planning), var(--color-background-adopted)'
+	],
+	[
+		programStatus.enum['program_status.in_implementation'],
+		'var(--gradient-after-adopted), var(--color-background-in-implementation)'
+	],
+	[
+		programStatus.enum['program_status.done'],
+		'var(--gradient-after-in-implementation), var(--color-background-done)'
+	],
+	[
+		programStatus.enum['program_status.rejected'],
+		'var(--gradient-after-done), var(--color-background-rejected)'
+	]
 ]);
 
 export const programStatusHoverColors = new Map<ProgramStatus, string>([
