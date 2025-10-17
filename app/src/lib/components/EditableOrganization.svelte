@@ -7,7 +7,7 @@
 		value: string;
 	}
 
-	let { editable = false, value = $bindable() } = $props();
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
 <div class="label">{$_('organization')}</div>

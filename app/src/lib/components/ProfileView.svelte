@@ -28,7 +28,7 @@
 		containers: AnyContainer[];
 	}
 
-	let { containers } = $props();
+	let { containers }: Props = $props();
 
 	let w = $state(0);
 
@@ -69,9 +69,11 @@
 				};
 
 			case 'modified':
-				return (a: TaskContainer, b: TaskContainer) => a.valid_from < b.valid_from;
+				return (a: TaskContainer, b: TaskContainer) =>
+					b.valid_from.getTime() - a.valid_from.getTime();
 			case 'alpha':
-				return (a: TaskContainer, b: TaskContainer) => a.payload.title > b.payload.title;
+				return (a: TaskContainer, b: TaskContainer) =>
+					a.payload.title.localeCompare(b.payload.title);
 		}
 	}
 </script>
