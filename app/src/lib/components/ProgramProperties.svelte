@@ -11,6 +11,7 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditablePDF from '$lib/components/EditablePDF.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
+	import EditableProgramStatus from '$lib/components/EditableProgramStatus.svelte';
 	import EditableProgramType from '$lib/components/EditableProgramType.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -54,6 +55,8 @@
 		<EditableChapterType {editable} bind:value={container.payload.chapterType} />
 
 		<EditableLevel {editable} bind:value={container.payload.level} />
+
+		<EditableProgramStatus {editable} bind:value={container.payload.programStatus} />
 
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState

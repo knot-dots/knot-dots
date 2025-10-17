@@ -38,7 +38,7 @@
 						{/if}
 					{/await}
 					<footer>
-						<button class="primary" type="submit">{$_('import.submit')}</button>
+						<button class="button-primary" type="submit">{$_('import.submit')}</button>
 					</footer>
 				</form>
 			</div>

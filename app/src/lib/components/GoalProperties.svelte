@@ -5,6 +5,7 @@
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
+	import EditableGoalStatus from '$lib/components/EditableGoalStatus.svelte';
 	import EditableGoalType from '$lib/components/EditableGoalType.svelte';
 	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
@@ -63,6 +64,8 @@
 
 	{#snippet general()}
 		<EditableGoalType {editable} bind:value={container.payload.goalType} />
+
+		<EditableGoalStatus {editable} bind:value={container.payload.goalStatus} />
 
 		<EditableHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 
