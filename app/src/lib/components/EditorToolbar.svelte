@@ -14,7 +14,7 @@
 		show: boolean;
 	}
 
-	const { ctx, show = false } = $props();
+	const { ctx, show = false }: Props = $props();
 
 	const onClick = (fn: (ctx: Ctx) => void) => (e: MouseEvent) => {
 		e.preventDefault();

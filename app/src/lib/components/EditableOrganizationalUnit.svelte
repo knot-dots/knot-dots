@@ -5,10 +5,10 @@
 	interface Props {
 		editable?: boolean;
 		organization: string;
-		value: string;
+		value: string | null;
 	}
 
-	let { editable = false, organization, value = $bindable() } = $props();
+	let { editable = false, organization, value = $bindable() }: Props = $props();
 </script>
 
 <div class="label">{$_('organizational_unit')}</div>

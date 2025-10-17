@@ -12,7 +12,7 @@
 		value: TaskStatus[];
 	}
 
-	let { value = $bindable() } = $props();
+	let { value = $bindable() }: Props = $props();
 
 	const popover = createPopover({ label: $_('filter') });
 
