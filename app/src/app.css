@@ -144,6 +144,15 @@
 	--color-is-prerequisite-of: #7ad0ff;
 	--color-is-sub-target-of: #7ad0ff;
 	--color-is-superordinate-of: #7ad0ff;
+
+	--color-background-adopted: #fef7ea;
+	--color-background-done: #e3f5f7;
+	--color-background-idea: #f9e4e7;
+	--color-background-in-implementation: #fffeeb;
+	--color-background-in-operation: #edfbf1;
+	--color-background-in-planning: #fef1e7;
+	--color-background-rejected: #def0fd;
+
 	--gradient-primary: linear-gradient(45deg, rgba(77, 195, 197, 1) 0%, rgba(33, 165, 237, 1) 100%);
 	--gradient-first-column: linear-gradient(
 		90deg,
@@ -170,32 +179,13 @@
 		rgba(40, 169, 231, 0.15) 0%,
 		rgba(32, 164, 238, 0.15) 100%
 	);
-	--gradient-idea: linear-gradient(90deg, rgba(218, 75, 96, 0.15) 0%, rgba(225, 95, 96, 0.15) 100%);
-	--gradient-in-planning: linear-gradient(
-		90deg,
-		rgba(241, 140, 95, 0.15) 0%,
-		rgb(254, 183, 97, 0.15) 100%
-	);
-	--gradient-in-implementation: linear-gradient(
-		90deg,
-		rgba(252, 205, 108, 0.15) 0%,
-		rgba(245, 255, 134, 0.15) 100%
-	);
-	--gradient-in-operation: linear-gradient(
-		90deg,
-		rgba(110, 218, 166, 0.15) 0%,
-		rgba(168, 234, 152, 0.15) 100%
-	);
-	--gradient-done: linear-gradient(
-		90deg,
-		rgba(70, 190, 203, 0.15) 40.28%,
-		rgba(110, 218, 166, 0.15) 100%
-	);
-	--gradient-rejected: linear-gradient(
-			90deg,
-			rgba(40, 169, 231, 0.15) 0%,
-			rgba(32, 164, 238, 0.15) 100%
-	);
+	--gradient-after-idea: linear-gradient(90deg, var(--color-background-idea) 0%, rgba(249, 228, 231, 0) 50%);
+	--gradient-after-in-planning: linear-gradient(90deg, var(--color-background-in-planning) 0%, rgba(254, 241, 231, 0) 50%);
+	--gradient-after-adopted: linear-gradient(90deg, var(--color-background-adopted) 0%, rgba(254, 247, 234, 0) 50%);
+	--gradient-after-in-implementation: linear-gradient(90deg, var(--color-background-in-implementation) 0%, rgba(255, 254, 235, 0) 50%);
+	--gradient-after-in-operation: linear-gradient(90deg, var(--color-background-in-operation) 0%, rgba(237, 251, 241, 0) 50%);
+	--gradient-after-done: linear-gradient(90deg, var(--color-background-done) 0%, rgba(227, 245, 247, 0) 50%);
+
 	--color-hover-neutral: #b4e1f7;
 	--color-hover-idea: rgba(218, 75, 96, 0.35);
 	--color-hover-in-planning: rgba(241, 140, 95, 0.35);
@@ -1238,37 +1228,42 @@ label > input[type='checkbox'].toggle {
 
 .badge.badge--red {
 	--badge-background-color: var(--color-red-100);
-	--badge-color: var(--color-red-800);
+	--badge-color: var(--color-red-700);
 }
 
 .badge.badge--orange {
 	--badge-background-color: var(--color-orange-100);
-	--badge-color: var(--color-orange-800);
+	--badge-color: var(--color-orange-700);
 }
 
 .badge.badge--pink {
 	--badge-background-color: var(--color-pink-100);
-	--badge-color: var(--color-pink-800);
+	--badge-color: var(--color-pink-700);
 }
 
 .badge.badge--purple {
 	--badge-background-color: var(--color-purple-100);
-	--badge-color: var(--color-purple-800);
+	--badge-color: var(--color-purple-700);
 }
 
 .badge.badge--yellow {
 	--badge-background-color: var(--color-yellow-100);
-	--badge-color: var(--color-yellow-800);
+	--badge-color: var(--color-yellow-700);
+}
+
+.badge.badge--amber {
+	--badge-background-color: var(--color-amber-100);
+	--badge-color: var(--color-amber-700);
 }
 
 .badge.badge--green {
 	--badge-background-color: var(--color-green-100);
-	--badge-color: var(--color-green-800);
+	--badge-color: var(--color-green-700);
 }
 
 .badge.badge--teal {
 	--badge-background-color: var(--color-teal-100);
-	--badge-color: var(--color-teal-800);
+	--badge-color: var(--color-teal-700);
 }
 
 .badge > svg {
