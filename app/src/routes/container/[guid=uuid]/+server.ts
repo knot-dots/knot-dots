@@ -2,8 +2,13 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
-import { etag, predicates } from '$lib/models';
-import { deleteContainer, deleteContainerRecursively, getContainerByGuid } from '$lib/server/db';
+import { etag, isOrganizationalUnitContainer, predicates } from '$lib/models';
+import {
+	deleteContainer,
+	deleteContainerRecursively,
+	deleteOrganizationalUnitContainer,
+	getContainerByGuid
+} from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -46,12 +51,21 @@ export const DELETE = (async ({ locals, params, request }) => {
 			);
 			return new Response(null, { status: 204 });
 		} else if (ability.can('delete', container)) {
-			await locals.pool.connect(
-				deleteContainer({
-					...container,
-					user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
-				})
-			);
+			if (isOrganizationalUnitContainer(container)) {
+				await locals.pool.connect(
+					deleteOrganizationalUnitContainer({
+						...container,
+						user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
+					})
+				);
+			} else {
+				await locals.pool.connect(
+					deleteContainer({
+						...container,
+						user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
+					})
+				);
+			}
 			return new Response(null, { status: 204 });
 		} else {
 			error(403, { message: unwrapFunctionStore(_)('error.unauthorized') });

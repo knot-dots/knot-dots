@@ -315,6 +315,26 @@ export function deleteContainerRecursively(container: AnyContainer) {
 	};
 }
 
+export function deleteOrganizationalUnitContainer(container: OrganizationalUnitContainer) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			await deleteContainer(container)(txConnection);
+
+			const ownedContainers = await getManyContainers(
+				[container.organization],
+				{
+					organizationalUnits: [container.guid]
+				},
+				''
+			)(txConnection);
+
+			for (const ownedContainer of ownedContainers) {
+				await deleteContainer(ownedContainer)(txConnection);
+			}
+		});
+	};
+}
+
 export function getContainerByGuid(guid: string) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer> => {
 		const containerResult = await connection.one(sql.typeAlias('anyContainer')`
