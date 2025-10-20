@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import DragHandle from '~icons/knotdots/draghandle';
-	import autoSave from '$lib/client/autoSave';
+	import { invalidate } from '$app/navigation';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import saveContainer from '$lib/client/saveContainer';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
@@ -41,12 +42,32 @@
 
 	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 
-	const handleSubmit = autoSave(container, 2000);
+	const handleSubmit = autoSave(2000);
 
 	function stopPropagation(fn: (event: Event) => void) {
 		return function (this: Event, event: Event) {
 			event.stopPropagation();
 			fn.call(this, event);
+		};
+	}
+
+	function autoSave(delay: number) {
+		let timer: ReturnType<typeof setTimeout>;
+
+		return (container: AnyContainer) => (event: SubmitEvent) => {
+			event.preventDefault();
+			clearTimeout(timer);
+			timer = setTimeout(async () => {
+				const response = await saveContainer(container);
+				if (response.ok) {
+					const updatedContainer = await response.json();
+					container.revision = updatedContainer.revision;
+					await invalidate('containers');
+				} else {
+					const error = await response.json();
+					alert(error.message);
+				}
+			}, delay);
 		};
 	}
 </script>
@@ -58,7 +79,7 @@
 		</span>
 	{/if}
 
-	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit} novalidate>
+	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
 		{#if isEffectCollectionContainer(container)}
 			<EditableEffectCollection
 				bind:container
