@@ -78,6 +78,7 @@
 				return;
 			}
 
+			sections = [...sections.slice(0, position), result.data, ...sections.slice(position)];
 			container.relation = [
 				...sections.map(({ guid }, index) => ({
 					object: container.guid,
