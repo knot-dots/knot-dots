@@ -90,7 +90,6 @@
 					({ predicate }) => predicate !== predicates.enum['is-section-of']
 				)
 			];
-			relatedContainers = [...relatedContainers, result.data];
 
 			const url = `/container/${container.guid}/relation`;
 			await fetch(url, {
