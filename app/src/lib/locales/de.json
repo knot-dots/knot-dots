@@ -72,6 +72,7 @@
 	"creator": "Autor*in",
 	"days_ago": "{daysAgo, plural, one {# Tag} other {# Tage}}",
 	"delete": "Löschen",
+	"delete.name": "{name} löschen",
 	"description": "Beschreibung",
 	"download": "Herunterladen",
 	"editor": {

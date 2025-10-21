@@ -481,6 +481,15 @@ button.button-alternative:hover,
 	color: var(--color-primary-700);
 }
 
+button.button-red, .button.button-red {
+	--button-active-background: var(--color-red-900);
+	--button-background: var(--color-red-700);
+	--button-hover-background: var(--color-red-800);
+
+	border: none;
+	color: var(--color-white);
+}
+
 button.button-ai {
 	--button-active-background: linear-gradient(62deg, rgba(240, 82, 82, 0.40) 17.85%, rgba(154, 122, 225, 0.40) 46.05%, rgba(22, 189, 202, 0.40) 74.26%), white;
 	--button-background: transparent;

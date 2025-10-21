@@ -62,7 +62,12 @@
 			{/if}
 		</header>
 
-		<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
+		<PropertiesDialog
+			bind:dialog
+			{container}
+			{relatedContainers}
+			title={$_('organization.properties.title')}
+		>
 			<OrganizationProperties bind:container editable />
 		</PropertiesDialog>
 
