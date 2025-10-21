@@ -180,6 +180,7 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		flex-shrink: 0;
+		margin-top: auto;
 		overflow: hidden;
 	}
 

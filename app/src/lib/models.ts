@@ -153,9 +153,22 @@ export const predicates = z.enum(predicateValues);
 
 export type Predicate = z.infer<typeof predicates>;
 
+const goalStatusValues = [
+	'goal_status.idea',
+	'goal_status.in_planning',
+	'goal_status.adopted',
+	'goal_status.achieved',
+	'goal_status.rejected'
+] as const;
+
+export const goalStatus = z.enum(goalStatusValues);
+
+export type GoalStatus = z.infer<typeof goalStatus>;
+
 const statusValues = [
 	'status.idea',
 	'status.in_planning',
+	'status.adopted',
 	'status.in_implementation',
 	'status.in_operation',
 	'status.done',
@@ -165,6 +178,19 @@ const statusValues = [
 export const status = z.enum(statusValues);
 
 export type Status = z.infer<typeof status>;
+
+const programStatusValues = [
+	'program_status.idea',
+	'program_status.in_planning',
+	'program_status.adopted',
+	'program_status.in_implementation',
+	'program_status.done',
+	'program_status.rejected'
+] as const;
+
+export const programStatus = z.enum(programStatusValues);
+
+export type ProgramStatus = z.infer<typeof programStatus>;
 
 const ruleStatusValues = [
 	'rule_status.idea',
@@ -551,6 +577,7 @@ const goalPayload = basePayload.extend({
 		.string()
 		.refine((v) => z.coerce.date().safeParse(v))
 		.optional(),
+	goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
 	goalType: goalType.optional(),
 	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 	progress: z.number().nonnegative().optional(),
@@ -749,6 +776,7 @@ const programPayload = basePayload
 		image: z.string().url().optional(),
 		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
+		programStatus: programStatus.default(programStatus.enum['program_status.idea']),
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
 	})

@@ -6,16 +6,20 @@
 	import { page } from '$app/state';
 	import {
 		containerOfType,
+		type GoalStatus,
 		isGoalContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
+		isProgramContainer,
 		isRuleContainer,
 		isTaskContainer,
+		type Level,
 		type NewContainer,
 		overlayKey,
 		type PartialRelation,
 		type PayloadType,
 		predicates,
+		type ProgramStatus,
 		type RuleStatus,
 		type Status,
 		type TaskStatus
@@ -57,8 +61,20 @@
 			container.payload.status = params.get('status') as Status;
 		} else if (isTaskContainer(container) && params.has('taskStatus')) {
 			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
-		} else if (isGoalContainer(container) && params.has('hierarchyLevel')) {
-			container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
+		} else if (isGoalContainer(container)) {
+			if (params.has('hierarchyLevel')) {
+				container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
+			}
+			if (params.has('goalStatus')) {
+				container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
+			}
+		} else if (isProgramContainer(container)) {
+			if (params.has('level')) {
+				container.payload.level = params.get('level') as Level;
+			}
+			if (params.has('programStatus')) {
+				container.payload.programStatus = params.get('programStatus') as ProgramStatus;
+			}
 		}
 
 		container.relation = [
@@ -161,6 +177,7 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-sm);
 		flex-shrink: 0;
+		margin-top: auto;
 		overflow: hidden;
 	}
 

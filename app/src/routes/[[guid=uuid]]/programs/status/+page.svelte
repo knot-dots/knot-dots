@@ -4,36 +4,36 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
-	import { payloadTypes, status } from '$lib/models';
+	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
+	import { payloadTypes, programStatus, status } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
-	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
+	import { programStatusBackgrounds, programStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<MeasuresPage {data}>
+<ProgramsPage {data}>
 	<Board>
-		{#each status.options as statusOption}
+		{#each programStatus.options as statusOption}
 			<BoardColumn
-				--background={statusBackgrounds.get(statusOption)}
-				--hover-border-color={statusHoverColors.get(statusOption)}
+				--background={programStatusBackgrounds.get(statusOption)}
+				--hover-border-color={programStatusHoverColors.get(statusOption)}
 				addItemUrl={$mayCreateContainer(
 					payloadTypes.enum.measure,
 					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
 				)
-					? `#create=measure&status=${statusOption}`
+					? `#create=program&programStatus=${statusOption}`
 					: undefined}
 				title={$_(statusOption)}
 			>
 				<MaybeDragZone
 					containers={data.containers.filter(
-						(c) => 'status' in c.payload && c.payload.status === statusOption
+						(c) => 'programStatus' in c.payload && c.payload.programStatus === statusOption
 					)}
 				/>
 			</BoardColumn>
 		{/each}
 	</Board>
-	<Help slug="measures-status" />
-</MeasuresPage>
+	<Help slug="programs-status" />
+</ProgramsPage>
