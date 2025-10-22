@@ -1563,7 +1563,8 @@ export function getAdministrativeAreas(name: string) {
 			FROM administrative_area_open_street_map osm
 			JOIN spatial_feature sf ON osm.boundary = sf.guid
 			LEFT JOIN administrative_area_bbsr bbsr USING (official_regional_code)
-			WHERE osm.name ILIKE ${name + '%'}
+			WHERE osm.official_regional_code IS NOT NULL
+				AND regexp_replace(osm.name, '^(Landkreis|Kreis)\\s+', '') ILIKE ${name + '%'}
 			ORDER BY osm.name
 		`);
 	};
