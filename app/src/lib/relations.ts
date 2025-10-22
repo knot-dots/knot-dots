@@ -5,13 +5,12 @@ export type Node = Pick<AnyContainer, 'guid' | 'relation'>;
 export function relatedSubjectNodesByPredicate<T extends Node>(
 	container: Node,
 	predicate: Predicate,
-	containers: ArrayIterator<T>
+	containers: Array<T>
 ) {
 	return containers
 		.filter(({ guid }) => guid !== container.guid)
 		.filter(({ guid }) =>
 			container.relation
-				.values()
 				.filter((relation) => relation.predicate === predicate)
 				.some(({ subject }) => subject === guid)
 		);
@@ -20,13 +19,12 @@ export function relatedSubjectNodesByPredicate<T extends Node>(
 export function relatedObjectNodesByPredicate<T extends Node>(
 	container: Node,
 	predicate: Predicate,
-	containers: ArrayIterator<T>
+	containers: Array<T>
 ) {
 	return containers
 		.filter(({ guid }) => guid !== container.guid)
 		.filter(({ guid }) =>
 			container.relation
-				.values()
 				.filter((relation) => relation.predicate === predicate)
 				.some(({ object }) => object === guid)
 		);
@@ -36,20 +34,12 @@ export function hasSection<T extends AnyContainer>(
 	container: { guid: string; relation: Relation[] },
 	containers: T[]
 ): T[] {
-	return relatedSubjectNodesByPredicate(
-		container,
-		predicates.enum['is-section-of'],
-		containers.values()
-	).toArray();
+	return relatedSubjectNodesByPredicate(container, predicates.enum['is-section-of'], containers);
 }
 
 export function sectionOf<T extends AnyContainer>(
 	container: { guid: string; relation: Relation[] },
 	containers: T[]
 ): T | undefined {
-	return relatedObjectNodesByPredicate(
-		container,
-		predicates.enum['is-section-of'],
-		containers.values()
-	).next().value;
+	return relatedObjectNodesByPredicate(container, predicates.enum['is-section-of'], containers)[0];
 }
