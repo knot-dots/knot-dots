@@ -20,11 +20,14 @@
 		selected: value
 	});
 
-	let filterCache = $combobox.filter.substring(0, 2) || value?.nameOSM.substring(0, 2) || '';
+	let filterCache =
+		$combobox.filter.replace(/^(\s+Landkreis|Kreis)\s+/, '').substring(0, 2) ||
+		value?.nameOSM.substring(0, 2) ||
+		'';
 
 	let name = $derived.by(() => {
 		if ($combobox.filter.length > 1) {
-			filterCache = $combobox.filter.replace(/\s+/g, '').substring(0, 2);
+			filterCache = $combobox.filter.replace(/^(\s+Landkreis|Kreis)\s+/, '').substring(0, 2);
 		}
 		return filterCache;
 	});
@@ -47,8 +50,11 @@
 		<div class="dropdown-panel">
 			<ul use:combobox.items>
 				{#each administrativeAreasPromise.current?.filter((area) => area.nameOSM
+						.replace(/^(\s+Landkreis|Kreis)\s+/, '')
 						.toLowerCase()
-						.includes($combobox.filter.toLowerCase().replace(/^\s+/g, ''))) ?? [] as value}
+						.includes($combobox.filter
+								.replace(/^(\s+Landkreis|Kreis)\s+/, '')
+								.toLowerCase())) ?? [] as value}
 					{@const active = $combobox.active?.officialRegionalCode === value.officialRegionalCode}
 					{@const selected =
 						$combobox.selected?.officialRegionalCode === value.officialRegionalCode}

@@ -315,6 +315,52 @@ export function deleteContainerRecursively(container: AnyContainer) {
 	};
 }
 
+export function deleteOrganizationContainer(container: OrganizationContainer) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			await deleteContainer(container)(txConnection);
+
+			const ownedContainers = await getManyContainers(
+				[container.organization],
+				{},
+				''
+			)(txConnection);
+
+			for (const ownedContainer of ownedContainers) {
+				await deleteContainer(ownedContainer)(txConnection);
+			}
+
+			const organizationalUnitContainers = await getManyOrganizationalUnitContainers({
+				organization: container.guid
+			})(txConnection);
+
+			for (const organizationalUnitContainer of organizationalUnitContainers) {
+				await deleteContainer(organizationalUnitContainer)(txConnection);
+			}
+		});
+	};
+}
+
+export function deleteOrganizationalUnitContainer(container: OrganizationalUnitContainer) {
+	return async (connection: DatabaseConnection) => {
+		return connection.transaction(async (txConnection) => {
+			await deleteContainer(container)(txConnection);
+
+			const ownedContainers = await getManyContainers(
+				[container.organization],
+				{
+					organizationalUnits: [container.guid]
+				},
+				''
+			)(txConnection);
+
+			for (const ownedContainer of ownedContainers) {
+				await deleteContainer(ownedContainer)(txConnection);
+			}
+		});
+	};
+}
+
 export function getContainerByGuid(guid: string) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer> => {
 		const containerResult = await connection.one(sql.typeAlias('anyContainer')`
@@ -1517,7 +1563,8 @@ export function getAdministrativeAreas(name: string) {
 			FROM administrative_area_open_street_map osm
 			JOIN spatial_feature sf ON osm.boundary = sf.guid
 			LEFT JOIN administrative_area_bbsr bbsr USING (official_regional_code)
-			WHERE osm.name ILIKE ${name + '%'}
+			WHERE osm.official_regional_code IS NOT NULL
+				AND regexp_replace(osm.name, '^(Landkreis|Kreis)\\s+', '') ILIKE ${name + '%'}
 			ORDER BY osm.name
 		`);
 	};

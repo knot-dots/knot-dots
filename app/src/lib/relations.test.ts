@@ -243,8 +243,8 @@ describe('relatedObjectNodesByPredicate', () => {
 		const relatedContainers = relatedObjectNodesByPredicate(
 			containers.get('899c59c1-d2fa-47b1-a87e-465c1ff7fec4') as Node,
 			predicates.enum['is-part-of'],
-			containers.values()
-		).toArray();
+			containers.values().toArray()
+		);
 
 		expect(relatedContainers).toMatchObject([
 			expect.objectContaining({ guid: '707d816d-6ee0-46f6-aee2-bca2d295566a' })
@@ -255,8 +255,8 @@ describe('relatedObjectNodesByPredicate', () => {
 		const relatedContainers = relatedObjectNodesByPredicate(
 			containers.get('899c59c1-d2fa-47b1-a87e-465c1ff7fec4') as Node,
 			predicates.enum['is-part-of-program'],
-			containers.values()
-		).toArray();
+			containers.values().toArray()
+		);
 
 		expect(relatedContainers).toMatchObject([
 			expect.objectContaining({ guid: 'f27b7194-1669-444a-ac0d-6380ed80e619' })
@@ -269,8 +269,8 @@ describe('relatedSubjectNodesByPredicate', () => {
 		const relatedContainers = relatedSubjectNodesByPredicate(
 			containers.get('899c59c1-d2fa-47b1-a87e-465c1ff7fec4') as Node,
 			predicates.enum['is-part-of-measure'],
-			containers.values()
-		).toArray();
+			containers.values().toArray()
+		);
 
 		expect(relatedContainers).toMatchObject([
 			expect.objectContaining({ guid: '706fa151-c541-45bd-ab2d-f0391665bda8' }),
