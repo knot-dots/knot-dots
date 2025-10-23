@@ -42,7 +42,7 @@
 
 		if (
 			selected === undefined ||
-			selected.officialRegionalCode === container.payload.officialRegionalCode
+			selected?.officialRegionalCode === container.payload.officialRegionalCode
 		) {
 			return;
 		}
