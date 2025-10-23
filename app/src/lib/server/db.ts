@@ -790,22 +790,24 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.subject
-					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
+					AND cr.predicate IN (${predicates.enum['is-part-of']})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
 				WHERE c.valid_currently
+					AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
 			), is_part_of_relation_up(path, is_cycle) AS (
 				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS subject
 				UNION ALL
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.object
-					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
+					AND cr.predicate IN (${predicates.enum['is-part-of']})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
 				WHERE c.valid_currently
+				  AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
 			), container_result AS (
 				SELECT c.*
 				FROM (
