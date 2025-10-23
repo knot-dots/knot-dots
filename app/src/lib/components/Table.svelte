@@ -13,7 +13,11 @@
 
 	let { columns, rows: originalRows }: Props = $props();
 
-	let rows = $state(originalRows);
+	let rows = $state($state.snapshot(originalRows)) as Container[];
+
+	$effect(() => {
+		rows = $state.snapshot(originalRows) as Container[];
+	});
 </script>
 
 <div class="table-wrapper">
