@@ -113,6 +113,6 @@
 	.dropdown-panel :global(.map) {
 		border-radius: 8px;
 		flex-shrink: 0;
-		width: 20rem;
+		width: 50%;
 	}
 </style>
