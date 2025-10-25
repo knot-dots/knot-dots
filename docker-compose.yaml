@@ -11,6 +11,7 @@ services:
       storage:
         condition: service_started
     env_file:
+      - ./db/.env
       - ./app/.env
     ports:
       - "5173:5173"
@@ -20,9 +21,9 @@ services:
     build:
       context: db
     env_file:
-      - ./app/.env
+      - ./db/.env
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U dev" ]
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
       interval: 3s
       timeout: 3s
       retries: 3
@@ -33,6 +34,7 @@ services:
       db:
         condition: service_healthy
     env_file:
+      - ./db/.env
       - ./app/.env
     profiles:
       - import
@@ -45,6 +47,7 @@ services:
       db:
         condition: service_healthy
     env_file:
+      - ./db/.env
       - ./app/.env
     volumes:
       - ./migrate/sql:/srv/migrations
@@ -78,6 +81,7 @@ services:
       migrate:
         condition: service_completed_successfully
     env_file:
+      - ./db/.env
       - ./app/.env
     environment:
       - PUBLIC_BASE_URL=http://localhost:3000
