@@ -27,6 +27,8 @@ services:
       interval: 3s
       timeout: 3s
       retries: 3
+    volumes:
+      - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
   import:
     build:
       context: import
@@ -57,9 +59,11 @@ services:
       - start-dev
       - --import-realm
       - --log-console-output=json
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./keycloak/.env
     healthcheck:
       test: [ "CMD-SHELL", "printf '' 2>>/dev/null >>/dev/tcp/localhost/8080" ]
       interval: 3s
