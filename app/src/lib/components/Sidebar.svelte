@@ -373,7 +373,7 @@
 		}
 
 		.sidebar-menu:not(.collapsed) {
-			width: var(--sidebar-max-width);
+			max-width: var(--sidebar-max-width);
 		}
 
 		.sidebar-menu:not(.collapsed) .sidebar-menu-item > span {
