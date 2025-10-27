@@ -147,6 +147,15 @@
 						{$_('imprint')}
 					</a>
 				</li>
+				<li>
+					<a
+						class="sidebar-menu-item sidebar-menu-item--secondary"
+						href="{env.PUBLIC_BASE_URL}/datenschutz"
+						rel="external"
+					>
+						{$_('privacy_policy')}
+					</a>
+				</li>
 			</ul>
 		</li>
 	{/if}
