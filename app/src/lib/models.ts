@@ -275,6 +275,7 @@ const goalTypeValues = [
 	'goal_type.key_performance_indicator',
 	'goal_type.operational_goal',
 	'goal_type.set_of_measures',
+	'goal_type.profile',
 	'goal_type.milestone',
 	'goal_type.sprint',
 	'goal_type.input',
