@@ -212,6 +212,7 @@
 	"indicator.wanted_values": "Wanted values",
 	"indicator_category": "Category",
 	"indicator_category.custom": "Custom",
+	"indicator_category.fgk": "FGK core indicators",
 	"indicator_category.kpi": "KPI",
 	"indicator_category.mpsc": "MPSC",
 	"indicator_category.sdg": "SDG",

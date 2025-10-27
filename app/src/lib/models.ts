@@ -369,6 +369,7 @@ export const organizationCategories = z.enum(organizationCategoryValues);
 export type OrganizationCategory = z.infer<typeof organizationCategories>;
 
 const indicatorCategoryValues = [
+	'indicator_category.fgk',
 	'indicator_category.kpi',
 	'indicator_category.mpsc',
 	'indicator_category.sdg',

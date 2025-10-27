@@ -213,6 +213,7 @@
 	"indicator.wanted_values": "Zielwerte",
 	"indicator_category": "Indikatoren-Set",
 	"indicator_category.custom": "Eigene",
+	"indicator_category.fgk": "FGK-Kernindikatoren",
 	"indicator_category.kpi": "KPI",
 	"indicator_category.mpsc": "MPSC",
 	"indicator_category.sdg": "SDG",
