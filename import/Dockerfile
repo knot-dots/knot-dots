@@ -1,4 +1,4 @@
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 WORKDIR /srv/app
 COPY package*.json ./
 RUN npm clean-install --silent
