@@ -50,6 +50,7 @@
 		"prettier-plugin-svelte": "^3.4.0",
 		"rehype-extract-excerpt": "^0.4.0",
 		"serialize-error": "^12.0.0",
+		"slonik": "^48.7.0",
 		"strip-markdown": "^6.0.0",
 		"svelte": "^5.42.3",
 		"svelte-check": "^4.3.3",
@@ -63,7 +64,8 @@
 		"unplugin-icons": "^22.5.0",
 		"uuid": "^13.0.0",
 		"vite": "^7.1.12",
-		"vitest": "^4.0.4"
+		"vitest": "^4.0.4",
+		"zod": "^4.1.12"
 	},
 	"type": "module",
 	"dependencies": {
@@ -82,9 +84,7 @@
 		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.2",
 		"roarr": "^7.21.2",
-		"slonik": "^47.3.2",
-		"unified": "^11.0.5",
-		"zod": "^3.25.76"
+		"unified": "^11.0.5"
 	},
 	"optionalDependencies": {
 		"@rollup/rollup-linux-arm64-gnu": "^4.30.1",
