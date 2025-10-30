@@ -105,6 +105,10 @@
 					({ predicate }) => predicate !== predicates.enum['is-section-of']
 				)
 			];
+			relatedContainers = [
+				...relatedContainers.filter(({ guid }) => !sections.map(({ guid }) => guid).includes(guid)),
+				...sections
+			];
 
 			const url = `/container/${container.guid}/relation`;
 			await fetch(url, {
