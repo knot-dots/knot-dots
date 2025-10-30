@@ -78,7 +78,22 @@
 				return;
 			}
 
-			sections = [...sections.slice(0, position), result.data, ...sections.slice(position)];
+			sections = [
+				...sections.slice(0, position),
+				result.data,
+				...sections.slice(position).map((s, i) => ({
+					...s,
+					relation: [
+						{
+							object: container.guid,
+							position: position + i + 1,
+							predicate: predicates.enum['is-section-of'],
+							subject: s.guid
+						},
+						...s.relation.filter(({ predicate }) => predicate !== predicates.enum['is-section-of'])
+					]
+				}))
+			];
 			container.relation = [
 				...sections.map(({ guid }, index) => ({
 					object: container.guid,
