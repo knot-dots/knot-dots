@@ -82,6 +82,7 @@ const payloadTypeValues = [
 	'program',
 	'program_collection',
 	'progress',
+	'report',
 	'resource',
 	'resource_collection',
 	'rule',
@@ -858,6 +859,17 @@ const effectCollectionPayload = z
 
 const initialEffectCollectionPayload = effectCollectionPayload;
 
+const reportPayload = z
+	.object({
+		title: z.string().trim(),
+		description: z.string().trim().optional(),
+		type: z.literal(payloadTypes.enum.report),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialReportPayload = reportPayload.partial({ title: true });
+
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
@@ -1004,6 +1016,7 @@ const payload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	reportPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1055,6 +1068,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	reportPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1357,6 +1371,18 @@ export function isProgressContainer(
 	return container.payload.type === payloadTypes.enum.progress;
 }
 
+const reportContainer = container.extend({
+	payload: reportPayload
+});
+
+export type ReportContainer = z.infer<typeof reportContainer>;
+
+export function isReportContainer(
+	container: AnyContainer | EmptyContainer
+): container is ReportContainer {
+	return container.payload.type === payloadTypes.enum.report;
+}
+
 const ruleContainer = container.extend({
 	payload: rulePayload
 });
@@ -1639,6 +1665,7 @@ export const emptyContainer = newContainer.extend({
 		initialProgramPayload,
 		initialProgressPayload,
 		initialRulePayload,
+		initialReportPayload,
 		initialResourceCollectionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,

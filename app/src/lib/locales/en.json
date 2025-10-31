@@ -419,6 +419,8 @@
 		"selected_is_superordinate_of_dragged": "“{selected}” is superordinate of …"
 	},
 	"relations": "Relations",
+	"report": "Report",
+	"report_section": "Section",
 	"resource": "Resource",
 	"resources": "Resources",
 	"role": {

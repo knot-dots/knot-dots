@@ -420,6 +420,8 @@
 		"selected_is_superordinate_of_dragged": "„{selected}“ ist … übergeordnet"
 	},
 	"relations": "Beziehungen",
+	"report": "Bericht",
+	"report_section": "Abschnitt",
 	"resource": "Ressource",
 	"resources": "Ressourcen",
 	"role": {
@@ -574,7 +576,7 @@
 	"upload.image.remove": "Bild löschen",
 	"upload.file.choose": "Datei wählen",
 	"upload.file.help": "PDF-, Word-, Excel-Dateien, maximal 100 MB",
-	"upload.pdf.remove": "Datei löschen",
+	"upload.file.remove": "Datei löschen",
 	"upload.pdf.choose": "PDF wählen",
 	"upload.pdf.help": "PDF-Dateien, maximal 100 MB",
 	"upload.pdf.remove": "PDF löschen",
