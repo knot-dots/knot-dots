@@ -6,13 +6,26 @@ A [SvelteKit](https://kit.svelte.dev) web application for tracing administrative
 
 The development environment relies on [Docker Compose](https://docs.docker.com/compose/) so make sure it is installed on your system.
 
-You can start the SvelteKit app in development mode with all dependant services:
+You can start the SvelteKit app in development mode with all dependent services:
 
 ```bash
 docker compose up -d --build
 ```
 
 Visit http://localhost:5173 to verify that it is up and running.
+
+To use the identity provider service, add the following line to /etc/hosts:
+
+```
+127.0.0.1      keycloak
+```
+
+The identity provider is initialised with a sysadmin user. Use these credentials to sign in:
+
+```
+Email: admin@knotdots.net
+Password: test
+```
 
 ## Database
 
