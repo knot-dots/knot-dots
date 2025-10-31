@@ -49,7 +49,7 @@ const createResultParserInterceptor = (): Interceptor => {
 				return row;
 			}
 
-			const validationResult = resultParser.safeParse(row);
+			const validationResult = (resultParser as z.ZodAny).safeParse(row);
 
 			if (!validationResult.success) {
 				throw new SchemaValidationError(actualQuery, row, validationResult.error.issues);

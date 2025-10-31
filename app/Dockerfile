@@ -1,4 +1,4 @@
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 WORKDIR /srv/app
 COPY package*.json ./
 RUN npm clean-install --silent
@@ -16,10 +16,14 @@ FROM builder AS dev
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
-FROM node:22-slim AS production
+FROM node:24-slim AS pre-production
 WORKDIR /srv/app
-COPY --from=builder /srv/app/package.json .
-COPY --from=builder /srv/app/node_modules ./node_modules
+COPY package*.json ./
+RUN npm clean-install --production --silent
+
+FROM gcr.io/distroless/nodejs24-debian12 AS production
+WORKDIR /srv/app
+COPY --from=pre-production /srv/app/node_modules ./node_modules
 COPY --from=builder /srv/app/build ./build
 EXPOSE 3000
-CMD ["node", "build"]
+CMD ["build"]

@@ -23,7 +23,7 @@ const createResultParserInterceptor = (): Interceptor => {
 				return row;
 			}
 
-			const validationResult = resultParser.safeParse(row);
+			const validationResult = (resultParser as z.ZodAny).safeParse(row);
 
 			if (!validationResult.success) {
 				throw new SchemaValidationError(actualQuery, row, validationResult.error.issues);
@@ -48,15 +48,9 @@ export async function getPool() {
 
 const empty = z.object({}).strict();
 
-const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+const jsonSchema = z.json();
 
-type Literal = z.infer<typeof literalSchema>;
-
-export type Json = Literal | { [key: string]: Json } | Json[];
-
-const jsonSchema: z.ZodType<Json> = z.lazy(() =>
-	z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
-);
+export type Json = z.infer<typeof jsonSchema>;
 
 export const administrativeAreaBBSR = z.object({
 	area: z.preprocess((v) => parseFloat(String(v).replace(',', '.')), z.number().positive()),
