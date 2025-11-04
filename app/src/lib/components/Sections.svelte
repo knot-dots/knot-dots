@@ -15,7 +15,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
 		container: AnyContainer;
@@ -158,7 +158,7 @@
 </script>
 
 <div class="sections">
-	{#if $applicationState.containerDetailView.editable}
+	{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 		<div class="section-wrapper">
 			<div class="add-section-wrapper">
 				<AddSectionMenu
@@ -179,7 +179,7 @@
 			<li animate:flip={{ duration: 100 }} class="section-wrapper">
 				<Section bind:relatedContainers bind:container={sections[i]} />
 
-				{#if $applicationState.containerDetailView.editable}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					<div class="add-section-wrapper">
 						<AddSectionMenu
 							bind:relatedContainers
