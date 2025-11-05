@@ -76,7 +76,7 @@
 </script>
 
 <header>
-	<h2 class="details-heading">{$_('tasks')}</h2>
+	<h2 class="details-heading">{container.payload.title}</h2>
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
