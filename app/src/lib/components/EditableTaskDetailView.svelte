@@ -6,6 +6,7 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import Sections from '$lib/components/Sections.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import { type AnyContainer, type Container, type TaskContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -36,6 +37,8 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
+
+		<Sections bind:container {relatedContainers} />
 	{/snippet}
 </EditableContainerDetailView>
 

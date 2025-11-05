@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { flip } from 'svelte/animate';
+	import { _ } from 'svelte-i18n';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
@@ -70,6 +71,10 @@
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
 				newContainer.payload.title = '';
+			}
+
+			if (payloadType === payloadTypes.enum.task_collection && isContainerWithTitle(newContainer)) {
+				newContainer.payload.title = container.payload.type === payloadTypes.enum.task ? $_('subtasks') : $_('tasks');
 			}
 
 			const response = await saveContainer(newContainer);
