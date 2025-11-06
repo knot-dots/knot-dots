@@ -17,18 +17,21 @@ services:
       - "5173:5173"
     volumes:
       - ./app/src:/srv/app/src
+
   db:
     build:
       context: db
     env_file:
       - ./db/.env
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_USER}" ]
       interval: 3s
       timeout: 3s
       retries: 3
+      start_period: 10s
     volumes:
       - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+
   import:
     build:
       context: import
@@ -42,6 +45,7 @@ services:
       - import
     volumes:
       - ./import/src:/srv/app/src
+
   migrate:
     build:
       context: migrate
@@ -54,6 +58,7 @@ services:
     volumes:
       - ./migrate/sql:/srv/migrations
     working_dir: /srv/migrations
+
   keycloak:
     command:
       - start-dev
@@ -75,6 +80,7 @@ services:
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import
       - ./keycloak/themes:/opt/keycloak/themes
+
   preview:
     build:
       context: app
@@ -93,10 +99,12 @@ services:
       - "3000:3000"
     profiles:
       - qa
+
   smtp:
     image: axllent/mailpit
     ports:
       - "8081:8025"
+
   storage:
     environment:
       COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: upload
