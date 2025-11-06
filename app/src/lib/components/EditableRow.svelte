@@ -1,17 +1,18 @@
 <script lang="ts">
-	import { dragHandle } from 'svelte-dnd-action';
-	import { _, date } from 'svelte-i18n';
-	import DragHandle from '~icons/knotdots/draghandle';
-	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
+	import GoalTypeDropdown from '$lib/components/GoalTypeDropdown.svelte';
+	import HierarchyLevelDropdown from '$lib/components/HierarchyLevelDropdown.svelte';
+	import MeasureTypeDropdown from '$lib/components/MeasureTypeDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
+	import ParentObjectDropdown from '$lib/components/ParentObjectDropdown.svelte';
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
 	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
+	import ProgramTypeDropdown from '$lib/components/ProgramTypeDropdown.svelte';
 	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
@@ -25,10 +26,17 @@
 		isContainerWithDuration,
 		isContainerWithEditorialState,
 		isContainerWithFulfillmentDate,
+		isGoalContainer,
+		isMeasureContainer,
+		isProgramContainer,
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { dragHandle } from 'svelte-dnd-action';
+	import { _, date } from 'svelte-i18n';
+	import DragHandle from '~icons/knotdots/draghandle';
+	import Overlay from '~icons/knotdots/overlay';
 
 	interface Props {
 		columns: string[];
@@ -38,6 +46,10 @@
 	}
 
 	let { columns, container = $bindable(), dragEnabled = false, editable = false }: Props = $props();
+
+	function findParentRel(c: Container) {
+		return c.relation.find((r) => r.predicate === 'is-part-of' && r.subject === c.guid);
+	}
 </script>
 
 <div class="cell cell--action">
@@ -265,6 +277,60 @@
 			organization={container.organization}
 			bind:value={container.organizational_unit}
 		/>
+	</div>
+{/if}
+
+{#if columns.includes('hierarchyLevel')}
+	<div
+		class="cell"
+		class:cell--locked={editable && $ability.cannot('update', container, 'payload.hierarchyLevel')}
+	>
+		{#if isGoalContainer(container)}
+			<HierarchyLevelDropdown
+				editable={editable && $ability.can('update', container, 'payload.hierarchyLevel')}
+				bind:value={container.payload.hierarchyLevel}
+			/>
+		{/if}
+	</div>
+{/if}
+
+{#if columns.includes('objectType')}
+	{#if isGoalContainer(container)}
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container, 'payload.goalType')}
+		>
+			<GoalTypeDropdown
+				editable={editable && $ability.can('update', container, 'payload.goalType')}
+				bind:value={container.payload.goalType}
+			/>
+		</div>
+	{:else if isProgramContainer(container)}
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container, 'payload.programType')}
+		>
+			<ProgramTypeDropdown
+				editable={editable && $ability.can('update', container, 'payload.programType')}
+				bind:value={container.payload.programType}
+			/>
+		</div>
+	{:else if isMeasureContainer(container)}
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container, 'payload.measureType')}
+		>
+			<MeasureTypeDropdown
+				editable={editable && $ability.can('update', container, 'payload.measureType')}
+				bind:value={container.payload.measureType}
+			/>
+		</div>
+	{/if}
+{/if}
+
+{#if columns.includes('parentObject')}
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<ParentObjectDropdown editable={editable && $ability.can('update', container)} bind:container />
 	</div>
 {/if}
 
