@@ -15,7 +15,7 @@
 
 	setContext('relationOverlay', {
 		enabled: true,
-		predicates: [predicates.enum['is-prerequisite-for'], predicates.enum['is-subtask-of']]
+		predicates: [predicates.enum['is-prerequisite-for']]
 	});
 
 	let facets = $derived.by(() => {
@@ -26,8 +26,7 @@
 							'relationType',
 							new Map([
 								[predicates.enum['is-part-of'], 0],
-								[predicates.enum['is-prerequisite-for'], 0],
-								[predicates.enum['is-subtask-of'], 0]
+								[predicates.enum['is-prerequisite-for'], 0]
 							])
 						]
 					]

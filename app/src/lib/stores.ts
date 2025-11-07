@@ -285,7 +285,6 @@ if (browser) {
 					predicates.enum['is-inconsistent-with'],
 					predicates.enum['is-prerequisite-for'],
 					predicates.enum['is-sub-target-of'],
-					predicates.enum['is-subtask-of'],
 					predicates.enum['is-superordinate-of']
 				]
 			})) as Container[];
