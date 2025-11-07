@@ -4,6 +4,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
+	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
@@ -37,6 +38,7 @@
 		isOrganizationContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isReportContainer,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -140,7 +142,14 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
-	let mayAddChapter = $derived(createFeatureDecisions(page.data.features).useChapter());
+	let mayAddChapter = $derived(
+		createFeatureDecisions(page.data.features).useChapter() && isReportContainer(parentContainer)
+	);
+
+	let mayAddReport = $derived(
+		createFeatureDecisions(page.data.features).useReport() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
 
 	let options = $derived(
 		[
@@ -241,6 +250,15 @@
 							icon: Progress,
 							label: $_('progress'),
 							value: payloadTypes.enum.progress
+						}
+					]
+				: []),
+			...(mayAddReport
+				? [
+						{
+							icon: FileChartBar,
+							label: $_('report'),
+							value: payloadTypes.enum.report
 						}
 					]
 				: []),
