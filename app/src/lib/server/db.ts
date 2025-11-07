@@ -167,6 +167,41 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
+
+			// Index newly created container in Elasticsearch (best-effort; non-blocking).
+			try {
+				const esUrl = process.env.ELASTICSEARCH_URL;
+				if (esUrl) {
+					const indexName = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+					// Lightweight dynamic import to avoid adding client unless env var present.
+					const { Client } = await import('@elastic/elasticsearch');
+					const client = new Client({ node: esUrl });
+					const doc = {
+						guid: containerResult.guid,
+						revision: containerResult.revision,
+						realm: containerResult.realm,
+						organization: containerResult.organization,
+						organizationalUnit: containerResult.organizational_unit ?? undefined,
+						managedBy: containerResult.managed_by,
+						type: (containerResult as any).payload?.type,
+						title:
+							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
+						visibility: (containerResult as any).payload?.visibility,
+						payload: (containerResult as any).payload,
+						text: [
+							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
+							(containerResult as any).payload?.description
+						]
+							.filter(Boolean)
+							.join(' ')
+					};
+					await client.index({ index: indexName, id: containerResult.guid, document: doc });
+				} // silently skip if ELASTICSEARCH_URL not set
+			} catch (e) {
+				// eslint-disable-next-line no-console
+				console.warn('Elasticsearch indexing failed (non-fatal):', (e as Error).message);
+			}
+
 			return { ...containerResult, relation: [...relationResult], user: [...userResult] };
 		});
 	};
@@ -244,6 +279,40 @@ export function updateContainer(container: ModifiedContainer) {
 				}
 			}
 
+
+			// Best-effort Elasticsearch indexing of updated container (non-blocking).
+			try {
+				const esUrl = process.env.ELASTICSEARCH_URL;
+				if (esUrl) {
+					const indexName = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+					const { Client } = await import('@elastic/elasticsearch');
+					const client = new Client({ node: esUrl });
+					const doc = {
+						guid: containerResult.guid,
+						revision: containerResult.revision,
+						realm: containerResult.realm,
+						organization: containerResult.organization,
+						organizationalUnit: containerResult.organizational_unit ?? undefined,
+						managedBy: containerResult.managed_by,
+						type: (containerResult as any).payload?.type,
+						title:
+							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
+						visibility: (containerResult as any).payload?.visibility,
+						payload: (containerResult as any).payload,
+						text: [
+							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
+							(containerResult as any).payload?.description
+						]
+							.filter(Boolean)
+							.join(' ')
+					};
+					await client.index({ index: indexName, id: containerResult.guid, document: doc });
+				}
+			} catch (e) {
+				// eslint-disable-next-line no-console
+				console.warn('Elasticsearch indexing (update) failed (non-fatal):', (e as Error).message);
+			}
+
 			return { ...containerResult, user: userResult };
 		});
 	};
@@ -252,6 +321,7 @@ export function updateContainer(container: ModifiedContainer) {
 export function deleteContainer(container: AnyContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
+			// Fetch descendants (sections) before deletion; we'll delete in DB then remove from ES.
 			const sections = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
@@ -288,6 +358,25 @@ export function deleteContainer(container: AnyContainer) {
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
+
+			// Best-effort Elasticsearch removal for the container and its section descendants.
+			try {
+				const esUrl = process.env.ELASTICSEARCH_URL;
+				if (esUrl) {
+					const indexName = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+					const { Client } = await import('@elastic/elasticsearch');
+					const client = new Client({ node: esUrl });
+					// Delete the main container doc.
+					await client.delete({ index: indexName, id: container.guid }, { ignore: [404] });
+					// Delete sections recursively (they were deleted above).
+					for (const section of sections) {
+						await client.delete({ index: indexName, id: section.guid }, { ignore: [404] });
+					}
+				}
+			} catch (e) {
+				// eslint-disable-next-line no-console
+				console.warn('Elasticsearch delete failed (non-fatal):', (e as Error).message);
+			}
 		});
 	};
 }
