@@ -779,7 +779,8 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "KmF1tDGwlVeZDunWRnn06QvVxvVUHcWU",
       "redirectUris": [
-        "http://localhost:5173/*"
+        "http://localhost:5173/*",
+        "http://localhost:3000/*"
       ],
       "webOrigins": [
         "+"
