@@ -3,14 +3,38 @@ import type { PlaywrightTestConfig } from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
 	projects: [
+		// Authenticate
 		{
-			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] }
+			name: 'authenticate users',
+			testMatch: ['auth.setup.ts']
+		},
+
+		// Global setup
+		{
+			name: 'setup objects',
+			testMatch: [/global\.setup\.ts/],
+			dependencies: ['authenticate users'],
+			use: {
+				storageState: 'tests/.auth/admin.json'
+			}
+		},
+
+		// Main Tests
+		{
+			name: 'firefox',
+			use: { ...devices['Desktop Firefox'] },
+			dependencies: ['setup objects']
 		},
 		{
-			name: 'iphone8',
-			use: { ...devices['iPhone 8'] }
+			name: 'chromium',
+			use: { ...devices['Desktop Chrome'] },
+			dependencies: ['setup objects']
 		}
+		// {
+		// 	name: 'iphone8',
+		// 	use: { ...devices['iPhone 8'] },
+		// 	dependencies: ['setup objects']
+		// }
 	],
 	use: {
 		trace: 'on-first-retry'
