@@ -37,7 +37,10 @@ const config: PlaywrightTestConfig = {
 		// }
 	],
 	use: {
-		trace: 'on-first-retry'
+		trace: 'on-first-retry',
+
+		// Sets the browser locale to English (en-US)
+		locale: 'en-US'
 	},
 	webServer: {
 		command: 'docker compose up --build preview',
