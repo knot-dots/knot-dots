@@ -27,6 +27,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Add keycloak entry to /etc/hosts
+        run: |
+          IP="127.0.0.1"
+          HOSTNAME="keycloak"
+          # Construct the entry and append it to /etc/hosts using sudo
+          echo "$IP $HOSTNAME" | sudo tee -a /etc/hosts
       - uses: actions/setup-node@v4
         with:
           node-version: 24
