@@ -19,7 +19,7 @@
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: { containers: Container[]; facets?: Record<string, Record<string, number>> };
 	}
 
 	let { children, data }: Props = $props();
@@ -52,8 +52,50 @@
 			}, new Map())
 	);
 
+	// Prefer server-provided Elasticsearch facet counts if available; otherwise fall back to local computation.
+	// ES facets do not include 'member', 'relationType' or 'included'; we synthesize those locally.
 	let facets = $derived.by(() => {
-		const facets = new Map([
+		function fromCounts(options: string[], counts?: Record<string, number>) {
+			const m = new Map<string, number>();
+			for (const opt of options) m.set(opt, Math.max(0, counts?.[opt] ?? 0));
+			if (counts) {
+				for (const [k, v] of Object.entries(counts)) if (!m.has(k)) m.set(k, v);
+			}
+			return m;
+		}
+
+		if (data.facets && Object.keys(data.facets).length > 0) {
+			const m = new Map<string, Map<string, number>>([
+				...((page.url.searchParams.has('related-to')
+					? [
+							[
+								'relationType',
+								new Map([
+									[predicates.enum['is-consistent-with'], 0],
+									[predicates.enum['is-equivalent-to'], 0],
+									[predicates.enum['is-inconsistent-with'], 0],
+									[predicates.enum['is-prerequisite-for'], 0]
+								])
+							]
+						]
+					: []) as Array<[string, Map<string, number>]>),
+				...((!page.data.currentOrganization.payload.default
+					? [['included', new Map()]]
+					: []) as Array<[string, Map<string, number>]>),
+				['audience', fromCounts(audience.options as string[], data.facets.audience)],
+				['category', fromCounts(sustainableDevelopmentGoals.options as string[], data.facets.category)],
+				['topic', fromCounts(topics.options as string[], data.facets.topic)],
+				['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data.facets.policyFieldBNK)],
+				['measureType', fromCounts(measureTypes.options as string[], data.facets.measureType)],
+				['programType', fromCounts(programTypes.options as string[], data.facets.programType)],
+				['member', memberFacet]
+			]);
+
+			console.log('Using ES-provided facets:', m);
+			return m;
+		}
+
+		const m = new Map([
 			...((page.url.searchParams.has('related-to')
 				? [
 						[
@@ -78,8 +120,7 @@
 			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))],
 			['member', memberFacet]
 		]);
-
-		return computeFacetCount(facets, data.containers);
+		return computeFacetCount(m, data.containers);
 	});
 </script>
 

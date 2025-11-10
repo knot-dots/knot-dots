@@ -881,6 +881,50 @@ export function getManyContainers(
 	};
 }
 
+// Note: legacy function getManyContainersWithFacets was removed.
+// Prefer using getManyContainers for results and getFacetAggregationsForGuids for facet counts on the filtered set.
+
+// Compute facet aggregations constrained to a specific set of container GUIDs.
+export async function getFacetAggregationsForGuids(guids: string[]) {
+	const esUrl = process.env.ELASTICSEARCH_URL;
+	const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+	if (!esUrl || guids.length === 0) {
+		return {} as Record<string, Record<string, number>>;
+	}
+	const { Client } = await import('@elastic/elasticsearch');
+	const es = new Client({ node: esUrl });
+	const query = { terms: { guid: guids } } as const;
+	const aggs: Record<string, any> = {
+		audience: { terms: { field: 'payload.audience', size: 50 } },
+		category: { terms: { field: 'payload.category', size: 100 } },
+		topic: { terms: { field: 'payload.topic', size: 100 } },
+		policyFieldBNK: { terms: { field: 'payload.policyFieldBNK', size: 100 } },
+		programType: { terms: { field: 'payload.programType', size: 20 } },
+		measureType: { terms: { field: 'payload.measureType', size: 20 } },
+		indicatorCategory: { terms: { field: 'payload.indicatorCategory', size: 100 } },
+		indicatorType: { terms: { field: 'payload.indicatorType', size: 20 } },
+		taskCategory: { terms: { field: 'payload.taskCategory', size: 50 } }
+	};
+	debugES('facets-for-guids:query', { size: guids.length, aggs: Object.keys(aggs) });
+	const { aggregations } = await es.search({ index: esIndex, size: 0, query, aggs });
+	const facets: Record<string, Record<string, number>> = {};
+	const toCounts = (a: any) =>
+		Object.fromEntries((a?.buckets ?? []).map((b: any) => [String(b.key_as_string ?? b.key), b.doc_count]));
+	if (aggregations) {
+		facets.audience = toCounts((aggregations as any).audience);
+		facets.category = toCounts((aggregations as any).category);
+		facets.topic = toCounts((aggregations as any).topic);
+		facets.policyFieldBNK = toCounts((aggregations as any).policyFieldBNK);
+		facets.programType = toCounts((aggregations as any).programType);
+		facets.measureType = toCounts((aggregations as any).measureType);
+		facets.indicatorCategory = toCounts((aggregations as any).indicatorCategory);
+		facets.indicatorType = toCounts((aggregations as any).indicatorType);
+		facets.taskCategory = toCounts((aggregations as any).taskCategory);
+	}
+	debugES('facets-for-guids:aggs', facets);
+	return facets;
+}
+
 export function getManyOrganizationContainers(
 	filters: { default?: boolean; organizationCategories?: string[] },
 	sort: string

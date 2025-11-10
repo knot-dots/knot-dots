@@ -2,7 +2,8 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
@@ -74,12 +75,12 @@ export default (async function load({ depends, locals, parent, url }) {
 		);
 	}
 
-	return {
-		containers: filterOrganizationalUnits(
-			filterVisible(containers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		)
-	};
+	const filtered = filterOrganizationalUnits(
+		filterVisible(containers, locals.user),
+		url,
+		subordinateOrganizationalUnits,
+		currentOrganizationalUnit
+	);
+	const facets = await getFacetAggregationsForGuids(filtered.map((c) => c.guid));
+	return { containers: filtered, facets };
 } satisfies PageServerLoad);

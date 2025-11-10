@@ -3,7 +3,8 @@ import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/programs/$types';
 
@@ -40,6 +41,15 @@ export default (async function load({ depends, locals, parent, url }) {
 				url.searchParams.get('sort') ?? ''
 			)
 		);
+		// After filtering visible + org units, compute facets over resulting GUID set via ES
+		const filtered = filterOrganizationalUnits(
+			filterVisible(containers, locals.user),
+			url,
+			subordinateOrganizationalUnits,
+			currentOrganizationalUnit
+		);
+		const facets = await getFacetAggregationsForGuids(filtered.map((c) => c.guid));
+		return { containers: filtered, facets };
 	} else {
 		containers = await locals.pool.connect(
 			getManyContainers(
@@ -56,14 +66,13 @@ export default (async function load({ depends, locals, parent, url }) {
 				url.searchParams.get('sort') ?? ''
 			)
 		);
-	}
-
-	return {
-		containers: filterOrganizationalUnits(
+		const filtered = filterOrganizationalUnits(
 			filterVisible(containers, locals.user),
 			url,
 			subordinateOrganizationalUnits,
 			currentOrganizationalUnit
-		)
-	};
+		);
+		const facets = await getFacetAggregationsForGuids(filtered.map((c) => c.guid));
+		return { containers: filtered, facets };
+	}
 } satisfies PageServerLoad);

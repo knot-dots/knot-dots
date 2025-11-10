@@ -14,7 +14,8 @@ import {
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/tasks/$types';
 
@@ -96,15 +97,15 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			subordinateOrganizationalUnits,
 			currentOrganizationalUnit
 		);
+		const relatedContainers = filterOrganizationalUnits(
+			filterVisible(filterRelated(otherContainers, containers), locals.user),
+			url,
+			subordinateOrganizationalUnits,
+			currentOrganizationalUnit
+		);
+		// Facets over tasks (primary list) only; could extend to include related if needed
+		const facets = await getFacetAggregationsForGuids(containers.map((c) => c.guid));
 
-		return {
-			containers,
-			relatedContainers: filterOrganizationalUnits(
-				filterVisible(filterRelated(otherContainers, containers), locals.user),
-				url,
-				subordinateOrganizationalUnits,
-				currentOrganizationalUnit
-			)
-		};
+		return { containers, relatedContainers, facets };
 	}) satisfies PageServerLoad;
 }

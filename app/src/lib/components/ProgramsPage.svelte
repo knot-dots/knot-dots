@@ -16,10 +16,12 @@
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: { containers: Container[]; facets?: Record<string, Record<string, number>> };
 	}
 
 	let { children, data }: Props = $props();
+
+	console.log('ProgramsPage Data:', data);
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -31,8 +33,35 @@
 		]
 	});
 
+	// Prefer server-provided Elasticsearch facet counts if available; otherwise fall back to local computation
 	let facets = $derived.by(() => {
-		const facets = new Map([
+		// Helper to turn an object of counts into a Map and ensure all known options are present with 0
+		function fromCounts(options: string[], counts?: Record<string, number>) {
+			const m = new Map<string, number>();
+			for (const opt of options) m.set(opt, Math.max(0, counts?.[opt] ?? 0));
+			if (counts) {
+				for (const [k, v] of Object.entries(counts)) if (!m.has(k)) m.set(k, v);
+			}
+			return m;
+		}
+
+		if (data.facets && Object.keys(data.facets).length > 0) {
+			const m = new Map<string, Map<string, number>>([
+				...((!page.data.currentOrganization.payload.default
+					? [['included', new Map()]]
+					: []) as Array<[string, Map<string, number>]>),
+				['audience', fromCounts(audience.options as string[], data.facets.audience)],
+				['category', fromCounts(sustainableDevelopmentGoals.options as string[], data.facets.category)],
+				['topic', fromCounts(topics.options as string[], data.facets.topic)],
+				['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data.facets.policyFieldBNK)],
+				['programType', fromCounts(programTypes.options as string[], data.facets.programType)]
+			]);
+
+			console.log('Using ES-provided facets:', m);
+			return m;
+		}
+
+		const m = new Map([
 			...((!page.data.currentOrganization.payload.default
 				? [['included', new Map()]]
 				: []) as Array<[string, Map<string, number>]>),
@@ -42,8 +71,7 @@
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
 			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
 		]);
-
-		return computeFacetCount(facets, data.containers);
+		return computeFacetCount(m, data.containers);
 	});
 </script>
 

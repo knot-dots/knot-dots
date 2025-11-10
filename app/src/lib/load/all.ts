@@ -4,7 +4,8 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/all/$types';
 
@@ -102,12 +103,12 @@ export default (async function load({ depends, locals, url, parent }) {
 		);
 	}
 
-	return {
-		containers: filterOrganizationalUnits(
-			filterVisible(containers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		)
-	};
+	const filtered = filterOrganizationalUnits(
+		filterVisible(containers, locals.user),
+		url,
+		subordinateOrganizationalUnits,
+		currentOrganizationalUnit
+	);
+	const facets = await getFacetAggregationsForGuids(filtered.map((c) => c.guid));
+	return { containers: filtered, facets };
 } satisfies PageServerLoad);

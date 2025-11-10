@@ -4,7 +4,8 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/goals/$types';
 
@@ -83,12 +84,15 @@ export default (async function load({ depends, locals, parent, url }) {
 		]);
 	}
 
-	return {
-		containers: filterOrganizationalUnits(
-			filterVisible(containers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		)
-	};
+	const filtered = filterOrganizationalUnits(
+		filterVisible(containers, locals.user),
+		url,
+		subordinateOrganizationalUnits,
+		currentOrganizationalUnit
+	);
+
+	// Compute facets via Elasticsearch aggregations over the visible set
+	const facets = await getFacetAggregationsForGuids(filtered.map((c) => c.guid));
+
+	return { containers: filtered, facets };
 } satisfies PageServerLoad);
