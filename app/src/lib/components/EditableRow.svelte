@@ -19,6 +19,9 @@
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
+	import EditableIndicatorType from '$lib/components/EditableIndicatorType.svelte';
+	import EditableIndicatorUnit from '$lib/components/EditableIndicatorUnit.svelte';
+	import EditableIndicatorCategory from '$lib/components/EditableIndicatorCategory.svelte';
 	import {
 		type Container,
 		isContainerWithDescription,
@@ -132,6 +135,40 @@
 				compact
 				editable={editable && $ability.can('update', container)}
 				bind:value={container.payload.category}
+			/>
+		{/if}
+	</div>
+{/if}
+
+{#if columns.includes('indicatorType')}
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		{#if 'indicatorType' in container.payload}
+			<EditableIndicatorType
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.indicatorType}
+			/>
+		{/if}
+	</div>
+{/if}
+
+{#if columns.includes('unit')}
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		{#if 'unit' in container.payload}
+			{@const _ensureUnit = (container.payload.unit = container.payload.unit ?? '')}
+			<EditableIndicatorUnit
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.unit}
+			/>
+		{/if}
+	</div>
+{/if}
+
+{#if columns.includes('indicatorCategory')}
+	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		{#if 'indicatorCategory' in container.payload}
+			<EditableIndicatorCategory
+				editable={editable && $ability.can('update', container)}
+				bind:value={container.payload.indicatorCategory}
 			/>
 		{/if}
 	</div>
