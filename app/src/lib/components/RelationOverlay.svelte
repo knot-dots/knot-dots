@@ -335,44 +335,6 @@
 				createRelation: function (selected: Container, dragged: Container) {
 					return createRelation(dragged, this.predicate, selected);
 				}
-			},
-			{
-				active: false,
-				items: relatedContainers
-					.filter(({ guid }) => guid != object.guid)
-					.filter(
-						({ relation }) =>
-							relation.findIndex(
-								(r) => r.subject == object.guid && r.predicate == predicates.enum['is-subtask-of']
-							) > -1
-					)
-					.map((container) => ({ guid: container.guid, container })),
-				help: $_('relation_overlay.selected_is_subtask_of_dragged', {
-					values: { selected: object.payload.title }
-				}),
-				predicate: predicates.enum['is-subtask-of'],
-				createRelation: function (selected: Container, dragged: Container) {
-					return createRelation(selected, this.predicate, dragged);
-				}
-			},
-			{
-				active: false,
-				items: relatedContainers
-					.filter(({ guid }) => guid != object.guid)
-					.filter(
-						({ relation }) =>
-							relation.findIndex(
-								(r) => r.object == object.guid && r.predicate == predicates.enum['is-subtask-of']
-							) > -1
-					)
-					.map((container) => ({ guid: container.guid, container })),
-				help: $_('relation_overlay.dragged_is_subtask_of_selected', {
-					values: { selected: object.payload.title }
-				}),
-				predicate: predicates.enum['is-subtask-of'],
-				createRelation: function (selected: Container, dragged: Container) {
-					return createRelation(dragged, this.predicate, selected);
-				}
 			}
 		].filter(({ predicate }) => enabledPredicates.includes(predicate))
 	);

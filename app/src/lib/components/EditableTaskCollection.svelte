@@ -103,7 +103,7 @@
 {#await tasksRequest then items}
 	<Carousel
 		{addItem}
-		{items}
+		items={items.filter(({ guid }) => guid !== parentContainer?.guid)}
 		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container.managed_by) && editable}
 	>
 		{#snippet itemSnippet(item)}
