@@ -101,6 +101,15 @@ const typeAliases = {
 
 const sql = createSqlTag({ typeAliases });
 
+// Debug helper for Elasticsearch usage. Enable by setting ELASTICSEARCH_DEBUG=true.
+const esDebug = process.env.ELASTICSEARCH_DEBUG === 'true';
+function debugES(tag: string, payload: unknown) {
+	if (esDebug) {
+		// eslint-disable-next-line no-console
+		console.debug(`[search] ${tag}`, payload);
+	}
+}
+
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection): Promise<AnyContainer> => {
 		return connection.transaction(async (txConnection) => {
@@ -744,14 +753,130 @@ export function getManyContainers(
 	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		// Temporary: delegate to Elasticsearch if available for basic term & type/org filtering.
+		// Falls back to original SQL logic for full predicate coverage until all filters are translated.
+		const esUrl = process.env.ELASTICSEARCH_URL;
+		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		if (esUrl && (filters.terms || filters.type || organizations.length)) {
+			try {
+				const { Client } = await import('@elastic/elasticsearch');
+				const es = new Client({ node: esUrl });
+				const must: any[] = [];
+				const must_not: any[] = [];
+				// organization filter
+				if (organizations?.length) {
+					must.push({ terms: { organization: organizations } });
+				}
+				// type filter
+				if (filters.type?.length) {
+					must.push({ terms: { type: filters.type } });
+				}
+
+				console.debug(`[cat] ${filters.categories}`);
+				// exclude non-searchable container types by default (SQL parity)
+				must_not.push({ terms: { type: ['organization', 'organizational_unit'] } });
+				// template handling (default NOT template unless explicitly requested)
+				if (filters.template) {
+					must.push({ term: { 'payload.template': true } });
+				} else {
+					must_not.push({ term: { 'payload.template': true } });
+				}
+				// organizational units
+				if (filters.organizationalUnits?.length) {
+					must.push({ terms: { organizationalUnit: filters.organizationalUnits } });
+				}
+				// program types
+				if (filters.programTypes?.length) {
+					must.push({ terms: { 'payload.programType': filters.programTypes } });
+				}
+				// measure types
+				if (filters.measureTypes?.length) {
+					must.push({ terms: { 'payload.measureType': filters.measureTypes } });
+				}
+				// categories (payload.category is an array). Support exact match via keyword when available,
+				// and fall back to match_phrase on analyzed text. Accept single string or array input.
+				{
+					const categories = Array.isArray(filters.categories)
+						? filters.categories
+						: (filters.categories ? [filters.categories] : []);
+					if (categories.length) {
+						const should: any[] = [];
+						for (const cat of categories) {
+							should.push({ term: { 'payload.category.keyword': cat } });
+							should.push({ match_phrase: { 'payload.category': cat } });
+						}
+						must.push({ bool: { should, minimum_should_match: 1 } });
+					}
+				}
+				// indicator-specific filters
+				if (filters.indicatorCategories?.length) {
+					must.push({ terms: { 'payload.indicatorCategory': filters.indicatorCategories } });
+				}
+				if (filters.indicatorTypes?.length) {
+					must.push({ terms: { 'payload.indicatorType': filters.indicatorTypes } });
+				}
+				if (filters.indicator) {
+					must.push({ term: { 'payload.indicator': filters.indicator } });
+				}
+				// policy fields
+				if (filters.policyFieldsBNK?.length) {
+					must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+				}
+				// task categories
+				if (filters.taskCategories?.length) {
+					must.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
+				}
+				// topics
+				if (filters.topics?.length) {
+					must.push({ terms: { 'payload.topic': filters.topics } });
+				}
+				// full text terms
+				if (filters.terms) {
+					must.push({
+						multi_match: {
+							query: filters.terms,
+							fields: ['title^3', 'text^2', 'payload.*'],
+							type: 'best_fields',
+							operator: 'and'
+						}
+					});
+				}
+				// Visibility: exclude deleted / invalid via DB, ES stores only current valid docs so no extra filter required.
+				// We do NOT sort in ES; DB will apply the final ORDER BY for stable behavior across mappings.
+				const size = limit && Number.isInteger(limit) && limit >= 0 ? limit : 2000;
+				debugES('getManyContainers.query', { must, must_not, size });
+				const esRes = await es.search({
+					index: esIndex,
+					query: must.length || must_not.length ? { bool: { must, must_not } } : { match_all: {} },
+					size
+				});
+				debugES('getManyContainers.result', { took: (esRes as any).took, total: (esRes.hits as any).total });
+				const hits = (esRes.hits.hits as any[]).map((h) => h._source?.guid).filter(Boolean);
+				if (hits.length) {
+					// Fetch full rows (with user+relation enrichment) preserving ES order.
+					const containerResult = await connection.any(sql.typeAlias('container')`
+						SELECT c.*
+						FROM container c
+						WHERE c.guid IN (${sql.join(hits, sql.fragment`, `)})
+						ORDER BY ${prepareOrderByExpression(sort)};
+					`);
+					return withUserAndRelation<Container>(connection, containerResult);
+				}
+				// No results from ES -> empty list early.
+				return [];
+			} catch (err) {
+				console.warn('Elasticsearch search fallback to SQL (error)', err);
+				// fall through to SQL implementation
+			}
+		}
+		// Original SQL path (all filters including complex category/topic logic)
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
 			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``};
-    `);
-
+		`);
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }
@@ -946,6 +1071,122 @@ export function getAllRelatedContainers(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		// Attempt Elasticsearch path if available and filters/terms present.
+		const esUrl = process.env.ELASTICSEARCH_URL;
+		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const wantEs = esUrl && (filters.terms || filters.type || filters.categories?.length || filters.topics?.length);
+		if (wantEs) {
+			try {
+				// First resolve related GUID set via SQL (recursive relation logic is non-trivial to port immediately).
+				const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
+					? await connection.any(sql.typeAlias('relationPath')`
+						WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
+							SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
+							UNION ALL
+							SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+							FROM container c
+							JOIN container_relation cr ON c.guid = cr.subject
+								AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
+								AND cr.valid_currently
+								AND NOT cr.deleted
+							JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
+							WHERE c.valid_currently
+						), is_part_of_relation_up(path, is_cycle) AS (
+							SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS subject
+							UNION ALL
+							SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+							FROM container c
+							JOIN container_relation cr ON c.guid = cr.object
+								AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']})
+								AND cr.valid_currently
+								AND NOT cr.deleted
+							JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
+							WHERE c.valid_currently
+						)
+						SELECT DISTINCT unnest(path) AS guid FROM (
+							SELECT path FROM is_part_of_relation_down
+							UNION
+							SELECT path FROM is_part_of_relation_up
+						) AS is_part_of_relation
+					`)
+					: [];
+				const otherPredicates = new Set(relations);
+				otherPredicates.delete(predicates.enum['is-part-of']);
+				const otherRelationResult = otherPredicates.size
+					? await connection.any(sql.typeAlias('relationPath')`
+						SELECT cr.subject, cr.object
+						FROM container_relation cr
+						WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+							AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
+							AND cr.valid_currently
+							AND NOT cr.deleted
+					`)
+					: [];
+				const relatedGuids = [...isPartOfResult, ...otherRelationResult, [guid]].flatMap((r) => Object.values(r));
+				if (!relatedGuids.length) return [];
+				const { Client } = await import('@elastic/elasticsearch');
+				const es = new Client({ node: esUrl! });
+				const must: any[] = [ { terms: { guid: relatedGuids } } ];
+				const must_not: any[] = [ { terms: { type: ['organization','organizational_unit'] } } ];
+				if (organizations?.length) must.push({ terms: { organization: organizations } });
+				if (filters.type?.length) must.push({ terms: { type: filters.type } });
+				// categories: exact keyword match when available, otherwise phrase match on analyzed text
+				{
+					const categories = Array.isArray(filters.categories)
+						? filters.categories
+						: (filters.categories ? [filters.categories] : []);
+					if (categories.length) {
+						const should: any[] = [];
+						for (const cat of categories) {
+							should.push({ term: { 'payload.category.keyword': cat } });
+							should.push({ match_phrase: { 'payload.category': cat } });
+						}
+						must.push({ bool: { should, minimum_should_match: 1 } });
+					}
+				}
+				if (filters.topics?.length) must.push({ terms: { 'payload.topic': filters.topics } });
+				if (filters.measureTypes?.length) must.push({ terms: { 'payload.measureType': filters.measureTypes } });
+				if (filters.programTypes?.length) must.push({ terms: { 'payload.programType': filters.programTypes } });
+				if (filters.taskCategories?.length) must.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
+				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+				if (filters.organizationalUnits?.length) must.push({ terms: { organizationalUnit: filters.organizationalUnits } });
+				if (filters.audience?.length) must.push({ terms: { 'payload.audience': filters.audience } });
+				if (filters.assignees?.length) must.push({ terms: { 'payload.assignee': filters.assignees } });
+				if (filters.terms) {
+					must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields' } });
+				}
+				debugES('getAllRelatedContainers.query', { mustCount: must.length, mustNotCount: must_not.length, sort });
+				debugES('getAllRelatedContainersByProgramType.query', { mustCount: must.length, mustNotCount: must_not.length, sort });
+				debugES('getAllContainersRelatedToMeasure.query', { mustCount: must.length, mustNotCount: must_not.length, sort });
+				const esRes = await es.search({ index: esIndex, query: { bool: { must, must_not } }, size: 2000 });
+				debugES('getAllContainersRelatedToMeasure.result', { took: (esRes as any).took, total: (esRes.hits as any).total });
+				debugES('getAllRelatedContainersByProgramType.result', { took: (esRes as any).took, total: (esRes.hits as any).total });
+				debugES('getAllRelatedContainers.result', { took: (esRes as any).took, total: (esRes.hits as any).total });
+				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
+				if (!hitGuids.length) return [];
+				const containerResult = await connection.any(sql.typeAlias('container')`
+					SELECT c.* FROM container c WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)}) ORDER BY ${prepareOrderByExpression(sort)}
+				`);
+				const objectivesAndEffects = containerResult
+					.filter(({ payload }) => payload.type == payloadTypes.enum.effect || payload.type == payloadTypes.enum.objective)
+					.map(({ guid }) => guid);
+				const includeIndicators = !filters.type?.length || filters.type.includes(payloadTypes.enum.indicator);
+				const indicatorResult = objectivesAndEffects.length && includeIndicators
+					? await connection.any(sql.typeAlias('container')`
+						SELECT DISTINCT(c.*)
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.object
+							AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
+							AND cr.subject IN (${sql.join(objectivesAndEffects, sql.fragment`, `)})
+							AND cr.valid_currently AND NOT cr.deleted
+						WHERE c.valid_currently AND NOT c.deleted
+					`)
+					: [];
+				return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
+			} catch (e) {
+				console.warn('ES related containers failed, fallback to SQL:', (e as Error).message);
+			}
+		}
 		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
 			? await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
@@ -1050,6 +1291,58 @@ export function getAllRelatedContainersByProgramType(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		// ES path: compute candidate GUIDs by programType via SQL, then filter with ES
+		const esUrl = process.env.ELASTICSEARCH_URL;
+		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const wantEs = esUrl && (filters.terms || filters.type?.length || filters.categories?.length || filters.topics?.length || filters.measureTypes?.length || filters.organizationalUnits?.length);
+		if (wantEs) {
+			try {
+				const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+					SELECT co.guid, cr.subject
+					FROM container co
+					JOIN container_relation cr ON co.guid = cr.object
+						AND cr.predicate = ${predicates.enum['is-part-of-program']}
+						AND cr.valid_currently
+						AND NOT cr.deleted
+					WHERE co.organization IN (${sql.join(organizations, sql.fragment`, `)})
+						AND co.payload->>'programType' IN (${sql.join(programTypes, sql.fragment`, `)})
+				`);
+				const relatedGuids = relationPathResult.length ? relationPathResult.map(r => Object.values(r)).flat() : [];
+				if (!relatedGuids.length) return [];
+				const { Client } = await import('@elastic/elasticsearch');
+				const es = new Client({ node: esUrl! });
+				const must: any[] = [{ terms: { guid: relatedGuids } }];
+				const must_not: any[] = [ { terms: { type: ['organization','organizational_unit'] } } ];
+				if (filters.type?.length) must.push({ terms: { type: filters.type } });
+				// categories: support array membership (exact keyword + phrase fallback)
+				{
+					const categories = Array.isArray(filters.categories) ? filters.categories : (filters.categories ? [filters.categories] : []);
+					if (categories.length) {
+						const should: any[] = [];
+						for (const cat of categories) {
+							should.push({ term: { 'payload.category.keyword': cat } });
+							should.push({ match_phrase: { 'payload.category': cat } });
+						}
+						must.push({ bool: { should, minimum_should_match: 1 } });
+					}
+				}
+				if (filters.topics?.length) must.push({ terms: { 'payload.topic': filters.topics } });
+				if (filters.measureTypes?.length) must.push({ terms: { 'payload.measureType': filters.measureTypes } });
+				if (filters.organizationalUnits?.length) must.push({ terms: { organizationalUnit: filters.organizationalUnits } });
+				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+				if (filters.audience?.length) must.push({ terms: { 'payload.audience': filters.audience } });
+				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], type: 'best_fields', operator: 'and' } });
+				const esRes = await es.search({ index: esIndex, query: { bool: { must, must_not } }, size: 2000 });
+				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
+				if (!hitGuids.length) return [];
+				const containerResult = await connection.any(sql.typeAlias('container')`
+					SELECT c.* FROM container c WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)}) ORDER BY ${prepareOrderByExpression(sort)}
+				`);
+				return withUserAndRelation<Container>(connection, containerResult);
+			} catch (e) {
+				console.warn('ES related-by-program-type failed, fallback to SQL:', (e as Error).message);
+			}
+		}
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
 			SELECT co.guid, cr.subject
 			FROM container co
@@ -1180,6 +1473,84 @@ export function getAllContainersRelatedToProgram(
 	}
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		// ES path for program-related containers (uses recursive SQL to collect GUID set then filters in ES)
+		const esUrl = process.env.ELASTICSEARCH_URL;
+		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const wantEs = esUrl && (filters.terms || filters.type?.length || filters.categories?.length || filters.topics?.length);
+		if (wantEs) {
+			try {
+				const predicate = [
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-measure'],
+					predicates.enum['is-part-of-program'],
+					predicates.enum['is-section-of']
+				];
+				const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+					WITH RECURSIVE relation(path, is_cycle) AS (
+						SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
+						UNION ALL
+						SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.subject
+							AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+							AND cr.valid_currently
+							AND NOT cr.deleted
+						JOIN relation r ON cr.object = r.object AND NOT r.is_cycle
+						WHERE c.valid_currently
+					)
+					SELECT DISTINCT unnest(path) FROM relation
+				`);
+				const relatedGuids = relationPathResult.flatMap(r => Object.values(r));
+				if (!relatedGuids.length) return [];
+				const { Client } = await import('@elastic/elasticsearch');
+				const es = new Client({ node: esUrl! });
+				const must: any[] = [ { terms: { guid: relatedGuids } } ];
+				const must_not: any[] = [ { terms: { type: ['organization','organizational_unit'] } } ];
+				if (filters.type?.length) must.push({ terms: { type: filters.type } });
+				// categories: keyword exact or phrase fallback for array field
+				{
+					const categories = Array.isArray(filters.categories) ? filters.categories : (filters.categories ? [filters.categories] : []);
+					if (categories.length) {
+						const should: any[] = [];
+						for (const cat of categories) {
+							should.push({ term: { 'payload.category.keyword': cat } });
+							should.push({ match_phrase: { 'payload.category': cat } });
+						}
+						must.push({ bool: { should, minimum_should_match: 1 } });
+					}
+				}
+				if (filters.topics?.length) must.push({ terms: { 'payload.topic': filters.topics } });
+				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+				if (filters.audience?.length) must.push({ terms: { 'payload.audience': filters.audience } });
+				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields' } });
+				debugES('getAllContainersRelatedToProgram.query', { mustCount: must.length, mustNotCount: must_not.length });
+				const esRes = await es.search({ index: esIndex, query: { bool: { must, must_not } }, size: 2000 });
+				debugES('getAllContainersRelatedToProgram.result', { took: (esRes as any).took, total: (esRes.hits as any).total });
+				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
+				if (!hitGuids.length) return [];
+				const containerResult = await connection.any(sql.typeAlias('container')`
+					SELECT c.* FROM container c WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)})
+				`);
+				const objectivesAndEffects = containerResult
+					.filter(({ payload }) => payload.type == payloadTypes.enum.effect || payload.type == payloadTypes.enum.objective)
+					.map(({ guid }) => guid);
+				const includeIndicators = !filters.type?.length || filters.type.includes(payloadTypes.enum.indicator);
+				const indicatorResult = objectivesAndEffects.length && includeIndicators
+					? await connection.any(sql.typeAlias('container')`
+						SELECT DISTINCT(c.*)
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.object
+							AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
+							AND cr.subject IN (${sql.join(objectivesAndEffects, sql.fragment`, `)})
+							AND cr.valid_currently AND NOT cr.deleted
+						WHERE c.valid_currently AND NOT c.deleted
+					`)
+					: [];
+				return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
+			} catch (e) {
+				console.warn('ES program-related failed, fallback to SQL:', (e as Error).message);
+			}
+		}
 		const predicate = [
 			predicates.enum['is-part-of'],
 			predicates.enum['is-part-of-measure'],
@@ -1267,6 +1638,113 @@ export function getAllContainersRelatedToMeasure(
 	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		// ES path for measure-related containers
+		const esUrl = process.env.ELASTICSEARCH_URL;
+		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const wantEs = esUrl && (filters.terms || filters.type?.length || filters.categories?.length || filters.topics?.length || filters.taskCategories?.length);
+		if (wantEs) {
+			try {
+				const predicate = [
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-measure'],
+					predicates.enum['is-part-of-program'],
+					predicates.enum['is-section-of']
+				];
+				const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
+					WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
+						SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
+						UNION ALL
+						SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.subject
+							AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
+							AND cr.valid_currently
+							AND NOT cr.deleted
+						JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
+						WHERE c.valid_currently
+					), is_part_of_relation_up(path, is_cycle) AS (
+						SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS subject
+						UNION ALL
+						SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.object
+							AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
+							AND cr.valid_currently
+							AND NOT cr.deleted
+						JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
+						WHERE c.valid_currently
+					)
+					SELECT DISTINCT unnest(path) FROM (
+						SELECT path FROM is_part_of_relation_down
+						UNION
+						SELECT path FROM is_part_of_relation_up
+					) AS is_part_of_relation
+				`);
+				const otherPredicate = [
+					predicates.enum['contributes-to'],
+					predicates.enum['is-consistent-with'],
+					predicates.enum['is-duplicate-of'],
+					predicates.enum['is-equivalent-to'],
+					predicates.enum['is-inconsistent-with'],
+					predicates.enum['is-prerequisite-for']
+				];
+				const otherRelationResult = await connection.any(sql.typeAlias('relationPath')`
+					SELECT cr.subject, cr.object
+					FROM container_relation cr
+					WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+						AND cr.predicate IN (${sql.join(otherPredicate, sql.fragment`, `)})
+						AND cr.valid_currently
+						AND NOT cr.deleted
+				`);
+				const relatedGuids = [...relationPathResult, ...otherRelationResult].flatMap(r => Object.values(r));
+				if (!relatedGuids.length) return [];
+				const { Client } = await import('@elastic/elasticsearch');
+				const es = new Client({ node: esUrl! });
+				const must: any[] = [{ terms: { guid: relatedGuids } }];
+				const must_not: any[] = [{ terms: { type: ['organization','organizational_unit'] } }];
+				if (filters.type?.length) must.push({ terms: { type: filters.type } });
+				// categories: array membership using keyword exact or phrase fallback
+				{
+					const categories = Array.isArray(filters.categories) ? filters.categories : (filters.categories ? [filters.categories] : []);
+					if (categories.length) {
+						const should: any[] = [];
+						for (const cat of categories) {
+							should.push({ term: { 'payload.category.keyword': cat } });
+							should.push({ match_phrase: { 'payload.category': cat } });
+						}
+						must.push({ bool: { should, minimum_should_match: 1 } });
+					}
+				}
+				if (filters.topics?.length) must.push({ terms: { 'payload.topic': filters.topics } });
+				if (filters.taskCategories?.length) must.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
+				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+				if (filters.assignees?.length) must.push({ terms: { 'payload.assignee': filters.assignees } });
+				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields' } });
+				// We intentionally avoid ES-side sorting to prevent mapping issues; DB will handle ORDER BY.
+				const esRes = await es.search({ index: esIndex, query: { bool: { must, must_not } }, size: 2000 });
+				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
+				if (!hitGuids.length) return [];
+				const containerResult = await connection.any(sql.typeAlias('container')`
+					SELECT c.* FROM container c WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)}) ORDER BY ${prepareOrderByExpression(sort)}
+				`);
+				const effects = containerResult.filter(({ payload }) => payload.type == payloadTypes.enum.effect).map(({ guid }) => guid);
+				const includeIndicators = !filters.type?.length || filters.type.includes(payloadTypes.enum.indicator);
+				const indicatorResult = effects.length && includeIndicators
+					? await connection.any(sql.typeAlias('container')`
+						SELECT DISTINCT(c.*)
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.object
+							AND cr.predicate = ${predicates.enum['is-measured-by']}
+							AND cr.subject IN (${sql.join(effects, sql.fragment`, `)})
+							AND cr.valid_currently AND NOT cr.deleted
+						WHERE c.valid_currently AND NOT c.deleted
+					`)
+					: [];
+				return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
+			} catch (e) {
+				console.warn('ES measure-related failed, fallback to SQL:', (e as Error).message);
+			}
+		}
 		const predicate = [
 			predicates.enum['is-part-of'],
 			predicates.enum['is-part-of-measure'],
