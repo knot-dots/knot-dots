@@ -41,7 +41,8 @@
 			table: '/goals/table'
 		},
 		indicators: {
-			catalog: '/indicators'
+			catalog: '/indicators',
+			table: '/indicators/table'
 		},
 		knowledge: {
 			catalog: '/knowledge/catalog',
@@ -107,6 +108,7 @@
 		table: {
 			all: '/all/table',
 			goals: '/goals/table',
+			indicators: '/indicators/table',
 			knowledge: '/knowledge/table',
 			measures: '/measures/table',
 			programs: '/programs/table',

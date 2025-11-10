@@ -1,95 +1,30 @@
-import { filterVisible } from '$lib/authorization';
-import { type IndicatorContainer, payloadTypes } from '$lib/models';
-import {
-	getAllContainersRelatedToIndicators,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
-} from '$lib/server/db';
+import { getIndicatorsData } from '$lib/load/indicators';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	let containers;
-	let organizationalUnits: string[] = [];
-	let relatedContainers;
-	let useNewIndicators = false;
-
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
-	if (currentOrganizationalUnit) {
-		const relatedOrganizationalUnits = await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-		);
-		organizationalUnits = relatedOrganizationalUnits
-			.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
-			.map(({ guid }) => guid)
-			.concat(currentOrganizationalUnit.guid);
-	}
-
-	containers = (await locals.pool.connect(
-		getManyContainers(
-			[currentOrganization.guid],
-			{
-				audience: url.searchParams.getAll('audience'),
-				categories: url.searchParams.getAll('category'),
-				indicatorCategories: url.searchParams.getAll('indicatorCategory'),
-				indicatorTypes: url.searchParams.getAll('indicatorType'),
-				...(url.searchParams.getAll('included').includes('all_organizational_units')
-					? undefined
-					: { organizationalUnits }),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic'),
-				type: [payloadTypes.enum.indicator]
-			},
-			'alpha'
-		)
-	)) as IndicatorContainer[];
-
-	relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(
-			containers,
-			url.searchParams.getAll('included').includes('all_organizational_units')
-				? {}
-				: { organizationalUnits }
-		)
-	);
-
-	if (containers.length == 0) {
-		useNewIndicators = true;
-
-		[containers, relatedContainers] = await Promise.all([
-			locals.pool.connect(
-				getManyContainers(
-					[],
-					{
-						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
-						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
-						indicatorTypes: url.searchParams.getAll('indicatorType'),
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						type: [payloadTypes.enum.indicator_template]
-					},
-					'alpha'
-				)
-			),
-			locals.pool.connect(
-				getManyContainers(
-					[currentOrganization.guid],
-					{
-						organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : [],
-						type: [payloadTypes.enum.actual_data]
-					},
-					'alpha'
-				)
-			)
-		]);
-	}
+	const result = await getIndicatorsData({
+		organizationGuid: currentOrganization.guid,
+		currentOrganizationalUnit: currentOrganizationalUnit ?? null,
+		filters: {
+			audience: url.searchParams.getAll('audience'),
+			categories: url.searchParams.getAll('category'),
+			indicatorCategories: url.searchParams.getAll('indicatorCategory'),
+			indicatorTypes: url.searchParams.getAll('indicatorType'),
+			policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+			topics: url.searchParams.getAll('topic'),
+			included: url.searchParams.getAll('included')
+		},
+		user: locals.user,
+		connect: locals.pool.connect
+	});
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: filterVisible([...containers, ...relatedContainers], locals.user),
-		useNewIndicators
+		containers: result.combined,
+		useNewIndicators: result.useNewIndicators
 	};
 }) satisfies PageServerLoad;
