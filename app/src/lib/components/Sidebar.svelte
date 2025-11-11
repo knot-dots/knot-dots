@@ -48,7 +48,10 @@
 		if ('default' in container.payload && container.payload.default) {
 			url.pathname = resolve('/[[guid=uuid]]/all/page', { guid: container.guid });
 		} else {
-			url.hostname = `${container.organization}.${url.hostname}`;
+			// Only use subdomains in production environment
+			if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
+				url.hostname = `${container.organization}.${url.hostname}`;
+			}
 			url.pathname = resolve('/[[guid=uuid]]/all/page', { guid: container.guid });
 		}
 
