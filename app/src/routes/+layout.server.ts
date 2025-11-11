@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
 import { type AnyContainer, type KeycloakUser } from '$lib/models';
@@ -31,12 +32,11 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
-		console.log('Dev mode');
-
 		// Parse GUID from the URL path
 		let guidUrl = url.pathname.split('/')[1];
 
-		if (guidUrl) {
+		// Check if the parsed part is a valid UUID
+		if (z.uuid().safeParse(guidUrl).success) {
 			currentOrganization = organizations.find(({ guid }) => guid === guidUrl);
 
 			if (!currentOrganization) {
