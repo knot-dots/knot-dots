@@ -1967,13 +1967,15 @@ export function overlayURL(url: URL, key: OverlayKey, guid: string, extraParams?
 	return `#${newParams.toString()}`;
 }
 
-export function getOrganizationURL(container: OrganizationContainer | OrganizationalUnitContainer, linkPath = '/all/page'): URL {
+export function getOrganizationURL(
+	container: OrganizationContainer | OrganizationalUnitContainer,
+	linkPath = '/all/page'
+): URL {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
 
 	// Only use subdomains if the environment variable is not set
 	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
-
-		// Maybe add special case for default organization later, 
+		// Maybe add special case for default organization later,
 		// but for now its being redirected to URL without subdomain anyway
 
 		url.hostname = `${container.organization}.${url.hostname}`;
@@ -1996,45 +1998,45 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
-			const included = url.searchParams.has('includedChanged')
-				? url.searchParams.getAll('included')
-				: ['subordinate_organizational_units'];
+				const included = url.searchParams.has('includedChanged')
+					? url.searchParams.getAll('included')
+					: ['subordinate_organizational_units'];
 
-			if (c.organizational_unit == currentOrganizationalUnit?.guid) {
-				return true;
-			}
+				if (c.organizational_unit == currentOrganizationalUnit?.guid) {
+					return true;
+				}
 
-			if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
-				return true;
-			}
+				if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
+					return true;
+				}
 
-			if (
-				included.includes('subordinate_organizational_units') &&
-				c.organizational_unit != null &&
-				subordinateOrganizationalUnits.includes(c.organizational_unit)
-			) {
-				return true;
-			}
+				if (
+					included.includes('subordinate_organizational_units') &&
+					c.organizational_unit != null &&
+					subordinateOrganizationalUnits.includes(c.organizational_unit)
+				) {
+					return true;
+				}
 
-			if (
-				included.includes('superordinate_organizational_units') &&
-				c.organizational_unit == null
-			) {
-				return true;
-			}
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit == null
+				) {
+					return true;
+				}
 
-			if (
-				included.includes('superordinate_organizational_units') &&
-				c.organizational_unit != null &&
-				!subordinateOrganizationalUnits
-					.filter((ou) => ou != currentOrganizationalUnit?.guid)
-					.includes(c.organizational_unit)
-			) {
-				return true;
-			}
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit != null &&
+					!subordinateOrganizationalUnits
+						.filter((ou) => ou != currentOrganizationalUnit?.guid)
+						.includes(c.organizational_unit)
+				) {
+					return true;
+				}
 
-			return false;
-		});
+				return false;
+			});
 }
 
 export function filterMembers<T extends AnyContainer>(containers: T[], members: string[]) {

@@ -40,7 +40,9 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 			currentOrganization = organizations.find(({ guid }) => guid === guidUrl);
 
 			if (!currentOrganization) {
-				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => { guid === guidUrl });
+				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => {
+					guid === guidUrl;
+				});
 				currentOrganization = organizations.find(
 					({ guid }) => guid === currentOrganizationalUnit?.organization
 				);
@@ -53,12 +55,9 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 				)) as OrganizationContainer;
 			}
 		}
-
-	
-	} 
+	}
 	// Production mode with subdomains
 	else {
-
 		if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
 			currentOrganization = organizations.find(({ payload }) => payload.default);
 			if (!currentOrganization) {
@@ -80,7 +79,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 				({ guid }) => guid === currentOrganizationalUnit?.organization
 			);
 		}
-
 	}
 
 	// Throw 404 if no organization is found
