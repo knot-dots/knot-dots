@@ -38,7 +38,12 @@
 	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return () => {
 			const url = new URL(env.PUBLIC_BASE_URL ?? '');
-			url.hostname = `${container.organization}.${url.hostname}`;
+
+			// Only use subdomains if the environment variable is not set
+			if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
+				url.hostname = `${container.organization}.${url.hostname}`;
+			}
+
 			url.pathname = `/${container.guid}${linkPath}`
 				.replace('/me/measures', '/measures/status')
 				.replace('/me/tasks', '/tasks/status')
