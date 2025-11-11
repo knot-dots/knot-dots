@@ -753,8 +753,6 @@ export function getManyContainers(
 	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		// Temporary: delegate to Elasticsearch if available for basic term & type/org filtering.
-		// Falls back to original SQL logic for full predicate coverage until all filters are translated.
 		const esUrl = process.env.ELASTICSEARCH_URL;
 		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
 		if (esUrl && (filters.terms || filters.type || organizations.length)) {
@@ -763,42 +761,15 @@ export function getManyContainers(
 				const es = new Client({ node: esUrl });
 				const must: any[] = [];
 				const must_not: any[] = [];
-				// organization filter
-				if (organizations?.length) {
-					must.push({ terms: { organization: organizations } });
-				}
-				// type filter
-				if (filters.type?.length) {
-					must.push({ terms: { type: filters.type } });
-				}
-
-				console.debug(`[cat] ${filters.categories}`);
-				// exclude non-searchable container types by default (SQL parity)
+				if (organizations?.length) must.push({ terms: { organization: organizations } });
+				if (filters.type?.length) must.push({ terms: { type: filters.type } });
 				must_not.push({ terms: { type: ['organization', 'organizational_unit'] } });
-				// template handling (default NOT template unless explicitly requested)
-				if (filters.template) {
-					must.push({ term: { 'payload.template': true } });
-				} else {
-					must_not.push({ term: { 'payload.template': true } });
-				}
-				// organizational units
-				if (filters.organizationalUnits?.length) {
-					must.push({ terms: { organizationalUnit: filters.organizationalUnits } });
-				}
-				// program types
-				if (filters.programTypes?.length) {
-					must.push({ terms: { 'payload.programType': filters.programTypes } });
-				}
-				// measure types
-				if (filters.measureTypes?.length) {
-					must.push({ terms: { 'payload.measureType': filters.measureTypes } });
-				}
-				// categories (payload.category is an array). Support exact match via keyword when available,
-				// and fall back to match_phrase on analyzed text. Accept single string or array input.
+				if (filters.template) { must.push({ term: { 'payload.template': true } }); } else { must_not.push({ term: { 'payload.template': true } }); }
+				if (filters.organizationalUnits?.length) { must.push({ terms: { organizationalUnit: filters.organizationalUnits } }); }
+				if (filters.programTypes?.length) { must.push({ terms: { 'payload.programType': filters.programTypes } }); }
+				if (filters.measureTypes?.length) { must.push({ terms: { 'payload.measureType': filters.measureTypes } }); }
 				{
-					const categories = Array.isArray(filters.categories)
-						? filters.categories
-						: (filters.categories ? [filters.categories] : []);
+					const categories = Array.isArray(filters.categories) ? filters.categories : (filters.categories ? [filters.categories] : []);
 					if (categories.length) {
 						const should: any[] = [];
 						for (const cat of categories) {
@@ -808,52 +779,21 @@ export function getManyContainers(
 						must.push({ bool: { should, minimum_should_match: 1 } });
 					}
 				}
-				// indicator-specific filters
-				if (filters.indicatorCategories?.length) {
-					must.push({ terms: { 'payload.indicatorCategory': filters.indicatorCategories } });
-				}
-				if (filters.indicatorTypes?.length) {
-					must.push({ terms: { 'payload.indicatorType': filters.indicatorTypes } });
-				}
-				if (filters.indicator) {
-					must.push({ term: { 'payload.indicator': filters.indicator } });
-				}
-				// policy fields
-				if (filters.policyFieldsBNK?.length) {
-					must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
-				}
-				// task categories
-				if (filters.taskCategories?.length) {
-					must.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
-				}
-				// topics
-				if (filters.topics?.length) {
-					must.push({ terms: { 'payload.topic': filters.topics } });
-				}
-				// full text terms
+				if (filters.indicatorCategories?.length) must.push({ terms: { 'payload.indicatorCategory': filters.indicatorCategories } });
+				if (filters.indicatorTypes?.length) must.push({ terms: { 'payload.indicatorType': filters.indicatorTypes } });
+				if (filters.indicator) must.push({ term: { 'payload.indicator': filters.indicator } });
+				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+				if (filters.taskCategories?.length) must.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
+				if (filters.topics?.length) must.push({ terms: { 'payload.topic': filters.topics } });
 				if (filters.terms) {
-					must.push({
-						multi_match: {
-							query: filters.terms,
-							fields: ['title^3', 'text^2', 'payload.*'],
-							type: 'best_fields',
-							operator: 'and'
-						}
-					});
+					must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], type: 'best_fields', operator: 'and', lenient: true } });
 				}
-				// Visibility: exclude deleted / invalid via DB, ES stores only current valid docs so no extra filter required.
-				// We do NOT sort in ES; DB will apply the final ORDER BY for stable behavior across mappings.
 				const size = limit && Number.isInteger(limit) && limit >= 0 ? limit : 2000;
 				debugES('getManyContainers.query', { must, must_not, size });
-				const esRes = await es.search({
-					index: esIndex,
-					query: must.length || must_not.length ? { bool: { must, must_not } } : { match_all: {} },
-					size
-				});
+				const esRes = await es.search({ index: esIndex, query: must.length || must_not.length ? { bool: { must, must_not } } : { match_all: {} }, size });
 				debugES('getManyContainers.result', { took: (esRes as any).took, total: (esRes.hits as any).total });
 				const hits = (esRes.hits.hits as any[]).map((h) => h._source?.guid).filter(Boolean);
 				if (hits.length) {
-					// Fetch full rows (with user+relation enrichment) preserving ES order.
 					const containerResult = await connection.any(sql.typeAlias('container')`
 						SELECT c.*
 						FROM container c
@@ -862,14 +802,11 @@ export function getManyContainers(
 					`);
 					return withUserAndRelation<Container>(connection, containerResult);
 				}
-				// No results from ES -> empty list early.
 				return [];
 			} catch (err) {
 				console.warn('Elasticsearch search fallback to SQL (error)', err);
-				// fall through to SQL implementation
 			}
 		}
-		// Original SQL path (all filters including complex category/topic logic)
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
@@ -1197,7 +1134,7 @@ export function getAllRelatedContainers(
 				if (filters.audience?.length) must.push({ terms: { 'payload.audience': filters.audience } });
 				if (filters.assignees?.length) must.push({ terms: { 'payload.assignee': filters.assignees } });
 				if (filters.terms) {
-					must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields' } });
+					must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields', lenient: true } });
 				}
 				debugES('getAllRelatedContainers.query', { mustCount: must.length, mustNotCount: must_not.length, sort });
 				debugES('getAllRelatedContainersByProgramType.query', { mustCount: must.length, mustNotCount: must_not.length, sort });
@@ -1375,7 +1312,7 @@ export function getAllRelatedContainersByProgramType(
 				if (filters.organizationalUnits?.length) must.push({ terms: { organizationalUnit: filters.organizationalUnits } });
 				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
 				if (filters.audience?.length) must.push({ terms: { 'payload.audience': filters.audience } });
-				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], type: 'best_fields', operator: 'and' } });
+				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], type: 'best_fields', operator: 'and', lenient: true } });
 				const esRes = await es.search({ index: esIndex, query: { bool: { must, must_not } }, size: 2000 });
 				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
 				if (!hitGuids.length) return [];
@@ -1566,7 +1503,7 @@ export function getAllContainersRelatedToProgram(
 				if (filters.topics?.length) must.push({ terms: { 'payload.topic': filters.topics } });
 				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
 				if (filters.audience?.length) must.push({ terms: { 'payload.audience': filters.audience } });
-				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields' } });
+				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields', lenient: true } });
 				debugES('getAllContainersRelatedToProgram.query', { mustCount: must.length, mustNotCount: must_not.length });
 				const esRes = await es.search({ index: esIndex, query: { bool: { must, must_not } }, size: 2000 });
 				debugES('getAllContainersRelatedToProgram.result', { took: (esRes as any).took, total: (esRes.hits as any).total });
@@ -1763,7 +1700,7 @@ export function getAllContainersRelatedToMeasure(
 				if (filters.taskCategories?.length) must.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
 				if (filters.policyFieldsBNK?.length) must.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
 				if (filters.assignees?.length) must.push({ terms: { 'payload.assignee': filters.assignees } });
-				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields' } });
+				if (filters.terms) must.push({ multi_match: { query: filters.terms, fields: ['title^3','text^2','payload.*'], operator: 'and', type: 'best_fields', lenient: true } });
 				// We intentionally avoid ES-side sorting to prevent mapping issues; DB will handle ORDER BY.
 				const esRes = await es.search({ index: esIndex, query: { bool: { must, must_not } }, size: 2000 });
 				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
