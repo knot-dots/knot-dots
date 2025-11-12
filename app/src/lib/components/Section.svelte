@@ -32,6 +32,8 @@
 		isTextContainer
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
+    import EditableTeaser from './EditableTeaser.svelte';
+    import {isTeaserContainer} from "../models";
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
@@ -148,6 +150,12 @@
 			/>
 		{:else if isTextContainer(container)}
 			<EditableTextSection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable && !isShadowItem}
+			/>
+		{:else if isTeaserContainer(container)}
+			<EditableTeaser
 				bind:container
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}

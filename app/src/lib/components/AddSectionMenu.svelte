@@ -27,6 +27,7 @@
 		isGoalContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
+		isTeaserContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
@@ -127,6 +128,10 @@
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
+    let mayAddTeaser = $derived(
+    	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+    );
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -222,7 +227,8 @@
 				: []),
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
-				: [])
+				: []),
+			...(mayAddTeaser ? [{ icon: ChartMixed, label: $_('teaser'), value: payloadTypes.enum.teaser }] : [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 </script>

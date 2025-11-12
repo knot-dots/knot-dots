@@ -85,6 +85,7 @@ const payloadTypeValues = [
 	'simple_measure',
 	'task',
 	'task_collection',
+	'teaser',
 	'text',
 	'undefined'
 ] as const;
@@ -875,6 +876,32 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
+//const textPayload = z
+//  .object({
+//    audience: z.array(audience).default([audience.enum['audience.citizens']]),
+//    body: z.string().trim().optional(),
+//    title: z.string().trim(),
+//    type: z.literal(payloadTypes.enum.text),
+//    visibility: visibility.default(visibility.enum['organization'])
+//  })
+//  .strict();
+//
+//const initialTextPayload = textPayload.partial({ body: true, title: true });
+
+
+// Add teaser payload schema here:
+const teaserPayload = z
+  .object({
+    audience: z.array(audience).default([audience.enum['audience.citizens']]),
+    title: z.string().trim(),  // Required field with validation (trim whitespace)
+    type: z.literal(payloadTypes.enum.teaser),  // Must be exactly 'teaser'
+    visibility: visibility.default(visibility.enum['organization'])
+  })
+  .strict();  // .strict() means no extra fields allowed
+
+// For creating new empty teasers (title optional during creation)
+const initialTeaserPayload = teaserPayload.partial({ title: true });
+
 const initialTaskPayload = taskPayload.partial({ title: true });
 
 const taskCollectionPayload = z
@@ -982,6 +1009,7 @@ const payload = z.discriminatedUnion('type', [
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
+	teaserPayload,
 	textPayload
 ]);
 
@@ -1032,6 +1060,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	taskCollectionPayload,
 	taskPayload,
 	textPayload,
+	teaserPayload,
 	undefinedPayload
 ]);
 
@@ -1546,6 +1575,19 @@ export function isContainerWithTopic(
 	return hasProperty(container.payload, 'topic');
 }
 
+const teaserContainer = container.extend({
+  payload: teaserPayload
+});
+
+export type TeaserContainer = z.infer<typeof teaserContainer>;
+
+export function isTeaserContainer(
+  container: AnyContainer | EmptyContainer
+): container is TeaserContainer {
+  return container.payload.type === payloadTypes.enum.teaser;
+}
+
+
 export const newContainer = anyContainer
 	.omit({
 		guid: true,
@@ -1589,6 +1631,7 @@ export const emptyContainer = newContainer.extend({
 		initialTextPayload,
 		initialTaskCollectionPayload,
 		initialTaskPayload,
+		initialTeaserPayload,
 		initialUndefinedPayload
 	])
 });
