@@ -6,7 +6,7 @@
   import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 
   let { data }: PageProps = $props();
-  console.log('Indicators Table Data:', data);
+
 </script>
 
 <IndicatorsPage {data}>
