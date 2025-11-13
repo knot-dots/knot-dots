@@ -75,6 +75,7 @@
 	"delete.name": "{name} löschen",
 	"description": "Beschreibung",
 	"download": "Herunterladen",
+	"edit_mode": "Bearbeitenmodus",
 	"editor": {
 		"emphasis": "K",
 		"strong": "F"

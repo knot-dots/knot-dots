@@ -35,8 +35,7 @@ test.describe(() => {
 
 		// Edit switch
 		const overlay = page.locator('.overlay');
-		const banner = overlay.getByRole('banner');
-		await banner.getByRole('checkbox', { name: '', exact: true }).check();
+		await overlay.getByRole('checkbox', { name: 'Edit mode', exact: true }).check();
 
 		const badgeList = page.locator('ul.badges');
 		const badgeButtons = badgeList.getByRole('button');
@@ -54,8 +53,7 @@ test.describe(() => {
 
 		// Edit switch
 		const overlay = page.locator('.overlay');
-		const banner = overlay.getByRole('banner');
-		await banner.getByRole('checkbox', { name: '', exact: true }).check();
+		await overlay.getByRole('checkbox', { name: 'Edit mode', exact: true }).check();
 
 		const slider = page.getByRole('slider', { name: 'Progress' });
 
