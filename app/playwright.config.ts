@@ -29,12 +29,12 @@ const config: PlaywrightTestConfig = {
 			name: 'chromium',
 			use: { ...devices['Desktop Chrome'] },
 			dependencies: ['setup objects']
+		},
+		{
+			name: 'ipad',
+			use: { ...devices['iPad (gen 5)'] },
+			dependencies: ['setup objects']
 		}
-		// {
-		// 	name: 'iphone8',
-		// 	use: { ...devices['iPhone 8'] },
-		// 	dependencies: ['setup objects']
-		// }
 	],
 	use: {
 		trace: 'on-first-retry',

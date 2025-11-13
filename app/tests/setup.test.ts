@@ -9,7 +9,7 @@ test.describe(() => {
 		await page.goto('/');
 
 		// Expect to be logged in as Bob
-		await expect(page.getByText('Bob Builder')).toBeVisible();
+		await expect(page.getByText('BB')).toBeVisible();
 
 		await page.getByRole('button', { name: 'All', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Goals' }).click();
