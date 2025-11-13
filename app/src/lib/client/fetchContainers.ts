@@ -26,6 +26,8 @@ export default async function fetchContainers(
 		taskCategory?: string[];
 		terms?: string;
 		topic?: string[];
+		// Optional opt-in cache signal. When present, server sets cacheable headers.
+		cache?: string;
 	},
 	sort?: string
 ) {
@@ -86,6 +88,9 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.topic ?? []) {
 		params.append('topic', value);
+	}
+	if (filters.cache) {
+		params.append('cache', filters.cache);
 	}
 	const url = `/container?${params}`;
 

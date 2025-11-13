@@ -463,7 +463,9 @@ export const GET = (async ({ locals, url }) => {
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
-		topic: z.array(topics).default([])
+		topic: z.array(topics).default([]),
+		// Optional opt-in cache flag; when present, server will send cacheable headers.
+		cache: z.array(z.string()).default([])
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
@@ -544,15 +546,21 @@ export const GET = (async ({ locals, url }) => {
 		);
 	}
 
-	// Enable HTTP client-side caching to reduce duplicate requests across identical queries.
-	// private: per-user data; s-maxage=0: don't cache on shared proxies; stale-while-revalidate allows quick re-use.
-	return json(filterVisible(containers, locals.user), {
-		headers: {
-			'Cache-Control':
-				'private, max-age=60, s-maxage=0, stale-while-revalidate=300, stale-if-error=600',
-			Vary: 'Cookie'
-		}
-	});
+	// Only set cache headers when the client explicitly opts in via ?cache=...
+	// Otherwise, prevent caching for other callers.
+	const cacheRequested = parseResult.data.cache.length > 0;
+	const headers = cacheRequested
+		? {
+				'Cache-Control':
+					'private, max-age=60, s-maxage=0, stale-while-revalidate=300, stale-if-error=600',
+				Vary: 'Cookie'
+			}
+		: {
+				'Cache-Control': 'no-store',
+				Vary: 'Cookie'
+			};
+
+	return json(filterVisible(containers, locals.user), { headers });
 }) satisfies RequestHandler;
 
 export const POST = (async ({ locals, request }) => {

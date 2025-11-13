@@ -22,7 +22,8 @@ export function createIsPartOfOptionsRequest(
 		return fetchContainers(
 			{
 				isPartOfMeasure: [measureGuid],
-				payloadType: [payloadTypes.enum.goal]
+				payloadType: [payloadTypes.enum.goal],
+				cache: '1'
 			},
 			'alpha'
 		) as Promise<Container[]>;
@@ -43,7 +44,8 @@ export function createIsPartOfOptionsRequest(
 				payloadType:
 					payloadType == payloadTypes.enum.knowledge
 						? [payloadTypes.enum.knowledge]
-						: [payloadTypes.enum.goal]
+						: [payloadTypes.enum.goal],
+				cache: '1'
 			},
 			'alpha'
 		) as Promise<Container[]>;
@@ -58,7 +60,8 @@ export function createIsPartOfOptionsRequest(
 			{
 				organization: [organization],
 				organizationalUnit: organizational_unit ? [organizational_unit] : [],
-				payloadType: [payloadTypes.enum.goal]
+				payloadType: [payloadTypes.enum.goal],
+				cache: '1'
 			},
 			'alpha'
 		) as Promise<Container[]>;
