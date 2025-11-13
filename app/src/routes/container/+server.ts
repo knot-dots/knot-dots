@@ -544,7 +544,15 @@ export const GET = (async ({ locals, url }) => {
 		);
 	}
 
-	return json(filterVisible(containers, locals.user));
+	// Enable HTTP client-side caching to reduce duplicate requests across identical queries.
+	// private: per-user data; s-maxage=0: don't cache on shared proxies; stale-while-revalidate allows quick re-use.
+	return json(filterVisible(containers, locals.user), {
+		headers: {
+			'Cache-Control':
+				'private, max-age=60, s-maxage=0, stale-while-revalidate=300, stale-if-error=600',
+			Vary: 'Cookie'
+		}
+	});
 }) satisfies RequestHandler;
 
 export const POST = (async ({ locals, request }) => {

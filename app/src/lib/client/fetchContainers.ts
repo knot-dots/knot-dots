@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { anyContainer } from '$lib/models';
 import type { PayloadType } from '$lib/models';
 
+// In-flight request deduplication to avoid firing identical concurrent network requests.
+type AnyContainerT = z.infer<typeof anyContainer>;
+const inflight = new Map<string, Promise<AnyContainerT[]>>();
+
 export default async function fetchContainers(
 	filters: {
 		assignee?: string[];
@@ -83,7 +87,26 @@ export default async function fetchContainers(
 	for (const value of filters.topic ?? []) {
 		params.append('topic', value);
 	}
-	const response = await fetch(`/container?${params}`);
-	const data = await response.json();
-	return z.array(anyContainer).parse(data);
+	const url = `/container?${params}`;
+
+	if (inflight.has(url)) return inflight.get(url)!;
+
+	const request: Promise<AnyContainerT[]> = (async () => {
+		const response = await fetch(url, {
+			// Let the browser use HTTP caching for subsequent identical requests
+			cache: 'default',
+			credentials: 'same-origin'
+		});
+		const data = await response.json();
+		return z.array(anyContainer).parse(data);
+	})();
+
+	inflight.set(url, request);
+
+	try {
+		return await request;
+	} finally {
+		// Ensure the inflight map is cleared after the request settles
+		inflight.delete(url);
+	}
 }

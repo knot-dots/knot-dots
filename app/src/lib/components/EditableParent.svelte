@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import { createIsPartOfOptionsRequest } from '$lib/client/isPartOfOptions';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
 		type Container,
@@ -17,49 +17,12 @@
 	interface Props {
 		container: Container | EmptyContainer;
 		editable?: boolean;
+		hideLabel?: boolean;
 	}
 
-	let { container = $bindable(), editable = false }: Props = $props();
+	let { container = $bindable(), editable = false, hideLabel = false }: Props = $props();
 
-	function createIsPartOfOptionsRequest(
-		payloadType: PayloadType,
-		organization: string,
-		organizational_unit: string | null,
-		measureGuid?: string,
-		programGuid?: string
-	): Promise<Container[]> {
-		if (measureGuid) {
-			return fetchContainers(
-				{
-					isPartOfMeasure: [measureGuid],
-					payloadType: [payloadTypes.enum.goal]
-				},
-				'alpha'
-			) as Promise<Container[]>;
-		} else if (programGuid) {
-			return fetchContainers(
-				{
-					isPartOfProgram: [programGuid],
-					payloadType:
-						payloadType == payloadTypes.enum.knowledge
-							? [payloadTypes.enum.knowledge]
-							: [payloadTypes.enum.goal]
-				},
-				'alpha'
-			) as Promise<Container[]>;
-		} else if (payloadType == payloadTypes.enum.task) {
-			return fetchContainers(
-				{
-					organization: [organization],
-					organizationalUnit: organizational_unit ? [organizational_unit] : [],
-					payloadType: [payloadTypes.enum.goal]
-				},
-				'alpha'
-			) as Promise<Container[]>;
-		}
-
-		return Promise.resolve([]);
-	}
+	// load function moved to a shared module for reuse and to work with HTTP/browser caches
 
 	let organization = $derived(container.organization);
 
@@ -89,6 +52,8 @@
 			programGuid
 		)
 	);
+
+	// Intentionally log only when the request is initiated in createIsPartOfOptionsRequest
 
 	let isPartOfObject = $derived(
 		(options: Array<{ value: string }>) =>
@@ -124,7 +89,12 @@
 </script>
 
 {#await isPartOfOptionsRequest}
-	<EditableSingleChoice {editable} label={$_('superordinate_element')} options={[]} value="" />
+	<EditableSingleChoice
+		{editable}
+		label={hideLabel ? '' : $_('superordinate_element')}
+		options={[]}
+		value=""
+	/>
 {:then isPartOfOptions}
 	{@const options = [
 		{ label: $_('empty'), value: '' },
@@ -152,7 +122,7 @@
 	]}
 	<EditableSingleChoice
 		{editable}
-		label={$_('superordinate_element')}
+		label={hideLabel ? '' : $_('superordinate_element')}
 		{options}
 		bind:value={() => isPartOfObject(options), set}
 	/>
