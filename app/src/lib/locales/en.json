@@ -74,6 +74,7 @@
 	"delete": "Delete",
 	"description": "Description",
 	"download": "Download",
+	"edit_mode": "Edit mode",
 	"editor": {
 		"emphasis": "I",
 		"strong": "B"

@@ -10,6 +10,7 @@
 		bind:checked={$applicationState.containerDetailView.editable}
 		value={$applicationState.containerDetailView.editable ? $_('on') : $_('off')}
 	/>
+	<span class="is-visually-hidden">{$_('edit_mode')}</span>
 </label>
 
 <style>
