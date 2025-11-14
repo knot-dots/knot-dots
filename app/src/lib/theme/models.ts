@@ -47,7 +47,9 @@ import {
 	type SustainableDevelopmentGoal,
 	sustainableDevelopmentGoals,
 	type TaskStatus,
-	taskStatus
+	taskStatus,
+	type BackgroundColor,
+	backgroundColor
 } from '$lib/models';
 
 export const predicateIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>>([
@@ -97,6 +99,16 @@ export const statusColors = new Map<Status, string>([
 	[status.enum['status.in_operation'], 'teal'],
 	[status.enum['status.done'], 'green'],
 	[status.enum['status.rejected'], 'indigo']
+]);
+
+
+export const backgroundColors = new Map<BackgroundColor, string>([
+	[backgroundColor.enum['color.white'], 'white'],
+	[backgroundColor.enum['color.blue'], 'blue'],
+	[backgroundColor.enum['color.gray'], 'gray'],
+	[backgroundColor.enum['color.red'], 'red'],
+	[backgroundColor.enum['color.orange'], 'orange'],
+	[backgroundColor.enum['color.yellow'], 'yellow']
 ]);
 
 export const statusBackgrounds = new Map<Status, string>([

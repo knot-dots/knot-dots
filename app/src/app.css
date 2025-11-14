@@ -1257,6 +1257,57 @@ label > input[type='checkbox'].toggle {
 	width: 1rem;
 }
 
+/* Stage */
+.stage {
+    --stage-background-color: var(--color-white);
+    --stage-color: var(--color-black);
+    background-color: var(--stage-background-color);
+    color: var(--stage-color);
+}
+
+img.cover {
+    width: 100%;
+    height: 15rem;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.stage.stage--color {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: .25rem;
+}
+
+.stage.stage--white {
+    --stage-background-color: var(--color-white);
+    --stage-color: var(--color-gray-600);
+}
+
+.stage.stage--blue {
+    --stage-background-color: var(--color-primary-050);
+    --stage-color: var(--color-primary-600);
+}
+
+.stage.stage--gray {
+    --stage-background-color: var(--color-gray-050);
+    --stage-color: var(--color-gray-600);
+}
+
+.stage.stage--red {
+    --stage-background-color: var(--color-red-050);
+    --stage-color: var(--color-red-600);
+}
+
+.stage.stage--orange {
+    --stage-background-color: var(--color-orange-050);
+    --stage-color: var(--color-orange-600);
+}
+
+.stage.stage--yellow {
+    --stage-background-color: var(--color-yellow-050);
+    --stage-color: var(--color-yellow-600);
+}
+
 /* Indicators */
 .indicator {
 	background-color: var(--indicator-background-color);
