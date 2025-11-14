@@ -25,7 +25,6 @@
 	}
 
 	async function upload(event: Event) {
-    console.log("LOAD ME UP");
 		event.stopPropagation();
 		const input = event.currentTarget as HTMLInputElement;
 		if (input.files instanceof FileList && input.files.length > 0) {

@@ -24,9 +24,7 @@
     value = $bindable()
   }: Props = $props();
 
-  console.log("VAL?", value);
-
-  const popover = createPopover({label: $_('color')});
+  const popover = createPopover();
 
   const [popperRef, popperContent] = createPopperActions({
     placement: 'bottom-start',
@@ -35,8 +33,6 @@
 
   const extraOpts = {modifiers: [{name: 'offset', options: {offset}}]};
 
-  console.log("# backgroundColors", backgroundColors);
-  console.log("# buttonStyle", buttonStyle);
 </script>
 
 {#if editable}
