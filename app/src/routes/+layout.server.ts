@@ -40,9 +40,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 			currentOrganization = organizations.find(({ guid }) => guid === guidUrl);
 
 			if (!currentOrganization) {
-				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => {
-					guid === guidUrl;
-				});
+				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === guidUrl);
 				currentOrganization = organizations.find(
 					({ guid }) => guid === currentOrganizationalUnit?.organization
 				);
