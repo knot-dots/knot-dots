@@ -3,69 +3,38 @@ import type { Container, PayloadType } from '$lib/models';
 import { payloadTypes } from '$lib/models';
 
 // Centralized loader for parent options used by EditableParent and others.
-// Logs only when the network request is initiated.
 export function createIsPartOfOptionsRequest(
 	payloadType: PayloadType,
-	organization: string,
-	organizational_unit: string | null,
 	measureGuid?: string,
 	programGuid?: string
 ): Promise<Container[]> {
+	// Determine the target parent payload type based on context
+	let targetPayloadTypes: PayloadType[] | undefined;
 	if (measureGuid) {
-		console.log('EditableParent:isPartOfOptionsRequest fired', {
-			by: 'measure',
-			measureGuid,
-			payloadType: payloadTypes.enum.goal,
-			organization,
-			organizational_unit
-		});
-		return fetchContainers(
-			{
-				isPartOfMeasure: [measureGuid],
-				payloadType: [payloadTypes.enum.goal],
-				cache: '1'
-			},
-			'alpha'
-		) as Promise<Container[]>;
+		// Parent for a measure is a goal
+		targetPayloadTypes = [payloadTypes.enum.goal];
 	} else if (programGuid) {
-		console.log('EditableParent:isPartOfOptionsRequest fired', {
-			by: 'program',
-			programGuid,
-			payloadType:
-				payloadType == payloadTypes.enum.knowledge
-					? payloadTypes.enum.knowledge
-					: payloadTypes.enum.goal,
-			organization,
-			organizational_unit
-		});
-		return fetchContainers(
-			{
-				isPartOfProgram: [programGuid],
-				payloadType:
-					payloadType == payloadTypes.enum.knowledge
-						? [payloadTypes.enum.knowledge]
-						: [payloadTypes.enum.goal],
-				cache: '1'
-			},
-			'alpha'
-		) as Promise<Container[]>;
+		// Parent for knowledge remains knowledge; otherwise goal
+		targetPayloadTypes =
+			payloadType == payloadTypes.enum.knowledge
+				? [payloadTypes.enum.knowledge]
+				: [payloadTypes.enum.goal];
 	} else if (payloadType == payloadTypes.enum.task) {
-		console.log('EditableParent:isPartOfOptionsRequest fired', {
-			by: 'task',
-			payloadType: payloadTypes.enum.goal,
-			organization,
-			organizational_unit
-		});
-		return fetchContainers(
-			{
-				organization: [organization],
-				organizationalUnit: organizational_unit ? [organizational_unit] : [],
-				payloadType: [payloadTypes.enum.goal],
-				cache: '1'
-			},
-			'alpha'
-		) as Promise<Container[]>;
+		// Parent for a task is a goal
+		targetPayloadTypes = [payloadTypes.enum.goal];
+	} else {
+		// No applicable parent type → no options
+		return Promise.resolve([]);
 	}
 
-	return Promise.resolve([]);
+	// Fetch broadly to maximize cache reuse: only by parent payloadType.
+	// Do NOT use isPartOfMeasure/isPartOfProgram nor organization/organizationalUnit here;
+	// filter those constraints in the component.
+	return fetchContainers(
+		{
+			payloadType: targetPayloadTypes,
+			cache: '1'
+		},
+		'alpha'
+	) as Promise<Container[]>;
 }

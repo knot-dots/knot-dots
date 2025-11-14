@@ -107,6 +107,11 @@
 						.map((c) => c.guid)
 						.includes(guid)
 			)
+			// Client-side filter by organization and organizational_unit to improve cache reuse.
+			.filter(
+				({ organization: org, organizational_unit: unit }) =>
+					org === organization && (!organizationalUnit || unit === organizationalUnit)
+			)
 			.filter(({ relation }) =>
 				programGuid
 					? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
