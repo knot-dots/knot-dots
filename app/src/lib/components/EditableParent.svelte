@@ -44,13 +44,7 @@
 	let payloadType = $derived(container.payload.type);
 
 	let isPartOfOptionsRequest = $derived(
-		createIsPartOfOptionsRequest(
-			payloadType,
-			organization,
-			organizationalUnit,
-			measureGuid,
-			programGuid
-		)
+		createIsPartOfOptionsRequest(payloadType, measureGuid, programGuid)
 	);
 
 	// Intentionally log only when the request is initiated in createIsPartOfOptionsRequest

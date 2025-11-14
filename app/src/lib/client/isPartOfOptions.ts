@@ -32,8 +32,7 @@ export function createIsPartOfOptionsRequest(
 	// filter those constraints in the component.
 	return fetchContainers(
 		{
-			payloadType: targetPayloadTypes,
-			cache: '1'
+			payloadType: targetPayloadTypes
 		},
 		'alpha'
 	) as Promise<Container[]>;
