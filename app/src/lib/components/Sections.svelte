@@ -74,7 +74,8 @@
 			}
 
 			if (payloadType === payloadTypes.enum.task_collection && isContainerWithTitle(newContainer)) {
-				newContainer.payload.title = container.payload.type === payloadTypes.enum.task ? $_('subtasks') : $_('tasks');
+				newContainer.payload.title =
+					container.payload.type === payloadTypes.enum.task ? $_('subtasks') : $_('tasks');
 			}
 
 			const response = await saveContainer(newContainer);
