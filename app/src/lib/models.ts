@@ -1975,10 +1975,12 @@ export function getOrganizationURL(
 
 	// Only use subdomains if the environment variable is not set
 	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
-		// Maybe add special case for default organization later,
-		// but for now its being redirected to URL without subdomain anyway
+		const isDefaultOrganization = 'default' in container.payload && container.payload.default;
 
-		url.hostname = `${container.organization}.${url.hostname}`;
+		// Default organization uses the base domain without subdomain
+		if (!isDefaultOrganization) {
+			url.hostname = `${container.organization}.${url.hostname}`;
+		}
 	}
 
 	url.pathname = `/${container.guid}${linkPath}`
