@@ -33,14 +33,14 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
 		// Parse GUID from the URL path
-		let guidUrl = url.pathname.split('/')[1];
+		let guidFromURL = url.pathname.split('/')[1];
 
 		// Check if the parsed part is a valid UUID
-		if (z.uuid().safeParse(guidUrl).success) {
-			currentOrganization = organizations.find(({ guid }) => guid === guidUrl);
+		if (z.uuid().safeParse(guidFromURL).success) {
+			currentOrganization = organizations.find(({ guid }) => guid === guidFromURL);
 
 			if (!currentOrganization) {
-				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === guidUrl);
+				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === guidFromURL);
 				currentOrganization = organizations.find(
 					({ guid }) => guid === currentOrganizationalUnit?.organization
 				);
