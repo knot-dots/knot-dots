@@ -171,13 +171,16 @@
 		stroke-width: 2.5px;
 	}
 
+	header + :global(*) {
+		flex-grow: 1;
+	}
+
 	footer {
 		background-color: #ffffff;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
 		box-shadow: var(--shadow-sm);
 		flex-shrink: 0;
-		margin-top: auto;
 		overflow: hidden;
 	}
 
