@@ -9,7 +9,7 @@
 	import HierarchyLevelDropdown from '$lib/components/HierarchyLevelDropdown.svelte';
 	import MeasureTypeDropdown from '$lib/components/MeasureTypeDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
-	import ParentObjectDropdown from '$lib/components/ParentObjectDropdown.svelte';
+	import ParentDropdown from '$lib/components/ParentDropdown.svelte';
 	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
 	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
 	import ProgramTypeDropdown from '$lib/components/ProgramTypeDropdown.svelte';
@@ -46,10 +46,6 @@
 	}
 
 	let { columns, container = $bindable(), dragEnabled = false, editable = false }: Props = $props();
-
-	function findParentRel(c: Container) {
-		return c.relation.find((r) => r.predicate === 'is-part-of' && r.subject === c.guid);
-	}
 </script>
 
 <div class="cell cell--action">
@@ -330,7 +326,11 @@
 
 {#if columns.includes('parentObject')}
 	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-		<ParentObjectDropdown editable={editable && $ability.can('update', container)} bind:container />
+		<ParentDropdown
+			offset={[0, -39]}
+			editable={editable && $ability.can('update', container)}
+			{container}
+		/>
 	</div>
 {/if}
 

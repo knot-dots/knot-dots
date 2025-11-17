@@ -8,19 +8,11 @@
 
 	let { editable = false, value = $bindable() }: Props = $props();
 
-	// Internal string value to interop with SingleChoiceDropdown (expects string/null/undefined)
-	let internal = $state(String(value));
-
-	// Keep internal in sync when external value changes
-	$effect(() => {
-		internal = String(value);
-	});
-
-	// Propagate changes back as number
-	$effect(() => {
-		const n = Number(internal);
+	function setLevel(v: string | null | undefined) {
+		if (v == null) return; // ignore null (no selection retained)
+		const n = Number(v);
 		if (!Number.isNaN(n) && n !== value) value = n;
-	});
+	}
 
 	const options = $derived(
 		Array.from({ length: 6 }, (_, i) => {
@@ -31,7 +23,7 @@
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown offset={[0, -39]} {options} bind:value={internal} />
+	<SingleChoiceDropdown offset={[0, -39]} {options} bind:value={() => String(value), setLevel} />
 {:else}
 	<span class="value">{value}</span>
 {/if}
