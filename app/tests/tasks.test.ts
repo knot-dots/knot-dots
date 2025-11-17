@@ -7,9 +7,9 @@ test.describe('Task status board', () => {
 	// Use admin to ensure we have permission to create and move tasks
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('task status can be changed via drag-and-drop', async ({ page, isMobile }) => {
-		test.skip(isMobile, 'Drag-and-drop is not supported on mobile');
+	const title = `Task ${Date.now()}`;
 
+	test.beforeEach('add task to the status board', async ({ page, request }) => {
 		await page.goto('/');
 
 		// Go to the task status board of the test organization
@@ -19,6 +19,35 @@ test.describe('Task status board', () => {
 		// Open the workspace menu and navigate to Tasks → Status
 		await page.getByRole('button', { name: 'All', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Tasks' }).click();
+
+		// Click the Add item button within the Idea column
+		await page.getByRole('link', { name: 'Add item' }).first().click();
+
+		// Fill out a minimal form and save
+		await page.getByRole('textbox', { name: 'Title' }).fill(title);
+		await page.getByRole('button', { name: 'Save' }).click();
+
+		// Close overlay to ensure the board is fully visible again
+		await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
+		await expect(page.locator('.overlay')).toBeHidden();
+	});
+
+	test.afterEach('delete task', async ({ page }) => {
+		// Open task in overlay
+		await page.getByTitle(title).click();
+
+		// Activate edit mode
+		await page.getByLabel('edit mode').click();
+
+		// Delete the task
+		await page.getByRole('button', { name: 'Delete' }).click();
+		await page.getByRole('button', { name: `I want to delete "${title}"` }).click();
+
+		await expect(page.getByTitle(title)).not.toBeAttached();
+	});
+
+	test('task status can be changed via drag-and-drop', async ({ page, isMobile }) => {
+		test.skip(isMobile, 'Drag-and-drop is not supported on mobile');
 
 		// Ensure columns are visible
 		const ideaColumn = page.locator('section', {
@@ -30,20 +59,6 @@ test.describe('Task status board', () => {
 
 		await expect(ideaColumn).toBeVisible();
 		await expect(inPlanningColumn).toBeVisible();
-
-		// Create a new task in the "Idea" column to have a known draggable card
-		const title = `Drag and drop task ${Date.now()}`;
-
-		// Click the Add item button within the Idea column footer
-		await ideaColumn.getByRole('link', { name: 'Add item' }).first().click();
-
-		// Fill out a minimal form and save
-		await page.getByRole('textbox', { name: 'Title' }).fill(title);
-		await page.getByRole('button', { name: 'Save' }).click();
-
-		// Close overlay to ensure the board is fully visible again
-		await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
-		await expect(page.locator('.overlay')).toBeHidden();
 
 		const ideaCard = ideaColumn.getByTitle(title).first();
 		await expect(ideaCard).toBeVisible();
