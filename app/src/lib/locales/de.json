@@ -249,6 +249,11 @@
 		"regional": "Regional",
 		"state": "Land"
 	},
+    "link_style": {
+      "default": "Standard",
+      "external": "Extern",
+      "button": "Button"
+    },
 	"login": "Anmelden",
 	"logo": "Logo",
 	"logout": "Abmelden",
@@ -503,6 +508,10 @@
 	"tasks": "Aufgaben",
 	"team": "Team",
 	"teaser": "Teaser",
+	"teaser.link": "URL",
+	"teaser.link_caption": "Beschriftung",
+	"teaser.link_style": "Link-Stil",
+	"teasers": "Teaser",
 	"template": "als Vorlage verwenden",
 	"text": "Ergänzungstext",
 	"title": "Titel",

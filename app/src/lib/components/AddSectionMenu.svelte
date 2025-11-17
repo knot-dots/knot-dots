@@ -15,6 +15,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
+	import Teaser from '~icons/knotdots/basic-data';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -128,7 +129,7 @@
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
-    let mayAddTeaser = $derived(
+    let mayAddTeaserCollection = $derived(
     	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
     );
 
@@ -228,7 +229,9 @@
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
-			...(mayAddTeaser ? [{ icon: ChartMixed, label: $_('teaser'), value: payloadTypes.enum.teaser }] : [])
+			...(mayAddTeaserCollection
+			    ? [{ icon: Teaser, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+			    : [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 </script>

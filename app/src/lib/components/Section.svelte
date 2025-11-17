@@ -16,6 +16,8 @@
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
+    import EditableTeaser from '$lib/components/EditableTeaser.svelte';
+    import EditableTeaserCollection from "$lib/components/EditableTeaserCollection.svelte";
 	import {
 		type AnyContainer,
 		isEffectCollectionContainer,
@@ -29,11 +31,11 @@
 		isProgramCollectionContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
+        isTeaserContainer,
+        isTeaserCollectionContainer,
 		isTextContainer
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
-    import EditableTeaser from './EditableTeaser.svelte';
-    import {isTeaserContainer} from "../models";
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
@@ -158,7 +160,13 @@
 			<EditableTeaser
 				bind:container
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable && !isShadowItem}
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isTeaserCollectionContainer(container)}
+			<EditableTeaserCollection
+				bind:container
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
 			/>
 		{/if}
 	</form>

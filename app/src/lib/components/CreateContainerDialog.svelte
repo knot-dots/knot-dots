@@ -18,6 +18,7 @@
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
+	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
 		isContainer,
@@ -37,6 +38,7 @@
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		isTextContainer,
 		type NewContainer,
 		overlayKey,
@@ -221,6 +223,13 @@
 						editable
 						relatedContainers={[]}
 						revisions={[]}
+					/>
+				{:else if isTeaserContainer($newContainer)}
+					<TeaserProperties
+							bind:container={$newContainer}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
 					/>
 				{:else if isTextContainer($newContainer)}
 					<TextProperties

@@ -23,6 +23,7 @@ export const overlayKey = z.enum([
 	'relations',
 	'table',
 	'tasks',
+	'teasers',
 	'view',
 	'view-help'
 ]);
@@ -86,6 +87,7 @@ const payloadTypeValues = [
 	'task',
 	'task_collection',
 	'teaser',
+	'teaser_collection',
 	'text',
 	'undefined'
 ] as const;
@@ -117,6 +119,14 @@ const levelValues = [
 ] as const;
 
 export const levels = z.enum(levelValues);
+
+const linkStyleValues = [
+  'default',
+  'external',
+  'button',
+] as const;
+
+export const linkStyles = z.enum(linkStyleValues);
 
 export type Level = z.infer<typeof levels>;
 
@@ -893,14 +903,32 @@ const taskPayload = measureMonitoringBasePayload
 const teaserPayload = z
   .object({
     audience: z.array(audience).default([audience.enum['audience.citizens']]),
-    title: z.string().trim(),  // Required field with validation (trim whitespace)
-    type: z.literal(payloadTypes.enum.teaser),  // Must be exactly 'teaser'
+    title: z.string().trim(),
+    link: z.string().optional(),
+    linkCaption: z.string().optional(),
+    description: z.string().optional(),
+    style: z.string().optional().default('default'),
+    image: z.string().url().optional(),
+    type: z.literal(payloadTypes.enum.teaser),
     visibility: visibility.default(visibility.enum['organization'])
   })
   .strict();  // .strict() means no extra fields allowed
 
 // For creating new empty teasers (title optional during creation)
 const initialTeaserPayload = teaserPayload.partial({ title: true });
+
+const teaserCollectionPayload = z
+  .object({
+    title: z
+      .string()
+      .readonly()
+      .default(() => unwrapFunctionStore(_)('teasers')),
+    type: z.literal(payloadTypes.enum.teaser_collection),
+    visibility: visibility.default(visibility.enum['organization'])
+  })
+  .strict();
+
+const initialTeaserCollectionPayload = teaserCollectionPayload;
 
 const initialTaskPayload = taskPayload.partial({ title: true });
 
@@ -1010,6 +1038,7 @@ const payload = z.discriminatedUnion('type', [
 	taskCollectionPayload,
 	taskPayload,
 	teaserPayload,
+	teaserCollectionPayload,
 	textPayload
 ]);
 
@@ -1061,6 +1090,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	taskPayload,
 	textPayload,
 	teaserPayload,
+	teaserCollectionPayload,
 	undefinedPayload
 ]);
 
@@ -1448,6 +1478,30 @@ export function isMeasureMonitoringContainer(
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
+const teaserContainer = container.extend({
+  payload: teaserPayload
+});
+
+export type TeaserContainer = z.infer<typeof teaserContainer>;
+
+export function isTeaserContainer(
+  container: AnyContainer | EmptyContainer
+): container is TeaserContainer {
+  return container.payload.type === payloadTypes.enum.teaser;
+}
+
+const teaserCollectionContainer = container.extend({
+  payload: teaserCollectionPayload
+});
+
+export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
+
+export function isTeaserCollectionContainer(
+  container: AnyContainer | EmptyContainer
+): container is TeaserCollectionContainer {
+  return container.payload.type === payloadTypes.enum.teaser_collection;
+}
+
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
 	return (
 		container.payload.type !== payloadTypes.enum.organization &&
@@ -1575,19 +1629,6 @@ export function isContainerWithTopic(
 	return hasProperty(container.payload, 'topic');
 }
 
-const teaserContainer = container.extend({
-  payload: teaserPayload
-});
-
-export type TeaserContainer = z.infer<typeof teaserContainer>;
-
-export function isTeaserContainer(
-  container: AnyContainer | EmptyContainer
-): container is TeaserContainer {
-  return container.payload.type === payloadTypes.enum.teaser;
-}
-
-
 export const newContainer = anyContainer
 	.omit({
 		guid: true,
@@ -1632,6 +1673,7 @@ export const emptyContainer = newContainer.extend({
 		initialTaskCollectionPayload,
 		initialTaskPayload,
 		initialTeaserPayload,
+		initialTeaserCollectionPayload,
 		initialUndefinedPayload
 	])
 });
