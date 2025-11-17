@@ -6,7 +6,7 @@
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
 	import GoalTypeDropdown from '$lib/components/GoalTypeDropdown.svelte';
-	import HierarchyLevelDropdown from '$lib/components/HierarchyLevelDropdown.svelte';
+	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
 	import MeasureTypeDropdown from '$lib/components/MeasureTypeDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import ParentDropdown from '$lib/components/ParentDropdown.svelte';
@@ -282,14 +282,14 @@
 		class:cell--locked={editable && $ability.cannot('update', container, 'payload.hierarchyLevel')}
 	>
 		{#if isGoalContainer(container)}
-			<HierarchyLevelDropdown
+			<EditableHierarchyLevel
 				editable={editable && $ability.can('update', container, 'payload.hierarchyLevel')}
+				showLabel={false}
 				bind:value={container.payload.hierarchyLevel}
 			/>
 		{/if}
 	</div>
 {/if}
-
 {#if columns.includes('objectType')}
 	{#if isGoalContainer(container)}
 		<div
@@ -389,6 +389,10 @@
 
 	:global(.row:hover .cell:hover input) {
 		background-color: var(--color-gray-100);
+	}
+
+	.cell > :global(input[type='number']) {
+		padding: 0;
 	}
 
 	.cell > :global(span),
