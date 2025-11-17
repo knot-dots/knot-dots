@@ -82,11 +82,6 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		// BUGFIX: Transfer write rights when object switches organizational_unit.
-		// Collaborators of the new organizational_unit should obtain update rights even if managed_by wasn't adjusted.
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
-			organizational_unit: { $in: [...user.collaboratorOf] }
-		});
 		can(
 			'invite-members',
 			[
