@@ -171,7 +171,7 @@
 		stroke-width: 2.5px;
 	}
 
-	header + :global(*) {
+	header + :global(div) {
 		flex-grow: 1;
 	}
 

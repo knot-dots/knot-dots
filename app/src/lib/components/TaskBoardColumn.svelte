@@ -170,7 +170,7 @@
 		gap: 0.5rem;
 	}
 
-	header + :global(*) {
+	header + div {
 		flex-grow: 1;
 	}
 
