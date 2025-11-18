@@ -1,6 +1,6 @@
 export const featureFlags = new Map([
 	['alpha', ['ImportFromCsv', 'AI'] as const],
-	['beta', ['AdministrativeArea'] as const]
+	['beta', ['AdministrativeArea', 'Chapter'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
@@ -13,6 +13,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useAdministrativeArea() {
 			return features.includes('AdministrativeArea');
+		},
+		useChapter() {
+			return features.includes('Chapter');
 		}
 	};
 }

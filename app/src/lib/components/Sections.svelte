@@ -9,6 +9,7 @@
 		type AnyContainer,
 		container as containerSchema,
 		containerOfType,
+		isChapterContainer,
 		isContainerWithTitle,
 		isOrganizationalUnitContainer,
 		type NewContainer,
@@ -71,6 +72,19 @@
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
 				newContainer.payload.title = '';
+			}
+
+			if (isChapterContainer(newContainer)) {
+				newContainer.payload.number = String(
+					parseInt(
+						sections
+							.slice(0, position)
+							.filter(isChapterContainer)
+							.at(-1)
+							?.payload.number.split('.')
+							.at(0) ?? '0'
+					) + 1
+				);
 			}
 
 			if (payloadType === payloadTypes.enum.task_collection && isContainerWithTitle(newContainer)) {

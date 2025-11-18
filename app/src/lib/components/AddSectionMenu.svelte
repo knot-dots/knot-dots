@@ -5,6 +5,7 @@
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
 	import BasicData from '~icons/knotdots/basic-data';
+	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
@@ -135,9 +136,20 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
+	let mayAddChapter = $derived(createFeatureDecisions(page.data.features).useChapter());
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddChapter
+				? [
+						{
+							icon: Chapter,
+							label: $_('chapter'),
+							value: payloadTypes.enum.chapter
+						}
+					]
+				: []),
 			...(mayAddFileCollection
 				? [
 						{
