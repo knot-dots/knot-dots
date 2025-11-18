@@ -62,6 +62,7 @@ const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
 	'chapter',
+	'custom_collection',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -567,6 +568,36 @@ const chapterPayload = basePayload
 
 const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
 
+const customCollectionPayload = z
+	.object({
+		filter: z
+			.object({
+				audience: z.array(audience).default([]),
+				category: z.array(sustainableDevelopmentGoals).default([]),
+				indicatorCategory: z.array(indicatorCategories).default([]),
+				type: z.array(payloadTypes).default([]),
+				policyFieldBNK: z.array(policyFieldBNK).default([]),
+				topic: z.array(topics).default([])
+			})
+			.default({
+				audience: [],
+				category: [],
+				indicatorCategory: [],
+				policyFieldBNK: [],
+				topic: [],
+				type: []
+			}),
+		item: z.array(z.uuid()).default([]),
+		sort: z.enum(['alpha', 'modified']).default('alpha'),
+		terms: z.string().default(''),
+		title: z.string(),
+		type: z.literal(payloadTypes.enum.custom_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
+
 const fileCollectionPayload = z
 	.object({
 		file: z
@@ -998,6 +1029,7 @@ const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
+	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1048,6 +1080,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
+	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1153,6 +1186,18 @@ export function isChapterContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ChapterContainer {
 	return container.payload.type === payloadTypes.enum.chapter;
+}
+
+const customCollectionContainer = container.extend({
+	payload: customCollectionPayload
+});
+
+export type CustomCollectionContainer = z.infer<typeof customCollectionContainer>;
+
+export function isCustomCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is CustomCollectionContainer {
+	return container.payload.type === payloadTypes.enum.custom_collection;
 }
 
 const effectContainer = container.extend({
@@ -1644,6 +1689,7 @@ export const emptyContainer = newContainer.extend({
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
 		initialChapterPayload,
+		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
 		initialFileCollectionPayload,
