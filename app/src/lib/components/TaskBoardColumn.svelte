@@ -170,6 +170,10 @@
 		gap: 0.5rem;
 	}
 
+	header + div {
+		flex-grow: 1;
+	}
+
 	:global(header svg) {
 		stroke-width: 2.5px;
 	}
@@ -180,7 +184,6 @@
 		border-radius: 8px;
 		box-shadow: var(--shadow-md);
 		flex-shrink: 0;
-		margin-top: auto;
 		overflow: hidden;
 	}
 
