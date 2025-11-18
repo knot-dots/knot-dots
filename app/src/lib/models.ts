@@ -61,6 +61,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'chapter',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -552,6 +553,19 @@ const administrativeAreaBasicDataPayload = z.object({
 
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
 
+const chapterPayload = basePayload
+	.extend({
+		image: z.url().optional(),
+		number: z.string(),
+		type: z.literal(payloadTypes.enum.chapter)
+	})
+	.omit({
+		description: true,
+		summary: true
+	});
+
+const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
+
 const fileCollectionPayload = z
 	.object({
 		file: z
@@ -971,6 +985,7 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	chapterPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1019,6 +1034,7 @@ export type Container = z.infer<typeof container>;
 const anyPayload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	chapterPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1111,6 +1127,18 @@ export function isAdministrativeAreaBasicDataContainer(
 	container: AnyContainer | EmptyContainer
 ): container is AdministrativeAreaBasicDataContainer {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
+}
+
+const chapterContainer = container.extend({
+	payload: chapterPayload
+});
+
+export type ChapterContainer = z.infer<typeof chapterContainer>;
+
+export function isChapterContainer(
+	container: AnyContainer | EmptyContainer
+): container is ChapterContainer {
+	return container.payload.type === payloadTypes.enum.chapter;
 }
 
 const effectContainer = container.extend({
@@ -1589,6 +1617,7 @@ export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
+		initialChapterPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
 		initialFileCollectionPayload,
