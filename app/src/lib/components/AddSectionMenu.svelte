@@ -5,6 +5,7 @@
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
 	import BasicData from '~icons/knotdots/basic-data';
+	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
@@ -137,6 +138,7 @@
 
 	let options = $derived(
 		[
+			{ icon: Chapter, label: $_('chapter'), value: payloadTypes.enum.chapter },
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
 			...(mayAddFileCollection
 				? [

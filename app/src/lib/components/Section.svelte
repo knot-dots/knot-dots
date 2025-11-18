@@ -4,6 +4,7 @@
 	import { invalidate } from '$app/navigation';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
+	import EditableChapterSection from '$lib/components/EditableChapterSection.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
@@ -20,6 +21,7 @@
 	import {
 		type AnyContainer,
 		isAdministrativeAreaBasicDataContainer,
+		isChapterContainer,
 		isContainerWithProgress,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
@@ -90,7 +92,21 @@
 	{/if}
 
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
-		{#if isEffectCollectionContainer(container) && isGoalContainer(parentContainer)}
+		{#if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+			<ReadonlyAdministrativeAreaBasicDataSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isChapterContainer(container)}
+			<EditableChapterSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isEffectCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableEffectCollection
 				bind:container
 				bind:parentContainer
@@ -127,13 +143,6 @@
 			/>
 		{:else if isMeasureCollectionContainer(container)}
 			<EditableMeasureCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-			/>
-		{:else if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
-			<ReadonlyAdministrativeAreaBasicDataSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers

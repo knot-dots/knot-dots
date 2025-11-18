@@ -53,6 +53,8 @@
 	"cancel": "Cancel",
 	"category": "Category",
 	"chapter": "Chapter",
+	"chapter.title.placeholder": "Enter title",
+	"chapter_number": "Chapter number",
 	"chapter_type": "Chapter types",
 	"close": "Close",
 	"close_sidebar": "Close sidebar",
