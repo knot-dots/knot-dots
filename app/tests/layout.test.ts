@@ -61,4 +61,20 @@ test.describe(() => {
 			await expect(slider).not.toBeEditable();
 		}
 	});
+
+	test('task badge shows category', async ({ page }) => {
+		await page.goto('/');
+
+		// Go to goal
+		await page.getByRole('button', { name: 'All', exact: true }).click();
+		await page.getByRole('menuitem', { name: 'Goals' }).click();
+		await page.getByRole('article', { name: 'Goal with task' }).first().click();
+
+		// Open task
+		await page.getByRole('article', { name: "Test task", exact: true }).click();
+
+		// Get badges in heading and expect to have 'Design' badge
+		const badges = page.locator('.details-section').filter({ hasText: "Test task"}).locator('.badges');
+		await expect(badges).toHaveText(/Design/);
+	});
 });
