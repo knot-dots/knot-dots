@@ -16,7 +16,7 @@
 			{$_('goal.hierarchy_level')}
 		</label>
 	{/if}
-	<input class="value" max="6" min="1" required type="number" bind:value />
+	<input class="value" id="hierarchyLevel" max="6" min="1" required type="number" bind:value />
 {:else}
 	{#if showLabel}
 		<span class="label">{$_('goal.hierarchy_level')}</span>
