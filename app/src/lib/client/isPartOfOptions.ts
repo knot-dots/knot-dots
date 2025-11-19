@@ -5,6 +5,7 @@ import { payloadTypes } from '$lib/models';
 // Centralized loader for parent options used by EditableParent and others.
 export function createIsPartOfOptionsRequest(
 	payloadType: PayloadType,
+	organization: string,
 	measureGuid?: string,
 	programGuid?: string
 ): Promise<Container[]> {
@@ -27,12 +28,11 @@ export function createIsPartOfOptionsRequest(
 		return Promise.resolve([]);
 	}
 
-	// Fetch broadly to maximize cache reuse: only by parent payloadType.
-	// Do NOT use isPartOfMeasure/isPartOfProgram nor organization/organizationalUnit here;
-	// filter those constraints in the component.
+	// Fetch, now constrained by organization if provided for narrower option set
 	return fetchContainers(
 		{
-			payloadType: targetPayloadTypes
+			payloadType: targetPayloadTypes,
+			organization: [organization]
 		},
 		'alpha'
 	) as Promise<Container[]>;

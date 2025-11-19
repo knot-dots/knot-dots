@@ -4,7 +4,14 @@ import type { PayloadType } from '$lib/models';
 
 // In-flight request deduplication to avoid firing identical concurrent network requests.
 type AnyContainerT = z.infer<typeof anyContainer>;
-const inflight = new Map<string, Promise<AnyContainerT[]>>();
+
+// Cache entry retains the promise while in-flight and the resolved result until TTL expires.
+interface CacheEntry {
+	promise: Promise<AnyContainerT[]>;
+	inserted: number; // ms timestamp when the request was initiated
+	result?: AnyContainerT[]; // populated once promise resolves
+}
+const inflight = new Map<string, CacheEntry>();
 
 export default async function fetchContainers(
 	filters: {
@@ -88,25 +95,40 @@ export default async function fetchContainers(
 		params.append('topic', value);
 	}
 	const url = `/container?${params}`;
+	const now = Date.now();
 
-	if (inflight.has(url)) return inflight.get(url)!;
+	const existing = inflight.get(url);
+	if (existing) {
+		// If we have a resolved result and it's still within TTL (2s), serve from cache.
+		if (existing.result && now - existing.inserted < 2000) {
+			return existing.result;
+		}
+		// If still in-flight (no result yet), just return that promise.
+		if (!existing.result) {
+			return existing.promise;
+		}
+		// Expired entry with a result: drop it and proceed to refetch.
+		inflight.delete(url);
+	}
 
-	const request: Promise<AnyContainerT[]> = (async () => {
+	// Create new entry
+	// Declare then assign to allow closure to mutate entry.result post resolution
+	const entry: CacheEntry = {
+		inserted: now,
+		promise: Promise.resolve([] as AnyContainerT[]) // placeholder, replaced immediately
+	};
+	entry.promise = (async () => {
 		const response = await fetch(url, {
-			// Let the browser use HTTP caching for subsequent identical requests
 			cache: 'default',
 			credentials: 'same-origin'
 		});
 		const data = await response.json();
-		return z.array(anyContainer).parse(data);
+		const parsed = z.array(anyContainer).parse(data);
+		entry.result = parsed; // store resolved data for TTL reuse
+		return parsed;
 	})();
+	inflight.set(url, entry);
 
-	inflight.set(url, request);
-
-	try {
-		return await request;
-	} finally {
-		// Ensure the inflight map is cleared after the request settles
-		inflight.delete(url);
-	}
+	// Return the promise (callers can await). Subsequent identical calls within 2s will reuse result.
+	return entry.promise;
 }

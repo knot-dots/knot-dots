@@ -34,7 +34,7 @@
 	let payloadType = $derived(container.payload.type);
 
 	let isPartOfOptionsRequest = $derived(
-		createIsPartOfOptionsRequest(payloadType, measureGuid, programGuid)
+		createIsPartOfOptionsRequest(payloadType, container.organization, measureGuid, programGuid)
 	);
 
 	let isPartOfObject = $derived(
@@ -91,9 +91,8 @@
 						.includes(guid)
 			)
 			.filter(
-				({ organization, organizational_unit }) =>
-					organization === container.organization &&
-					(!container.organizational_unit || organizational_unit === container.organizational_unit)
+				({ organizational_unit }) =>
+					!container.organizational_unit || organizational_unit === container.organizational_unit
 			)
 			.filter(({ relation }) =>
 				programGuid
