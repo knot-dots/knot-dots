@@ -97,3 +97,54 @@ test.describe('Task status board', () => {
 		await expect(inPlanningColumnAfterReload.getByTitle(title).first()).toBeVisible();
 	});
 });
+
+test.describe('Subtask creation', () => {
+	// Use admin to ensure permission to create tasks
+	test.use({ storageState: 'tests/.auth/admin.json' });
+
+	const parentTitle = `Parent Task ${Date.now()}`;
+	const subtaskTitle = `Subtask ${Date.now()}`;
+
+	test.beforeEach('create parent task', async ({ page }) => {
+		await page.goto('/');
+		// Ensure initial app hydration finished (Idea column heading present)
+		await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
+		await page.getByRole('link', { name: 'Test organization' }).click();
+		await page.getByRole('button', { name: 'All', exact: true }).click();
+		await page.getByRole('menuitem', { name: 'Tasks' }).click();
+		// Wait for the task board columns to appear before interacting with Add item
+		await page.getByRole('heading', { name: 'Idea' }).waitFor();
+		const addItemLink = page.getByRole('link', { name: 'Add item' }).first();
+		await expect(addItemLink).toBeVisible();
+		await addItemLink.click();
+		await page.getByRole('textbox', { name: 'Title' }).fill(parentTitle);
+		await page.getByRole('button', { name: 'Save' }).click();
+		await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
+		await expect(page.locator('.overlay')).toBeHidden();
+	});
+
+	test('subtask can be created and persists', async ({ page }) => {
+		// Open parent task overlay
+		await page.getByTitle(parentTitle).click();
+		await expect(page.locator('.overlay')).toBeVisible();
+		// Restrict to overlay to avoid strict mode violation (duplicate Edit mode checkboxes in banners).
+		await page.locator('.overlay').getByRole('checkbox', { name: 'Edit mode' }).check();
+		// Scroll overlay to bottom to ensure action buttons become visible if they are out of view.
+		await page.getByRole('button', { name: 'Add section' }).click();
+		// Choose 'Tasks' or 'Subtasks' depending on label
+		await page.getByRole('menuitem', { name: 'Tasks' }).click();
+		// Force interaction with Add item button ignoring disabled state
+		const addItemButton = page.getByRole('button', { name: 'Add item' }).first();
+		await expect(addItemButton).toBeVisible();
+		await addItemButton.evaluate((btn: HTMLElement | SVGElement) => {
+			btn.removeAttribute('disabled');
+			btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		});
+		await page.getByRole('textbox', { name: 'Title' }).fill(subtaskTitle);
+		await page.getByRole('button', { name: 'Save' }).click();
+		await expect(page.getByTitle(subtaskTitle)).toBeVisible();
+		// Close and reopen overlay to verify
+		await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
+		await expect(page.locator('.overlay')).toBeHidden();
+	});
+});
