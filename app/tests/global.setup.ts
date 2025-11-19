@@ -17,6 +17,24 @@ setup('insert test goal', async ({ page }) => {
 	await page.getByRole('button', { name: 'Save' }).click();
 });
 
+setup('insert test program', async ({ page }) => {
+	await page.goto('/');
+	await page.getByRole('button', { name: 'All', exact: true }).click();
+	await page.getByRole('menuitem', { name: 'Programs' }).click();
+	await page.getByRole('button', { name: 'Program', exact: true }).click();
+	await page.getByRole('textbox', { name: 'Title' }).fill('Test program');
+	await page.getByRole('button', { name: 'Save' }).click();
+});
+
+setup('insert test measure', async ({ page }) => {
+	await page.goto('/');
+	await page.getByRole('button', { name: 'All', exact: true }).click();
+	await page.getByRole('menuitem', { name: 'Measures' }).click();
+	await page.getByText('Add item').first().click();
+	await page.getByRole('textbox', { name: 'Title' }).fill('Test measure');
+	await page.getByRole('button', { name: 'Save' }).click();
+});
+
 setup('insert goal with task', async ({ page }) => {
 	await page.goto('/');
 
