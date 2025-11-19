@@ -105,11 +105,20 @@
 	{@const ancestors = parentContainer
 		? findAncestors(parentContainer, items, [predicates.enum['is-part-of']])
 		: []}
+	{@const directChildren = parentContainer
+		? items.filter(
+				(item) =>
+					item.guid !== parentContainer.guid &&
+					!ancestors.some((a) => a.guid === item.guid) &&
+					item.relation.some(
+						(r) =>
+							r.predicate === predicates.enum['is-part-of'] && r.object === parentContainer.guid
+					)
+			)
+		: []}
 	<Carousel
 		{addItem}
-		items={items.filter(
-			({ guid }) => guid !== parentContainer?.guid && !ancestors.some((a) => a.guid === guid)
-		)}
+		items={directChildren}
 		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container.managed_by) && editable}
 	>
 		{#snippet itemSnippet(item)}
