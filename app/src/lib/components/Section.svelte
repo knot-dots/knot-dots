@@ -12,26 +12,29 @@
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
+	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
 	import {
 		type AnyContainer,
+		isAdministrativeAreaBasicDataContainer,
+		isContainerWithProgress,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
+		isGoalContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
-		isAdministrativeAreaBasicDataContainer,
 		isObjectiveCollectionContainer,
+		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
+		isProgressContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
-		isTextContainer,
-		isOrganizationalUnitContainer,
-		isGoalContainer
+		isTextContainer
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -145,6 +148,13 @@
 			/>
 		{:else if isProgramCollectionContainer(container)}
 			<EditableProgramCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
+			<EditableProgressSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers

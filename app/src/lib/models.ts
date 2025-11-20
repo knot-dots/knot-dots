@@ -726,7 +726,6 @@ const objectiveCollectionPayload = z
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 const progressPayload = z.object({
-	description: z.string().trim().optional(),
 	title: z
 		.string()
 		.readonly()
