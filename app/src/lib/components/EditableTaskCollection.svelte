@@ -16,22 +16,21 @@
 		type TaskCollectionContainer,
 		type TaskContainer
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: TaskCollectionContainer;
 		editable?: boolean;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	let parentContainer = $derived(sectionOf(container, relatedContainers));
 
 	let tasksRequest = $derived(
 		parentContainer
@@ -95,7 +94,7 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}

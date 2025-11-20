@@ -12,12 +12,15 @@
 
 	interface Props {
 		container: AnyContainer;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
-
-	let parentContainer = $derived(sectionOf(container, relatedContainers)) as AnyContainer;
+	let {
+		container = $bindable(),
+		parentContainer = $bindable(),
+		relatedContainers = $bindable()
+	}: Props = $props();
 
 	let popover = createPopover({ label: $_('settings') });
 

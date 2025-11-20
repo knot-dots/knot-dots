@@ -132,7 +132,11 @@
 {/if}
 
 {#each subsections as { guid }, i (guid)}
-	<Subsection bind:relatedContainers bind:container={subsections[i]} />
+	<Subsection
+		bind:container={subsections[i]}
+		bind:parentContainer={container}
+		bind:relatedContainers
+	/>
 {/each}
 
 <footer class="content-actions">

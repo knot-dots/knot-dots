@@ -29,16 +29,23 @@
 		isProgramCollectionContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
-		isTextContainer
+		isTextContainer,
+		isOrganizationalUnitContainer,
+		isGoalContainer
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
+	let {
+		container = $bindable(),
+		parentContainer = $bindable(),
+		relatedContainers = $bindable()
+	}: Props = $props();
 
 	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
 
@@ -80,75 +87,87 @@
 	{/if}
 
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
-		{#if isEffectCollectionContainer(container)}
+		{#if isEffectCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableEffectCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isFileCollectionContainer(container)}
 			<EditableFileCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		{:else if isMapContainer(container)}
+		{:else if isMapContainer(container) && isOrganizationalUnitContainer(parentContainer)}
 			<EditableMapSection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isMeasureCollectionContainer(container)}
 			<EditableMeasureCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		{:else if isAdministrativeAreaBasicDataContainer(container)}
+		{:else if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
 			<ReadonlyAdministrativeAreaBasicDataSection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		{:else if isObjectiveCollectionContainer(container)}
+		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableObjectiveCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isProgramCollectionContainer(container)}
 			<EditableProgramCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isTaskCollectionContainer(container)}
 			<EditableTaskCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isTextContainer(container)}
 			<EditableTextSection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 			/>
