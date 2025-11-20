@@ -71,10 +71,13 @@ test.describe(() => {
 		await page.getByRole('article', { name: 'Goal with task' }).first().click();
 
 		// Open task
-		await page.getByRole('article', { name: "Test task", exact: true }).click();
+		await page.getByRole('article', { name: 'Test task', exact: true }).click();
 
 		// Get badges in heading and expect to have 'Design' badge
-		const badges = page.locator('.details-section').filter({ hasText: "Test task"}).locator('.badges');
+		const badges = page
+			.locator('.details-section')
+			.filter({ hasText: 'Test task' })
+			.locator('.badges');
 		await expect(badges).toHaveText(/Design/);
 	});
 });
