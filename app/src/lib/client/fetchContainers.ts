@@ -1,15 +1,13 @@
 import { z } from 'zod';
-import { anyContainer } from '$lib/models';
+import { type AnyContainer, anyContainer } from '$lib/models';
 import type { PayloadType } from '$lib/models';
 
 // In-flight request deduplication to avoid firing identical concurrent network requests.
-type AnyContainerT = z.infer<typeof anyContainer>;
-
 // Cache entry retains the promise while in-flight and the resolved result until TTL expires.
 interface CacheEntry {
-	promise: Promise<AnyContainerT[]>;
+	promise: Promise<AnyContainer[]>;
 	inserted: number; // ms timestamp when the request was initiated
-	result?: AnyContainerT[]; // populated once promise resolves
+	result?: AnyContainer[]; // populated once promise resolves
 }
 const inflight = new Map<string, CacheEntry>();
 
@@ -115,7 +113,7 @@ export default async function fetchContainers(
 	// Declare then assign to allow closure to mutate entry.result post resolution
 	const entry: CacheEntry = {
 		inserted: now,
-		promise: Promise.resolve([] as AnyContainerT[]) // placeholder, replaced immediately
+		promise: Promise.resolve([] as AnyContainer[]) // placeholder, replaced immediately
 	};
 	entry.promise = (async () => {
 		const response = await fetch(url, {
