@@ -177,38 +177,18 @@ export function createContainer(container: NewContainer) {
 			}
 
 
-			// Index newly created container in Elasticsearch (best-effort; non-blocking).
+			// Queue indexing event instead of direct Elasticsearch call.
 			try {
-				const esUrl = process.env.ELASTICSEARCH_URL;
-				if (esUrl) {
-					const indexName = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
-					// Lightweight dynamic import to avoid adding client unless env var present.
-					const { Client } = await import('@elastic/elasticsearch');
-					const client = new Client({ node: esUrl });
-					const doc = {
-						guid: containerResult.guid,
-						revision: containerResult.revision,
-						realm: containerResult.realm,
-						organization: containerResult.organization,
-						organizationalUnit: containerResult.organizational_unit ?? undefined,
-						managedBy: containerResult.managed_by,
-						type: (containerResult as any).payload?.type,
-						title:
-							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
-						visibility: (containerResult as any).payload?.visibility,
-						payload: (containerResult as any).payload,
-						text: [
-							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
-							(containerResult as any).payload?.description
-						]
-							.filter(Boolean)
-							.join(' ')
-					};
-					await client.index({ index: indexName, id: containerResult.guid, document: doc });
-				} // silently skip if ELASTICSEARCH_URL not set
+				const { enqueueIndexingEvent } = await import('./indexingQueue');
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: containerResult.guid,
+					type: (containerResult as any).payload?.type,
+					timestamp: new Date().toISOString()
+				});
 			} catch (e) {
 				// eslint-disable-next-line no-console
-				console.warn('Elasticsearch indexing failed (non-fatal):', (e as Error).message);
+				console.warn('Queue enqueue (create) failed (non-fatal):', (e as Error).message);
 			}
 
 			return { ...containerResult, relation: [...relationResult], user: [...userResult] };
@@ -289,37 +269,18 @@ export function updateContainer(container: ModifiedContainer) {
 			}
 
 
-			// Best-effort Elasticsearch indexing of updated container (non-blocking).
+			// Queue indexing event instead of direct Elasticsearch call.
 			try {
-				const esUrl = process.env.ELASTICSEARCH_URL;
-				if (esUrl) {
-					const indexName = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
-					const { Client } = await import('@elastic/elasticsearch');
-					const client = new Client({ node: esUrl });
-					const doc = {
-						guid: containerResult.guid,
-						revision: containerResult.revision,
-						realm: containerResult.realm,
-						organization: containerResult.organization,
-						organizationalUnit: containerResult.organizational_unit ?? undefined,
-						managedBy: containerResult.managed_by,
-						type: (containerResult as any).payload?.type,
-						title:
-							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
-						visibility: (containerResult as any).payload?.visibility,
-						payload: (containerResult as any).payload,
-						text: [
-							(containerResult as any).payload?.title ?? (containerResult as any).payload?.name,
-							(containerResult as any).payload?.description
-						]
-							.filter(Boolean)
-							.join(' ')
-					};
-					await client.index({ index: indexName, id: containerResult.guid, document: doc });
-				}
+				const { enqueueIndexingEvent } = await import('./indexingQueue');
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: container.guid,
+					type: container.payload.type,
+					timestamp: new Date().toISOString()
+				});
 			} catch (e) {
 				// eslint-disable-next-line no-console
-				console.warn('Elasticsearch indexing (update) failed (non-fatal):', (e as Error).message);
+				console.warn('Queue enqueue (update) failed (non-fatal):', (e as Error).message);
 			}
 
 			return { ...containerResult, user: userResult };
@@ -368,23 +329,16 @@ export function deleteContainer(container: AnyContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			// Best-effort Elasticsearch removal for the container and its section descendants.
+			// Queue delete events for container and its section descendants.
 			try {
-				const esUrl = process.env.ELASTICSEARCH_URL;
-				if (esUrl) {
-					const indexName = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
-					const { Client } = await import('@elastic/elasticsearch');
-					const client = new Client({ node: esUrl });
-					// Delete the main container doc.
-					await client.delete({ index: indexName, id: container.guid }, { ignore: [404] });
-					// Delete sections recursively (they were deleted above).
-					for (const section of sections) {
-						await client.delete({ index: indexName, id: section.guid }, { ignore: [404] });
-					}
+				const { enqueueIndexingEvent } = await import('./indexingQueue');
+				await enqueueIndexingEvent({ action: 'delete', guid: container.guid, timestamp: new Date().toISOString() });
+				for (const section of sections) {
+					await enqueueIndexingEvent({ action: 'delete', guid: section.guid, timestamp: new Date().toISOString() });
 				}
 			} catch (e) {
 				// eslint-disable-next-line no-console
-				console.warn('Elasticsearch delete failed (non-fatal):', (e as Error).message);
+				console.warn('Queue enqueue (delete) failed (non-fatal):', (e as Error).message);
 			}
 		});
 	};
@@ -798,6 +752,8 @@ export function getManyContainers(
 						SELECT c.*
 						FROM container c
 						WHERE c.guid IN (${sql.join(hits, sql.fragment`, `)})
+							AND c.valid_currently
+							AND NOT c.deleted
 						ORDER BY ${prepareOrderByExpression(sort)};
 					`);
 					return withUserAndRelation<Container>(connection, containerResult);
@@ -1146,7 +1102,12 @@ export function getAllRelatedContainers(
 				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
 				if (!hitGuids.length) return [];
 				const containerResult = await connection.any(sql.typeAlias('container')`
-					SELECT c.* FROM container c WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)}) ORDER BY ${prepareOrderByExpression(sort)}
+					SELECT c.*
+					FROM container c
+					WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)})
+						AND c.valid_currently
+						AND NOT c.deleted
+					ORDER BY ${prepareOrderByExpression(sort)}
 				`);
 				const objectivesAndEffects = containerResult
 					.filter(({ payload }) => payload.type == payloadTypes.enum.effect || payload.type == payloadTypes.enum.objective)
@@ -1317,7 +1278,12 @@ export function getAllRelatedContainersByProgramType(
 				const hitGuids = (esRes.hits.hits as any[]).map(h => h._source?.guid).filter(Boolean);
 				if (!hitGuids.length) return [];
 				const containerResult = await connection.any(sql.typeAlias('container')`
-					SELECT c.* FROM container c WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)}) ORDER BY ${prepareOrderByExpression(sort)}
+					SELECT c.*
+					FROM container c
+					WHERE c.guid IN (${sql.join(hitGuids, sql.fragment`, `)})
+						AND c.valid_currently
+						AND NOT c.deleted
+					ORDER BY ${prepareOrderByExpression(sort)}
 				`);
 				return withUserAndRelation<Container>(connection, containerResult);
 			} catch (e) {

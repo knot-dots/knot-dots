@@ -31,6 +31,8 @@ export const GET = (async ({ locals, params }) => {
 					})
 				)
 			);
+			// Small delay to let indexing worker create ES document before first view
+			await new Promise((resolve) => setTimeout(resolve, 500));
 			return json(container);
 		} else {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });

@@ -166,6 +166,11 @@ export const actions = {
 				await createContainer(container)(connection);
 			}
 		});
+
+		// Give the asynchronous indexing worker a brief head start so that
+		// freshly created containers are more likely to appear immediately
+		// in Elasticsearch-backed listings after this action completes.
+		await new Promise((resolve) => setTimeout(resolve, 500));
 	}
 } satisfies Actions;
 

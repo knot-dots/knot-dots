@@ -591,6 +591,10 @@ export const POST = (async ({ locals, request }) => {
 			})
 		);
 
+		// Allow asynchronous indexing worker time to upsert into Elasticsearch
+		// so subsequent immediate navigations/searches can see the new container.
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+
 		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 	}
 }) satisfies RequestHandler;

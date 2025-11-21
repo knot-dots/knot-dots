@@ -169,7 +169,9 @@ async function* fetchContainers(batchSize = 500) {
     const rows = (await pool.any(sql.unsafe`
       SELECT guid, revision, realm, organization::text, organizational_unit::text, managed_by::text, payload
       FROM container
-      WHERE deleted = false AND (${lastGuid ? sql.fragment`guid > ${lastGuid}::uuid` : sql.fragment`true`})
+      WHERE deleted = false
+        AND valid_currently
+        AND (${lastGuid ? sql.fragment`guid > ${lastGuid}::uuid` : sql.fragment`true`})
       ORDER BY guid
       LIMIT ${batchSize}
     `)) as unknown as Row[];
