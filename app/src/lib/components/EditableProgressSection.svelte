@@ -39,6 +39,20 @@
 			alert(error.message);
 		}
 	}
+
+	async function handleDelete() {
+		parentContainer.payload.progress = undefined;
+
+		const response = await saveContainer(parentContainer);
+		if (response.ok) {
+			const updatedContainer = await response.json();
+			parentContainer.revision = updatedContainer.revision;
+			await invalidate('containers');
+		} else {
+			const error = await response.json();
+			alert(error.message);
+		}
+	}
 </script>
 
 <header>
@@ -47,7 +61,12 @@
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
 			<li>
-				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+				<ContainerSettingsDropdown
+					bind:container
+					bind:parentContainer
+					bind:relatedContainers
+					ondelete={handleDelete}
+				/>
 			</li>
 		</ul>
 	{/if}

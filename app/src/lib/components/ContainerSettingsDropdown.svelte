@@ -12,12 +12,14 @@
 
 	interface Props {
 		container: AnyContainer;
+		ondelete?: () => Promise<void>;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
+		ondelete,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -42,6 +44,10 @@
 				({ subject }) => subject !== container.guid
 			);
 			relatedContainers = relatedContainers.filter(({ guid }) => guid !== container.guid);
+		}
+
+		if (ondelete) {
+			await ondelete();
 		}
 
 		dialog.close();
