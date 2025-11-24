@@ -5,9 +5,11 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { computeFacetCount, type Container, predicates, taskCategories } from '$lib/models';
 
+	import type { PageData } from '../../routes/[[guid=uuid]]/tasks/catalog/$types';
+
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: PageData;
 		sortOptions?: [string, string][];
 	}
 
@@ -44,7 +46,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search {sortOptions} />
+		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} {facets} search {sortOptions} />
 	{/snippet}
 
 	{#snippet main()}

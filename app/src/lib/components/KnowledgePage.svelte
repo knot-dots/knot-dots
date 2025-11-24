@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
@@ -11,9 +12,11 @@
 		topics
 	} from '$lib/models';
 
+	import type { PageData } from '../../routes/[[guid=uuid]]/knowledge/catalog/$types';
+
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: PageData;
 	}
 
 	let { children, data }: Props = $props();
@@ -32,7 +35,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} {facets} search />
 	{/snippet}
 
 	{#snippet main()}

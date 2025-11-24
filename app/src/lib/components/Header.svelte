@@ -41,6 +41,7 @@
 
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
+		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
 		workspaceOptions?: { label: string; value: string }[];
@@ -48,6 +49,7 @@
 
 	let {
 		facets = new Map(),
+		filterBarInitiallyOpen = false,
 		search = false,
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
@@ -59,6 +61,14 @@
 	let overlay = getContext('overlay');
 
 	let filterBar = createDisclosure({ label: $_('filters') });
+
+	$effect(() => {
+		if (filterBarInitiallyOpen) {
+			filterBar.open();
+		} else {
+			filterBar.close();
+		}
+	});
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
