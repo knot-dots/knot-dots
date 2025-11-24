@@ -32,11 +32,15 @@
 	}
 </script>
 
-{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+{#if $applicationState.containerDetailView.editable}
 	<button
 		aria-label={$_('delete')}
 		class="delete quiet"
 		type="button"
+		disabled={!$mayDeleteContainer(container)}
+		title={!$mayDeleteContainer(container)
+			? $_('delete_disabled_contains_children')
+			: $_('delete')}
 		onclick={() => confirmDeleteDialog.showModal()}
 	>
 		<TrashBin />
@@ -49,3 +53,12 @@
 		{relatedContainers}
 	/>
 {/if}
+
+<style>
+	button:disabled {
+		background: transparent;
+		opacity: 0.5;
+		border: none;
+		outline: none;
+	}
+</style>
