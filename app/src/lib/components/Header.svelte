@@ -338,7 +338,7 @@
 		flex-direction: row;
 		font-size: 0.875rem;
 		gap: 0.25rem;
-		height: 3rem;
+		min-height: 3rem;
 		justify-content: safe center;
 		overflow: auto;
 		padding: 0 0 0 1rem;
@@ -346,6 +346,10 @@
 
 	.filter-and-sort fieldset > :global(*) {
 		flex-shrink: 0;
+		min-height: 3rem;
+		display: flex;
+		flex-direction: row;
+		justify-content: safe center;
 	}
 
 	.filter-and-sort legend + span[aria-hidden='true'] {
