@@ -22,6 +22,7 @@
 		isPartOf,
 		isResourceContainer,
 		isSimpleMeasureContainer,
+		isTeaserContainer,
 		isTaskContainer,
 		overlayKey,
 		overlayURL,
@@ -287,6 +288,13 @@
 			{#if indicator}
 				<ObjectiveChart {container} {relatedContainers} />
 			{/if}
+		{:else if isTeaserContainer(container)}
+			{#if 'image' in container.payload && container.payload.image}
+				<p>
+					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+				</p>
+			{/if}
+			<Summary {container} />
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />
 		{:else if isResourceContainer(container)}

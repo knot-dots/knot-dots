@@ -120,6 +120,21 @@ const levelValues = [
 
 export const levels = z.enum(levelValues);
 
+
+export type Level = z.infer<typeof levels>;
+
+export function isLevel(value: unknown): value is Level {
+  return levelValues.includes(value as Level);
+}
+
+const listTypeValues = [
+  'carousel',
+  'wall',
+  'list',
+] as const;
+
+export const listTypes = z.enum(listTypeValues);
+
 const linkStyleValues = [
   'default',
   'external',
@@ -128,11 +143,12 @@ const linkStyleValues = [
 
 export const linkStyles = z.enum(linkStyleValues);
 
-export type Level = z.infer<typeof levels>;
+const cardStyleValues = [
+  'default',
+  'highlight',
+] as const;
 
-export function isLevel(value: unknown): value is Level {
-	return levelValues.includes(value as Level);
-}
+export const cardStyles = z.enum(cardStyleValues);
 
 const predicateValues = [
 	'contributes-to',
@@ -905,6 +921,8 @@ const teaserPayload = z
     audience: z.array(audience).default([audience.enum['audience.citizens']]),
     title: z.string().trim(),
     link: z.string().optional(),
+    cardStyle: z.string().optional(),
+    //href: z.string().optional(),
     linkCaption: z.string().optional(),
     description: z.string().optional(),
     style: z.string().optional().default('default'),
@@ -924,6 +942,7 @@ const teaserCollectionPayload = z
       .readonly()
       .default(() => unwrapFunctionStore(_)('teasers')),
     type: z.literal(payloadTypes.enum.teaser_collection),
+    listType: z.string().default(() => 'wall'),
     visibility: visibility.default(visibility.enum['organization'])
   })
   .strict();

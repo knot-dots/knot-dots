@@ -5,7 +5,10 @@
   import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
   import TeaserCard from "$lib/components/TeaserCard.svelte";
   import Wall from '$lib/components/Wall.svelte';
+  import List from '$lib/components/List.svelte';
+  import Carousel from '$lib/components/Carousel.svelte';
   import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+  import ContainerModeDropdown from '$lib/components/ContainerModeDropdown.svelte';
   import {
     type AnyContainer,
     containerOfType,
@@ -19,6 +22,7 @@
   } from '$lib/models';
   import {sectionOf} from '$lib/relations';
   import {mayCreateContainer, newContainer} from '$lib/stores';
+  import { ability } from '$lib/stores';
 
   interface Props {
     container: TeaserCollectionContainer;
@@ -74,13 +78,35 @@
 
     createContainerDialog.getElement().showModal();
   }
+
+  const init: Attachment = (element) => {
+    if (container.payload.title == '') {
+      (element as HTMLElement).focus();
+    }
+  };
 </script>
 
 <header>
-	<h2 class="details-heading">{container.payload.title}</h2>
+	{#if editable && $ability.can('update', container)}
+		<!-- svelte-ignore binding_property_non_reactive -->
+		<h2
+				bind:textContent={container.payload.title}
+				class="details-heading"
+				contenteditable="plaintext-only"
+				onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+				{@attach init}
+		></h2>
+	{:else}
+		<h2 class="details-heading" contenteditable="false">
+			{container.payload.title}
+		</h2>
+	{/if}
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
+			<li>
+				<ContainerModeDropdown bind:container bind:relatedContainers/>
+			</li>
 			{#if $mayCreateContainer(payloadTypes.enum.teaser, container.managed_by)}
 				<li>
 					<button
@@ -102,13 +128,35 @@
 </header>
 
 {#await teaserRequest then items}
-	<Wall
-			{addItem}
-			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
-	>
-		{#snippet itemSnippet(item)}
-			<TeaserCard container={item}/>
-		{/snippet}
-	</Wall>
+	{#if container.payload.listType === 'list'}
+		<List
+				{addItem}
+				{items}
+				mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+		>
+			{#snippet itemSnippet(item)}
+				<TeaserCard container={item} {editable}/>
+			{/snippet}
+		</List>
+	{:else if container.payload.listType === 'wall'}
+		<Wall
+				{addItem}
+				{items}
+				mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+		>
+			{#snippet itemSnippet(item)}
+				<TeaserCard container={item} {editable}/>
+			{/snippet}
+		</Wall>
+	{:else}
+		<Carousel
+				{addItem}
+				{items}
+				mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+		>
+			{#snippet itemSnippet(item)}
+				<TeaserCard container={item} {editable}/>
+			{/snippet}
+		</Carousel>
+	{/if}
 {/await}

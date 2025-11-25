@@ -2,6 +2,7 @@
   import { _ } from 'svelte-i18n';
   import AuthoredBy from '$lib/components/AuthoredBy.svelte';
   import EditableAudience from '$lib/components/EditableAudience.svelte';
+  import EditableCardStyle from '$lib/components/EditableCardStyle.svelte';
   import EditableImage from '$lib/components/EditableImage.svelte';
   import EditablePlainText from '$lib/components/EditablePlainText.svelte';
   import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -37,6 +38,12 @@
 		<EditableLinkStyle
 				{editable}
 				label={$_('teaser.link_style')}
+				bind:value={container.payload.style}
+		/>
+
+		<EditableCardStyle
+				{editable}
+				label={$_('card_style')}
 				bind:value={container.payload.style}
 		/>
 

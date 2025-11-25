@@ -50,6 +50,9 @@
 	"boards": "Boards",
 	"body": "Inhalt",
 	"cancel": "Abbrechen",
+	"card_style": "Stil",
+	"card_style.default": "Standard",
+	"card_style.highlight": "Hervorheben",
 	"category": "SDG",
 	"chapter": "Absatz",
 	"chapter_type": "Absatztypen",
@@ -249,11 +252,16 @@
 		"regional": "Regional",
 		"state": "Land"
 	},
-    "link_style": {
-      "default": "Standard",
-      "external": "Extern",
-      "button": "Button"
-    },
+	"link_style": {
+		"default": "Standard",
+		"external": "Extern",
+		"button": "Button"
+	},
+	"list_type": {
+		"carousel": "Karussell",
+		"wall": "Wand",
+		"list": "Liste"
+	},
 	"login": "Anmelden",
 	"logo": "Logo",
 	"logout": "Abmelden",
