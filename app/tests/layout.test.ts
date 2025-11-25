@@ -95,8 +95,7 @@ const expectedHeadings = [
 	'Editorial state',
 	'Organizational unit',
 	'Hierarchy level',
-	'Goal type',
-	'Parent object'
+	'Goal type'
 ];
 
 test.describe('Goals table columns', () => {
