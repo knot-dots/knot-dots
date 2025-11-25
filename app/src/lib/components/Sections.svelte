@@ -178,7 +178,11 @@
 	>
 		{#each sections as { guid }, i (guid)}
 			<li animate:flip={{ duration: 100 }} class="section-wrapper">
-				<Section bind:relatedContainers bind:container={sections[i]} />
+				<Section
+					bind:container={sections[i]}
+					bind:parentContainer={container}
+					bind:relatedContainers
+				/>
 
 				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					<div class="add-section-wrapper">

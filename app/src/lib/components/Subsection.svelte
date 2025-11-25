@@ -7,6 +7,7 @@
 	import {
 		type AnyContainer,
 		isGoalCollectionContainer,
+		isGoalContainer,
 		isObjectiveCollectionContainer,
 		isResourceCollectionContainer
 	} from '$lib/models';
@@ -14,10 +15,15 @@
 
 	interface Props {
 		container: AnyContainer;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
+	let {
+		container = $bindable(),
+		parentContainer = $bindable(),
+		relatedContainers = $bindable()
+	}: Props = $props();
 
 	const handleSubmit = autoSave(container, 2000);
 
@@ -34,13 +40,15 @@
 		{#if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				subsection
 			/>
-		{:else if isObjectiveCollectionContainer(container)}
+		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableObjectiveCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				subsection
@@ -48,6 +56,7 @@
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				subsection
