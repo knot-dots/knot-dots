@@ -56,9 +56,39 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
+		// Auto-transfer managed_by when organizational_unit changes.
+		// Rules:
+		// 1. If organizational_unit changed from previous value to a new non-null value
+		//    and previous managed_by was the previous organizational_unit OR (previous org_unit was null and managed_by == organization),
+		//    then set managed_by to new organizational_unit.
+		// 2. If organizational_unit changed from a non-null value to null and previous managed_by == previous organizational_unit,
+		//    then set managed_by back to organization.
+		// 3. Otherwise keep provided managed_by (allow explicit overrides).
+		const previous = container; // earlier fetched container
+		let managed_by = parseResult.data.managed_by;
+		if (parseResult.data.organizational_unit !== previous.organizational_unit) {
+			const newUnit = parseResult.data.organizational_unit; // may be null
+			const prevUnit = previous.organizational_unit; // may be null
+			// Case: assigning a unit
+			if (newUnit) {
+				const shouldAdopt =
+					(prevUnit && previous.managed_by === prevUnit) ||
+					(!prevUnit && previous.managed_by === previous.organization);
+				if (shouldAdopt) {
+					managed_by = newUnit;
+				}
+			} else {
+				// removing unit
+				if (prevUnit && previous.managed_by === prevUnit) {
+					managed_by = previous.organization;
+				}
+			}
+		}
+
 		const result = await locals.pool.connect(
 			updateContainer({
 				...parseResult.data,
+				managed_by,
 				user: [
 					...parseResult.data.user.filter(
 						({ predicate }) => predicate != predicates.enum['is-creator-of']
