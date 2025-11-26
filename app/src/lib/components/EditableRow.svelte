@@ -37,6 +37,7 @@
 	import { _, date } from 'svelte-i18n';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
+	import lazyMount from '$lib/actions/lazyMount';
 
 	interface Props {
 		columns: string[];
@@ -46,6 +47,8 @@
 	}
 
 	let { columns, container = $bindable(), dragEnabled = false, editable = false }: Props = $props();
+	// Defer mounting of heavy cells (like ParentDropdown) until visible
+	let parentMounted = $state(false);
 </script>
 
 <div class="cell cell--action">
@@ -325,12 +328,20 @@
 {/if}
 
 {#if columns.includes('parentObject')}
-	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-		<ParentDropdown
-			offset={[0, -39]}
-			editable={editable && $ability.can('update', container)}
-			{container}
-		/>
+	<div
+		class="cell"
+		class:cell--locked={editable && $ability.cannot('update', container)}
+		use:lazyMount={{ onVisible: () => (parentMounted = true), once: true, rootMargin: '150px' }}
+	>
+		{#if parentMounted}
+			<ParentDropdown
+				offset={[0, -39]}
+				editable={editable && $ability.can('update', container)}
+				{container}
+			/>
+		{:else}
+			<div class="value">{$_('loading')}</div>
+		{/if}
 	</div>
 {/if}
 

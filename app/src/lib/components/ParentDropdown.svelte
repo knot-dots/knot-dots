@@ -113,11 +113,25 @@
 		{@const selected = options.find((o) => o.value === isPartOfObject(options))}
 		<div class="value">
 			{#if selected}
-				{#if 'href' in selected && selected.href}<a href={selected.href}>{selected.label}</a
-					>{:else}{selected.label}{/if}
+				{#if 'href' in selected && selected.href}
+					<a href={selected.href} title={selected.label}>{selected.label}</a>
+				{:else}
+					<span class="truncated" title={selected.label}>{selected.label}</span>
+				{/if}
 			{:else}
 				{$_('empty')}
 			{/if}
 		</div>
 	{/if}
 {/await}
+
+<style>
+	/* Single-line truncation with ellipsis */
+	.value, .value a, .value .truncated {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: block;
+		width: 100%;
+	}
+</style>
