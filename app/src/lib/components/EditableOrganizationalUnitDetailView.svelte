@@ -14,6 +14,11 @@
 		organizationalUnitType
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import EditableCover from '$lib/components/EditableCover.svelte';
+	import transformFileURL from '$lib/transformFileURL.js';
+	import {backgroundColors} from '$lib/theme/models';
+	import ColorDropdown from "$lib/components/ColorDropdown.svelte";
+
 
 	interface Props {
 		container: OrganizationalUnitContainer;
@@ -38,8 +43,24 @@
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+{#if container.payload.cover}
+	<div class="cover-section">
+		<img alt={$_('logo')} class="cover" src={transformFileURL(container.payload.cover)} />
+	</div>
+{/if}
+<article class="details stage stage--{backgroundColors.get(container.payload.color)}"
+		 bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
 	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+		<div class="details-section">
+			<EditableCover editable={$applicationState.containerDetailView.editable}
+						   label="Cover hinzufügen"
+						   bind:value={container.payload.cover} />
+			<ColorDropdown
+					buttonStyle='button'
+					bind:value={container.payload.color}
+					label="Hervorheben"
+					editable={$applicationState.containerDetailView.editable}/>
+		</div>
 		<header class="details-section">
 			<EditableLogo
 				editable={$applicationState.containerDetailView.editable}

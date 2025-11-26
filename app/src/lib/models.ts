@@ -193,6 +193,18 @@ export const goalStatus = z.enum(goalStatusValues);
 
 export type GoalStatus = z.infer<typeof goalStatus>;
 
+const backgroundColorValues = [
+	'color.white',
+	'color.blue',
+	'color.gray',
+	'color.red',
+	'color.orange',
+	'color.yellow',
+] as const;
+
+export const backgroundColor = z.enum(backgroundColorValues);
+export type BackgroundColor = z.infer<typeof backgroundColor>;
+
 const statusValues = [
 	'status.idea',
 	'status.in_planning',
@@ -975,6 +987,8 @@ const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
 	boards: z.array(boards).default([]),
+	color: backgroundColor.optional(),
+	cover: z.string().url().optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	image: z.string().url().optional(),
@@ -989,6 +1003,8 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 const organizationalUnitPayload = z.object({
 	administrativeType: administrativeTypes.optional(),
 	boards: z.array(boards).default([]),
+	color: backgroundColor.optional(),
+	cover: z.string().url().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	federalState: z.string().optional(),

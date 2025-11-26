@@ -1,6 +1,7 @@
 {
 	"about": "knot dots",
 	"active_filters": "{count, plural, one {1 aktiv} other {# aktiv}}",
+    "add_cover": "Cover hinzufügen",
 	"add_item": "Hinzufügen",
 	"add_section": "Abschnitt hinzufügen",
 	"administrative_area": "Verwaltungsgebiet",
@@ -58,6 +59,14 @@
 	"chapter_type": "Absatztypen",
 	"close_sidebar": "Seitenleiste schließen",
 	"collapse_sidebar": "Seitenleiste zuklappen",
+	"color": {
+		"white": "Keine",
+		"blue": "Blau",
+		"gray": "Grau",
+		"red": "Rot",
+		"orange": "Orange",
+		"yellow": "Gelb"
+	},
 	"comment": "Kommentar",
 	"confirm_delete_dialog.heading": "{title} löschen",
 	"confirm_delete_dialog.message": "Möchten Sie {count, plural, one {dieses Objekt} other {diese # Objekte}} wirklich löschen?",
@@ -158,6 +167,7 @@
 	"goals_and_measure_results_and_milestones": "Ziele, Maßnahmenergebnisse, Meilensteine",
 	"goals_by_hierarchy_level": "Zielebene {level}",
 	"help": "Hilfe",
+    "hightlight": "Hervorheben",
 	"home": "Startseite",
 	"homepage": "Homepage",
 	"import.csv_file": "CSV-Datei",
