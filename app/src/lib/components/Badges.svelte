@@ -31,6 +31,8 @@
 			{$_(container.payload.goalType)}
 		{:else if 'programType' in container.payload && container.payload.programType !== programTypes.enum['program_type.misc']}
 			{$_(container.payload.programType)}
+		{:else if 'taskCategory' in container.payload && container.payload.taskCategory}
+			{$_(container.payload.taskCategory)}
 		{:else}
 			{$_(container.payload.type)}
 		{/if}

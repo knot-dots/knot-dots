@@ -8,28 +8,27 @@
 	import {
 		type AnyContainer,
 		type EffectCollectionContainer,
+		type GoalContainer,
 		isEffectContainer,
-		isGoalContainer,
 		isPartOf,
 		overlayKey,
 		payloadTypes
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { addEffectState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: EffectCollectionContainer;
 		editable?: boolean;
+		parentContainer: GoalContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	let parentContainer = $derived(sectionOf(container, relatedContainers.filter(isGoalContainer)));
 
 	let items = $derived(
 		parentContainer
@@ -84,7 +83,7 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}

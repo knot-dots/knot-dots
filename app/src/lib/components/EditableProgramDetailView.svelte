@@ -156,7 +156,9 @@
 					'fulfillmentDate',
 					'duration',
 					'editorialState',
-					'organizationalUnit'
+					'organizationalUnit',
+					'hierarchyLevel',
+					'objectType'
 				]}
 				bind:container={parts[i]}
 				{dragEnabled}
@@ -227,6 +229,8 @@
 					<div class="cell">{$_('planned_duration')}</div>
 					<div class="cell">{$_('editorial_state')}</div>
 					<div class="cell">{$_('organizational_unit')}</div>
+					<div class="cell">{$_('goal.hierarchy_level')}</div>
+					<div class="cell">{$_('goal_type')}</div>
 				</div>
 			</div>
 			{#if $ability.cannot('update', container) || paramsFromFragment(page.url).has('type')}

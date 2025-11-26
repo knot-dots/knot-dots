@@ -5,11 +5,13 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/ci-import.yaml'
       - 'import/**'
   pull_request:
     branches:
       - main
     paths:
+      - '.github/workflows/ci-import.yaml'
       - 'import/**'
 
 env:

@@ -5,11 +5,13 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/ci-app.yaml'
       - 'app/**'
   pull_request:
     branches:
       - main
     paths:
+      - '.github/workflows/ci-app.yaml'
       - 'app/**'
 
 env:
@@ -39,6 +41,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: ./app/package-lock.json
       - run: npm clean-install
+      - run: npm run lint
       - run: npx playwright install --with-deps
       - run: docker compose build
       - run: npx playwright test

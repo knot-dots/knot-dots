@@ -21,7 +21,9 @@
 			{ heading: $_('audience'), key: 'audience' },
 			{ heading: $_('fulfillment_date'), key: 'fulfillmentDate' },
 			{ heading: $_('editorial_state'), key: 'editorialState' },
-			{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
+			{ heading: $_('organizational_unit'), key: 'organizationalUnit' },
+			{ heading: $_('goal.hierarchy_level'), key: 'hierarchyLevel' },
+			{ heading: $_('goal_type'), key: 'objectType' }
 		]}
 		rows={data.containers}
 	/>
