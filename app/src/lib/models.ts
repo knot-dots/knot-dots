@@ -69,6 +69,7 @@ const payloadTypeValues = [
 	'indicator',
 	'indicator_collection',
 	'indicator_template',
+	'info_box',
 	'knowledge',
 	'map',
 	'measure',
@@ -124,28 +125,28 @@ export const levels = z.enum(levelValues);
 export type Level = z.infer<typeof levels>;
 
 export function isLevel(value: unknown): value is Level {
-  return levelValues.includes(value as Level);
+	return levelValues.includes(value as Level);
 }
 
 const listTypeValues = [
-  'carousel',
-  'wall',
-  'list',
+	'carousel',
+	'wall',
+	'list',
 ] as const;
 
 export const listTypes = z.enum(listTypeValues);
 
 const linkStyleValues = [
-  'default',
-  'external',
-  'button',
+	'default',
+	'external',
+	'button',
 ] as const;
 
 export const linkStyles = z.enum(linkStyleValues);
 
 const cardStyleValues = [
-  'default',
-  'highlight',
+	'default',
+	'highlight',
 ] as const;
 
 export const cardStyles = z.enum(cardStyleValues);
@@ -902,50 +903,58 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
-//const textPayload = z
-//  .object({
-//    audience: z.array(audience).default([audience.enum['audience.citizens']]),
-//    body: z.string().trim().optional(),
-//    title: z.string().trim(),
-//    type: z.literal(payloadTypes.enum.text),
-//    visibility: visibility.default(visibility.enum['organization'])
-//  })
-//  .strict();
-//
-//const initialTextPayload = textPayload.partial({ body: true, title: true });
-
-
 // Add teaser payload schema here:
 const teaserPayload = z
-  .object({
-    audience: z.array(audience).default([audience.enum['audience.citizens']]),
-    title: z.string().trim(),
-    link: z.string().optional(),
-    cardStyle: z.string().optional(),
-    //href: z.string().optional(),
-    linkCaption: z.string().optional(),
-    description: z.string().optional(),
-    style: z.string().optional().default('default'),
-    image: z.string().url().optional(),
-    type: z.literal(payloadTypes.enum.teaser),
-    visibility: visibility.default(visibility.enum['organization'])
-  })
-  .strict();  // .strict() means no extra fields allowed
+	.object({
+		audience: z.array(audience).default([audience.enum['audience.citizens']]),
+		body: z.string().trim().optional(),
+		title: z.string().trim(),
+		link: z.string().optional(),
+		cardStyle: z.string().optional(),
+		//href: z.string().optional(),
+		linkCaption: z.string().optional(),
+		description: z.string().optional(),
+		style: z.string().optional().default('default'),
+		image: z.string().url().optional(),
+		type: z.literal(payloadTypes.enum.teaser),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();  // .strict() means no extra fields allowed
 
 // For creating new empty teasers (title optional during creation)
 const initialTeaserPayload = teaserPayload.partial({ title: true });
 
+// Add info payload schema here:
+const infoBoxPayload = z
+	.object({
+		audience: z.array(audience).default([audience.enum['audience.citizens']]),
+		body: z.string().trim().optional(),
+		title: z.string().trim(),
+		link: z.string().optional(),
+		cardStyle: z.string().optional(),
+		linkCaption: z.string().optional(),
+		description: z.string().optional(),
+		style: z.string().optional().default('default'),
+		image: z.string().url().optional(),
+		type: z.literal(payloadTypes.enum.info_box),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();  // .strict() means no extra fields allowed
+
+// For creating new empty teasers (title optional during creation)
+const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
+
 const teaserCollectionPayload = z
-  .object({
-    title: z
-      .string()
-      .readonly()
-      .default(() => unwrapFunctionStore(_)('teasers')),
-    type: z.literal(payloadTypes.enum.teaser_collection),
-    listType: z.string().default(() => 'wall'),
-    visibility: visibility.default(visibility.enum['organization'])
-  })
-  .strict();
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('teasers')),
+		type: z.literal(payloadTypes.enum.teaser_collection),
+		listType: listTypes.default(listTypes.enum.wall),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 const initialTeaserCollectionPayload = teaserCollectionPayload;
 
@@ -1024,7 +1033,7 @@ const undefinedPayload = z
 	.object({
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.undefined),
-		visibility: visibility.default(visibility.enum['organization'])
+		visibility: visibility.default(visibility.enum['organization']),
 	})
 	.strict();
 
@@ -1041,6 +1050,7 @@ const payload = z.discriminatedUnion('type', [
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
+	infoBoxPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -1090,6 +1100,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
+	infoBoxPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -1498,27 +1509,39 @@ export function isMeasureMonitoringContainer(
 }
 
 const teaserContainer = container.extend({
-  payload: teaserPayload
+	payload: teaserPayload
 });
 
 export type TeaserContainer = z.infer<typeof teaserContainer>;
 
 export function isTeaserContainer(
-  container: AnyContainer | EmptyContainer
+	container: AnyContainer | EmptyContainer
 ): container is TeaserContainer {
-  return container.payload.type === payloadTypes.enum.teaser;
+	return container.payload.type === payloadTypes.enum.teaser;
+}
+
+
+const infoBoxContainer = container.extend({
+	payload: infoBoxPayload
+});
+
+export type InfoBoxContainer = z.infer<typeof infoBoxContainer>;
+export function isInfoBoxContainer(
+	container: AnyContainer | EmptyContainer
+): container is InfoBoxContainer {
+	return container.payload.type === payloadTypes.enum.info_box;
 }
 
 const teaserCollectionContainer = container.extend({
-  payload: teaserCollectionPayload
+	payload: teaserCollectionPayload
 });
 
 export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
 
 export function isTeaserCollectionContainer(
-  container: AnyContainer | EmptyContainer
+	container: AnyContainer | EmptyContainer
 ): container is TeaserCollectionContainer {
-  return container.payload.type === payloadTypes.enum.teaser_collection;
+	return container.payload.type === payloadTypes.enum.teaser_collection;
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
@@ -1673,6 +1696,7 @@ export const emptyContainer = newContainer.extend({
 		initialIndicatorCollectionPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
+		initialInfoBoxPayload,
 		initialKnowledgePayload,
 		initialMapPayload,
 		initialMeasureCollectionPayload,

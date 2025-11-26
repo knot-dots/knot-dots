@@ -16,6 +16,9 @@
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
 	import Teaser from '~icons/knotdots/basic-data';
+	import Tiles from '~icons/knotdots/tiles';
+	import Link from '~icons/knotdots/link';
+	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -133,6 +136,10 @@
     	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
     );
 
+    let mayAddTeaserSection = $derived(
+    	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+    );
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -230,7 +237,13 @@
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
 			...(mayAddTeaserCollection
-			    ? [{ icon: Teaser, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+			    ? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+			    : []),
+			...(mayAddTeaserSection
+			    ? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
+			    : []),
+			...(mayAddTeaserSection
+			    ? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
 			    : [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);

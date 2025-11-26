@@ -26,9 +26,3 @@
 		{$_(`link_style.${value}`) ?? $_('empty')}
 	</div>
 {/if}
-
-<style>
-	input {
-		border: none;
-	}
-</style>

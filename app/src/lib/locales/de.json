@@ -230,6 +230,7 @@
 	"indicator_type.key": "Schlüsselindikator",
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
+	"info_box": "Infobox",
 	"invite": {
 		"email": "E-Mail-Adresse",
 		"email_text": "Willkommen bei knotdots.net!\n\nBitte bestätigen Sie Ihre E-Mail-Adresse:\n{link}",
@@ -259,7 +260,7 @@
 	},
 	"list_type": {
 		"carousel": "Karussell",
-		"wall": "Wand",
+		"wall": "Kacheln",
 		"list": "Liste"
 	},
 	"login": "Anmelden",
@@ -519,7 +520,7 @@
 	"teaser.link": "URL",
 	"teaser.link_caption": "Beschriftung",
 	"teaser.link_style": "Link-Stil",
-	"teasers": "Teaser",
+	"teasers": "Kacheln",
 	"template": "als Vorlage verwenden",
 	"text": "Ergänzungstext",
 	"title": "Titel",

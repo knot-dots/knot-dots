@@ -18,6 +18,7 @@
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
     import EditableTeaser from '$lib/components/EditableTeaser.svelte';
     import EditableTeaserCollection from "$lib/components/EditableTeaserCollection.svelte";
+    import EditableTeaserSection from "$lib/components/EditableTeaserSection.svelte";
 	import {
 		type AnyContainer,
 		isEffectCollectionContainer,
@@ -31,8 +32,9 @@
 		isProgramCollectionContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
-        isTeaserContainer,
-        isTeaserCollectionContainer,
+		isTeaserContainer,
+		isInfoBoxContainer,
+		isTeaserCollectionContainer,
 		isTextContainer
 	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -156,11 +158,11 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 			/>
-		{:else if isTeaserContainer(container)}
-			<EditableTeaser
-				bind:container
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+		{:else if isTeaserContainer(container) || isInfoBoxContainer(container)}
+			<EditableTeaserSection
+					bind:container
+					bind:relatedContainers
+					editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isTeaserCollectionContainer(container)}
 			<EditableTeaserCollection

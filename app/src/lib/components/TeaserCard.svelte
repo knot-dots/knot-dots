@@ -13,7 +13,7 @@
     editable
   }: Props = $props();
 
-  function teaserUrl(container) {
+  function teaserUrl(container: TeaserContainer) {
     return () => {
       return container.payload.link || '#';
     }

@@ -193,50 +193,51 @@
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
-	<header>
-		<h3>
-			<a
-				href={href ? href() : computeHref(page.url)}
-				bind:this={previewLink}
-				onclick={updateOverlayHistory}
-			>
-				{#if titleOverride && isObjectiveContainer(container)}
-					{@const goal = relatedContainers
-						.filter(isContainerWithObjective)
-						.find(
-							(candidate) =>
-								container.relation.findIndex(
-									({ object, predicate, subject }) =>
-										container.guid === subject &&
-										candidate.guid === object &&
-										predicate === predicates.enum['is-part-of']
-								) > -1
-						)}
-					{#if goal}
-						{goal.payload.title} ({container.payload.title})
+	{#if !isTeaserContainer(container)}
+		<header>
+			<h3>
+				<a
+					href={href ? href() : computeHref(page.url)}
+					bind:this={previewLink}
+					onclick={updateOverlayHistory}
+				>
+					{#if titleOverride && isObjectiveContainer(container)}
+						{@const goal = relatedContainers
+							.filter(isContainerWithObjective)
+							.find(
+								(candidate) =>
+									container.relation.findIndex(
+										({ object, predicate, subject }) =>
+											container.guid === subject &&
+											candidate.guid === object &&
+											predicate === predicates.enum['is-part-of']
+									) > -1
+							)}
+						{#if goal}
+							{goal.payload.title} ({container.payload.title})
+						{/if}
+					{:else if titleOverride && isEffectContainer(container)}
+						{@const measure = findAncestors(container, relatedContainers, [
+							predicates.enum['is-part-of']
+						]).find(isContainerWithEffect)}
+						{#if measure}
+							{measure.payload.title} ({container.payload.title})
+						{/if}
+					{:else if 'title' in container.payload}
+						{container.payload.title}
+					{:else if 'name' in container.payload}
+						{container.payload.name}
 					{/if}
-				{:else if titleOverride && isEffectContainer(container)}
-					{@const measure = findAncestors(container, relatedContainers, [
-						predicates.enum['is-part-of']
-					]).find(isContainerWithEffect)}
-					{#if measure}
-						{measure.payload.title} ({container.payload.title})
-					{/if}
-				{:else if 'title' in container.payload}
-					{container.payload.title}
-				{:else if 'name' in container.payload}
-					{container.payload.name}
-				{/if}
-			</a>
-		</h3>
-		{#if selected && relationIcon(container, selected)}
-			{@const RelationIcon = relationIcon(container, selected)}
-			<span>
-				<RelationIcon />
-			</span>
-		{/if}
-	</header>
-
+				</a>
+			</h3>
+			{#if selected && relationIcon(container, selected)}
+				{@const RelationIcon = relationIcon(container, selected)}
+				<span>
+					<RelationIcon />
+				</span>
+			{/if}
+		</header>
+	{/if}
 	<div class="body">
 		{#if body}
 			{@render body()}
@@ -294,6 +295,9 @@
 					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
 				</p>
 			{/if}
+			<header>
+				<h3>{container.payload.title}</h3>
+			</header>
 			<Summary {container} />
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />

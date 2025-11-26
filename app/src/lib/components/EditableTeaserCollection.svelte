@@ -23,6 +23,7 @@
   import {sectionOf} from '$lib/relations';
   import {mayCreateContainer, newContainer} from '$lib/stores';
   import { ability } from '$lib/stores';
+  import type {Attachment} from "svelte/attachments";
 
   interface Props {
     container: TeaserCollectionContainer;

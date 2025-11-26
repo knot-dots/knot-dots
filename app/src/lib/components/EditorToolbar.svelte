@@ -4,6 +4,7 @@
 	import {
 		toggleEmphasisCommand,
 		toggleStrongCommand,
+		wrapInBlockquoteCommand,
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
 	import { _ } from 'svelte-i18n';
@@ -43,6 +44,14 @@
 		<button
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(wrapInBulletListCommand.key))}
+		>
+			<ListBullet />
+		</button>
+	</li>
+	<li>
+		<button
+			type="button"
+			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(wrapInBlockquoteCommand.key))}
 		>
 			<ListBullet />
 		</button>

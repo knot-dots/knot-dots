@@ -6,7 +6,7 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyContainer, visibility, listTypes } from '$lib/models';
+    import {type AnyContainer, visibility, listTypes, isTeaserCollectionContainer} from '$lib/models';
 	import { sectionOf } from '$lib/relations';
 	import { ability } from '$lib/stores';
 
@@ -33,7 +33,7 @@
 
 </script>
 
-{#if $ability.can('update', container, 'visibility') || $ability.can('delete', container)}
+{#if isTeaserCollectionContainer(container) && ($ability.can('update', container, 'visibility') || $ability.can('delete', container))}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" use:popover.button>
 			<ListType />
@@ -63,19 +63,6 @@
 <style>
 	.dropdown-panel {
 		border-radius: 16px;
-	}
-
-	.dropdown-panel-title {
-		font-size: 0.75rem;
-		font-weight: 600;
-		padding: 0.5rem 0.75rem;
-	}
-
-	.dropdown-panel-group-title {
-		color: var(--color-gray-400);
-		font-size: 0.75rem;
-		font-weight: 500;
-		padding: 0.5rem 0.75rem;
 	}
 
 	.dropdown-panel .action-button span {

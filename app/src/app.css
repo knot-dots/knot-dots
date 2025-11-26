@@ -235,6 +235,11 @@ dd {
 	margin: 0;
 }
 
+blockquote {
+	border-left: 2px solid var(--color-orange-400);
+	padding: 0 0 0 1rem;
+}
+
 /* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
 ul,
 ol {
