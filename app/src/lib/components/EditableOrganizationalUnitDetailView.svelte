@@ -48,8 +48,9 @@
 		<img alt={$_('logo')} class="cover" src={transformFileURL(container.payload.cover)} />
 	</div>
 {/if}
-<article class="details stage stage--{backgroundColors.get(container.payload.color)}"
-		 bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+<article >
+	<div class="stage stage--{container.payload.color ? backgroundColors.get(container.payload.color) : 'white'}">
+
 	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 		<div class="details-section">
 			<EditableCover editable={$applicationState.containerDetailView.editable}
@@ -107,8 +108,10 @@
 			{/key}
 		{/if}
 	</form>
-
-	<Sections bind:container {relatedContainers} />
+	</div>
+	<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+		<Sections bind:container {relatedContainers} />
+	</div>
 </article>
 
 <style>

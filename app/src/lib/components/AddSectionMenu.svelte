@@ -13,6 +13,7 @@
 	import Goal from '~icons/knotdots/goal';
 	import Map from '~icons/knotdots/map';
 	import Plus from '~icons/knotdots/plus';
+	import Star from '~icons/knotdots/star';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
 	import Teaser from '~icons/knotdots/basic-data';
@@ -241,6 +242,9 @@
 			    : []),
 			...(mayAddTeaserSection
 			    ? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
+			    : []),
+			...(mayAddTeaserSection
+			    ? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
 			    : []),
 			...(mayAddTeaserSection
 			    ? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]

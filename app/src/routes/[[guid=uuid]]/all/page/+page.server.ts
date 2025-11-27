@@ -67,6 +67,7 @@ export const load = (async ({ depends, locals, parent }) => {
 						payloadTypes.enum.task_collection,
 						payloadTypes.enum.teaser,
 						payloadTypes.enum.teaser_collection,
+						payloadTypes.enum.teaser_highlight,
 						payloadTypes.enum.text
 					]
 				},

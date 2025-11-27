@@ -43,66 +43,68 @@
 		<img alt={$_('logo')} class="cover" src={transformFileURL(container.payload.cover)} />
 	</div>
 {/if}
-<article class="details stage stage--{backgroundColors.get(container.payload.color)}"
-		 bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+<article>
+	<div class="stage stage--{container.payload.color ? backgroundColors.get(container.payload.color) : 'white'}">
+		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+			<div class="details-section">
+				<EditableCover editable={$applicationState.containerDetailView.editable}
+							   label="{$_('add_cover')}"
+							   bind:value={container.payload.cover} />
+				<ColorDropdown
+						buttonStyle='button'
+						bind:value={container.payload.color}
+						label="{$_('highlight')}"
+						editable={$applicationState.containerDetailView.editable}/>
+			</div>
+			<header class="details-section">
+				<EditableLogo
+					editable={$applicationState.containerDetailView.editable}
+					bind:value={container.payload.image}
+				/>
 
-	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-		<div class="details-section">
-			<EditableCover editable={$applicationState.containerDetailView.editable}
-						   label="{$_('add_cover')}"
-						   bind:value={container.payload.cover} />
-			<ColorDropdown
-					buttonStyle='button'
-					bind:value={container.payload.color}
-					label="{$_('highlight')}"
-					editable={$applicationState.containerDetailView.editable}/>
-		</div>
-		<header class="details-section">
-			<EditableLogo
-				editable={$applicationState.containerDetailView.editable}
-				bind:value={container.payload.image}
-			/>
+				{#if $applicationState.containerDetailView.editable}
+					<h1
+						class="details-title"
+						contenteditable="plaintext-only"
+						bind:textContent={container.payload.name}
+						onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+					></h1>
+				{:else}
+					<h1 class="details-title" contenteditable="false">
+						{container.payload.name}
+					</h1>
+				{/if}
 
-			{#if $applicationState.containerDetailView.editable}
-				<h1
-					class="details-title"
-					contenteditable="plaintext-only"
-					bind:textContent={container.payload.name}
-					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-				></h1>
-			{:else}
-				<h1 class="details-title" contenteditable="false">
-					{container.payload.name}
-				</h1>
-			{/if}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<button class="action-button" onclick={() => dialog.showModal()} type="button">
+						<Ellipsis />
+					</button>
+				{/if}
+			</header>
 
-			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-				<button class="action-button" onclick={() => dialog.showModal()} type="button">
-					<Ellipsis />
-				</button>
-			{/if}
-		</header>
+			<PropertiesDialog
+				bind:dialog
+				{container}
+				{relatedContainers}
+				title={$_('organization.properties.title')}
+			>
+				<OrganizationProperties bind:container editable />
+			</PropertiesDialog>
 
-		<PropertiesDialog
-			bind:dialog
-			{container}
-			{relatedContainers}
-			title={$_('organization.properties.title')}
-		>
-			<OrganizationProperties bind:container editable />
-		</PropertiesDialog>
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
+		</form>
+	</div>
 
-		{#key container.guid}
-			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				label={$_('description')}
-				bind:value={container.payload.description}
-			/>
-		{/key}
-	</form>
-
-	<Sections bind:container {relatedContainers} />
+	<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+		<Sections bind:container {relatedContainers} />
+	</div>
 </article>
 
 <style>

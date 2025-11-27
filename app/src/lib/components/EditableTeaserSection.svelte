@@ -1,81 +1,103 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
-  import type {Attachment} from 'svelte/attachments';
-  import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
-  import EditablePlainText from '$lib/components/EditablePlainText.svelte';
-  import Editor from '$lib/components/Editor.svelte';
-  import Viewer from '$lib/components/Viewer.svelte';
-  import ArrowRight from '~icons/knotdots/arrow-right';
-  import ExclamationCircle from '~icons/knotdots/exclamation-circle';
-  import {type AnyContainer, type TeaserContainer, type PayloadType, type InfoBoxContainer} from '$lib/models';
-  import {ability} from '$lib/stores';
-  import EditableImage from "$lib/components/EditableImage.svelte";
+	import {_} from 'svelte-i18n';
+	import type {Attachment} from 'svelte/attachments';
+	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
+	import Editor from '$lib/components/Editor.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
+	import ArrowRight from '~icons/knotdots/arrow-right';
+	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
+	import {
+		type AnyContainer,
+		type TeaserContainer,
+		type InfoBoxContainer,
+		type TeaserHighlightContainer
+	} from '$lib/models';
+	import {ability} from '$lib/stores';
+	import EditableImageInline from "$lib/components/EditableImageInline.svelte";
+    import {createPopover} from "svelte-headlessui";
+    import {createPopperActions} from "svelte-popperjs";
+    import requestSubmit from "$lib/client/requestSubmit";
 
-  interface Props {
-    container: TeaserContainer | InfoBoxContainer;
-    editable?: boolean;
-    relatedContainers: AnyContainer[];
-  }
+	interface Props {
+		container: TeaserContainer | InfoBoxContainer | TeaserHighlightContainer;
+		editable?: boolean;
+		relatedContainers: AnyContainer[];
+	}
 
-  let {
-    container = $bindable(),
-    editable = false,
-    relatedContainers = $bindable()
-  }: Props = $props();
+	let {
+		container = $bindable(),
+		editable = false,
+		relatedContainers = $bindable()
+	}: Props = $props();
 
-  const init: Attachment = (element) => {
-    if (container.payload.title == '') {
-      (element as HTMLElement).focus();
-    }
-  };
+    const init: Attachment = (element) => {
+		if (container.payload.title == '') {
+		(element as HTMLElement).focus();
+		}
+	};
 
-  const teaserCssClass = (): string => {
-    switch (container.payload.type) {
-      case "teaser":
-        return "teaser";
-      case "info_box":
-        return "info-box";
-      default:
-        return "teaser";
-    }
-  }
+	const cssClassMap: Record<string, string> = {
+		teaser: 'teaser',
+		info_box: 'info-box',
+		teaser_highlight: 'teaser-highlight'
+	};
+
+	let cssClass = $derived(cssClassMap[container.payload.type] ?? 'teaser');
+	let canUpdate = $derived(editable && $ability.can('update', container));
+	let isInfoBox = $derived(container.payload.type === 'info_box');
+	let hasLink = $derived(container.payload.link && container.payload.linkCaption);
+	let gridClass = $derived(container.payload.image ? 'grid-2-cols grid-66-33' : '');
 </script>
-<div class={teaserCssClass()}>
-	<header>
-		{#if container.payload.type === 'info_box'}
-			<ExclamationCircle/>
-		{/if}
-		{#if editable && $ability.can('update', container)}
-			<h3
-					bind:textContent={container.payload.title}
-					class="details-heading"
-					contenteditable="plaintext-only"
-					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					{@attach init}
 
-			></h3>
-		{:else}
-			<h3 class="details-heading" contenteditable="false">
-				{container.payload.title}
-			</h3>
-		{/if}
+<div style="position: relative" class={cssClass}>
+	{#if canUpdate}
+		<ul class="absolute-actions is-visible-on-hover">
+			<li>
+				<ContainerSettingsDropdown bind:container bind:relatedContainers/>
+			</li>
+		</ul>
+	{/if}
 
-		{#if editable}
-			<ul class="inline-actions is-visible-on-hover">
-				<li>
-					<ContainerSettingsDropdown bind:container bind:relatedContainers/>
-				</li>
-			</ul>
-		{/if}
-	</header>
-
-	{#if editable && $ability.can('update', container)}
-		<!-- svelte-ignore binding_property_non_reactive -->
-		<div class="flex">
-		<Editor bind:value={container.payload.body}/>
-		<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
+	<div class={canUpdate ? 'grid-2-cols grid-66-33' : gridClass}>
+		<div>
+			<header>
+				{#if isInfoBox}
+					<span style="color: var(--color-orange-500)">
+						<ExclamationCircle/>
+					</span>
+				{/if}
+				{#if canUpdate}
+					<h3
+							bind:textContent={container.payload.title}
+							class="details-heading"
+							contenteditable="plaintext-only"
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							{@attach init}
+					></h3>
+				{:else}
+					<h3 class="details-heading" contenteditable="false">
+						{container.payload.title}
+					</h3>
+				{/if}
+			</header>
+			<div class="teaser--content">
+				{#if canUpdate}
+					<Editor bind:value={container.payload.body}/>
+				{:else}
+					<Viewer value={container.payload.body}/>
+				{/if}
+			</div>
 		</div>
-		<div class="flex mt-3">
+		<EditableImageInline
+				{editable}
+				label={$_(canUpdate ? 'upload.image.add' : 'cover')}
+				bind:value={container.payload.image}
+		/>
+	</div>
+
+	<div class="flex mt-3" class:flex-column={!canUpdate}>
+		{#if canUpdate}
 			<EditablePlainText
 					{editable}
 					label={$_('teaser.link_caption')}
@@ -86,53 +108,85 @@
 					label={$_('teaser.link')}
 					bind:value={container.payload.link}
 			/>
-		</div>
-	{:else}
-		<div class="flex">
-			<Viewer value={container.payload.body}/>
-			<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
-		</div>
-		<div class="flex flex-column">
-			{#if container.payload.link && container.payload.linkCaption}
-				<div class="flex-end">
-					<a class="button button--action" href={container.payload.link}>
-						<ArrowRight/> {container.payload.linkCaption}</a>
-				</div>
-			{/if}
-		</div>
-	{/if}
+		{:else if hasLink}
+			<div class="flex-end">
+				<a class="button button--action" href={container.payload.link}>
+					<ArrowRight/> {container.payload.linkCaption}</a>
+			</div>
+		{/if}
+	</div>
 </div>
 <style>
-    .mt-3 {
-        margin-top: 1rem;
-    }
+	header {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
 
-    .flex {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-    }
+	.mt-3 {
+		margin-top: 1rem;
+	}
 
-    .flex.flex-column {
-        align-items: flex-start;
-        flex-direction: column;
-    }
+	.flex {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+	}
 
-    .flex-end {
-        align-self: flex-end;
-    }
+	.flex.flex-column {
+		align-items: flex-start;
+		flex-direction: column;
+	}
 
-	h3 {
-		font-size: 1.25rem;
+	.flex-end {
+		align-self: flex-end;
+	}
+
+	.info-box h3,
+	.teaser-highlight h3 {
+		min-height: unset;
+	}
+
+	.info-box h3 {
+		color: var(--color-yellow-900);
+	}
+
+	.teaser-highlight h3 {
+		color: var(--color-teal-900);
+	}
+
+	.info-box {
+		margin: 0 -1rem 0 -1rem;
+		padding: 1rem;
+		border: 1px solid var(--color-yellow-200);
+		border-radius: 1rem;
+		background-color: var(--color-yellow-050);
+	}
+	.info-box .teaser--content {
         color: var(--color-yellow-700);
 	}
 
-    .info-box {
-        color: var(--color-yellow-700);
-        margin: 0 -1rem 0 -1rem;
-        padding: 1rem;
-        border: 1px solid var(--color-yellow-200);
-        border-radius: 1rem;
-        background-color: var(--color-yellow-050);
-    }
+	.info-box .button--action {
+		background-color: var(--color-yellow-600);
+		color: var(--color-white);
+		border-color: var(--color-yellow-600);
+	}
+
+	.teaser-highlight {
+		margin: 0 -1rem 0 -1rem;
+		padding: 1rem;
+		border: 1px solid var(--color-teal-200);
+		border-radius: 1rem;
+		background-color: var(--color-teal-050);
+	}
+
+	.teaser-highlight .teaser--content {
+		color: var(--color-teal-700);
+	}
+
+	.teaser-highlight .button--action {
+		background-color: var(--color-gray-800);
+		color: var(--color-white);
+		border-color: var(--color-gray-600);
+	}
 </style>

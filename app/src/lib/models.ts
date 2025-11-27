@@ -89,6 +89,7 @@ const payloadTypeValues = [
 	'task_collection',
 	'teaser',
 	'teaser_collection',
+	'teaser_highlight',
 	'text',
 	'undefined'
 ] as const;
@@ -915,6 +916,7 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
+
 // Add teaser payload schema here:
 const teaserPayload = z
 	.object({
@@ -937,24 +939,23 @@ const teaserPayload = z
 const initialTeaserPayload = teaserPayload.partial({ title: true });
 
 // Add info payload schema here:
-const infoBoxPayload = z
-	.object({
-		audience: z.array(audience).default([audience.enum['audience.citizens']]),
-		body: z.string().trim().optional(),
-		title: z.string().trim(),
-		link: z.string().optional(),
-		cardStyle: z.string().optional(),
-		linkCaption: z.string().optional(),
-		description: z.string().optional(),
-		style: z.string().optional().default('default'),
-		image: z.string().url().optional(),
-		type: z.literal(payloadTypes.enum.info_box),
-		visibility: visibility.default(visibility.enum['organization'])
+const infoBoxPayload = teaserPayload
+	.extend({
+		type: z.literal(payloadTypes.enum.info_box)
 	})
-	.strict();  // .strict() means no extra fields allowed
+	.strict();
+
+// For creating new empty info teasers (title optional during creation)
+const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
+
+const teaserHighlightPayload = teaserPayload
+	.extend({
+		type: z.literal(payloadTypes.enum.teaser_highlight)
+	})
+	.strict();
 
 // For creating new empty teasers (title optional during creation)
-const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
+const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
 
 const teaserCollectionPayload = z
 	.object({
@@ -1084,6 +1085,7 @@ const payload = z.discriminatedUnion('type', [
 	taskPayload,
 	teaserPayload,
 	teaserCollectionPayload,
+	teaserHighlightPayload,
 	textPayload
 ]);
 
@@ -1137,6 +1139,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	textPayload,
 	teaserPayload,
 	teaserCollectionPayload,
+	teaserHighlightPayload,
 	undefinedPayload
 ]);
 
@@ -1524,6 +1527,7 @@ export function isMeasureMonitoringContainer(
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
+// #Teaser
 const teaserContainer = container.extend({
 	payload: teaserPayload
 });
@@ -1536,7 +1540,7 @@ export function isTeaserContainer(
 	return container.payload.type === payloadTypes.enum.teaser;
 }
 
-
+// #InfoBox
 const infoBoxContainer = container.extend({
 	payload: infoBoxPayload
 });
@@ -1546,6 +1550,18 @@ export function isInfoBoxContainer(
 	container: AnyContainer | EmptyContainer
 ): container is InfoBoxContainer {
 	return container.payload.type === payloadTypes.enum.info_box;
+}
+
+// #TeaserHighlight
+const teaserHighlightContainer = container.extend({
+	payload: teaserHighlightPayload
+});
+
+export type TeaserHighlightContainer = z.infer<typeof teaserHighlightContainer>;
+export function isTeaserHighlightContainer(
+	container: AnyContainer | EmptyContainer
+): container is TeaserHighlightContainer {
+	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
 
 const teaserCollectionContainer = container.extend({
@@ -1733,6 +1749,7 @@ export const emptyContainer = newContainer.extend({
 		initialTaskPayload,
 		initialTeaserPayload,
 		initialTeaserCollectionPayload,
+		initialTeaserHighlightPayload,
 		initialUndefinedPayload
 	])
 });

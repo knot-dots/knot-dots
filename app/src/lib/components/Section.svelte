@@ -19,24 +19,25 @@
     import EditableTeaser from '$lib/components/EditableTeaser.svelte';
     import EditableTeaserCollection from "$lib/components/EditableTeaserCollection.svelte";
     import EditableTeaserSection from "$lib/components/EditableTeaserSection.svelte";
-	import {
-		type AnyContainer,
-		isEffectCollectionContainer,
-		isFileCollectionContainer,
-		isGoalCollectionContainer,
-		isIndicatorCollectionContainer,
-		isMapContainer,
-		isMeasureCollectionContainer,
-		isAdministrativeAreaBasicDataContainer,
-		isObjectiveCollectionContainer,
-		isProgramCollectionContainer,
-		isResourceCollectionContainer,
-		isTaskCollectionContainer,
-		isTeaserContainer,
-		isInfoBoxContainer,
-		isTeaserCollectionContainer,
-		isTextContainer
-	} from '$lib/models';
+    import {
+      type AnyContainer,
+      isEffectCollectionContainer,
+      isFileCollectionContainer,
+      isGoalCollectionContainer,
+      isIndicatorCollectionContainer,
+      isMapContainer,
+      isMeasureCollectionContainer,
+      isAdministrativeAreaBasicDataContainer,
+      isObjectiveCollectionContainer,
+      isProgramCollectionContainer,
+      isResourceCollectionContainer,
+      isTaskCollectionContainer,
+      isTeaserContainer,
+      isInfoBoxContainer,
+      isTeaserCollectionContainer,
+      isTextContainer,
+	  isTeaserHighlightContainer
+    } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
@@ -158,7 +159,7 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 			/>
-		{:else if isTeaserContainer(container) || isInfoBoxContainer(container)}
+		{:else if isTeaserContainer(container) || isInfoBoxContainer(container) || isTeaserHighlightContainer(container)}
 			<EditableTeaserSection
 					bind:container
 					bind:relatedContainers
