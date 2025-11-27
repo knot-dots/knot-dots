@@ -83,6 +83,7 @@ const payloadTypeValues = [
 	'program',
 	'program_collection',
 	'progress',
+	'quote',
 	'resource',
 	'resource_collection',
 	'rule',
@@ -969,6 +970,15 @@ const teaserHighlightPayload = teaserPayload
 // For creating new empty teasers (title optional during creation)
 const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
 
+const quotePayload = teaserPayload
+	.extend({
+		type: z.literal(payloadTypes.enum.quote)
+	})
+	.strict();
+
+// For creating new empty teasers (title optional during creation)
+const initialQuotePayload = quotePayload.partial();
+
 const teaserCollectionPayload = z
 	.object({
 		title: z
@@ -1090,6 +1100,7 @@ const payload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	quotePayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1144,6 +1155,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	quotePayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1590,6 +1602,18 @@ export function isTeaserHighlightContainer(
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
 
+// #Quote
+const quoteContainer = container.extend({
+	payload: quotePayload
+});
+
+export type QuoteContainer = z.infer<typeof quoteContainer>;
+export function isQuoteContainer(
+	container: AnyContainer | EmptyContainer
+): container is QuoteContainer {
+	return container.payload.type === payloadTypes.enum.quote;
+}
+
 const teaserCollectionContainer = container.extend({
 	payload: teaserCollectionPayload
 });
@@ -1767,6 +1791,7 @@ export const emptyContainer = newContainer.extend({
 		initialProgramCollectionPayload,
 		initialProgramPayload,
 		initialProgressPayload,
+		initialQuotePayload,
 		initialRulePayload,
 		initialResourceCollectionPayload,
 		initialResourcePayload,

@@ -22,26 +22,27 @@
     import EditableTeaserSection from "$lib/components/EditableTeaserSection.svelte";
     import {
       type AnyContainer,
-		isAdministrativeAreaBasicDataContainer,
-		isContainerWithProgress,
+      isAdministrativeAreaBasicDataContainer,
+      isContainerWithProgress,
       isEffectCollectionContainer,
       isFileCollectionContainer,
       isGoalCollectionContainer,
-		isGoalContainer,
+      isGoalContainer,
       isIndicatorCollectionContainer,
       isMapContainer,
       isMeasureCollectionContainer,
       isObjectiveCollectionContainer,
-		isOrganizationalUnitContainer,
+      isOrganizationalUnitContainer,
       isProgramCollectionContainer,
-		isProgressContainer,
+      isProgressContainer,
       isResourceCollectionContainer,
       isTaskCollectionContainer,
       isTeaserContainer,
       isInfoBoxContainer,
       isTeaserCollectionContainer,
       isTextContainer,
-	  isTeaserHighlightContainer
+      isTeaserHighlightContainer,
+	  isQuoteContainer
     } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
@@ -188,11 +189,12 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 			/>
-		{:else if isTeaserContainer(container) || isInfoBoxContainer(container) || isTeaserHighlightContainer(container)}
+		{:else if isTeaserContainer(container) || isInfoBoxContainer(container) || isTeaserHighlightContainer(container) || isQuoteContainer(container)}
 			<EditableTeaserSection
-					bind:container
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isTeaserCollectionContainer(container)}
 			<EditableTeaserCollection

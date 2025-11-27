@@ -265,6 +265,9 @@
 			    : []),
 			...(mayAddTeaserSection
 			    ? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
+			    : []),
+			...(mayAddTeaserSection
+			    ? [{ icon: ExclamationCircle, label: $_('quote'), value: payloadTypes.enum.quote }]
 			    : [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);

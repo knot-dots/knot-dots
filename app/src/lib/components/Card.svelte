@@ -11,24 +11,24 @@
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
-	import {
-		findAncestors,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		isEffectContainer,
-		isGoalContainer,
-		isIndicatorContainer,
-		isObjectiveContainer,
-		isPartOf,
-		isResourceContainer,
-		isSimpleMeasureContainer,
-		isTeaserContainer,
-		isTaskContainer,
-		overlayKey,
-		overlayURL,
-		paramsFromFragment,
-		predicates
-	} from '$lib/models';
+    import {
+      findAncestors,
+      isContainerWithEffect,
+      isContainerWithObjective,
+      isEffectContainer,
+      isGoalContainer,
+      isIndicatorContainer,
+      isObjectiveContainer,
+      isPartOf,
+      isResourceContainer,
+      isSimpleMeasureContainer,
+      isTeaserContainer,
+      isTaskContainer,
+      overlayKey,
+      overlayURL,
+      paramsFromFragment,
+      predicates, isQuoteContainer
+    } from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
 	import {
@@ -295,15 +295,17 @@
 					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
 				</p>
 			{/if}
-			<header>
-				<h3>
-					<a
-							href={href ? href() : computeHref(page.url)}
-							bind:this={previewLink}
-							onclick={updateOverlayHistory}
-					>{container.payload.title}</a>
-				</h3>
-			</header>
+			{#if !isQuoteContainer(container)}
+				<header>
+					<h3>
+						<a
+								href={href ? href() : computeHref(page.url)}
+								bind:this={previewLink}
+								onclick={updateOverlayHistory}
+						>{container.payload.title}</a>
+					</h3>
+				</header>
+			{/if}
 			<Summary {container} />
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />

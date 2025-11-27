@@ -259,7 +259,7 @@ dd {
 	margin: 0;
 }
 
-blockquote {
+blockquote, .blockquote {
 	border-left: 2px solid var(--color-orange-400);
 	padding: 0 0 0 1rem;
 }
