@@ -296,7 +296,13 @@
 				</p>
 			{/if}
 			<header>
-				<h3>{container.payload.title}</h3>
+				<h3>
+					<a
+							href={href ? href() : computeHref(page.url)}
+							bind:this={previewLink}
+							onclick={updateOverlayHistory}
+					>{container.payload.title}</a>
+				</h3>
 			</header>
 			<Summary {container} />
 		{:else if isSimpleMeasureContainer(container)}
