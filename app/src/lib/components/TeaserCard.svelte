@@ -20,8 +20,8 @@
   }
 
 </script>
-<Card {container} href={editable ? undefined : teaserUrl(container)}>
-	{#snippet footer()}
+<Card {container} >
+	{#snippet button()}
 		{#if container.payload.linkCaption}
 			{#if container.payload.style === 'default'}
 				<a href="{container.payload.link}">
