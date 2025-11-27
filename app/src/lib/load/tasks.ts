@@ -53,11 +53,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 				getAllRelatedContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					url.searchParams.get('related-to') as string,
-					[
-						predicates.enum['is-part-of'],
-						predicates.enum['is-prerequisite-for'],
-						predicates.enum['is-subtask-of']
-					],
+					[predicates.enum['is-part-of'], predicates.enum['is-prerequisite-for']],
 					{},
 					url.searchParams.get('sort') ?? defaultSort
 				)

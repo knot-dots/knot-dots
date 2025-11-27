@@ -31,7 +31,9 @@
 			{ heading: $_('fulfillment_date'), key: 'fulfillmentDate' },
 			{ heading: $_('planned_duration'), key: 'duration' },
 			{ heading: $_('editorial_state'), key: 'editorialState' },
-			{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
+			{ heading: $_('organizational_unit'), key: 'organizationalUnit' },
+			{ heading: $_('goal.hierarchy_level'), key: 'hierarchyLevel' },
+			{ heading: $_('type'), key: 'objectType' }
 		]}
 		rows={data.containers
 			.filter(

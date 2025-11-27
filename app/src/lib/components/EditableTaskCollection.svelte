@@ -9,28 +9,28 @@
 	import {
 		type AnyContainer,
 		containerOfType,
+		findAncestors,
 		type NewContainer,
 		payloadTypes,
 		predicates,
 		type TaskCollectionContainer,
 		type TaskContainer
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: TaskCollectionContainer;
 		editable?: boolean;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	let parentContainer = $derived(sectionOf(container, relatedContainers));
 
 	let tasksRequest = $derived(
 		parentContainer
@@ -94,16 +94,30 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}
 </header>
 
 {#await tasksRequest then items}
+	{@const ancestors = parentContainer
+		? findAncestors(parentContainer, items, [predicates.enum['is-part-of']])
+		: []}
+	{@const directChildren = parentContainer
+		? items.filter(
+				(item) =>
+					item.guid !== parentContainer.guid &&
+					!ancestors.some((a) => a.guid === item.guid) &&
+					item.relation.some(
+						(r) =>
+							r.predicate === predicates.enum['is-part-of'] && r.object === parentContainer.guid
+					)
+			)
+		: []}
 	<Carousel
 		{addItem}
-		{items}
+		items={directChildren}
 		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container.managed_by) && editable}
 	>
 		{#snippet itemSnippet(item)}

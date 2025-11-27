@@ -168,12 +168,36 @@
 		rgba(40, 169, 231, 0.15) 0%,
 		rgba(32, 164, 238, 0.15) 100%
 	);
-	--gradient-after-idea: linear-gradient(90deg, var(--color-background-idea) 0%, rgba(249, 228, 231, 0) 50%);
-	--gradient-after-in-planning: linear-gradient(90deg, var(--color-background-in-planning) 0%, rgba(254, 241, 231, 0) 50%);
-	--gradient-after-adopted: linear-gradient(90deg, var(--color-background-adopted) 0%, rgba(254, 247, 234, 0) 50%);
-	--gradient-after-in-implementation: linear-gradient(90deg, var(--color-background-in-implementation) 0%, rgba(255, 254, 235, 0) 50%);
-	--gradient-after-in-operation: linear-gradient(90deg, var(--color-background-in-operation) 0%, rgba(237, 251, 241, 0) 50%);
-	--gradient-after-done: linear-gradient(90deg, var(--color-background-done) 0%, rgba(227, 245, 247, 0) 50%);
+	--gradient-after-idea: linear-gradient(
+		90deg,
+		var(--color-background-idea) 0%,
+		rgba(249, 228, 231, 0) 50%
+	);
+	--gradient-after-in-planning: linear-gradient(
+		90deg,
+		var(--color-background-in-planning) 0%,
+		rgba(254, 241, 231, 0) 50%
+	);
+	--gradient-after-adopted: linear-gradient(
+		90deg,
+		var(--color-background-adopted) 0%,
+		rgba(254, 247, 234, 0) 50%
+	);
+	--gradient-after-in-implementation: linear-gradient(
+		90deg,
+		var(--color-background-in-implementation) 0%,
+		rgba(255, 254, 235, 0) 50%
+	);
+	--gradient-after-in-operation: linear-gradient(
+		90deg,
+		var(--color-background-in-operation) 0%,
+		rgba(237, 251, 241, 0) 50%
+	);
+	--gradient-after-done: linear-gradient(
+		90deg,
+		var(--color-background-done) 0%,
+		rgba(227, 245, 247, 0) 50%
+	);
 
 	--color-hover-neutral: #b4e1f7;
 	--color-hover-idea: rgba(218, 75, 96, 0.35);
@@ -256,7 +280,9 @@ html:focus-within {
 body {
 	color: var(--color-gray-800);
 	font-family: 'Inter', sans-serif;
-	font-feature-settings: 'liga' 1, 'calt' 1;
+	font-feature-settings:
+		'liga' 1,
+		'calt' 1;
 	font-size: 100%;
 	font-style: normal;
 	font-weight: 400;
@@ -266,7 +292,9 @@ body {
 }
 
 @supports (font-variation-settings: normal) {
-	body { font-family: InterVariable, sans-serif; }
+	body {
+		font-family: InterVariable, sans-serif;
+	}
 }
 
 /* Links */
@@ -331,7 +359,8 @@ progress::-moz-progress-bar {
 }
 
 /* Tables */
-table, .table {
+table,
+.table {
 	border-collapse: collapse;
 	border-color: inherit;
 	color: var(--color-gray-700);
@@ -341,29 +370,34 @@ table, .table {
 	width: 100%;
 }
 
-thead, .table-head {
+thead,
+.table-head {
 	color: var(--color-gray-600);
 	display: table-header-group;
 }
 
-tbody, .table-body {
+tbody,
+.table-body {
 	display: table-row-group;
 }
 
-tr, .row {
+tr,
+.row {
 	background-color: white;
 	display: table-row;
 }
 
-tr:hover, .row:hover {
+tr:hover,
+.row:hover {
 	background-color: var(--color-gray-050);
 }
 
-td, .cell {
+td,
+.cell {
 	border-bottom: solid 1px var(--color-gray-200);
 	display: table-cell;
 	padding: 0.75rem 0.5rem;
-	vertical-align: middle
+	vertical-align: middle;
 }
 
 td:hover,
@@ -460,7 +494,7 @@ button.button-outline,
 	--button-border-color: var(--color-primary-700);
 	--button-hover-background: var(--color-primary-800);
 
-	 color: var(--color-primary-700)
+	color: var(--color-primary-700);
 }
 
 button.button-outline:active,
@@ -486,7 +520,8 @@ button.button-alternative:hover,
 	color: var(--color-primary-700);
 }
 
-button.button-red, .button.button-red {
+button.button-red,
+.button.button-red {
 	--button-active-background: var(--color-red-900);
 	--button-background: var(--color-red-700);
 	--button-hover-background: var(--color-red-800);
@@ -496,10 +531,24 @@ button.button-red, .button.button-red {
 }
 
 button.button-ai {
-	--button-active-background: linear-gradient(62deg, rgba(240, 82, 82, 0.40) 17.85%, rgba(154, 122, 225, 0.40) 46.05%, rgba(22, 189, 202, 0.40) 74.26%), white;
+	--button-active-background:
+		linear-gradient(
+			62deg,
+			rgba(240, 82, 82, 0.4) 17.85%,
+			rgba(154, 122, 225, 0.4) 46.05%,
+			rgba(22, 189, 202, 0.4) 74.26%
+		),
+		white;
 	--button-background: transparent;
 	--button-border-color: var(--color-gray-200);
-	--button-hover-background: linear-gradient(62deg, rgba(240, 82, 82, 0.20) 17.85%, rgba(154, 122, 225, 0.20) 46.05%, rgba(22, 189, 202, 0.20) 74.26%), white;
+	--button-hover-background:
+		linear-gradient(
+			62deg,
+			rgba(240, 82, 82, 0.2) 17.85%,
+			rgba(154, 122, 225, 0.2) 46.05%,
+			rgba(22, 189, 202, 0.2) 74.26%
+		),
+		white;
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-gray-900);
@@ -512,10 +561,12 @@ button.button-ai > svg {
 }
 
 button.button-copycat {
-	--button-active-background: linear-gradient(85deg, rgba(252, 221, 9, 0.40) 3.48%, rgba(22, 189, 202, 0.40) 96.01%), white;
+	--button-active-background:
+		linear-gradient(85deg, rgba(252, 221, 9, 0.4) 3.48%, rgba(22, 189, 202, 0.4) 96.01%), white;
 	--button-background: transparent;
 	--button-border-color: var(--color-gray-200);
-	--button-hover-background: linear-gradient(85deg, rgba(252, 221, 9, 0.20) 3.48%, rgba(22, 189, 202, 0.20) 96.01%), white;
+	--button-hover-background:
+		linear-gradient(85deg, rgba(252, 221, 9, 0.2) 3.48%, rgba(22, 189, 202, 0.2) 96.01%), white;
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-gray-900);
@@ -529,10 +580,12 @@ button.button-copycat > svg {
 
 button.button-relation,
 .button.button-relation {
-	--button-active-background: linear-gradient(62deg, rgba(28, 100, 242, 0.40) 17.85%, rgba(22, 189, 202, 0.40) 74.26%), white;
+	--button-active-background:
+		linear-gradient(62deg, rgba(28, 100, 242, 0.4) 17.85%, rgba(22, 189, 202, 0.4) 74.26%), white;
 	--button-background: transparent;
 	--button-border-color: var(--color-primary-700);
-	--button-hover-background: linear-gradient(62deg, rgba(28, 100, 242, 0.20) 17.85%, rgba(22, 189, 202, 0.20) 74.26%), white;
+	--button-hover-background:
+		linear-gradient(62deg, rgba(28, 100, 242, 0.2) 17.85%, rgba(22, 189, 202, 0.2) 74.26%), white;
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-primary-700);
@@ -710,7 +763,8 @@ label {
 	font-weight: 500;
 }
 
-input, progress {
+input,
+progress {
 	accent-color: var(--color-primary-700);
 }
 
@@ -1002,8 +1056,12 @@ label > input[type='checkbox'].toggle {
 	--details-padding-right: max(3.5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;
-	--carousel-margin-left: calc((var(--details-padding-left) + var(--details-section-padding-x)) * -1);
-	--carousel-margin-right: calc(var(--details-padding-right) * -1 - var(--details-section-padding-x));
+	--carousel-margin-left: calc(
+		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
+	);
+	--carousel-margin-right: calc(
+		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+	);
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
@@ -1119,7 +1177,8 @@ label > input[type='checkbox'].toggle {
 	white-space: pre-wrap;
 }
 
-.markdown-body, .milkdown .editor {
+.markdown-body,
+.milkdown .editor {
 	font-size: 1rem;
 	line-height: 1.5;
 	min-height: 1.5em;
@@ -1593,7 +1652,8 @@ img.cover {
 	border-radius: 50%;
 	border-style: solid;
 	border-width: 4px;
-	border-color: var(--color-gray-200) var(--color-gray-200) var(--color-gray-200) var(--color-primary-600);
+	border-color: var(--color-gray-200) var(--color-gray-200) var(--color-gray-200)
+		var(--color-primary-600);
 	box-sizing: border-box;
 	flex-shrink: 0;
 	height: 1rem;

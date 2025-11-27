@@ -7,7 +7,6 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
@@ -150,10 +149,6 @@
 
 					{#if isContainer($newContainer)}
 						<Badges bind:container={$newContainer} editable />
-					{/if}
-
-					{#if isContainerWithProgress($newContainer)}
-						<EditableProgress editable bind:value={$newContainer.payload.progress} />
 					{/if}
 				</header>
 

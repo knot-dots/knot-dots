@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import type { MongoAbility } from '@casl/ability';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
@@ -81,6 +82,7 @@ const payloadTypeValues = [
 	'page',
 	'program',
 	'program_collection',
+	'progress',
 	'resource',
 	'resource_collection',
 	'rule',
@@ -174,7 +176,6 @@ const predicateValues = [
 	'is-prerequisite-for',
 	'is-section-of',
 	'is-sub-target-of',
-	'is-subtask-of',
 	'is-superordinate-of'
 ] as const;
 
@@ -765,6 +766,17 @@ const objectiveCollectionPayload = z
 
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
+const progressPayload = z.object({
+	title: z
+		.string()
+		.readonly()
+		.default(() => unwrapFunctionStore(_)('progress')),
+	type: z.literal(payloadTypes.enum.progress),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+const initialProgressPayload = progressPayload;
+
 const rulePayload = basePayload.extend({
 	ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
 	type: z.literal(payloadTypes.enum.rule),
@@ -1077,6 +1089,7 @@ const payload = z.discriminatedUnion('type', [
 	pagePayload,
 	programCollectionPayload,
 	programPayload,
+	progressPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1130,6 +1143,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	pagePayload,
 	programCollectionPayload,
 	programPayload,
+	progressPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1409,6 +1423,18 @@ export function isPageContainer(
 	container: AnyContainer | EmptyContainer
 ): container is PageContainer {
 	return container.payload.type === payloadTypes.enum.page;
+}
+
+const progressContainer = container.extend({
+	payload: progressPayload
+});
+
+export type ProgressContainer = z.infer<typeof progressContainer>;
+
+export function isProgressContainer(
+	container: AnyContainer | EmptyContainer
+): container is ProgressContainer {
+	return container.payload.type === payloadTypes.enum.progress;
 }
 
 const ruleContainer = container.extend({
@@ -1740,6 +1766,7 @@ export const emptyContainer = newContainer.extend({
 		initialPagePayload,
 		initialProgramCollectionPayload,
 		initialProgramPayload,
+		initialProgressPayload,
 		initialRulePayload,
 		initialResourceCollectionPayload,
 		initialResourcePayload,
@@ -2126,6 +2153,30 @@ export function overlayURL(url: URL, key: OverlayKey, guid: string, extraParams?
 	]);
 
 	return `#${newParams.toString()}`;
+}
+
+export function getOrganizationURL(
+	container: OrganizationContainer | OrganizationalUnitContainer,
+	linkPath = '/all/page'
+): URL {
+	const url = new URL(env.PUBLIC_BASE_URL ?? '');
+
+	// Only use subdomains if the environment variable is not set
+	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
+		const isDefaultOrganization = 'default' in container.payload && container.payload.default;
+
+		// Default organization uses the base domain without subdomain
+		if (!isDefaultOrganization) {
+			url.hostname = `${container.organization}.${url.hostname}`;
+		}
+	}
+
+	url.pathname = `/${container.guid}${linkPath}`
+		.replace('/me/measures', '/measures/status')
+		.replace('/me/tasks', '/tasks/status')
+		.replace(/\/me$/, '/all/page');
+
+	return url;
 }
 
 export function filterOrganizationalUnits<T extends AnyContainer>(

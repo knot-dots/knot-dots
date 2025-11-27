@@ -3,9 +3,8 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
-	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import { type Container, isContainerWithProgress } from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
 		container: Container;
@@ -40,14 +39,11 @@
 				</h1>
 			{/if}
 
-			<Badges bind:container editable={$applicationState.containerDetailView.editable} />
-
-			{#if isContainerWithProgress(container)}
-				<EditableProgress
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.progress}
-				/>
-			{/if}
+			<Badges
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+			/>
 		</header>
 
 		{@render data?.()}

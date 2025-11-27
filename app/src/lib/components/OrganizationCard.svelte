@@ -6,7 +6,11 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
-	import { type OrganizationalUnitContainer, type OrganizationContainer } from '$lib/models';
+	import {
+		type OrganizationalUnitContainer,
+		type OrganizationContainer,
+		getOrganizationURL
+	} from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
@@ -37,13 +41,7 @@
 
 	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return () => {
-			const url = new URL(env.PUBLIC_BASE_URL ?? '');
-			url.hostname = `${container.organization}.${url.hostname}`;
-			url.pathname = `/${container.guid}${linkPath}`
-				.replace('/me/measures', '/measures/status')
-				.replace('/me/tasks', '/tasks/status')
-				.replace(/\/me$/, '/all/page');
-			return url.toString();
+			return getOrganizationURL(container, linkPath).toString();
 		};
 	}
 </script>
