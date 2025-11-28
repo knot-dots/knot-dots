@@ -63,8 +63,8 @@
 				selected.officialRegionalCode.substring(0, 2)
 			);
 			container.payload.nameOSM = selected.nameOSM;
-			container.payload.officialMunicipalityKey = selected.officialMunicipalityKey;
-			container.payload.officialRegionalCode = selected.officialRegionalCode;
+			container.payload.officialMunicipalityKey = selected.officialMunicipalityKey ?? undefined;
+			container.payload.officialRegionalCode = selected.officialRegionalCode ?? undefined;
 		}
 
 		requestSubmit(event);
