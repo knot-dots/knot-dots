@@ -96,9 +96,15 @@
 			)
 			.filter(({ relation }) =>
 				programGuid
-					? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+					? relation.some(
+							({ object, predicate }) =>
+								predicate === predicates.enum['is-part-of-program'] && object === programGuid
+						)
 					: measureGuid
-						? relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+						? relation.some(
+								({ object, predicate }) =>
+									predicate === predicates.enum['is-part-of-measure'] && object === measureGuid
+							)
 						: true
 			)
 			.map(({ guid, payload }) => ({
@@ -113,8 +119,11 @@
 		{@const selected = options.find((o) => o.value === isPartOfObject(options))}
 		<div class="value">
 			{#if selected}
-				{#if 'href' in selected && selected.href}<a href={selected.href}>{selected.label}</a
-					>{:else}{selected.label}{/if}
+				{#if 'href' in selected && selected.href}
+					<a href={selected.href}>{selected.label}</a>
+				{:else}
+					{selected.label}
+				{/if}
 			{:else}
 				{$_('empty')}
 			{/if}
