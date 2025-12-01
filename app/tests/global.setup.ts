@@ -5,7 +5,7 @@ setup('insert test organization', async ({ page }) => {
 	await page.getByRole('button', { name: 'Organizations and' }).click();
 	await page.getByText('Add item').click();
 	await page.getByRole('textbox', { name: 'Title' }).fill('Test organization');
-	await page.locator('[id="headlessui-popover:11"]').click();
+	await page.locator('div.label:has-text("Boards") + div.dropdown').getByRole('button').first().click();
 	await page.getByRole('checkbox', { name: 'Organizational units' }).check();
 	await page.getByRole('button', { name: 'Save' }).click();
 });
