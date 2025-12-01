@@ -5,6 +5,7 @@ let suborg2Title: string;
 let editableTask: string;
 
 test.describe('Permissions', () => {
+	// Run this suite only on Chromium because we are just testing write rights
 	test.skip(({ browserName }) => browserName !== 'chromium', 'This suite runs only on Chromium');
 	test.describe('as admin', () => {
 		test.use({ storageState: 'tests/.auth/admin.json' });
@@ -93,29 +94,19 @@ test.describe('Permissions', () => {
 		test('delete suborgs', async ({ page }) => {
 			await page.goto('/');
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-
 			await page.getByTitle(suborgTitle).click();
-
 			await page.getByLabel('edit mode').check();
-
 			await page.getByRole('button').filter({ hasText: /^$/ }).nth(1).click();
 			await page.getByRole('button', { name: `${suborgTitle} löschen` }).click();
 			await page.getByRole('button', { name: `I want to delete "${suborgTitle}` }).click();
-
 			await page.goto('/');
-
 			await expect(page.getByTitle(suborgTitle)).not.toBeAttached();
-
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-
 			await page.getByTitle(suborg2Title).click();
-
 			await page.getByLabel('edit mode').check();
-
 			await page.getByRole('button').filter({ hasText: /^$/ }).nth(1).click();
 			await page.getByRole('button', { name: `${suborg2Title} löschen` }).click();
 			await page.getByRole('button', { name: `I want to delete "${suborg2Title}` }).click();
-
 			await expect(page.getByTitle(suborg2Title)).not.toBeAttached();
 		});
 	});
