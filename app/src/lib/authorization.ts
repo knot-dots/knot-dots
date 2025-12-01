@@ -120,9 +120,13 @@ export default function defineAbilityFor(user: User) {
 		can(['delete'], commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 		});
-		can('delete-recursively', [payloadTypes.enum.goal], {
-			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
-		});
+		can(
+			'delete-recursively',
+			[payloadTypes.enum.goal, payloadTypes.enum.program, payloadTypes.enum.measure],
+			{
+				managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
+			}
+		);
 		can(['create', 'update', 'delete'], payloadTypes.enum.indicator, {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
