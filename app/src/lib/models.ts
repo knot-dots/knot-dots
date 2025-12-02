@@ -1150,7 +1150,7 @@ export function isContainerWithEffect(
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 
-const actualDataContainer = container.extend({
+export const actualDataContainer = container.extend({
 	payload: actualDataPayload
 });
 
