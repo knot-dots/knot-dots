@@ -5,7 +5,8 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL';
-
+	import tooltip from '$lib/attachments/tooltip';
+	
 	interface Props {
 		editable?: boolean;
 		value: string[][];
@@ -63,6 +64,7 @@
 							class="button button-remove"
 							onclick={remove(i)}
 							type="button"
+							{@attach tooltip($_('upload.pdf.remove'))}
 						>
 							<Close />
 						</button>

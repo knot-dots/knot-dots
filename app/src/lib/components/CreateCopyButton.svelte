@@ -5,7 +5,8 @@
 	import { page } from '$app/state';
 	import { type AnyContainer, type Container, createCopyOf, type NewContainer } from '$lib/models';
 	import { ability, newContainer, user } from '$lib/stores';
-
+	import tooltip from '$lib/attachments/tooltip';
+	
 	interface Props {
 		container: AnyContainer;
 	}
@@ -51,7 +52,13 @@
 </script>
 
 {#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
-	<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
+	<button
+		class="button-copycat"
+		type="button"
+		onclick={() => createCopy(container)}
+		aria-label={$_('copy')}
+		{@attach tooltip($_('copy'))}
+	>
 		<CopyCat />
 		{$_('copy')}
 	</button>

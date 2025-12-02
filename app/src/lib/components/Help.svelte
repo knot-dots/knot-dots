@@ -5,7 +5,8 @@
 	import { page } from '$app/state';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
 	import { overlayHistory } from '$lib/stores';
-
+	import tooltip from '$lib/attachments/tooltip';
+	
 	interface Props {
 		slug: string;
 	}
@@ -29,9 +30,13 @@
 </script>
 
 <aside>
-	<button onclick={() => toggleHelp(page.url)} type="button">
+	<button
+		onclick={() => toggleHelp(page.url)}
+		type="button"
+		aria-label={$_('help')}
+		{@attach tooltip($_('help'))}
+	>
 		<QuestionCircle />
-		<span class="is-visually-hidden">{$_('help')}</span>
 	</button>
 </aside>
 

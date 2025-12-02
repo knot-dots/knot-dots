@@ -6,6 +6,7 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		addItem: (event: Event) => void;
@@ -27,7 +28,13 @@
 
 		{#if mayAddItem}
 			<li>
-				<button aria-label={$_('add_item')} class="card" onclick={addItem} type="button">
+				<button
+					aria-label={$_('add_item')}
+					class="card"
+					onclick={addItem}
+					type="button"
+					{@attach tooltip($_('add_item'))}
+				>
 					<CirclePlus />
 				</button>
 			</li>

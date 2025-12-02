@@ -3,7 +3,8 @@
 	import Relation from '~icons/knotdots/relation';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-
+	import tooltip from '$lib/attachments/tooltip';
+	
 	interface Props {
 		container: OrganizationContainer | OrganizationalUnitContainer;
 		linkPath: string;
@@ -24,6 +25,7 @@
 				event.stopPropagation();
 				selectedContext = container.guid === selectedContext?.guid ? null : container;
 			}}
+			{@attach tooltip($_('show_related_objects'))}
 		>
 			<Relation />
 		</button>

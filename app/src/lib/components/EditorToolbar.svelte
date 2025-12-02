@@ -8,7 +8,8 @@
 	} from '@milkdown/preset-commonmark';
 	import { _ } from 'svelte-i18n';
 	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
-
+	import tooltip from '$lib/attachments/tooltip';
+	
 	interface Props {
 		ctx: Ctx;
 		show: boolean;
@@ -27,6 +28,8 @@
 		<button
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(toggleStrongCommand.key))}
+			aria-label={$_('editor.strong')}
+			{@attach tooltip($_('editor.strong'))}
 		>
 			<strong>{$_('editor.strong')}</strong>
 		</button>
@@ -35,6 +38,8 @@
 		<button
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(toggleEmphasisCommand.key))}
+			aria-label={$_('editor.emphasis')}
+			{@attach tooltip($_('editor.emphasis'))}
 		>
 			<em>{$_('editor.emphasis')}</em>
 		</button>

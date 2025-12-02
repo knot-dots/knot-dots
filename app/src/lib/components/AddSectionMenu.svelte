@@ -41,6 +41,7 @@
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		handleAddSection: (event: Event) => void;
@@ -228,9 +229,15 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
+	<button
+		class="dropdown-button"
+		onchange={handleAddSection}
+		type="button"
+		aria-label={$_('add_section')}
+		{@attach tooltip($_('add_section'))}
+		use:menu.button
+	>
 		<Plus />
-		<span class="is-visually-hidden">{$_('add_section')}</span>
 	</button>
 
 	{#if $menu.expanded}

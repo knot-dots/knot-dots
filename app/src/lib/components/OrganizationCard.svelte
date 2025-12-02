@@ -12,6 +12,7 @@
 		getOrganizationURL
 	} from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		button?: Snippet;
@@ -72,6 +73,7 @@
 					type="button"
 					class:is-active={relatedTo === container.guid}
 					onclick={toggleRelatedTo(page.url.searchParams)}
+					{@attach tooltip($_('show_related_objects'))}
 				>
 					<Relation />
 				</button>

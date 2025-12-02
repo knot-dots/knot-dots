@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
 	import { type AnyContainer, findDescendants, predicates } from '$lib/models';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -45,7 +46,12 @@
 			})}
 		</p>
 
-		<button class="button-primary button-xs" type="submit">
+		<button
+			class="button-primary button-xs"
+			type="submit"
+			aria-label={$_('confirm_delete_dialog.button')}
+			{@attach tooltip($_('confirm_delete_dialog.button'))}
+		>
 			{$_('confirm_delete_dialog.button', {
 				values: {
 					title: 'title' in container.payload ? container.payload.title : container.payload.name

@@ -44,6 +44,7 @@
 		status
 	} from '$lib/models';
 	import { addEffectState, newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -114,10 +115,21 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button class="button-xs button-primary" type="submit">
+				<button
+					class="button-xs button-primary"
+					type="submit"
+					aria-label={$_('save')}
+					{@attach tooltip($_('save'))}
+				>
 					{$_('save')}
 				</button>
-				<button class="button-xs button-alternative" formnovalidate type="submit">
+				<button
+					class="button-xs button-alternative"
+					formnovalidate
+					type="submit"
+					aria-label={$_('cancel')}
+					{@attach tooltip($_('cancel'))}
+				>
 					{$_('cancel')}
 				</button>
 			</p>
