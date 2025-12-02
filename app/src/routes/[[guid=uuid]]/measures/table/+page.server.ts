@@ -1,4 +1,10 @@
 import measures from '$lib/load/measures';
 import type { PageServerLoad } from '../$types';
 
-export const load = (async (event) => measures(event)) satisfies PageServerLoad;
+export const load: PageServerLoad = async (event) => {
+	const data = await measures(event);
+	return {
+		...data,
+		filterBarInitiallyOpen: false
+	};
+};

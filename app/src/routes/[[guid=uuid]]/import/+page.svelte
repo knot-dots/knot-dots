@@ -4,6 +4,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { displayName } from '$lib/models';
 	import type { PageProps } from './$types';
+	import tooltip from '$lib/attachments/tooltip';
 
 	let { data, form }: PageProps = $props();
 </script>
@@ -38,7 +39,12 @@
 						{/if}
 					{/await}
 					<footer>
-						<button class="button-primary" type="submit">{$_('import.submit')}</button>
+						<button
+							class="button-primary"
+							type="submit"
+							aria-label={$_('import.submit')}
+							{@attach tooltip($_('import.submit'))}>{$_('import.submit')}</button
+						>
 					</footer>
 				</form>
 			</div>

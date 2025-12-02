@@ -14,9 +14,11 @@
 		topics
 	} from '$lib/models';
 
+	import type { PageData } from '../../routes/[[guid=uuid]]/programs/catalog/$types';
+
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: PageData;
 	}
 
 	let { children, data }: Props = $props();
@@ -49,7 +51,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} {facets} search />
 	{/snippet}
 
 	{#snippet main()}

@@ -3,6 +3,7 @@
 	import ChevronLeft from '~icons/flowbite/chevron-left-outline';
 	import { goto } from '$app/navigation';
 	import { overlayHistory } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	async function navigateBack() {
 		$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
@@ -12,7 +13,12 @@
 </script>
 
 {#if $overlayHistory.length > 1}
-	<button aria-label={$_('back')} class="action-button" onclick={navigateBack}>
+	<button
+		aria-label={$_('back')}
+		class="action-button"
+		onclick={navigateBack}
+		{@attach tooltip($_('back'))}
+	>
 		<ChevronLeft />
 	</button>
 {/if}

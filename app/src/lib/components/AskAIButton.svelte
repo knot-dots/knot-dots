@@ -9,6 +9,7 @@
 	import { paramsFromFragment, payloadTypes, type ProgramContainer } from '$lib/models';
 	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
 	import { ability } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: ProgramContainer;
@@ -74,6 +75,8 @@
 		class:is-active={isThinking}
 		type="button"
 		onclick={() => askAI(container as ProgramContainer)}
+		aria-label={$_('ask_ai')}
+		{@attach tooltip($_('ask_ai'))}
 	>
 		<AskAI />
 		{$_('ask_ai')}

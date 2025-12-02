@@ -30,6 +30,7 @@
 	} from '$lib/models';
 	import { fetchIndicatorDataWegweiserKommune } from '$lib/remote/indicatorDataWegweiserKommune.remote.js';
 	import { newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		containers: IndicatorTemplateContainer[];
@@ -161,7 +162,8 @@
 						{#snippet button()}
 							<button
 								class="button-square"
-								title={$_('indicator_template.select')}
+								aria-label={$_('indicator_template.select')}
+								{@attach tooltip($_('indicator_template.select'))}
 								type="button"
 								onclick={stopPropagation(() => select(container))}
 							>

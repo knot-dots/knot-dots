@@ -15,6 +15,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import { addEffectState, mayCreateContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: EffectCollectionContainer;
@@ -76,6 +77,7 @@
 						class="action-button action-button--size-l"
 						onclick={addItem}
 						type="button"
+						{@attach tooltip($_('add_item'))}
 					>
 						<Plus />
 					</button>
