@@ -46,7 +46,12 @@
 
 <Layout>
 	{#snippet header()}
-		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} {facets} search {sortOptions} />
+		<Header
+			filterBarInitiallyOpen={page.data.filterBarInitiallyOpen}
+			{facets}
+			search
+			{sortOptions}
+		/>
 	{/snippet}
 
 	{#snippet main()}
