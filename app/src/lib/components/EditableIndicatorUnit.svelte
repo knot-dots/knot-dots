@@ -5,7 +5,7 @@
 
 	interface Props {
 		editable?: boolean;
-		value: string;
+		value?: string; // allow undefined so callers can bind optional field
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
