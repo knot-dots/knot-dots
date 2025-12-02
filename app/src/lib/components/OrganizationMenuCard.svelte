@@ -4,7 +4,7 @@
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
-	
+
 	interface Props {
 		container: OrganizationContainer | OrganizationalUnitContainer;
 		linkPath: string;

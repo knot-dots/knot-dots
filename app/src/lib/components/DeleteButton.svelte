@@ -6,6 +6,7 @@
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: AnyContainer;
@@ -13,6 +14,13 @@
 	}
 
 	let { container, relatedContainers }: Props = $props();
+
+	// Text used for tooltip (disabled reason vs delete label)
+	const tooltipText = $derived(
+		container && !$mayDeleteContainer(container)
+			? $_('delete_disabled_contains_children')
+			: $_('delete')
+	);
 
 	// svelte-ignore non_reactive_update
 	let confirmDeleteDialog: HTMLDialogElement;
@@ -38,10 +46,8 @@
 		class="delete quiet"
 		type="button"
 		disabled={!$mayDeleteContainer(container)}
-		title={!$mayDeleteContainer(container)
-			? $_('delete_disabled_contains_children')
-			: $_('delete')}
 		onclick={() => confirmDeleteDialog.showModal()}
+		{@attach tooltip(tooltipText)}
 	>
 		<TrashBin />
 	</button>

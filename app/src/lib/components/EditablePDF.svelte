@@ -6,7 +6,7 @@
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL';
 	import tooltip from '$lib/attachments/tooltip';
-	
+
 	interface Props {
 		editable?: boolean;
 		value: string[][];

@@ -5,7 +5,7 @@
 	import { page } from '$app/state';
 	import { signIn } from '@auth/sveltekit/client';
 	import tooltip from '$lib/attachments/tooltip';
-	
+
 	interface Props {
 		dialog: HTMLDialogElement;
 	}

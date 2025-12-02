@@ -9,7 +9,7 @@
 	import { _ } from 'svelte-i18n';
 	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
 	import tooltip from '$lib/attachments/tooltip';
-	
+
 	interface Props {
 		ctx: Ctx;
 		show: boolean;

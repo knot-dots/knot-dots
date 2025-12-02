@@ -6,7 +6,7 @@
 	import { overlayKey, paramsFromFragment } from '$lib/models';
 	import { overlayHistory } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
-	
+
 	interface Props {
 		slug: string;
 	}
