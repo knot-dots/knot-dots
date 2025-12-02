@@ -6,6 +6,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import EditableChapterSection from '$lib/components/EditableChapterSection.svelte';
+	import EditableCustomCollection from '$lib/components/EditableCustomCollection.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
@@ -25,6 +26,7 @@
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
+		isCustomCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -114,6 +116,13 @@
 			/>
 		{:else if isChapterContainer(container)}
 			<EditableChapterSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isCustomCollectionContainer(container)}
+			<EditableCustomCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
