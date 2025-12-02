@@ -34,6 +34,7 @@
 	"back": "Back",
 	"benefit": "Benefit",
 	"benefit.high": "High",
+	"type": "Type",
 	"benefit.low": "Low",
 	"benefit.medium": "Medium",
 	"board": {
@@ -154,6 +155,7 @@
 	"goal_type.vision": "Vision",
 	"goal_type.vision.plural": "Visions",
 	"goals": "Goals",
+	"parent_object": "Parent object",
 	"goals_and_measure_results_and_milestones": "Goals, results milestones",
 	"goals_by_hierarchy_level": "Goals {level}",
 	"help": "Help",

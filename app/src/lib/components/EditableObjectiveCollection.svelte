@@ -7,20 +7,20 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
-		isGoalContainer,
+		type GoalContainer,
 		isObjectiveContainer,
 		isPartOf,
 		type ObjectiveCollectionContainer,
 		overlayKey,
 		payloadTypes
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { addObjectiveState, mayCreateContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: ObjectiveCollectionContainer;
 		editable?: boolean;
+		parentContainer: GoalContainer;
 		relatedContainers: AnyContainer[];
 		subsection?: boolean;
 	}
@@ -28,11 +28,10 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable(),
 		subsection = false
 	}: Props = $props();
-
-	let parentContainer = $derived(sectionOf(container, relatedContainers.filter(isGoalContainer)));
 
 	let items = $derived(
 		parentContainer
@@ -92,7 +91,7 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}

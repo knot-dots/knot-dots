@@ -1536,7 +1536,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 export function getManySpatialFeatures(guid: string[]) {
 	return async (connection: DatabaseConnection) => {
 		return connection.any(sql.typeAlias('spatialFeature')`
-			SELECT geom::json, guid FROM spatial_feature WHERE guid IN (${sql.join(guid, sql.fragment`, `)})
+			SELECT geom::json, guid FROM spatial_feature WHERE guid = ANY (${sql.array(guid, 'uuid')})
 		`);
 	};
 }

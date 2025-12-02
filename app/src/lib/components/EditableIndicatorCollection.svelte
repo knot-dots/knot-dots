@@ -21,6 +21,7 @@
 	interface Props {
 		container: IndicatorCollectionContainer;
 		editable?: boolean;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 		subsection?: boolean;
 	}
@@ -28,6 +29,7 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable(),
 		subsection = false
 	}: Props = $props();
@@ -75,7 +77,7 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}
