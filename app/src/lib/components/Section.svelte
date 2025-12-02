@@ -4,6 +4,7 @@
 	import { invalidate } from '$app/navigation';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
+	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import EditableChapterSection from '$lib/components/EditableChapterSection.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
@@ -38,16 +39,18 @@
 		isTaskCollectionContainer,
 		isTextContainer
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
+		handleAddSection: (event: Event) => void;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
+		handleAddSection,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -86,9 +89,14 @@
 
 <section class="details-section">
 	{#if $applicationState.containerDetailView.editable}
-		<span class="drag-handle is-visible-on-hover" use:dragHandle>
-			<DragHandle />
-		</span>
+		<div class="actions is-visible-on-hover">
+			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+				<AddSectionMenu bind:relatedContainers bind:parentContainer {handleAddSection} />
+			{/if}
+			<span class="drag-handle" use:dragHandle>
+				<DragHandle />
+			</span>
+		</div>
 	{/if}
 
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
@@ -195,25 +203,32 @@
 </section>
 
 <style>
-	.drag-handle {
+	.details-section {
+		position: relative;
+	}
+
+	.actions {
+		--dropdown-button-icon-default-color: var(--color-gray-700);
+
+		align-items: center;
 		background-color: white;
-		border-radius: 8px;
+		border-radius: 12px;
 		box-shadow: var(--shadow-sm);
-		color: var(--color-gray-700);
-		left: -1.75rem;
+		display: flex;
+		gap: 0.25rem;
+		left: -3.25rem;
 		padding: 0.25rem;
 		position: absolute;
 	}
 
-	.drag-handle > :global(svg) {
-		border-radius: 8px;
-		height: 2rem;
-		padding: 0.375rem;
-		width: 2rem;
+	.drag-handle {
+		padding: 0.25rem;
 	}
 
-	.drag-handle:hover > :global(svg) {
-		background-color: var(--dropdown-button-hover-background);
+	.drag-handle :global(svg) {
+		color: var(--dropdown-button-icon-default-color);
+		height: 1rem;
+		width: 1rem;
 	}
 
 	@media (hover: hover) {

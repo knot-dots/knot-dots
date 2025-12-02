@@ -173,15 +173,13 @@
 </script>
 
 <div class="sections">
-	{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-		<div class="section-wrapper">
-			<div class="add-section-wrapper">
-				<AddSectionMenu
-					bind:relatedContainers
-					bind:parentContainer={container}
-					handleAddSection={createAddSectionHandler(0)}
-				/>
-			</div>
+	{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && sections.length == 0}
+		<div class="details-section">
+			<AddSectionMenu
+				bind:relatedContainers
+				bind:parentContainer={container}
+				handleAddSection={createAddSectionHandler(0)}
+			/>
 		</div>
 	{/if}
 
@@ -191,58 +189,14 @@
 		onfinalize={handleDndFinalize}
 	>
 		{#each sections as { guid }, i (guid)}
-			<li animate:flip={{ duration: 100 }} class="section-wrapper">
+			<li animate:flip={{ duration: 100 }}>
 				<Section
 					bind:container={sections[i]}
 					bind:parentContainer={container}
 					bind:relatedContainers
+					handleAddSection={createAddSectionHandler(i + 1)}
 				/>
-
-				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-					<div class="add-section-wrapper">
-						<AddSectionMenu
-							bind:relatedContainers
-							bind:parentContainer={container}
-							handleAddSection={createAddSectionHandler(i + 1)}
-						/>
-					</div>
-				{/if}
 			</li>
 		{/each}
 	</ul>
 </div>
-
-<style>
-	.section-wrapper {
-		position: relative;
-	}
-
-	.add-section-wrapper {
-		bottom: -1.25rem;
-		position: absolute;
-		width: 100%;
-		z-index: 1;
-	}
-
-	.add-section-wrapper::before {
-		background-color: var(--color-primary-200);
-		border: 12px solid white;
-		border-radius: calc(infinity * 1px);
-		content: '';
-		display: block;
-		height: 27px;
-		left: 0.75rem;
-		position: absolute;
-		right: 0.75rem;
-		top: calc(50% - 13px);
-	}
-
-	.add-section-wrapper:hover::before {
-		background-color: var(--color-primary-700);
-		border-color: var(--color-primary-050);
-	}
-
-	.add-section-wrapper:has(:global(.dropdown-panel)) {
-		z-index: 2;
-	}
-</style>

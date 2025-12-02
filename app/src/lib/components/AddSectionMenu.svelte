@@ -65,7 +65,7 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
+	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [-4, 8] } }] };
 
 	let mayAddTaskCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
@@ -283,27 +283,19 @@
 
 <style>
 	.dropdown {
-		--dropdown-button-default-background: white;
-		--dropdown-button-expanded-background: var(--color-primary-900);
-		--dropdown-button-hover-background: var(--color-primary-800);
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-icon-default-color: var(--color-primary-700);
-		--dropdown-button-icon-expanded-color: white;
+		--dropdown-button-active-background: var(--color-white);
+		--dropdown-button-border-width: 0;
+		--dropdown-button-box-shadow: none;
+		--dropdown-button-default-background: var(--color-white);
+		--dropdown-button-icon-size: 1rem;
 
-		align-items: center;
 		background-color: white;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
 		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.375rem;
-		margin: 0 auto;
-		padding: 0.25rem;
 		width: fit-content;
 	}
 
-	.dropdown-button:hover {
-		--dropdown-button-icon-default-color: white;
+	.dropdown-button {
+		padding: 0.25rem;
 	}
 
 	.dropdown-panel {
