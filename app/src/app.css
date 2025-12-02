@@ -1033,8 +1033,8 @@ label > input[type='checkbox'].toggle {
 
 .details {
 	--details-max-width: 51.5rem;
-	--details-padding-left: 3.5rem;
-	--details-padding-right: max(3.5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
+	--details-padding-left: 5rem;
+	--details-padding-right: max(5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;
 	--carousel-margin-left: calc(
@@ -1048,7 +1048,7 @@ label > input[type='checkbox'].toggle {
 	container-type: inline-size;
 	font-size: 0.875rem;
 	min-width: min(var(--details-max-width), calc(100% - 8rem));
-	padding: 3rem var(--details-padding-right) 3rem var(--details-padding-left);
+	padding: 5rem var(--details-padding-right) 5rem var(--details-padding-left);
 	position: relative;
 }
 
