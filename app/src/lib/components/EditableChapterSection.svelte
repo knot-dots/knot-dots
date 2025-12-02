@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
+	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import { type AnyContainer, type ChapterContainer } from '$lib/models';
@@ -39,12 +40,6 @@
 			(element as HTMLElement).focus();
 		}
 	};
-
-	function handleKeyDown(event: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) {
-		if (event.key === 'Enter') {
-			event.preventDefault();
-		}
-	}
 </script>
 
 <header>
@@ -78,16 +73,15 @@
 		editable={editable && $ability.can('update', container)}
 	/>
 	{#if editable && $ability.can('update', container)}
-		<p class="details-heading title">
+		<p class="details-heading">
 			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
-			<textarea
+			<AutoresizingTextarea
 				{@attach init}
 				bind:value={container.payload.title}
 				id={idForTitle}
-				onkeydown={handleKeyDown}
 				placeholder={$_('chapter.title.placeholder')}
-				rows="1"
-			></textarea>
+				rows={1}
+			/>
 		</p>
 	{:else}
 		<svelte:element
@@ -133,35 +127,5 @@
 
 	.heading button {
 		margin-left: auto;
-	}
-
-	.title {
-		display: grid;
-	}
-
-	.title::after {
-		content: attr(data-replicated-value) ' ';
-		visibility: hidden;
-		white-space: pre-wrap;
-	}
-
-	.title > textarea {
-		--outline-offset: 0.25rem;
-
-		background-color: revert;
-		min-height: 1.5rem;
-		overflow: hidden;
-		resize: none;
-		width: calc(100% + 0.5rem);
-	}
-
-	.title::after,
-	.title > textarea {
-		border: none;
-		border-radius: 8px;
-		font: inherit;
-		grid-area: 1 / 1 / 2 / 2;
-		margin: 0;
-		padding: 0;
 	}
 </style>
