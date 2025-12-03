@@ -113,11 +113,9 @@
 				{@const relatedContainers = containers
 					.filter(isActualDataContainer)
 					.filter(({ payload }) => payload.indicator == container.guid)}
-				{#if relatedContainers.length > 0}
 					<li>
 						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
 					</li>
-				{/if}
 			{/each}
 		</ul>
 	{:else}
@@ -126,11 +124,9 @@
 				{@const relatedContainers = containers
 					.filter(isActualDataContainer)
 					.filter(({ payload }) => payload.indicator == container.guid)}
-				{#if relatedContainers.length > 0}
 					<li>
 						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
 					</li>
-				{/if}
 			{/each}
 		</ul>
 	{/if}
