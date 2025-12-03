@@ -13,15 +13,21 @@
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import {
 		type Container,
+		containerOfType,
 		findConnected,
+		indicatorCategories,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
+		type NewContainer,
 		overlayKey,
 		payloadTypes,
-		predicates
+		predicates,
+		units
 	} from '$lib/models';
-	import { ability, dragged, overlay } from '$lib/stores';
+	import { ability, dragged, overlay, newContainer } from '$lib/stores';
+	import { getContext } from 'svelte';
+	import { env } from '$env/dynamic/public';
 
 	interface Props {
 		containers: Container[];
@@ -56,6 +62,28 @@
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function createCustomIndicatorTemplate() {
+		const container = containerOfType(
+			payloadTypes.enum.indicator_template,
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as NewContainer & Pick<IndicatorTemplateContainer, 'payload'>;
+
+		container.payload.title = '';
+		container.payload.unit = units.enum['unit.cubic_meter'];
+		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
+
+		$newContainer = container;
+
+		createContainerDialog.getElement().showModal();
+	}
 
 	let shouldIgnoreDndEvents = $state(false);
 
@@ -96,10 +124,14 @@
 <div class="indicators">
 	{#if $ability.can('create', payloadTypes.enum.indicator)}
 		<p>
-			<a class="button button-xs button-primary" href="#new-indicator-catalog">
+			<button
+				class="button button-xs button-primary"
+				type="button"
+				onclick={createCustomIndicatorTemplate}
+			>
 				<Plus />
-				{$_('indicator')}
-			</a>
+				{$_('indicator_form.create_custom')}
+			</button>
 		</p>
 	{/if}
 
@@ -113,9 +145,9 @@
 				{@const relatedContainers = containers
 					.filter(isActualDataContainer)
 					.filter(({ payload }) => payload.indicator == container.guid)}
-					<li>
-						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
-					</li>
+				<li>
+					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+				</li>
 			{/each}
 		</ul>
 	{:else}
@@ -124,9 +156,9 @@
 				{@const relatedContainers = containers
 					.filter(isActualDataContainer)
 					.filter(({ payload }) => payload.indicator == container.guid)}
-					<li>
-						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
-					</li>
+				<li>
+					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+				</li>
 			{/each}
 		</ul>
 	{/if}
