@@ -200,3 +200,23 @@
 		{/each}
 	</ul>
 </div>
+
+<style>
+	.sections :global(section h2.details-heading) {
+		color: var(--color-gray-800);
+		font-size: 1.875rem;
+		font-weight: 600;
+	}
+
+	.sections :global(section h3.details-heading) {
+		color: var(--color-gray-800);
+		font-size: 1.875rem;
+		font-weight: 400;
+	}
+
+	.sections :global(section h4.details-heading) {
+		color: var(--color-gray-800);
+		font-size: 1.5rem;
+		font-weight: 600;
+	}
+</style>

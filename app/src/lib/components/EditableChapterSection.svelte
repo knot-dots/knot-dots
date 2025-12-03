@@ -72,8 +72,11 @@
 		bind:value={container.payload.image}
 		editable={editable && $ability.can('update', container)}
 	/>
-	{#if editable && $ability.can('update', container)}
-		<p class="details-heading">
+	<svelte:element
+		this={`h${Math.min(container.payload.number.split('.').length + 1, 6)}`}
+		class="details-heading"
+	>
+		{#if editable && $ability.can('update', container)}
 			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
 			<AutoresizingTextarea
 				{@attach init}
@@ -82,26 +85,16 @@
 				placeholder={$_('chapter.title.placeholder')}
 				rows={1}
 			/>
-		</p>
-	{:else}
-		<svelte:element
-			this={`h${Math.min(container.payload.number.split('.').length + 1, 6)}`}
-			class="details-heading"
-		>
+		{:else}
 			{container.payload.title}
-		</svelte:element>
-	{/if}
+		{/if}
+	</svelte:element>
 </div>
 
 <style>
 	header {
 		margin-bottom: 0;
 		min-height: 2.5rem;
-	}
-
-	.details-heading {
-		color: var(--color-gray-800);
-		font-size: 1.875rem;
 	}
 
 	.number {
