@@ -9,20 +9,18 @@
 		type AnyContainer,
 		containerOfType,
 		type GoalCollectionContainer,
-		isMeasureContainer,
 		isPartOf,
 		isPartOfMeasure,
-		isSimpleMeasureContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: GoalCollectionContainer;
 		editable?: boolean;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 		subsection?: boolean;
 	}
@@ -30,16 +28,10 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable(),
 		subsection = false
 	}: Props = $props();
-
-	let parentContainer = $derived(
-		sectionOf(
-			container,
-			relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
-		)
-	);
 
 	let items = $derived(
 		parentContainer
@@ -104,7 +96,7 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}

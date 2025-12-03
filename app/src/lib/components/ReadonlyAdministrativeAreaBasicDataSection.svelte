@@ -3,26 +3,23 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
-		isOrganizationalUnitContainer,
-		type AdministrativeAreaBasicDataContainer
+		type AdministrativeAreaBasicDataContainer,
+		type OrganizationalUnitContainer
 	} from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 
 	interface Props {
 		container: AdministrativeAreaBasicDataContainer;
 		editable?: boolean;
+		parentContainer: OrganizationalUnitContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	let parentContainer = $derived(
-		sectionOf(container, relatedContainers.filter(isOrganizationalUnitContainer))
-	);
 </script>
 
 <header>
@@ -32,7 +29,9 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			<li><ContainerSettingsDropdown bind:container bind:relatedContainers /></li>
+			<li>
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+			</li>
 		</ul>
 	{/if}
 </header>

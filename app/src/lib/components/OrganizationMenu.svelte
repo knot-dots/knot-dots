@@ -147,7 +147,6 @@
 						{#if 'default' in currentContext.payload && currentContext.payload.default}
 							{#each organizations as container}
 								<OrganizationMenuCard
-									--height="100%"
 									{container}
 									linkPath={pathnameWithoutContextSegment}
 									bind:selectedContext
@@ -156,13 +155,12 @@
 						{:else}
 							{#each organizations as container}
 								<OrganizationMenuCard
-									--height="100%"
 									{container}
 									linkPath={pathnameWithoutContextSegment}
 									bind:selectedContext
 								/>
 							{/each}
-							<AllOrganizationsCard --height="100%" linkPath={pathnameWithoutContextSegment} />
+							<AllOrganizationsCard linkPath={pathnameWithoutContextSegment} />
 						{/if}
 					</div>
 				</BoardColumn>

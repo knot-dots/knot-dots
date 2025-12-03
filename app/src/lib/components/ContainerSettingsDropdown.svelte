@@ -12,12 +12,17 @@
 
 	interface Props {
 		container: AnyContainer;
+		ondelete?: () => Promise<void>;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
-
-	let parentContainer = $derived(sectionOf(container, relatedContainers)) as AnyContainer;
+	let {
+		container = $bindable(),
+		ondelete,
+		parentContainer = $bindable(),
+		relatedContainers = $bindable()
+	}: Props = $props();
 
 	let popover = createPopover({ label: $_('settings') });
 
@@ -39,6 +44,10 @@
 				({ subject }) => subject !== container.guid
 			);
 			relatedContainers = relatedContainers.filter(({ guid }) => guid !== container.guid);
+		}
+
+		if (ondelete) {
+			await ondelete();
 		}
 
 		dialog.close();

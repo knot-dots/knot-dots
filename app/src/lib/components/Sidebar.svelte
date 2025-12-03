@@ -23,7 +23,11 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
-	import { type OrganizationalUnitContainer, type OrganizationContainer } from '$lib/models';
+	import {
+		getOrganizationURL,
+		type OrganizationalUnitContainer,
+		type OrganizationContainer
+	} from '$lib/models';
 	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
@@ -43,16 +47,7 @@
 	}
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		const url = new URL(env.PUBLIC_BASE_URL);
-
-		if ('default' in container.payload && container.payload.default) {
-			url.pathname = resolve('/[[guid=uuid]]/all/page', { guid: container.guid });
-		} else {
-			url.hostname = `${container.organization}.${url.hostname}`;
-			url.pathname = resolve('/[[guid=uuid]]/all/page', { guid: container.guid });
-		}
-
-		return url.toString();
+		return getOrganizationURL(container, '/all/page').toString();
 	}
 </script>
 

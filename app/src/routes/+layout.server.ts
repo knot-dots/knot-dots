@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
 import { type AnyContainer, type KeycloakUser } from '$lib/models';
@@ -29,27 +30,56 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
 	]);
 
-	if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
-		currentOrganization = organizations.find(({ payload }) => payload.default);
-		if (!currentOrganization) {
-			currentOrganization = (await locals.pool.connect(
-				setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-			)) as OrganizationContainer;
+	// Don't use subdomains in dev mode if the env var is set
+	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
+		// Parse GUID from the URL path
+		let guidFromURL = url.pathname.split('/')[1];
+
+		// Check if the parsed part is a valid UUID
+		if (z.uuid().safeParse(guidFromURL).success) {
+			currentOrganization = organizations.find(({ guid }) => guid === guidFromURL);
+
+			if (!currentOrganization) {
+				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === guidFromURL);
+				currentOrganization = organizations.find(
+					({ guid }) => guid === currentOrganizationalUnit?.organization
+				);
+			}
+		} else {
+			currentOrganization = organizations.find(({ payload }) => payload.default);
+			if (!currentOrganization) {
+				currentOrganization = (await locals.pool.connect(
+					setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
+				)) as OrganizationContainer;
+			}
 		}
-	} else {
-		currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
+	}
+	// Production mode with subdomains
+	else {
+		if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
+			currentOrganization = organizations.find(({ payload }) => payload.default);
+			if (!currentOrganization) {
+				currentOrganization = (await locals.pool.connect(
+					setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
+				)) as OrganizationContainer;
+			}
+		} else {
+			currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
+		}
+
+		// If we haven't found the organization yet, try to find the organizational unit by subdomain
+		if (!currentOrganization) {
+			currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
+				url.hostname.startsWith(`${guid}.`)
+			);
+
+			currentOrganization = organizations.find(
+				({ guid }) => guid === currentOrganizationalUnit?.organization
+			);
+		}
 	}
 
-	if (!currentOrganization) {
-		currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
-			url.hostname.startsWith(`${guid}.`)
-		);
-
-		currentOrganization = organizations.find(
-			({ guid }) => guid === currentOrganizationalUnit?.organization
-		);
-	}
-
+	// Throw 404 if no organization is found
 	if (!currentOrganization) {
 		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}

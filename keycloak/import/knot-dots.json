@@ -506,6 +506,39 @@
       "groups": []
     },
     {
+      "id": "06bbaff5-fe13-4c80-bb54-c3f2e3850de2",
+      "username": "builderbob@bobby.com",
+      "firstName": "Bob",
+      "lastName": "Builder",
+      "email": "builderbob@bobby.com",
+      "emailVerified": true,
+      "attributes": {
+        "locale": [
+          "de"
+        ]
+      },
+      "createdTimestamp": 1762337455820,
+      "enabled": true,
+      "totp": false,
+      "credentials": [
+        {
+          "id": "e17f36dd-ffc4-4e33-b6ab-8c742a8fd8cd",
+          "type": "password",
+          "userLabel": "My password",
+          "createdDate": 1762337485322,
+          "secretData": "{\"value\":\"do/xFhkzEZAaAcP5QX1VTjx7ZdO8y91NG+RfcIueHz8=\",\"salt\":\"rt1MBx8m9bBy/qErJaSRKQ==\",\"additionalParameters\":{}}",
+          "credentialData": "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-knot-dots"
+      ],
+      "notBefore": 0,
+      "groups": []
+    },
+    {
       "id": "2d1096c8-f53a-4487-a296-2649f768d192",
       "username": "service-account-knot-dots",
       "emailVerified": false,
@@ -513,6 +546,7 @@
       "enabled": true,
       "totp": false,
       "serviceAccountClientId": "knot-dots",
+      "credentials": [],
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
@@ -745,7 +779,8 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "KmF1tDGwlVeZDunWRnn06QvVxvVUHcWU",
       "redirectUris": [
-        "http://localhost:5173/*"
+        "http://localhost:5173/*",
+        "http://localhost:3000/*"
       ],
       "webOrigins": [
         "+"
@@ -1597,13 +1632,13 @@
         "config": {
           "allowed-protocol-mapper-types": [
             "oidc-address-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
-            "oidc-full-name-mapper",
-            "oidc-usermodel-property-mapper",
+            "saml-user-attribute-mapper",
             "saml-role-list-mapper",
             "oidc-usermodel-attribute-mapper",
             "saml-user-property-mapper",
-            "saml-user-attribute-mapper"
+            "oidc-sha256-pairwise-sub-mapper",
+            "oidc-usermodel-property-mapper",
+            "oidc-full-name-mapper"
           ]
         }
       },
@@ -1628,13 +1663,13 @@
         "config": {
           "allowed-protocol-mapper-types": [
             "oidc-sha256-pairwise-sub-mapper",
-            "oidc-full-name-mapper",
-            "oidc-usermodel-attribute-mapper",
-            "saml-role-list-mapper",
+            "saml-user-property-mapper",
             "oidc-usermodel-property-mapper",
-            "saml-user-attribute-mapper",
             "oidc-address-mapper",
-            "saml-user-property-mapper"
+            "oidc-full-name-mapper",
+            "saml-user-attribute-mapper",
+            "saml-role-list-mapper",
+            "oidc-usermodel-attribute-mapper"
           ]
         }
       },

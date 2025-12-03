@@ -15,7 +15,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { applicationState } from '$lib/stores';
+	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
 		container: AnyContainer;
@@ -74,7 +74,8 @@
 			}
 
 			if (payloadType === payloadTypes.enum.task_collection && isContainerWithTitle(newContainer)) {
-				newContainer.payload.title = container.payload.type === payloadTypes.enum.task ? $_('subtasks') : $_('tasks');
+				newContainer.payload.title =
+					container.payload.type === payloadTypes.enum.task ? $_('subtasks') : $_('tasks');
 			}
 
 			const response = await saveContainer(newContainer);
@@ -158,7 +159,7 @@
 </script>
 
 <div class="sections">
-	{#if $applicationState.containerDetailView.editable}
+	{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 		<div class="section-wrapper">
 			<div class="add-section-wrapper">
 				<AddSectionMenu
@@ -177,9 +178,13 @@
 	>
 		{#each sections as { guid }, i (guid)}
 			<li animate:flip={{ duration: 100 }} class="section-wrapper">
-				<Section bind:relatedContainers bind:container={sections[i]} />
+				<Section
+					bind:container={sections[i]}
+					bind:parentContainer={container}
+					bind:relatedContainers
+				/>
 
-				{#if $applicationState.containerDetailView.editable}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					<div class="add-section-wrapper">
 						<AddSectionMenu
 							bind:relatedContainers

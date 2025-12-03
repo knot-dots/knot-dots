@@ -4,18 +4,23 @@
 	interface Props {
 		editable?: boolean;
 		value: number;
+		showLabel?: boolean; // allow consumers (e.g. table rows) to hide the label
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, value = $bindable(), showLabel = true }: Props = $props();
 </script>
 
 {#if editable}
-	<label class="label" for="hierarchyLevel">
-		{$_('goal.hierarchy_level')}
-	</label>
+	{#if showLabel}
+		<label class="label" for="hierarchyLevel">
+			{$_('goal.hierarchy_level')}
+		</label>
+	{/if}
 	<input class="value" max="6" min="1" required type="number" bind:value />
 {:else}
-	<span class="label">{$_('goal.hierarchy_level')}</span>
+	{#if showLabel}
+		<span class="label">{$_('goal.hierarchy_level')}</span>
+	{/if}
 	<span class="value">{value ? $number(value) : $_('empty')}</span>
 {/if}
 

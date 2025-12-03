@@ -60,7 +60,6 @@ export const predicateIcons = new Map<string, Component<SVGAttributes<SVGSVGElem
 	[predicates.enum['is-inconsistent-with'], Minus],
 	[predicates.enum['is-prerequisite-for'], ChevronDoubleRight],
 	[predicates.enum['is-sub-target-of'], ChartPie],
-	[predicates.enum['is-subtask-of'], ChartPie],
 	[predicates.enum['is-superordinate-of'], ChevronDoubleUp]
 ]);
 

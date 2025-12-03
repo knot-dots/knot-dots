@@ -3,8 +3,12 @@
 	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
 	import type { ProgramStatus } from '$lib/models';
 
-	export let editable = false;
-	export let value: ProgramStatus;
+	interface Props {
+		editable?: boolean;
+		value: ProgramStatus;
+	}
+
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
 <div class="label">{$_('program_status')}</div>

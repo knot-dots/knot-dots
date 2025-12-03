@@ -20,14 +20,16 @@
 
 	interface Props {
 		container: FileCollectionContainer;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 		editable?: boolean;
 	}
 
 	let {
 		container = $bindable(),
-		relatedContainers = $bindable(),
-		editable = false
+		editable = false,
+		parentContainer = $bindable(),
+		relatedContainers = $bindable()
 	}: Props = $props();
 
 	let uppy = new Uppy({
@@ -89,7 +91,7 @@
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
 			<li>
-				<ContainerSettingsDropdown bind:container bind:relatedContainers />
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}

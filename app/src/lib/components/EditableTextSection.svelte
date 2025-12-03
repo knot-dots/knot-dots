@@ -9,12 +9,14 @@
 	interface Props {
 		container: TextContainer;
 		editable?: boolean;
+		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
+		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 
@@ -43,7 +45,9 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			<li><ContainerSettingsDropdown bind:container bind:relatedContainers /></li>
+			<li>
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+			</li>
 		</ul>
 	{/if}
 </header>

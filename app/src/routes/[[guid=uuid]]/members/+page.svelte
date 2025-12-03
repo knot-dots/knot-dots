@@ -6,7 +6,11 @@
 	import Members from '$lib/components/Members.svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <Layout>
@@ -20,7 +24,7 @@
 				{'title' in data.container.payload
 					? data.container.payload.title
 					: data.container.payload.name}
-				<button class="action-button" type="button" on:click={() => window.history.back()}>
+				<button class="action-button" type="button" onclick={() => window.history.back()}>
 					<ChevronLeft />
 				</button>
 			</h1>

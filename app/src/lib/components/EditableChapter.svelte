@@ -6,7 +6,6 @@
 	import { env } from '$env/dynamic/public';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
-	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Subsection from '$lib/components/Subsection.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -111,10 +110,6 @@
 
 <Badges bind:container {editable} />
 
-{#if isContainerWithProgress(container)}
-	<EditableProgress {editable} bind:value={container.payload.progress} />
-{/if}
-
 {#if 'body' in container.payload}
 	{#if editable}
 		<Editor bind:value={container.payload.body} />
@@ -132,7 +127,11 @@
 {/if}
 
 {#each subsections as { guid }, i (guid)}
-	<Subsection bind:relatedContainers bind:container={subsections[i]} />
+	<Subsection
+		bind:container={subsections[i]}
+		bind:parentContainer={container}
+		bind:relatedContainers
+	/>
 {/each}
 
 <footer class="content-actions">

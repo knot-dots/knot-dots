@@ -12,6 +12,7 @@
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
 	import Map from '~icons/knotdots/map';
+	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
@@ -21,6 +22,7 @@
 		type AnyContainer,
 		boards,
 		isAdministrativeAreaBasicDataContainer,
+		isContainerWithProgress,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -33,6 +35,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramCollectionContainer,
+		isProgressContainer,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -127,6 +130,11 @@
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
+	let mayAddProgress = $derived(
+		isContainerWithProgress(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -208,6 +216,15 @@
 							icon: Program,
 							label: $_('programs'),
 							value: payloadTypes.enum.program_collection
+						}
+					]
+				: []),
+			...(mayAddProgress
+				? [
+						{
+							icon: Progress,
+							label: $_('progress'),
+							value: payloadTypes.enum.progress
 						}
 					]
 				: []),
