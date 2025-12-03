@@ -157,8 +157,10 @@
 		}
 	});
 
+	const idForModal = crypto.randomUUID();
+
 	$effect(() => {
-		if (page.state.showCustomCollectionModal) {
+		if (page.state.showCustomCollectionModal == idForModal) {
 			dialog?.showModal();
 		} else {
 			dialog?.close();
@@ -166,7 +168,7 @@
 	});
 
 	function addItems() {
-		pushState(page.url, { showCustomCollectionModal: true });
+		pushState(page.url, { showCustomCollectionModal: idForModal });
 	}
 
 	function resetFilters() {

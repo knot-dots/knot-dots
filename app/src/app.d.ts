@@ -23,7 +23,7 @@ declare global {
 			user?: KeycloakUser;
 		}
 		interface PageState {
-			showCustomCollectionModal?: boolean;
+			showCustomCollectionModal?: string;
 		}
 		// interface Platform {}
 	}
