@@ -64,24 +64,22 @@ export const POST = (async ({ locals, params, request }) => {
 		// 2. If organizational_unit changed from a non-null value to null and previous managed_by == previous organizational_unit,
 		//    then set managed_by back to organization.
 		// 3. Otherwise keep provided managed_by (allow explicit overrides).
-		const previous = container; // earlier fetched container
+		const previousContainer = container; // earlier fetched container
 		let managed_by = parseResult.data.managed_by;
-		if (parseResult.data.organizational_unit !== previous.organizational_unit) {
-			const newUnit = parseResult.data.organizational_unit; // may be null
-			const prevUnit = previous.organizational_unit; // may be null
-			// Case: assigning a unit
-			if (newUnit) {
+		if (parseResult.data.organizational_unit !== previousContainer.organizational_unit) {
+			const newOrganizationalUnit = parseResult.data.organizational_unit; // may be null
+			const prevOrganizationalUnit = previousContainer.organizational_unit; // may be null
+			if (newOrganizationalUnit) {
+				// Case 1: assigning a organizational unit
 				const shouldAdopt =
-					(prevUnit && previous.managed_by === prevUnit) ||
-					(!prevUnit && previous.managed_by === previous.organization);
+					(prevOrganizationalUnit && previousContainer.managed_by === prevOrganizationalUnit) ||
+					(!prevOrganizationalUnit && previousContainer.managed_by === previousContainer.organization);
 				if (shouldAdopt) {
-					managed_by = newUnit;
+					managed_by = newOrganizationalUnit;
 				}
-			} else {
-				// removing unit
-				if (prevUnit && previous.managed_by === prevUnit) {
-					managed_by = previous.organization;
-				}
+			} else if (prevOrganizationalUnit && previousContainer.managed_by === prevOrganizationalUnit) {
+				// Case 2: removing organizational unit
+				managed_by = previousContainer.organization;
 			}
 		}
 
