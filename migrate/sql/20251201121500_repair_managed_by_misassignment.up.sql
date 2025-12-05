@@ -19,4 +19,6 @@ WHERE c.guid = cand.guid
   -- And target value is not null (avoid violating NOT NULL constraint)
   AND COALESCE(c.organizational_unit, c.organization) IS NOT NULL
   -- And it's actually different
-  AND c.managed_by IS DISTINCT FROM COALESCE(c.organizational_unit, c.organization);
+  AND c.managed_by IS DISTINCT FROM COALESCE(c.organizational_unit, c.organization)
+  -- And it is the current version
+  AND c.valid_currently IS TRUE;
