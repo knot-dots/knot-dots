@@ -44,6 +44,7 @@
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
 		handleAddSection: (event: Event) => void;
+		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
@@ -51,6 +52,7 @@
 	let {
 		container = $bindable(),
 		handleAddSection,
+		heading = 'h2',
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -106,6 +108,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isChapterContainer(container)}
 			<EditableChapterSection
@@ -120,6 +123,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isFileCollectionContainer(container)}
 			<EditableFileCollection
@@ -127,6 +131,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
@@ -134,6 +139,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
@@ -141,6 +147,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isMapContainer(container) && isOrganizationalUnitContainer(parentContainer)}
 			<EditableMapSection
@@ -148,6 +155,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isMeasureCollectionContainer(container)}
 			<EditableMeasureCollection
@@ -155,6 +163,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableObjectiveCollection
@@ -162,6 +171,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isProgramCollectionContainer(container)}
 			<EditableProgramCollection
@@ -169,6 +179,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
 			<EditableProgressSection
@@ -176,6 +187,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
@@ -183,6 +195,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isTaskCollectionContainer(container)}
 			<EditableTaskCollection
@@ -190,6 +203,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isTextContainer(container)}
 			<EditableTextSection
@@ -197,6 +211,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
+				{heading}
 			/>
 		{/if}
 	</form>
