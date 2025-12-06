@@ -13,6 +13,7 @@
 	interface Props {
 		container: MapContainer;
 		editable?: boolean;
+		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: OrganizationalUnitContainer;
 		relatedContainers: AnyContainer[];
 	}
@@ -20,6 +21,7 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		heading,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -35,16 +37,18 @@
 <header>
 	{#if editable && $ability.can('update', container)}
 		<!-- svelte-ignore binding_property_non_reactive -->
-		<h2
+		<svelte:element
+			this={heading}
 			bind:textContent={container.payload.title}
 			class="details-heading"
 			contenteditable="plaintext-only"
 			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-		></h2>
+			role="heading"
+		></svelte:element>
 	{:else}
-		<h2 class="details-heading" contenteditable="false">
+		<svelte:element this={heading} class="details-heading" contenteditable="false">
 			{container.payload.title}
-		</h2>
+		</svelte:element>
 	{/if}
 
 	{#if editable}

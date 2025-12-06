@@ -170,6 +170,12 @@
 			}
 		});
 	}
+
+	function heading(position: number) {
+		const chapter = sections.slice(0, position).reverse().find(isChapterContainer);
+		const level = Math.min((chapter?.payload.number.split('.').length ?? 0) + 2, 6);
+		return `h${level}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+	}
 </script>
 
 <div class="sections">
@@ -195,6 +201,7 @@
 					bind:parentContainer={container}
 					bind:relatedContainers
 					handleAddSection={createAddSectionHandler(i + 1)}
+					heading={heading(i)}
 				/>
 			</li>
 		{/each}

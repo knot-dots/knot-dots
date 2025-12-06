@@ -20,14 +20,16 @@
 
 	interface Props {
 		container: FileCollectionContainer;
+		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+		editable?: boolean;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
-		editable?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
+		heading,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -87,7 +89,7 @@
 </script>
 
 <header>
-	<h2 class="details-heading">{$_('files')}</h2>
+	<svelte:element this={heading} class="details-heading">{$_('files')}</svelte:element>
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
 			<li>

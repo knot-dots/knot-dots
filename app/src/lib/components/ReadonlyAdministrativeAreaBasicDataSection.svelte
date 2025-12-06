@@ -10,6 +10,7 @@
 	interface Props {
 		container: AdministrativeAreaBasicDataContainer;
 		editable?: boolean;
+		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: OrganizationalUnitContainer;
 		relatedContainers: AnyContainer[];
 	}
@@ -17,15 +18,16 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		heading,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 </script>
 
 <header>
-	<h2 class="details-heading" contenteditable="false">
+	<svelte:element this={heading} class="details-heading">
 		{container.payload.title}
-	</h2>
+	</svelte:element>
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">

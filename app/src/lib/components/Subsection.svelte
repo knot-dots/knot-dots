@@ -43,7 +43,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				subsection
+				heading="h3"
 			/>
 		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableObjectiveCollection
@@ -51,7 +51,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				subsection
+				heading="h3"
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
@@ -59,7 +59,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				subsection
+				heading="h3"
 			/>
 		{/if}
 	</form>

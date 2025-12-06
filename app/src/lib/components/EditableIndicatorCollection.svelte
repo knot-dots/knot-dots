@@ -20,6 +20,7 @@
 	interface Props {
 		container: IndicatorCollectionContainer;
 		editable?: boolean;
+		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 		subsection?: boolean;
@@ -28,9 +29,9 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		heading,
 		parentContainer = $bindable(),
-		relatedContainers = $bindable(),
-		subsection = false
+		relatedContainers = $bindable()
 	}: Props = $props();
 
 	let items = $derived(relatedContainers.filter(isIndicatorContainer));
@@ -53,11 +54,7 @@
 </script>
 
 <header>
-	{#if subsection}
-		<h3 class="details-heading">{$_('indicators')}</h3>
-	{:else}
-		<h2 class="details-heading">{$_('indicators')}</h2>
-	{/if}
+	<svelte:element this={heading} class="details-heading">{$_('indicators')}</svelte:element>
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
