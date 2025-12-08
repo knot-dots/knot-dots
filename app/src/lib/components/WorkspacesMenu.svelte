@@ -22,6 +22,7 @@
 	import Objects from '~icons/knotdots/objects';
 	import Program from '~icons/knotdots/program';
 	import Star from '~icons/knotdots/star';
+	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { boards } from '$lib/models';
@@ -196,7 +197,7 @@
 		},
 		{
 			exists: true,
-			icon: ChartBar,
+			icon: Resources,
 			label: $_('workspace.type.resources'),
 			recommended: false,
 			value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
