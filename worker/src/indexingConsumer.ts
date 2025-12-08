@@ -16,7 +16,8 @@ const endpoint = process.env.INDEXING_QUEUE_ENDPOINT;
 const accessKeyId = process.env.INDEXING_QUEUE_ACCESS_KEY || process.env.SCALEWAY_ACCESS_KEY || '';
 const secretAccessKey = process.env.INDEXING_QUEUE_SECRET_KEY || process.env.SCALEWAY_SECRET_KEY || '';
 const esUrl = process.env.ELASTICSEARCH_URL || '';
-const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+// Use alias for all read/write operations (no legacy index env fallback)
+const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
 const pollIntervalMs = Number(process.env.INDEXING_WORKER_POLL_INTERVAL_MS || '2000');
 
 let running = true;

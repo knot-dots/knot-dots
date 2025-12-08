@@ -707,8 +707,8 @@ export function getManyContainers(
 	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const esUrl = process.env.ELASTICSEARCH_URL;
-		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+	const esUrl = process.env.ELASTICSEARCH_URL;
+	const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
 		if (esUrl && (filters.terms || filters.type || organizations.length)) {
 			try {
 				const { Client } = await import('@elastic/elasticsearch');
@@ -780,7 +780,7 @@ export function getManyContainers(
 // Compute facet aggregations constrained to a specific set of container GUIDs.
 export async function getFacetAggregationsForGuids(guids: string[]) {
 	const esUrl = process.env.ELASTICSEARCH_URL;
-	const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+	const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
 	if (!esUrl || guids.length === 0) {
 		return {} as Record<string, Record<string, number>>;
 	}
@@ -1010,7 +1010,7 @@ export function getAllRelatedContainers(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		// Attempt Elasticsearch path if available and filters/terms present.
 		const esUrl = process.env.ELASTICSEARCH_URL;
-		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
 		const wantEs = esUrl && (filters.terms || filters.type || filters.categories?.length || filters.topics?.length);
 		if (wantEs) {
 			try {
@@ -1235,7 +1235,7 @@ export function getAllRelatedContainersByProgramType(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		// ES path: compute candidate GUIDs by programType via SQL, then filter with ES
 		const esUrl = process.env.ELASTICSEARCH_URL;
-		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
 		const wantEs = esUrl && (filters.terms || filters.type?.length || filters.categories?.length || filters.topics?.length || filters.measureTypes?.length || filters.organizationalUnits?.length);
 		if (wantEs) {
 			try {
@@ -1422,7 +1422,7 @@ export function getAllContainersRelatedToProgram(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		// ES path for program-related containers (uses recursive SQL to collect GUID set then filters in ES)
 		const esUrl = process.env.ELASTICSEARCH_URL;
-		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
 		const wantEs = esUrl && (filters.terms || filters.type?.length || filters.categories?.length || filters.topics?.length);
 		if (wantEs) {
 			try {
@@ -1587,7 +1587,7 @@ export function getAllContainersRelatedToMeasure(
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		// ES path for measure-related containers
 		const esUrl = process.env.ELASTICSEARCH_URL;
-		const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+		const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
 		const wantEs = esUrl && (filters.terms || filters.type?.length || filters.categories?.length || filters.topics?.length || filters.taskCategories?.length);
 		if (wantEs) {
 			try {

@@ -40,13 +40,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     env_file:
       - ./db/.env
       - ./app/.env
+    environment:
+      - DE_LABELS_PATH=/opt/labels/de.json
     profiles:
       - import
     volumes:
       - ./import/src:/srv/app/src
+      - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
 
   migrate:
     build:
