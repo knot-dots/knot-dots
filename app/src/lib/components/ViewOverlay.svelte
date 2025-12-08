@@ -12,6 +12,7 @@
 	import EditableProgramDetailView from '$lib/components/EditableProgramDetailView.svelte';
 	import EditableReportDetailView from '$lib/components/EditableReportDetailView.svelte';
 	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
+	import EditableResourceV2DetailView from '$lib/components/EditableResourceV2DetailView.svelte';
 	import EditableRuleDetailView from '$lib/components/EditableRuleDetailView.svelte';
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
@@ -34,6 +35,7 @@
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
+		isResourceV2Container,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -177,6 +179,8 @@
 		<EditableReportDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isResourceContainer(container)}
 		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isResourceV2Container(container)}
+		<EditableResourceV2DetailView bind:container {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}
 		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTaskContainer(container)}
