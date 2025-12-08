@@ -645,6 +645,7 @@ export function getManyContainers(
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
+		resourceCategories?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
@@ -661,7 +662,7 @@ export function getManyContainers(
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
 			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``};
-    `);
+    	`);
 
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
