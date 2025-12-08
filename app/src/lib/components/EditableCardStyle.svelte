@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-    import CardStyleDropdown from "$lib/components/CardStyleDropdown.svelte";
+	import CardStyleDropdown from '$lib/components/CardStyleDropdown.svelte';
 
 	interface Props {
 		editable?: boolean;
@@ -15,12 +15,7 @@
 	<div class="label">{label}</div>
 {/if}
 {#if editable}
-
-	<CardStyleDropdown
-			{editable}
-			bind:value={value}
-	/>
-
+	<CardStyleDropdown {editable} bind:value />
 {:else}
 	<div class="value">
 		{$_(`card_style.${value}`) ?? $_('empty')}

@@ -17,33 +17,33 @@
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
-    import EditableTeaser from '$lib/components/EditableTeaser.svelte';
-    import EditableTeaserCollection from "$lib/components/EditableTeaserCollection.svelte";
-    import EditableTeaserSection from "$lib/components/EditableTeaserSection.svelte";
-    import {
-      type AnyContainer,
-      isAdministrativeAreaBasicDataContainer,
-      isContainerWithProgress,
-      isEffectCollectionContainer,
-      isFileCollectionContainer,
-      isGoalCollectionContainer,
-      isGoalContainer,
-      isIndicatorCollectionContainer,
-      isMapContainer,
-      isMeasureCollectionContainer,
-      isObjectiveCollectionContainer,
-      isOrganizationalUnitContainer,
-      isProgramCollectionContainer,
-      isProgressContainer,
-      isResourceCollectionContainer,
-      isTaskCollectionContainer,
-      isTeaserContainer,
-      isInfoBoxContainer,
-      isTeaserCollectionContainer,
-      isTextContainer,
-      isTeaserHighlightContainer,
-	  isQuoteContainer
-    } from '$lib/models';
+	import EditableTeaser from '$lib/components/EditableTeaser.svelte';
+	import EditableTeaserCollection from '$lib/components/EditableTeaserCollection.svelte';
+	import EditableTeaserSection from '$lib/components/EditableTeaserSection.svelte';
+	import {
+		type AnyContainer,
+		isAdministrativeAreaBasicDataContainer,
+		isContainerWithProgress,
+		isEffectCollectionContainer,
+		isFileCollectionContainer,
+		isGoalCollectionContainer,
+		isGoalContainer,
+		isIndicatorCollectionContainer,
+		isMapContainer,
+		isMeasureCollectionContainer,
+		isObjectiveCollectionContainer,
+		isOrganizationalUnitContainer,
+		isProgramCollectionContainer,
+		isProgressContainer,
+		isResourceCollectionContainer,
+		isTaskCollectionContainer,
+		isTeaserContainer,
+		isInfoBoxContainer,
+		isTeaserCollectionContainer,
+		isTextContainer,
+		isTeaserHighlightContainer,
+		isQuoteContainer
+	} from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {

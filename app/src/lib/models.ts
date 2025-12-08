@@ -125,33 +125,21 @@ const levelValues = [
 
 export const levels = z.enum(levelValues);
 
-
 export type Level = z.infer<typeof levels>;
 
 export function isLevel(value: unknown): value is Level {
 	return levelValues.includes(value as Level);
 }
 
-const listTypeValues = [
-	'carousel',
-	'wall',
-	'list',
-] as const;
+const listTypeValues = ['carousel', 'wall', 'list'] as const;
 
 export const listTypes = z.enum(listTypeValues);
 
-const linkStyleValues = [
-	'default',
-	'external',
-	'button',
-] as const;
+const linkStyleValues = ['default', 'external', 'button'] as const;
 
 export const linkStyles = z.enum(linkStyleValues);
 
-const cardStyleValues = [
-	'default',
-	'highlight',
-] as const;
+const cardStyleValues = ['default', 'highlight'] as const;
 
 export const cardStyles = z.enum(cardStyleValues);
 
@@ -202,7 +190,7 @@ const backgroundColorValues = [
 	'color.gray',
 	'color.red',
 	'color.orange',
-	'color.yellow',
+	'color.yellow'
 ] as const;
 
 export const backgroundColor = z.enum(backgroundColorValues);
@@ -929,7 +917,6 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
-
 // Add teaser payload schema here:
 const teaserPayload = z
 	.object({
@@ -946,7 +933,7 @@ const teaserPayload = z
 		type: z.literal(payloadTypes.enum.teaser),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict();  // .strict() means no extra fields allowed
+	.strict(); // .strict() means no extra fields allowed
 
 // For creating new empty teasers (title optional during creation)
 const initialTeaserPayload = teaserPayload.partial({ title: true });
@@ -1072,7 +1059,7 @@ const undefinedPayload = z
 	.object({
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.undefined),
-		visibility: visibility.default(visibility.enum['organization']),
+		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 

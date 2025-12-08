@@ -39,20 +39,20 @@
 	.wall {
 		display: grid;
 		gap: 1rem;
-        align-items: stretch;
+		align-items: stretch;
 		grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
 	}
 
-    .wall > li {
-        display: flex;
-    }
+	.wall > li {
+		display: flex;
+	}
 
-    .wall > li > * {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        width: 100%;
-    }
+	.wall > li > * {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		width: 100%;
+	}
 	.card {
 		align-items: center;
 		background: #ffffff;

@@ -229,10 +229,10 @@
 					/>
 				{:else if isTeaserContainer($newContainer)}
 					<TeaserProperties
-							bind:container={$newContainer}
-							editable
-							relatedContainers={[]}
-							revisions={[]}
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
 					/>
 				{:else if isTextContainer($newContainer)}
 					<TextProperties

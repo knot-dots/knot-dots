@@ -13,7 +13,7 @@
 	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
 	import EditableRuleDetailView from '$lib/components/EditableRuleDetailView.svelte';
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
-	import EditableTeaserDetailView from "$lib/components/EditableTeaserDetailView.svelte";
+	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';

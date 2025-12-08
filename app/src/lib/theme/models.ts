@@ -100,7 +100,6 @@ export const statusColors = new Map<Status, string>([
 	[status.enum['status.rejected'], 'indigo']
 ]);
 
-
 export const backgroundColors = new Map<BackgroundColor, string>([
 	[backgroundColor.enum['color.white'], 'white'],
 	[backgroundColor.enum['color.blue'], 'blue'],

@@ -2,11 +2,16 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-    import ListType from '~icons/knotdots/tasks';
+	import ListType from '~icons/knotdots/tasks';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-    import {type AnyContainer, visibility, listTypes, isTeaserCollectionContainer} from '$lib/models';
+	import {
+		type AnyContainer,
+		visibility,
+		listTypes,
+		isTeaserCollectionContainer
+	} from '$lib/models';
 	import { sectionOf } from '$lib/relations';
 	import { ability } from '$lib/stores';
 
@@ -30,7 +35,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
 </script>
 
 {#if isTeaserCollectionContainer(container) && ($ability.can('update', container, 'visibility') || $ability.can('delete', container))}
@@ -45,11 +49,7 @@
 					{#if $ability.can('update', container, 'visibility')}
 						{#each listTypes.options.map( (o) => ({ value: o, label: $_(`list_type.${o}`) }) ) as option (option.value)}
 							<label>
-								<input
-									type="radio"
-									value={option.value}
-									bind:group={container.payload.listType}
-								/>
+								<input type="radio" value={option.value} bind:group={container.payload.listType} />
 								<span class="truncated">{option.label}</span>
 							</label>
 						{/each}

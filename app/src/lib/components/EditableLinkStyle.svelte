@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-    import LinkStyleDropdown from "$lib/components/LinkStyleDropdown.svelte";
+	import LinkStyleDropdown from '$lib/components/LinkStyleDropdown.svelte';
 
 	interface Props {
 		editable?: boolean;
@@ -15,12 +15,7 @@
 	<div class="label">{label}</div>
 {/if}
 {#if editable}
-
-	<LinkStyleDropdown
-			{editable}
-			bind:value={value}
-	/>
-
+	<LinkStyleDropdown {editable} bind:value />
 {:else}
 	<div class="value">
 		{$_(`link_style.${value}`) ?? $_('empty')}

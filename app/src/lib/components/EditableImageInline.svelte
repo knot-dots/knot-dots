@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-    import PlaceholderImage from '~icons/knotdots/placeholder-image';
+	import PlaceholderImage from '~icons/knotdots/placeholder-image';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL.js';
-    import {createPopover} from "svelte-headlessui";
-    import {createPopperActions} from "svelte-popperjs";
-    import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import { createPopover } from 'svelte-headlessui';
+	import { createPopperActions } from 'svelte-popperjs';
+	import TrashBin from '~icons/flowbite/trash-bin-outline';
 
 	interface Props {
 		editable?: boolean;
@@ -20,15 +20,14 @@
 
 	const id = crypto.randomUUID();
 
-    const popover = createPopover({});
+	const popover = createPopover({});
 
-    const [popperRef, popperContent] = createPopperActions({
-      placement: 'top-start',
-      strategy: 'absolute'
-    });
+	const [popperRef, popperContent] = createPopperActions({
+		placement: 'top-start',
+		strategy: 'absolute'
+	});
 
-
-    function remove(event: Event) {
+	function remove(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
 		value = undefined;
 		requestSubmit(event);
@@ -58,15 +57,14 @@
 			{label}
 		</div>
 		<input
-				name="image"
-				accept="image/png,image/jpeg,image/svg+xml"
-				class="is-visually-hidden"
-				{id}
-				oninput={upload}
-				type="file"
+			name="image"
+			accept="image/png,image/jpeg,image/svg+xml"
+			class="is-visually-hidden"
+			{id}
+			oninput={upload}
+			type="file"
 		/>
 	</label>
-
 {:else if value}
 	{#if editable}
 		<div class="full" use:popperRef>
@@ -90,7 +88,7 @@
 		height: 100%;
 		overflow: hidden;
 		position: relative;
-        border-radius: 0.5rem;
+		border-radius: 0.5rem;
 	}
 	.full > img {
 		position: absolute;
@@ -98,7 +96,7 @@
 		height: auto;
 		object-fit: cover;
 	}
-    .placeholder {
+	.placeholder {
 		padding: 1rem;
 		background-color: var(--color-gray-050);
 		border-radius: 0.5rem;
@@ -109,7 +107,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		justify-content: center;
-    }
+	}
 	img {
 		border-radius: 0.5rem;
 	}

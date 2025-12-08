@@ -136,15 +136,15 @@
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
-    let mayAddTeaserCollection = $derived(
-      createFeatureDecisions(page.data.features).useTeaser() &&
-    	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-    );
+	let mayAddTeaserCollection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
 
-    let mayAddTeaserSection = $derived(
-      createFeatureDecisions(page.data.features).useTeaser() &&
-    	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-    );
+	let mayAddTeaserSection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
 
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
@@ -257,20 +257,20 @@
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
 			...(mayAddTeaserCollection
-			    ? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
-			    : []),
+				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+				: []),
 			...(mayAddTeaserSection
-			    ? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
-			    : []),
+				? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
+				: []),
 			...(mayAddTeaserSection
-			    ? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
-			    : []),
+				? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
+				: []),
 			...(mayAddTeaserSection
-			    ? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
-			    : []),
+				? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
+				: []),
 			...(mayAddTeaserSection
-			    ? [{ icon: ExclamationCircle, label: $_('quote'), value: payloadTypes.enum.quote }]
-			    : [])
+				? [{ icon: ExclamationCircle, label: $_('quote'), value: payloadTypes.enum.quote }]
+				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 </script>

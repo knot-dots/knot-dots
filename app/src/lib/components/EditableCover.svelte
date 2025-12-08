@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-    import PlaceholderImage from '~icons/knotdots/placeholder-image';
+	import PlaceholderImage from '~icons/knotdots/placeholder-image';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL.js';
@@ -47,11 +47,11 @@
 		{label}
 	</label>
 	<input
-			name="cover"
-			accept="image/png,image/jpeg,image/svg+xml"
-			class="is-visually-hidden"
-			{id}
-			oninput={upload}
-			type="file"
+		name="cover"
+		accept="image/png,image/jpeg,image/svg+xml"
+		class="is-visually-hidden"
+		{id}
+		oninput={upload}
+		type="file"
 	/>
 {/if}
