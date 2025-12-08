@@ -72,6 +72,10 @@
 			catalog: '/tasks/catalog',
 			status: '/tasks/status',
 			table: '/tasks/table'
+		},
+		resources: {
+			catalog: '/resources/catalog',
+			table: '/resources/table'
 		}
 	};
 
@@ -84,7 +88,8 @@
 			measures: '/measures/catalog',
 			programs: '/programs/catalog',
 			rules: '/rules/catalog',
-			tasks: '/tasks/catalog'
+			tasks: '/tasks/catalog',
+			resources: '/resources/catalog'
 		},
 		level: {
 			all: '/all/level',
@@ -111,7 +116,8 @@
 			measures: '/measures/table',
 			programs: '/programs/table',
 			rules: '/rules/table',
-			tasks: '/tasks/table'
+			tasks: '/tasks/table',
+			resources: '/resources/table'
 		}
 	};
 
@@ -187,6 +193,13 @@
 			label: $_('workspace.type.knowledge'),
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
+		},
+		{
+			exists: true,
+			icon: ChartBar,
+			label: $_('workspace.type.resources'),
+			recommended: false,
+			value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
 		},
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [
