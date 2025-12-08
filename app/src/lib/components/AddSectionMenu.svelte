@@ -47,12 +47,14 @@
 	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
+		compact?: boolean;
 		handleAddSection: (event: Event) => void;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
+		compact = false,
 		handleAddSection,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
@@ -65,7 +67,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [-4, 8] } }] };
+	const extraOpts = {
+		modifiers: [{ name: 'offset', options: { offset: compact ? [-4, 8] : [0, 4] } }]
+	};
 
 	let mayAddTaskCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
@@ -256,10 +260,10 @@
 	);
 </script>
 
-<div class="dropdown" use:popperRef>
+<div class="dropdown" class:dropdown--compact={compact} use:popperRef>
 	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
 		<Plus />
-		<span class="is-visually-hidden">{$_('add_section')}</span>
+		<span class:is-visually-hidden={compact}>{$_('add_section')}</span>
 	</button>
 
 	{#if $menu.expanded}
@@ -283,19 +287,16 @@
 
 <style>
 	.dropdown {
-		--dropdown-button-active-background: var(--color-white);
-		--dropdown-button-border-width: 0;
-		--dropdown-button-box-shadow: none;
-		--dropdown-button-default-background: var(--color-white);
-		--dropdown-button-icon-size: 1rem;
+		--dropdown-button-border-radius: 16px;
+		--dropdown-button-padding: 1rem;
 
-		background-color: white;
 		color: var(--color-gray-700);
 		width: fit-content;
 	}
 
-	.dropdown-button {
-		padding: 0.25rem;
+	.dropdown.dropdown--compact {
+		--dropdown-button-border-radius: 4px;
+		--dropdown-button-padding: 0.25rem;
 	}
 
 	.dropdown-panel {

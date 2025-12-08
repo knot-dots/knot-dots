@@ -1441,6 +1441,7 @@ label > input[type='checkbox'].toggle {
 	--dropdown-button-hover-background: var(--color-gray-100);
 	--dropdown-button-active-background: var(--color-gray-300);
 	--dropdown-button-expanded-background: var(--color-gray-050);
+	--dropdown-button-expanded-border-color: var(--dropdown-button-default-border-color);
 	--dropdown-button-expanded-color: var(--color-gray-700);
 	--dropdown-button-border-radius: 4px;
 	--dropdown-button-border-width: 0;
@@ -1491,6 +1492,7 @@ label > input[type='checkbox'].toggle {
 
 .dropdown-button[aria-expanded='true'] {
 	background: var(--dropdown-button-expanded-background);
+	border-color: var(--dropdown-button-expanded-border-color);
 	color: var(--dropdown-button-expanded-color);
 }
 

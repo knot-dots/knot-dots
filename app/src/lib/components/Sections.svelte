@@ -226,4 +226,16 @@
 		font-size: 1.5rem;
 		font-weight: 600;
 	}
+
+	.details-section {
+		--dropdown-button-active-border-color: transparent;
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-border-color: transparent;
+		--dropdown-button-expanded-background: var(--color-primary-050);
+		--dropdown-button-expanded-border-color: var(--color-primary-200);
+		--dropdown-button-expanded-color: var(--color-primary-700);
+		--dropdown-button-hover-border-color: transparent;
+		--dropdown-button-icon-expanded-color: inherit;
+	}
 </style>

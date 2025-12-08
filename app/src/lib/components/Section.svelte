@@ -93,7 +93,7 @@
 	{#if $applicationState.containerDetailView.editable}
 		<div class="actions is-visible-on-hover">
 			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-				<AddSectionMenu bind:relatedContainers bind:parentContainer {handleAddSection} />
+				<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
 			{/if}
 			<span class="drag-handle" use:dragHandle>
 				<DragHandle />
@@ -224,6 +224,7 @@
 
 	.actions {
 		--dropdown-button-icon-default-color: var(--color-gray-700);
+		--dropdown-button-icon-size: 1rem;
 
 		align-items: center;
 		background-color: white;
