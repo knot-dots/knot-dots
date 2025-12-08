@@ -86,6 +86,7 @@ const payloadTypeValues = [
 	'report',
 	'resource',
 	'resource_collection',
+	'resource_v2', // New payload type for resources with temporary v2 suffix
 	'rule',
 	'simple_measure',
 	'task',
@@ -385,6 +386,16 @@ export const indicatorCategories = z.enum(indicatorCategoryValues);
 
 export type IndicatorCategory = z.infer<typeof indicatorCategories>;
 
+const resourceCategoryValues = [
+	'resource_category.money',
+	'resource_category.personnel',
+	'resource_category.material'
+] as const;
+
+export const resourceCategories = z.enum(resourceCategoryValues);
+
+export type ResourceCategory = z.infer<typeof resourceCategories>;
+
 const quantityValues = [
 	'quantity.custom',
 	'quantity.broadband_coverage',
@@ -443,6 +454,12 @@ const unitValues = [
 ] as const;
 
 export const units = z.enum(unitValues);
+
+const resourceUnitValues = ['unit.euro', 'unit.piece', 'unit.personnel_hour'] as const;
+
+export const resourceUnits = z.enum(resourceUnitValues);
+
+export type ResourceUnit = z.infer<typeof resourceUnits>;
 
 const audienceValues = [
 	'audience.administration',
@@ -931,6 +948,20 @@ const resourceCollectionPayload = z
 
 const initialResourceCollectionPayload = resourceCollectionPayload;
 
+const resourceV2Payload = basePayload
+	.omit({ category: true, summary: true, topic: true, audience: true })
+	.extend({
+		type: z.literal(payloadTypes.enum.resource_v2),
+		resourceCategory: resourceCategories.default(
+			resourceCategories.enum['resource_category.money']
+		),
+		resourceUnit: resourceUnits.default(resourceUnits.enum['unit.euro']),
+		visibility: visibility.default(visibility.enum['public'])
+	})
+	.strict();
+
+const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
+
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -1052,6 +1083,7 @@ const payload = z.discriminatedUnion('type', [
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
+	resourceV2Payload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
@@ -1105,6 +1137,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
+	resourceV2Payload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
@@ -1464,6 +1497,18 @@ export function isResourceCollectionContainer(
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
 
+const resourceV2Container = container.extend({
+	payload: resourceV2Payload
+});
+
+export type ResourceV2Container = z.infer<typeof resourceV2Container>;
+
+export function isResourceV2Container(
+	container: AnyContainer | EmptyContainer
+): container is ResourceV2Container {
+	return container.payload.type === payloadTypes.enum.resource_v2;
+}
+
 const simpleMeasureContainer = container.extend({
 	payload: simpleMeasurePayload
 });
@@ -1714,6 +1759,7 @@ export const emptyContainer = newContainer.extend({
 		initialReportPayload,
 		initialResourceCollectionPayload,
 		initialResourcePayload,
+		initialResourceV2Payload,
 		initialSimpleMeasurePayload,
 		initialTextPayload,
 		initialTaskCollectionPayload,
