@@ -21,6 +21,7 @@
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: EffectContainer;
@@ -140,7 +141,12 @@
 										{#if container.payload.plannedValues.length > 0}
 											<tr>
 												<td colspan="4">
-													<button aria-label={$_('append_row')} onclick={prependYear} type="button">
+													<button
+														aria-label={$_('append_row')}
+														onclick={prependYear}
+														type="button"
+														{@attach tooltip($_('append_row'))}
+													>
 														<Plus />
 													</button>
 												</td>
@@ -179,6 +185,7 @@
 															aria-label={$_('delete_row')}
 															onclick={removeYear(index)}
 															type="button"
+															{@attach tooltip($_('delete_row'))}
 														>
 															<Minus />
 														</button>
@@ -189,7 +196,12 @@
 
 										<tr>
 											<td colspan="4">
-												<button aria-label={$_('append_row')} onclick={appendYear} type="button">
+												<button
+													aria-label={$_('append_row')}
+													onclick={appendYear}
+													type="button"
+													{@attach tooltip($_('append_row'))}
+												>
 													<Plus />
 												</button>
 											</td>

@@ -38,9 +38,11 @@
 	} from '$lib/models';
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
+		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
 		workspaceOptions?: { label: string; value: string }[];
@@ -48,6 +50,7 @@
 
 	let {
 		facets = new Map(),
+		filterBarInitiallyOpen = false,
 		search = false,
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
@@ -59,6 +62,14 @@
 	let overlay = getContext('overlay');
 
 	let filterBar = createDisclosure({ label: $_('filters') });
+
+	$effect(() => {
+		if (filterBarInitiallyOpen) {
+			filterBar.open();
+		} else {
+			filterBar.close();
+		}
+	});
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
@@ -150,6 +161,8 @@
 				class="dropdown-button dropdown-button--command"
 				onclick={() => sortBar.close()}
 				type="button"
+				aria-label={$_('filter')}
+				{@attach tooltip($_('filter'))}
 				use:filterBar.button
 			>
 				<Filter />
@@ -165,10 +178,11 @@
 				class="dropdown-button dropdown-button--command"
 				onclick={() => filterBar.close()}
 				type="button"
+				aria-label={$_('sort')}
+				{@attach tooltip($_('sort'))}
 				use:sortBar.button
 			>
 				<Sort />
-				<span class="is-visually-hidden">{$_('sort')}</span>
 			</button>
 		{/if}
 
@@ -178,9 +192,10 @@
 			<a
 				class="action-button action-button--size-l"
 				href={overlayURL(page.url, overlayKey.enum.members, $overlayStore.container.guid)}
+				aria-label={$_('members')}
+				{@attach tooltip($_('members'))}
 			>
 				<Users />
-				<span class="is-visually-hidden">{$_('members')}</span>
 			</a>
 		{:else if !overlay && !$overlayStore?.key && $ability.can('invite-members', selectedContext)}
 			<div class="divider"></div>
@@ -188,9 +203,10 @@
 			<a
 				class="action-button action-button--size-l"
 				href={resolve('/[[guid=uuid]]/members', { guid: selectedContext.guid })}
+				aria-label={$_('members')}
+				{@attach tooltip($_('members'))}
 			>
 				<Users />
-				<span class="is-visually-hidden">{$_('members')}</span>
 			</a>
 		{/if}
 	</form>
@@ -328,7 +344,7 @@
 		flex-direction: row;
 		font-size: 0.875rem;
 		gap: 0.25rem;
-		height: 3rem;
+		min-height: 3rem;
 		justify-content: safe center;
 		overflow: auto;
 		padding: 0 0 0 1rem;
@@ -336,6 +352,10 @@
 
 	.filter-and-sort fieldset > :global(*) {
 		flex-shrink: 0;
+		min-height: 3rem;
+		display: flex;
+		flex-direction: row;
+		justify-content: safe center;
 	}
 
 	.filter-and-sort legend + span[aria-hidden='true'] {

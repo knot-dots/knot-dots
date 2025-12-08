@@ -13,6 +13,7 @@
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
@@ -163,7 +164,13 @@
 		{#if editable}
 			<p>
 				{#if actualDataContainer.some(({ payload }) => payload.source) && actualDataContainer.length === 1}
-					<button disabled={addingCustomActualData} onclick={addCustomActualData} type="button">
+					<button
+						disabled={addingCustomActualData}
+						onclick={addCustomActualData}
+						type="button"
+						aria-label={$_('indicator.add_custom_actual_data')}
+						{@attach tooltip($_('indicator.add_custom_actual_data'))}
+					>
 						{#if addingCustomActualData}
 							<span class="loader"></span>
 						{:else}

@@ -2,6 +2,7 @@
 	import { setContext, type Snippet } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
+	import { page } from '$app/stores';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -62,7 +63,7 @@
 		{#if header}
 			{@render header()}
 		{:else}
-			<Header />
+			<Header filterBarInitiallyOpen={$page.data.filterBarInitiallyOpen} />
 		{/if}
 
 		<main in:fly={transitionIn} out:fly={transitionOut}>
