@@ -61,7 +61,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		[containers, relatedContainers] = await Promise.all([
 			locals.pool.connect(
 				getManyContainers(
-					[currentOrganization.guid],
+					[],
 					{
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),

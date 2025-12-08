@@ -28,6 +28,7 @@
 		isContainerWithTitle,
 		isGoalContainer,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
@@ -160,6 +161,13 @@
 						revisions={[]}
 					/>
 				{:else if isIndicatorContainer($newContainer)}
+					<IndicatorProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isIndicatorTemplateContainer($newContainer)}
 					<IndicatorProperties
 						bind:container={$newContainer}
 						editable

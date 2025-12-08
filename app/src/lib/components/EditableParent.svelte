@@ -12,4 +12,4 @@
 </script>
 
 <div class="label">{$_t('superordinate_element')}</div>
-<ParentDropdown {editable} {container} />
+<ParentDropdown bind:container {editable} />
