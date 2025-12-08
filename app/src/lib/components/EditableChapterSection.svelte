@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
@@ -34,12 +33,6 @@
 
 		container.payload.number = input.value;
 	}
-
-	const init: Attachment = (element) => {
-		if (container.payload.title == '') {
-			(element as HTMLElement).focus();
-		}
-	};
 </script>
 
 <header>
@@ -79,7 +72,6 @@
 		{#if editable && $ability.can('update', container)}
 			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
 			<AutoresizingTextarea
-				{@attach init}
 				bind:value={container.payload.title}
 				id={idForTitle}
 				placeholder={$_('chapter.title.placeholder')}

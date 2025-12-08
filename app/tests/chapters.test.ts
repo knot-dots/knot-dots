@@ -64,7 +64,6 @@ test.describe('Chapter section heading levels', () => {
 
 			const section = overlay.locator('.sections section').nth(numberOfSections);
 			const chapterTitle = section.getByRole('textbox', { name: 'Title' });
-			await expect(chapterTitle).toBeFocused();
 			await chapterTitle.fill(`Chapter ${number}`, { force: true });
 			const numberInput = section.getByRole('textbox', { name: 'Chapter number' });
 			await numberInput.fill(number, { force: true });
