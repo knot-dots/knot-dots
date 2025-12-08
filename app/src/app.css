@@ -1033,8 +1033,8 @@ label > input[type='checkbox'].toggle {
 
 .details {
 	--details-max-width: 51.5rem;
-	--details-padding-left: 3.5rem;
-	--details-padding-right: max(3.5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
+	--details-padding-left: 5rem;
+	--details-padding-right: max(5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;
 	--carousel-margin-left: calc(
@@ -1048,7 +1048,7 @@ label > input[type='checkbox'].toggle {
 	container-type: inline-size;
 	font-size: 0.875rem;
 	min-width: min(var(--details-max-width), calc(100% - 8rem));
-	padding: 3rem var(--details-padding-right) 3rem var(--details-padding-left);
+	padding: 5rem var(--details-padding-right) 5rem var(--details-padding-left);
 	position: relative;
 }
 
@@ -1441,6 +1441,7 @@ label > input[type='checkbox'].toggle {
 	--dropdown-button-hover-background: var(--color-gray-100);
 	--dropdown-button-active-background: var(--color-gray-300);
 	--dropdown-button-expanded-background: var(--color-gray-050);
+	--dropdown-button-expanded-border-color: var(--dropdown-button-default-border-color);
 	--dropdown-button-expanded-color: var(--color-gray-700);
 	--dropdown-button-border-radius: 4px;
 	--dropdown-button-border-width: 0;
@@ -1491,6 +1492,7 @@ label > input[type='checkbox'].toggle {
 
 .dropdown-button[aria-expanded='true'] {
 	background: var(--dropdown-button-expanded-background);
+	border-color: var(--dropdown-button-expanded-border-color);
 	color: var(--dropdown-button-expanded-color);
 }
 
@@ -1618,7 +1620,7 @@ label > input[type='checkbox'].toggle {
 
 @media (hover: hover) {
 	.is-visible-on-hover {
-		transition: var(--is-visible-on-hover-transition, none);
+		transition: var(--is-visible-on-hover-transition, visibility 0s 0.5s linear);
 		visibility: var(--is-visible-on-hover-visibility, hidden);
 	}
 }

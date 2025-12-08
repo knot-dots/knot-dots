@@ -57,6 +57,7 @@ export const load = (async ({ depends, locals, parent }) => {
 				[predicates.enum['is-section-of']],
 				{
 					type: [
+						payloadTypes.enum.chapter,
 						payloadTypes.enum.file_collection,
 						payloadTypes.enum.indicator_collection,
 						payloadTypes.enum.map,

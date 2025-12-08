@@ -9,6 +9,7 @@
 		type AnyContainer,
 		container as containerSchema,
 		containerOfType,
+		isChapterContainer,
 		isContainerWithTitle,
 		isOrganizationalUnitContainer,
 		type NewContainer,
@@ -71,6 +72,19 @@
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
 				newContainer.payload.title = '';
+			}
+
+			if (isChapterContainer(newContainer)) {
+				newContainer.payload.number = String(
+					parseInt(
+						sections
+							.slice(0, position)
+							.filter(isChapterContainer)
+							.at(-1)
+							?.payload.number.split('.')
+							.at(0) ?? '0'
+					) + 1
+				);
 			}
 
 			if (payloadType === payloadTypes.enum.task_collection && isContainerWithTitle(newContainer)) {
@@ -156,18 +170,22 @@
 			}
 		});
 	}
+
+	function heading(position: number) {
+		const chapter = sections.slice(0, position).reverse().find(isChapterContainer);
+		const level = Math.min((chapter?.payload.number.split('.').length ?? 0) + 2, 6);
+		return `h${level}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+	}
 </script>
 
 <div class="sections">
-	{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-		<div class="section-wrapper">
-			<div class="add-section-wrapper">
-				<AddSectionMenu
-					bind:relatedContainers
-					bind:parentContainer={container}
-					handleAddSection={createAddSectionHandler(0)}
-				/>
-			</div>
+	{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && sections.length == 0}
+		<div class="details-section">
+			<AddSectionMenu
+				bind:relatedContainers
+				bind:parentContainer={container}
+				handleAddSection={createAddSectionHandler(0)}
+			/>
 		</div>
 	{/if}
 
@@ -177,58 +195,47 @@
 		onfinalize={handleDndFinalize}
 	>
 		{#each sections as { guid }, i (guid)}
-			<li animate:flip={{ duration: 100 }} class="section-wrapper">
+			<li animate:flip={{ duration: 100 }}>
 				<Section
 					bind:container={sections[i]}
 					bind:parentContainer={container}
 					bind:relatedContainers
+					handleAddSection={createAddSectionHandler(i + 1)}
+					heading={heading(i)}
 				/>
-
-				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-					<div class="add-section-wrapper">
-						<AddSectionMenu
-							bind:relatedContainers
-							bind:parentContainer={container}
-							handleAddSection={createAddSectionHandler(i + 1)}
-						/>
-					</div>
-				{/if}
 			</li>
 		{/each}
 	</ul>
 </div>
 
 <style>
-	.section-wrapper {
-		position: relative;
+	.sections :global(section h2.details-heading) {
+		color: var(--color-gray-800);
+		font-size: 1.875rem;
+		font-weight: 600;
 	}
 
-	.add-section-wrapper {
-		bottom: -1.25rem;
-		position: absolute;
-		width: 100%;
-		z-index: 1;
+	.sections :global(section h3.details-heading) {
+		color: var(--color-gray-800);
+		font-size: 1.875rem;
+		font-weight: 400;
 	}
 
-	.add-section-wrapper::before {
-		background-color: var(--color-primary-200);
-		border: 12px solid white;
-		border-radius: calc(infinity * 1px);
-		content: '';
-		display: block;
-		height: 27px;
-		left: 0.75rem;
-		position: absolute;
-		right: 0.75rem;
-		top: calc(50% - 13px);
+	.sections :global(section h4.details-heading) {
+		color: var(--color-gray-800);
+		font-size: 1.5rem;
+		font-weight: 600;
 	}
 
-	.add-section-wrapper:hover::before {
-		background-color: var(--color-primary-700);
-		border-color: var(--color-primary-050);
-	}
-
-	.add-section-wrapper:has(:global(.dropdown-panel)) {
-		z-index: 2;
+	.details-section {
+		--dropdown-button-active-border-color: transparent;
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-border-color: transparent;
+		--dropdown-button-expanded-background: var(--color-primary-050);
+		--dropdown-button-expanded-border-color: var(--color-primary-200);
+		--dropdown-button-expanded-color: var(--color-primary-700);
+		--dropdown-button-hover-border-color: transparent;
+		--dropdown-button-icon-expanded-color: inherit;
 	}
 </style>
