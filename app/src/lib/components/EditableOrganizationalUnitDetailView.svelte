@@ -8,16 +8,18 @@
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import {
-		type Container,
-		type OrganizationalUnitContainer,
-		organizationalUnitType
-	} from '$lib/models';
+    import {
+      type Container, isOrganizationalUnitContainer, isOrganizationContainer,
+      type OrganizationalUnitContainer,
+      organizationalUnitType
+    } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import EditableCover from '$lib/components/EditableCover.svelte';
 	import transformFileURL from '$lib/transformFileURL.js';
 	import {backgroundColors} from '$lib/theme/models';
 	import ColorDropdown from "$lib/components/ColorDropdown.svelte";
+    import {createFeatureDecisions} from "$lib/features";
+    import {page} from "$app/state";
 
 
 	interface Props {
@@ -39,6 +41,10 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
+	let mayEditStage = $derived(
+		createFeatureDecisions(page.data.features).useStage()
+	);
+
 	// svelte-ignore state_referenced_locally
 	const handleSubmit = autoSave(container, 2000);
 </script>
@@ -52,16 +58,18 @@
 	<div class="stage stage--{container.payload.color ? backgroundColors.get(container.payload.color) : 'white'}">
 
 	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-		<div class="details-section">
-			<EditableCover editable={$applicationState.containerDetailView.editable}
-						   label="Cover hinzufügen"
-						   bind:value={container.payload.cover} />
-			<ColorDropdown
-					buttonStyle='button'
-					bind:value={container.payload.color}
-					label="Hervorheben"
-					editable={$applicationState.containerDetailView.editable}/>
-		</div>
+		{#if mayEditStage}
+			<div class="details-section">
+				<EditableCover editable={$applicationState.containerDetailView.editable}
+							   label={$_('add_cover')}
+							   bind:value={container.payload.cover} />
+				<ColorDropdown
+						buttonStyle='button'
+						bind:value={container.payload.color}
+						label={$_('hightlight')}
+						editable={$applicationState.containerDetailView.editable}/>
+			</div>
+		{/if}
 		<header class="details-section">
 			<EditableLogo
 				editable={$applicationState.containerDetailView.editable}

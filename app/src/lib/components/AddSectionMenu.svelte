@@ -137,10 +137,12 @@
 	);
 
     let mayAddTeaserCollection = $derived(
+      createFeatureDecisions(page.data.features).useTeaser() &&
     	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
     );
 
     let mayAddTeaserSection = $derived(
+      createFeatureDecisions(page.data.features).useTeaser() &&
     	(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
     );
 
