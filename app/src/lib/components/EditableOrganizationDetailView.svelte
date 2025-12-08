@@ -55,12 +55,12 @@
 			{#if mayEditStage}
 				<div class="details-section">
 					<EditableCover editable={$applicationState.containerDetailView.editable}
-								   label="{$_('add_cover')}"
+								   label={$_('add_cover')}
 								   bind:value={container.payload.cover} />
 					<ColorDropdown
 							buttonStyle='button'
 							bind:value={container.payload.color}
-							label="{$_('highlight')}"
+							label={$_('highlight')}
 							editable={$applicationState.containerDetailView.editable}/>
 				</div>
 			{/if}
