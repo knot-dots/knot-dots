@@ -61,15 +61,7 @@
 
 	let overlay = getContext('overlay');
 
-	let filterBar = createDisclosure({ label: $_('filters') });
-
-	$effect(() => {
-		if (filterBarInitiallyOpen) {
-			filterBar.open();
-		} else {
-			filterBar.close();
-		}
-	});
+	let filterBar = createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen });
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
