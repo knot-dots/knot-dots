@@ -51,6 +51,7 @@ services:
       - import
     volumes:
       - ./import/src:/srv/app/src
+      - ./shared:/srv/app/shared
       - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
 
   migrate:
@@ -159,11 +160,12 @@ services:
       - ./db/.env
       - ./app/.env
     environment:
-      # Optional tuning; override in .env or compose overrides
       - INDEXING_WORKER_POLL_INTERVAL_MS=2000
-    command: ["npm","start"]
+      - DE_LABELS_PATH=/opt/labels/de.json
+    volumes:
+      - ./shared:/srv/app/shared
+      - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
     healthcheck:
-      # Simple healthcheck: process must be alive and able to resolve DNS; could be replaced with HTTP if added later.
       test: ["CMD-SHELL", "ps -o pid= 1 >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
