@@ -140,5 +140,28 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
       - "5601:5601"
+  indexing-worker:
+    build:
+      context: worker
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    env_file:
+      - ./db/.env
+      - ./app/.env
+    environment:
+      # Optional tuning; override in .env or compose overrides
+      - INDEXING_WORKER_POLL_INTERVAL_MS=2000
+    command: ["npm","start"]
+    healthcheck:
+      # Simple healthcheck: process must be alive and able to resolve DNS; could be replaced with HTTP if added later.
+      test: ["CMD-SHELL", "ps -o pid= 1 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   esdata:
