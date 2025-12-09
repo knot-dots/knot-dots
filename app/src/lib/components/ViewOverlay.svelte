@@ -104,6 +104,22 @@
 					topic: paramsFromFragment(page.url).getAll('topic')
 				}
 			});
+		} else if (isResourceV2Container(container)) {
+			return fetchRelatedContainers({
+				guid,
+				params: {
+					organization: [page.data.currentOrganization.guid],
+					relationType: [
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-objective-for'],
+						predicates.enum['is-part-of'],
+						predicates.enum['is-section-of']
+					]
+				}
+			});
 		} else {
 			return fetchRelatedContainers({
 				guid,
