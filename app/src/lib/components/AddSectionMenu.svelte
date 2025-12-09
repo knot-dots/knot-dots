@@ -40,6 +40,7 @@
 		isProgramCollectionContainer,
 		isProgressContainer,
 		isReportContainer,
+		isResourceV2Container,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -103,6 +104,8 @@
 		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
 	);
+
+	let mayAddExpensesSection = $derived(isResourceV2Container(parentContainer));
 
 	let mayAddFileCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
@@ -229,6 +232,15 @@
 							icon: Cash,
 							label: $_('resources'),
 							value: payloadTypes.enum.resource_collection
+						}
+					]
+				: []),
+			...(mayAddExpensesSection
+				? [
+						{
+							icon: Cash,
+							label: $_('expenses'),
+							value: payloadTypes.enum.expenses
 						}
 					]
 				: []),

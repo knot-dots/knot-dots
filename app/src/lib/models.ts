@@ -65,6 +65,7 @@ const payloadTypeValues = [
 	'custom_collection',
 	'effect',
 	'effect_collection',
+	'expenses',
 	'file_collection',
 	'goal',
 	'goal_collection',
@@ -962,6 +963,27 @@ const resourceV2Payload = basePayload
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
+const expensesPayload = z
+	.object({
+		entries: z
+			.array(
+				z.object({
+					year: z.number().int().positive(),
+					amount: z.coerce.number()
+				})
+			)
+			.default([]),
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('expenses')),
+		type: z.literal(payloadTypes.enum.expenses),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialExpensesPayload = expensesPayload;
+
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -1063,6 +1085,7 @@ const payload = z.discriminatedUnion('type', [
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
+	expensesPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
@@ -1115,6 +1138,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
+	expensesPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
@@ -1497,6 +1521,18 @@ export function isResourceCollectionContainer(
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
 
+const expensesContainer = container.extend({
+	payload: expensesPayload
+});
+
+export type ExpensesContainer = z.infer<typeof expensesContainer>;
+
+export function isExpensesContainer(
+	container: AnyContainer | EmptyContainer
+): container is ExpensesContainer {
+	return container.payload.type === payloadTypes.enum.expenses;
+}
+
 const resourceV2Container = container.extend({
 	payload: resourceV2Payload
 });
@@ -1737,6 +1773,7 @@ export const emptyContainer = newContainer.extend({
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
+		initialExpensesPayload,
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,

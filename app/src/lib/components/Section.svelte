@@ -18,6 +18,7 @@
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
 	import EditableReportSection from '$lib/components/EditableReportSection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
+	import EditableExpensesSection from '$lib/components/EditableExpensesSection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
@@ -39,6 +40,7 @@
 		isProgramCollectionContainer,
 		isProgressContainer,
 		isReportContainer,
+		isExpensesContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
 		isTextContainer
@@ -208,6 +210,13 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
+			/>
+		{:else if isExpensesContainer(container)}
+			<EditableExpensesSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
