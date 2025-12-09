@@ -41,7 +41,7 @@
 			table: '/goals/table'
 		},
 		indicators: {
-			catalog: '/indicators',
+			catalog: '/indicators/catalog',
 			table: '/indicators/table'
 		},
 		knowledge: {
@@ -80,7 +80,7 @@
 		catalog: {
 			all: '/all/catalog',
 			goals: '/goals/catalog',
-			indicators: '/indicators',
+			indicators: '/indicators/catalog',
 			knowledge: '/knowledge/catalog',
 			measures: '/measures/catalog',
 			programs: '/programs/catalog',
@@ -208,7 +208,7 @@
 						icon: ChartBar,
 						label: $_('workspace.type.indicators'),
 						recommended: false,
-						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators'
+						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators/catalog'
 					},
 					{
 						exists: true,

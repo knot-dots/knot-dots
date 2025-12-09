@@ -49,7 +49,6 @@
 	}
 
 	let { columns, container = $bindable(), dragEnabled = false, editable = false }: Props = $props();
-
 </script>
 
 <div class="cell cell--action">
