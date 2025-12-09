@@ -79,7 +79,12 @@
 							<input bind:value={entry.year} min="0" step="1" type="number" />
 						</td>
 						<td>
-							<input bind:value={entry.amount} step="0.01" type="number" />
+							<input
+								bind:value={entry.amount}
+								type="text"
+								pattern="[0-9]*([.,][0-9]+)?"
+								inputmode="decimal"
+							/>
 						</td>
 						<td class="actions-cell">
 							<button
