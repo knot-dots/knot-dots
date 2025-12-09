@@ -41,10 +41,14 @@
 			)
 			.toSorted(
 				(a, b) =>
-					a.relation.find(({ predicate }) => predicate == predicates.enum['is-section-of'])!
-						.position -
-					b.relation.find(({ predicate }) => predicate == predicates.enum['is-section-of'])!
-						.position
+					a.relation.find(
+						({ object, predicate }) =>
+							object == guid && predicate == predicates.enum['is-section-of']
+					)!.position -
+					b.relation.find(
+						({ object, predicate }) =>
+							object == guid && predicate == predicates.enum['is-section-of']
+					)!.position
 			);
 	});
 
