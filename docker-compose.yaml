@@ -148,7 +148,8 @@ services:
       - "5601:5601"
   indexing-worker:
     build:
-      context: worker
+      context: .
+      dockerfile: worker/Dockerfile
     depends_on:
       elasticsearch:
         condition: service_healthy
