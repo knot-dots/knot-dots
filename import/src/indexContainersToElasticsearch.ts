@@ -1,4 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
+import fs from 'node:fs';
+import path from 'node:path';
 import { sql } from 'slonik';
 import { getPool } from './db';
 
@@ -19,54 +21,72 @@ function env(name: string, fallback?: string) {
   throw new Error(`Missing required env var ${name}`);
 }
 
-async function ensureIndex(client: Client, index: string) {
-  const exists = await client.indices.exists({ index });
-  // Allow forced recreation to adopt new mapping (drop deprecated facets.* fields)
-  if (exists && process.env.ELASTICSEARCH_RECREATE === 'true') {
-    await client.indices.delete({ index });
-  }
-  const finalExists = await client.indices.exists({ index });
-  if (!finalExists) {
-    await client.indices.create({
-      index,
-      settings: {
-        number_of_shards: 1,
-        number_of_replicas: 0
-      },
-      mappings: {
-        dynamic: true,
-        properties: {
-          guid: { type: 'keyword' },
-          revision: { type: 'integer' },
-          realm: { type: 'keyword' },
-          organization: { type: 'keyword' },
-          organizationalUnit: { type: 'keyword' },
-          managedBy: { type: 'keyword' },
-          type: { type: 'keyword' },
-          title: { type: 'text', fields: { keyword: { type: 'keyword', ignore_above: 256 } } },
-          visibility: { type: 'keyword' },
-          text: { type: 'text' },
-          // Store localized SDG category labels for full-text matching (both languages merged)
-          category_labels: { type: 'text' },
-          // Explicit payload sub-field mappings for aggregation dimensions (arrays of keywords)
-          payload: {
-            properties: {
-              audience: { type: 'keyword' },
-              category: { type: 'keyword' },
-              topic: { type: 'keyword' },
-              policyFieldBNK: { type: 'keyword' },
-              programType: { type: 'keyword' },
-              measureType: { type: 'keyword' },
-              indicatorCategory: { type: 'keyword' },
-              indicatorType: { type: 'keyword' },
-              taskCategory: { type: 'keyword' }
-            }
+async function createIndexWithMappings(client: Client, index: string) {
+  await client.indices.create({
+    index,
+    settings: {
+      number_of_shards: 1,
+      number_of_replicas: 0
+    },
+    mappings: {
+      dynamic: true,
+      date_detection: false,
+      properties: {
+        guid: { type: 'keyword' },
+        revision: { type: 'integer' },
+        realm: { type: 'keyword' },
+        organization: { type: 'keyword' },
+        organizationalUnit: { type: 'keyword' },
+        managedBy: { type: 'keyword' },
+        type: { type: 'keyword' },
+        title: { type: 'text', fields: { keyword: { type: 'keyword', ignore_above: 256 } } },
+        visibility: { type: 'keyword' },
+        text: { type: 'text' },
+        // Store localized SDG category labels for full-text matching (German-only per de.json)
+        category_labels: { type: 'text' },
+        // Additional facet labels for full-text matching
+        topic_labels: { type: 'text' },
+        audience_labels: { type: 'text' },
+        policy_field_labels: { type: 'text' },
+        program_type_labels: { type: 'text' },
+        measure_type_labels: { type: 'text' },
+        indicator_category_labels: { type: 'text' },
+        indicator_type_labels: { type: 'text' },
+        task_category_labels: { type: 'text' },
+        // Explicit payload sub-field mappings for aggregation dimensions (arrays of keywords)
+        payload: {
+          properties: {
+            audience: { type: 'keyword' },
+            category: { type: 'keyword' },
+            topic: { type: 'keyword' },
+            level: { type: 'keyword' },
+            policyFieldBNK: { type: 'keyword' },
+            programType: { type: 'keyword' },
+            measureType: { type: 'keyword' },
+            indicatorCategory: { type: 'keyword' },
+            indicatorType: { type: 'keyword' },
+            taskCategory: { type: 'keyword' }
           }
         }
       }
-    });
-  }
+    }
+  });
 }
+
+// Load German labels from app locales (de.json) so we can index proper DE facet labels for full-text search.
+// We resolve relative to the repository layout: import/ -> app/src/lib/locales/de.json
+let deLabels: Record<string, string> = {};
+// Require de.json via explicit env; no fallback. Fail fast if missing.
+(() => {
+  const labelsPath = process.env.DE_LABELS_PATH;
+  if (!labelsPath || labelsPath.length === 0) {
+    throw new Error('DE_LABELS_PATH is required and must point to de.json. Set it in environment.');
+  }
+  const contents = fs.readFileSync(labelsPath, 'utf-8');
+  deLabels = JSON.parse(contents);
+  // eslint-disable-next-line no-console
+  console.log('[indexer] Loaded German labels from', labelsPath);
+})();
 
 function toDoc(row: Row) {
   const type: string | undefined = row.payload?.type;
@@ -96,54 +116,56 @@ function toDoc(row: Row) {
       normalized[key] = [value];
     }
   }
-  // Localized SDG (category) labels. Hard-coded here to avoid coupling import service to app locales.
-  const sdgEn: Record<string, string> = {
-    '01': 'No poverty',
-    '02': 'Zero hunger',
-    '03': 'Good health and well-being',
-    '04': 'Quality Education',
-    '05': 'Gender equality',
-    '06': 'Clean water and sanitation',
-    '07': 'Affordable clean energy',
-    '08': 'Decent work and economic growth',
-    '09': 'Industry, innovation and infrastructure',
-    '10': 'Reduce inequalities',
-    '11': 'Sustainable cities and communities',
-    '12': 'Responsible consumption and production',
-    '13': 'Climate action',
-    '14': 'Life below water',
-    '15': 'Life on land',
-    '16': 'Peace, justice and strong institutions',
-    '17': 'Partnerships for the goals'
+  // Recursively remove empty date strings (keys ending with 'Date') to avoid ES parsing errors.
+  function sanitizeDates(obj: any) {
+    if (obj && typeof obj === 'object') {
+      for (const k of Object.keys(obj)) {
+        const v = obj[k];
+        if (/Date$/.test(k)) {
+          // Drop all date-suffixed fields to avoid ES dynamic date mapping conflicts.
+          delete obj[k];
+          continue;
+        }
+        if (Array.isArray(v)) {
+          v.forEach((item) => sanitizeDates(item));
+        } else if (v && typeof v === 'object') {
+          sanitizeDates(v);
+        }
+      }
+    }
+  }
+  sanitizeDates(normalized);
+  // Category labels will use German labels only; require presence in de.json.
+  const label = (code: string): string | undefined => {
+    // First try direct flat key lookup (e.g., 'topic.cityscape')
+    const direct = (deLabels as any)[code];
+    if (typeof direct === 'string') return direct;
+    // Otherwise resolve nested paths like 'sdg.01' or 'task_category.default'
+    const parts = code.split('.');
+    let cur: any = deLabels;
+    for (const p of parts) {
+      if (cur && typeof cur === 'object' && p in cur) {
+        cur = cur[p];
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(`[indexer] Missing German label for code '${code}' in de.json`);
+        return undefined;
+      }
+    }
+    if (typeof cur === 'string') return cur;
+    // eslint-disable-next-line no-console
+    console.warn(`[indexer] Label for code '${code}' is not a string in de.json`);
+    return undefined;
   };
-  const sdgDe: Record<string, string> = {
-    '01': '1 - Keine Armut',
-    '02': '2 - Kein Hunger',
-    '03': '3 - Gesundheit und Wohlergehen',
-    '04': '4 - Hochwertige Bildung',
-    '05': '5 - Geschlechtergleichheit',
-    '06': '6 - Sauberes Wasser und Sanitäreinrichtungen',
-    '07': '7 - Bezahlbare und saubere Energie',
-    '08': '8 - Menschenwürdige Arbeit und Wirtschaftswachstum',
-    '09': '9 - Industrie, Innovation und Infrastruktur',
-    '10': '10 - Weniger Ungleichheiten',
-    '11': '11 - Nachhaltige Städte und Gemeinden',
-    '12': '12 - Nachhaltige/r Konsum und Produktion',
-    '13': '13 - Maßnahmen zum Klimaschutz',
-    '14': '14 - Leben unter Wasser',
-    '15': '15 - Leben an Land',
-    '16': '16 - Frieden, Gerechtigkeit und starke Institutionen',
-    '17': '17 - Partnerschaften zur Erreichung der Ziele'
-  };
-  const categoryCodes: string[] = normalized.category ?? [];
-  const categoryLabels = Array.from(
-    new Set(
-      categoryCodes.flatMap((code) => {
-        const id = code.split('.')[1];
-        return [sdgEn[id], sdgDe[id]].filter(Boolean);
-      })
-    )
-  );
+  const topicLabels = (normalized.topic || []).map(label).filter(Boolean) as string[];
+  const audienceLabels = (normalized.audience || []).map(label).filter(Boolean) as string[];
+  const policyFieldLabels = (normalized.policyFieldBNK || []).map(label).filter(Boolean) as string[];
+  const programTypeLabels = (normalized.programType || []).map(label).filter(Boolean) as string[];
+  const measureTypeLabels = (normalized.measureType || []).map(label).filter(Boolean) as string[];
+  const indicatorCategoryLabels = (normalized.indicatorCategory || []).map(label).filter(Boolean) as string[];
+  const indicatorTypeLabels = (normalized.indicatorType || []).map(label).filter(Boolean) as string[];
+  const taskCategoryLabels = (normalized.taskCategory || []).map(label).filter(Boolean) as string[];
+  const categoryLabels = (normalized.category || []).map(label).filter(Boolean) as string[];
   return {
     guid: row.guid,
     revision: row.revision,
@@ -156,7 +178,29 @@ function toDoc(row: Row) {
     visibility,
     payload: normalized,
     category_labels: categoryLabels,
-    text: [title, description, ...categoryLabels].filter(Boolean).join(' ')
+    topic_labels: topicLabels,
+    audience_labels: audienceLabels,
+    policy_field_labels: policyFieldLabels,
+    program_type_labels: programTypeLabels,
+    measure_type_labels: measureTypeLabels,
+    indicator_category_labels: indicatorCategoryLabels,
+    indicator_type_labels: indicatorTypeLabels,
+    task_category_labels: taskCategoryLabels,
+    text: [
+      title,
+      description,
+      ...categoryLabels,
+      ...topicLabels,
+      ...audienceLabels,
+      ...policyFieldLabels,
+      ...programTypeLabels,
+      ...measureTypeLabels,
+      ...indicatorCategoryLabels,
+      ...indicatorTypeLabels,
+      ...taskCategoryLabels
+    ]
+      .filter(Boolean)
+      .join(' ')
   } as const;
 }
 
@@ -171,40 +215,84 @@ async function* fetchContainers(batchSize = 500) {
       FROM container
       WHERE deleted = false
         AND valid_currently
+        AND (payload ->> 'type') IN (
+          'effect',
+          'goal',
+          'indicator',
+          'knowledge',
+          'measure',
+          'objective',
+          'organization',
+          'organizational_unit',
+          'page',
+          'program',
+          'progress',
+          'resource',
+          'rule',
+          'simple_measure',
+          'task'
+        )
         AND (${lastGuid ? sql.fragment`guid > ${lastGuid}::uuid` : sql.fragment`true`})
       ORDER BY guid
       LIMIT ${batchSize}
     `)) as unknown as Row[];
-
+ 
     if (rows.length === 0) return;
 
     for (const r of rows) {
       lastGuid = r.guid;
       yield r;
-    }
+    } 
   }
 }
 
 async function run() {
-  const indexName = env('ELASTICSEARCH_INDEX_CONTAINERS', 'containers');
+  const aliasName = env('ELASTICSEARCH_INDEX_ALIAS', 'containers');
   const node = env('ELASTICSEARCH_URL', 'http://localhost:9200');
   const client = new Client({ node });
 
-  await ensureIndex(client, indexName);
+  // Create a new timestamped physical index and point/switch the alias to it atomically after bulk.
+  const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14); // YYYYMMDDHHmmss
+  const newIndexName = `${aliasName}-${timestamp}`;
+  const exists = await client.indices.exists({ index: newIndexName });
+  if (exists) {
+    // Extremely unlikely collision; append random suffix
+    const rand = Math.random().toString(36).slice(2, 6);
+    const alt = `${newIndexName}-${rand}`;
+    await createIndexWithMappings(client, alt);
+    // eslint-disable-next-line no-console
+    console.log(`[indexer] Created index ${alt}`);
+  } else {
+    await createIndexWithMappings(client, newIndexName);
+    // eslint-disable-next-line no-console
+    console.log(`[indexer] Created index ${newIndexName}`);
+  }
 
   let indexed = 0;
   let ops: any[] = [];
 
   for await (const row of fetchContainers()) {
     const doc = toDoc(row);
-    ops.push({ index: { _index: indexName, _id: row.guid } });
+    ops.push({ index: { _index: newIndexName, _id: row.guid } });
     ops.push(doc);
 
     if (ops.length >= 1000) {
       const res = await client.bulk({ refresh: false, operations: ops });
       if (res.errors) {
-        const errs = res.items?.filter((i: any) => (i.index && i.index.error) || (i.create && i.create.error));
-        console.error('Bulk had errors:', errs?.slice(0, 5));
+        const errs = (res.items || []).filter(
+          (i: any) => (i.index && i.index.error) || (i.create && i.create.error)
+        );
+        const details = errs.slice(0, 5).map((item: any) => {
+          const e = item.index?.error || item.create?.error;
+          return {
+            id: item.index?._id || item.create?._id,
+            type: item.index ? 'index' : 'create',
+            reason: e?.reason,
+            type_reason: e?.type,
+            caused_by: e?.caused_by
+          };
+        });
+        console.error('Bulk had errors (first 5):', details);
         throw new Error('Bulk indexing failed');
       }
       indexed += ops.length / 2;
@@ -216,14 +304,46 @@ async function run() {
   if (ops.length > 0) {
     const res = await client.bulk({ refresh: true, operations: ops });
     if (res.errors) {
-      const errs = res.items?.filter((i: any) => (i.index && i.index.error) || (i.create && i.create.error));
-      console.error('Bulk had errors:', errs?.slice(0, 5));
+      const errs = (res.items || []).filter(
+        (i: any) => (i.index && i.index.error) || (i.create && i.create.error)
+      );
+      const details = errs.slice(0, 5).map((item: any) => {
+        const e = item.index?.error || item.create?.error;
+        return {
+          id: item.index?._id || item.create?._id,
+          type: item.index ? 'index' : 'create',
+          reason: e?.reason,
+          type_reason: e?.type,
+          caused_by: e?.caused_by
+        };
+      });
+      console.error('Bulk had errors (first 5):', details);
       throw new Error('Bulk indexing failed');
     }
     indexed += ops.length / 2;
   }
 
-  console.log(`Done. Indexed ${indexed} documents into ${indexName}.`);
+  // Atomically switch alias to the new index; remove from any old indices.
+  const currentAliases = await client.indices.getAlias({ name: aliasName }).catch(() => ({} as any));
+  // If a legacy physical index exists with the same name as the intended alias (e.g., 'containers'),
+  // Elasticsearch forbids creating an alias with that name. Migrate by deleting the legacy index first.
+  const aliasIndexExists = await client.indices.exists({ index: aliasName });
+  if (aliasIndexExists && (!currentAliases || Object.keys(currentAliases).length === 0)) {
+    console.warn(`[indexer] Found legacy index named '${aliasName}'. Deleting it to allow alias creation.`);
+    await client.indices.delete({ index: aliasName });
+  }
+  const removeActions: any[] = [];
+  if (currentAliases && typeof currentAliases === 'object') {
+    for (const idx of Object.keys(currentAliases)) {
+      removeActions.push({ remove: { index: idx, alias: aliasName, must_exist: false } });
+    }
+  }
+  const actions = [
+    ...removeActions,
+    { add: { index: newIndexName, alias: aliasName, is_write_index: true } }
+  ];
+  await client.indices.updateAliases({ actions });
+  console.log(`Done. Indexed ${indexed} documents into ${newIndexName} and pointed alias '${aliasName}' to it.`);
 }
 
 run().catch((err) => {
