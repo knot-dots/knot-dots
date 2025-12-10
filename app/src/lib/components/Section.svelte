@@ -6,6 +6,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import EditableChapterSection from '$lib/components/EditableChapterSection.svelte';
+	import EditableCustomCollection from '$lib/components/EditableCustomCollection.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
@@ -15,6 +16,7 @@
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
+	import EditableReportSection from '$lib/components/EditableReportSection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
@@ -24,6 +26,7 @@
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
+		isCustomCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -35,6 +38,7 @@
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isReportContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
 		isTextContainer
@@ -117,6 +121,14 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
+		{:else if isCustomCollectionContainer(container)}
+			<EditableCustomCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
 		{:else if isEffectCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableEffectCollection
 				bind:container
@@ -183,6 +195,14 @@
 			/>
 		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
 			<EditableProgressSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isReportContainer(container)}
+			<EditableReportSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
