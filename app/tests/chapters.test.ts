@@ -23,15 +23,16 @@ test.describe('Chapter section heading levels', () => {
 		// Activate edit mode
 		await page.getByLabel('edit mode').check();
 
-		// Add a report section
-		await page.getByRole('button', { name: 'Add section', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Report' }).click();
-		const section = page.locator('.sections section');
+		// Navigate to Dots board
+		await page.getByText('dots', { exact: true }).click();
 
-		// Open report in overlay
-		await section.hover();
-		await section.getByRole('link', { name: 'Open in overlay' }).click({ force: true });
-		await page.locator('.overlay').getByRole('heading', { level: 1 }).fill(title);
+		// Add a report
+		await page.getByLabel('Add item').first().click();
+		await page.getByRole('menuitem', { name: 'Report' }).click();
+
+		// Fill out a minimal form and save
+		await page.getByRole('textbox', { name: 'Title' }).fill(title);
+		await page.getByRole('button', { name: 'Save' }).click();
 	});
 
 	test.afterEach('delete goal', async ({ page, isMobile }) => {

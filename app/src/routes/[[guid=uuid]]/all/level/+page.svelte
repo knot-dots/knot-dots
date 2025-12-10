@@ -1,19 +1,22 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		computeColumnTitleForGoals,
-		titleForProgramCollection,
 		goalsByHierarchyLevel,
 		isGoalContainer,
 		isProgramContainer,
+		isReportContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		titleForProgramCollection
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -29,10 +32,16 @@
 		)
 	);
 
+	$inspect(data.containers);
+
+	const useReport = createFeatureDecisions(page.data.features).useReport();
+
 	let columns = $derived([
 		{
-			addItemUrl: '#create=program',
-			containers: data.containers.filter(isProgramContainer).slice(0, browser ? undefined : 10),
+			addItemUrl: `#create=program${useReport ? '&create=report' : ''}`,
+			containers: data.containers
+				.filter((c) => isProgramContainer(c) || isReportContainer(c))
+				.slice(0, browser ? undefined : 10),
 			key: 'programs',
 			title: titleForProgramCollection(data.containers.filter(isProgramContainer))
 		},
