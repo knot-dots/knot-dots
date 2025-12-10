@@ -15,7 +15,6 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -32,12 +31,7 @@
 
 	let columns = $derived([
 		{
-			addItemUrl: $mayCreateContainer(
-				payloadTypes.enum.program,
-				data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-			)
-				? '#create=program'
-				: undefined,
+			addItemUrl: '#create=program',
 			containers: data.containers.filter(isProgramContainer).slice(0, browser ? undefined : 10),
 			key: 'programs',
 			title: titleForProgramCollection(data.containers.filter(isProgramContainer))
@@ -45,12 +39,7 @@
 		...Array.from(goals.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => ({
-				addItemUrl: $mayCreateContainer(
-					payloadTypes.enum.goal,
-					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-				)
-					? `#create=goal&hierarchyLevel=${hierarchyLevel}`
-					: undefined,
+				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
 				containers: containers.slice(0, browser ? undefined : 10),
 				key: `goals-${hierarchyLevel}`,
 				title: computeColumnTitleForGoals(containers)

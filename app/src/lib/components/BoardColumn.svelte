@@ -15,7 +15,6 @@
 		isTaskContainer,
 		type Level,
 		type NewContainer,
-		overlayKey,
 		type PartialRelation,
 		type PayloadType,
 		predicates,
@@ -24,7 +23,7 @@
 		type Status,
 		type TaskStatus
 	} from '$lib/models';
-	import { newContainer } from '$lib/stores';
+	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		addItemUrl?: string;
@@ -38,15 +37,22 @@
 		'createContainerDialog'
 	);
 
-	function createContainer(event: Event) {
-		event.preventDefault();
+	let addItemParams = $derived(new URLSearchParams(addItemUrl?.substring(1)));
 
-		const params = new URLSearchParams(
-			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
-		);
+	let mayCreate = $derived(
+		addItemParams
+			.getAll('create')
+			.filter((t) =>
+				$mayCreateContainer(
+					t as PayloadType,
+					page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
+				)
+			) as PayloadType[]
+	);
 
+	function createContainer(payloadType: PayloadType, params: URLSearchParams) {
 		const container = containerOfType(
-			params.get(overlayKey.enum.create) as PayloadType,
+			payloadType,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
@@ -105,16 +111,27 @@
 		<h2>
 			{title}
 		</h2>
-		{#if addItemUrl}
-			<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><Plus /></a>
+		{#if mayCreate.length === 1}
+			<button
+				class="action-button action-button--size-l"
+				onclick={() => createContainer(mayCreate[0], addItemParams)}
+				type="button"
+			>
+				<Plus />
+				<span class="is-visually-hidden">{$_('add_item')}</span>
+			</button>
 		{/if}
 	</header>
 
 	{@render children()}
 
-	{#if addItemUrl}
+	{#if mayCreate.length > 0}
 		<footer>
-			<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<Plus /></a>
+			{#if addItemParams.getAll('create').length === 1}
+				<button onclick={() => createContainer(mayCreate[0], addItemParams)} type="button">
+					<Plus />{$_('add_item')}
+				</button>
+			{/if}
 		</footer>
 	{/if}
 </section>
@@ -173,6 +190,16 @@
 
 	header + :global(div) {
 		flex-grow: 1;
+	}
+
+	.action-button {
+		color: inherit;
+	}
+
+	.action-button,
+	.action-button:hover,
+	.action-button:active {
+		background-color: transparent;
 	}
 
 	footer {
