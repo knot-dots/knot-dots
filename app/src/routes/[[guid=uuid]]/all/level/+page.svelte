@@ -45,7 +45,7 @@
 				title: computeColumnTitleForGoals(containers)
 			})),
 		{
-			addItemUrl: undefined,
+			addItemUrl: '#create=measure&create=rule&create=simple_measure',
 			containers: data.containers
 				.filter(
 					(c) =>

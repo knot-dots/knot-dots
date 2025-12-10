@@ -2,8 +2,9 @@
 	import { getContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
-	import { env } from '$env/dynamic/public';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
+	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
 		containerOfType,
 		type GoalStatus,
@@ -120,6 +121,19 @@
 				<Plus />
 				<span class="is-visually-hidden">{$_('add_item')}</span>
 			</button>
+		{:else if mayCreate.length > 1}
+			<DropDownMenu
+				handleChange={(e) =>
+					e instanceof CustomEvent &&
+					e.detail.selected &&
+					createContainer(e.detail.selected, addItemParams)}
+				label={$_('add_item')}
+				options={mayCreate.map((t) => ({ label: $_(t), value: t }))}
+			>
+				{#snippet icon()}
+					<Plus />
+				{/snippet}
+			</DropDownMenu>
 		{/if}
 	</header>
 
@@ -131,6 +145,19 @@
 				<button onclick={() => createContainer(mayCreate[0], addItemParams)} type="button">
 					<Plus />{$_('add_item')}
 				</button>
+			{:else if mayCreate.length > 1}
+				<DropDownMenu
+					handleChange={(e) =>
+						e instanceof CustomEvent &&
+						e.detail.selected &&
+						createContainer(e.detail.selected, addItemParams)}
+					label={$_('add_item')}
+					options={mayCreate.map((t) => ({ label: $_(t), value: t }))}
+				>
+					{#snippet icon()}
+						<Plus />
+					{/snippet}
+				</DropDownMenu>
 			{/if}
 		</footer>
 	{/if}
@@ -169,6 +196,13 @@
 	}
 
 	header {
+		--dropdown-button-active-background: transparent;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-gray-800);
+		--dropdown-button-expanded-background: transparent;
+		--dropdown-button-hover-background: transparent;
+		--dropdown-button-icon-default-color: var(--color-gray-800);
+
 		align-items: center;
 		color: var(--color-gray-800);
 		display: flex;
@@ -184,8 +218,8 @@
 		gap: 0.5rem;
 	}
 
-	:global(header svg) {
-		stroke-width: 2.5px;
+	header :global(.dropdown-button > :nth-child(n + 2)) {
+		display: none;
 	}
 
 	header + :global(div) {
@@ -203,25 +237,28 @@
 	}
 
 	footer {
-		background-color: #ffffff;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
+		--dropdown-button-border-radius: 8px;
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-default-background: var(--color-white);
+		--dropdown-button-default-color: var(--color-gray-800);
+		--dropdown-button-padding: 0.625rem;
+
 		flex-shrink: 0;
-		overflow: hidden;
 	}
 
-	footer:hover {
-		background-color: var(--color-gray-100);
+	footer :global(.dropdown) {
+		width: 100%;
 	}
 
-	footer a {
-		align-items: center;
-		display: flex;
-		gap: 0.5rem;
+	footer :global(.dropdown-button) {
 		justify-content: center;
-		padding: 10px 20px;
-		text-align: center;
+	}
+
+	footer > button {
+		--button-background: var(--color-white);
+
+		justify-content: center;
+		padding: var(--dropdown-button-padding);
 		width: 100%;
 	}
 </style>
