@@ -74,7 +74,6 @@
 	"creator": "Creator",
 	"days_ago": "{daysAgo, plural, one {# day ago} other {# days ago}}",
 	"delete": "Delete",
-	"delete_disabled_contains_children": "Object contains child objects and cannot be deleted",
 	"description": "Description",
 	"download": "Download",
 	"edit_mode": "Edit mode",

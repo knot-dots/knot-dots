@@ -74,7 +74,6 @@
 	"creator": "Autor*in",
 	"days_ago": "{daysAgo, plural, one {# Tag} other {# Tage}}",
 	"delete": "Löschen",
-	"delete_disabled_contains_children": "Objekt enthält untergeordnete Objekte und kann nicht gelöscht werden",
 	"delete.name": "{name} löschen",
 	"description": "Beschreibung",
 	"download": "Herunterladen",
