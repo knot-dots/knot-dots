@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Help from '$lib/components/Help.svelte';
-	import Table from '$lib/components/Table.svelte';
-	import type { PageProps } from './$types';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
+	import Table from '$lib/components/Table.svelte';
+	import { isIndicatorContainer, isIndicatorTemplateContainer } from '$lib/models';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
@@ -24,7 +25,9 @@
 			{ heading: $_('editorial_state'), key: 'editorialState' },
 			{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
 		]}
-		rows={data.containers}
+		rows={data.containers.filter((c) =>
+			data.useNewIndicators ? isIndicatorTemplateContainer(c) : isIndicatorContainer(c)
+		)}
 	/>
 	<Help slug="indicators-table" />
 </IndicatorsPage>
