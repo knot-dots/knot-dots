@@ -890,12 +890,9 @@ const effectCollectionPayload = z
 
 const initialEffectCollectionPayload = effectCollectionPayload;
 
-const reportPayload = z
-	.object({
-		title: z.string().trim(),
-		description: z.string().trim().optional(),
-		type: z.literal(payloadTypes.enum.report),
-		visibility: visibility.default(visibility.enum['organization'])
+const reportPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum.report)
 	})
 	.strict();
 
