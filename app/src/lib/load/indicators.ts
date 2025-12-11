@@ -1,11 +1,16 @@
 import { filterVisible } from '$lib/authorization';
-import { type IndicatorContainer, type Container, payloadTypes } from '$lib/models';
+import {
+	type Container,
+	type IndicatorContainer,
+	type OrganizationalUnitContainer,
+	payloadTypes
+} from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import type { AnyContainer } from '$lib/models';
+import type { User } from '$lib/stores';
 
 export interface IndicatorFilters {
 	audience: string[];
@@ -31,9 +36,9 @@ export interface IndicatorLoadResult {
  */
 export async function getIndicatorsData(params: {
 	organizationGuid: string;
-	currentOrganizationalUnit?: Pick<AnyContainer, 'guid' | 'payload'> | null;
+	currentOrganizationalUnit: OrganizationalUnitContainer | null;
 	filters: IndicatorFilters;
-	user: any; // shape consistent with filterVisible usage
+	user: User;
 	connect: <T>(fn: (connection: any) => Promise<T>) => Promise<T>;
 }): Promise<IndicatorLoadResult> {
 	const { organizationGuid, currentOrganizationalUnit, filters, user, connect } = params;
