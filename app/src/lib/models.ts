@@ -62,6 +62,8 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'chapter',
+	'custom_collection',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -83,6 +85,7 @@ const payloadTypeValues = [
 	'program',
 	'program_collection',
 	'progress',
+	'report',
 	'quote',
 	'resource',
 	'resource_collection',
@@ -582,6 +585,49 @@ const administrativeAreaBasicDataPayload = z.object({
 
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
 
+const chapterPayload = basePayload
+	.extend({
+		image: z.url().optional(),
+		number: z.string(),
+		type: z.literal(payloadTypes.enum.chapter)
+	})
+	.omit({
+		description: true,
+		summary: true
+	});
+
+const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
+
+const customCollectionPayload = z
+	.object({
+		filter: z
+			.object({
+				audience: z.array(audience).default([]),
+				category: z.array(sustainableDevelopmentGoals).default([]),
+				indicatorCategory: z.array(indicatorCategories).default([]),
+				type: z.array(payloadTypes).default([]),
+				policyFieldBNK: z.array(policyFieldBNK).default([]),
+				topic: z.array(topics).default([])
+			})
+			.default({
+				audience: [],
+				category: [],
+				indicatorCategory: [],
+				policyFieldBNK: [],
+				topic: [],
+				type: []
+			}),
+		item: z.array(z.uuid()).default([]),
+		sort: z.enum(['alpha', 'modified']).default('alpha'),
+		terms: z.string().default(''),
+		title: z.string(),
+		type: z.literal(payloadTypes.enum.custom_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
+
 const fileCollectionPayload = z
 	.object({
 		file: z
@@ -874,6 +920,17 @@ const effectCollectionPayload = z
 
 const initialEffectCollectionPayload = effectCollectionPayload;
 
+const reportPayload = z
+	.object({
+		title: z.string().trim(),
+		description: z.string().trim().optional(),
+		type: z.literal(payloadTypes.enum.report),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialReportPayload = reportPayload.partial({ title: true });
+
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
@@ -1068,6 +1125,8 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	chapterPayload,
+	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1087,6 +1146,7 @@ const payload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	reportPayload,
 	quotePayload,
 	rulePayload,
 	resourceCollectionPayload,
@@ -1121,6 +1181,8 @@ export type Container = z.infer<typeof container>;
 const anyPayload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	chapterPayload,
+	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1142,6 +1204,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	reportPayload,
 	quotePayload,
 	rulePayload,
 	resourceCollectionPayload,
@@ -1194,7 +1257,7 @@ export function isContainerWithEffect(
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 
-const actualDataContainer = container.extend({
+export const actualDataContainer = container.extend({
 	payload: actualDataPayload
 });
 
@@ -1218,6 +1281,30 @@ export function isAdministrativeAreaBasicDataContainer(
 	container: AnyContainer | EmptyContainer
 ): container is AdministrativeAreaBasicDataContainer {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
+}
+
+const chapterContainer = container.extend({
+	payload: chapterPayload
+});
+
+export type ChapterContainer = z.infer<typeof chapterContainer>;
+
+export function isChapterContainer(
+	container: AnyContainer | EmptyContainer
+): container is ChapterContainer {
+	return container.payload.type === payloadTypes.enum.chapter;
+}
+
+const customCollectionContainer = container.extend({
+	payload: customCollectionPayload
+});
+
+export type CustomCollectionContainer = z.infer<typeof customCollectionContainer>;
+
+export function isCustomCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is CustomCollectionContainer {
+	return container.payload.type === payloadTypes.enum.custom_collection;
 }
 
 const effectContainer = container.extend({
@@ -1434,6 +1521,18 @@ export function isProgressContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ProgressContainer {
 	return container.payload.type === payloadTypes.enum.progress;
+}
+
+const reportContainer = container.extend({
+	payload: reportPayload
+});
+
+export type ReportContainer = z.infer<typeof reportContainer>;
+
+export function isReportContainer(
+	container: AnyContainer | EmptyContainer
+): container is ReportContainer {
+	return container.payload.type === payloadTypes.enum.report;
 }
 
 const ruleContainer = container.extend({
@@ -1757,6 +1856,8 @@ export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
+		initialChapterPayload,
+		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
 		initialFileCollectionPayload,
@@ -1780,6 +1881,7 @@ export const emptyContainer = newContainer.extend({
 		initialProgressPayload,
 		initialQuotePayload,
 		initialRulePayload,
+		initialReportPayload,
 		initialResourceCollectionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,

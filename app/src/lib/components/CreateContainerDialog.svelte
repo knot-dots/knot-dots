@@ -14,6 +14,7 @@
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
+	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
@@ -34,6 +35,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramContainer,
+		isReportContainer,
 		isResourceContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
@@ -42,8 +44,7 @@
 		isTextContainer,
 		type NewContainer,
 		overlayKey,
-		overlayURL,
-		status
+		overlayURL
 	} from '$lib/models';
 	import { addEffectState, newContainer } from '$lib/stores';
 
@@ -192,6 +193,13 @@
 					<OrganizationProperties bind:container={$newContainer} editable />
 				{:else if isOrganizationalUnitContainer($newContainer)}
 					<OrganizationalUnitProperties bind:container={$newContainer} editable />
+				{:else if isReportContainer($newContainer)}
+					<ReportProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isResourceContainer($newContainer)}
 					<ResourceProperties
 						bind:container={$newContainer}

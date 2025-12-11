@@ -132,6 +132,7 @@
 	}
 
 	h1 {
+		flex-grow: 1;
 		margin: 0;
 		min-height: 3rem;
 	}

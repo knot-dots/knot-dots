@@ -4,13 +4,16 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
+	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
+	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
+	import Grid from '~icons/knotdots/grid';
 	import Map from '~icons/knotdots/map';
 	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
@@ -42,6 +45,7 @@
 		isOrganizationContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isReportContainer,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -52,12 +56,14 @@
 	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
+		compact?: boolean;
 		handleAddSection: (event: Event) => void;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
+		compact = false,
 		handleAddSection,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
@@ -70,7 +76,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
+	const extraOpts = {
+		modifiers: [{ name: 'offset', options: { offset: compact ? [-4, 8] : [0, 4] } }]
+	};
 
 	let mayAddTaskCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
@@ -151,9 +159,41 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
+	let mayAddChapter = $derived(
+		createFeatureDecisions(page.data.features).useChapter() && isReportContainer(parentContainer)
+	);
+
+	let mayAddCustomCollection = $derived(
+		createFeatureDecisions(page.data.features).useCustomCollection() &&
+			isReportContainer(parentContainer)
+	);
+
+	let mayAddReport = $derived(
+		createFeatureDecisions(page.data.features).useReport() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddCustomCollection
+				? [
+						{
+							icon: Grid,
+							label: $_('custom_collection'),
+							value: payloadTypes.enum.custom_collection
+						}
+					]
+				: []),
+			...(mayAddChapter
+				? [
+						{
+							icon: Chapter,
+							label: $_('chapter'),
+							value: payloadTypes.enum.chapter
+						}
+					]
+				: []),
 			...(mayAddFileCollection
 				? [
 						{
@@ -244,6 +284,15 @@
 						}
 					]
 				: []),
+			...(mayAddReport
+				? [
+						{
+							icon: FileChartBar,
+							label: $_('report'),
+							value: payloadTypes.enum.report
+						}
+					]
+				: []),
 			...(mayAddAdministrativeAreaBasicData
 				? [
 						{
@@ -275,10 +324,10 @@
 	);
 </script>
 
-<div class="dropdown" use:popperRef>
+<div class="dropdown" class:dropdown--compact={compact} use:popperRef>
 	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
 		<Plus />
-		<span class="is-visually-hidden">{$_('add_section')}</span>
+		<span class:is-visually-hidden={compact}>{$_('add_section')}</span>
 	</button>
 
 	{#if $menu.expanded}
@@ -302,27 +351,16 @@
 
 <style>
 	.dropdown {
-		--dropdown-button-default-background: white;
-		--dropdown-button-expanded-background: var(--color-primary-900);
-		--dropdown-button-hover-background: var(--color-primary-800);
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-icon-default-color: var(--color-primary-700);
-		--dropdown-button-icon-expanded-color: white;
+		--dropdown-button-border-radius: 16px;
+		--dropdown-button-padding: 1rem;
 
-		align-items: center;
-		background-color: white;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
 		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.375rem;
-		margin: 0 auto;
-		padding: 0.25rem;
 		width: fit-content;
 	}
 
-	.dropdown-button:hover {
-		--dropdown-button-icon-default-color: white;
+	.dropdown.dropdown--compact {
+		--dropdown-button-border-radius: 4px;
+		--dropdown-button-padding: 0.25rem;
 	}
 
 	.dropdown-panel {

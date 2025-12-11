@@ -122,6 +122,17 @@
 	--color-primary-700: #1a56db;
 	--color-primary-800: #1e429f;
 	--color-primary-900: #233876;
+	--color-blue-gray-025: #f8fafc;
+	--color-blue-gray-050: #f0f6fa;
+	--color-blue-gray-100: #dae7f1;
+	--color-blue-gray-200: #b8cfe0;
+	--color-blue-gray-300: #9ab7cb;
+	--color-blue-gray-400: #749fbe;
+	--color-blue-gray-500: #3d8cc2;
+	--color-blue-gray-600: #1882ce;
+	--color-blue-gray-700: #1265a0;
+	--color-blue-gray-800: #0d4872;
+	--color-blue-gray-900: #092b44;
 
 	--color-contributes-to: #7ad0ff;
 	--color-is-affected-by: #7ad0ff;
@@ -483,6 +494,7 @@ button.button-primary,
 .button.button-primary {
 	--button-active-background: var(--color-primary-900);
 	--button-background: var(--color-primary-700);
+	--button-disabled-background: var(--color-gray-300);
 	--button-hover-background: var(--color-primary-800);
 
 	border: none;
@@ -656,6 +668,7 @@ button:disabled,
 .button:disabled {
 	background: var(--button-disabled-background);
 	border-color: var(--button-disabled-border-color);
+	cursor: not-allowed;
 }
 
 button.button-square,
@@ -1052,8 +1065,8 @@ label > input[type='checkbox'].toggle {
 
 .details {
 	--details-max-width: 51.5rem;
-	--details-padding-left: 3.5rem;
-	--details-padding-right: max(3.5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
+	--details-padding-left: 5rem;
+	--details-padding-right: max(5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;
 	--carousel-margin-left: calc(
@@ -1067,7 +1080,7 @@ label > input[type='checkbox'].toggle {
 	container-type: inline-size;
 	font-size: 0.875rem;
 	min-width: min(var(--details-max-width), calc(100% - 8rem));
-	padding: 3rem var(--details-padding-right) 3rem var(--details-padding-left);
+	padding: 5rem var(--details-padding-right) 5rem var(--details-padding-left);
 	position: relative;
 }
 
@@ -1513,6 +1526,7 @@ img.cover {
 	--dropdown-button-hover-background: var(--color-gray-100);
 	--dropdown-button-active-background: var(--color-gray-300);
 	--dropdown-button-expanded-background: var(--color-gray-050);
+	--dropdown-button-expanded-border-color: var(--dropdown-button-default-border-color);
 	--dropdown-button-expanded-color: var(--color-gray-700);
 	--dropdown-button-border-radius: 4px;
 	--dropdown-button-border-width: 0;
@@ -1563,6 +1577,7 @@ img.cover {
 
 .dropdown-button[aria-expanded='true'] {
 	background: var(--dropdown-button-expanded-background);
+	border-color: var(--dropdown-button-expanded-border-color);
 	color: var(--dropdown-button-expanded-color);
 }
 
@@ -1690,7 +1705,7 @@ img.cover {
 
 @media (hover: hover) {
 	.is-visible-on-hover {
-		transition: var(--is-visible-on-hover-transition, none);
+		transition: var(--is-visible-on-hover-transition, visibility 0s 0.5s linear);
 		visibility: var(--is-visible-on-hover-visibility, hidden);
 	}
 }
