@@ -266,7 +266,7 @@ export function updateContainer(container: ModifiedContainer) {
 					timestamp: new Date().toISOString()
 				});
 			}
-			
+
 			return { ...containerResult, user: userResult };
 		});
 	};
@@ -321,7 +321,6 @@ export function deleteContainer(container: AnyContainer) {
 					timestamp: new Date().toISOString()
 				});
 			}
-
 		});
 	};
 }
