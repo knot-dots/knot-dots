@@ -37,6 +37,8 @@ const commonTypes = [
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.task,
 	payloadTypes.enum.task_collection,
+	payloadTypes.enum.teaser,
+	payloadTypes.enum.teaser_collection,
 	payloadTypes.enum.text,
 	payloadTypes.enum.undefined
 ];
@@ -212,7 +214,7 @@ export default function defineAbilityFor(user: User) {
 	}
 
 	return build({
-		detectSubjectType: (object) => object.payload.type
+		detectSubjectType: (object) => object.payload.type ?? payloadTypes.enum.undefined
 	});
 }
 
