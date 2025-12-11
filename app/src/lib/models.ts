@@ -2389,7 +2389,9 @@ export function createCopyOf(
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
 			...container.payload,
-			achievedValues: container.payload.achievedValues.map(([year]) => [year, 0])
+			achievedValues: container.payload.achievedValues.map(
+				([year]) => [year, 0] as [number, number]
+			)
 		};
 	} else {
 		copy.payload = { ...container.payload };

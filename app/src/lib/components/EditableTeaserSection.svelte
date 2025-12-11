@@ -24,6 +24,7 @@
 	interface Props {
 		container: TeaserContainer | InfoBoxContainer | TeaserHighlightContainer | QuoteContainer;
 		editable?: boolean;
+		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
@@ -31,6 +32,7 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		heading,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -74,17 +76,20 @@
 						</span>
 					{/if}
 					{#if canUpdate}
-						<h3
+						<svelte:element
+							this={heading}
 							bind:textContent={container.payload.title}
 							class="details-heading"
 							contenteditable="plaintext-only"
+							role="textbox"
+							tabindex="0"
 							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 							{@attach init}
-						></h3>
+						></svelte:element>
 					{:else}
-						<h3 class="details-heading" contenteditable="false">
+						<svelte:element this={heading} class="details-heading" contenteditable="false">
 							{container.payload.title}
-						</h3>
+						</svelte:element>
 					{/if}
 				</header>
 			{/if}

@@ -214,7 +214,7 @@ export default function defineAbilityFor(user: User) {
 	}
 
 	return build({
-		detectSubjectType: (object) => object.payload.type
+		detectSubjectType: (object) => object.payload.type ?? payloadTypes.enum.undefined
 	});
 }
 

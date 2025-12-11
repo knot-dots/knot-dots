@@ -247,12 +247,15 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isTeaserCollectionContainer(container)}
 			<EditableTeaserCollection
 				bind:container
+				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{/if}
 	</form>
