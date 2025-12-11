@@ -9,6 +9,8 @@
 		type Container,
 		indicatorCategories,
 		indicatorTypes,
+		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
@@ -16,7 +18,7 @@
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: { containers: Container[]; useNewIndicators: boolean };
 	}
 
 	let { children, data }: Props = $props();
@@ -34,7 +36,12 @@
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 		]);
 
-		return computeFacetCount(facets, data.containers);
+		return computeFacetCount(
+			facets,
+			data.containers.filter((c) =>
+				data.useNewIndicators ? isIndicatorTemplateContainer(c) : isIndicatorContainer(c)
+			)
+		);
 	});
 </script>
 
