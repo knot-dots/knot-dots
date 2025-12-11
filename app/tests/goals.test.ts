@@ -18,7 +18,7 @@ test.describe('Goal progress section', () => {
 		await page.getByRole('menuitem', { name: 'Goals' }).click();
 
 		// Create a new goal
-		await page.getByText('Add item').click();
+		await page.getByText('Add item').first().click();
 		await page.getByRole('textbox', { name: 'Title' }).fill(title);
 		await page.getByRole('button', { name: 'Save' }).click();
 

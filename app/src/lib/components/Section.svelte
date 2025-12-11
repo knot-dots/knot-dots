@@ -16,7 +16,6 @@
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
-	import EditableReportSection from '$lib/components/EditableReportSection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
@@ -195,14 +194,6 @@
 			/>
 		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
 			<EditableProgressSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-				{heading}
-			/>
-		{:else if isReportContainer(container)}
-			<EditableReportSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers

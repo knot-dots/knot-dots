@@ -45,6 +45,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.program,
+						payloadTypes.enum.report,
 						payloadTypes.enum.rule,
 						payloadTypes.enum.simple_measure
 					]
@@ -69,6 +70,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.program,
+						payloadTypes.enum.report,
 						payloadTypes.enum.rule,
 						payloadTypes.enum.simple_measure
 					]
@@ -93,6 +95,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.program,
+						payloadTypes.enum.report,
 						payloadTypes.enum.rule,
 						payloadTypes.enum.simple_measure
 					]

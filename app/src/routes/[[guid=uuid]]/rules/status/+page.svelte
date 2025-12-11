@@ -5,8 +5,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
-	import { payloadTypes, ruleStatus } from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { ruleStatus } from '$lib/models';
 	import { ruleStatusBackgrounds, ruleStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
@@ -19,12 +18,7 @@
 			<BoardColumn
 				--background={ruleStatusBackgrounds.get(statusOption)}
 				--hover-border-color={ruleStatusHoverColors.get(statusOption)}
-				addItemUrl={$mayCreateContainer(
-					payloadTypes.enum.rule,
-					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-				)
-					? `#create=rule&ruleStatus=${statusOption}`
-					: undefined}
+				addItemUrl={`#create=rule&ruleStatus=${statusOption}`}
 				title={$_(statusOption)}
 			>
 				<MaybeDragZone

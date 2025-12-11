@@ -8,9 +8,10 @@
 	import {
 		isGoalContainer,
 		isMeasureContainer,
+		isProgramContainer,
+		isReportContainer,
 		isRuleContainer,
-		isSimpleMeasureContainer,
-		isProgramContainer
+		isSimpleMeasureContainer
 	} from '$lib/models';
 
 	let { data }: PageProps = $props();
@@ -40,6 +41,7 @@
 				(c) =>
 					isGoalContainer(c) ||
 					isMeasureContainer(c) ||
+					isReportContainer(c) ||
 					isRuleContainer(c) ||
 					isSimpleMeasureContainer(c) ||
 					isProgramContainer(c)
