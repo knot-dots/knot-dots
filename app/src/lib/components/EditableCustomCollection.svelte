@@ -9,7 +9,7 @@
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
 	import Close from '~icons/knotdots/close';
 	import Collection from '~icons/knotdots/collection';
-	import Filter from '~icons/knotdots/filter-badge';
+	import Filter from '~icons/knotdots/filter';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
@@ -567,6 +567,7 @@
 
 	.inline-actions {
 		margin-left: 0;
+		margin-top: 1rem;
 	}
 
 	.inline-actions > li:last-child {
