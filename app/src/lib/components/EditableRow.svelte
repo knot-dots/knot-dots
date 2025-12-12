@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { dragHandle } from 'svelte-dnd-action';
+	import { _, date } from 'svelte-i18n';
+	import DragHandle from '~icons/knotdots/draghandle';
+	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
@@ -7,6 +11,9 @@
 	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
 	import GoalTypeDropdown from '$lib/components/GoalTypeDropdown.svelte';
 	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
+	import IndicatorCategoryDropdown from '$lib/components/IndicatorCategoryDropdown.svelte';
+	import IndicatorTypeDropdown from '$lib/components/IndicatorTypeDropdown.svelte';
+	import IndicatorUnitDropdown from '$lib/components/IndicatorUnitDropdown.svelte';
 	import MeasureTypeDropdown from '$lib/components/MeasureTypeDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import ParentDropdown from '$lib/components/ParentDropdown.svelte';
@@ -20,9 +27,6 @@
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
-	import IndicatorTypeDropdown from '$lib/components/IndicatorTypeDropdown.svelte';
-	import IndicatorUnitDropdown from '$lib/components/IndicatorUnitDropdown.svelte';
-	import IndicatorCategoryDropdown from '$lib/components/IndicatorCategoryDropdown.svelte';
 	import {
 		type Container,
 		isContainerWithDescription,
@@ -30,16 +34,14 @@
 		isContainerWithEditorialState,
 		isContainerWithFulfillmentDate,
 		isGoalContainer,
+		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isProgramContainer,
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
-	import { dragHandle } from 'svelte-dnd-action';
-	import { _, date } from 'svelte-i18n';
-	import DragHandle from '~icons/knotdots/draghandle';
-	import Overlay from '~icons/knotdots/overlay';
 
 	interface Props {
 		columns: string[];
@@ -71,7 +73,7 @@
 	</div>
 {/if}
 
-{#each columns as col}
+{#each columns as col (col)}
 	{#if col === 'type'}
 		<div class="cell" class:cell--locked={editable}>
 			<span>{$_(container.payload.type)}</span>
@@ -143,16 +145,16 @@
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'indicatorType' in container.payload}
 				<IndicatorTypeDropdown
-					editable={editable && $ability.can('update', container, 'payload.indicatorType')}
+					editable={editable && $ability.can('update', container)}
 					bind:value={container.payload.indicatorType}
 				/>
 			{/if}
 		</div>
 	{:else if col === 'unit'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if 'unit' in container.payload}
+			{#if isIndicatorContainer(container) || isIndicatorTemplateContainer(container)}
 				<IndicatorUnitDropdown
-					editable={editable && $ability.can('update', container, 'payload.unit')}
+					editable={editable && $ability.can('update', container)}
 					bind:value={container.payload.unit}
 				/>
 			{/if}
@@ -161,7 +163,7 @@
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'indicatorCategory' in container.payload}
 				<IndicatorCategoryDropdown
-					editable={editable && $ability.can('update', container, 'payload.indicatorCategory')}
+					editable={editable && $ability.can('update', container)}
 					bind:value={container.payload.indicatorCategory}
 				/>
 			{/if}

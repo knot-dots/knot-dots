@@ -1,43 +1,22 @@
 <script lang="ts">
-	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
-	import {
-		units as unitEnum,
-		type IndicatorContainer,
-		type IndicatorTemplateContainer,
-		type AnyContainer
-	} from '$lib/models';
-	import { ability } from '$lib/stores';
 	import { _ } from 'svelte-i18n';
+	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
+	import { units } from '$lib/models';
 
-	// Units aren't enumerated like types; supply via parent or fallback.
 	interface Props {
-		value: string | undefined;
-		container?: IndicatorContainer | IndicatorTemplateContainer | AnyContainer | null;
 		editable?: boolean;
+		value: string;
 	}
 
-	let { value = $bindable(), container = null, editable = false }: Props = $props();
-
-	// Build options from enum and include current value if it's a custom unit (non-empty)
-	const options = $derived.by(() => {
-		const base = unitEnum.options as readonly string[];
-		const withCurrent = value && value !== '' && !base.includes(value) ? [...base, value] : base;
-		return [
-			{ label: $_('empty'), value: null },
-			...withCurrent.map((u) => ({ label: $_(u), value: u }))
-		];
-	});
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
-{#if editable && (!container || $ability.can('update', container, 'payload.unit'))}
-	<SingleChoiceDropdown offset={[0, -39]} {options} bind:value />
+{#if editable}
+	<SingleChoiceDropdown
+		offset={[0, -39]}
+		options={units.options.map((o) => ({ value: o, label: $_(o) }))}
+		bind:value
+	/>
 {:else}
-	<span class="readonly">{value ? $_(value) : ''}</span>
+	<span class="valuey">{$_(value)}</span>
 {/if}
-
-<style>
-	.readonly {
-		display: inline-block;
-		min-width: 2rem;
-	}
-</style>
