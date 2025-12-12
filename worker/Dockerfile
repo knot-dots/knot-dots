@@ -8,10 +8,7 @@ COPY shared ./worker/src/shared
 
 # Install dependencies inside worker directory
 WORKDIR /srv/worker
-RUN npm clean-install --silent
-
-# Build worker (now that shared is present in the image)
-RUN npm run build
+RUN npm clean-install
 
 # Set the command to start the application
 CMD ["npm", "start"]

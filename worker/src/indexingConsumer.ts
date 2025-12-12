@@ -1,6 +1,6 @@
 import { sql } from 'slonik';
-import { getPool } from './db';
-import type { IndexingEvent } from './types';
+import { getPool } from './db.ts';
+import type { IndexingEvent } from './types.ts';
 
 import {
   SQSClient,
@@ -11,7 +11,7 @@ import {
   type Message as QueueMessage
 } from '@aws-sdk/client-sqs';
 import { Client as ESClient } from '@elastic/elasticsearch';
-import { toDoc } from './shared/indexing';
+import { toDoc } from './shared/indexing.ts';
 
 const queueUrl = process.env.INDEXING_QUEUE_URL || '';
 const dlqUrl = process.env.INDEXING_DLQ_URL || '';

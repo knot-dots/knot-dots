@@ -1,4 +1,4 @@
-import { startIndexingConsumer } from './indexingConsumer';
+import { startIndexingConsumer } from './indexingConsumer.ts';
 
 startIndexingConsumer().catch((err: unknown) => {
   // eslint-disable-next-line no-console
