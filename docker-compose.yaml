@@ -89,6 +89,16 @@ services:
       - ./keycloak/import:/opt/keycloak/data/import
       - ./keycloak/themes:/opt/keycloak/themes
 
+  elasticmq:
+    image: softwaremill/elasticmq-native
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./elasticmq.conf:/opt/elasticmq.conf
+    environment:
+      - CONFIG_FILE=/opt/elasticmq.conf
+
   preview:
     build:
       context: app
