@@ -13,5 +13,5 @@ RUN npm clean-install --silent
 # Build worker (now that shared is present in the image)
 RUN npm run build
 
-# Build on container start as a safeguard, then start
-CMD ["sh", "-lc", "npm run build && npm start"]
+# Set the command to start the application
+CMD ["npm", "start"]
