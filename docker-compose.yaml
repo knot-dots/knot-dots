@@ -36,7 +36,8 @@ services:
 
   import:
     build:
-      context: import
+      context: .
+      dockerfile: import/Dockerfile
     depends_on:
       db:
         condition: service_healthy
