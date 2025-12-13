@@ -14,6 +14,7 @@
   "license": "AGPL-3.0-or-later",
   "description": "",
   "dependencies": {
+    "@elastic/elasticsearch": "^8.15.1",
     "csv-parse": "^6.1.0",
     "osmtogeojson": "^3.0.0-beta.5",
     "overpass-ql-ts": "^1.11.0",
