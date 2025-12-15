@@ -112,17 +112,12 @@
 	}
 
 	ul {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 1.5rem;
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(19.5rem, 1fr));
 	}
 
 	ul:nth-child(2) {
 		margin-top: 1.5rem;
-	}
-
-	li {
-		width: 19.5rem;
 	}
 </style>

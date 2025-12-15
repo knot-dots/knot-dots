@@ -9,7 +9,7 @@
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
 	import Close from '~icons/knotdots/close';
 	import Collection from '~icons/knotdots/collection';
-	import Filter from '~icons/knotdots/filter-badge';
+	import Filter from '~icons/knotdots/filter';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
@@ -559,14 +559,9 @@
 		min-height: 1px;
 	}
 
-	.catalog {
-		flex-grow: 1;
-		margin-top: 1rem;
-		overflow: auto;
-	}
-
 	.inline-actions {
 		margin-left: 0;
+		margin-top: 1rem;
 	}
 
 	.inline-actions > li:last-child {
@@ -644,18 +639,11 @@
 	}
 
 	.catalog {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 1.5rem;
-	}
-
-	.catalog:nth-child(2) {
-		margin-top: 1.5rem;
-	}
-
-	.catalog > li {
-		width: 19.5rem;
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+		margin-top: 1rem;
+		overflow: auto;
 	}
 
 	.preview {
