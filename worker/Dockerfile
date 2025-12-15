@@ -10,5 +10,7 @@ COPY shared ./worker/src/shared
 WORKDIR /srv/worker
 RUN npm clean-install
 
+COPY app/src/lib/locales/de.json /opt/labels/de.json
+
 # Set the command to start the application
 CMD ["npm", "start"]
