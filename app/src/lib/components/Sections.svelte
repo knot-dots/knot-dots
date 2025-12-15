@@ -70,7 +70,13 @@
 				? container.guid
 				: container.managed_by;
 
-			if (payloadType === payloadTypes.enum.expenses && isResourceV2Container(container)) {
+			if (
+				(payloadType === payloadTypes.enum.resource_data_historical_expenses ||
+					payloadType === payloadTypes.enum.resource_data_expected_expenses ||
+					payloadType === payloadTypes.enum.resource_data_historical_income ||
+					payloadType === payloadTypes.enum.resource_data_expected_income) &&
+				isResourceV2Container(container)
+			) {
 				const currentOrganization = page.data.currentOrganization;
 				const currentOrganizationalUnit = page.data.currentOrganizationalUnit;
 

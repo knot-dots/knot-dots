@@ -65,7 +65,6 @@ const payloadTypeValues = [
 	'custom_collection',
 	'effect',
 	'effect_collection',
-	'expenses',
 	'file_collection',
 	'goal',
 	'goal_collection',
@@ -88,6 +87,10 @@ const payloadTypeValues = [
 	'resource',
 	'resource_collection',
 	'resource_v2', // New payload type for resources with temporary v2 suffix
+	'resource_data_historical_expenses',
+	'resource_data_expected_expenses',
+	'resource_data_historical_income',
+	'resource_data_expected_income',
 	'rule',
 	'simple_measure',
 	'task',
@@ -963,26 +966,55 @@ const resourceV2Payload = basePayload
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
-const expensesPayload = z
-	.object({
-		entries: z
-			.array(
-				z.object({
+// Resource Data Payloads
+const resourceDataEntry = z.object({
 					year: z.number().int().positive(),
 					amount: z.coerce.number()
-				})
-			)
-			.default([]),
+});
+
+function makeResourceDataPayload<
+	TType extends (typeof payloadTypes.enum)[keyof typeof payloadTypes.enum]
+>(typeLiteral: TType, titleKey: string) {
+	return z
+		.object({
+			entries: z.array(resourceDataEntry).default([]),
 		title: z
 			.string()
 			.readonly()
-			.default(() => unwrapFunctionStore(_)('expenses')),
-		type: z.literal(payloadTypes.enum.expenses),
+				.default(() => unwrapFunctionStore(_)(titleKey)),
+			type: z.literal(typeLiteral),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
+}
 
-const initialExpensesPayload = expensesPayload;
+const resourceDataHistoricalExpensesPayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_historical_expenses,
+	'resource_data.historical_expenses'
+);
+
+const initialResourceDataHistoricalExpensesPayload = resourceDataHistoricalExpensesPayload;
+
+const resourceDataExpectedExpensesPayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_expected_expenses,
+	'resource_data.expected_expenses'
+);
+
+const initialResourceDataExpectedExpensesPayload = resourceDataExpectedExpensesPayload;
+
+const resourceDataHistoricalIncomePayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_historical_income,
+	'resource_data.historical_income'
+);
+
+const initialResourceDataHistoricalIncomePayload = resourceDataHistoricalIncomePayload;
+
+const resourceDataExpectedIncomePayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_expected_income,
+	'resource_data.expected_income'
+);
+
+const initialResourceDataExpectedIncomePayload = resourceDataExpectedIncomePayload;
 
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
@@ -1085,7 +1117,6 @@ const payload = z.discriminatedUnion('type', [
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
-	expensesPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
@@ -1107,6 +1138,10 @@ const payload = z.discriminatedUnion('type', [
 	resourceCollectionPayload,
 	resourcePayload,
 	resourceV2Payload,
+	resourceDataHistoricalExpensesPayload,
+	resourceDataExpectedExpensesPayload,
+	resourceDataHistoricalIncomePayload,
+	resourceDataExpectedIncomePayload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
@@ -1138,7 +1173,6 @@ const anyPayload = z.discriminatedUnion('type', [
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
-	expensesPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
@@ -1162,6 +1196,10 @@ const anyPayload = z.discriminatedUnion('type', [
 	resourceCollectionPayload,
 	resourcePayload,
 	resourceV2Payload,
+	resourceDataHistoricalExpensesPayload,
+	resourceDataExpectedExpensesPayload,
+	resourceDataHistoricalIncomePayload,
+	resourceDataExpectedIncomePayload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
@@ -1521,16 +1559,88 @@ export function isResourceCollectionContainer(
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
 
-const expensesContainer = container.extend({
-	payload: expensesPayload
+const resourceDataHistoricalExpensesContainer = container.extend({
+	payload: resourceDataHistoricalExpensesPayload
 });
 
-export type ExpensesContainer = z.infer<typeof expensesContainer>;
+export type ResourceDataHistoricalExpensesContainer = z.infer<
+	typeof resourceDataHistoricalExpensesContainer
+>;
 
-export function isExpensesContainer(
+export function isResourceDataHistoricalExpensesContainer(
 	container: AnyContainer | EmptyContainer
-): container is ExpensesContainer {
-	return container.payload.type === payloadTypes.enum.expenses;
+): container is ResourceDataHistoricalExpensesContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_historical_expenses;
+}
+
+const resourceDataExpectedExpensesContainer = container.extend({
+	payload: resourceDataExpectedExpensesPayload
+});
+
+export type ResourceDataExpectedExpensesContainer = z.infer<
+	typeof resourceDataExpectedExpensesContainer
+>;
+
+export function isResourceDataExpectedExpensesContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataExpectedExpensesContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_expected_expenses;
+}
+
+const resourceDataHistoricalIncomeContainer = container.extend({
+	payload: resourceDataHistoricalIncomePayload
+});
+
+export type ResourceDataHistoricalIncomeContainer = z.infer<
+	typeof resourceDataHistoricalIncomeContainer
+>;
+
+export function isResourceDataHistoricalIncomeContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataHistoricalIncomeContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_historical_income;
+}
+
+const resourceDataExpectedIncomeContainer = container.extend({
+	payload: resourceDataExpectedIncomePayload
+});
+
+export type ResourceDataExpectedIncomeContainer = z.infer<
+	typeof resourceDataExpectedIncomeContainer
+>;
+
+export function isResourceDataExpectedIncomeContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataExpectedIncomeContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_expected_income;
+}
+
+const resourceDataContainer = z.union([
+	resourceDataHistoricalExpensesContainer,
+	resourceDataExpectedExpensesContainer,
+	resourceDataHistoricalIncomeContainer,
+	resourceDataExpectedIncomeContainer
+]);
+// container.extend({
+// 	payload: z.discriminatedUnion('type', [
+// 		resourceDataHistoricalExpensesPayload,
+// 		resourceDataExpectedExpensesPayload,
+// 		resourceDataHistoricalIncomePayload,
+// 		resourceDataExpectedIncomePayload
+// 	])
+// });
+
+export type ResourceDataContainer = z.infer<typeof resourceDataContainer>;
+
+export function isResourceDataContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataContainer {
+	return (
+		container.payload.type === payloadTypes.enum.resource_data_historical_expenses ||
+		container.payload.type === payloadTypes.enum.resource_data_expected_expenses ||
+		container.payload.type === payloadTypes.enum.resource_data_historical_income ||
+		container.payload.type === payloadTypes.enum.resource_data_expected_income
+	);
 }
 
 const resourceV2Container = container.extend({
@@ -1773,7 +1883,6 @@ export const emptyContainer = newContainer.extend({
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
-		initialExpensesPayload,
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
@@ -1797,6 +1906,10 @@ export const emptyContainer = newContainer.extend({
 		initialResourceCollectionPayload,
 		initialResourcePayload,
 		initialResourceV2Payload,
+		initialResourceDataHistoricalExpensesPayload,
+		initialResourceDataExpectedExpensesPayload,
+		initialResourceDataHistoricalIncomePayload,
+		initialResourceDataExpectedIncomePayload,
 		initialSimpleMeasurePayload,
 		initialTextPayload,
 		initialTaskCollectionPayload,

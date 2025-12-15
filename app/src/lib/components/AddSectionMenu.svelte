@@ -105,7 +105,7 @@
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
 	);
 
-	let mayAddExpensesSection = $derived(isResourceV2Container(parentContainer));
+	let mayAddResourceDataSection = $derived(isResourceV2Container(parentContainer));
 
 	let mayAddFileCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
@@ -235,12 +235,27 @@
 						}
 					]
 				: []),
-			...(mayAddExpensesSection
+			...(mayAddResourceDataSection
 				? [
 						{
 							icon: Cash,
-							label: $_('expenses'),
-							value: payloadTypes.enum.expenses
+							label: $_('resource_data.historical_expenses'),
+							value: payloadTypes.enum.resource_data_historical_expenses
+						},
+						{
+							icon: Cash,
+							label: $_('resource_data.expected_expenses'),
+							value: payloadTypes.enum.resource_data_expected_expenses
+						},
+						{
+							icon: Cash,
+							label: $_('resource_data.historical_income'),
+							value: payloadTypes.enum.resource_data_historical_income
+						},
+						{
+							icon: Cash,
+							label: $_('resource_data.expected_income'),
+							value: payloadTypes.enum.resource_data_expected_income
 						}
 					]
 				: []),
