@@ -51,14 +51,16 @@
 			(relation.object === candidate.guid || relation.subject === candidate.guid);
 
 		return (
-			candidate.relation.some((relation) => relation.predicate === predicate && matcher(relation)) ||
+			candidate.relation.some(
+				(relation) => relation.predicate === predicate && matcher(relation)
+			) ||
 			object.relation.some(
 				(relation) => relation.predicate === predicate && touches(relation) && matcher(relation)
 			)
 		);
 	}
 
-	let dropZones: DropZone[] = $derived(
+	let dropZones: DropZone[] = $state(
 		[
 			{
 				active: false,
@@ -121,14 +123,13 @@
 				active: false,
 				items: relatedContainers
 					.filter(({ guid }) => guid != object.guid)
-					.filter(
-						(candidate) =>
-							hasRelation(
-								candidate,
-								predicates.enum['implies'],
-								({ subject, object: relationObject }) =>
-									subject === object.guid && relationObject === candidate.guid
-							)
+					.filter((candidate) =>
+						hasRelation(
+							candidate,
+							predicates.enum['implies'],
+							({ subject, object: relationObject }) =>
+								subject === object.guid && relationObject === candidate.guid
+						)
 					)
 					.map((container) => ({ guid: container.guid, container })),
 				help: $_('relation_overlay.selected_implies_dragged', {
@@ -143,14 +144,13 @@
 				active: false,
 				items: relatedContainers
 					.filter(({ guid }) => guid != object.guid)
-					.filter(
-						(candidate) =>
-							hasRelation(
-								candidate,
-								predicates.enum['implies'],
-								({ subject, object: relationObject }) =>
-									subject === candidate.guid && relationObject === object.guid
-							)
+					.filter((candidate) =>
+						hasRelation(
+							candidate,
+							predicates.enum['implies'],
+							({ subject, object: relationObject }) =>
+								subject === candidate.guid && relationObject === object.guid
+						)
 					)
 					.map((container) => ({ guid: container.guid, container })),
 				help: $_('relation_overlay.dragged_implies_selected', {
@@ -421,10 +421,13 @@
 		if (event.detail.info.trigger === TRIGGERS.DROPPED_INTO_ZONE && $dragged) {
 			$dragged.relation.push(dropZones[index].createRelation(object, $dragged));
 			dropZones[index].active = true;
+			dropZones[index].items = event.detail.items;
+
 			setTimeout(() => {
 				dropZones[index].active = false;
 				activeDropZoneIndex = -1;
 			}, 2000);
+
 			await saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
 			await invalidateAll();
 		}
