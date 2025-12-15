@@ -41,7 +41,7 @@
 		};
 	}
 
-	let dropZones: DropZone[] = $derived(
+	let dropZones: DropZone[] = $state(
 		[
 			{
 				active: false,
@@ -360,10 +360,13 @@
 		if (event.detail.info.trigger === TRIGGERS.DROPPED_INTO_ZONE && $dragged) {
 			$dragged.relation.push(dropZones[index].createRelation(object, $dragged));
 			dropZones[index].active = true;
+			dropZones[index].items = event.detail.items;
+
 			setTimeout(() => {
 				dropZones[index].active = false;
 				activeDropZoneIndex = -1;
 			}, 2000);
+
 			await saveContainer({ ...$dragged, guid: $dragged.guid.split('_')[0] });
 			await invalidateAll();
 		}
