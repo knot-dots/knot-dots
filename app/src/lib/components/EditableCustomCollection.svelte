@@ -559,12 +559,6 @@
 		min-height: 1px;
 	}
 
-	.catalog {
-		flex-grow: 1;
-		margin-top: 1rem;
-		overflow: auto;
-	}
-
 	.inline-actions {
 		margin-left: 0;
 		margin-top: 1rem;
@@ -645,18 +639,11 @@
 	}
 
 	.catalog {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 1.5rem;
-	}
-
-	.catalog:nth-child(2) {
-		margin-top: 1.5rem;
-	}
-
-	.catalog > li {
-		width: 19.5rem;
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+		margin-top: 1rem;
+		overflow: auto;
 	}
 
 	.preview {
