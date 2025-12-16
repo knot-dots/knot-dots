@@ -38,6 +38,7 @@ import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createFeatureDecisions } from '$lib/features';
 import { storage } from '$lib/server/context';
+import { Client } from '@elastic/elasticsearch';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -688,6 +689,49 @@ export function getManyContainers(
 	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		const esEnabled = true;
+		const esUrl = process.env.ELASTICSEARCH_URL;
+		const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
+		if (esEnabled && esUrl && (filters.terms || filters.type || organizations.length)) {
+			try {
+				const es = new Client({ node: esUrl });
+				const must: any[] = [];
+				const filter: any[] = [];
+				if (filters.terms) {
+					must.push({ multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' } });
+				}
+				if (filters.type?.length) filter.push({ terms: { type: filters.type } });
+				if (filters.categories?.length) filter.push({ terms: { 'payload.category': filters.categories } });
+				if (filters.topics?.length) filter.push({ terms: { 'payload.topic': filters.topics } });
+				if (filters.audience?.length) filter.push({ terms: { 'payload.audience': filters.audience } });
+				if (filters.policyFieldsBNK?.length) filter.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+				if (filters.programTypes?.length) filter.push({ terms: { 'payload.programType': filters.programTypes } });
+				if (filters.measureTypes?.length) filter.push({ terms: { 'payload.measureType': filters.measureTypes } });
+				if (filters.indicatorCategories?.length) filter.push({ terms: { 'payload.indicatorCategory': filters.indicatorCategories } });
+				if (filters.indicatorTypes?.length) filter.push({ terms: { 'payload.indicatorType': filters.indicatorTypes } });
+				if (filters.taskCategories?.length) filter.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
+				if (filters.assignees?.length) filter.push({ terms: { 'payload.assignee': filters.assignees } });
+				if (filters.organizationalUnits?.length) filter.push({ terms: { organizationalUnit: filters.organizationalUnits } });
+				if (organizations.length) filter.push({ terms: { organization: organizations } });
+				if (filters.template !== undefined) filter.push({ term: { 'payload.template': filters.template } });
+				const query = { bool: { must, filter } };
+				const sortParam = sort === 'modified' ? [{ revision: 'desc' }] : sort === 'priority' ? [{ 'payload.priority': 'asc' }] : [{ 'title.keyword': 'asc' }];
+				const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
+				const { hits } = await es.search({ index: esIndex, query, sort: sortParam, size: sizeParam, _source: ['guid'] });
+				const guids = (hits.hits as any[]).map((h) => h._source.guid);
+				console.log('[getManyContainers] Elasticsearch returned', guids.length, 'results');
+				if (guids.length === 0) return [];
+				const containerResult = await connection.any(sql.typeAlias('container')`
+					SELECT c.*
+					FROM container c
+					WHERE c.guid IN (${sql.join(guids.map((g) => sql.fragment`${g}`), sql.fragment`, `)})
+					ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)
+				`);
+				return withUserAndRelation<Container>(connection, containerResult);
+			} catch (err) {
+				console.warn('[getManyContainers] Elasticsearch error, falling back to SQL:', err);
+			}
+		}
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
