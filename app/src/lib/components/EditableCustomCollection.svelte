@@ -559,12 +559,12 @@
 		min-height: 1px;
 	}
 
-	.inline-actions {
+	.result .inline-actions {
 		margin-left: 0;
 		margin-top: 1rem;
 	}
 
-	.inline-actions > li:last-child {
+	.result .inline-actions > li:last-child {
 		margin-left: auto;
 	}
 
