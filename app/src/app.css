@@ -1704,48 +1704,18 @@ img.cover {
     white-space: nowrap;
 }
 
-/* grid classes */
-.grid-2-cols {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 1fr;
-}
-
-.grid-33-66 {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 1fr;
-}
-
-.grid-66-33 {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 1fr;
-}
-
-@media (min-width: 768px) {
-    .grid-2-cols {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .grid-33-66 {
-        grid-template-columns: 1fr 2fr;
-    }
-
-    .grid-66-33 {
-        grid-template-columns: 2fr 1fr;
-    }
-}
-
-
 /** Splitter */
 .splitpanes.modern-theme .splitpanes__pane {
+    height: 100%;
+}
 
+.splitpanes__pane--wrap {
+    margin: 1rem;
 }
 
 .splitpanes.modern-theme .splitpanes__splitter {
     position: relative;
-    cursor: ew-resize !important;
+    cursor: ew-resize;
 }
 
 .splitpanes.modern-theme .splitpanes__splitter:before,
@@ -1753,27 +1723,27 @@ img.cover {
     content: ' ';
     position: absolute;
     left: 0;
-    top: 2rem;
-    bottom: 2rem;
+    top: 0;
+    bottom: 0;
     transition: opacity 0.4s;
     background-color: var(--color-gray-200);
     opacity: .4;
     border-radius: 4px;
     z-index: 1;
-    cursor: ew-resize !important;
+    cursor: ew-resize;
 }
 
 .splitpanes.modern-theme .splitpanes__splitter:hover:before,
 .splitpanes.modern-theme .splitpanes__splitter:hover:after {
     opacity: 1;
     background-color: var(--color-gray-500);
-    cursor: ew-resize !important;
+    cursor: ew-resize;
     pointer-events: all;
 }
 
 .splitpanes.modern-theme .splitpanes__splitter.splitpanes__splitter__active {
     z-index: 2; /* Fix an issue of overlap fighting with a near hovered splitter */
-    cursor: ew-resize !important;
+    cursor: ew-resize;
 }
 
 .modern-theme.splitpanes--vertical > .splitpanes__splitter:before {

@@ -52,21 +52,40 @@
   };
 
   // Define the allowed sizes
-  const allowedSizes = [0, 33, 50, 66, 100];
-  let paneSize = $state(50); // Initial size
+  const allowedSizes = ['0-100', '33-66', '50-50', '66-33', '100-0'];
+  const sizeToNumber = {
+    '0-100': 0,
+    '33-66': 33,
+    '50-50': 50,
+    '66-33': 66,
+    '100-0': 100
+  };
+  const numberToSize = {
+    0: '0-100',
+    33: '33-66',
+    50: '50-50',
+    66: '66-33',
+    100: '100-0'
+  };
+
+  let currentColSize = $state(container.payload.colSize || '33-66');
+  let paneSize = $state(sizeToNumber[currentColSize as keyof typeof sizeToNumber] || 33);
+
   let isResizing = $state(false);
   let splitpanesRef = $state<HTMLElement>();
+  let colSizeInputRef = $state<HTMLInputElement>();
 
   function handleResize(event: any) {
     const currentSize = event.detail[0].size;
+    const numericSizes = Object.keys(sizeToNumber).map(k => sizeToNumber[k as keyof typeof sizeToNumber]);
 
     // Check if we're within 5% of any allowed size
     const snapThreshold = 5;
-    const nearestSize = allowedSizes.find(size =>
+    const nearestSize = numericSizes.find(size =>
       Math.abs(size - currentSize) <= snapThreshold
     );
 
-    if (nearestSize && !isResizing) {
+    if (nearestSize !== undefined && !isResizing) {
       paneSize = nearestSize;
     } else {
       paneSize = currentSize;
@@ -81,28 +100,54 @@
     isResizing = false;
     const currentSize = event.detail[0].size;
     snapToClosestSize(currentSize);
+    updateContainer();
   }
 
   function snapToClosestSize(currentSize: number) {
-    paneSize = allowedSizes.reduce((prev, curr) =>
+    const numericSizes = Object.keys(sizeToNumber).map(k => sizeToNumber[k as keyof typeof sizeToNumber]);
+    paneSize = numericSizes.reduce((prev, curr) =>
       Math.abs(curr - currentSize) < Math.abs(prev - currentSize) ? curr : prev
     );
   }
 
-  let paneClass = $derived(() => {
-    switch (paneSize) {
-      case 0:
-        return 'pane-0';
-      case 33:
-        return 'pane-33';
-      case 50:
-        return 'pane-50';
-      case 66:
-        return 'pane-66';
-      case 100:
-        return 'pane-100';
+  function updateContainer() {
+    const stringSize = numberToSize[paneSize as keyof typeof numberToSize] || '33-66';
+    currentColSize = stringSize;
+    container.payload.colSize = stringSize;
+    triggerFormSubmit()
+  }
+
+  function setPaneSize(size: string) {
+    const numericSize = sizeToNumber[size as keyof typeof sizeToNumber];
+    if (numericSize !== undefined) {
+      paneSize = numericSize;
+      currentColSize = size;
+      container.payload.colSize = size;
+      updateContainer();
+    }
+  }
+
+  function triggerFormSubmit() {
+    if (colSizeInputRef) {
+      colSizeInputRef.value = container.payload.colSize || '';
+      colSizeInputRef.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+  }
+
+  let gridClass = $derived(() => {
+    switch (currentColSize) {
+      case '0-100':
+        return '';
+      case '33-66':
+        return 'grid-2-cols grid-33-66';
+      case '50-50':
+        return 'grid-2-cols grid-50-50';
+      case '66-33':
+        return 'grid-2-cols grid-66-33';
+      case '100-0':
+        return '';
       default:
-        return 'pane-50';
+        return 'grid-2-cols grid-33-66';
     }
   });
 
@@ -110,7 +155,6 @@
   let canUpdate = $derived(editable && $ability.can('update', container));
   let isInfoBox = $derived(container.payload.type === 'info_box');
   let hasLink = $derived(container.payload.link && container.payload.linkCaption);
-  let gridClass = $derived(container.payload.image ? 'grid-2-cols grid-66-33' : '');
 </script>
 
 <div style="position: relative" class={cssClass}>
@@ -122,79 +166,82 @@
 		</ul>
 	{/if}
 
-	<div class="splitpanes-container" bind:this={splitpanesRef}>
-		<!-- Position markers -->
-		<div class="position-markers">
-			{#each allowedSizes as size}
-				<div
-						class="position-marker"
-						class:active={paneSize === size}
-						style="left: {size}%"
-				>
 
-					<div class="marker-label"></div>
-				</div>
-			{/each}
-		</div>
+	<div class="splitpanes-container" bind:this={splitpanesRef}>
+		{#if editable}
+			<!-- Position markers -->
+			<div class="position-markers">
+				{#each allowedSizes as size}
+					<div
+							class="position-marker"
+							class:active={currentColSize === size}
+							style="left: {sizeToNumber[size]}%"
+					>
+						<button class="marker-label" aria-label={$_('teaser.position_marker.' + size)}
+								onclick={() => setPaneSize(size)}
+								type="button"
+						></button>
+					</div>
+				{/each}
+			</div>
+		{/if}
 		<Splitpanes
-				theme="modern-theme"
+				theme={editable ? "modern-theme" : "no-splitter"}
+				class={gridClass()}
 				on:resize={handleResize}
 				on:splitter-click={handleResizeStart}
 				on:resized={handleResizeEnd}
 		>
 			<Pane bind:size={paneSize} minSize={0} maxSize={100}>
-				<div class={paneClass()}>
-					A
-				</div>
-			</Pane>
-			<Pane>
-				<div class="pane-b">
-					B
-				</div>
-			</Pane>
-		</Splitpanes>
-	</div>
-	<div class={canUpdate ? 'grid-2-cols grid-66-33' : gridClass}>
-		<div>
-			{#if !isQuoteContainer(container)}
-				<header>
-					{#if isInfoBox}
+				<div class="splitpanes__pane--wrap">
+					{#if !isQuoteContainer(container)}
+						<header>
+							{#if isInfoBox}
 						<span style="color: var(--color-orange-500)">
 							<ExclamationCircle/>
 						</span>
+							{/if}
+							{#if canUpdate}
+								<svelte:element
+										this={heading}
+										bind:textContent={container.payload.title}
+										class="details-heading"
+										contenteditable="plaintext-only"
+										role="textbox"
+										tabindex="0"
+										onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+										{@attach init}
+								></svelte:element>
+							{:else}
+								<svelte:element this={heading} class="details-heading" contenteditable="false">
+									{container.payload.title}
+								</svelte:element>
+							{/if}
+						</header>
 					{/if}
-					{#if canUpdate}
-						<svelte:element
-								this={heading}
-								bind:textContent={container.payload.title}
-								class="details-heading"
-								contenteditable="plaintext-only"
-								role="textbox"
-								tabindex="0"
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-								{@attach init}
-						></svelte:element>
-					{:else}
-						<svelte:element this={heading} class="details-heading" contenteditable="false">
-							{container.payload.title}
-						</svelte:element>
-					{/if}
-				</header>
-			{/if}
-			<div class="teaser--content">
-				{#if canUpdate}
-					<Editor bind:value={container.payload.body}/>
-				{:else}
-					<Viewer value={container.payload.body}/>
-				{/if}
-			</div>
-		</div>
-		<EditableImageInline
-				{editable}
-				label={$_(canUpdate ? 'upload.image.add' : 'cover')}
-				bind:value={container.payload.image}
-		/>
+					<div class="teaser--content">
+						{#if canUpdate}
+							<Editor bind:value={container.payload.body}/>
+						{:else}
+							<Viewer value={container.payload.body}/>
+						{/if}
+					</div>
+				</div>
+			</Pane>
+			<Pane>
+				<div class="splitpanes__pane--wrap">
+					<EditableImageInline
+							{editable}
+							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
+							bind:value={container.payload.image}
+					/>
+				</div>
+			</Pane>
+		</Splitpanes>
+
+		<input type="hidden" name="colSize" bind:this={colSizeInputRef} bind:value={container.payload.colSize}/>
 	</div>
+
 
 	{#if !isQuoteContainer(container)}
 		<div class="flex mt-3" class:flex-column={!canUpdate}>
@@ -301,17 +348,25 @@
 
     .splitpanes-container {
         position: relative;
-        height: 300px; /* Adjust as needed */
+        height: 100%;
     }
 
-    .position-markers {
+    .splitpanes-container .position-markers {
         position: absolute;
-        top: 0;
+
         left: 0;
         right: 0;
         height: 100%;
         pointer-events: none;
+        top: -10px;
+        opacity: 0;
         z-index: 10;
+        transition: all 0.2s ease;
+    }
+
+    .splitpanes-container:hover .position-markers {
+        opacity: 1;
+        top: 0;
     }
 
     .position-marker {
@@ -330,9 +385,12 @@
         left: 50%;
         transform: translateX(-50%);
         background-color: var(--color-gray-200);
+        border-radius: 1rem;
+        border: none;
         color: white;
+        cursor: pointer;
         padding: 0.25rem;
-        border-radius: 0.25rem;
+        pointer-events: all;
         font-size: 0;
         white-space: nowrap;
         opacity: 1;

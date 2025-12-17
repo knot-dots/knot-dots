@@ -985,6 +985,7 @@ const teaserPayload = z
 		style: z.string().optional().default('default'),
 		image: z.string().url().optional(),
 		type: z.literal(payloadTypes.enum.teaser),
+		colSize: z.string().optional(),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict(); // .strict() means no extra fields allowed

@@ -51,7 +51,7 @@
 </script>
 
 {#if editable && !value}
-	<label class="placeholder" style="">
+	<div class="placeholder">
 		<div style="display: flex; align-items: center; gap: 0.5rem;">
 			<PlaceholderImage />
 			{label}
@@ -64,16 +64,12 @@
 			oninput={upload}
 			type="file"
 		/>
-	</label>
+	</div>
 {:else if value}
 	{#if editable}
-		<div class="full" use:popperRef>
-			<img use:popover.button alt={$_('logo')} class="logo" src={transformFileURL(value)} />
-		</div>
+		<img use:popover.button alt={$_('logo')} class="logo" src={transformFileURL(value)} />
 	{:else}
-		<div class="full">
-			<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
-		</div>
+		<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
 	{/if}
 	{#if $popover.expanded}
 		<div class="dropdown-panel" use:popperContent use:popover.panel>
@@ -83,19 +79,6 @@
 {/if}
 
 <style>
-	.full {
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		position: relative;
-		border-radius: 0.5rem;
-	}
-	.full > img {
-		position: absolute;
-		width: 100%;
-		height: auto;
-		object-fit: cover;
-	}
 	.placeholder {
 		padding: 1rem;
 		background-color: var(--color-gray-050);
@@ -107,8 +90,13 @@
 		align-items: center;
 		gap: 0.5rem;
 		justify-content: center;
+        width: 100%;
+        height: auto;
 	}
+
 	img {
+		width: 100%;
+		height: auto;
 		border-radius: 0.5rem;
 	}
 </style>
