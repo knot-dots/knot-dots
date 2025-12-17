@@ -930,18 +930,20 @@ export function getAllRelatedContainers(
 			`)
 			: [];
 
-		const otherPredicates = new Set(relations);
-		otherPredicates.delete(predicates.enum['is-part-of']);
-		const otherRelationResult = otherPredicates.size
-			? await connection.any(sql.typeAlias('relationPath')`
+		const otherPredicates = relations.filter(
+			(predicate) => predicate != predicates.enum['is-part-of']
+		);
+		const otherRelationResult =
+			otherPredicates.length > 0
+				? await connection.any(sql.typeAlias('relationPath')`
 				SELECT cr.subject, cr.object
 				FROM container_relation cr
 				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
-          AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
+          AND cr.predicate IN (${sql.join(otherPredicates, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 			`)
-			: [];
+				: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
