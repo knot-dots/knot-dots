@@ -49,13 +49,13 @@
 {/if}
 <article>
 	<div
-		class="stage stage--{container.payload.color
+		class="details stage stage--{container.payload.color
 			? backgroundColors.get(container.payload.color)
 			: 'white'}"
 	>
 		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-			{#if mayEditStage}
-				<div class="details-section">
+			<div class="stage--buttons details-section">
+				{#if mayEditStage}
 					<EditableCover
 						editable={$applicationState.containerDetailView.editable}
 						label={$_('add_cover')}
@@ -67,8 +67,8 @@
 						label={$_('highlight')}
 						editable={$applicationState.containerDetailView.editable}
 					/>
-				</div>
-			{/if}
+				{/if}
+			</div>
 			<header class="details-section">
 				<EditableLogo
 					editable={$applicationState.containerDetailView.editable}
@@ -108,7 +108,6 @@
 				<EditableFormattedText
 					editable={$applicationState.containerDetailView.editable &&
 						$ability.can('update', container)}
-					label={$_('description')}
 					bind:value={container.payload.description}
 				/>
 			{/key}
@@ -126,6 +125,10 @@
 		display: flex;
 		gap: 0.75rem;
 	}
+
+    .stage--buttons {
+        min-height: 4rem;
+    }
 
 	header button {
 		margin-left: auto;

@@ -70,7 +70,7 @@
 					<ColorDropdown
 						buttonStyle="button"
 						bind:value={container.payload.color}
-						label={$_('hightlight')}
+						label={$_('highlight')}
 						editable={$applicationState.containerDetailView.editable}
 					/>
 				</div>
