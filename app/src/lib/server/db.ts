@@ -800,7 +800,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			), container_user_result AS (
 				SELECT
 					c.guid,
-					coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+					coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS "user"
 				FROM container_result c
 				LEFT JOIN container_user cu ON c.revision = cu.object
 				GROUP BY c.guid
@@ -858,7 +858,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				JOIN container c ON c.guid = p.path[array_upper(p.path, 1)]
 				WHERE c.valid_currently AND NOT c.deleted
 			), container_user_result AS (
-				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS "user"
 				FROM container_result c
 				LEFT JOIN container_user cu ON c.revision = cu.object
 				GROUP BY c.guid
