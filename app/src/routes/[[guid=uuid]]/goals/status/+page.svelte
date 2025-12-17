@@ -5,8 +5,7 @@
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { goalStatus, payloadTypes } from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { goalStatus } from '$lib/models';
 	import { goalStatusBackgrounds, goalStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
@@ -19,12 +18,7 @@
 			<BoardColumn
 				--background={goalStatusBackgrounds.get(statusOption)}
 				--hover-border-color={goalStatusHoverColors.get(statusOption)}
-				addItemUrl={$mayCreateContainer(
-					payloadTypes.enum.measure,
-					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-				)
-					? `#create=goal&goalStatus=${statusOption}`
-					: undefined}
+				addItemUrl={`#create=goal&goalStatus=${statusOption}`}
 				title={$_(statusOption)}
 			>
 				<MaybeDragZone

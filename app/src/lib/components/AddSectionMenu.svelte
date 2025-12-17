@@ -168,11 +168,6 @@
 			isReportContainer(parentContainer)
 	);
 
-	let mayAddReport = $derived(
-		createFeatureDecisions(page.data.features).useReport() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-	);
-
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -281,15 +276,6 @@
 							icon: Progress,
 							label: $_('progress'),
 							value: payloadTypes.enum.progress
-						}
-					]
-				: []),
-			...(mayAddReport
-				? [
-						{
-							icon: FileChartBar,
-							label: $_('report'),
-							value: payloadTypes.enum.report
 						}
 					]
 				: []),

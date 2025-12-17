@@ -1,7 +1,11 @@
 <script lang="ts">
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
+	import EditableAudience from '$lib/components/EditableAudience.svelte';
+	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
+	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
+	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
@@ -20,13 +24,23 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<AuthoredBy {container} {revisions} />
+		<EditableCategory {editable} bind:value={container.payload.category} />
 	{/snippet}
 
 	{#snippet general()}
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
+	{/snippet}
+
+	{#snippet categories()}
+		<EditableCategory {editable} bind:value={container.payload.category} />
+
+		<EditableTopic {editable} bind:value={container.payload.topic} />
+
+		<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
+
+		<EditableAudience {editable} bind:value={container.payload.audience} />
 	{/snippet}
 
 	{#snippet ownership()}
