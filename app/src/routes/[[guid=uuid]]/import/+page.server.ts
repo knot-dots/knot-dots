@@ -45,7 +45,9 @@ export const actions = {
 		);
 		const organizationalUnits = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
-				organization: organization.guid
+				include: {
+					organization: organization.guid
+				}
 			})
 		);
 		const programs = await locals.pool.connect(

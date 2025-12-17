@@ -5,7 +5,7 @@ import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
-import { type AnyContainer, type KeycloakUser } from '$lib/models';
+import { type AnyContainer, type KeycloakUser, organizationalUnitType } from '$lib/models';
 import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import {
 	getManyOrganizationalUnitContainers,
@@ -27,7 +27,17 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
 	const [organizations, organizationalUnits] = await Promise.all([
 		filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
-		filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
+		filterVisibleAsync(
+			locals.pool.connect(
+				getManyOrganizationalUnitContainers({
+					exclude: {
+						organizationalUnitType: [
+							organizationalUnitType.enum['organizational_unit_type.administrative_area']
+						]
+					}
+				})
+			)
+		)
 	]);
 
 	// Don't use subdomains in dev mode if the env var is set
