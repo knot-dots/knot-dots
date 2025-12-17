@@ -1232,7 +1232,7 @@ export function getAllContainersRelatedToMeasure(
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.subject
-					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
+					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
@@ -1243,7 +1243,7 @@ export function getAllContainersRelatedToMeasure(
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.object
-					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
+					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle
