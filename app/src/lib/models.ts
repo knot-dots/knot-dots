@@ -412,6 +412,14 @@ export function isQuantity(value: unknown): value is Quantity {
 	return quantityValues.includes(value as Quantity);
 }
 
+export function fromCounts(options: string[], counts: Record<string, number> = {}) {
+	const m = new Map<string, number>(options.map((opt) => [opt, 0]));
+	for (const [key, count] of Object.entries(counts)) {
+		m.set(key, count);
+	}
+	return m;
+}
+
 const unitValues = [
 	'unit.euro',
 	'unit.euro_per_capita',

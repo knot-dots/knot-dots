@@ -1,6 +1,11 @@
+import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import { payloadTypes, predicates } from '$lib/models';
-import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
+import {
+	getAllRelatedContainers,
+	getManyContainers,
+	getFacetAggregationsForGuids
+} from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/knowledge/$types';
 
 export default (async function load({ depends, locals, parent, url }) {
@@ -37,5 +42,10 @@ export default (async function load({ depends, locals, parent, url }) {
 		);
 	}
 
-	return { containers: filterVisible(containers, locals.user) };
+	const filtered = filterVisible(containers, locals.user);
+	const features = createFeatureDecisions(locals.features);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+	return { containers: filtered, facets };
 } satisfies PageServerLoad);

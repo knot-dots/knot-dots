@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
 	filterOrganizationalUnits,
@@ -14,7 +15,8 @@ import {
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/tasks/$types';
 
@@ -92,15 +94,18 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			subordinateOrganizationalUnits,
 			currentOrganizationalUnit
 		);
+		const relatedContainers = filterOrganizationalUnits(
+			filterVisible(filterRelated(otherContainers, containers), locals.user),
+			url,
+			subordinateOrganizationalUnits,
+			currentOrganizationalUnit
+		);
+		// Facets over tasks (primary list) only; could extend to include related if needed
+		const features = createFeatureDecisions(locals.features);
+		const facets = features.useElasticsearch()
+			? await getFacetAggregationsForGuids(containers.map((c) => c.guid))
+			: {};
 
-		return {
-			containers,
-			relatedContainers: filterOrganizationalUnits(
-				filterVisible(filterRelated(otherContainers, containers), locals.user),
-				url,
-				subordinateOrganizationalUnits,
-				currentOrganizationalUnit
-			)
-		};
+		return { containers, relatedContainers, facets };
 	}) satisfies PageServerLoad;
 }

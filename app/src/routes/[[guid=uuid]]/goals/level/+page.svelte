@@ -17,15 +17,7 @@
 
 	let { data }: PageProps = $props();
 
-	let goals = $derived(
-		goalsByHierarchyLevel(
-			data.containers
-				.filter(isGoalContainer)
-				.filter(({ relation }) =>
-					relation.every(({ predicate }) => predicate !== predicates.enum['is-part-of-measure'])
-				)
-		)
-	);
+	let goals = $derived(goalsByHierarchyLevel(data.containers.filter(isGoalContainer)));
 
 	let columns = $derived(
 		Array.from(goals.entries())

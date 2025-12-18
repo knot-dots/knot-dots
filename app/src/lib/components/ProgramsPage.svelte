@@ -7,6 +7,7 @@
 		audience,
 		computeFacetCount,
 		type Container,
+		fromCounts,
 		policyFieldBNK,
 		predicates,
 		programTypes,
@@ -16,7 +17,7 @@
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: { containers: Container[]; facets?: Record<string, Record<string, number>> };
 	}
 
 	let { children, data }: Props = $props();
@@ -31,19 +32,30 @@
 		]
 	});
 
+	// Prefer server-provided Elasticsearch facet counts if available; otherwise fall back to local computation
 	let facets = $derived.by(() => {
-		const facets = new Map([
+		const facets = new Map<string, Map<string, number>>([
 			...((!page.data.currentOrganization.payload.default
 				? [['included', new Map()]]
 				: []) as Array<[string, Map<string, number>]>),
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
+			['audience', fromCounts(audience.options as string[], data.facets?.audience)],
+			[
+				'category',
+				fromCounts(sustainableDevelopmentGoals.options as string[], data.facets?.category)
+			],
+			['topic', fromCounts(topics.options as string[], data.facets?.topic)],
+			[
+				'policyFieldBNK',
+				fromCounts(policyFieldBNK.options as string[], data.facets?.policyFieldBNK)
+			],
+			['programType', fromCounts(programTypes.options as string[], data.facets?.programType)]
 		]);
 
-		return computeFacetCount(facets, data.containers);
+		if (!data.facets || Object.keys(data.facets).length === 0) {
+			return computeFacetCount(facets, data.containers);
+		}
+
+		return facets;
 	});
 </script>
 

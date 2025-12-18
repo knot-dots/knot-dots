@@ -2,10 +2,12 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/rules/$types';
 
 export default (async function load({ depends, locals, parent, url }) {
@@ -74,12 +76,17 @@ export default (async function load({ depends, locals, parent, url }) {
 		);
 	}
 
-	return {
-		containers: filterOrganizationalUnits(
-			filterVisible(containers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		)
-	};
+	const filtered = filterOrganizationalUnits(
+		filterVisible(containers, locals.user),
+		url,
+		subordinateOrganizationalUnits,
+		currentOrganizationalUnit
+	);
+
+	const features = createFeatureDecisions(locals.features);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+
+	return { containers: filtered, facets };
 } satisfies PageServerLoad);

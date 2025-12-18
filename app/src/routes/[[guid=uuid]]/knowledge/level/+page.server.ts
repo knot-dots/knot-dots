@@ -3,8 +3,10 @@ import { type Container, payloadTypes, predicates, type ProgramContainer } from 
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
+import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 
 function isRelatedToSome(containers: Container[]) {
@@ -72,8 +74,16 @@ export const load = (async ({ locals, url, parent }) => {
 		)
 	)) as ProgramContainer[];
 
+	const filtered = filterVisible(containers, locals.user);
+
+	const features = createFeatureDecisions(locals.features);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+
 	return {
-		containers: filterVisible(containers, locals.user),
-		programs: filterVisible(programs.filter(isRelatedToSome(containers)), locals.user)
+		containers: filtered,
+		programs: filterVisible(programs.filter(isRelatedToSome(containers)), locals.user),
+		facets
 	};
 }) satisfies PageServerLoad;

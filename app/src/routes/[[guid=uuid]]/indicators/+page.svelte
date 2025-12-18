@@ -9,6 +9,7 @@
 	import {
 		audience,
 		computeFacetCount,
+		fromCounts,
 		indicatorCategories,
 		indicatorTypes,
 		policyFieldBNK,
@@ -30,15 +31,28 @@
 			...((!page.data.currentOrganization.payload.default
 				? [['included', new Map()]]
 				: []) as Array<[string, Map<string, number>]>),
-			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+			['indicatorType', fromCounts(indicatorTypes.options as string[], data.facets?.indicatorType)],
+			[
+				'indicatorCategory',
+				fromCounts(indicatorCategories.options as string[], data.facets?.indicatorCategory)
+			],
+			['audience', fromCounts(audience.options as string[], data.facets?.audience)],
+			[
+				'category',
+				fromCounts(sustainableDevelopmentGoals.options as string[], data.facets?.category)
+			],
+			['topic', fromCounts(topics.options as string[], data.facets?.topic)],
+			[
+				'policyFieldBNK',
+				fromCounts(policyFieldBNK.options as string[], data.facets?.policyFieldBNK)
+			]
 		]);
 
-		return computeFacetCount(facets, data.containers);
+		if (!data.facets || Object.keys(data.facets).length === 0) {
+			return computeFacetCount(facets, data.containers);
+		}
+
+		return facets;
 	});
 </script>
 

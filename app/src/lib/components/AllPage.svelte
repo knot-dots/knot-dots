@@ -7,6 +7,7 @@
 		audience,
 		computeFacetCount,
 		type Container,
+		fromCounts,
 		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
@@ -21,7 +22,7 @@
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: { containers: Container[]; facets: Record<string, Record<string, number>> };
 	}
 
 	let { children, data }: Props = $props();
@@ -55,24 +56,27 @@
 			...((!page.data.currentOrganization.payload.default
 				? [['included', new Map()]]
 				: []) as Array<[string, Map<string, number>]>),
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
+			['audience', fromCounts(audience.options, data.facets?.audience)],
+			['category', fromCounts(sustainableDevelopmentGoals.options, data.facets?.category)],
+			['topic', fromCounts(topics.options, data.facets?.topic)],
+			['policyFieldBNK', fromCounts(policyFieldBNK.options, data.facets?.policyFieldBNK)],
+			['programType', fromCounts(programTypes.options, data.facets?.programType)]
 		]);
 
-		return computeFacetCount(
-			facets,
-			data.containers.filter(
-				(c) =>
-					isGoalContainer(c) ||
-					isMeasureContainer(c) ||
-					isRuleContainer(c) ||
-					isSimpleMeasureContainer(c) ||
-					isProgramContainer(c)
-			)
-		);
+		if (!data.facets || Object.keys(data.facets).length === 0) {
+			return computeFacetCount(
+				facets,
+				data.containers.filter(
+					(c) =>
+						isGoalContainer(c) ||
+						isMeasureContainer(c) ||
+						isRuleContainer(c) ||
+						isSimpleMeasureContainer(c) ||
+						isProgramContainer(c)
+				)
+			);
+		}
+		return facets;
 	});
 </script>
 

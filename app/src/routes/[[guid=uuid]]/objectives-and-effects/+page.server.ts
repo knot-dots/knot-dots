@@ -1,6 +1,11 @@
+import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import { audience, type Container, type IndicatorContainer, payloadTypes } from '$lib/models';
-import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
+import {
+	getAllContainersRelatedToIndicators,
+	getManyContainers,
+	getFacetAggregationsForGuids
+} from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
@@ -27,8 +32,15 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		getAllContainersRelatedToIndicators(containers, {})
 	);
 
+	const filtered = filterVisible([...containers, ...relatedContainers], locals.user);
+	const features = createFeatureDecisions(locals.features);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+
 	return {
 		container: currentOrganization,
-		containers: filterVisible([...containers, ...relatedContainers], locals.user)
+		containers: filtered,
+		facets
 	};
 }) satisfies PageServerLoad;

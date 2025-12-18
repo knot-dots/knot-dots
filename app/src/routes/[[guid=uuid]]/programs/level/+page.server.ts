@@ -3,8 +3,10 @@ import { type Container, filterOrganizationalUnits, payloadTypes, predicates } f
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
+import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, url, parent }) => {
@@ -75,5 +77,12 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	}
 
-	return { containers: filterVisible(containers, locals.user) };
+	const filtered = filterVisible(containers, locals.user);
+
+	const features = createFeatureDecisions(locals.features);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+
+	return { containers: filtered, facets };
 }) satisfies PageServerLoad;

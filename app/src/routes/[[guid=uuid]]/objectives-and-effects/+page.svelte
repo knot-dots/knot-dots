@@ -17,6 +17,7 @@
 		findConnected,
 		findDescendants,
 		findLeafObjectives,
+		fromCounts,
 		indicatorCategories,
 		indicatorTypes,
 		isContainerWithEffect,
@@ -121,15 +122,19 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+			['indicatorType', fromCounts(indicatorTypes.options, data.facets.indicatorType)],
+			['indicatorCategory', fromCounts(indicatorCategories.options, data.facets.indicatorCategory)],
+			['audience', fromCounts(audience.options, data.facets.audience)],
+			['category', fromCounts(sustainableDevelopmentGoals.options, data.facets.category)],
+			['topic', fromCounts(topics.options, data.facets.topic)],
+			['policyFieldBNK', fromCounts(policyFieldBNK.options, data.facets.policyFieldBNK)]
 		]);
 
-		return computeFacetCount(facets, data.containers);
+		if (Object.keys(data.facets).length === 0) {
+			return computeFacetCount(facets, data.containers);
+		}
+
+		return facets;
 	});
 </script>
 

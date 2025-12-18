@@ -1,9 +1,11 @@
+import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import { type IndicatorContainer, payloadTypes } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getManyContainers,
+	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -87,9 +89,16 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		]);
 	}
 
+	const filtered = filterVisible([...containers, ...relatedContainers], locals.user);
+	const features = createFeatureDecisions(locals.features);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: filterVisible([...containers, ...relatedContainers], locals.user),
+		containers: filtered,
+		facets,
 		useNewIndicators
 	};
 }) satisfies PageServerLoad;

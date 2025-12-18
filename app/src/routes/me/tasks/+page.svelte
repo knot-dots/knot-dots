@@ -4,7 +4,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
-	import { computeFacetCount, taskCategories } from '$lib/models';
+	import { computeFacetCount, fromCounts, taskCategories } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -17,10 +17,14 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))]
+			['taskCategory', fromCounts(taskCategories.options, data.facets.taskCategory)]
 		]);
 
-		return computeFacetCount(facets, data.containers);
+		if (Object.keys(data.facets).length === 0) {
+			return computeFacetCount(facets, data.containers);
+		}
+
+		return facets;
 	});
 </script>
 

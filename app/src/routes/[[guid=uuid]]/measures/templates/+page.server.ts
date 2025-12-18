@@ -1,6 +1,11 @@
 import { filterVisible } from '$lib/authorization';
 import { filterOrganizationalUnits, payloadTypes } from '$lib/models';
-import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
+import {
+	getAllRelatedOrganizationalUnitContainers,
+	getManyContainers,
+	getFacetAggregationsForGuids
+} from '$lib/server/db';
+import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
@@ -36,12 +41,20 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		)
 	);
 
+	const filtered = filterOrganizationalUnits(
+		filterVisible(containers, locals.user),
+		url,
+		subordinateOrganizationalUnits,
+		currentOrganizationalUnit
+	);
+
+	const features = createFeatureDecisions(locals.features);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+
 	return {
-		containers: filterOrganizationalUnits(
-			filterVisible(containers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		)
+		containers: filtered,
+		facets
 	};
 }) satisfies PageServerLoad;

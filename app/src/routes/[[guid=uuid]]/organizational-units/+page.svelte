@@ -8,6 +8,7 @@
 	import {
 		administrativeTypes,
 		computeFacetCount,
+		fromCounts,
 		isOrganizationalUnitContainer
 	} from '$lib/models';
 
@@ -42,12 +43,19 @@
 		]);
 
 		const facets = new Map([
-			['administrativeType', new Map(administrativeTypes.options.map((v) => [v as string, 0]))],
+			[
+				'administrativeType',
+				fromCounts(administrativeTypes.options, data.facets.administrativeType)
+			],
 			['cityAndMunicipalityTypeBBSR', cityAndMunicipalityTypeFacet],
 			['federalState', federalStateFacet]
 		]);
 
-		return computeFacetCount(facets, data.containers.filter(isOrganizationalUnitContainer));
+		if (Object.keys(data.facets).length === 0) {
+			return computeFacetCount(facets, data.containers.filter(isOrganizationalUnitContainer));
+		}
+
+		return facets;
 	});
 </script>
 

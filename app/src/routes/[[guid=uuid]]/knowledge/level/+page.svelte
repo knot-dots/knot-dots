@@ -13,6 +13,7 @@
 		computeFacetCount,
 		type Container,
 		findAncestors,
+		fromCounts,
 		payloadTypes,
 		policyFieldBNK,
 		predicates,
@@ -44,14 +45,18 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
+			['audience', fromCounts(audience.options, data.facets.audience)],
+			['category', fromCounts(sustainableDevelopmentGoals.options, data.facets.category)],
+			['topic', fromCounts(topics.options, data.facets.topic)],
+			['policyFieldBNK', fromCounts(policyFieldBNK.options, data.facets.policyFieldBNK)],
+			['programType', fromCounts(programTypes.options, data.facets.programType)]
 		]);
 
-		return computeFacetCount(facets, [...data.containers, ...data.programs]);
+		if (Object.keys(data.facets).length === 0) {
+			return computeFacetCount(facets, [...data.containers, ...data.programs]);
+		}
+
+		return facets;
 	});
 </script>
 

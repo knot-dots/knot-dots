@@ -3,11 +3,11 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { computeFacetCount, type Container, predicates, taskCategories } from '$lib/models';
+	import { computeFacetCount, type Container, fromCounts, predicates, taskCategories } from '$lib/models';
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: { containers: Container[]; facets: Record<string, Record<string, number>> };
 		sortOptions?: [string, string][];
 	}
 
@@ -34,11 +34,15 @@
 			...((!page.data.currentOrganization.payload.default
 				? [['included', new Map()]]
 				: []) as Array<[string, Map<string, number>]>),
-			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+			['taskCategory', fromCounts(taskCategories.options, data.facets?.taskCategory)],
 			['assignee', new Map()]
 		]);
 
-		return computeFacetCount(facets, data.containers);
+		if (!data.facets || Object.keys(data.facets).length === 0) {
+			return computeFacetCount(facets, data.containers);
+		}
+
+		return facets;
 	});
 </script>
 
