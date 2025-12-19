@@ -18,6 +18,7 @@ type Subjects = AnyContainer | EmptyContainer | PayloadType;
 const commonTypes = [
 	payloadTypes.enum.administrative_area_basic_data,
 	payloadTypes.enum.chapter,
+	payloadTypes.enum.custom_collection,
 	payloadTypes.enum.effect,
 	payloadTypes.enum.effect_collection,
 	payloadTypes.enum.file_collection,
@@ -31,6 +32,7 @@ const commonTypes = [
 	payloadTypes.enum.objective,
 	payloadTypes.enum.objective_collection,
 	payloadTypes.enum.program_collection,
+	payloadTypes.enum.report,
 	payloadTypes.enum.resource,
 	payloadTypes.enum.resource_collection,
 	payloadTypes.enum.rule,
