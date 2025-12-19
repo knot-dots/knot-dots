@@ -2,8 +2,7 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { isAssignedTo, isTaskContainer } from '$lib/models';
-import { getAllContainersRelatedToUser } from '$lib/server/db';
-import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { getAllContainersRelatedToUser, getFacetAggregationsForGuids } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 
