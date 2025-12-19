@@ -4,6 +4,7 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
+	getManyContainersWithES,
 	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
@@ -12,6 +13,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, url, parent }) => {
 	let containers: Container[];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const features = createFeatureDecisions(locals.features);
 
 	async function filterOrganizationalUnitsAsync<T extends Container>(promise: Promise<Array<T>>) {
 		let subordinateOrganizationalUnits: string[] = [];
@@ -60,26 +62,39 @@ export const load = (async ({ locals, url, parent }) => {
 	} else {
 		containers = await filterOrganizationalUnitsAsync(
 			locals.pool.connect(
-				getManyContainers(
-					[],
-					{
-						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						topics: url.searchParams.getAll('topic'),
-						type: [payloadTypes.enum.program]
-					},
-					url.searchParams.get('sort') ?? ''
-				)
+				features.useElasticsearch()
+					? getManyContainersWithES(
+							[],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								terms: url.searchParams.get('terms') ?? '',
+								topics: url.searchParams.getAll('topic'),
+								type: [payloadTypes.enum.program]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
+					: getManyContainers(
+							[],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								terms: url.searchParams.get('terms') ?? '',
+								topics: url.searchParams.getAll('topic'),
+								type: [payloadTypes.enum.program]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
 			)
 		);
 	}
 
 	const filtered = filterVisible(containers, locals.user);
 
-	const features = createFeatureDecisions(locals.features);
 	const facets = features.useElasticsearch()
 		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
 		: {};

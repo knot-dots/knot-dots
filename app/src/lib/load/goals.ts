@@ -6,6 +6,7 @@ import {
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
+	getManyContainersWithES,
 	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/goals/$types';
@@ -66,21 +67,36 @@ export default (async function load({ depends, locals, parent, url }) {
 			)
 		]);
 	} else {
+		const features = createFeatureDecisions(locals.features);
 		[containers] = await Promise.all([
 			locals.pool.connect(
-				getManyContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						programTypes: url.searchParams.getAll('programType'),
-						topics: url.searchParams.getAll('topic'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.goal]
-					},
-					url.searchParams.get('sort') ?? ''
-				)
+				features.useElasticsearch()
+					? getManyContainersWithES(
+							currentOrganization.payload.default ? [] : [currentOrganization.guid],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								topics: url.searchParams.getAll('topic'),
+								terms: url.searchParams.get('terms') ?? '',
+								type: [payloadTypes.enum.goal]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
+					: getManyContainers(
+							currentOrganization.payload.default ? [] : [currentOrganization.guid],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								topics: url.searchParams.getAll('topic'),
+								terms: url.searchParams.get('terms') ?? '',
+								type: [payloadTypes.enum.goal]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
 			)
 		]);
 	}

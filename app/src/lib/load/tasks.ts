@@ -16,6 +16,7 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
+	getManyContainersWithES,
 	getFacetAggregationsForGuids
 } from '$lib/server/db';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/tasks/$types';
@@ -36,6 +37,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		let subordinateOrganizationalUnits: string[] = [];
 
 		const { currentOrganization, currentOrganizationalUnit } = await parent();
+		const features = createFeatureDecisions(locals.features);
 
 		if (currentOrganization.payload.default) {
 			error(404, unwrapFunctionStore(_)('error.not_found'));
@@ -65,25 +67,44 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		} else {
 			[taskContainers, otherContainers] = (await Promise.all([
 				locals.pool.connect(
-					getManyContainers(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							assignees: url.searchParams.getAll('assignee'),
-							taskCategories: url.searchParams.getAll('taskCategory'),
-							terms: url.searchParams.get('terms') ?? '',
-							type: [payloadTypes.enum.task]
-						},
-						url.searchParams.get('sort') ?? defaultSort
-					)
+					features.useElasticsearch()
+						? getManyContainersWithES(
+								currentOrganization.payload.default ? [] : [currentOrganization.guid],
+								{
+									assignees: url.searchParams.getAll('assignee'),
+									taskCategories: url.searchParams.getAll('taskCategory'),
+									terms: url.searchParams.get('terms') ?? '',
+									type: [payloadTypes.enum.task]
+								},
+								url.searchParams.get('sort') ?? defaultSort
+							)
+						: getManyContainers(
+								currentOrganization.payload.default ? [] : [currentOrganization.guid],
+								{
+									assignees: url.searchParams.getAll('assignee'),
+									taskCategories: url.searchParams.getAll('taskCategory'),
+									terms: url.searchParams.get('terms') ?? '',
+									type: [payloadTypes.enum.task]
+								},
+								url.searchParams.get('sort') ?? defaultSort
+							)
 				),
 				locals.pool.connect(
-					getManyContainers(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							type: [payloadTypes.enum.goal]
-						},
-						'alpha'
-					)
+					features.useElasticsearch()
+						? getManyContainersWithES(
+								currentOrganization.payload.default ? [] : [currentOrganization.guid],
+								{
+									type: [payloadTypes.enum.goal]
+								},
+								'alpha'
+							)
+						: getManyContainers(
+								currentOrganization.payload.default ? [] : [currentOrganization.guid],
+								{
+									type: [payloadTypes.enum.goal]
+								},
+								'alpha'
+							)
 				)
 			])) as [TaskContainer[], GoalContainer[]];
 		}
@@ -101,7 +122,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			currentOrganizationalUnit
 		);
 		// Facets over tasks (primary list) only; could extend to include related if needed
-		const features = createFeatureDecisions(locals.features);
 		const facets = features.useElasticsearch()
 			? await getFacetAggregationsForGuids(containers.map((c) => c.guid))
 			: {};
