@@ -22,6 +22,7 @@
 	import Text from '~icons/knotdots/text';
 	import Teaser from '~icons/knotdots/basic-data';
 	import Tiles from '~icons/knotdots/tiles';
+	import TwoCol from '~icons/knotdots/two-column';
 	import Link from '~icons/knotdots/link';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import { page } from '$app/state';
@@ -293,6 +294,9 @@
 				: []),
 			...(mayAddTeaserCollection
 				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content }]
 				: []),
 			...(mayAddTeaserSection
 				? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]

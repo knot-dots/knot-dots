@@ -126,9 +126,9 @@
 		gap: 0.75rem;
 	}
 
-    .stage--buttons {
-        min-height: 4rem;
-    }
+	.stage--buttons {
+		min-height: 4rem;
+	}
 
 	header button {
 		margin-left: auto;

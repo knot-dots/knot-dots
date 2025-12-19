@@ -48,7 +48,8 @@
 		isTeaserCollectionContainer,
 		isTextContainer,
 		isTeaserHighlightContainer,
-		isQuoteContainer
+		isQuoteContainer,
+		isColContentContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -232,7 +233,7 @@
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 				{heading}
 			/>
-		{:else if isTeaserContainer(container) || isInfoBoxContainer(container) || isTeaserHighlightContainer(container) || isQuoteContainer(container)}
+		{:else if isTeaserContainer(container) || isInfoBoxContainer(container) || isTeaserHighlightContainer(container) || isQuoteContainer(container) || isColContentContainer(container)}
 			<EditableTeaserSection
 				bind:container
 				bind:parentContainer

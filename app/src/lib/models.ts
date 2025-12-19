@@ -63,6 +63,7 @@ const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
 	'chapter',
+	'col_content',
 	'custom_collection',
 	'effect',
 	'effect_collection',
@@ -137,6 +138,28 @@ export function isLevel(value: unknown): value is Level {
 const listTypeValues = ['carousel', 'wall', 'list'] as const;
 
 export const listTypes = z.enum(listTypeValues);
+
+const teaserColSizeValues = ['0-100', '33-66', '50-50', '66-33', '100-0'] as const;
+
+export const teaserColSizes = z.enum(teaserColSizeValues);
+
+export type TeaserColSize = z.infer<typeof teaserColSizes>;
+
+export const teaserColSizeToNumber: Record<TeaserColSize, number> = {
+	'0-100': 0,
+	'33-66': 33,
+	'50-50': 50,
+	'66-33': 66,
+	'100-0': 100
+};
+
+export const teaserNumberToColSize: Record<number, TeaserColSize> = {
+	0: '0-100',
+	33: '33-66',
+	50: '50-50',
+	66: '66-33',
+	100: '100-0'
+};
 
 const linkStyleValues = ['default', 'external', 'button'] as const;
 
@@ -976,19 +999,33 @@ const teaserPayload = z
 	.object({
 		audience: z.array(audience).default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
-		title: z.string().trim(),
-		link: z.string().optional(),
+		bodyRight: z.string().trim().optional(),
 		cardStyle: z.string().optional(),
-		//href: z.string().optional(),
-		linkCaption: z.string().optional(),
+		colSize: teaserColSizes.default('33-66'),
 		description: z.string().optional(),
-		style: z.string().optional().default('default'),
 		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
+		imageAltTextRight: z.string().optional(),
+		imageEnable: z.boolean().default(true),
+		imageEnableRight: z.boolean().default(false),
+		imageRight: z.string().url().optional(),
+		link: z.string().optional(),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		linkRight: z.string().optional(),
+		linkCaption: z.string().optional(),
+		linkCaptionRight: z.string().optional(),
+		textEnable: z.boolean().default(false),
+		textEnableRight: z.boolean().default(true),
+		title: z.string().trim(),
+		titleEnable: z.boolean().default(false),
+		titleEnableRight: z.boolean().default(true),
+		titleRight: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.teaser),
-		colSize: z.string().optional(),
+		style: z.string().optional().default('default'),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict(); // .strict() means no extra fields allowed
+	.strict(); // means no extra fields allowed
 
 // For creating new empty teasers (title optional during creation)
 const initialTeaserPayload = teaserPayload.partial({ title: true });
@@ -996,6 +1033,15 @@ const initialTeaserPayload = teaserPayload.partial({ title: true });
 // Add info payload schema here:
 const infoBoxPayload = teaserPayload
 	.extend({
+		colSize: teaserColSizes.default('100-0'),
+		imageEnable: z.boolean().default(false),
+		imageEnableRight: z.boolean().default(false),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(false),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.info_box)
 	})
 	.strict();
@@ -1005,6 +1051,15 @@ const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
 
 const teaserHighlightPayload = teaserPayload
 	.extend({
+		colSize: teaserColSizes.default('100-0'),
+		imageEnable: z.boolean().default(false),
+		imageEnableRight: z.boolean().default(false),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(false),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.teaser_highlight)
 	})
 	.strict();
@@ -1014,12 +1069,39 @@ const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: tr
 
 const quotePayload = teaserPayload
 	.extend({
+		colSize: teaserColSizes.default('100-0'),
+		imageEnable: z.boolean().default(false),
+		imageEnableRight: z.boolean().default(false),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(false),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.quote)
 	})
 	.strict();
 
 // For creating new empty teasers (title optional during creation)
-const initialQuotePayload = quotePayload.partial();
+const initialQuotePayload = quotePayload.partial({ title: true });
+
+const colContentPayload = teaserPayload
+	.extend({
+		colSize: teaserColSizes.default('50-50'),
+		imageEnable: z.boolean().default(true),
+		imageEnableRight: z.boolean().default(true),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(true),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(true),
+		type: z.literal(payloadTypes.enum.col_content)
+	})
+	.strict();
+
+// For creating new empty teasers (title optional during creation)
+const initialColContentPayload = colContentPayload.partial({ title: true });
 
 const teaserCollectionPayload = z
 	.object({
@@ -1124,6 +1206,7 @@ const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
+	colContentPayload,
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
@@ -1144,8 +1227,8 @@ const payload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
-	reportPayload,
 	quotePayload,
+	reportPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1180,6 +1263,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
+	colContentPayload,
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
@@ -1202,8 +1286,8 @@ const anyPayload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
-	reportPayload,
 	quotePayload,
+	reportPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1686,6 +1770,19 @@ export function isTeaserHighlightContainer(
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
 
+// #ColContent
+const colContentContainer = container.extend({
+	payload: colContentPayload
+});
+
+export type ColContentContainer = z.infer<typeof colContentContainer>;
+
+export function isColContentContainer(
+	container: AnyContainer | EmptyContainer
+): container is ColContentContainer {
+	return container.payload.type === payloadTypes.enum.col_content;
+}
+
 // #Quote
 const quoteContainer = container.extend({
 	payload: quotePayload
@@ -1855,6 +1952,7 @@ export const emptyContainer = newContainer.extend({
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
 		initialChapterPayload,
+		initialColContentPayload,
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,

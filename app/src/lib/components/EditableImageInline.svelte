@@ -51,7 +51,7 @@
 </script>
 
 {#if editable && !value}
-	<div class="placeholder">
+	<label class="placeholder" style="">
 		<div style="display: flex; align-items: center; gap: 0.5rem;">
 			<PlaceholderImage />
 			{label}
@@ -64,7 +64,7 @@
 			oninput={upload}
 			type="file"
 		/>
-	</div>
+	</label>
 {:else if value}
 	{#if editable}
 		<img use:popover.button alt={$_('logo')} class="logo" src={transformFileURL(value)} />
@@ -90,8 +90,8 @@
 		align-items: center;
 		gap: 0.5rem;
 		justify-content: center;
-        width: 100%;
-        height: auto;
+		width: 100%;
+		height: auto;
 	}
 
 	img {
