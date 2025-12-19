@@ -27,7 +27,7 @@
 
 	let [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
-		strategy: 'absolute'
+		strategy: 'fixed'
 	});
 
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };

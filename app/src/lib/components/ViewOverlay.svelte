@@ -14,6 +14,7 @@
 	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
 	import EditableRuleDetailView from '$lib/components/EditableRuleDetailView.svelte';
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
+	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
@@ -37,6 +38,7 @@
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		isTextContainer,
 		paramsFromFragment,
 		policyFieldBNK,
@@ -181,6 +183,8 @@
 		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTaskContainer(container)}
 		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isTeaserContainer(container)}
+		<EditableTeaserDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTextContainer(container)}
 		<EditableTextDetailView bind:container {relatedContainers} {revisions} />
 	{/if}
