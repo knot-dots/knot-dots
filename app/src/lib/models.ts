@@ -1801,6 +1801,23 @@ const teaserCollectionContainer = container.extend({
 
 export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
 
+export type TeaserLikeContainer =
+	| TeaserContainer
+	| InfoBoxContainer
+	| TeaserHighlightContainer
+	| QuoteContainer
+	| ColContentContainer;
+
+export function isTeaserLikeContainer(container: AnyContainer): container is TeaserLikeContainer {
+	return [
+		payloadTypes.enum.teaser,
+		payloadTypes.enum.info_box,
+		payloadTypes.enum.teaser_highlight,
+		payloadTypes.enum.quote,
+		payloadTypes.enum.col_content
+	].includes(container.payload.type as any);
+}
+
 export function isTeaserCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TeaserCollectionContainer {

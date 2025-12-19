@@ -8,7 +8,7 @@
 	import Text from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyContainer } from '$lib/models';
+	import { type AnyContainer, isTeaserLikeContainer, type TeaserLikeContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -39,6 +39,8 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
+	let teaserContainer = $derived(isTeaserLikeContainer(container) ? container : null);
+
 	async function handleDelete(container: AnyContainer) {
 		const response = await deleteContainer(container);
 
@@ -54,6 +56,18 @@
 		}
 
 		dialog.close();
+	}
+
+	/**
+	 * Helper to get a typed reference to a boolean field in the payload
+	 */
+	function getBooleanField(key: 'titleEnable' | 'textEnable' | 'imageEnable' | 'linkEnable') {
+		if (!teaserContainer) return null;
+		const pKey = (
+			payloadSuffix === 'Right' ? `${key}Right` : key
+		) as keyof TeaserLikeContainer['payload'];
+		// We return the actual object and the specific key to allow binding
+		return { payload: teaserContainer.payload, key: pKey };
 	}
 </script>
 
@@ -119,51 +133,74 @@
 	/>
 {/if}
 
-{#snippet CheckboxItem(key: string, label: string)}
-	<label class="menu-label-item">
-		<input
-			name={key + payloadSuffix}
-			bind:checked={container.payload[key + payloadSuffix]}
-			type="checkbox"
-		/>
-		<span class="truncated">{label}</span>
-	</label>
+{#snippet CheckboxItem(
+	key: 'titleEnable' | 'textEnable' | 'imageEnable' | 'linkEnable',
+	label: string
+)}
+	{@const field = getBooleanField(key)}
+
+	{#if field}
+		<label class="menu-label-item">
+			<input
+				name={String(field.key)}
+				bind:checked={field.payload[field.key] as boolean}
+				type="checkbox"
+			/>
+			<span class="truncated">{label}</span>
+		</label>
+	{/if}
 {/snippet}
 
 {#snippet AltTextSub()}
-	<label class="input-group">
-		<span>Alt-Text eingeben</span>
-		<input
-			bind:value={container.payload['imageAltText' + payloadSuffix]}
-			name={'imageAltText' + (payloadSuffix || '')}
-			type="text"
-			placeholder="z.B. Beschreibung des Bildes..."
-		/>
-	</label>
+	{#if teaserContainer}
+		{@const payloadKey = (
+			payloadSuffix === 'Right' ? 'imageAltTextRight' : 'imageAltText'
+		) as keyof typeof teaserContainer.payload}
+
+		<label class="input-group">
+			<span>Alt-Text eingeben</span>
+			<input
+				bind:value={teaserContainer.payload[payloadKey] as string}
+				name={String(payloadKey)}
+				type="text"
+				placeholder="z.B. Beschreibung des Bildes..."
+			/>
+		</label>
+	{/if}
 {/snippet}
 
 {#snippet LinkUrlSub()}
-	<label class="input-group">
-		<span>URL</span>
-		<input
-			bind:value={container.payload['link' + payloadSuffix]}
-			name={'link' + (payloadSuffix || '')}
-			type="url"
-			placeholder="https://..."
-		/>
-	</label>
+	{#if teaserContainer}
+		{@const payloadKey = (
+			payloadSuffix === 'Right' ? 'linkRight' : 'link'
+		) as keyof typeof teaserContainer.payload}
+		<label class="input-group">
+			<span>URL</span>
+			<input
+				bind:value={teaserContainer.payload[payloadKey] as string}
+				name={String(payloadKey)}
+				type="url"
+				placeholder="https://..."
+			/>
+		</label>
+	{/if}
 {/snippet}
 
 {#snippet LinkTextSub()}
-	<label class="input-group">
-		<span>Anzeigetext</span>
-		<input
-			bind:value={container.payload['linkCaption' + payloadSuffix]}
-			name={'linkCaption' + (payloadSuffix || '')}
-			type="text"
-			placeholder="Link Text..."
-		/>
-	</label>
+	{#if teaserContainer}
+		{@const payloadKey = (
+			payloadSuffix === 'Right' ? 'linkCaptionRight' : 'linkCaption'
+		) as keyof typeof teaserContainer.payload}
+		<label class="input-group">
+			<span>Anzeigetext</span>
+			<input
+				bind:value={teaserContainer.payload[payloadKey] as string}
+				name={String(payloadKey)}
+				type="text"
+				placeholder="Link Text..."
+			/>
+		</label>
+	{/if}
 {/snippet}
 
 <style>

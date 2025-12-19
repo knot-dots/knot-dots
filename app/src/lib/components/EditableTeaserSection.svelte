@@ -2,21 +2,17 @@
 	import { _ } from 'svelte-i18n';
 	import type { Attachment } from 'svelte/attachments';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
-	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import ArrowRight from '~icons/knotdots/arrow-right';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import {
 		type AnyContainer,
-		type TeaserContainer,
-		type InfoBoxContainer,
-		type TeaserHighlightContainer,
-		type QuoteContainer,
 		teaserColSizes,
 		type TeaserColSize,
 		teaserColSizeToNumber,
-		teaserNumberToColSize
+		teaserNumberToColSize,
+		type TeaserLikeContainer
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
@@ -24,7 +20,7 @@
 	import ContainerSectionDropdown from '$lib/components/ContainerSectionDropdown.svelte';
 
 	interface Props {
-		container: TeaserContainer | InfoBoxContainer | TeaserHighlightContainer | QuoteContainer;
+		container: TeaserLikeContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
@@ -172,14 +168,14 @@
 			</div>
 		{/if}
 		<Splitpanes
-			theme={editable ? 'modern-theme' : 'no-splitter'}
+			theme={editable ? 'modern-theme' : 'modern-theme no-splitter'}
 			class={gridClass()}
 			on:resize={handleResize}
 			on:splitter-click={handleResizeStart}
 			on:resized={handleResizeEnd}
 		>
 			<Pane bind:size={paneSize} minSize={0} maxSize={100}>
-				<div class="splitpanes__pane--wrap">
+				<div class="splitpanes__pane--wrap splitpanes__pane--wrap--left">
 					{#if canUpdate}
 						<ul class="absolute-actions is-visible-on-hover">
 							<li>
@@ -200,7 +196,7 @@
 						/>
 					{/if}
 					{#if container.payload.titleEnable}
-						<header class="mt-3">
+						<header class="">
 							{#if isInfoBox}
 								<span style="color: var(--color-orange-500)">
 									<ExclamationCircle />
@@ -225,27 +221,29 @@
 						</header>
 					{/if}
 
-					<div class="teaser--content mt-3">
-						{#if canUpdate && container.payload.textEnable}
-							<Editor bind:value={container.payload.body} />
-						{:else if container.payload.textEnable}
-							<Viewer value={container.payload.body} />
-						{/if}
-					</div>
+					{#if container.payload.textEnable}
+						<div class="teaser--content">
+							{#if canUpdate}
+								<Editor bind:value={container.payload.body} />
+							{:else}
+								<Viewer value={container.payload.body} />
+							{/if}
+						</div>
+					{/if}
 
-					<div class="flex mt-3" class:flex-column={!canUpdate}>
-						{#if hasLink}
+					{#if hasLink}
+						<div class="flex" class:flex-column={!canUpdate}>
 							<div class="flex-end">
 								<a class="button button--action" href={container.payload.link}>
 									<ArrowRight /> {container.payload.linkCaption}</a
 								>
 							</div>
-						{/if}
-					</div>
+						</div>
+					{/if}
 				</div>
 			</Pane>
 			<Pane>
-				<div class="splitpanes__pane--wrap">
+				<div class="splitpanes__pane--wrap splitpanes__pane--wrap--right">
 					{#if canUpdate}
 						<ul class="absolute-actions is-visible-on-hover">
 							<li>
@@ -273,7 +271,7 @@
 						/>
 					{/if}
 					{#if container.payload.titleEnableRight}
-						<header class="mt-3">
+						<header>
 							{#if isInfoBox}
 								<span style="color: var(--color-orange-500)">
 									<ExclamationCircle />
@@ -298,23 +296,25 @@
 						</header>
 					{/if}
 
-					<div class="teaser--content mt-3">
-						{#if canUpdate && container.payload.textEnableRight}
-							<Editor bind:value={container.payload.bodyRight} />
-						{:else if container.payload.textEnableRight}
-							<Viewer value={container.payload.bodyRight} />
-						{/if}
-					</div>
+					{#if container.payload.textEnableRight}
+						<div class="teaser--content">
+							{#if canUpdate}
+								<Editor bind:value={container.payload.bodyRight} />
+							{:else}
+								<Viewer value={container.payload.bodyRight} />
+							{/if}
+						</div>
+					{/if}
 
-					<div class="flex mt-3" class:flex-column={!canUpdate}>
-						{#if hasLinkRight}
+					{#if hasLinkRight}
+						<div class="flex" class:flex-column={!canUpdate}>
 							<div class="flex-end">
 								<a class="button button--action" href={container.payload.linkRight}>
 									<ArrowRight /> {container.payload.linkCaptionRight}</a
 								>
 							</div>
-						{/if}
-					</div>
+						</div>
+					{/if}
 				</div>
 			</Pane>
 		</Splitpanes>
@@ -333,10 +333,6 @@
 		display: flex;
 		gap: 0.5rem;
 		align-items: center;
-	}
-
-	.mt-3 {
-		margin-top: 1rem;
 	}
 
 	.flex {
