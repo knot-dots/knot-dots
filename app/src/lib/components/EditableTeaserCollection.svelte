@@ -5,6 +5,7 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import TeaserCard from '$lib/components/TeaserCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
+	import Accordion from '$lib/components/Accordion.svelte';
 	import List from '$lib/components/List.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
@@ -13,8 +14,6 @@
 		type AnyContainer,
 		containerOfType,
 		predicates,
-		isTeaserContainer,
-		isTeaserCollectionContainer,
 		type TeaserContainer,
 		type TeaserCollectionContainer,
 		type NewContainer,
@@ -153,6 +152,16 @@
 				<TeaserCard container={item} {editable} />
 			{/snippet}
 		</Wall>
+	{:else if container.payload.listType === 'accordion'}
+		<Accordion
+			{addItem}
+			{items}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+		>
+			{#snippet itemSnippet(item)}
+				<TeaserCard container={item} {editable} />
+			{/snippet}
+		</Accordion>
 	{:else}
 		<Carousel
 			{addItem}

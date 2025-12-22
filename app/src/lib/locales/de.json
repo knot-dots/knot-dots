@@ -283,6 +283,7 @@
 		"button": "Button"
 	},
 	"list_type": {
+		"accordion": "Accordion",
 		"carousel": "Karussell",
 		"wall": "Kacheln",
 		"list": "Liste"

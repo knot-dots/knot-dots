@@ -135,7 +135,7 @@ export function isLevel(value: unknown): value is Level {
 	return levelValues.includes(value as Level);
 }
 
-const listTypeValues = ['carousel', 'wall', 'list'] as const;
+const listTypeValues = ['carousel', 'wall', 'list', 'accordion'] as const;
 
 export const listTypes = z.enum(listTypeValues);
 
@@ -2415,45 +2415,45 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
-				const included = url.searchParams.has('includedChanged')
-					? url.searchParams.getAll('included')
-					: ['subordinate_organizational_units'];
+			const included = url.searchParams.has('includedChanged')
+				? url.searchParams.getAll('included')
+				: ['subordinate_organizational_units'];
 
-				if (c.organizational_unit == currentOrganizationalUnit?.guid) {
-					return true;
-				}
+			if (c.organizational_unit == currentOrganizationalUnit?.guid) {
+				return true;
+			}
 
-				if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
-					return true;
-				}
+			if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
+				return true;
+			}
 
-				if (
-					included.includes('subordinate_organizational_units') &&
-					c.organizational_unit != null &&
-					subordinateOrganizationalUnits.includes(c.organizational_unit)
-				) {
-					return true;
-				}
+			if (
+				included.includes('subordinate_organizational_units') &&
+				c.organizational_unit != null &&
+				subordinateOrganizationalUnits.includes(c.organizational_unit)
+			) {
+				return true;
+			}
 
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit == null
-				) {
-					return true;
-				}
+			if (
+				included.includes('superordinate_organizational_units') &&
+				c.organizational_unit == null
+			) {
+				return true;
+			}
 
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit != null &&
-					!subordinateOrganizationalUnits
-						.filter((ou) => ou != currentOrganizationalUnit?.guid)
-						.includes(c.organizational_unit)
-				) {
-					return true;
-				}
+			if (
+				included.includes('superordinate_organizational_units') &&
+				c.organizational_unit != null &&
+				!subordinateOrganizationalUnits
+					.filter((ou) => ou != currentOrganizationalUnit?.guid)
+					.includes(c.organizational_unit)
+			) {
+				return true;
+			}
 
-				return false;
-			});
+			return false;
+		});
 }
 
 export function filterMembers<T extends AnyContainer>(containers: T[], members: string[]) {
