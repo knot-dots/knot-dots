@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
+	import Briefcase from '~icons/flowbite/briefcase-solid';
 	import File from '~icons/flowbite/file-solid';
 	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
@@ -33,6 +34,7 @@
 		boards,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
+		isContentPartnerCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -149,6 +151,13 @@
 	let mayAddTeaserCollection = $derived(
 		createFeatureDecisions(page.data.features).useTeaser() &&
 			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddContentPartnerCollection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) ||
+				isOrganizationalUnitContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
 	);
 
 	let mayAddTeaserSection = $derived(
@@ -316,6 +325,15 @@
 				: []),
 			...(mayAddTeaserSection
 				? [{ icon: ExclamationCircle, label: $_('quote'), value: payloadTypes.enum.quote }]
+				: []),
+			...(mayAddContentPartnerCollection
+				? [
+						{
+							icon: Briefcase,
+							label: $_('partners'),
+							value: payloadTypes.enum.content_partner_collection
+						}
+					]
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);

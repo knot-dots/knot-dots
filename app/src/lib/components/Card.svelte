@@ -28,7 +28,8 @@
 		overlayURL,
 		paramsFromFragment,
 		predicates,
-		isQuoteContainer
+		isQuoteContainer,
+		isContentPartnerContainer
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
@@ -194,7 +195,7 @@
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
-	{#if !isTeaserContainer(container)}
+	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container)}
 		<header>
 			<h3>
 				<a
@@ -289,6 +290,22 @@
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
 				<ObjectiveChart {container} {relatedContainers} />
+			{/if}
+		{:else if isContentPartnerContainer(container)}
+			{#if 'image' in container.payload && container.payload.image}
+				<p>
+					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+				</p>
+			{:else}
+				<header>
+					<h3>
+						<a
+							href={href ? href() : computeHref(page.url)}
+							bind:this={previewLink}
+							onclick={updateOverlayHistory}>{container.payload.title}</a
+						>
+					</h3>
+				</header>
 			{/if}
 		{:else if isTeaserContainer(container)}
 			{#if 'image' in container.payload && container.payload.image}

@@ -37,7 +37,7 @@
 	let dialog: HTMLDialogElement;
 </script>
 
-{#if isTeaserCollectionContainer(container) && ($ability.can('update', container, 'visibility') || $ability.can('delete', container))}
+{#if $ability.can('update', container, 'visibility') || $ability.can('delete', container)}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" use:popover.button>
 			<ListType />

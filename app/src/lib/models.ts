@@ -64,6 +64,8 @@ const payloadTypeValues = [
 	'administrative_area_basic_data',
 	'chapter',
 	'col_content',
+	'content_partner',
+	'content_partner_collection',
 	'custom_collection',
 	'effect',
 	'effect_collection',
@@ -1118,6 +1120,31 @@ const colContentPayload = teaserPayload
 // For creating new empty teasers (title optional during creation)
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
+const contentPartnerPayload = z
+	.object({
+		image: z.string().url().optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.content_partner),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
+
+const contentPartnerCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default('Partners'),
+		type: z.literal(payloadTypes.enum.content_partner_collection),
+		listType: listTypes.default(listTypes.enum.list),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialContentPartnerCollectionPayload = contentPartnerCollectionPayload;
+
 const teaserCollectionPayload = z
 	.object({
 		title: z
@@ -1222,6 +1249,8 @@ const payload = z.discriminatedUnion('type', [
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
 	colContentPayload,
+	contentPartnerCollectionPayload,
+	contentPartnerPayload,
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
@@ -1280,6 +1309,8 @@ const anyPayload = z.discriminatedUnion('type', [
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
 	colContentPayload,
+	contentPartnerCollectionPayload,
+	contentPartnerPayload,
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
@@ -1799,6 +1830,31 @@ export function isTeaserHighlightContainer(
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
 
+// #ContentPartner
+const contentPartnerContainer = container.extend({
+	payload: contentPartnerPayload
+});
+
+export type ContentPartnerContainer = z.infer<typeof contentPartnerContainer>;
+
+export function isContentPartnerContainer(
+	container: AnyContainer | EmptyContainer
+): container is ContentPartnerContainer {
+	return container.payload.type === payloadTypes.enum.content_partner;
+}
+
+const contentPartnerCollectionContainer = container.extend({
+	payload: contentPartnerCollectionPayload
+});
+
+export type ContentPartnerCollectionContainer = z.infer<typeof contentPartnerCollectionContainer>;
+
+export function isContentPartnerCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ContentPartnerCollectionContainer {
+	return container.payload.type === payloadTypes.enum.content_partner_collection;
+}
+
 // #ColContent
 const colContentContainer = container.extend({
 	payload: colContentPayload
@@ -1999,6 +2055,8 @@ export const emptyContainer = newContainer.extend({
 		initialAdministrativeAreaBasicDataPayload,
 		initialChapterPayload,
 		initialColContentPayload,
+		initialContentPartnerCollectionPayload,
+		initialContentPartnerPayload,
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,

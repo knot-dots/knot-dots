@@ -59,6 +59,8 @@ export const load = (async ({ depends, locals, parent }) => {
 					type: [
 						payloadTypes.enum.chapter,
 						payloadTypes.enum.col_content,
+						payloadTypes.enum.content_partner,
+						payloadTypes.enum.content_partner_collection,
 						payloadTypes.enum.file_collection,
 						payloadTypes.enum.indicator_collection,
 						payloadTypes.enum.info_box,
