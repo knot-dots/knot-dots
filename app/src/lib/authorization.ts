@@ -24,6 +24,7 @@ const commonTypes = [
 	payloadTypes.enum.file_collection,
 	payloadTypes.enum.goal,
 	payloadTypes.enum.goal_collection,
+	payloadTypes.enum.image,
 	payloadTypes.enum.indicator_collection,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.map,

@@ -70,6 +70,7 @@ const payloadTypeValues = [
 	'file_collection',
 	'goal',
 	'goal_collection',
+	'image',
 	'indicator',
 	'indicator_collection',
 	'indicator_template',
@@ -994,6 +995,20 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
+
+const imagePayload = z
+	.object({
+		body: z.string().trim().optional(),
+		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.image),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialImagePayload = imagePayload.partial({ body: true, title: true });
+
 // Add teaser payload schema here:
 const teaserPayload = z
 	.object({
@@ -1213,6 +1228,7 @@ const payload = z.discriminatedUnion('type', [
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
+	imagePayload,
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
@@ -1270,6 +1286,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
+	imagePayload,
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
@@ -1733,6 +1750,18 @@ export function isMeasureMonitoringContainer(
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
+// #image
+const imageContainer = container.extend({
+	payload: imagePayload
+});
+export type ImageContainer = z.infer<typeof imageContainer>;
+
+export function isImageContainer(
+	container: AnyContainer | EmptyContainer
+): container is ImageContainer {
+	return container.payload.type === payloadTypes.enum.image;
+}
+
 // #Teaser
 const teaserContainer = container.extend({
 	payload: teaserPayload
@@ -1976,6 +2005,7 @@ export const emptyContainer = newContainer.extend({
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
+		initialImagePayload,
 		initialIndicatorCollectionPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,

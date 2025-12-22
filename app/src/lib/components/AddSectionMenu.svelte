@@ -14,6 +14,7 @@
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
+	import Image from '~icons/knotdots/placeholder-image';
 	import Map from '~icons/knotdots/map';
 	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
@@ -169,6 +170,11 @@
 			isReportContainer(parentContainer)
 	);
 
+	let mayAddImage = $derived(
+		createFeatureDecisions(page.data.features).useImage() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
@@ -292,6 +298,7 @@
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
+			...(mayAddImage ? [{ icon: Image, label: $_('image'), value: payloadTypes.enum.image }] : []),
 			...(mayAddTeaserCollection
 				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
 				: []),

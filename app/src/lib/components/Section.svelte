@@ -10,6 +10,7 @@
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
+	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
@@ -33,6 +34,7 @@
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
+		isImageContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -162,6 +164,14 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
+		{:else if isImageContainer(container)}
+			<EditableImageSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
 				bind:container
@@ -236,6 +246,14 @@
 			/>
 		{:else if isTeaserLikeContainer(container)}
 			<EditableTeaserSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isImageContainer(container)}
+			<EditableImageSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
