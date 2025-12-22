@@ -19,6 +19,10 @@
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
+	import ExpenseExpected from '~icons/knotdots/expense-expected';
+	import Expense from '~icons/knotdots/expense';
+	import IncomeExpected from '~icons/knotdots/income-expected';
+	import Income from '~icons/knotdots/income';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {

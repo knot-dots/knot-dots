@@ -212,6 +212,8 @@
 	"indicator.table.in_progress": "In progress total",
 	"indicator.table.objectives": "Objectives total",
 	"indicator.table.overall_objective": "Overall objective",
+	"indicator.table.no_resource_warning": "No resource is selected for this table yet.",
+	"indicator.table.select_resource": "Select resource",
 	"indicator.table.year": "Year",
 	"indicator.template": "Indicator template",
 	"indicator.tip.done": "Already achieved in {year}: {value, number} {unit}",

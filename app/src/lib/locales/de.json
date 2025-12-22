@@ -213,6 +213,8 @@
 	"indicator.table.in_progress": "In Umsetzung gesamt",
 	"indicator.table.objectives": "Ziele aus Programmen gesamt",
 	"indicator.table.overall_objective": "Gesamtziel",
+	"indicator.table.no_resource_warning": "Für diese Tabelle ist noch keine Ressource ausgewählt.",
+	"indicator.table.select_resource": "Ressource auswählen",
 	"indicator.table.year": "Jahr",
 	"indicator.template": "Indikator-Vorlage",
 	"indicator.tip.done": "{year} bereits umgesetzt: {value, number} {unit}",
