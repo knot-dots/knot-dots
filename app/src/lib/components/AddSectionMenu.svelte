@@ -265,30 +265,6 @@
 						}
 					]
 				: []),
-			...(mayAddResourceDataSection
-				? [
-						{
-							icon: Cash,
-							label: $_('resource_data.historical_expenses'),
-							value: payloadTypes.enum.resource_data_historical_expenses
-						},
-						{
-							icon: Cash,
-							label: $_('resource_data.expected_expenses'),
-							value: payloadTypes.enum.resource_data_expected_expenses
-						},
-						{
-							icon: Cash,
-							label: $_('resource_data.historical_income'),
-							value: payloadTypes.enum.resource_data_historical_income
-						},
-						{
-							icon: Cash,
-							label: $_('resource_data.expected_income'),
-							value: payloadTypes.enum.resource_data_expected_income
-						}
-					]
-				: []),
 			...(mayAddIndicatorCollection
 				? [
 						{
@@ -348,6 +324,54 @@
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
+
+	let resourceRelatedOptions = $derived([
+		...(mayAddResourceDataCollectionSection
+			? [
+					{
+						icon: Cash,
+						label: $_('resource_data'),
+						value: payloadTypes.enum.resource_data_collection
+					}
+				]
+			: []),
+		...(mayAddResourceDataHistoricalExpenses
+			? [
+					{
+						icon: Expense,
+						label: $_('resource_data.historical_expenses'),
+						value: payloadTypes.enum.resource_data_historical_expenses
+					}
+				]
+			: []),
+		...(mayAddResourceDataExpectedExpenses
+			? [
+					{
+						icon: ExpenseExpected,
+						label: $_('resource_data.expected_expenses'),
+						value: payloadTypes.enum.resource_data_expected_expenses
+					}
+				]
+			: []),
+		...(mayAddResourceDataHistoricalIncome
+			? [
+					{
+						icon: Income,
+						label: $_('resource_data.historical_income'),
+						value: payloadTypes.enum.resource_data_historical_income
+					}
+				]
+			: []),
+		...(mayAddResourceDataExpectedIncome
+			? [
+					{
+						icon: IncomeExpected,
+						label: $_('resource_data.expected_income'),
+						value: payloadTypes.enum.resource_data_expected_income
+					}
+				]
+			: [])
+	]);
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
@@ -370,6 +394,20 @@
 						</li>
 					{/if}
 				{/each}
+
+				{#if resourceRelatedOptions.length > 0}
+					<li class="menu-subheader">{$_('resources')}</li>
+					{#each resourceRelatedOptions as option}
+						{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
+							<li class="menu-item">
+								<button use:menu.item={{ value: option.value }}>
+									<option.icon />
+									{option.label}
+								</button>
+							</li>
+						{/if}
+					{/each}
+				{/if}
 			</ul>
 		</div>
 	{/if}
@@ -406,5 +444,13 @@
 
 	.menu-item > button > :global(svg) {
 		color: var(--color-gray-500);
+	}
+
+	.menu-subheader {
+		color: var(--color-gray-500);
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		padding: 0.5rem 0.75rem 0.25rem;
 	}
 </style>
