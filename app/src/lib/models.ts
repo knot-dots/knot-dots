@@ -967,23 +967,31 @@ const resourceV2Payload = basePayload
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
 // Resource Data Payloads
-const resourceDataEntry = z.object({
+const resourceDataBase = z
+	.object({
+		entries: z
+			.array(
+				z.object({
 					year: z.number().int().positive(),
 					amount: z.coerce.number()
-});
+				})
+			)
+			.default([]),
+		resource: z.union([z.uuid(), z.null()]).default(null),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 function makeResourceDataPayload<
 	TType extends (typeof payloadTypes.enum)[keyof typeof payloadTypes.enum]
 >(typeLiteral: TType, titleKey: string) {
-	return z
-		.object({
-			entries: z.array(resourceDataEntry).default([]),
+	return resourceDataBase
+		.extend({
 		title: z
 			.string()
 			.readonly()
 				.default(() => unwrapFunctionStore(_)(titleKey)),
-			type: z.literal(typeLiteral),
-		visibility: visibility.default(visibility.enum['organization'])
+			type: z.literal(typeLiteral)
 	})
 	.strict();
 }
@@ -1581,20 +1589,14 @@ export function isResourceDataExpectedIncomeContainer(
 	return container.payload.type === payloadTypes.enum.resource_data_expected_income;
 }
 
-const resourceDataContainer = z.union([
-	resourceDataHistoricalExpensesContainer,
-	resourceDataExpectedExpensesContainer,
-	resourceDataHistoricalIncomeContainer,
-	resourceDataExpectedIncomeContainer
-]);
-// container.extend({
-// 	payload: z.discriminatedUnion('type', [
-// 		resourceDataHistoricalExpensesPayload,
-// 		resourceDataExpectedExpensesPayload,
-// 		resourceDataHistoricalIncomePayload,
-// 		resourceDataExpectedIncomePayload
-// 	])
-// });
+const resourceDataContainer = container.extend({
+	payload: z.discriminatedUnion('type', [
+		resourceDataHistoricalExpensesPayload,
+		resourceDataExpectedExpensesPayload,
+		resourceDataHistoricalIncomePayload,
+		resourceDataExpectedIncomePayload
+	])
+});
 
 export type ResourceDataContainer = z.infer<typeof resourceDataContainer>;
 
@@ -1607,6 +1609,12 @@ export function isResourceDataContainer(
 		container.payload.type === payloadTypes.enum.resource_data_historical_income ||
 		container.payload.type === payloadTypes.enum.resource_data_expected_income
 	);
+}
+
+export function hasValidResource(
+	container: ResourceDataContainer
+): container is ResourceDataContainer & { payload: { resource: string } } {
+	return container.payload.resource != null;
 }
 
 const resourceV2Container = container.extend({

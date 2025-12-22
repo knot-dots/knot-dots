@@ -105,7 +105,33 @@
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
 	);
 
-	let mayAddResourceDataSection = $derived(isResourceV2Container(parentContainer));
+	let mayAddResourceDataHistoricalExpenses = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) => c.payload.type === payloadTypes.enum.resource_data_historical_expenses
+			)
+	);
+
+	let mayAddResourceDataExpectedExpenses = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) => c.payload.type === payloadTypes.enum.resource_data_expected_expenses
+			)
+	);
+
+	let mayAddResourceDataHistoricalIncome = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) => c.payload.type === payloadTypes.enum.resource_data_historical_income
+			)
+	);
+
+	let mayAddResourceDataExpectedIncome = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) => c.payload.type === payloadTypes.enum.resource_data_expected_income
+			)
+	);
 
 	let mayAddFileCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)

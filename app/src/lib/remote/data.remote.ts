@@ -102,13 +102,34 @@ export const fetchContainersRelatedToIndicatorTemplates = query(
 	}
 );
 
-export const fetchContainersRelatedToMeasure = query(z.string().uuid(), async (guid) => {
+export const fetchContainersRelatedToMeasure = query(
+	z.object({
+		guid: z.string().uuid(),
+		params: z.object({
+			organization: z.array(z.string().uuid())
+		})
+	}),
+	async ({ guid, params }) => {
 	const { locals } = getRequestEvent();
-	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToMeasure(guid, {}, 'alpha')
-	);
-	return filterVisible(relatedContainers, locals.user);
-});
+
+		const [related, resources] = await Promise.all([
+			locals.pool.connect(getAllContainersRelatedToMeasure(guid, {}, 'alpha')),
+			locals.pool.connect(
+				getManyContainers(
+					[],
+					{
+						type: [payloadTypes.enum.resource_v2]
+					},
+					'alpha'
+				)
+			)
+		]);
+
+		const merged = [...related, ...resources];
+
+		return filterVisible(merged, locals.user);
+	}
+);
 
 export const fetchContainersRelatedToProgram = query(
 	z.object({

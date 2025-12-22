@@ -92,7 +92,12 @@
 				}
 			});
 		} else if (isMeasureContainer(container)) {
-			return fetchContainersRelatedToMeasure(guid);
+			return fetchContainersRelatedToMeasure({
+				guid,
+				params: {
+					organization: [organization]
+				}
+			});
 		} else if (isProgramContainer(container)) {
 			return fetchContainersRelatedToProgram({
 				guid,
