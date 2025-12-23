@@ -108,18 +108,17 @@
 		color: var(--color-gray-500);
 	}
 
-	.card {
-		align-items: center;
-		background: #ffffff;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
+	.accordion-list :global(.card) {
+		padding: 0;
+		background: transparent;
+		border: none;
+		box-shadow: none;
 		cursor: pointer;
 		display: grid;
-		grid-row: 1 / 4;
-		min-height: 4rem;
-		justify-content: center;
 		width: 100%;
+	}
+	.accordion-list :global(.card header h3) {
+		display: none;
 	}
 
 	.card :global(svg) {
