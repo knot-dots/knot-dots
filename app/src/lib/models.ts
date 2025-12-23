@@ -64,6 +64,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'accordion_collection',
 	'chapter',
 	'col_content',
 	'content_partner',
@@ -1182,6 +1183,20 @@ const teaserCollectionPayload = z
 
 const initialTeaserCollectionPayload = teaserCollectionPayload;
 
+const accordionCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('accordion')),
+		type: z.literal(payloadTypes.enum.accordion_collection),
+		listType: listTypes.default(listTypes.enum.accordion),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialAccordionCollectionPayload = accordionCollectionPayload;
+
 const initialTaskPayload = taskPayload.partial({ title: true });
 
 const taskCollectionPayload = z
@@ -1306,6 +1321,7 @@ const payload = z.discriminatedUnion('type', [
 	taskPayload,
 	teaserPayload,
 	teaserCollectionPayload,
+	accordionCollectionPayload,
 	teaserHighlightPayload,
 	textPayload
 ]);
@@ -1370,6 +1386,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	textPayload,
 	teaserPayload,
 	teaserCollectionPayload,
+	accordionCollectionPayload,
 	teaserHighlightPayload,
 	undefinedPayload
 ]);
@@ -1946,6 +1963,12 @@ export function isTeaserCollectionContainer(
 	return container.payload.type === payloadTypes.enum.teaser_collection;
 }
 
+export function isAccordionCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is TeaserCollectionContainer {
+	return container.payload.type === payloadTypes.enum.accordion_collection;
+}
+
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
 	return (
 		container.payload.type !== payloadTypes.enum.organization &&
@@ -2129,6 +2152,7 @@ export const emptyContainer = newContainer.extend({
 		initialTaskPayload,
 		initialTeaserPayload,
 		initialTeaserCollectionPayload,
+		initialAccordionCollectionPayload,
 		initialTeaserHighlightPayload,
 		initialUndefinedPayload
 	])

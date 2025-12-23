@@ -11,9 +11,9 @@
 	const { container, editable }: Props = $props();
 
 	function teaserUrl(container: TeaserContainer) {
-		return () => {
-			return container.payload.link || '#';
-		};
+		const link = container.payload.link;
+		if (!link) return undefined;
+		return () => link;
 	}
 </script>
 

@@ -27,6 +27,7 @@
 	import Tiles from '~icons/knotdots/tiles';
 	import TwoCol from '~icons/knotdots/two-column';
 	import Link from '~icons/knotdots/link';
+	import Collection from '~icons/knotdots/collection';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
@@ -319,6 +320,15 @@
 			...(mayAddImage ? [{ icon: Image, label: $_('image'), value: payloadTypes.enum.image }] : []),
 			...(mayAddTeaserCollection
 				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+				: []),
+			...(mayAddTeaserCollection
+				? [
+						{
+							icon: Collection,
+							label: $_('accordion'),
+							value: payloadTypes.enum.accordion_collection
+						}
+					]
 				: []),
 			...(mayAddTeaserSection
 				? [{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content }]

@@ -1,5 +1,6 @@
 {
 	"about": "knot dots",
+	"accordion": "Akkordeon",
 	"active_filters": "{count, plural, one {1 aktiv} other {# aktiv}}",
 	"add_cover": "Cover hinzufügen",
 	"add_item": "Hinzufügen",
@@ -297,7 +298,7 @@
 		"button": "Button"
 	},
 	"list_type": {
-		"accordion": "Accordion",
+		"accordion": "Akkordeon",
 		"carousel": "Karussell",
 		"wall": "Kacheln",
 		"list": "Liste"

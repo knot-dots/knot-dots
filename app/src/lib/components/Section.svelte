@@ -36,6 +36,7 @@
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
+		isAccordionCollectionContainer,
 		isGoalContainer,
 		isImageContainer,
 		isContentPartnerContainer,
@@ -290,7 +291,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isTeaserCollectionContainer(container)}
+		{:else if isTeaserCollectionContainer(container) || isAccordionCollectionContainer(container)}
 			<EditableTeaserCollection
 				bind:container
 				bind:parentContainer

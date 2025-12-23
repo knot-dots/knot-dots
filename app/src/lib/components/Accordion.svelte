@@ -69,6 +69,7 @@
 
 <style>
 	.accordion-list {
+		margin-top: 1rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
