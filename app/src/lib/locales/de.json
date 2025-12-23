@@ -94,6 +94,7 @@
 	"custom_collection.dialog.cancel": "Abbrechen und schließen",
 	"custom_collection.dialog.select": "Auswählen",
 	"custom_collection.dialog.title": "Objekte auswählen",
+	"date": "Datum",
 	"days_ago": "{daysAgo, plural, one {# Tag} other {# Tage}}",
 	"delete": "Löschen",
 	"delete.name": "{name} löschen",
@@ -265,6 +266,18 @@
 		"submit": "Einladung abschicken"
 	},
 	"knowledge": "Wissen",
+	"knowledge.category": "Kategorie",
+	"knowledge.category.publication": "Publikation",
+	"knowledge.category.tool": "Tool",
+	"knowledge.category.best_practise": "Praxisbeispiel",
+	"knowledge.content_partner": "Inhaltepartner",
+	"knowledge.tags": "Art",
+	"knowledge.tags.measure": "Maßnahme",
+	"knowledge.tags.recommendation": "Empfehlung",
+	"knowledge.tags.goal": "Ziel",
+	"knowledge.tags.report": "Bericht",
+	"knowledge.tags.xlsx": "Excel",
+	"knowledge.tags.app": "App",
 	"knowledge.level": "Ebene {level}",
 	"label": {
 		"unit": "Einheit"

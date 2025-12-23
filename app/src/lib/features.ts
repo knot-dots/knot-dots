@@ -1,5 +1,5 @@
 export const featureFlags = new Map([
-	['alpha', ['ImportFromCsv', 'AI', 'Teaser', 'Stage', 'Image', 'ContentPartner'] as const],
+	['alpha', ['ImportFromCsv', 'AI', 'Teaser', 'Stage', 'Image', 'ContentPartner', 'Knowledge'] as const],
 	['beta', ['AdministrativeArea', 'Report'] as const]
 ]);
 
@@ -31,6 +31,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useContentPartner() {
 			return features.includes('ContentPartner');
+		},
+		useKnowledge() {
+			return features.includes('Knowledge');
 		},
 		useStage() {
 			return features.includes('Stage');

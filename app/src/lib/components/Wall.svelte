@@ -36,23 +36,11 @@
 {/if}
 
 <style>
-	.wall {
-		display: grid;
-		gap: 1rem;
-		align-items: stretch;
-		grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+	.card :global(svg) {
+		height: 2.25rem;
+		width: 2.25rem;
 	}
 
-	.wall > li {
-		display: flex;
-	}
-
-	.wall > li > * {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		width: 100%;
-	}
 	.card {
 		align-items: center;
 		background: #ffffff;
@@ -64,10 +52,5 @@
 		grid-row: 1 / 4;
 		min-height: 6rem;
 		justify-content: center;
-	}
-
-	.card :global(svg) {
-		height: 2.25rem;
-		width: 2.25rem;
 	}
 </style>

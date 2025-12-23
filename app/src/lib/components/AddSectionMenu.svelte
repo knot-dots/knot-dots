@@ -4,6 +4,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import Briefcase from '~icons/flowbite/briefcase-solid';
+	import Book from '~icons/flowbite/book-solid';
 	import File from '~icons/flowbite/file-solid';
 	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
@@ -40,6 +41,7 @@
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isIndicatorCollectionContainer,
+		isKnowledgeCollectionContainer,
 		isMapContainer,
 		isTeaserContainer,
 		isMeasureCollectionContainer,
@@ -158,6 +160,13 @@
 			(isOrganizationContainer(parentContainer) ||
 				isOrganizationalUnitContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
+	);
+
+	let mayAddKnowledgeCollection = $derived(
+		createFeatureDecisions(page.data.features).useKnowledge() &&
+			(isOrganizationContainer(parentContainer) ||
+				isOrganizationalUnitContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isKnowledgeCollectionContainer)
 	);
 
 	let mayAddTeaserSection = $derived(
@@ -332,6 +341,15 @@
 							icon: Briefcase,
 							label: $_('partners'),
 							value: payloadTypes.enum.content_partner_collection
+						}
+					]
+				: []),
+			...(mayAddKnowledgeCollection
+				? [
+						{
+							icon: Book,
+							label: $_('knowledge'),
+							value: payloadTypes.enum.knowledge_collection
 						}
 					]
 				: [])

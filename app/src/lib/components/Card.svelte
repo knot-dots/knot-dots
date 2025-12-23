@@ -8,6 +8,7 @@
 	import { page } from '$app/state';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
+	import KnowledgeCardContent from '$lib/components/KnowledgeCardContent.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
@@ -23,6 +24,7 @@
 		isResourceContainer,
 		isSimpleMeasureContainer,
 		isTeaserContainer,
+		isKnowledgeContainer,
 		isTaskContainer,
 		overlayKey,
 		overlayURL,
@@ -126,7 +128,7 @@
 	let previewLink: HTMLAnchorElement;
 
 	function handleClick(event: MouseEvent) {
-		if (previewLink == event.target) {
+		if (!previewLink || previewLink.contains(event.target as Node)) {
 			return;
 		}
 		const isTextSelected = window.getSelection()?.toString();
@@ -137,7 +139,7 @@
 
 	function handleKeyUp(event: KeyboardEvent) {
 		if (event.key == 'Enter') {
-			previewLink.click();
+			previewLink?.click();
 		}
 	}
 
@@ -195,7 +197,7 @@
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
-	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container)}
+	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container) && !isKnowledgeContainer(container)}
 		<header>
 			<h3>
 				<a
@@ -292,21 +294,25 @@
 				<ObjectiveChart {container} {relatedContainers} />
 			{/if}
 		{:else if isContentPartnerContainer(container)}
-			{#if 'image' in container.payload && container.payload.image}
-				<p>
+			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>
+				{#if 'image' in container.payload && container.payload.image}
 					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
-				</p>
-			{:else}
-				<header>
-					<h3>
-						<a
-							href={href ? href() : computeHref(page.url)}
-							bind:this={previewLink}
-							onclick={updateOverlayHistory}>{container.payload.title}</a
-						>
-					</h3>
-				</header>
-			{/if}
+				{:else}
+					<header>
+						<h3>
+							{container.payload.title}
+						</h3>
+					</header>
+				{/if}
+			</a>
+		{:else if isKnowledgeContainer(container)}
+			<a
+				href={href ? href() : computeHref(page.url)}
+				bind:this={previewLink}
+				onclick={updateOverlayHistory}
+			>
+				<KnowledgeCardContent {container} />
+			</a>
 		{:else if isTeaserContainer(container)}
 			{#if 'image' in container.payload && container.payload.image}
 				<p>

@@ -12,10 +12,12 @@ export type ApplicationState = {
 
 export const overlayKey = z.enum([
 	'chapters',
+	'content-partners',
 	'create',
 	'indicator-catalog',
 	'new-indicator-catalog',
 	'indicators',
+	'knowledge',
 	'measure-monitoring',
 	'measures',
 	'members',
@@ -78,6 +80,7 @@ const payloadTypeValues = [
 	'indicator_template',
 	'info_box',
 	'knowledge',
+	'knowledge_collection',
 	'map',
 	'measure',
 	'measure_collection',
@@ -749,10 +752,30 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 });
 
 const knowledgePayload = basePayload
-	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
+	.extend({
+		category: z.enum(['publication', 'tool', 'best_practise']).default('publication'),
+		content_partner: z.string().optional(),
+		date: z.string().optional(),
+		tags: z.array(z.string()).default([]),
+		type: z.literal(payloadTypes.enum.knowledge)
+	})
 	.strict();
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
+
+const knowledgeCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default('Knowledge'),
+		type: z.literal(payloadTypes.enum.knowledge_collection),
+		listType: listTypes.default(listTypes.enum.list),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialKnowledgeCollectionPayload = knowledgeCollectionPayload;
 
 const mapPayload = z
 	.object({
@@ -1262,6 +1285,7 @@ const payload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
+	knowledgeCollectionPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -1322,6 +1346,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	indicatorPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
+	knowledgeCollectionPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -1543,6 +1568,18 @@ export function isKnowledgeContainer(
 	container: AnyContainer | EmptyContainer
 ): container is KnowledgeContainer {
 	return container.payload.type === payloadTypes.enum.knowledge;
+}
+
+const knowledgeCollectionContainer = container.extend({
+	payload: knowledgeCollectionPayload
+});
+
+export type KnowledgeCollectionContainer = z.infer<typeof knowledgeCollectionContainer>;
+
+export function isKnowledgeCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is KnowledgeCollectionContainer {
+	return container.payload.type === payloadTypes.enum.knowledge_collection;
 }
 
 const mapContainer = container.extend({
@@ -2068,6 +2105,7 @@ export const emptyContainer = newContainer.extend({
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialInfoBoxPayload,
+		initialKnowledgeCollectionPayload,
 		initialKnowledgePayload,
 		initialMapPayload,
 		initialMeasureCollectionPayload,

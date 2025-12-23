@@ -20,6 +20,8 @@ const commonTypes = [
 	payloadTypes.enum.chapter,
 	payloadTypes.enum.content_partner,
 	payloadTypes.enum.content_partner_collection,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.knowledge_collection,
 	payloadTypes.enum.custom_collection,
 	payloadTypes.enum.effect,
 	payloadTypes.enum.effect_collection,

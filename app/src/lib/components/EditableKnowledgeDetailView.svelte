@@ -5,13 +5,14 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
-	import { type KnowledgeContainer } from '$lib/models';
+	import { type AnyContainer, type Container, type KnowledgeContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import Sections from './Sections.svelte';
 
 	interface Props {
 		container: KnowledgeContainer;
-		relatedContainers: any[];
-		revisions: any[];
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
 	}
 
 	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
@@ -33,6 +34,8 @@
 				bind:value={container.payload.description}
 			/>
 		{/key}
+
+		<Sections bind:container {relatedContainers} />
 	{/snippet}
 </EditableContainerDetailView>
 

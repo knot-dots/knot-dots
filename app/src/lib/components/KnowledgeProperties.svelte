@@ -1,18 +1,29 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
+	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
+	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
+	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyContainer, type Container, type KnowledgeContainer } from '$lib/models';
+	import {
+		type AnyContainer,
+		type Container,
+		type KnowledgeContainer,
+		isContentPartnerContainer,
+		payloadTypes
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -23,6 +34,51 @@
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
+
+	// todo: dummy categories
+	const knowledgeCategories = [
+		{ label: $_('knowledge.category.publication'), value: 'publication' },
+		{ label: $_('knowledge.category.tool'), value: 'tool' },
+		{ label: $_('knowledge.category.best_practise'), value: 'best_practise' }
+	];
+
+	// todo: dummy tags
+	const tagsByCategory: Record<string, { label: string; value: string }[]> = {
+		publication: [
+			{ label: $_('knowledge.tags.measure'), value: 'measure' },
+			{ label: $_('knowledge.tags.recommendation'), value: 'recommendation' },
+			{ label: $_('knowledge.tags.goal'), value: 'goal' }
+		],
+		tool: [
+			{ label: $_('knowledge.tags.measure'), value: 'measure' },
+			{ label: $_('knowledge.tags.recommendation'), value: 'recommendation' },
+			{ label: $_('knowledge.tags.goal'), value: 'goal' }
+		],
+		best_practise: [
+			{ label: $_('knowledge.tags.report'), value: 'report' },
+			{ label: $_('knowledge.tags.xlsx'), value: 'xlsx' },
+			{ label: $_('knowledge.tags.app'), value: 'app' }
+		]
+	};
+
+	let availableTags = $derived(
+		tagsByCategory[container.payload.category]?.sort((a, b) => a.label.localeCompare(b.label)) || []
+	);
+
+	let contentPartners: AnyContainer[] = $state([]);
+
+	$effect(() => {
+		fetchContainers({ payloadType: [payloadTypes.enum.content_partner] }).then((containers) => {
+			contentPartners = containers;
+		});
+	});
+
+	let contentPartnerOptions = $derived(
+		contentPartners
+			.filter(isContentPartnerContainer)
+			.map((c) => ({ label: c.payload.title, value: c.guid }))
+			.sort((a, b) => a.label.localeCompare(b.label))
+	);
 </script>
 
 <PropertyGrid>
@@ -34,6 +90,12 @@
 			/>
 		{/if}
 
+		<EditableDate
+			editable={editable && $ability.can('update', container)}
+			label={$_('date')}
+			bind:value={container.payload.date}
+		/>
+
 		<EditableProgram {editable} bind:container />
 
 		<EditableParent bind:container {editable} />
@@ -44,7 +106,28 @@
 	{/snippet}
 
 	{#snippet categories()}
-		<EditableCategory {editable} bind:value={container.payload.category} />
+		<EditableSingleChoice
+			{editable}
+			label={$_('knowledge.category')}
+			options={knowledgeCategories}
+			bind:value={container.payload.category}
+		/>
+
+		{#if availableTags.length > 0}
+			<EditableMultipleChoice
+				{editable}
+				label={$_('knowledge.tags')}
+				options={availableTags}
+				bind:value={container.payload.tags}
+			/>
+		{/if}
+
+		<EditableSingleChoice
+			{editable}
+			label={$_('knowledge.content_partner')}
+			options={contentPartnerOptions}
+			bind:value={container.payload.content_partner}
+		/>
 
 		<EditableTopic {editable} bind:value={container.payload.topic} />
 
