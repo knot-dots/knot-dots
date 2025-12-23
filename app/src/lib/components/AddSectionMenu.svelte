@@ -6,6 +6,7 @@
 	import Briefcase from '~icons/flowbite/briefcase-solid';
 	import Book from '~icons/flowbite/book-solid';
 	import File from '~icons/flowbite/file-solid';
+	import Quote from '~icons/flowbite/quote-solid';
 	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
 	import Chapter from '~icons/knotdots/chapter';
@@ -343,7 +344,7 @@
 				? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
 				: []),
 			...(mayAddTeaserSection
-				? [{ icon: ExclamationCircle, label: $_('quote'), value: payloadTypes.enum.quote }]
+				? [{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }]
 				: []),
 			...(mayAddContentPartnerCollection
 				? [
