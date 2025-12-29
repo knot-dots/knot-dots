@@ -15,6 +15,7 @@ import {
 	getUser
 } from '$lib/server/db';
 import { storage } from '$lib/server/context';
+import { withLogger } from '$lib/server/logger';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
@@ -106,7 +107,7 @@ const { handle: authentication } = SvelteKitAuth({
 	trustHost: true
 });
 
-export const handle = sequence(authentication, async ({ event, resolve }) => {
+export const handle = sequence(withLogger, authentication, async ({ event, resolve }) => {
 	const lang = event.request.headers.get('accept-language')?.split(',')[0];
 	locale.set(lang ?? 'de');
 
