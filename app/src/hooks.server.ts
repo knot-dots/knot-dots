@@ -14,6 +14,7 @@ import {
 	getPool,
 	getUser
 } from '$lib/server/db';
+import { storage } from '$lib/server/context';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
@@ -141,7 +142,7 @@ export const handle = sequence(authentication, async ({ event, resolve }) => {
 
 	event.locals.features = event.locals.user.settings.features ?? [];
 
-	return resolve(event);
+	return storage.run(event.locals, () => resolve(event));
 }) satisfies Handle;
 
 export const handleError = (async ({ error }) => {

@@ -35,6 +35,9 @@ import {
 	visibility
 } from '$lib/models';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
+import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
+import { createFeatureDecisions } from '$lib/features';
+import { storage } from '$lib/server/context';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -167,6 +170,16 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
+			const locals = storage.getStore();
+			if (locals && createFeatureDecisions(locals.features).useElasticsearch()) {
+				// Emit indexing event for created container
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: containerResult.guid,
+					timestamp: new Date().toISOString()
+				});
+			}
+
 			return { ...containerResult, relation: [...relationResult], user: [...userResult] };
 		});
 	};
@@ -244,6 +257,16 @@ export function updateContainer(container: ModifiedContainer) {
 				}
 			}
 
+			const locals = storage.getStore();
+			if (locals && createFeatureDecisions(locals.features).useElasticsearch()) {
+				// Emit indexing event for updated container
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: containerResult.guid,
+					timestamp: new Date().toISOString()
+				});
+			}
+
 			return { ...containerResult, user: userResult };
 		});
 	};
@@ -288,6 +311,16 @@ export function deleteContainer(container: AnyContainer) {
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
+
+			const locals = storage.getStore();
+			if (locals && createFeatureDecisions(locals.features).useElasticsearch()) {
+				// Emit indexing event for deleted container
+				await enqueueIndexingEvent({
+					action: 'delete',
+					guid: container.guid,
+					timestamp: new Date().toISOString()
+				});
+			}
 		});
 	};
 }
