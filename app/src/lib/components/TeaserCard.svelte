@@ -10,6 +10,8 @@
 
 	const { container, editable }: Props = $props();
 
+	console.log(container);
+
 	function teaserUrl(container: TeaserContainer) {
 		const link = container.payload.link;
 		if (!link) return undefined;
@@ -18,7 +20,7 @@
 </script>
 
 <div class="teaser-card">
-	<Card {container} href={editable ? undefined : teaserUrl(container)}>
+	<Card {container} href={editable ? undefined : teaserUrl(container)} cropSummaryByWords={10}>
 		{#snippet button()}
 			{#if container.payload.linkCaption}
 				{#if container.payload.style === 'default'}

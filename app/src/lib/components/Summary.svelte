@@ -11,13 +11,22 @@
 
 	interface Props {
 		container: Container | EmptyContainer;
+		maxWords?: number;
 	}
 
-	let { container }: Props = $props();
+	let { container, maxWords }: Props = $props();
+
+	function cropByWords(text: string, maxWords: number): string {
+		const words = text.trim().split(/\s+/);
+		if (words.length <= maxWords) {
+			return text;
+		}
+		return words.slice(0, maxWords).join(' ') + '…';
+	}
 </script>
 
 {#if 'summary' in container.payload && container.payload.summary}
-	<p>{container.payload.summary}</p>
+	<p>{maxWords ? cropByWords(container.payload.summary, maxWords) : container.payload.summary}</p>
 {:else if 'description' in container.payload && container.payload.description}
 	{#await unified()
 		.use(remarkParse)
@@ -29,7 +38,11 @@
 		.use(rehypeStringify)
 		.process(container.payload.description) then content}
 		{#if content.data.excerpt}
-			<p>{@html content.data.excerpt}</p>
+			{@const excerptText =
+				typeof content.data.excerpt === 'string'
+					? content.data.excerpt
+					: String(content.data.excerpt)}
+			<p>{@html maxWords ? cropByWords(excerptText, maxWords) : excerptText}</p>
 		{/if}
 	{/await}
 {/if}
