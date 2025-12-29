@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import { Client } from '@elastic/elasticsearch';
+import { Roarr as log } from 'roarr';
+import { isErrorLike, serializeError } from 'serialize-error';
 
 // Shared label loading: German-only via DE_LABELS_PATH
 let deLabels: Record<string, any> = {};
@@ -13,11 +15,12 @@ let deLabels: Record<string, any> = {};
   try {
     const contents = fs.readFileSync(labelsPath, 'utf-8');
     deLabels = JSON.parse(contents);
-    // eslint-disable-next-line no-console
-    console.log('[shared:indexing] Loaded German labels from', labelsPath);
+    log.info({ labelsPath }, '[shared:indexing] Loaded German labels');
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('[shared:indexing] Failed to load labels from', labelsPath, (e as Error).message);
+    log.warn(
+      { labelsPath, error: isErrorLike(e) ? serializeError(e) : String(e) },
+      '[shared:indexing] Failed to load labels'
+    );
     deLabels = {};
   }
 })();

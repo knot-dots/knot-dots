@@ -1,5 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
 import { sql } from 'slonik';
+import { Roarr as log } from 'roarr';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { getPool } from './db';
 import { createIndexWithMappings, toDoc } from '../shared/indexing';
 
@@ -76,12 +78,10 @@ async function run() {
     const rand = Math.random().toString(36).slice(2, 6);
     const alt = `${newIndexName}-${rand}`;
     await createIndexWithMappings(client, alt);
-    // eslint-disable-next-line no-console
-    console.log(`[indexer] Created index ${alt}`);
+    log.info({ index: alt }, '[indexer] Created index');
   } else {
     await createIndexWithMappings(client, newIndexName);
-    // eslint-disable-next-line no-console
-    console.log(`[indexer] Created index ${newIndexName}`);
+    log.info({ index: newIndexName }, '[indexer] Created index');
   }
 
   let indexed = 0;
@@ -108,12 +108,12 @@ async function run() {
             caused_by: e?.caused_by
           };
         });
-        console.error('Bulk had errors (first 5):', details);
+        log.error({ errorCount: errs.length, details }, '[indexer] Bulk had errors');
         throw new Error('Bulk indexing failed');
       }
       indexed += ops.length / 2;
       ops = [];
-      process.stdout.write(`Indexed ${indexed} documents...\n`);
+      log.info({ indexed }, '[indexer] Indexed documents');
     }
   }
 
@@ -133,7 +133,7 @@ async function run() {
           caused_by: e?.caused_by
         };
       });
-      console.error('Bulk had errors (first 5):', details);
+      log.error({ errorCount: errs.length, details }, '[indexer] Bulk had errors');
       throw new Error('Bulk indexing failed');
     }
     indexed += ops.length / 2;
@@ -145,7 +145,7 @@ async function run() {
   // Elasticsearch forbids creating an alias with that name. Migrate by deleting the legacy index first.
   const aliasIndexExists = await client.indices.exists({ index: aliasName });
   if (aliasIndexExists && (!currentAliases || Object.keys(currentAliases).length === 0)) {
-    console.warn(`[indexer] Found legacy index named '${aliasName}'. Deleting it to allow alias creation.`);
+    log.warn({ aliasName }, '[indexer] Found legacy index. Deleting it to allow alias creation');
     await client.indices.delete({ index: aliasName });
   }
   const removeActions: any[] = [];
@@ -159,10 +159,16 @@ async function run() {
     { add: { index: newIndexName, alias: aliasName, is_write_index: true } }
   ];
   await client.indices.updateAliases({ actions });
-  console.log(`Done. Indexed ${indexed} documents into ${newIndexName} and pointed alias '${aliasName}' to it.`);
+  log.info(
+    { indexed, newIndexName, aliasName },
+    '[indexer] Done. Indexed documents and pointed alias to new index'
+  );
 }
 
 run().catch((err) => {
-  console.error(err);
+  log.error(
+    { error: isErrorLike(err) ? serializeError(err) : String(err) },
+    '[indexer] Fatal error'
+  );
   process.exit(1);
 });

@@ -11,6 +11,8 @@ import {
   type Message as QueueMessage
 } from '@aws-sdk/client-sqs';
 import { Client as ESClient } from '@elastic/elasticsearch';
+import { Roarr as log } from 'roarr';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { toDoc } from './shared/indexing.ts';
 
 const queueUrl = process.env.INDEXING_QUEUE_URL || '';
@@ -36,21 +38,6 @@ process.on('SIGTERM', () => {
   running = false;
 });
 
-function log(...args: unknown[]) {
-  // eslint-disable-next-line no-console
-  console.log('[indexing-consumer]', ...args);
-}
-
-function warn(...args: unknown[]) {
-  // eslint-disable-next-line no-console
-  console.warn('[indexing-consumer]', ...args);
-}
-
-function error(...args: unknown[]) {
-  // eslint-disable-next-line no-console
-  console.error('[indexing-consumer]', ...args);
-}
-
 async function fetchContainerRow(guid: string) {
   const pool = await getPool();
   const row = await pool.maybeOne<any>(sql.unsafe`
@@ -64,7 +51,7 @@ async function fetchContainerRow(guid: string) {
 
 async function processBatch(events: IndexingEvent[], client: ESClient) {
   if (!events.length) return;
-  log('Processing batch of events', events.length);
+  log.info({ eventCount: events.length }, '[indexing-consumer] Processing batch of events');
   const operations: any[] = [];
   for (const evt of events) {
     if (evt.action === 'delete') {
@@ -74,7 +61,7 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
     if (evt.action === 'upsert') {
       const row = await fetchContainerRow(evt.guid);
       if (!row) {
-        warn('Upsert skipped; container missing', evt.guid);
+        log.warn({ guid: evt.guid }, '[indexing-consumer] Upsert skipped; container missing');
         continue;
       }
       const doc = toDoc({
@@ -99,7 +86,7 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
       const res = await client.bulk({ operations });
       if (res.errors) {
         const failed = (res.items || []).filter((i: any) => i.index?.error || i.delete?.error);
-        error('Bulk indexing encountered errors', failed.slice(0, 5));
+        log.error({ failedCount: failed.length }, '[indexing-consumer] Bulk indexing encountered errors');
         throw new Error('Bulk indexing failed');
       }
       break;
@@ -110,20 +97,26 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         throw e;
       }
       const delay = bulkRetryBaseMs * Math.pow(2, attempt - 1);
-      warn(`Bulk retry ${attempt}/${bulkMaxRetries} after error: ${e?.message || e}. Waiting ${delay}ms`);
+      log.warn(
+        { attempt, maxRetries: bulkMaxRetries, delay, error: isErrorLike(e) ? serializeError(e) : String(e) },
+        '[indexing-consumer] Bulk retry after error'
+      );
       await new Promise((r) => setTimeout(r, delay));
     }
   }
-  log('Bulk processed', operations.length, 'operations for', events.length, 'events');
+  log.info(
+    { operationCount: operations.length, eventCount: events.length },
+    '[indexing-consumer] Bulk processed'
+  );
 }
 
 export async function startIndexingConsumer() {
   if (!queueUrl) {
-    warn('Queue URL missing; consumer will not start');
+    log.warn('[indexing-consumer] Queue URL missing; consumer will not start');
     return;
   }
   if (!esUrl) {
-    warn('Elasticsearch URL missing; consumer will not start');
+    log.warn('[indexing-consumer] Elasticsearch URL missing; consumer will not start');
     return;
   }
 
@@ -134,14 +127,17 @@ export async function startIndexingConsumer() {
   });
   const es = new ESClient({ node: esUrl });
 
-  log('Started consumer loop with config', {
-    queueUrl,
-    region,
-    endpoint,
-    esUrl,
-    esIndex,
-    pollIntervalMs
-  });
+  log.info(
+    {
+      queueUrl,
+      region,
+      endpoint,
+      esUrl,
+      esIndex,
+      pollIntervalMs
+    },
+    '[indexing-consumer] Started consumer loop'
+  );
 
   while (running) {
     try {
@@ -156,7 +152,7 @@ export async function startIndexingConsumer() {
         })
       );
       const messages: QueueMessage[] = res.Messages || [];
-      log('Polled queue, received', messages.length, 'messages');
+      log.info({ messageCount: messages.length }, '[indexing-consumer] Polled queue');
       if (!messages.length) {
         await new Promise((r) => setTimeout(r, pollIntervalMs));
         continue;
@@ -170,7 +166,10 @@ export async function startIndexingConsumer() {
           await sqs.send(new ChangeMessageVisibilityBatchCommand({ QueueUrl: queueUrl, Entries: visEntries }));
         }
       } catch (e) {
-        warn('Failed to extend visibility timeout', (e as Error).message);
+        log.warn(
+          { error: isErrorLike(e) ? serializeError(e) : String(e) },
+          '[indexing-consumer] Failed to extend visibility timeout'
+        );
       }
       const events: IndexingEvent[] = [];
       const poison: QueueMessage[] = [];
@@ -180,13 +179,16 @@ export async function startIndexingConsumer() {
           const evt = JSON.parse(m.Body) as IndexingEvent;
           events.push(evt);
         } catch (e) {
-          warn('Failed to parse message body', e);
+          log.warn(
+            { error: isErrorLike(e) ? serializeError(e) : String(e) },
+            '[indexing-consumer] Failed to parse message body'
+          );
           poison.push(m);
         }
       }
       // Process valid events; if it fails, decide what to do with messages
       await processBatch(events, es);
-      log('Successfully processed batch with', events.length, 'events');
+      log.info({ eventCount: events.length }, '[indexing-consumer] Successfully processed batch');
 
       // Delete processed messages; forward poison to DLQ or drop
       if (messages.length) {
@@ -204,19 +206,25 @@ export async function startIndexingConsumer() {
             if (receiveCount >= maxReceiveCount) {
               try {
                 await sqs.send(new SendMessageCommand({ QueueUrl: dlqUrl, MessageBody: m.Body || '' }));
-                warn('Forwarded poison message to DLQ');
+                log.warn('[indexing-consumer] Forwarded poison message to DLQ');
               } catch (e) {
-                warn('Failed to forward poison message to DLQ', (e as Error).message);
+                log.warn(
+                  { error: isErrorLike(e) ? serializeError(e) : String(e) },
+                  '[indexing-consumer] Failed to forward poison message to DLQ'
+                );
               }
             }
           }
         }
       }
     } catch (e) {
-      error('Polling cycle error', (e as Error).message);
+      log.error(
+        { error: isErrorLike(e) ? serializeError(e) : String(e) },
+        '[indexing-consumer] Polling cycle error'
+      );
       await new Promise((r) => setTimeout(r, pollIntervalMs));
     }
   }
 
-  log('Consumer stopped');
+  log.info('[indexing-consumer] Consumer stopped');
 }
