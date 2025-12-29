@@ -264,6 +264,12 @@
 </footer>
 
 <style>
+	.chapters :global(.dropdown-button.dropdown-button--menu) {
+		--dropdown-button-border-radius: 8px;
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-icon-size: 1rem;
+	}
+
 	.details-section {
 		--details-section-padding-y: 1.5rem;
 	}

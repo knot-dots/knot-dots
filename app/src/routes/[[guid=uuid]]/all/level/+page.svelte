@@ -1,21 +1,23 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		computeColumnTitleForGoals,
-		titleForProgramCollection,
 		goalsByHierarchyLevel,
 		isGoalContainer,
 		isProgramContainer,
+		isReportContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		titleForProgramCollection
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -30,33 +32,29 @@
 		)
 	);
 
+	$inspect(data.containers);
+
+	const useReport = createFeatureDecisions(page.data.features).useReport();
+
 	let columns = $derived([
 		{
-			addItemUrl: $mayCreateContainer(
-				payloadTypes.enum.program,
-				data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-			)
-				? '#create=program'
-				: undefined,
-			containers: data.containers.filter(isProgramContainer).slice(0, browser ? undefined : 10),
+			addItemUrl: `#create=program${useReport ? '&create=report' : ''}`,
+			containers: data.containers
+				.filter((c) => isProgramContainer(c) || isReportContainer(c))
+				.slice(0, browser ? undefined : 10),
 			key: 'programs',
 			title: titleForProgramCollection(data.containers.filter(isProgramContainer))
 		},
 		...Array.from(goals.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => ({
-				addItemUrl: $mayCreateContainer(
-					payloadTypes.enum.goal,
-					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-				)
-					? `#create=goal&hierarchyLevel=${hierarchyLevel}`
-					: undefined,
+				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
 				containers: containers.slice(0, browser ? undefined : 10),
 				key: `goals-${hierarchyLevel}`,
 				title: computeColumnTitleForGoals(containers)
 			})),
 		{
-			addItemUrl: undefined,
+			addItemUrl: '#create=measure&create=rule&create=simple_measure',
 			containers: data.containers
 				.filter(
 					(c) =>

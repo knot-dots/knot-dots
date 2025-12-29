@@ -122,6 +122,17 @@
 	--color-primary-700: #1a56db;
 	--color-primary-800: #1e429f;
 	--color-primary-900: #233876;
+	--color-blue-gray-025: #f8fafc;
+	--color-blue-gray-050: #f0f6fa;
+	--color-blue-gray-100: #dae7f1;
+	--color-blue-gray-200: #b8cfe0;
+	--color-blue-gray-300: #9ab7cb;
+	--color-blue-gray-400: #749fbe;
+	--color-blue-gray-500: #3d8cc2;
+	--color-blue-gray-600: #1882ce;
+	--color-blue-gray-700: #1265a0;
+	--color-blue-gray-800: #0d4872;
+	--color-blue-gray-900: #092b44;
 
 	--color-contributes-to: #7ad0ff;
 	--color-is-affected-by: #7ad0ff;
@@ -477,6 +488,7 @@ button.button-primary,
 .button.button-primary {
 	--button-active-background: var(--color-primary-900);
 	--button-background: var(--color-primary-700);
+	--button-disabled-background: var(--color-gray-300);
 	--button-hover-background: var(--color-primary-800);
 
 	border: none;
@@ -650,6 +662,7 @@ button:disabled,
 .button:disabled {
 	background: var(--button-disabled-background);
 	border-color: var(--button-disabled-border-color);
+	cursor: not-allowed;
 }
 
 button.button-square,

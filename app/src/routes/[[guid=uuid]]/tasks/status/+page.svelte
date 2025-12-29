@@ -54,12 +54,7 @@
 				<BoardColumn
 					--background={taskStatusBackgrounds.get(taskStatusOption)}
 					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
-					addItemUrl={$mayCreateContainer(
-						payloadTypes.enum.task,
-						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-					)
-						? `#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`
-						: undefined}
+					addItemUrl={`#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`}
 					title={$_(taskStatusOption)}
 				>
 					<MaybeDragZone

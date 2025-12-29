@@ -29,6 +29,8 @@
 
 	let sections = $state([]) as AnyContainer[];
 
+	const type = crypto.randomUUID();
+
 	$effect(() => {
 		sections = relatedContainers
 			.filter((c) => c.guid != guid)
@@ -39,10 +41,14 @@
 			)
 			.toSorted(
 				(a, b) =>
-					a.relation.find(({ predicate }) => predicate == predicates.enum['is-section-of'])!
-						.position -
-					b.relation.find(({ predicate }) => predicate == predicates.enum['is-section-of'])!
-						.position
+					a.relation.find(
+						({ object, predicate }) =>
+							object == guid && predicate == predicates.enum['is-section-of']
+					)!.position -
+					b.relation.find(
+						({ object, predicate }) =>
+							object == guid && predicate == predicates.enum['is-section-of']
+					)!.position
 			);
 	});
 
@@ -190,7 +196,7 @@
 	{/if}
 
 	<ul
-		use:dragHandleZone={{ dropTargetStyle: {}, items: sections, flipDurationMs: 100 }}
+		use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
 		onconsider={handleDndConsider}
 		onfinalize={handleDndFinalize}
 	>

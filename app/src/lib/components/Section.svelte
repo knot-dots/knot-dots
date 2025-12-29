@@ -6,6 +6,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import EditableChapterSection from '$lib/components/EditableChapterSection.svelte';
+	import EditableCustomCollection from '$lib/components/EditableCustomCollection.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
@@ -24,6 +25,7 @@
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
+		isCustomCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -35,6 +37,7 @@
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isReportContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
 		isTextContainer
@@ -116,6 +119,14 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isCustomCollectionContainer(container)}
+			<EditableCustomCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isEffectCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableEffectCollection
@@ -235,6 +246,7 @@
 		left: -3.25rem;
 		padding: 0.25rem;
 		position: absolute;
+		top: 1.25rem;
 	}
 
 	.drag-handle {
