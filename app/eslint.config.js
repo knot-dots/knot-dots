@@ -26,5 +26,11 @@ export default ts.config(
 				svelteConfig
 			}
 		}
+	},
+	{
+		rules: {
+			'svelte/no-navigation-without-resolve': 'warn',
+			'svelte/prefer-svelte-reactivity': 'warn'
+		}
 	}
 );
