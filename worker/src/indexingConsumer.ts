@@ -1,6 +1,7 @@
 import { sql } from 'slonik';
 import { getPool } from './db.ts';
 import type { IndexingEvent } from './types.ts';
+import { z } from 'zod';
 
 import {
   SQSClient,
@@ -15,19 +16,39 @@ import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { toDoc } from './shared/indexing.ts';
 
-const queueUrl = process.env.INDEXING_QUEUE_URL || '';
-const dlqUrl = process.env.INDEXING_DLQ_URL || '';
-const region = process.env.INDEXING_QUEUE_REGION || 'fr-par';
-const endpoint = process.env.INDEXING_QUEUE_ENDPOINT;
-const accessKeyId = process.env.INDEXING_QUEUE_ACCESS_KEY || process.env.SCALEWAY_ACCESS_KEY || '';
-const secretAccessKey = process.env.INDEXING_QUEUE_SECRET_KEY || process.env.SCALEWAY_SECRET_KEY || '';
-const esUrl = process.env.ELASTICSEARCH_URL || '';
-// Use alias for all read/write operations (no legacy index env fallback)
-const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
-const pollIntervalMs = Number(process.env.INDEXING_WORKER_POLL_INTERVAL_MS || '2000');
-const maxReceiveCount = Number(process.env.INDEXING_MAX_RECEIVE_COUNT || '5');
-const bulkMaxRetries = Number(process.env.INDEXING_BULK_MAX_RETRIES || '3');
-const bulkRetryBaseMs = Number(process.env.INDEXING_BULK_RETRY_BASE_MS || '500');
+const envSchema = z
+  .object({
+    INDEXING_QUEUE_URL: z.string().default(''),
+    INDEXING_DLQ_URL: z.string().default(''),
+    INDEXING_QUEUE_REGION: z.string().default('fr-par'),
+    INDEXING_QUEUE_ENDPOINT: z.string().optional(),
+    INDEXING_QUEUE_ACCESS_KEY: z.string().default(''),
+    INDEXING_QUEUE_SECRET_KEY: z.string().default(''),
+    ELASTICSEARCH_URL: z.string().default(''),
+    ELASTICSEARCH_INDEX_ALIAS: z.string().default('containers'),
+    INDEXING_WORKER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
+    INDEXING_MAX_RECEIVE_COUNT: z.coerce.number().int().positive().default(5),
+    INDEXING_BULK_MAX_RETRIES: z.coerce.number().int().positive().default(3),
+    INDEXING_BULK_RETRY_BASE_MS: z.coerce.number().int().positive().default(500)
+  })
+  .transform((value) => ({
+    queueUrl: value.INDEXING_QUEUE_URL,
+    dlqUrl: value.INDEXING_DLQ_URL,
+    region: value.INDEXING_QUEUE_REGION,
+    endpoint: value.INDEXING_QUEUE_ENDPOINT,
+    accessKeyId: value.INDEXING_QUEUE_ACCESS_KEY,
+    secretAccessKey: value.INDEXING_QUEUE_SECRET_KEY,
+    esUrl: value.ELASTICSEARCH_URL,
+    esIndex: value.ELASTICSEARCH_INDEX_ALIAS,
+    pollIntervalMs: value.INDEXING_WORKER_POLL_INTERVAL_MS,
+    maxReceiveCount: value.INDEXING_MAX_RECEIVE_COUNT,
+    bulkMaxRetries: value.INDEXING_BULK_MAX_RETRIES,
+    bulkRetryBaseMs: value.INDEXING_BULK_RETRY_BASE_MS
+  }));
+
+const env = envSchema.parse(process.env);
+
+const { queueUrl, dlqUrl, region, endpoint, accessKeyId, secretAccessKey, esUrl, esIndex, pollIntervalMs, maxReceiveCount, bulkMaxRetries, bulkRetryBaseMs } = env;
 
 let running = true;
 

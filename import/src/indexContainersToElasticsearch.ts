@@ -2,6 +2,7 @@ import { Client } from '@elastic/elasticsearch';
 import { sql } from 'slonik';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
+import { z } from 'zod';
 import { getPool } from './db';
 import { createIndexWithMappings, toDoc } from '../shared/indexing';
 
@@ -15,12 +16,17 @@ interface Row {
   payload: any;
 }
 
-function env(name: string, fallback?: string) {
-  const v = process.env[name];
-  if (v && v.length > 0) return v;
-  if (fallback !== undefined) return fallback;
-  throw new Error(`Missing required env var ${name}`);
-}
+const envSchema = z
+  .object({
+    ELASTICSEARCH_INDEX_ALIAS: z.string().default('containers'),
+    ELASTICSEARCH_URL: z.string().default('http://localhost:9200')
+  })
+  .transform((value) => ({
+    aliasName: value.ELASTICSEARCH_INDEX_ALIAS,
+    node: value.ELASTICSEARCH_URL
+  }));
+
+const env = envSchema.parse(process.env);
 
 async function* fetchContainers(batchSize = 500) {
   const pool = await getPool();
@@ -65,8 +71,7 @@ async function* fetchContainers(batchSize = 500) {
 }
 
 async function run() {
-  const aliasName = env('ELASTICSEARCH_INDEX_ALIAS', 'containers');
-  const node = env('ELASTICSEARCH_URL', 'http://localhost:9200');
+  const { aliasName, node } = env;
   const client = new Client({ node });
 
   // Create a new timestamped physical index and point/switch the alias to it atomically after bulk.
