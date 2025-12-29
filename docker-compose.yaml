@@ -149,8 +149,6 @@ services:
       retries: 5
     ports:
       - "9200:9200"
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
   kibana:
     image: docker.elastic.co/kibana/kibana:9.2.3
     depends_on:
@@ -186,5 +184,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-volumes:
-  esdata:
