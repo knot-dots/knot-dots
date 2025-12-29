@@ -61,8 +61,6 @@ export async function enqueueIndexingEvent(event: IndexingEvent): Promise<void> 
 				new SendMessageCommand({
 					QueueUrl: queueUrl,
 					MessageBody: body
-					//MessageGroupId: event.guid,
-					//MessageDeduplicationId: `${event.guid}-${event.action}-${event.timestamp}`.slice(0,128)
 				})
 			);
 			log.info(
