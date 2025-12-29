@@ -4,8 +4,8 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import {
 		type AnyContainer,
+		type ContentPartnerContainer,
 		type KnowledgeContainer,
-		isContentPartnerContainer,
 		payloadTypes
 	} from '$lib/models';
 
@@ -15,16 +15,19 @@
 
 	let { container }: Props = $props();
 
-	let contentPartners: AnyContainer[] = $state([]);
+	let contentPartners: ContentPartnerContainer[] = $state([]);
 	let partnerName = $derived(
-		(contentPartners.find((c) => c.guid === container.payload.content_partner) as AnyContainer)
-			?.payload?.title
+		(
+			contentPartners.find(
+				(c) => c.guid === container.payload.content_partner
+			) as ContentPartnerContainer
+		)?.payload?.title
 	);
 
 	$effect(() => {
 		if (container.payload.content_partner) {
 			fetchContainers({ payloadType: [payloadTypes.enum.content_partner] }).then((containers) => {
-				contentPartners = containers;
+				contentPartners = containers as ContentPartnerContainer[];
 			});
 		}
 	});
@@ -32,8 +35,10 @@
 
 <div class="knowledge-content">
 	<div class="meta-top">
-		{#if container.payload.category}
-			<span class="category-badge">{$_(`knowledge.category.${container.payload.category}`)}</span>
+		{#if container.payload.knowledgeCategory}
+			<span class="category-badge"
+				>{$_(`knowledge.category.${container.payload.knowledgeCategory}`)}</span
+			>
 		{/if}
 
 		{#if partnerName}

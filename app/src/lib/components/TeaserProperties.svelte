@@ -39,7 +39,11 @@
 
 		<EditableCardStyle {editable} label={$_('card_style')} bind:value={container.payload.style} />
 
-		<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
+		<EditableImage
+			{editable}
+			label={$_('upload.image.choose')}
+			bind:value={container.payload.image}
+		/>
 
 		<AuthoredBy {container} {revisions} />
 	{/snippet}

@@ -17,7 +17,8 @@
 		type TeaserContainer,
 		type TeaserCollectionContainer,
 		type NewContainer,
-		payloadTypes
+		payloadTypes,
+		type AccordionCollectionContainer
 	} from '$lib/models';
 	import { sectionOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
@@ -25,7 +26,7 @@
 	import type { Attachment } from 'svelte/attachments';
 
 	interface Props {
-		container: TeaserCollectionContainer;
+		container: TeaserCollectionContainer | AccordionCollectionContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;

@@ -16,6 +16,7 @@ type Actions =
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const commonTypes = [
+	payloadTypes.enum.accordion_collection,
 	payloadTypes.enum.administrative_area_basic_data,
 	payloadTypes.enum.chapter,
 	payloadTypes.enum.content_partner,

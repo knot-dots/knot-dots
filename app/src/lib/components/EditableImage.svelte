@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import Upload from '~icons/flowbite/upload-outline';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL.js';
+	import UppyImageUploader from '$lib/components/UppyImageUploader.svelte';
 
 	interface Props {
 		editable?: boolean;
@@ -15,34 +14,16 @@
 	let { editable = false, label, value = $bindable() }: Props = $props();
 
 	let uploadInProgress = $state(false);
-
 	const id = crypto.randomUUID();
 
 	function remove(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
 		value = undefined;
 		requestSubmit(event);
-	}
-
-	async function upload(event: Event) {
-		event.stopPropagation();
-		const input = event.currentTarget as HTMLInputElement;
-		if (input.files instanceof FileList && input.files.length > 0) {
-			try {
-				uploadInProgress = true;
-				value = await uploadAsFormData(input.files[0]);
-				input.form?.requestSubmit();
-			} catch (e) {
-				console.log(e);
-			} finally {
-				uploadInProgress = false;
-			}
-		}
 	}
 </script>
 
 {#if editable}
-	<label class="label" for="image">{label}</label>
+	<label class="label" for={id}>{label}</label>
 	<div>
 		<span class="value value--is-editable">
 			{#if uploadInProgress}
@@ -60,16 +41,17 @@
 			{/if}
 		</span>
 
-		<label class="button button-upload" for={id}>
-			<Upload />
-			{$_('upload.image.choose')}
-		</label>
-		<input
-			accept="image/png,image/jpeg,image/svg+xml"
-			class="is-visually-hidden"
+		<UppyImageUploader
+			bind:value
+			{label}
 			{id}
-			oninput={upload}
-			type="file"
+			mode="input"
+			onSuccess={() => {
+				const form = document.querySelector(`[for="${id}"]`)?.parentElement?.closest('form');
+				if (form) {
+					form.requestSubmit();
+				}
+			}}
 		/>
 
 		<p class="help">{$_('upload.image.help')}</p>
@@ -118,26 +100,6 @@
 		width: 0.75rem;
 	}
 
-	.button-upload {
-		--button-border-color: var(--color-primary-700);
-		--button-hover-background: var(--color-primary-700);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		border-radius: 4px;
-		color: var(--color-primary-700);
-		font-size: 0.75rem;
-	}
-
-	.button-upload > :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
-	}
-
-	.button-upload:hover {
-		color: white;
-	}
-
 	.help {
 		flex-basis: 100%;
 		font-size: 0.75rem;
@@ -159,5 +121,24 @@
 
 	.value.value--is-editable:hover {
 		background-color: var(--color-gray-100);
+	}
+
+	.loader {
+		width: 1rem;
+		height: 1rem;
+		border: 2px solid currentColor;
+		border-bottom-color: transparent;
+		border-radius: 50%;
+		display: inline-block;
+		animation: rotation 1s linear infinite;
+	}
+
+	@keyframes rotation {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 </style>

@@ -6,12 +6,7 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import {
-		type AnyContainer,
-		visibility,
-		listTypes,
-		isTeaserCollectionContainer
-	} from '$lib/models';
+	import { type AnyContainer, visibility, listTypes, isCollectionContainer } from '$lib/models';
 	import { sectionOf } from '$lib/relations';
 	import { ability } from '$lib/stores';
 
@@ -37,7 +32,7 @@
 	let dialog: HTMLDialogElement;
 </script>
 
-{#if $ability.can('update', container, 'visibility') || $ability.can('delete', container)}
+{#if $ability.can('update', container, 'visibility') && isCollectionContainer(container)}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" use:popover.button>
 			<ListType />
@@ -46,14 +41,12 @@
 		{#if $popover.expanded}
 			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 				<div>
-					{#if $ability.can('update', container, 'visibility')}
-						{#each listTypes.options.map( (o) => ({ value: o, label: $_(`list_type.${o}`) }) ) as option (option.value)}
-							<label>
-								<input type="radio" value={option.value} bind:group={container.payload.listType} />
-								<span class="truncated">{option.label}</span>
-							</label>
-						{/each}
-					{/if}
+					{#each listTypes.options.map( (o) => ({ value: o, label: $_(`list_type.${o}`) }) ) as option (option.value)}
+						<label>
+							<input type="radio" value={option.value} bind:group={container.payload.listType} />
+							<span class="truncated">{option.label}</span>
+						</label>
+					{/each}
 				</div>
 			</fieldset>
 		{/if}
@@ -63,9 +56,5 @@
 <style>
 	.dropdown-panel {
 		border-radius: 16px;
-	}
-
-	.dropdown-panel .action-button span {
-		color: var(--color-gray-500);
 	}
 </style>

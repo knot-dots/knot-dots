@@ -754,7 +754,7 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 
 const knowledgePayload = basePayload
 	.extend({
-		category: z.enum(['publication', 'tool', 'best_practise']).default('publication'),
+		knowledgeCategory: z.enum(['publication', 'tool', 'best_practise']).default('publication'),
 		content_partner: z.string().optional(),
 		date: z.string().optional(),
 		tags: z.array(z.string()).default([]),
@@ -1144,8 +1144,8 @@ const colContentPayload = teaserPayload
 // For creating new empty teasers (title optional during creation)
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
-const contentPartnerPayload = z
-	.object({
+const contentPartnerPayload = basePayload
+	.extend({
 		image: z.string().url().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.content_partner),
@@ -1940,6 +1940,18 @@ const teaserCollectionContainer = container.extend({
 
 export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
 
+const accordionCollectionContainer = container.extend({
+	payload: accordionCollectionPayload
+});
+
+export type AccordionCollectionContainer = z.infer<typeof accordionCollectionContainer>;
+
+export type CollectionContainer =
+	| AccordionCollectionContainer
+	| ContentPartnerCollectionContainer
+	| KnowledgeCollectionContainer
+	| TeaserCollectionContainer;
+
 export type TeaserLikeContainer =
 	| TeaserContainer
 	| InfoBoxContainer
@@ -1965,8 +1977,19 @@ export function isTeaserCollectionContainer(
 
 export function isAccordionCollectionContainer(
 	container: AnyContainer | EmptyContainer
-): container is TeaserCollectionContainer {
+): container is AccordionCollectionContainer {
 	return container.payload.type === payloadTypes.enum.accordion_collection;
+}
+
+export function isCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is CollectionContainer {
+	return [
+		payloadTypes.enum.accordion_collection,
+		payloadTypes.enum.content_partner_collection,
+		payloadTypes.enum.knowledge_collection,
+		payloadTypes.enum.teaser_collection
+	].includes(container.payload.type as any);
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {

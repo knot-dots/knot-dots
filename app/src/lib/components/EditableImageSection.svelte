@@ -32,7 +32,6 @@
 
 <header>
 	{#if editable && $ability.can('update', container)}
-		<!-- svelte-ignore binding_property_non_reactive -->
 		<svelte:element
 			this={heading}
 			{@attach init}

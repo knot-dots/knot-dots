@@ -3,7 +3,6 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
@@ -62,7 +61,9 @@
 	};
 
 	let availableTags = $derived(
-		tagsByCategory[container.payload.category]?.sort((a, b) => a.label.localeCompare(b.label)) || []
+		tagsByCategory[container.payload.knowledgeCategory]?.sort((a, b) =>
+			a.label.localeCompare(b.label)
+		) || []
 	);
 
 	let contentPartners: AnyContainer[] = $state([]);
@@ -110,7 +111,7 @@
 			{editable}
 			label={$_('knowledge.category')}
 			options={knowledgeCategories}
-			bind:value={container.payload.category}
+			bind:value={container.payload.knowledgeCategory}
 		/>
 
 		{#if availableTags.length > 0}
