@@ -1,5 +1,6 @@
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
+import { env as privateEnv } from '$env/dynamic/private';
 
 // Using dynamic import to avoid type errors before dependency is installed/built.
 // Lazy loader wrapper – if dependency missing we no-op.
@@ -30,12 +31,10 @@ export interface IndexingEvent {
 let sqs: any | undefined;
 async function getClient() {
 	if (sqs) return sqs;
-	const queueRegion = process.env.INDEXING_QUEUE_REGION || 'fr-par';
-	const endpoint = process.env.INDEXING_QUEUE_ENDPOINT; // Scaleway SQS-compatible endpoint if provided
-	const accessKeyId =
-		process.env.INDEXING_QUEUE_ACCESS_KEY || process.env.SCALEWAY_ACCESS_KEY || '';
-	const secretAccessKey =
-		process.env.INDEXING_QUEUE_SECRET_KEY || process.env.SCALEWAY_SECRET_KEY || '';
+	const queueRegion = privateEnv.INDEXING_QUEUE_REGION || 'fr-par';
+	const endpoint = privateEnv.INDEXING_QUEUE_ENDPOINT;
+	const accessKeyId = privateEnv.INDEXING_QUEUE_ACCESS_KEY || '';
+	const secretAccessKey = privateEnv.INDEXING_QUEUE_SECRET_KEY || '';
 	const { SQSClient } = await loadSQS();
 	sqs = new SQSClient({
 		region: queueRegion,
@@ -45,7 +44,7 @@ async function getClient() {
 	return sqs;
 }
 
-const queueUrl = process.env.INDEXING_QUEUE_URL || '';
+const queueUrl = privateEnv.INDEXING_QUEUE_URL || '';
 
 export async function enqueueIndexingEvent(event: IndexingEvent): Promise<void> {
 	if (!queueUrl) {

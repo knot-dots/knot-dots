@@ -2,6 +2,7 @@ import { Client } from '@elastic/elasticsearch';
 import type { DatabaseConnection } from 'slonik';
 import type { Container, PayloadType } from '$lib/models';
 import { withUserAndRelation, sql } from './db';
+import { env as privateEnv } from '$env/dynamic/private';
 
 export function getManyContainersWithES(
 	organizations: string[],
@@ -26,9 +27,9 @@ export function getManyContainersWithES(
 	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const esUrl = process.env.ELASTICSEARCH_URL;
-		const esIndex = process.env.ELASTICSEARCH_INDEX_ALIAS || 'containers';
-		
+		const esUrl = privateEnv.ELASTICSEARCH_URL;
+		const esIndex = privateEnv.ELASTICSEARCH_INDEX_ALIAS || 'containers';
+
 		if (!esUrl) {
 			console.warn('[getManyContainersWithES] No Elasticsearch URL configured');
 			return [];
@@ -38,7 +39,7 @@ export function getManyContainersWithES(
 			const es = new Client({ node: esUrl });
 			const must: any[] = [];
 			const filter: any[] = [];
-			
+
 			if (filters.terms) {
 				must.push({
 					multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
@@ -69,7 +70,7 @@ export function getManyContainersWithES(
 			if (organizations.length) filter.push({ terms: { organization: organizations } });
 			if (filters.template !== undefined)
 				filter.push({ term: { 'payload.template': filters.template } });
-			
+
 			const query = { bool: { must, filter } };
 			const sortParam =
 				sort === 'modified'
@@ -78,7 +79,7 @@ export function getManyContainersWithES(
 						? [{ 'payload.priority': 'asc' }]
 						: [{ 'title.keyword': 'asc' }];
 			const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
-			
+
 			const { hits } = await es.search({
 				index: esIndex,
 				query,
@@ -86,12 +87,12 @@ export function getManyContainersWithES(
 				size: sizeParam,
 				_source: ['guid']
 			});
-			
+
 			const guids = (hits.hits as any[]).map((h) => h._source.guid);
 			console.log('[getManyContainersWithES] Elasticsearch returned', guids.length, 'results');
-			
+
 			if (guids.length === 0) return [];
-			
+
 			const containerResult = await connection.any(sql.typeAlias('container')`
 				SELECT c.*
 				FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
@@ -103,13 +104,13 @@ export function getManyContainersWithES(
 				AND valid_currently
 				ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)
 			`);
-			
+
 			console.log(
 				'[getManyContainersWithES] SQL returned',
 				containerResult.length,
 				'results after ES filtering'
 			);
-			
+
 			return withUserAndRelation<Container>(connection, containerResult);
 		} catch (err) {
 			console.error('[getManyContainersWithES] Elasticsearch error:', err);
@@ -119,9 +120,9 @@ export function getManyContainersWithES(
 }
 
 export async function getFacetAggregationsForGuids(guids: string[]) {
-	const esUrl = process.env.ELASTICSEARCH_URL;
+	const esUrl = privateEnv.ELASTICSEARCH_URL;
 	console.log('[getFacetAggregationsForGuids] Fetching facets for', guids.length, 'guids');
-	const esIndex = process.env.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
+	const esIndex = privateEnv.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
 	if (!esUrl || guids.length === 0) {
 		return {} as Record<string, Record<string, number>>;
 	}
