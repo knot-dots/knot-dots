@@ -73,15 +73,16 @@ export default (async function load({ depends, locals, parent, url }) {
 						url.searchParams.get('sort') ?? ''
 					)
 		);
-		const filtered = filterOrganizationalUnits(
-			filterVisible(containers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
-		);
-		const facets = features.useElasticsearch()
-			? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
-			: {};
-		return { containers: filtered, facets };
 	}
+
+	const filtered = filterOrganizationalUnits(
+		filterVisible(containers, locals.user),
+		url,
+		subordinateOrganizationalUnits,
+		currentOrganizationalUnit
+	);
+	const facets = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: {};
+	return { containers: filtered, facets };
 } satisfies PageServerLoad);
