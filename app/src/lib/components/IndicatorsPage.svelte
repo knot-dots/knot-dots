@@ -19,7 +19,11 @@
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[]; useNewIndicators: boolean };
+		data: {
+			containers: Container[];
+			useNewIndicators: boolean;
+			facets?: Record<string, Record<string, number>>;
+		};
 	}
 
 	let { children, data }: Props = $props();
@@ -46,20 +50,11 @@
 			]
 		]);
 
-<<<<<<< HEAD:app/src/routes/[[guid=uuid]]/indicators/+page.svelte
 		if (!data.facets || Object.keys(data.facets).length === 0) {
 			return computeFacetCount(facets, data.containers);
 		}
 
 		return facets;
-=======
-		return computeFacetCount(
-			facets,
-			data.containers.filter((c) =>
-				data.useNewIndicators ? isIndicatorTemplateContainer(c) : isIndicatorContainer(c)
-			)
-		);
->>>>>>> main:app/src/lib/components/IndicatorsPage.svelte
 	});
 </script>
 

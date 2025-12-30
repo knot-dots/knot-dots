@@ -91,7 +91,12 @@ export const load = (async ({ locals, url, parent }) => {
 						)
 			)
 		);
-		containers = await filterOrganizationalUnitsAsync(Promise.resolve(items));
-		return { containers: filterVisible(containers, locals.user) };
+		const filtered = filterVisible(items, locals.user);
+
+		const facets = features.useElasticsearch()
+			? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+			: {};
+
+		return { containers: filtered, facets };
 	}
 }) satisfies PageServerLoad;

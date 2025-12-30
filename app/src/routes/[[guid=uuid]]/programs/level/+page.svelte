@@ -51,14 +51,14 @@
 			...((!page.data.currentOrganization.payload.default
 				? [['included', new Map()]]
 				: []) as Array<[string, Map<string, number>]>),
-			['audience', fromCounts(audience.options, data.facets.audience)],
-			['category', fromCounts(sustainableDevelopmentGoals.options, data.facets.category)],
-			['topic', fromCounts(topics.options, data.facets.topic)],
-			['policyFieldBNK', fromCounts(policyFieldBNK.options, data.facets.policyFieldBNK)],
-			['programType', fromCounts(programTypes.options, data.facets.programType)]
+			['audience', fromCounts(audience.options, data.facets?.audience)],
+			['category', fromCounts(sustainableDevelopmentGoals.options, data.facets?.category)],
+			['topic', fromCounts(topics.options, data.facets?.topic)],
+			['policyFieldBNK', fromCounts(policyFieldBNK.options, data.facets?.policyFieldBNK)],
+			['programType', fromCounts(programTypes.options, data.facets?.programType)]
 		]);
 
-		if (Object.keys(data.facets).length === 0) {
+		if (!data.facets || Object.keys(data.facets).length === 0) {
 			return computeFacetCount(facets, data.containers);
 		}
 
