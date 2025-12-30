@@ -3,7 +3,13 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { computeFacetCount, type Container, fromCounts, predicates, taskCategories } from '$lib/models';
+	import {
+		computeFacetCount,
+		type Container,
+		fromCounts,
+		predicates,
+		taskCategories
+	} from '$lib/models';
 
 	interface Props {
 		children: Snippet;

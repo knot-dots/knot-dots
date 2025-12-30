@@ -1,10 +1,7 @@
 import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import { payloadTypes, predicates } from '$lib/models';
-import {
-	getAllRelatedContainers,
-	getManyContainers
-} from '$lib/server/db';
+import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/knowledge/$types';
 

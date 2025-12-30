@@ -1,10 +1,7 @@
 import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import { audience, type Container, type IndicatorContainer, payloadTypes } from '$lib/models';
-import {
-	getAllContainersRelatedToIndicators,
-	getManyContainers
-} from '$lib/server/db';
+import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from './$types';
 
