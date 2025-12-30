@@ -19,7 +19,7 @@ import { withLogger } from '$lib/server/logger';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
-const { handle: authentication } = SvelteKitAuth({
+const { handle: withAuthentication } = SvelteKitAuth({
 	callbacks: {
 		async jwt({ token, account }) {
 			if (account?.access_token) {
@@ -109,7 +109,7 @@ const { handle: authentication } = SvelteKitAuth({
 
 export const handle = sequence(
 	withLogger,
-	authentication,
+	withAuthentication,
 	async ({ event, resolve }) => {
 		const lang = event.request.headers.get('accept-language')?.split(',')[0];
 		locale.set(lang ?? 'de');
