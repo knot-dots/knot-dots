@@ -3,10 +3,9 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers,
-	getManyContainersWithES,
-	getFacetAggregationsForGuids
+	getManyContainers
 } from '$lib/server/db';
+import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { filterOrganizationalUnits, filterMembers, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/measures/$types';

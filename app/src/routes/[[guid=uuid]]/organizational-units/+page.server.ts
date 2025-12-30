@@ -1,7 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { filterVisible } from '$lib/authorization';
 import type { OrganizationalUnitContainer } from '$lib/models';
-import { getManyOrganizationalUnitContainers, getFacetAggregationsForGuids } from '$lib/server/db';
+import { getManyOrganizationalUnitContainers } from '$lib/server/db';
+import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 

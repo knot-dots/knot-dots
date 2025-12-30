@@ -5,10 +5,9 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers,
-	getManyContainersWithES,
-	getFacetAggregationsForGuids
+	getManyContainers
 } from '$lib/server/db';
+import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/goals/$types';
 
 export default (async function load({ depends, locals, parent, url }) {

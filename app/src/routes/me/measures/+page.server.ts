@@ -1,6 +1,7 @@
 import { filterVisible } from '$lib/authorization';
 import { isContainerWithEffect, isMemberOf } from '$lib/models';
-import { getAllContainersRelatedToUser, getFacetAggregationsForGuids } from '$lib/server/db';
+import { getAllContainersRelatedToUser } from '$lib/server/db';
+import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';

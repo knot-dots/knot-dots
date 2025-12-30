@@ -4,10 +4,9 @@ import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers,
-	getManyContainersWithES,
-	getFacetAggregationsForGuids
+	getManyContainers
 } from '$lib/server/db';
+import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/programs/$types';
 
 export default (async function load({ depends, locals, parent, url }) {

@@ -15,10 +15,9 @@ import {
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers,
-	getManyContainersWithES,
-	getFacetAggregationsForGuids
+	getManyContainers
 } from '$lib/server/db';
+import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/tasks/$types';
 
 function filterRelated(

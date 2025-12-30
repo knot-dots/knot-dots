@@ -3,10 +3,9 @@ import { filterVisible } from '$lib/authorization';
 import { payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
-	getManyContainers,
-	getManyContainersWithES,
-	getFacetAggregationsForGuids
+	getManyContainers
 } from '$lib/server/db';
+import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/knowledge/$types';
 
 export default (async function load({ depends, locals, parent, url }) {

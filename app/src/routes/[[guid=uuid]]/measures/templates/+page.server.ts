@@ -2,10 +2,9 @@ import { filterVisible } from '$lib/authorization';
 import { filterOrganizationalUnits, payloadTypes } from '$lib/models';
 import {
 	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers,
-	getManyContainersWithES,
-	getFacetAggregationsForGuids
+	getManyContainers
 } from '$lib/server/db';
+import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 
