@@ -59,8 +59,9 @@ export const load = (async ({ locals, url, parent }) => {
 				)
 			)
 		);
+		return { containers: filterVisible(containers, locals.user) };
 	} else {
-		containers = await filterOrganizationalUnitsAsync(
+		const items = await filterOrganizationalUnitsAsync(
 			locals.pool.connect(
 				features.useElasticsearch()
 					? getManyContainersWithES(
@@ -91,13 +92,7 @@ export const load = (async ({ locals, url, parent }) => {
 						)
 			)
 		);
+		containers = await filterOrganizationalUnitsAsync(Promise.resolve(items));
+		return { containers: filterVisible(containers, locals.user) };
 	}
-
-	const filtered = filterVisible(containers, locals.user);
-
-	const facets = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
-		: {};
-
-	return { containers: filtered, facets };
 }) satisfies PageServerLoad;

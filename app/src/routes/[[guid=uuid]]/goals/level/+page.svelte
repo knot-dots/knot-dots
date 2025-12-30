@@ -9,10 +9,8 @@
 		computeColumnTitleForGoals,
 		goalsByHierarchyLevel,
 		isGoalContainer,
-		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -34,16 +32,7 @@
 <GoalsPage {data}>
 	<Board>
 		{#each columns as column (column.key)}
-			<BoardColumn
-				addItemUrl={column.addItemUrl &&
-				$mayCreateContainer(
-					payloadTypes.enum.goal,
-					data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-				)
-					? column.addItemUrl
-					: undefined}
-				title={column.title}
-			>
+			<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
 				<MaybeDragZone containers={column.containers} />
 			</BoardColumn>
 		{/each}

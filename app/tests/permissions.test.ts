@@ -20,14 +20,24 @@ test.describe('Permissions', () => {
 			await page.waitForTimeout(500);
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
 			await page.waitForTimeout(500);
-			await page.getByText('Add item').nth(1).click();
+			await page
+				.locator('section')
+				.filter({ hasText: 'Level 1' })
+				.getByText('Add item')
+				.first()
+				.click();
 			await page.waitForTimeout(500);
 			await page.getByRole('textbox', { name: 'Title' }).fill(suborgTitle);
 			await page.getByRole('button', { name: 'Save' }).click();
 			await page.waitForTimeout(500);
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
 			await page.waitForTimeout(500);
-			await page.getByText('Add item').nth(1).click();
+			await page
+				.locator('section')
+				.filter({ hasText: 'Level 1' })
+				.getByText('Add item')
+				.first()
+				.click();
 			await page.waitForTimeout(500);
 			await page.getByRole('textbox', { name: 'Title' }).fill(suborg2Title);
 			await page.getByRole('button', { name: 'Save' }).click();

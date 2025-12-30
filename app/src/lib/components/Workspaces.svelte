@@ -31,7 +31,7 @@
 			{ label: $_('workspace.rules'), value: '/rules/status' },
 			...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
 				? [
-						{ label: $_('workspace.indicators'), value: '/indicators' },
+						{ label: $_('workspace.indicators'), value: '/indicators/catalog' },
 						{ label: $_('workspace.objectives_and_effects'), value: '/objectives-and-effects' }
 					]
 				: [])

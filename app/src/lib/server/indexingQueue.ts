@@ -1,3 +1,6 @@
+import { Roarr as log } from 'roarr';
+import { isErrorLike, serializeError } from 'serialize-error';
+
 // Using dynamic import to avoid type errors before dependency is installed/built.
 // Lazy loader wrapper – if dependency missing we no-op.
 let SQSClient: any;
@@ -9,8 +12,7 @@ async function loadSQS() {
 		SQSClient = mod.SQSClient;
 		SendMessageCommand = mod.SendMessageCommand;
 	} catch (e) {
-		// eslint-disable-next-line no-console
-		console.warn('[indexingQueue] SQS client module not available; events will be skipped');
+		log.warn('[indexingQueue] SQS client module not available; events will be skipped');
 		SQSClient = class {};
 		SendMessageCommand = class {};
 	}
@@ -47,10 +49,7 @@ const queueUrl = process.env.INDEXING_QUEUE_URL || '';
 
 export async function enqueueIndexingEvent(event: IndexingEvent): Promise<void> {
 	if (!queueUrl) {
-		if (process.env.NODE_ENV !== 'production') {
-			// eslint-disable-next-line no-console
-			console.warn('[indexingQueue] INDEXING_QUEUE_URL not set, skipping event', event);
-		}
+		log.warn('[indexingQueue] INDEXING_QUEUE_URL not set, skipping event');
 		return;
 	}
 	try {
@@ -62,21 +61,18 @@ export async function enqueueIndexingEvent(event: IndexingEvent): Promise<void> 
 				new SendMessageCommand({
 					QueueUrl: queueUrl,
 					MessageBody: body
-					//MessageGroupId: event.guid,
-					//MessageDeduplicationId: `${event.guid}-${event.action}-${event.timestamp}`.slice(0,128)
 				})
 			);
-			if (process.env.NODE_ENV !== 'production') {
-				// eslint-disable-next-line no-console
-				console.info('[indexingQueue] Enqueued indexing event', {
+			log.info(
+				{
 					action: event.action,
 					guid: event.guid,
 					timestamp: event.timestamp
-				});
-			}
+				},
+				'[indexingQueue] Enqueued indexing event'
+			);
 		}
-	} catch (e) {
-		// eslint-disable-next-line no-console
-		console.error('[indexingQueue] Failed to enqueue event', (e as Error).message);
+	} catch (error) {
+		log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 	}
 }

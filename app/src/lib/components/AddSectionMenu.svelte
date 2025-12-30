@@ -4,6 +4,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
+	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
@@ -12,6 +13,7 @@
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
+	import Grid from '~icons/knotdots/grid';
 	import Map from '~icons/knotdots/map';
 	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
@@ -37,6 +39,7 @@
 		isOrganizationContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isReportContainer,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -140,11 +143,27 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
-	let mayAddChapter = $derived(createFeatureDecisions(page.data.features).useChapter());
+	let mayAddChapter = $derived(
+		createFeatureDecisions(page.data.features).useChapter() && isReportContainer(parentContainer)
+	);
+
+	let mayAddCustomCollection = $derived(
+		createFeatureDecisions(page.data.features).useCustomCollection() &&
+			isReportContainer(parentContainer)
+	);
 
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddCustomCollection
+				? [
+						{
+							icon: Grid,
+							label: $_('custom_collection'),
+							value: payloadTypes.enum.custom_collection
+						}
+					]
+				: []),
 			...(mayAddChapter
 				? [
 						{

@@ -1,30 +1,28 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
-	import Indicators from '$lib/components/Indicators.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import {
 		audience,
 		computeFacetCount,
 		fromCounts,
+		type Container,
 		indicatorCategories,
 		indicatorTypes,
+		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		policyFieldBNK,
-		predicates,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+	interface Props {
+		children: Snippet;
+		data: { containers: Container[]; useNewIndicators: boolean };
+	}
 
-	setContext('relationOverlay', {
-		enabled: true,
-		predicates: [predicates.enum['is-affected-by']]
-	});
+	let { children, data }: Props = $props();
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
@@ -48,11 +46,20 @@
 			]
 		]);
 
+<<<<<<< HEAD:app/src/routes/[[guid=uuid]]/indicators/+page.svelte
 		if (!data.facets || Object.keys(data.facets).length === 0) {
 			return computeFacetCount(facets, data.containers);
 		}
 
 		return facets;
+=======
+		return computeFacetCount(
+			facets,
+			data.containers.filter((c) =>
+				data.useNewIndicators ? isIndicatorTemplateContainer(c) : isIndicatorContainer(c)
+			)
+		);
+>>>>>>> main:app/src/lib/components/IndicatorsPage.svelte
 	});
 </script>
 
@@ -62,11 +69,6 @@
 	{/snippet}
 
 	{#snippet main()}
-		{#if data.useNewIndicators}
-			<NewIndicators containers={data.containers} />
-		{:else}
-			<Indicators containers={data.containers} />
-		{/if}
-		<Help slug="indicators" />
+		{@render children()}
 	{/snippet}
 </Layout>

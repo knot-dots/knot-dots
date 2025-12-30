@@ -13,14 +13,12 @@
 		computeFacetCount,
 		fromCounts,
 		levels,
-		payloadTypes,
 		policyFieldBNK,
 		predicates,
 		programTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -76,15 +74,7 @@
 	{#snippet main()}
 		<Board>
 			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
-				<BoardColumn
-					addItemUrl={$mayCreateContainer(
-						payloadTypes.enum.program,
-						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-					)
-						? `#create=program&level=${levelOption}`
-						: undefined}
-					title={$_(levelOption)}
-				>
+				<BoardColumn addItemUrl={`#create=program&level=${levelOption}`} title={$_(levelOption)}>
 					<MaybeDragZone
 						containers={data.containers.filter(
 							(c) => 'level' in c.payload && c.payload.level === levelOption

@@ -7,9 +7,9 @@ test.describe('Chapter section heading levels', () => {
 	// Use admin to ensure we have permission to create and edit
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	const title = `Goal with chapters ${crypto.randomUUID()}`;
+	const title = `Report ${crypto.randomUUID()}`;
 
-	test.beforeEach('add goal', async ({ page, isMobile }) => {
+	test.beforeEach('add report', async ({ page, isMobile }) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
 		await page.goto('/');
@@ -17,15 +17,20 @@ test.describe('Chapter section heading levels', () => {
 		// Ensure feature flag is enabled
 		await page.getByRole('navigation').getByText('AA').click();
 		await page.getByRole('navigation').getByRole('button', { name: 'Settings' }).click();
-		await page.getByLabel('Chapter').check();
+		await page.getByLabel('Report').check();
 		await page.getByRole('button', { name: 'Save' }).click();
 
-		// Navigate to Goals
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
+		// Activate edit mode
+		await page.getByLabel('edit mode').check();
 
-		// Create a new goal
-		await page.getByText('Add item').click();
+		// Navigate to Dots board
+		await page.getByText('dots', { exact: true }).click();
+
+		// Add a report
+		await page.getByLabel('Add item').first().click();
+		await page.getByRole('menuitem', { name: 'Report' }).click();
+
+		// Fill out a minimal form and save
 		await page.getByRole('textbox', { name: 'Title' }).fill(title);
 		await page.getByRole('button', { name: 'Save' }).click();
 	});
@@ -45,21 +50,18 @@ test.describe('Chapter section heading levels', () => {
 
 		const overlay = page.locator('.overlay');
 
-		// Activate edit mode
-		await overlay.getByLabel('edit mode').check();
-
 		// Helper to add a Chapter section and set its number
 		async function addChapter(number: string) {
 			const numberOfSections = await overlay.locator('.sections section').count();
 
 			if (numberOfSections === 0) {
-				await page.getByRole('button', { name: 'Add section' }).click();
-				await page.getByRole('menuitem', { name: 'Chapter' }).click();
+				await overlay.getByRole('button', { name: 'Add section' }).click();
+				await overlay.getByRole('menuitem', { name: 'Chapter' }).click();
 			} else {
 				const lastSection = overlay.locator('.sections section').nth(numberOfSections - 1);
 				await lastSection.hover();
 				await lastSection.getByRole('button', { name: 'Add section' }).click({ force: true });
-				await page.getByRole('menuitem', { name: 'Chapter' }).click({ force: true });
+				await lastSection.getByRole('menuitem', { name: 'Chapter' }).click({ force: true });
 			}
 
 			const section = overlay.locator('.sections section').nth(numberOfSections);
@@ -75,7 +77,7 @@ test.describe('Chapter section heading levels', () => {
 			const lastSection = overlay.locator('.sections section').nth(numberOfSections - 1);
 			await lastSection.hover();
 			await lastSection.getByRole('button', { name: 'Add section' }).click({ force: true });
-			await page.getByRole('menuitem', { name: 'Text' }).click({ force: true });
+			await lastSection.getByRole('menuitem', { name: 'Text' }).click({ force: true });
 
 			// The editable text section heading is a contenteditable heading element
 			const textHeading = overlay

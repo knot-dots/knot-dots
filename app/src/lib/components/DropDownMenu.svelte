@@ -54,26 +54,10 @@
 
 <style>
 	.dropdown {
-		--dropdown-button-icon-size: 1rem;
-
 		display: inline-block;
-	}
-
-	.dropdown-button.dropdown-button--menu {
-		--button-background: transparent;
-		--button-hover-border-color: var(--button-border-color);
-
-		align-items: center;
-		border: solid 1px var(--button-border-color);
-		border-radius: 8px;
-		height: 100%;
 	}
 
 	.dropdown-button.dropdown-button--menu > :global(svg) {
 		color: inherit;
-	}
-
-	.dropdown-panel {
-		max-width: revert;
 	}
 </style>
