@@ -1,6 +1,6 @@
 import Keycloak from '@auth/core/providers/keycloak';
 import { SvelteKitAuth } from '@auth/sveltekit';
-import { type Handle, type HandleServerError, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
@@ -147,11 +147,11 @@ export const handle = sequence(
 		return resolve(event);
 	},
 	withFeatures
-) satisfies Handle;
+);
 
-export const handleError = (async ({ error }) => {
+export const handleError = async ({ error }) => {
 	log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 	return {
 		message: unwrapFunctionStore(_)('error.unexpected')
 	};
-}) satisfies HandleServerError;
+};
