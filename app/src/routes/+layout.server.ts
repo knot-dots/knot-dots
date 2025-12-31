@@ -76,17 +76,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		} else {
 			currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
 		}
-
-		// If we haven't found the organization yet, try to find the organizational unit by subdomain
-		if (!currentOrganization) {
-			currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
-				url.hostname.startsWith(`${guid}.`)
-			);
-
-			currentOrganization = organizations.find(
-				({ guid }) => guid === currentOrganizationalUnit?.organization
-			);
-		}
 	}
 
 	// Throw 404 if no organization is found
