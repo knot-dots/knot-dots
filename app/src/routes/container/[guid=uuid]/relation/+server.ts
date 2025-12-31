@@ -2,16 +2,13 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
 import {
-	type AnyContainer,
 	audience,
 	isContainerWithEffect,
 	isIndicatorContainer,
 	measureTypes,
 	type OrganizationalUnitContainer,
-	type OrganizationContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
@@ -28,9 +25,6 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
-	getManyOrganizationalUnitContainers,
-	getManyOrganizationContainers,
-	setUp,
 	updateManyContainerRelations
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -84,48 +78,15 @@ export const GET = (async ({ locals, params, url }) => {
 					)
 				);
 			} else {
-				let currentOrganization;
-				let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
-
-				async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
-					const containers = await promise;
-					return filterVisible(containers, locals.user);
-				}
-
-				const [organizations, organizationalUnits] = await Promise.all([
-					filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
-					filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
-				]);
-
-				if (url.hostname === new URL(env.PUBLIC_BASE_URL ?? '').hostname) {
-					currentOrganization = organizations.find(({ payload }) => payload.default);
-					if (!currentOrganization) {
-						currentOrganization = (await locals.pool.connect(
-							setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-						)) as OrganizationContainer;
-					}
-				} else {
-					currentOrganization = organizations.find(({ guid }) =>
-						url.hostname.startsWith(`${guid}.`)
-					);
-				}
-
-				if (!currentOrganization) {
-					currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
-						url.hostname.startsWith(`${guid}.`)
-					);
-
-					currentOrganization = organizations.find(
-						({ guid }) => guid === currentOrganizationalUnit?.organization
-					);
-				}
-
 				let subordinateOrganizationalUnits: string[] = [];
 
-				if (currentOrganizationalUnit) {
-					const relatedOrganizationalUnits = await locals.pool.connect(
-						getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-					);
+				if (parseResult.data.organizationalUnit.length > 0) {
+					const [currentOrganizationalUnit, relatedOrganizationalUnits] = (await Promise.all([
+						locals.pool.connect(getContainerByGuid(parseResult.data.organizationalUnit[0])),
+						locals.pool.connect(
+							getAllRelatedOrganizationalUnitContainers(parseResult.data.organizationalUnit[0])
+						)
+					])) as [OrganizationalUnitContainer, OrganizationalUnitContainer[]];
 					subordinateOrganizationalUnits = relatedOrganizationalUnits
 						.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
 						.map(({ guid }) => guid)
