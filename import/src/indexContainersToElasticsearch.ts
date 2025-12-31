@@ -19,11 +19,15 @@ interface Row {
 const envSchema = z
   .object({
     ELASTICSEARCH_INDEX_ALIAS: z.string().default('containers'),
-    ELASTICSEARCH_URL: z.string().default('http://localhost:9200')
+    ELASTICSEARCH_URL: z.string().default('http://localhost:9200'),
+    ELASTICSEARCH_USERNAME: z.string().optional(),
+    ELASTICSEARCH_PASSWORD: z.string().optional()
   })
   .transform((value) => ({
     aliasName: value.ELASTICSEARCH_INDEX_ALIAS,
-    node: value.ELASTICSEARCH_URL
+    node: value.ELASTICSEARCH_URL,
+    username: value.ELASTICSEARCH_USERNAME,
+    password: value.ELASTICSEARCH_PASSWORD
   }));
 
 const env = envSchema.parse(process.env);
@@ -71,8 +75,17 @@ async function* fetchContainers(batchSize = 500) {
 }
 
 async function run() {
-  const { aliasName, node } = env;
-  const client = new Client({ node });
+  const { aliasName, node, username, password } = env;
+  const clientConfig: any = { node };
+  
+  if (username && password) {
+    clientConfig.auth = {
+      username,
+      password
+    };
+  }
+  
+  const client = new Client(clientConfig);
 
   // Create a new timestamped physical index and point/switch the alias to it atomically after bulk.
   const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14); // YYYYMMDDHHmmss
