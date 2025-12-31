@@ -7,7 +7,6 @@ import { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	type KeycloakUser,
-	type OrganizationalUnitContainer,
 	organizationalUnitType,
 	type OrganizationContainer
 } from '$lib/models';
@@ -21,7 +20,6 @@ import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 	let currentOrganization;
-	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 	let user: KeycloakUser | undefined = undefined;
 
 	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
@@ -44,17 +42,16 @@ export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 		)
 	]);
 
+	const currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === params.guid);
+
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
-		if (params.guid) {
+		if (currentOrganizationalUnit) {
+			currentOrganization = organizations.find(
+				({ guid }) => guid === currentOrganizationalUnit.organization
+			);
+		} else if (params.guid) {
 			currentOrganization = organizations.find(({ guid }) => guid === params.guid);
-
-			if (!currentOrganization) {
-				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === params.guid);
-				currentOrganization = organizations.find(
-					({ guid }) => guid === currentOrganizationalUnit?.organization
-				);
-			}
 		} else {
 			currentOrganization = organizations.find(({ payload }) => payload.default);
 			if (!currentOrganization) {
