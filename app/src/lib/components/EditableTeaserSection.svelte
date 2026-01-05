@@ -175,7 +175,10 @@
 			on:resized={handleResizeEnd}
 		>
 			<Pane bind:size={paneSize} minSize={0} maxSize={100}>
-				<div class="splitpanes__pane--wrap splitpanes__pane--wrap--left">
+				<div
+					class="splitpanes__pane--wrap splitpanes__pane--wrap--left"
+					class:is-hidden={paneSize === 0}
+				>
 					{#if canUpdate}
 						<ul class="absolute-actions is-visible-on-hover">
 							<li>
@@ -243,7 +246,10 @@
 				</div>
 			</Pane>
 			<Pane>
-				<div class="splitpanes__pane--wrap splitpanes__pane--wrap--right">
+				<div
+					class="splitpanes__pane--wrap splitpanes__pane--wrap--right"
+					class:is-hidden={paneSize === 100}
+				>
 					{#if canUpdate}
 						<ul class="absolute-actions is-visible-on-hover">
 							<li>
@@ -474,5 +480,9 @@
 		left: unset;
 		right: -0.75rem;
 		top: -0.75rem;
+	}
+
+	.is-hidden {
+		display: none;
 	}
 </style>
