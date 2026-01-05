@@ -2,16 +2,18 @@ import fs from 'node:fs';
 import { Client } from '@elastic/elasticsearch';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
+import { z } from 'zod';
+
+const envSchema = z.object({
+  DE_LABELS_PATH: z.string().default('/opt/labels/de.json')
+});
+
+const env = envSchema.parse(process.env);
 
 // Shared label loading: German-only via DE_LABELS_PATH
 let deLabels: Record<string, any> = {};
 (function loadLabels() {
-  const labelsPath = process.env.DE_LABELS_PATH;
-  if (!labelsPath || labelsPath.length === 0) {
-    // If not provided, stay empty; callers can decide to warn.
-    deLabels = {};
-    return;
-  }
+  const labelsPath = env.DE_LABELS_PATH;
   try {
     const contents = fs.readFileSync(labelsPath, 'utf-8');
     deLabels = JSON.parse(contents);
