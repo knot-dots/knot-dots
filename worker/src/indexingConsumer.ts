@@ -18,13 +18,15 @@ import { toDoc } from './shared/indexing.ts';
 
 const envSchema = z
   .object({
-    INDEXING_QUEUE_URL: z.string().default(''),
-    INDEXING_DLQ_URL: z.string().default(''),
+    INDEXING_QUEUE_URL: z.string(),
+    INDEXING_DLQ_URL: z.string(),
     INDEXING_QUEUE_REGION: z.string().default('fr-par'),
-    INDEXING_QUEUE_ENDPOINT: z.string().optional(),
-    INDEXING_QUEUE_ACCESS_KEY: z.string().default(''),
-    INDEXING_QUEUE_SECRET_KEY: z.string().default(''),
-    ELASTICSEARCH_URL: z.string().default(''),
+    INDEXING_QUEUE_ENDPOINT: z.string(),
+    INDEXING_QUEUE_ACCESS_KEY: z.string(),
+    INDEXING_QUEUE_SECRET_KEY: z.string(),
+    ELASTICSEARCH_URL: z.string(),
+    ELASTICSEARCH_USERNAME: z.string().optional(),
+    ELASTICSEARCH_PASSWORD: z.string().optional(),
     ELASTICSEARCH_INDEX_ALIAS: z.string().default('containers'),
     INDEXING_WORKER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
     INDEXING_MAX_RECEIVE_COUNT: z.coerce.number().int().positive().default(5),
@@ -39,6 +41,8 @@ const envSchema = z
     accessKeyId: value.INDEXING_QUEUE_ACCESS_KEY,
     secretAccessKey: value.INDEXING_QUEUE_SECRET_KEY,
     esUrl: value.ELASTICSEARCH_URL,
+    esUsername: value.ELASTICSEARCH_USERNAME,
+    esPassword: value.ELASTICSEARCH_PASSWORD,
     esIndex: value.ELASTICSEARCH_INDEX_ALIAS,
     pollIntervalMs: value.INDEXING_WORKER_POLL_INTERVAL_MS,
     maxReceiveCount: value.INDEXING_MAX_RECEIVE_COUNT,
@@ -48,7 +52,7 @@ const envSchema = z
 
 const env = envSchema.parse(process.env);
 
-const { queueUrl, dlqUrl, region, endpoint, accessKeyId, secretAccessKey, esUrl, esIndex, pollIntervalMs, maxReceiveCount, bulkMaxRetries, bulkRetryBaseMs } = env;
+const { queueUrl, dlqUrl, region, endpoint, accessKeyId, secretAccessKey, esUrl, esUsername, esPassword, esIndex, pollIntervalMs, maxReceiveCount, bulkMaxRetries, bulkRetryBaseMs } = env;
 
 let running = true;
 
@@ -143,10 +147,20 @@ export async function startIndexingConsumer() {
 
   const sqs = new SQSClient({
     region,
-    ...(endpoint ? { endpoint } : {}),
+    endpoint,
     credentials: accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined
   });
-  const es = new ESClient({ node: esUrl });
+  
+  const esClientConfig: any = { node: esUrl };
+  
+  if (esUsername && esPassword) {
+    esClientConfig.auth = {
+      username: esUsername,
+      password: esPassword
+    };
+  }
+  
+  const es = new ESClient(esClientConfig);
 
   log.info(
     {
