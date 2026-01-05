@@ -18,13 +18,13 @@ import { toDoc } from './shared/indexing.ts';
 
 const envSchema = z
   .object({
-    INDEXING_QUEUE_URL: z.string().default(''),
-    INDEXING_DLQ_URL: z.string().default(''),
+    INDEXING_QUEUE_URL: z.string(),
+    INDEXING_DLQ_URL: z.string(),
     INDEXING_QUEUE_REGION: z.string().default('fr-par'),
-    INDEXING_QUEUE_ENDPOINT: z.string().optional(),
-    INDEXING_QUEUE_ACCESS_KEY: z.string().default(''),
-    INDEXING_QUEUE_SECRET_KEY: z.string().default(''),
-    ELASTICSEARCH_URL: z.string().default(''),
+    INDEXING_QUEUE_ENDPOINT: z.string(),
+    INDEXING_QUEUE_ACCESS_KEY: z.string(),
+    INDEXING_QUEUE_SECRET_KEY: z.string(),
+    ELASTICSEARCH_URL: z.string(),
     ELASTICSEARCH_USERNAME: z.string().optional(),
     ELASTICSEARCH_PASSWORD: z.string().optional(),
     ELASTICSEARCH_INDEX_ALIAS: z.string().default('containers'),
@@ -147,7 +147,7 @@ export async function startIndexingConsumer() {
 
   const sqs = new SQSClient({
     region,
-    ...(endpoint ? { endpoint } : {}),
+    endpoint,
     credentials: accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined
   });
   
