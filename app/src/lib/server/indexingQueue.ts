@@ -40,8 +40,8 @@ const envSchema = z
 		queueUrl: value.INDEXING_QUEUE_URL,
 		region: value.INDEXING_QUEUE_REGION,
 		endpoint: value.INDEXING_QUEUE_ENDPOINT,
-		accessKeyId: value.INDEXING_QUEUE_ACCESS_KEY || '',
-		secretAccessKey: value.INDEXING_QUEUE_SECRET_KEY || ''
+		accessKeyId: value.INDEXING_QUEUE_ACCESS_KEY,
+		secretAccessKey: value.INDEXING_QUEUE_SECRET_KEY
 	}));
 
 let env: ReturnType<typeof envSchema.parse> | undefined;
