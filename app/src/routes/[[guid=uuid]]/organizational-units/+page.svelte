@@ -5,12 +5,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import type { PageProps } from './$types';
-	import {
-		administrativeTypes,
-		computeFacetCount,
-		fromCounts,
-		isOrganizationalUnitContainer
-	} from '$lib/models';
+	import { isOrganizationalUnitContainer } from '$lib/models';
 
 	let { data }: PageProps = $props();
 
@@ -42,20 +37,11 @@
 			['Thüringen', 0]
 		]);
 
-		const facets = new Map([
-			[
-				'administrativeType',
-				fromCounts(administrativeTypes.options, data.facets.administrativeType)
-			],
+		return new Map([
+			...data.facets,
 			['cityAndMunicipalityTypeBBSR', cityAndMunicipalityTypeFacet],
 			['federalState', federalStateFacet]
 		]);
-
-		if (Object.keys(data.facets).length === 0) {
-			return computeFacetCount(facets, data.containers.filter(isOrganizationalUnitContainer));
-		}
-
-		return facets;
 	});
 </script>
 

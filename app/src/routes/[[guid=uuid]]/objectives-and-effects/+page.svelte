@@ -10,25 +10,17 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
-		audience,
-		computeFacetCount,
 		type Container,
 		findAncestors,
 		findConnected,
 		findDescendants,
 		findLeafObjectives,
-		fromCounts,
-		indicatorCategories,
-		indicatorTypes,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
 		isRelatedTo,
-		policyFieldBNK,
-		predicates,
-		sustainableDevelopmentGoals,
-		topics
+		predicates
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -120,22 +112,7 @@
 		return objectivesByLevel;
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['indicatorType', fromCounts(indicatorTypes.options, data.facets.indicatorType)],
-			['indicatorCategory', fromCounts(indicatorCategories.options, data.facets.indicatorCategory)],
-			['audience', fromCounts(audience.options, data.facets.audience)],
-			['category', fromCounts(sustainableDevelopmentGoals.options, data.facets.category)],
-			['topic', fromCounts(topics.options, data.facets.topic)],
-			['policyFieldBNK', fromCounts(policyFieldBNK.options, data.facets.policyFieldBNK)]
-		]);
-
-		if (Object.keys(data.facets).length === 0) {
-			return computeFacetCount(facets, data.containers);
-		}
-
-		return facets;
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

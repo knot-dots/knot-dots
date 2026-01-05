@@ -1,6 +1,18 @@
 import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
-import { audience, type Container, type IndicatorContainer, payloadTypes } from '$lib/models';
+import {
+	audience,
+	type Container,
+	type IndicatorContainer,
+	payloadTypes,
+	computeFacetCount,
+	fromCounts,
+	indicatorCategories,
+	indicatorTypes,
+	policyFieldBNK,
+	sustainableDevelopmentGoals,
+	topics
+} from '$lib/models';
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from './$types';
@@ -45,9 +57,24 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	);
 
 	const filtered = filterVisible([...containers, ...relatedContainers], locals.user);
-	const facets = features.useElasticsearch()
+
+	const data = features.useElasticsearch()
 		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
-		: {};
+		: undefined;
+
+	const _facets = new Map<string, Map<string, number>>([
+		['indicatorType', fromCounts(indicatorTypes.options as string[], data?.indicatorType)],
+		[
+			'indicatorCategory',
+			fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
+		],
+		['audience', fromCounts(audience.options as string[], data?.audience)],
+		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
+		['topic', fromCounts(topics.options as string[], data?.topic)],
+		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
+	]);
+
+	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
 
 	return {
 		container: currentOrganization,

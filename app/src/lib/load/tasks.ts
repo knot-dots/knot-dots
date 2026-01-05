@@ -10,7 +10,10 @@ import {
 	isTaskContainer,
 	payloadTypes,
 	predicates,
-	type TaskContainer
+	type TaskContainer,
+	computeFacetCount,
+	fromCounts,
+	taskCategories
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -120,10 +123,33 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			subordinateOrganizationalUnits,
 			currentOrganizationalUnit
 		);
-		// Facets over tasks (primary list) only; could extend to include related if needed
-		const facets = features.useElasticsearch()
+
+		const data = features.useElasticsearch()
 			? await getFacetAggregationsForGuids(containers.map((c) => c.guid))
-			: {};
+			: undefined;
+
+		const _facets = new Map<string, Map<string, number>>([
+			...((url.searchParams.has('related-to')
+				? [
+						[
+							'relationType',
+							new Map([
+								[predicates.enum['is-part-of'], 0],
+								[predicates.enum['is-prerequisite-for'], 0]
+							])
+						]
+					]
+				: []) as Array<[string, Map<string, number>]>),
+			...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
+				[string, Map<string, number>]
+			>),
+			['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)],
+			['assignee', new Map()]
+		]);
+
+		const facets = features.useElasticsearch()
+			? _facets
+			: computeFacetCount(_facets, taskContainers);
 
 		return { containers, relatedContainers, facets };
 	}) satisfies PageServerLoad;

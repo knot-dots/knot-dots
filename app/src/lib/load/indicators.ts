@@ -3,13 +3,23 @@ import {
 	type Container,
 	type IndicatorContainer,
 	type OrganizationalUnitContainer,
-	payloadTypes
+	payloadTypes,
+	computeFacetCount,
+	audience,
+	fromCounts,
+	indicatorCategories,
+	indicatorTypes,
+	policyFieldBNK,
+	sustainableDevelopmentGoals,
+	topics
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
+import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { createFeatureDecisions } from '$lib/features';
 import type { User } from '$lib/stores';
 
 export interface IndicatorFilters {
@@ -148,10 +158,35 @@ export default async function load({ depends, locals, parent, url }: any) {
 		connect: locals.pool.connect
 	});
 
+	const features = createFeatureDecisions(locals.features);
+	const data = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(result.combined.map((c) => c.guid))
+		: undefined;
+
+	const _facets = new Map<string, Map<string, number>>([
+		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
+			[string, Map<string, number>]
+		>),
+		['indicatorType', fromCounts(indicatorTypes.options as string[], data?.indicatorType)],
+		[
+			'indicatorCategory',
+			fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
+		],
+		['audience', fromCounts(audience.options as string[], data?.audience)],
+		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
+		['topic', fromCounts(topics.options as string[], data?.topic)],
+		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
+	]);
+
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, result.combined);
+
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
 		containers: result.combined,
 		filters,
-		useNewIndicators: result.useNewIndicators
+		useNewIndicators: result.useNewIndicators,
+		facets
 	};
 }

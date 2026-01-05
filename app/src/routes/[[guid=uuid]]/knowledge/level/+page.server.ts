@@ -1,5 +1,17 @@
 import { filterVisible } from '$lib/authorization';
-import { type Container, payloadTypes, predicates, type ProgramContainer } from '$lib/models';
+import {
+	type Container,
+	payloadTypes,
+	predicates,
+	type ProgramContainer,
+	computeFacetCount,
+	audience,
+	fromCounts,
+	policyFieldBNK,
+	programTypes,
+	sustainableDevelopmentGoals,
+	topics
+} from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
@@ -96,14 +108,27 @@ export const load = (async ({ locals, url, parent }) => {
 	)) as ProgramContainer[];
 
 	const filtered = filterVisible(containers, locals.user);
+	const filteredPrograms = filterVisible(programs.filter(isRelatedToSome(containers)), locals.user);
+
+	const data = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		: undefined;
+
+	const _facets = new Map<string, Map<string, number>>([
+		['audience', fromCounts(audience.options as string[], data?.audience)],
+		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
+		['topic', fromCounts(topics.options as string[], data?.topic)],
+		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
+		['programType', fromCounts(programTypes.options as string[], data?.programType)]
+	]);
 
 	const facets = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
-		: {};
+		? _facets
+		: computeFacetCount(_facets, [...filtered, ...filteredPrograms]);
 
 	return {
 		containers: filtered,
-		programs: filterVisible(programs.filter(isRelatedToSome(containers)), locals.user),
+		programs: filteredPrograms,
 		facets
 	};
 }) satisfies PageServerLoad;

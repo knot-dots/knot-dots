@@ -1,6 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { filterVisible } from '$lib/authorization';
-import type { OrganizationalUnitContainer } from '$lib/models';
+import {
+	type OrganizationalUnitContainer,
+	computeFacetCount,
+	administrativeTypes,
+	fromCounts
+} from '$lib/models';
 import { getManyOrganizationalUnitContainers } from '$lib/server/db';
 import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
@@ -44,9 +49,18 @@ export const load = (async ({ locals, parent, url }) => {
 	const filtered = filterVisible(containers, locals.user);
 
 	const features = createFeatureDecisions(locals.features);
-	const facets = features.useElasticsearch()
+	const data = features.useElasticsearch()
 		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
-		: {};
+		: undefined;
+
+	const _facets = new Map<string, Map<string, number>>([
+		[
+			'administrativeType',
+			fromCounts(administrativeTypes.options as string[], data?.administrativeType)
+		]
+	]);
+
+	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
 
 	return { containers: filtered, facets };
 }) satisfies PageServerLoad;
