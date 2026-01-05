@@ -9,6 +9,7 @@ COPY tsconfig.json .
 COPY vite.config.ts .
 COPY src ./src
 COPY static ./static
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run check
 RUN npm run build
 
