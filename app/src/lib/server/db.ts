@@ -34,11 +34,10 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
-import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
-import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createFeatureDecisions } from '$lib/features';
-import { storage } from '$lib/server/context';
-import { Client } from '@elastic/elasticsearch';
+import { getFeatures } from '$lib/server/features';
+import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
+import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -171,9 +170,7 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			const locals = storage.getStore();
-			if (locals && createFeatureDecisions(locals.features).useElasticsearch()) {
-				// Emit indexing event for created container
+			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -258,9 +255,7 @@ export function updateContainer(container: ModifiedContainer) {
 				}
 			}
 
-			const locals = storage.getStore();
-			if (locals && createFeatureDecisions(locals.features).useElasticsearch()) {
-				// Emit indexing event for updated container
+			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -313,9 +308,7 @@ export function deleteContainer(container: AnyContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			const locals = storage.getStore();
-			if (locals && createFeatureDecisions(locals.features).useElasticsearch()) {
-				// Emit indexing event for deleted container
+			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
 				await enqueueIndexingEvent({
 					action: 'delete',
 					guid: container.guid,

@@ -1,6 +1,7 @@
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { env as privateEnv } from '$env/dynamic/private';
+import { z } from 'zod';
 
 // Using dynamic import to avoid type errors before dependency is installed/built.
 // Lazy loader wrapper – if dependency missing we no-op.
@@ -28,25 +29,46 @@ export interface IndexingEvent {
 	timestamp: string; // ISO string
 }
 
+const envSchema = z
+	.object({
+		INDEXING_QUEUE_URL: z.string(),
+		INDEXING_QUEUE_REGION: z.string().default('fr-par'),
+		INDEXING_QUEUE_ENDPOINT: z.string(),
+		INDEXING_QUEUE_ACCESS_KEY: z.string().optional(),
+		INDEXING_QUEUE_SECRET_KEY: z.string().optional()
+	})
+	.transform((value) => ({
+		queueUrl: value.INDEXING_QUEUE_URL,
+		region: value.INDEXING_QUEUE_REGION,
+		endpoint: value.INDEXING_QUEUE_ENDPOINT,
+		accessKeyId: value.INDEXING_QUEUE_ACCESS_KEY,
+		secretAccessKey: value.INDEXING_QUEUE_SECRET_KEY
+	}));
+
+let env: ReturnType<typeof envSchema.parse> | undefined;
 let sqs: any | undefined;
+
+function getEnv() {
+	if (!env) {
+		env = envSchema.parse(privateEnv);
+	}
+	return env;
+}
+
 async function getClient() {
 	if (sqs) return sqs;
-	const queueRegion = privateEnv.INDEXING_QUEUE_REGION || 'fr-par';
-	const endpoint = privateEnv.INDEXING_QUEUE_ENDPOINT;
-	const accessKeyId = privateEnv.INDEXING_QUEUE_ACCESS_KEY || '';
-	const secretAccessKey = privateEnv.INDEXING_QUEUE_SECRET_KEY || '';
+	const { region, endpoint, accessKeyId, secretAccessKey } = getEnv();
 	const { SQSClient } = await loadSQS();
 	sqs = new SQSClient({
-		region: queueRegion,
-		...(endpoint ? { endpoint } : {}),
+		region,
+		endpoint,
 		credentials: accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined
 	});
 	return sqs;
 }
 
-const queueUrl = privateEnv.INDEXING_QUEUE_URL || '';
-
 export async function enqueueIndexingEvent(event: IndexingEvent): Promise<void> {
+	const { queueUrl } = getEnv();
 	if (!queueUrl) {
 		log.warn('[indexingQueue] INDEXING_QUEUE_URL not set, skipping event');
 		return;
