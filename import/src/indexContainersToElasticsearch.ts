@@ -54,7 +54,6 @@ async function* fetchContainers(batchSize = 500) {
           'organizational_unit',
           'page',
           'program',
-          'progress',
           'resource',
           'rule',
           'simple_measure',
