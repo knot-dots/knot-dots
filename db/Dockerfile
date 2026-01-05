@@ -1,4 +1,4 @@
-FROM postgres:16
+FROM postgres:17
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends postgresql-16-postgis \
+  && apt-get install -y --no-install-recommends postgresql-17-postgis \
   && rm -rf /var/lib/apt/lists/*

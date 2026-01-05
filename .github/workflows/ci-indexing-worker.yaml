@@ -1,19 +1,19 @@
-name: CI (import)
+name: CI (indexing-worker)
 
 on:
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/ci-import.yaml'
-      - 'import/**'
+      - '.github/workflows/ci-indexing-worker.yaml'
+      - 'worker/**'
       - 'shared/**'
   pull_request:
     branches:
       - main
     paths:
-      - '.github/workflows/ci-import.yaml'
-      - 'import/**'
+      - '.github/workflows/ci-indexing-worker.yaml'
+      - 'worker/**'
       - 'shared/**'
 
 env:
@@ -33,8 +33,8 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./import/Dockerfile
+          file: ./worker/Dockerfile
           push: ${{ github.event_name == 'push' }}
           tags: |
-            ${{ env.REGISTRY }}/import:${{ github.sha }}
-            ${{ env.REGISTRY }}/import:latest
+            ${{ env.REGISTRY }}/indexing-worker:${{ github.sha }}
+            ${{ env.REGISTRY }}/indexing-worker:latest

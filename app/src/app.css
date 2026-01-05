@@ -1711,6 +1711,7 @@ img.cover {
 
 .splitpanes.modern-theme .splitpanes__pane {
 	height: 100%;
+	overflow: visible !important;
 }
 
 @media (max-width: 768px) {
@@ -1729,6 +1730,7 @@ img.cover {
 	display: flex;
 	gap: 1rem;
 	flex-direction: column;
+	min-height: 4rem;
 }
 
 .splitpanes.modern-theme .splitpanes__splitter {

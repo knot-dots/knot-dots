@@ -1,3 +1,4 @@
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { createAddHookMessageChannel } from 'import-in-the-middle';
 import { register } from 'node:module';
@@ -8,6 +9,6 @@ register(
 	createAddHookMessageChannel().registerOptions
 );
 
-const sdk = new NodeSDK();
+const sdk = new NodeSDK({ instrumentations: [getNodeAutoInstrumentations()] });
 
 sdk.start();
