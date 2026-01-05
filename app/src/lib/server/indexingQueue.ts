@@ -1,5 +1,6 @@
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
+import { env as privateEnv } from '$env/dynamic/private';
 import { z } from 'zod';
 
 // Using dynamic import to avoid type errors before dependency is installed/built.
@@ -49,7 +50,7 @@ let sqs: any | undefined;
 
 function getEnv() {
 	if (!env) {
-		env = envSchema.parse(process.env);
+		env = envSchema.parse(privateEnv);
 	}
 	return env;
 }
