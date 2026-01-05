@@ -1,7 +1,8 @@
 FROM node:24-slim AS builder
 WORKDIR /srv/app
-COPY package*.json ./
+COPY import/package*.json ./
 RUN npm clean-install --silent
-COPY tsconfig.json .
-COPY src ./src
+COPY import/tsconfig.json .
+COPY import/src ./src
+COPY shared ./shared
 ENTRYPOINT ["npm", "run"]

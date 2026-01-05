@@ -34,6 +34,9 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
+import { createFeatureDecisions } from '$lib/features';
+import { getFeatures } from '$lib/server/features';
+import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
@@ -167,6 +170,14 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
+			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: containerResult.guid,
+					timestamp: new Date().toISOString()
+				});
+			}
+
 			return { ...containerResult, relation: [...relationResult], user: [...userResult] };
 		});
 	};
@@ -244,6 +255,14 @@ export function updateContainer(container: ModifiedContainer) {
 				}
 			}
 
+			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: containerResult.guid,
+					timestamp: new Date().toISOString()
+				});
+			}
+
 			return { ...containerResult, user: userResult };
 		});
 	};
@@ -288,6 +307,14 @@ export function deleteContainer(container: AnyContainer) {
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
+
+			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+				await enqueueIndexingEvent({
+					action: 'delete',
+					guid: container.guid,
+					timestamp: new Date().toISOString()
+				});
+			}
 		});
 	};
 }
