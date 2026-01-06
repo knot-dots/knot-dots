@@ -8,7 +8,8 @@
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
 	import { _ } from 'svelte-i18n';
-	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
+	import ListBullet from '~icons/flowbite/list-outline';
+	import Quote from '~icons/flowbite/quote-solid';
 
 	interface Props {
 		ctx: Ctx;
@@ -53,7 +54,7 @@
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(wrapInBlockquoteCommand.key))}
 		>
-			<ListBullet />
+			<Quote />
 		</button>
 	</li>
 </ul>
