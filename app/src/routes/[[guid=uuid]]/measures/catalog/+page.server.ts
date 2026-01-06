@@ -1,6 +1,4 @@
 import measures from '$lib/load/measures';
 import type { PageServerLoad } from '../$types';
 
-export const load: PageServerLoad = async (event) => {
-	return await measures(event);
-};
+export const load = measures satisfies PageServerLoad;
