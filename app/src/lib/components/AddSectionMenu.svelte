@@ -4,6 +4,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
+	import Quote from '~icons/flowbite/quote-solid';
 	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
 	import Chapter from '~icons/knotdots/chapter';
@@ -17,8 +18,14 @@
 	import Map from '~icons/knotdots/map';
 	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
+	import Star from '~icons/knotdots/star';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
+	import Teaser from '~icons/knotdots/basic-data';
+	import Tiles from '~icons/knotdots/tiles';
+	import TwoCol from '~icons/knotdots/two-column';
+	import Link from '~icons/knotdots/link';
+	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -32,6 +39,7 @@
 		isGoalContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
+		isTeaserContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
@@ -136,6 +144,16 @@
 			isOrganizationalUnitContainer(parentContainer) &&
 			parentContainer.payload.geometry &&
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
+	);
+
+	let mayAddTeaserCollection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddTeaserSection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
 	);
 
 	let mayAddProgress = $derived(
@@ -274,6 +292,24 @@
 				: []),
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
+				: []),
+			...(mayAddTeaserCollection
+				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }]
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);

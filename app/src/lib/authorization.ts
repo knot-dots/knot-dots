@@ -15,33 +15,15 @@ type Actions =
 	| 'prioritize';
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
-const commonTypes = [
-	payloadTypes.enum.administrative_area_basic_data,
-	payloadTypes.enum.chapter,
-	payloadTypes.enum.custom_collection,
-	payloadTypes.enum.effect,
-	payloadTypes.enum.effect_collection,
-	payloadTypes.enum.file_collection,
-	payloadTypes.enum.goal,
-	payloadTypes.enum.goal_collection,
-	payloadTypes.enum.indicator_collection,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.map,
-	payloadTypes.enum.measure,
-	payloadTypes.enum.measure_collection,
-	payloadTypes.enum.objective,
-	payloadTypes.enum.objective_collection,
-	payloadTypes.enum.program_collection,
-	payloadTypes.enum.report,
-	payloadTypes.enum.resource,
-	payloadTypes.enum.resource_collection,
-	payloadTypes.enum.rule,
-	payloadTypes.enum.simple_measure,
-	payloadTypes.enum.task,
-	payloadTypes.enum.task_collection,
-	payloadTypes.enum.text,
-	payloadTypes.enum.undefined
+const specialTypes: PayloadType[] = [
+	payloadTypes.enum.organization,
+	payloadTypes.enum.organizational_unit,
+	payloadTypes.enum.program,
+	payloadTypes.enum.indicator,
+	payloadTypes.enum.indicator_template
 ];
+
+const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
 
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
@@ -214,7 +196,7 @@ export default function defineAbilityFor(user: User) {
 	}
 
 	return build({
-		detectSubjectType: (object) => object.payload.type
+		detectSubjectType: (object) => object.payload.type ?? payloadTypes.enum.undefined
 	});
 }
 

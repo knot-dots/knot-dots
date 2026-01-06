@@ -1,5 +1,5 @@
 export const featureFlags = new Map([
-	['alpha', ['ImportFromCsv', 'AI', 'Elasticsearch'] as const],
+	['alpha', ['ImportFromCsv', 'AI', 'Elasticsearch', 'Teaser', 'Stage'] as const],
 	['beta', ['AdministrativeArea', 'Report'] as const]
 ]);
 
@@ -25,6 +25,12 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useCustomCollection() {
 			return features.includes('Report');
+		},
+		useTeaser() {
+			return features.includes('Teaser');
+		},
+		useStage() {
+			return features.includes('Stage');
 		}
 	};
 }

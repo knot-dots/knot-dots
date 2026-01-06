@@ -9,6 +9,7 @@
 		findDescendants,
 		overlayKey,
 		overlayURL,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 
@@ -31,7 +32,7 @@
 				(!('guid' in container) || object !== container.guid)
 		)?.object
 	);
-	let payloadType = $derived(container.payload.type);
+	let payloadType = $derived(container.payload.type ?? payloadTypes.enum.undefined);
 
 	let isPartOfOptionsRequest = $derived(
 		createIsPartOfOptionsRequest(payloadType, container.organization, measureGuid, programGuid)
