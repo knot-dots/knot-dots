@@ -8,7 +8,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<RulesPage {data}>
+<RulesPage {data} filtersInitiallyOpened>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.rule]} />
 	<Help slug="rules-catalog" />
 </RulesPage>

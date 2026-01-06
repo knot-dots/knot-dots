@@ -22,9 +22,10 @@
 	interface Props {
 		children: Snippet;
 		data: PageData;
+		filtersInitiallyOpened?: boolean;
 	}
 
-	let { children, data }: Props = $props();
+	let { children, data, filtersInitiallyOpened = false }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -87,7 +88,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} {facets} search />
+		<Header filterBarInitiallyOpen={filtersInitiallyOpened} {facets} search />
 	{/snippet}
 
 	{#snippet main()}

@@ -17,9 +17,10 @@
 	interface Props {
 		children: Snippet;
 		data: PageData;
+		filtersInitiallyOpened?: boolean;
 	}
 
-	let { children, data }: Props = $props();
+	let { children, data, filtersInitiallyOpened = false }: Props = $props();
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
@@ -35,7 +36,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} {facets} search />
+		<Header filterBarInitiallyOpen={filtersInitiallyOpened} {facets} search />
 	{/snippet}
 
 	{#snippet main()}

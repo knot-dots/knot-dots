@@ -11,9 +11,10 @@
 		children: Snippet;
 		data: PageData;
 		sortOptions?: [string, string][];
+		filtersInitiallyOpened?: boolean;
 	}
 
-	let { children, data, sortOptions }: Props = $props();
+	let { children, data, filtersInitiallyOpened = false, sortOptions }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -46,12 +47,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			filterBarInitiallyOpen={page.data.filterBarInitiallyOpen}
-			{facets}
-			search
-			{sortOptions}
-		/>
+		<Header filterBarInitiallyOpen={filtersInitiallyOpened} {facets} search {sortOptions} />
 	{/snippet}
 
 	{#snippet main()}
