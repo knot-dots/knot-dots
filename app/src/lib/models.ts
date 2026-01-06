@@ -766,10 +766,7 @@ const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 const knowledgeCollectionPayload = z
 	.object({
-		title: z
-			.string()
-			.readonly()
-			.default('Knowledge'),
+		title: z.string().readonly().default('Knowledge'),
 		type: z.literal(payloadTypes.enum.knowledge_collection),
 		listType: listTypes.default(listTypes.enum.list),
 		visibility: visibility.default(visibility.enum['organization'])
@@ -1021,7 +1018,6 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
-
 const imagePayload = z
 	.object({
 		body: z.string().trim().optional(),
@@ -1157,10 +1153,7 @@ const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true
 
 const contentPartnerCollectionPayload = z
 	.object({
-		title: z
-			.string()
-			.readonly()
-			.default('Partners'),
+		title: z.string().readonly().default('Partners'),
 		type: z.literal(payloadTypes.enum.content_partner_collection),
 		listType: listTypes.default(listTypes.enum.list),
 		visibility: visibility.default(visibility.enum['organization'])
@@ -2588,45 +2581,45 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
-			const included = url.searchParams.has('includedChanged')
-				? url.searchParams.getAll('included')
-				: ['subordinate_organizational_units'];
+				const included = url.searchParams.has('includedChanged')
+					? url.searchParams.getAll('included')
+					: ['subordinate_organizational_units'];
 
-			if (c.organizational_unit == currentOrganizationalUnit?.guid) {
-				return true;
-			}
+				if (c.organizational_unit == currentOrganizationalUnit?.guid) {
+					return true;
+				}
 
-			if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
-				return true;
-			}
+				if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
+					return true;
+				}
 
-			if (
-				included.includes('subordinate_organizational_units') &&
-				c.organizational_unit != null &&
-				subordinateOrganizationalUnits.includes(c.organizational_unit)
-			) {
-				return true;
-			}
+				if (
+					included.includes('subordinate_organizational_units') &&
+					c.organizational_unit != null &&
+					subordinateOrganizationalUnits.includes(c.organizational_unit)
+				) {
+					return true;
+				}
 
-			if (
-				included.includes('superordinate_organizational_units') &&
-				c.organizational_unit == null
-			) {
-				return true;
-			}
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit == null
+				) {
+					return true;
+				}
 
-			if (
-				included.includes('superordinate_organizational_units') &&
-				c.organizational_unit != null &&
-				!subordinateOrganizationalUnits
-					.filter((ou) => ou != currentOrganizationalUnit?.guid)
-					.includes(c.organizational_unit)
-			) {
-				return true;
-			}
+				if (
+					included.includes('superordinate_organizational_units') &&
+					c.organizational_unit != null &&
+					!subordinateOrganizationalUnits
+						.filter((ou) => ou != currentOrganizationalUnit?.guid)
+						.includes(c.organizational_unit)
+				) {
+					return true;
+				}
 
-			return false;
-		});
+				return false;
+			});
 }
 
 export function filterMembers<T extends AnyContainer>(containers: T[], members: string[]) {

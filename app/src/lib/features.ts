@@ -1,5 +1,17 @@
 export const featureFlags = new Map([
-	['alpha', ['ImportFromCsv', 'AI', 'Elasticsearch', 'Teaser', 'Stage', 'Image', 'ContentPartner', 'Knowledge'] as const],
+	[
+		'alpha',
+		[
+			'ImportFromCsv',
+			'AI',
+			'Elasticsearch',
+			'Teaser',
+			'Stage',
+			'Image',
+			'ContentPartner',
+			'Knowledge'
+		] as const
+	],
 	['beta', ['AdministrativeArea', 'Report'] as const]
 ]);
 

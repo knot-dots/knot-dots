@@ -1,3 +1,3 @@
 export default function requestSubmitElement(element: HTMLElement) {
-    element.closest('form')?.requestSubmit();
+	element.closest('form')?.requestSubmit();
 }

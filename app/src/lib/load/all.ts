@@ -31,12 +31,12 @@ export default (async function load({ depends, locals, url, parent }) {
 				url.searchParams.get('related-to') as string,
 				url.searchParams.getAll('relationType').length == 0
 					? [
-						predicates.enum['contributes-to'],
-						predicates.enum['is-consistent-with'],
-						predicates.enum['is-equivalent-to'],
-						predicates.enum['is-inconsistent-with'],
-						predicates.enum['is-part-of']
-					]
+							predicates.enum['contributes-to'],
+							predicates.enum['is-consistent-with'],
+							predicates.enum['is-equivalent-to'],
+							predicates.enum['is-inconsistent-with'],
+							predicates.enum['is-part-of']
+						]
 					: url.searchParams.getAll('relationType'),
 				{
 					type: [

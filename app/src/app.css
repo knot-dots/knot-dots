@@ -1485,18 +1485,16 @@ img.cover {
 	grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
 }
 
-.wall>li {
+.wall > li {
 	display: flex;
 }
 
-
-.wall>li>* {
+.wall > li > * {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
 	width: 100%;
 }
-
 
 /* Disclosure */
 .disclosure {

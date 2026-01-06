@@ -11,11 +11,10 @@
 
 	interface Props {
 		container: Container | EmptyContainer;
-    	maxLength?: number;
+		maxLength?: number;
 	}
 
 	let { container, maxLength = 200 }: Props = $props();
-
 </script>
 
 {#if 'summary' in container.payload && container.payload.summary}

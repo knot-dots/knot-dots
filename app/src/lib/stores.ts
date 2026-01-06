@@ -138,75 +138,75 @@ export const newContainer = writable<NewContainer | undefined>();
 
 export type OverlayData =
 	| {
-		key: 'chapters';
-		container: AnyContainer;
-		containers: Container[];
-	}
+			key: 'chapters';
+			container: AnyContainer;
+			containers: Container[];
+	  }
 	| {
-		key: 'indicator-catalog';
-		container: undefined;
-		indicators: IndicatorContainer[];
-		indicatorTemplates: IndicatorTemplateContainer[];
-	}
+			key: 'indicator-catalog';
+			container: undefined;
+			indicators: IndicatorContainer[];
+			indicatorTemplates: IndicatorTemplateContainer[];
+	  }
 	| {
-		key: 'new-indicator-catalog';
-		container: undefined;
-		containers: IndicatorTemplateContainer[];
-	}
+			key: 'new-indicator-catalog';
+			container: undefined;
+			containers: IndicatorTemplateContainer[];
+	  }
 	| {
-		key: 'indicators';
-		container: AnyContainer;
-		containers: Container[];
-	}
+			key: 'indicators';
+			container: AnyContainer;
+			containers: Container[];
+	  }
 	| {
-		key: 'measure-monitoring';
-		container: AnyContainer;
-		containers: Container[];
-	}
+			key: 'measure-monitoring';
+			container: AnyContainer;
+			containers: Container[];
+	  }
 	| {
-		key: 'measures';
-		container: AnyContainer;
-		containers: MeasureContainer[];
-	}
+			key: 'measures';
+			container: AnyContainer;
+			containers: MeasureContainer[];
+	  }
 	| {
-		key: 'members';
-		container: AnyContainer;
-		users: UserRecord[];
-	}
+			key: 'members';
+			container: AnyContainer;
+			users: UserRecord[];
+	  }
 	| {
-		key: 'relations';
-		container: Container;
-		relatedContainers: Container[];
-	}
+			key: 'relations';
+			container: Container;
+			relatedContainers: Container[];
+	  }
 	| {
-		key: 'tasks';
-		container: AnyContainer;
-		containers: Container[];
-	}
+			key: 'tasks';
+			container: AnyContainer;
+			containers: Container[];
+	  }
 	| {
-		key: 'content-partners';
-		container: AnyContainer;
-		containers: Container[];
-	}
+			key: 'content-partners';
+			container: AnyContainer;
+			containers: Container[];
+	  }
 	| {
-		key: 'knowledge';
-		container: AnyContainer;
-		containers: Container[];
-	}
+			key: 'knowledge';
+			container: AnyContainer;
+			containers: Container[];
+	  }
 	| {
-		key: 'teasers';
-		container: AnyContainer;
-		containers: Container[];
-	}
+			key: 'teasers';
+			container: AnyContainer;
+			containers: Container[];
+	  }
 	| {
-		key: 'view';
-		container: AnyContainer;
-		revisions: AnyContainer[];
-	}
+			key: 'view';
+			container: AnyContainer;
+			revisions: AnyContainer[];
+	  }
 	| {
-		key: 'view-help';
-		container: PageContainer;
-	};
+			key: 'view-help';
+			container: PageContainer;
+	  };
 
 export const overlay = writable<OverlayData | undefined>();
 
