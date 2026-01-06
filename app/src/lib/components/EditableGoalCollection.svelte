@@ -21,6 +21,7 @@
 	interface Props {
 		container: GoalCollectionContainer;
 		editable?: boolean;
+		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 		subsection?: boolean;
@@ -29,9 +30,9 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		heading,
 		parentContainer = $bindable(),
-		relatedContainers = $bindable(),
-		subsection = false
+		relatedContainers = $bindable()
 	}: Props = $props();
 
 	let items = $derived(
@@ -75,11 +76,7 @@
 </script>
 
 <header>
-	{#if subsection}
-		<h3 class="details-heading">{$_('goals')}</h3>
-	{:else}
-		<h2 class="details-heading">{$_('goals')}</h2>
-	{/if}
+	<svelte:element this={heading} class="details-heading">{$_('goals')}</svelte:element>
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">

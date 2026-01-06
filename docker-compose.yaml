@@ -4,6 +4,8 @@ services:
       context: app
       target: dev
     depends_on:
+      elasticsearch:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
       migrate:
@@ -13,6 +15,8 @@ services:
     env_file:
       - ./db/.env
       - ./app/.env
+    environment:
+      - ROARR_LOG=true
     ports:
       - "5173:5173"
     volumes:
@@ -34,17 +38,25 @@ services:
 
   import:
     build:
-      context: import
+      context: .
+      dockerfile: import/Dockerfile
     depends_on:
       db:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     env_file:
       - ./db/.env
       - ./app/.env
+    environment:
+      - DE_LABELS_PATH=/opt/labels/de.json
+      - ROARR_LOG=true
     profiles:
       - import
     volumes:
       - ./import/src:/srv/app/src
+      - ./shared:/srv/app/shared
+      - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
 
   migrate:
     build:
@@ -81,6 +93,16 @@ services:
       - ./keycloak/import:/opt/keycloak/data/import
       - ./keycloak/themes:/opt/keycloak/themes
 
+  elasticmq:
+    image: softwaremill/elasticmq-native
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./elasticmq.conf:/opt/elasticmq.conf
+    environment:
+      - CONFIG_FILE=/opt/elasticmq.conf
+
   preview:
     build:
       context: app
@@ -113,3 +135,52 @@ services:
     image: adobe/s3mock
     ports:
       - "8082:9090"
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.3
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - node.name=es01
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "9200:9200"
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.2.3
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+  indexing-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    env_file:
+      - ./db/.env
+      - ./app/.env
+    environment:
+      - INDEXING_WORKER_POLL_INTERVAL_MS=2000
+      - DE_LABELS_PATH=/opt/labels/de.json
+      - ROARR_LOG=true
+    volumes:
+      - ./shared:/srv/app/shared
+      - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "ps -o pid= 1 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

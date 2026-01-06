@@ -4,18 +4,28 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import File from '~icons/flowbite/file-solid';
+	import Quote from '~icons/flowbite/quote-solid';
+	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
+	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
+	import Grid from '~icons/knotdots/grid';
 	import Map from '~icons/knotdots/map';
 	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
+	import Star from '~icons/knotdots/star';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
+	import Teaser from '~icons/knotdots/basic-data';
+	import Tiles from '~icons/knotdots/tiles';
+	import TwoCol from '~icons/knotdots/two-column';
+	import Link from '~icons/knotdots/link';
+	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -29,6 +39,7 @@
 		isGoalContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
+		isTeaserContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
@@ -36,6 +47,7 @@
 		isOrganizationContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isReportContainer,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -47,12 +59,14 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
+		compact?: boolean;
 		handleAddSection: (event: Event) => void;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
+		compact = false,
 		handleAddSection,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
@@ -65,7 +79,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
+	const extraOpts = {
+		modifiers: [{ name: 'offset', options: { offset: compact ? [-4, 8] : [0, 4] } }]
+	};
 
 	let mayAddTaskCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
@@ -131,14 +147,51 @@
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
+	let mayAddTeaserCollection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddTeaserSection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
+	let mayAddChapter = $derived(
+		createFeatureDecisions(page.data.features).useChapter() && isReportContainer(parentContainer)
+	);
+
+	let mayAddCustomCollection = $derived(
+		createFeatureDecisions(page.data.features).useCustomCollection() &&
+			isReportContainer(parentContainer)
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddCustomCollection
+				? [
+						{
+							icon: Grid,
+							label: $_('custom_collection'),
+							value: payloadTypes.enum.custom_collection
+						}
+					]
+				: []),
+			...(mayAddChapter
+				? [
+						{
+							icon: Chapter,
+							label: $_('chapter'),
+							value: payloadTypes.enum.chapter
+						}
+					]
+				: []),
 			...(mayAddFileCollection
 				? [
 						{
@@ -240,20 +293,33 @@
 				: []),
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
+				: []),
+			...(mayAddTeaserCollection
+				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }]
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button
-		class="dropdown-button"
-		onchange={handleAddSection}
-		type="button"
-		{@attach tooltip($_('add_section'))}
-		use:menu.button
-	>
+<div class="dropdown" class:dropdown--compact={compact} use:popperRef>
+	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
 		<Plus />
+		<span class:is-visually-hidden={compact}>{$_('add_section')}</span>
 	</button>
 
 	{#if $menu.expanded}
@@ -277,27 +343,16 @@
 
 <style>
 	.dropdown {
-		--dropdown-button-default-background: white;
-		--dropdown-button-expanded-background: var(--color-primary-900);
-		--dropdown-button-hover-background: var(--color-primary-800);
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-icon-default-color: var(--color-primary-700);
-		--dropdown-button-icon-expanded-color: white;
+		--dropdown-button-border-radius: 16px;
+		--dropdown-button-padding: 1rem;
 
-		align-items: center;
-		background-color: white;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
 		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.375rem;
-		margin: 0 auto;
-		padding: 0.25rem;
 		width: fit-content;
 	}
 
-	.dropdown-button:hover {
-		--dropdown-button-icon-default-color: white;
+	.dropdown.dropdown--compact {
+		--dropdown-button-border-radius: 4px;
+		--dropdown-button-padding: 0.25rem;
 	}
 
 	.dropdown-panel {

@@ -3,8 +3,14 @@ import { test as setup } from '@playwright/test';
 setup('insert test organization', async ({ page }) => {
 	await page.goto('/');
 	await page.getByRole('button', { name: 'Organizations and' }).click();
-	await page.getByRole('link', { name: 'Add item' }).first().click();
+	await page.getByText('Add item').first().click();
 	await page.getByRole('textbox', { name: 'Title' }).fill('Test organization');
+	await page
+		.locator('div.label:has-text("Boards") + div.dropdown')
+		.getByRole('button')
+		.first()
+		.click();
+	await page.getByRole('checkbox', { name: 'Organizational units' }).check();
 	await page.getByRole('button', { name: 'Save' }).click();
 });
 
@@ -12,7 +18,7 @@ setup('insert test goal', async ({ page }) => {
 	await page.goto('/');
 	await page.getByRole('button', { name: 'All', exact: true }).click();
 	await page.getByRole('menuitem', { name: 'Goals' }).click();
-	await page.getByRole('link', { name: 'Add item' }).first().click();
+	await page.getByText('Add item').first().click();
 	await page.getByRole('textbox', { name: 'Title' }).fill('Test goal');
 	await page.getByRole('button', { name: 'Save' }).click();
 });
@@ -41,7 +47,7 @@ setup('insert goal with task', async ({ page }) => {
 	// Add goal
 	await page.getByRole('button', { name: 'All', exact: true }).click();
 	await page.getByRole('menuitem', { name: 'Goals' }).click();
-	await page.getByRole('link', { name: 'Add item' }).first().click();
+	await page.getByText('Add item').first().click();
 	await page.getByRole('textbox', { name: 'Title' }).fill('Goal with task');
 	await page.getByRole('button', { name: 'Save' }).click();
 

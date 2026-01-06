@@ -10,9 +10,11 @@
 	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
 	import EditableObjectiveDetailView from '$lib/components/EditableObjectiveDetailView.svelte';
 	import EditableProgramDetailView from '$lib/components/EditableProgramDetailView.svelte';
+	import EditableReportDetailView from '$lib/components/EditableReportDetailView.svelte';
 	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
 	import EditableRuleDetailView from '$lib/components/EditableRuleDetailView.svelte';
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
+	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
@@ -31,10 +33,12 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramContainer,
+		isReportContainer,
 		isResourceContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		isTextContainer,
 		paramsFromFragment,
 		policyFieldBNK,
@@ -172,12 +176,16 @@
 		<EditableOrganizationalUnitDetailView bind:container />
 	{:else if isOrganizationContainer(container)}
 		<EditableOrganizationDetailView bind:container />
+	{:else if isReportContainer(container)}
+		<EditableReportDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isResourceContainer(container)}
 		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}
 		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTaskContainer(container)}
 		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isTeaserContainer(container)}
+		<EditableTeaserDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTextContainer(container)}
 		<EditableTextDetailView bind:container {relatedContainers} {revisions} />
 	{/if}

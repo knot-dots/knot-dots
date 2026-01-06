@@ -24,6 +24,7 @@ export const overlayKey = z.enum([
 	'relations',
 	'table',
 	'tasks',
+	'teasers',
 	'view',
 	'view-help'
 ]);
@@ -61,6 +62,9 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'chapter',
+	'col_content',
+	'custom_collection',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -69,6 +73,7 @@ const payloadTypeValues = [
 	'indicator',
 	'indicator_collection',
 	'indicator_template',
+	'info_box',
 	'knowledge',
 	'map',
 	'measure',
@@ -81,12 +86,17 @@ const payloadTypeValues = [
 	'program',
 	'program_collection',
 	'progress',
+	'report',
+	'quote',
 	'resource',
 	'resource_collection',
 	'rule',
 	'simple_measure',
 	'task',
 	'task_collection',
+	'teaser',
+	'teaser_collection',
+	'teaser_highlight',
 	'text',
 	'undefined'
 ] as const;
@@ -124,6 +134,40 @@ export type Level = z.infer<typeof levels>;
 export function isLevel(value: unknown): value is Level {
 	return levelValues.includes(value as Level);
 }
+
+const listTypeValues = ['carousel', 'wall', 'list'] as const;
+
+export const listTypes = z.enum(listTypeValues);
+
+const teaserColSizeValues = ['0-100', '33-66', '50-50', '66-33', '100-0'] as const;
+
+export const teaserColSizes = z.enum(teaserColSizeValues);
+
+export type TeaserColSize = z.infer<typeof teaserColSizes>;
+
+export const teaserColSizeToNumber: Record<TeaserColSize, number> = {
+	'0-100': 0,
+	'33-66': 33,
+	'50-50': 50,
+	'66-33': 66,
+	'100-0': 100
+};
+
+export const teaserNumberToColSize: Record<number, TeaserColSize> = {
+	0: '0-100',
+	33: '33-66',
+	50: '50-50',
+	66: '66-33',
+	100: '100-0'
+};
+
+const linkStyleValues = ['default', 'external', 'button'] as const;
+
+export const linkStyles = z.enum(linkStyleValues);
+
+const cardStyleValues = ['default', 'highlight'] as const;
+
+export const cardStyles = z.enum(cardStyleValues);
 
 const predicateValues = [
 	'contributes-to',
@@ -165,6 +209,18 @@ const goalStatusValues = [
 export const goalStatus = z.enum(goalStatusValues);
 
 export type GoalStatus = z.infer<typeof goalStatus>;
+
+const backgroundColorValues = [
+	'color.white',
+	'color.blue',
+	'color.gray',
+	'color.red',
+	'color.orange',
+	'color.yellow'
+] as const;
+
+export const backgroundColor = z.enum(backgroundColorValues);
+export type BackgroundColor = z.infer<typeof backgroundColor>;
 
 const statusValues = [
 	'status.idea',
@@ -552,6 +608,49 @@ const administrativeAreaBasicDataPayload = z.object({
 
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
 
+const chapterPayload = basePayload
+	.extend({
+		image: z.url().optional(),
+		number: z.string(),
+		type: z.literal(payloadTypes.enum.chapter)
+	})
+	.omit({
+		description: true,
+		summary: true
+	});
+
+const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
+
+const customCollectionPayload = z
+	.object({
+		filter: z
+			.object({
+				audience: z.array(audience).default([]),
+				category: z.array(sustainableDevelopmentGoals).default([]),
+				indicatorCategory: z.array(indicatorCategories).default([]),
+				type: z.array(payloadTypes).default([]),
+				policyFieldBNK: z.array(policyFieldBNK).default([]),
+				topic: z.array(topics).default([])
+			})
+			.default({
+				audience: [],
+				category: [],
+				indicatorCategory: [],
+				policyFieldBNK: [],
+				topic: [],
+				type: []
+			}),
+		item: z.array(z.uuid()).default([]),
+		sort: z.enum(['alpha', 'modified']).default('alpha'),
+		terms: z.string().default(''),
+		title: z.string(),
+		type: z.literal(payloadTypes.enum.custom_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
+
 const fileCollectionPayload = z
 	.object({
 		file: z
@@ -844,6 +943,14 @@ const effectCollectionPayload = z
 
 const initialEffectCollectionPayload = effectCollectionPayload;
 
+const reportPayload = basePayload
+	.extend({
+		type: z.literal(payloadTypes.enum.report)
+	})
+	.strict();
+
+const initialReportPayload = reportPayload.partial({ title: true });
+
 const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
@@ -887,6 +994,129 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
+// Add teaser payload schema here:
+const teaserPayload = z
+	.object({
+		audience: z.array(audience).default([audience.enum['audience.citizens']]),
+		body: z.string().trim().optional(),
+		bodyRight: z.string().trim().optional(),
+		cardStyle: z.string().optional(),
+		colSize: teaserColSizes.default('33-66'),
+		description: z.string().optional(),
+		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
+		imageAltTextRight: z.string().optional(),
+		imageEnable: z.boolean().default(true),
+		imageEnableRight: z.boolean().default(false),
+		imageRight: z.string().url().optional(),
+		link: z.string().optional(),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		linkRight: z.string().optional(),
+		linkCaption: z.string().optional(),
+		linkCaptionRight: z.string().optional(),
+		textEnable: z.boolean().default(false),
+		textEnableRight: z.boolean().default(true),
+		title: z.string().trim(),
+		titleEnable: z.boolean().default(false),
+		titleEnableRight: z.boolean().default(true),
+		titleRight: z.string().trim().optional(),
+		type: z.literal(payloadTypes.enum.teaser),
+		style: z.string().optional().default('default'),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict(); // means no extra fields allowed
+
+// For creating new empty teasers (title optional during creation)
+const initialTeaserPayload = teaserPayload.partial({ title: true });
+
+// Add info payload schema here:
+const infoBoxPayload = teaserPayload
+	.extend({
+		colSize: teaserColSizes.default('100-0'),
+		imageEnable: z.boolean().default(false),
+		imageEnableRight: z.boolean().default(false),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(false),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(false),
+		type: z.literal(payloadTypes.enum.info_box)
+	})
+	.strict();
+
+// For creating new empty info teasers (title optional during creation)
+const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
+
+const teaserHighlightPayload = teaserPayload
+	.extend({
+		colSize: teaserColSizes.default('100-0'),
+		imageEnable: z.boolean().default(false),
+		imageEnableRight: z.boolean().default(false),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(false),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(false),
+		type: z.literal(payloadTypes.enum.teaser_highlight)
+	})
+	.strict();
+
+// For creating new empty teasers (title optional during creation)
+const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
+
+const quotePayload = teaserPayload
+	.extend({
+		colSize: teaserColSizes.default('100-0'),
+		imageEnable: z.boolean().default(false),
+		imageEnableRight: z.boolean().default(false),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(false),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(false),
+		type: z.literal(payloadTypes.enum.quote)
+	})
+	.strict();
+
+// For creating new empty teasers (title optional during creation)
+const initialQuotePayload = quotePayload.partial({ title: true });
+
+const colContentPayload = teaserPayload
+	.extend({
+		colSize: teaserColSizes.default('50-50'),
+		imageEnable: z.boolean().default(true),
+		imageEnableRight: z.boolean().default(true),
+		linkEnable: z.boolean().default(false),
+		linkEnableRight: z.boolean().default(false),
+		textEnable: z.boolean().default(true),
+		textEnableRight: z.boolean().default(true),
+		titleEnable: z.boolean().default(true),
+		titleEnableRight: z.boolean().default(true),
+		type: z.literal(payloadTypes.enum.col_content)
+	})
+	.strict();
+
+// For creating new empty teasers (title optional during creation)
+const initialColContentPayload = colContentPayload.partial({ title: true });
+
+const teaserCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('teasers')),
+		type: z.literal(payloadTypes.enum.teaser_collection),
+		listType: listTypes.default(listTypes.enum.wall),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialTeaserCollectionPayload = teaserCollectionPayload;
+
 const initialTaskPayload = taskPayload.partial({ title: true });
 
 const taskCollectionPayload = z
@@ -904,6 +1134,8 @@ const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
 	boards: z.array(boards).default([]),
+	color: backgroundColor.optional(),
+	cover: z.string().url().optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	image: z.string().url().optional(),
@@ -918,6 +1150,8 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 const organizationalUnitPayload = z.object({
 	administrativeType: administrativeTypes.optional(),
 	boards: z.array(boards).default([]),
+	color: backgroundColor.optional(),
+	cover: z.string().url().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	federalState: z.string().optional(),
@@ -971,6 +1205,9 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	chapterPayload,
+	colContentPayload,
+	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -979,6 +1216,7 @@ const payload = z.discriminatedUnion('type', [
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
+	infoBoxPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -989,12 +1227,17 @@ const payload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	quotePayload,
+	reportPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
+	teaserPayload,
+	teaserCollectionPayload,
+	teaserHighlightPayload,
 	textPayload
 ]);
 
@@ -1019,6 +1262,9 @@ export type Container = z.infer<typeof container>;
 const anyPayload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	chapterPayload,
+	colContentPayload,
+	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1027,6 +1273,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
+	infoBoxPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -1039,6 +1286,8 @@ const anyPayload = z.discriminatedUnion('type', [
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
+	quotePayload,
+	reportPayload,
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
@@ -1046,6 +1295,9 @@ const anyPayload = z.discriminatedUnion('type', [
 	taskCollectionPayload,
 	taskPayload,
 	textPayload,
+	teaserPayload,
+	teaserCollectionPayload,
+	teaserHighlightPayload,
 	undefinedPayload
 ]);
 
@@ -1087,7 +1339,7 @@ export function isContainerWithEffect(
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 
-const actualDataContainer = container.extend({
+export const actualDataContainer = container.extend({
 	payload: actualDataPayload
 });
 
@@ -1111,6 +1363,30 @@ export function isAdministrativeAreaBasicDataContainer(
 	container: AnyContainer | EmptyContainer
 ): container is AdministrativeAreaBasicDataContainer {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
+}
+
+const chapterContainer = container.extend({
+	payload: chapterPayload
+});
+
+export type ChapterContainer = z.infer<typeof chapterContainer>;
+
+export function isChapterContainer(
+	container: AnyContainer | EmptyContainer
+): container is ChapterContainer {
+	return container.payload.type === payloadTypes.enum.chapter;
+}
+
+const customCollectionContainer = container.extend({
+	payload: customCollectionPayload
+});
+
+export type CustomCollectionContainer = z.infer<typeof customCollectionContainer>;
+
+export function isCustomCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is CustomCollectionContainer {
+	return container.payload.type === payloadTypes.enum.custom_collection;
 }
 
 const effectContainer = container.extend({
@@ -1329,6 +1605,18 @@ export function isProgressContainer(
 	return container.payload.type === payloadTypes.enum.progress;
 }
 
+const reportContainer = container.extend({
+	payload: reportPayload
+});
+
+export type ReportContainer = z.infer<typeof reportContainer>;
+
+export function isReportContainer(
+	container: AnyContainer | EmptyContainer
+): container is ReportContainer {
+	return container.payload.type === payloadTypes.enum.report;
+}
+
 const ruleContainer = container.extend({
 	payload: rulePayload
 });
@@ -1443,6 +1731,97 @@ export function isMeasureMonitoringContainer(
 	container: AnyContainer | EmptyContainer
 ): container is MeasureMonitoringContainer {
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
+}
+
+// #Teaser
+const teaserContainer = container.extend({
+	payload: teaserPayload
+});
+
+export type TeaserContainer = z.infer<typeof teaserContainer>;
+
+export function isTeaserContainer(
+	container: AnyContainer | EmptyContainer
+): container is TeaserContainer {
+	return container.payload.type === payloadTypes.enum.teaser;
+}
+
+// #InfoBox
+const infoBoxContainer = container.extend({
+	payload: infoBoxPayload
+});
+
+export type InfoBoxContainer = z.infer<typeof infoBoxContainer>;
+export function isInfoBoxContainer(
+	container: AnyContainer | EmptyContainer
+): container is InfoBoxContainer {
+	return container.payload.type === payloadTypes.enum.info_box;
+}
+
+// #TeaserHighlight
+const teaserHighlightContainer = container.extend({
+	payload: teaserHighlightPayload
+});
+
+export type TeaserHighlightContainer = z.infer<typeof teaserHighlightContainer>;
+export function isTeaserHighlightContainer(
+	container: AnyContainer | EmptyContainer
+): container is TeaserHighlightContainer {
+	return container.payload.type === payloadTypes.enum.teaser_highlight;
+}
+
+// #ColContent
+const colContentContainer = container.extend({
+	payload: colContentPayload
+});
+
+export type ColContentContainer = z.infer<typeof colContentContainer>;
+
+export function isColContentContainer(
+	container: AnyContainer | EmptyContainer
+): container is ColContentContainer {
+	return container.payload.type === payloadTypes.enum.col_content;
+}
+
+// #Quote
+const quoteContainer = container.extend({
+	payload: quotePayload
+});
+
+export type QuoteContainer = z.infer<typeof quoteContainer>;
+export function isQuoteContainer(
+	container: AnyContainer | EmptyContainer
+): container is QuoteContainer {
+	return container.payload.type === payloadTypes.enum.quote;
+}
+
+const teaserCollectionContainer = container.extend({
+	payload: teaserCollectionPayload
+});
+
+export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
+
+export type TeaserLikeContainer =
+	| TeaserContainer
+	| InfoBoxContainer
+	| TeaserHighlightContainer
+	| QuoteContainer
+	| ColContentContainer;
+
+export function isTeaserLikeContainer(container: AnyContainer): container is TeaserLikeContainer {
+	return [
+		payloadTypes.enum.teaser,
+		payloadTypes.enum.info_box,
+		payloadTypes.enum.teaser_highlight,
+		payloadTypes.enum.quote,
+		payloadTypes.enum.col_content
+	].includes(container.payload.type as any);
+}
+
+export function isTeaserCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is TeaserCollectionContainer {
+	return container.payload.type === payloadTypes.enum.teaser_collection;
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
@@ -1589,6 +1968,9 @@ export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
+		initialChapterPayload,
+		initialColContentPayload,
+		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
 		initialFileCollectionPayload,
@@ -1597,6 +1979,7 @@ export const emptyContainer = newContainer.extend({
 		initialIndicatorCollectionPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
+		initialInfoBoxPayload,
 		initialKnowledgePayload,
 		initialMapPayload,
 		initialMeasureCollectionPayload,
@@ -1609,13 +1992,18 @@ export const emptyContainer = newContainer.extend({
 		initialProgramCollectionPayload,
 		initialProgramPayload,
 		initialProgressPayload,
+		initialQuotePayload,
 		initialRulePayload,
+		initialReportPayload,
 		initialResourceCollectionPayload,
 		initialResourcePayload,
 		initialSimpleMeasurePayload,
 		initialTextPayload,
 		initialTaskCollectionPayload,
 		initialTaskPayload,
+		initialTeaserPayload,
+		initialTeaserCollectionPayload,
+		initialTeaserHighlightPayload,
 		initialUndefinedPayload
 	])
 });
@@ -2114,7 +2502,9 @@ export function createCopyOf(
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
 			...container.payload,
-			achievedValues: container.payload.achievedValues.map(([year]) => [year, 0])
+			achievedValues: container.payload.achievedValues.map(
+				([year]) => [year, 0] as [number, number]
+			)
 		};
 	} else {
 		copy.payload = { ...container.payload };

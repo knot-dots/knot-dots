@@ -13,14 +13,12 @@
 		computeFacetCount,
 		type Container,
 		findAncestors,
-		payloadTypes,
 		policyFieldBNK,
 		predicates,
 		programTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -72,12 +70,7 @@
 
 			{#each [...knowledgeByLevel.entries()].toSorted() as [key, value] (key)}
 				<BoardColumn
-					addItemUrl={$mayCreateContainer(
-						payloadTypes.enum.knowledge,
-						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-					)
-						? '#create=knowledge'
-						: undefined}
+					addItemUrl="#create=knowledge"
 					title={$_('knowledge.level', { values: { level: key + 1 } })}
 				>
 					<MaybeDragZone containers={value}>

@@ -14,9 +14,11 @@
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
+	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
+	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
 		isContainer,
@@ -27,20 +29,22 @@
 		isContainerWithTitle,
 		isGoalContainer,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramContainer,
+		isReportContainer,
 		isResourceContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		isTextContainer,
 		type NewContainer,
 		overlayKey,
-		overlayURL,
-		status
+		overlayURL
 	} from '$lib/models';
 	import { addEffectState, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
@@ -170,6 +174,13 @@
 						relatedContainers={[]}
 						revisions={[]}
 					/>
+				{:else if isIndicatorTemplateContainer($newContainer)}
+					<IndicatorProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isKnowledgeContainer($newContainer)}
 					<KnowledgeProperties
 						bind:container={$newContainer}
@@ -188,6 +199,13 @@
 					<OrganizationProperties bind:container={$newContainer} editable />
 				{:else if isOrganizationalUnitContainer($newContainer)}
 					<OrganizationalUnitProperties bind:container={$newContainer} editable />
+				{:else if isReportContainer($newContainer)}
+					<ReportProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isResourceContainer($newContainer)}
 					<ResourceProperties
 						bind:container={$newContainer}
@@ -218,6 +236,13 @@
 					/>
 				{:else if isTaskContainer($newContainer)}
 					<TaskProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isTeaserContainer($newContainer)}
+					<TeaserProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

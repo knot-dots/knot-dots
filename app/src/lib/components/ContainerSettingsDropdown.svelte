@@ -7,7 +7,6 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import { type AnyContainer, visibility } from '$lib/models';
-	import { sectionOf } from '$lib/relations';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -28,7 +27,7 @@
 
 	let [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
-		strategy: 'absolute'
+		strategy: 'fixed'
 	});
 
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };

@@ -170,11 +170,7 @@
 						--background="transparent"
 						--border="solid 1px var(--color-gray-900)"
 						addItemUrl={!page.data.currentOrganization.payload.default &&
-						page.data.currentOrganization.payload.boards.includes('board.organizational_units') &&
-						$mayCreateContainer(
-							payloadTypes.enum.organizational_unit,
-							page.data.currentOrganization.guid
-						)
+						page.data.currentOrganization.payload.boards.includes('board.organizational_units')
 							? `#create=${payloadTypes.enum.organizational_unit}&level=${level}`
 							: undefined}
 						title={$_('organizational_unit_level', { values: { level } })}

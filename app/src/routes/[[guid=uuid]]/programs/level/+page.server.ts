@@ -55,25 +55,26 @@ export const load = (async ({ locals, url, parent }) => {
 				)
 			)
 		);
+		return { containers: filterVisible(containers, locals.user) };
 	} else {
-		containers = await filterOrganizationalUnitsAsync(
-			locals.pool.connect(
-				getManyContainers(
-					[],
-					{
-						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						topics: url.searchParams.getAll('topic'),
-						type: [payloadTypes.enum.program]
-					},
-					url.searchParams.get('sort') ?? ''
-				)
+		const items = await locals.pool.connect(
+			getManyContainers(
+				[],
+				{
+					audience: url.searchParams.getAll('audience'),
+					categories: url.searchParams.getAll('category'),
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					programTypes: url.searchParams.getAll('programType'),
+					terms: url.searchParams.get('terms') ?? '',
+					topics: url.searchParams.getAll('topic'),
+					type: [payloadTypes.enum.program]
+				},
+				url.searchParams.get('sort') ?? ''
 			)
 		);
+		containers = await filterOrganizationalUnitsAsync(Promise.resolve(items));
+		return { containers: filterVisible(containers, locals.user) };
 	}
-
+	// Unreachable, but keep a safe fallback
 	return { containers: filterVisible(containers, locals.user) };
 }) satisfies PageServerLoad;
