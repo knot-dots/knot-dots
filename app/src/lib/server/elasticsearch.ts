@@ -72,12 +72,7 @@ export function getManyContainersWithES(
 				filter.push({ term: { 'payload.template': filters.template } });
 
 			const query = { bool: { must, filter } };
-			const sortParam =
-				sort === 'modified'
-					? [{ revision: 'desc' }]
-					: sort === 'priority'
-						? [{ 'payload.priority': 'asc' }]
-						: [{ 'title.keyword': 'asc' }];
+			const sortParam = sort === 'modified' ? [{ revision: 'desc' }] : [{ 'title.keyword': 'asc' }]; // Priority sorting handled in SQL
 			const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
 
 			const { hits } = await es.search({
@@ -102,7 +97,7 @@ export function getManyContainersWithES(
 				)})
 				AND deleted = false
 				AND valid_currently
-				ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)
+				${sort == 'priority' ? sql.fragment`ORDER BY task_priority.priority ASC NULLS LAST, c.guid` : sql.fragment`ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)`}
 			`);
 
 			console.log(
