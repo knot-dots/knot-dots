@@ -142,7 +142,7 @@
 		{#key page.url.searchParams}
 			<Board>
 				<BoardColumn title={$_('indicators')}>
-					<div class="vertical-scroll-wrapper masked-overflow">
+					<div class="vertical-scroll-wrapper">
 						{#each data.containers
 							.filter(isIndicatorContainer)
 							.filter((c) => containers.has(c)) as container}

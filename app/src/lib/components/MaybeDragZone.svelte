@@ -51,7 +51,7 @@
 
 {#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relations && $ability.can('relate', $overlay.container)}
 	<div
-		class="vertical-scroll-wrapper masked-overflow"
+		class="vertical-scroll-wrapper"
 		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
 		onconsider={handleDndConsider}
 		onfinalize={handleDndFinalize}
@@ -67,7 +67,7 @@
 		{/each}
 	</div>
 {:else}
-	<div class="vertical-scroll-wrapper masked-overflow">
+	<div class="vertical-scroll-wrapper">
 		{#each items as { container }}
 			{#if itemSnippet}
 				{@render itemSnippet(container)}

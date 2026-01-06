@@ -10,7 +10,7 @@
 </script>
 
 <Header sortOptions={[]} workspaceOptions={[]} />
-<div class="content-details masked-overflow">
+<div class="content-details">
 	{#await import('./EditablePageDetailView.svelte') then { default: EditablePageDetailView }}
 		<EditablePageDetailView {container} revisions={[container]} />
 	{/await}

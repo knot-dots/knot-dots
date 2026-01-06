@@ -143,7 +143,7 @@
 
 <Header {facets} workspaceOptions={[]} />
 
-<div class="content-details masked-overflow">
+<div class="content-details">
 	<div class="details">
 		<p class="details-section">
 			<button class="template-category" type="button" onclick={() => createCustomIndicator()}>

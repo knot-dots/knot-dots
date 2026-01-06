@@ -54,7 +54,7 @@
 			--border="solid 1px var(--color-gray-900)"
 			title={goalsColumnTitle(relatedContainers)}
 		>
-			<div class="vertical-scroll-wrapper masked-overflow">
+			<div class="vertical-scroll-wrapper">
 				{#each relatedContainers.sort(sortByTitle) as container}
 					<Card {container} showRelationFilter />
 				{/each}

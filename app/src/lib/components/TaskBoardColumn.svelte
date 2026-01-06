@@ -111,7 +111,7 @@
 	</header>
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
 		<div
-			class="vertical-scroll-wrapper masked-overflow"
+			class="vertical-scroll-wrapper"
 			use:dndzone={{ items }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
@@ -125,7 +125,7 @@
 			{/each}
 		</div>
 	{:else}
-		<div class="vertical-scroll-wrapper masked-overflow">
+		<div class="vertical-scroll-wrapper">
 			{#each items as container (container.guid)}
 				{#if itemSnippet}
 					{@render itemSnippet(container)}
