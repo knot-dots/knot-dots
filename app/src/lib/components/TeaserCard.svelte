@@ -6,11 +6,10 @@
 	interface Props {
 		container: TeaserContainer;
 		editable: boolean;
+		maxSummaryLength?: number;
 	}
 
-	const { container, editable }: Props = $props();
-
-	console.log(container);
+	const { container, editable, maxSummaryLength }: Props = $props();
 
 	function teaserUrl(container: TeaserContainer) {
 		const link = container.payload.link;
@@ -20,7 +19,7 @@
 </script>
 
 <div class="teaser-card">
-	<Card {container} href={editable ? undefined : teaserUrl(container)} cropSummaryByWords={10}>
+	<Card {container} href={editable ? undefined : teaserUrl(container)} {maxSummaryLength}>
 		{#snippet button()}
 			{#if container.payload.linkCaption}
 				{#if container.payload.style === 'default'}

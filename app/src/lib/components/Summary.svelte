@@ -11,22 +11,15 @@
 
 	interface Props {
 		container: Container | EmptyContainer;
-		maxWords?: number;
+    	maxLength?: number;
 	}
 
-	let { container, maxWords }: Props = $props();
+	let { container, maxLength = 200 }: Props = $props();
 
-	function cropByWords(text: string, maxWords: number): string {
-		const words = text.trim().split(/\s+/);
-		if (words.length <= maxWords) {
-			return text;
-		}
-		return words.slice(0, maxWords).join(' ') + '…';
-	}
 </script>
 
 {#if 'summary' in container.payload && container.payload.summary}
-	<p>{maxWords ? cropByWords(container.payload.summary, maxWords) : container.payload.summary}</p>
+	<p>{container.payload.summary}</p>
 {:else if 'description' in container.payload && container.payload.description}
 	{#await unified()
 		.use(remarkParse)
@@ -34,15 +27,11 @@
 		.use(stripMarkdown)
 		.use(remarkRehype)
 		.use(rehypeSanitize)
-		.use(rehypeExtractExcerpt, { maxLength: 200 })
+		.use(rehypeExtractExcerpt, { maxLength: maxLength, wordBoundaries: true })
 		.use(rehypeStringify)
 		.process(container.payload.description) then content}
 		{#if content.data.excerpt}
-			{@const excerptText =
-				typeof content.data.excerpt === 'string'
-					? content.data.excerpt
-					: String(content.data.excerpt)}
-			<p>{@html maxWords ? cropByWords(excerptText, maxWords) : excerptText}</p>
+			<p>{@html content.data.excerpt}</p>
 		{/if}
 	{/await}
 {/if}

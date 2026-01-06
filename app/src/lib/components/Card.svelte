@@ -55,7 +55,7 @@
 		relatedContainers?: AnyContainer[];
 		showRelationFilter?: boolean;
 		titleOverride?: boolean;
-		cropSummaryByWords?: number;
+		maxSummaryLength?: number;
 	}
 
 	let {
@@ -67,7 +67,7 @@
 		relatedContainers = [],
 		showRelationFilter = false,
 		titleOverride = false,
-		cropSummaryByWords
+		maxSummaryLength
 	}: Props = $props();
 
 	let overlayContext = getContext('overlay');
@@ -288,7 +288,7 @@
 			{#if indicator && effect}
 				<EffectChart container={effect} {relatedContainers} />
 			{:else}
-				<Summary {container} maxWords={cropSummaryByWords} />
+				<Summary {container} maxLength={maxSummaryLength} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
@@ -332,7 +332,7 @@
 					</h3>
 				</header>
 			{/if}
-			<Summary {container} maxWords={cropSummaryByWords} />
+			<Summary {container} maxLength={maxSummaryLength} />
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />
 		{:else if isResourceContainer(container)}

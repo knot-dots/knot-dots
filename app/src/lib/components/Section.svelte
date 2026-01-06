@@ -322,6 +322,7 @@
 		padding: 0.25rem;
 		position: absolute;
 		top: 1.25rem;
+		z-index: 1;
 	}
 
 	.drag-handle {

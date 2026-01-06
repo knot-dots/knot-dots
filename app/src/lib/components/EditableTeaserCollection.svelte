@@ -140,7 +140,7 @@
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} />
+				<TeaserCard container={item} {editable} maxSummaryLength={200} />
 			{/snippet}
 		</List>
 	{:else if container.payload.listType === 'wall'}
@@ -150,7 +150,7 @@
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} />
+				<TeaserCard container={item} {editable} maxSummaryLength={100} />
 			{/snippet}
 		</Wall>
 	{:else if container.payload.listType === 'accordion'}
@@ -160,7 +160,7 @@
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} />
+				<TeaserCard container={item} {editable} maxSummaryLength={1000} />
 			{/snippet}
 		</Accordion>
 	{:else}
@@ -170,7 +170,7 @@
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} />
+				<TeaserCard container={item} {editable} maxSummaryLength={100} />
 			{/snippet}
 		</Carousel>
 	{/if}

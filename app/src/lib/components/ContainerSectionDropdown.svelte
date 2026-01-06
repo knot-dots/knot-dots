@@ -236,13 +236,15 @@
 
 	/* Sub Menu Specifics */
 	.dropdown-panel--sub {
-		display: none;
 		min-width: 220px;
 		z-index: 100;
+		visibility: hidden;
+		transition: visibility 0s 0.5s;
 	}
 
 	.menu-item--has-sub:hover > .dropdown-panel--sub {
-		display: block;
+		transition: var(--is-visible-on-hover-transition, visibility 0s 0.5s linear);
+		visibility: var(--is-visible-on-hover-visibility, visible);
 	}
 
 	.sub-menu-content {
