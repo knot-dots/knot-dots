@@ -69,7 +69,6 @@
 			{#if showRelationFilter}
 				<button
 					class="button-relation button-relation--square"
-					aria-label={$_('show_related_objects')}
 					type="button"
 					class:is-active={relatedTo === container.guid}
 					onclick={toggleRelatedTo(page.url.searchParams)}

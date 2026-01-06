@@ -107,12 +107,7 @@
 			{title}
 		</h2>
 		{#if addItemUrl}
-			<a
-				href={addItemUrl}
-				onclick={createContainer}
-				aria-label={$_('add_item')}
-				{@attach tooltip($_('add_item'))}><Plus /></a
-			>
+			<a href={addItemUrl} onclick={createContainer} {@attach tooltip($_('add_item'))}><Plus /></a>
 		{/if}
 	</header>
 
@@ -120,11 +115,8 @@
 
 	{#if addItemUrl}
 		<footer>
-			<a
-				href={addItemUrl}
-				onclick={createContainer}
-				aria-label={$_('add_item')}
-				{@attach tooltip($_('add_item'))}>{$_('add_item')}<Plus /></a
+			<a href={addItemUrl} onclick={createContainer} {@attach tooltip($_('add_item'))}
+				>{$_('add_item')}<Plus /></a
 			>
 		</footer>
 	{/if}

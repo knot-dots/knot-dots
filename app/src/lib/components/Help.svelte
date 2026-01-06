@@ -30,12 +30,7 @@
 </script>
 
 <aside>
-	<button
-		onclick={() => toggleHelp(page.url)}
-		type="button"
-		aria-label={$_('help')}
-		{@attach tooltip($_('help'))}
-	>
+	<button onclick={() => toggleHelp(page.url)} type="button" {@attach tooltip($_('help'))}>
 		<QuestionCircle />
 	</button>
 </aside>

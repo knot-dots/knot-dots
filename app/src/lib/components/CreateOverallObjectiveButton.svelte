@@ -31,7 +31,6 @@
 	<button
 		type="button"
 		onclick={createOverallObjective(container)}
-		aria-label={$_('overall_objective')}
 		{@attach tooltip($_('overall_objective'))}
 	>
 		<Plus />{$_('overall_objective')}

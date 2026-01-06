@@ -33,7 +33,6 @@
 		type="button"
 		onclick={saveIndicatorAsTemplate(container)}
 		disabled={saveAsIndicatorTemplateDisabled}
-		aria-label={$_('indicator.save_as_template')}
 		{@attach tooltip($_('indicator.save_as_template'))}
 	>
 		{$_('indicator.save_as_template')}

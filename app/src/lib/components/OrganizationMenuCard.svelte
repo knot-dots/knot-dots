@@ -18,7 +18,6 @@
 	{#snippet button()}
 		<button
 			class="button-relation button-relation--square"
-			aria-label={$_('show_related_objects')}
 			type="button"
 			class:is-active={container.guid === selectedContext?.guid}
 			onclick={(event: Event) => {

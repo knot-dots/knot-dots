@@ -129,7 +129,6 @@
 											<tr>
 												<td colspan="4">
 													<button
-														aria-label={$_('append_row')}
 														onclick={prepend}
 														type="button"
 														{@attach tooltip($_('append_row'))}
@@ -160,7 +159,6 @@
 												<td>
 													{#if index === 0 || index === container.payload.wantedValues.length - 1}
 														<button
-															aria-label={$_('delete_row')}
 															onclick={remove(index)}
 															type="button"
 															{@attach tooltip($_('delete_row'))}
@@ -174,12 +172,7 @@
 
 										<tr>
 											<td colspan="4">
-												<button
-													aria-label={$_('append_row')}
-													onclick={append}
-													type="button"
-													{@attach tooltip($_('append_row'))}
-												>
+												<button onclick={append} type="button" {@attach tooltip($_('append_row'))}>
 													<Plus />
 												</button>
 											</td>

@@ -161,7 +161,6 @@
 							{#snippet button()}
 								<button
 									class="button-square"
-									aria-label={$_('indicator_template.select')}
 									{@attach tooltip($_('indicator_template.select'))}
 									type="button"
 									onclick={stopPropagation(() => select(indicator))}
@@ -179,7 +178,6 @@
 						{#snippet button()}
 							<button
 								class="button-square"
-								aria-label={$_('indicator_template.select')}
 								{@attach tooltip($_('indicator_template.select'))}
 								type="button"
 								onclick={stopPropagation(() => select(template))}

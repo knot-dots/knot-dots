@@ -42,7 +42,6 @@
 
 {#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
 	<button
-		aria-label={$_('delete')}
 		class="delete quiet"
 		type="button"
 		onclick={() => confirmDeleteDialog.showModal()}

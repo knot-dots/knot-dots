@@ -153,7 +153,6 @@
 				class="dropdown-button dropdown-button--command"
 				onclick={() => sortBar.close()}
 				type="button"
-				aria-label={$_('filter')}
 				{@attach tooltip($_('filter'))}
 				use:filterBar.button
 			>
@@ -170,7 +169,6 @@
 				class="dropdown-button dropdown-button--command"
 				onclick={() => filterBar.close()}
 				type="button"
-				aria-label={$_('sort')}
 				{@attach tooltip($_('sort'))}
 				use:sortBar.button
 			>
@@ -184,7 +182,6 @@
 			<a
 				class="action-button action-button--size-l"
 				href={overlayURL(page.url, overlayKey.enum.members, $overlayStore.container.guid)}
-				aria-label={$_('members')}
 				{@attach tooltip($_('members'))}
 			>
 				<Users />
@@ -195,7 +192,6 @@
 			<a
 				class="action-button action-button--size-l"
 				href={resolve('/[[guid=uuid]]/members', { guid: selectedContext.guid })}
-				aria-label={$_('members')}
 				{@attach tooltip($_('members'))}
 			>
 				<Users />

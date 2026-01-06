@@ -142,7 +142,6 @@
 											<tr>
 												<td colspan="4">
 													<button
-														aria-label={$_('append_row')}
 														onclick={prependYear}
 														type="button"
 														{@attach tooltip($_('append_row'))}
@@ -182,7 +181,6 @@
 												<td>
 													{#if index === 0 || index === container.payload.plannedValues.length - 1}
 														<button
-															aria-label={$_('delete_row')}
 															onclick={removeYear(index)}
 															type="button"
 															{@attach tooltip($_('delete_row'))}
@@ -197,7 +195,6 @@
 										<tr>
 											<td colspan="4">
 												<button
-													aria-label={$_('append_row')}
 													onclick={appendYear}
 													type="button"
 													{@attach tooltip($_('append_row'))}

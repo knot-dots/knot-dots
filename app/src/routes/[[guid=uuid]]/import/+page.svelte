@@ -39,11 +39,8 @@
 						{/if}
 					{/await}
 					<footer>
-						<button
-							class="button-primary"
-							type="submit"
-							aria-label={$_('import.submit')}
-							{@attach tooltip($_('import.submit'))}>{$_('import.submit')}</button
+						<button class="button-primary" type="submit" {@attach tooltip($_('import.submit'))}
+							>{$_('import.submit')}</button
 						>
 					</footer>
 				</form>

@@ -28,13 +28,7 @@
 
 		{#if mayAddItem}
 			<li>
-				<button
-					aria-label={$_('add_item')}
-					class="card"
-					onclick={addItem}
-					type="button"
-					{@attach tooltip($_('add_item'))}
-				>
+				<button class="card" onclick={addItem} type="button" {@attach tooltip($_('add_item'))}>
 					<CirclePlus />
 				</button>
 			</li>

@@ -60,7 +60,6 @@
 					<span class="badge badge--gray">
 						<span class="badge-text">{file[1]}</span>
 						<button
-							aria-label={$_('upload.file.remove')}
 							class="button button-remove"
 							onclick={remove(i)}
 							type="button"

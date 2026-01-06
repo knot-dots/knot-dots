@@ -11,7 +11,6 @@
 <button
 	class="action-button"
 	onclick={() => (fullScreen.enabled = !fullScreen.enabled)}
-	aria-label={$_('full_screen')}
 	{@attach tooltip($_('full_screen'))}
 >
 	{#if fullScreen.enabled}<Minimize />{:else}<Maximize />{/if}

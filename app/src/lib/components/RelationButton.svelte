@@ -21,7 +21,6 @@
 	<a
 		class="button button-relation"
 		href="#relations={container.guid}"
-		aria-label={$_('relations')}
 		{@attach tooltip($_('relations'))}
 	>
 		<Relation />

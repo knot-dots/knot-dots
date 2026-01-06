@@ -75,7 +75,6 @@
 		class:is-active={isThinking}
 		type="button"
 		onclick={() => askAI(container as ProgramContainer)}
-		aria-label={$_('ask_ai')}
 		{@attach tooltip($_('ask_ai'))}
 	>
 		<AskAI />

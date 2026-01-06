@@ -60,7 +60,6 @@
 					<span class="badge badge--gray">
 						<span class="badge-text">{pdf[1]}</span>
 						<button
-							aria-label={$_('upload.pdf.remove')}
 							class="button button-remove"
 							onclick={remove(i)}
 							type="button"

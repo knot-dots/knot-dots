@@ -73,7 +73,6 @@
 			{#if $mayCreateContainer(payloadTypes.enum.effect, container.managed_by)}
 				<li>
 					<button
-						aria-label={$_('add_item')}
 						class="action-button action-button--size-l"
 						onclick={addItem}
 						type="button"

@@ -21,7 +21,6 @@
 		class="action-button action-button--size-s"
 		onclick={onclose}
 		type="button"
-		aria-label={$_('cancel')}
 		{@attach tooltip($_('cancel'))}
 	>
 		<Close />

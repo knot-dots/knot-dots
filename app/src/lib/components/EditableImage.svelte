@@ -50,7 +50,6 @@
 			{:else if value}
 				<img alt={$_('image')} src={transformFileURL(value)} />
 				<button
-					aria-label={$_('upload.image.remove')}
 					class="button button-remove"
 					onclick={remove}
 					{@attach tooltip($_('upload.image.remove'))}

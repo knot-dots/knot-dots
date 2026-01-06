@@ -114,19 +114,13 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button
-					class="button-xs button-primary"
-					type="submit"
-					aria-label={$_('save')}
-					{@attach tooltip($_('save'))}
-				>
+				<button class="button-xs button-primary" type="submit" {@attach tooltip($_('save'))}>
 					{$_('save')}
 				</button>
 				<button
 					class="button-xs button-alternative"
 					formnovalidate
 					type="submit"
-					aria-label={$_('cancel')}
 					{@attach tooltip($_('cancel'))}
 				>
 					{$_('cancel')}

@@ -250,7 +250,6 @@
 		class="dropdown-button"
 		onchange={handleAddSection}
 		type="button"
-		aria-label={$_('add_section')}
 		{@attach tooltip($_('add_section'))}
 		use:menu.button
 	>

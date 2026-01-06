@@ -56,7 +56,6 @@
 		class="button-copycat"
 		type="button"
 		onclick={() => createCopy(container)}
-		aria-label={$_('copy')}
 		{@attach tooltip($_('copy'))}
 	>
 		<CopyCat />

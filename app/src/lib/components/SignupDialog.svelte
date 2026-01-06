@@ -154,7 +154,6 @@
 			<button
 				class="button-xs button-primary"
 				type="submit"
-				aria-label={$_('signup_dialog.submit')}
 				{@attach tooltip($_('signup_dialog.submit'))}>{$_('signup_dialog.submit')}</button
 			>
 		</div>

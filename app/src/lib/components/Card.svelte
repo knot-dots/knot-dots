@@ -340,7 +340,6 @@
 		{:else if showRelationFilter}
 			<button
 				class="button-relation button-relation--square"
-				aria-label={$_('show_relations')}
 				class:is-active={relatedTo === container.guid}
 				onclick={applyRelationFilter(page.url)}
 				{@attach tooltip($_('show_relations'))}

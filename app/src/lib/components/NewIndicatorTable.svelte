@@ -168,7 +168,6 @@
 						disabled={addingCustomActualData}
 						onclick={addCustomActualData}
 						type="button"
-						aria-label={$_('indicator.add_custom_actual_data')}
 						{@attach tooltip($_('indicator.add_custom_actual_data'))}
 					>
 						{#if addingCustomActualData}

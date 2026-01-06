@@ -161,7 +161,6 @@
 					<button
 						class="action-button"
 						type="button"
-						aria-label={$_('user.remove_relations')}
 						{@attach tooltip($_('user.remove_relations'))}
 						onclick={() => handleRemoveRelations(u, container)}
 					>
