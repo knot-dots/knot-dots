@@ -39,6 +39,29 @@ import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
 
+// Types that are indexed to Elasticsearch (must match indexContainersToElasticsearch.ts)
+const INDEXABLE_TYPES = new Set<string>([
+	'effect',
+	'goal',
+	'indicator',
+	'indicator_template',
+	'knowledge',
+	'measure',
+	'objective',
+	'organization',
+	'organizational_unit',
+	'page',
+	'program',
+	'resource',
+	'rule',
+	'simple_measure',
+	'task'
+]);
+
+function shouldIndexType(type: PayloadType): boolean {
+	return INDEXABLE_TYPES.has(type);
+}
+
 const createResultParserInterceptor = (): Interceptor => {
 	return {
 		// If you are not going to transform results using Zod, then you should use `afterQueryExecution` instead.
@@ -170,7 +193,10 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+			if (
+				createFeatureDecisions(getFeatures()).useElasticsearch() &&
+				shouldIndexType(containerResult.payload.type)
+			) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -255,7 +281,10 @@ export function updateContainer(container: ModifiedContainer) {
 				}
 			}
 
-			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+			if (
+				createFeatureDecisions(getFeatures()).useElasticsearch() &&
+				shouldIndexType(containerResult.payload.type)
+			) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -308,7 +337,10 @@ export function deleteContainer(container: AnyContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+			if (
+				createFeatureDecisions(getFeatures()).useElasticsearch() &&
+				shouldIndexType(container.payload.type)
+			) {
 				await enqueueIndexingEvent({
 					action: 'delete',
 					guid: container.guid,
