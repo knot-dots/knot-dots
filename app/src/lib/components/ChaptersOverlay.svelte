@@ -3,19 +3,22 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import {
+		type AnyContainer,
 		audience,
 		computeFacetCount,
 		type Container,
+		isProgramContainer,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
 
 	interface Props {
+		container: AnyContainer;
 		containers: Container[];
 	}
 
-	let { containers }: Props = $props();
+	let { container, containers }: Props = $props();
 
 	let facets = $derived(
 		computeFacetCount(
@@ -32,6 +35,6 @@
 
 <Header {facets} search />
 
-<Chapters {containers} />
+<Chapters program={isProgramContainer(container) ? container : undefined} {containers} />
 
 <Help slug="all-level" />

@@ -102,6 +102,13 @@
 					position: 0,
 					predicate: predicates.enum['is-part-of-measure']
 				})
+			),
+			...params.getAll(predicates.enum['is-part-of-program']).map(
+				(o): PartialRelation => ({
+					object: o,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				})
 			)
 		];
 

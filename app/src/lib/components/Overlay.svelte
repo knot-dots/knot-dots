@@ -67,7 +67,7 @@
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}
-		<ChaptersOverlay containers={data.containers} />
+		<ChaptersOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['content-partners']}
 		<ContentPartnersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['teasers']}
