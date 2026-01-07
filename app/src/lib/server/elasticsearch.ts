@@ -68,8 +68,21 @@ export function getManyContainersWithES(
 			if (filters.organizationalUnits?.length)
 				filter.push({ terms: { organizationalUnit: filters.organizationalUnits } });
 			if (organizations.length) filter.push({ terms: { organization: organizations } });
-			if (filters.template !== undefined)
+			if (filters.template !== undefined) {
 				filter.push({ term: { 'payload.template': filters.template } });
+			} else {
+				// Match SQL behavior: when template filter is not specified, exclude templates by default
+				// SQL: (c.payload @> '{"template": false}' OR NOT payload ? 'template')
+				filter.push({
+					bool: {
+						should: [
+							{ term: { 'payload.template': false } },
+							{ bool: { must_not: { exists: { field: 'payload.template' } } } }
+						],
+						minimum_should_match: 1
+					}
+				});
+			}
 
 			const query = { bool: { must, filter } };
 			const sortParam = sort === 'modified' ? [{ revision: 'desc' }] : [{ 'title.keyword': 'asc' }]; // Priority sorting handled in SQL
