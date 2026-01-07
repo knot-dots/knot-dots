@@ -18,7 +18,6 @@
 		predicates,
 		type SimpleMeasureContainer
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		measure?: MeasureContainer | SimpleMeasureContainer;
@@ -44,31 +43,34 @@
 		...Array.from(goals.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => ({
-				...(measure && $mayCreateContainer(payloadTypes.enum.goal, measure.managed_by)
-					? {
-							addItemUrl: addItemUrl([
-								[overlayKey.enum.create, payloadTypes.enum.goal],
-								['hierarchyLevel', String(hierarchyLevel)],
-								[predicates.enum['is-part-of-measure'], measure.guid]
-							])
-						}
-					: undefined),
+				addItemUrl: measure
+					? addItemUrl([
+							[overlayKey.enum.create, payloadTypes.enum.goal],
+							['hierarchyLevel', String(hierarchyLevel)],
+
+							[predicates.enum['is-part-of-measure'], measure.guid],
+							['managedBy', measure.managed_by]
+						])
+					: undefined,
 				containers: containers,
 				key: `goals-${hierarchyLevel}`,
 				title: computeColumnTitleForGoals(containers)
 			})),
 		{
-			...(measure && $mayCreateContainer(payloadTypes.enum.task, measure.managed_by)
-				? {
-						addItemUrl: addItemUrl([
-							[overlayKey.enum.create, payloadTypes.enum.task],
-							[predicates.enum['is-part-of-measure'], measure.guid]
-						])
-					}
-				: undefined),
+			addItemUrl: measure
+				? addItemUrl([
+						[overlayKey.enum.create, payloadTypes.enum.task],
+						...(measure
+							? [
+									[predicates.enum['is-part-of-measure'], measure.guid],
+									['managedBy', measure.managed_by]
+								]
+							: [])
+					])
+				: undefined,
 			containers: containers.filter(isTaskContainer),
 			key: 'tasks',
-			title: 'tasks'
+			title: $_('tasks')
 		}
 	]);
 
@@ -91,7 +93,7 @@
 		</BoardColumn>
 	{/if}
 	{#each columns as column (column.key)}
-		<BoardColumn addItemUrl={column.addItemUrl} title={$_(column.title)}>
+		<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
 			<div class="vertical-scroll-wrapper">
 				{#each column.containers as container (container.guid)}
 					{#if isGoalContainer(container)}
