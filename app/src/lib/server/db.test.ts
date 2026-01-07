@@ -244,30 +244,116 @@ test('adding more relations does not interfere with existing relations', async (
 	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
 });
 
-test('getManyContainers and getManyContainersWithES return the same results', async ({
-	connection
-}: Fixtures) => {
-	// Get the organization GUID for Musterhausen
-	const org = await connection.one(sql.typeAlias('guid')`
+test.for([
+	{
+		name: 'goal',
+		filters: { type: [payloadTypes.enum.goal] }
+	},
+	{
+		name: 'goal with categories',
+		filters: { type: [payloadTypes.enum.goal], categories: ['sdg.11', 'sdg.13'] as string[] }
+	},
+	{
+		name: 'goal with audience',
+		filters: { type: [payloadTypes.enum.goal], audience: ['audience.public'] as string[] }
+	},
+	{
+		name: 'indicator',
+		filters: { type: [payloadTypes.enum.indicator] }
+	},
+	{
+		name: 'indicator with topics',
+		filters: { type: [payloadTypes.enum.indicator], topics: ['topic.health'] as string[] }
+	},
+	{
+		name: 'knowledge',
+		filters: { type: [payloadTypes.enum.knowledge] }
+	},
+	{
+		name: 'knowledge with categories',
+		filters: { type: [payloadTypes.enum.knowledge], categories: ['sdg.11'] as string[] }
+	},
+	{
+		name: 'measure',
+		filters: { type: [payloadTypes.enum.measure] }
+	},
+	{
+		name: 'measure with measureTypes',
+		filters: {
+			type: [payloadTypes.enum.measure],
+			measureTypes: ['measure_type.funding'] as string[]
+		}
+	},
+	{
+		name: 'measure with topics and audience',
+		filters: {
+			type: [payloadTypes.enum.measure],
+			topics: ['topic.economy'] as string[],
+			audience: ['audience.business'] as string[]
+		}
+	},
+	{
+		name: 'objective',
+		filters: { type: [payloadTypes.enum.objective] }
+	},
+	{
+		name: 'objective with categories',
+		filters: { type: [payloadTypes.enum.objective], categories: ['sdg.13'] as string[] }
+	},
+	{
+		name: 'program',
+		filters: { type: [payloadTypes.enum.program] }
+	},
+	{
+		name: 'program with audience',
+		filters: {
+			type: [payloadTypes.enum.program],
+			audience: ['audience.public', 'audience.business'] as string[]
+		}
+	},
+	{
+		name: 'resource',
+		filters: { type: [payloadTypes.enum.resource] }
+	},
+	{
+		name: 'resource with categories and topics',
+		filters: {
+			type: [payloadTypes.enum.resource],
+			categories: ['sdg.11'] as string[],
+			topics: ['topic.environment'] as string[]
+		}
+	},
+	{
+		name: 'rule',
+		filters: { type: [payloadTypes.enum.rule] }
+	},
+	{
+		name: 'rule with topics',
+		filters: { type: [payloadTypes.enum.rule], topics: ['topic.legal'] as string[] }
+	},
+	{
+		name: 'task',
+		filters: { type: [payloadTypes.enum.task] }
+	},
+	{
+		name: 'task with categories',
+		filters: { type: [payloadTypes.enum.task], categories: ['sdg.13'] as string[] }
+	}
+])(
+	`getManyContainers and getManyContainersWithES: $name`,
+	async ({ name, filters }, { connection }) => {
+		// Get the organization GUID for Musterhausen
+		const org = await connection.one(sql.typeAlias('guid')`
 		SELECT guid FROM container 
 		WHERE payload->>'name' = 'Musterhausen' 
 		AND payload->>'type' = 'organization'
 		LIMIT 1
 	`);
 
-	let filters = { type: [payloadTypes.enum.goal], categories: [] as string[] };
+		const sqlResults = await getManyContainers([org.guid], filters, 'title', 1000)(connection);
+		const esResults = await getManyContainersWithES([org.guid], filters, 'title', 1000)(connection);
 
-	// Query with both functions using the same parameters, filtering for goals only
-	const sqlResults = await getManyContainers([org.guid], filters, 'title', 1000)(connection);
-
-	const esResults = await getManyContainersWithES([org.guid], filters, 'title', 1000)(connection);
-
-	// Both should return the same number of containers
-	expect(esResults.length).toBe(sqlResults.length);
-
-	// Extract GUIDs and verify they match
-	const sqlGuids = sqlResults.map((c) => c.guid).sort();
-	const esGuids = esResults.map((c) => c.guid).sort();
-
-	expect(esGuids).toEqual(sqlGuids);
-});
+		expect(esResults.length).toBe(sqlResults.length);
+		expect(esResults.map((c) => c.guid).sort()).toEqual(sqlResults.map((c) => c.guid).sort());
+	}
+);
