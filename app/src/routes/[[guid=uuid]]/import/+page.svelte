@@ -11,7 +11,7 @@
 <Layout>
 	{#snippet main()}
 		<div class="detail-page-content">
-			<div class="content-details masked-overflow">
+			<div class="content-details">
 				{#if form?.errors}
 					<ul>
 						{#each form.errors as error}

@@ -13,7 +13,7 @@
 </script>
 
 <Header workspaceOptions={[]} />
-<div class="content-details masked-overflow">
+<div class="content-details">
 	<div class="details">
 		<div class="details-section">
 			<Members {container} {users} />
