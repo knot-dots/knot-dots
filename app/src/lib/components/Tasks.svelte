@@ -13,7 +13,6 @@
 		type TaskContainer,
 		taskStatus
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 
 	interface Props {
@@ -65,7 +64,7 @@
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(taskStatusOption)}
 			--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
-			addItemUrl={container && $mayCreateContainer(payloadTypes.enum.task, container.managed_by)
+			addItemUrl={container
 				? `#create=${payloadTypes.enum.task}&is-part-of-measure=${container.guid}&managed-by=${container.managed_by}&taskStatus=${taskStatusOption}`
 				: undefined}
 			items={containers.filter(({ payload }) => payload.taskStatus === taskStatusOption)}

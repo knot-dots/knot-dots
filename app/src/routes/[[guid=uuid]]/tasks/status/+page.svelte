@@ -8,6 +8,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
+	import TasksPage from '$lib/components/TasksPage.svelte';
 	import {
 		type GoalContainer,
 		isTaskContainer,
@@ -16,10 +17,8 @@
 		payloadTypes,
 		taskStatus
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
-	import TasksPage from '$lib/components/TasksPage.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -67,12 +66,7 @@
 				<TaskBoardColumn
 					--background={taskStatusBackgrounds.get(taskStatusOption)}
 					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
-					addItemUrl={$mayCreateContainer(
-						payloadTypes.enum.task,
-						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-					)
-						? `#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`
-						: undefined}
+					addItemUrl={`#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`}
 					items={data.containers
 						.filter(isTaskContainer)
 						.filter(({ payload }) => payload.taskStatus === taskStatusOption)}

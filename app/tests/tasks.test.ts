@@ -84,7 +84,7 @@ test.describe('Subtask creation', () => {
 		await page.getByRole('menuitem', { name: 'Tasks' }).click();
 
 		// Force interaction with Add item button ignoring disabled state
-		await page.getByRole('button', { name: 'Add item' }).click({ force: true });
+		await page.locator('.overlay').getByRole('button', { name: 'Add item' }).click({ force: true });
 		await page.getByRole('textbox', { name: 'Title' }).fill(subtaskTitle);
 		await page.getByRole('button', { name: 'Save' }).click();
 		await expect(page.getByTitle(subtaskTitle)).toBeVisible();
