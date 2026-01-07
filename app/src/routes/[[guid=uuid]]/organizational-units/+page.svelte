@@ -53,7 +53,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header workspaceOptions={[]} {facets} search />
+		<Header workspaceOptions={[]} {facets} filterBarInitiallyOpen search />
 	{/snippet}
 
 	{#snippet main()}
