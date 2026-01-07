@@ -33,6 +33,7 @@
 		units
 	} from '$lib/models';
 	import { addEffectState, addObjectiveState, newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		indicatorTemplates: IndicatorTemplateContainer[];
@@ -160,7 +161,7 @@
 							{#snippet button()}
 								<button
 									class="button-square"
-									title={$_('indicator_template.select')}
+									{@attach tooltip($_('indicator_template.select'))}
 									type="button"
 									onclick={stopPropagation(() => select(indicator))}
 								>
@@ -177,7 +178,7 @@
 						{#snippet button()}
 							<button
 								class="button-square"
-								title={$_('indicator_template.select')}
+								{@attach tooltip($_('indicator_template.select'))}
 								type="button"
 								onclick={stopPropagation(() => select(template))}
 							>

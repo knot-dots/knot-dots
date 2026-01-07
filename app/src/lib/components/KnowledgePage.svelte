@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
@@ -11,12 +12,15 @@
 		topics
 	} from '$lib/models';
 
+	import type { PageData } from '../../routes/[[guid=uuid]]/knowledge/catalog/$types';
+
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: PageData;
+		filterBarInitiallyOpen?: boolean;
 	}
 
-	let { children, data }: Props = $props();
+	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
@@ -32,7 +36,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header {filterBarInitiallyOpen} {facets} search />
 	{/snippet}
 
 	{#snippet main()}

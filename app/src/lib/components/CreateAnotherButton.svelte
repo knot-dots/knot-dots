@@ -14,7 +14,6 @@
 		predicates
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
-
 	interface Props {
 		container: AnyContainer;
 		relatedContainers: Container[];

@@ -17,6 +17,7 @@
 		predicates
 	} from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: AnyContainer;
@@ -160,7 +161,7 @@
 					<button
 						class="action-button"
 						type="button"
-						title={$_('user.remove_relations')}
+						{@attach tooltip($_('user.remove_relations'))}
 						onclick={() => handleRemoveRelations(u, container)}
 					>
 						<TrashBin />

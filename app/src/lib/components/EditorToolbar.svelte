@@ -8,7 +8,8 @@
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
 	import { _ } from 'svelte-i18n';
-	import ListBullet from '~icons/flowbite/list-outline';
+	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
+	import tooltip from '$lib/attachments/tooltip';
 	import Quote from '~icons/flowbite/quote-solid';
 
 	interface Props {
@@ -29,6 +30,7 @@
 		<button
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(toggleStrongCommand.key))}
+			{@attach tooltip($_('editor.strong'))}
 		>
 			<strong>{$_('editor.strong')}</strong>
 		</button>
@@ -37,6 +39,7 @@
 		<button
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(toggleEmphasisCommand.key))}
+			{@attach tooltip($_('editor.emphasis'))}
 		>
 			<em>{$_('editor.emphasis')}</em>
 		</button>

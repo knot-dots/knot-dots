@@ -11,6 +11,15 @@
 	}
 
 	let { dialog = $bindable(), handleSubmit, container, relatedContainers }: Props = $props();
+
+	// derive the title once and reuse below
+	const title: string =
+		'title' in container.payload
+			? (container.payload as any).title
+			: (container.payload.name as string);
+
+	// also derive the translated button label once
+	const buttonLabel = $_('confirm_delete_dialog.button', { values: { title } });
 </script>
 
 <dialog bind:this={dialog}>
@@ -26,9 +35,7 @@
 
 		<h2>
 			{$_('confirm_delete_dialog.heading', {
-				values: {
-					title: 'title' in container.payload ? container.payload.title : container.payload.name
-				}
+				values: { title }
 			})}
 		</h2>
 
@@ -45,12 +52,8 @@
 			})}
 		</p>
 
-		<button class="button-primary button-xs" type="submit">
-			{$_('confirm_delete_dialog.button', {
-				values: {
-					title: 'title' in container.payload ? container.payload.title : container.payload.name
-				}
-			})}
+		<button class="button-primary button-xs" type="submit" aria-label={buttonLabel}>
+			{buttonLabel}
 		</button>
 	</form>
 </dialog>

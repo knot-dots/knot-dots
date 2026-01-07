@@ -22,6 +22,7 @@
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: ObjectiveContainer;
@@ -127,7 +128,11 @@
 										{#if container.payload.wantedValues.length > 0}
 											<tr>
 												<td colspan="4">
-													<button aria-label={$_('append_row')} onclick={prepend} type="button">
+													<button
+														onclick={prepend}
+														type="button"
+														{@attach tooltip($_('append_row'))}
+													>
 														<Plus />
 													</button>
 												</td>
@@ -154,9 +159,9 @@
 												<td>
 													{#if index === 0 || index === container.payload.wantedValues.length - 1}
 														<button
-															aria-label={$_('delete_row')}
 															onclick={remove(index)}
 															type="button"
+															{@attach tooltip($_('delete_row'))}
 														>
 															<Minus />
 														</button>
@@ -167,7 +172,7 @@
 
 										<tr>
 											<td colspan="4">
-												<button aria-label={$_('append_row')} onclick={append} type="button">
+												<button onclick={append} type="button" {@attach tooltip($_('append_row'))}>
 													<Plus />
 												</button>
 											</td>

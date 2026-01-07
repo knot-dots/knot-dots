@@ -5,7 +5,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL.js';
-
+	import tooltip from '$lib/attachments/tooltip';
 	interface Props {
 		editable?: boolean;
 		label: string;
@@ -50,9 +50,9 @@
 			{:else if value}
 				<img alt={$_('image')} src={transformFileURL(value)} />
 				<button
-					aria-label={$_('upload.image.remove')}
 					class="button button-remove"
 					onclick={remove}
+					{@attach tooltip($_('upload.image.remove'))}
 					type="button"><TrashBin /></button
 				>
 			{:else}

@@ -8,7 +8,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<IndicatorsPage {data}>
+<IndicatorsPage {data} filterBarInitiallyOpen>
 	{#if data.useNewIndicators}
 		<NewIndicators containers={data.containers} />
 	{:else}

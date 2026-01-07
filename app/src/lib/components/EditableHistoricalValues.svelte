@@ -9,6 +9,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import type { IndicatorContainer } from '$lib/models';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorContainer;
@@ -105,7 +106,7 @@
 					{#if container.payload.historicalValues.length > 0}
 						<tr>
 							<td colspan="3">
-								<button aria-label={$_('append_row')} onclick={prepend} type="button">
+								<button onclick={prepend} type="button" {@attach tooltip($_('append_row'))}>
 									<Plus />
 								</button>
 							</td>
@@ -132,7 +133,7 @@
 							</td>
 							<td>
 								{#if index === 0 || index === container.payload.historicalValues.length - 1}
-									<button aria-label={$_('delete_row')} onclick={remove(index)} type="button">
+									<button onclick={remove(index)} type="button" {@attach tooltip($_('delete_row'))}>
 										<Minus />
 									</button>
 								{/if}
@@ -142,7 +143,7 @@
 
 					<tr>
 						<td colspan="3">
-							<button aria-label={$_('append_row')} onclick={append} type="button">
+							<button onclick={append} type="button" {@attach tooltip($_('append_row'))}>
 								<Plus />
 							</button>
 						</td>

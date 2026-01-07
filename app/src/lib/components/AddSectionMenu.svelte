@@ -56,6 +56,7 @@
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		compact?: boolean;

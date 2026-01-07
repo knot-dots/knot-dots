@@ -5,13 +5,16 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { computeFacetCount, type Container, predicates, taskCategories } from '$lib/models';
 
+	import type { PageData } from '../../routes/[[guid=uuid]]/tasks/catalog/$types';
+
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: PageData;
 		sortOptions?: [string, string][];
+		filterBarInitiallyOpen?: boolean;
 	}
 
-	let { children, data, sortOptions }: Props = $props();
+	let { children, data, filterBarInitiallyOpen = false, sortOptions }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -44,7 +47,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search {sortOptions} />
+		<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
 	{/snippet}
 
 	{#snippet main()}

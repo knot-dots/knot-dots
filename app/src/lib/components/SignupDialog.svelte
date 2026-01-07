@@ -4,6 +4,7 @@
 	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
 	import { signIn } from '@auth/sveltekit/client';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -150,7 +151,11 @@
 				/>
 			</fieldset>
 
-			<button class="button-xs button-primary" type="submit">{$_('signup_dialog.submit')}</button>
+			<button
+				class="button-xs button-primary"
+				type="submit"
+				{@attach tooltip($_('signup_dialog.submit'))}>{$_('signup_dialog.submit')}</button
+			>
 		</div>
 	</form>
 </dialog>

@@ -7,10 +7,10 @@ import { expect, test } from '@playwright/test';
 test.describe('Goal progress section', () => {
 	// Use admin to ensure we have permission to create and edit
 	test.use({ storageState: 'tests/.auth/admin.json' });
-
-	const title = `Goal with progress ${Date.now()}`;
+	let title: string;
 
 	test.beforeEach('add goal', async ({ page }) => {
+		title = `Goal with progress ${test.info().project.name} ${Date.now()}`;
 		await page.goto('/');
 
 		// Navigate to Goals
@@ -35,7 +35,8 @@ test.describe('Goal progress section', () => {
 		await page.getByLabel('edit mode').check();
 
 		// Delete the goal
-		await page.getByRole('button', { name: 'Delete' }).click();
+		await page.getByRole('button', { name: 'Delete' }).first().click();
+		await page.waitForTimeout(500); // wait for dialog animation
 		await page.getByRole('button', { name: `I want to delete "${title}"` }).click();
 
 		await expect(page.getByTitle(title)).not.toBeAttached();
