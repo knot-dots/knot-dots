@@ -14,9 +14,12 @@ import {
 import {
 	createContainer,
 	getContainerByGuid,
+	getManyContainers,
+	sql,
 	updateContainer,
 	updateManyContainerRelations
 } from '$lib/server/db';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
 
 const organization = uuid();
 const realm = 'test';
@@ -239,4 +242,32 @@ test('adding more relations does not interfere with existing relations', async (
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
 	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
+});
+
+test('getManyContainers and getManyContainersWithES return the same results', async ({
+	connection
+}: Fixtures) => {
+	// Get the organization GUID for Musterhausen
+	const org = await connection.one(sql.typeAlias('guid')`
+		SELECT guid FROM container 
+		WHERE payload->>'name' = 'Musterhausen' 
+		AND payload->>'type' = 'organization'
+		LIMIT 1
+	`);
+
+	let filters = { type: [payloadTypes.enum.goal], categories: [] as string[] };
+
+	// Query with both functions using the same parameters, filtering for goals only
+	const sqlResults = await getManyContainers([org.guid], filters, 'title', 1000)(connection);
+
+	const esResults = await getManyContainersWithES([org.guid], filters, 'title', 1000)(connection);
+
+	// Both should return the same number of containers
+	expect(esResults.length).toBe(sqlResults.length);
+
+	// Extract GUIDs and verify they match
+	const sqlGuids = sqlResults.map((c) => c.guid).sort();
+	const esGuids = esResults.map((c) => c.guid).sort();
+
+	expect(esGuids).toEqual(sqlGuids);
 });
