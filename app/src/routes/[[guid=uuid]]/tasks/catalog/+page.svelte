@@ -8,7 +8,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<TasksPage {data} filtersInitiallyOpened>
+<TasksPage {data} filterBarInitiallyOpen>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.task]} />
 	<Help slug="tasks-catalog" />
 </TasksPage>
