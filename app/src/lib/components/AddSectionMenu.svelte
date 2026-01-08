@@ -158,7 +158,7 @@
 	);
 
 	let mayAddContentPartnerCollection = $derived(
-		createFeatureDecisions(page.data.features).useTeaser() &&
+		createFeatureDecisions(page.data.features).useContentPartner() &&
 			(isOrganizationContainer(parentContainer) ||
 				isOrganizationalUnitContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
