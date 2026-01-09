@@ -248,42 +248,42 @@ test.for([
 	{
 		name: 'goal',
 		filters: { type: [payloadTypes.enum.goal] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'goal with categories',
 		filters: { type: [payloadTypes.enum.goal], categories: ['sdg.11', 'sdg.13'] as string[] },
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'goal with audience',
 		filters: { type: [payloadTypes.enum.goal], audience: ['audience.public'] as string[] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'indicator',
 		filters: { type: [payloadTypes.enum.indicator] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'indicator with topics',
 		filters: { type: [payloadTypes.enum.indicator], topics: ['topic.health'] as string[] },
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'knowledge',
 		filters: { type: [payloadTypes.enum.knowledge] },
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'knowledge with categories',
 		filters: { type: [payloadTypes.enum.knowledge], categories: ['sdg.11'] as string[] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'measure',
 		filters: { type: [payloadTypes.enum.measure] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'measure with measureTypes',
@@ -291,7 +291,7 @@ test.for([
 			type: [payloadTypes.enum.measure],
 			measureTypes: ['measure_type.funding'] as string[]
 		},
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'measure with topics and audience',
@@ -300,22 +300,22 @@ test.for([
 			topics: ['topic.economy'] as string[],
 			audience: ['audience.business'] as string[]
 		},
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'objective',
 		filters: { type: [payloadTypes.enum.objective] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'objective with categories',
 		filters: { type: [payloadTypes.enum.objective], categories: ['sdg.13'] as string[] },
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'program',
 		filters: { type: [payloadTypes.enum.program] },
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'program with audience',
@@ -323,12 +323,12 @@ test.for([
 			type: [payloadTypes.enum.program],
 			audience: ['audience.public', 'audience.business'] as string[]
 		},
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'resource',
 		filters: { type: [payloadTypes.enum.resource] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'resource with categories and topics',
@@ -337,27 +337,27 @@ test.for([
 			categories: ['sdg.11'] as string[],
 			topics: ['topic.environment'] as string[]
 		},
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'rule',
 		filters: { type: [payloadTypes.enum.rule] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'rule with topics',
 		filters: { type: [payloadTypes.enum.rule], topics: ['topic.legal'] as string[] },
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'task',
 		filters: { type: [payloadTypes.enum.task] },
-		sort: 'title'
+		sort: 'alpha'
 	},
 	{
 		name: 'task with categories',
 		filters: { type: [payloadTypes.enum.task], categories: ['sdg.13'] as string[] },
-		sort: 'title'
+		sort: 'modified'
 	},
 	{
 		name: 'task with priority sorting',
@@ -379,6 +379,6 @@ test.for([
 		const esResults = await getManyContainersWithES([org.guid], filters, sort, 1000)(connection);
 
 		expect(esResults.length).toBe(sqlResults.length);
-		expect(esResults.map((c) => c.guid).sort()).toEqual(sqlResults.map((c) => c.guid).sort());
+		expect(esResults.map((c) => c.guid)).toEqual(sqlResults.map((c) => c.guid));
 	}
 );
