@@ -143,7 +143,7 @@
 						: undefined}
 					title={$_('organizations')}
 				>
-					<div class="vertical-scroll-wrapper masked-overflow">
+					<div class="vertical-scroll-wrapper">
 						{#if 'default' in currentContext.payload && currentContext.payload.default}
 							{#each organizations as container}
 								<OrganizationMenuCard
@@ -175,7 +175,7 @@
 							: undefined}
 						title={$_('organizational_unit_level', { values: { level } })}
 					>
-						<div class="vertical-scroll-wrapper masked-overflow">
+						<div class="vertical-scroll-wrapper">
 							{#each containers as container}
 								<OrganizationMenuCard
 									{container}

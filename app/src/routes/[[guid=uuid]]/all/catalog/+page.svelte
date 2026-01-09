@@ -17,7 +17,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<AllPage {data}>
+<AllPage {data} filterBarInitiallyOpen>
 	<Catalog
 		containers={data.containers
 			.filter(

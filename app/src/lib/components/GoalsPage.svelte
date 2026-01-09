@@ -14,12 +14,15 @@
 		topics
 	} from '$lib/models';
 
+	import type { PageData } from '../../routes/[[guid=uuid]]/goals/catalog/$types';
+
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: PageData;
+		filterBarInitiallyOpen?: boolean;
 	}
 
-	let { children, data }: Props = $props();
+	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -61,7 +64,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header {filterBarInitiallyOpen} {facets} search />
 	{/snippet}
 
 	{#snippet main()}

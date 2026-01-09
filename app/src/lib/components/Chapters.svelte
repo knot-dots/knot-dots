@@ -55,7 +55,7 @@
 <Board>
 	{#each columns as column (column.key)}
 		<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
-			<div class="vertical-scroll-wrapper masked-overflow">
+			<div class="vertical-scroll-wrapper">
 				{#each column.containers as container}
 					<Card {container} showRelationFilter />
 				{/each}

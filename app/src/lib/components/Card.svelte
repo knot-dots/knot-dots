@@ -45,6 +45,7 @@
 		taskStatusIcons
 	} from '$lib/theme/models';
 	import transformFileURL from '$lib/transformFileURL';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		body?: Snippet;
@@ -394,9 +395,9 @@
 		{:else if showRelationFilter}
 			<button
 				class="button-relation button-relation--square"
-				aria-label={$_('show_relations')}
 				class:is-active={relatedTo === container.guid}
 				onclick={applyRelationFilter(page.url)}
+				{@attach tooltip($_('show_relations'))}
 			>
 				<Relation />
 			</button>

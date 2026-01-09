@@ -128,6 +128,7 @@
 
 {#if isProgramContainer(container)}
 	<Header
+		filterBarInitiallyOpen={true}
 		facets={computeFacetCount(
 			new Map([
 				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
