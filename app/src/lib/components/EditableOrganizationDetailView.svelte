@@ -128,6 +128,9 @@
 
 	.stage--buttons {
 		min-height: 4rem;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
 	}
 
 	header button {

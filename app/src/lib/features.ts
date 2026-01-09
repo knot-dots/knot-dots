@@ -1,5 +1,21 @@
 export const featureFlags = new Map([
-	['alpha', ['ImportFromCsv', 'AI', 'Elasticsearch', 'Teaser', 'Stage'] as const],
+	[
+		'alpha',
+		[
+			'ImportFromCsv',
+			'AI',
+			'Elasticsearch',
+			'Teaser',
+			'TeaserCollection',
+			'InfoBox',
+			'Quote',
+			'TwoColumn',
+			'Stage',
+			'Image',
+			'ContentPartner',
+			'Knowledge'
+		] as const
+	],
 	['beta', ['AdministrativeArea', 'Report'] as const]
 ]);
 
@@ -28,6 +44,27 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useTeaser() {
 			return features.includes('Teaser');
+		},
+		useTeaserCollection() {
+			return features.includes('TeaserCollection');
+		},
+		useInfoBox() {
+			return features.includes('InfoBox');
+		},
+		useQuote() {
+			return features.includes('Quote');
+		},
+		useTwoColumn() {
+			return features.includes('TwoColumn');
+		},
+		useImage() {
+			return features.includes('Image');
+		},
+		useContentPartner() {
+			return features.includes('ContentPartner');
+		},
+		useKnowledge() {
+			return features.includes('Knowledge');
 		},
 		useStage() {
 			return features.includes('Stage');

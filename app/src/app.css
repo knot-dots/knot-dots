@@ -1454,6 +1454,26 @@ img.cover {
 	padding: 0.25rem 0;
 }
 
+/* Wall */
+.wall {
+	margin-top: 1.5rem;
+	display: grid;
+	gap: 1rem;
+	align-items: stretch;
+	grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+
+.wall > li {
+	display: flex;
+}
+
+.wall > li > * {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	width: 100%;
+}
+
 /* Disclosure */
 .disclosure {
 	border: solid 1px var(--color-gray-200);
@@ -1516,7 +1536,7 @@ img.cover {
 	--dropdown-button-chevron-expanded-color: var(--color-primary-600);
 	--dropdown-button-chevron-icon-size: 1.25rem;
 	--dropdown-button-align-items: center;
-	--dropdown-panel-max-height: 20rem;
+	--dropdown-panel-max-height: 21rem;
 	--dropdown-panel-max-width: none;
 	--dropdown-panel-padding: 0.5rem;
 }

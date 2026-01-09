@@ -12,10 +12,12 @@ export type ApplicationState = {
 
 export const overlayKey = z.enum([
 	'chapters',
+	'content-partners',
 	'create',
 	'indicator-catalog',
 	'new-indicator-catalog',
 	'indicators',
+	'knowledge',
 	'measure-monitoring',
 	'measures',
 	'members',
@@ -62,19 +64,24 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'accordion_collection',
 	'chapter',
 	'col_content',
+	'content_partner',
+	'content_partner_collection',
 	'custom_collection',
 	'effect',
 	'effect_collection',
 	'file_collection',
 	'goal',
 	'goal_collection',
+	'image',
 	'indicator',
 	'indicator_collection',
 	'indicator_template',
 	'info_box',
 	'knowledge',
+	'knowledge_collection',
 	'map',
 	'measure',
 	'measure_collection',
@@ -135,7 +142,7 @@ export function isLevel(value: unknown): value is Level {
 	return levelValues.includes(value as Level);
 }
 
-const listTypeValues = ['carousel', 'wall', 'list'] as const;
+const listTypeValues = ['carousel', 'wall', 'list', 'accordion'] as const;
 
 export const listTypes = z.enum(listTypeValues);
 
@@ -746,10 +753,27 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 });
 
 const knowledgePayload = basePayload
-	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
+	.extend({
+		knowledgeCategory: z.enum(['publication', 'tool', 'best_practise']).default('publication'),
+		content_partner: z.string().optional(),
+		date: z.string().optional(),
+		tags: z.array(z.string()).default([]),
+		type: z.literal(payloadTypes.enum.knowledge)
+	})
 	.strict();
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
+
+const knowledgeCollectionPayload = z
+	.object({
+		title: z.string().readonly().default('Knowledge'),
+		type: z.literal(payloadTypes.enum.knowledge_collection),
+		listType: listTypes.default(listTypes.enum.list),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialKnowledgeCollectionPayload = knowledgeCollectionPayload;
 
 const mapPayload = z
 	.object({
@@ -994,6 +1018,19 @@ const taskPayload = measureMonitoringBasePayload
 	})
 	.strict();
 
+const imagePayload = z
+	.object({
+		body: z.string().trim().optional(),
+		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.image),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialImagePayload = imagePayload.partial({ body: true, title: true });
+
 // Add teaser payload schema here:
 const teaserPayload = z
 	.object({
@@ -1103,6 +1140,28 @@ const colContentPayload = teaserPayload
 // For creating new empty teasers (title optional during creation)
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
+const contentPartnerPayload = basePayload
+	.extend({
+		image: z.string().url().optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.content_partner),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
+
+const contentPartnerCollectionPayload = z
+	.object({
+		title: z.string().readonly().default('Partners'),
+		type: z.literal(payloadTypes.enum.content_partner_collection),
+		listType: listTypes.default(listTypes.enum.list),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialContentPartnerCollectionPayload = contentPartnerCollectionPayload;
+
 const teaserCollectionPayload = z
 	.object({
 		title: z
@@ -1116,6 +1175,20 @@ const teaserCollectionPayload = z
 	.strict();
 
 const initialTeaserCollectionPayload = teaserCollectionPayload;
+
+const accordionCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('accordion')),
+		type: z.literal(payloadTypes.enum.accordion_collection),
+		listType: listTypes.default(listTypes.enum.accordion),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialAccordionCollectionPayload = accordionCollectionPayload;
 
 const initialTaskPayload = taskPayload.partial({ title: true });
 
@@ -1207,16 +1280,20 @@ const payload = z.discriminatedUnion('type', [
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
 	colContentPayload,
+	contentPartnerCollectionPayload,
+	contentPartnerPayload,
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
+	imagePayload,
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
+	knowledgeCollectionPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -1237,6 +1314,7 @@ const payload = z.discriminatedUnion('type', [
 	taskPayload,
 	teaserPayload,
 	teaserCollectionPayload,
+	accordionCollectionPayload,
 	teaserHighlightPayload,
 	textPayload
 ]);
@@ -1264,16 +1342,20 @@ const anyPayload = z.discriminatedUnion('type', [
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
 	colContentPayload,
+	contentPartnerCollectionPayload,
+	contentPartnerPayload,
 	customCollectionPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
+	imagePayload,
 	indicatorCollectionPayload,
 	indicatorPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
+	knowledgeCollectionPayload,
 	knowledgePayload,
 	mapPayload,
 	measureCollectionPayload,
@@ -1297,6 +1379,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	textPayload,
 	teaserPayload,
 	teaserCollectionPayload,
+	accordionCollectionPayload,
 	teaserHighlightPayload,
 	undefinedPayload
 ]);
@@ -1495,6 +1578,18 @@ export function isKnowledgeContainer(
 	container: AnyContainer | EmptyContainer
 ): container is KnowledgeContainer {
 	return container.payload.type === payloadTypes.enum.knowledge;
+}
+
+const knowledgeCollectionContainer = container.extend({
+	payload: knowledgeCollectionPayload
+});
+
+export type KnowledgeCollectionContainer = z.infer<typeof knowledgeCollectionContainer>;
+
+export function isKnowledgeCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is KnowledgeCollectionContainer {
+	return container.payload.type === payloadTypes.enum.knowledge_collection;
 }
 
 const mapContainer = container.extend({
@@ -1733,6 +1828,18 @@ export function isMeasureMonitoringContainer(
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
+// #image
+const imageContainer = container.extend({
+	payload: imagePayload
+});
+export type ImageContainer = z.infer<typeof imageContainer>;
+
+export function isImageContainer(
+	container: AnyContainer | EmptyContainer
+): container is ImageContainer {
+	return container.payload.type === payloadTypes.enum.image;
+}
+
 // #Teaser
 const teaserContainer = container.extend({
 	payload: teaserPayload
@@ -1770,6 +1877,31 @@ export function isTeaserHighlightContainer(
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
 
+// #ContentPartner
+const contentPartnerContainer = container.extend({
+	payload: contentPartnerPayload
+});
+
+export type ContentPartnerContainer = z.infer<typeof contentPartnerContainer>;
+
+export function isContentPartnerContainer(
+	container: AnyContainer | EmptyContainer
+): container is ContentPartnerContainer {
+	return container.payload.type === payloadTypes.enum.content_partner;
+}
+
+const contentPartnerCollectionContainer = container.extend({
+	payload: contentPartnerCollectionPayload
+});
+
+export type ContentPartnerCollectionContainer = z.infer<typeof contentPartnerCollectionContainer>;
+
+export function isContentPartnerCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ContentPartnerCollectionContainer {
+	return container.payload.type === payloadTypes.enum.content_partner_collection;
+}
+
 // #ColContent
 const colContentContainer = container.extend({
 	payload: colContentPayload
@@ -1801,6 +1933,18 @@ const teaserCollectionContainer = container.extend({
 
 export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
 
+const accordionCollectionContainer = container.extend({
+	payload: accordionCollectionPayload
+});
+
+export type AccordionCollectionContainer = z.infer<typeof accordionCollectionContainer>;
+
+export type CollectionContainer =
+	| AccordionCollectionContainer
+	| ContentPartnerCollectionContainer
+	| KnowledgeCollectionContainer
+	| TeaserCollectionContainer;
+
 export type TeaserLikeContainer =
 	| TeaserContainer
 	| InfoBoxContainer
@@ -1822,6 +1966,23 @@ export function isTeaserCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TeaserCollectionContainer {
 	return container.payload.type === payloadTypes.enum.teaser_collection;
+}
+
+export function isAccordionCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is AccordionCollectionContainer {
+	return container.payload.type === payloadTypes.enum.accordion_collection;
+}
+
+export function isCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is CollectionContainer {
+	return [
+		payloadTypes.enum.accordion_collection,
+		payloadTypes.enum.content_partner_collection,
+		payloadTypes.enum.knowledge_collection,
+		payloadTypes.enum.teaser_collection
+	].includes(container.payload.type as any);
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
@@ -1970,16 +2131,20 @@ export const emptyContainer = newContainer.extend({
 		initialAdministrativeAreaBasicDataPayload,
 		initialChapterPayload,
 		initialColContentPayload,
+		initialContentPartnerCollectionPayload,
+		initialContentPartnerPayload,
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
+		initialImagePayload,
 		initialIndicatorCollectionPayload,
 		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialInfoBoxPayload,
+		initialKnowledgeCollectionPayload,
 		initialKnowledgePayload,
 		initialMapPayload,
 		initialMeasureCollectionPayload,
@@ -2003,6 +2168,7 @@ export const emptyContainer = newContainer.extend({
 		initialTaskPayload,
 		initialTeaserPayload,
 		initialTeaserCollectionPayload,
+		initialAccordionCollectionPayload,
 		initialTeaserHighlightPayload,
 		initialUndefinedPayload
 	])

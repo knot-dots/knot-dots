@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
 	import EditableIndicatorDetailView from '$lib/components/EditableIndicatorDetailView.svelte';
@@ -23,6 +24,7 @@
 		audience,
 		computeFacetCount,
 		isContainerWithEffect,
+		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -158,7 +160,9 @@
 	/>
 {:else if relatedContainersPromise.current}
 	{@const relatedContainers = relatedContainersPromise.current}
-	{#if isEffectContainer(container)}
+	{#if isContentPartnerContainer(container)}
+		<EditableContentPartnerDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isEffectContainer(container)}
 		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isGoalContainer(container)}
 		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />

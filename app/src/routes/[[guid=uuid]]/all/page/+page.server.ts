@@ -57,11 +57,17 @@ export const load = (async ({ depends, locals, parent }) => {
 				[predicates.enum['is-section-of']],
 				{
 					type: [
+						payloadTypes.enum.accordion_collection,
 						payloadTypes.enum.chapter,
 						payloadTypes.enum.col_content,
+						payloadTypes.enum.content_partner,
+						payloadTypes.enum.content_partner_collection,
+						payloadTypes.enum.knowledge,
+						payloadTypes.enum.knowledge_collection,
 						payloadTypes.enum.file_collection,
 						payloadTypes.enum.indicator_collection,
 						payloadTypes.enum.info_box,
+						payloadTypes.enum.image,
 						payloadTypes.enum.map,
 						payloadTypes.enum.measure_collection,
 						payloadTypes.enum.administrative_area_basic_data,

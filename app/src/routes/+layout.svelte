@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
+	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
 
@@ -39,3 +40,4 @@
 {@render children()}
 
 <SignupDialog bind:dialog />
+<UppyDashboardService />

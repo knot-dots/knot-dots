@@ -3,9 +3,10 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
+	import Briefcase from '~icons/flowbite/briefcase-solid';
+	import Book from '~icons/flowbite/book-solid';
 	import File from '~icons/flowbite/file-solid';
 	import Quote from '~icons/flowbite/quote-solid';
-	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
 	import BasicData from '~icons/knotdots/basic-data';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
@@ -15,16 +16,17 @@
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
+	import Image from '~icons/knotdots/placeholder-image';
 	import Map from '~icons/knotdots/map';
 	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
 	import Star from '~icons/knotdots/star';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
-	import Teaser from '~icons/knotdots/basic-data';
 	import Tiles from '~icons/knotdots/tiles';
 	import TwoCol from '~icons/knotdots/two-column';
 	import Link from '~icons/knotdots/link';
+	import Collection from '~icons/knotdots/collection';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
@@ -33,13 +35,14 @@
 		boards,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
+		isContentPartnerCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isIndicatorCollectionContainer,
+		isKnowledgeCollectionContainer,
 		isMapContainer,
-		isTeaserContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
@@ -148,12 +151,41 @@
 	);
 
 	let mayAddTeaserCollection = $derived(
-		createFeatureDecisions(page.data.features).useTeaser() &&
+		createFeatureDecisions(page.data.features).useTeaserCollection() &&
 			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddContentPartnerCollection = $derived(
+		createFeatureDecisions(page.data.features).useContentPartner() &&
+			(isOrganizationContainer(parentContainer) ||
+				isOrganizationalUnitContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
+	);
+
+	let mayAddKnowledgeCollection = $derived(
+		createFeatureDecisions(page.data.features).useKnowledge() &&
+			(isOrganizationContainer(parentContainer) ||
+				isOrganizationalUnitContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isKnowledgeCollectionContainer)
 	);
 
 	let mayAddTeaserSection = $derived(
 		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddInfoBox = $derived(
+		createFeatureDecisions(page.data.features).useInfoBox() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddQuote = $derived(
+		createFeatureDecisions(page.data.features).useQuote() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddTwoColumnSection = $derived(
+		createFeatureDecisions(page.data.features).useTwoColumn() &&
 			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
 	);
 
@@ -169,6 +201,11 @@
 	let mayAddCustomCollection = $derived(
 		createFeatureDecisions(page.data.features).useCustomCollection() &&
 			isReportContainer(parentContainer)
+	);
+
+	let mayAddImage = $derived(
+		createFeatureDecisions(page.data.features).useImage() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
 	);
 
 	let options = $derived(
@@ -294,10 +331,20 @@
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
+			...(mayAddImage ? [{ icon: Image, label: $_('image'), value: payloadTypes.enum.image }] : []),
 			...(mayAddTeaserCollection
 				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
 				: []),
-			...(mayAddTeaserSection
+			...(mayAddTeaserCollection
+				? [
+						{
+							icon: Collection,
+							label: $_('accordion'),
+							value: payloadTypes.enum.accordion_collection
+						}
+					]
+				: []),
+			...(mayAddTwoColumnSection
 				? [{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content }]
 				: []),
 			...(mayAddTeaserSection
@@ -306,18 +353,40 @@
 			...(mayAddTeaserSection
 				? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
 				: []),
-			...(mayAddTeaserSection
+			...(mayAddInfoBox
 				? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
 				: []),
-			...(mayAddTeaserSection
-				? [{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }]
+			...(mayAddQuote ? [{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }] : []),
+			...(mayAddContentPartnerCollection
+				? [
+						{
+							icon: Briefcase,
+							label: $_('partners'),
+							value: payloadTypes.enum.content_partner_collection
+						}
+					]
+				: []),
+			...(mayAddKnowledgeCollection
+				? [
+						{
+							icon: Book,
+							label: $_('knowledge'),
+							value: payloadTypes.enum.knowledge_collection
+						}
+					]
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
-	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
+	<button
+		class="dropdown-button"
+		onchange={handleAddSection}
+		type="button"
+		{@attach tooltip($_('add_section'))}
+		use:menu.button
+	>
 		<Plus />
 		<span class:is-visually-hidden={compact}>{$_('add_section')}</span>
 	</button>

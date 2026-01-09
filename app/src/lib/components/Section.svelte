@@ -10,6 +10,10 @@
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
+	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
+	import EditableContentPartnerSection from '$lib/components/EditableContentPartnerSection.svelte';
+	import EditableContentPartnerCollection from '$lib/components/EditableContentPartnerCollection.svelte';
+	import EditableKnowledgeCollection from '$lib/components/EditableKnowledgeCollection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
@@ -32,8 +36,13 @@
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
+		isAccordionCollectionContainer,
 		isGoalContainer,
+		isImageContainer,
+		isContentPartnerContainer,
+		isContentPartnerCollectionContainer,
 		isIndicatorCollectionContainer,
+		isKnowledgeCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isObjectiveCollectionContainer,
@@ -162,8 +171,40 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
+		{:else if isImageContainer(container)}
+			<EditableImageSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isContentPartnerCollectionContainer(container)}
+			<EditableContentPartnerCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isContentPartnerContainer(container)}
+			<EditableContentPartnerSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isKnowledgeCollectionContainer(container)}
+			<EditableKnowledgeCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
@@ -242,7 +283,15 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isTeaserCollectionContainer(container)}
+		{:else if isImageContainer(container)}
+			<EditableImageSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isTeaserCollectionContainer(container) || isAccordionCollectionContainer(container)}
 			<EditableTeaserCollection
 				bind:container
 				bind:parentContainer

@@ -1,16 +1,16 @@
 <script lang="ts">
+	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
-	import { type AnyContainer, type Container, type KnowledgeContainer } from '$lib/models';
+	import Sections from '$lib/components/Sections.svelte';
+	import type { AnyContainer, Container, ContentPartnerContainer } from '$lib/models';
+	import ContentPartnerProperties from './ContentPartnerProperties.svelte';
 	import { ability, applicationState } from '$lib/stores';
-	import Sections from './Sections.svelte';
 
 	interface Props {
-		container: KnowledgeContainer;
+		container: ContentPartnerContainer;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
@@ -20,21 +20,12 @@
 
 <EditableContainerDetailView bind:container>
 	{#snippet data()}
-		<KnowledgeProperties
+		<ContentPartnerProperties
 			bind:container
 			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
-
-		{#key container.guid}
-			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				bind:value={container.payload.description}
-			/>
-		{/key}
-
 		<Sections bind:container {relatedContainers} />
 	{/snippet}
 </EditableContainerDetailView>
@@ -42,6 +33,7 @@
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
 		<RelationButton {container} />
+		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
 		<DeleteButton {container} {relatedContainers} />
 	</div>

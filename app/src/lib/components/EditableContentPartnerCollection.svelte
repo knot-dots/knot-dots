@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import TeaserCard from '$lib/components/TeaserCard.svelte';
+	import ContentPartnerCard from '$lib/components/ContentPartnerCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
 	import Accordion from '$lib/components/Accordion.svelte';
 	import List from '$lib/components/List.svelte';
@@ -14,17 +14,17 @@
 		type AnyContainer,
 		containerOfType,
 		predicates,
-		type TeaserContainer,
-		type TeaserCollectionContainer,
+		type ContentPartnerContainer,
+		type ContentPartnerCollectionContainer,
 		type NewContainer,
-		payloadTypes,
-		type AccordionCollectionContainer
+		payloadTypes
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import { ability } from '$lib/stores';
+	import type { Attachment } from 'svelte/attachments';
 
 	interface Props {
-		container: TeaserCollectionContainer | AccordionCollectionContainer;
+		container: ContentPartnerCollectionContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
@@ -39,12 +39,12 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let teaserRequest = $derived(
+	let contentPartnerRequest = $derived(
 		fetchRelatedContainers(container.guid, {
-			payloadType: [payloadTypes.enum.teaser],
+			payloadType: [payloadTypes.enum.content_partner],
 			relationType: [predicates.enum['is-part-of']]
 		})
-	) as Promise<TeaserContainer[]>;
+	) as Promise<ContentPartnerContainer[]>;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -56,7 +56,7 @@
 		}
 
 		const item = containerOfType(
-			payloadTypes.enum.teaser,
+			payloadTypes.enum.content_partner,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,
@@ -78,6 +78,12 @@
 
 		createContainerDialog.getElement().showModal();
 	}
+
+	const init: Attachment = (element) => {
+		if (container.payload.title == '') {
+			(element as HTMLElement).focus();
+		}
+	};
 </script>
 
 <header>
@@ -91,6 +97,7 @@
 			role="textbox"
 			tabindex="0"
 			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+			{@attach init}
 		></svelte:element>
 	{:else}
 		<svelte:element this={heading} class="details-heading" contenteditable="false">
@@ -103,7 +110,7 @@
 			<li>
 				<ContainerModeDropdown bind:container bind:relatedContainers />
 			</li>
-			{#if $mayCreateContainer(payloadTypes.enum.teaser, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.content_partner, container.managed_by)}
 				<li>
 					<button
 						aria-label={$_('add_item')}
@@ -123,45 +130,49 @@
 	{/if}
 </header>
 
-{#await teaserRequest then items}
+{#await contentPartnerRequest then items}
 	{#if container.payload.listType === 'list'}
 		<List
 			{addItem}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.content_partner, container.managed_by) &&
+				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} maxSummaryLength={200} />
+				<ContentPartnerCard container={item} {editable} />
 			{/snippet}
 		</List>
 	{:else if container.payload.listType === 'wall'}
 		<Wall
 			{addItem}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.content_partner, container.managed_by) &&
+				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} maxSummaryLength={100} />
+				<ContentPartnerCard container={item} {editable} />
 			{/snippet}
 		</Wall>
 	{:else if container.payload.listType === 'accordion'}
 		<Accordion
 			{addItem}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.content_partner, container.managed_by) &&
+				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} maxSummaryLength={1000} />
+				<ContentPartnerCard container={item} {editable} />
 			{/snippet}
 		</Accordion>
 	{:else}
 		<Carousel
 			{addItem}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.content_partner, container.managed_by) &&
+				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<TeaserCard container={item} {editable} maxSummaryLength={100} />
+				<ContentPartnerCard container={item} {editable} />
 			{/snippet}
 		</Carousel>
 	{/if}

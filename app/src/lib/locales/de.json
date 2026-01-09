@@ -1,5 +1,6 @@
 {
 	"about": "knot dots",
+	"accordion": "Akkordeon",
 	"active_filters": "{count, plural, one {1 aktiv} other {# aktiv}}",
 	"add_cover": "Cover hinzufügen",
 	"add_item": "Hinzufügen",
@@ -94,6 +95,7 @@
 	"custom_collection.dialog.cancel": "Abbrechen und schließen",
 	"custom_collection.dialog.select": "Auswählen",
 	"custom_collection.dialog.title": "Objekte auswählen",
+	"date": "Datum",
 	"days_ago": "{daysAgo, plural, one {# Tag} other {# Tage}}",
 	"delete": "Löschen",
 	"delete.name": "{name} löschen",
@@ -178,12 +180,14 @@
 	"goal_type.vision.plural": "Visionen",
 	"goals": "Ziele",
 	"parent_object": "Übergeordnetes Objekt",
+	"partners": "Inhaltepartner",
 	"goals_and_measure_results_and_milestones": "Ziele, Maßnahmenergebnisse, Meilensteine",
 	"goals_by_hierarchy_level": "Zielebene {level}",
 	"help": "Hilfe",
 	"highlight": "Hervorheben",
 	"home": "Startseite",
 	"homepage": "Homepage",
+	"image": "Bild",
 	"import.csv_file": "CSV-Datei",
 	"import.error.invalid_record": "Fehler in Zeile {line}: {errors}",
 	"import.error.missing": "Die CSV-Datei fehlt",
@@ -264,6 +268,18 @@
 		"submit": "Einladung abschicken"
 	},
 	"knowledge": "Wissen",
+	"knowledge.category": "Kategorie",
+	"knowledge.category.publication": "Publikation",
+	"knowledge.category.tool": "Tool",
+	"knowledge.category.best_practise": "Praxisbeispiel",
+	"knowledge.content_partner": "Inhaltepartner",
+	"knowledge.tags": "Art",
+	"knowledge.tags.measure": "Maßnahme",
+	"knowledge.tags.recommendation": "Empfehlung",
+	"knowledge.tags.goal": "Ziel",
+	"knowledge.tags.report": "Bericht",
+	"knowledge.tags.xlsx": "Excel",
+	"knowledge.tags.app": "App",
 	"knowledge.level": "Ebene {level}",
 	"label": {
 		"unit": "Einheit"
@@ -283,6 +299,7 @@
 		"button": "Button"
 	},
 	"list_type": {
+		"accordion": "Akkordeon",
 		"carousel": "Karussell",
 		"wall": "Kacheln",
 		"list": "Liste"
@@ -454,6 +471,7 @@
 		"selected_is_superordinate_of_dragged": "„{selected}“ ist … übergeordnet"
 	},
 	"relations": "Beziehungen",
+	"remove_cover": "Cover entfernen",
 	"report": "Bericht",
 	"report_section": "Abschnitt",
 	"resource": "Ressource",
