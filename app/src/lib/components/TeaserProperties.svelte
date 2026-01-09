@@ -43,6 +43,7 @@
 			{editable}
 			label={$_('upload.image.choose')}
 			bind:value={container.payload.image}
+			bind:altAttribute={container.payload.imageAltText}
 		/>
 
 		<AuthoredBy {container} {revisions} />
@@ -55,6 +56,13 @@
 			{editable}
 			label={$_('teaser.link_caption')}
 			bind:value={container.payload.linkCaption}
+		/>
+
+		<EditableImage
+			{editable}
+			label={$_('upload.image.choose')}
+			bind:value={container.payload.image}
+			bind:altAttribute={container.payload.imageAltText}
 		/>
 
 		<EditableAudience {editable} bind:value={container.payload.audience} />

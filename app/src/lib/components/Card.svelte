@@ -299,7 +299,10 @@
 		{:else if isContentPartnerContainer(container)}
 			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>
 				{#if 'image' in container.payload && container.payload.image}
-					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+					<img
+						alt={container.payload.imageAltText || $_('cover_image')}
+						src={transformFileURL(container.payload.image)}
+					/>
 				{:else}
 					<header>
 						<h3>
@@ -319,7 +322,10 @@
 		{:else if isTeaserContainer(container)}
 			{#if 'image' in container.payload && container.payload.image}
 				<p>
-					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+					<img
+						alt={container.payload.imageAltText || $_('cover_image')}
+						src={transformFileURL(container.payload.image)}
+					/>
 				</p>
 			{/if}
 			{#if !isQuoteContainer(container)}
@@ -346,7 +352,10 @@
 					: ''}
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+			<img
+				alt={container.payload.imageAltText || $_('cover_image')}
+				src={transformFileURL(container.payload.image)}
+			/>
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}

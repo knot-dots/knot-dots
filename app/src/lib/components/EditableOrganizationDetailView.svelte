@@ -44,7 +44,11 @@
 
 {#if container.payload.cover}
 	<div class="cover-section">
-		<img alt={$_('logo')} class="cover" src={transformFileURL(container.payload.cover)} />
+		<img
+			class="cover"
+			src={transformFileURL(container.payload.cover)}
+			alt={container.payload.imageAltText || 'Bühne'}
+		/>
 	</div>
 {/if}
 <article>
@@ -60,6 +64,7 @@
 						editable={$applicationState.containerDetailView.editable}
 						label={$_('add_cover')}
 						bind:value={container.payload.cover}
+						bind:altAttribute={container.payload.imageAltText}
 					/>
 					<ColorDropdown
 						buttonStyle="button"

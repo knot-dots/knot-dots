@@ -10,9 +10,15 @@
 		editable?: boolean;
 		label: string;
 		value: string | undefined;
+		altAttribute?: string;
 	}
 
-	let { editable = false, label, value = $bindable() }: Props = $props();
+	let {
+		editable = false,
+		label,
+		value = $bindable(),
+		altAttribute = $bindable()
+	}: Props = $props();
 
 	let uploadInProgress = $state(false);
 	const id = crypto.randomUUID();
@@ -30,7 +36,7 @@
 			{#if uploadInProgress}
 				<span class="loader"></span>
 			{:else if value}
-				<img alt={$_('image')} src={transformFileURL(value)} />
+				<img alt={altAttribute || $_('image')} src={transformFileURL(value)} />
 				<button
 					class="button button-remove"
 					onclick={remove}
@@ -44,6 +50,7 @@
 
 		<UppyImageUploader
 			bind:value
+			bind:altAttribute
 			{label}
 			{id}
 			mode="input"
@@ -54,21 +61,36 @@
 				}
 			}}
 		/>
-
 		<p class="help">{$_('upload.image.help')}</p>
+	</div>
+
+	<label class="label" for="{id}-alt">{$_('image.alt_text')}</label>
+	<div>
+		<input
+			class="alt-input"
+			id="{id}-alt"
+			type="text"
+			bind:value={altAttribute}
+			placeholder={$_('image.alt_text_placeholder')}
+		/>
 	</div>
 {:else}
 	<span class="label">{label}</span>
 	<div>
 		<span class="value">
 			{#if value}
-				<img alt={$_('image')} src={transformFileURL(value)} />
+				<img alt={altAttribute || $_('image')} src={transformFileURL(value)} />
 			{:else}
 				{$_('empty')}
 			{/if}
 		</span>
 
 		<p class="help">{$_('upload.image.help')}</p>
+	</div>
+
+	<label class="label" for="{id}-alt">{$_('image.alt_text')}</label>
+	<div class="value">
+		{altAttribute || $_('empty')}
 	</div>
 {/if}
 
@@ -141,5 +163,20 @@
 		100% {
 			transform: rotate(360deg);
 		}
+	}
+
+	.alt-input {
+		flex-basis: 100%;
+		border: 1px solid var(--color-gray-300, #d1d5db);
+		border-radius: 4px;
+		padding: 0.375rem 0.5rem;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		background-color: var(--form-control-background);
+	}
+
+	.alt-input:focus {
+		outline: 2px solid var(--color-primary, #3b82f6);
+		outline-offset: 2px;
 	}
 </style>

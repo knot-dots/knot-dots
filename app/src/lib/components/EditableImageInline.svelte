@@ -8,10 +8,16 @@
 	interface Props {
 		editable?: boolean;
 		label: string;
+		altAttribute?: string;
 		value: string | undefined;
 	}
 
-	let { editable = false, label, value = $bindable() }: Props = $props();
+	let {
+		editable = false,
+		label,
+		value = $bindable(),
+		altAttribute = $bindable()
+	}: Props = $props();
 
 	const id = crypto.randomUUID();
 
@@ -36,14 +42,20 @@
 	<UppyImageUploader bind:value {label} mode="placeholder" {onSuccess} />
 {:else if value}
 	{#if editable}
-		<img use:popover.button alt={$_('logo')} class="logo" src={transformFileURL(value)} />
+		<img
+			use:popover.button
+			alt={altAttribute || $_('logo')}
+			class="logo"
+			src={transformFileURL(value)}
+		/>
 	{:else}
-		<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
+		<img alt={altAttribute || $_('logo')} class="logo" src={transformFileURL(value)} />
 	{/if}
 	{#if $popover.expanded}
 		<div class="dropdown-panel" use:popperContent use:popover.panel>
 			<UppyImageUploader
 				bind:value
+				bind:altAttribute
 				{label}
 				class="inline-uploader"
 				mode="button"

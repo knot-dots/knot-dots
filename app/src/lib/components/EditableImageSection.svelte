@@ -56,4 +56,9 @@
 	{/if}
 </header>
 
-<EditableImageInline {editable} label={$_('image')} bind:value={container.payload.image} />
+<EditableImageInline
+	{editable}
+	label={$_('image')}
+	bind:value={container.payload.image}
+	bind:altAttribute={container.payload.imageAltText}
+/>

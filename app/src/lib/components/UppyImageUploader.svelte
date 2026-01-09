@@ -14,6 +14,8 @@
 
 	interface Props {
 		value: string | undefined;
+		altAttribute?: string;
+		hideAltAttribute?: boolean;
 		label?: string;
 		allowedFileTypes?: string[];
 		aspectRatio?: number;
@@ -25,6 +27,8 @@
 
 	let {
 		value = $bindable(),
+		altAttribute = $bindable(),
+		hideAltAttribute = false,
 		label = '',
 		allowedFileTypes = ['image/png', 'image/jpeg', 'image/svg+xml'],
 		aspectRatio = 1,
@@ -154,10 +158,22 @@
 
 {#if mode === 'button'}
 	{#if value}
-		<button class={className} onclick={removeImage} type="button">
-			<TrashBin />
-			{$_('upload.image.remove')}
-		</button>
+		<div class="uppy-button-group">
+			<button class={className} onclick={removeImage} type="button">
+				<TrashBin />
+				{$_('upload.image.remove')}
+			</button>
+
+			{#if !hideAltAttribute}
+				<input
+					class="alt-input"
+					id="{id}-alt"
+					type="text"
+					bind:value={altAttribute}
+					placeholder={$_('image.alt_text_placeholder')}
+				/>
+			{/if}
+		</div>
 	{:else}
 		<button class={className || 'button button-upload'} onclick={triggerOpen} type="button">
 			{#if uploadInProgress}
@@ -187,6 +203,38 @@
 {/if}
 
 <style>
+	.uppy-button-group {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.image-action-container {
+		position: relative;
+	}
+
+	.alt-text-container {
+		position: absolute;
+		margin-top: 1rem;
+		left: 0;
+		top: 1rem;
+		z-index: 10;
+	}
+
+	.alt-input {
+		border: 1px solid var(--color-gray-300, #d1d5db);
+		border-radius: 4px;
+		padding: 0.375rem 0.5rem;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		background-color: var(--form-control-background);
+	}
+
+	.alt-input:focus {
+		outline: 2px solid var(--color-primary, #3b82f6);
+		outline-offset: 2px;
+	}
+
 	.placeholder {
 		padding: 1rem;
 		background-color: var(--color-gray-050);

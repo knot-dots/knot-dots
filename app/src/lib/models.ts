@@ -618,6 +618,7 @@ const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPay
 const chapterPayload = basePayload
 	.extend({
 		image: z.url().optional(),
+		imageAltText: z.string().optional(),
 		number: z.string(),
 		type: z.literal(payloadTypes.enum.chapter)
 	})
@@ -911,6 +912,7 @@ const programPayload = basePayload
 	.extend({
 		chapterType: z.array(payloadTypes).default(chapterTypeOptions),
 		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
 		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		programStatus: programStatus.default(programStatus.enum['program_status.idea']),
@@ -1143,6 +1145,7 @@ const initialColContentPayload = colContentPayload.partial({ title: true });
 const contentPartnerPayload = basePayload
 	.extend({
 		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.content_partner),
 		visibility: visibility.default(visibility.enum['organization'])
@@ -1212,6 +1215,7 @@ const organizationPayload = z.object({
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	image: z.string().url().optional(),
+	imageAltText: z.string().optional(),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
@@ -1230,6 +1234,7 @@ const organizationalUnitPayload = z.object({
 	federalState: z.string().optional(),
 	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
+	imageAltText: z.string().optional(),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
 	nameBBSR: z.string().optional(),
