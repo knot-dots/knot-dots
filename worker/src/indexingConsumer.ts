@@ -66,10 +66,12 @@ process.on('SIGTERM', () => {
 async function fetchContainerRow(guid: string) {
   const pool = await getPool();
   const row = await pool.maybeOne<any>(sql.unsafe`
-    SELECT * FROM container
-    WHERE guid = ${guid}
-      AND valid_currently
-      AND NOT deleted
+    SELECT c.*, tp.priority
+    FROM container c
+    LEFT JOIN task_priority tp ON tp.task = c.guid
+    WHERE c.guid = ${guid}
+      AND c.valid_currently
+      AND NOT c.deleted
   `);
   return row as any;
 }
@@ -92,6 +94,8 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
       const doc = toDoc({
         guid: row.guid,
         revision: row.revision,
+        valid_from: row.valid_from,
+        priority: row.priority,
         realm: row.realm,
         organization: String(row.organization),
         organizational_unit: row.organizational_unit ?? null,

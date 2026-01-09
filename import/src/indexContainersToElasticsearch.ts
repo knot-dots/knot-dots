@@ -9,6 +9,8 @@ import { createIndexWithMappings, toDoc } from '../shared/indexing';
 interface Row {
   guid: string;
   revision: number;
+  valid_from: string;
+  priority: number | null;
   realm: string;
   organization: string;
   organizational_unit: string | null;
@@ -39,11 +41,12 @@ async function* fetchContainers(batchSize = 500) {
   // We paginate by guid; it is indexed in migrations (container_guid_idx)
   for (;;) {
     const rows = (await pool.any(sql.unsafe`
-      SELECT guid, revision, realm, organization::text, organizational_unit::text, managed_by::text, payload
-      FROM container
+      SELECT c.guid, c.revision, c.valid_from, tp.priority, c.realm, c.organization::text, c.organizational_unit::text, c.managed_by::text, c.payload
+      FROM container c
+      LEFT JOIN task_priority tp ON tp.task = c.guid
       WHERE deleted = false
         AND valid_currently
-        AND (payload ->> 'type') IN (
+        AND (c.payload ->> 'type') IN (
           'effect',
           'goal',
           'indicator',
@@ -60,8 +63,8 @@ async function* fetchContainers(batchSize = 500) {
           'simple_measure',
           'task'
         )
-        AND (${lastGuid ? sql.fragment`guid > ${lastGuid}::uuid` : sql.fragment`true`})
-      ORDER BY guid
+        AND (${lastGuid ? sql.fragment`c.guid > ${lastGuid}::uuid` : sql.fragment`true`})
+      ORDER BY c.guid
       LIMIT ${batchSize}
     `)) as unknown as Row[];
  

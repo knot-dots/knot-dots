@@ -37,6 +37,8 @@ export function createIndexWithMappings(client: Client, index: string) {
       properties: {
         guid: { type: 'keyword' },
         revision: { type: 'integer' },
+        validFrom: { type: 'date' },
+        priority: { type: 'integer' },
         realm: { type: 'keyword' },
         organization: { type: 'keyword' },
         organizationalUnit: { type: 'keyword' },
@@ -117,12 +119,15 @@ export function normalizePayload(payload: any) {
 export function toDoc(row: {
   guid: string; revision: number; realm: string; organization: string;
   organizational_unit?: string | null; managed_by: string; payload: any;
+  valid_from?: string | Date | null; priority?: number | null;
 }) {
   const normalized = normalizePayload(row.payload || {});
   const type: string | undefined = normalized?.type;
   const title: string | undefined = normalized?.title ?? normalized?.name;
   const description: string | undefined = normalized?.description;
   const visibility: string | undefined = normalized?.visibility;
+  const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
+  const priority = row.priority ?? undefined;
 
   const mapLabels = (arr?: string[]) => (arr || []).map(resolveLabel).filter(Boolean) as string[];
   const topicLabels = mapLabels(normalized.topic);
@@ -145,6 +150,8 @@ export function toDoc(row: {
     type,
     title,
     visibility,
+    validFrom,
+    priority,
     payload: normalized,
     category_labels: categoryLabels,
     topic_labels: topicLabels,
