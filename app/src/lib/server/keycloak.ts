@@ -146,6 +146,20 @@ export async function createGroup(name: string) {
 	return z.string().uuid().parse(response.headers.get('Location')?.split('/').pop());
 }
 
+export async function deleteGroup(id: string) {
+	const token = await getToken();
+	const response = await fetch(
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups/${id}`,
+		{
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			method: 'DELETE'
+		}
+	);
+	if (!response.ok) {
+		throw new Error(`Failed to delete group in realm. Keycloak responded with ${response.status}`);
+	}
+}
+
 export async function getMembers(group: string) {
 	const token = await getToken();
 	const response = await fetch(

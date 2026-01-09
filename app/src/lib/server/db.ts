@@ -37,7 +37,7 @@ import {
 import { createFeatureDecisions } from '$lib/features';
 import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
-import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
+import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -271,6 +271,10 @@ export function updateContainer(container: ModifiedContainer) {
 export function deleteContainer(container: AnyContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
+			if (container.payload.type === payloadTypes.enum.organization) {
+				await deleteGroup(container.guid);
+			}
+
 			const sections = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
