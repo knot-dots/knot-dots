@@ -97,6 +97,7 @@
 				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					<button class="action-button" onclick={() => dialog.showModal()} type="button">
 						<Ellipsis />
+						<span class="is-visually-hidden">{$_('organizational_unit.properties.title')}</span>
 					</button>
 				{/if}
 			</header>
