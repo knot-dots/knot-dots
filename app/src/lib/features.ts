@@ -6,6 +6,10 @@ export const featureFlags = new Map([
 			'AI',
 			'Elasticsearch',
 			'Teaser',
+			'TeaserCollection',
+			'InfoBox',
+			'Quote',
+			'TwoColumn',
 			'Stage',
 			'Image',
 			'ContentPartner',
@@ -40,6 +44,18 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useTeaser() {
 			return features.includes('Teaser');
+		},
+		useTeaserCollection() {
+			return features.includes('TeaserCollection');
+		},
+		useInfoBox() {
+			return features.includes('InfoBox');
+		},
+		useQuote() {
+			return features.includes('Quote');
+		},
+		useTwoColumn() {
+			return features.includes('TwoColumn');
 		},
 		useImage() {
 			return features.includes('Image');
