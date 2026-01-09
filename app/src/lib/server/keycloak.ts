@@ -206,6 +206,10 @@ function urlFromGuid(guid: string) {
 }
 
 export async function updateAccessSettings(guid: string) {
+	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
+		return;
+	}
+
 	const token = await getToken();
 
 	const getResponse = await fetch(

@@ -41,6 +41,10 @@ async function deleteContainer(context: BrowserContext, container: AnyContainer)
 	});
 }
 
+async function inviteUser(context: BrowserContext, email: string, container: AnyContainer) {
+	await context.request.post(`/user`, { data: { email, container } });
+}
+
 export const test = base.extend<{}, MyWorkerFixtures>({
 	adminContext: [
 		async ({ browser }, use, workerInfo) => {
@@ -81,6 +85,7 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 					boards: ['board.organizational_units']
 				}
 			});
+			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);
 
 			await use(testOrganization);
 
@@ -89,12 +94,12 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 		{ scope: 'worker' }
 	],
 	testProgram: [
-		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
 			const newProgram = containerOfType(
 				payloadTypes.enum.program,
-				defaultOrganization.guid,
+				testOrganization.guid,
 				null,
-				defaultOrganization.guid,
+				testOrganization.guid,
 				'knot-dots'
 			) as ProgramContainer;
 			const testProgram = await createContainer(adminContext, {
@@ -109,12 +114,12 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 		{ scope: 'worker' }
 	],
 	testGoal: [
-		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
 			const newGoal = containerOfType(
 				payloadTypes.enum.goal,
-				defaultOrganization.guid,
+				testOrganization.guid,
 				null,
-				defaultOrganization.guid,
+				testOrganization.guid,
 				'knot-dots'
 			) as GoalContainer;
 			const testGoal = await createContainer(adminContext, {
@@ -129,12 +134,12 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 		{ scope: 'worker' }
 	],
 	testMeasure: [
-		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
 			const newMeasure = containerOfType(
 				payloadTypes.enum.measure,
-				defaultOrganization.guid,
+				testOrganization.guid,
 				null,
-				defaultOrganization.guid,
+				testOrganization.guid,
 				'knot-dots'
 			) as MeasureContainer;
 			const testMeasure = await createContainer(adminContext, {
