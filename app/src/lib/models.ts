@@ -618,6 +618,7 @@ const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPay
 const chapterPayload = basePayload
 	.extend({
 		image: z.url().optional(),
+		imageAltText: z.string().optional(),
 		number: z.string(),
 		type: z.literal(payloadTypes.enum.chapter)
 	})
@@ -911,6 +912,7 @@ const programPayload = basePayload
 	.extend({
 		chapterType: z.array(payloadTypes).default(chapterTypeOptions),
 		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
 		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		programStatus: programStatus.default(programStatus.enum['program_status.idea']),
@@ -1143,6 +1145,7 @@ const initialColContentPayload = colContentPayload.partial({ title: true });
 const contentPartnerPayload = basePayload
 	.extend({
 		image: z.string().url().optional(),
+		imageAltText: z.string().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.content_partner),
 		visibility: visibility.default(visibility.enum['organization'])
@@ -1212,6 +1215,7 @@ const organizationPayload = z.object({
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	image: z.string().url().optional(),
+	imageAltText: z.string().optional(),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
@@ -1230,6 +1234,7 @@ const organizationalUnitPayload = z.object({
 	federalState: z.string().optional(),
 	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
+	imageAltText: z.string().optional(),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
 	nameBBSR: z.string().optional(),
@@ -2581,45 +2586,45 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
-				const included = url.searchParams.has('includedChanged')
-					? url.searchParams.getAll('included')
-					: ['subordinate_organizational_units'];
+			const included = url.searchParams.has('includedChanged')
+				? url.searchParams.getAll('included')
+				: ['subordinate_organizational_units'];
 
-				if (c.organizational_unit == currentOrganizationalUnit?.guid) {
-					return true;
-				}
+			if (c.organizational_unit == currentOrganizationalUnit?.guid) {
+				return true;
+			}
 
-				if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
-					return true;
-				}
+			if (included.includes('subordinate_organizational_units') && !currentOrganizationalUnit) {
+				return true;
+			}
 
-				if (
-					included.includes('subordinate_organizational_units') &&
-					c.organizational_unit != null &&
-					subordinateOrganizationalUnits.includes(c.organizational_unit)
-				) {
-					return true;
-				}
+			if (
+				included.includes('subordinate_organizational_units') &&
+				c.organizational_unit != null &&
+				subordinateOrganizationalUnits.includes(c.organizational_unit)
+			) {
+				return true;
+			}
 
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit == null
-				) {
-					return true;
-				}
+			if (
+				included.includes('superordinate_organizational_units') &&
+				c.organizational_unit == null
+			) {
+				return true;
+			}
 
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit != null &&
-					!subordinateOrganizationalUnits
-						.filter((ou) => ou != currentOrganizationalUnit?.guid)
-						.includes(c.organizational_unit)
-				) {
-					return true;
-				}
+			if (
+				included.includes('superordinate_organizational_units') &&
+				c.organizational_unit != null &&
+				!subordinateOrganizationalUnits
+					.filter((ou) => ou != currentOrganizationalUnit?.guid)
+					.includes(c.organizational_unit)
+			) {
+				return true;
+			}
 
-				return false;
-			});
+			return false;
+		});
 }
 
 export function filterMembers<T extends AnyContainer>(containers: T[], members: string[]) {
