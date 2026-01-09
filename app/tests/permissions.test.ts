@@ -107,7 +107,7 @@ test.describe('Permissions', () => {
 			await page.getByTitle(suborgTitle).click();
 			await page.getByLabel('edit mode').check();
 			await page.getByRole('button', { name: 'Settings' }).click();
-			await page.getByRole('button', { name: `${suborgTitle} löschen` }).click();
+			await page.getByRole('button', { name: `Delete ${suborgTitle}` }).click();
 			await page.getByRole('button', { name: `I want to delete "${suborgTitle}` }).click();
 			await page.goto('/');
 			await expect(page.getByTitle(suborgTitle)).not.toBeAttached();
@@ -115,7 +115,7 @@ test.describe('Permissions', () => {
 			await page.getByTitle(suborg2Title).click();
 			await page.getByLabel('edit mode').check();
 			await page.getByRole('button', { name: 'Settings' }).click();
-			await page.getByRole('button', { name: `${suborg2Title} löschen` }).click();
+			await page.getByRole('button', { name: `Delete ${suborg2Title}` }).click();
 			await page.getByRole('button', { name: `I want to delete "${suborg2Title}` }).click();
 			await expect(page.getByTitle(suborg2Title)).not.toBeAttached();
 		});
