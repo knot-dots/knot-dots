@@ -4,6 +4,19 @@ import type { Container, PayloadType } from '$lib/models';
 import { withUserAndRelation, sql } from './db';
 import { env as privateEnv } from '$env/dynamic/private';
 
+function buildElasticsearchSortClause(sort: string) {
+	if (sort === 'modified') {
+		return [{ validFrom: { order: 'desc', unmapped_type: 'date' } }, { guid: { order: 'asc' } }];
+	}
+	if (sort === 'priority') {
+		return [
+			{ priority: { order: 'asc', missing: '_last', unmapped_type: 'integer' } },
+			{ guid: { order: 'asc' } }
+		];
+	}
+	return [{ 'title.keyword': { order: 'asc', missing: '_last' } }, { guid: { order: 'asc' } }];
+}
+
 export function getManyContainersWithES(
 	organizations: string[],
 	filters: {
@@ -85,16 +98,18 @@ export function getManyContainersWithES(
 			}
 
 			const query = { bool: { must, filter } };
-			const sortParam = sort === 'modified' ? [{ revision: 'desc' }] : [{ 'title.keyword': 'asc' }]; // Priority sorting handled in SQL
+			const esSortClauses = buildElasticsearchSortClause(sort);
 			const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
 
-			const { hits } = await es.search({
+			const searchParams: Record<string, any> = {
 				index: esIndex,
 				query,
-				sort: sortParam,
+				sort: esSortClauses,
 				size: sizeParam,
 				_source: ['guid']
-			});
+			};
+
+			const { hits } = await es.search(searchParams);
 
 			const guids = (hits.hits as any[]).map((h) => h._source.guid);
 			console.log('[getManyContainersWithES] Elasticsearch returned', guids.length, 'results');
@@ -103,14 +118,14 @@ export function getManyContainersWithES(
 
 			const containerResult = await connection.any(sql.typeAlias('container')`
 				SELECT c.*
-				FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
+				FROM container c
 				WHERE c.guid IN (${sql.join(
 					guids.map((g) => sql.fragment`${g}`),
 					sql.fragment`, `
 				)})
 				AND deleted = false
 				AND valid_currently
-				${sort == 'priority' ? sql.fragment`ORDER BY task_priority.priority ASC NULLS LAST, c.guid` : sql.fragment`ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)`}
+				ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)
 			`);
 
 			console.log(
