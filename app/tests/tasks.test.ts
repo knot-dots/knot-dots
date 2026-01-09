@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // This test verifies that a task can be dragged from one status column
 // to another on the task status board, and that the change persists.
@@ -9,12 +9,12 @@ test.describe('Task status board', () => {
 
 	const title = `Task ${Date.now()}`;
 
-	test.beforeEach('add task to the status board', async ({ page }) => {
+	test.beforeEach('add task to the status board', async ({ page, testOrganization }) => {
 		await page.goto('/');
 
 		// Go to the task status board of the test organization
 		await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-		await page.getByRole('link', { name: 'Test organization' }).click();
+		await page.getByRole('link', { name: testOrganization.payload.name }).click();
 
 		// Open the workspace menu and navigate to Tasks → Status
 		await page.getByRole('button', { name: 'All', exact: true }).click();
@@ -34,7 +34,7 @@ test.describe('Task status board', () => {
 
 	test.afterEach('delete task', async ({ page }) => {
 		// Open task in overlay
-		await page.getByTitle(title).click();
+		await page.getByRole('listitem', { name: title }).click();
 
 		// Activate edit mode
 		await page.getByLabel('edit mode').click();
@@ -105,10 +105,10 @@ test.describe('Subtask creation', () => {
 	const parentTitle = `Parent Task ${Date.now()}`;
 	const subtaskTitle = `Subtask ${Date.now()}`;
 
-	test.beforeEach('create parent task', async ({ page }) => {
+	test.beforeEach('create parent task', async ({ page, testOrganization }) => {
 		await page.goto('/');
 		await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-		await page.getByRole('link', { name: 'Test organization' }).click();
+		await page.getByRole('link', { name: testOrganization.payload.name }).click();
 		await page.getByRole('button', { name: 'All', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Tasks' }).click();
 		// Click the Add item button within the Idea column

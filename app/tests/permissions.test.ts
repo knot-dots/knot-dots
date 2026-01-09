@@ -1,22 +1,25 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 let suborgTitle: string;
 let suborg2Title: string;
 let editableTask: string;
 
 test.describe('Permissions', () => {
-	// Run this suite only on Chromium because we are just testing write rights
-	test.skip(({ browserName }) => browserName !== 'chromium', 'This suite runs only on Chromium');
+	test.skip(
+		({ browserName }) => browserName !== 'chromium',
+		'This suite runs only on Chromium because we are just testing write rights'
+	);
 	test.describe('as admin', () => {
 		test.use({ storageState: 'tests/.auth/admin.json' });
 
-		test('setup suborgs', async ({ page }) => {
+		test('setup org and suborgs', async ({ page, testOrganization }) => {
 			suborgTitle = `Suborg 1 ${test.info().project.name} ${Date.now()}`;
 			suborg2Title = `Suborg 2 ${test.info().project.name} ${Date.now()}`;
 			editableTask = `Editable Task ${test.info().project.name} ${Date.now()}`;
+
 			await page.goto('/');
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-			await page.getByRole('article', { name: 'Test organization' }).click();
+			await page.getByRole('article', { name: testOrganization.payload.name }).click();
 			await page.waitForTimeout(500);
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
 			await page.waitForTimeout(500);
@@ -65,7 +68,7 @@ test.describe('Permissions', () => {
 			await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
 			await page.getByRole('button', { name: 'Organizations and' }).click();
 			await page
-				.getByRole('article', { name: 'Test organization' })
+				.getByRole('article', { name: testOrganization.payload.name })
 				.getByLabel('show_related_objects')
 				.click();
 			await page.waitForTimeout(500);
@@ -84,10 +87,10 @@ test.describe('Permissions', () => {
 	test.describe('as bob', () => {
 		test.use({ storageState: 'tests/.auth/bob.json' });
 
-		test('task editable after sub org switch', async ({ page }) => {
+		test('task editable after sub org switch', async ({ page, testOrganization }) => {
 			await page.goto('/');
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-			await page.getByRole('link', { name: 'Test organization' }).click();
+			await page.getByRole('link', { name: testOrganization.payload.name }).click();
 			await page.getByRole('button', { name: 'All', exact: true }).click();
 			await page.getByRole('menuitem', { name: 'Tasks' }).click();
 			await page.waitForTimeout(500);

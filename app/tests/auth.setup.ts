@@ -1,4 +1,3 @@
-// tests/auth.setup.ts
 import { test as setup, expect } from '@playwright/test';
 import * as path from 'path';
 
