@@ -22,13 +22,10 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
-	import {
-		getOrganizationURL,
-		type OrganizationalUnitContainer,
-		type OrganizationContainer
-	} from '$lib/models';
+	import { type OrganizationalUnitContainer, type OrganizationContainer } from '$lib/models';
 	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
+	import { getOrganizationURL } from '$lib/components/OrganizationCard.svelte';
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
 
