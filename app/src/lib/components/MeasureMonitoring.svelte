@@ -83,7 +83,7 @@
 <Board>
 	{#if showMeasures}
 		<BoardColumn title={$_('measures')}>
-			<div class="vertical-scroll-wrapper masked-overflow">
+			<div class="vertical-scroll-wrapper">
 				{#each measures as c}
 					<Card container={c} showRelationFilter />
 				{/each}
@@ -92,7 +92,7 @@
 	{/if}
 	{#each columns as column (column.key)}
 		<BoardColumn addItemUrl={column.addItemUrl} title={$_(column.title)}>
-			<div class="vertical-scroll-wrapper masked-overflow">
+			<div class="vertical-scroll-wrapper">
 				{#each column.containers as container}
 					{#if isGoalContainer(container)}
 						{@const effect = containers

@@ -62,6 +62,7 @@
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		compact?: boolean;
@@ -369,7 +370,13 @@
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
-	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
+	<button
+		class="dropdown-button"
+		onchange={handleAddSection}
+		type="button"
+		{@attach tooltip($_('add_section'))}
+		use:menu.button
+	>
 		<Plus />
 		<span class:is-visually-hidden={compact}>{$_('add_section')}</span>
 	</button>

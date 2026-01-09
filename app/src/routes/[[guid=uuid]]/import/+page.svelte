@@ -4,6 +4,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { displayName } from '$lib/models';
 	import type { PageProps } from './$types';
+	import tooltip from '$lib/attachments/tooltip';
 
 	let { data, form }: PageProps = $props();
 </script>
@@ -11,7 +12,7 @@
 <Layout>
 	{#snippet main()}
 		<div class="detail-page-content">
-			<div class="content-details masked-overflow">
+			<div class="content-details">
 				{#if form?.errors}
 					<ul>
 						{#each form.errors as error}
@@ -38,7 +39,9 @@
 						{/if}
 					{/await}
 					<footer>
-						<button class="button-primary" type="submit">{$_('import.submit')}</button>
+						<button class="button-primary" type="submit" {@attach tooltip($_('import.submit'))}
+							>{$_('import.submit')}</button
+						>
 					</footer>
 				</form>
 			</div>

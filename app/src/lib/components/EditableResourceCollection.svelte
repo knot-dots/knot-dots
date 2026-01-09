@@ -16,6 +16,7 @@
 		type ResourceCollectionContainer
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: ResourceCollectionContainer;
@@ -81,10 +82,10 @@
 			{#if $mayCreateContainer(payloadTypes.enum.resource, container.managed_by)}
 				<li>
 					<button
-						aria-label={$_('add_item')}
 						class="action-button action-button--size-l"
 						onclick={addItem}
 						type="button"
+						{@attach tooltip($_('add_item'))}
 					>
 						<Plus />
 					</button>

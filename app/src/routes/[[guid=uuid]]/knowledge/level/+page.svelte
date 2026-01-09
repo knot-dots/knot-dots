@@ -61,7 +61,7 @@
 	{#snippet main()}
 		<Board>
 			<BoardColumn title={titleForProgramCollection(data.programs)}>
-				<div class="vertical-scroll-wrapper masked-overflow">
+				<div class="vertical-scroll-wrapper">
 					{#each data.programs as container (container.guid)}
 						<Card {container} showRelationFilter />
 					{/each}

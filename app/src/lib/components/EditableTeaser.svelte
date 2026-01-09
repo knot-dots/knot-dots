@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import { type AnyContainer, type TeaserContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -19,12 +18,6 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	const init: Attachment = (element) => {
-		if (container.payload.title == '') {
-			(element as HTMLElement).focus();
-		}
-	};
 </script>
 
 <header>
@@ -37,7 +30,6 @@
 			role="textbox"
 			tabindex="0"
 			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-			{@attach init}
 		></svelte:element>
 	{:else}
 		<svelte:element this={heading} class="details-heading">

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import type { Attachment } from 'svelte/attachments';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -34,12 +33,6 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	const init: Attachment = (element) => {
-		if (container.payload.title == '') {
-			(element as HTMLElement).focus();
-		}
-	};
 
 	const cssClassMap: Record<string, string> = {
 		teaser: 'teaser',
@@ -214,7 +207,6 @@
 									role="textbox"
 									tabindex="0"
 									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-									{@attach init}
 								></svelte:element>
 							{:else}
 								<svelte:element this={heading} class="details-heading" contenteditable="false">
@@ -292,7 +284,6 @@
 									role="textbox"
 									tabindex="0"
 									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-									{@attach init}
 								></svelte:element>
 							{:else}
 								<svelte:element this={heading} class="details-heading" contenteditable="false">

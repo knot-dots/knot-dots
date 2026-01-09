@@ -40,7 +40,7 @@ test.describe('Task status board', () => {
 		await page.getByLabel('edit mode').click();
 
 		// Delete the task
-		await page.getByRole('button', { name: 'Delete' }).click();
+		await page.getByRole('button', { name: 'Delete' }).first().click();
 		await page.getByRole('button', { name: `I want to delete "${title}"` }).click();
 
 		await expect(page.getByTitle(title)).not.toBeAttached();

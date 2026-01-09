@@ -4,6 +4,7 @@
 	import Relation from '~icons/knotdots/relation';
 	import type { AnyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: AnyContainer;
@@ -17,7 +18,11 @@
 </script>
 
 {#if mayShowRelationButton && $ability.can('relate', container)}
-	<a class="button button-relation" href="#relations={container.guid}">
+	<a
+		class="button button-relation"
+		href="#relations={container.guid}"
+		{@attach tooltip($_('relations'))}
+	>
 		<Relation />
 		{$_('relations')}
 	</a>

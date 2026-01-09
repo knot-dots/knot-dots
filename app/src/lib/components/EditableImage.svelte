@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import tooltip from '$lib/attachments/tooltip';
+	import UppyImageUploader from '$lib/components/UppyImageUploader.svelte';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import transformFileURL from '$lib/transformFileURL.js';
-	import UppyImageUploader from '$lib/components/UppyImageUploader.svelte';
 
 	interface Props {
 		editable?: boolean;
@@ -31,9 +32,9 @@
 			{:else if value}
 				<img alt={$_('image')} src={transformFileURL(value)} />
 				<button
-					aria-label={$_('upload.image.remove')}
 					class="button button-remove"
 					onclick={remove}
+					{@attach tooltip($_('upload.image.remove'))}
 					type="button"><TrashBin /></button
 				>
 			{:else}

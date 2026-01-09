@@ -8,7 +8,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<ProgramsPage {data}>
+<ProgramsPage {data} filterBarInitiallyOpen>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.program]} />
 	<Help slug="programs-catalog" />
 </ProgramsPage>

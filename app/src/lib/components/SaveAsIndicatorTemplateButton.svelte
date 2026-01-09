@@ -9,6 +9,7 @@
 		quantities
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorContainer;
@@ -32,6 +33,7 @@
 		type="button"
 		onclick={saveIndicatorAsTemplate(container)}
 		disabled={saveAsIndicatorTemplateDisabled}
+		{@attach tooltip($_('indicator.save_as_template'))}
 	>
 		{$_('indicator.save_as_template')}
 	</button>

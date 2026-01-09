@@ -229,12 +229,6 @@
 			alert(error.message);
 		}
 	}
-
-	const init: Attachment = (element) => {
-		if (container.payload.title == '') {
-			(element as HTMLElement).focus();
-		}
-	};
 </script>
 
 <header>
@@ -242,7 +236,6 @@
 		{#if editable && $ability.can('update', container)}
 			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
 			<AutoresizingTextarea
-				{@attach init}
 				bind:value={container.payload.title}
 				id={idForTitle}
 				placeholder={$_('chapter.title.placeholder')}

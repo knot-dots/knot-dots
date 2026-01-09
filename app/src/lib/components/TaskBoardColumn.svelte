@@ -20,6 +20,7 @@
 		type TaskStatus
 	} from '$lib/models';
 	import { ability, newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		addItemUrl?: string;
@@ -106,12 +107,12 @@
 			{$_(status)}
 		</h2>
 		{#if addItemUrl}
-			<a href={addItemUrl} onclick={createContainer} title={$_('add_item')}><Plus /></a>
+			<a href={addItemUrl} onclick={createContainer} {@attach tooltip($_('add_item'))}><Plus /></a>
 		{/if}
 	</header>
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
 		<div
-			class="vertical-scroll-wrapper masked-overflow"
+			class="vertical-scroll-wrapper"
 			use:dndzone={{ items }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
@@ -125,7 +126,7 @@
 			{/each}
 		</div>
 	{:else}
-		<div class="vertical-scroll-wrapper masked-overflow">
+		<div class="vertical-scroll-wrapper">
 			{#each items as container (container.guid)}
 				{#if itemSnippet}
 					{@render itemSnippet(container)}
@@ -137,7 +138,9 @@
 	{/if}
 	{#if addItemUrl}
 		<footer>
-			<a href={addItemUrl} onclick={createContainer}>{$_('add_item')}<Plus /></a>
+			<a href={addItemUrl} onclick={createContainer} {@attach tooltip($_('add_item'))}
+				>{$_('add_item')}<Plus /></a
+			>
 		</footer>
 	{/if}
 </section>

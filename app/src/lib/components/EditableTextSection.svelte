@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -21,12 +20,6 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	const init: Attachment = (element) => {
-		if (container.payload.title == '') {
-			(element as HTMLElement).focus();
-		}
-	};
 </script>
 
 <header>
@@ -34,7 +27,6 @@
 		<!-- svelte-ignore binding_property_non_reactive -->
 		<svelte:element
 			this={heading}
-			{@attach init}
 			bind:textContent={container.payload.title}
 			class="details-heading"
 			contenteditable="plaintext-only"

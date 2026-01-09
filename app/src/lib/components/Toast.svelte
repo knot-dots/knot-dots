@@ -3,6 +3,7 @@
 	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		icon?: Component<SvelteHTMLElements['svg']>;
@@ -16,9 +17,13 @@
 </script>
 
 <div class="toast" role="status">
-	<button class="action-button action-button--size-s" onclick={onclose} type="button">
+	<button
+		class="action-button action-button--size-s"
+		onclick={onclose}
+		type="button"
+		{@attach tooltip($_('cancel'))}
+	>
 		<Close />
-		<span class="is-visually-hidden">{$_('cancel')}</span>
 	</button>
 
 	{#if Icon}
