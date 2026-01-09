@@ -7,47 +7,10 @@ test.describe('Task status board', () => {
 	// Use admin to ensure we have permission to create and move tasks
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	const title = `Task ${Date.now()}`;
-
-	test.beforeEach('add task to the status board', async ({ page, testOrganization }) => {
-		await page.goto('/');
-
-		// Go to the task status board of the test organization
-		await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-		await page.getByRole('link', { name: testOrganization.payload.name }).click();
-
-		// Open the workspace menu and navigate to Tasks → Status
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Tasks' }).click();
-
-		// Click the Add item button within the Idea column
-		await page.getByRole('link', { name: 'Add item' }).first().click();
-
-		// Fill out a minimal form and save
-		await page.getByRole('textbox', { name: 'Title' }).fill(title);
-		await page.getByRole('button', { name: 'Save' }).click();
-
-		// Close overlay to ensure the board is fully visible again
-		await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
-		await expect(page.locator('.overlay')).toBeHidden();
-	});
-
-	test.afterEach('delete task', async ({ page }) => {
-		// Open task in overlay
-		await page.getByRole('listitem', { name: title }).click();
-
-		// Activate edit mode
-		await page.getByLabel('edit mode').click();
-
-		// Delete the task
-		await page.getByRole('button', { name: 'Delete' }).first().click();
-		await page.getByRole('button', { name: `I want to delete "${title}"` }).click();
-
-		await expect(page.getByTitle(title)).not.toBeAttached();
-	});
-
-	test('task status can be changed via drag-and-drop', async ({ page, isMobile }) => {
+	test('task status can be changed via drag-and-drop', async ({ page, isMobile, testTask }) => {
 		test.skip(isMobile, 'Drag-and-drop is not supported on mobile');
+
+		await page.goto(`/${testTask.organization}/tasks/status`);
 
 		// Ensure columns are visible
 		const ideaColumn = page.locator('section', {
@@ -60,7 +23,7 @@ test.describe('Task status board', () => {
 		await expect(ideaColumn).toBeVisible();
 		await expect(inPlanningColumn).toBeVisible();
 
-		const ideaCard = ideaColumn.getByTitle(title).first();
+		const ideaCard = ideaColumn.getByTitle(testTask.payload.title).first();
 		await expect(ideaCard).toBeVisible();
 
 		// Perform drag and drop to the "In planning" column
@@ -85,16 +48,20 @@ test.describe('Task status board', () => {
 		await page.mouse.move((startX + endX) / 2, (startY + endY) / 2);
 		await page.mouse.move(endX, endY);
 		// Wait for the drop zone to contain the (invisible) card before releasing the mouse button.
-		await expect(inPlanningColumn.getByTitle(title).first()).toBeAttached({ timeout: 5000 });
+		await expect(inPlanningColumn.getByTitle(testTask.payload.title).first()).toBeAttached({
+			timeout: 5000
+		});
 		await page.mouse.up();
-		await expect(inPlanningColumn.getByTitle(title).first()).toBeVisible();
+		await expect(inPlanningColumn.getByTitle(testTask.payload.title).first()).toBeVisible();
 
 		// Reload to verify persistence
 		await page.reload();
 		const inPlanningColumnAfterReload = page.locator('section', {
 			has: page.getByRole('heading', { name: 'In planning' })
 		});
-		await expect(inPlanningColumnAfterReload.getByTitle(title).first()).toBeVisible();
+		await expect(
+			inPlanningColumnAfterReload.getByTitle(testTask.payload.title).first()
+		).toBeVisible();
 	});
 });
 
@@ -102,26 +69,12 @@ test.describe('Subtask creation', () => {
 	// Use admin to ensure permission to create tasks
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	const parentTitle = `Parent Task ${Date.now()}`;
 	const subtaskTitle = `Subtask ${Date.now()}`;
 
-	test.beforeEach('create parent task', async ({ page, testOrganization }) => {
-		await page.goto('/');
-		await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
-		await page.getByRole('link', { name: testOrganization.payload.name }).click();
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Tasks' }).click();
-		// Click the Add item button within the Idea column
-		await page.getByRole('link', { name: 'Add item' }).first().click();
-		await page.getByRole('textbox', { name: 'Title' }).fill(parentTitle);
-		await page.getByRole('button', { name: 'Save' }).click();
-		await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
-		await expect(page.locator('.overlay')).toBeHidden();
-	});
-
-	test('subtask can be created and persists', async ({ page }) => {
+	test('subtask can be created and persists', async ({ page, testTask }) => {
+		await page.goto(`/${testTask.organization}/tasks/status`);
 		// Open parent task overlay
-		await page.getByTitle(parentTitle).click();
+		await page.getByTitle(testTask.payload.title).click();
 		await expect(page.locator('.overlay')).toBeVisible();
 		// Restrict to overlay to avoid strict mode violation (duplicate Edit mode checkboxes in banners).
 		await page.locator('.overlay').getByRole('checkbox', { name: 'Edit mode' }).check();
@@ -139,14 +92,14 @@ test.describe('Subtask creation', () => {
 			.locator('section')
 			.filter({ hasText: 'Subtasks' });
 		await subtaskSection.scrollIntoViewIfNeeded();
-		await expect(subtaskSection.getByTitle(parentTitle)).not.toBeVisible();
+		await expect(subtaskSection.getByTitle(testTask.payload.title)).not.toBeVisible();
 		await page.reload();
-		await expect(page.getByTitle(parentTitle)).toBeVisible();
+		await expect(page.getByTitle(testTask.payload.title)).toBeVisible();
 		// After reload, verify parent is still not visible as a subtask
 		const subtaskSectionAfterReload = page
 			.locator('.overlay')
 			.locator('section')
 			.filter({ hasText: 'Subtasks' });
-		await expect(subtaskSectionAfterReload.getByTitle(parentTitle)).not.toBeVisible();
+		await expect(subtaskSectionAfterReload.getByTitle(testTask.payload.title)).not.toBeVisible();
 	});
 });

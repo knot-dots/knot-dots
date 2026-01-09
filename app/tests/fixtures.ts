@@ -45,6 +45,7 @@ async function inviteUser(context: BrowserContext, email: string, container: Any
 	await context.request.post(`/user`, { data: { email, container } });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export const test = base.extend<{}, MyWorkerFixtures>({
 	adminContext: [
 		async ({ browser }, use, workerInfo) => {
