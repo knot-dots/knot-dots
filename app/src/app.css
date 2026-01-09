@@ -1536,7 +1536,7 @@ img.cover {
 	--dropdown-button-chevron-expanded-color: var(--color-primary-600);
 	--dropdown-button-chevron-icon-size: 1.25rem;
 	--dropdown-button-align-items: center;
-	--dropdown-panel-max-height: 20rem;
+	--dropdown-panel-max-height: 21rem;
 	--dropdown-panel-max-width: none;
 	--dropdown-panel-padding: 0.5rem;
 }
