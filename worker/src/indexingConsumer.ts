@@ -19,7 +19,7 @@ import { toDoc } from './shared/indexing.ts';
 const envSchema = z
   .object({
     INDEXING_QUEUE_URL: z.string(),
-    INDEXING_DLQ_URL: z.string(),
+    INDEXING_DLQ_URL: z.string().optional(),
     INDEXING_QUEUE_REGION: z.string().default('fr-par'),
     INDEXING_QUEUE_ENDPOINT: z.string(),
     INDEXING_QUEUE_ACCESS_KEY: z.string(),
