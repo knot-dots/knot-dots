@@ -6,7 +6,6 @@
 	import {
 		audience,
 		computeFacetCount,
-		type Container,
 		policyFieldBNK,
 		predicates,
 		programTypes,

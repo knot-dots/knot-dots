@@ -21,7 +21,6 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type OrganizationalUnitContainer,
-		organizationalUnitType,
 		type OrganizationContainer,
 		payloadTypes,
 		predicates

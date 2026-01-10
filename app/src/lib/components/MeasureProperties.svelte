@@ -4,7 +4,6 @@
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableDuration from '$lib/components/EditableDuration.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
-	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';

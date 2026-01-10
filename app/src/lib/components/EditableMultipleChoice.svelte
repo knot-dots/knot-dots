@@ -10,8 +10,6 @@
 	}
 
 	let { editable = false, label, options, value = $bindable() }: Props = $props();
-
-	let selected = $derived(options.filter((o) => value.includes(o.value)).map(({ label }) => label));
 </script>
 
 <div class="label">{label}</div>

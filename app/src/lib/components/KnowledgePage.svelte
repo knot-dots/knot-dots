@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
 		audience,
 		computeFacetCount,
-		type Container,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics

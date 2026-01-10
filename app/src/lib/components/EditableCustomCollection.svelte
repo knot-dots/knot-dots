@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resource } from 'runed';
-	import type { Attachment } from 'svelte/attachments';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';

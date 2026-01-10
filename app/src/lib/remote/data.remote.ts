@@ -24,7 +24,7 @@ export const fetchContainersRelatedToIndicators = query(
 		})
 	}),
 	async ({ guid, params }) => {
-		const { locals, url } = getRequestEvent();
+		const { locals } = getRequestEvent();
 
 		let relatedContainers;
 
