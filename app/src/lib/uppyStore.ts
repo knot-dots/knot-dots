@@ -4,7 +4,7 @@ import type Uppy from '@uppy/core';
 interface UppyDashboardState {
 	open: boolean;
 	uppy: Uppy | null;
-	props?: any;
+	props: { doneButtonHandler?: () => void; onRequestCloseModal?: () => void };
 }
 
 export const uppyDashboard = writable<UppyDashboardState>({
@@ -13,7 +13,7 @@ export const uppyDashboard = writable<UppyDashboardState>({
 	props: {}
 });
 
-export function openDashboard(uppy: Uppy, props: any = {}) {
+export function openDashboard(uppy: Uppy, props: UppyDashboardState['props'] = {}) {
 	uppyDashboard.set({
 		open: true,
 		uppy,

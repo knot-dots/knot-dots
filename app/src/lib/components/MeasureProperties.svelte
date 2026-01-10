@@ -16,14 +16,14 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type ContainerWithEffect, isSimpleMeasureContainer } from '$lib/models';
+	import type { AnyContainer, Container, ContainerWithEffect } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: ContainerWithEffect;
 		editable?: boolean;
-		relatedContainers: any[];
-		revisions: any[];
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

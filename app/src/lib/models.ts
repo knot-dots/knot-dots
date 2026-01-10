@@ -1953,13 +1953,15 @@ export type TeaserLikeContainer =
 	| ColContentContainer;
 
 export function isTeaserLikeContainer(container: AnyContainer): container is TeaserLikeContainer {
-	return [
-		payloadTypes.enum.teaser,
-		payloadTypes.enum.info_box,
-		payloadTypes.enum.teaser_highlight,
-		payloadTypes.enum.quote,
-		payloadTypes.enum.col_content
-	].includes(container.payload.type as any);
+	return (
+		[
+			payloadTypes.enum.teaser,
+			payloadTypes.enum.info_box,
+			payloadTypes.enum.teaser_highlight,
+			payloadTypes.enum.quote,
+			payloadTypes.enum.col_content
+		] as PayloadType[]
+	).includes(container.payload.type);
 }
 
 export function isTeaserCollectionContainer(
@@ -1977,12 +1979,14 @@ export function isAccordionCollectionContainer(
 export function isCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is CollectionContainer {
-	return [
-		payloadTypes.enum.accordion_collection,
-		payloadTypes.enum.content_partner_collection,
-		payloadTypes.enum.knowledge_collection,
-		payloadTypes.enum.teaser_collection
-	].includes(container.payload.type as any);
+	return (
+		[
+			payloadTypes.enum.accordion_collection,
+			payloadTypes.enum.content_partner_collection,
+			payloadTypes.enum.knowledge_collection,
+			payloadTypes.enum.teaser_collection
+		] as PayloadType[]
+	).includes(container.payload.type);
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
