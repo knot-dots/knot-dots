@@ -12,10 +12,9 @@
 
 	interface Props {
 		container: IndicatorContainer;
-		relatedContainers: Container[];
 	}
 
-	let { container, relatedContainers }: Props = $props();
+	let { container }: Props = $props();
 
 	let saveAsIndicatorTemplateDisabled = $state(false);
 

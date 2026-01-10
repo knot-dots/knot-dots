@@ -131,7 +131,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<ContentPartnerCard container={item} {editable} />
+				<ContentPartnerCard container={item} />
 			{/snippet}
 		</List>
 	{:else if container.payload.listType === 'wall'}
@@ -142,7 +142,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<ContentPartnerCard container={item} {editable} />
+				<ContentPartnerCard container={item} />
 			{/snippet}
 		</Wall>
 	{:else if container.payload.listType === 'accordion'}
@@ -153,7 +153,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<ContentPartnerCard container={item} {editable} />
+				<ContentPartnerCard container={item} />
 			{/snippet}
 		</Accordion>
 	{:else}
@@ -164,7 +164,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<ContentPartnerCard container={item} {editable} />
+				<ContentPartnerCard container={item} />
 			{/snippet}
 		</Carousel>
 	{/if}
