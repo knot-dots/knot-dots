@@ -47,6 +47,7 @@ export default function tooltip(content: string, options?: Options): Attachment 
 					transition: opacity 120ms ease;
 					z-index: 1000;
 					pointer-events: none;
+					top: 0;
 				}
 				.tooltip[data-show] { opacity: 1; }
 				.tooltip-arrow { position: absolute; width: 8px; height: 8px; pointer-events: none; }
