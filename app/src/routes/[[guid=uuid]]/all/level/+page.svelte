@@ -32,8 +32,6 @@
 		)
 	);
 
-	$inspect(data.containers);
-
 	const useReport = createFeatureDecisions(page.data.features).useReport();
 
 	let columns = $derived([
