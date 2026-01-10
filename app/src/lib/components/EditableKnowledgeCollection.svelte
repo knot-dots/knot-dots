@@ -21,7 +21,6 @@
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import { ability } from '$lib/stores';
-	import type { Attachment } from 'svelte/attachments';
 
 	interface Props {
 		container: KnowledgeCollectionContainer;
@@ -78,12 +77,6 @@
 
 		createContainerDialog.getElement().showModal();
 	}
-
-	const init: Attachment = (element) => {
-		if (container.payload.title == '') {
-			(element as HTMLElement).focus();
-		}
-	};
 </script>
 
 <header>
@@ -97,7 +90,6 @@
 			role="textbox"
 			tabindex="0"
 			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-			{@attach init}
 		></svelte:element>
 	{:else}
 		<svelte:element this={heading} class="details-heading" contenteditable="false">

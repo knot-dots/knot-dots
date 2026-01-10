@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import type { Attachment } from 'svelte/attachments';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
 	import { type AnyContainer, type ContentPartnerContainer } from '$lib/models';
@@ -21,12 +20,6 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	const init: Attachment = (element) => {
-		if (container.payload.title == '') {
-			(element as HTMLElement).focus();
-		}
-	};
 
 	let canUpdate = $derived(editable && $ability.can('update', container));
 </script>
@@ -57,7 +50,6 @@
 					role="textbox"
 					tabindex="0"
 					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					{@attach init}
 				></svelte:element>
 			{:else}
 				<svelte:element this={heading} class="details-heading" contenteditable="false">

@@ -180,13 +180,33 @@
 		{/if}
 	</div>
 {:else if mode === 'input'}
-	<label class="button button-upload" onclick={triggerOpen}>
+	<label class="button button-upload" for={id}>
 		<UploadIcon />
 		{$_('upload.image.choose')}
 	</label>
 {/if}
 
 <style>
+	.button-upload {
+		--button-border-color: var(--color-primary-700);
+		--button-hover-background: var(--color-primary-700);
+		--padding-x: 0.75rem;
+		--padding-y: 0.5rem;
+
+		border-radius: 4px;
+		color: var(--color-primary-700);
+		font-size: 0.75rem;
+	}
+
+	.button-upload > :global(svg) {
+		height: 0.75rem;
+		width: 0.75rem;
+	}
+
+	.button-upload:hover {
+		color: white;
+	}
+
 	.placeholder {
 		padding: 1rem;
 		background-color: var(--color-gray-050);
@@ -210,30 +230,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-	}
-
-	.input-trigger {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		cursor: pointer;
-	}
-
-	.input-trigger .label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--color-gray-700);
-	}
-
-	.input-trigger .value {
-		background-color: var(--form-control-background);
-		padding: 0.5rem 0.75rem;
-		border-radius: 4px;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.875rem;
-		border: 1px solid var(--color-gray-200);
 	}
 
 	.loader {
