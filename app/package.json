@@ -10,7 +10,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"lint": "prettier --check ./src ./tests",
+		"lint": "prettier --check ./src ./tests && eslint --concurrency=auto ./src ./tests",
 		"format": "prettier --write ./src ./tests"
 	},
 	"type": "module",
