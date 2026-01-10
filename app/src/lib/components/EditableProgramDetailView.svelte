@@ -140,6 +140,7 @@
 			onsubmit={autoSave(part, 2000)}
 			novalidate
 		>
+			<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 			<!-- svelte-ignore binding_property_non_reactive -->
 			<EditableRow
 				columns={[
@@ -187,6 +188,7 @@
 						onsubmit={autoSave(part, 2000)}
 						novalidate
 					>
+						<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 						<!-- svelte-ignore binding_property_non_reactive -->
 						<EditableChapter
 							bind:container={filteredParts[i]}
