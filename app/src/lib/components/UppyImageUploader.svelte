@@ -180,7 +180,7 @@
 		{/if}
 	</div>
 {:else if mode === 'input'}
-	<label class="button button-upload" onclick={triggerOpen}>
+	<label class="button button-upload" for={id}>
 		<UploadIcon />
 		{$_('upload.image.choose')}
 	</label>
