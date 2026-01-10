@@ -33,7 +33,7 @@
 				(!('guid' in container) || object !== container.guid)
 		)?.object
 	);
-	let payloadType = $derived(container.payload.type ?? payloadTypes.enum.undefined);
+	let payloadType = $derived(container.payload.type);
 
 	let isPartOfOptionsRequest = $derived(
 		createIsPartOfOptionsRequest(payloadType, container.organization, measureGuid, programGuid)

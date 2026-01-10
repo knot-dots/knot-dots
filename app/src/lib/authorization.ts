@@ -13,7 +13,7 @@ type Actions =
 	| 'invite-members'
 	| 'relate'
 	| 'prioritize';
-type Subjects = AnyContainer | EmptyContainer | PayloadType;
+type Subjects = AnyContainer | EmptyContainer | PayloadType | 'all';
 
 const specialTypes: PayloadType[] = [
 	payloadTypes.enum.binary_indicator,
@@ -262,7 +262,7 @@ export default function defineAbilityFor(user: User) {
 	}
 
 	return build({
-		detectSubjectType: (object) => object.payload.type ?? payloadTypes.enum.undefined
+		detectSubjectType: (object) => object.payload.type
 	});
 }
 

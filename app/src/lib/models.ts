@@ -110,8 +110,7 @@ const payloadTypeValues = [
 	'teaser',
 	'teaser_collection',
 	'teaser_highlight',
-	'text',
-	'undefined'
+	'text'
 ] as const;
 
 export const payloadTypes = z.enum(payloadTypeValues);
@@ -613,7 +612,7 @@ export function slugify(source: string) {
 		.substring(0, 128);
 }
 
-function deduplicate(v: string[]) {
+function deduplicate<T>(v: T[]) {
 	return [...new Set(v)];
 }
 
@@ -1558,16 +1557,6 @@ export type TextPayload = z.infer<typeof textPayload>;
 
 const initialTextPayload = textPayload.partial({ body: true, title: true });
 
-const undefinedPayload = z
-	.object({
-		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.undefined),
-		visibility: visibility.default(visibility.enum['organization'])
-	})
-	.strict();
-
-const initialUndefinedPayload = undefinedPayload.partial({ title: true });
-
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
@@ -1623,8 +1612,7 @@ export type Payload = z.infer<typeof payload>;
 export const anyPayload = z.discriminatedUnion('type', [
 	...payload.options,
 	organizationPayload,
-	organizationalUnitPayload,
-	undefinedPayload
+	organizationalUnitPayload
 ]);
 
 export type AnyPayload = z.infer<typeof anyPayload>;
@@ -1676,8 +1664,7 @@ const initialPayload = z.discriminatedUnion('type', [
 	initialTeaserHighlightPayload,
 	initialTeaserPayload,
 	initialTermPayload,
-	initialTextPayload,
-	initialUndefinedPayload
+	initialTextPayload
 ]);
 
 export const anyInitialPayload = z.discriminatedUnion('type', [

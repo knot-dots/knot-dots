@@ -157,7 +157,7 @@
 	}
 </script>
 
-{#if $applicationState.containerDetailView.editable && $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
+{#if $applicationState.containerDetailView.editable && $ability.can('create', container) && mayDeriveFrom(container)}
 	<DropDownMenu label={$_('create_another')} {options} handleChange={createHandler(container)}>
 		{#snippet icon()}<CodeMerge />{/snippet}
 	</DropDownMenu>

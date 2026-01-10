@@ -23,7 +23,6 @@
 		overlayKey,
 		paramsFromFragment,
 		type PayloadType,
-		payloadTypes,
 		predicates,
 		type ProgramContainer
 	} from '$lib/models';
@@ -145,7 +144,7 @@
 		{$_('read_more')}
 	</a>
 
-	{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM))}
+	{#if isPartOf.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM)) )}
 		<DropDownMenu
 			handleChange={createContainerAt(currentIndex + 1)}
 			label={$_('chapter')}
