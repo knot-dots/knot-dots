@@ -6,7 +6,6 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
@@ -19,7 +18,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			.map(({ guid }) => guid);
 	}
 
-	containers = await locals.pool.connect(
+	const containers = await locals.pool.connect(
 		getManyContainers(
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{
