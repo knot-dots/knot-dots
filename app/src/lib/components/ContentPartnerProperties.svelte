@@ -11,11 +11,10 @@
 	interface Props {
 		container: ContentPartnerContainer;
 		editable?: boolean;
-		relatedContainers: AnyContainer[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), editable = false, revisions }: Props = $props();
 </script>
 
 <PropertyGrid>

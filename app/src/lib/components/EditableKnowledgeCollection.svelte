@@ -131,7 +131,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<KnowledgeCard container={item} {editable} />
+				<KnowledgeCard container={item} />
 			{/snippet}
 		</List>
 	{:else if container.payload.listType === 'wall'}
@@ -142,7 +142,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<KnowledgeCard container={item} {editable} />
+				<KnowledgeCard container={item} />
 			{/snippet}
 		</Wall>
 	{:else if container.payload.listType === 'accordion'}
@@ -153,7 +153,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<KnowledgeCard container={item} {editable} />
+				<KnowledgeCard container={item} />
 			{/snippet}
 		</Accordion>
 	{:else}
@@ -164,7 +164,7 @@
 				editable}
 		>
 			{#snippet itemSnippet(item)}
-				<KnowledgeCard container={item} {editable} />
+				<KnowledgeCard container={item} />
 			{/snippet}
 		</Carousel>
 	{/if}

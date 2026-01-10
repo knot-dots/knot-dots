@@ -162,7 +162,7 @@
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
 		<CreateOverallObjectiveButton {container} {relatedContainers} />
-		<SaveAsIndicatorTemplateButton {container} {relatedContainers} />
+		<SaveAsIndicatorTemplateButton {container} />
 		<RelationButton {container} />
 		<CreateCopyButton {container} />
 		<DeleteButton {container} {relatedContainers} />

@@ -4,10 +4,9 @@
 
 	interface Props {
 		container: KnowledgeContainer;
-		editable?: boolean;
 	}
 
-	let { container, editable = false }: Props = $props();
+	let { container }: Props = $props();
 </script>
 
 <Card {container}></Card>

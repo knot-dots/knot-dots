@@ -23,7 +23,6 @@
 		<ContentPartnerProperties
 			bind:container
 			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-			{relatedContainers}
 			{revisions}
 		/>
 		<Sections bind:container {relatedContainers} />
