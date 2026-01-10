@@ -20,7 +20,9 @@
 
 	const onClick = (fn: (ctx: Ctx) => void) => (e: MouseEvent) => {
 		e.preventDefault();
-		ctx && fn(ctx);
+		if (ctx) {
+			fn(ctx);
+		}
 	};
 </script>
 

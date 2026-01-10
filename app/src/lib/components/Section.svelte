@@ -164,14 +164,6 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isImageContainer(container)}
-			<EditableImageSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-				{heading}
-			/>
 		{:else if isContentPartnerCollectionContainer(container)}
 			<EditableContentPartnerCollection
 				bind:container

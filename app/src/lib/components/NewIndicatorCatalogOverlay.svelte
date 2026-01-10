@@ -172,7 +172,7 @@
 	</div>
 </div>
 
-<Help slug={'indicator-catalog'} />
+<Help slug="indicator-catalog" />
 
 <style>
 	ul {
