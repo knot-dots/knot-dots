@@ -172,7 +172,7 @@
 		{#if menuExpanded}
 			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 				<ul class="menu">
-					{#each options as option}
+					{#each options as option (option.value)}
 						<li
 							class="menu-item"
 							class:menu-item--active={option.value === menuActive}

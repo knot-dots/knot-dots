@@ -38,7 +38,7 @@
 				{#each policyFieldBNK.options
 					.filter((o) => value.includes(o))
 					.slice(0, value.length > 1 && compact ? 1 : value.length)
-					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+					.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
 					<span class="badge badge--gray truncated">{selectedOption.label}</span>
 				{:else}
 					{$_('empty')}
@@ -67,7 +67,7 @@
 			{:else}
 				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 					<ul>
-						{#each value as topic}
+						{#each value as topic (topic)}
 							<li>
 								<span class="badge badge--gray">{$_(topic)}</span>
 							</li>
@@ -82,7 +82,7 @@
 		{#each policyFieldBNK.options
 			.filter((o) => value.includes(o))
 			.slice(0, compact ? 1 : value.length)
-			.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+			.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
 			<span class="badge badge--gray truncated">{selectedOption.label}</span>
 		{:else}
 			{$_('empty')}

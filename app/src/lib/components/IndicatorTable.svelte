@@ -212,7 +212,7 @@
 		<thead>
 			<tr>
 				<th></th>
-				{#each years as year}
+				{#each years as year (year)}
 					<th>{year}</th>
 				{/each}
 			</tr>
@@ -221,7 +221,7 @@
 		<tbody>
 			<tr class="historical-values">
 				<th scope="row">{$_('indicator.table.historical_values')}</th>
-				{#each years as year}
+				{#each years as year (year)}
 					<td>{historicalValuesByYear.get(year) ?? ''}</td>
 				{/each}
 			</tr>
@@ -235,19 +235,19 @@
 
 				<tr class="overall-objective">
 					<th scope="row">{$_('indicator.table.overall_objective')}</th>
-					{#each years as year}
+					{#each years as year (year)}
 						<td>{overallObjectiveByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
 
 				<tr class="objective-total">
 					<th scope="row">{$_('indicator.table.objectives')}</th>
-					{#each years as year}
+					{#each years as year (year)}
 						<td>{objectivesByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
 
-				{#each relatedContainers.filter(isContainerWithObjective) as containerWithObjective}
+				{#each relatedContainers.filter(isContainerWithObjective) as containerWithObjective (containerWithObjective.guid)}
 					{@const valuesByYear = new Map(
 						findLeafObjectives(
 							relatedContainers
@@ -257,7 +257,7 @@
 					)}
 					<tr class="objective">
 						<th scope="row">{containerWithObjective.payload.title}</th>
-						{#each years as year}
+						{#each years as year (year)}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
 					</tr>
@@ -273,12 +273,12 @@
 
 				<tr class="done-total">
 					<th scope="row">{$_('indicator.table.done')}</th>
-					{#each years as year}
+					{#each years as year (year)}
 						<td>{doneByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
 
-				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.done']) as measure}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.done']) as measure (measure.guid)}
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
@@ -294,7 +294,7 @@
 					)}
 					<tr class="done">
 						<th scope="row">{measure.payload.title}</th>
-						{#each years as year}
+						{#each years as year (year)}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
 					</tr>
@@ -302,11 +302,11 @@
 
 				<tr class="in-progress-total">
 					<th scope="row">{$_('indicator.table.in_progress')}</th>
-					{#each years as year}
+					{#each years as year (year)}
 						<td>{inImplementationByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_implementation']) as measure}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_implementation']) as measure (measure.guid)}
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
@@ -322,7 +322,7 @@
 					)}
 					<tr class="in-progress">
 						<th scope="row">{measure.payload.title}</th>
-						{#each years as year}
+						{#each years as year (year)}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
 					</tr>
@@ -330,11 +330,11 @@
 
 				<tr class="in-planning-total">
 					<th scope="row">{$_('indicator.table.in_planning')}</th>
-					{#each years as year}
+					{#each years as year (year)}
 						<td>{inPlanningByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_planning']) as measure}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.in_planning']) as measure (measure.guid)}
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
@@ -350,7 +350,7 @@
 					)}
 					<tr class="in-planning">
 						<th scope="row">{measure.payload.title}</th>
-						{#each years as year}
+						{#each years as year (year)}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
 					</tr>
@@ -358,11 +358,11 @@
 
 				<tr class="idea-total">
 					<th scope="row">{$_('indicator.table.idea')}</th>
-					{#each years as year}
+					{#each years as year (year)}
 						<td>{ideasByYear.get(year) ?? 0}</td>
 					{/each}
 				</tr>
-				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.idea']) as measure}
+				{#each measureContainers.filter(({ payload }) => payload.status === status.enum['status.idea']) as measure (measure.guid)}
 					{@const valuesByYear = new Map(
 						effectContainers
 							.filter((c) =>
@@ -378,7 +378,7 @@
 					)}
 					<tr class="idea">
 						<th scope="row">{measure.payload.title}</th>
-						{#each years as year}
+						{#each years as year (year)}
 							<td>{valuesByYear.get(year) ?? 0}</td>
 						{/each}
 					</tr>

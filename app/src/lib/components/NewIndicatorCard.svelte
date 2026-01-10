@@ -24,11 +24,11 @@
 
 	{#snippet footer()}
 		<div class="badges">
-			{#each container.payload.indicatorType as indicatorType}
+			{#each container.payload.indicatorType as indicatorType (indicatorType)}
 				<span class="badge">{$_(indicatorType)}</span>
 			{/each}
 
-			{#each container.payload.indicatorCategory as indicatorCategory}
+			{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
 				<span class="badge">{$_(indicatorCategory)}</span>
 			{/each}
 		</div>

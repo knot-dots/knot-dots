@@ -139,7 +139,7 @@
 				>
 					<div class="vertical-scroll-wrapper">
 						{#if 'default' in currentContext.payload && currentContext.payload.default}
-							{#each organizations as container}
+							{#each organizations as container (container.guid)}
 								<OrganizationMenuCard
 									{container}
 									linkPath={pathnameWithoutContextSegment}
@@ -147,7 +147,7 @@
 								/>
 							{/each}
 						{:else}
-							{#each organizations as container}
+							{#each organizations as container (container.guid)}
 								<OrganizationMenuCard
 									{container}
 									linkPath={pathnameWithoutContextSegment}
@@ -158,7 +158,7 @@
 						{/if}
 					</div>
 				</BoardColumn>
-				{#each organizationalUnitsByLevel as containers, i}
+				{#each organizationalUnitsByLevel as containers, i (i)}
 					{@const level = i + 1}
 					<BoardColumn
 						--background="transparent"
@@ -170,7 +170,7 @@
 						title={$_('organizational_unit_level', { values: { level } })}
 					>
 						<div class="vertical-scroll-wrapper">
-							{#each containers as container}
+							{#each containers as container (container.guid)}
 								<OrganizationMenuCard
 									{container}
 									linkPath={pathnameWithoutContextSegment}

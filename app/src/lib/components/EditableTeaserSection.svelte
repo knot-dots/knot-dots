@@ -144,7 +144,7 @@
 		{#if editable}
 			<!-- Position markers -->
 			<div class="position-markers">
-				{#each teaserColSizes.options as size}
+				{#each teaserColSizes.options as size (size)}
 					<div
 						class="position-marker"
 						class:active={currentColSize === size}

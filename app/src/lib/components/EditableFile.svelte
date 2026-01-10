@@ -56,7 +56,7 @@
 			{#if uploadInProgress}
 				<span class="loader"></span>
 			{:else if value}
-				{#each value as file, i}
+				{#each value as file, i (file[0])}
 					<span class="badge badge--gray">
 						<span class="badge-text">{file[1]}</span>
 						<button
@@ -95,7 +95,7 @@
 	<span class="label">{$_('files')}</span>
 	<div>
 		<ul class="value">
-			{#each value as file, i}
+			{#each value as file (file[0])}
 				<li>
 					<a class="badge badge--gray" href={transformFileURL(file[0])}>
 						<span class="badge-text">{file[1]}</span>

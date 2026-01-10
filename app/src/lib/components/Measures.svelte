@@ -14,7 +14,7 @@
 </script>
 
 <Board>
-	{#each status.options as statusOption}
+	{#each status.options as statusOption (statusOption)}
 		<BoardColumn
 			--background={statusBackgrounds.get(statusOption)}
 			--hover-border-color={statusHoverColors.get(statusOption)}
