@@ -44,6 +44,7 @@
 		.process(value) then content}
 		<button class="dropdown-button truncated" type="button" use:popover.button>
 			{#if content.data.excerpt}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html content.data.excerpt}
 			{:else}
 				{$_('empty')}

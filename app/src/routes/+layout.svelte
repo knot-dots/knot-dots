@@ -26,6 +26,7 @@
 	<title>{$_('page_title')}</title>
 
 	{#if env.PUBLIC_MATOMO_CONTAINER_ID}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html `<script>
   var _mtm = window._mtm = window._mtm || [];
   _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
