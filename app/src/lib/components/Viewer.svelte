@@ -26,6 +26,7 @@
 
 <div class="markdown-body">
 	{#if content.value}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html content.value}
 	{:else}
 		{$_('empty')}

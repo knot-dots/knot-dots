@@ -30,6 +30,7 @@
 		.use(rehypeStringify)
 		.process(container.payload.description) then content}
 		{#if content.data.excerpt}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			<p>{@html content.data.excerpt}</p>
 		{/if}
 	{/await}
