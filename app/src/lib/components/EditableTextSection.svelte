@@ -27,7 +27,6 @@
 <header>
 	{#if !hideTitle}
 		{#if editable && $ability.can('update', container)}
-			<!-- svelte-ignore binding_property_non_reactive -->
 			<svelte:element
 				this={heading}
 				bind:textContent={container.payload.title}
@@ -53,7 +52,6 @@
 </header>
 
 {#if editable && $ability.can('update', container)}
-	<!-- svelte-ignore binding_property_non_reactive -->
 	<Editor bind:value={container.payload.body} />
 {:else}
 	<Viewer value={container.payload.body} />
