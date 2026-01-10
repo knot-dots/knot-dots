@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
-		type Container,
 		type IndicatorContainer,
 		newIndicatorTemplateFromIndicator,
 		payloadTypes,

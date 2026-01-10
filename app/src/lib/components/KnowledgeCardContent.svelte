@@ -2,12 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { date } from 'svelte-i18n';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import {
-		type AnyContainer,
-		type ContentPartnerContainer,
-		type KnowledgeContainer,
-		payloadTypes
-	} from '$lib/models';
+	import { type ContentPartnerContainer, type KnowledgeContainer, payloadTypes } from '$lib/models';
 
 	interface Props {
 		container: KnowledgeContainer;

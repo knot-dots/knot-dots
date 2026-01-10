@@ -20,7 +20,6 @@
 
 	function remove(index: number) {
 		return (event: Event) => {
-			const input = event.currentTarget as HTMLInputElement;
 			value = [...value.slice(0, index), ...value.slice(index + 1)];
 			requestSubmit(event);
 		};

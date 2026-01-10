@@ -1434,6 +1434,7 @@ export function isActualDataContainer(
 	return container.payload.type === payloadTypes.enum.actual_data;
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const administrativeAreaBasicDataContainer = container.extend({
 	payload: administrativeAreaBasicDataPayload
 });
@@ -2209,6 +2210,8 @@ const emptyRuleContainer = emptyContainer.extend({
 });
 
 export type EmptyRuleContainer = z.infer<typeof emptyRuleContainer>;
+
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 export const modifiedContainer = anyContainer.omit({
 	revision: true,

@@ -17,7 +17,7 @@
 
 	const popover = createPopover({});
 
-	const [popperRef, popperContent] = createPopperActions({
+	const [, popperContent] = createPopperActions({
 		placement: 'top-start',
 		strategy: 'absolute'
 	});

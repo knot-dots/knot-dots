@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import Card from '$lib/components/Card.svelte';
 	import type { KnowledgeContainer } from '$lib/models';
 

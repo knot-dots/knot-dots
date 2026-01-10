@@ -8,7 +8,6 @@
 		type Container,
 		goalsByHierarchyLevel,
 		isGoalContainer,
-		isPartOf,
 		payloadTypes,
 		predicates
 	} from '$lib/models';

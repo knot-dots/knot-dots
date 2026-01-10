@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { computeFacetCount, type Container, predicates, taskCategories } from '$lib/models';
+	import { computeFacetCount, predicates, taskCategories } from '$lib/models';
 
 	import type { PageData } from '../../routes/[[guid=uuid]]/tasks/catalog/$types';
 

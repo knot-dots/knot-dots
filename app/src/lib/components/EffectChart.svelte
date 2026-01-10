@@ -5,11 +5,8 @@
 	import {
 		type AnyContainer,
 		type EffectContainer,
-		findAncestors,
-		isContainerWithEffect,
 		isIndicatorContainer,
-		isRelatedTo,
-		predicates
+		isRelatedTo
 	} from '$lib/models';
 
 	interface Props {

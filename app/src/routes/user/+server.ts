@@ -49,7 +49,7 @@ export const POST = (async ({ locals, request }) => {
 				settings: {}
 			})
 		);
-	} catch (error) {
+	} catch {
 		const subject = await createKeycloakUser(parseResult.data.email);
 		user = await locals.pool.connect(
 			createUser({

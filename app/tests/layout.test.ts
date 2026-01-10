@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('home screen has expected regions', async ({ page, viewport }) => {
+test('home screen has expected regions', async ({ page }) => {
 	await page.goto('/');
 	await expect(page.getByRole('banner')).toBeVisible();
 	await expect(page.getByRole('main')).toBeVisible();

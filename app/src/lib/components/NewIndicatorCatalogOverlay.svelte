@@ -21,7 +21,6 @@
 		type NewContainer,
 		overlayKey,
 		overlayURL,
-		paramsFromFragment,
 		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
@@ -37,8 +36,6 @@
 	}
 
 	let { containers }: Props = $props();
-
-	let params = $derived(paramsFromFragment(page.url));
 
 	let orgContext = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
 
@@ -106,7 +103,6 @@
 		try {
 			const response = await saveContainer(container);
 			if (response.ok) {
-				const { guid } = await response.json();
 				await goto(overlayURL(page.url, overlayKey.enum.view, template.guid));
 			} else {
 				const error = await response.json();

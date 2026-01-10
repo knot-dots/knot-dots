@@ -28,7 +28,6 @@
 	});
 
 	function remove(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
 		value = undefined;
 		requestSubmit(event);
 	}
