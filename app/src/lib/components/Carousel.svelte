@@ -20,7 +20,7 @@
 
 {#if items.length > 0 || mayAddItem}
 	<ul class="carousel">
-		{#each items as item}
+		{#each items as item (item.guid)}
 			<li>
 				{@render itemSnippet(item)}
 			</li>

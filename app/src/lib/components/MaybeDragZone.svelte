@@ -68,7 +68,7 @@
 	</div>
 {:else}
 	<div class="vertical-scroll-wrapper">
-		{#each items as { container }}
+		{#each items as { container, guid } (guid)}
 			{#if itemSnippet}
 				{@render itemSnippet(container)}
 			{:else}

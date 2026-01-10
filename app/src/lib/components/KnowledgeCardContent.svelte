@@ -55,7 +55,7 @@
 
 	{#if container.payload.tags.length > 0}
 		<div class="tags">
-			{#each container.payload.tags as tag}
+			{#each container.payload.tags as tag (tag)}
 				<span class="tag">
 					{$_(`knowledge.tags.${tag}`) !== `knowledge.tags.${tag}`
 						? $_(`knowledge.tags.${tag}`)

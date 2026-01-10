@@ -155,7 +155,7 @@
 
 		<ul class="details-section">
 			{#if params.has('alreadyInUse')}
-				{#each indicators as indicator}
+				{#each indicators as indicator (indicator.guid)}
 					<li>
 						<Card --height="100%" container={indicator}>
 							{#snippet button()}
@@ -172,7 +172,7 @@
 					</li>
 				{/each}
 			{/if}
-			{#each indicatorTemplates.filter((c) => !alreadyInUse(c, indicators)) as template}
+			{#each indicatorTemplates.filter((c) => !alreadyInUse(c, indicators)) as template (template.guid)}
 				<li>
 					<IndicatorTemplateCard --height="100%" container={template}>
 						{#snippet button()}

@@ -19,7 +19,7 @@
 	<MultipleChoiceDropdown {options} bind:value />
 {:else}
 	<ul class="value">
-		{#each options.filter((o) => value.includes(o.value)) as selectedOption}
+		{#each options.filter((o) => value.includes(o.value)) as selectedOption (selectedOption.value)}
 			<li>{selectedOption.label}</li>
 		{:else}
 			<li>{$_('empty')}</li>

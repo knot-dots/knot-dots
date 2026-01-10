@@ -356,7 +356,7 @@
 				<fieldset aria-labelledby="legend" use:sortBar.panel>
 					<legend class="is-visually-hidden">{$_('sort')}</legend>
 					<span aria-hidden="true">{$_('sort')}</span>
-					{#each sortOptions as [label, value]}
+					{#each sortOptions as [label, value] (value)}
 						{@const Icon = sortIcons.get(value)}
 						<label class="sort-option">
 							<input type="radio" {value} bind:group={sort} />

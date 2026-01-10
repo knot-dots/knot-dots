@@ -15,7 +15,7 @@
 			<div class="content-details">
 				{#if form?.errors}
 					<ul>
-						{#each form.errors as error}
+						{#each form.errors as error (error)}
 							<li>{error}</li>
 						{/each}
 					</ul>

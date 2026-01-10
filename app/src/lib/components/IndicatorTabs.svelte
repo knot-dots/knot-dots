@@ -30,7 +30,7 @@
 </script>
 
 <ul class="tabs">
-	{#each tab.options.filter((o) => hasHistoricalValues(container) || o != 'historical_values') as tabOption}
+	{#each tab.options.filter((o) => hasHistoricalValues(container) || o != 'historical_values') as tabOption (tabOption)}
 		<li class="tab-item" class:tab-item--active={tabOption === currentTab}>
 			<a class="badge" href={tabURL(paramsFromFragment(page.url), tabOption)}>
 				{$_(`indicator.tab.${tabOption}`)}

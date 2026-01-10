@@ -14,7 +14,7 @@
 
 <ProgramsPage {data}>
 	<Board>
-		{#each programStatus.options as statusOption}
+		{#each programStatus.options as statusOption (statusOption)}
 			<BoardColumn
 				--background={programStatusBackgrounds.get(statusOption)}
 				--hover-border-color={programStatusHoverColors.get(statusOption)}

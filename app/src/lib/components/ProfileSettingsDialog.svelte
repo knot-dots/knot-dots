@@ -104,7 +104,7 @@
 							<li>
 								<p><strong>{key}</strong></p>
 								<ul>
-									{#each value as flag}
+									{#each value as flag (flag)}
 										<li>
 											<label>
 												<input type="checkbox" name="feature" value={flag} bind:group={features} />
