@@ -1581,7 +1581,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 		const taskPriorityValues = taskPriority.map(({ priority, task }) => [priority, task]);
 		const tasks = taskPriority.map(({ task }) => task);
 
-		return connection.transaction(async (txConnection) => {
+		await connection.transaction(async (txConnection) => {
 			await txConnection.query(sql.typeAlias('void')`
 				DELETE FROM task_priority WHERE task IN (${sql.join(tasks, sql.fragment`,`)})
 			`);
@@ -1591,6 +1591,19 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 				FROM ${sql.unnest(taskPriorityValues, ['int4', 'uuid'])}
 			`);
 		});
+
+		if (
+			createFeatureDecisions(getFeatures()).useElasticsearch() &&
+			shouldIndexType(payloadTypes.enum.task)
+		) {
+			for (const taskGuid of new Set(tasks)) {
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: taskGuid,
+					timestamp: new Date().toISOString()
+				});
+			}
+		}
 	};
 }
 
