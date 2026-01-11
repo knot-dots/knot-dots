@@ -123,4 +123,72 @@ test.describe('Permissions', () => {
 			await expect(page.getByTitle(suborg2Title)).not.toBeAttached();
 		});
 	});
+
+	test.describe('changing the organizational unit of a measure propagates to its descendant elements', () => {
+		test.use({ storageState: 'tests/.auth/admin.json' });
+
+		test('change the organizational unit of a measure', async ({
+			page,
+			testOrganizationalUnit,
+			testProgram,
+			testMeasure
+		}) => {
+			const overlay = page.locator('.overlay');
+			const dialog = page.getByRole('dialog');
+
+			await page.goto(`/${testMeasure.organization}/all/level`);
+
+			await page.getByRole('link', { name: testMeasure.payload.title }).click();
+			await overlay.getByRole('checkbox', { name: 'Edit mode' }).check();
+
+			// Add a goal to this measure via the goals section
+			await overlay.getByRole('button', { name: 'Add section' }).click();
+			await overlay.getByRole('menuitem', { name: 'Goals' }).click();
+			const section = overlay
+				.locator('.sections section')
+				.filter({ has: page.getByRole('heading', { name: 'Goals' }) })
+				.first();
+			await expect(section).toBeVisible();
+			const titleOfFirstGoal = 'First goal';
+			await section.getByRole('button', { name: 'Add item' }).click();
+			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
+				testMeasure.payload.title
+			);
+			await dialog.getByRole('textbox', { name: 'Title' }).fill(titleOfFirstGoal);
+			await dialog.getByRole('button', { name: 'Save' }).click();
+			await expect(overlay.getByRole('heading', { name: titleOfFirstGoal })).toBeVisible();
+
+			// Change the organizational unit of the measure
+			await overlay.getByRole('button', { name: 'Back' }).click();
+			await expect(overlay.getByRole('heading', { name: testMeasure.payload.title })).toBeVisible();
+			await overlay.getByLabel('Organizational unit').click();
+			await overlay.getByLabel(testOrganizationalUnit.payload.name).click();
+			await page.waitForTimeout(2100);
+
+			// Assert descendant goal' organizational unit is updated, too
+			await section.getByRole('link', { name: titleOfFirstGoal }).click();
+			await expect(overlay.getByRole('heading', { name: titleOfFirstGoal })).toBeVisible();
+			await expect(page.getByRole('button', { name: 'Organizational unit' })).toHaveText(
+				testOrganizationalUnit.payload.name
+			);
+
+			// Assert program is not affected by changing the organizational unit of its descendant measure
+			await overlay.getByRole('link', { name: 'Close' }).click();
+			await page.getByRole('link', { name: testProgram.payload.title }).click();
+			await expect(overlay.getByRole('heading', { name: testProgram.payload.title })).toBeVisible();
+			await expect(overlay.getByRole('button', { name: 'Organizational unit' })).toHaveText(
+				'Empty'
+			);
+
+			// Assert newly added goals inherit the organizational unit of the measure
+			await page.getByRole('link', { name: testMeasure.payload.title }).click();
+			await section.getByRole('button', { name: 'Add item' }).click();
+			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
+				testMeasure.payload.title
+			);
+			await expect(dialog.getByRole('button', { name: 'Organizational unit' })).toHaveText(
+				testOrganizationalUnit.payload.name
+			);
+		});
+	});
 });

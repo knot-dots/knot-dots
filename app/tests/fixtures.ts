@@ -7,6 +7,7 @@ import {
 	type GoalContainer,
 	type MeasureContainer,
 	type NewContainer,
+	type OrganizationalUnitContainer,
 	type OrganizationContainer,
 	payloadTypes,
 	predicates,
@@ -19,6 +20,7 @@ type MyWorkerFixtures = {
 	adminContext: BrowserContext;
 	defaultOrganization: OrganizationContainer;
 	testOrganization: OrganizationContainer;
+	testOrganizationalUnit: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
 	testMeasure: MeasureContainer;
@@ -94,6 +96,29 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
+	testOrganizationalUnit: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newOrganizationalUnit = containerOfType(
+				payloadTypes.enum.organizational_unit,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as OrganizationalUnitContainer;
+			const testOrganizationalUnit = await createContainer(adminContext, {
+				...newOrganizationalUnit,
+				payload: {
+					...newOrganizationalUnit.payload,
+					name: `Test Organizational Unit ${workerInfo.workerIndex}`
+				}
+			});
+
+			await use(testOrganizationalUnit);
+
+			await deleteContainer(adminContext, testOrganizationalUnit);
+		},
+		{ scope: 'worker' }
+	],
 	testProgram: [
 		async ({ adminContext, testOrganization }, use, workerInfo) => {
 			const newProgram = containerOfType(
@@ -135,7 +160,7 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 		{ scope: 'worker' }
 	],
 	testMeasure: [
-		async ({ adminContext, testOrganization }, use, workerInfo) => {
+		async ({ adminContext, testOrganization, testProgram }, use, workerInfo) => {
 			const newMeasure = containerOfType(
 				payloadTypes.enum.measure,
 				testOrganization.guid,
@@ -145,7 +170,14 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 			) as MeasureContainer;
 			const testMeasure = await createContainer(adminContext, {
 				...newMeasure,
-				payload: { ...newMeasure.payload, title: `Test Measure ${workerInfo.workerIndex}` }
+				payload: { ...newMeasure.payload, title: `Test Measure ${workerInfo.workerIndex}` },
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of-program'],
+						object: testProgram.guid
+					}
+				]
 			});
 
 			await use(testMeasure);
