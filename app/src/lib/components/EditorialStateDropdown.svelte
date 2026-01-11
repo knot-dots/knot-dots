@@ -6,14 +6,16 @@
 	interface Props {
 		aiSuggestion?: boolean;
 		editable?: boolean;
+		labelledBy?: string;
 		value: string | undefined;
 	}
 
-	let { aiSuggestion = false, editable = false, value = $bindable() }: Props = $props();
+	let { aiSuggestion = false, labelledBy, editable = false, value = $bindable() }: Props = $props();
 </script>
 
 {#if editable}
 	<SingleChoiceDropdown
+		{labelledBy}
 		offset={[-41, -39]}
 		options={[
 			{ label: $_('empty'), value: undefined },

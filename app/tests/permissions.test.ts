@@ -62,7 +62,7 @@ test.describe('Permissions', () => {
 			await expect(page.locator('.overlay')).toBeVisible();
 			await page.locator('.overlay').getByRole('checkbox', { name: 'Edit mode' }).check();
 			await page.getByRole('button', { name: 'Show all properties' }).click();
-			await page.getByRole('button', { name: suborgTitle }).click();
+			await page.getByRole('button', { name: 'Organizational unit' }).click();
 			await page.waitForTimeout(500);
 			await page.getByRole('radio', { name: suborg2Title }).check();
 			await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();

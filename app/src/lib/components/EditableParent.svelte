@@ -9,7 +9,9 @@
 	}
 
 	let { container = $bindable(), editable = false }: Props = $props();
+
+	const id = crypto.randomUUID();
 </script>
 
-<div class="label">{$_t('superordinate_element')}</div>
-<ParentDropdown bind:container {editable} />
+<div class="label" {id}>{$_t('superordinate_element')}</div>
+<ParentDropdown bind:container {editable} labelledBy={id} />

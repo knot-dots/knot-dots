@@ -5,14 +5,16 @@
 
 	interface Props {
 		editable: boolean;
+		labelledBy?: string;
 		value: string;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, labelledBy, value = $bindable() }: Props = $props();
 </script>
 
 {#if editable}
 	<SingleChoiceDropdown
+		{labelledBy}
 		offset={[-41, -39]}
 		options={visibility.options.map((o) => ({ value: o, label: $_(`visibility.${o}`) }))}
 		bind:value

@@ -6,12 +6,13 @@
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 
 	interface Props {
+		labelledBy?: string;
 		offset?: [number, number];
 		options: Array<{ href?: string; label: string; value: string | null | undefined }>;
 		value: string | null | undefined;
 	}
 
-	let { offset = [0, 4], options, value = $bindable() }: Props = $props();
+	let { labelledBy, offset = [0, 4], options, value = $bindable() }: Props = $props();
 	let selected = $derived(options.find((o) => o.value == value));
 
 	const popover = createPopover({});
@@ -27,14 +28,19 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
+	<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
 		<span class="truncated">
 			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
 		</span>
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<fieldset
+			aria-labelledby={labelledBy}
+			class="dropdown-panel"
+			use:popperContent={extraOpts}
+			use:popover.panel
+		>
 			<div>
 				{#each options as option (option.value)}
 					<label>
