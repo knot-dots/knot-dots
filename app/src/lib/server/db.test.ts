@@ -246,6 +246,38 @@ test('adding more relations does not interfere with existing relations', async (
 
 test.for([
 	{
+		name: 'all',
+		filters: {
+			terms: 'nachhaltig',
+			type: [
+				payloadTypes.enum.effect,
+				payloadTypes.enum.goal,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.program,
+				payloadTypes.enum.rule,
+				payloadTypes.enum.simple_measure
+			]
+		},
+		sort: 'alpha'
+	},
+	{
+		name: 'öffentlich',
+		filters: {
+			terms: 'nachhalt',
+			type: [
+				payloadTypes.enum.effect,
+				payloadTypes.enum.goal,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.program,
+				payloadTypes.enum.rule,
+				payloadTypes.enum.simple_measure
+			]
+		},
+		sort: 'alpha'
+	},
+	{
 		name: 'goal',
 		filters: { type: [payloadTypes.enum.goal] },
 		sort: 'modified'
