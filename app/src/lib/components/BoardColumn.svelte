@@ -7,6 +7,7 @@
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
 		containerOfType,
+		isCategoryContainer,
 		type GoalStatus,
 		isGoalContainer,
 		isMeasureContainer,
@@ -61,6 +62,8 @@
 		) as NewContainer;
 
 		if (isOrganizationalUnitContainer(container) && params.has('level')) {
+			container.payload.level = parseInt(params.get('level') as string);
+		} else if (isCategoryContainer(container) && params.has('level')) {
 			container.payload.level = parseInt(params.get('level') as string);
 		} else if (isRuleContainer(container) && params.has('ruleStatus')) {
 			container.payload.ruleStatus = params.get('ruleStatus') as RuleStatus;

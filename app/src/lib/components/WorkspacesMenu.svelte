@@ -49,6 +49,9 @@
 			level: '/knowledge/level',
 			table: '/knowledge/table'
 		},
+		categories: {
+			level: '/categories'
+		},
 		measures: {
 			catalog: '/measures/catalog',
 			monitoring: '/measures/monitoring',
@@ -90,6 +93,7 @@
 		level: {
 			all: '/all/level',
 			knowledge: '/knowledge/level',
+			categories: '/categories',
 			goals: '/goals/level',
 			'objectives-and-effects': '/objectives-and-effects',
 			programs: '/programs/level'
@@ -189,6 +193,13 @@
 			label: $_('workspace.type.knowledge'),
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
+		},
+		{
+			exists: true,
+			icon: Grid,
+			label: $_('workspace.type.categories'),
+			recommended: false,
+			value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
 		},
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [

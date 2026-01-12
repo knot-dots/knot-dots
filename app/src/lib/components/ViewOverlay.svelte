@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
@@ -23,6 +24,7 @@
 		type AnyContainer,
 		audience,
 		computeFacetCount,
+		isCategoryContainer,
 		isContainerWithEffect,
 		isContentPartnerContainer,
 		isEffectContainer,
@@ -118,6 +120,7 @@
 						predicates.enum['is-measured-by'],
 						predicates.enum['is-objective-for'],
 						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-category'],
 						predicates.enum['is-section-of']
 					]
 				}
@@ -165,6 +168,8 @@
 		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isGoalContainer(container)}
 		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isCategoryContainer(container)}
+		<EditableCategoryDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isIndicatorContainer(container)}
 		<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isIndicatorTemplateContainer(container)}

@@ -7,6 +7,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
@@ -21,6 +22,7 @@
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
+		isCategoryContainer,
 		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
@@ -162,6 +164,13 @@
 
 				{#if isGoalContainer($newContainer)}
 					<GoalProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isCategoryContainer($newContainer)}
+					<CategoryProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
