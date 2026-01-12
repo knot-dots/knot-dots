@@ -65,6 +65,7 @@ const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
 	'accordion_collection',
+	'category',
 	'chapter',
 	'col_content',
 	'content_partner',
@@ -101,6 +102,7 @@ const payloadTypeValues = [
 	'simple_measure',
 	'task',
 	'task_collection',
+	'term',
 	'teaser',
 	'teaser_collection',
 	'teaser_highlight',
@@ -193,6 +195,7 @@ const predicateValues = [
 	'is-member-of',
 	'is-objective-for',
 	'is-part-of',
+	'is-part-of-category',
 	'is-part-of-measure',
 	'is-part-of-program',
 	'is-prerequisite-for',
@@ -591,6 +594,69 @@ const basePayload = z
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
+
+function slugifyCategoryKey(source: string) {
+	return (
+		source
+			.trim()
+			.toLowerCase()
+			.replace(/[^a-z0-9_.-]+/g, '-')
+			.replace(/^-+|-+$/g, '') || 'category'
+	);
+}
+
+const categoryPayloadBase = z
+	.object({
+		description: z.string().trim().optional(),
+		key: z
+			.string()
+			.trim()
+			.min(1)
+			.max(128)
+			.regex(/^[a-z0-9_.-]+$/i)
+			.optional(),
+		level: z.number().int().nonnegative().default(0),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.category),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.passthrough()
+	.superRefine((value, ctx) => {
+		if (!value.key || !value.key.trim()) {
+			if (!value.title?.trim()) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'category title is required to derive key'
+				});
+				return;
+			}
+			value.key = slugifyCategoryKey(value.title);
+		} else {
+			value.key = slugifyCategoryKey(value.key);
+		}
+	});
+
+const categoryPayload = categoryPayloadBase;
+
+const initialCategoryPayload = categoryPayloadBase.partial({
+	key: true,
+	title: true
+});
+
+const termPayload = z
+	.object({
+		description: z.string().trim().optional(),
+		title: z.string().trim(),
+		value: z.string().trim(),
+		type: z.literal(payloadTypes.enum.term),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialTermPayload = termPayload.partial({
+	title: true,
+	value: true
+});
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
@@ -1279,6 +1345,7 @@ const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
+	categoryPayload,
 	colContentPayload,
 	contentPartnerCollectionPayload,
 	contentPartnerPayload,
@@ -1312,6 +1379,7 @@ const payload = z.discriminatedUnion('type', [
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
+	termPayload,
 	teaserPayload,
 	teaserCollectionPayload,
 	accordionCollectionPayload,
@@ -1341,6 +1409,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
+	categoryPayload,
 	colContentPayload,
 	contentPartnerCollectionPayload,
 	contentPartnerPayload,
@@ -1376,6 +1445,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
+	termPayload,
 	textPayload,
 	teaserPayload,
 	teaserCollectionPayload,
@@ -1458,6 +1528,18 @@ export function isChapterContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ChapterContainer {
 	return container.payload.type === payloadTypes.enum.chapter;
+}
+
+const categoryContainer = container.extend({
+	payload: categoryPayload
+});
+
+export type CategoryContainer = z.infer<typeof categoryContainer>;
+
+export function isCategoryContainer(
+	container: AnyContainer | EmptyContainer
+): container is CategoryContainer {
+	return container.payload.type === payloadTypes.enum.category;
 }
 
 const customCollectionContainer = container.extend({
@@ -1808,6 +1890,18 @@ export function isTaskContainer(
 	return container.payload.type === payloadTypes.enum.task;
 }
 
+const termContainer = container.extend({
+	payload: termPayload
+});
+
+export type TermContainer = z.infer<typeof termContainer>;
+
+export function isTermContainer(
+	container: AnyContainer | EmptyContainer
+): container is TermContainer {
+	return container.payload.type === payloadTypes.enum.term;
+}
+
 const taskCollectionContainer = container.extend({
 	payload: taskCollectionPayload
 });
@@ -2130,6 +2224,7 @@ export const emptyContainer = newContainer.extend({
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
 		initialChapterPayload,
+		initialCategoryPayload,
 		initialColContentPayload,
 		initialContentPartnerCollectionPayload,
 		initialContentPartnerPayload,
@@ -2166,6 +2261,7 @@ export const emptyContainer = newContainer.extend({
 		initialTextPayload,
 		initialTaskCollectionPayload,
 		initialTaskPayload,
+		initialTermPayload,
 		initialTeaserPayload,
 		initialTeaserCollectionPayload,
 		initialAccordionCollectionPayload,
@@ -2381,6 +2477,7 @@ export function mayDelete(container: AnyContainer | EmptyContainer, ability: Mon
 		container.relation.filter(
 			({ predicate, object }) =>
 				(predicate == predicates.enum['is-part-of'] ||
+					predicate == predicates.enum['is-part-of-category'] ||
 					predicate == predicates.enum['is-part-of-measure']) &&
 				'guid' in container &&
 				object == container.guid
