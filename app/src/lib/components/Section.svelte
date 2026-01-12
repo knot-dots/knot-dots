@@ -274,6 +274,7 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 				{heading}
+				hideTitle={isReportContainer(parentContainer)}
 			/>
 		{:else if isTeaserLikeContainer(container)}
 			<EditableTeaserSection
