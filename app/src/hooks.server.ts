@@ -14,6 +14,7 @@ import {
 	getPool,
 	getUser
 } from '$lib/server/db';
+import { ensureDefaultCategoryTerms } from '$lib/server/defaultCategories';
 import { withFeatures } from '$lib/server/features';
 import { withLogger } from '$lib/server/logger';
 
@@ -114,7 +115,9 @@ export const handle = sequence(
 		const lang = event.request.headers.get('accept-language')?.split(',')[0];
 		locale.set(lang ?? 'de');
 
-		event.locals.pool = await getPool();
+		const pool = await getPool();
+		event.locals.pool = pool;
+		await ensureDefaultCategoryTerms(pool);
 
 		const session = await event.locals.auth();
 		if (session) {

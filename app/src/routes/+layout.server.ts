@@ -5,7 +5,7 @@ import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { filterVisible } from '$lib/authorization';
-import { type AnyContainer, type KeycloakUser } from '$lib/models';
+import { type KeycloakUser } from '$lib/models';
 import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 import {
 	getManyOrganizationalUnitContainers,
@@ -20,15 +20,14 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 	let user: KeycloakUser | undefined = undefined;
 
-	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
-		const containers = await promise;
-		return filterVisible(containers, locals.user);
-	}
-
-	const [organizations, organizationalUnits] = await Promise.all([
-		filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
-		filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
+	const [allOrganizations, allOrganizationalUnits] = await Promise.all([
+		locals.pool.connect(getManyOrganizationContainers({}, 'alpha')),
+		locals.pool.connect(getManyOrganizationalUnitContainers({}))
 	]);
+
+	const organizations = filterVisible(allOrganizations, locals.user);
+	const organizationalUnits = filterVisible(allOrganizationalUnits, locals.user);
+	const defaultOrganizationGuid = allOrganizations.find(({ payload }) => payload.default)?.guid;
 
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
@@ -101,6 +100,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		features: locals.features,
 		organizations,
 		organizationalUnits,
+		defaultOrganizationGuid,
 		session: await locals.auth(),
 		user
 	};
