@@ -71,34 +71,29 @@ test.describe('Chapter section heading levels', () => {
 			await numberInput.fill(number, { force: true });
 		}
 
-		// Helper to add a Text section and set its heading
-		async function addText(headingText: string) {
+		async function addCustomCollection(headingText: string) {
 			const numberOfSections = await overlay.locator('.sections section').count();
 			const lastSection = overlay.locator('.sections section').nth(numberOfSections - 1);
 			await lastSection.hover();
 			await lastSection.getByRole('button', { name: 'Add section' }).click({ force: true });
-			await lastSection.getByRole('menuitem', { name: 'Text' }).click({ force: true });
+			await lastSection.getByRole('menuitem', { name: 'Custom collection' }).click({ force: true });
 
-			// The editable text section heading is a contenteditable heading element
-			const textHeading = overlay
-				.locator('.sections section')
-				.nth(numberOfSections)
-				.getByRole('heading');
-			await textHeading.fill(headingText, { force: true });
+			const section = overlay.locator('.sections section').nth(numberOfSections);
+			await section.getByRole('textbox', { name: 'Title' }).fill(headingText, { force: true });
 		}
 
 		// Build the requested structure:
 		// 1, [Text], 1.1, [Text], 2, [Text], 2.1, [Text], 2.1.1, [Text]
 		await addChapter('1');
-		await addText('Text after 1');
+		await addCustomCollection('Text after 1');
 		await addChapter('1.1');
-		await addText('Text after 1.1');
+		await addCustomCollection('Text after 1.1');
 		await addChapter('2');
-		await addText('Text after 2');
+		await addCustomCollection('Text after 2');
 		await addChapter('2.1');
-		await addText('Text after 2.1');
+		await addCustomCollection('Text after 2.1');
 		await addChapter('2.1.1');
-		await addText('Text after 2.1.1');
+		await addCustomCollection('Text after 2.1.1');
 
 		// Collect the heading tag names in the same order as the section list
 		const headings = overlay.locator('ul li section .details-heading');

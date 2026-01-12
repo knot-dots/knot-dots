@@ -9,6 +9,7 @@
 		container: TextContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+		hideTitle?: boolean;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
@@ -17,26 +18,29 @@
 		container = $bindable(),
 		editable = false,
 		heading,
+		hideTitle = false,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 </script>
 
 <header>
-	{#if editable && $ability.can('update', container)}
-		<!-- svelte-ignore binding_property_non_reactive -->
-		<svelte:element
-			this={heading}
-			bind:textContent={container.payload.title}
-			class="details-heading"
-			contenteditable="plaintext-only"
-			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-			role="heading"
-		></svelte:element>
-	{:else}
-		<svelte:element this={heading} class="details-heading" contenteditable="false">
-			{container.payload.title}
-		</svelte:element>
+	{#if !hideTitle}
+		{#if editable && $ability.can('update', container)}
+			<!-- svelte-ignore binding_property_non_reactive -->
+			<svelte:element
+				this={heading}
+				bind:textContent={container.payload.title}
+				class="details-heading"
+				contenteditable="plaintext-only"
+				onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+				role="heading"
+			></svelte:element>
+		{:else}
+			<svelte:element this={heading} class="details-heading" contenteditable="false">
+				{container.payload.title}
+			</svelte:element>
+		{/if}
 	{/if}
 
 	{#if editable}
