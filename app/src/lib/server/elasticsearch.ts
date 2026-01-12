@@ -6,7 +6,10 @@ import { env as privateEnv } from '$env/dynamic/private';
 
 function buildElasticsearchSortClause(sort: string) {
 	if (sort === 'modified') {
-		return [{ validFrom: { order: 'desc', unmapped_type: 'date' } }, { guid: { order: 'asc' } }];
+		return [
+			{ validFrom: { order: 'desc', missing: '_first', unmapped_type: 'date' } },
+			{ guid: { order: 'asc' } }
+		];
 	}
 	if (sort === 'priority') {
 		return [
@@ -14,7 +17,7 @@ function buildElasticsearchSortClause(sort: string) {
 			{ guid: { order: 'asc' } }
 		];
 	}
-	return [{ 'title.keyword': { order: 'asc', missing: '_last' } }, { guid: { order: 'asc' } }];
+	return [{ titleSort: { order: 'asc', missing: '_last' } }, { guid: { order: 'asc' } }];
 }
 
 export function getManyContainersWithES(
