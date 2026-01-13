@@ -50,7 +50,6 @@ export default (async function load({ depends, locals, parent, url }) {
 				url.searchParams.getAll('programType'),
 				{
 					customCategories,
-					measureTypes: url.searchParams.getAll('measureType'),
 					terms: url.searchParams.get('terms') ?? ''
 				},
 				url.searchParams.get('sort') ?? ''
@@ -62,7 +61,6 @@ export default (async function load({ depends, locals, parent, url }) {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
 					customCategories,
-					measureTypes: url.searchParams.getAll('measureType'),
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]

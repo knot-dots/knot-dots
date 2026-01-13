@@ -496,7 +496,6 @@ function prepareWhereCondition(filters: {
 	indicatorCategories?: string[];
 	indicator?: string;
 	indicatorTypes?: string[];
-	measureTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
 	policyFieldsBNK?: string[];
@@ -543,11 +542,6 @@ function prepareWhereCondition(filters: {
 	if (filters.indicatorTypes?.length) {
 		conditions.push(
 			sql.fragment`c.payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
-		);
-	}
-	if (filters.measureTypes?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'measureType' ?| ${sql.array(filters.measureTypes, 'text')}`
 		);
 	}
 	if (filters.organizations?.length) {
@@ -673,7 +667,6 @@ export function getManyContainers(
 		categories?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		measureTypes?: string[];
 		indicator?: string;
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
@@ -894,7 +887,6 @@ export function getAllRelatedContainers(
 		categories?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
@@ -1003,7 +995,6 @@ export function getAllRelatedContainersByProgramType(
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		categories?: string[];
-		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;

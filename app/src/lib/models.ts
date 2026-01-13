@@ -305,19 +305,13 @@ export const programTypes = z.enum(programTypeValues);
 export type ProgramType = z.infer<typeof programTypes>;
 
 const measureTypeValues = [
-	'measure_type.app',
-	'measure_type.artificial_intelligence',
-	'measure_type.cyber_security',
-	'measure_type.data_visualization',
-	'measure_type.digital_platform',
-	'measure_type.digital_twin',
-	'measure_type.management_tools',
-	'measure_type.network_infrastructure',
-	'measure_type.planning',
-	'measure_type.sensory',
-	'measure_type.smart_grid',
-	'measure_type.user_participation',
-	'measure_type.virtual_reality'
+	'measure_type.activity',
+	'measure_type.module',
+	'measure_type.partial_measure',
+	'measure_type.partial_project',
+	'measure_type.project',
+	'measure_type.sub_measure',
+	'measure_type.sub_project'
 ] as const;
 
 export const measureTypes = z.enum(measureTypeValues);
@@ -832,7 +826,6 @@ const indicatorPayload = basePayload
 		historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
-		measureType: z.array(measureTypes).default([]),
 		quantity: z.string(),
 		type: z.literal(payloadTypes.enum.indicator),
 		unit: z.string()
@@ -895,7 +888,7 @@ const measurePayload = basePayload
 		annotation: z.string().trim().optional(),
 		comment: z.string().trim().optional(),
 		endDate: z.string().date().optional(),
-		measureType: z.array(measureTypes).default([]),
+		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().optional(),
 		resource: z
 			.array(
@@ -1002,7 +995,7 @@ const simpleMeasurePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
-		measureType: z.array(measureTypes).default([]),
+		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().default(0),
 		resource: z
 			.array(

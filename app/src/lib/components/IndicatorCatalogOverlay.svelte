@@ -21,7 +21,6 @@
 		type IndicatorTemplateContainer,
 		indicatorTypes,
 		isIndicatorContainer,
-		measureTypes,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -136,7 +135,6 @@
 				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
 				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-				['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))]
 			]),

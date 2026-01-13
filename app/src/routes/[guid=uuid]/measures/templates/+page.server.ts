@@ -25,7 +25,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{
 				customCategories,
-				measureTypes: url.searchParams.getAll('measureType'),
 				template: true,
 				terms: url.searchParams.get('terms') ?? '',
 				type: [payloadTypes.enum.measure]

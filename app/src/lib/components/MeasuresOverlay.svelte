@@ -8,7 +8,6 @@
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		type MeasureContainer,
-		measureTypes,
 		policyFieldBNK,
 		predicates,
 		sustainableDevelopmentGoals,
@@ -46,7 +45,6 @@
 				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-				['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
 				['member', memberFacet]
 			]),
 			containers

@@ -35,6 +35,8 @@
 
 <PropertyGrid>
 	{#snippet top()}
+		<EditableMeasureType {editable} bind:value={container.payload.measureType} />
+
 		<EditableDuration {editable} bind:container />
 
 		<EditableProgram {editable} bind:container />
