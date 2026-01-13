@@ -191,6 +191,7 @@
 
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
+			!isSimpleMeasureContainer(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
