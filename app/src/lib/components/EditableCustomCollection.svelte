@@ -79,7 +79,7 @@
 		return computeFacetCount(facets, searchResource.current ?? []);
 	});
 
-	let filter = $state(container.payload.filter);
+	let filter = $state({ ...container.payload.filter });
 
 	let sort = $state(container.payload.sort);
 
