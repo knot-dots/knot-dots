@@ -124,7 +124,9 @@
 	);
 
 	let mayAddMeasureCollection = $derived(
-		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
+		(isOrganizationContainer(parentContainer) ||
+			isOrganizationalUnitContainer(parentContainer) ||
+			isMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isMeasureCollectionContainer)
 	);
 
