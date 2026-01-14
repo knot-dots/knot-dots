@@ -100,7 +100,7 @@
 				<legend>{$_('feature_flags')}</legend>
 				<ul>
 					{#each featureFlags.entries() as [key, value] (key)}
-						{#if (key == 'alpha' && $user.roles.includes('sysadmin')) || key == 'beta'}
+						{#if (key == 'alpha' && $user.roles.includes('alpha-testing')) || key == 'beta'}
 							<li>
 								<p><strong>{key}</strong></p>
 								<ul>
