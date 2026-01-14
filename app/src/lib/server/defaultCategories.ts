@@ -2,6 +2,7 @@ import { Roarr as log } from 'roarr';
 import type { DatabasePool } from 'slonik';
 import de from '$lib/locales/de.json' assert { type: 'json' };
 import {
+	audience,
 	containerOfType,
 	isCategoryContainer,
 	isTermContainer,
@@ -29,6 +30,11 @@ import {
 const translations = de as Record<string, unknown>;
 
 function translate(key: string) {
+	const direct = translations[key];
+	if (typeof direct === 'string') {
+		return direct;
+	}
+
 	const [namespace, remainder] = key.split('.', 2);
 	if (!remainder) {
 		return (translations[key] as string | undefined) ?? key;
@@ -83,6 +89,14 @@ const defaultCategorySeeds: CategorySeed[] = [
 			title: translate(value),
 			value
 		}))
+	},
+	{
+		key: 'audience',
+		title: translate('audience'),
+		terms: audience.options.map((value) => ({
+			title: translate(value),
+			value
+		}))
 	}
 ];
 
@@ -91,15 +105,12 @@ let initializationPromise: Promise<void> | null = null;
 export function ensureDefaultCategoryTerms(pool: DatabasePool) {
 	if (!initializationPromise) {
 		initializationPromise = seedDefaultCategories(pool)
-			.then((seeded) => {
-				if (!seeded) {
-					initializationPromise = null;
-				}
-			})
 			.catch((error) => {
 				log.error(error, 'Failed to seed default categories');
-				initializationPromise = null;
 				throw error;
+			})
+			.finally(() => {
+				initializationPromise = null;
 			});
 	}
 
@@ -116,28 +127,54 @@ async function seedDefaultCategories(pool: DatabasePool): Promise<boolean> {
 		return false;
 	}
 
+	return seedForOrganization(pool, defaultOrganization);
+}
+
+async function seedForOrganization(pool: DatabasePool, organization: { guid: string; realm: string }) {
 	const categories = (await pool.connect(
 		getManyContainers([], { type: [payloadTypes.enum.category] }, 'alpha')
 	))
 		.filter(isCategoryContainer)
-		.filter((container) => container.organization === defaultOrganization.guid);
+		.filter((container) => container.organization === organization.guid);
+
+	// Removed ensureCategoryKeys call
 
 	const terms = (await pool.connect(
 		getManyContainers([], { type: [payloadTypes.enum.term] }, 'alpha')
 	))
 		.filter(isTermContainer)
-		.filter((container) => container.organization === defaultOrganization.guid);
-
-	const categoriesByKey = new Map(categories.map((category) => [category.payload.key, category]));
+		.filter((container) => container.organization === organization.guid);
 
 	for (const seed of defaultCategorySeeds) {
-		let category = categoriesByKey.get(seed.key);
+		let category = categories.find((candidate) => candidate.payload.key === seed.key);
+
 		if (!category) {
-			category = await createCategory(pool, defaultOrganization.guid, defaultOrganization.realm, seed);
-			categoriesByKey.set(seed.key, category);
+			const byTitle = categories.find(
+				(candidate) => candidate.payload.title === seed.title || candidate.payload.title === seed.key
+			);
+
+			if (byTitle) {
+				if (byTitle.payload.key !== seed.key) {
+					byTitle.payload = { ...byTitle.payload, key: seed.key };
+					const updated = await pool.connect(updateContainer(byTitle as ModifiedContainer));
+
+					if (isCategoryContainer(updated)) {
+						category = updated;
+					} else {
+						category = byTitle;
+					}
+				} else {
+					category = byTitle;
+				}
+			}
+		}
+
+		if (!category) {
+			category = await createCategory(pool, organization.guid, organization.realm, seed);
 			categories.push(category);
 		}
 
+		category = await ensureCategoryMetadata(pool, category, seed);
 		category = await ensurePublicVisibility(pool, category);
 
 		await ensureTermsForCategory(pool, category, seed, terms);
@@ -193,6 +230,7 @@ async function ensureTermsForCategory(
 			term = await createTerm(pool, category, termSeed, index);
 			allTerms.push(term);
 		} else {
+			term = await ensureTermMetadata(pool, term, termSeed);
 			await ensurePublicVisibility(pool, term);
 			await ensureRelation(pool, category.guid, term, index);
 		}
@@ -256,6 +294,61 @@ async function ensurePublicVisibility<T extends CategoryContainer | TermContaine
 	await pool.connect(updateContainer(container as ModifiedContainer));
 
 	return container;
+}
+
+async function ensureCategoryMetadata(
+	pool: DatabasePool,
+	category: CategoryContainer,
+	seed: CategorySeed
+) {
+	const needsKeyUpdate = !category.payload.key;
+	const needsTitleUpdate = category.payload.title !== seed.title;
+	const needsLevelUpdate = seed.level !== undefined && category.payload.level !== seed.level;
+	const needsDescriptionUpdate =
+		seed.description !== undefined && category.payload.description !== seed.description;
+
+	if (!needsKeyUpdate && !needsTitleUpdate && !needsLevelUpdate && !needsDescriptionUpdate) {
+		return category;
+	}
+
+	category.payload = {
+		...category.payload,
+		key: needsKeyUpdate ? seed.key : category.payload.key,
+		title: needsTitleUpdate ? seed.title : category.payload.title,
+		level: needsLevelUpdate ? seed.level : category.payload.level,
+		description: needsDescriptionUpdate ? seed.description : category.payload.description
+	};
+
+	const updated = await pool.connect(updateContainer(category as ModifiedContainer));
+
+	if (!isCategoryContainer(updated)) {
+		throw new Error('Unexpected payload when updating default category');
+	}
+
+	return updated;
+}
+
+async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed: TermSeed) {
+	const needsTitleUpdate = term.payload.title !== seed.title;
+	const needsDescriptionUpdate = seed.description !== undefined && term.payload.description !== seed.description;
+
+	if (!needsTitleUpdate && !needsDescriptionUpdate) {
+		return term;
+	}
+
+	term.payload = {
+		...term.payload,
+		title: needsTitleUpdate ? seed.title : term.payload.title,
+		description: needsDescriptionUpdate ? seed.description : term.payload.description
+	};
+
+	const updated = await pool.connect(updateContainer(term as ModifiedContainer));
+
+	if (!isTermContainer(updated)) {
+		throw new Error('Unexpected payload when updating default term');
+	}
+
+	return updated;
 }
 
 async function createTerm(
