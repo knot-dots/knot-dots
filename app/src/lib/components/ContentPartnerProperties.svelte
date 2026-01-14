@@ -20,7 +20,12 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<EditableImage {editable} label={$_('image')} bind:value={container.payload.image} />
+		<EditableImage
+			{editable}
+			label={$_('image')}
+			bind:value={container.payload.image}
+			bind:sourceAttribute={container.payload.imageSource}
+		/>
 		<AuthoredBy {container} {revisions} />
 	{/snippet}
 

@@ -8,13 +8,15 @@
 		label: string;
 		value: string | undefined;
 		altAttribute?: string;
+		sourceAttribute?: string;
 	}
 
 	let {
 		editable = false,
 		label,
 		value = $bindable(),
-		altAttribute = $bindable()
+		altAttribute = $bindable(),
+		sourceAttribute = $bindable()
 	}: Props = $props();
 
 	let showAltText = $state(false);
@@ -65,6 +67,13 @@
 							type="text"
 							bind:value={altAttribute}
 							placeholder={$_('image.alt_text_placeholder')}
+						/>
+						<input
+							class="alt-input"
+							id="{id}-source"
+							type="text"
+							bind:value={sourceAttribute}
+							placeholder={$_('image.source_placeholder')}
 						/>
 					</div>
 				{/if}

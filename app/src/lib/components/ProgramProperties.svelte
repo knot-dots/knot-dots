@@ -32,7 +32,12 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
+		<EditableImage
+			{editable}
+			label={$_('cover')}
+			bind:value={container.payload.image}
+			bind:sourceAttribute={container.payload.imageSource}
+		/>
 
 		<EditablePDF {editable} bind:value={container.payload.pdf} />
 
@@ -46,7 +51,12 @@
 	{/snippet}
 
 	{#snippet general()}
-		<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
+		<EditableImage
+			{editable}
+			label={$_('cover')}
+			bind:value={container.payload.image}
+			bind:sourceAttribute={container.payload.imageSource}
+		/>
 
 		<EditablePDF {editable} bind:value={container.payload.pdf} />
 

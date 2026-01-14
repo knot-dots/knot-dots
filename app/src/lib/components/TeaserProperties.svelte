@@ -44,6 +44,7 @@
 			label={$_('upload.image.choose')}
 			bind:value={container.payload.image}
 			bind:altAttribute={container.payload.imageAltText}
+			bind:sourceAttribute={container.payload.imageSource}
 		/>
 
 		<AuthoredBy {container} {revisions} />
@@ -63,6 +64,7 @@
 			label={$_('upload.image.choose')}
 			bind:value={container.payload.image}
 			bind:altAttribute={container.payload.imageAltText}
+			bind:sourceAttribute={container.payload.imageSource}
 		/>
 
 		<EditableAudience {editable} bind:value={container.payload.audience} />

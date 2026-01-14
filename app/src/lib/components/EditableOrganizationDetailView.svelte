@@ -65,6 +65,7 @@
 						label={$_('add_cover')}
 						bind:value={container.payload.cover}
 						bind:altAttribute={container.payload.imageAltText}
+						bind:sourceAttribute={container.payload.imageSource}
 					/>
 					<ColorDropdown
 						buttonStyle="button"

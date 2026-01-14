@@ -45,6 +45,8 @@
 			{editable}
 			label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 			bind:value={container.payload.image}
+			bind:altAttribute={container.payload.imageAltText}
+			bind:sourceAttribute={container.payload.imageSource}
 		/>
 
 		<header>

@@ -9,6 +9,7 @@
 		editable?: boolean;
 		label: string;
 		altAttribute?: string;
+		sourceAttribute?: string;
 		value: string | undefined;
 	}
 
@@ -16,7 +17,8 @@
 		editable = false,
 		label,
 		value = $bindable(),
-		altAttribute = $bindable()
+		altAttribute = $bindable(),
+		sourceAttribute = $bindable()
 	}: Props = $props();
 
 	const id = crypto.randomUUID();
@@ -45,17 +47,24 @@
 		<img
 			use:popover.button
 			alt={altAttribute || $_('logo')}
+			title={sourceAttribute}
 			class="logo"
 			src={transformFileURL(value)}
 		/>
 	{:else}
-		<img alt={altAttribute || $_('logo')} class="logo" src={transformFileURL(value)} />
+		<img
+			alt={altAttribute || $_('logo')}
+			title={sourceAttribute}
+			class="logo"
+			src={transformFileURL(value)}
+		/>
 	{/if}
 	{#if $popover.expanded}
 		<div class="dropdown-panel" use:popperContent use:popover.panel>
 			<UppyImageUploader
 				bind:value
 				bind:altAttribute
+				bind:sourceAttribute
 				{label}
 				class="inline-uploader"
 				mode="button"

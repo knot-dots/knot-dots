@@ -11,13 +11,15 @@
 		label: string;
 		value: string | undefined;
 		altAttribute?: string;
+		sourceAttribute?: string;
 	}
 
 	let {
 		editable = false,
 		label,
 		value = $bindable(),
-		altAttribute = $bindable()
+		altAttribute = $bindable(),
+		sourceAttribute = $bindable()
 	}: Props = $props();
 
 	let uploadInProgress = $state(false);
@@ -36,7 +38,11 @@
 			{#if uploadInProgress}
 				<span class="loader"></span>
 			{:else if value}
-				<img alt={altAttribute || $_('image')} src={transformFileURL(value)} />
+				<img
+					title={sourceAttribute}
+					alt={altAttribute || $_('image')}
+					src={transformFileURL(value)}
+				/>
 				<button
 					class="button button-remove"
 					onclick={remove}
@@ -51,6 +57,7 @@
 		<UppyImageUploader
 			bind:value
 			bind:altAttribute
+			bind:sourceAttribute
 			{label}
 			{id}
 			mode="input"
@@ -74,12 +81,27 @@
 			placeholder={$_('image.alt_text_placeholder')}
 		/>
 	</div>
+
+	<label class="label" for="{id}-source">Alt-Source</label>
+	<div>
+		<input
+			class="alt-input"
+			id="{id}-source"
+			type="text"
+			bind:value={sourceAttribute}
+			placeholder={$_('image.source_placeholder')}
+		/>
+	</div>
 {:else}
 	<span class="label">{label}</span>
 	<div>
 		<span class="value">
 			{#if value}
-				<img alt={altAttribute || $_('image')} src={transformFileURL(value)} />
+				<img
+					title={sourceAttribute}
+					alt={altAttribute || $_('image')}
+					src={transformFileURL(value)}
+				/>
 			{:else}
 				{$_('empty')}
 			{/if}
@@ -91,6 +113,11 @@
 	<label class="label" for="{id}-alt">{$_('image.alt_text')}</label>
 	<div class="value">
 		{altAttribute || $_('empty')}
+	</div>
+
+	<label class="label" for="{id}-source">Alt-Source</label>
+	<div class="value">
+		{sourceAttribute || $_('empty')}
 	</div>
 {/if}
 

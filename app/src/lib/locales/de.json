@@ -190,6 +190,8 @@
 	"image": "Bild",
 	"image.alt_text": "Alt-Text",
 	"image.alt_text_placeholder": "Alt-Text eingeben",
+	"image.source": "Quelle",
+	"image.source_placeholder": "Quelle eingeben",
 	"import.csv_file": "CSV-Datei",
 	"import.error.invalid_record": "Fehler in Zeile {line}: {errors}",
 	"import.error.missing": "Die CSV-Datei fehlt",

@@ -15,6 +15,7 @@
 	interface Props {
 		value: string | undefined;
 		altAttribute?: string;
+		sourceAttribute?: string;
 		hideAltAttribute?: boolean;
 		label?: string;
 		allowedFileTypes?: string[];
@@ -28,6 +29,7 @@
 	let {
 		value = $bindable(),
 		altAttribute = $bindable(),
+		sourceAttribute = $bindable(),
 		hideAltAttribute = false,
 		label = '',
 		allowedFileTypes = ['image/png', 'image/jpeg', 'image/svg+xml'],
@@ -171,6 +173,14 @@
 					type="text"
 					bind:value={altAttribute}
 					placeholder={$_('image.alt_text_placeholder')}
+				/>
+				<input
+					class="alt-input"
+					id="{id}-source"
+					type="text"
+					bind:value={sourceAttribute}
+					onchange={(e) => requestSubmitElement(e.currentTarget)}
+					placeholder={$_('image.source_placeholder')}
 				/>
 			{/if}
 		</div>

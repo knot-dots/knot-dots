@@ -189,6 +189,8 @@
 							{editable}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.image}
+							bind:altAttribute={container.payload.imageAltText}
+							bind:sourceAttribute={container.payload.imageSource}
 						/>
 					{/if}
 					{#if container.payload.titleEnable}
@@ -266,6 +268,8 @@
 							{editable}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.imageRight}
+							bind:altAttribute={container.payload.imageAltTextRight}
+							bind:sourceAttribute={container.payload.imageSourceRight}
 						/>
 					{/if}
 					{#if container.payload.titleEnableRight}

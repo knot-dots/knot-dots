@@ -61,4 +61,5 @@
 	label={$_('image')}
 	bind:value={container.payload.image}
 	bind:altAttribute={container.payload.imageAltText}
+	bind:sourceAttribute={container.payload.imageSource}
 />
