@@ -15,13 +15,6 @@
 
 	let { container, relatedContainers }: Props = $props();
 
-	// Text used for tooltip (disabled reason vs delete label)
-	const tooltipText = $derived(
-		container && !$mayDeleteContainer(container)
-			? $_('delete_disabled_contains_children')
-			: $_('delete')
-	);
-
 	// svelte-ignore non_reactive_update
 	let confirmDeleteDialog: HTMLDialogElement;
 

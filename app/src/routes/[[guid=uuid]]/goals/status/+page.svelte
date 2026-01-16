@@ -14,7 +14,7 @@
 
 <GoalsPage {data}>
 	<Board>
-		{#each goalStatus.options as statusOption}
+		{#each goalStatus.options as statusOption (statusOption)}
 			<BoardColumn
 				--background={goalStatusBackgrounds.get(statusOption)}
 				--hover-border-color={goalStatusHoverColors.get(statusOption)}

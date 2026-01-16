@@ -2,12 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { date } from 'svelte-i18n';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import {
-		type AnyContainer,
-		type ContentPartnerContainer,
-		type KnowledgeContainer,
-		payloadTypes
-	} from '$lib/models';
+	import { type ContentPartnerContainer, type KnowledgeContainer, payloadTypes } from '$lib/models';
 
 	interface Props {
 		container: KnowledgeContainer;
@@ -55,7 +50,7 @@
 
 	{#if container.payload.tags.length > 0}
 		<div class="tags">
-			{#each container.payload.tags as tag}
+			{#each container.payload.tags as tag (tag)}
 				<span class="tag">
 					{$_(`knowledge.tags.${tag}`) !== `knowledge.tags.${tag}`
 						? $_(`knowledge.tags.${tag}`)

@@ -14,7 +14,7 @@
 
 <RulesPage {data}>
 	<Board>
-		{#each ruleStatus.options as statusOption}
+		{#each ruleStatus.options as statusOption (statusOption)}
 			<BoardColumn
 				--background={ruleStatusBackgrounds.get(statusOption)}
 				--hover-border-color={ruleStatusHoverColors.get(statusOption)}

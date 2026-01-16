@@ -3,7 +3,7 @@
 	import CalendarDays from '~icons/heroicons/calendar-days-16-solid';
 	import ExclamationCircle from '~icons/heroicons/exclamation-circle-16-solid';
 	import Card from '$lib/components/Card.svelte';
-	import { type Container, type TaskContainer, taskStatus } from '$lib/models';
+	import { type Container, type TaskContainer } from '$lib/models';
 	import { taskStatusIcons, taskStatusColors } from '$lib/theme/models';
 
 	interface Props {

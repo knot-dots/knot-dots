@@ -8,7 +8,6 @@
 		type Container,
 		goalsByHierarchyLevel,
 		isGoalContainer,
-		isPartOf,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -56,7 +55,7 @@
 	{#each columns as column (column.key)}
 		<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
 			<div class="vertical-scroll-wrapper">
-				{#each column.containers as container}
+				{#each column.containers as container (container.guid)}
 					<Card {container} showRelationFilter />
 				{/each}
 			</div>

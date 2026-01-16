@@ -10,8 +10,6 @@
 	}
 
 	let { editable = false, label, options, value = $bindable() }: Props = $props();
-
-	let selected = $derived(options.filter((o) => value.includes(o.value)).map(({ label }) => label));
 </script>
 
 <div class="label">{label}</div>
@@ -19,7 +17,7 @@
 	<MultipleChoiceDropdown {options} bind:value />
 {:else}
 	<ul class="value">
-		{#each options.filter((o) => value.includes(o.value)) as selectedOption}
+		{#each options.filter((o) => value.includes(o.value)) as selectedOption (selectedOption.value)}
 			<li>{selectedOption.label}</li>
 		{:else}
 			<li>{$_('empty')}</li>

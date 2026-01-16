@@ -55,13 +55,13 @@
 			title={goalsColumnTitle(relatedContainers)}
 		>
 			<div class="vertical-scroll-wrapper">
-				{#each relatedContainers.sort(sortByTitle) as container}
+				{#each relatedContainers.sort(sortByTitle) as container (container.guid)}
 					<Card {container} showRelationFilter />
 				{/each}
 			</div>
 		</BoardColumn>
 	{/if}
-	{#each taskStatus.options as taskStatusOption}
+	{#each taskStatus.options as taskStatusOption (taskStatusOption)}
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(taskStatusOption)}
 			--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}

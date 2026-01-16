@@ -97,8 +97,8 @@
 	});
 
 	uppy.on('upload-success', (file, response) => {
-		if (response.body && (response.body as any).url) {
-			const url = (response.body as any).url;
+		if (response.body && response.body.url) {
+			const url = response.body.url;
 			value = url;
 			const input = document.getElementById(id);
 			if (input) requestSubmitElement(input);

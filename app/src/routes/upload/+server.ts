@@ -44,7 +44,7 @@ export const POST = (async ({ request, locals }) => {
 		Tagging: `uploaded-by=${locals.user.guid}`
 	});
 
-	const result = await client.send(putCommand);
+	await client.send(putCommand);
 
 	return json({
 		url: objectURL(

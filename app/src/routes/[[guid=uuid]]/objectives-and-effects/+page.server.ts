@@ -1,5 +1,5 @@
 import { filterVisible } from '$lib/authorization';
-import { audience, type Container, type IndicatorContainer, payloadTypes } from '$lib/models';
+import { type IndicatorContainer, payloadTypes } from '$lib/models';
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 

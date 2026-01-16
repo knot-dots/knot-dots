@@ -34,7 +34,7 @@
 			<span class="selected">
 				{#each taskStatus.options
 					.filter((o) => value.includes(o))
-					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+					.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
 					<span class="value">{selectedOption.label}</span>
 				{:else}
 					&nbsp;

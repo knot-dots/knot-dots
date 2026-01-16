@@ -75,7 +75,7 @@
 		{/if}
 	{/if}
 	<ul>
-		{#each containers as container}
+		{#each containers as container (container.guid)}
 			<li>
 				{#if item}
 					{@render item(container)}

@@ -1,8 +1,8 @@
 <script lang="ts" module>
-	import { type AnyContainer } from '$lib/models';
+	import { type Container } from '$lib/models';
 </script>
 
-<script lang="ts" generics="Item extends AnyContainer">
+<script lang="ts" generics="Item extends Container">
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
@@ -41,7 +41,7 @@
 					type="button"
 					aria-expanded={openItems.has(item.guid)}
 				>
-					<span class="accordion-title">{titles?.[idx] || (item.payload as any).title}</span>
+					<span class="accordion-title">{titles?.[idx] || item.payload.title}</span>
 					{#if openItems.has(item.guid)}
 						<ChevronUp />
 					{:else}

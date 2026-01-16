@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import UppyImageUploader from '$lib/components/UppyImageUploader.svelte';
 
 	interface Props {

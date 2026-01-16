@@ -12,7 +12,6 @@
 
 	let map: Map;
 
-	// svelte-ignore non_reactive_update
 	let mapElement: HTMLElement;
 
 	onMount(async () => {

@@ -14,9 +14,7 @@
 
 	// derive the title once and reuse below
 	const title: string =
-		'title' in container.payload
-			? (container.payload as any).title
-			: (container.payload.name as string);
+		'title' in container.payload ? container.payload.title : container.payload.name;
 
 	// also derive the translated button label once
 	const buttonLabel = $_('confirm_delete_dialog.button', { values: { title } });

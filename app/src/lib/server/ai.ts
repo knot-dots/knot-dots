@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
-import { payloadTypes, sustainableDevelopmentGoals, topics } from '$lib/models';
 
 const startJobResponseSchema = z.object({
 	job_id: z.string().uuid(),

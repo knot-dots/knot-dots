@@ -8,7 +8,7 @@ import EditorToolbar from '$lib/components/EditorToolbar.svelte';
 export const toolbar = tooltipFactory('toolbar');
 
 export function toolbarPluginView(ctx: Ctx) {
-	return (view: EditorView) => {
+	return () => {
 		const content = document.createElement('div');
 		content.classList.add('milkdown-tooltip');
 		const toolbar = mount(EditorToolbar as Component, { target: content, props: { ctx } });

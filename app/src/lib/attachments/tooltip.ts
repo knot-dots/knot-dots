@@ -13,7 +13,7 @@ interface Options {
 
 export default function tooltip(content: string, options?: Options): Attachment {
 	return (node) => {
-		let config = {
+		const config = {
 			placement: 'top' as Placement,
 			offset: 8,
 			shiftPadding: 10, // minimum distance from viewport edges

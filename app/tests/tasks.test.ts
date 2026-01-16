@@ -9,7 +9,7 @@ test.describe('Task status board', () => {
 
 	const title = `Task ${Date.now()}`;
 
-	test.beforeEach('add task to the status board', async ({ page, request }) => {
+	test.beforeEach('add task to the status board', async ({ page }) => {
 		await page.goto('/');
 
 		// Go to the task status board of the test organization
