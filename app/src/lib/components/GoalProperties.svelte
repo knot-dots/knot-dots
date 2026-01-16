@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableGoalStatus from '$lib/components/EditableGoalStatus.svelte';
@@ -12,9 +10,8 @@
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
+	import CustomCategorySelectors from '$lib/components/CustomCategorySelectors.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
@@ -52,8 +49,6 @@
 		{:else}
 			<EditableProgram bind:container {editable} />
 		{/if}
-
-		<EditableCategory {editable} bind:value={container.payload.category} />
 
 		<EditableOrganizationalUnit
 			editable={editable && $ability.can('update', container.payload.type, 'organizational_unit')}
@@ -96,13 +91,11 @@
 	{/snippet}
 
 	{#snippet categories()}
-		<EditableCategory {editable} bind:value={container.payload.category} />
-
-		<EditableTopic {editable} bind:value={container.payload.topic} />
-
-		<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
-
-		<EditableAudience {editable} bind:value={container.payload.audience} />
+		<CustomCategorySelectors
+			bind:container
+			editable={editable}
+			organizationGuid={container.organization}
+		/>
 	{/snippet}
 
 	{#snippet ownership()}

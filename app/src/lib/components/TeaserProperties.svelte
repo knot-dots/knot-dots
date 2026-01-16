@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCardStyle from '$lib/components/EditableCardStyle.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import CustomCategorySelectors from '$lib/components/CustomCategorySelectors.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { type AnyContainer, type TeaserContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -57,7 +57,7 @@
 			bind:value={container.payload.linkCaption}
 		/>
 
-		<EditableAudience {editable} bind:value={container.payload.audience} />
+		<CustomCategorySelectors bind:container editable={editable} organizationGuid={container.organization} />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />

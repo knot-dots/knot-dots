@@ -2,18 +2,16 @@
 	import { _ } from 'svelte-i18n';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import CustomCategorySelectors from '$lib/components/CustomCategorySelectors.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
@@ -130,11 +128,11 @@
 			bind:value={container.payload.content_partner}
 		/>
 
-		<EditableTopic {editable} bind:value={container.payload.topic} />
-
-		<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
-
-		<EditableAudience {editable} bind:value={container.payload.audience} />
+		<CustomCategorySelectors
+			bind:container
+			editable={editable}
+			organizationGuid={container.organization}
+		/>
 	{/snippet}
 
 	{#snippet ownership()}
