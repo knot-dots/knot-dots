@@ -9,10 +9,20 @@
 	interface Props {
 		editable?: boolean;
 		label: string;
+		help?: string;
 		value: string | undefined;
+		submitOnUpload?: boolean;
+		allowedFileTypes?: string[];
 	}
 
-	let { editable = false, label, value = $bindable() }: Props = $props();
+	let {
+		editable = false,
+		label,
+		help,
+		value = $bindable(),
+		submitOnUpload = true,
+		allowedFileTypes
+	}: Props = $props();
 
 	let uploadInProgress = $state(false);
 	const id = crypto.randomUUID();
@@ -46,8 +56,13 @@
 			bind:value
 			{label}
 			{id}
+			{allowedFileTypes}
 			mode="input"
+			submitOnUpload={submitOnUpload}
 			onSuccess={() => {
+				if (!submitOnUpload) {
+					return;
+				}
 				const form = document.querySelector(`[for="${id}"]`)?.parentElement?.closest('form');
 				if (form) {
 					form.requestSubmit();
@@ -55,7 +70,7 @@
 			}}
 		/>
 
-		<p class="help">{$_('upload.image.help')}</p>
+		<p class="help">{help ?? $_('upload.image.help')}</p>
 	</div>
 {:else}
 	<span class="label">{label}</span>
@@ -68,7 +83,7 @@
 			{/if}
 		</span>
 
-		<p class="help">{$_('upload.image.help')}</p>
+		<p class="help">{help ?? $_('upload.image.help')}</p>
 	</div>
 {/if}
 

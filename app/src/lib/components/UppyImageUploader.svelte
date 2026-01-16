@@ -21,6 +21,7 @@
 		mode?: 'button' | 'placeholder' | 'input';
 		class?: string;
 		id?: string;
+		submitOnUpload?: boolean;
 	}
 
 	let {
@@ -31,7 +32,8 @@
 		onSuccess,
 		mode = 'button',
 		class: className = '',
-		id: providedId = ''
+		id: providedId = '',
+		submitOnUpload = true
 	}: Props = $props();
 
 	const id = providedId || crypto.randomUUID();
@@ -100,8 +102,10 @@
 		if (response.body && (response.body as any).url) {
 			const url = (response.body as any).url;
 			value = url;
-			const input = document.getElementById(id);
-			if (input) requestSubmitElement(input);
+			if (submitOnUpload) {
+				const input = document.getElementById(id);
+				if (input) requestSubmitElement(input);
+			}
 
 			if (onSuccess) onSuccess(url);
 		}
