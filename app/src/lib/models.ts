@@ -87,6 +87,8 @@ const payloadTypeValues = [
 	'resource',
 	'resource_collection',
 	'resource_v2', // New payload type for resources with temporary v2 suffix
+	'resource_budget',
+	'resource_data_collection',
 	'resource_data_historical_expenses',
 	'resource_data_expected_expenses',
 	'resource_data_historical_income',
@@ -966,6 +968,24 @@ const resourceV2Payload = basePayload
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
+const resourceBudgetPayload = basePayload
+	.omit({ category: true, summary: true, topic: true, audience: true })
+	.extend({
+		type: z.literal(payloadTypes.enum.resource_budget),
+		resource: z.uuid(),
+		value: z.coerce.number(),
+		budgetYear: z.number().int().positive().optional(),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialResourceBudgetPayload = resourceBudgetPayload.partial({
+	title: true,
+	value: true,
+	budgetYear: true,
+	resource: true
+});
+
 // Resource Data Payloads
 const resourceDataBase = z
 	.object({
@@ -987,13 +1007,13 @@ function makeResourceDataPayload<
 >(typeLiteral: TType, titleKey: string) {
 	return resourceDataBase
 		.extend({
-		title: z
-			.string()
-			.readonly()
+			title: z
+				.string()
+				.readonly()
 				.default(() => unwrapFunctionStore(_)(titleKey)),
 			type: z.literal(typeLiteral)
-	})
-	.strict();
+		})
+		.strict();
 }
 
 const resourceDataHistoricalExpensesPayload = makeResourceDataPayload(
@@ -1023,6 +1043,19 @@ const resourceDataExpectedIncomePayload = makeResourceDataPayload(
 );
 
 const initialResourceDataExpectedIncomePayload = resourceDataExpectedIncomePayload;
+
+const resourceDataCollectionPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('resource_data.collection')),
+		type: z.literal(payloadTypes.enum.resource_data_collection),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialResourceDataCollectionPayload = resourceDataCollectionPayload;
 
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
@@ -1146,6 +1179,8 @@ const payload = z.discriminatedUnion('type', [
 	resourceCollectionPayload,
 	resourcePayload,
 	resourceV2Payload,
+	resourceBudgetPayload,
+	resourceDataCollectionPayload,
 	resourceDataHistoricalExpensesPayload,
 	resourceDataExpectedExpensesPayload,
 	resourceDataHistoricalIncomePayload,
@@ -1617,6 +1652,18 @@ export function hasValidResource(
 	return container.payload.resource != null;
 }
 
+const resourceDataCollectionContainer = container.extend({
+	payload: resourceDataCollectionPayload
+});
+
+export type ResourceDataCollectionContainer = z.infer<typeof resourceDataCollectionContainer>;
+
+export function isResourceDataCollectionContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataCollectionContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_collection;
+}
+
 const resourceV2Container = container.extend({
 	payload: resourceV2Payload
 });
@@ -1627,6 +1674,18 @@ export function isResourceV2Container(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceV2Container {
 	return container.payload.type === payloadTypes.enum.resource_v2;
+}
+
+const resourceBudgetContainer = container.extend({
+	payload: resourceBudgetPayload
+});
+
+export type ResourceBudgetContainer = z.infer<typeof resourceBudgetContainer>;
+
+export function isResourceBudgetContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceBudgetContainer {
+	return container.payload.type === payloadTypes.enum.resource_budget;
 }
 
 const simpleMeasureContainer = container.extend({
@@ -1880,6 +1939,8 @@ export const emptyContainer = newContainer.extend({
 		initialResourceCollectionPayload,
 		initialResourcePayload,
 		initialResourceV2Payload,
+		initialResourceBudgetPayload,
+		initialResourceDataCollectionPayload,
 		initialResourceDataHistoricalExpensesPayload,
 		initialResourceDataExpectedExpensesPayload,
 		initialResourceDataHistoricalIncomePayload,

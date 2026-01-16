@@ -51,6 +51,7 @@
 		fetchContainersRelatedToIndicatorTemplates,
 		fetchContainersRelatedToMeasure,
 		fetchContainersRelatedToProgram,
+		fetchContainersRelatedToResource,
 		fetchRelatedContainers
 	} from '$lib/remote/data.remote';
 
@@ -110,7 +111,7 @@
 				}
 			});
 		} else if (isResourceV2Container(container)) {
-			return fetchRelatedContainers({
+			return fetchContainersRelatedToResource({
 				guid,
 				params: {
 					organization: [page.data.currentOrganization.guid],

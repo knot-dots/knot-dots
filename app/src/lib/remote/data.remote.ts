@@ -110,7 +110,7 @@ export const fetchContainersRelatedToMeasure = query(
 		})
 	}),
 	async ({ guid, params }) => {
-	const { locals } = getRequestEvent();
+		const { locals } = getRequestEvent();
 
 		const [related, resources] = await Promise.all([
 			locals.pool.connect(getAllContainersRelatedToMeasure(guid, {}, 'alpha')),
@@ -154,6 +154,49 @@ export const fetchContainersRelatedToProgram = query(
 			})
 		);
 		return filterVisible(relatedContainers, locals.user);
+	}
+);
+
+export const fetchContainersRelatedToResource = query(
+	z.object({
+		guid: z.uuid(),
+		params: z.object({
+			organization: z.array(z.uuid()),
+			relationType: z.array(z.string())
+		})
+	}),
+	async ({ guid, params }) => {
+		const { locals } = getRequestEvent();
+
+		const [related, resourceData] = await Promise.all([
+			locals.pool.connect(
+				getAllRelatedContainers(params.organization, guid, params.relationType, {}, 'alpha')
+			),
+			locals.pool.connect(
+				getManyContainers(
+					[],
+					{
+						type: [
+							payloadTypes.enum.resource_data_expected_expenses,
+							payloadTypes.enum.resource_data_historical_expenses,
+							payloadTypes.enum.resource_data_expected_income,
+							payloadTypes.enum.resource_data_historical_income
+						],
+						resource: [guid]
+					},
+					'alpha'
+				)
+			)
+		]);
+
+		const merged = [
+			...related,
+			...resourceData.filter(
+				(r) => !related.some((existing: { guid: string }) => existing.guid === r.guid)
+			)
+		];
+
+		return filterVisible(merged, locals.user);
 	}
 );
 

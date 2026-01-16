@@ -645,6 +645,7 @@ export function getManyContainers(
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
+		resource?: string[];
 		resourceCategories?: string[];
 		taskCategories?: string[];
 		template?: boolean;

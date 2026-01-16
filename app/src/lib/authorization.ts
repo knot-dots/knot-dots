@@ -34,6 +34,7 @@ const commonTypes = [
 	payloadTypes.enum.resource,
 	payloadTypes.enum.resource_collection,
 	payloadTypes.enum.resource_v2,
+	payloadTypes.enum.resource_data_collection,
 	payloadTypes.enum.rule,
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.task,

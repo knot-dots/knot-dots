@@ -71,10 +71,7 @@
 				: container.managed_by;
 
 			if (
-				(payloadType === payloadTypes.enum.resource_data_historical_expenses ||
-					payloadType === payloadTypes.enum.resource_data_expected_expenses ||
-					payloadType === payloadTypes.enum.resource_data_historical_income ||
-					payloadType === payloadTypes.enum.resource_data_expected_income) &&
+				payloadType === payloadTypes.enum.resource_data_collection &&
 				isResourceV2Container(container)
 			) {
 				const currentOrganization = page.data.currentOrganization;

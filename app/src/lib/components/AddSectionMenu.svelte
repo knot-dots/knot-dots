@@ -29,6 +29,7 @@
 		type AnyContainer,
 		boards,
 		isAdministrativeAreaBasicDataContainer,
+		isResourceDataCollectionContainer,
 		isContainerWithProgress,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
@@ -107,6 +108,11 @@
 	let mayAddResourceCollection = $derived(
 		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
+	);
+
+	let mayAddResourceDataCollectionSection = $derived(
+		isResourceV2Container(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isResourceDataCollectionContainer)
 	);
 
 	let mayAddResourceDataHistoricalExpenses = $derived(
