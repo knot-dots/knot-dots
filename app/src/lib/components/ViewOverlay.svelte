@@ -18,6 +18,7 @@
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
 	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
+	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import {
@@ -40,6 +41,7 @@
 		isReportContainer,
 		isResourceContainer,
 		isRuleContainer,
+		isTermContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
 		isTeaserContainer,
@@ -190,6 +192,8 @@
 		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}
 		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isTermContainer(container)}
+		<EditableTermDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTaskContainer(container)}
 		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTeaserContainer(container)}
