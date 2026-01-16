@@ -1257,13 +1257,13 @@ const textPayload = z
 	.object({
 		audience: z.array(audience).default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
-		title: z.string().trim().default(''),
+		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.text),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
-const initialTextPayload = textPayload;
+const initialTextPayload = textPayload.partial({ body: true, title: true });
 
 const undefinedPayload = z
 	.object({
