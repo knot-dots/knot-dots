@@ -583,27 +583,17 @@ export type Benefit = z.infer<typeof benefit>;
 const basePayload = z
 	.object({
 		aiSuggestion: z.boolean().default(false),
-		audience: z.array(audience).default([audience.enum['audience.citizens']]),
-		category: z.array(sustainableDevelopmentGoals).default([]),
+		audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+		category: z.array(z.string().trim().min(1)).default([]),
 		description: z.string().trim().optional(),
 		editorialState: editorialState.optional(),
-		policyFieldBNK: z.array(policyFieldBNK).default([]),
+		policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
 		summary: z.string().trim().max(200).optional(),
 		title: z.string().trim(),
-		topic: z.array(topics).default([]),
+		topic: z.array(z.string().trim().min(1)).default([]),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict();
-
-function slugifyCategoryKey(source: string) {
-	return (
-		source
-			.trim()
-			.toLowerCase()
-			.replace(/[^a-z0-9_.-]+/g, '-')
-			.replace(/^-+|-+$/g, '') || 'category'
-	);
-}
+	.passthrough();
 
 const categoryPayloadBase = z
 	.object({
@@ -630,9 +620,9 @@ const categoryPayloadBase = z
 				});
 				return;
 			}
-			value.key = slugifyCategoryKey(value.title);
+			value.key = value.title.trim();
 		} else {
-			value.key = slugifyCategoryKey(value.key);
+			value.key = value.key.trim();
 		}
 	});
 

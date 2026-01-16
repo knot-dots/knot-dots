@@ -67,7 +67,7 @@ type CategorySeed = {
 
 const defaultCategorySeeds: CategorySeed[] = [
 	{
-		key: 'sdg',
+		key: 'category',
 		title: translate('category'),
 		terms: sustainableDevelopmentGoals.options.map((value) => ({
 			title: translate(value),
@@ -83,7 +83,7 @@ const defaultCategorySeeds: CategorySeed[] = [
 		}))
 	},
 	{
-		key: 'policy_field_bnk',
+		key: 'policyFieldBNK',
 		title: translate('policy_field_bnk'),
 		terms: policyFieldBNK.options.map((value) => ({
 			title: translate(value),
@@ -100,7 +100,7 @@ const defaultCategorySeeds: CategorySeed[] = [
 	}
 ];
 
-let initializationPromise: Promise<void> | null = null;
+let initializationPromise: Promise<boolean> | null = null;
 
 export function ensureDefaultCategoryTerms(pool: DatabasePool) {
 	if (!initializationPromise) {
@@ -157,12 +157,7 @@ async function seedForOrganization(pool: DatabasePool, organization: { guid: str
 				if (byTitle.payload.key !== seed.key) {
 					byTitle.payload = { ...byTitle.payload, key: seed.key };
 					const updated = await pool.connect(updateContainer(byTitle as ModifiedContainer));
-
-					if (isCategoryContainer(updated)) {
-						category = updated;
-					} else {
-						category = byTitle;
-					}
+					category = { ...updated, relation: byTitle.relation } as CategoryContainer;
 				} else {
 					category = byTitle;
 				}
@@ -301,7 +296,7 @@ async function ensureCategoryMetadata(
 	category: CategoryContainer,
 	seed: CategorySeed
 ) {
-	const needsKeyUpdate = !category.payload.key;
+	const needsKeyUpdate = category.payload.key !== seed.key;
 	const needsTitleUpdate = category.payload.title !== seed.title;
 	const needsLevelUpdate = seed.level !== undefined && category.payload.level !== seed.level;
 	const needsDescriptionUpdate =
@@ -311,21 +306,19 @@ async function ensureCategoryMetadata(
 		return category;
 	}
 
+	const level = needsLevelUpdate ? seed.level ?? category.payload.level ?? 0 : category.payload.level ?? 0;
+
 	category.payload = {
 		...category.payload,
 		key: needsKeyUpdate ? seed.key : category.payload.key,
 		title: needsTitleUpdate ? seed.title : category.payload.title,
-		level: needsLevelUpdate ? seed.level : category.payload.level,
+		level,
 		description: needsDescriptionUpdate ? seed.description : category.payload.description
 	};
 
 	const updated = await pool.connect(updateContainer(category as ModifiedContainer));
 
-	if (!isCategoryContainer(updated)) {
-		throw new Error('Unexpected payload when updating default category');
-	}
-
-	return updated;
+	return { ...updated, relation: category.relation } as CategoryContainer;
 }
 
 async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed: TermSeed) {
@@ -344,11 +337,7 @@ async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed:
 
 	const updated = await pool.connect(updateContainer(term as ModifiedContainer));
 
-	if (!isTermContainer(updated)) {
-		throw new Error('Unexpected payload when updating default term');
-	}
-
-	return updated;
+	return { ...updated, relation: term.relation } as TermContainer;
 }
 
 async function createTerm(

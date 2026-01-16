@@ -25,13 +25,7 @@
 	let optionsByKey = $state(new Map<string, CategoryOption[]>());
 	let values = $state<Record<string, string[]>>({});
 
-	const payloadKeyFor = (categoryKey: string) =>
-		({
-			sdg: 'category',
-			topic: 'topic',
-			policy_field_bnk: 'policyFieldBNK',
-			audience: 'audience'
-		}[categoryKey] ?? categoryKey);
+	const safeKey = (key: string | undefined) => key ?? '';
 
 	const organizationScope = $derived(() => {
 		const scope = new Set<string>();
@@ -85,8 +79,7 @@
 		const keys = custom.map(({ payload }) => payload.key).filter(Boolean) as string[];
 		const nextValues: Record<string, string[]> = {};
 		for (const key of keys) {
-			const payloadKey = payloadKeyFor(key);
-			const current = (container.payload as Record<string, unknown>)[payloadKey];
+			const current = (container.payload as Record<string, unknown>)[key];
 			nextValues[key] = Array.isArray(current) ? (current as string[]) : [];
 		}
 		values = nextValues;
@@ -107,18 +100,19 @@
 
 	$effect(() => {
 		for (const [key, val] of Object.entries(values)) {
-			(container.payload as Record<string, unknown>)[payloadKeyFor(key)] = val;
+			(container.payload as Record<string, unknown>)[key] = val;
 		}
 	});
 </script>
 
 {#if categories.length > 0}
 	{#each categories as category (category.guid)}
+		{@const key = safeKey(category.payload.key)}
 		<EditableMultipleChoice
 			editable={editable}
 			label={category.payload.title ?? category.payload.key}
-			options={optionsByKey.get(category.payload.key) ?? []}
-			bind:value={values[category.payload.key]}
+			options={optionsByKey.get(key) ?? []}
+			bind:value={values[key]}
 		/>
 	{/each}
 {/if}
