@@ -2,12 +2,13 @@
 	import { _ } from 'svelte-i18n';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
+	import DeleteCategoryWithTermsButton from '$lib/components/DeleteCategoryWithTermsButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
 	import CategoryTerms from '$lib/components/CategoryTerms.svelte';
+	import SaveAsCategoryTemplateButton from '$lib/components/SaveAsCategoryTemplateButton.svelte';
 	import { type AnyContainer, type CategoryContainer, type Container } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -46,8 +47,9 @@
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
 		<RelationButton {container} />
+		<SaveAsCategoryTemplateButton {container} {relatedContainers} />
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
-		<DeleteButton {container} {relatedContainers} />
+		<DeleteCategoryWithTermsButton {container} {relatedContainers} />
 	</div>
 </footer>

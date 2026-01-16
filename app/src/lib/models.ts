@@ -2497,6 +2497,49 @@ export function newIndicatorTemplateFromIndicator(container: IndicatorContainer)
 	});
 }
 
+export function newCategoryTemplateFromCategory(
+	category: CategoryContainer,
+	organization: OrganizationContainer
+) {
+	const template = containerOfType(
+		payloadTypes.enum.category,
+		organization.guid,
+		null,
+		organization.guid,
+		organization.realm
+	) as NewContainer;
+	const payload = template.payload as CategoryContainer['payload'];
+	Object.assign(payload, category.payload);
+	payload.visibility = visibility.enum.public;
+	return template;
+}
+
+export function newTermForCategoryTemplate(
+	term: TermContainer,
+	categoryGuid: string,
+	organization: OrganizationContainer,
+	position: number
+) {
+	const template = containerOfType(
+		payloadTypes.enum.term,
+		organization.guid,
+		null,
+		organization.guid,
+		organization.realm
+	) as NewContainer;
+	const payload = template.payload as TermContainer['payload'];
+	Object.assign(payload, term.payload);
+	payload.visibility = visibility.enum.public;
+	template.relation = [
+		{
+			object: categoryGuid,
+			position,
+			predicate: predicates.enum['is-part-of-category']
+		}
+	];
+	return template;
+}
+
 export function findConnected<T extends AnyContainer>(
 	container: T,
 	containers: T[],
