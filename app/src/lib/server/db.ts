@@ -358,7 +358,9 @@ export function deleteOrganizationContainer(container: OrganizationContainer) {
 			}
 
 			const organizationalUnitContainers = await getManyOrganizationalUnitContainers({
-				organization: container.guid
+				include: {
+					organization: container.guid
+				}
 			})(txConnection);
 
 			for (const organizationalUnitContainer of organizationalUnitContainers) {
@@ -735,12 +737,17 @@ export function getManyOrganizationContainers(
 }
 
 export function getManyOrganizationalUnitContainers(filters: {
-	administrativeType?: string[];
-	cityAndMunicipalityTypeBBSR?: string[];
-	federalState?: string[];
-	level?: number;
-	organization?: string;
-	terms?: string;
+	include?: {
+		administrativeType?: string[];
+		cityAndMunicipalityTypeBBSR?: string[];
+		federalState?: string[];
+		level?: number;
+		organization?: string;
+		terms?: string;
+	};
+	exclude?: {
+		organizationalUnitType?: string[];
+	};
 }) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
 		const conditions = [
@@ -748,34 +755,40 @@ export function getManyOrganizationalUnitContainers(filters: {
 			sql.fragment`NOT c.deleted`,
 			sql.fragment`c.payload->>'type' = ${payloadTypes.enum.organizational_unit}`
 		];
-		if (filters.administrativeType?.length) {
+		if (filters.include?.administrativeType?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'administrativeType' = ANY (${sql.array(filters.administrativeType, 'text')})`
+				sql.fragment`c.payload->>'administrativeType' = ANY (${sql.array(filters.include.administrativeType, 'text')})`
 			);
 		}
-		if (filters.cityAndMunicipalityTypeBBSR?.length) {
+		if (filters.include?.cityAndMunicipalityTypeBBSR?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.cityAndMunicipalityTypeBBSR, 'text')})`
+				sql.fragment`c.payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.include.cityAndMunicipalityTypeBBSR, 'text')})`
 			);
 		}
-		if (filters.federalState?.length) {
+		if (filters.include?.federalState?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.federalState, 'text')})`
+				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.include.federalState, 'text')})`
 			);
 		}
-		if (filters.level) {
-			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.level}`);
+		if (filters.include?.level) {
+			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.include.level}`);
 		}
-		if (filters.organization) {
-			conditions.push(sql.fragment`c.organization = ${filters.organization}`);
+		if (filters.include?.organization) {
+			conditions.push(sql.fragment`c.organization = ${filters.include.organization}`);
 		}
-		if (filters.terms) {
+		if (filters.include?.terms) {
 			conditions.push(
-				sql.fragment`to_tsquery('german', ${filters.terms
+				sql.fragment`to_tsquery('german', ${filters.include.terms
 					.trim()
 					.split(' ')
 					.map((t) => `${t}:*`)
 					.join(' & ')}) @@ jsonb_to_tsvector('german', c.payload, '["string", "numeric"]')`
+			);
+		}
+
+		if (filters.exclude?.organizationalUnitType?.length) {
+			conditions.push(
+				sql.fragment`NOT (payload ? 'organizationalUnitType' AND payload->>'organizationalUnitType' = ANY (${sql.array(filters.exclude.organizationalUnitType, 'text')}))`
 			);
 		}
 

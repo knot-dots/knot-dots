@@ -546,7 +546,7 @@ export const GET = (async ({ locals, url }) => {
 		containers = await locals.pool.connect(
 			getManyOrganizationalUnitContainers(
 				parseResult.data.organization.length > 0
-					? { organization: parseResult.data.organization[0] }
+					? { include: { organization: parseResult.data.organization[0] } }
 					: {}
 			)
 		);

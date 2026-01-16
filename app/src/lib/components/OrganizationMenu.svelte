@@ -83,13 +83,7 @@
 		for (const level of [1, 2, 3, 4]) {
 			organizationalUnitsByLevel = [
 				...organizationalUnitsByLevel,
-				organizationalUnits
-					.filter(
-						({ payload }) =>
-							payload.organizationalUnitType !=
-							organizationalUnitType.enum['organizational_unit_type.administrative_area']
-					)
-					.filter(({ payload }) => payload.level === level)
+				organizationalUnits.filter(({ payload }) => payload.level === level)
 			];
 		}
 
