@@ -23,6 +23,7 @@
 			{ label: $_('workspace.programs'), value: '/programs/catalog' },
 			{ label: $_('workspace.programs_by_level'), value: '/programs/level' },
 			{ label: $_('workspace.measures'), value: '/measures/status' },
+			{ label: $_('workspace.resources'), value: '/resources/catalog' },
 			...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 				? [{ label: $_('workspace.tasks'), value: '/tasks/status' }]
 				: []),

@@ -17,6 +17,7 @@
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
+	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
@@ -37,6 +38,7 @@
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
+		isResourceV2Container,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -212,6 +214,13 @@
 					/>
 				{:else if isResourceContainer($newContainer)}
 					<ResourceProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isResourceV2Container($newContainer)}
+					<ResourceV2Properties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
