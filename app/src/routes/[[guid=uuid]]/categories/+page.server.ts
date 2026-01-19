@@ -1,9 +1,13 @@
+import { error, type ServerLoad } from '@sveltejs/kit';
 import { filterVisible } from '$lib/authorization';
 import { payloadTypes, predicates } from '$lib/models';
 import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
-import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, parent, url }) => {
+export const load: ServerLoad = async ({ locals, parent, url }) => {
+	if (!locals.user.isAuthenticated || !locals.user.roles.includes('sysadmin')) {
+		error(403, { message: 'forbidden' });
+	}
+
 	const { currentOrganization, defaultOrganizationGuid } = await parent();
 
 	const organizationScope = Array.from(
@@ -77,4 +81,4 @@ export const load = (async ({ locals, parent, url }) => {
 		containers: filterVisible(containers, locals.user),
 		terms: filterVisible(terms, locals.user)
 	};
-}) satisfies PageServerLoad;
+};

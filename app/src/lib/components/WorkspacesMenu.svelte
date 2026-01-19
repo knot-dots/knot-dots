@@ -24,7 +24,8 @@
 	import Star from '~icons/knotdots/star';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { boards } from '$lib/models';
+	import { boards, payloadTypes } from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
@@ -194,13 +195,17 @@
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
-		{
-			exists: true,
-			icon: Grid,
-			label: $_('workspace.type.categories'),
-			recommended: false,
-			value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
-		},
+		...($ability.can('create', payloadTypes.enum.category)
+			? [
+					{
+						exists: true,
+						icon: Grid,
+						label: $_('workspace.type.categories'),
+						recommended: false,
+						value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
+					}
+				]
+			: []),
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [
 					{
