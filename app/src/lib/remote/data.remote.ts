@@ -136,6 +136,25 @@ export const fetchContainersRelatedToProgram = query(
 	}
 );
 
+export const fetchContainersRelatedToResource = query(
+	z.object({
+		guid: z.uuid(),
+		params: z.object({
+			organization: z.array(z.uuid()),
+			relationType: z.array(z.string())
+		})
+	}),
+	async ({ guid, params }) => {
+		const { locals } = getRequestEvent();
+
+		const related = await locals.pool.connect(
+			getAllRelatedContainers(params.organization, guid, params.relationType, {}, 'alpha')
+		);
+
+		return filterVisible(related, locals.user);
+	}
+);
+
 export const fetchRelatedContainers = query(
 	z.object({
 		guid: z.string().uuid(),
