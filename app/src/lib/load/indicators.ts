@@ -10,15 +10,13 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { User } from '$lib/stores';
 
 export interface IndicatorFilters {
-	audience: string[];
-	categories: string[];
+	customCategories: Record<string, string[]>;
 	indicatorCategories: string[];
 	indicatorTypes: string[];
-	policyFieldsBNK: string[];
-	topics: string[];
 	included: string[];
 }
 
@@ -62,13 +60,10 @@ export async function getIndicatorsData(params: {
 		getManyContainers(
 			[organizationGuid],
 			{
-				audience: filters.audience,
-				categories: filters.categories,
+				customCategories: filters.customCategories,
 				indicatorCategories: filters.indicatorCategories,
 				indicatorTypes: filters.indicatorTypes,
 				...(restrictOrgUnits ? { organizationalUnits } : {}),
-				policyFieldsBNK: filters.policyFieldsBNK,
-				topics: filters.topics,
 				type: [payloadTypes.enum.indicator]
 			},
 			'alpha'
@@ -89,12 +84,9 @@ export async function getIndicatorsData(params: {
 				getManyContainers(
 					[organizationGuid],
 					{
-						audience: filters.audience,
-						categories: filters.categories,
+						customCategories: filters.customCategories,
 						indicatorCategories: filters.indicatorCategories,
 						indicatorTypes: filters.indicatorTypes,
-						policyFieldsBNK: filters.policyFieldsBNK,
-						topics: filters.topics,
 						type: [payloadTypes.enum.indicator_template]
 					},
 					'alpha'
@@ -129,14 +121,12 @@ export default async function load({ depends, locals, parent, url }: any) {
 	depends('containers');
 
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const customCategories = extractCustomCategoryFilters(url);
 
 	const filters = {
-		audience: url.searchParams.getAll('audience'),
-		categories: url.searchParams.getAll('category'),
+		customCategories,
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
-		policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-		topics: url.searchParams.getAll('topic'),
 		included: url.searchParams.getAll('included')
 	} as const;
 

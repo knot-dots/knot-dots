@@ -493,6 +493,7 @@ function prepareWhereCondition(filters: {
 	assignees?: string[];
 	audience?: string[];
 	categories?: string[];
+	customCategories?: Record<string, string[]>;
 	indicatorCategories?: string[];
 	indicator?: string;
 	indicatorTypes?: string[];
@@ -522,6 +523,12 @@ function prepareWhereCondition(filters: {
 		conditions.push(
 			sql.fragment`c.payload->'category' ?| ${sql.array(filters.categories, 'text')}`
 		);
+	}
+	if (filters.customCategories) {
+		for (const [key, values] of Object.entries(filters.customCategories)) {
+			if (!values?.length) continue;
+			conditions.push(sql.fragment`c.payload->${key} ?| ${sql.array(values, 'text')}`);
+		}
 	}
 	if (filters.indicatorCategories?.length) {
 		conditions.push(
@@ -663,19 +670,16 @@ export function getManyContainers(
 	organizations: string[],
 	filters: {
 		assignees?: string[];
-		audience?: string[];
-		categories?: string[];
+		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		measureTypes?: string[];
 		indicator?: string;
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string,
@@ -870,15 +874,12 @@ export function getAllRelatedContainers(
 	relations: string[],
 	filters: {
 		assignees?: string[];
-		audience?: string[];
-		categories?: string[];
+		customCategories?: Record<string, string[]>;
 		measureTypes?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		taskCategories?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string
@@ -976,13 +977,10 @@ export function getAllRelatedContainersByProgramType(
 	organizations: string[],
 	programTypes: string[],
 	filters: {
-		audience?: string[];
-		categories?: string[];
+		customCategories?: Record<string, string[]>;
 		measureTypes?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string

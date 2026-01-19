@@ -6,6 +6,7 @@ import {
 } from '$lib/server/db';
 import { filterOrganizationalUnits, filterMembers, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/measures/$types';
 
 export default (async function load({ depends, locals, parent, url }) {
@@ -13,6 +14,7 @@ export default (async function load({ depends, locals, parent, url }) {
 
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
+	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -37,7 +39,7 @@ export default (async function load({ depends, locals, parent, url }) {
 							predicates.enum['is-prerequisite-for']
 						]
 					: url.searchParams.getAll('relationType'),
-				{},
+				{ customCategories },
 				url.searchParams.get('sort') ?? ''
 			)
 		);
@@ -47,12 +49,9 @@ export default (async function load({ depends, locals, parent, url }) {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.getAll('programType'),
 				{
-					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					customCategories,
 					measureTypes: url.searchParams.getAll('measureType'),
-					terms: url.searchParams.get('terms') ?? '',
-					topics: url.searchParams.getAll('topic')
+					terms: url.searchParams.get('terms') ?? ''
 				},
 				url.searchParams.get('sort') ?? ''
 			)
@@ -62,13 +61,10 @@ export default (async function load({ depends, locals, parent, url }) {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
+					customCategories,
 					measureTypes: url.searchParams.getAll('measureType'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
-					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
 				},
 				url.searchParams.get('sort') ?? ''

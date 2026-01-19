@@ -5,6 +5,7 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
@@ -12,6 +13,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
+	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -30,6 +32,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				url.searchParams.get('related-to') as string,
 				[predicates.enum['is-part-of']],
 				{
+					customCategories,
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
@@ -46,9 +49,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					categories: url.searchParams.getAll('category'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
+					customCategories,
 					terms: url.searchParams.get('terms') ?? '',
 					type: [
 						payloadTypes.enum.effect,

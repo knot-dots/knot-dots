@@ -1,22 +1,21 @@
 import { filterVisible } from '$lib/authorization';
 import { audience, type Container, type IndicatorContainer, payloadTypes } from '$lib/models';
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
 	const { currentOrganization } = await parent();
+	const customCategories = extractCustomCategoryFilters(url);
 	const containers = (await locals.pool.connect(
 		getManyContainers(
 			[currentOrganization.guid],
 			{
-				audience: url.searchParams.getAll('audience'),
-				categories: url.searchParams.getAll('category'),
+				customCategories,
 				indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 				indicatorTypes: url.searchParams.getAll('indicatorType'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic'),
 				type: [payloadTypes.enum.indicator]
 			},
 			''

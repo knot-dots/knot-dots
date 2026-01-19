@@ -5,6 +5,7 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/programs/$types';
 
 export default (async function load({ depends, locals, parent, url }) {
@@ -12,6 +13,7 @@ export default (async function load({ depends, locals, parent, url }) {
 
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
+	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -36,7 +38,7 @@ export default (async function load({ depends, locals, parent, url }) {
 							predicates.enum['is-superordinate-of']
 						]
 					: url.searchParams.getAll('relationType'),
-				{},
+				{ customCategories },
 				url.searchParams.get('sort') ?? ''
 			)
 		);
@@ -45,12 +47,9 @@ export default (async function load({ depends, locals, parent, url }) {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					customCategories,
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
-					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.program]
 				},
 				url.searchParams.get('sort') ?? ''
