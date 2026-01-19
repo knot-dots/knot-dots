@@ -3,15 +3,14 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import { loadCategoryOptions, buildCategoryFacets, buildCategoryLabels } from '$lib/client/categoryOptions';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import {
-		audience,
 		computeFacetCount,
-		type Container,
-		policyFieldBNK,
+		isCategoryContainer,
+		payloadTypes,
 		predicates,
-		programTypes,
-		sustainableDevelopmentGoals,
-		topics
+		programTypes
 	} from '$lib/models';
 
 	import type { PageData } from '../../routes/[[guid=uuid]]/programs/catalog/$types';
@@ -34,25 +33,79 @@
 		]
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			...((!page.data.currentOrganization.payload.default
-				? [['included', new Map()]]
-				: []) as Array<[string, Map<string, number>]>),
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
-		]);
+	let categoryFacets = $state(new Map<string, Map<string, number>>());
+	let facetLabels = $state(new Map<string, string>());
 
-		return computeFacetCount(facets, data.containers);
+	$effect(() => {
+		const organizationScope = Array.from(
+			new Set(
+				[page.data.currentOrganization?.guid, page.data.defaultOrganizationGuid].filter(
+					(guid): guid is string => Boolean(guid)
+				)
+			)
+		);
+
+		let cancelled = false;
+		(async () => {
+			const [scopedCategories, fallbackCategories] = await Promise.all([
+				fetchContainers(
+					{ organization: organizationScope, payloadType: [payloadTypes.enum.category] },
+					'alpha'
+				),
+				fetchContainers({ payloadType: [payloadTypes.enum.category] }, 'alpha')
+			]);
+
+			if (cancelled) return;
+
+			const categoryKeys = Array.from(
+				new Set(
+					[...scopedCategories, ...fallbackCategories]
+						.filter(isCategoryContainer)
+						.map(({ payload }) => payload.key)
+						.filter((key): key is string => Boolean(key))
+				)
+			);
+
+			let options = await loadCategoryOptions(categoryKeys, organizationScope);
+			let next = buildCategoryFacets(options);
+			let nextLabels = buildCategoryLabels(options);
+
+			if (next.size === 0) {
+				options = await loadCategoryOptions(categoryKeys, []);
+				next = buildCategoryFacets(options);
+				nextLabels = buildCategoryLabels(options);
+			}
+
+			if (cancelled) return;
+			categoryFacets = next;
+			facetLabels = nextLabels;
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	let facets = $derived.by(() => {
+		const entries: Array<[string, Map<string, number>]> = [];
+
+		if (!page.data.currentOrganization.payload.default) {
+			entries.push(['included', new Map<string, number>()]);
+		}
+
+		for (const [key, values] of categoryFacets.entries()) {
+			entries.push([key, new Map<string, number>(values.entries())]);
+		}
+
+		entries.push(['programType', new Map<string, number>(programTypes.options.map((v) => [v as string, 0]))]);
+
+		return computeFacetCount(new Map(entries), data.containers);
 	});
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {filterBarInitiallyOpen} {facets} search />
+		<Header {filterBarInitiallyOpen} {facets} {facetLabels} search />
 	{/snippet}
 
 	{#snippet main()}

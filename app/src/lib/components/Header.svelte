@@ -42,6 +42,7 @@
 
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
+		facetLabels?: Map<string, string>;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
@@ -50,6 +51,7 @@
 
 	let {
 		facets = new Map(),
+		facetLabels = new Map(),
 		filterBarInitiallyOpen = false,
 		search = false,
 		sortOptions = [
@@ -222,8 +224,13 @@
 			{/if}
 
 			{#each facets.entries() as [key, foci] (key)}
+				{@const labelOverride = facetLabels.get(key)}
 				{@const options = [...foci.entries()]
-					.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+					.map(([k, v]) => ({
+						count: v,
+						label: facetLabels.get(k) ?? $_(k),
+						value: k
+					}))
 					.toSorted((a, b) =>
 						a.label.localeCompare(b.label, undefined, {
 							numeric: true,
@@ -239,7 +246,7 @@
 				{:else if key === 'member'}
 					<MemberFilterDropDown {options} />
 				{:else if options.filter(({ count }) => count > 0).length > 0 || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
-					<FilterDropDown {key} {options} />
+					<FilterDropDown {key} {options} label={labelOverride} />
 				{/if}
 			{/each}
 		</fieldset>

@@ -10,7 +10,12 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
-		audience,
+		loadCategoryOptions,
+		buildCategoryFacets,
+		buildCategoryLabels
+	} from '$lib/client/categoryOptions';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import {
 		computeFacetCount,
 		type Container,
 		findAncestors,
@@ -19,15 +24,14 @@
 		findLeafObjectives,
 		indicatorCategories,
 		indicatorTypes,
+		isCategoryContainer,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
 		isRelatedTo,
-		policyFieldBNK,
-		predicates,
-		sustainableDevelopmentGoals,
-		topics
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -119,23 +123,77 @@
 		return objectivesByLevel;
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-		]);
+	let categoryFacets = $state(new Map<string, Map<string, number>>());
+	let facetLabels = $state(new Map<string, string>());
 
+	$effect(() => {
+		const organizationScope = Array.from(
+			new Set(
+				[page.data.currentOrganization?.guid, page.data.defaultOrganizationGuid].filter(
+					(guid): guid is string => Boolean(guid)
+				)
+			)
+		);
+
+		let cancelled = false;
+		(async () => {
+			const [scopedCategories, fallbackCategories] = await Promise.all([
+				fetchContainers(
+					{ organization: organizationScope, payloadType: [payloadTypes.enum.category] },
+					'alpha'
+				),
+				fetchContainers({ payloadType: [payloadTypes.enum.category] }, 'alpha')
+			]);
+
+			if (cancelled) return;
+
+			const categoryKeys = Array.from(
+				new Set(
+					[...scopedCategories, ...fallbackCategories]
+						.filter(isCategoryContainer)
+						.map(({ payload }) => payload.key)
+						.filter((key): key is string => Boolean(key))
+				)
+			);
+
+			let options = await loadCategoryOptions(categoryKeys, organizationScope);
+			let nextFacets = buildCategoryFacets(options);
+			let nextLabels = buildCategoryLabels(options);
+
+			if (nextFacets.size === 0) {
+				options = await loadCategoryOptions(categoryKeys, []);
+				nextFacets = buildCategoryFacets(options);
+				nextLabels = buildCategoryLabels(options);
+			}
+
+			if (cancelled) return;
+			categoryFacets = nextFacets;
+			facetLabels = nextLabels;
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	let facets = $derived.by(() => {
+		const entries: Array<[string, Map<string, number>]> = [
+			['indicatorType', new Map<string, number>(indicatorTypes.options.map((v: string) => [v, 0]))],
+			['indicatorCategory', new Map<string, number>(indicatorCategories.options.map((v: string) => [v, 0]))]
+		];
+
+		for (const [key, values] of categoryFacets.entries()) {
+			entries.push([key, new Map<string, number>(values.entries())]);
+		}
+
+		const facets = new Map<string, Map<string, number>>(entries);
 		return computeFacetCount(facets, data.containers);
 	});
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header {facets} facetLabels={facetLabels} search />
 	{/snippet}
 
 	{#snippet main()}
