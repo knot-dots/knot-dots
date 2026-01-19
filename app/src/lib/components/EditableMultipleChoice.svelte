@@ -1,31 +1,55 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		editable?: boolean;
 		label: string;
-		options: Array<{ label: string; value: string }>;
-		value: string[];
+		options?: Array<{ label: string; value: string; icon?: string }>;
+		value?: string[];
 	}
 
-	let { editable = false, label, options, value = $bindable() }: Props = $props();
+let { editable = false, label, options = [], value = $bindable([] as string[]) }: Props = $props();
 
-	let selected = $derived(options.filter((o) => value.includes(o.value)).map(({ label }) => label));
+function iconURL(origin?: string) {
+	if (!origin) return undefined;
+	try {
+		return transformFileURL(origin);
+	} catch (error) {
+		console.warn('Failed to transform icon URL', error);
+		return origin;
+	}
+}
+
+	let safeOptions = $state([] as Array<{ label: string; value: string; icon?: string }>);
+	$effect(() => {
+		safeOptions = Array.isArray(options) ? options : [];
+	});
+
+	let selected = $derived(
+		safeOptions.filter((o) => value.includes(o.value)).map(({ label }) => label)
+	);
 </script>
 
 <div class="label">{label}</div>
-{#if editable}
-	<MultipleChoiceDropdown {options} bind:value />
-{:else}
-	<ul class="value">
-		{#each options.filter((o) => value.includes(o.value)) as selectedOption}
-			<li>{selectedOption.label}</li>
-		{:else}
-			<li>{$_('empty')}</li>
-		{/each}
-	</ul>
-{/if}
+	{#if editable}
+		<MultipleChoiceDropdown options={safeOptions} bind:value />
+	{:else}
+		<ul class="value">
+			{#each safeOptions.filter((o) => value.includes(o.value)) as selectedOption}
+				{@const icon = iconURL(selectedOption.icon)}
+				<li>
+					{#if icon}
+						<img alt="" class="value-icon" src={icon} />
+					{/if}
+					{selectedOption.label}
+				</li>
+			{:else}
+				<li>{$_('empty')}</li>
+			{/each}
+		</ul>
+	{/if}
 
 <style>
 	.value {
@@ -33,10 +57,23 @@
 	}
 
 	.value > li {
-		display: list-item;
+		align-items: center;
+		display: flex;
+		gap: 0.35rem;
 		list-style: none;
 		padding: 0;
 		text-align: left;
 		text-wrap: nowrap;
+	}
+
+	.value > li + li {
+		margin-top: 0.35rem;
+	}
+
+	.value-icon {
+		height: 1.25rem;
+		margin-right: 0.35rem;
+		object-fit: contain;
+		width: 1.25rem;
 	}
 </style>

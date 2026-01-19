@@ -8,7 +8,7 @@ import {
 	type TermContainer
 } from '$lib/models';
 
-export type CategoryOption = { label: string; value: string; guid: string };
+export type CategoryOption = { label: string; value: string; guid: string; icon?: string };
 
 export type CategoryOptions = Record<string, CategoryOption[]> & {
 	__categoryLabels__?: Record<string, string>;
@@ -117,7 +117,8 @@ export async function loadCategoryOptions(
 					const options = findTermsForCategory(category, termContainers).map((term) => ({
 						label: term.payload.filterLabel ?? term.payload.title ?? term.payload.value,
 						value: term.payload.value,
-						guid: term.guid
+						guid: term.guid,
+						icon: term.payload.icon
 					}));
 
 					const sorted = sortOptions(options);

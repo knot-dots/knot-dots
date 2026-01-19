@@ -636,14 +636,18 @@ const initialCategoryPayload = categoryPayloadBase.partial({
 const termPayload = z
 	.object({
 		description: z.string().trim().optional(),
+		filterLabel: z.string().trim().max(256).optional(),
 		title: z.string().trim(),
 		value: z.string().trim(),
+		icon: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.term),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
 const initialTermPayload = termPayload.partial({
+	filterLabel: true,
+	icon: true,
 	title: true,
 	value: true
 });
@@ -2869,17 +2873,32 @@ export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
 	containers: AnyContainer[]
 ) {
+	const normalizeValue = (value: unknown): string => {
+		if (value === null || value === undefined) return '';
+		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+			return String(value);
+		}
+		if (typeof value === 'object') {
+			const v = value as { guid?: unknown; value?: unknown };
+			if (v.guid !== undefined) return String(v.guid);
+			if (v.value !== undefined) return String(v.value);
+		}
+		return String(value);
+	};
+
 	for (const container of containers) {
 		for (const key of facets.keys()) {
 			if (key in container.payload) {
 				const foci = facets.get(key) as Map<string, number>;
 				if (Array.isArray(container.payload[key as keyof typeof container.payload])) {
 					for (const value of container.payload[key as keyof typeof container.payload]) {
-						foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
+						const normalized = normalizeValue(value);
+						foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 					}
 				} else {
 					const value = container.payload[key as keyof typeof container.payload];
-					foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
+					const normalized = normalizeValue(value);
+					foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 				}
 			}
 		}
