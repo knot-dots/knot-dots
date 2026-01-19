@@ -57,6 +57,7 @@
 	"category.save_as_template": "Save as template for all",
 	"categories.columns.root": "Categories",
 	"category.terms.heading": "Terms",
+	"category.subterms.heading": "Sub-terms",
 	"category.terms.empty": "No terms linked yet.",
 	"category.terms.create_title": "Create new term",
 	"category.terms.value_label": "Value",

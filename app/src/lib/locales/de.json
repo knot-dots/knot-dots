@@ -62,6 +62,7 @@
 	"category.save_as_template": "Als Vorlage für alle speichern",
 	"categories.columns.root": "Kategorien",
 	"category.terms.heading": "Begriffe",
+	"category.subterms.heading": "Unterbegriffe",
 	"category.terms.empty": "Noch keine Begriffe verknüpft.",
 	"category.terms.create_title": "Neuen Begriff erstellen",
 	"category.terms.value_label": "Wert",

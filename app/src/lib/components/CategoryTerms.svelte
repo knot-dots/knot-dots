@@ -7,38 +7,41 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableImage from '$lib/components/EditableImage.svelte';
-	import {
-		ability,
-		applicationState
-	} from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import {
 		container as containerSchema,
 		containerOfType,
 		isTermContainer,
 		overlayKey,
 		overlayURL,
+		payloadTypes,
+		predicates,
 		type AnyContainer,
 		type CategoryContainer,
 		type NewContainer,
-		type TermContainer,
-		payloadTypes,
-		predicates
+		type Predicate,
+		type TermContainer
 	} from '$lib/models';
 
 	interface Props {
-		container: CategoryContainer;
+		container: CategoryContainer | TermContainer;
 		relatedContainers: AnyContainer[];
+		predicate?: Predicate;
+		headingKey?: string;
 	}
+
+	let {
+		container = $bindable(),
+		relatedContainers = $bindable(),
+		predicate = predicates.enum['is-part-of-category'],
+		headingKey = 'category.terms.heading'
+	}: Props = $props();
 
 	type TermDragItem = {
 		guid: string;
 		term?: TermContainer;
 		[SHADOW_ITEM_MARKER_PROPERTY_NAME]?: boolean;
 	};
-
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
-
-	const predicate = predicates.enum['is-part-of-category'];
 
 	let terms = $state([] as TermContainer[]);
 	let termItems = $state([] as TermDragItem[]);
@@ -65,8 +68,12 @@
 		const relatedTerms = relatedContainers
 			.filter(isTermContainer)
 			.map((term) => {
+				if (term.guid === container.guid) {
+					return null;
+				}
 				const membership = term.relation.find(
-					({ object, predicate: p }) => object === container.guid && p === predicate
+					({ object, predicate: p, subject }) =>
+						object === container.guid && subject === term.guid && p === predicate
 				);
 				if (!membership) {
 					return null;
@@ -384,11 +391,18 @@
 	const canEdit = $derived(
 		$applicationState.containerDetailView.editable && $ability.can('update', container)
 	);
+
+	const isSubterm = $derived(
+		(container.relation ?? []).some(
+			({ predicate: p, subject }) => p === predicates.enum['is-part-of'] && subject === container.guid
+		)
+	);
 </script>
 
+{#if !isSubterm}
 <div class="category-terms details-section">
 	<div class="category-terms__header">
-		<h2>{$_('category.terms.heading')}</h2>
+		<h2>{$_(headingKey)}</h2>
 	</div>
 
 	{#if terms.length === 0}
@@ -450,7 +464,7 @@
 		{/if}
 	{/if}
 
-	{#if canEdit}
+	{#if canEdit && !isSubterm}
 		<form class="category-terms__form" onsubmit={handleCreateTerm}>
 			<h3>{$_('category.terms.create_title')}</h3>
 
@@ -513,6 +527,7 @@
 
 	{/if}
 </div>
+{/if}
 
 <style>
 	.category-terms {
@@ -521,8 +536,7 @@
 		flex-direction: column;
 	}
 
-	.category-terms__list,
-	.category-terms__results {
+	.category-terms__list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
@@ -531,8 +545,7 @@
 		gap: 0.5rem;
 	}
 
-	.category-terms__item,
-	.category-terms__results li {
+	.category-terms__item {
 		align-items: center;
 		background: var(--color-gray-050);
 		border-radius: 8px;
@@ -593,8 +606,7 @@
 		font-size: 0.875rem;
 	}
 
-	.category-terms__form,
-	.category-terms__existing {
+	.category-terms__form {
 		background: white;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 12px;
@@ -605,7 +617,6 @@
 	}
 
 	.category-terms__form h3,
-	.category-terms__existing h3,
 	.category-terms__header h2 {
 		margin: 0;
 	}
@@ -617,15 +628,13 @@
 	}
 
 	.category-terms__form input,
-	.category-terms__form textarea,
-	.category-terms__existing input {
+	.category-terms__form textarea {
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
 		padding: 0.5rem;
 	}
 
 	.category-terms__empty,
-	.category-terms__hint,
 	.category-terms__error {
 		margin: 0;
 		color: var(--color-gray-600);

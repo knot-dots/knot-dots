@@ -18,7 +18,9 @@
 			predicates.enum['is-consistent-with'],
 			predicates.enum['is-equivalent-to'],
 			predicates.enum['is-inconsistent-with'],
-			predicates.enum['contributes-to']
+			predicates.enum['contributes-to'],
+			predicates.enum['is-part-of-category'],
+			predicates.enum['is-part-of']
 		]
 	});
 
@@ -34,8 +36,11 @@
 			<BoardColumn addItemUrl="#create=category&level=0" title={$_('categories.columns.root')}>
 				<MaybeDragZone containers={data.containers} />
 			</BoardColumn>
-			<BoardColumn addItemUrl="#create=term" title={$_('category.terms.heading')}>
+			<BoardColumn title={$_('category.terms.heading')}>
 				<MaybeDragZone containers={data.terms} />
+			</BoardColumn>
+			<BoardColumn title={$_('category.subterms.heading')}>
+				<MaybeDragZone containers={data.subterms} />
 			</BoardColumn>
 		</Board>
 
