@@ -2161,7 +2161,7 @@ export function isContainer(container: AnyContainer | EmptyContainer): container
 	);
 }
 
-export type ContainerWithAudience = AnyContainer & {
+export type ContainerWithAudience = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { audience: Audience[] };
 };
 
@@ -2171,7 +2171,7 @@ export function isContainerWithAudience(
 	return hasProperty(container.payload, 'audience');
 }
 
-export type ContainerWithBody = AnyContainer & {
+export type ContainerWithBody = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { body: string | undefined };
 };
 
@@ -2181,7 +2181,7 @@ export function isContainerWithBody(
 	return hasProperty(container.payload, 'body');
 }
 
-export type ContainerWithCategory = AnyContainer & {
+export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { category: SustainableDevelopmentGoal[] };
 };
 
@@ -2191,7 +2191,7 @@ export function isContainerWithCategory(
 	return hasProperty(container.payload, 'category');
 }
 
-export type ContainerWithDescription = AnyContainer & {
+export type ContainerWithDescription = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { description: string | undefined };
 };
 
@@ -2201,7 +2201,7 @@ export function isContainerWithDescription(
 	return hasProperty(container.payload, 'description');
 }
 
-export type ContainerWithDuration = AnyContainer & {
+export type ContainerWithDuration = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { startDate: string; endDate: string };
 };
 
@@ -2211,7 +2211,7 @@ export function isContainerWithDuration(
 	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
 }
 
-export type ContainerWithEditorialState = AnyContainer & {
+export type ContainerWithEditorialState = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { editorialState: EditorialState | undefined };
 };
 
@@ -2221,7 +2221,7 @@ export function isContainerWithEditorialState(
 	return hasProperty(container.payload, 'editorialState');
 }
 
-export type ContainerWithFulfillmentDate = AnyContainer & {
+export type ContainerWithFulfillmentDate = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { fulfillmentDate: string | undefined };
 };
 
@@ -2231,7 +2231,7 @@ export function isContainerWithFulfillmentDate(
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
-export type ContainerWithName = AnyContainer & {
+export type ContainerWithName = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { name: string | undefined };
 };
 
@@ -2241,7 +2241,7 @@ export function isContainerWithName(
 	return hasProperty(container.payload, 'name');
 }
 
-export type ContainerWithProgress = AnyContainer & {
+export type ContainerWithProgress = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { progress: number | undefined };
 };
 
@@ -2251,7 +2251,7 @@ export function isContainerWithProgress(
 	return hasProperty(container.payload, 'progress');
 }
 
-export type ContainerWithStatus = AnyContainer & {
+export type ContainerWithStatus = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { status: Status };
 };
 
@@ -2261,7 +2261,7 @@ export function isContainerWithStatus(
 	return hasProperty(container.payload, 'status');
 }
 
-export type ContainerWithTitle = AnyContainer & {
+export type ContainerWithTitle = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { title: string | undefined };
 };
 
@@ -2271,7 +2271,7 @@ export function isContainerWithTitle(
 	return hasProperty(container.payload, 'title');
 }
 
-export type ContainerWithTopic = AnyContainer & {
+export type ContainerWithTopic = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { topic: Topic[] };
 };
 
