@@ -795,6 +795,7 @@ const measurePayload = basePayload
 		comment: z.string().trim().optional(),
 		endDate: z.string().date().optional(),
 		measureType: z.array(measureTypes).default([]),
+		progress: z.number().nonnegative().optional(),
 		resource: z
 			.array(
 				z.object({
