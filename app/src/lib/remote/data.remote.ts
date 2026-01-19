@@ -147,11 +147,35 @@ export const fetchContainersRelatedToResource = query(
 	async ({ guid, params }) => {
 		const { locals } = getRequestEvent();
 
-		const related = await locals.pool.connect(
-			getAllRelatedContainers(params.organization, guid, params.relationType, {}, 'alpha')
-		);
+		const [related, resourceData] = await Promise.all([
+			locals.pool.connect(
+				getAllRelatedContainers(params.organization, guid, params.relationType, {}, 'alpha')
+			),
+			locals.pool.connect(
+				getManyContainers(
+					[],
+					{
+						type: [
+							payloadTypes.enum.resource_data_expected_expenses,
+							payloadTypes.enum.resource_data_historical_expenses,
+							payloadTypes.enum.resource_data_expected_income,
+							payloadTypes.enum.resource_data_historical_income
+						],
+						resource: [guid]
+					},
+					'alpha'
+				)
+			)
+		]);
 
-		return filterVisible(related, locals.user);
+		const merged = [
+			...related,
+			...resourceData.filter(
+				(r) => !related.some((existing: { guid: string }) => existing.guid === r.guid)
+			)
+		];
+
+		return filterVisible(merged, locals.user);
 	}
 );
 

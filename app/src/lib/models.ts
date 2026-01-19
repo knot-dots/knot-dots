@@ -1099,6 +1099,15 @@ const resourceDataExpectedIncomePayload = makeResourceDataPayload(
 
 const initialResourceDataExpectedIncomePayload = resourceDataExpectedIncomePayload;
 
+export function isResourceDataPayload(value: string) {
+	return (
+		value === payloadTypes.enum.resource_data_historical_expenses ||
+		value === payloadTypes.enum.resource_data_expected_expenses ||
+		value === payloadTypes.enum.resource_data_historical_income ||
+		value === payloadTypes.enum.resource_data_expected_income
+	);
+}
+
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
