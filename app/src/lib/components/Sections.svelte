@@ -17,7 +17,6 @@
 		type NewContainer,
 		payloadTypes,
 		predicates,
-		isResourceDataContainer,
 		isResourceDataPayload
 	} from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';

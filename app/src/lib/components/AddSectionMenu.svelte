@@ -481,7 +481,7 @@
 
 				{#if resourceRelatedOptions.length > 0}
 					<li class="menu-subheader">{$_('resources')}</li>
-					{#each resourceRelatedOptions as option}
+					{#each resourceRelatedOptions as option (option.value)}
 						{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 							<li class="menu-item">
 								<button use:menu.item={{ value: option.value }}>

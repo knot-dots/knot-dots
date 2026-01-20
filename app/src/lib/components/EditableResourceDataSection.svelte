@@ -85,12 +85,6 @@
 			tableContainer.scrollTo({ left: tableContainer.scrollWidth, behavior: 'smooth' });
 		}
 	}
-
-	function removeEntry(index: number) {
-		container.payload.entries = container.payload.entries.filter((_, i) => i !== index);
-
-		scheduleSave(container);
-	}
 </script>
 
 <div class="resource-data">
@@ -139,7 +133,7 @@
 						</th>
 					{/if}
 
-					{#each container.payload.entries as entry}
+					{#each container.payload.entries as entry (entry.year)}
 						<th scope="col" class="resource-data__year">
 							{#if editable && $ability.can('update', container)}
 								<input
@@ -187,7 +181,7 @@
 							<td class="resource-data__value resource-data__value--placeholder"></td>
 						{/if}
 
-						{#each container.payload.entries as entry, index}
+						{#each container.payload.entries as entry (entry.year)}
 							<td class="resource-data__value">
 								{#if editable && $ability.can('update', container)}
 									<input
