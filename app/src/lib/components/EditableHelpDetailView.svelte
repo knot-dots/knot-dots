@@ -2,12 +2,12 @@
 	import { _ } from 'svelte-i18n';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import PageProperties from '$lib/components/PageProperties.svelte';
-	import type { AnyContainer, PageContainer } from '$lib/models';
+	import HelpProperties from '$lib/components/HelpProperties.svelte';
+	import type { AnyContainer, HelpContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: PageContainer;
+		container: HelpContainer;
 		revisions: AnyContainer[];
 	}
 
@@ -16,7 +16,7 @@
 
 <EditableContainerDetailView bind:container>
 	{#snippet data()}
-		<PageProperties
+		<HelpProperties
 			bind:container
 			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			relatedContainers={[]}
