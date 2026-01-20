@@ -97,7 +97,9 @@
 	<header class="resource-data__header">
 		<div class="resource-data__heading">
 			<h2 class="resource-data__title">
-				<span class="resource-data__title-main">{$_(getResourceDataI18nKey(container.payload.type))}</span>
+				<span class="resource-data__title-main"
+					>{$_(getResourceDataI18nKey(container.payload.type))}</span
+				>
 				{#if currentResource}
 					<span class="resource-data__title-in">in</span>
 					<span class="resource-data__title-unit">
