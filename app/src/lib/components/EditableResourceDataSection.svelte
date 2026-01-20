@@ -3,6 +3,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
+		getResourceDataI18nKey,
 		isResourceV2Container,
 		type AnyContainer,
 		type ResourceDataContainer,
@@ -28,9 +29,8 @@
 	}: Props = $props();
 
 	let currentResource: ResourceV2Container | undefined = $derived(
-		relatedContainers.find(
-			(resource): resource is ResourceV2Container =>
-				isResourceV2Container(resource) && resource.guid === container.payload.resource
+		relatedContainers.find((resource): resource is ResourceV2Container =>
+			isResourceV2Container(resource)
 		)
 	);
 
@@ -97,7 +97,7 @@
 	<header class="resource-data__header">
 		<div class="resource-data__heading">
 			<h2 class="resource-data__title">
-				<span class="resource-data__title-main">{container.payload.title}</span>
+				<span class="resource-data__title-main">{$_(getResourceDataI18nKey(container.payload.type))}</span>
 				{#if currentResource}
 					<span class="resource-data__title-in">in</span>
 					<span class="resource-data__title-unit">
@@ -179,9 +179,7 @@
 					</tr>
 				{:else}
 					<tr>
-						<th scope="row" class="resource-data__row-label">
-							{container.payload.title}
-						</th>
+						<th scope="row" class="resource-data__row-label"> </th>
 
 						{#if editable && $ability.can('update', container)}
 							<td class="resource-data__value resource-data__value--placeholder"></td>

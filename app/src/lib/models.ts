@@ -1052,49 +1052,41 @@ const resourceDataBase = z
 				})
 			)
 			.default([]),
-		resource: z.union([z.uuid(), z.null()]).default(null),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
 function makeResourceDataPayload<
 	TType extends (typeof payloadTypes.enum)[keyof typeof payloadTypes.enum]
->(typeLiteral: TType, titleKey: string) {
+>(typeLiteral: TType) {
 	return resourceDataBase
 		.extend({
-			title: z
-				.string()
-				.readonly()
-				.default(() => unwrapFunctionStore(_)(titleKey)),
+			title: z.string().default(''),
 			type: z.literal(typeLiteral)
 		})
 		.strict();
 }
 
 const resourceDataHistoricalExpensesPayload = makeResourceDataPayload(
-	payloadTypes.enum.resource_data_historical_expenses,
-	'resource_data.historical_expenses'
+	payloadTypes.enum.resource_data_historical_expenses
 );
 
 const initialResourceDataHistoricalExpensesPayload = resourceDataHistoricalExpensesPayload;
 
 const resourceDataExpectedExpensesPayload = makeResourceDataPayload(
-	payloadTypes.enum.resource_data_expected_expenses,
-	'resource_data.expected_expenses'
+	payloadTypes.enum.resource_data_expected_expenses
 );
 
 const initialResourceDataExpectedExpensesPayload = resourceDataExpectedExpensesPayload;
 
 const resourceDataHistoricalIncomePayload = makeResourceDataPayload(
-	payloadTypes.enum.resource_data_historical_income,
-	'resource_data.historical_income'
+	payloadTypes.enum.resource_data_historical_income
 );
 
 const initialResourceDataHistoricalIncomePayload = resourceDataHistoricalIncomePayload;
 
 const resourceDataExpectedIncomePayload = makeResourceDataPayload(
-	payloadTypes.enum.resource_data_expected_income,
-	'resource_data.expected_income'
+	payloadTypes.enum.resource_data_expected_income
 );
 
 const initialResourceDataExpectedIncomePayload = resourceDataExpectedIncomePayload;
@@ -1895,10 +1887,19 @@ export function isResourceDataContainer(
 	);
 }
 
-export function hasValidResource(
-	container: ResourceDataContainer
-): container is ResourceDataContainer & { payload: { resource: string } } {
-	return container.payload.resource != null;
+export function getResourceDataI18nKey(type: string): string {
+	switch (type) {
+		case payloadTypes.enum.resource_data_historical_expenses:
+			return 'resource_data.historical_expenses';
+		case payloadTypes.enum.resource_data_expected_expenses:
+			return 'resource_data.expected_expenses';
+		case payloadTypes.enum.resource_data_historical_income:
+			return 'resource_data.historical_income';
+		case payloadTypes.enum.resource_data_expected_income:
+			return 'resource_data.expected_income';
+		default:
+			return type;
+	}
 }
 
 const resourceV2Container = container.extend({
