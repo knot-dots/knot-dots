@@ -13,10 +13,10 @@
 	import {
 		type Container,
 		containerOfType,
-		isContainerWithProgress,
 		isGoalCollectionContainer,
 		isObjectiveCollectionContainer,
 		isResourceCollectionContainer,
+		isSimpleMeasureContainer,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -110,7 +110,7 @@
 
 <Badges bind:container {editable} />
 
-{#if isContainerWithProgress(container)}
+{#if isSimpleMeasureContainer(container)}
 	<EditableProgress {editable} bind:value={container.payload.progress} />
 {/if}
 
