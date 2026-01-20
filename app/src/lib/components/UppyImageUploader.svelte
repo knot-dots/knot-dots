@@ -9,6 +9,7 @@
 	import { openDashboard, closeDashboard } from '$lib/uppyStore';
 	import UploadIcon from '~icons/flowbite/upload-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import EditIcon from '~icons/flowbite/edit-outline';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
 	import requestSubmitElement from '$lib/client/requestSubmitElement';
 
@@ -107,6 +108,10 @@
 			const url = (response.body as any).url;
 			value = url;
 			const input = document.getElementById(id);
+
+			if (file.meta.altText) altAttribute = file.meta.altText as string;
+			if (file.meta.source) sourceAttribute = file.meta.source as string;
+
 			if (input) requestSubmitElement(input);
 
 			if (onSuccess) onSuccess(url);
@@ -145,6 +150,26 @@
 		requestSubmit(event);
 	}
 
+	async function editImage() {
+		if (!value) return;
+		try {
+			const response = await fetch(value);
+			const blob = await response.blob();
+			uppy.addFile({
+				name: 'image',
+				type: blob.type,
+				data: blob,
+				meta: {
+					altText: altAttribute,
+					source: sourceAttribute
+				},
+				source: 'Remote'
+			});
+		} catch (e) {
+			console.error('Error fetching image for edit:', e);
+		}
+	}
+
 	onDestroy(() => {
 		uppy.destroy();
 	});
@@ -161,28 +186,14 @@
 {#if mode === 'button'}
 	{#if value}
 		<div class="uppy-button-group">
+			<button class={className} onclick={editImage} type="button">
+				<EditIcon />
+				{$_('edit')}
+			</button>
 			<button class={className} onclick={removeImage} type="button">
 				<TrashBin />
 				{$_('upload.image.remove')}
 			</button>
-
-			{#if !hideAltAttribute}
-				<input
-					class="alt-input"
-					id="{id}-alt"
-					type="text"
-					bind:value={altAttribute}
-					placeholder={$_('image.alt_text_placeholder')}
-				/>
-				<input
-					class="alt-input"
-					id="{id}-source"
-					type="text"
-					bind:value={sourceAttribute}
-					onchange={(e) => requestSubmitElement(e.currentTarget)}
-					placeholder={$_('image.source_placeholder')}
-				/>
-			{/if}
 		</div>
 	{:else}
 		<button class={className || 'button button-upload'} onclick={triggerOpen} type="button">

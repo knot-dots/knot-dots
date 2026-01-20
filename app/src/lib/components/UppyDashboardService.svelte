@@ -4,6 +4,7 @@
 	import '@uppy/core/css/style.min.css';
 	import '@uppy/dashboard/css/style.min.css';
 	import '@uppy/image-editor/css/style.min.css';
+	import { _ } from 'svelte-i18n';
 
 	let state = $derived($uppyDashboard);
 	let dialogEl: HTMLDialogElement;
@@ -35,6 +36,15 @@
 				inline: true,
 				width: '100%',
 				height: '100%',
+				height: '100%',
+				metaFields: [
+					{
+						id: 'altText',
+						name: $_('image.alt_text'),
+						placeholder: $_('image.alt_text_placeholder')
+					},
+					{ id: 'source', name: $_('image.source'), placeholder: $_('image.source_placeholder') }
+				],
 				...state.props
 			}}
 		/>
