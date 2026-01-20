@@ -321,6 +321,7 @@
 	"logout": "Log out",
 	"managed_by": "Managed by",
 	"measure": "Measure",
+	"measure.hierarchy_level": "Hierarchy level",
 	"measure_type": "Measure type",
 	"measure_type.activity": "Activity",
 	"measure_type.module": "Module",

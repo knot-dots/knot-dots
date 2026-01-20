@@ -321,6 +321,7 @@
 	"logout": "Abmelden",
 	"managed_by": "Verantwortlich für die Ausarbeitung",
 	"measure": "Maßnahme",
+	"measure.hierarchy_level": "Umsetzungs-Ebene",
 	"measure_type": "Art der Maßnahme",
 	"measure_type.activity": "Aktivität",
 	"measure_type.module": "Modul",

@@ -4,9 +4,9 @@
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
+	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
 	import EditableGoalStatus from '$lib/components/EditableGoalStatus.svelte';
 	import EditableGoalType from '$lib/components/EditableGoalType.svelte';
-	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
@@ -44,7 +44,7 @@
 	{#snippet top()}
 		<EditableGoalType {editable} bind:value={container.payload.goalType} />
 
-		<EditableHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
+		<EditableGoalHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 
 		<EditableDate
 			{editable}
@@ -70,7 +70,7 @@
 
 		<EditableGoalStatus {editable} bind:value={container.payload.goalStatus} />
 
-		<EditableHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
+		<EditableGoalHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState

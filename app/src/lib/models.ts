@@ -888,6 +888,7 @@ const measurePayload = basePayload
 		annotation: z.string().trim().optional(),
 		comment: z.string().trim().optional(),
 		endDate: z.string().date().optional(),
+		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().optional(),
 		resource: z

@@ -5,6 +5,7 @@
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableDuration from '$lib/components/EditableDuration.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
+	import EditableMeasureHierarchyLevel from '$lib/components/EditableMeasureHierarchyLevel.svelte';
 	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
@@ -18,7 +19,12 @@
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import type { AnyContainer, Container, ContainerWithEffect } from '$lib/models';
+	import {
+		type AnyContainer,
+		type Container,
+		type ContainerWithEffect,
+		isMeasureContainer
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -37,6 +43,10 @@
 	{#snippet top()}
 		<EditableMeasureType {editable} bind:value={container.payload.measureType} />
 
+		{#if isMeasureContainer(container)}
+			<EditableMeasureHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
+		{/if}
+
 		<EditableDuration {editable} bind:container />
 
 		<EditableProgram {editable} bind:container />
@@ -54,6 +64,10 @@
 		<EditableMeasureType {editable} bind:value={container.payload.measureType} />
 
 		<EditableStatus {editable} bind:value={container.payload.status} />
+
+		{#if isMeasureContainer(container)}
+			<EditableMeasureHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
+		{/if}
 
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState
