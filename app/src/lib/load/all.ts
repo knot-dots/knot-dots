@@ -102,6 +102,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						payloadTypes.enum.image,
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
+						payloadTypes.enum.page,
 						payloadTypes.enum.program,
 						payloadTypes.enum.report,
 						payloadTypes.enum.rule,
