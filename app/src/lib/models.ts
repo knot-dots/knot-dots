@@ -3034,6 +3034,21 @@ export function computeColumnTitleForGoals(containers: GoalContainer[]) {
 	}
 }
 
+export function titleForMeasureCollection(containers: MeasureContainer[]) {
+	const measureTypes = new Set(containers.map(({ payload }) => payload.measureType));
+
+	if (measureTypes.size == 1) {
+		const measureType = measureTypes.values().next().value;
+		return unwrapFunctionStore(_)(`${measureType}.plural`);
+	} else if (measureTypes.size >= 1) {
+		return unwrapFunctionStore(_)('measures_by_hierarchy_level', {
+			values: { level: containers[0].payload.hierarchyLevel }
+		});
+	} else {
+		return unwrapFunctionStore(_)('measures');
+	}
+}
+
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
 	containers: AnyContainer[]

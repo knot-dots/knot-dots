@@ -8,10 +8,12 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
+		titleForMeasureCollection,
 		containerOfType,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		type MeasureCollectionContainer,
+		type MeasureContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates
@@ -47,16 +49,20 @@
 	);
 
 	function addItem() {
-		$newContainer = containerOfType(
+		const item = containerOfType(
 			payloadTypes.enum.measure,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,
 			container.realm
-		) as NewContainer;
+		) as Omit<NewContainer, 'payload'> & Pick<MeasureContainer, 'payload'>;
 
 		if (isMeasureContainer(parentContainer)) {
-			$newContainer.relation = [
+			item.payload.hierarchyLevel = parentContainer.payload.hierarchyLevel + 1;
+		}
+
+		if (isMeasureContainer(parentContainer)) {
+			item.relation = [
 				{
 					object: parentContainer.guid,
 					position: parentContainer.relation.filter(
@@ -74,12 +80,20 @@
 			];
 		}
 
+		$newContainer = item;
+
 		createContainerDialog.getElement().showModal();
 	}
 </script>
 
 <header>
-	<svelte:element this={heading} class="details-heading">{$_('measures')}</svelte:element>
+	<svelte:element this={heading} class="details-heading">
+		{#if isMeasureContainer(parentContainer)}
+			{titleForMeasureCollection(items as MeasureContainer[])}
+		{:else}
+			{$_('measures')}
+		{/if}
+	</svelte:element>
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">

@@ -60,10 +60,16 @@ test.describe('Sub-measure creation', () => {
 		const subMeasureTitle = `Sub-measure ${Date.now()}`;
 
 		await subMeasureSection.getByRole('button', { name: 'Add item' }).first().click();
-		await dotsBoard.page.getByRole('textbox', { name: 'Title' }).fill(subMeasureTitle);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
+		await dotsBoard.page
+			.getByRole('dialog')
+			.getByRole('textbox', { name: 'Title' })
+			.fill(subMeasureTitle);
+		await dotsBoard.page.getByRole('dialog').getByLabel('Measure type').click();
+		await dotsBoard.page.getByRole('dialog').getByRole('radio', { name: 'Module' }).check();
+		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
 		await dotsBoard.overlay.backButton.click();
+		await expect(subMeasureSection.getByRole('heading', { level: 2 })).toHaveText('Modules');
 		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
 		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();
 
