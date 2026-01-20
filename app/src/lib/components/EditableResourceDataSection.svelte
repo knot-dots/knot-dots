@@ -95,7 +95,7 @@
 					>{$_(getResourceDataI18nKey(container.payload.type))}</span
 				>
 				{#if currentResource}
-					<span class="resource-data__title-in">in</span>
+					<span class="resource-data__title-in">{$_('preposition.in')}</span>
 					<span class="resource-data__title-unit">
 						{$_(currentResource.payload.resourceUnit)}
 					</span>
@@ -117,21 +117,21 @@
 			<thead>
 				<tr>
 					<th scope="col" class="resource-data__column-label">
-						{$_('unit.year')}
-					</th>
+						<div class="resource-data__column-label-inner">
+							<span class="resource-data__column-label-text">{$_('year')}</span>
 
-					{#if editable && $ability.can('update', container)}
-						<th scope="col" class="resource-data__header-actions">
-							<button
-								aria-label={$_('add_item')}
-								class="resource-data__icon-button"
-								onclick={addEntryLeft}
-								type="button"
-							>
-								<Plus />
-							</button>
-						</th>
-					{/if}
+							{#if editable && $ability.can('update', container)}
+								<button
+									aria-label={$_('add_item')}
+									class="resource-data__cell-action"
+									onclick={addEntryLeft}
+									type="button"
+								>
+									<Plus />
+								</button>
+							{/if}
+						</div>
+					</th>
 
 					{#each container.payload.entries as entry (entry.year)}
 						<th scope="col" class="resource-data__year">
@@ -149,11 +149,11 @@
 						</th>
 					{/each}
 
-					{#if editable && $ability.can('update', container)}
+					{#if editable && $ability.can('update', container) && container.payload.entries.length > 0}
 						<th scope="col" class="resource-data__header-actions">
 							<button
 								aria-label={$_('add_item')}
-								class="resource-data__icon-button"
+								class="resource-data__cell-action"
 								onclick={addEntryRight}
 								type="button"
 							>
@@ -168,18 +168,21 @@
 					<tr>
 						<td
 							class="resource-data__empty"
-							colspan={1 + (editable && $ability.can('update', container) ? 1 : 0)}
+							colspan={1 +
+								(editable &&
+								$ability.can('update', container) &&
+								container.payload.entries.length > 0
+									? 1
+									: 0)}
 						>
 							{$_('empty')}
 						</td>
 					</tr>
 				{:else}
 					<tr>
-						<th scope="row" class="resource-data__row-label"> </th>
-
-						{#if editable && $ability.can('update', container)}
-							<td class="resource-data__value resource-data__value--placeholder"></td>
-						{/if}
+						<th scope="row" class="resource-data__row-header">
+							<span class="resource-data__row-badge">{$_('value')}</span>
+						</th>
 
 						{#each container.payload.entries as entry (entry.year)}
 							<td class="resource-data__value">
@@ -198,7 +201,7 @@
 						{/each}
 
 						{#if editable && $ability.can('update', container)}
-							<td class="resource-data__value resource-data__value--placeholder"></td>
+							<td class="resource-data__header-actions resource-data__value--placeholder"></td>
 						{/if}
 					</tr>
 				{/if}
@@ -260,38 +263,65 @@
 		display: block;
 		overflow: auto;
 		white-space: nowrap;
-		border-radius: 8px;
+		border: 1px solid var(--color-gray-200);
+		border-radius: 4px;
 	}
 
 	.resource-data__table {
 		border-collapse: collapse;
-		width: 100%;
+		min-width: 100%;
+		width: max-content;
+		table-layout: fixed;
+	}
+
+	.resource-data__table thead th,
+	.resource-data__table tbody th,
+	.resource-data__table tbody td {
+		border: 1px solid var(--color-gray-200);
+		color: var(--color-gray-700);
+		font-size: 0.875rem;
+		font-weight: 400;
+		line-height: 1.5;
+		padding: 0.75rem 0.5rem;
+		white-space: nowrap;
 	}
 
 	.resource-data__table thead th {
 		background-color: var(--color-gray-100);
-		border-bottom: 1px solid var(--color-gray-200);
-		color: var(--color-gray-700);
-		font-weight: 400;
-		font-size: 0.875rem;
-		padding: 0.5rem 0.75rem;
+		height: 40px;
+		padding: 0.5rem;
 		text-align: right;
-		white-space: nowrap;
+		vertical-align: middle;
 	}
 
-	.resource-data__table thead th.resource-data__column-label {
+	.resource-data__column-label {
 		text-align: left;
+		width: 220px;
+	}
+
+	.resource-data__column-label-inner {
+		align-items: center;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.resource-data__column-label-text {
+		display: inline-block;
 	}
 
 	.resource-data__year {
-		min-width: 3.5rem;
+		width: 56px;
 	}
 
 	.resource-data__year-input {
 		background: transparent;
 		border: none;
+		box-sizing: border-box;
 		color: var(--color-gray-700);
 		font: inherit;
+		min-width: 0;
 		padding: 0;
 		text-align: right;
 		width: 100%;
@@ -304,42 +334,64 @@
 
 	.resource-data__header-actions {
 		text-align: center;
-		width: 3rem;
+		width: 56px;
 	}
 
-	.resource-data__icon-button {
+	.resource-data__cell-action {
 		--button-active-background: transparent;
 		--button-hover-background: var(--color-gray-200);
 
 		align-items: center;
 		background: transparent;
 		border: none;
-		border-radius: 9999px;
+		border-radius: 4px;
 		color: var(--color-gray-700);
 		cursor: pointer;
 		display: inline-flex;
-		height: 1.5rem;
+		height: 24px;
 		justify-content: center;
-		padding: 0.125rem;
-		width: 1.5rem;
+		padding: 6px;
+		width: 24px;
 	}
 
-	.resource-data__icon-button :global(svg) {
-		height: 1rem;
-		width: 1rem;
+	.resource-data__cell-action:hover {
+		background: var(--color-gray-200);
+	}
+
+	.resource-data__cell-action:focus-visible {
+		outline: 2px solid var(--focus-color);
+		outline-offset: 2px;
+	}
+
+	.resource-data__cell-action :global(svg) {
+		height: 0.75rem;
+		width: 0.75rem;
 	}
 
 	.resource-data__table tbody th,
 	.resource-data__table tbody td {
-		border-bottom: 1px solid var(--color-gray-200);
-		padding: 0.75rem 0.75rem;
+		background-color: var(--color-white);
+		min-height: 48px;
+		padding: 0.75rem 0.5rem;
+		vertical-align: middle;
 	}
 
-	.resource-data__row-label {
-		color: var(--color-gray-900);
-		font-weight: 500;
+	.resource-data__row-header {
 		text-align: left;
+		width: 220px;
+	}
+
+	.resource-data__row-badge {
+		align-items: center;
+		display: inline-flex;
+		font-weight: 400;
+		line-height: 14px;
+		overflow: hidden;
+		padding: 6px 0;
+		border-radius: 9999px;
+		text-overflow: ellipsis;
 		white-space: nowrap;
+		max-width: 100%;
 	}
 
 	.resource-data__value {
@@ -350,8 +402,10 @@
 	.resource-data__value-input {
 		background: transparent;
 		border: none;
+		box-sizing: border-box;
 		color: inherit;
 		font: inherit;
+		min-width: 0;
 		padding: 0;
 		text-align: right;
 		width: 100%;
@@ -363,7 +417,7 @@
 	}
 
 	.resource-data__value--placeholder {
-		border-bottom-color: transparent;
+		color: transparent;
 	}
 
 	.resource-data__empty {
