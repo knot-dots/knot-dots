@@ -9,10 +9,11 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
+	import CategoryTerms from '$lib/components/CategoryTerms.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
-	import type { AnyContainer, Container, TermContainer } from '$lib/models';
+	import { predicates, type AnyContainer, type Container, type TermContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -114,6 +115,13 @@
 				<AuthoredBy {container} {revisions} />
 			{/snippet}
 		</PropertyGrid>
+
+		<CategoryTerms
+			headingKey="category.subterms.heading"
+			predicate={predicates.enum['is-part-of']}
+			bind:container
+			bind:relatedContainers
+		/>
 	{/snippet}
 </EditableContainerDetailView>
 

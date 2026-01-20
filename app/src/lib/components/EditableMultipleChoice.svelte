@@ -6,7 +6,13 @@
 	interface Props {
 		editable?: boolean;
 		label: string;
-		options?: Array<{ label: string; value: string; icon?: string }>;
+		options?: Array<{
+			label: string;
+			value: string;
+			guid: string;
+			icon?: string;
+			subterms?: Array<{ label: string; value: string; guid: string; icon?: string }>;
+		}>;
 		value?: string[];
 	}
 
@@ -22,9 +28,18 @@ function iconURL(origin?: string) {
 	}
 }
 
-	let safeOptions = $state([] as Array<{ label: string; value: string; icon?: string }>);
+	let safeOptions = $state([] as Array<{ label: string; value: string; guid: string; icon?: string; subterms?: Array<{ label: string; value: string; guid: string; icon?: string }> }>);
 	$effect(() => {
-		safeOptions = Array.isArray(options) ? options : [];
+		safeOptions = Array.isArray(options)
+			? options.map((option) => ({
+				...option,
+				guid: option.guid ?? option.value,
+				subterms: option.subterms?.map((sub) => ({
+					...sub,
+					guid: sub.guid ?? sub.value
+				}))
+			}))
+			: [];
 	});
 
 	let selected = $derived(

@@ -3,7 +3,12 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { loadCategoryOptions, buildCategoryFacets, buildCategoryLabels } from '$lib/client/categoryOptions';
+	import {
+		loadCategoryOptions,
+		buildCategoryFacets,
+		buildCategoryLabels,
+		type CategoryOptions
+	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import { computeFacetCount, isCategoryContainer, payloadTypes } from '$lib/models';
 
@@ -19,6 +24,7 @@
 
 	let categoryFacets = $state(new Map<string, Map<string, number>>());
 	let facetLabels = $state(new Map<string, string>());
+	let categoryOptions: CategoryOptions | null = $state(null);
 
 	$effect(() => {
 		const organizationScope = Array.from(
@@ -63,6 +69,7 @@
 			if (cancelled) return;
 			categoryFacets = next;
 			facetLabels = nextLabels;
+			categoryOptions = options;
 		})();
 
 		return () => {
@@ -83,7 +90,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {filterBarInitiallyOpen} {facets} {facetLabels} search />
+		<Header {filterBarInitiallyOpen} {facets} {facetLabels} {categoryOptions} search />
 	{/snippet}
 
 	{#snippet main()}

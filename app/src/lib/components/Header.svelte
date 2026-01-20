@@ -27,6 +27,7 @@
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
+	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import {
 		isMeasureContainer,
@@ -40,9 +41,19 @@
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
 
+	type FilterOption = {
+		count: number;
+		label: string;
+		value: string;
+		guid?: string;
+		icon?: string;
+		subterms?: FilterOption[];
+	};
+
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
 		facetLabels?: Map<string, string>;
+		categoryOptions?: CategoryOptions | null;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
@@ -58,12 +69,15 @@
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-		workspaceOptions
+			workspaceOptions,
+			categoryOptions = null
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
 
-	let filterBar = createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen });
+	let filterBar = $derived.by(() =>
+		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })
+	);
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
@@ -225,18 +239,32 @@
 
 			{#each facets.entries() as [key, foci] (key)}
 				{@const labelOverride = facetLabels.get(key)}
-				{@const options = [...foci.entries()]
-					.map(([k, v]) => ({
-						count: v,
-						label: facetLabels.get(k) ?? $_(k),
-						value: k
-					}))
-					.toSorted((a, b) =>
-						a.label.localeCompare(b.label, undefined, {
-							numeric: true,
-							sensitivity: 'base'
-						})
-					)}
+				{@const categoryOptionList = categoryOptions?.[key]}
+				{@const options = (
+					categoryOptionList
+						? categoryOptionList.map((option) => ({
+							...option,
+							count:
+								foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+							subterms: option.subterms?.map((sub) => ({
+								...sub,
+								count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+							}))
+						}))
+						: [...foci.entries()]
+								.map(([k, v]) => ({
+									count: v,
+									label: facetLabels.get(k) ?? $_(k),
+									value: k,
+									subterms: undefined
+								}))
+								.toSorted((a, b) =>
+									a.label.localeCompare(b.label, undefined, {
+										numeric: true,
+										sensitivity: 'base'
+									})
+								)
+				) as FilterOption[]}
 				{#if key === 'assignee'}
 					<AssigneeFilterDropDown {options} />
 				{:else if key === 'included'}
@@ -245,7 +273,7 @@
 					<RelationTypeFilterDropDown {options} />
 				{:else if key === 'member'}
 					<MemberFilterDropDown {options} />
-				{:else if options.filter(({ count }) => count > 0).length > 0 || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
+				{:else if options.some(({ count, subterms }: FilterOption) => (count ?? 0) > 0 || subterms?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 					<FilterDropDown {key} {options} label={labelOverride} />
 				{/if}
 			{/each}
