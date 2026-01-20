@@ -88,6 +88,7 @@ const payloadTypeValues = [
 	'objective_collection',
 	'organization',
 	'organizational_unit',
+	'page',
 	'program',
 	'program_collection',
 	'progress',
@@ -954,6 +955,15 @@ const objectiveCollectionPayload = z
 
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
+const pagePayload = z.object({
+	body: z.string().trim(),
+	title: z.string().trim(),
+	type: z.literal(payloadTypes.enum.page),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+const initialPagePayload = pagePayload.partial({ body: true, title: true });
+
 const progressPayload = z.object({
 	title: z
 		.string()
@@ -1464,6 +1474,7 @@ const payload = z.discriminatedUnion('type', [
 	measurePayload,
 	objectiveCollectionPayload,
 	objectivePayload,
+	pagePayload,
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
@@ -1815,6 +1826,16 @@ export function isOrganizationalUnitContainer(
 	container: AnyContainer | EmptyContainer
 ): container is OrganizationalUnitContainer {
 	return container.payload.type === payloadTypes.enum.organizational_unit;
+}
+
+const pageContainer = container.extend({ payload: pagePayload });
+
+export type PageContainer = z.infer<typeof pageContainer>;
+
+export function isPageContainer(
+	container: AnyContainer | EmptyContainer
+): container is PageContainer {
+	return container.payload.type === payloadTypes.enum.page;
 }
 
 const progressContainer = container.extend({
@@ -2386,6 +2407,7 @@ export const emptyContainer = newContainer.extend({
 		initialObjectivePayload,
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
+		initialPagePayload,
 		initialProgramCollectionPayload,
 		initialProgramPayload,
 		initialProgressPayload,
