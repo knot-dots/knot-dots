@@ -23,7 +23,16 @@
 			</label>
 		</p>
 		<p class="value">
-			<input {id} type="range" max="1" min="0" list="steps" step="0.1" bind:value />
+			<input
+				bind:value
+				defaultValue="0"
+				{id}
+				list="steps"
+				max="1"
+				min="0"
+				step="0.1"
+				type="range"
+			/>
 			<datalist id="steps">
 				<option value="0"></option>
 				<option value="0.1"></option>
