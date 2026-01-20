@@ -2,7 +2,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { get } from 'svelte/store';
-	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
+	import { dndzone, dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
+	import DragHandle from '~icons/knotdots/draghandle';
 	import { _ } from 'svelte-i18n';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
@@ -429,18 +430,19 @@
 					class:category-terms__item--placeholder={isShadow}
 				>
 					{#if term && !isShadow}
+						{#if canEdit}
+							<div class="actions is-visible-on-hover category-terms__actions">
+								<span class="drag-handle" use:dragHandle>
+									<DragHandle />
+								</span>
+							</div>
+						{/if}
 						<a
 							class="category-terms__link"
 							href={overlayURL(page.url, overlayKey.enum.view, term.guid)}
 						>
-							<p class="category-terms__title">{term.payload.title}</p>
+							<h3 class="details-heading">{term.payload.title}</h3>
 							<p class="category-terms__value">{$_('category.terms.value_label')}: {term.payload.value}</p>
-							<p class="category-terms__filter">
-								{$_('category.terms.filter_label')}: {term.payload.filterLabel ?? '—'}
-							</p>
-							{#if term.payload.description}
-								<p class="category-terms__description">{term.payload.description}</p>
-							{/if}
 						</a>
 
 						{#if canEdit}
@@ -553,6 +555,35 @@
 		justify-content: space-between;
 		padding: 0.75rem;
 		gap: 1rem;
+		position: relative;
+	}
+
+	.category-terms__actions {
+		--dropdown-button-icon-default-color: var(--color-gray-700);
+		--dropdown-button-icon-size: 1rem;
+
+		align-items: center;
+		background: white;
+		border-radius: 12px;
+		box-shadow: var(--shadow-sm);
+		display: flex;
+		gap: 0.25rem;
+		left: -2.75rem;
+		padding: 0.25rem;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 1;
+	}
+
+	.category-terms__actions .drag-handle {
+		padding: 0.25rem;
+	}
+
+	.category-terms__actions .drag-handle :global(svg) {
+		color: var(--dropdown-button-icon-default-color);
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.category-terms__link {
@@ -583,6 +614,10 @@
 		min-height: 2.5rem;
 	}
 
+	.category-terms__item--placeholder .category-terms__actions {
+		display: none;
+	}
+
 	.category-terms__placeholder-hint {
 		font-size: 1.25rem;
 		letter-spacing: 0.25rem;
@@ -591,6 +626,13 @@
 
 	.category-terms__list[data-reordering='true'] {
 		opacity: 0.7;
+	}
+
+	@media (hover: hover) {
+		.category-terms__item:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+		}
 	}
 
 	.category-terms__title {
