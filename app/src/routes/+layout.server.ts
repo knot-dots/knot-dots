@@ -3,14 +3,17 @@ import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { filterVisible } from '$lib/authorization';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
+	isOrganizationalUnitContainer,
 	type KeycloakUser,
+	type OrganizationalUnitContainer,
 	organizationalUnitType,
 	type OrganizationContainer
 } from '$lib/models';
 import {
+	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
 	setUp
@@ -42,7 +45,21 @@ export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 		)
 	]);
 
-	const currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === params.guid);
+	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+
+	try {
+		const containerFromParams = await locals.pool.connect(
+			getContainerByGuid(params.guid as string)
+		);
+		if (
+			isOrganizationalUnitContainer(containerFromParams) &&
+			defineAbilityFor(locals.user).can('read', containerFromParams)
+		) {
+			currentOrganizationalUnit = containerFromParams;
+		}
+	} catch {
+		// Do nothing.
+	}
 
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
