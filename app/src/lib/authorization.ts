@@ -25,6 +25,8 @@ const specialTypes: PayloadType[] = [
 
 const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
 
+const taxonomyTypes: PayloadType[] = [payloadTypes.enum.category, payloadTypes.enum.term];
+
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
 		createMongoAbility
@@ -186,6 +188,7 @@ export default function defineAbilityFor(user: User) {
 			managed_by: { $in: user.memberOf }
 		});
 		cannot('update', payloadTypes.enum.indicator, ['indicatorCategory']);
+		cannot(['create', 'update', 'delete'], taxonomyTypes);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
