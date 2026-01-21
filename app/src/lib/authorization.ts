@@ -40,7 +40,9 @@ export default function defineAbilityFor(user: User) {
 		can('delete-recursively', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.program,
-			payloadTypes.enum.goal
+			payloadTypes.enum.goal,
+			payloadTypes.enum.category,
+			payloadTypes.enum.term
 		]);
 		can('invite-members', [
 			payloadTypes.enum.measure,
@@ -109,7 +111,13 @@ export default function defineAbilityFor(user: User) {
 		});
 		can(
 			'delete-recursively',
-			[payloadTypes.enum.goal, payloadTypes.enum.program, payloadTypes.enum.measure],
+			[
+				payloadTypes.enum.goal,
+				payloadTypes.enum.program,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.category,
+				payloadTypes.enum.term
+			],
 			{
 				managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 			}
