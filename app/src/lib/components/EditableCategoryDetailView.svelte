@@ -25,8 +25,7 @@
 	{#snippet data()}
 		<CategoryProperties
 			bind:container
-			editable={$applicationState.containerDetailView.editable &&
-				$ability.can('update', container)}
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
 			{relatedContainers}
 			{revisions}
 		/>
@@ -46,7 +45,6 @@
 
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
-		<RelationButton {container} />
 		<SaveAsCategoryTemplateButton {container} {relatedContainers} />
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
