@@ -2738,3 +2738,28 @@ export function computeFacetCount(
 	}
 	return facets;
 }
+
+export function getOrganizationURL(
+	container: OrganizationContainer | OrganizationalUnitContainer,
+	linkPath = '/all/page',
+	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string }
+): URL {
+	const url = new URL(env.PUBLIC_BASE_URL ?? '');
+
+	// Only use subdomains if the environment variable is not set
+	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
+		const isDefaultOrganization = 'default' in container.payload && container.payload.default;
+
+		// Default organization uses the base domain without subdomain
+		if (!isDefaultOrganization) {
+			url.hostname = `${container.organization}.${url.hostname}`;
+		}
+	}
+
+	url.pathname = `/${container.guid}${linkPath}`
+		.replace('/me/measures', '/measures/status')
+		.replace('/me/tasks', '/tasks/status')
+		.replace(/\/me$/, '/all/page');
+
+	return url;
+}
