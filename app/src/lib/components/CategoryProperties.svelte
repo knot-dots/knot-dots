@@ -20,24 +20,6 @@
 		relatedContainers: _relatedContainers,
 		revisions: _revisions
 	}: Props = $props();
-
-	function slugify(source: string) {
-		return source
-			.trim()
-			.toLowerCase()
-			.replace(/[^a-z0-9_.-]+/g, '-')
-			.replace(/^-+|-+$/g, '');
-	}
-
-	$effect(() => {
-		if (!editable || container.payload.key || !container.payload.title?.trim()) {
-			return;
-		}
-		const slug = slugify(container.payload.title);
-		if (slug) {
-			container.payload.key = slug;
-		}
-	});
 </script>
 
 <PropertyGrid>

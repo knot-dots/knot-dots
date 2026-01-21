@@ -580,6 +580,13 @@ export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high'])
 
 export type Benefit = z.infer<typeof benefit>;
 
+const slugifyCategoryKey = (source: string) =>
+	source
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9_.-]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+
 const basePayload = z
 	.object({
 		aiSuggestion: z.boolean().default(false),
@@ -592,38 +599,39 @@ const basePayload = z
 		title: z.string().trim(),
 		topic: z.array(z.string().trim().min(1)).default([]),
 		visibility: visibility.default(visibility.enum['organization'])
-	})
-	.passthrough();
+	});
 
 const categoryPayloadBase = z
 	.object({
 		description: z.string().trim().optional(),
-		key: z
-			.string()
-			.trim()
-			.min(1)
-			.max(128)
-			.regex(/^[a-z0-9_.-]+$/i)
-			.optional(),
+		key: z.string().trim().optional(),
 		level: z.number().int().nonnegative().default(0),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.category),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.passthrough()
 	.superRefine((value, ctx) => {
-		if (!value.key || !value.key.trim()) {
-			if (!value.title?.trim()) {
-				ctx.addIssue({
-					code: z.ZodIssueCode.custom,
-					message: 'category title is required to derive key'
-				});
-				return;
-			}
-			value.key = value.title.trim();
-		} else {
-			value.key = value.key.trim();
+		const title = value.title?.trim();
+		const key = value.key?.trim();
+		const slug = slugifyCategoryKey(key || title || '');
+
+		if (!slug) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'category title is required to derive key'
+			});
+			return;
 		}
+
+		if (slug.length > 128) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'category key must be 128 characters or fewer'
+			});
+			return;
+		}
+
+		value.key = slug;
 	});
 
 const categoryPayload = categoryPayloadBase;
