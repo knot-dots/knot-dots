@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
-	import DeleteCategoryWithTermsButton from '$lib/components/DeleteCategoryWithTermsButton.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
@@ -50,6 +50,6 @@
 		<SaveAsCategoryTemplateButton {container} {relatedContainers} />
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
-		<DeleteCategoryWithTermsButton {container} {relatedContainers} />
+		<DeleteButton {container} {relatedContainers} />
 	</div>
 </footer>
