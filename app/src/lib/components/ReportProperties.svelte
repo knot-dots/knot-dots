@@ -3,7 +3,7 @@
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import CustomCategorySelectors from '$lib/components/CustomCategorySelectors.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { type AnyContainer, type Container, type ReportContainer } from '$lib/models';
@@ -20,9 +20,6 @@
 </script>
 
 <PropertyGrid>
-	{#snippet top()}
-	{/snippet}
-
 	{#snippet general()}
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
@@ -30,7 +27,7 @@
 	{/snippet}
 
 	{#snippet categories()}
-		<CustomCategorySelectors
+		<EditableCategories
 			bind:container
 			editable={editable}
 			organizationGuid={container.organization}

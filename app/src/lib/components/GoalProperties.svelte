@@ -11,7 +11,7 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
-	import CustomCategorySelectors from '$lib/components/CustomCategorySelectors.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
@@ -91,7 +91,7 @@
 	{/snippet}
 
 	{#snippet categories()}
-		<CustomCategorySelectors
+		<EditableCategories
 			bind:container
 			editable={editable}
 			organizationGuid={container.organization}

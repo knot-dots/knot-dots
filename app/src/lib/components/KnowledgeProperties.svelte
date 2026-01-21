@@ -11,7 +11,7 @@
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import CustomCategorySelectors from '$lib/components/CustomCategorySelectors.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
@@ -128,7 +128,7 @@
 			bind:value={container.payload.content_partner}
 		/>
 
-		<CustomCategorySelectors
+		<EditableCategories
 			bind:container
 			editable={editable}
 			organizationGuid={container.organization}

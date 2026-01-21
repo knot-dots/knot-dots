@@ -7,7 +7,7 @@
 	import EditableRuleStatus from '$lib/components/EditableRuleStatus.svelte';
 	import EditableValidFrom from '$lib/components/EditableValidFrom.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import CustomCategorySelectors from '$lib/components/CustomCategorySelectors.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { type AnyContainer, type Container, type RuleContainer } from '$lib/models';
@@ -58,7 +58,7 @@
 	{/snippet}
 
 	{#snippet categories()}
-		<CustomCategorySelectors
+		<EditableCategories
 			bind:container
 			editable={editable}
 			organizationGuid={container.organization}
