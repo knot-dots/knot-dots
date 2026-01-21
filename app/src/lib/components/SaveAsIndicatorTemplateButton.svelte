@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
-		type Container,
 		type IndicatorContainer,
 		newIndicatorTemplateFromIndicator,
 		payloadTypes,
@@ -13,10 +12,9 @@
 
 	interface Props {
 		container: IndicatorContainer;
-		relatedContainers: Container[];
 	}
 
-	let { container, relatedContainers }: Props = $props();
+	let { container }: Props = $props();
 
 	let saveAsIndicatorTemplateDisabled = $state(false);
 

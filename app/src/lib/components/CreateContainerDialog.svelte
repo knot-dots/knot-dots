@@ -8,6 +8,7 @@
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
+	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
@@ -27,7 +28,6 @@
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithName,
-		isContainerWithProgress,
 		isContainerWithTitle,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -160,6 +160,10 @@
 					{#if isContainer($newContainer)}
 						<Badges bind:container={$newContainer} editable />
 					{/if}
+
+					{#if isSimpleMeasureContainer($newContainer)}
+						<EditableProgress editable bind:value={$newContainer.payload.progress} />
+					{/if}
 				</header>
 
 				{#if isGoalContainer($newContainer)}
@@ -251,12 +255,7 @@
 						revisions={[]}
 					/>
 				{:else if isTeaserContainer($newContainer)}
-					<TeaserProperties
-						bind:container={$newContainer}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
+					<TeaserProperties bind:container={$newContainer} editable revisions={[]} />
 				{:else if isTextContainer($newContainer)}
 					<TextProperties
 						bind:container={$newContainer}

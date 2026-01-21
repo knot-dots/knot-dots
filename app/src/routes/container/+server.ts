@@ -17,6 +17,7 @@ import {
 	isIndicatorContainer,
 	isMeasureContainer,
 	isProgramContainer,
+	isReportContainer,
 	isTaskContainer,
 	type MeasureContainer,
 	measureTypes,
@@ -29,6 +30,7 @@ import {
 	type ProgramContainer,
 	programTypes,
 	type Relation,
+	type ReportContainer,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -293,9 +295,9 @@ async function copyEffectsFromOriginal(
 }
 
 async function copySectionsFromOriginal(
-	createdContainer: MeasureContainer | ProgramContainer,
+	createdContainer: AnyContainer,
 	originals: Container[],
-	isPartOfObjects: Array<GoalContainer | MeasureContainer | ProgramContainer>,
+	isPartOfObjects: Array<AnyContainer>,
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
@@ -443,6 +445,32 @@ async function copyProgram(
 	await createManyContainerRelations(relations)(txConnection);
 }
 
+async function copyReportContainer(
+	createdContainer: ReportContainer,
+	isCopyOfRelation: PartialRelation,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const containersRelatedToOriginal = filterVisible(
+		await getAllRelatedContainers(
+			[],
+			isCopyOfRelation.object as string,
+			['is-section-of'],
+			{},
+			''
+		)(txConnection),
+		user
+	);
+
+	await copySectionsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		[createdContainer],
+		user.guid,
+		txConnection
+	);
+}
+
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
@@ -518,7 +546,7 @@ export const GET = (async ({ locals, url }) => {
 		containers = await locals.pool.connect(
 			getManyOrganizationalUnitContainers(
 				parseResult.data.organization.length > 0
-					? { organization: parseResult.data.organization[0] }
+					? { include: { organization: parseResult.data.organization[0] } }
 					: {}
 			)
 		);
@@ -585,6 +613,8 @@ export const POST = (async ({ locals, request }) => {
 					await copyMeasure(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				} else if (isCopyOfRelation && isProgramContainer(createdContainer)) {
 					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
+				} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
+					await copyReportContainer(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				}
 
 				return createdContainer;

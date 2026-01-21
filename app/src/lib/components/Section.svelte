@@ -24,7 +24,6 @@
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
-	import EditableTeaser from '$lib/components/EditableTeaser.svelte';
 	import EditableTeaserCollection from '$lib/components/EditableTeaserCollection.svelte';
 	import EditableTeaserSection from '$lib/components/EditableTeaserSection.svelte';
 	import {
@@ -49,16 +48,10 @@
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
-		isReportContainer,
 		isResourceCollectionContainer,
 		isTaskCollectionContainer,
-		isTeaserContainer,
-		isInfoBoxContainer,
 		isTeaserCollectionContainer,
 		isTextContainer,
-		isTeaserHighlightContainer,
-		isQuoteContainer,
-		isColContentContainer,
 		isTeaserLikeContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -165,14 +158,6 @@
 			/>
 		{:else if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-				{heading}
-			/>
-		{:else if isImageContainer(container)}
-			<EditableImageSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers

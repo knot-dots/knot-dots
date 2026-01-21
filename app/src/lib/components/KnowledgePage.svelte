@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
@@ -11,6 +10,7 @@
 	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import { computeFacetCount, isCategoryContainer, payloadTypes } from '$lib/models';
+	import { page } from '$app/state';
 
 	import type { PageData } from '../../routes/[[guid=uuid]]/knowledge/catalog/$types';
 

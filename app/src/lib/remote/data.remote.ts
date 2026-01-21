@@ -24,7 +24,7 @@ export const fetchContainersRelatedToIndicators = query(
 		})
 	}),
 	async ({ guid, params }) => {
-		const { locals, url } = getRequestEvent();
+		const { locals } = getRequestEvent();
 
 		let relatedContainers;
 
@@ -87,7 +87,7 @@ export const fetchContainersRelatedToIndicatorTemplates = query(
 	}),
 	async ({ guid, params }) => {
 		const { locals } = getRequestEvent();
-		let relatedContainers = await locals.pool.connect(
+		const relatedContainers = await locals.pool.connect(
 			getManyContainers(
 				[params.organization],
 				{

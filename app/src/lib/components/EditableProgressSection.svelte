@@ -79,6 +79,7 @@
 		<label class="is-visually-hidden" for={id}>{$_('progress')}</label>
 		<input
 			bind:value={parentContainer.payload.progress}
+			defaultValue="0"
 			{id}
 			list="steps"
 			max="1"

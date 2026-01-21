@@ -15,8 +15,6 @@
 	let { categories, general, ownership, top }: Props = $props();
 
 	const disclosure = createDisclosure();
-
-	let disclosureExpanded = $state($disclosure.expanded);
 </script>
 
 <div class="details-section">

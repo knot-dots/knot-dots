@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resource } from 'runed';
-	import type { Attachment } from 'svelte/attachments';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
@@ -79,7 +78,7 @@
 		return computeFacetCount(facets, searchResource.current ?? []);
 	});
 
-	let filter = $state(container.payload.filter);
+	let filter = $state({ ...container.payload.filter });
 
 	let sort = $state(container.payload.sort);
 
@@ -356,7 +355,7 @@
 				<fieldset aria-labelledby="legend" use:sortBar.panel>
 					<legend class="is-visually-hidden">{$_('sort')}</legend>
 					<span aria-hidden="true">{$_('sort')}</span>
-					{#each sortOptions as [label, value]}
+					{#each sortOptions as [label, value] (value)}
 						{@const Icon = sortIcons.get(value)}
 						<label class="sort-option">
 							<input type="radio" {value} bind:group={sort} />

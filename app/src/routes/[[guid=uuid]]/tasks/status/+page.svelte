@@ -43,13 +43,13 @@
 				title={goalsColumnTitle(data.relatedContainers)}
 			>
 				<div class="vertical-scroll-wrapper">
-					{#each data.relatedContainers as container}
+					{#each data.relatedContainers as container (container.guid)}
 						<Card {container} showRelationFilter />
 					{/each}
 				</div>
 			</BoardColumn>
 		{/if}
-		{#each taskStatus.options as taskStatusOption}
+		{#each taskStatus.options as taskStatusOption (taskStatusOption)}
 			{#if paramsFromFragment(page.url).has(overlayKey.enum['relations'])}
 				<BoardColumn
 					--background={taskStatusBackgrounds.get(taskStatusOption)}

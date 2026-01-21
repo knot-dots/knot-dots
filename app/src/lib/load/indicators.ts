@@ -1,3 +1,4 @@
+import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
 	type Container,
@@ -12,6 +13,7 @@ import {
 } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { User } from '$lib/stores';
+import type { PageServerLoad } from '../../routes/[[guid=uuid]]/indicators/$types';
 
 export interface IndicatorFilters {
 	customCategories: Record<string, string[]>;
@@ -37,7 +39,7 @@ export async function getIndicatorsData(params: {
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
 	filters: IndicatorFilters;
 	user: User;
-	connect: <T>(fn: (connection: any) => Promise<T>) => Promise<T>;
+	connect: <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 }): Promise<IndicatorLoadResult> {
 	const { organizationGuid, currentOrganizationalUnit, filters, user, connect } = params;
 
@@ -48,7 +50,7 @@ export async function getIndicatorsData(params: {
 			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
 		);
 		organizationalUnits = relatedUnits
-			.filter(({ payload }) => payload.level > (currentOrganizationalUnit as any).payload.level)
+			.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
 			.map(({ guid }) => guid)
 			.concat(currentOrganizationalUnit.guid);
 	}
@@ -117,7 +119,7 @@ export async function getIndicatorsData(params: {
 	};
 }
 
-export default async function load({ depends, locals, parent, url }: any) {
+export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
@@ -144,4 +146,4 @@ export default async function load({ depends, locals, parent, url }: any) {
 		filters,
 		useNewIndicators: result.useNewIndicators
 	};
-}
+} satisfies PageServerLoad);

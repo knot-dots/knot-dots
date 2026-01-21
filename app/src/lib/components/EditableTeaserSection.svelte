@@ -51,7 +51,7 @@
 	let splitpanesRef = $state<HTMLElement>();
 	let colSizeInputRef = $state<HTMLInputElement>();
 
-	function handleResize(event: any) {
+	function handleResize(event: CustomEvent) {
 		const currentSize = event.detail[0].size;
 		const numericSizes = Object.values(teaserColSizeToNumber);
 
@@ -70,7 +70,7 @@
 		isResizing = true;
 	}
 
-	function handleResizeEnd(event: any) {
+	function handleResizeEnd(event: CustomEvent) {
 		isResizing = false;
 		const currentSize = event.detail[0].size;
 		snapToClosestSize(currentSize);
@@ -144,7 +144,7 @@
 		{#if editable}
 			<!-- Position markers -->
 			<div class="position-markers">
-				{#each teaserColSizes.options as size}
+				{#each teaserColSizes.options as size (size)}
 					<div
 						class="position-marker"
 						class:active={currentColSize === size}

@@ -6,16 +6,17 @@
 	import { env } from '$env/dynamic/public';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
+	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Subsection from '$lib/components/Subsection.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		type Container,
 		containerOfType,
-		isContainerWithProgress,
 		isGoalCollectionContainer,
 		isObjectiveCollectionContainer,
 		isResourceCollectionContainer,
+		isSimpleMeasureContainer,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -96,7 +97,6 @@
 
 <header>
 	{#if editable}
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<h2
 			class="details-heading"
 			contenteditable="plaintext-only"
@@ -109,6 +109,10 @@
 </header>
 
 <Badges bind:container {editable} />
+
+{#if isSimpleMeasureContainer(container)}
+	<EditableProgress {editable} bind:value={container.payload.progress} />
+{/if}
 
 {#if 'body' in container.payload}
 	{#if editable}

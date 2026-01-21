@@ -20,7 +20,6 @@
 
 	function remove(index: number) {
 		return (event: Event) => {
-			const input = event.currentTarget as HTMLInputElement;
 			value = [...value.slice(0, index), ...value.slice(index + 1)];
 			requestSubmit(event);
 		};
@@ -56,7 +55,7 @@
 			{#if uploadInProgress}
 				<span class="loader"></span>
 			{:else if value}
-				{#each value as pdf, i}
+				{#each value as pdf, i (pdf[0])}
 					<span class="badge badge--gray">
 						<span class="badge-text">{pdf[1]}</span>
 						<button
@@ -95,7 +94,7 @@
 	<span class="label">{$_('pdf')}</span>
 	<div>
 		<ul class="value">
-			{#each value as pdf, i}
+			{#each value as pdf (pdf[0])}
 				<li>
 					<a
 						class="badge badge--gray"

@@ -27,7 +27,7 @@
 	let actualValues = $derived(
 		actualDataContainer[0]?.payload.values.map(([key, value]) => ({
 			date: new Date(key, 0),
-			value: actualDataContainer[1]?.payload.values.find(([k, v]) => k == key)?.at(1) ?? value
+			value: actualDataContainer[1]?.payload.values.find(([k]) => k == key)?.at(1) ?? value
 		})) ?? []
 	);
 

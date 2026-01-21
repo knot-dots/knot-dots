@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Component } from 'svelte';
+	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { _ } from 'svelte-i18n';
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
@@ -71,7 +73,11 @@
 	}
 </script>
 
-{#snippet SubMenu(label: string, Icon: any, children: import('svelte').Snippet)}
+{#snippet SubMenu(
+	label: string,
+	Icon: Component<SvelteHTMLElements['svg']>,
+	children: import('svelte').Snippet
+)}
 	{@const [subTrigger, subContent] = createPopperActions({
 		placement: 'right-start',
 		strategy: 'fixed',

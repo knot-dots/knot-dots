@@ -74,7 +74,7 @@
 
 		<div class="details-section">
 			<ul class="button-group">
-				{#each tab.options as option}
+				{#each tab.options as option (option)}
 					<li class:is-active={option === currentTab}>
 						<a class="button" href={tabURL(paramsFromFragment(page.url), option)}>
 							{$_(`indicator.tab.${option}`)}
@@ -103,7 +103,7 @@
 			<div class="details-section">
 				<h2 class="details-heading">{$_('measures')}</h2>
 				<ul class="carousel">
-					{#each relatedContainers.filter((c) => isContainerWithEffect(c)) as measure}
+					{#each relatedContainers.filter( (c) => isContainerWithEffect(c) ) as measure (measure.guid)}
 						<li>
 							<Card container={measure} />
 						</li>
@@ -121,7 +121,7 @@
 							<Card container={overallObjective} />
 						</li>
 					{/if}
-					{#each relatedContainers.filter(isObjectiveContainer) as objective}
+					{#each relatedContainers.filter(isObjectiveContainer) as objective (objective.guid)}
 						{@const goal = relatedContainers
 							.filter(isContainerWithObjective)
 							.find(isRelatedTo(objective))}
@@ -140,7 +140,7 @@
 				{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
 			</h2>
 			<ul class="carousel">
-				{#each relatedContainers.filter(isProgramContainer) as program}
+				{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
 					<li>
 						<Card container={program} />
 					</li>
@@ -162,7 +162,7 @@
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
 		<CreateOverallObjectiveButton {container} {relatedContainers} />
-		<SaveAsIndicatorTemplateButton {container} {relatedContainers} />
+		<SaveAsIndicatorTemplateButton {container} />
 		<RelationButton {container} />
 		<CreateCopyButton {container} />
 		<DeleteButton {container} {relatedContainers} />

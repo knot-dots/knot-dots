@@ -1,10 +1,9 @@
-import { error, redirect } from '@sveltejs/kit';
-import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ params, parent, url }) => {
-	let { currentOrganization, currentOrganizationalUnit, organizationalUnits } = await parent();
+	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (!params.guid) {
 		const baseURL = new URL(env.PUBLIC_BASE_URL ?? '');
@@ -23,12 +22,5 @@ export const load = (async ({ params, parent, url }) => {
 		redirect(308, newURL.toString());
 	}
 
-	if (params.guid != currentOrganization.guid) {
-		currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === params.guid);
-		if (!currentOrganizationalUnit) {
-			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
-		}
-	}
-
-	return { currentOrganizationalUnit };
+	return {};
 }) satisfies LayoutServerLoad;

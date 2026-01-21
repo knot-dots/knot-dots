@@ -15,12 +15,14 @@ export const load = (async ({ locals, parent, url }) => {
 	if (currentOrganizationalUnit) {
 		const organizationalUnits = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
-				administrativeType: url.searchParams.getAll('administrativeType'),
-				cityAndMunicipalityTypeBBSR: url.searchParams.getAll('cityAndMunicipalityTypeBBSR'),
-				federalState: url.searchParams.getAll('federalState'),
-				level: currentOrganizationalUnit.payload.level + 1,
-				organization: currentOrganization.guid,
-				terms: url.searchParams.get('terms') ?? ''
+				include: {
+					administrativeType: url.searchParams.getAll('administrativeType'),
+					cityAndMunicipalityTypeBBSR: url.searchParams.getAll('cityAndMunicipalityTypeBBSR'),
+					federalState: url.searchParams.getAll('federalState'),
+					level: currentOrganizationalUnit.payload.level + 1,
+					organization: currentOrganization.guid,
+					terms: url.searchParams.get('terms') ?? ''
+				}
 			})
 		);
 		containers = organizationalUnits.filter(({ relation }) =>
@@ -29,12 +31,14 @@ export const load = (async ({ locals, parent, url }) => {
 	} else {
 		containers = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
-				administrativeType: url.searchParams.getAll('administrativeType'),
-				cityAndMunicipalityTypeBBSR: url.searchParams.getAll('cityAndMunicipalityTypeBBSR'),
-				federalState: url.searchParams.getAll('federalState'),
-				level: 1,
-				organization: currentOrganization.guid,
-				terms: url.searchParams.get('terms') ?? ''
+				include: {
+					administrativeType: url.searchParams.getAll('administrativeType'),
+					cityAndMunicipalityTypeBBSR: url.searchParams.getAll('cityAndMunicipalityTypeBBSR'),
+					federalState: url.searchParams.getAll('federalState'),
+					level: 1,
+					organization: currentOrganization.guid,
+					terms: url.searchParams.get('terms') ?? ''
+				}
 			})
 		);
 	}

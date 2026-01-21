@@ -4,7 +4,6 @@
 	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type OrganizationalUnitContainer,

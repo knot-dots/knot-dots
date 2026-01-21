@@ -113,7 +113,7 @@
 	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper"
-			use:dndzone={{ items }}
+			use:dndzone={{ dropTargetStyle: {}, items }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
 		>

@@ -19,7 +19,7 @@
 
 {#if items.length > 0 || mayAddItem}
 	<ul class="wall">
-		{#each items as item}
+		{#each items as item (item.guid)}
 			<li>
 				{@render itemSnippet(item)}
 			</li>

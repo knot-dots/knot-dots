@@ -14,14 +14,15 @@
 
 	interface Props {
 		ctx: Ctx;
-		show: boolean;
 	}
 
-	const { ctx, show = false }: Props = $props();
+	const { ctx }: Props = $props();
 
 	const onClick = (fn: (ctx: Ctx) => void) => (e: MouseEvent) => {
 		e.preventDefault();
-		ctx && fn(ctx);
+		if (ctx) {
+			fn(ctx);
+		}
 	};
 </script>
 

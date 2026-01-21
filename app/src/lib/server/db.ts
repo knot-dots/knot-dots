@@ -363,7 +363,9 @@ export function deleteOrganizationContainer(container: OrganizationContainer) {
 			}
 
 			const organizationalUnitContainers = await getManyOrganizationalUnitContainers({
-				organization: container.guid
+				include: {
+					organization: container.guid
+				}
 			})(txConnection);
 
 			for (const organizationalUnitContainer of organizationalUnitContainers) {
@@ -744,12 +746,17 @@ export function getManyOrganizationContainers(
 }
 
 export function getManyOrganizationalUnitContainers(filters: {
-	administrativeType?: string[];
-	cityAndMunicipalityTypeBBSR?: string[];
-	federalState?: string[];
-	level?: number;
-	organization?: string;
-	terms?: string;
+	include?: {
+		administrativeType?: string[];
+		cityAndMunicipalityTypeBBSR?: string[];
+		federalState?: string[];
+		level?: number;
+		organization?: string;
+		terms?: string;
+	};
+	exclude?: {
+		organizationalUnitType?: string[];
+	};
 }) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
 		const conditions = [
@@ -757,34 +764,40 @@ export function getManyOrganizationalUnitContainers(filters: {
 			sql.fragment`NOT c.deleted`,
 			sql.fragment`c.payload->>'type' = ${payloadTypes.enum.organizational_unit}`
 		];
-		if (filters.administrativeType?.length) {
+		if (filters.include?.administrativeType?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'administrativeType' = ANY (${sql.array(filters.administrativeType, 'text')})`
+				sql.fragment`c.payload->>'administrativeType' = ANY (${sql.array(filters.include.administrativeType, 'text')})`
 			);
 		}
-		if (filters.cityAndMunicipalityTypeBBSR?.length) {
+		if (filters.include?.cityAndMunicipalityTypeBBSR?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.cityAndMunicipalityTypeBBSR, 'text')})`
+				sql.fragment`c.payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.include.cityAndMunicipalityTypeBBSR, 'text')})`
 			);
 		}
-		if (filters.federalState?.length) {
+		if (filters.include?.federalState?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.federalState, 'text')})`
+				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.include.federalState, 'text')})`
 			);
 		}
-		if (filters.level) {
-			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.level}`);
+		if (filters.include?.level) {
+			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.include.level}`);
 		}
-		if (filters.organization) {
-			conditions.push(sql.fragment`c.organization = ${filters.organization}`);
+		if (filters.include?.organization) {
+			conditions.push(sql.fragment`c.organization = ${filters.include.organization}`);
 		}
-		if (filters.terms) {
+		if (filters.include?.terms) {
 			conditions.push(
-				sql.fragment`to_tsquery('german', ${filters.terms
+				sql.fragment`to_tsquery('german', ${filters.include.terms
 					.trim()
 					.split(' ')
 					.map((t) => `${t}:*`)
 					.join(' & ')}) @@ jsonb_to_tsvector('german', c.payload, '["string", "numeric"]')`
+			);
+		}
+
+		if (filters.exclude?.organizationalUnitType?.length) {
+			conditions.push(
+				sql.fragment`NOT (payload ? 'organizationalUnitType' AND payload->>'organizationalUnitType' = ANY (${sql.array(filters.exclude.organizationalUnitType, 'text')}))`
 			);
 		}
 
@@ -796,7 +809,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			), container_user_result AS (
 				SELECT
 					c.guid,
-					coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+					coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS "user"
 				FROM container_result c
 				LEFT JOIN container_user cu ON c.revision = cu.object
 				GROUP BY c.guid
@@ -854,7 +867,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				JOIN container c ON c.guid = p.path[array_upper(p.path, 1)]
 				WHERE c.valid_currently AND NOT c.deleted
 			), container_user_result AS (
-				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS user
+				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER ( WHERE cu.object IS NOT NULL ), '[]') AS "user"
 				FROM container_result c
 				LEFT JOIN container_user cu ON c.revision = cu.object
 				GROUP BY c.guid
@@ -923,18 +936,20 @@ export function getAllRelatedContainers(
 			`)
 			: [];
 
-		const otherPredicates = new Set(relations);
-		otherPredicates.delete(predicates.enum['is-part-of']);
-		const otherRelationResult = otherPredicates.size
-			? await connection.any(sql.typeAlias('relationPath')`
+		const otherPredicates = relations.filter(
+			(predicate) => predicate != predicates.enum['is-part-of']
+		);
+		const otherRelationResult =
+			otherPredicates.length > 0
+				? await connection.any(sql.typeAlias('relationPath')`
 				SELECT cr.subject, cr.object
 				FROM container_relation cr
 				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
-          AND cr.predicate IN (${sql.join([...otherPredicates], sql.fragment`, `)})
+          AND cr.predicate IN (${sql.join(otherPredicates, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 			`)
-			: [];
+				: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
@@ -1222,7 +1237,7 @@ export function getAllContainersRelatedToMeasure(
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.subject
-					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
+					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
@@ -1233,7 +1248,7 @@ export function getAllContainersRelatedToMeasure(
 				SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 				FROM container c
 				JOIN container_relation cr ON c.guid = cr.object
-					AND cr.predicate IN (${predicates.enum['is-part-of']}, ${predicates.enum['is-part-of-measure']}, ${predicates.enum['is-part-of-program']}, ${predicates.enum['is-section-of']})
+					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
 				JOIN is_part_of_relation_up r ON cr.subject = r.subject AND NOT r.is_cycle

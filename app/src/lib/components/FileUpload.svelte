@@ -50,6 +50,7 @@
 		{:else if errorMessage}
 			{errorMessage}
 		{:else}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html $_('upload.drop_here', {
 				values: { or_browse: `<br><span class="link">${$_('upload.or_browse')}</span>` }
 			})}

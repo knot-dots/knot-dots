@@ -7,7 +7,7 @@ export interface Fixtures {
 }
 
 export const test = base.extend<Fixtures>({
-	connection: async ({}, use) => {
+	connection: async (_, use) => {
 		const pool = await getPool();
 		try {
 			await pool.transaction(async (connection) => {

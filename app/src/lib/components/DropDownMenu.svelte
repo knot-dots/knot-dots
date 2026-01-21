@@ -40,7 +40,7 @@
 	{#if $menu.expanded}
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<ul class="menu">
-				{#each options as option}
+				{#each options as option (option.value)}
 					<li class="menu-item">
 						<button use:menu.item={{ value: option.value }}>
 							{option.label}
