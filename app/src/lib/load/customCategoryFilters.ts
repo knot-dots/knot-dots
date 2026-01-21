@@ -1,34 +1,34 @@
 const KNOWN_FILTER_KEYS = new Set([
-  'assignee',
-  'indicatorCategory',
-  'indicatorType',
-  'included',
-  'measureType',
-  'member',
-  'organization',
-  'organizationalUnit',
-  'programType',
-  'relationType',
-  'related-to',
-  'sort',
-  'taskCategory',
-  'template',
-  'terms',
-  'type',
-  'measureTypes',
-  'programTypes'
+	'assignee',
+	'indicatorCategory',
+	'indicatorType',
+	'included',
+	'measureType',
+	'member',
+	'organization',
+	'organizationalUnit',
+	'programType',
+	'relationType',
+	'related-to',
+	'sort',
+	'taskCategory',
+	'template',
+	'terms',
+	'type',
+	'measureTypes',
+	'programTypes'
 ]);
 
 export function extractCustomCategoryFilters(url: URL): Record<string, string[]> {
-  const custom: Record<string, string[]> = {};
+	const custom: Record<string, string[]> = {};
 
-  for (const key of url.searchParams.keys()) {
-    if (KNOWN_FILTER_KEYS.has(key)) continue;
-    const values = url.searchParams.getAll(key).filter(Boolean);
-    if (values.length > 0) {
-      custom[key] = values;
-    }
-  }
+	for (const key of url.searchParams.keys()) {
+		if (KNOWN_FILTER_KEYS.has(key)) continue;
+		const values = url.searchParams.getAll(key).filter(Boolean);
+		if (values.length > 0) {
+			custom[key] = values;
+		}
+	}
 
-  return custom;
+	return custom;
 }

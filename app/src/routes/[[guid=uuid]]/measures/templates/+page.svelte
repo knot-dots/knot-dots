@@ -109,7 +109,10 @@
 			entries.push([key, new Map<string, number>(values.entries())]);
 		}
 
-		entries.push(['measureType', new Map<string, number>(measureTypes.options.map((v: string) => [v, 0]))]);
+		entries.push([
+			'measureType',
+			new Map<string, number>(measureTypes.options.map((v: string) => [v, 0]))
+		]);
 
 		return computeFacetCount(new Map(entries), data.containers);
 	});

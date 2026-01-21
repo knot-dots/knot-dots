@@ -1,4 +1,3 @@
-
 <script lang="ts">
 	import { page } from '$app/state';
 	import { get } from 'svelte/store';
@@ -350,10 +349,7 @@
 
 			const saved = parsed.data;
 			const nextTerms = [...terms, saved];
-			relatedContainers = [
-				...relatedContainers.filter(({ guid }) => guid !== saved.guid),
-				saved
-			];
+			relatedContainers = [...relatedContainers.filter(({ guid }) => guid !== saved.guid), saved];
 			await syncParentRelations(nextTerms);
 			searchQuery = '';
 		} catch (error) {
@@ -399,139 +395,136 @@
 
 	const isSubterm = $derived(
 		(container.relation ?? []).some(
-			({ predicate: p, subject }) => p === predicates.enum['is-part-of'] && subject === container.guid
+			({ predicate: p, subject }) =>
+				p === predicates.enum['is-part-of'] && subject === container.guid
 		)
 	);
 </script>
 
 {#if !isSubterm}
-<div class="category-terms details-section">
-	<div class="category-terms__header">
-		<h2>{$_(headingKey)}</h2>
-	</div>
+	<div class="category-terms details-section">
+		<div class="category-terms__header">
+			<h2>{$_(headingKey)}</h2>
+		</div>
 
-	{#if terms.length === 0}
-		<p class="category-terms__empty">{$_('category.terms.empty')}</p>
-	{:else}
-		<ul
-			class="category-terms__list"
-			use:dndzone={{
-				items: termItems,
-				flipDurationMs: 150,
-				dropFromOthersDisabled: true,
-				dragDisabled: !canEdit || reordering
-			}}
-			onconsider={handleDndConsider}
-			onfinalize={handleDndFinalize}
-			data-reordering={reordering}
-		>
-			{#each termItems as dragItem (dragItem.guid)}
-				{@const term = dragItem.term}
-				{@const isShadow = dragItem[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
-				<li
-					class="category-terms__item"
-					class:category-terms__item--draggable={canEdit && !isShadow}
-					class:category-terms__item--placeholder={isShadow}
-				>
-					{#if term && !isShadow}
-						{#if canEdit}
-							<div class="actions is-visible-on-hover category-terms__actions">
-								<span class="drag-handle" use:dragHandle>
-									<DragHandle />
-								</span>
-							</div>
-						{/if}
-						<a
-							class="category-terms__link"
-							href={overlayURL(page.url, overlayKey.enum.view, term.guid)}
-						>
-							<h3 class="details-heading">{term.payload.title}</h3>
-							<p class="category-terms__value">{$_('category.terms.value_label')}: {term.payload.value}</p>
-						</a>
-
-						{#if canEdit}
-							<button
-								type="button"
-								class="button button-xs button-alternative"
-								onclick={() => detachTerm(term)}
-								disabled={removingGuid === term.guid || reordering}
+		{#if terms.length === 0}
+			<p class="category-terms__empty">{$_('category.terms.empty')}</p>
+		{:else}
+			<ul
+				class="category-terms__list"
+				use:dndzone={{
+					items: termItems,
+					flipDurationMs: 150,
+					dropFromOthersDisabled: true,
+					dragDisabled: !canEdit || reordering
+				}}
+				onconsider={handleDndConsider}
+				onfinalize={handleDndFinalize}
+				data-reordering={reordering}
+			>
+				{#each termItems as dragItem (dragItem.guid)}
+					{@const term = dragItem.term}
+					{@const isShadow = dragItem[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
+					<li
+						class="category-terms__item"
+						class:category-terms__item--draggable={canEdit && !isShadow}
+						class:category-terms__item--placeholder={isShadow}
+					>
+						{#if term && !isShadow}
+							{#if canEdit}
+								<div class="actions is-visible-on-hover category-terms__actions">
+									<span class="drag-handle" use:dragHandle>
+										<DragHandle />
+									</span>
+								</div>
+							{/if}
+							<a
+								class="category-terms__link"
+								href={overlayURL(page.url, overlayKey.enum.view, term.guid)}
 							>
-								{$_('category.terms.remove_button')}
-							</button>
+								<h3 class="details-heading">{term.payload.title}</h3>
+								<p class="category-terms__value">
+									{$_('category.terms.value_label')}: {term.payload.value}
+								</p>
+							</a>
+
+							{#if canEdit}
+								<button
+									type="button"
+									class="button button-xs button-alternative"
+									onclick={() => detachTerm(term)}
+									disabled={removingGuid === term.guid || reordering}
+								>
+									{$_('category.terms.remove_button')}
+								</button>
+							{/if}
+						{:else}
+							<span class="category-terms__placeholder-hint" aria-hidden="true">⋯⋯</span>
 						{/if}
-					{:else}
-						<span class="category-terms__placeholder-hint" aria-hidden="true">⋯⋯</span>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-		{#if reorderError}
-			<p class="category-terms__error" role="alert">{reorderError}</p>
-		{/if}
-	{/if}
-
-	{#if canEdit && !isSubterm}
-		<form class="category-terms__form" onsubmit={handleCreateTerm}>
-			<h3>{$_('category.terms.create_title')}</h3>
-
-			<label>
-				<span>{$_('title')}</span>
-				<input
-					type="text"
-					placeholder={$_('title')}
-					required
-					bind:value={newTitle}
-				/>
-			</label>
-
-			<label>
-				<span>{$_('category.terms.value_label')}</span>
-				<input
-					type="text"
-					placeholder={$_('category.terms.value_label')}
-					required
-					bind:value={newValue}
-					oninput={() => (valueTouched = true)}
-				/>
-			</label>
-
-			<label>
-				<span>{$_('description')}</span>
-				<textarea
-					rows="2"
-					placeholder={$_('category.terms.description_placeholder')}
-					bind:value={newDescription}
-				></textarea>
-			</label>
-
-			<label>
-				<span>{$_('category.terms.filter_label')}</span>
-				<input
-					type="text"
-					placeholder={$_('category.terms.filter_label')}
-					bind:value={newFilterLabel}
-				/>
-			</label>
-
-			<EditableImage
-				editable
-				allowedFileTypes={["image/svg+xml"]}
-				help={$_('upload.image.svg_only_help')}
-				label={$_('category.terms.icon')}
-				bind:value={newIcon}
-			/>
-
-			{#if formError}
-				<p class="category-terms__error">{formError}</p>
+					</li>
+				{/each}
+			</ul>
+			{#if reorderError}
+				<p class="category-terms__error" role="alert">{reorderError}</p>
 			{/if}
+		{/if}
 
-			<button class="button button-primary" type="submit" disabled={creating}>
-				{$_('category.terms.create_button')}
-			</button>
-		</form>
+		{#if canEdit && !isSubterm}
+			<form class="category-terms__form" onsubmit={handleCreateTerm}>
+				<h3>{$_('category.terms.create_title')}</h3>
 
-	{/if}
-</div>
+				<label>
+					<span>{$_('title')}</span>
+					<input type="text" placeholder={$_('title')} required bind:value={newTitle} />
+				</label>
+
+				<label>
+					<span>{$_('category.terms.value_label')}</span>
+					<input
+						type="text"
+						placeholder={$_('category.terms.value_label')}
+						required
+						bind:value={newValue}
+						oninput={() => (valueTouched = true)}
+					/>
+				</label>
+
+				<label>
+					<span>{$_('description')}</span>
+					<textarea
+						rows="2"
+						placeholder={$_('category.terms.description_placeholder')}
+						bind:value={newDescription}
+					></textarea>
+				</label>
+
+				<label>
+					<span>{$_('category.terms.filter_label')}</span>
+					<input
+						type="text"
+						placeholder={$_('category.terms.filter_label')}
+						bind:value={newFilterLabel}
+					/>
+				</label>
+
+				<EditableImage
+					editable
+					allowedFileTypes={['image/svg+xml']}
+					help={$_('upload.image.svg_only_help')}
+					label={$_('category.terms.icon')}
+					bind:value={newIcon}
+				/>
+
+				{#if formError}
+					<p class="category-terms__error">{formError}</p>
+				{/if}
+
+				<button class="button button-primary" type="submit" disabled={creating}>
+					{$_('category.terms.create_button')}
+				</button>
+			</form>
+		{/if}
+	</div>
 {/if}
 
 <style>

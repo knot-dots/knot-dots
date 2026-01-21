@@ -11,12 +11,7 @@
 		loadCategoryOptions
 	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import {
-		computeFacetCount,
-		measureTypes,
-		isCategoryContainer,
-		payloadTypes
-	} from '$lib/models';
+	import { computeFacetCount, measureTypes, isCategoryContainer, payloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

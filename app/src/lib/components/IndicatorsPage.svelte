@@ -92,8 +92,14 @@
 		}
 
 		entries.push(
-			['indicatorType', new Map<string, number>(indicatorTypes.options.map((v) => [v as string, 0]))],
-			['indicatorCategory', new Map<string, number>(indicatorCategories.options.map((v) => [v as string, 0]))]
+			[
+				'indicatorType',
+				new Map<string, number>(indicatorTypes.options.map((v) => [v as string, 0]))
+			],
+			[
+				'indicatorCategory',
+				new Map<string, number>(indicatorCategories.options.map((v) => [v as string, 0]))
+			]
 		);
 
 		for (const [key, values] of categoryFacets.entries()) {

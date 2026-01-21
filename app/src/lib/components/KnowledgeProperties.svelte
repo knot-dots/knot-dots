@@ -128,11 +128,7 @@
 			bind:value={container.payload.content_partner}
 		/>
 
-		<EditableCategories
-			bind:container
-			editable={editable}
-			organizationGuid={container.organization}
-		/>
+		<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 	{/snippet}
 
 	{#snippet ownership()}

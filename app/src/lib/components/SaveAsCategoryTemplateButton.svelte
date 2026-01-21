@@ -3,9 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
-	import {
-		ability
-	} from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import {
 		container as containerSchema,
 		isCategoryContainer,
@@ -33,15 +31,17 @@
 	let errorMessage = $state('');
 	const defaultOrganization = $derived.by<OrganizationContainer | undefined>(() => {
 		const guid = $pageStore.data.defaultOrganizationGuid;
-		return $pageStore.data.organizations?.find(({ guid: organizationGuid }) => guid === organizationGuid);
+		return $pageStore.data.organizations?.find(
+			({ guid: organizationGuid }) => guid === organizationGuid
+		);
 	});
 
-	const currentOrganizationGuid = $derived.by<string | undefined>(() =>
-		$pageStore.data.currentOrganization?.guid
+	const currentOrganizationGuid = $derived.by<string | undefined>(
+		() => $pageStore.data.currentOrganization?.guid
 	);
 
-	const currentOrganizationIsDefault = $derived.by<boolean>(() =>
-		$pageStore.data.currentOrganization?.payload.default ?? false
+	const currentOrganizationIsDefault = $derived.by<boolean>(
+		() => $pageStore.data.currentOrganization?.payload.default ?? false
 	);
 
 	const orderedTerms = $derived.by<TermContainer[]>(() =>

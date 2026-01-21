@@ -26,12 +26,7 @@
 
 <EditableContainerDetailView bind:container>
 	{#snippet data()}
-		<TermProperties
-			bind:container
-			{editable}
-			{relatedContainers}
-			{revisions}
-		/>
+		<TermProperties bind:container {editable} {relatedContainers} {revisions} />
 
 		{#key container.guid}
 			<EditableFormattedText

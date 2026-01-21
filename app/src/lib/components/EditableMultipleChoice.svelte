@@ -16,29 +16,42 @@
 		value?: string[];
 	}
 
-let { editable = false, label, options = [], value = $bindable([] as string[]) }: Props = $props();
+	let {
+		editable = false,
+		label,
+		options = [],
+		value = $bindable([] as string[])
+	}: Props = $props();
 
-function iconURL(origin?: string) {
-	if (!origin) return undefined;
-	try {
-		return transformFileURL(origin);
-	} catch (error) {
-		console.warn('Failed to transform icon URL', error);
-		return origin;
+	function iconURL(origin?: string) {
+		if (!origin) return undefined;
+		try {
+			return transformFileURL(origin);
+		} catch (error) {
+			console.warn('Failed to transform icon URL', error);
+			return origin;
+		}
 	}
-}
 
-	let safeOptions = $state([] as Array<{ label: string; value: string; guid: string; icon?: string; subterms?: Array<{ label: string; value: string; guid: string; icon?: string }> }>);
+	let safeOptions = $state(
+		[] as Array<{
+			label: string;
+			value: string;
+			guid: string;
+			icon?: string;
+			subterms?: Array<{ label: string; value: string; guid: string; icon?: string }>;
+		}>
+	);
 	$effect(() => {
 		safeOptions = Array.isArray(options)
 			? options.map((option) => ({
-				...option,
-				guid: option.guid ?? option.value,
-				subterms: option.subterms?.map((sub) => ({
-					...sub,
-					guid: sub.guid ?? sub.value
+					...option,
+					guid: option.guid ?? option.value,
+					subterms: option.subterms?.map((sub) => ({
+						...sub,
+						guid: sub.guid ?? sub.value
+					}))
 				}))
-			}))
 			: [];
 	});
 
@@ -48,23 +61,23 @@ function iconURL(origin?: string) {
 </script>
 
 <div class="label">{label}</div>
-	{#if editable}
-		<MultipleChoiceDropdown options={safeOptions} bind:value />
-	{:else}
-		<ul class="value">
-			{#each safeOptions.filter((o) => value.includes(o.value)) as selectedOption}
-				{@const icon = iconURL(selectedOption.icon)}
-				<li>
-					{#if icon}
-						<img alt="" class="value-icon" src={icon} />
-					{/if}
-					{selectedOption.label}
-				</li>
-			{:else}
-				<li>{$_('empty')}</li>
-			{/each}
-		</ul>
-	{/if}
+{#if editable}
+	<MultipleChoiceDropdown options={safeOptions} bind:value />
+{:else}
+	<ul class="value">
+		{#each safeOptions.filter((o) => value.includes(o.value)) as selectedOption}
+			{@const icon = iconURL(selectedOption.icon)}
+			<li>
+				{#if icon}
+					<img alt="" class="value-icon" src={icon} />
+				{/if}
+				{selectedOption.label}
+			</li>
+		{:else}
+			<li>{$_('empty')}</li>
+		{/each}
+	</ul>
+{/if}
 
 <style>
 	.value {

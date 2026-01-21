@@ -179,7 +179,10 @@
 	let facets = $derived.by(() => {
 		const entries: Array<[string, Map<string, number>]> = [
 			['indicatorType', new Map<string, number>(indicatorTypes.options.map((v: string) => [v, 0]))],
-			['indicatorCategory', new Map<string, number>(indicatorCategories.options.map((v: string) => [v, 0]))]
+			[
+				'indicatorCategory',
+				new Map<string, number>(indicatorCategories.options.map((v: string) => [v, 0]))
+			]
 		];
 
 		for (const [key, values] of categoryFacets.entries()) {
@@ -193,7 +196,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} facetLabels={facetLabels} search />
+		<Header {facets} {facetLabels} search />
 	{/snippet}
 
 	{#snippet main()}

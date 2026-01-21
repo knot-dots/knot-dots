@@ -91,11 +91,7 @@
 	{/snippet}
 
 	{#snippet categories()}
-		<EditableCategories
-			bind:container
-			editable={editable}
-			organizationGuid={container.organization}
-		/>
+		<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 	{/snippet}
 
 	{#snippet ownership()}

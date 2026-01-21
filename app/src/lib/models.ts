@@ -587,19 +587,18 @@ const slugifyCategoryKey = (source: string) =>
 		.replace(/[^a-z0-9_.-]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 
-const basePayload = z
-	.object({
-		aiSuggestion: z.boolean().default(false),
-		audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
-		category: z.array(z.string().trim().min(1)).default([]),
-		description: z.string().trim().optional(),
-		editorialState: editorialState.optional(),
-		policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
-		summary: z.string().trim().max(200).optional(),
-		title: z.string().trim(),
-		topic: z.array(z.string().trim().min(1)).default([]),
-		visibility: visibility.default(visibility.enum['organization'])
-	});
+const basePayload = z.object({
+	aiSuggestion: z.boolean().default(false),
+	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+	category: z.array(z.string().trim().min(1)).default([]),
+	description: z.string().trim().optional(),
+	editorialState: editorialState.optional(),
+	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+	summary: z.string().trim().max(200).optional(),
+	title: z.string().trim(),
+	topic: z.array(z.string().trim().min(1)).default([]),
+	visibility: visibility.default(visibility.enum['organization'])
+});
 
 const categoryPayloadBase = z
 	.object({

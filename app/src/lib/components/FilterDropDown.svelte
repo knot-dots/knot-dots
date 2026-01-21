@@ -28,7 +28,6 @@
 
 	let { initialValue = [], key, label, options }: Props = $props();
 
-
 	let overlay = getContext('overlay');
 
 	const changeKey = $derived.by(() => `${key}Changed`);
@@ -156,7 +155,7 @@
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
-		{#if $popover.expanded}
+	{#if $popover.expanded}
 		<fieldset
 			class="dropdown-panel"
 			use:popperContent={extraOpts}
@@ -185,8 +184,9 @@
 										onclick={(event) => handleChevronClick(event, option)}
 										onkeydown={(event) =>
 											event.key === 'Enter' || event.key === ' '
-												? (event.preventDefault(), handleChevronClick(event as unknown as MouseEvent, option))
-											: undefined}
+												? (event.preventDefault(),
+													handleChevronClick(event as unknown as MouseEvent, option))
+												: undefined}
 										aria-label={$_('filter.show_subterms')}
 									>
 										<ChevronRight class="subterm-indicator" aria-hidden="true" />
@@ -216,8 +216,9 @@
 										onclick={(event) => handleChevronClick(event, option)}
 										onkeydown={(event) =>
 											event.key === 'Enter' || event.key === ' '
-												? (event.preventDefault(), handleChevronClick(event as unknown as MouseEvent, option))
-											: undefined}
+												? (event.preventDefault(),
+													handleChevronClick(event as unknown as MouseEvent, option))
+												: undefined}
 										aria-label={$_('filter.show_subterms')}
 									>
 										<ChevronRight class="subterm-indicator" aria-hidden="true" />
@@ -252,7 +253,7 @@
 				</div>
 			{/if}
 		</fieldset>
-		{/if}
+	{/if}
 </div>
 
 <style>

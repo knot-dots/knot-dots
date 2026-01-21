@@ -14,13 +14,7 @@
 		allowedFileTypes?: string[];
 	}
 
-	let {
-		editable = false,
-		label,
-		help,
-		value = $bindable(),
-		allowedFileTypes
-	}: Props = $props();
+	let { editable = false, label, help, value = $bindable(), allowedFileTypes }: Props = $props();
 
 	let uploadInProgress = $state(false);
 	const id = crypto.randomUUID();

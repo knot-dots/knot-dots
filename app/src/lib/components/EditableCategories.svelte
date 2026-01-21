@@ -26,33 +26,33 @@
 
 	const safeKey = (key: string | undefined) => key ?? '';
 
-		const organizationScope = $derived(() => {
-			const scope = new Set<string>();
-			if (organizationGuid) {
-				scope.add(organizationGuid);
-			} else if (page.data.currentOrganization?.guid) {
-				scope.add(page.data.currentOrganization.guid);
-			}
-			if (includeDefaultOrganization && page.data.defaultOrganizationGuid) {
-				scope.add(page.data.defaultOrganizationGuid);
-			}
-			return Array.from(scope.values());
-		});
-
-		function normalizeScope(scope: unknown): string[] {
-			if (Array.isArray(scope)) return scope.filter((v): v is string => typeof v === 'string');
-			if (typeof scope === 'function') {
-				try {
-					const value = (scope as () => unknown)();
-					return normalizeScope(value);
-				} catch (e) {
-					console.error('Failed to resolve organization scope', e);
-					return [];
-				}
-			}
-			if (typeof scope === 'string') return [scope];
-			return [];
+	const organizationScope = $derived(() => {
+		const scope = new Set<string>();
+		if (organizationGuid) {
+			scope.add(organizationGuid);
+		} else if (page.data.currentOrganization?.guid) {
+			scope.add(page.data.currentOrganization.guid);
 		}
+		if (includeDefaultOrganization && page.data.defaultOrganizationGuid) {
+			scope.add(page.data.defaultOrganizationGuid);
+		}
+		return Array.from(scope.values());
+	});
+
+	function normalizeScope(scope: unknown): string[] {
+		if (Array.isArray(scope)) return scope.filter((v): v is string => typeof v === 'string');
+		if (typeof scope === 'function') {
+			try {
+				const value = (scope as () => unknown)();
+				return normalizeScope(value);
+			} catch (e) {
+				console.error('Failed to resolve organization scope', e);
+				return [];
+			}
+		}
+		if (typeof scope === 'string') return [scope];
+		return [];
+	}
 
 	onMount(async () => {
 		await loadCategories();
@@ -88,19 +88,18 @@
 		}
 		optionsByKey = next;
 	}
-
 </script>
 
 {#if categories.length > 0}
 	{#each categories as category (category.guid)}
 		{@const key = safeKey(category.payload.key)}
 		{#if key}
-				<EditableMultipleChoice
-					editable={editable}
-					label={category.payload.title ?? category.payload.key}
-					options={optionsByKey.get(key) ?? []}
-					bind:value={(container.payload as Record<string, unknown>)[key] as string[]}
-				/>
+			<EditableMultipleChoice
+				{editable}
+				label={category.payload.title ?? category.payload.key}
+				options={optionsByKey.get(key) ?? []}
+				bind:value={(container.payload as Record<string, unknown>)[key] as string[]}
+			/>
 		{/if}
 	{/each}
 {/if}

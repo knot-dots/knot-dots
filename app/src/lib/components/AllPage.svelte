@@ -3,7 +3,11 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { loadCategoryOptions, buildCategoryFacets, buildCategoryLabels } from '$lib/client/categoryOptions';
+	import {
+		loadCategoryOptions,
+		buildCategoryFacets,
+		buildCategoryLabels
+	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import {
 		computeFacetCount,
@@ -15,7 +19,7 @@
 		isSimpleMeasureContainer,
 		payloadTypes,
 		predicates,
-		programTypes,
+		programTypes
 	} from '$lib/models';
 
 	import type { PageData } from '../../routes/[[guid=uuid]]/all/catalog/$types';

@@ -130,18 +130,21 @@ async function seedDefaultCategories(pool: DatabasePool): Promise<boolean> {
 	return seedForOrganization(pool, defaultOrganization);
 }
 
-async function seedForOrganization(pool: DatabasePool, organization: { guid: string; realm: string }) {
-	const categories = (await pool.connect(
-		getManyContainers([], { type: [payloadTypes.enum.category] }, 'alpha')
-	))
+async function seedForOrganization(
+	pool: DatabasePool,
+	organization: { guid: string; realm: string }
+) {
+	const categories = (
+		await pool.connect(getManyContainers([], { type: [payloadTypes.enum.category] }, 'alpha'))
+	)
 		.filter(isCategoryContainer)
 		.filter((container) => container.organization === organization.guid);
 
 	// Removed ensureCategoryKeys call
 
-	const terms = (await pool.connect(
-		getManyContainers([], { type: [payloadTypes.enum.term] }, 'alpha')
-	))
+	const terms = (
+		await pool.connect(getManyContainers([], { type: [payloadTypes.enum.term] }, 'alpha'))
+	)
 		.filter(isTermContainer)
 		.filter((container) => container.organization === organization.guid);
 
@@ -150,7 +153,8 @@ async function seedForOrganization(pool: DatabasePool, organization: { guid: str
 
 		if (!category) {
 			const byTitle = categories.find(
-				(candidate) => candidate.payload.title === seed.title || candidate.payload.title === seed.key
+				(candidate) =>
+					candidate.payload.title === seed.title || candidate.payload.title === seed.key
 			);
 
 			if (byTitle) {
@@ -250,7 +254,8 @@ async function ensureRelation(
 	position: number
 ) {
 	const hasRelation = term.relation.some(
-		({ object, predicate }) => object === categoryGuid && predicate === predicates.enum['is-part-of-category']
+		({ object, predicate }) =>
+			object === categoryGuid && predicate === predicates.enum['is-part-of-category']
 	);
 
 	if (!hasRelation) {
@@ -306,7 +311,9 @@ async function ensureCategoryMetadata(
 		return category;
 	}
 
-	const level = needsLevelUpdate ? seed.level ?? category.payload.level ?? 0 : category.payload.level ?? 0;
+	const level = needsLevelUpdate
+		? (seed.level ?? category.payload.level ?? 0)
+		: (category.payload.level ?? 0);
 
 	category.payload = {
 		...category.payload,
@@ -323,7 +330,8 @@ async function ensureCategoryMetadata(
 
 async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed: TermSeed) {
 	const needsTitleUpdate = term.payload.title !== seed.title;
-	const needsDescriptionUpdate = seed.description !== undefined && term.payload.description !== seed.description;
+	const needsDescriptionUpdate =
+		seed.description !== undefined && term.payload.description !== seed.description;
 
 	if (!needsTitleUpdate && !needsDescriptionUpdate) {
 		return term;

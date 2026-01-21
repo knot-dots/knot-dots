@@ -69,8 +69,8 @@
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-			workspaceOptions,
-			categoryOptions = null
+		workspaceOptions,
+		categoryOptions = null
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
@@ -243,14 +243,14 @@
 				{@const options = (
 					categoryOptionList
 						? categoryOptionList.map((option) => ({
-							...option,
-							count:
-								foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
-							subterms: option.subterms?.map((sub) => ({
-								...sub,
-								count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+								...option,
+								count:
+									foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+								subterms: option.subterms?.map((sub) => ({
+									...sub,
+									count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+								}))
 							}))
-						}))
 						: [...foci.entries()]
 								.map(([k, v]) => ({
 									count: v,

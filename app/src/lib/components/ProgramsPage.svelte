@@ -104,7 +104,10 @@
 			entries.push([key, new Map<string, number>(values.entries())]);
 		}
 
-		entries.push(['programType', new Map<string, number>(programTypes.options.map((v) => [v as string, 0]))]);
+		entries.push([
+			'programType',
+			new Map<string, number>(programTypes.options.map((v) => [v as string, 0]))
+		]);
 
 		return computeFacetCount(new Map(entries), data.containers);
 	});

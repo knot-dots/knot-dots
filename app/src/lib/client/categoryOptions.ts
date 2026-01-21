@@ -75,8 +75,12 @@ function normalize(values: unknown): string[] {
 const cache = new Map<string, Promise<CategoryOptions>>();
 
 function toCacheKey(categoryKeys: string[], organizationScope: string[]) {
-	const scopeKey = Array.from(new Set(normalize(organizationScope))).sort().join(',');
-	const categoriesKey = Array.from(new Set(normalize(categoryKeys))).sort().join(',');
+	const scopeKey = Array.from(new Set(normalize(organizationScope)))
+		.sort()
+		.join(',');
+	const categoriesKey = Array.from(new Set(normalize(categoryKeys)))
+		.sort()
+		.join(',');
 	return `${scopeKey}|${categoriesKey}`;
 }
 

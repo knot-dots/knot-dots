@@ -56,7 +56,7 @@
 			bind:value={container.payload.linkCaption}
 		/>
 
-		<EditableCategories bind:container editable={editable} organizationGuid={container.organization} />
+		<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
