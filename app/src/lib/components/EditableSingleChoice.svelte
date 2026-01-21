@@ -12,11 +12,13 @@
 	let { editable = false, label, options, value = $bindable() }: Props = $props();
 
 	let selected = $derived(options.find((o) => o.value == value));
+
+	const id = crypto.randomUUID();
 </script>
 
-<div class="label">{label}</div>
+<div class="label" {id}>{label}</div>
 {#if editable}
-	<SingleChoiceDropdown {options} bind:value />
+	<SingleChoiceDropdown labelledBy={id} {options} bind:value />
 {:else}
 	<div class="value">
 		{#if selected}

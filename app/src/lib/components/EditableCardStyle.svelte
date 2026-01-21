@@ -9,13 +9,15 @@
 	}
 
 	let { editable = false, label, value = $bindable() }: Props = $props();
+
+	const id = crypto.randomUUID();
 </script>
 
 {#if label}
-	<div class="label">{label}</div>
+	<div class="label" {id}>{label}</div>
 {/if}
 {#if editable}
-	<CardStyleDropdown {editable} bind:value />
+	<CardStyleDropdown labelledBy={label ? id : undefined} {editable} bind:value />
 {:else}
 	<div class="value">
 		{$_(`card_style.${value}`) ?? $_('empty')}

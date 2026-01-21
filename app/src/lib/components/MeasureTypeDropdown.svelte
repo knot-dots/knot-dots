@@ -4,12 +4,13 @@
 	import { measureTypes } from '$lib/models';
 
 	interface Props {
-		editable?: boolean;
-		value: string[]; // now truly multiple-choice
 		compact?: boolean;
+		editable?: boolean;
+		labelledBy?: string;
+		value: string[];
 	}
 
-	let { editable = false, value = $bindable(), compact = false }: Props = $props();
+	let { compact = false, editable = false, labelledBy, value = $bindable() }: Props = $props();
 
 	const options = $derived(measureTypes.options.map((o) => ({ label: $_(o), value: o })));
 
@@ -17,7 +18,7 @@
 </script>
 
 {#if editable}
-	<MultipleChoiceDropdown {options} {compact} offset={[-41, -39]} bind:value />
+	<MultipleChoiceDropdown {labelledBy} {options} {compact} offset={[-41, -39]} bind:value />
 {:else}
 	<span class="value">{value.length ? display : $_('empty')}</span>
 {/if}
