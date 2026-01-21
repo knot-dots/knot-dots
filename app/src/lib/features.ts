@@ -13,7 +13,8 @@ export const featureFlags = new Map([
 			'Stage',
 			'Image',
 			'ContentPartner',
-			'Knowledge'
+			'Knowledge',
+			'ResourcesV2'
 		] as const
 	],
 	['beta', ['AdministrativeArea', 'Report'] as const]
@@ -68,6 +69,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useStage() {
 			return features.includes('Stage');
+		},
+		useResourceWorkspace() {
+			return features.includes('ResourcesV2');
 		}
 	};
 }

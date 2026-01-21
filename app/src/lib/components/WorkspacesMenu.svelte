@@ -25,6 +25,7 @@
 	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import { boards } from '$lib/models';
 
 	const workspacesLeft: Record<string, Record<string, string>> = {
@@ -75,10 +76,14 @@
 			status: '/tasks/status',
 			table: '/tasks/table'
 		},
-		resources: {
-			catalog: '/resources/catalog',
-			table: '/resources/table'
-		}
+		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+			? {
+					resources: {
+						catalog: '/resources/catalog',
+						table: '/resources/table'
+					}
+				}
+			: undefined)
 	};
 
 	const workspacesRight: Record<string, Record<string, string>> = {
@@ -91,7 +96,9 @@
 			programs: '/programs/catalog',
 			rules: '/rules/catalog',
 			tasks: '/tasks/catalog',
-			resources: '/resources/catalog'
+			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+				? { resources: '/resources/catalog' }
+				: undefined)
 		},
 		level: {
 			all: '/all/level',
@@ -120,7 +127,9 @@
 			programs: '/programs/table',
 			rules: '/rules/table',
 			tasks: '/tasks/table',
-			resources: '/resources/table'
+			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+				? { resources: '/resources/table' }
+				: undefined)
 		}
 	};
 
@@ -197,13 +206,17 @@
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
-		{
-			exists: true,
-			icon: Resources,
-			label: $_('workspace.type.resources'),
-			recommended: false,
-			value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
-		},
+		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+			? [
+					{
+						exists: true,
+						icon: Resources,
+						label: $_('workspace.type.resources'),
+						recommended: false,
+						value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
+					}
+				]
+			: []),
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [
 					{
