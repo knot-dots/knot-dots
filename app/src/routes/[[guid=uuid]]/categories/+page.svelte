@@ -49,34 +49,56 @@
 		const knownGuids = new Set(combinedContainers.map(({ guid }) => guid));
 		if (!knownGuids.has(target)) return null;
 
-		const adjacency = new Map<string, Set<string>>();
+		type Edge = { to: string; dir: 'up' | 'down' | 'undirected' };
+		const adjacency = new Map<string, Edge[]>();
 		// Ensure the selected node exists even if it has no relations.
-		adjacency.set(target, new Set(adjacency.get(target)));
+		adjacency.set(target, []);
+
+		const hierarchyPredicates: Predicate[] = [
+			predicates.enum['is-part-of'],
+			predicates.enum['is-part-of-category'],
+			predicates.enum['is-part-of-program']
+		];
 
 		for (const container of combinedContainers) {
 			for (const { predicate, subject, object } of container.relation) {
 				if (!relationPredicates.includes(predicate as Predicate)) continue;
 				if (!subject || !object) continue;
 
-				if (!adjacency.has(subject)) adjacency.set(subject, new Set());
-				if (!adjacency.has(object)) adjacency.set(object, new Set());
+				if (!adjacency.has(subject)) adjacency.set(subject, []);
+				if (!adjacency.has(object)) adjacency.set(object, []);
 
-				adjacency.get(subject)?.add(object);
-				adjacency.get(object)?.add(subject);
+				if (hierarchyPredicates.includes(predicate as Predicate)) {
+					// subject = child, object = parent
+					adjacency.get(subject)?.push({ to: object, dir: 'up' });
+					adjacency.get(object)?.push({ to: subject, dir: 'down' });
+				} else {
+					adjacency.get(subject)?.push({ to: object, dir: 'undirected' });
+					adjacency.get(object)?.push({ to: subject, dir: 'undirected' });
+				}
 			}
 		}
 
 		if (!adjacency.has(target)) return null;
 
 		const visited = new Set<string>([target]);
-		const queue = [target];
+		const queue: Array<{ node: string; cameFrom?: 'up' | 'down' | 'undirected' }> = [
+			{ node: target }
+		];
 
 		while (queue.length > 0) {
-			const current = queue.shift() as string;
-			for (const next of adjacency.get(current) ?? []) {
-				if (!visited.has(next)) {
-					visited.add(next);
-					queue.push(next);
+			const { node, cameFrom } = queue.shift() as {
+				node: string;
+				cameFrom?: 'up' | 'down' | 'undirected';
+			};
+			for (const edge of adjacency.get(node) ?? []) {
+				// Prevent sibling bleed: if we came from a child (up), do not expand back down to other children.
+				if (cameFrom === 'up' && edge.dir === 'down') {
+					continue;
+				}
+				if (!visited.has(edge.to)) {
+					visited.add(edge.to);
+					queue.push({ node: edge.to, cameFrom: edge.dir });
 				}
 			}
 		}
