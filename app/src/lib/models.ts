@@ -97,6 +97,11 @@ const payloadTypeValues = [
 	'quote',
 	'resource',
 	'resource_collection',
+	'resource_v2', // New payload type for resources with temporary v2 suffix
+	'resource_data_historical_expenses',
+	'resource_data_expected_expenses',
+	'resource_data_historical_income',
+	'resource_data_expected_income',
 	'rule',
 	'simple_measure',
 	'task',
@@ -445,6 +450,16 @@ export const indicatorCategories = z.enum(indicatorCategoryValues);
 
 export type IndicatorCategory = z.infer<typeof indicatorCategories>;
 
+const resourceCategoryValues = [
+	'resource_category.money',
+	'resource_category.personnel',
+	'resource_category.material'
+] as const;
+
+export const resourceCategories = z.enum(resourceCategoryValues);
+
+export type ResourceCategory = z.infer<typeof resourceCategories>;
+
 const quantityValues = [
 	'quantity.custom',
 	'quantity.broadband_coverage',
@@ -503,6 +518,12 @@ const unitValues = [
 ] as const;
 
 export const units = z.enum(unitValues);
+
+const resourceUnitValues = ['unit.euro', 'unit.piece', 'unit.personnel_hour'] as const;
+
+export const resourceUnits = z.enum(resourceUnitValues);
+
+export type ResourceUnit = z.infer<typeof resourceUnits>;
 
 const audienceValues = [
 	'audience.administration',
@@ -1006,6 +1027,79 @@ const resourceCollectionPayload = z
 
 const initialResourceCollectionPayload = resourceCollectionPayload;
 
+const resourceV2Payload = basePayload
+	.omit({ category: true, summary: true, topic: true, audience: true })
+	.extend({
+		type: z.literal(payloadTypes.enum.resource_v2),
+		resourceCategory: resourceCategories.default(
+			resourceCategories.enum['resource_category.money']
+		),
+		resourceUnit: resourceUnits.default(resourceUnits.enum['unit.euro']),
+		visibility: visibility.default(visibility.enum['public'])
+	})
+	.strict();
+
+const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
+
+// Resource Data Payloads
+const resourceDataBase = z
+	.object({
+		entries: z
+			.array(
+				z.object({
+					year: z.number().int().positive(),
+					amount: z.coerce.number()
+				})
+			)
+			.default([]),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+function makeResourceDataPayload<
+	TType extends (typeof payloadTypes.enum)[keyof typeof payloadTypes.enum]
+>(typeLiteral: TType) {
+	return resourceDataBase
+		.extend({
+			title: z.string().default(''),
+			type: z.literal(typeLiteral)
+		})
+		.strict();
+}
+
+const resourceDataHistoricalExpensesPayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_historical_expenses
+);
+
+const initialResourceDataHistoricalExpensesPayload = resourceDataHistoricalExpensesPayload;
+
+const resourceDataExpectedExpensesPayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_expected_expenses
+);
+
+const initialResourceDataExpectedExpensesPayload = resourceDataExpectedExpensesPayload;
+
+const resourceDataHistoricalIncomePayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_historical_income
+);
+
+const initialResourceDataHistoricalIncomePayload = resourceDataHistoricalIncomePayload;
+
+const resourceDataExpectedIncomePayload = makeResourceDataPayload(
+	payloadTypes.enum.resource_data_expected_income
+);
+
+const initialResourceDataExpectedIncomePayload = resourceDataExpectedIncomePayload;
+
+export function isResourceDataPayload(value: string) {
+	return (
+		value === payloadTypes.enum.resource_data_historical_expenses ||
+		value === payloadTypes.enum.resource_data_expected_expenses ||
+		value === payloadTypes.enum.resource_data_historical_income ||
+		value === payloadTypes.enum.resource_data_expected_income
+	);
+}
+
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
@@ -1310,6 +1404,11 @@ const payload = z.discriminatedUnion('type', [
 	rulePayload,
 	resourceCollectionPayload,
 	resourcePayload,
+	resourceV2Payload,
+	resourceDataHistoricalExpensesPayload,
+	resourceDataExpectedExpensesPayload,
+	resourceDataHistoricalIncomePayload,
+	resourceDataExpectedIncomePayload,
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
@@ -1339,49 +1438,9 @@ export const container = z.object({
 export type Container = z.infer<typeof container>;
 
 const anyPayload = z.discriminatedUnion('type', [
-	actualDataPayload,
-	administrativeAreaBasicDataPayload,
-	chapterPayload,
-	colContentPayload,
-	contentPartnerCollectionPayload,
-	contentPartnerPayload,
-	customCollectionPayload,
-	effectCollectionPayload,
-	effectPayload,
-	fileCollectionPayload,
-	goalCollectionPayload,
-	goalPayload,
-	imagePayload,
-	indicatorCollectionPayload,
-	indicatorPayload,
-	indicatorTemplatePayload,
-	infoBoxPayload,
-	knowledgeCollectionPayload,
-	knowledgePayload,
-	mapPayload,
-	measureCollectionPayload,
-	measurePayload,
-	objectiveCollectionPayload,
-	objectivePayload,
+	...payload.options,
 	organizationPayload,
 	organizationalUnitPayload,
-	pagePayload,
-	programCollectionPayload,
-	programPayload,
-	progressPayload,
-	quotePayload,
-	reportPayload,
-	rulePayload,
-	resourceCollectionPayload,
-	resourcePayload,
-	simpleMeasurePayload,
-	taskCollectionPayload,
-	taskPayload,
-	textPayload,
-	teaserPayload,
-	teaserCollectionPayload,
-	accordionCollectionPayload,
-	teaserHighlightPayload,
 	undefinedPayload
 ]);
 
@@ -1750,6 +1809,111 @@ export function isResourceCollectionContainer(
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
 
+const resourceDataHistoricalExpensesContainer = container.extend({
+	payload: resourceDataHistoricalExpensesPayload
+});
+
+export type ResourceDataHistoricalExpensesContainer = z.infer<
+	typeof resourceDataHistoricalExpensesContainer
+>;
+
+export function isResourceDataHistoricalExpensesContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataHistoricalExpensesContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_historical_expenses;
+}
+
+const resourceDataExpectedExpensesContainer = container.extend({
+	payload: resourceDataExpectedExpensesPayload
+});
+
+export type ResourceDataExpectedExpensesContainer = z.infer<
+	typeof resourceDataExpectedExpensesContainer
+>;
+
+export function isResourceDataExpectedExpensesContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataExpectedExpensesContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_expected_expenses;
+}
+
+const resourceDataHistoricalIncomeContainer = container.extend({
+	payload: resourceDataHistoricalIncomePayload
+});
+
+export type ResourceDataHistoricalIncomeContainer = z.infer<
+	typeof resourceDataHistoricalIncomeContainer
+>;
+
+export function isResourceDataHistoricalIncomeContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataHistoricalIncomeContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_historical_income;
+}
+
+const resourceDataExpectedIncomeContainer = container.extend({
+	payload: resourceDataExpectedIncomePayload
+});
+
+export type ResourceDataExpectedIncomeContainer = z.infer<
+	typeof resourceDataExpectedIncomeContainer
+>;
+
+export function isResourceDataExpectedIncomeContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataExpectedIncomeContainer {
+	return container.payload.type === payloadTypes.enum.resource_data_expected_income;
+}
+
+const resourceDataContainer = container.extend({
+	payload: z.discriminatedUnion('type', [
+		resourceDataHistoricalExpensesPayload,
+		resourceDataExpectedExpensesPayload,
+		resourceDataHistoricalIncomePayload,
+		resourceDataExpectedIncomePayload
+	])
+});
+
+export type ResourceDataContainer = z.infer<typeof resourceDataContainer>;
+
+export function isResourceDataContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataContainer {
+	return (
+		container.payload.type === payloadTypes.enum.resource_data_historical_expenses ||
+		container.payload.type === payloadTypes.enum.resource_data_expected_expenses ||
+		container.payload.type === payloadTypes.enum.resource_data_historical_income ||
+		container.payload.type === payloadTypes.enum.resource_data_expected_income
+	);
+}
+
+export function getResourceDataI18nKey(type: string): string {
+	switch (type) {
+		case payloadTypes.enum.resource_data_historical_expenses:
+			return 'resource_data.historical_expenses';
+		case payloadTypes.enum.resource_data_expected_expenses:
+			return 'resource_data.expected_expenses';
+		case payloadTypes.enum.resource_data_historical_income:
+			return 'resource_data.historical_income';
+		case payloadTypes.enum.resource_data_expected_income:
+			return 'resource_data.expected_income';
+		default:
+			return type;
+	}
+}
+
+const resourceV2Container = container.extend({
+	payload: resourceV2Payload
+});
+
+export type ResourceV2Container = z.infer<typeof resourceV2Container>;
+
+export function isResourceV2Container(
+	container: AnyContainer | EmptyContainer
+): container is ResourceV2Container {
+	return container.payload.type === payloadTypes.enum.resource_v2;
+}
+
 const simpleMeasureContainer = container.extend({
 	payload: simpleMeasurePayload
 });
@@ -1998,7 +2162,7 @@ export function isContainer(container: AnyContainer | EmptyContainer): container
 	);
 }
 
-export type ContainerWithAudience = AnyContainer & {
+export type ContainerWithAudience = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { audience: Audience[] };
 };
 
@@ -2008,7 +2172,7 @@ export function isContainerWithAudience(
 	return hasProperty(container.payload, 'audience');
 }
 
-export type ContainerWithBody = AnyContainer & {
+export type ContainerWithBody = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { body: string | undefined };
 };
 
@@ -2018,7 +2182,7 @@ export function isContainerWithBody(
 	return hasProperty(container.payload, 'body');
 }
 
-export type ContainerWithCategory = AnyContainer & {
+export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { category: SustainableDevelopmentGoal[] };
 };
 
@@ -2028,7 +2192,7 @@ export function isContainerWithCategory(
 	return hasProperty(container.payload, 'category');
 }
 
-export type ContainerWithDescription = AnyContainer & {
+export type ContainerWithDescription = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { description: string | undefined };
 };
 
@@ -2038,7 +2202,7 @@ export function isContainerWithDescription(
 	return hasProperty(container.payload, 'description');
 }
 
-export type ContainerWithDuration = AnyContainer & {
+export type ContainerWithDuration = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { startDate: string; endDate: string };
 };
 
@@ -2048,7 +2212,7 @@ export function isContainerWithDuration(
 	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
 }
 
-export type ContainerWithEditorialState = AnyContainer & {
+export type ContainerWithEditorialState = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { editorialState: EditorialState | undefined };
 };
 
@@ -2058,7 +2222,7 @@ export function isContainerWithEditorialState(
 	return hasProperty(container.payload, 'editorialState');
 }
 
-export type ContainerWithFulfillmentDate = AnyContainer & {
+export type ContainerWithFulfillmentDate = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { fulfillmentDate: string | undefined };
 };
 
@@ -2068,7 +2232,7 @@ export function isContainerWithFulfillmentDate(
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
-export type ContainerWithName = AnyContainer & {
+export type ContainerWithName = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { name: string | undefined };
 };
 
@@ -2078,7 +2242,7 @@ export function isContainerWithName(
 	return hasProperty(container.payload, 'name');
 }
 
-export type ContainerWithProgress = AnyContainer & {
+export type ContainerWithProgress = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { progress: number | undefined };
 };
 
@@ -2088,7 +2252,7 @@ export function isContainerWithProgress(
 	return hasProperty(container.payload, 'progress');
 }
 
-export type ContainerWithStatus = AnyContainer & {
+export type ContainerWithStatus = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { status: Status };
 };
 
@@ -2098,7 +2262,7 @@ export function isContainerWithStatus(
 	return hasProperty(container.payload, 'status');
 }
 
-export type ContainerWithTitle = AnyContainer & {
+export type ContainerWithTitle = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { title: string | undefined };
 };
 
@@ -2108,7 +2272,7 @@ export function isContainerWithTitle(
 	return hasProperty(container.payload, 'title');
 }
 
-export type ContainerWithTopic = AnyContainer & {
+export type ContainerWithTopic = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { topic: Topic[] };
 };
 
@@ -2168,6 +2332,11 @@ export const emptyContainer = newContainer.extend({
 		initialReportPayload,
 		initialResourceCollectionPayload,
 		initialResourcePayload,
+		initialResourceV2Payload,
+		initialResourceDataHistoricalExpensesPayload,
+		initialResourceDataExpectedExpensesPayload,
+		initialResourceDataHistoricalIncomePayload,
+		initialResourceDataExpectedIncomePayload,
 		initialSimpleMeasurePayload,
 		initialTextPayload,
 		initialTaskCollectionPayload,
