@@ -608,7 +608,7 @@ const categoryPayloadBase = z
 		level: z.number().int().nonnegative().default(0),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.category),
-		visibility: visibility.default(visibility.enum['organization'])
+		visibility: visibility.default(visibility.enum['public'])
 	})
 	.superRefine((value, ctx) => {
 		const title = value.title?.trim();
@@ -649,7 +649,7 @@ const termPayload = z
 		value: z.string().trim(),
 		icon: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.term),
-		visibility: visibility.default(visibility.enum['organization'])
+		visibility: visibility.default(visibility.enum['public'])
 	})
 	.strict();
 
