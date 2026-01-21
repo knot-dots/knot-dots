@@ -246,6 +246,10 @@
 
 	async function handleCreateTerm(event: SubmitEvent) {
 		event.preventDefault();
+		// Ignore implicit submits (e.g., image upload triggering requestSubmit)
+		if (!event.submitter) {
+			return;
+		}
 		if (creating) {
 			return;
 		}
@@ -511,7 +515,6 @@
 
 			<EditableImage
 				editable
-				submitOnUpload={false}
 				allowedFileTypes={["image/svg+xml"]}
 				help={$_('upload.image.svg_only_help')}
 				label={$_('category.terms.icon')}

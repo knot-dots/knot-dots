@@ -11,7 +11,6 @@
 		label: string;
 		help?: string;
 		value: string | undefined;
-		submitOnUpload?: boolean;
 		allowedFileTypes?: string[];
 	}
 
@@ -20,12 +19,18 @@
 		label,
 		help,
 		value = $bindable(),
-		submitOnUpload = true,
 		allowedFileTypes
 	}: Props = $props();
 
 	let uploadInProgress = $state(false);
 	const id = crypto.randomUUID();
+
+	function stopPropagation(fn: (event: Event) => void) {
+		return (event: Event) => {
+			event.stopPropagation();
+			fn(event);
+		};
+	}
 
 	function remove(event: Event) {
 		value = undefined;
@@ -43,7 +48,7 @@
 				<img alt={$_('image')} src={transformFileURL(value)} />
 				<button
 					class="button button-remove"
-					onclick={remove}
+					onclick={stopPropagation(remove)}
 					{@attach tooltip($_('upload.image.remove'))}
 					type="button"><TrashBin /></button
 				>
@@ -58,11 +63,7 @@
 			{id}
 			{allowedFileTypes}
 			mode="input"
-			submitOnUpload={submitOnUpload}
 			onSuccess={() => {
-				if (!submitOnUpload) {
-					return;
-				}
 				const form = document.querySelector(`[for="${id}"]`)?.parentElement?.closest('form');
 				if (form) {
 					form.requestSubmit();
