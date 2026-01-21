@@ -7,7 +7,7 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
-import type { PageServerLoad } from '../../routes/[[guid=uuid]]/all/$types';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/all/$types';
 
 export default (async function load({ depends, locals, url, parent }) {
 	depends('containers');

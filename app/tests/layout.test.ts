@@ -101,8 +101,8 @@ const expectedHeadings = [
 test.describe('Goals table columns', () => {
 	test.use({ storageState: 'tests/.auth/bob.json' });
 
-	test('all goal columns are displayed', async ({ page }) => {
-		await page.goto('/goals/table');
+	test('all goal columns are displayed', async ({ page, testOrganization }) => {
+		await page.goto(`/${testOrganization.guid}/goals/table`);
 
 		// Simpler: collect texts via all cells and compare arrays.
 		const allHeaderCells = page.locator('.table-head .row .cell');
@@ -139,8 +139,8 @@ const expectedProgramHeadings = [
 test.describe('Programs table columns', () => {
 	test.use({ storageState: 'tests/.auth/bob.json' });
 
-	test('all program columns are displayed', async ({ page }) => {
-		await page.goto('/programs/table');
+	test('all program columns are displayed', async ({ page, testOrganization }) => {
+		await page.goto(`/${testOrganization.guid}/programs/table`);
 
 		const allHeaderCells = page.locator('.table-head .row .cell');
 		await expect(allHeaderCells).toHaveCount(expectedProgramHeadings.length + 1); // +1 for action column
@@ -174,8 +174,8 @@ const expectedMeasureHeadings = [
 test.describe('Measures table columns', () => {
 	test.use({ storageState: 'tests/.auth/bob.json' });
 
-	test('all measure columns are displayed', async ({ page }) => {
-		await page.goto('/measures/table');
+	test('all measure columns are displayed', async ({ page, testOrganization }) => {
+		await page.goto(`/${testOrganization.guid}/measures/table`);
 
 		const allHeaderCells = page.locator('.table-head .row .cell');
 		await expect(allHeaderCells).toHaveCount(expectedMeasureHeadings.length + 1); // +1 for action column

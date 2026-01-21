@@ -21,7 +21,7 @@
 	} from '$lib/models';
 	import { page } from '$app/state';
 
-	import type { PageData } from '../../routes/[[guid=uuid]]/knowledge/catalog/$types';
+	import type { PageData } from '../../routes/[guid=uuid]/knowledge/catalog/$types';
 
 	interface Props {
 		children: Snippet;

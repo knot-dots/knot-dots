@@ -212,7 +212,7 @@
 
 			<a
 				class="action-button action-button--size-l"
-				href={resolve('/[[guid=uuid]]/members', { guid: selectedContext.guid })}
+				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
 				{@attach tooltip($_('members'))}
 			>
 				<Users />
