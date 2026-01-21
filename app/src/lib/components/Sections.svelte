@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { flip } from 'svelte/animate';
 	import { _ } from 'svelte-i18n';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
@@ -12,12 +11,10 @@
 		containerOfType,
 		isChapterContainer,
 		isContainerWithTitle,
-		isResourceV2Container,
 		isOrganizationalUnitContainer,
 		type NewContainer,
 		payloadTypes,
-		predicates,
-		isResourceDataPayload
+		predicates
 	} from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';
 
@@ -63,34 +60,11 @@
 				return;
 			}
 
-			let organization = container.organization;
-			let organizationalUnit = isOrganizationalUnitContainer(container)
-				? container.guid
-				: container.organizational_unit;
-			let managedBy = isOrganizationalUnitContainer(container)
-				? container.guid
-				: container.managed_by;
-
-			if (isResourceDataPayload(payloadType) && isResourceV2Container(container)) {
-				const currentOrganization = page.data.currentOrganization;
-				const currentOrganizationalUnit = page.data.currentOrganizationalUnit;
-
-				if (currentOrganizationalUnit) {
-					organization = currentOrganizationalUnit.organization;
-					organizationalUnit = currentOrganizationalUnit.guid;
-					managedBy = currentOrganizationalUnit.guid;
-				} else if (currentOrganization) {
-					organization = currentOrganization.guid;
-					organizationalUnit = null;
-					managedBy = currentOrganization.guid;
-				}
-			}
-
 			const newContainer = containerOfType(
 				payloadType,
-				organization,
-				organizationalUnit,
-				managedBy,
+				container.organization,
+				isOrganizationalUnitContainer(container) ? container.guid : container.organizational_unit,
+				isOrganizationalUnitContainer(container) ? container.guid : container.managed_by,
 				container.realm
 			) as NewContainer;
 

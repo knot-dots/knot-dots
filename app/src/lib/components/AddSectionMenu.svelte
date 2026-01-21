@@ -28,10 +28,6 @@
 	import Link from '~icons/knotdots/link';
 	import Collection from '~icons/knotdots/collection';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
-	import ExpenseExpected from '~icons/knotdots/expense-expected';
-	import Expense from '~icons/knotdots/expense';
-	import IncomeExpected from '~icons/knotdots/income-expected';
-	import Income from '~icons/knotdots/income';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -55,7 +51,6 @@
 		isProgramCollectionContainer,
 		isProgressContainer,
 		isReportContainer,
-		isResourceV2Container,
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
@@ -119,34 +114,6 @@
 	let mayAddResourceCollection = $derived(
 		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
-	);
-
-	let mayAddResourceDataHistoricalExpenses = $derived(
-		isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(
-				(c) => c.payload.type === payloadTypes.enum.resource_data_historical_expenses
-			)
-	);
-
-	let mayAddResourceDataExpectedExpenses = $derived(
-		isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(
-				(c) => c.payload.type === payloadTypes.enum.resource_data_expected_expenses
-			)
-	);
-
-	let mayAddResourceDataHistoricalIncome = $derived(
-		isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(
-				(c) => c.payload.type === payloadTypes.enum.resource_data_historical_income
-			)
-	);
-
-	let mayAddResourceDataExpectedIncome = $derived(
-		isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(
-				(c) => c.payload.type === payloadTypes.enum.resource_data_expected_income
-			)
 	);
 
 	let mayAddFileCollection = $derived(
@@ -411,45 +378,6 @@
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
-
-	let resourceRelatedOptions = $derived([
-		...(mayAddResourceDataHistoricalExpenses
-			? [
-					{
-						icon: Expense,
-						label: $_('resource_data.historical_expenses'),
-						value: payloadTypes.enum.resource_data_historical_expenses
-					}
-				]
-			: []),
-		...(mayAddResourceDataExpectedExpenses
-			? [
-					{
-						icon: ExpenseExpected,
-						label: $_('resource_data.expected_expenses'),
-						value: payloadTypes.enum.resource_data_expected_expenses
-					}
-				]
-			: []),
-		...(mayAddResourceDataHistoricalIncome
-			? [
-					{
-						icon: Income,
-						label: $_('resource_data.historical_income'),
-						value: payloadTypes.enum.resource_data_historical_income
-					}
-				]
-			: []),
-		...(mayAddResourceDataExpectedIncome
-			? [
-					{
-						icon: IncomeExpected,
-						label: $_('resource_data.expected_income'),
-						value: payloadTypes.enum.resource_data_expected_income
-					}
-				]
-			: [])
-	]);
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
@@ -478,20 +406,6 @@
 						</li>
 					{/if}
 				{/each}
-
-				{#if resourceRelatedOptions.length > 0}
-					<li class="menu-subheader">{$_('resources')}</li>
-					{#each resourceRelatedOptions as option (option.value)}
-						{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
-							<li class="menu-item">
-								<button use:menu.item={{ value: option.value }}>
-									<option.icon />
-									{option.label}
-								</button>
-							</li>
-						{/if}
-					{/each}
-				{/if}
 			</ul>
 		</div>
 	{/if}
@@ -528,13 +442,5 @@
 
 	.menu-item > button > :global(svg) {
 		color: var(--color-gray-500);
-	}
-
-	.menu-subheader {
-		color: var(--color-gray-500);
-		font-size: 0.75rem;
-		font-weight: 500;
-		letter-spacing: 0.02em;
-		padding: 0.5rem 0.75rem 0.25rem;
 	}
 </style>
