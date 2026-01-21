@@ -5,20 +5,17 @@
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import RelationButton from '$lib/components/RelationButton.svelte';
 	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
 	import CategoryTerms from '$lib/components/CategoryTerms.svelte';
-	import SaveAsCategoryTemplateButton from '$lib/components/SaveAsCategoryTemplateButton.svelte';
-	import { type AnyContainer, type CategoryContainer, type Container } from '$lib/models';
+	import { type CategoryContainer, type Container } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: CategoryContainer;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), relatedContainers }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container>
@@ -26,8 +23,6 @@
 		<CategoryProperties
 			bind:container
 			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-			{relatedContainers}
-			{revisions}
 		/>
 
 		{#key container.guid}
@@ -45,7 +40,6 @@
 
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
-		<SaveAsCategoryTemplateButton {container} {relatedContainers} />
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
 		<DeleteButton {container} {relatedContainers} />

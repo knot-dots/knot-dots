@@ -6,7 +6,6 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import CategoryTerms from '$lib/components/CategoryTerms.svelte';
-	import RelationButton from '$lib/components/RelationButton.svelte';
 	import TermProperties from '$lib/components/TermProperties.svelte';
 	import { predicates, type AnyContainer, type Container, type TermContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';

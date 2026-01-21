@@ -33,17 +33,8 @@
 		}
 	}
 
-	let safeOptions = $state(
-		[] as Array<{
-			label: string;
-			value: string;
-			guid: string;
-			icon?: string;
-			subterms?: Array<{ label: string; value: string; guid: string; icon?: string }>;
-		}>
-	);
-	$effect(() => {
-		safeOptions = Array.isArray(options)
+	let safeOptions = $derived.by(() =>
+		Array.isArray(options)
 			? options.map((option) => ({
 					...option,
 					guid: option.guid ?? option.value,
@@ -52,11 +43,7 @@
 						guid: sub.guid ?? sub.value
 					}))
 				}))
-			: [];
-	});
-
-	let selected = $derived(
-		safeOptions.filter((o) => value.includes(o.value)).map(({ label }) => label)
+			: []
 	);
 </script>
 
@@ -65,7 +52,7 @@
 	<MultipleChoiceDropdown options={safeOptions} bind:value />
 {:else}
 	<ul class="value">
-		{#each safeOptions.filter((o) => value.includes(o.value)) as selectedOption}
+		{#each safeOptions.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.guid)}
 			{@const icon = iconURL(selectedOption.icon)}
 			<li>
 				{#if icon}

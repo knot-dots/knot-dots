@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, setContext, type Snippet } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
@@ -13,7 +13,6 @@
 	import {
 		computeFacetCount,
 		isCategoryContainer,
-		type Container,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		measureTypes,

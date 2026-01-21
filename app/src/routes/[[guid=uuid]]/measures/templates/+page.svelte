@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, setContext } from 'svelte';
+	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';

@@ -40,7 +40,7 @@
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		<span class="selected" class:truncated={compact}>
-			{#each options.filter((o) => value.includes(o.value)) as selectedOption}
+			{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
 				{@const iconSrc = iconURL(selectedOption.icon)}
 				<span class="value" class:value--compact={compact}>
 					{#if iconSrc}

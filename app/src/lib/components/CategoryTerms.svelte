@@ -4,7 +4,6 @@
 	import { dndzone, dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import { _ } from 'svelte-i18n';
-	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableImage from '$lib/components/EditableImage.svelte';
 	import { ability, applicationState } from '$lib/stores';
@@ -43,10 +42,10 @@
 		[SHADOW_ITEM_MARKER_PROPERTY_NAME]?: boolean;
 	};
 
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let terms = $state([] as TermContainer[]);
 	let termItems = $state([] as TermDragItem[]);
 	let creating = $state(false);
-	let linkingGuid = $state<string | null>(null);
 	let removingGuid = $state<string | null>(null);
 	let formError = $state('');
 	let reordering = $state(false);
@@ -58,11 +57,6 @@
 	let newFilterLabel = $state('');
 	let newIcon = $state('');
 	let valueTouched = $state(false);
-
-	let searchQuery = $state('');
-	let searchResults = $state([] as TermContainer[]);
-	let searchLoading = $state(false);
-	let searchToken = 0;
 
 	$effect(() => {
 		const relatedTerms = relatedContainers
@@ -113,41 +107,6 @@
 		if (!valueTouched) {
 			newValue = slugify(newTitle);
 		}
-	});
-
-	$effect(() => {
-		const query = searchQuery.trim();
-		const token = ++searchToken;
-		if (!query) {
-			searchResults = [];
-			searchLoading = false;
-			return;
-		}
-
-		searchLoading = true;
-		(async () => {
-			try {
-				const containers = await fetchContainers(
-					{ payloadType: [payloadTypes.enum.term], terms: query },
-					'alpha'
-				);
-				if (token !== searchToken) {
-					return;
-				}
-				searchResults = containers
-					.filter(isTermContainer)
-					.filter(({ guid }) => !terms.some((term) => term.guid === guid));
-			} catch (error) {
-				if (token !== searchToken) {
-					return;
-				}
-				searchResults = [];
-			} finally {
-				if (token === searchToken) {
-					searchLoading = false;
-				}
-			}
-		})();
 	});
 
 	function resetForm() {
@@ -313,49 +272,6 @@
 			formError = error instanceof Error ? error.message : String(error);
 		} finally {
 			creating = false;
-		}
-	}
-
-	async function attachTerm(term: TermContainer) {
-		if (linkingGuid) {
-			return;
-		}
-
-		linkingGuid = term.guid;
-		try {
-			const updatedTerm = {
-				...term,
-				relation: [
-					...(term.relation ?? []).filter(
-						({ object, predicate: p }) => !(object === container.guid && p === predicate)
-					),
-					{
-						object: container.guid,
-						position: terms.length,
-						predicate
-					}
-				]
-			};
-
-			const response = await saveContainer(updatedTerm);
-			const payload = await response.json();
-			if (!response.ok) {
-				throw new Error(payload.message ?? 'Failed to link term');
-			}
-			const parsed = containerSchema.safeParse(payload);
-			if (!parsed.success || !isTermContainer(parsed.data)) {
-				throw new Error('Unexpected response while linking term');
-			}
-
-			const saved = parsed.data;
-			const nextTerms = [...terms, saved];
-			relatedContainers = [...relatedContainers.filter(({ guid }) => guid !== saved.guid), saved];
-			await syncParentRelations(nextTerms);
-			searchQuery = '';
-		} catch (error) {
-			alert(error instanceof Error ? error.message : String(error));
-		} finally {
-			linkingGuid = null;
 		}
 	}
 

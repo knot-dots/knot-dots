@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	// Snippet import removed; not used
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
@@ -29,7 +29,9 @@
 
 	let { data }: PageProps = $props();
 
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let categoryFacets = $state(new Map<string, Map<string, number>>());
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let facetLabels = $state(new Map<string, string>());
 
 	let knowledgeByLevel = $derived.by(() => {

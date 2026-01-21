@@ -14,7 +14,6 @@
 		computeFacetCount,
 		isCategoryContainer,
 		payloadTypes,
-		type Container,
 		predicates,
 		programTypes
 	} from '$lib/models';
