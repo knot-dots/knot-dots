@@ -73,19 +73,23 @@ test.describe('Subtask creation', () => {
 
 	test('subtask can be created and persists', async ({ page, testTask }) => {
 		await page.goto(`/${testTask.organization}/tasks/status`);
+
 		// Open parent task overlay
 		await page.getByTitle(testTask.payload.title).click();
 		await expect(page.locator('.overlay')).toBeVisible();
+
 		// Restrict to overlay to avoid strict mode violation (duplicate Edit mode checkboxes in banners).
 		await page.locator('.overlay').getByRole('checkbox', { name: 'Edit mode' }).check();
 		await page.getByRole('button', { name: 'Add section' }).click();
 		await page.getByRole('menuitem', { name: 'Tasks' }).click();
+
 		// Force interaction with Add item button ignoring disabled state
 		await page.getByRole('button', { name: 'Add item' }).click({ force: true });
 		await page.getByRole('textbox', { name: 'Title' }).fill(subtaskTitle);
 		await page.getByRole('button', { name: 'Save' }).click();
 		await expect(page.getByTitle(subtaskTitle)).toBeVisible();
 		await page.getByRole('button', { name: 'Back' }).click();
+
 		// Verify that the parent task title does not appear as a subtask
 		const subtaskSection = page
 			.locator('.overlay')
@@ -95,11 +99,13 @@ test.describe('Subtask creation', () => {
 		await expect(subtaskSection.getByTitle(testTask.payload.title)).not.toBeVisible();
 		await page.reload();
 		await expect(page.getByTitle(testTask.payload.title)).toBeVisible();
+
 		// After reload, verify parent is still not visible as a subtask
 		const subtaskSectionAfterReload = page
 			.locator('.overlay')
 			.locator('section')
 			.filter({ hasText: 'Subtasks' });
+
 		await expect(subtaskSectionAfterReload.getByTitle(testTask.payload.title)).not.toBeVisible();
 	});
 });
