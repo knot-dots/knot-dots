@@ -11,10 +11,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 
 		const { currentOrganizationalUnit } = await parent();
 
-		// if (currentOrganization.payload.default) {
-		// 	error(404, unwrapFunctionStore(_)('error.not_found'));
-		// }
-
 		const resourceContainers = (await locals.pool.connect(
 			getManyContainers(
 				[],
