@@ -271,6 +271,7 @@
 	},
 	"knowledge": "Wissen",
 	"knowledge.level": "Ebene {level}",
+	"knowledge_ai.label": "KI-Upload",
 	"label": {
 		"unit": "Einheit"
 	},
