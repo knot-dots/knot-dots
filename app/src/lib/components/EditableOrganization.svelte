@@ -8,7 +8,9 @@
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
+
+	const id = crypto.randomUUID();
 </script>
 
-<div class="label">{$_('organization')}</div>
-<OrganizationDropdown {editable} bind:value />
+<div class="label" {id}>{$_('organization')}</div>
+<OrganizationDropdown {editable} labelledBy={id} bind:value />

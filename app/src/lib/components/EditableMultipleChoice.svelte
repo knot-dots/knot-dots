@@ -45,11 +45,13 @@
 				}))
 			: []
 	);
+
+	const id = crypto.randomUUID();
 </script>
 
-<div class="label">{label}</div>
+<div class="label" {id}>{label}</div>
 {#if editable}
-	<MultipleChoiceDropdown options={safeOptions} bind:value />
+	<MultipleChoiceDropdown labelledBy={id} options={safeOptions} bind:value />
 {:else}
 	<ul class="value">
 		{#each safeOptions.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.guid)}

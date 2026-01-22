@@ -46,7 +46,7 @@
 	}
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		return getOrganizationURL(container, '/all/page').toString();
+		return getOrganizationURL(container, '/all/page', env).toString();
 	}
 </script>
 

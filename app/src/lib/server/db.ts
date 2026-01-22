@@ -37,7 +37,7 @@ import {
 import { createFeatureDecisions } from '$lib/features';
 import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
-import { createGroup, updateAccessSettings } from '$lib/server/keycloak';
+import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -230,29 +230,17 @@ export function updateContainer(container: ModifiedContainer) {
 			await deleteManyContainerRelations(deletedRelations)(txConnection);
 			await updateManyContainerRelations(container.relation)(txConnection);
 
-			if (container.payload.type == payloadTypes.enum.program) {
-				if (
-					container.organizational_unit &&
-					previousRevision.organizational_unit != container.organizational_unit
-				) {
-					await bulkUpdateOrganizationalUnit(
-						previousRevision,
-						container.organizational_unit
-					)(txConnection);
-				}
-				if (previousRevision.organization != container.organization) {
-					await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
-				}
-				if (previousRevision.managed_by != container.managed_by) {
-					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
-				}
-			} else if (
-				container.payload.type == payloadTypes.enum.measure ||
-				container.payload.type == payloadTypes.enum.simple_measure
-			) {
-				if (previousRevision.managed_by != container.managed_by) {
-					await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
-				}
+			if (previousRevision.organizational_unit != container.organizational_unit) {
+				await bulkUpdateOrganizationalUnit(
+					previousRevision,
+					container.organizational_unit
+				)(txConnection);
+			}
+			if (previousRevision.organization != container.organization) {
+				await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
+			}
+			if (previousRevision.managed_by != container.managed_by) {
+				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 			}
 
 			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
@@ -271,6 +259,10 @@ export function updateContainer(container: ModifiedContainer) {
 export function deleteContainer(container: AnyContainer) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
+			if (container.payload.type === payloadTypes.enum.organization) {
+				await deleteGroup(container.guid);
+			}
+
 			const sections = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
@@ -684,6 +676,8 @@ export function getManyContainers(
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
 		programTypes?: string[];
+		resource?: string[];
+		resourceCategories?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
@@ -1473,47 +1467,68 @@ export function getAllMembershipRelationsOfUser(guid: string) {
 export function bulkUpdateOrganization(container: AnyContainer, organization: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			const containerResult = await getAllRelatedContainers(
-				[container.organization],
-				container.guid,
-				[predicates.enum['is-part-of']],
-				{},
-				''
-			)(txConnection);
-			if (containerResult.length) {
-				await txConnection.query(sql.typeAlias('void')`
-        	UPDATE container
-        	SET organization = ${organization}
-        	WHERE guid IN (${sql.join(
-						containerResult.map(({ guid }) => guid),
-						sql.fragment`, `
-					)})
-				`);
-			}
+			const predicate = [
+				predicates.enum['is-part-of'],
+				predicates.enum['is-part-of-measure'],
+				predicates.enum['is-part-of-program'],
+				predicates.enum['is-section-of']
+			];
+			await txConnection.query(sql.typeAlias('void')`
+				WITH RECURSIVE descendant(path, is_cycle) AS (
+					SELECT ${sql.array([container.guid], 'uuid')} AS path, false, ${sql.uuid(container.guid)} AS object
+					UNION ALL
+					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+					FROM container c
+					JOIN container_relation cr ON c.guid = cr.subject
+						AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+						AND cr.valid_currently
+						AND NOT cr.deleted
+					JOIN descendant r ON cr.object = r.object AND NOT r.is_cycle
+					WHERE c.valid_currently
+				)
+				UPDATE container
+				SET organization = ${organization}
+				WHERE guid IN (SELECT DISTINCT unnest(path) AS guid FROM descendant)
+					AND organization = ${container.organization}
+					AND valid_currently
+					AND NOT deleted
+			`);
 		});
 	};
 }
 
-export function bulkUpdateOrganizationalUnit(container: AnyContainer, organizationalUnit: string) {
+export function bulkUpdateOrganizationalUnit(
+	container: AnyContainer,
+	organizationalUnit: string | null
+) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			const containerResult = await getAllRelatedContainers(
-				[container.organization],
-				container.guid,
-				[predicates.enum['is-part-of']],
-				{},
-				''
-			)(txConnection);
-			if (containerResult.length) {
-				await txConnection.query(sql.typeAlias('void')`
-					UPDATE container
-					SET organizational_unit = ${organizationalUnit}
-					WHERE guid IN (${sql.join(
-						containerResult.map(({ guid }) => guid),
-						sql.fragment`, `
-					)})
-				`);
-			}
+			const predicate = [
+				predicates.enum['is-part-of'],
+				predicates.enum['is-part-of-measure'],
+				predicates.enum['is-part-of-program'],
+				predicates.enum['is-section-of']
+			];
+			await txConnection.query(sql.typeAlias('void')`
+				WITH RECURSIVE descendant(path, is_cycle) AS (
+					SELECT ${sql.array([container.guid], 'uuid')} AS path, false, ${sql.uuid(container.guid)} AS object
+					UNION ALL
+					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+					FROM container c
+					JOIN container_relation cr ON c.guid = cr.subject
+						AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+						AND cr.valid_currently
+						AND NOT cr.deleted
+					JOIN descendant r ON cr.object = r.object AND NOT r.is_cycle
+					WHERE c.valid_currently
+				)
+				UPDATE container
+				SET organizational_unit = ${organizationalUnit}
+				WHERE guid IN (SELECT DISTINCT unnest(path) AS guid FROM descendant)
+					AND ${container.organizational_unit === null ? sql.fragment`organizational_unit IS NULL` : sql.fragment`organizational_unit = ${container.organizational_unit}`}
+					AND valid_currently
+					AND NOT deleted
+			`);
 		});
 	};
 }

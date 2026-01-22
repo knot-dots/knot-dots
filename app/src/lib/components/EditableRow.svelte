@@ -287,6 +287,22 @@
 	{/if}
 {/each}
 
+{#if columns.includes('resourceCategory')}
+	<div class="cell cell--locked">
+		{#if 'resourceCategory' in container.payload}
+			<span>{$_(container.payload.resourceCategory)}</span>
+		{/if}
+	</div>
+{/if}
+
+{#if columns.includes('resourceUnit')}
+	<div class="cell cell--locked">
+		{#if 'resourceUnit' in container.payload}
+			<span>{$_(container.payload.resourceUnit)}</span>
+		{/if}
+	</div>
+{/if}
+
 {#if columns.includes('hierarchyLevel')}
 	<div
 		class="cell"
