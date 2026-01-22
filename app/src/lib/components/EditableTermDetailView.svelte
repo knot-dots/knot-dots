@@ -9,6 +9,7 @@
 	import TermProperties from '$lib/components/TermProperties.svelte';
 	import { predicates, type AnyContainer, type Container, type TermContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import RelationButton from '$lib/components/RelationButton.svelte';
 
 	interface Props {
 		container: TermContainer;
@@ -46,6 +47,7 @@
 
 <footer class="content-footer bottom-actions-bar">
 	<div class="content-actions">
+		<RelationButton {container} />
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
 		<DeleteButton {container} {relatedContainers} />

@@ -464,6 +464,7 @@
 	"relation_filter.option.is_consistent_with": "unterstützen sich",
 	"relation_filter.option.is_equivalent_to": "entsprechen sich",
 	"relation_filter.option.is_inconsistent_with": "widersprechen sich",
+	"relation_filter.option.implies": "impliziert",
 	"relation_filter.option.is_part_of": "hierarchisch",
 	"relation_filter.option.is_prerequisite_for": "bedingt sich",
 	"relation_filter.option.is_superordinate_of": "übergeordnet",
@@ -474,6 +475,7 @@
 		"dragged_contributes_to_selected": "… trägt zu „{selected}“ bei",
 		"dragged_is_concrete_target_of_selected": "… ist erwartete Wirkung von „{selected}“",
 		"dragged_is_prerequisite_for_selected": "… ist Voraussetzung für „{selected}“",
+		"dragged_implies_selected": "… impliziert „{selected}“",
 		"dragged_is_sub_target_of_selected": "… ist Teil von „{selected}“",
 		"dragged_is_subtask_of_selected": "… ist Teilaufgabe von „{selected}“",
 		"dragged_is_superordinate_of_selected": "… ist „{selected}“ übergeordnet",
@@ -487,6 +489,7 @@
 		"selected_is_affected_by_dragged": "„{selected}“ wird beeinflusst von …",
 		"selected_is_concrete_target_of_dragged": "„{selected}“ ist erwartete Wirkung von …",
 		"selected_is_prerequisite_for_dragged": "„{selected}“ ist Voraussetzung für …",
+		"selected_implies_dragged": "„{selected}“ impliziert …",
 		"selected_is_sub_target_of_dragged": "„{selected}“ ist Teil von …",
 		"selected_is_subtask_of_dragged": "„{selected}“ ist Teilaufgabe von …",
 		"selected_is_superordinate_of_dragged": "„{selected}“ ist … übergeordnet"

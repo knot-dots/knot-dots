@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
@@ -21,12 +22,14 @@
 	let { data }: PageProps = $props();
 
 	const defaultRelationPredicates: Predicate[] = [
-		predicates.enum['is-consistent-with'],
 		predicates.enum['is-equivalent-to'],
-		predicates.enum['is-inconsistent-with'],
-		predicates.enum['contributes-to'],
+		predicates.enum['implies']
+	];
+
+	const hierarchyPredicates: Predicate[] = [
+		predicates.enum['is-part-of'],
 		predicates.enum['is-part-of-category'],
-		predicates.enum['is-part-of']
+		predicates.enum['is-part-of-program']
 	];
 
 	setContext('relationOverlay', {
@@ -54,21 +57,18 @@
 		// Ensure the selected node exists even if it has no relations.
 		adjacency.set(target, []);
 
-		const hierarchyPredicates: Predicate[] = [
-			predicates.enum['is-part-of'],
-			predicates.enum['is-part-of-category'],
-			predicates.enum['is-part-of-program']
-		];
+		const allowedPredicates = new Set<Predicate>([...relationPredicates, ...hierarchyPredicates]);
 
 		for (const container of combinedContainers) {
 			for (const { predicate, subject, object } of container.relation) {
-				if (!relationPredicates.includes(predicate as Predicate)) continue;
+				const predicateType = predicate as Predicate;
+				if (!allowedPredicates.has(predicateType)) continue;
 				if (!subject || !object) continue;
 
 				if (!adjacency.has(subject)) adjacency.set(subject, []);
 				if (!adjacency.has(object)) adjacency.set(object, []);
 
-				if (hierarchyPredicates.includes(predicate as Predicate)) {
+				if (hierarchyPredicates.includes(predicateType)) {
 					// subject = child, object = parent
 					adjacency.get(subject)?.push({ to: object, dir: 'up' });
 					adjacency.get(object)?.push({ to: subject, dir: 'down' });
@@ -128,7 +128,11 @@
 		{#key page.url.searchParams}
 			<Board>
 				<BoardColumn addItemUrl="#create=category&level=0" title={$_('categories.columns.root')}>
-					<MaybeDragZone containers={filteredContainers} />
+					<div class="vertical-scroll-wrapper">
+						{#each filteredContainers as container (container.guid)}
+							<Card {container} showRelationFilter />
+						{/each}
+					</div>
 				</BoardColumn>
 				<BoardColumn title={$_('category.terms.heading')}>
 					<MaybeDragZone containers={filteredTerms} />

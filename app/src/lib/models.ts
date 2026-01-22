@@ -189,6 +189,7 @@ const predicateValues = [
 	'is-creator-of',
 	'is-duplicate-of',
 	'is-equivalent-to',
+	'implies',
 	'is-head-of',
 	'is-inconsistent-with',
 	'is-measured-by',

@@ -41,6 +41,23 @@
 		};
 	}
 
+	function hasRelation(
+		candidate: Container,
+		predicate: Predicate,
+		matcher: (relation: Relation) => boolean
+	) {
+		const touches = (relation: Relation) =>
+			(relation.object === object.guid || relation.subject === object.guid) &&
+			(relation.object === candidate.guid || relation.subject === candidate.guid);
+
+		return (
+			candidate.relation.some((relation) => relation.predicate === predicate && matcher(relation)) ||
+			object.relation.some(
+				(relation) => relation.predicate === predicate && touches(relation) && matcher(relation)
+			)
+		);
+	}
+
 	let dropZones: DropZone[] = $derived(
 		[
 			{
@@ -96,6 +113,50 @@
 					.map((container) => ({ guid: container.guid, container })),
 				help: $_('relation_overlay.is_equivalent_to'),
 				predicate: predicates.enum['is-equivalent-to'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(dragged, this.predicate, selected);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						(candidate) =>
+							hasRelation(
+								candidate,
+								predicates.enum['implies'],
+								({ subject, object: relationObject }) =>
+									subject === object.guid && relationObject === candidate.guid
+							)
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.selected_implies_dragged', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['implies'],
+				createRelation: function (selected: Container, dragged: Container) {
+					return createRelation(selected, this.predicate, dragged);
+				}
+			},
+			{
+				active: false,
+				items: relatedContainers
+					.filter(({ guid }) => guid != object.guid)
+					.filter(
+						(candidate) =>
+							hasRelation(
+								candidate,
+								predicates.enum['implies'],
+								({ subject, object: relationObject }) =>
+									subject === candidate.guid && relationObject === object.guid
+							)
+					)
+					.map((container) => ({ guid: container.guid, container })),
+				help: $_('relation_overlay.dragged_implies_selected', {
+					values: { selected: object.payload.title }
+				}),
+				predicate: predicates.enum['implies'],
 				createRelation: function (selected: Container, dragged: Container) {
 					return createRelation(dragged, this.predicate, selected);
 				}
