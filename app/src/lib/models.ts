@@ -770,14 +770,8 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	unit: true
 });
 
-const knowledgePayload = basePayload
-	.extend({
-		knowledgeCategory: z.enum(['publication', 'tool', 'best_practise']).default('publication'),
-		content_partner: z.string().optional(),
-		date: z.string().optional(),
-		tags: z.array(z.string()).default([]),
-		type: z.literal(payloadTypes.enum.knowledge)
-	})
+export const knowledgePayload = basePayload
+	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
 	.strict();
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
