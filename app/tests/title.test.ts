@@ -22,7 +22,7 @@ test.describe('Document titles', () => {
 
 		// Title should include the test organization's name
 		const expectedOrgName = testOrganization.payload.name;
-		await expect(page).toHaveTitle(new RegExp(`^${expectedOrgName}\\s*\/`));
+		await expect(page).toHaveTitle(new RegExp(`^${expectedOrgName}\\s*/`));
 	});
 
 	test('title updates when switching between workspaces', async ({ page, testOrganization }) => {
@@ -44,5 +44,16 @@ test.describe('Document titles', () => {
 		await page.getByRole('button', { name: 'Programs', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Measures' }).click();
 		await expect(page).toHaveTitle(/\/\s*Measures$/);
+	});
+
+	test('profile routes use profile workspace title segments', async ({ page }) => {
+		await page.goto('/me');
+		await expect(page).toHaveTitle(/\/\s*My workspace$/);
+
+		await page.goto('/me/tasks');
+		await expect(page).toHaveTitle(/\/\s*My Tasks$/);
+
+		await page.goto('/me/measures');
+		await expect(page).toHaveTitle(/\/\s*My measures$/);
 	});
 });

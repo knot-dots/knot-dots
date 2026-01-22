@@ -32,22 +32,24 @@ locale.set('en');
 
 async function createContainer(context: BrowserContext, newContainer: NewContainer) {
 	const response = await context.request.post('/container', { data: newContainer });
-	
+
 	if (!response.ok()) {
 		throw new Error(`Failed to create container: ${response.status()} ${response.statusText()}`);
 	}
-	
+
 	return response.json();
 }
 
 async function deleteContainer(context: BrowserContext, container: AnyContainer) {
 	const response = await context.request.get(`/container/${container.guid}`);
-	
+
 	// If container doesn't exist or request failed, skip deletion
 	if (!response.ok()) {
-		throw new Error(`Failed to fetch container for deletion: ${response.status()} ${response.statusText()}`);
+		throw new Error(
+			`Failed to fetch container for deletion: ${response.status()} ${response.statusText()}`
+		);
 	}
-	
+
 	const currentVersion = await response.json();
 	await context.request.delete(`/container/${container.guid}`, {
 		headers: { 'If-Match': etag(currentVersion) }
