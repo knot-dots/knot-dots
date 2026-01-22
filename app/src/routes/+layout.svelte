@@ -23,11 +23,25 @@
 	});
 
 	const workspaceTranslated = $derived.by(() => {
-		const workspaceType = page.url.pathname.split('/')[2];
+		const segments = page.url.pathname.split('/');
+		let msgId = '';
 
-		if (!workspaceType) return null;
+		// Determine workspace type from URL segments
+		if (segments[1] == 'me') {
+			if (!segments[2]) {
+				msgId = 'workspace.profile';
+			} else {
+				const personalWorkspaceType = segments[2];
+				msgId = 'workspace.profile.' + personalWorkspaceType;
+			}
+		} else {
+			const workspaceType = segments[2];
 
-		const msgId = 'workspace.type.' + workspaceType;
+			if (!workspaceType) return null;
+
+			msgId = 'workspace.type.' + workspaceType;
+		}
+
 		const translation = $_(msgId);
 
 		// If translation is same as msgId, it means no translation was found and null should be returned
