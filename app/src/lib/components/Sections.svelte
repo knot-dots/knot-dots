@@ -27,12 +27,8 @@
 
 	let guid = $derived(container.guid);
 
-	let sections = $state([]) as AnyContainer[];
-
-	const type = crypto.randomUUID();
-
-	$effect(() => {
-		sections = relatedContainers
+	let sections = $derived.by(() => {
+		return relatedContainers
 			.filter((c) => c.guid != guid)
 			.filter(({ relation }) =>
 				relation.some(
@@ -49,8 +45,14 @@
 						({ object, predicate }) =>
 							object == guid && predicate == predicates.enum['is-section-of']
 					)!.position
-			);
+			)
+			.map((c) => {
+				let _: AnyContainer = $state(c); // $state() can only be used in an assignment
+				return _;
+			});
 	});
+
+	const type = crypto.randomUUID();
 
 	function createAddSectionHandler(position: number) {
 		return async (event: Event) => {
@@ -202,6 +204,8 @@
 	>
 		{#each sections as { guid }, i (guid)}
 			<li animate:flip={{ duration: 100 }}>
+				<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
+				<!-- svelte-ignore binding_property_non_reactive -->
 				<Section
 					bind:container={sections[i]}
 					bind:parentContainer={container}
