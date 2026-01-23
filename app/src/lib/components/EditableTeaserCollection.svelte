@@ -38,8 +38,10 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
+	let guid = $derived(container.guid);
+
 	let teaserRequest = $derived(
-		fetchRelatedContainers(container.guid, {
+		fetchRelatedContainers(guid, {
 			payloadType: [payloadTypes.enum.teaser],
 			relationType: [predicates.enum['is-part-of']]
 		})
