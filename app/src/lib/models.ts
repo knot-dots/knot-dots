@@ -620,7 +620,8 @@ const basePayload = z
 		title: z.string().trim(),
 		topic: z.array(z.string().trim().min(1)).default([]),
 		visibility: visibility.default(visibility.enum['organization'])
-	}).catchall(z.array(z.string().trim().min(1)));
+	})
+	.catchall(z.array(z.string().trim().min(1)));
 
 const categoryPayloadBase = z
 	.object({

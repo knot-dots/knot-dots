@@ -35,7 +35,7 @@ function initializeNewContainer(
 }
 
 const simplePayload = (type: AnyPayload['type']) =>
-	({ title: 'Lorem ipsum', type } as Partial<AnyPayload> & Pick<AnyPayload, 'type'>);
+	({ title: 'Lorem ipsum', type }) as Partial<AnyPayload> & Pick<AnyPayload, 'type'>;
 
 test('containers can be related to each other', async ({ connection }: Fixtures) => {
 	const expectedRelations: Relation[] = [];
@@ -216,16 +216,13 @@ test('adding more relations does not interfere with existing relations', async (
 	}
 
 	const task = await createContainer(
-		initializeNewContainer(
-			simplePayload(payloadTypes.enum.task),
-			[
-				{
-					object: expectedRelationsOfProgram[2].subject,
-					position: 0,
-					predicate: predicates.enum['is-part-of']
-				}
-			]
-		)
+		initializeNewContainer(simplePayload(payloadTypes.enum.task), [
+			{
+				object: expectedRelationsOfProgram[2].subject,
+				position: 0,
+				predicate: predicates.enum['is-part-of']
+			}
+		])
 	)(connection);
 	expect(task.relation).toEqual([
 		{

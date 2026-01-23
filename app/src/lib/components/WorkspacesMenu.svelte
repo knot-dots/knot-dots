@@ -218,7 +218,8 @@
 						icon: Grid,
 						label: $_('workspace.type.categories'),
 						recommended: false,
-						value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'}
+						value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
+					}
 				]
 			: []),
 		...(createFeatureDecisions(page.data.features).useResourceWorkspace()

@@ -170,31 +170,31 @@
 
 	<footer>
 		{#if 'ruleStatus' in container.payload}
-				{@const ruleStatus = container.payload.ruleStatus as RuleStatus}
-				{@const RuleStatusIcon = ruleStatusIcons.get(ruleStatus) ?? Cog}
-				<span class="badge badge--{ruleStatusColors.get(ruleStatus)}">
+			{@const ruleStatus = container.payload.ruleStatus as RuleStatus}
+			{@const RuleStatusIcon = ruleStatusIcons.get(ruleStatus) ?? Cog}
+			<span class="badge badge--{ruleStatusColors.get(ruleStatus)}">
 				<RuleStatusIcon />
-					{$_(ruleStatus)}
+				{$_(ruleStatus)}
 			</span>
 		{:else if 'status' in container.payload}
-				{@const status = container.payload.status as Status}
-				{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
-				<span class="badge badge--{statusColors.get(status)}">
+			{@const status = container.payload.status as Status}
+			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
+			<span class="badge badge--{statusColors.get(status)}">
 				<StatusIcon />
-					{$_(status)}
+				{$_(status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
-				{@const taskStatus = container.payload.taskStatus as TaskStatus}
-				{@const TaskStatusIcon = taskStatusIcons.get(taskStatus) ?? Lightbulb}
-				<span class="badge badge--{taskStatusColors.get(taskStatus)}">
+			{@const taskStatus = container.payload.taskStatus as TaskStatus}
+			{@const TaskStatusIcon = taskStatusIcons.get(taskStatus) ?? Lightbulb}
+			<span class="badge badge--{taskStatusColors.get(taskStatus)}">
 				<TaskStatusIcon />
-					{$_(taskStatus)}
+				{$_(taskStatus)}
 			</span>
-			{:else if isContainerWithProgress(container)}
+		{:else if isContainerWithProgress(container)}
 			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}
-				{@const programType = container.payload.programType as ProgramType}
-				<span class="badge">{$_(programType)}</span>
+			{@const programType = container.payload.programType as ProgramType}
+			<span class="badge">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>
 		{/if}

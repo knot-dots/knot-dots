@@ -202,7 +202,7 @@
 				<TaskCategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
-							bind:value={container.payload.taskCategory as TaskCategory}
+					bind:value={container.payload.taskCategory as TaskCategory}
 				/>
 			{/if}
 		</div>
@@ -297,16 +297,16 @@
 
 {#if columns.includes('resourceCategory')}
 	<div class="cell cell--locked">
-			{#if 'resourceCategory' in container.payload}
-					<span>{$_(container.payload.resourceCategory as ResourceCategory) as string}</span>
+		{#if 'resourceCategory' in container.payload}
+			<span>{$_(container.payload.resourceCategory as ResourceCategory) as string}</span>
 		{/if}
 	</div>
 {/if}
 
 {#if columns.includes('resourceUnit')}
 	<div class="cell cell--locked">
-			{#if 'resourceUnit' in container.payload}
-					<span>{$_(container.payload.resourceUnit as ResourceUnit) as string}</span>
+		{#if 'resourceUnit' in container.payload}
+			<span>{$_(container.payload.resourceUnit as ResourceUnit) as string}</span>
 		{/if}
 	</div>
 {/if}
