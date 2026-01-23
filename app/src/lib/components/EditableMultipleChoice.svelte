@@ -9,9 +9,9 @@
 		options?: Array<{
 			label: string;
 			value: string;
-			guid: string;
+			guid?: string;
 			icon?: string;
-			subterms?: Array<{ label: string; value: string; guid: string; icon?: string }>;
+			subterms?: Array<{ label: string; value: string; guid?: string; icon?: string }>;
 		}>;
 		value?: string[];
 	}

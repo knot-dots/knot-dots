@@ -76,12 +76,14 @@
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer & EmptyIndicatorContainer;
 
-		container.payload = {
+		const payload = {
 			...template.payload,
 			historicalValues: container.payload.historicalValues,
 			quantity: template.guid,
 			type: container.payload.type
-		};
+		} as IndicatorContainer['payload'];
+
+		container.payload = payload;
 
 		$newContainer = container;
 

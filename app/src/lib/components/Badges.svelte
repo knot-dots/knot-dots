@@ -7,6 +7,7 @@
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import {
+		type GoalType,
 		type Container,
 		isContainerWithStatus,
 		isGoalContainer,
@@ -14,7 +15,9 @@
 		isRuleContainer,
 		isSuggestedByAI,
 		isTaskContainer,
-		programTypes
+		programTypes,
+		type ProgramType,
+		type TaskCategory
 	} from '$lib/models';
 
 	interface Props {
@@ -28,11 +31,14 @@
 <ul class="badges">
 	<li class="badge badge--purple">
 		{#if 'goalType' in container.payload && container.payload.goalType}
-			{$_(container.payload.goalType)}
+			{@const goalType = container.payload.goalType as GoalType}
+			{$_(goalType)}
 		{:else if 'programType' in container.payload && container.payload.programType !== programTypes.enum['program_type.misc']}
-			{$_(container.payload.programType)}
+			{@const programType = container.payload.programType as ProgramType}
+			{$_(programType)}
 		{:else if 'taskCategory' in container.payload && container.payload.taskCategory}
-			{$_(container.payload.taskCategory)}
+			{@const taskCategory = container.payload.taskCategory as TaskCategory}
+			{$_(taskCategory)}
 		{:else}
 			{$_(container.payload.type)}
 		{/if}

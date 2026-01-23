@@ -608,18 +608,19 @@ const slugifyCategoryKey = (source: string) =>
 		.replace(/[^a-z0-9_.-]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 
-const basePayload = z.object({
-	aiSuggestion: z.boolean().default(false),
-	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
-	category: z.array(z.string().trim().min(1)).default([]),
-	description: z.string().trim().optional(),
-	editorialState: editorialState.optional(),
-	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
-	summary: z.string().trim().max(200).optional(),
-	title: z.string().trim(),
-	topic: z.array(z.string().trim().min(1)).default([]),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const basePayload = z
+	.object({
+		aiSuggestion: z.boolean().default(false),
+		audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+		category: z.array(z.string().trim().min(1)).default([]),
+		description: z.string().trim().optional(),
+		editorialState: editorialState.optional(),
+		policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+		summary: z.string().trim().max(200).optional(),
+		title: z.string().trim(),
+		topic: z.array(z.string().trim().min(1)).default([]),
+		visibility: visibility.default(visibility.enum['organization'])
+	}).catchall(z.array(z.string().trim().min(1)));
 
 const categoryPayloadBase = z
 	.object({
@@ -1507,52 +1508,9 @@ export const container = z.object({
 export type Container = z.infer<typeof container>;
 
 const anyPayload = z.discriminatedUnion('type', [
-	actualDataPayload,
-	administrativeAreaBasicDataPayload,
-	chapterPayload,
-	categoryPayload,
-	colContentPayload,
-	contentPartnerCollectionPayload,
-	contentPartnerPayload,
-	customCollectionPayload,
-	effectCollectionPayload,
-	effectPayload,
-	fileCollectionPayload,
-	goalCollectionPayload,
-	goalPayload,
-	imagePayload,
-	indicatorCollectionPayload,
-	indicatorPayload,
-	indicatorTemplatePayload,
-	infoBoxPayload,
-	knowledgeCollectionPayload,
-	knowledgePayload,
-	mapPayload,
-	measureCollectionPayload,
-	measurePayload,
-	objectiveCollectionPayload,
-	objectivePayload,
+	...payload.options,
 	organizationPayload,
 	organizationalUnitPayload,
-	pagePayload,
-	programCollectionPayload,
-	programPayload,
-	progressPayload,
-	quotePayload,
-	reportPayload,
-	rulePayload,
-	resourceCollectionPayload,
-	resourcePayload,
-	simpleMeasurePayload,
-	taskCollectionPayload,
-	taskPayload,
-	termPayload,
-	textPayload,
-	teaserPayload,
-	teaserCollectionPayload,
-	accordionCollectionPayload,
-	teaserHighlightPayload,
-	...payload.options,
 	undefinedPayload
 ]);
 

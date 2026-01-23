@@ -305,9 +305,7 @@
 		}
 	}
 
-	const canEdit = $derived(
-		$applicationState.containerDetailView.editable && $ability.can('update', container)
-	);
+	const canEdit = $derived($ability.can('update', container));
 
 	const isSubterm = $derived(
 		(container.relation ?? []).some(

@@ -72,6 +72,10 @@
 
 	let container = $state(originalContainer);
 
+	$effect(() => {
+		container = originalContainer;
+	});
+
 	let guid = $derived(container.guid);
 
 	let organization = $derived(container.organization);
@@ -190,7 +194,7 @@
 	{:else if isGoalContainer(container)}
 		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isCategoryContainer(container)}
-		<EditableCategoryDetailView bind:container {relatedContainers} {revisions} />
+		<EditableCategoryDetailView bind:container {relatedContainers} />
 	{:else if isIndicatorContainer(container)}
 		<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isIndicatorTemplateContainer(container)}

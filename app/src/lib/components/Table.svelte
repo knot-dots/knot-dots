@@ -13,7 +13,7 @@
 
 	let { columns, rows: originalRows }: Props = $props();
 
-	let rows = $state($state.snapshot(originalRows)) as Container[];
+	let rows = $state([] as Container[]);
 
 	$effect(() => {
 		rows = $state.snapshot(originalRows) as Container[];

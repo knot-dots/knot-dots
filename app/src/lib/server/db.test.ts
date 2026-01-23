@@ -34,6 +34,9 @@ function initializeNewContainer(
 	});
 }
 
+const simplePayload = (type: AnyPayload['type']) =>
+	({ title: 'Lorem ipsum', type } as Partial<AnyPayload> & Pick<AnyPayload, 'type'>);
+
 test('containers can be related to each other', async ({ connection }: Fixtures) => {
 	const expectedRelations: Relation[] = [];
 
@@ -52,7 +55,7 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -85,7 +88,7 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -134,7 +137,7 @@ test('relations are added or removed when updating a container', async ({
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -201,7 +204,7 @@ test('adding more relations does not interfere with existing relations', async (
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -214,10 +217,7 @@ test('adding more relations does not interfere with existing relations', async (
 
 	const task = await createContainer(
 		initializeNewContainer(
-			{
-				title: 'Lorem ipsum',
-				type: payloadTypes.enum.task
-			},
+			simplePayload(payloadTypes.enum.task),
 			[
 				{
 					object: expectedRelationsOfProgram[2].subject,
