@@ -17,6 +17,7 @@
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
+	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -29,7 +30,8 @@
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		type ProgramContainer
+		type ProgramContainer,
+		programTypes
 	} from '$lib/models';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 
@@ -259,7 +261,11 @@
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
 		{#if createFeatureDecisions(page.data.features).useAI()}
-			<AskAIButton {container} />
+			{#if container.payload.programType == programTypes.enum['program_type.guide']}
+				<KnowledgeAIButton {container} />
+			{:else}
+				<AskAIButton {container} />
+			{/if}
 		{/if}
 		<DeleteButton {container} {relatedContainers} />
 	</div>

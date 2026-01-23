@@ -13,7 +13,6 @@ export const featureFlags = new Map([
 			'Stage',
 			'Image',
 			'ContentPartner',
-			'Knowledge',
 			'ResourcesV2'
 		] as const
 	],
@@ -63,9 +62,6 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useContentPartner() {
 			return features.includes('ContentPartner');
-		},
-		useKnowledge() {
-			return features.includes('Knowledge');
 		},
 		useStage() {
 			return features.includes('Stage');

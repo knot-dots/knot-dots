@@ -252,6 +252,7 @@
 	},
 	"knowledge": "Knowledge",
 	"knowledge.level": "Level {level}",
+	"knowledge_ai.label": "AI upload",
 	"label": {
 		"unit": "Unit"
 	},

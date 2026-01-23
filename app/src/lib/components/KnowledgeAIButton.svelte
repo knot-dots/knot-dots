@@ -8,7 +8,7 @@
 	import { getToastContext } from '$lib/contexts/toast';
 	import { paramsFromFragment, payloadTypes, type ProgramContainer } from '$lib/models';
 	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
-	import { ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ProgramContainer;
@@ -28,7 +28,7 @@
 
 	let toast = getToastContext();
 
-	async function askAI(container: ProgramContainer) {
+	async function extractKnowledgeObjects(container: ProgramContainer) {
 		isThinking = true;
 
 		toast({
@@ -38,7 +38,7 @@
 			status: 'info'
 		});
 
-		const stream = source('/ask-ai', {
+		const stream = source('/knowledge-ai', {
 			options: {
 				body: new URLSearchParams([['program', container.guid]]),
 				headers: { 'content-type': 'application/x-www-form-urlencoded' }
@@ -51,7 +51,7 @@
 					isThinking = false;
 					alert($_('ai_status.error'));
 					break;
-				case 'complete':
+				case 'completed':
 					isThinking = false;
 					toast({
 						icon: Check,
@@ -68,14 +68,14 @@
 	}
 </script>
 
-{#if container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.undefined)}
+{#if container.payload.pdf.length > 0 && $applicationState.containerDetailView.editable && $ability.can('create', payloadTypes.enum.knowledge)}
 	<button
 		class="button-ai"
 		class:is-active={isThinking}
 		type="button"
-		onclick={() => askAI(container as ProgramContainer)}
+		onclick={() => extractKnowledgeObjects(container as ProgramContainer)}
 	>
 		<AskAI />
-		{$_('ask_ai')}
+		{$_('knowledge_ai.label')}
 	</button>
 {/if}
