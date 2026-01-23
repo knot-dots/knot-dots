@@ -31,15 +31,14 @@
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
+		isContentPartnerCollectionContainer,
+		isContentPartnerContainer,
 		isCustomCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
-		isAccordionCollectionContainer,
 		isGoalContainer,
 		isImageContainer,
-		isContentPartnerContainer,
-		isContentPartnerCollectionContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -47,12 +46,12 @@
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
-		isResourceDataContainer,
 		isResourceCollectionContainer,
+		isResourceDataContainer,
 		isTaskCollectionContainer,
 		isTeaserCollectionContainer,
-		isTextContainer,
-		isTeaserLikeContainer
+		isTeaserLikeContainer,
+		isTextContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -275,7 +274,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isTeaserCollectionContainer(container) || isAccordionCollectionContainer(container)}
+		{:else if isTeaserCollectionContainer(container)}
 			<EditableTeaserCollection
 				bind:container
 				bind:parentContainer

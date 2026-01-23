@@ -13,18 +13,17 @@
 	import {
 		type AnyContainer,
 		containerOfType,
-		predicates,
-		type TeaserContainer,
-		type TeaserCollectionContainer,
 		type NewContainer,
 		payloadTypes,
-		type AccordionCollectionContainer
+		predicates,
+		type TeaserCollectionContainer,
+		type TeaserContainer
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: TeaserCollectionContainer | AccordionCollectionContainer;
+		container: TeaserCollectionContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
