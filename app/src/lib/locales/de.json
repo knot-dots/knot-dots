@@ -1,6 +1,5 @@
 {
 	"about": "knot dots",
-	"accordion": "Akkordeon",
 	"active_filters": "{count, plural, one {1 aktiv} other {# aktiv}}",
 	"add_cover": "Cover hinzufügen",
 	"add_item": "Hinzufügen",
@@ -95,7 +94,6 @@
 	"custom_collection.dialog.cancel": "Abbrechen und schließen",
 	"custom_collection.dialog.select": "Auswählen",
 	"custom_collection.dialog.title": "Objekte auswählen",
-	"date": "Datum",
 	"days_ago": "{daysAgo, plural, one {# Tag} other {# Tage}}",
 	"delete": "Löschen",
 	"delete.name": "{name} löschen",
