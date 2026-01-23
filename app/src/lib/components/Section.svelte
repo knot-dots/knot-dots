@@ -71,7 +71,7 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 
 	const handleSubmit = autoSave(2000);
 
@@ -280,6 +280,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				fetchDisabled={isShadowItem}
 				{heading}
 			/>
 		{/if}

@@ -25,6 +25,7 @@
 	interface Props {
 		container: TeaserCollectionContainer;
 		editable?: boolean;
+		fetchDisabled?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
@@ -32,6 +33,7 @@
 
 	let {
 		container = $bindable(),
+		fetchDisabled = false,
 		editable = false,
 		heading,
 		parentContainer = $bindable(),
@@ -40,12 +42,16 @@
 
 	let guid = $derived(container.guid);
 
-	let teaserRequest = $derived(
-		fetchRelatedContainers(guid, {
-			payloadType: [payloadTypes.enum.teaser],
-			relationType: [predicates.enum['is-part-of']]
-		})
-	) as Promise<TeaserContainer[]>;
+	let teaserRequest = $derived.by(() => {
+		if (fetchDisabled) {
+			return Promise.resolve([]);
+		} else {
+			return fetchRelatedContainers(guid, {
+				payloadType: [payloadTypes.enum.teaser],
+				relationType: [predicates.enum['is-part-of']]
+			});
+		}
+	}) as Promise<TeaserContainer[]>;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
