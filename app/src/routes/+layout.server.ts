@@ -47,18 +47,18 @@ export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 
 	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 
-	try {
-		const containerFromParams = await locals.pool.connect(
-			getContainerByGuid(params.guid as string)
-		);
-		if (
-			isOrganizationalUnitContainer(containerFromParams) &&
-			defineAbilityFor(locals.user).can('read', containerFromParams)
-		) {
-			currentOrganizationalUnit = containerFromParams;
+	if (params.guid) {
+		try {
+			const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
+			if (
+				isOrganizationalUnitContainer(containerFromParams) &&
+				defineAbilityFor(locals.user).can('read', containerFromParams)
+			) {
+				currentOrganizationalUnit = containerFromParams;
+			}
+		} catch {
+			// Do nothing.
 		}
-	} catch {
-		// Do nothing.
 	}
 
 	// Don't use subdomains in dev mode if the env var is set
