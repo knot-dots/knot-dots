@@ -7,12 +7,7 @@ import {
 	type CategoryOption,
 	type CategoryOptions
 } from '$lib/categoryOptions';
-import {
-	isCategoryContainer,
-	isTermContainer,
-	payloadTypes,
-	type CategoryContainer
-} from '$lib/models';
+import { payloadTypes, type CategoryContainer, isContainerWithPayloadType } from '$lib/models';
 
 export { buildCategoryFacets, buildCategoryLabels, getCategoryKeys };
 export type { CategoryOption, CategoryOptions };
@@ -73,9 +68,11 @@ export async function loadCategoryOptions(
 
 				const allowedTypes = new Set(normalizedObjectTypes);
 				const categoryList = categories
-					.filter(isCategoryContainer)
+					.filter((c) => isContainerWithPayloadType(payloadTypes.enum.category, c))
 					.filter((category) => categoryMatchesObjectTypes(category, allowedTypes));
-				const termContainers = terms.filter(isTermContainer);
+				const termContainers = terms.filter((c) =>
+					isContainerWithPayloadType(payloadTypes.enum.term, c)
+				);
 
 				const categoryOptions = buildCategoryOptionsFromContainers(categoryList, termContainers);
 

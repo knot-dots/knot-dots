@@ -3,7 +3,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
 import { filterVisible } from '$lib/authorization';
-import { isIndicatorContainer, isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
+import { isContainerWithPayloadType, payloadTypes } from '$lib/models';
 import { hasSection } from '$lib/relations';
 import {
 	getAllContainersRelatedToIndicators,
@@ -31,7 +31,7 @@ export const fetchContainersRelatedToIndicators = query(
 
 		const container = await locals.pool.connect(getContainerByGuid(guid));
 
-		if (!isIndicatorContainer(container)) {
+		if (!isContainerWithPayloadType(payloadTypes.enum.indicator, container)) {
 			error(404, unwrapFunctionStore(_)('error.not_found'));
 		}
 
@@ -57,7 +57,12 @@ export const fetchContainersRelatedToIndicators = query(
 					getContainerByGuid(params.organizationalUnit)
 				);
 
-				if (!isOrganizationalUnitContainer(currentOrganizationalUnit)) {
+				if (
+					!isContainerWithPayloadType(
+						payloadTypes.enum.organizational_unit,
+						currentOrganizationalUnit
+					)
+				) {
 					error(404, unwrapFunctionStore(_)('error.not_found'));
 				}
 

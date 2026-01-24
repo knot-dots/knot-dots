@@ -5,8 +5,9 @@
 	import {
 		type AnyContainer,
 		type EffectContainer,
-		isIndicatorContainer,
-		isRelatedTo
+		isContainerWithPayloadType,
+		isRelatedTo,
+		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
@@ -18,7 +19,9 @@
 	let { container, relatedContainers = [], showLegend = false }: Props = $props();
 
 	const indicator = $derived(
-		relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container))
+		relatedContainers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.indicator, c))
+			.find(isRelatedTo(container))
 	);
 
 	const unit = $derived($_(indicator?.payload.unit ?? ''));

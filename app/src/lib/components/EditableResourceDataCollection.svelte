@@ -8,14 +8,13 @@
 	import {
 		type AnyContainer,
 		containerOfType,
-		isResourceDataContainer,
 		isPartOf,
 		type NewContainer,
 		type ResourceDataCollectionContainer,
 		payloadTypes,
 		predicates,
-		isResourceV2Container,
-		type ResourceV2Container
+		type ResourceV2Container,
+		isContainerWithPayloadType
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
@@ -45,7 +44,7 @@
 	let items = $derived(
 		parentContainer
 			? relatedContainers
-					.filter(isResourceDataContainer)
+					.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
 					.filter((item) => item.payload.resourceDataType === container.payload.resourceDataType)
 					.filter(isPartOf(parentContainer))
 			: []
@@ -55,7 +54,9 @@
 
 	onMount(async () => {
 		const containers = await fetchContainers({ payloadType: ['resource_v2'] }, 'alpha');
-		resourceContainers = containers.filter(isResourceV2Container);
+		resourceContainers = containers.filter((c) =>
+			isContainerWithPayloadType(payloadTypes.enum.resource_v2, c)
+		);
 	});
 
 	function addItem() {

@@ -25,32 +25,16 @@
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
-		isCategoryContainer,
 		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithName,
+		isContainerWithPayloadType,
 		isContainerWithTitle,
-		isGoalContainer,
-		isIndicatorContainer,
-		isIndicatorTemplateContainer,
-		isKnowledgeContainer,
-		isMeasureContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		isProgramContainer,
-		isReportContainer,
-		isResourceContainer,
-		isResourceV2Container,
-		isResourceDataContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer,
-		isTaskContainer,
-		isTeaserContainer,
-		isTextContainer,
 		type NewContainer,
 		overlayKey,
-		overlayURL
+		overlayURL,
+		payloadTypes
 	} from '$lib/models';
 	import { addEffectState, lastCreatedContainer, newContainer } from '$lib/stores';
 
@@ -67,12 +51,16 @@
 
 			// Signal that a container was successfully created
 			$lastCreatedContainer = savedContainer;
-
-			if (isIndicatorContainer(savedContainer) && $addEffectState.target) {
+			if (
+				isContainerWithPayloadType(payloadTypes.enum.indicator, savedContainer) &&
+				$addEffectState.target
+			) {
 				const effect = await createEffect($addEffectState.target, savedContainer);
 				$addEffectState = {};
 				await goto(`#view=${effect.guid}`);
-			} else if (isOrganizationalUnitContainer(savedContainer)) {
+			} else if (
+				isContainerWithPayloadType(payloadTypes.enum.organizational_unit, savedContainer)
+			) {
 				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
@@ -163,116 +151,116 @@
 						<Badges bind:container={$newContainer} editable />
 					{/if}
 
-					{#if isSimpleMeasureContainer($newContainer)}
+					{#if isContainerWithPayloadType(payloadTypes.enum.simple_measure, $newContainer)}
 						<EditableProgress editable bind:value={$newContainer.payload.progress} />
 					{/if}
 				</header>
 
-				{#if isGoalContainer($newContainer)}
+				{#if isContainerWithPayloadType(payloadTypes.enum.goal, $newContainer)}
 					<GoalProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isCategoryContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.category, $newContainer)}
 					<CategoryProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isIndicatorContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.indicator, $newContainer)}
 					<IndicatorProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isIndicatorTemplateContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.indicator_template, $newContainer)}
 					<IndicatorProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isKnowledgeContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.knowledge, $newContainer)}
 					<KnowledgeProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isMeasureContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.measure, $newContainer)}
 					<MeasureProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isOrganizationContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.organization, $newContainer)}
 					<OrganizationProperties bind:container={$newContainer} editable />
-				{:else if isOrganizationalUnitContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.organizational_unit, $newContainer)}
 					<OrganizationalUnitProperties bind:container={$newContainer} editable />
-				{:else if isReportContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.report, $newContainer)}
 					<ReportProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isResourceContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.resource, $newContainer)}
 					<ResourceProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isResourceV2Container($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.resource_v2, $newContainer)}
 					<ResourceV2Properties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isResourceDataContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.resource_data, $newContainer)}
 					<ResourceDataProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isRuleContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.rule, $newContainer)}
 					<RuleProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isSimpleMeasureContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.simple_measure, $newContainer)}
 					<MeasureProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isProgramContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.program, $newContainer)}
 					<ProgramProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isTaskContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.task, $newContainer)}
 					<TaskProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isTeaserContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.teaser, $newContainer)}
 					<TeaserProperties bind:container={$newContainer} editable revisions={[]} />
-				{:else if isTextContainer($newContainer)}
+				{:else if isContainerWithPayloadType(payloadTypes.enum.text, $newContainer)}
 					<TextProperties
 						bind:container={$newContainer}
 						editable

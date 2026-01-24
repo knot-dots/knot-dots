@@ -32,31 +32,9 @@
 	import {
 		type AnyContainer,
 		boards,
-		isAdministrativeAreaBasicDataContainer,
+		isContainerWithPayloadType,
 		isContainerWithProgress,
 		isContainerWithSummary,
-		isContentPartnerCollectionContainer,
-		isEffectCollectionContainer,
-		isFileCollectionContainer,
-		isGoalCollectionContainer,
-		isGoalContainer,
-		isIndicatorCollectionContainer,
-		isMapContainer,
-		isMeasureCollectionContainer,
-		isMeasureContainer,
-		isObjectiveCollectionContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		isPageContainer,
-		isProgramCollectionContainer,
-		isProgressContainer,
-		isReportContainer,
-		isResourceCollectionContainer,
-		isResourceDataCollectionContainer,
-		isSimpleMeasureContainer,
-		isSummaryContainer,
-		isTaskCollectionContainer,
-		isTaskContainer,
 		payloadTypes,
 		predicates,
 		resourceDataTypes
@@ -91,98 +69,126 @@
 	};
 
 	let mayAddTaskCollection = $derived(
-		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer) &&
-			(isGoalContainer(parentContainer) ||
-				isMeasureContainer(parentContainer) ||
-				isTaskContainer(parentContainer))
+		!hasSection(parentContainer, relatedContainers).some((container) =>
+			isContainerWithPayloadType(payloadTypes.enum.task_collection, container)
+		) &&
+			(isContainerWithPayloadType(payloadTypes.enum.goal, parentContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.task, parentContainer))
 	);
 
 	let mayAddObjectiveCollection = $derived(
-		isGoalContainer(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isObjectiveCollectionContainer) &&
+		isContainerWithPayloadType(payloadTypes.enum.goal, parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some((c) =>
+				isContainerWithPayloadType(payloadTypes.enum.objective_collection, c)
+			) &&
 			!parentContainer.relation.some(
 				({ predicate }) => predicate == predicates.enum['is-part-of-measure']
 			)
 	);
 
 	let mayAddEffectCollection = $derived(
-		(isMeasureContainer(parentContainer) ||
-			(isGoalContainer(parentContainer) &&
+		(isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer) ||
+			(isContainerWithPayloadType(payloadTypes.enum.goal, parentContainer) &&
 				parentContainer.relation.some(
 					({ predicate }) => predicate == predicates.enum['is-part-of-measure']
 				))) &&
-			!hasSection(parentContainer, relatedContainers).some(isEffectCollectionContainer)
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.effect_collection, container)
+			)
 	);
 
 	let mayAddGoalCollection = $derived(
-		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isGoalCollectionContainer)
+		(isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer) ||
+			isContainerWithPayloadType(payloadTypes.enum.simple_measure, parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.goal_collection, container)
+			)
 	);
 
 	let mayAddResourceCollection = $derived(
 		!createFeatureDecisions(page.data.features).useResourcePlanning() &&
-			(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
+			(isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.simple_measure, parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.resource_collection, container)
+			)
 	);
 
 	let mayAddFileCollection = $derived(
-		!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
+		!hasSection(parentContainer, relatedContainers).some((container) =>
+			isContainerWithPayloadType(payloadTypes.enum.file_collection, container)
+		)
 	);
 
 	let mayAddIndicatorCollection = $derived(
-		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
+		(isContainerWithPayloadType(payloadTypes.enum.organization, parentContainer) ||
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer)) &&
 			parentContainer.payload.boards.includes(boards.enum['board.indicators']) &&
-			!hasSection(parentContainer, relatedContainers).some(isIndicatorCollectionContainer)
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.indicator_collection, container)
+			)
 	);
 
 	let mayAddMeasureCollection = $derived(
-		(isOrganizationContainer(parentContainer) ||
-			isOrganizationalUnitContainer(parentContainer) ||
-			(isMeasureContainer(parentContainer) &&
+		(isContainerWithPayloadType(payloadTypes.enum.organization, parentContainer) ||
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer) ||
+			(isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer) &&
 				createFeatureDecisions(page.data.features).useSubMeasures())) &&
-			!hasSection(parentContainer, relatedContainers).some(isMeasureCollectionContainer)
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.measure_collection, container)
+			)
 	);
 
 	let mayAddProgramCollection = $derived(
-		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isProgramCollectionContainer)
+		(isContainerWithPayloadType(payloadTypes.enum.organization, parentContainer) ||
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.program_collection, container)
+			)
 	);
 
 	let mayAddAdministrativeAreaBasicData = $derived(
 		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
-			isOrganizationalUnitContainer(parentContainer) &&
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer) &&
 			parentContainer.payload.officialRegionalCode &&
-			!hasSection(parentContainer, relatedContainers).some(isAdministrativeAreaBasicDataContainer)
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.administrative_area_basic_data, container)
+			)
 	);
 
 	let mayAddMap = $derived(
 		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
-			isOrganizationalUnitContainer(parentContainer) &&
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer) &&
 			parentContainer.payload.geometry &&
-			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.map, container)
+			)
 	);
 
 	let mayAddTeaserCollection = $derived(
 		createFeatureDecisions(page.data.features).useTeaserCollection() &&
-			(isOrganizationContainer(parentContainer) ||
-				isOrganizationalUnitContainer(parentContainer) ||
-				isPageContainer(parentContainer))
+			(isContainerWithPayloadType(payloadTypes.enum.organization, parentContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.page, parentContainer))
 	);
 
 	let mayAddContentPartnerCollection = $derived(
 		createFeatureDecisions(page.data.features).useContentPartner() &&
-			(isOrganizationContainer(parentContainer) ||
-				isOrganizationalUnitContainer(parentContainer) ||
-				isPageContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
+			(isContainerWithPayloadType(payloadTypes.enum.organization, parentContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.page, parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.content_partner_collection, container)
+			)
 	);
 
 	let mayAddActualResourceAllocationCollection = $derived(
 		createFeatureDecisions(page.data.features).useResourcePlanning() &&
-			isMeasureContainer(parentContainer) &&
+			isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
-					isResourceDataCollectionContainer(c) &&
+					isContainerWithPayloadType(payloadTypes.enum.resource_data_collection, c) &&
 					c.payload.resourceDataType ===
 						resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
 			)
@@ -190,10 +196,10 @@
 
 	let mayAddPlannedResourceAllocationCollection = $derived(
 		createFeatureDecisions(page.data.features).useResourcePlanning() &&
-			isMeasureContainer(parentContainer) &&
+			isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
-					isResourceDataCollectionContainer(c) &&
+					isContainerWithPayloadType(payloadTypes.enum.resource_data_collection, c) &&
 					c.payload.resourceDataType ===
 						resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
 			)
@@ -201,10 +207,10 @@
 
 	let mayAddBudgetCollection = $derived(
 		createFeatureDecisions(page.data.features).useResourcePlanning() &&
-			isGoalContainer(parentContainer) &&
+			isContainerWithPayloadType(payloadTypes.enum.goal, parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
-					isResourceDataCollectionContainer(c) &&
+					isContainerWithPayloadType(payloadTypes.enum.resource_data_collection, c) &&
 					c.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
 			)
 	);
@@ -219,24 +225,29 @@
 
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
-			!isSimpleMeasureContainer(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
+			!isContainerWithPayloadType(payloadTypes.enum.simple_measure, parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.progress, container)
+			)
 	);
 
 	let mayAddChapter = $derived(
-		createFeatureDecisions(page.data.features).useChapter() && isReportContainer(parentContainer)
+		createFeatureDecisions(page.data.features).useChapter() &&
+			isContainerWithPayloadType(payloadTypes.enum.report, parentContainer)
 	);
 
 	let mayAddCustomCollection = $derived(
 		createFeatureDecisions(page.data.features).useCustomCollection() &&
-			isReportContainer(parentContainer)
+			isContainerWithPayloadType(payloadTypes.enum.report, parentContainer)
 	);
 
 	let mayAddImage = $derived(createFeatureDecisions(page.data.features).useImage());
 
 	let mayAddSummary = $derived(
 		isContainerWithSummary(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
+			!hasSection(parentContainer, relatedContainers).some((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.summary, container)
+			)
 	);
 
 	let options = $derived(

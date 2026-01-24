@@ -5,9 +5,9 @@
 	import {
 		audience,
 		computeFacetCount,
-		isMeasureContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
 		type MeasureContainer,
+		payloadTypes,
 		policyFieldBNK,
 		predicates,
 		sustainableDevelopmentGoals,
@@ -22,7 +22,11 @@
 
 	let memberFacet = $derived(
 		containers
-			.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+			.filter(
+				(c) =>
+					isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)
+			)
 			.flatMap(({ user }) =>
 				user
 					.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])

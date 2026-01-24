@@ -9,12 +9,11 @@
 		type AnyContainer,
 		container as containerSchema,
 		containerOfType,
-		isChapterContainer,
 		isContainerWithTitle,
-		isOrganizationalUnitContainer,
 		type NewContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		isContainerWithPayloadType
 	} from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';
 
@@ -65,8 +64,12 @@
 			const newContainer = containerOfType(
 				payloadType,
 				container.organization,
-				isOrganizationalUnitContainer(container) ? container.guid : container.organizational_unit,
-				isOrganizationalUnitContainer(container) ? container.guid : container.managed_by,
+				isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)
+					? container.guid
+					: container.organizational_unit,
+				isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)
+					? container.guid
+					: container.managed_by,
 				container.realm
 			) as NewContainer;
 
@@ -92,12 +95,14 @@
 				newContainer.payload.title = '';
 			}
 
-			if (isChapterContainer(newContainer)) {
+			if (isContainerWithPayloadType(payloadTypes.enum.chapter, newContainer)) {
 				newContainer.payload.number = String(
 					parseInt(
 						sections
 							.slice(0, position)
-							.filter(isChapterContainer)
+							.filter((container) =>
+								isContainerWithPayloadType(payloadTypes.enum.chapter, container)
+							)
 							.at(-1)
 							?.payload.number.split('.')
 							.at(0) ?? '0'
@@ -190,7 +195,10 @@
 	}
 
 	function heading(position: number) {
-		const chapter = sections.slice(0, position).reverse().find(isChapterContainer);
+		const chapter = sections
+			.slice(0, position)
+			.reverse()
+			.find((container) => isContainerWithPayloadType(payloadTypes.enum.chapter, container));
 		const level = Math.min((chapter?.payload.number.split('.').length ?? 0) + 2, 6);
 		return `h${level}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 	}

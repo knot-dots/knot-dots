@@ -17,11 +17,7 @@
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import {
-		isActualDataContainer,
-		isIndicatorContainer,
-		isIndicatorTemplateContainer
-	} from '$lib/models';
+	import { isContainerWithPayloadType, payloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -33,14 +29,16 @@
 	let uploadFiles: { id: string; name: string; size: number }[] = $state([]);
 	let uppy: Uppy | undefined = $state();
 
-	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
+	let actualDataContainers = $derived(
+		data.containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.actual_data, c))
+	);
 
 	let filteredRows = $derived(
 		data.containers.filter((c) =>
 			data.useNewIndicators
-				? isIndicatorTemplateContainer(c) &&
+				? isContainerWithPayloadType(payloadTypes.enum.indicator_template, c) &&
 					actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
-				: isIndicatorContainer(c)
+				: isContainerWithPayloadType(payloadTypes.enum.indicator, c)
 		)
 	);
 

@@ -30,18 +30,14 @@
 	import {
 		type ActualDataContainer,
 		type Container,
-		isActualDataContainer,
 		isContainerWithDescription,
 		isContainerWithDuration,
 		isContainerWithEditorialState,
 		isContainerWithFulfillmentDate,
-		isGoalContainer,
-		isIndicatorContainer,
-		isIndicatorTemplateContainer,
-		isMeasureContainer,
-		isProgramContainer,
+		isContainerWithPayloadType,
 		overlayKey,
-		overlayURL
+		overlayURL,
+		payloadTypes
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -161,7 +157,7 @@
 		</div>
 	{:else if col === 'unit'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if isIndicatorContainer(container) || isIndicatorTemplateContainer(container)}
+			{#if isContainerWithPayloadType(payloadTypes.enum.indicator, container) || isContainerWithPayloadType(payloadTypes.enum.indicator_template, container)}
 				<IndicatorUnitDropdown
 					editable={editable && $ability.can('update', container)}
 					bind:value={container.payload.unit}
@@ -296,7 +292,9 @@
 	{:else if col.startsWith('year:')}
 		{@const year = parseInt(col.split(':')[1], 10)}
 		{@const actualData = actualDataContainers.find(
-			(c) => isActualDataContainer(c) && c.payload.indicator === container.guid
+			(c) =>
+				isContainerWithPayloadType(payloadTypes.enum.actual_data, c) &&
+				c.payload.indicator === container.guid
 		)}
 		{@const values = actualData ? actualData.payload.values : []}
 		{@const idx = values.findIndex(([y]: [number, number]) => y === year)}
@@ -362,7 +360,7 @@
 		class="cell"
 		class:cell--locked={editable && $ability.cannot('update', container, 'payload.hierarchyLevel')}
 	>
-		{#if isGoalContainer(container)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.goal, container)}
 			<EditableGoalHierarchyLevel
 				editable={editable && $ability.can('update', container, 'payload.hierarchyLevel')}
 				showLabel={false}
@@ -372,7 +370,7 @@
 	</div>
 {/if}
 {#if columns.includes('objectType')}
-	{#if isGoalContainer(container)}
+	{#if isContainerWithPayloadType(payloadTypes.enum.goal, container)}
 		<div
 			class="cell"
 			class:cell--locked={editable && $ability.cannot('update', container, 'payload.goalType')}
@@ -382,7 +380,7 @@
 				bind:value={container.payload.goalType}
 			/>
 		</div>
-	{:else if isProgramContainer(container)}
+	{:else if isContainerWithPayloadType(payloadTypes.enum.program, container)}
 		<div
 			class="cell"
 			class:cell--locked={editable && $ability.cannot('update', container, 'payload.programType')}
@@ -392,7 +390,7 @@
 				bind:value={container.payload.programType}
 			/>
 		</div>
-	{:else if isMeasureContainer(container)}
+	{:else if isContainerWithPayloadType(payloadTypes.enum.measure, container)}
 		<div
 			class="cell"
 			class:cell--locked={editable && $ability.cannot('update', container, 'payload.measureType')}

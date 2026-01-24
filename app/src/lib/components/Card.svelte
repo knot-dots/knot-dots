@@ -17,26 +17,13 @@
 		type AnyContainer,
 		type Container,
 		findAncestors,
-		isActualDataContainer,
-		isBinaryIndicatorContainer,
-		isContainerWithEffect,
-		isContainerWithObjective,
+		isContainerWithPayloadType,
 		isContainerWithProgress,
-		isContentPartnerContainer,
-		isEffectContainer,
-		isGoalContainer,
-		isIndicatorContainer,
-		isKnowledgeContainer,
-		isObjectiveContainer,
 		isPartOf,
-		isQuoteContainer,
-		isResourceContainer,
-		isSimpleMeasureContainer,
-		isTaskContainer,
-		isTeaserContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
@@ -220,7 +207,7 @@
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
-	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container) && !isKnowledgeContainer(container)}
+	{#if !isContainerWithPayloadType(payloadTypes.enum.teaser, container) && !isContainerWithPayloadType(payloadTypes.enum.content_partner, container) && !isContainerWithPayloadType(payloadTypes.enum.knowledge, container)}
 		<header>
 			<h3>
 				<a
@@ -228,9 +215,9 @@
 					bind:this={previewLink}
 					onclick={updateOverlayHistory}
 				>
-					{#if titleOverride && isObjectiveContainer(container)}
+					{#if titleOverride && isContainerWithPayloadType(payloadTypes.enum.objective, container)}
 						{@const goal = relatedContainers
-							.filter(isContainerWithObjective)
+							.filter((container) => isContainerWithPayloadType(payloadTypes.enum.goal, container))
 							.find(
 								(candidate) =>
 									container.relation.findIndex(
@@ -243,10 +230,14 @@
 						{#if goal}
 							{goal.payload.title} ({container.payload.title})
 						{/if}
-					{:else if titleOverride && isEffectContainer(container)}
+					{:else if titleOverride && isContainerWithPayloadType(payloadTypes.enum.effect, container)}
 						{@const measure = findAncestors(container, relatedContainers, [
 							predicates.enum['is-part-of']
-						]).find(isContainerWithEffect)}
+						]).find(
+							(container) =>
+								isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+								isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+						)}
 						{#if measure}
 							{measure.payload.title} ({container.payload.title})
 						{/if}
@@ -268,21 +259,29 @@
 	<div class="body">
 		{#if body}
 			{@render body()}
-		{:else if isBinaryIndicatorContainer(container)}
-			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.binary_indicator, container)}
+			{@const actualDataContainer = relatedContainers.find((c) =>
+				isContainerWithPayloadType(payloadTypes.enum.actual_data, c)
+			)}
 			<Summary {container} />
 			{#if actualDataContainer}
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
-		{:else if isIndicatorContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.indicator, container)}
 			<IndicatorChart
 				{container}
 				relatedContainers={[
 					...relatedContainers.filter(({ relation }) =>
 						relation.some(({ object }) => object === container.guid)
 					),
-					...relatedContainers.filter(isContainerWithEffect),
-					...relatedContainers.filter(isContainerWithObjective)
+					...relatedContainers.filter(
+						(container) =>
+							isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+							isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+					),
+					...relatedContainers.filter((container) =>
+						isContainerWithPayloadType(payloadTypes.enum.goal, container)
+					)
 				]}
 				showEffects
 				showObjectives
@@ -296,8 +295,11 @@
 					<span class="badge">{$_(indicatorCategory)}</span>
 				{/each}
 			</p>
-		{:else if isEffectContainer(container)}
-			{#if relatedContainers.find(isIndicatorContainer) && container.payload.plannedValues.length > 0}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.effect, container)}
+			{@const indicator = relatedContainers.find((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+			)}
+			{#if indicator && container.payload.plannedValues.length > 0}
 				<EffectChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />
@@ -305,10 +307,12 @@
 			{:else}
 				<Tendency {container} />
 			{/if}
-		{:else if isGoalContainer(container)}
-			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.goal, container)}
+			{@const effect = relatedContainers
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.effect, container))
+				.find(isPartOf(container))}
 			{@const indicator = relatedContainers
-				.filter(isIndicatorContainer)
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.indicator, container))
 				.find(
 					({ guid }) =>
 						(effect?.relation.findIndex(
@@ -321,8 +325,11 @@
 			{:else}
 				<Summary {container} maxLength={maxSummaryLength} />
 			{/if}
-		{:else if isObjectiveContainer(container)}
-			{#if container.payload.wantedValues.length > 0 && relatedContainers.find(isIndicatorContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.objective, container)}
+			{@const indicator = relatedContainers.find((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+			)}
+			{#if indicator && container.payload.wantedValues.length > 0}
 				<ObjectiveChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />
@@ -330,7 +337,7 @@
 			{:else}
 				<Tendency {container} />
 			{/if}
-		{:else if isContentPartnerContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.content_partner, container)}
 			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>
 				{#if 'image' in container.payload && container.payload.image}
 					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
@@ -342,13 +349,13 @@
 					</header>
 				{/if}
 			</a>
-		{:else if isTeaserContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.teaser, container)}
 			{#if 'image' in container.payload && container.payload.image}
 				<p>
 					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
 				</p>
 			{/if}
-			{#if !isQuoteContainer(container)}
+			{#if !isContainerWithPayloadType(payloadTypes.enum.quote, container)}
 				<header>
 					<h3>
 						<a
@@ -360,9 +367,9 @@
 				</header>
 			{/if}
 			<Summary {container} maxLength={maxSummaryLength} />
-		{:else if isSimpleMeasureContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)}
 			<Progress value={container.payload.progress} />
-		{:else if isResourceContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.resource, container)}
 			<Summary {container} />
 			<p>
 				{container.payload.amount}
@@ -372,11 +379,8 @@
 					: ''}
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
-			{@const image = Array.isArray(container.payload.image)
-				? container.payload.image[0]
-				: container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(image)} />
-		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
+			<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+		{:else if 'summary' in container.payload || ('description' in container.payload && !isContainerWithPayloadType(payloadTypes.enum.task, container))}
 			<Summary {container} />
 		{/if}
 	</div>

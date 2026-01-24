@@ -1769,461 +1769,97 @@ export function isContainerWithPayloadType<T extends PayloadType>(
 	return container.payload.type == payloadType;
 }
 
-export type ContainerWithObjective = GoalContainer;
-
-export function isContainerWithObjective(
-	container: AnyContainer | EmptyContainer
-): container is ContainerWithObjective {
-	return isGoalContainer(container);
-}
-
 export type ContainerWithEffect = Container<MeasurePayload | SimpleMeasurePayload>;
-
-export function isContainerWithEffect(
-	container: AnyContainer | EmptyContainer
-): container is ContainerWithEffect {
-	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
-}
 
 export type ActualDataContainer = Container<ActualDataPayload>;
 
-export function isActualDataContainer(
-	container: AnyContainer | EmptyContainer
-): container is ActualDataContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.actual_data, container);
-}
-
 export type AdministrativeAreaBasicDataContainer = Container<AdministrativeAreaBasicDataPayload>;
-
-export function isAdministrativeAreaBasicDataContainer(
-	container: AnyContainer | EmptyContainer
-): container is AdministrativeAreaBasicDataContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.administrative_area_basic_data, container);
-}
 
 export type BinaryIndicatorContainer = Container<BinaryIndicatorPayload>;
 
-export function isBinaryIndicatorContainer(
-	container: AnyContainer | EmptyContainer
-): container is BinaryIndicatorContainer {
-	return container.payload.type === payloadTypes.enum.binary_indicator;
-}
+export type CategoryContainer = Container<CategoryPayload>;
 
 export type ChapterContainer = Container<ChapterPayload>;
 
-export function isChapterContainer(
-	container: AnyContainer | EmptyContainer
-): container is ChapterContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.chapter, container);
-}
-
-export type CategoryContainer = Container<CategoryPayload>;
-
-export function isCategoryContainer(
-	container: AnyContainer | EmptyContainer
-): container is CategoryContainer {
-	return container.payload.type === payloadTypes.enum.category;
-}
-
 export type CustomCollectionContainer = Container<CustomCollectionPayload>;
-
-export function isCustomCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is CustomCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.custom_collection, container);
-}
 
 export type EffectContainer = Container<EffectPayload>;
 
-export function isEffectContainer(
-	container: AnyContainer | EmptyContainer
-): container is EffectContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.effect, container);
-}
-
 export type EffectCollectionContainer = Container<EffectCollectionPayload>;
-
-export function isEffectCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is EffectCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.effect_collection, container);
-}
 
 export type FileCollectionContainer = Container<FileCollectionPayload>;
 
-export function isFileCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is FileCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.file_collection, container);
-}
-
 export type GoalContainer = Container<GoalPayload>;
-
-export function isGoalContainer(
-	container: AnyContainer | EmptyContainer
-): container is GoalContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.goal, container);
-}
 
 export type GoalCollectionContainer = Container<GoalCollectionPayload>;
 
-export function isGoalCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is GoalCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.goal_collection, container);
-}
-
 export type HelpContainer = Container<HelpPayload>;
-
-export function isHelpContainer(
-	container: AnyContainer | EmptyContainer
-): container is HelpContainer {
-	return container.payload.type === payloadTypes.enum.help;
-}
 
 export type IndicatorContainer = Container<IndicatorPayload>;
 
-export function isIndicatorContainer(
-	container: AnyContainer | EmptyContainer
-): container is IndicatorContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.indicator, container);
-}
-
 export type IndicatorCollectionContainer = Container<IndicatorCollectionPayload>;
-
-export function isIndicatorCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is IndicatorCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.indicator_collection, container);
-}
 
 export type IndicatorTemplateContainer = Container<IndicatorTemplatePayload>;
 
-export function isIndicatorTemplateContainer(
-	container: AnyContainer | EmptyContainer
-): container is IndicatorTemplateContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.indicator_template, container);
-}
-
 export type KnowledgeContainer = Container<KnowledgePayload>;
-
-export function isKnowledgeContainer(
-	container: AnyContainer | EmptyContainer
-): container is KnowledgeContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.knowledge, container);
-}
 
 export type MapContainer = Container<MapPayload>;
 
-export function isMapContainer(
-	container: AnyContainer | EmptyContainer
-): container is MapContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.map, container);
-}
-
 export type MeasureContainer = Container<MeasurePayload>;
-
-export function isMeasureContainer(
-	container: AnyContainer | EmptyContainer
-): container is MeasureContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.measure, container);
-}
 
 export type MeasureCollectionContainer = Container<MeasureCollectionPayload>;
 
-export function isMeasureCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is MeasureCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.measure_collection, container);
-}
-
 export type ObjectiveContainer = Container<ObjectivePayload>;
-
-export function isObjectiveContainer(
-	container: AnyContainer | EmptyContainer
-): container is ObjectiveContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.objective, container);
-}
 
 export type ObjectiveCollectionContainer = Container<ObjectiveCollectionPayload>;
 
-export function isObjectiveCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is ObjectiveCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.objective_collection, container);
-}
-
 export type OrganizationContainer = Container<OrganizationPayload>;
-
-export function isOrganizationContainer(
-	container: AnyContainer | EmptyContainer
-): container is OrganizationContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.organization, container);
-}
 
 export type OrganizationalUnitContainer = Container<OrganizationalUnitPayload>;
 
-export function isOrganizationalUnitContainer(
-	container: AnyContainer | EmptyContainer
-): container is OrganizationalUnitContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container);
-}
-
 export type PageContainer = Container<PagePayload>;
-
-export function isPageContainer(
-	container: AnyContainer | EmptyContainer
-): container is PageContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.page, container);
-}
 
 export type ProgressContainer = Container<ProgressPayload>;
 
-export function isProgressContainer(
-	container: AnyContainer | EmptyContainer
-): container is ProgressContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.progress, container);
-}
-
 export type ReportContainer = Container<ReportPayload>;
-
-export function isReportContainer(
-	container: AnyContainer | EmptyContainer
-): container is ReportContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.report, container);
-}
 
 export type RuleContainer = Container<RulePayload>;
 
-export function isRuleContainer(
-	container: AnyContainer | EmptyContainer
-): container is RuleContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.rule, container);
-}
-
 export type ResourceContainer = Container<ResourcePayload>;
-
-export function isResourceContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.resource, container);
-}
 
 export type ResourceCollectionContainer = Container<ResourceCollectionPayload>;
 
-export function isResourceCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.resource_collection, container);
-}
-
 export type ResourceDataContainer = Container<ResourceDataPayload>;
-
-export function isResourceDataContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return container.payload.type === payloadTypes.enum.resource_data;
-}
-
-export function isResourceDataActualResourceAllocationContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
-	);
-}
-
-export function isResourceDataPlannedResourceAllocationContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
-	);
-}
-
-export function isResourceDataBudgetContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
-	);
-}
-
-export function isResourceDataTotalBudgetContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
-	);
-}
-
-export function isResourceDataTotalBudgetForecastContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.total_budget_forecast']
-	);
-}
 
 export type ResourceDataCollectionContainer = Container<ResourceDataCollectionPayload>;
 
-export function isResourceDataCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataCollectionContainer {
-	return container.payload.type === payloadTypes.enum.resource_data_collection;
-}
-
 export type ResourceV2Container = Container<ResourceV2Payload>;
-
-export function isResourceV2Container(
-	container: AnyContainer | EmptyContainer
-): container is ResourceV2Container {
-	return isContainerWithPayloadType(payloadTypes.enum.resource_v2, container);
-}
 
 export type SimpleMeasureContainer = Container<SimpleMeasurePayload>;
 
-export function isSimpleMeasureContainer(
-	container: AnyContainer | EmptyContainer
-): container is SimpleMeasureContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.simple_measure, container);
-}
-
 export type SummaryContainer = Container<SummaryPayload>;
-
-export function isSummaryContainer(
-	container: AnyContainer | EmptyContainer
-): container is SummaryContainer {
-	return container.payload.type === payloadTypes.enum.summary;
-}
 
 export type ProgramContainer = Container<ProgramPayload>;
 
-export function isProgramContainer(
-	container: AnyContainer | EmptyContainer
-): container is ProgramContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.program, container);
-}
-
 export type ProgramCollectionContainer = Container<ProgramCollectionPayload>;
-
-export function isProgramCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is ProgramCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.program_collection, container);
-}
 
 export type TextContainer = Container<TextPayload>;
 
-export function isTextContainer(
-	container: AnyContainer | EmptyContainer
-): container is TextContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.text, container);
-}
-
 export type TaskContainer = Container<TaskPayload>;
-
-export function isTaskContainer(
-	container: AnyContainer | EmptyContainer
-): container is TaskContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.task, container);
-}
 
 export type TermContainer = Container<TermPayload>;
 
-export function isTermContainer(
-	container: AnyContainer | EmptyContainer
-): container is TermContainer {
-	return container.payload.type === payloadTypes.enum.term;
-}
-
 export type TaskCollectionContainer = Container<TaskCollectionPayload>;
-
-export function isTaskCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is TaskCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.task_collection, container);
-}
 
 export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
 
-export function isMeasureMonitoringContainer(
-	container: AnyContainer | EmptyContainer
-): container is MeasureMonitoringContainer {
-	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
-}
-
 export type ImageContainer = Container<ImagePayload>;
-
-export function isImageContainer(
-	container: AnyContainer | EmptyContainer
-): container is ImageContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.image, container);
-}
 
 export type TeaserContainer = Container<TeaserPayload>;
 
-export function isTeaserContainer(
-	container: AnyContainer | EmptyContainer
-): container is TeaserContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.teaser, container);
-}
-
-export type InfoBoxContainer = Container<InfoBoxPayload>;
-
-export function isInfoBoxContainer(
-	container: AnyContainer | EmptyContainer
-): container is InfoBoxContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.info_box, container);
-}
-
-export type TeaserHighlightContainer = Container<TeaserHighlightPayload>;
-
-export function isTeaserHighlightContainer(
-	container: AnyContainer | EmptyContainer
-): container is TeaserHighlightContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.teaser_highlight, container);
-}
-
 export type ContentPartnerContainer = Container<ContentPartnerPayload>;
 
-export function isContentPartnerContainer(
-	container: AnyContainer | EmptyContainer
-): container is ContentPartnerContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.content_partner, container);
-}
-
 export type ContentPartnerCollectionContainer = Container<ContentPartnerCollectionPayload>;
-
-export function isContentPartnerCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is ContentPartnerCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.content_partner_collection, container);
-}
-
-export type ColContentContainer = Container<ColContentPayload>;
-
-export function isColContentContainer(
-	container: AnyContainer | EmptyContainer
-): container is ColContentContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.col_content, container);
-}
-
-export type QuoteContainer = Container<QuotePayload>;
-
-export function isQuoteContainer(
-	container: AnyContainer | EmptyContainer
-): container is QuoteContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.quote, container);
-}
 
 export type TeaserCollectionContainer = Container<TeaserCollectionPayload>;
 
@@ -2234,31 +1870,6 @@ export type CollectionContainer = Container<
 export type TeaserLikeContainer = Container<
 	TeaserPayload | InfoBoxPayload | TeaserHighlightPayload | QuotePayload | ColContentPayload
 >;
-
-export function isTeaserLikeContainer(container: AnyContainer): container is TeaserLikeContainer {
-	return (
-		isContainerWithPayloadType(payloadTypes.enum.teaser, container) ||
-		isContainerWithPayloadType(payloadTypes.enum.info_box, container) ||
-		isContainerWithPayloadType(payloadTypes.enum.teaser_highlight, container) ||
-		isContainerWithPayloadType(payloadTypes.enum.quote, container) ||
-		isContainerWithPayloadType(payloadTypes.enum.col_content, container)
-	);
-}
-
-export function isTeaserCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is TeaserCollectionContainer {
-	return isContainerWithPayloadType(payloadTypes.enum.teaser_collection, container);
-}
-
-export function isCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is CollectionContainer {
-	return (
-		isContainerWithPayloadType(payloadTypes.enum.content_partner_collection, container) ||
-		isContainerWithPayloadType(payloadTypes.enum.teaser_collection, container)
-	);
-}
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
 	return (
@@ -2740,7 +2351,9 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 
 	for (const container of roots) {
 		const descendants = findDescendants(container, containers, [predicates.enum['is-part-of']]);
-		const objectives = descendants.filter(isPartOf(container)).filter(isObjectiveContainer);
+		const objectives = descendants
+			.filter(isPartOf(container))
+			.filter((candidate) => isContainerWithPayloadType(payloadTypes.enum.objective, candidate));
 
 		if (objectives.length > 0) {
 			parentObjectives.push(...objectives);
@@ -2764,7 +2377,7 @@ export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveC
 
 export function findOverallObjective(container: IndicatorContainer, containers: Container[]) {
 	return containers
-		.filter(isObjectiveContainer)
+		.filter((candidate) => isContainerWithPayloadType(payloadTypes.enum.objective, candidate))
 		.find(
 			({ relation }) =>
 				relation.some(
@@ -2873,37 +2486,31 @@ export function createCopyOf(
 		container.realm
 	);
 
-	if (isMeasureContainer(container)) {
+	if (isContainerWithPayloadType(payloadTypes.enum.measure, container)) {
+		copy.payload = { ...container.payload, template: false };
+	} else if (isContainerWithPayloadType(payloadTypes.enum.task, container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
-			template: false
-		} as typeof copy.payload;
-	} else if (isTaskContainer(container)) {
-		copy.payload = {
-			...(container.payload as typeof copy.payload),
+			...container.payload,
 			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
-		} as typeof copy.payload;
-	} else if (isIndicatorContainer(container)) {
+		};
+	} else if (isContainerWithPayloadType(payloadTypes.enum.indicator, container)) {
+		copy.payload = { ...container.payload, historicalValues: [] };
+	} else if (isContainerWithPayloadType(payloadTypes.enum.effect, container)) {
 		copy.payload = {
-			...(container.payload as unknown as typeof copy.payload),
-			historicalValues: []
-		} as unknown as typeof copy.payload;
-	} else if (isEffectContainer(container)) {
-		copy.payload = {
-			...(container.payload as typeof copy.payload),
+			...container.payload,
 			achievedValues: container.payload.achievedValues.map(
 				([year]) => [year, 0] as [number, number]
 			)
-		} as typeof copy.payload;
+		};
 	} else {
-		copy.payload = { ...(container.payload as typeof copy.payload) } as typeof copy.payload;
+		copy.payload = { ...container.payload };
 	}
 
 	copy.payload = {
 		...copy.payload,
 		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
-	} as typeof copy.payload;
+	};
 
 	copy.relation.push({
 		object: container.guid,

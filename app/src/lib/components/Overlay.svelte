@@ -6,6 +6,7 @@
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
+	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
@@ -16,9 +17,8 @@
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
-	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
+	import { isContainerWithPayloadType, overlayKey, payloadTypes } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
-	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
 
 	interface Props {
 		data: OverlayData;
@@ -77,9 +77,9 @@
 		<ChaptersOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['content-partners']}
 		<ContentPartnersOverlay containers={data.containers} />
-	{:else if data.key === overlayKey.enum['goal-iooi'] && isGoalContainer(data.container)}
+	{:else if data.key === overlayKey.enum['goal-iooi'] && isContainerWithPayloadType(payloadTypes.enum.goal, data.container)}
 		<IOOIOverlay container={data.container} containers={data.containers} />
-	{:else if data.key === overlayKey.enum['measure-iooi'] && isMeasureContainer(data.container)}
+	{:else if data.key === overlayKey.enum['measure-iooi'] && isContainerWithPayloadType(payloadTypes.enum.measure, data.container)}
 		<IOOIOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['teasers']}
 		<TeasersOverlay containers={data.containers} />

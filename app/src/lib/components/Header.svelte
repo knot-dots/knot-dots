@@ -38,16 +38,11 @@
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		isGoalContainer,
-		isMeasureContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		isProgramContainer,
-		isReportContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
 		overlayKey,
 		overlayURL,
-		paramsFromFragment
+		paramsFromFragment,
+		payloadTypes
 	} from '$lib/models';
 	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
@@ -209,13 +204,13 @@
 	{#if workspaceOptions}
 		<Workspaces options={workspaceOptions} />
 	{:else if container}
-		{#if isProgramContainer(container)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.program, container)}
 			<ProgramWorkspaces {container} />
-		{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.measure, container) || isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)}
 			<MeasureWorkspaces {container} />
-		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.goal, container) && createFeatureDecisions(page.data.features).useIOOI()}
 			<GoalWorkspaces {container} />
-		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.organization, container) || isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)}
 			<WorkspacesMenu />
 		{/if}
 	{:else}
@@ -233,7 +228,7 @@
 			>
 				<Users />
 			</a>
-		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('invite-members', container)}
+		{:else if !overlay && !$overlayStore?.key && container && (isContainerWithPayloadType(payloadTypes.enum.program, container) || isContainerWithPayloadType(payloadTypes.enum.measure, container) || isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)) && $ability.can('invite-members', container)}
 			<div class="divider"></div>
 
 			<a
@@ -312,7 +307,7 @@
 		</button>
 	{/if}
 
-	{#if createFeatureDecisions(page.data.features).useCompare() && container && isReportContainer(container)}
+	{#if createFeatureDecisions(page.data.features).useCompare() && container && isContainerWithPayloadType(payloadTypes.enum.report, container)}
 		<button
 			class="dropdown-button dropdown-button--command"
 			type="button"

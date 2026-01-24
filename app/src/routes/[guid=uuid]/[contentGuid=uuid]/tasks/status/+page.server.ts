@@ -5,8 +5,7 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	type GoalContainer,
-	isMeasureContainer,
-	isSimpleMeasureContainer,
+	isContainerWithPayloadType,
 	payloadTypes,
 	predicates,
 	type TaskContainer
@@ -31,7 +30,10 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		if (!isMeasureContainer(container) && !isSimpleMeasureContainer(container)) {
+		if (
+			!isContainerWithPayloadType(payloadTypes.enum.measure, container) &&
+			!isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+		) {
 			error(404, { message: t('error.not_found') });
 		}
 

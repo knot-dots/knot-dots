@@ -7,12 +7,12 @@
 		type AnyContainer,
 		findDescendants,
 		findLeafObjectives,
-		isIndicatorContainer,
-		isObjectiveContainer,
+		isContainerWithPayloadType,
 		isRelatedTo,
 		type ObjectiveContainer,
 		overlayKey,
 		overlayURL,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 
@@ -24,7 +24,9 @@
 	let { container, relatedContainers = [] }: Props = $props();
 
 	const indicator = $derived(
-		relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container))
+		relatedContainers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.indicator, c))
+			.find(isRelatedTo(container))
 	);
 
 	const unit = $derived($_(indicator?.payload.unit ?? ''));
@@ -38,9 +40,11 @@
 
 	const subTargets = $derived(
 		findLeafObjectives(
-			findDescendants(container, relatedContainers.filter(isObjectiveContainer), [
-				predicates.enum['is-sub-target-of']
-			])
+			findDescendants(
+				container,
+				relatedContainers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.objective, c)),
+				[predicates.enum['is-sub-target-of']]
+			)
 		).flatMap(({ guid, payload }) =>
 			payload.wantedValues.map(([year, value]) => ({
 				date: new Date(year, 0),

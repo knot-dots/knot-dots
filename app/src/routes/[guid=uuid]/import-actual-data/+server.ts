@@ -8,7 +8,7 @@ import defineAbilityFor from '$lib/authorization';
 import {
 	type ActualDataContainer,
 	containerOfType,
-	isIndicatorTemplateContainer,
+	isContainerWithPayloadType,
 	type NewContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes
@@ -108,7 +108,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			} else {
 				try {
 					const indicator = await getContainerByGuid(currentIndicator)(tx);
-					if (!isIndicatorTemplateContainer(indicator)) {
+					if (!isContainerWithPayloadType(payloadTypes.enum.indicator_template, indicator)) {
 						continue;
 					}
 

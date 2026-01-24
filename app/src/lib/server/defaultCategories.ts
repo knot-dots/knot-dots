@@ -6,8 +6,7 @@ import {
 	type CategoryContainer,
 	type CategoryPayload,
 	containerOfType,
-	isCategoryContainer,
-	isTermContainer,
+	isContainerWithPayloadType,
 	type ModifiedContainer,
 	type NewContainer,
 	payloadTypes,
@@ -143,7 +142,7 @@ async function seedForOrganization(
 	const categories = (
 		await pool.connect(getManyContainers([], { type: [payloadTypes.enum.category] }, 'alpha'))
 	)
-		.filter(isCategoryContainer)
+		.filter((c) => isContainerWithPayloadType(payloadTypes.enum.category, c))
 		.filter((container) => container.organization === organization.guid);
 
 	// Skip seeding entirely when categories already exist for the organization.
@@ -156,7 +155,7 @@ async function seedForOrganization(
 	const terms = (
 		await pool.connect(getManyContainers([], { type: [payloadTypes.enum.term] }, 'alpha'))
 	)
-		.filter(isTermContainer)
+		.filter((c) => isContainerWithPayloadType(payloadTypes.enum.term, c))
 		.filter((container) => container.organization === organization.guid);
 
 	for (const seed of defaultCategorySeeds) {
@@ -217,7 +216,7 @@ async function createCategory(
 
 	const created = await pool.connect(createContainer(newCategory));
 
-	if (!isCategoryContainer(created)) {
+	if (!isContainerWithPayloadType(payloadTypes.enum.category, created)) {
 		throw new Error('Unexpected payload when creating default category');
 	}
 
@@ -384,7 +383,7 @@ async function createTerm(
 
 	const created = await pool.connect(createContainer(newTerm));
 
-	if (!isTermContainer(created)) {
+	if (!isContainerWithPayloadType(payloadTypes.enum.term, created)) {
 		throw new Error('Unexpected payload when creating default term');
 	}
 

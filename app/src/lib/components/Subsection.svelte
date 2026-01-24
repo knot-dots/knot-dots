@@ -4,13 +4,7 @@
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
-	import {
-		type AnyContainer,
-		isGoalCollectionContainer,
-		isGoalContainer,
-		isObjectiveCollectionContainer,
-		isResourceCollectionContainer
-	} from '$lib/models';
+	import { type AnyContainer, isContainerWithPayloadType, payloadTypes } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
@@ -37,7 +31,7 @@
 
 <section class="details-subsection">
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit} novalidate>
-		{#if isGoalCollectionContainer(container)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.goal_collection, container)}
 			<EditableGoalCollection
 				bind:container
 				bind:parentContainer
@@ -45,7 +39,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				heading="h3"
 			/>
-		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.objective_collection, container) && isContainerWithPayloadType(payloadTypes.enum.goal, parentContainer)}
 			<EditableObjectiveCollection
 				bind:container
 				bind:parentContainer
@@ -53,7 +47,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				heading="h3"
 			/>
-		{:else if isResourceCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.resource_collection, container)}
 			<EditableResourceCollection
 				bind:container
 				bind:parentContainer

@@ -9,9 +9,7 @@
 		type AnyContainer,
 		containerOfType,
 		type IndicatorCollectionContainer,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		isIndicatorContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
@@ -34,7 +32,11 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let items = $derived(relatedContainers.filter(isIndicatorContainer));
+	let items = $derived(
+		relatedContainers.filter((container) =>
+			isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+		)
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -90,8 +92,14 @@
 				...relatedContainers.filter(({ relation }) =>
 					relation.some(({ object }) => object === item.guid)
 				),
-				...relatedContainers.filter(isContainerWithEffect),
-				...relatedContainers.filter(isContainerWithObjective)
+				...relatedContainers.filter(
+					(container) =>
+						isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+						isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+				),
+				...relatedContainers.filter((container) =>
+					isContainerWithPayloadType(payloadTypes.enum.goal, container)
+				)
 			]}
 		/>
 	{/snippet}

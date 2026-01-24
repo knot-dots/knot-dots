@@ -7,9 +7,8 @@
 		findAncestors,
 		findLeafObjectives,
 		type IndicatorContainer,
-		isContainerWithEffect,
-		isEffectContainer,
-		isObjectiveContainer,
+		isContainerWithPayloadType,
+		payloadTypes,
 		predicates,
 		status
 	} from '$lib/models';
@@ -45,7 +44,11 @@
 		let objectives = [] as Array<{ date: Date; value: number }>;
 
 		if (showObjectives) {
-			objectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer))
+			objectives = findLeafObjectives(
+				relatedContainers.filter((container) =>
+					isContainerWithPayloadType(payloadTypes.enum.objective, container)
+				)
+			)
 				.flatMap(({ payload }) => payload.wantedValues)
 				.reduce(
 					(accumulator, currentValue) => {
@@ -83,56 +86,62 @@
 		let effects = [] as Array<{ date: Date; value: number; status: string }>;
 
 		if (showEffects) {
-			effects = relatedContainers.filter(isEffectContainer).flatMap((c) => {
-				const measure = findAncestors(c, relatedContainers, [
-					predicates.enum['is-part-of'],
-					predicates.enum['is-part-of-measure']
-				]).find(isContainerWithEffect);
-				if (measure?.payload.status == status.enum['status.done']) {
-					return c.payload.achievedValues.map(([year, value]) => ({
-						date: new Date(year, 0),
-						value: value,
-						status: status.enum['status.done'] as string,
-						title: c.payload.title,
-						guid: c.guid
-					}));
-				} else if (measure?.payload.status == status.enum['status.in_implementation']) {
-					return [
-						...c.payload.plannedValues.map(([year, value], index) => ({
-							date: new Date(year, 0),
-							value: c.payload.achievedValues[index]
-								? value - c.payload.achievedValues[index][1]
-								: value,
-							status: measure?.payload.status as string,
-							title: c.payload.title,
-							guid: c.guid
-						})),
-						...c.payload.achievedValues.map(([year, value]) => ({
+			effects = relatedContainers
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.effect, container))
+				.flatMap((c) => {
+					const measure = findAncestors(c, relatedContainers, [
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-measure']
+					]).find(
+						(container) =>
+							isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+							isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+					);
+					if (measure?.payload.status == status.enum['status.done']) {
+						return c.payload.achievedValues.map(([year, value]) => ({
 							date: new Date(year, 0),
 							value: value,
 							status: status.enum['status.done'] as string,
 							title: c.payload.title,
 							guid: c.guid
-						}))
-					];
-				} else if (measure?.payload.status == status.enum['status.rejected']) {
-					return c.payload.plannedValues.map(([year]) => ({
-						date: new Date(year, 0),
-						value: 0,
-						status: measure?.payload.status as string,
-						title: c.payload.title,
-						guid: c.guid
-					}));
-				} else {
-					return c.payload.plannedValues.map(([year, value]) => ({
-						date: new Date(year, 0),
-						value: value,
-						status: measure?.payload.status as string,
-						title: c.payload.title,
-						guid: c.guid
-					}));
-				}
-			});
+						}));
+					} else if (measure?.payload.status == status.enum['status.in_implementation']) {
+						return [
+							...c.payload.plannedValues.map(([year, value], index) => ({
+								date: new Date(year, 0),
+								value: c.payload.achievedValues[index]
+									? value - c.payload.achievedValues[index][1]
+									: value,
+								status: measure?.payload.status as string,
+								title: c.payload.title,
+								guid: c.guid
+							})),
+							...c.payload.achievedValues.map(([year, value]) => ({
+								date: new Date(year, 0),
+								value: value,
+								status: status.enum['status.done'] as string,
+								title: c.payload.title,
+								guid: c.guid
+							}))
+						];
+					} else if (measure?.payload.status == status.enum['status.rejected']) {
+						return c.payload.plannedValues.map(([year]) => ({
+							date: new Date(year, 0),
+							value: 0,
+							status: measure?.payload.status as string,
+							title: c.payload.title,
+							guid: c.guid
+						}));
+					} else {
+						return c.payload.plannedValues.map(([year, value]) => ({
+							date: new Date(year, 0),
+							value: value,
+							status: measure?.payload.status as string,
+							title: c.payload.title,
+							guid: c.guid
+						}));
+					}
+				});
 		}
 
 		return effects;

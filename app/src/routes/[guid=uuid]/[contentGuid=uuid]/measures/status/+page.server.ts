@@ -4,7 +4,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import {
 	type AnyContainer,
 	filterMembers,
-	isProgramContainer,
+	isContainerWithPayloadType,
 	type MeasureContainer,
 	payloadTypes,
 	predicates,
@@ -27,7 +27,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		if (!isProgramContainer(container)) {
+		if (!isContainerWithPayloadType(payloadTypes.enum.program, container)) {
 			error(404, { message: t('error.not_found') });
 		}
 

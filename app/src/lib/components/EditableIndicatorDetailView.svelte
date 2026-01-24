@@ -20,15 +20,13 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import {
 		type AnyContainer,
-		titleForProgramCollection,
 		findOverallObjective,
 		type IndicatorContainer,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		isObjectiveContainer,
-		isProgramContainer,
+		isContainerWithPayloadType,
 		isRelatedTo,
-		paramsFromFragment
+		paramsFromFragment,
+		payloadTypes,
+		titleForProgramCollection
 	} from '$lib/models';
 	import { fetchContainersRelatedToIndicators } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
@@ -138,7 +136,7 @@
 				<div class="details-section">
 					<h2 class="details-heading">{$_('measures')}</h2>
 					<ul class="carousel">
-						{#each relatedContainers.filter( (c) => isContainerWithEffect(c) ) as measure (measure.guid)}
+						{#each relatedContainers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.measure, c) || isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)) as measure (measure.guid)}
 							<li>
 								<Card container={measure} />
 							</li>
@@ -156,9 +154,9 @@
 								<Card container={overallObjective} />
 							</li>
 						{/if}
-						{#each relatedContainers.filter(isObjectiveContainer) as objective (objective.guid)}
+						{#each relatedContainers.filter( (c) => isContainerWithPayloadType(payloadTypes.enum.goal, c) ) as objective (objective.guid)}
 							{@const goal = relatedContainers
-								.filter(isContainerWithObjective)
+								.filter((c) => isContainerWithPayloadType(payloadTypes.enum.goal, c))
 								.find(isRelatedTo(objective))}
 							{#if goal}
 								<li>
@@ -172,10 +170,14 @@
 
 			<div class="details-section">
 				<h2 class="details-heading">
-					{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
+					{titleForProgramCollection(
+						relatedContainers.filter((c) =>
+							isContainerWithPayloadType(payloadTypes.enum.program, c)
+						)
+					)}
 				</h2>
 				<ul class="carousel">
-					{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
+					{#each relatedContainers.filter( (c) => isContainerWithPayloadType(payloadTypes.enum.program, c) ) as program (program.guid)}
 						<li>
 							<Card container={program} />
 						</li>

@@ -2,12 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
-import {
-	etag,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
-	predicates
-} from '$lib/models';
+import { etag, predicates, payloadTypes, isContainerWithPayloadType } from '$lib/models';
 import {
 	deleteContainer,
 	deleteContainerRecursively,
@@ -57,14 +52,14 @@ export const DELETE = (async ({ locals, params, request }) => {
 			);
 			return new Response(null, { status: 204 });
 		} else if (ability.can('delete', container)) {
-			if (isOrganizationContainer(container)) {
+			if (isContainerWithPayloadType(payloadTypes.enum.organization, container)) {
 				await locals.pool.connect(
 					deleteOrganizationContainer({
 						...container,
 						user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
 					})
 				);
-			} else if (isOrganizationalUnitContainer(container)) {
+			} else if (isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)) {
 				await locals.pool.connect(
 					deleteOrganizationalUnitContainer({
 						...container,

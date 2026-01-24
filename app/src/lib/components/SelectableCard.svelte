@@ -8,23 +8,11 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
-		isContainerWithEffect,
-		isContainerWithObjective,
+		isContainerWithPayloadType,
 		isContainerWithProgress,
-		isEffectContainer,
-		isGoalContainer,
-		isIndicatorContainer,
-		isIndicatorTemplateContainer,
-		isObjectiveContainer,
 		isPartOf,
-		isResourceContainer,
-		isSimpleMeasureContainer,
-		isTaskContainer,
-		predicates,
-		type ProgramType,
-		type RuleStatus,
-		type Status,
-		type TaskStatus
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import type { AnyContainer } from '$lib/models';
 	import {
@@ -105,15 +93,21 @@
 	</header>
 
 	<div class="body">
-		{#if isIndicatorContainer(container)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.indicator, container)}
 			<IndicatorChart
 				{container}
 				relatedContainers={[
 					...relatedContainers.filter(({ relation }) =>
 						relation.some(({ object }) => object === container.guid)
 					),
-					...relatedContainers.filter(isContainerWithEffect),
-					...relatedContainers.filter(isContainerWithObjective)
+					...relatedContainers.filter(
+						(container) =>
+							isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+							isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+					),
+					...relatedContainers.filter((container) =>
+						isContainerWithPayloadType(payloadTypes.enum.goal, container)
+					)
 				]}
 				showEffects
 				showObjectives
@@ -127,22 +121,26 @@
 					<span class="badge">{$_(indicatorCategory)}</span>
 				{/each}
 			</p>
-		{:else if isIndicatorTemplateContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.indicator_template, container)}
 			<Summary {container} />
 			<p class="badges">
 				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
 					<span class="badge">{$_(indicatorCategory)}</span>
 				{/each}
 			</p>
-		{:else if isEffectContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.effect, container)}
+			{@const indicator = relatedContainers.find((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+			)}
 			{#if indicator}
 				<EffectChart {container} {relatedContainers} />
 			{/if}
-		{:else if isGoalContainer(container)}
-			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.goal, container)}
+			{@const effect = relatedContainers
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.effect, container))
+				.find(isPartOf(container))}
 			{@const indicator = relatedContainers
-				.filter(isIndicatorContainer)
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.indicator, container))
 				.find(
 					({ guid }) =>
 						(effect?.relation.findIndex(
@@ -155,14 +153,16 @@
 			{:else}
 				<Summary {container} />
 			{/if}
-		{:else if isObjectiveContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.objective, container)}
+			{@const indicator = relatedContainers.find((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+			)}
 			{#if indicator}
 				<ObjectiveChart {container} {relatedContainers} />
 			{/if}
-		{:else if isSimpleMeasureContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)}
 			<Progress value={container.payload.progress} />
-		{:else if isResourceContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.resource, container)}
 			<Summary {container} />
 			<p>
 				{container.payload.amount}
@@ -172,32 +172,29 @@
 					: ''}
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
-			{@const image = Array.isArray(container.payload.image)
-				? container.payload.image[0]
-				: container.payload.image}
-			<img alt={$_('cover_image')} loading="lazy" src={transformFileURL(image as string)} />
-		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
+			<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+		{:else if 'summary' in container.payload || ('description' in container.payload && !isContainerWithPayloadType(payloadTypes.enum.task, container))}
 			<Summary {container} />
 		{/if}
 	</div>
 
 	<footer>
 		{#if 'ruleStatus' in container.payload}
-			{@const ruleStatus = container.payload.ruleStatus as RuleStatus}
+			{@const ruleStatus = container.payload.ruleStatus}
 			{@const RuleStatusIcon = ruleStatusIcons.get(ruleStatus) ?? Cog}
 			<span class="badge badge--{ruleStatusColors.get(ruleStatus)}">
 				<RuleStatusIcon />
 				{$_(ruleStatus)}
 			</span>
 		{:else if 'status' in container.payload}
-			{@const status = container.payload.status as Status}
+			{@const status = container.payload.status}
 			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
 			<span class="badge badge--{statusColors.get(status)}">
 				<StatusIcon />
 				{$_(status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
-			{@const taskStatus = container.payload.taskStatus as TaskStatus}
+			{@const taskStatus = container.payload.taskStatus}
 			{@const TaskStatusIcon = taskStatusIcons.get(taskStatus) ?? Lightbulb}
 			<span class="badge badge--{taskStatusColors.get(taskStatus)}">
 				<TaskStatusIcon />
@@ -206,7 +203,7 @@
 		{:else if isContainerWithProgress(container)}
 			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}
-			{@const programType = container.payload.programType as ProgramType}
+			{@const programType = container.payload.programType}
 			<span class="badge">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>

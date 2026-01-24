@@ -8,7 +8,7 @@
 	import {
 		type AnyContainer,
 		type GoalContainer,
-		isObjectiveContainer,
+		isContainerWithPayloadType,
 		isPartOf,
 		type ObjectiveCollectionContainer,
 		overlayKey,
@@ -35,7 +35,9 @@
 
 	let items = $derived(
 		parentContainer
-			? relatedContainers.filter(isObjectiveContainer).filter(isPartOf(parentContainer))
+			? relatedContainers
+					.filter((container) => isContainerWithPayloadType(payloadTypes.enum.objective, container))
+					.filter(isPartOf(parentContainer))
 			: []
 	);
 

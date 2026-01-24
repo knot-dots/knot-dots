@@ -5,10 +5,7 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	findConnected,
-	isEffectContainer,
-	isGoalContainer,
-	isMeasureContainer,
-	isObjectiveContainer,
+	isContainerWithPayloadType,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -28,8 +25,8 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		const isGoal = isGoalContainer(container);
-		const isMeasure = isMeasureContainer(container);
+		const isGoal = isContainerWithPayloadType(payloadTypes.enum.goal, container);
+		const isMeasure = isContainerWithPayloadType(payloadTypes.enum.measure, container);
 
 		if (!isGoal && !isMeasure) {
 			error(404, { message: t('error.not_found') });
@@ -59,7 +56,8 @@ export const load = (async ({ depends, locals, params, url }) => {
 
 		if (
 			selectedContainer &&
-			(isEffectContainer(selectedContainer) || isObjectiveContainer(selectedContainer))
+			(isContainerWithPayloadType(payloadTypes.enum.effect, selectedContainer) ||
+				isContainerWithPayloadType(payloadTypes.enum.objective, selectedContainer))
 		) {
 			containers = [
 				...findConnected(selectedContainer, containers, [predicates.enum['contributes-to']])

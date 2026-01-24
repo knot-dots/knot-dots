@@ -4,8 +4,8 @@
 	import {
 		audience,
 		computeFacetCount,
-		isMeasureContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
+		payloadTypes,
 		policyFieldBNK,
 		predicates,
 		sustainableDevelopmentGoals,
@@ -14,14 +14,17 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Measures from '$lib/components/Measures.svelte';
-
 	let { data }: PageProps = $props();
 
 	let containers = $derived(data.containers);
 
 	let memberFacet = $derived(
 		containers
-			.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+			.filter(
+				(c) =>
+					isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)
+			)
 			.flatMap(({ user }) =>
 				user
 					.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])

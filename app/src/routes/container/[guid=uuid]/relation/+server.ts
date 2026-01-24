@@ -5,14 +5,13 @@ import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
 	audience,
-	isContainerWithEffect,
-	isIndicatorContainer,
+	isContainerWithPayloadType,
 	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	relation,
 	programTypes,
+	relation,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -63,7 +62,7 @@ export const GET = (async ({ locals, params, url }) => {
 
 		let containers;
 
-		if (isIndicatorContainer(container)) {
+		if (isContainerWithPayloadType(payloadTypes.enum.indicator, container)) {
 			if (parseResult.data.program.length > 0) {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
 					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
@@ -97,7 +96,10 @@ export const GET = (async ({ locals, params, url }) => {
 					})
 				);
 			}
-		} else if (isContainerWithEffect(container)) {
+		} else if (
+			isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+			isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+		) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(
 					container.guid,

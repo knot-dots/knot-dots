@@ -18,8 +18,7 @@
 	import {
 		findAncestors,
 		findDescendants,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
+		isContainerWithPayloadType,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
 		payloadTypes,
@@ -69,7 +68,10 @@
 					: true
 		);
 
-		if (selectedContext && isOrganizationalUnitContainer(selectedContext)) {
+		if (
+			selectedContext &&
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, selectedContext)
+		) {
 			organizationalUnits = [
 				selectedContext,
 				...findAncestors(selectedContext, organizationalUnits, [predicates.enum['is-part-of']]),
@@ -109,7 +111,7 @@
 	<button class="dropdown-button" type="button" use:popover.button>
 		<Organization />
 		<span class="is-visually-hidden truncated">
-			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
+			{#if isContainerWithPayloadType(payloadTypes.enum.organization, currentContext) && currentContext.payload.default}
 				{$_('all_organizations')}
 			{:else}
 				{currentContext.payload.name}

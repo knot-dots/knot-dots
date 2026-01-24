@@ -22,8 +22,7 @@
 		type IndicatorContainer,
 		type IndicatorTemplateContainer,
 		indicatorTypes,
-		isBinaryIndicatorContainer,
-		isIndicatorContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -110,7 +109,10 @@
 	async function select(
 		container: BinaryIndicatorContainer | IndicatorContainer | IndicatorTemplateContainer
 	) {
-		if (isIndicatorContainer(container) || isBinaryIndicatorContainer(container)) {
+		if (
+			isContainerWithPayloadType(payloadTypes.enum.binary_indicator, container) ||
+			isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+		) {
 			if ($addEffectState.target) {
 				const effect = await createEffect(
 					$addEffectState.target,
@@ -164,7 +166,11 @@
 			]),
 			[
 				...indicatorTemplates.filter(
-					(c) => !alreadyInUse(c, indicators.filter(isIndicatorContainer))
+					(c) =>
+						!alreadyInUse(
+							c,
+							indicators.filter((c) => isContainerWithPayloadType(payloadTypes.enum.indicator, c))
+						)
 				),
 				...(params.has('alreadyInUse') ? indicators : [])
 			]
@@ -209,7 +215,7 @@
 					</li>
 				{/each}
 			{/if}
-			{#each indicatorTemplates.filter((c) => !alreadyInUse(c, indicators.filter(isIndicatorContainer))) as template (template.guid)}
+			{#each indicatorTemplates.filter((c) => !alreadyInUse( c, indicators.filter( (c) => isContainerWithPayloadType(payloadTypes.enum.indicator, c) ) )) as template (template.guid)}
 				<li>
 					<IndicatorTemplateCard --height="100%" container={template}>
 						{#snippet button()}

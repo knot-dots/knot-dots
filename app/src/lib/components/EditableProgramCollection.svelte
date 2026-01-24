@@ -7,12 +7,12 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
-		titleForProgramCollection,
 		containerOfType,
-		isProgramContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes,
-		type ProgramCollectionContainer
+		type ProgramCollectionContainer,
+		titleForProgramCollection
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
@@ -33,7 +33,11 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let items = $derived(relatedContainers.filter(isProgramContainer));
+	let items = $derived(
+		relatedContainers.filter((container) =>
+			isContainerWithPayloadType(payloadTypes.enum.program, container)
+		)
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

@@ -24,33 +24,7 @@
 	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
-	import {
-		type AnyContainer,
-		isCategoryContainer,
-		isContainerWithEffect,
-		isContentPartnerContainer,
-		isEffectContainer,
-		isGoalContainer,
-		isHelpContainer,
-		isIndicatorContainer,
-		isIndicatorTemplateContainer,
-		isKnowledgeContainer,
-		isObjectiveContainer,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		isPageContainer,
-		isProgramContainer,
-		isReportContainer,
-		isResourceContainer,
-		isResourceV2Container,
-		isRuleContainer,
-		isTermContainer,
-		isTaskContainer,
-		isTeaserContainer,
-		isTextContainer,
-		isResourceDataContainer,
-		isBinaryIndicatorContainer
-	} from '$lib/models';
+	import { type AnyContainer, isContainerWithPayloadType, payloadTypes } from '$lib/models';
 
 	interface Props {
 		container: AnyContainer;
@@ -66,52 +40,52 @@
 	});
 </script>
 
-{#if isBinaryIndicatorContainer(container)}
+{#if isContainerWithPayloadType(payloadTypes.enum.binary_indicator, container)}
 	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} />
-{:else if isContentPartnerContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.content_partner, container)}
 	<EditableContentPartnerDetailView bind:container {layout} {revisions} />
-{:else if isEffectContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.effect, container)}
 	<EditableEffectDetailView bind:container {layout} {revisions} />
-{:else if isGoalContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.goal, container)}
 	<EditableGoalDetailView bind:container {layout} {revisions} />
-{:else if isHelpContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.help, container)}
 	<EditableHelpDetailView bind:container {layout} {revisions} />
-{:else if isCategoryContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.category, container)}
 	<EditableCategoryDetailView bind:container {layout} {revisions} />
-{:else if isIndicatorContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.indicator, container)}
 	<EditableIndicatorDetailView bind:container {layout} {revisions} />
-{:else if isIndicatorTemplateContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.indicator_template, container)}
 	<EditableIndicatorTemplateDetailView bind:container {layout} {revisions} />
-{:else if isKnowledgeContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.knowledge, container)}
 	<EditableKnowledgeDetailView bind:container {layout} {revisions} />
-{:else if isContainerWithEffect(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.measure, container) || isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)}
 	<EditableMeasureDetailView bind:container {layout} {revisions} />
-{:else if isObjectiveContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.objective, container)}
 	<EditableObjectiveDetailView bind:container {layout} {revisions} />
-{:else if isOrganizationalUnitContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)}
 	<EditableOrganizationalUnitDetailView bind:container {layout} />
-{:else if isOrganizationContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.organization, container)}
 	<EditableOrganizationDetailView bind:container {layout} />
-{:else if isPageContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.page, container)}
 	<EditablePageDetailView bind:container {layout} {revisions} />
-{:else if isProgramContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.program, container)}
 	<EditableProgramDetailView bind:container {layout} {revisions} />
-{:else if isReportContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.report, container)}
 	<EditableReportDetailView bind:container {layout} {revisions} />
-{:else if isResourceContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.resource, container)}
 	<EditableResourceDetailView bind:container {layout} {revisions} />
-{:else if isResourceV2Container(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.resource_v2, container)}
 	<EditableResourceV2DetailView bind:container {layout} {revisions} />
-{:else if isResourceDataContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.resource_data, container)}
 	<EditableResourceDataDetailView bind:container {layout} {revisions} />
-{:else if isRuleContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.rule, container)}
 	<EditableRuleDetailView bind:container {layout} {revisions} />
-{:else if isTermContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.term, container)}
 	<EditableTermDetailView bind:container {layout} {revisions} />
-{:else if isTaskContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.task, container)}
 	<EditableTaskDetailView bind:container {layout} {revisions} />
-{:else if isTeaserContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.teaser, container)}
 	<EditableTeaserDetailView bind:container {layout} {revisions} />
-{:else if isTextContainer(container)}
+{:else if isContainerWithPayloadType(payloadTypes.enum.text, container)}
 	<EditableTextDetailView bind:container {layout} {revisions} />
 {/if}

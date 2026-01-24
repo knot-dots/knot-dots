@@ -12,7 +12,7 @@
 		type Container,
 		containerOfType,
 		type IndicatorTemplateContainer,
-		isActualDataContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
@@ -29,7 +29,7 @@
 
 	let actualDataContainer = $derived(
 		relatedContainers
-			.filter(isActualDataContainer)
+			.filter((container) => isContainerWithPayloadType(payloadTypes.enum.actual_data, container))
 			.filter(({ payload }) => payload.indicator === container.guid)
 			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
 			.map((c) => {

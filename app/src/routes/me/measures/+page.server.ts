@@ -1,10 +1,10 @@
 import { filterVisible } from '$lib/authorization';
 import {
-	isContainerWithEffect,
-	isMemberOf,
-	computeFacetCount,
 	audience,
+	computeFacetCount,
 	fromCounts,
+	isContainerWithPayloadType,
+	isMemberOf,
 	payloadTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
@@ -33,7 +33,13 @@ export const load = (async ({ locals, parent }) => {
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
 	const filtered = filterVisible(
-		containers.filter(isContainerWithEffect).filter((c) => isMemberOf(locals.user, c)),
+		containers
+			.filter(
+				(c) =>
+					isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)
+			)
+			.filter((c) => isMemberOf(locals.user, c)),
 		locals.user
 	);
 

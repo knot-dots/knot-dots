@@ -23,8 +23,8 @@
 	import {
 		type AnyContainer,
 		type EffectContainer,
-		isBinaryIndicatorContainer,
-		isIndicatorContainer,
+		isContainerWithPayloadType,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
@@ -68,7 +68,11 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+			.filter(
+				(c) =>
+					isContainerWithPayloadType(payloadTypes.enum.binary_indicator, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.indicator, c)
+			)
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
@@ -163,7 +167,7 @@
 			{/key}
 
 			{#if indicator}
-				{#if createFeatureDecisions(page.data.features).useBinaryIndicators() && isBinaryIndicatorContainer(indicator)}
+				{#if createFeatureDecisions(page.data.features).useBinaryIndicators() && isContainerWithPayloadType(payloadTypes.enum.binary_indicator, indicator)}
 					<div class="details-section">
 						<BooleanValueToggle
 							bind:checked={
@@ -174,7 +178,7 @@
 								!$ability.can('update', container)}
 						/>
 					</div>
-				{:else if !isBinaryIndicatorContainer(indicator)}
+				{:else if !isContainerWithPayloadType(payloadTypes.enum.binary_indicator, indicator)}
 					{#if createFeatureDecisions(page.data.features).useTendentialObjectivesAndEffects()}
 						<div class="details-section">
 							<h2 class="details-heading">{$_('effect.tendency')}</h2>

@@ -10,10 +10,10 @@
 		displayName,
 		isAdminOf,
 		isCollaboratorOf,
+		isContainerWithPayloadType,
 		isHeadOf,
 		isObserverOf,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 	import type { AnyContainer, User } from '$lib/models';
@@ -149,7 +149,7 @@
 							<option value="role.head" selected={isHeadOf(u, container)}>
 								{$_('role.head')}
 							</option>
-							{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+							{#if isContainerWithPayloadType(payloadTypes.enum.organization, container) || isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)}
 								<option value="role.administrator" selected={isAdminOf(u, container)}>
 									{$_('role.administrator')}
 								</option>

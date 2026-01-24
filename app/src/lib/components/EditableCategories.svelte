@@ -8,7 +8,7 @@
 		type CategoryOption
 	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import { isCategoryContainer, payloadTypes } from '$lib/models';
+	import { isContainerWithPayloadType, payloadTypes } from '$lib/models';
 	import type { AnyContainer, CategoryContainer } from '$lib/models';
 
 	interface Props {
@@ -68,7 +68,9 @@
 			{ payloadType: [payloadTypes.enum.category], organization: orgs.length ? orgs : undefined },
 			'alpha'
 		);
-		const visibleCategories = all.filter(isCategoryContainer);
+		const visibleCategories = all.filter((c) =>
+			isContainerWithPayloadType(payloadTypes.enum.category, c)
+		);
 
 		const payloadType = (container.payload as Record<string, unknown>).type;
 		const custom = visibleCategories

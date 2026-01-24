@@ -4,7 +4,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import IOOI from '$lib/components/IOOI.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { isGoalContainer, isMeasureContainer, predicates } from '$lib/models';
+	import { isContainerWithPayloadType, payloadTypes, predicates } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -21,10 +21,10 @@
 	{/snippet}
 
 	{#snippet main()}
-		{#if isGoalContainer(data.container)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.goal, data.container)}
 			<IOOI container={data.container} containers={data.containers} />
 			<Help slug="iooi" />
-		{:else if isMeasureContainer(data.container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.measure, data.container)}
 			<IOOI container={data.container} containers={data.containers} />
 			<Help slug="iooi" />
 		{/if}

@@ -15,14 +15,12 @@
 		isContainerWithDescription,
 		type Container,
 		containerOfType,
-		isGoalCollectionContainer,
-		isObjectiveCollectionContainer,
-		isResourceCollectionContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
 		type PayloadType,
+		payloadTypes,
 		predicates,
 		type ProgramContainer
 	} from '$lib/models';
@@ -41,9 +39,9 @@
 	let subsections = $state(
 		hasSection(container, relatedContainers).filter(
 			(s) =>
-				isGoalCollectionContainer(s) ||
-				isObjectiveCollectionContainer(s) ||
-				isResourceCollectionContainer(s)
+				isContainerWithPayloadType(payloadTypes.enum.goal_collection, s) ||
+				isContainerWithPayloadType(payloadTypes.enum.objective_collection, s) ||
+				isContainerWithPayloadType(payloadTypes.enum.resource_collection, s)
 		)
 	);
 
@@ -111,7 +109,7 @@
 
 <Badges bind:container {editable} />
 
-{#if isSimpleMeasureContainer(container)}
+{#if isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)}
 	<EditableProgress {editable} bind:value={container.payload.progress} />
 {/if}
 

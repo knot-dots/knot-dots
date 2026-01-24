@@ -9,11 +9,10 @@
 	import { getLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		isMeasureContainer,
-		isProgramContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
 		overlayKey,
-		paramsFromFragment
+		paramsFromFragment,
+		payloadTypes
 	} from '$lib/models';
 	import { overlay } from '$lib/stores';
 
@@ -52,11 +51,11 @@
 			case overlayKey.enum['resources']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', routeParams);
 			case overlayKey.enum['measure-monitoring']:
-				if (isProgramContainer($overlay.container)) {
+				if (isContainerWithPayloadType(payloadTypes.enum.program, $overlay.container)) {
 					return resolve('/[guid=uuid]/[contentGuid=uuid]/measures/monitoring', routeParams);
 				} else if (
-					isMeasureContainer($overlay.container) ||
-					isSimpleMeasureContainer($overlay.container)
+					isContainerWithPayloadType(payloadTypes.enum.measure, $overlay.container) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, $overlay.container)
 				) {
 					return resolve('/[guid=uuid]/[contentGuid=uuid]/all/monitoring', routeParams);
 				} else {

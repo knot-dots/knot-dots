@@ -3,7 +3,12 @@
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ListType from '~icons/knotdots/tasks';
-	import { type AnyContainer, listTypes, isCollectionContainer } from '$lib/models';
+	import {
+		type AnyContainer,
+		isContainerWithPayloadType,
+		listTypes,
+		payloadTypes
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -22,7 +27,7 @@
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 </script>
 
-{#if $ability.can('update', container, 'visibility') && isCollectionContainer(container)}
+{#if $ability.can('update', container, 'visibility') && (isContainerWithPayloadType(payloadTypes.enum.content_partner_collection, container) || isContainerWithPayloadType(payloadTypes.enum.teaser_collection, container))}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" use:popover.button>
 			<ListType />

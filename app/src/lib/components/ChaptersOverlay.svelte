@@ -7,7 +7,8 @@
 		audience,
 		computeFacetCount,
 		type Container,
-		isProgramContainer,
+		isContainerWithPayloadType,
+		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
@@ -35,6 +36,9 @@
 
 <Header {facets} search />
 
-<Chapters program={isProgramContainer(container) ? container : undefined} {containers} />
+<Chapters
+	program={isContainerWithPayloadType(payloadTypes.enum.program, container) ? container : undefined}
+	{containers}
+/>
 
 <Help slug="all-level" />

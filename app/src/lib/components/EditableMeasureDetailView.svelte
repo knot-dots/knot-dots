@@ -10,7 +10,12 @@
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type AnyContainer, type ContainerWithEffect, isMeasureContainer } from '$lib/models';
+	import {
+		type AnyContainer,
+		type ContainerWithEffect,
+		isContainerWithPayloadType,
+		payloadTypes
+	} from '$lib/models';
 	import { fetchContainersRelatedToMeasure } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -59,7 +64,7 @@
 
 	<footer class="content-footer bottom-actions-bar">
 		<div class="content-actions">
-			{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
+			{#if $applicationState.containerDetailView.editable && isContainerWithPayloadType(payloadTypes.enum.measure, container) && $ability.can('update', container)}
 				<label>
 					<input
 						class="toggle"

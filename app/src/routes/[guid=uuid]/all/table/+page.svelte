@@ -5,14 +5,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import type { PageProps } from './$types';
 	import Table from '$lib/components/Table.svelte';
-	import {
-		isGoalContainer,
-		isMeasureContainer,
-		isProgramContainer,
-		isReportContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer
-	} from '$lib/models';
+	import { isContainerWithPayloadType, payloadTypes } from '$lib/models';
 
 	let { data }: PageProps = $props();
 </script>
@@ -39,12 +32,12 @@
 		rows={data.containers
 			.filter(
 				(c) =>
-					isGoalContainer(c) ||
-					isMeasureContainer(c) ||
-					isReportContainer(c) ||
-					isRuleContainer(c) ||
-					isSimpleMeasureContainer(c) ||
-					isProgramContainer(c)
+					isContainerWithPayloadType(payloadTypes.enum.goal, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.report, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.rule, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.program, c)
 			)
 			.slice(0, browser ? undefined : 20)}
 	/>

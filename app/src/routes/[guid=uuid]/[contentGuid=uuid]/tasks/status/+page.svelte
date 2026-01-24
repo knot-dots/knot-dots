@@ -1,9 +1,9 @@
 <script lang="ts">
 	import {
 		computeFacetCount,
-		isGoalContainer,
+		isContainerWithPayloadType,
 		isPartOf,
-		isTaskContainer,
+		payloadTypes,
 		taskCategories
 	} from '$lib/models';
 	import type { PageProps } from './$types';
@@ -37,10 +37,14 @@
 	{#snippet main()}
 		<Tasks
 			{container}
-			containers={containers.filter(isTaskContainer)}
+			containers={containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.task, c))}
 			relatedContainers={containers
-				.filter(isGoalContainer)
-				.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
+				.filter((c) => isContainerWithPayloadType(payloadTypes.enum.goal, c))
+				.filter((c) =>
+					containers
+						.filter((c) => isContainerWithPayloadType(payloadTypes.enum.task, c))
+						.some(isPartOf(c))
+				)}
 		/>
 
 		<Help slug="tasks-status" />

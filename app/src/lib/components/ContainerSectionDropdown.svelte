@@ -10,7 +10,12 @@
 	import Text from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyContainer, isTeaserLikeContainer, type TeaserLikeContainer } from '$lib/models';
+	import {
+		type AnyContainer,
+		isContainerWithPayloadType,
+		payloadTypes,
+		type TeaserLikeContainer
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -41,7 +46,15 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
-	let teaserContainer = $derived(isTeaserLikeContainer(container) ? container : null);
+	let teaserContainer = $derived(
+		isContainerWithPayloadType(payloadTypes.enum.teaser, container) ||
+			isContainerWithPayloadType(payloadTypes.enum.info_box, container) ||
+			isContainerWithPayloadType(payloadTypes.enum.teaser_highlight, container) ||
+			isContainerWithPayloadType(payloadTypes.enum.quote, container) ||
+			isContainerWithPayloadType(payloadTypes.enum.col_content, container)
+			? (container as TeaserLikeContainer)
+			: null
+	);
 
 	async function handleDelete(container: AnyContainer) {
 		const response = await deleteContainer(container);

@@ -8,14 +8,11 @@
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import {
 		type Container,
+		isContainerWithPayloadType,
 		isContainerWithStatus,
-		isGoalContainer,
-		isProgramContainer,
-		isRuleContainer,
 		isSuggestedByAI,
-		isTaskContainer,
-		programTypes,
-		isResourceDataContainer
+		payloadTypes,
+		programTypes
 	} from '$lib/models';
 
 	interface Props {
@@ -42,7 +39,7 @@
 			{$_(container.payload.programType as string)}
 		{:else if 'taskCategory' in container.payload && container.payload.taskCategory}
 			{$_(container.payload.taskCategory as string)}
-		{:else if isResourceDataContainer(container)}
+		{:else if 'resourceDataType' in container.payload && container.payload.resourceDataType}
 			{$_(container.payload.resourceDataType)}
 		{:else}
 			{$_(container.payload.type)}
@@ -55,7 +52,7 @@
 		<li>
 			<StatusDropdown buttonStyle="badge" {editable} bind:value={container.payload.status} />
 		</li>
-	{:else if isTaskContainer(container)}
+	{:else if isContainerWithPayloadType(payloadTypes.enum.task, container)}
 		<li>
 			<TaskStatusDropdown
 				buttonStyle="badge"
@@ -63,7 +60,7 @@
 				bind:value={container.payload.taskStatus}
 			/>
 		</li>
-	{:else if isRuleContainer(container)}
+	{:else if isContainerWithPayloadType(payloadTypes.enum.rule, container)}
 		<li>
 			<RuleStatusDropdown
 				buttonStyle="badge"
@@ -71,7 +68,7 @@
 				bind:value={container.payload.ruleStatus}
 			/>
 		</li>
-	{:else if isGoalContainer(container)}
+	{:else if isContainerWithPayloadType(payloadTypes.enum.goal, container)}
 		<li>
 			<GoalStatusDropdown
 				buttonStyle="badge"
@@ -79,7 +76,7 @@
 				bind:value={container.payload.goalStatus}
 			/>
 		</li>
-	{:else if isProgramContainer(container)}
+	{:else if isContainerWithPayloadType(payloadTypes.enum.program, container)}
 		<li>
 			<ProgramStatusDropdown
 				buttonStyle="badge"

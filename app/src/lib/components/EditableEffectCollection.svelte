@@ -9,7 +9,7 @@
 		type AnyContainer,
 		type EffectCollectionContainer,
 		type GoalContainer,
-		isEffectContainer,
+		isContainerWithPayloadType,
 		isPartOf,
 		type MeasureContainer,
 		overlayKey,
@@ -36,7 +36,9 @@
 
 	let items = $derived(
 		parentContainer
-			? relatedContainers.filter(isEffectContainer).filter(isPartOf(parentContainer))
+			? relatedContainers
+					.filter((container) => isContainerWithPayloadType(payloadTypes.enum.effect, container))
+					.filter(isPartOf(parentContainer))
 			: []
 	);
 

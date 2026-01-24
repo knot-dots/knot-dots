@@ -2,12 +2,7 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
-import {
-	isMeasureContainer,
-	isProgramContainer,
-	isSimpleMeasureContainer,
-	predicates
-} from '$lib/models';
+import { isContainerWithPayloadType, payloadTypes, predicates } from '$lib/models';
 import { getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
@@ -26,9 +21,9 @@ export const load = (async ({ locals, params }) => {
 		}
 
 		if (
-			!isProgramContainer(container) &&
-			!isMeasureContainer(container) &&
-			!isSimpleMeasureContainer(container)
+			!isContainerWithPayloadType(payloadTypes.enum.program, container) &&
+			!isContainerWithPayloadType(payloadTypes.enum.measure, container) &&
+			!isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
 		) {
 			error(404, { message: t('error.not_found') });
 		}

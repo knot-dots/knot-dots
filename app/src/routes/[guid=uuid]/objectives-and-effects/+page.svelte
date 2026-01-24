@@ -16,11 +16,9 @@
 		findConnected,
 		findDescendants,
 		findLeafObjectives,
-		isContainerWithEffect,
-		isEffectContainer,
-		isIndicatorContainer,
-		isObjectiveContainer,
+		isContainerWithPayloadType,
 		isRelatedTo,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 	import type { PageProps } from './$types';
@@ -40,24 +38,36 @@
 			);
 
 			if (selectedContainer) {
-				if (isIndicatorContainer(selectedContainer)) {
+				if (isContainerWithPayloadType(payloadTypes.enum.indicator, selectedContainer)) {
 					containers = findConnected(selectedContainer, data.containers, [
 						predicates.enum['is-measured-by'],
 						predicates.enum['is-objective-for']
 					]);
-				} else if (isObjectiveContainer(selectedContainer)) {
+				} else if (isContainerWithPayloadType(payloadTypes.enum.objective, selectedContainer)) {
 					const indicator = data.containers
-						.filter(isIndicatorContainer)
+						.filter((container) =>
+							isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+						)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
 						selectedContainer,
 						...(indicator ? [indicator] : []),
 						...findLeafObjectives([
 							selectedContainer,
-							...findDescendants(selectedContainer, data.containers.filter(isObjectiveContainer), [
-								predicates.enum['is-sub-target-of']
-							])
-						]).flatMap((c) => data.containers.filter(isEffectContainer).filter(isRelatedTo(c))),
+							...findDescendants(
+								selectedContainer,
+								data.containers.filter((container) =>
+									isContainerWithPayloadType(payloadTypes.enum.objective, container)
+								),
+								[predicates.enum['is-sub-target-of']]
+							)
+						]).flatMap((c) =>
+							data.containers
+								.filter((container) =>
+									isContainerWithPayloadType(payloadTypes.enum.effect, container)
+								)
+								.filter(isRelatedTo(c))
+						),
 						...findAncestors(selectedContainer, data.containers, [
 							predicates.enum['is-sub-target-of']
 						]),
@@ -65,12 +75,16 @@
 							predicates.enum['is-sub-target-of']
 						])
 					]);
-				} else if (isEffectContainer(selectedContainer)) {
+				} else if (isContainerWithPayloadType(payloadTypes.enum.effect, selectedContainer)) {
 					const objective = data.containers
-						.filter(isObjectiveContainer)
+						.filter((container) =>
+							isContainerWithPayloadType(payloadTypes.enum.objective, container)
+						)
 						.find(isRelatedTo(selectedContainer));
 					const indicator = data.containers
-						.filter(isIndicatorContainer)
+						.filter((container) =>
+							isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+						)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
 						selectedContainer,
@@ -96,10 +110,16 @@
 	let objectivesByLevel = $derived.by(() => {
 		let objectivesByLevel = new SvelteMap<number, Container[]>();
 
-		for (const container of data.containers.filter(isObjectiveContainer)) {
-			const ancestors = findAncestors(container, data.containers.filter(isObjectiveContainer), [
-				predicates.enum['is-sub-target-of']
-			]);
+		for (const container of data.containers.filter((container) =>
+			isContainerWithPayloadType(payloadTypes.enum.objective, container)
+		)) {
+			const ancestors = findAncestors(
+				container,
+				data.containers.filter((container) =>
+					isContainerWithPayloadType(payloadTypes.enum.objective, container)
+				),
+				[predicates.enum['is-sub-target-of']]
+			);
 			const level = ancestors.length;
 
 			if (objectivesByLevel.has(level)) {
@@ -131,7 +151,7 @@
 				<BoardColumn title={$_('indicators')}>
 					<div class="vertical-scroll-wrapper">
 						{#each data.containers
-							.filter(isIndicatorContainer)
+							.filter( (container) => isContainerWithPayloadType(payloadTypes.enum.indicator, container) )
 							.filter((c) => containers.has(c)) as container (container.guid)}
 							<Card {container} relatedContainers={data.containers} showRelationFilter />
 						{/each}
@@ -153,14 +173,22 @@
 				{/each}
 				<BoardColumn title={$_('effects')}>
 					<MaybeDragZone
-						containers={data.containers.filter(isEffectContainer).filter((c) => containers.has(c))}
+						containers={data.containers
+							.filter((container) =>
+								isContainerWithPayloadType(payloadTypes.enum.effect, container)
+							)
+							.filter((c) => containers.has(c))}
 					>
 						{#snippet itemSnippet(container)}
 							<Card
 								{container}
 								relatedContainers={[
 									...data.containers.filter(isRelatedTo(container)),
-									...data.containers.filter(isContainerWithEffect)
+									...data.containers.filter(
+										(container) =>
+											isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+											isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+									)
 								]}
 								showRelationFilter
 								titleOverride

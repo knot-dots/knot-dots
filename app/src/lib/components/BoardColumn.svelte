@@ -9,16 +9,12 @@
 		containerOfType,
 		type GoalStatus,
 		isContainerWithHierarchyLevel,
-		isGoalContainer,
-		isMeasureContainer,
-		isOrganizationalUnitContainer,
-		isProgramContainer,
-		isRuleContainer,
-		isTaskContainer,
+		isContainerWithPayloadType,
 		type Level,
 		type NewContainer,
 		type PartialRelation,
 		type PayloadType,
+		payloadTypes,
 		predicates,
 		type ProgramStatus,
 		type RuleStatus,
@@ -76,17 +72,34 @@
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
-		if (isOrganizationalUnitContainer(container) && params.has('level')) {
+		if (
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container) &&
+			params.has('level')
+		) {
 			container.payload.level = parseInt(params.get('level') as string);
-		} else if (isRuleContainer(container) && params.has('ruleStatus')) {
+		} else if (
+			isContainerWithPayloadType(payloadTypes.enum.rule, container) &&
+			params.has('ruleStatus')
+		) {
 			container.payload.ruleStatus = params.get('ruleStatus') as RuleStatus;
-		} else if (isMeasureContainer(container) && params.has('status')) {
+		} else if (
+			isContainerWithPayloadType(payloadTypes.enum.measure, container) &&
+			params.has('status')
+		) {
 			container.payload.status = params.get('status') as Status;
-		} else if (isTaskContainer(container) && params.has('taskStatus')) {
+		} else if (
+			isContainerWithPayloadType(payloadTypes.enum.task, container) &&
+			params.has('taskStatus')
+		) {
 			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
-		} else if (isGoalContainer(container) && params.has('goalStatus')) {
-			container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
-		} else if (isProgramContainer(container)) {
+		} else if (isContainerWithPayloadType(payloadTypes.enum.goal, container)) {
+			if (params.has('hierarchyLevel')) {
+				container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
+			}
+			if (params.has('goalStatus')) {
+				container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
+			}
+		} else if (isContainerWithPayloadType(payloadTypes.enum.program, container)) {
 			if (params.has('level')) {
 				container.payload.level = params.get('level') as Level;
 			}

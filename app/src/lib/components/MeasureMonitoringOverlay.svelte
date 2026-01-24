@@ -7,13 +7,11 @@
 		audience,
 		computeFacetCount,
 		type Container,
-		isIndicatorContainer,
-		isMeasureContainer,
-		isMeasureMonitoringContainer,
-		isSimpleMeasureContainer,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
-		topics
+		topics,
+		payloadTypes,
+		isContainerWithPayloadType
 	} from '$lib/models';
 
 	interface Props {
@@ -24,9 +22,14 @@
 	let { container, containers }: Props = $props();
 
 	let measures = $derived(
-		isMeasureContainer(container) || isSimpleMeasureContainer(container)
+		isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+			isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
 			? [container]
-			: containers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+			: containers.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)
+				)
 	);
 
 	let facets = $derived(
@@ -45,13 +48,20 @@
 <Header {facets} search />
 
 <MeasureMonitoring
-	measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)
+	measure={isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+	isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
 		? container
 		: undefined}
 	{measures}
-	containers={containers.filter(isMeasureMonitoringContainer)}
-	indicators={containers.filter(isIndicatorContainer)}
-	showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
+	containers={containers.filter(
+		(c) =>
+			isContainerWithPayloadType(payloadTypes.enum.effect, c) ||
+			isContainerWithPayloadType(payloadTypes.enum.goal, c) ||
+			isContainerWithPayloadType(payloadTypes.enum.task, c)
+	)}
+	indicators={containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.indicator, c))}
+	showMeasures={!isContainerWithPayloadType(payloadTypes.enum.measure, container) &&
+		!isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)}
 />
 
 <Help slug="measures-monitoring" />

@@ -10,8 +10,8 @@
 		type ActualDataContainer,
 		type BinaryIndicatorContainer,
 		type IndicatorTemplateContainer,
-		isActualDataContainer,
-		isBinaryIndicatorContainer
+		isContainerWithPayloadType,
+		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
@@ -36,8 +36,10 @@
 
 <Card {button} {container} {relatedContainers} {showRelationFilter}>
 	{#snippet body()}
-		{#if isBinaryIndicatorContainer(container)}
-			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.binary_indicator, container)}
+			{@const actualDataContainer = relatedContainers.find((c) =>
+				isContainerWithPayloadType(payloadTypes.enum.actual_data, c)
+			)}
 			<Summary {container} />
 			{#if actualDataContainer}
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />

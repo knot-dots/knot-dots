@@ -7,10 +7,8 @@
 		titleForGoalCollection,
 		containersByHierarchyLevel,
 		type IndicatorContainer,
-		isEffectContainer,
-		isGoalContainer,
+		isContainerWithPayloadType,
 		isPartOf,
-		isTaskContainer,
 		type MeasureContainer,
 		type MeasureMonitoringContainer,
 		overlayKey,
@@ -32,7 +30,7 @@
 	let goals = $derived(
 		containersByHierarchyLevel(
 			containers
-				.filter(isGoalContainer)
+				.filter((c) => isContainerWithPayloadType(payloadTypes.enum.goal, c))
 				.filter(({ relation }) =>
 					relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
 				)
@@ -68,7 +66,7 @@
 							: [])
 					])
 				: undefined,
-			containers: containers.filter(isTaskContainer),
+			containers: containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.task, c)),
 			key: 'tasks',
 			title: $_('tasks')
 		}
@@ -96,9 +94,11 @@
 		<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
 			<div class="vertical-scroll-wrapper">
 				{#each column.containers as container (container.guid)}
-					{#if isGoalContainer(container)}
+					{#if isContainerWithPayloadType(payloadTypes.enum.goal, container)}
 						{@const effect = containers
-							.filter(isEffectContainer)
+							.filter((container) =>
+								isContainerWithPayloadType(payloadTypes.enum.effect, container)
+							)
 							.find((e) => isPartOf(container)(e))}
 						{#if effect}
 							{@const indicator = indicatorsByGuid.get(

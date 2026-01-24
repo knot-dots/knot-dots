@@ -2,10 +2,11 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import {
-	isAssignedTo,
-	isTaskContainer,
 	computeFacetCount,
 	fromCounts,
+	isAssignedTo,
+	isContainerWithPayloadType,
+	payloadTypes,
 	taskCategories
 } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
@@ -20,7 +21,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
 	const filtered = filterVisible(
-		containers.filter(isTaskContainer).filter(isAssignedTo(locals.user)),
+		containers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.task, c))
+			.filter(isAssignedTo(locals.user)),
 		locals.user
 	);
 

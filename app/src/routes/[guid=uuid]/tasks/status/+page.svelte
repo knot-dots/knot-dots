@@ -11,7 +11,7 @@
 	import TasksPage from '$lib/components/TasksPage.svelte';
 	import {
 		type GoalContainer,
-		isTaskContainer,
+		isContainerWithPayloadType,
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
@@ -58,7 +58,7 @@
 				>
 					<MaybeDragZone
 						containers={data.containers
-							.filter(isTaskContainer)
+							.filter((container) => isContainerWithPayloadType(payloadTypes.enum.task, container))
 							.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 					/>
 				</BoardColumn>
@@ -68,7 +68,7 @@
 					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
 					addItemUrl={`#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`}
 					items={data.containers
-						.filter(isTaskContainer)
+						.filter((container) => isContainerWithPayloadType(payloadTypes.enum.task, container))
 						.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 					status={taskStatusOption}
 				>

@@ -7,7 +7,8 @@ import {
 	type AnyContainer,
 	computeFacetCount,
 	fromCounts,
-	isProgramContainer,
+	isContainerWithPayloadType,
+	payloadTypes,
 	resourceCategories,
 	resourceUnits
 } from '$lib/models';
@@ -36,7 +37,7 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		if (!isProgramContainer(container)) {
+		if (!isContainerWithPayloadType(payloadTypes.enum.program, container)) {
 			error(404, { message: t('error.not_found') });
 		}
 

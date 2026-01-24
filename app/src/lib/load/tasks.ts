@@ -7,9 +7,8 @@ import {
 	filterOrganizationalUnits,
 	fromCounts,
 	type GoalContainer,
-	isGoalContainer,
+	isContainerWithPayloadType,
 	isPartOf,
-	isTaskContainer,
 	payloadTypes,
 	predicates,
 	taskCategories,
@@ -65,8 +64,12 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 					url.searchParams.get('sort') ?? defaultSort
 				)
 			);
-			taskContainers = containers.filter(isTaskContainer);
-			otherContainers = containers.filter(isGoalContainer);
+			taskContainers = containers.filter((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.task, container)
+			);
+			otherContainers = containers.filter((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.goal, container)
+			);
 		} else {
 			if (features.useElasticsearch()) {
 				const [taskResult, otherResult] = await Promise.all([

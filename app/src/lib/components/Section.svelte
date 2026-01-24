@@ -28,33 +28,10 @@
 	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
 	import {
 		type AnyContainer,
-		isAdministrativeAreaBasicDataContainer,
-		isChapterContainer,
+		isContainerWithPayloadType,
 		isContainerWithProgress,
 		isContainerWithSummary,
-		isContentPartnerCollectionContainer,
-		isContentPartnerContainer,
-		isCustomCollectionContainer,
-		isEffectCollectionContainer,
-		isFileCollectionContainer,
-		isGoalCollectionContainer,
-		isGoalContainer,
-		isImageContainer,
-		isIndicatorCollectionContainer,
-		isMapContainer,
-		isMeasureCollectionContainer,
-		isMeasureContainer,
-		isObjectiveCollectionContainer,
-		isOrganizationalUnitContainer,
-		isProgramCollectionContainer,
-		isProgressContainer,
-		isResourceCollectionContainer,
-		isResourceDataCollectionContainer,
-		isSummaryContainer,
-		isTaskCollectionContainer,
-		isTeaserCollectionContainer,
-		isTeaserLikeContainer,
-		isTextContainer
+		payloadTypes
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
@@ -121,7 +98,7 @@
 	{/if}
 
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
-		{#if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.administrative_area_basic_data, container) && isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer)}
 			<ReadonlyAdministrativeAreaBasicDataSection
 				bind:container
 				bind:parentContainer
@@ -129,14 +106,14 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isChapterContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.chapter, container)}
 			<EditableChapterSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		{:else if isCustomCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.custom_collection, container)}
 			<EditableCustomCollection
 				bind:container
 				bind:parentContainer
@@ -144,7 +121,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.effect_collection, container) && (isContainerWithPayloadType(payloadTypes.enum.goal, parentContainer) || isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer))}
 			<EditableEffectCollection
 				bind:container
 				bind:parentContainer
@@ -152,7 +129,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isFileCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.file_collection, container)}
 			<EditableFileCollection
 				bind:container
 				bind:parentContainer
@@ -160,7 +137,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isGoalCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.goal_collection, container)}
 			<EditableGoalCollection
 				bind:container
 				bind:parentContainer
@@ -168,7 +145,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isContentPartnerCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.content_partner_collection, container)}
 			<EditableContentPartnerCollection
 				bind:container
 				bind:parentContainer
@@ -176,7 +153,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isContentPartnerContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.content_partner, container)}
 			<EditableContentPartnerSection
 				bind:container
 				bind:parentContainer
@@ -184,7 +161,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isIndicatorCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.indicator_collection, container)}
 			<EditableIndicatorCollection
 				bind:container
 				bind:parentContainer
@@ -192,7 +169,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isMapContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.map, container) && isContainerWithPayloadType(payloadTypes.enum.organizational_unit, parentContainer)}
 			<EditableMapSection
 				bind:container
 				bind:parentContainer
@@ -200,7 +177,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isMeasureCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.measure_collection, container)}
 			<EditableMeasureCollection
 				bind:container
 				bind:parentContainer
@@ -208,7 +185,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.objective_collection, container) && isContainerWithPayloadType(payloadTypes.enum.goal, parentContainer)}
 			<EditableObjectiveCollection
 				bind:container
 				bind:parentContainer
@@ -216,7 +193,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isProgramCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.program_collection, container)}
 			<EditableProgramCollection
 				bind:container
 				bind:parentContainer
@@ -224,7 +201,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.progress, container) && isContainerWithProgress(parentContainer)}
 			<EditableProgressSection
 				bind:container
 				bind:parentContainer
@@ -232,7 +209,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.resource_data_collection, container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
 			<EditableResourceDataCollection
 				bind:container
 				bind:parentContainer
@@ -240,7 +217,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isResourceCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.resource_collection, container)}
 			<EditableResourceCollection
 				bind:container
 				bind:parentContainer
@@ -248,14 +225,14 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isSummaryContainer(container) && isContainerWithSummary(parentContainer)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.summary, container) && isContainerWithSummary(parentContainer)}
 			<EditableSummarySection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		{:else if isTaskCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.task_collection, container)}
 			<EditableTaskCollection
 				bind:container
 				bind:parentContainer
@@ -263,7 +240,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isTextContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.text, container)}
 			<EditableTextSection
 				bind:container
 				bind:parentContainer
@@ -271,7 +248,7 @@
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
 				{heading}
 			/>
-		{:else if isTeaserLikeContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.teaser, container) || isContainerWithPayloadType(payloadTypes.enum.info_box, container) || isContainerWithPayloadType(payloadTypes.enum.teaser_highlight, container) || isContainerWithPayloadType(payloadTypes.enum.quote, container) || isContainerWithPayloadType(payloadTypes.enum.col_content, container)}
 			<EditableTeaserSection
 				bind:container
 				bind:parentContainer
@@ -279,7 +256,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isImageContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.image, container)}
 			<EditableImageSection
 				bind:container
 				bind:parentContainer
@@ -287,7 +264,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isTeaserCollectionContainer(container)}
+		{:else if isContainerWithPayloadType(payloadTypes.enum.teaser_collection, container)}
 			<EditableTeaserCollection
 				bind:container
 				bind:parentContainer

@@ -16,10 +16,7 @@
 		type Container,
 		findConnected,
 		type IndicatorContainer,
-		isBinaryIndicatorContainer,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		isIndicatorContainer,
+		isContainerWithPayloadType,
 		overlayKey,
 		payloadTypes,
 		predicates
@@ -35,7 +32,11 @@
 	let selectedContainer = $derived.by(() => {
 		if (page.url.searchParams.has('related-to')) {
 			return containers
-				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+				.filter(
+					(container) =>
+						isContainerWithPayloadType(payloadTypes.enum.binary_indicator, container) ||
+						isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+				)
 				.find(({ guid }) => guid === page.url.searchParams.get('related-to'));
 		} else {
 			return undefined;
@@ -46,16 +47,28 @@
 		if (selectedContainer) {
 			const connectedContainers = findConnected(
 				selectedContainer,
-				containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c)),
+				containers.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.binary_indicator, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.indicator, c)
+				),
 				[predicates.enum['is-affected-by']]
 			);
 			return containers
-				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+				.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.binary_indicator, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.indicator, c)
+				)
 				.filter((c) => connectedContainers.has(c))
 				.map((container) => ({ guid: container.guid, container }));
 		} else {
 			return containers
-				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+				.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.binary_indicator, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.indicator, c)
+				)
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
@@ -121,8 +134,14 @@
 					...containers.filter(({ relation }) =>
 						relation.some(({ object }) => object === container.guid)
 					),
-					...containers.filter(isContainerWithEffect),
-					...containers.filter(isContainerWithObjective)
+					...containers.filter(
+						(container) =>
+							isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+							isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+					),
+					...containers.filter((container) =>
+						isContainerWithPayloadType(payloadTypes.enum.goal, container)
+					)
 				]}
 				<li>
 					<Card --height="100%" {container} {relatedContainers} showRelationFilter />
@@ -136,8 +155,14 @@
 					...containers.filter(({ relation }) =>
 						relation.some(({ object }) => object === container.guid)
 					),
-					...containers.filter(isContainerWithEffect),
-					...containers.filter(isContainerWithObjective)
+					...containers.filter(
+						(container) =>
+							isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+							isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+					),
+					...containers.filter((container) =>
+						isContainerWithPayloadType(payloadTypes.enum.goal, container)
+					)
 				]}
 				<li>
 					<Card --height="100%" {container} {relatedContainers} showRelationFilter />

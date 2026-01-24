@@ -19,13 +19,7 @@
 		type GoalContainer,
 		type IooiType,
 		iooiTypes,
-		isEffectContainer,
-		isGoalContainer,
-		isIndicatorContainer,
-		isMeasureContainer,
-		isObjectiveContainer,
-		isResourceDataCollectionContainer,
-		isResourceDataContainer,
+		isContainerWithPayloadType,
 		type MeasureContainer,
 		type NewContainer,
 		type ObjectiveContainer,
@@ -58,7 +52,11 @@
 	$effect(() => {
 		const created = $lastCreatedContainer;
 
-		if (created && isResourceDataContainer(created) && container) {
+		if (
+			created &&
+			isContainerWithPayloadType(payloadTypes.enum.resource_data, created) &&
+			container
+		) {
 			// Check if this resourceData belongs to our container
 			const belongsToThisContainer = created.relation.some(
 				(r) => r.object === container.guid && r.predicate === predicates.enum['is-part-of']
@@ -77,7 +75,7 @@
 		// Check if a collection with this resourceDataType already exists
 		const collectionExists = containers.some(
 			(c) =>
-				isResourceDataCollectionContainer(c) &&
+				isContainerWithPayloadType(payloadTypes.enum.resource_data_collection, c) &&
 				c.payload.resourceDataType === resourceDataType &&
 				c.relation.some(
 					(r) => r.object === container.guid && r.predicate === predicates.enum['is-section-of']
@@ -120,16 +118,16 @@
 	}
 
 	const { itemType, itemFilterFn, addItemState } = $derived.by(() => {
-		if (isGoalContainer(container)) {
+		if (isContainerWithPayloadType(payloadTypes.enum.goal, container)) {
 			return {
 				itemType: 'objective' as const,
-				itemFilterFn: isObjectiveContainer,
+				itemFilterFn: (c: Container) => isContainerWithPayloadType(payloadTypes.enum.objective, c),
 				addItemState: addObjectiveState
 			};
-		} else if (isMeasureContainer(container)) {
+		} else if (isContainerWithPayloadType(payloadTypes.enum.measure, container)) {
 			return {
 				itemType: 'effect' as const,
-				itemFilterFn: isEffectContainer,
+				itemFilterFn: (c: Container) => isContainerWithPayloadType(payloadTypes.enum.effect, c),
 				addItemState: addEffectState
 			};
 		}
@@ -155,7 +153,7 @@
 
 	// Define create options for resource data based on container type
 	let resourceDataCreateOptions = $derived.by(() => {
-		if (isMeasureContainer(container)) {
+		if (isContainerWithPayloadType(payloadTypes.enum.measure, container)) {
 			// Measures can have both planned and actual resource allocation
 			return [
 				{
@@ -183,7 +181,7 @@
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
 	let resourceData = $derived(
 		(containers ?? [])
-			.filter(isResourceDataContainer)
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
 			.filter((rd) =>
 				rd.relation.some(
 					(r) => r.object === container?.guid && r.predicate === predicates.enum['is-part-of']
@@ -240,7 +238,7 @@
 			// Use selectedType if provided, otherwise determine based on container type
 			const resourceDataType =
 				selectedType ||
-				(isMeasureContainer(container)
+				(isContainerWithPayloadType(payloadTypes.enum.measure, container)
 					? resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
 					: resourceDataTypes.enum['resource_data_type.budget']);
 
@@ -316,7 +314,9 @@
 					{#snippet itemSnippet(container)}
 						<Card
 							{container}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={containers.filter((c) =>
+								isContainerWithPayloadType(payloadTypes.enum.indicator, c)
+							)}
 							showRelationFilter
 						/>
 					{/snippet}
@@ -331,7 +331,9 @@
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
 						<Card
 							container={item}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={containers.filter((c) =>
+								isContainerWithPayloadType(payloadTypes.enum.indicator, c)
+							)}
 							showRelationFilter
 						/>
 					{/each}
@@ -341,7 +343,9 @@
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
 						<Card
 							container={item}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={containers.filter((c) =>
+								isContainerWithPayloadType(payloadTypes.enum.indicator, c)
+							)}
 							showRelationFilter
 						/>
 					{/each}

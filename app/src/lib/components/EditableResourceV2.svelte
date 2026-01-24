@@ -4,9 +4,9 @@
 	import GroupedSingleChoiceDropdown from '$lib/components/GroupedSingleChoiceDropdown.svelte';
 	import {
 		type ResourceV2Container,
-		isResourceV2Container,
 		payloadTypes,
-		resourceCategories
+		resourceCategories,
+		isContainerWithPayloadType
 	} from '$lib/models';
 
 	interface Props {
@@ -59,7 +59,9 @@
 				'alpha'
 			);
 			if (cancelled) return;
-			resources = result.filter(isResourceV2Container);
+			resources = result.filter((c) =>
+				isContainerWithPayloadType(payloadTypes.enum.resource_v2, c)
+			);
 		})();
 
 		return () => {

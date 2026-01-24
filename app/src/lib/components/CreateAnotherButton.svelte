@@ -7,8 +7,7 @@
 		type AnyContainer,
 		type Container,
 		containerOfType,
-		isProgramContainer,
-		isTaskContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes,
 		predicates
@@ -33,11 +32,11 @@
 			({ predicate }) => predicate === predicates.enum['is-part-of-measure']
 		);
 
-		if (isProgramContainer(container)) {
+		if (isContainerWithPayloadType(payloadTypes.enum.program, container)) {
 			options = [...container.payload.chapterType].map((p) => ({ label: $_(p), value: p }));
 		} else if (isPartOfProgramRelation) {
 			const program = relatedContainers
-				.filter(isProgramContainer)
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.program, container))
 				.find(({ relation }) =>
 					relation.some(
 						({ predicate, object }) =>
@@ -76,7 +75,8 @@
 
 			const derivedPayload = {
 				...derived.payload,
-				...('assignee' in container.payload && isTaskContainer(derived)
+				...('assignee' in container.payload &&
+				isContainerWithPayloadType(payloadTypes.enum.task, derived)
 					? { assignee: container.payload.assignee }
 					: undefined),
 				...('audience' in container.payload && 'audience' in derived.payload
@@ -115,7 +115,7 @@
 				({ predicate }) => predicate === predicates.enum['is-part-of-measure']
 			);
 
-			if (isProgramContainer(container)) {
+			if (isContainerWithPayloadType(payloadTypes.enum.program, container)) {
 				derived.relation = [
 					{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 				];
@@ -145,7 +145,7 @@
 
 	function mayDeriveFrom(container: AnyContainer) {
 		return (
-			isProgramContainer(container) ||
+			isContainerWithPayloadType(payloadTypes.enum.program, container) ||
 			container.relation
 				.filter(({ object }) => object !== container.guid)
 				.some(

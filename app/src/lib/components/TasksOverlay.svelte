@@ -6,9 +6,9 @@
 		type AnyContainer,
 		computeFacetCount,
 		type Container,
-		isGoalContainer,
+		isContainerWithPayloadType,
 		isPartOf,
-		isTaskContainer,
+		payloadTypes,
 		taskCategories
 	} from '$lib/models';
 
@@ -34,10 +34,16 @@
 
 <Tasks
 	{container}
-	containers={containers.filter(isTaskContainer)}
+	containers={containers.filter((container) =>
+		isContainerWithPayloadType(payloadTypes.enum.task, container)
+	)}
 	relatedContainers={containers
-		.filter(isGoalContainer)
-		.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
+		.filter((container) => isContainerWithPayloadType(payloadTypes.enum.goal, container))
+		.filter((c) =>
+			containers
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.task, container))
+				.some(isPartOf(c))
+		)}
 />
 
 <Help slug="tasks-status" />

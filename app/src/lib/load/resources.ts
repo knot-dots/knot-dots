@@ -4,7 +4,7 @@ import {
 	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
-	isResourceDataContainer,
+	isContainerWithPayloadType,
 	payloadTypes,
 	resourceCategories,
 	resourceUnits,
@@ -93,7 +93,9 @@ export async function fetchResources({
 
 		// Extract unique resource GUIDs from resource_data containers
 		const usedResourceGuids = new Set(
-			relatedContainers.filter(isResourceDataContainer).map((c) => c.payload.resource)
+			relatedContainers
+				.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
+				.map((c) => c.payload.resource)
 		);
 
 		// Filter to only resources that are actually used

@@ -10,7 +10,8 @@ import {
 	anyPayload,
 	createNewContainerSchema,
 	editorialState,
-	isProgramContainer,
+	isContainerWithPayloadType,
+	payloadTypes,
 	predicates
 } from '$lib/models';
 import { pollJobStatus, startGoalsJob, startJob } from '$lib/server/ai';
@@ -45,7 +46,7 @@ export const POST = (async ({ locals, request }) => {
 	const container = await locals.pool.connect(
 		getContainerByGuid(formData.get('program') as string)
 	);
-	if (!isProgramContainer(container)) {
+	if (!isContainerWithPayloadType(payloadTypes.enum.program, container)) {
 		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
 	}
 

@@ -4,18 +4,9 @@
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import {
-		isGoalContainer,
-		isMeasureContainer,
-		isPageContainer,
-		isProgramContainer,
-		isReportContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer,
-		payloadTypes
-	} from '$lib/models';
-	import type { PageProps } from './$types';
 	import { createFeatureDecisions } from '$lib/features';
+	import { isContainerWithPayloadType, payloadTypes } from '$lib/models';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
@@ -27,13 +18,13 @@
 		containers={data.containers
 			.filter(
 				(c) =>
-					isGoalContainer(c) ||
-					isMeasureContainer(c) ||
-					(usePage && isPageContainer(c)) ||
-					isProgramContainer(c) ||
-					isReportContainer(c) ||
-					isRuleContainer(c) ||
-					isSimpleMeasureContainer(c)
+					isContainerWithPayloadType(payloadTypes.enum.goal, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+					(usePage && isContainerWithPayloadType(payloadTypes.enum.page, c)) ||
+					isContainerWithPayloadType(payloadTypes.enum.program, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.report, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.rule, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)
 			)
 			.slice(0, browser ? undefined : 20)}
 		payloadType={[

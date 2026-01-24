@@ -6,7 +6,7 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import { payloadTypes, type Container, isSimpleMeasureContainer } from '$lib/models';
+	import { type Container, isContainerWithPayloadType, payloadTypes } from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
@@ -56,7 +56,7 @@
 						$ability.can('update', container)}
 				/>
 
-				{#if isSimpleMeasureContainer(container)}
+				{#if isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)}
 					<EditableProgress
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}

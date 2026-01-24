@@ -9,8 +9,7 @@
 		type AnyContainer,
 		type Container,
 		type GoalContainer,
-		isMeasureContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
 		overlayKey,
 		payloadTypes,
 		predicates,
@@ -76,7 +75,9 @@
 			addItemUrl={addItemUrl([
 				[overlayKey.enum.create, payloadTypes.enum.task],
 				['taskStatus', taskStatusOption],
-				...(container && (isMeasureContainer(container) || isSimpleMeasureContainer(container))
+				...(container &&
+				(isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, container))
 					? [
 							[predicates.enum['is-part-of-measure'], container.guid],
 							['managedBy', container.managed_by]

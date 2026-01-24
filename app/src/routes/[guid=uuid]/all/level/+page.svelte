@@ -10,12 +10,8 @@
 	import {
 		titleForGoalCollection,
 		containersByHierarchyLevel,
-		isGoalContainer,
-		isMeasureContainer,
-		isProgramContainer,
-		isReportContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
+		payloadTypes,
 		predicates,
 		titleForMeasureCollection,
 		titleForProgramCollection
@@ -27,7 +23,7 @@
 	let goals = $derived(
 		containersByHierarchyLevel(
 			data.containers
-				.filter(isGoalContainer)
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.goal, container))
 				.filter(({ relation }) =>
 					relation.every(({ predicate }) => predicate !== predicates.enum['is-part-of-measure'])
 				)
@@ -37,7 +33,10 @@
 	let measuresAndRules = $derived(
 		containersByHierarchyLevel(
 			data.containers.filter(
-				(c) => isMeasureContainer(c) || isSimpleMeasureContainer(c) || isRuleContainer(c)
+				(c) =>
+					isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.rule, c)
 			)
 		)
 	);
@@ -48,10 +47,18 @@
 		{
 			addItemUrl: `#create=program${useReport ? '&create=report' : ''}`,
 			containers: data.containers
-				.filter((c) => isProgramContainer(c) || isReportContainer(c))
+				.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.program, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.report, c)
+				)
 				.slice(0, browser ? undefined : 10),
 			key: 'programs',
-			title: titleForProgramCollection(data.containers.filter(isProgramContainer))
+			title: titleForProgramCollection(
+				data.containers.filter((container) =>
+					isContainerWithPayloadType(payloadTypes.enum.program, container)
+				)
+			)
 		},
 		...Array.from(goals.entries())
 			.toSorted()
@@ -70,7 +77,7 @@
 						containers: containers.slice(0, browser ? undefined : 10),
 						key: `implementation-${hierarchyLevel}`,
 						title: titleForMeasureCollection(
-							containers.filter(isMeasureContainer),
+							containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.measure, c)),
 							[...measuresAndRules.keys()].length > 1 ? hierarchyLevel : 0
 						)
 					};
@@ -79,7 +86,10 @@
 						addItemUrl: `#create=measure&hierarchyLevel=${hierarchyLevel}`,
 						containers: containers.slice(0, browser ? undefined : 10),
 						key: `implementation-${hierarchyLevel}`,
-						title: titleForMeasureCollection(containers.filter(isMeasureContainer), hierarchyLevel)
+						title: titleForMeasureCollection(
+							containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.measure, c)),
+							hierarchyLevel
+						)
 					};
 				}
 			})

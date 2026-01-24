@@ -26,13 +26,7 @@
 		type ResourceV2Container,
 		containerOfType,
 		findAncestors,
-		isGoalContainer,
-		isMeasureContainer,
-		isResourceDataBudgetContainer,
-		isResourceDataPlannedResourceAllocationContainer,
-		isResourceDataActualResourceAllocationContainer,
-		isResourceDataTotalBudgetContainer,
-		isResourceDataTotalBudgetForecastContainer,
+		isContainerWithPayloadType,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
@@ -126,16 +120,50 @@
 
 	// --- ResourceV2Table logic ---
 
-	let budgetContainers = $derived(relatedContainers.filter(isResourceDataBudgetContainer));
+	let budgetContainers = $derived(
+		relatedContainers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
+			.filter(
+				({ payload }) =>
+					payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
+			)
+	);
 	let plannedContainers = $derived(
-		relatedContainers.filter(isResourceDataPlannedResourceAllocationContainer)
+		relatedContainers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
+			.filter(
+				({ payload }) =>
+					payload.resourceDataType ===
+					resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
+			)
 	);
 	let actualContainers = $derived(
-		relatedContainers.filter(isResourceDataActualResourceAllocationContainer)
+		relatedContainers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
+			.filter(
+				({ payload }) =>
+					payload.resourceDataType ===
+					resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
+			)
 	);
-	let budgetTotalContainer = $derived(relatedContainers.find(isResourceDataTotalBudgetContainer));
+	let budgetTotalContainer = $derived(
+		relatedContainers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
+			.filter(
+				({ payload }) =>
+					payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
+			)
+			.at(0)
+	);
 	let prognosisContainer = $derived(
-		relatedContainers.find(isResourceDataTotalBudgetForecastContainer)
+		relatedContainers
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.resource_data, c))
+			.filter(
+				({ payload }) =>
+					payload.resourceDataType ===
+					resourceDataTypes.enum['resource_data_type.total_budget_forecast']
+			)
+			.at(0)
 	);
 
 	// Helper to create a stub container for optimistic UI
@@ -200,7 +228,11 @@
 		const ancestors = findAncestors(resourceDataContainer, relatedContainers, [
 			predicates.enum['is-part-of']
 		]);
-		return ancestors.find((c) => isMeasureContainer(c) || isGoalContainer(c));
+		return ancestors.find(
+			(c) =>
+				isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+				isContainerWithPayloadType(payloadTypes.enum.goal, c)
+		);
 	}
 
 	// Build sections for EditableTable

@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
-import { isOrganizationalUnitContainer, isOrganizationContainer, predicates } from '$lib/models';
+import { isContainerWithPayloadType, payloadTypes, predicates } from '$lib/models';
 import { getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
@@ -20,7 +20,10 @@ export const load = (async ({ locals, parent }) => {
 		)
 	]);
 
-	if (!isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)) {
+	if (
+		!isContainerWithPayloadType(payloadTypes.enum.organization, container) &&
+		!isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)
+	) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 

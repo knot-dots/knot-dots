@@ -22,9 +22,7 @@
 		findConnected,
 		indicatorCategories,
 		type IndicatorTemplateContainer,
-		isActualDataContainer,
-		isBinaryIndicatorContainer,
-		isIndicatorTemplateContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		overlayKey,
 		payloadTypes,
@@ -49,7 +47,7 @@
 	let selectedContainer = $derived.by(() => {
 		if (page.url.searchParams.has('related-to')) {
 			return containers
-				.filter(isIndicatorTemplateContainer)
+				.filter((c) => isContainerWithPayloadType(payloadTypes.enum.indicator_template, c))
 				.find(({ guid }) => guid === page.url.searchParams.get('related-to'));
 		} else {
 			return undefined;
@@ -60,16 +58,28 @@
 		if (selectedContainer) {
 			const connectedContainers = findConnected(
 				selectedContainer,
-				containers.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c)),
+				containers.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.binary_indicator, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.indicator_template, c)
+				),
 				[predicates.enum['is-affected-by']]
 			);
 			return containers
-				.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
+				.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.binary_indicator, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.indicator_template, c)
+				)
 				.filter((c) => connectedContainers.has(c))
 				.map((container) => ({ guid: container.guid, container }));
 		} else {
 			return containers
-				.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
+				.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.binary_indicator, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.indicator_template, c)
+				)
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
@@ -202,8 +212,10 @@
 		>
 			{#each items as { guid, container } (guid)}
 				{@const relatedContainers = containers
-					.filter(isActualDataContainer)
-					.filter(({ payload }) => payload.indicator === container.guid)}
+					.filter((container) =>
+						isContainerWithPayloadType(payloadTypes.enum.actual_data, container)
+					)
+					.filter(({ payload }) => payload.indicator == container.guid)}
 				{#if relatedContainers.length > 0}
 					<li>
 						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
@@ -215,8 +227,10 @@
 		<ul>
 			{#each items as { guid, container } (guid)}
 				{@const relatedContainers = containers
-					.filter(isActualDataContainer)
-					.filter(({ payload }) => payload.indicator === container.guid)}
+					.filter((container) =>
+						isContainerWithPayloadType(payloadTypes.enum.actual_data, container)
+					)
+					.filter(({ payload }) => payload.indicator == container.guid)}
 				{#if relatedContainers.length > 0}
 					<li>
 						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />

@@ -3,17 +3,14 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		titleForGoalCollection,
 		type Container,
 		containersByHierarchyLevel,
-		isGoalContainer,
-		isMeasureContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
 		overlayKey,
 		payloadTypes,
 		predicates,
 		type ProgramContainer,
+		titleForGoalCollection,
 		titleForMeasureCollection
 	} from '$lib/models';
 
@@ -27,7 +24,7 @@
 	let goals = $derived(
 		containersByHierarchyLevel(
 			containers
-				.filter(isGoalContainer)
+				.filter((c) => isContainerWithPayloadType(payloadTypes.enum.goal, c))
 				.filter(({ relation }) =>
 					relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
 				)
@@ -37,7 +34,10 @@
 	let measuresAndRules = $derived(
 		containersByHierarchyLevel(
 			containers.filter(
-				(c) => isMeasureContainer(c) || isSimpleMeasureContainer(c) || isRuleContainer(c)
+				(c) =>
+					isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.simple_measure, c) ||
+					isContainerWithPayloadType(payloadTypes.enum.rule, c)
 			)
 		)
 	);
@@ -78,7 +78,7 @@
 						containers,
 						key: `implementation-${hierarchyLevel}`,
 						title: titleForMeasureCollection(
-							containers.filter(isMeasureContainer),
+							containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.measure, c)),
 							[...measuresAndRules.keys()].length > 1 ? hierarchyLevel : 0
 						)
 					};
@@ -96,7 +96,10 @@
 						]),
 						containers,
 						key: `implementation-${hierarchyLevel}`,
-						title: titleForMeasureCollection(containers.filter(isMeasureContainer), hierarchyLevel)
+						title: titleForMeasureCollection(
+							containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.measure, c)),
+							hierarchyLevel
+						)
 					};
 				}
 			})

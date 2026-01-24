@@ -10,8 +10,7 @@ import {
 	containerOfType,
 	editorialState,
 	type IndicatorTemplatePayload,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
+	isContainerWithPayloadType,
 	newContainer,
 	type NewContainer,
 	payloadTypes,
@@ -50,13 +49,13 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	try {
 		const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
 		if (
-			isOrganizationalUnitContainer(containerFromParams) &&
+			isContainerWithPayloadType(payloadTypes.enum.organizational_unit, containerFromParams) &&
 			defineAbilityFor(locals.user).can('read', containerFromParams)
 		) {
 			currentOrganizationalUnitGuid = containerFromParams.guid;
 			currentOrganizationGuid = containerFromParams.organization;
 		} else if (
-			isOrganizationContainer(containerFromParams) &&
+			isContainerWithPayloadType(payloadTypes.enum.organization, containerFromParams) &&
 			defineAbilityFor(locals.user).can('read', containerFromParams)
 		) {
 			currentOrganizationGuid = containerFromParams.guid;

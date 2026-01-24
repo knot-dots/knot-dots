@@ -2,7 +2,12 @@
 	import { _ } from 'svelte-i18n';
 	import ArrowCircleDownSolid from '~icons/knotdots/arrow-circle-down-solid';
 	import ArrowCircleUpSolid from '~icons/knotdots/arrow-circle-up-solid';
-	import { type EffectContainer, isEffectContainer, type ObjectiveContainer } from '$lib/models';
+	import {
+		type EffectContainer,
+		isContainerWithPayloadType,
+		type ObjectiveContainer,
+		payloadTypes
+	} from '$lib/models';
 
 	interface Props {
 		container: EffectContainer | ObjectiveContainer;
@@ -11,10 +16,14 @@
 	let { container }: Props = $props();
 
 	const trendValueUpLabel = $derived(
-		isEffectContainer(container) ? $_('effect.trend_value_up') : $_('objective.trend_value_up')
+		isContainerWithPayloadType(payloadTypes.enum.effect, container)
+			? $_('effect.trend_value_up')
+			: $_('objective.trend_value_up')
 	);
 	const trendValueDownLabel = $derived(
-		isEffectContainer(container) ? $_('effect.trend_value_down') : $_('objective.trend_value_down')
+		isContainerWithPayloadType(payloadTypes.enum.effect, container)
+			? $_('effect.trend_value_down')
+			: $_('objective.trend_value_down')
 	);
 </script>
 

@@ -16,13 +16,7 @@ import {
 	indicatorCategories,
 	type IndicatorContainer,
 	indicatorTypes,
-	isEffectContainer,
-	isGoalContainer,
-	isIndicatorContainer,
-	isMeasureContainer,
-	isProgramContainer,
-	isReportContainer,
-	isTaskContainer,
+	isContainerWithPayloadType,
 	type MeasureContainer,
 	type MeasurePayload,
 	type NewContainer,
@@ -182,7 +176,9 @@ async function copyTasksFromOriginal(
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
-	for (const copyFrom of originals.filter(isTaskContainer)) {
+	for (const copyFrom of originals.filter((container) =>
+		isContainerWithPayloadType(payloadTypes.enum.task, container)
+	)) {
 		const copy = createCopyOf(
 			copyFrom,
 			createdMeasure.organization,
@@ -225,7 +221,9 @@ async function copyIndicatorsFromOriginal(
 		''
 	)(txConnection)) as IndicatorContainer[];
 
-	for (const copyFrom of originals.filter(isIndicatorContainer)) {
+	for (const copyFrom of originals.filter((container) =>
+		isContainerWithPayloadType(payloadTypes.enum.indicator, container)
+	)) {
 		const match = organizationIndicators.find(
 			({ payload }) => payload.quantity === copyFrom.payload.quantity
 		);
@@ -269,7 +267,9 @@ async function copyEffectsFromOriginal(
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
-	for (const copyFrom of originals.filter(isEffectContainer)) {
+	for (const copyFrom of originals.filter((container) =>
+		isContainerWithPayloadType(payloadTypes.enum.effect, container)
+	)) {
 		const copy = createCopyOf(
 			copyFrom,
 			createdMeasure.organization,
@@ -347,7 +347,7 @@ async function copyMeasure(
 	const isPartOfObjects = await copyGoalsFromOriginal(
 		createdContainer,
 		containersRelatedToOriginal
-			.filter(isGoalContainer)
+			.filter((container) => isContainerWithPayloadType(payloadTypes.enum.goal, container))
 			.filter(({ relation }) =>
 				relation.some(
 					({ predicate, object }) =>
@@ -411,7 +411,7 @@ async function copyProgram(
 	const isPartOfObjects = [createdProgram] as AnyContainer[];
 
 	for (const copyFrom of originalParts) {
-		if (isMeasureContainer(copyFrom)) {
+		if (isContainerWithPayloadType(payloadTypes.enum.measure, copyFrom)) {
 			isPartOfObjects.push(
 				await copyMeasureFromOriginal(createdProgram, copyFrom, user, txConnection)
 			);
@@ -625,11 +625,20 @@ export const POST = (async ({ locals, request }) => {
 						predicate === predicates.enum['is-copy-of'] && object !== undefined
 				);
 
-				if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
+				if (
+					isCopyOfRelation &&
+					isContainerWithPayloadType(payloadTypes.enum.measure, createdContainer)
+				) {
 					await copyMeasure(createdContainer, isCopyOfRelation, locals.user, txConnection);
-				} else if (isCopyOfRelation && isProgramContainer(createdContainer)) {
+				} else if (
+					isCopyOfRelation &&
+					isContainerWithPayloadType(payloadTypes.enum.program, createdContainer)
+				) {
 					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
-				} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
+				} else if (
+					isCopyOfRelation &&
+					isContainerWithPayloadType(payloadTypes.enum.report, createdContainer)
+				) {
 					await copyReportContainer(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				}
 

@@ -1,5 +1,10 @@
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
-import { isActualDataContainer, type Container, type IndicatorContainer } from '$lib/models';
+import {
+	type Container,
+	type IndicatorContainer,
+	isContainerWithPayloadType,
+	payloadTypes
+} from '$lib/models';
 
 const $_ = unwrapFunctionStore(_);
 
@@ -57,7 +62,7 @@ export function generateIndicatorCsv(
 		const p = row.payload as IndicatorContainer['payload'];
 
 		const actualData = actualDataContainers
-			.filter(isActualDataContainer)
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.actual_data, c))
 			.find(({ payload }) => payload.indicator === row.guid);
 		const valuesMap = new Map<number, number>(actualData?.payload.values ?? []);
 

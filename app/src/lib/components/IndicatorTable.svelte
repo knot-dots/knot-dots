@@ -6,11 +6,9 @@
 		findLeafObjectives,
 		findOverallObjective,
 		type IndicatorContainer,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		isEffectContainer,
-		isObjectiveContainer,
+		isContainerWithPayloadType,
 		isPartOf,
+		payloadTypes,
 		predicates,
 		status
 	} from '$lib/models';
@@ -57,7 +55,11 @@
 	});
 
 	let objectivesByYear = $derived.by(() => {
-		let objectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer))
+		let objectives = findLeafObjectives(
+			relatedContainers.filter((container) =>
+				isContainerWithPayloadType(payloadTypes.enum.objective, container)
+			)
+		)
 			.flatMap(({ payload }) => payload.wantedValues)
 			.map(([year, value]) => ({ Year: year, Value: value }))
 			.reduce(
@@ -102,15 +104,27 @@
 		return new Map(objectives.map(({ Year, Value }) => [Year, Value]));
 	});
 
-	let effectContainers = $derived(relatedContainers.filter(isEffectContainer));
+	let effectContainers = $derived(
+		relatedContainers.filter((container) =>
+			isContainerWithPayloadType(payloadTypes.enum.effect, container)
+		)
+	);
 
-	let measureContainers = $derived(relatedContainers.filter(isContainerWithEffect));
+	let measureContainers = $derived(
+		relatedContainers.filter(
+			(container) =>
+				isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+				isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
+		)
+	);
 
 	let effects = $derived.by(() => {
 		return effectContainers
 			.map((c) => {
 				const measure = findAncestors(c, relatedContainers, [predicates.enum['is-part-of']]).find(
-					isContainerWithEffect
+					(container) =>
+						isContainerWithPayloadType(payloadTypes.enum.measure, container) ||
+						isContainerWithPayloadType(payloadTypes.enum.simple_measure, container)
 				);
 				return {
 					indicator: container.guid,
@@ -247,11 +261,13 @@
 					{/each}
 				</tr>
 
-				{#each relatedContainers.filter(isContainerWithObjective) as containerWithObjective (containerWithObjective.guid)}
+				{#each relatedContainers.filter( (container) => isContainerWithPayloadType(payloadTypes.enum.goal, container) ) as containerWithObjective (containerWithObjective.guid)}
 					{@const valuesByYear = new Map(
 						findLeafObjectives(
 							relatedContainers
-								.filter(isObjectiveContainer)
+								.filter((container) =>
+									isContainerWithPayloadType(payloadTypes.enum.objective, container)
+								)
 								.filter(isPartOf(containerWithObjective))
 						).flatMap(({ payload }) => payload.wantedValues)
 					)}

@@ -17,7 +17,7 @@
 		type AnyContainer,
 		type BinaryIndicatorContainer,
 		containerOfType,
-		isActualDataContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
@@ -65,7 +65,7 @@
 
 	let actualDataContainer = $derived(
 		relatedContainers
-			.filter(isActualDataContainer)
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.actual_data, c))
 			.filter(({ payload }) => payload.indicator === container.guid)
 			.map((c) => {
 				let _ = $state(c);

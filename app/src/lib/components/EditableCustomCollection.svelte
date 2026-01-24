@@ -26,8 +26,7 @@
 		computeFacetCount,
 		type CustomCollectionContainer,
 		indicatorCategories,
-		isActualDataContainer,
-		isIndicatorTemplateContainer,
+		isContainerWithPayloadType,
 		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
@@ -208,7 +207,9 @@
 	);
 
 	let indicatorGuids = $derived(
-		items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
+		items
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.indicator_template, c))
+			.map((item) => item.guid)
 	);
 
 	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
@@ -251,7 +252,10 @@
 	let comparisonDataMap = $derived.by(() => {
 		const map = new SvelteMap<string, ActualDataContainer[]>();
 		for (const container of comparisonDataResource.current ?? []) {
-			if (isActualDataContainer(container) && container.payload.indicator) {
+			if (
+				isContainerWithPayloadType(payloadTypes.enum.actual_data, container) &&
+				container.payload.indicator
+			) {
 				const indicatorGuid = container.payload.indicator;
 				if (!map.has(indicatorGuid)) {
 					map.set(indicatorGuid, []);
@@ -339,7 +343,7 @@
 	<ul class="catalog">
 		{#each items as item (item.guid)}
 			<li>
-				{#if isIndicatorTemplateContainer(item)}
+				{#if isContainerWithPayloadType(payloadTypes.enum.indicator_template, item)}
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}

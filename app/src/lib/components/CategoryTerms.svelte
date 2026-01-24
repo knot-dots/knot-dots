@@ -10,7 +10,7 @@
 		type CategoryContainer,
 		container as containerSchema,
 		containerOfType,
-		isTermContainer,
+		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes,
 		type Predicate,
@@ -39,7 +39,7 @@
 
 	let terms: TermContainer[] = $derived(
 		relatedContainers
-			.filter(isTermContainer)
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.term, c))
 			.filter(({ guid }) => guid !== container.guid)
 			.map((term) => {
 				const membership = term.relation.find(
@@ -215,7 +215,7 @@
 				throw new Error(payload.message ?? 'Failed to create term');
 			}
 			const parsed = containerSchema.safeParse(payload);
-			if (!parsed.success || !isTermContainer(parsed.data)) {
+			if (!parsed.success || !isContainerWithPayloadType(payloadTypes.enum.term, parsed.data)) {
 				throw new Error('Unexpected response while creating term');
 			}
 

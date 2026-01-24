@@ -6,7 +6,7 @@ import {
 	type CategoryOptions,
 	getCategoryKeys
 } from '$lib/categoryOptions';
-import { isCategoryContainer, isTermContainer, payloadTypes } from '$lib/models';
+import { isContainerWithPayloadType, payloadTypes } from '$lib/models';
 import type { User } from '$lib/stores';
 import { getManyContainers } from '$lib/server/db';
 import type { DatabaseConnection } from 'slonik';
@@ -35,11 +35,17 @@ export async function loadCategoryContext(params: {
 		)
 	);
 
-	const categories = filterVisible(containers.filter(isCategoryContainer), params.user);
+	const categories = filterVisible(
+		containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.category, c)),
+		params.user
+	);
 
 	const options = buildCategoryOptionsFromContainers(
 		categories,
-		filterVisible(containers.filter(isTermContainer), params.user)
+		filterVisible(
+			containers.filter((c) => isContainerWithPayloadType(payloadTypes.enum.term, c)),
+			params.user
+		)
 	);
 	const keys = getCategoryKeys(options);
 

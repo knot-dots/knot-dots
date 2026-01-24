@@ -9,18 +9,15 @@
 		type AnyContainer,
 		type ContainerWithEffect,
 		isAssignedTo,
-		isContainerWithEffect,
 		isMemberOf,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		isProgramContainer,
-		isTaskContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
 		type ProgramContainer,
 		type TaskContainer,
 		type TaskStatus,
-		taskStatus
+		taskStatus,
+		payloadTypes,
+		isContainerWithPayloadType
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -94,7 +91,7 @@
 
 		<ul class="carousel">
 			{#each containers
-				.filter(isTaskContainer)
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.task, container))
 				.filter(isAssignedTo($user))
 				.filter(byTaskStatus(taskStatusFilter))
 				.toSorted(bySortOption(sort)) as task (task.guid)}
@@ -109,7 +106,7 @@
 		<h2 class="details-heading">{$_('profile.my_measures')}</h2>
 		<ul class="carousel">
 			{#each containers
-				.filter(isContainerWithEffect)
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.measure, container) || isContainerWithPayloadType(payloadTypes.enum.simple_measure, container))
 				.filter((c: ContainerWithEffect) => isMemberOf($user, c)) as measure (measure.guid)}
 				<li>
 					<Card container={measure} />
@@ -122,7 +119,7 @@
 		<h2 class="details-heading">{$_('profile.my_organizations')}</h2>
 		<ul class="carousel">
 			{#each containers
-				.filter((c: AnyContainer) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c))
+				.filter((c: AnyContainer) => isContainerWithPayloadType(payloadTypes.enum.organization, c) || isContainerWithPayloadType(payloadTypes.enum.organizational_unit, c))
 				.filter( (c: OrganizationContainer | OrganizationalUnitContainer) => isMemberOf($user, c) ) as organization (organization.guid)}
 				<li>
 					<OrganizationCard container={organization} />
@@ -135,7 +132,7 @@
 		<h2 class="details-heading">{$_('profile.my_programs')}</h2>
 		<ul class="carousel">
 			{#each containers
-				.filter(isProgramContainer)
+				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.program, container))
 				.filter((c: ProgramContainer) => isMemberOf($user, c)) as program (program.guid)}
 				<li>
 					<Card container={program} />

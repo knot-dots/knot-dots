@@ -12,8 +12,7 @@
 		type AnyContainer,
 		titleForMeasureCollection,
 		containerOfType,
-		isMeasureContainer,
-		isSimpleMeasureContainer,
+		isContainerWithPayloadType,
 		type MeasureCollectionContainer,
 		type MeasureContainer,
 		type NewContainer,
@@ -40,12 +39,20 @@
 	}: Props = $props();
 
 	let items = $derived(
-		isMeasureContainer(parentContainer)
+		isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer)
 			? hasPart(
 					parentContainer,
-					relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+					relatedContainers.filter(
+						(c) =>
+							isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+							isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)
+					)
 				)
-			: relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+			: relatedContainers.filter(
+					(c) =>
+						isContainerWithPayloadType(payloadTypes.enum.measure, c) ||
+						isContainerWithPayloadType(payloadTypes.enum.simple_measure, c)
+				)
 	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
@@ -61,7 +68,7 @@
 			container.realm
 		) as Omit<NewContainer, 'payload'> & Pick<MeasureContainer, 'payload'>;
 
-		if (isMeasureContainer(parentContainer)) {
+		if (isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer)) {
 			if (createFeatureDecisions(page.data.features).useCustomCategories()) {
 				item.payload.category = parentContainer.payload.category;
 			} else {
@@ -99,7 +106,7 @@
 
 <header>
 	<svelte:element this={heading} class="details-heading">
-		{#if isMeasureContainer(parentContainer)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer)}
 			{titleForMeasureCollection(
 				items as MeasureContainer[],
 				parentContainer.payload.hierarchyLevel + 1

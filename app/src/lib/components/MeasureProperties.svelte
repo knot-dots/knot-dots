@@ -23,7 +23,8 @@
 		type AnyContainer,
 		type Container,
 		type ContainerWithEffect,
-		isMeasureContainer
+		isContainerWithPayloadType,
+		payloadTypes
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -43,7 +44,7 @@
 	{#snippet top()}
 		<EditableMeasureType {editable} bind:value={container.payload.measureType} />
 
-		{#if isMeasureContainer(container) && featureDecisions.useSubMeasures()}
+		{#if isContainerWithPayloadType(payloadTypes.enum.measure, container) && featureDecisions.useSubMeasures()}
 			<EditableMeasureHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 		{/if}
 
@@ -65,7 +66,7 @@
 
 		<EditableStatus {editable} bind:value={container.payload.status} />
 
-		{#if isMeasureContainer(container)}
+		{#if isContainerWithPayloadType(payloadTypes.enum.measure, container)}
 			<EditableMeasureHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 		{/if}
 

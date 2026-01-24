@@ -6,7 +6,7 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
-	isOrganizationalUnitContainer,
+	isContainerWithPayloadType,
 	type KeycloakUser,
 	type OrganizationalUnitContainer,
 	organizationalUnitType,
@@ -55,7 +55,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 		try {
 			const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
 			if (
-				isOrganizationalUnitContainer(containerFromParams) &&
+				isContainerWithPayloadType(payloadTypes.enum.organizational_unit, containerFromParams) &&
 				defineAbilityFor(locals.user).can('read', containerFromParams)
 			) {
 				currentOrganizationalUnit = containerFromParams;

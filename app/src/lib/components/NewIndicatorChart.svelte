@@ -6,7 +6,8 @@
 		type ActualDataContainer,
 		type AnyContainer,
 		type IndicatorTemplateContainer,
-		isActualDataContainer
+		isContainerWithPayloadType,
+		payloadTypes
 	} from '$lib/models';
 	import { compareState } from '$lib/stores';
 	import { page } from '$app/state';
@@ -26,7 +27,7 @@
 	// Current organizational unit's actual data
 	let actualDataContainer = $derived(
 		relatedContainers
-			.filter(isActualDataContainer)
+			.filter((container) => isContainerWithPayloadType(payloadTypes.enum.actual_data, container))
 			.filter(({ payload }) => payload.indicator === container.guid)
 			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
 	);

@@ -1,11 +1,6 @@
 import type { GeoJsonObject } from 'geojson';
 import { filterVisible } from '$lib/authorization';
-import {
-	isMapContainer,
-	isOrganizationalUnitContainer,
-	payloadTypes,
-	predicates
-} from '$lib/models';
+import { isContainerWithPayloadType, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
@@ -19,7 +14,7 @@ export const load = (async ({ locals, parent }) => {
 	const container = currentOrganizationalUnit ?? currentOrganization;
 	let organizationalUnits: string[] = [];
 
-	if (isOrganizationalUnitContainer(container)) {
+	if (isContainerWithPayloadType(payloadTypes.enum.organizational_unit, container)) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
 			getAllRelatedOrganizationalUnitContainers(container.guid)
 		);
@@ -84,14 +79,18 @@ export const load = (async ({ locals, parent }) => {
 
 	let spatialFeatures: Array<GeoJsonObject & { id: string }> = [];
 
-	if (sections.filter(isMapContainer).length > 0 || 'geometry' in container.payload) {
+	if (
+		sections.filter((container) => isContainerWithPayloadType(payloadTypes.enum.map, container))
+			.length > 0 ||
+		'geometry' in container.payload
+	) {
 		const result = await locals.pool.connect(
 			getManySpatialFeatures([
 				...('geometry' in container.payload && container.payload.geometry
 					? [container.payload.geometry]
 					: []),
 				...sections
-					.filter(isMapContainer)
+					.filter((container) => isContainerWithPayloadType(payloadTypes.enum.map, container))
 					.map(({ payload }) => payload.geometry)
 					.filter((geom) => geom !== undefined)
 			])

@@ -12,10 +12,6 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import {
-		isResourceDataBudgetContainer,
-		isResourceDataContainer,
-		isGoalContainer,
-		isMeasureContainer,
 		predicates,
 		overlayKey,
 		overlayURL,
@@ -26,7 +22,9 @@
 		type GoalContainer,
 		type MeasureContainer,
 		type ResourceDataContainer,
-		type ResourceV2Container
+		type ResourceV2Container,
+		isContainerWithPayloadType,
+		resourceDataTypes
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { _ } from 'svelte-i18n';
@@ -80,7 +78,10 @@
 		});
 	});
 
-	const isBudgetContainer = $derived(isResourceDataBudgetContainer(container));
+	const isBudgetContainer = $derived(
+		isContainerWithPayloadType(payloadTypes.enum.resource_data, container) &&
+			container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
+	);
 
 	const resourceUnit = $derived(currentResource?.payload.resourceUnit ?? 'undefined');
 
@@ -99,8 +100,12 @@
 			},
 			'alpha'
 		).then((containers) => {
-			goalContainers = containers.filter(isGoalContainer);
-			measureContainers = containers.filter(isMeasureContainer);
+			goalContainers = containers.filter((c) =>
+				isContainerWithPayloadType(payloadTypes.enum.goal, c)
+			);
+			measureContainers = containers.filter((c) =>
+				isContainerWithPayloadType(payloadTypes.enum.measure, c)
+			);
 		});
 	});
 
@@ -142,14 +147,19 @@
 			},
 			'alpha'
 		).then((containers) => {
-			allResourceDataContainers = containers.filter(isResourceDataContainer);
+			allResourceDataContainers = containers.filter((c) =>
+				isContainerWithPayloadType(payloadTypes.enum.resource_data, c)
+			);
 		});
 	});
 
 	let allBudgetContainers = $derived.by(() => {
 		const subordinateGoalGuids = new Set(subordinateGoals.map((g) => g.guid));
 		return allResourceDataContainers
-			.filter(isResourceDataBudgetContainer)
+			.filter(
+				({ payload }) =>
+					payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
+			)
 			.filter((c) =>
 				c.relation.some(
 					(r) => r.predicate === predicates.enum['is-part-of'] && subordinateGoalGuids.has(r.object)
