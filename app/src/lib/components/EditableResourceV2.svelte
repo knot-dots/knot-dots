@@ -3,10 +3,11 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import GroupedSingleChoiceDropdown from '$lib/components/GroupedSingleChoiceDropdown.svelte';
 	import {
-		type ResourceV2Container,
+		type Container,
+		isContainerWithPayloadType,
 		payloadTypes,
 		resourceCategories,
-		isContainerWithPayloadType
+		type ResourceV2Payload
 	} from '$lib/models';
 
 	interface Props {
@@ -25,9 +26,9 @@
 		value = $bindable()
 	}: Props = $props();
 
-	let resources = $state<ResourceV2Container[]>([]);
+	let resources = $state<Container<ResourceV2Payload>[]>([]);
 	let groupedResources = $derived.by(() => {
-		const byCategory = new Map<string, ResourceV2Container[]>();
+		const byCategory = new Map<string, Container<ResourceV2Payload>[]>();
 		for (const r of resources) {
 			const key = r.payload.resourceCategory;
 			const existing = byCategory.get(key);

@@ -3,19 +3,20 @@
 	import { createMapWithGeoJsonObject } from '$lib/attachments/map';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
-		type MapContainer,
-		type OrganizationalUnitContainer
+		type AnyPayload,
+		type Container,
+		type MapPayload,
+		type OrganizationalUnitPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import 'leaflet/dist/leaflet.css';
 
 	interface Props {
-		container: MapContainer;
+		container: Container<MapPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: OrganizationalUnitContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<OrganizationalUnitPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

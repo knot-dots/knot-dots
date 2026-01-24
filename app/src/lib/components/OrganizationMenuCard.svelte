@@ -2,13 +2,13 @@
 	import { _ } from 'svelte-i18n';
 	import Relation from '~icons/knotdots/relation';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import type { Container, OrganizationalUnitPayload, OrganizationPayload } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: OrganizationContainer | OrganizationalUnitContainer;
+		container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>;
 		linkPath: string;
-		selectedContext: OrganizationContainer | OrganizationalUnitContainer | null;
+		selectedContext: Container<OrganizationPayload> | Container<OrganizationalUnitPayload> | null;
 	}
 
 	let { container, linkPath, selectedContext = $bindable() }: Props = $props();

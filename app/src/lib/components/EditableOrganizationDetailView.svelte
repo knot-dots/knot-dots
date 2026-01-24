@@ -12,7 +12,7 @@
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type Container, type OrganizationContainer } from '$lib/models';
+	import { type Container, type OrganizationPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL.js';
 	import { backgroundColors } from '$lib/theme/models';
@@ -20,7 +20,7 @@
 	import { page } from '$app/state';
 
 	interface Props {
-		container: OrganizationContainer;
+		container: Container<OrganizationPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		relatedContainers?: Container[];
 	}

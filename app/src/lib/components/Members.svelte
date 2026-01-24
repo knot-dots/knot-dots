@@ -7,6 +7,8 @@
 	import saveUser from '$lib/client/saveUser';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import {
+		type AnyPayload,
+		type Container,
 		displayName,
 		isAdminOf,
 		isCollaboratorOf,
@@ -14,13 +16,13 @@
 		isHeadOf,
 		isObserverOf,
 		payloadTypes,
-		predicates
+		predicates,
+		type User
 	} from '$lib/models';
-	import type { AnyContainer, User } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		users: Readonly<Array<User>>;
 	}
 
@@ -31,7 +33,7 @@
 
 	let email: string = $state('');
 
-	function handleChangeRole(user: User, container: AnyContainer) {
+	function handleChangeRole(user: User, container: Container<AnyPayload>) {
 		return async (event: { currentTarget: HTMLSelectElement }) => {
 			let containerUser;
 			switch (event.currentTarget.value) {
@@ -87,7 +89,7 @@
 		};
 	}
 
-	async function handleRemoveRelations(user: User, container: AnyContainer) {
+	async function handleRemoveRelations(user: User, container: Container<AnyPayload>) {
 		const response = await saveContainerUser({
 			...container,
 			user: [
@@ -107,7 +109,7 @@
 		await invalidateAll();
 	}
 
-	function handleInvite(container: AnyContainer) {
+	function handleInvite(container: Container<AnyPayload>) {
 		return async (event: Event) => {
 			event.preventDefault();
 

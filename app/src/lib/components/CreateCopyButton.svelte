@@ -3,11 +3,11 @@
 	import { _ } from 'svelte-i18n';
 	import CopyCat from '~icons/knotdots/copycat';
 	import { page } from '$app/state';
-	import { type AnyContainer, type Container, createCopyOf, type NewContainer } from '$lib/models';
+	import { type AnyPayload, type Container, createCopyOf, type NewContainer } from '$lib/models';
 	import { ability, applicationState, newContainer, user } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 	}
 
 	let { container }: Props = $props();
@@ -16,7 +16,7 @@
 		'createContainerDialog'
 	);
 
-	async function createCopy(container: AnyContainer) {
+	async function createCopy(container: Container<AnyPayload>) {
 		const organizationalUnit = page.data.organizationalUnits.find(
 			(o) => $user.adminOf[0] == o.guid
 		);

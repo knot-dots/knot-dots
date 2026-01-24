@@ -24,12 +24,17 @@
 	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
-	import { type AnyContainer, isContainerWithPayloadType, payloadTypes } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		isContainerWithPayloadType,
+		payloadTypes
+	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions?: AnyContainer[];
+		revisions?: Container<AnyPayload>[];
 	}
 
 	let { container: originalContainer, layout, revisions = [] }: Props = $props();

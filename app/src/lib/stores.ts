@@ -11,20 +11,20 @@ import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import { createFeatureDecisions } from '$lib/features';
 import {
-	type AnyContainer,
+	type AnyPayload,
 	type ApplicationState,
-	type BinaryIndicatorContainer,
+	type BinaryIndicatorPayload,
 	type Container,
 	containerOfType,
 	filterMembers,
-	type HelpContainer,
-	type IndicatorContainer,
-	type IndicatorTemplateContainer,
+	type HelpPayload,
+	type IndicatorPayload,
+	type IndicatorTemplatePayload,
 	type IooiType,
 	mayDelete,
-	type MeasureContainer,
+	type MeasurePayload,
 	type NewContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	overlayKey,
 	paramsFromFragment,
 	type PayloadType,
@@ -40,7 +40,7 @@ export const applicationState = writable<ApplicationState>({
 });
 
 export const compareState = writable<{
-	selectedMunicipalities: OrganizationalUnitContainer[];
+	selectedMunicipalities: Container<OrganizationalUnitPayload>[];
 	colorAssignments: Record<string, string>;
 }>({
 	selectedMunicipalities: [],
@@ -117,7 +117,7 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 });
 
 export const mayDeleteContainer = derived(ability, (values) => {
-	return (container: AnyContainer): boolean => {
+	return (container: Container<AnyPayload>): boolean => {
 		return mayDelete(container, values) || values.can('delete-recursively', container);
 	};
 });
@@ -134,7 +134,7 @@ if (browser) {
 
 type AddEffectState = {
 	target?: Container;
-	effect?: IndicatorContainer;
+	effect?: Container<IndicatorPayload>;
 	iooiType?: IooiType;
 };
 
@@ -142,7 +142,7 @@ export const addEffectState = writable<AddEffectState>({});
 
 type AddObjectiveState = {
 	target?: Container;
-	indicator?: IndicatorContainer;
+	indicator?: Container<IndicatorPayload>;
 	iooiType?: IooiType;
 };
 
@@ -156,38 +156,38 @@ export const lastCreatedContainer = writable<Container | undefined>(undefined);
 export type OverlayData =
 	| {
 			key: 'chapters';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'indicator-catalog';
 			container: undefined;
-			indicators: Array<BinaryIndicatorContainer | IndicatorContainer>;
-			indicatorTemplates: IndicatorTemplateContainer[];
+			indicators: Array<Container<BinaryIndicatorPayload> | Container<IndicatorPayload>>;
+			indicatorTemplates: Container<IndicatorTemplatePayload>[];
 	  }
 	| {
 			key: 'new-indicator-catalog';
 			container: undefined;
-			containers: IndicatorTemplateContainer[];
+			containers: Container<IndicatorTemplatePayload>[];
 	  }
 	| {
 			key: 'indicators';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'measure-monitoring';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'measures';
-			container: AnyContainer;
-			containers: MeasureContainer[];
+			container: Container<AnyPayload>;
+			containers: Container<MeasurePayload>[];
 	  }
 	| {
 			key: 'members';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			users: UserRecord[];
 	  }
 	| {
@@ -197,42 +197,42 @@ export type OverlayData =
 	  }
 	| {
 			key: 'tasks';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'content-partners';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'goal-iooi';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'measure-iooi';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'teasers';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'resources';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'view';
-			container: AnyContainer;
-			revisions: AnyContainer[];
+			container: Container<AnyPayload>;
+			revisions: Container<AnyPayload>[];
 	  }
 	| {
 			key: 'view-help';
-			container: HelpContainer;
+			container: Container<HelpPayload>;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();
@@ -453,7 +453,7 @@ if (browser) {
 					topic: hashParams.getAll('topic')
 				},
 				hashParams.get('sort') ?? 'alpha'
-			)) as MeasureContainer[];
+			)) as Container<MeasurePayload>[];
 			setOverlayIfLatest({
 				key: overlayKey.enum.measures,
 				container,
@@ -661,7 +661,7 @@ if (browser) {
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
-			})) as IndicatorTemplateContainer[];
+			})) as Container<IndicatorTemplatePayload>[];
 			const indicators = (await fetchContainers({
 				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
@@ -669,7 +669,7 @@ if (browser) {
 				organization: [values.data.currentOrganization.guid],
 				payloadType: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator],
 				topic: hashParams.getAll('topic')
-			})) as Array<BinaryIndicatorContainer | IndicatorContainer>;
+			})) as Array<Container<BinaryIndicatorPayload> | Container<IndicatorPayload>>;
 			setOverlayIfLatest({
 				key: overlayKey.enum['indicator-catalog'],
 				container: undefined,
@@ -683,7 +683,7 @@ if (browser) {
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
-			})) as IndicatorTemplateContainer[];
+			})) as Container<IndicatorTemplatePayload>[];
 			setOverlayIfLatest({
 				key: overlayKey.enum['new-indicator-catalog'],
 				container: undefined,

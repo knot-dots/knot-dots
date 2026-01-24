@@ -1,6 +1,11 @@
 import { type DefaultSession } from '@auth/sveltekit';
 import type { DatabasePool } from 'slonik';
-import type { KeycloakUser, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+import type {
+	Container,
+	KeycloakUser,
+	OrganizationalUnitPayload,
+	OrganizationPayload
+} from '$lib/models';
 import type { CategoryContext } from '$lib/server/categoryOptions';
 import type { User } from '$lib/stores';
 
@@ -16,12 +21,12 @@ declare global {
 		}
 		interface PageData {
 			categoryContext: CategoryContext | null;
-			currentOrganization: OrganizationContainer;
-			currentOrganizationalUnit?: OrganizationalUnitContainer;
+			currentOrganization: Container<OrganizationPayload>;
+			currentOrganizationalUnit?: Container<OrganizationalUnitPayload>;
 			defaultOrganizationGuid: string;
 			features: string[];
-			organizations: OrganizationContainer[];
-			organizationalUnits: OrganizationalUnitContainer[];
+			organizations: Container<OrganizationPayload>[];
+			organizationalUnits: Container<OrganizationalUnitPayload>[];
 			session: Session | null;
 			user?: KeycloakUser;
 		}

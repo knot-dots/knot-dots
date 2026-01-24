@@ -7,16 +7,17 @@
 	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
 	import {
+		type Container,
 		getOrganizationURL,
-		type OrganizationalUnitContainer,
-		type OrganizationContainer
+		type OrganizationalUnitPayload,
+		type OrganizationPayload
 	} from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		button?: Snippet;
-		container: OrganizationContainer | OrganizationalUnitContainer;
+		container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>;
 		linkPath?: string;
 		showRelationFilter?: boolean;
 	}
@@ -40,7 +41,9 @@
 		};
 	}
 
-	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function organizationURL(
+		container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>
+	) {
 		return () => {
 			return getOrganizationURL(container, linkPath, env).toString();
 		};

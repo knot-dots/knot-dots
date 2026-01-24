@@ -11,23 +11,23 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ContainerModeDropdown from '$lib/components/ContainerModeDropdown.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
-		predicates,
-		type ContentPartnerContainer,
-		type ContentPartnerCollectionContainer,
+		type ContentPartnerCollectionPayload,
+		type ContentPartnerPayload,
 		type NewContainer,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
-	import { mayCreateContainer, newContainer } from '$lib/stores';
-	import { ability } from '$lib/stores';
+	import { ability, mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: ContentPartnerCollectionContainer;
+		container: Container<ContentPartnerCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -43,7 +43,7 @@
 			payloadType: [payloadTypes.enum.content_partner],
 			relationType: [predicates.enum['is-part-of']]
 		})
-	) as Promise<ContentPartnerContainer[]>;
+	) as Promise<Container<ContentPartnerPayload>[]>;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

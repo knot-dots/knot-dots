@@ -1,16 +1,17 @@
 import { error } from '@sveltejs/kit';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
-import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
-	type AnyContainer,
+	type AnyPayload,
+	type Container,
 	isContainerWithPayloadType,
 	type KeycloakUser,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	organizationalUnitType,
-	type OrganizationContainer,
+	type OrganizationPayload,
 	payloadTypes
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
@@ -29,7 +30,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 	let currentOrganization;
 	let user: KeycloakUser | undefined = undefined;
 
-	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
+	async function filterVisibleAsync<T extends Container<AnyPayload>>(promise: Promise<Array<T>>) {
 		const containers = await promise;
 		return filterVisible(containers, locals.user);
 	}
@@ -49,7 +50,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 		)
 	]);
 
-	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+	let currentOrganizationalUnit: Container<OrganizationalUnitPayload> | undefined;
 
 	if (params.guid) {
 		try {
@@ -78,7 +79,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 			if (!currentOrganization) {
 				currentOrganization = (await locals.pool.connect(
 					setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-				)) as OrganizationContainer;
+				)) as Container<OrganizationPayload>;
 			}
 		}
 	}
@@ -89,7 +90,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 			if (!currentOrganization) {
 				currentOrganization = (await locals.pool.connect(
 					setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-				)) as OrganizationContainer;
+				)) as Container<OrganizationPayload>;
 			}
 		} else {
 			currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));

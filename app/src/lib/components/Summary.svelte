@@ -7,11 +7,11 @@
 	import rehypeStringify from 'rehype-stringify';
 	import stripMarkdown from 'strip-markdown';
 	import rehypeExtractExcerpt from 'rehype-extract-excerpt';
-	import type { Container, EmptyContainer } from '$lib/models';
+	import type { Container, NewContainer } from '$lib/models';
 	import type { VFile } from 'vfile';
 
 	interface Props {
-		container: Container | EmptyContainer;
+		container: Container | NewContainer;
 		maxLength?: number;
 	}
 

@@ -9,10 +9,15 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import paramsFromURL from '$lib/client/paramsFromURL';
-	import { type IndicatorContainer, hasHistoricalValues, paramsFromFragment } from '$lib/models';
+	import {
+		type Container,
+		hasHistoricalValues,
+		type IndicatorPayload,
+		paramsFromFragment
+	} from '$lib/models';
 
 	interface Props {
-		container: IndicatorContainer;
+		container: Container<IndicatorPayload>;
 	}
 
 	let { container }: Props = $props();

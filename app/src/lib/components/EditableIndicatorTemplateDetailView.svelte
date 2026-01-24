@@ -16,17 +16,18 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import {
 		actualDataContainer,
-		type AnyContainer,
-		type IndicatorTemplateContainer,
+		type AnyPayload,
+		type Container,
+		type IndicatorTemplatePayload,
 		payloadTypes
 	} from '$lib/models';
 	import { fetchContainersRelatedToIndicatorTemplates } from '$lib/remote/data.remote';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
-		container: IndicatorTemplateContainer;
+		container: Container<IndicatorTemplatePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

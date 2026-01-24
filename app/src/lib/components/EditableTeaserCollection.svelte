@@ -12,24 +12,24 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ContainerModeDropdown from '$lib/components/ContainerModeDropdown.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		type NewContainer,
 		payloadTypes,
 		predicates,
-		type TeaserCollectionContainer,
-		type TeaserContainer
+		type TeaserCollectionPayload,
+		type TeaserPayload
 	} from '$lib/models';
-	import { mayCreateContainer, newContainer } from '$lib/stores';
-	import { ability } from '$lib/stores';
+	import { ability, mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: TeaserCollectionContainer;
+		container: Container<TeaserCollectionPayload>;
 		editable?: boolean;
 		fetchDisabled?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -59,7 +59,7 @@
 					},
 					'alpha',
 					{ signal }
-				)) as TeaserContainer[];
+				)) as Container<TeaserPayload>[];
 			}
 		},
 		{ lazy: true, once: true }

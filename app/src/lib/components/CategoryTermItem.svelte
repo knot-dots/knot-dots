@@ -9,11 +9,11 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import { overlayKey, overlayURL, type TermContainer } from '$lib/models';
+	import { type Container, overlayKey, overlayURL, type TermPayload } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
-		term?: TermContainer;
+		term?: Container<TermPayload>;
 		isCreateForm?: boolean;
 		canEdit?: boolean;
 		reordering?: boolean;
@@ -26,7 +26,7 @@
 			creating: boolean;
 		};
 		onAdd?: () => void;
-		onRemove?: (term: TermContainer) => void;
+		onRemove?: (term: Container<TermPayload>) => void;
 		onSubmit?: (event: SubmitEvent) => void;
 	}
 

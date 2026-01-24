@@ -8,11 +8,11 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import type { OrganizationalUnitContainer } from '$lib/models';
+	import type { Container, OrganizationalUnitPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: OrganizationalUnitContainer;
+		container: Container<OrganizationalUnitPayload>;
 		editable?: boolean;
 	}
 

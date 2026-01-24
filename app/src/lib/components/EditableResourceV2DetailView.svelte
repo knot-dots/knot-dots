@@ -8,31 +8,31 @@
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
 		ResourceTableRow,
 		ResourceTableSection
 	} from '$lib/components/EditableTable.svelte';
+	import EditableTable from '$lib/components/EditableTable.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		type Container,
-		type NewContainer,
-		type ResourceDataContainer,
-		type ResourceV2Container,
 		containerOfType,
 		findAncestors,
 		isContainerWithPayloadType,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
-		resourceDataTypes
+		type ResourceDataPayload,
+		resourceDataTypes,
+		type ResourceV2Payload
 	} from '$lib/models';
 	import {
 		fetchContainersRelatedToProgram,
@@ -41,9 +41,9 @@
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ResourceV2Container;
+		container: Container<ResourceV2Payload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();
@@ -173,14 +173,14 @@
 			| 'resource_data_type.total_budget_forecast',
 		title: string,
 		temporaryGuid: string
-	): ResourceDataContainer {
+	): Container<ResourceDataPayload> {
 		let c = containerOfType(
 			payloadTypes.enum.resource_data,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,
 			container.realm
-		) as ResourceDataContainer;
+		) as Container<ResourceDataPayload>;
 
 		c.guid = temporaryGuid;
 		c.payload.title = title;
@@ -318,7 +318,7 @@
 
 	// onSave callback – handles both creating new stub containers and updating existing ones
 	async function handleSave(
-		containerToSave: ResourceDataContainer
+		containerToSave: Container<ResourceDataPayload>
 	): Promise<{ guid: string; revision: number }> {
 		const isNewContainer = containerToSave.guid.startsWith('TEMPORARY_NEW');
 

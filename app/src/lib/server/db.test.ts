@@ -4,14 +4,15 @@ import { type Fixtures, test } from '$lib/fixtures';
 import {
 	anyPayload,
 	type AnyPayload,
+	type Container,
 	createNewContainerSchema,
-	type MeasureContainer,
+	type MeasurePayload,
 	modifiedContainer,
 	type NewContainer,
 	type PartialRelation,
 	payloadTypes,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	type Relation
 } from '$lib/models';
 import {
@@ -52,7 +53,7 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as NewContainer & Container<ProgramPayload>['payload'],
 			[]
 		)
 	)(connection);
@@ -85,7 +86,7 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as NewContainer & Container<ProgramPayload>['payload'],
 			[]
 		)
 	)(connection);
@@ -134,7 +135,7 @@ test('relations are added or removed when updating a container', async ({
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as NewContainer & Container<ProgramPayload>['payload'],
 			[]
 		)
 	)(connection);
@@ -161,7 +162,7 @@ test('relations are added or removed when updating a container', async ({
 	const anotherContainer = await createContainer(
 		initializeNewContainer(
 			{ title: 'Lorem ipsum', type: payloadTypes.enum.measure } as NewContainer &
-				MeasureContainer['payload'],
+				Container<MeasurePayload>['payload'],
 			[]
 		)
 	)(connection);
@@ -205,7 +206,7 @@ test('adding more relations does not interfere with existing relations', async (
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as NewContainer & Container<ProgramPayload>['payload'],
 			[]
 		)
 	)(connection);

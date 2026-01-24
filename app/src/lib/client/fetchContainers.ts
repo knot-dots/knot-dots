@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import withRequestCoalescing from '$lib/client/withRequestCoalescing';
-import { anyContainer, type PayloadType } from '$lib/models';
+import type { PayloadType } from '$lib/models';
+import { anyContainer } from '$lib/models';
 
 export default async function fetchContainers(
 	filters: {

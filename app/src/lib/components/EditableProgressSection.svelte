@@ -4,18 +4,19 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
-		type ContainerWithProgress,
-		type ProgressContainer
+		type AnyPayload,
+		type Container,
+		type PayloadWithProgress,
+		type ProgressPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ProgressContainer;
+		container: Container<ProgressPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: ContainerWithProgress;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<PayloadWithProgress>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

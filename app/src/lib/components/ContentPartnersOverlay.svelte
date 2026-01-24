@@ -7,7 +7,7 @@
 		audience,
 		computeFacetCount,
 		type Container,
-		type ContentPartnerContainer,
+		type ContentPartnerPayload,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
@@ -41,7 +41,7 @@
 </div>
 
 {#snippet partnerSnippet(item: Container)}
-	<ContentPartnerCard container={item as ContentPartnerContainer} />
+	<ContentPartnerCard container={item as Container<ContentPartnerPayload>} />
 {/snippet}
 
 <Help slug="content-partner-view" />

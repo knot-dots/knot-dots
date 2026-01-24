@@ -1,12 +1,15 @@
 import { describe, expect, test } from 'vitest';
-import { type AnyContainer, payloadTypes, predicates } from '$lib/models';
+import { type AnyPayload, type Container, payloadTypes, predicates } from '$lib/models';
 import {
 	type Node,
 	relatedObjectNodesByPredicate,
 	relatedSubjectNodesByPredicate
 } from '$lib/relations';
 
-const containers = new Map<string, Node & { payload: Pick<AnyContainer['payload'], 'type'> }>([
+const containers = new Map<
+	string,
+	Node & { payload: Pick<Container<AnyPayload>['payload'], 'type'> }
+>([
 	[
 		'304bd9e4-55d9-410f-93fb-38a152635b64',
 		{

@@ -20,19 +20,20 @@
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		type Container,
-		type ContainerWithEffect,
 		isContainerWithPayloadType,
-		payloadTypes
+		type MeasurePayload,
+		payloadTypes,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ContainerWithEffect;
+		container: Container<MeasurePayload | SimpleMeasurePayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

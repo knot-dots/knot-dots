@@ -3,11 +3,16 @@ import {
 	buildCategoryFacets,
 	buildCategoryLabels,
 	buildCategoryOptionsFromContainers,
-	getCategoryKeys,
 	type CategoryOption,
-	type CategoryOptions
+	type CategoryOptions,
+	getCategoryKeys
 } from '$lib/categoryOptions';
-import { payloadTypes, type CategoryContainer, isContainerWithPayloadType } from '$lib/models';
+import {
+	type CategoryPayload,
+	type Container,
+	isContainerWithPayloadType,
+	payloadTypes
+} from '$lib/models';
 
 export { buildCategoryFacets, buildCategoryLabels, getCategoryKeys };
 export type { CategoryOption, CategoryOptions };
@@ -29,7 +34,10 @@ function toCacheKey(categoryKeys: string[], organizationScope: string[], objectT
 	return `${scopeKey}|${categoriesKey}|${objectTypesKey}`;
 }
 
-export function categoryMatchesObjectTypes(category: CategoryContainer, allowed: Iterable<string>) {
+export function categoryMatchesObjectTypes(
+	category: Container<CategoryPayload>,
+	allowed: Iterable<string>
+) {
 	const allowedSet = new Set(normalize(Array.from(allowed)));
 	if (allowedSet.size === 0) return true;
 

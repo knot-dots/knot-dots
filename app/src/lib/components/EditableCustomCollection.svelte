@@ -19,12 +19,13 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
-		type ActualDataContainer,
 		actualDataContainer,
-		type AnyContainer,
+		type ActualDataPayload,
+		type AnyPayload,
 		audience,
 		computeFacetCount,
-		type CustomCollectionContainer,
+		type Container,
+		type CustomCollectionPayload,
 		indicatorCategories,
 		isContainerWithPayloadType,
 		payloadTypes,
@@ -36,11 +37,11 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
-		container: CustomCollectionContainer;
+		container: Container<CustomCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -195,7 +196,7 @@
 		if (container.payload.item.length > 0) {
 			return container.payload.item
 				.map((item) => savedResource.current?.find(({ guid }) => guid === item))
-				.filter((item): item is AnyContainer => item !== undefined);
+				.filter((item): item is Container<AnyPayload> => item !== undefined);
 		} else {
 			return savedResource.current ?? [];
 		}
@@ -250,7 +251,7 @@
 
 	// Create a map for efficient lookup of comparison data by indicator GUID
 	let comparisonDataMap = $derived.by(() => {
-		const map = new SvelteMap<string, ActualDataContainer[]>();
+		const map = new SvelteMap<string, Container<ActualDataPayload>[]>();
 		for (const container of comparisonDataResource.current ?? []) {
 			if (
 				isContainerWithPayloadType(payloadTypes.enum.actual_data, container) &&

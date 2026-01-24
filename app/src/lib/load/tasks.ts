@@ -4,15 +4,17 @@ import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
 	computeFacetCount,
+	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
-	type GoalContainer,
+	type GoalPayload,
 	isContainerWithPayloadType,
 	isPartOf,
+	type OrganizationalUnitPayload,
 	payloadTypes,
 	predicates,
 	taskCategories,
-	type TaskContainer
+	type TaskPayload
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -23,9 +25,9 @@ import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
 
 function filterRelated(
-	containers: GoalContainer[],
-	taskContainers: TaskContainer[]
-): GoalContainer[] {
+	containers: Container<GoalPayload>[],
+	taskContainers: Container<TaskPayload>[]
+): Container<GoalPayload>[] {
 	return containers.filter((c) => taskContainers.some(isPartOf(c)));
 }
 
@@ -33,8 +35,8 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 	return (async ({ depends, locals, parent, url }) => {
 		depends('containers');
 
-		let taskContainers: TaskContainer[];
-		let otherContainers: GoalContainer[];
+		let taskContainers: Container<TaskPayload>[];
+		let otherContainers: Container<GoalPayload>[];
 		let subordinateOrganizationalUnits: string[] = [];
 
 		const { currentOrganization, currentOrganizationalUnit } = await parent();
@@ -47,7 +49,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		if (currentOrganizationalUnit) {
 			const relatedOrganizationalUnits = (await locals.pool.connect(
 				getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-			)) as import('$lib/models').OrganizationalUnitContainer[];
+			)) as Container<OrganizationalUnitPayload>[];
 			subordinateOrganizationalUnits = relatedOrganizationalUnits
 				.filter((unit) => unit.payload.level > currentOrganizationalUnit.payload.level)
 				.map((unit) => unit.guid);
@@ -97,8 +99,8 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 						)
 					)
 				]);
-				taskContainers = taskResult.containers as TaskContainer[];
-				otherContainers = otherResult.containers as GoalContainer[];
+				taskContainers = taskResult.containers as Container<TaskPayload>[];
+				otherContainers = otherResult.containers as Container<GoalPayload>[];
 				data = taskResult.facets;
 			} else {
 				const [taskResult, otherResult] = await Promise.all([
@@ -124,8 +126,8 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 						)
 					)
 				]);
-				taskContainers = taskResult as TaskContainer[];
-				otherContainers = otherResult as GoalContainer[];
+				taskContainers = taskResult as Container<TaskPayload>[];
+				otherContainers = otherResult as Container<GoalPayload>[];
 			}
 		}
 

@@ -8,14 +8,14 @@
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from './Sections.svelte';
-	import { type AnyContainer, type KnowledgeContainer, predicates } from '$lib/models';
+	import { type AnyPayload, type Container, type KnowledgePayload, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: KnowledgeContainer;
+		container: Container<KnowledgePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

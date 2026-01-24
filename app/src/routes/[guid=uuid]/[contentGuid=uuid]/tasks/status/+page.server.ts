@@ -3,12 +3,13 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
-	type AnyContainer,
-	type GoalContainer,
+	type AnyPayload,
+	type Container,
+	type GoalPayload,
 	isContainerWithPayloadType,
 	payloadTypes,
 	predicates,
-	type TaskContainer
+	type TaskPayload
 } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
@@ -24,7 +25,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 
 	try {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid));
-		const container = revisions.at(-1) as AnyContainer;
+		const container = revisions.at(-1) as Container<AnyPayload>;
 
 		if (!defineAbilityFor(locals.user).can('read', container)) {
 			error(404, { message: t('error.not_found') });
@@ -61,7 +62,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 						},
 						'priority'
 					)
-		)) as Array<GoalContainer | TaskContainer>;
+		)) as Array<Container<GoalPayload> | Container<TaskPayload>>;
 
 		return {
 			container,

@@ -14,7 +14,7 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import Tendency from '$lib/components/Tendency.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		type Container,
 		findAncestors,
 		isContainerWithPayloadType,
@@ -42,10 +42,10 @@
 	interface Props {
 		body?: Snippet;
 		button?: Snippet;
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		footer?: Snippet;
 		href?: () => string;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container<AnyPayload>[];
 		showRelationFilter?: boolean;
 		titleOverride?: boolean;
 		maxSummaryLength?: number;
@@ -175,14 +175,14 @@
 		[predicates.enum['is-superordinate-of'], 'var(--color-is-superordinate-of)']
 	]);
 
-	function highlightColor(a: AnyContainer, b: Container) {
+	function highlightColor(a: Container<AnyPayload>, b: Container) {
 		return a.relation
 			.filter((r) => a.guid != b.guid && (r.object === b.guid || r.subject === b.guid))
 			.map(({ predicate }) => highlightColorMap.get(predicate))
 			.pop();
 	}
 
-	function relationIcon(a: AnyContainer, b: Container) {
+	function relationIcon(a: Container<AnyPayload>, b: Container) {
 		return a.relation
 			.filter((r) => a.guid != b.guid && (r.object === b.guid || r.subject === b.guid))
 			.map(({ predicate }) => predicateIcons.get(predicate))

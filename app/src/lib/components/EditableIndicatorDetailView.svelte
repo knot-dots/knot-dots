@@ -19,9 +19,10 @@
 	import SaveAsIndicatorTemplateButton from '$lib/components/SaveAsIndicatorTemplateButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		findOverallObjective,
-		type IndicatorContainer,
+		type IndicatorPayload,
 		isContainerWithPayloadType,
 		isRelatedTo,
 		paramsFromFragment,
@@ -32,9 +33,9 @@
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: IndicatorContainer;
+		container: Container<IndicatorPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

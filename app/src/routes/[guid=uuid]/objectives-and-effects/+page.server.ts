@@ -2,12 +2,13 @@ import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
 	audience,
-	type IndicatorContainer,
-	payloadTypes,
 	computeFacetCount,
+	type Container,
 	fromCounts,
 	indicatorCategories,
+	type IndicatorPayload,
 	indicatorTypes,
+	payloadTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
 	topics
@@ -45,7 +46,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				topics: url.searchParams.getAll('topic')
 			};
 
-	let containers: IndicatorContainer[];
+	let containers: Container<IndicatorPayload>[];
 	let data: Record<string, Record<string, number>> | undefined;
 	if (features.useElasticsearch()) {
 		const esResult = await locals.pool.connect(
@@ -63,7 +64,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			)
 		);
-		containers = esResult.containers as IndicatorContainer[];
+		containers = esResult.containers as Container<IndicatorPayload>[];
 		data = esResult.facets;
 	} else {
 		containers = (await locals.pool.connect(
@@ -78,7 +79,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				},
 				''
 			)
-		)) as IndicatorContainer[];
+		)) as Container<IndicatorPayload>[];
 	}
 
 	const relatedContainers = await locals.pool.connect(

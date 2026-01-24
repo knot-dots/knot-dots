@@ -6,14 +6,14 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyContainer, visibility } from '$lib/models';
+	import { type AnyPayload, type Container, visibility } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		ondelete?: () => Promise<void>;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -35,7 +35,7 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
-	async function handleDelete(container: AnyContainer) {
+	async function handleDelete(container: Container<AnyPayload>) {
 		const response = await deleteContainer(container);
 
 		if (response.ok) {

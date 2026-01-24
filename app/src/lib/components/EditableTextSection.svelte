@@ -2,15 +2,15 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { type AnyContainer, type TextContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type TextPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: TextContainer;
+		container: Container<TextPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

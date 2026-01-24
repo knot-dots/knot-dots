@@ -28,7 +28,7 @@
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		type Container,
 		isContainerWithDescription,
 		isContainerWithDuration,
@@ -42,7 +42,7 @@
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		actualDataContainers?: ActualDataContainer[];
+		actualDataContainers?: Container<ActualDataPayload>[];
 		columns: string[];
 		container: Container;
 		dragEnabled?: boolean;

@@ -12,10 +12,10 @@
 	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		type Container,
 		findConnected,
-		type IndicatorContainer,
+		type IndicatorPayload,
 		isContainerWithPayloadType,
 		overlayKey,
 		payloadTypes,
@@ -77,7 +77,10 @@
 
 	function handleDndConsider(
 		event: CustomEvent<
-			DndEvent<{ guid: string; container: BinaryIndicatorContainer | IndicatorContainer }>
+			DndEvent<{
+				guid: string;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
+			}>
 		>
 	) {
 		const { trigger, id } = event.detail.info;
@@ -101,7 +104,10 @@
 
 	function handleDndFinalize(
 		event: CustomEvent<
-			DndEvent<{ guid: string; container: BinaryIndicatorContainer | IndicatorContainer }>
+			DndEvent<{
+				guid: string;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
+			}>
 		>
 	) {
 		if (!shouldIgnoreDndEvents) {

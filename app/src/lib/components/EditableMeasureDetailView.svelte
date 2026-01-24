@@ -11,18 +11,20 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import {
-		type AnyContainer,
-		type ContainerWithEffect,
+		type AnyPayload,
+		type Container,
 		isContainerWithPayloadType,
-		payloadTypes
+		type MeasurePayload,
+		payloadTypes,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { fetchContainersRelatedToMeasure } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ContainerWithEffect;
+		container: Container<MeasurePayload | SimpleMeasurePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

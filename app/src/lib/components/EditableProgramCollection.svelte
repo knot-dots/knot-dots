@@ -6,23 +6,24 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes,
-		type ProgramCollectionContainer,
+		type ProgramCollectionPayload,
 		titleForProgramCollection
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: ProgramCollectionContainer;
+		container: Container<ProgramCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

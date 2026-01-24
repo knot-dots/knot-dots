@@ -13,16 +13,16 @@
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { type AnyContainer, type PageContainer, predicates } from '$lib/models';
+	import { type AnyPayload, type Container, type PagePayload, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
-		container: PageContainer;
+		container: Container<PagePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

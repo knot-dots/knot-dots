@@ -9,13 +9,19 @@
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import { containerOfType, payloadTypes, type TaskContainer, type TaskStatus } from '$lib/models';
+	import {
+		type Container,
+		containerOfType,
+		payloadTypes,
+		type TaskPayload,
+		type TaskStatus
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		addItemUrl?: string;
-		itemSnippet: Snippet<[TaskContainer]>;
-		items: TaskContainer[];
+		itemSnippet: Snippet<[Container<TaskPayload>]>;
+		items: Container<TaskPayload>[];
 		status: TaskStatus;
 	}
 
@@ -31,11 +37,11 @@
 		);
 	}
 
-	function handleDndConsider(e: CustomEvent<DndEvent<TaskContainer>>) {
+	function handleDndConsider(e: CustomEvent<DndEvent<Container<TaskPayload>>>) {
 		items = e.detail.items;
 	}
 
-	async function handleDndFinalize(e: CustomEvent<DndEvent<TaskContainer>>) {
+	async function handleDndFinalize(e: CustomEvent<DndEvent<Container<TaskPayload>>>) {
 		items = e.detail.items;
 		if (e.detail.info.trigger == 'droppedIntoZone') {
 			const droppedItem = items.find(({ guid }) => guid == e.detail.info.id);

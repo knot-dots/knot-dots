@@ -4,15 +4,20 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import {
 		categoryMatchesObjectTypes,
-		loadCategoryOptions,
-		type CategoryOption
+		type CategoryOption,
+		loadCategoryOptions
 	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import { isContainerWithPayloadType, payloadTypes } from '$lib/models';
-	import type { AnyContainer, CategoryContainer } from '$lib/models';
+	import {
+		type AnyPayload,
+		type CategoryPayload,
+		type Container,
+		isContainerWithPayloadType,
+		payloadTypes
+	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		editable?: boolean;
 		organizationGuid?: string;
 		includeDefaultOrganization?: boolean;
@@ -25,7 +30,7 @@
 		includeDefaultOrganization = true
 	}: Props = $props();
 
-	let categories = $state([] as CategoryContainer[]);
+	let categories = $state([] as Container<CategoryPayload>[]);
 	let optionsByKey = $state(new Map<string, CategoryOption[]>());
 
 	const safeKey = (key: string | undefined) => key ?? '';

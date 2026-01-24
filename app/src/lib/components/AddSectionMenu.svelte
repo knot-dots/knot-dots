@@ -30,8 +30,9 @@
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		boards,
+		type Container,
 		isContainerWithPayloadType,
 		isContainerWithProgress,
 		isContainerWithSummary,
@@ -46,8 +47,8 @@
 	interface Props {
 		compact?: boolean;
 		handleAddSection: (event: Event) => void;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

@@ -7,9 +7,9 @@
 		audience,
 		computeFacetCount,
 		type Container,
-		type TeaserContainer,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
+		type TeaserPayload,
 		topics
 	} from '$lib/models';
 
@@ -41,7 +41,7 @@
 </div>
 
 {#snippet teaserSnippet(item: Container)}
-	<TeaserCard container={item as TeaserContainer} editable={false} />
+	<TeaserCard container={item as Container<TeaserPayload>} editable={false} />
 {/snippet}
 
 <Help slug="teaser-view" />

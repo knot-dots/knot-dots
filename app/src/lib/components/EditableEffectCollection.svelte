@@ -6,12 +6,13 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
-		type EffectCollectionContainer,
-		type GoalContainer,
+		type AnyPayload,
+		type Container,
+		type EffectCollectionPayload,
+		type GoalPayload,
 		isContainerWithPayloadType,
 		isPartOf,
-		type MeasureContainer,
+		type MeasurePayload,
 		overlayKey,
 		payloadTypes
 	} from '$lib/models';
@@ -19,11 +20,11 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: EffectCollectionContainer;
+		container: Container<EffectCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: GoalContainer | MeasureContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<GoalPayload | MeasurePayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

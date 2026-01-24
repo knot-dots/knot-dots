@@ -9,25 +9,26 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type AnyContainer,
-		titleForMeasureCollection,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		isContainerWithPayloadType,
-		type MeasureCollectionContainer,
-		type MeasureContainer,
+		type MeasureCollectionPayload,
+		type MeasurePayload,
 		type NewContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		titleForMeasureCollection
 	} from '$lib/models';
 	import { hasPart } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: MeasureCollectionContainer;
+		container: Container<MeasureCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -66,7 +67,7 @@
 			container.organizational_unit,
 			container.managed_by,
 			container.realm
-		) as Omit<NewContainer, 'payload'> & Pick<MeasureContainer, 'payload'>;
+		) as NewContainer<MeasurePayload>;
 
 		if (isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer)) {
 			if (createFeatureDecisions(page.data.features).useCustomCategories()) {
@@ -108,7 +109,7 @@
 	<svelte:element this={heading} class="details-heading">
 		{#if isContainerWithPayloadType(payloadTypes.enum.measure, parentContainer)}
 			{titleForMeasureCollection(
-				items as MeasureContainer[],
+				items as Container<MeasurePayload>[],
 				parentContainer.payload.hierarchyLevel + 1
 			)}
 		{:else}

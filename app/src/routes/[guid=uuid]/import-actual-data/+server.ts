@@ -6,11 +6,12 @@ import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import {
-	type ActualDataContainer,
+	type ActualDataPayload,
+	type Container,
 	containerOfType,
 	isContainerWithPayloadType,
 	type NewContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	payloadTypes
 } from '$lib/models';
 import {
@@ -36,12 +37,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	let organizationalUnitContainer: OrganizationalUnitContainer;
+	let organizationalUnitContainer: Container<OrganizationalUnitPayload>;
 
 	try {
 		organizationalUnitContainer = (await locals.pool.connect(
 			getContainerByGuid(params.guid)
-		)) as OrganizationalUnitContainer;
+		)) as Container<OrganizationalUnitPayload>;
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
@@ -89,7 +90,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				organizationalUnitContainer.guid,
 				organizationalUnitContainer.guid,
 				env.PUBLIC_KC_REALM
-			) as NewContainer & { payload: ActualDataContainer['payload'] };
+			) as NewContainer & { payload: Container<ActualDataPayload>['payload'] };
 
 			if (
 				statisticsForIndicator &&

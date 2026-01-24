@@ -10,7 +10,7 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { type AnyContainer, type TeaserContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type TeaserPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import EditableLinkStyle from './EditableLinkStyle.svelte';
 
@@ -22,9 +22,9 @@
 	};
 
 	interface Props {
-		container: TeaserContainer;
+		container: Container<TeaserPayload>;
 		editable?: boolean;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, revisions }: Props = $props();

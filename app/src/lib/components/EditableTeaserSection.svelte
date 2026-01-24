@@ -6,12 +6,17 @@
 	import ArrowRight from '~icons/knotdots/arrow-right';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import {
-		type AnyContainer,
-		teaserColSizes,
+		type AnyPayload,
+		type ColContentPayload,
+		type Container,
+		type InfoBoxPayload,
+		type QuotePayload,
 		type TeaserColSize,
+		teaserColSizes,
 		teaserColSizeToNumber,
+		type TeaserHighlightPayload,
 		teaserNumberToColSize,
-		type TeaserLikeContainer
+		type TeaserPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
@@ -19,11 +24,13 @@
 	import ContainerSectionDropdown from '$lib/components/ContainerSectionDropdown.svelte';
 
 	interface Props {
-		container: TeaserLikeContainer;
+		container: Container<
+			TeaserPayload | InfoBoxPayload | TeaserHighlightPayload | QuotePayload | ColContentPayload
+		>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

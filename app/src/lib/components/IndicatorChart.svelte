@@ -3,10 +3,11 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		findAncestors,
 		findLeafObjectives,
-		type IndicatorContainer,
+		type IndicatorPayload,
 		isContainerWithPayloadType,
 		payloadTypes,
 		predicates,
@@ -14,8 +15,8 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: IndicatorContainer;
-		relatedContainers?: AnyContainer[];
+		container: Container<IndicatorPayload>;
+		relatedContainers?: Container<AnyPayload>[];
 		showEffects?: boolean;
 		showObjectives?: boolean;
 		showLegend?: boolean;

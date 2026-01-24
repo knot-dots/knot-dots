@@ -10,14 +10,14 @@
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import TermProperties from '$lib/components/TermProperties.svelte';
-	import { predicates, type AnyContainer, type TermContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type TermPayload } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: TermContainer;
+		container: Container<TermPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

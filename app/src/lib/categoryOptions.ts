@@ -1,4 +1,4 @@
-import { predicates, type CategoryContainer, type TermContainer } from '$lib/models';
+import { type CategoryPayload, type Container, predicates, type TermPayload } from '$lib/models';
 
 export type CategoryOption = {
 	label: string;
@@ -20,7 +20,10 @@ function sortOptions(options: CategoryOption[]) {
 	);
 }
 
-function findTermsForCategory(category: CategoryContainer, terms: TermContainer[]) {
+function findTermsForCategory(
+	category: Container<CategoryPayload>,
+	terms: Container<TermPayload>[]
+) {
 	return terms.filter(({ relation }) =>
 		relation?.some(
 			({ object, predicate }) =>
@@ -29,7 +32,7 @@ function findTermsForCategory(category: CategoryContainer, terms: TermContainer[
 	);
 }
 
-function toOption(term: TermContainer): CategoryOption {
+function toOption(term: Container<TermPayload>): CategoryOption {
 	const value = term.payload.value ?? term.payload.title ?? term.guid;
 	const filterLabel = term.payload.filterLabel?.trim();
 	const label = filterLabel ? filterLabel : (term.payload.title ?? value);
@@ -42,12 +45,12 @@ function toOption(term: TermContainer): CategoryOption {
 }
 
 export function buildCategoryOptionsFromContainers(
-	categories: Array<CategoryContainer>,
-	terms: Array<TermContainer>
+	categories: Array<Container<CategoryPayload>>,
+	terms: Array<Container<TermPayload>>
 ): CategoryOptions {
 	const categoryLabels: Record<string, string> = {};
 	const result: CategoryOptions = {};
-	const subtermsByParent = new Map<string, TermContainer[]>();
+	const subtermsByParent = new Map<string, Container<TermPayload>[]>();
 
 	for (const term of terms) {
 		(term.relation ?? [])

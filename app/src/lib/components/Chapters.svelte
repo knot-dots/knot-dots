@@ -9,14 +9,14 @@
 		overlayKey,
 		payloadTypes,
 		predicates,
-		type ProgramContainer,
+		type ProgramPayload,
 		titleForGoalCollection,
 		titleForMeasureCollection
 	} from '$lib/models';
 
 	interface Props {
 		containers: Container[];
-		program?: ProgramContainer;
+		program?: Container<ProgramPayload>;
 	}
 
 	let { containers, program }: Props = $props();

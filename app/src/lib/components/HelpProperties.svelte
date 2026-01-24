@@ -7,15 +7,15 @@
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { type AnyContainer, type Container, type HelpContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type HelpPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { page } from '$app/state';
 
 	interface Props {
-		container: HelpContainer;
+		container: Container<HelpPayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

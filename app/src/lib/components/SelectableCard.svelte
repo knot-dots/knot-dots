@@ -8,13 +8,14 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
+		type AnyPayload,
+		type Container,
 		isContainerWithPayloadType,
 		isContainerWithProgress,
 		isPartOf,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import type { AnyContainer } from '$lib/models';
 	import {
 		ruleStatusColors,
 		ruleStatusIcons,
@@ -26,8 +27,8 @@
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
-		container: AnyContainer;
-		relatedContainers?: AnyContainer[];
+		container: Container<AnyPayload>;
+		relatedContainers?: Container<AnyPayload>[];
 		selectable?: boolean;
 		value: string[];
 	}

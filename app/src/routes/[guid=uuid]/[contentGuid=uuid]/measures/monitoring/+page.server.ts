@@ -3,7 +3,8 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
-	type AnyContainer,
+	type AnyPayload,
+	type Container,
 	isContainerWithPayloadType,
 	payloadTypes,
 	predicates
@@ -18,7 +19,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 
 	try {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid));
-		const container = revisions.at(-1) as AnyContainer;
+		const container = revisions.at(-1) as Container<AnyPayload>;
 
 		if (!defineAbilityFor(locals.user).can('read', container)) {
 			error(404, { message: t('error.not_found') });

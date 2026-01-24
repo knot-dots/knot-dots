@@ -3,15 +3,16 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	audience,
 	computeFacetCount,
+	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
+	type OrganizationalUnitPayload,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics,
-	type OrganizationalUnitContainer
+	topics
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -69,7 +70,7 @@ export default (async function load({ depends, locals, url, parent }) {
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = (await locals.pool.connect(
 			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-		)) as OrganizationalUnitContainer[];
+		)) as Container<OrganizationalUnitPayload>[];
 		subordinateOrganizationalUnits = relatedOrganizationalUnits
 			.filter((unit) => unit.payload.level > currentOrganizationalUnit.payload.level)
 			.map((unit) => unit.guid);

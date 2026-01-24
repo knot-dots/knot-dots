@@ -5,8 +5,9 @@ import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
 	audience,
+	type Container,
 	isContainerWithPayloadType,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
@@ -83,7 +84,7 @@ export const GET = (async ({ locals, params, url }) => {
 						locals.pool.connect(
 							getAllRelatedOrganizationalUnitContainers(parseResult.data.organizationalUnit[0])
 						)
-					])) as [OrganizationalUnitContainer, OrganizationalUnitContainer[]];
+					])) as [Container<OrganizationalUnitPayload>, Container<OrganizationalUnitPayload>[]];
 					subordinateOrganizationalUnits = relatedOrganizationalUnits
 						.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
 						.map(({ guid }) => guid)

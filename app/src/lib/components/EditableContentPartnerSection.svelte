@@ -2,15 +2,15 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
-	import { type AnyContainer, type ContentPartnerContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type ContentPartnerPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ContentPartnerContainer;
+		container: Container<ContentPartnerPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

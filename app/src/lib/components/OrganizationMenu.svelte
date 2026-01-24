@@ -16,11 +16,12 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import {
+		type Container,
 		findAncestors,
 		findDescendants,
 		isContainerWithPayloadType,
-		type OrganizationalUnitContainer,
-		type OrganizationContainer,
+		type OrganizationalUnitPayload,
+		type OrganizationPayload,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -43,16 +44,16 @@
 	let organizations = $derived.by(() => {
 		if ('default' in currentContext.payload && currentContext.payload.default) {
 			return page.data.organizations
-				.filter((c: OrganizationContainer) => !c.payload.default)
-				.filter((c: OrganizationContainer) =>
+				.filter((c: Container<OrganizationPayload>) => !c.payload.default)
+				.filter((c: Container<OrganizationPayload>) =>
 					selectedContext && selectedContext.guid != currentContext.guid
 						? c.organization == selectedContext.organization
 						: true
 				);
 		} else {
 			return page.data.organizations
-				.filter((c: OrganizationContainer) => !c.payload.default)
-				.filter((c: OrganizationContainer) =>
+				.filter((c: Container<OrganizationPayload>) => !c.payload.default)
+				.filter((c: Container<OrganizationPayload>) =>
 					selectedContext ? c.organization == selectedContext.organization : true
 				);
 		}
@@ -60,7 +61,7 @@
 
 	let organizationalUnitsByLevel = $derived.by(() => {
 		let organizationalUnits = page.data.organizationalUnits.filter(
-			(c: OrganizationalUnitContainer) =>
+			(c: Container<OrganizationalUnitPayload>) =>
 				selectedContext
 					? 'default' in selectedContext.payload && selectedContext.payload.default
 						? true
@@ -79,7 +80,7 @@
 			];
 		}
 
-		let organizationalUnitsByLevel: OrganizationalUnitContainer[][] = [];
+		let organizationalUnitsByLevel: Container<OrganizationalUnitPayload>[][] = [];
 
 		for (const level of [1, 2, 3, 4]) {
 			organizationalUnitsByLevel = [

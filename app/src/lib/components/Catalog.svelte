@@ -1,4 +1,4 @@
-<script lang="ts" generics="T extends AnyContainer">
+<script lang="ts" generics="T extends Container<AnyPayload>">
 	import { getContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -7,7 +7,8 @@
 	import Card from '$lib/components/Card.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		type NewContainer,
 		type PayloadType

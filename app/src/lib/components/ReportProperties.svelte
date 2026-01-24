@@ -12,14 +12,14 @@
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { type AnyContainer, type Container, type ReportContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type ReportPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ReportContainer;
+		container: Container<ReportPayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

@@ -6,12 +6,18 @@
 	import { page } from '$app/state';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
-	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
+	import {
+		administrativeTypes,
+		type Container,
+		isContainerWithPayloadType,
+		type OrganizationalUnitPayload,
+		payloadTypes
+	} from '$lib/models';
 	import { untrack } from 'svelte';
 
 	interface Props {
 		dialog: HTMLDialogElement;
-		selected: OrganizationalUnitContainer[];
+		selected: Container<OrganizationalUnitPayload>[];
 	}
 
 	let { dialog = $bindable(), selected = $bindable() }: Props = $props();
@@ -24,15 +30,15 @@
 
 	const PAGE_SIZE = 50;
 	let offset = $state(0);
-	let allMunicipalities: OrganizationalUnitContainer[] = $state([]);
+	let allMunicipalities: Container<OrganizationalUnitPayload>[] = $state([]);
 	let hasMore = $state(true);
 	let isLoadingMore = $state(false);
-	let previousResults: OrganizationalUnitContainer[] | undefined = $state(undefined);
+	let previousResults: Container<OrganizationalUnitPayload>[] | undefined = $state(undefined);
 	let loadMoreSentinel: HTMLElement | undefined = $state(undefined);
 
 	// Maintain a map of all encountered municipalities to preserve selections
 	// even if they are no longer in the current visible list (e.g. after search)
-	let knownMunicipalities = new SvelteMap<string, OrganizationalUnitContainer>();
+	let knownMunicipalities = new SvelteMap<string, Container<OrganizationalUnitPayload>>();
 
 	// Fetch municipalities based on search terms
 	const municipalitiesResource = resource(
@@ -59,7 +65,7 @@
 			const response = await fetch(`/container?${params.toString()}`, { signal });
 			if (!response.ok) throw new Error(response.statusText);
 			const result = await response.json();
-			return result as OrganizationalUnitContainer[];
+			return result as Container<OrganizationalUnitPayload>[];
 		},
 		{ debounce: 300 }
 	);
@@ -125,7 +131,8 @@
 	function confirm() {
 		selected = localSelected
 			.map((guid) => knownMunicipalities.get(guid))
-			.filter((m): m is OrganizationalUnitContainer => !!m);
+			.filter((c) => c !== undefined)
+			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.organizational_unit, c));
 		dialog.close();
 	}
 

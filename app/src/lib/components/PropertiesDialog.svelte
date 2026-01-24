@@ -1,24 +1,28 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import { env } from '$env/dynamic/public';
-	import {
-		type AnyContainer,
-		type OrganizationalUnitContainer,
-		type OrganizationContainer,
-		type PageContainer
-	} from '$lib/models';
-	import deleteContainer from '$lib/client/deleteContainer';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { onMount, onDestroy } from 'svelte';
+	import { env } from '$env/dynamic/public';
+	import deleteContainer from '$lib/client/deleteContainer';
+	import {
+		type AnyPayload,
+		type Container,
+		type OrganizationalUnitPayload,
+		type OrganizationPayload,
+		type PagePayload
+	} from '$lib/models';
 
 	interface Props {
 		children: Snippet;
-		container: OrganizationContainer | OrganizationalUnitContainer | PageContainer;
-		relatedContainers: AnyContainer[];
+		container:
+			| Container<OrganizationPayload>
+			| Container<OrganizationalUnitPayload>
+			| Container<PagePayload>;
+		relatedContainers: Container<AnyPayload>[];
 		dialog: HTMLDialogElement;
 		title: string;
 	}
@@ -32,7 +36,7 @@
 		dialog.close();
 	}
 
-	async function handleConfirmDelete(c: AnyContainer) {
+	async function handleConfirmDelete(c: Container<AnyPayload>) {
 		const response = await deleteContainer(c);
 		if (response.ok) {
 			if (container.guid == container.organization) {

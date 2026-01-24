@@ -2,11 +2,11 @@
 	import { _ } from 'svelte-i18n';
 	import { resolve } from '$app/paths';
 	import Card from '$lib/components/Card.svelte';
-	import type { OrganizationalUnitContainer } from '$lib/models';
+	import type { Container, OrganizationalUnitPayload } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL.js';
 
 	interface Props {
-		container: OrganizationalUnitContainer;
+		container: Container<OrganizationalUnitPayload>;
 	}
 
 	let { container }: Props = $props();

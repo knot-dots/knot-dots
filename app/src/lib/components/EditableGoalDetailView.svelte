@@ -10,14 +10,14 @@
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type AnyContainer, type GoalContainer, predicates } from '$lib/models';
+	import { type AnyPayload, type Container, type GoalPayload, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: GoalContainer;
+		container: Container<GoalPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

@@ -3,16 +3,17 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
-		type AnyContainer,
-		type EffectContainer,
+		type AnyPayload,
+		type Container,
+		type EffectPayload,
 		isContainerWithPayloadType,
 		isRelatedTo,
 		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
-		container: EffectContainer;
-		relatedContainers?: AnyContainer[];
+		container: Container<EffectPayload>;
+		relatedContainers?: Container<AnyPayload>[];
 		showLegend?: boolean;
 	}
 

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Card from '$lib/components/Card.svelte';
-	import type { ContentPartnerContainer } from '$lib/models';
+	import type { Container, ContentPartnerPayload } from '$lib/models';
 
 	interface Props {
-		container: ContentPartnerContainer;
+		container: Container<ContentPartnerPayload>;
 	}
 
 	let { container }: Props = $props();

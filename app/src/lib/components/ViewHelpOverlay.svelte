@@ -1,9 +1,9 @@
 <script lang="ts">
 	import EditableHelpDetailView from '$lib/components/EditableHelpDetailView.svelte';
-	import { type HelpContainer } from '$lib/models';
+	import { type Container, type HelpPayload } from '$lib/models';
 
 	interface Props {
-		container: HelpContainer;
+		container: Container<HelpPayload>;
 	}
 
 	let { container }: Props = $props();

@@ -4,8 +4,10 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
-		type EmptyOrganizationalUnitContainer,
-		type OrganizationalUnitContainer,
+		type Container,
+		type InitialOrganizationalUnitPayload,
+		type NewContainer,
+		type OrganizationalUnitPayload,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
@@ -13,7 +15,9 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
+		container:
+			| Container<OrganizationalUnitPayload>
+			| NewContainer<InitialOrganizationalUnitPayload>;
 		editable?: boolean;
 	}
 
@@ -25,7 +29,7 @@
 		fetchContainers({
 			organization: [organization],
 			payloadType: [payloadTypes.enum.organizational_unit]
-		}) as Promise<OrganizationalUnitContainer[]>
+		}) as Promise<Container<OrganizationalUnitPayload>[]>
 	);
 
 	let isPartOfObject = $derived(

@@ -9,10 +9,10 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import { ability, applicationState } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+	import type { Container, OrganizationalUnitPayload, OrganizationPayload } from '$lib/models';
 
 	interface Props {
-		container: OrganizationContainer | OrganizationalUnitContainer;
+		container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>;
 		index: number;
 	}
 

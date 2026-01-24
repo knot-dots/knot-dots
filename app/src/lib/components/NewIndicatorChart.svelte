@@ -3,9 +3,10 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
-		type ActualDataContainer,
-		type AnyContainer,
-		type IndicatorTemplateContainer,
+		type ActualDataPayload,
+		type AnyPayload,
+		type Container,
+		type IndicatorTemplatePayload,
 		isContainerWithPayloadType,
 		payloadTypes
 	} from '$lib/models';
@@ -13,9 +14,9 @@
 	import { page } from '$app/state';
 
 	interface Props {
-		container: IndicatorTemplateContainer;
-		relatedContainers?: AnyContainer[];
-		comparisonContainers?: ActualDataContainer[];
+		container: Container<IndicatorTemplatePayload>;
+		relatedContainers?: Container<AnyPayload>[];
+		comparisonContainers?: Container<ActualDataPayload>[];
 	}
 
 	let { container, relatedContainers = [], comparisonContainers }: Props = $props();

@@ -3,8 +3,8 @@ import type { DatabasePool } from 'slonik';
 import de from '$lib/locales/de.json' assert { type: 'json' };
 import {
 	audience,
-	type CategoryContainer,
 	type CategoryPayload,
+	type Container,
 	containerOfType,
 	isContainerWithPayloadType,
 	type ModifiedContainer,
@@ -14,7 +14,6 @@ import {
 	predicates,
 	type Relation,
 	sustainableDevelopmentGoals,
-	type TermContainer,
 	type TermPayload,
 	topics,
 	visibility
@@ -171,7 +170,7 @@ async function seedForOrganization(
 				if (byTitle.payload.key !== seed.key) {
 					byTitle.payload = { ...byTitle.payload, key: seed.key };
 					const updated = await pool.connect(updateContainer(byTitle as ModifiedContainer));
-					category = { ...updated, relation: byTitle.relation } as CategoryContainer;
+					category = { ...updated, relation: byTitle.relation } as Container<CategoryPayload>;
 				} else {
 					category = byTitle;
 				}
@@ -225,9 +224,9 @@ async function createCategory(
 
 async function ensureTermsForCategory(
 	pool: DatabasePool,
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	seed: CategorySeed,
-	allTerms: TermContainer[]
+	allTerms: Container<TermPayload>[]
 ) {
 	const relationsToUpdate: Relation[] = [];
 
@@ -259,7 +258,7 @@ async function ensureTermsForCategory(
 async function ensureRelation(
 	pool: DatabasePool,
 	categoryGuid: string,
-	term: TermContainer,
+	term: Container<TermPayload>,
 	position: number
 ) {
 	const hasRelation = term.relation.some(
@@ -290,10 +289,9 @@ async function ensureRelation(
 	}
 }
 
-async function ensurePublicVisibility<T extends CategoryContainer | TermContainer>(
-	pool: DatabasePool,
-	container: T
-) {
+async function ensurePublicVisibility<
+	T extends Container<CategoryPayload> | Container<TermPayload>
+>(pool: DatabasePool, container: T) {
 	if (container.payload.visibility === visibility.enum.public) {
 		return container;
 	}
@@ -307,7 +305,7 @@ async function ensurePublicVisibility<T extends CategoryContainer | TermContaine
 
 async function ensureCategoryMetadata(
 	pool: DatabasePool,
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	seed: CategorySeed
 ) {
 	const needsKeyUpdate = category.payload.key !== seed.key;
@@ -328,10 +326,14 @@ async function ensureCategoryMetadata(
 
 	const updated = await pool.connect(updateContainer(category as ModifiedContainer));
 
-	return { ...updated, relation: category.relation } as CategoryContainer;
+	return { ...updated, relation: category.relation } as Container<CategoryPayload>;
 }
 
-async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed: TermSeed) {
+async function ensureTermMetadata(
+	pool: DatabasePool,
+	term: Container<TermPayload>,
+	seed: TermSeed
+) {
 	const needsTitleUpdate = term.payload.title !== seed.title;
 	const needsDescriptionUpdate =
 		seed.description !== undefined && term.payload.description !== seed.description;
@@ -348,12 +350,12 @@ async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed:
 
 	const updated = await pool.connect(updateContainer(term as ModifiedContainer));
 
-	return { ...updated, relation: term.relation } as TermContainer;
+	return { ...updated, relation: term.relation } as Container<TermPayload>;
 }
 
 async function createTerm(
 	pool: DatabasePool,
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	seed: TermSeed,
 	position: number
 ) {

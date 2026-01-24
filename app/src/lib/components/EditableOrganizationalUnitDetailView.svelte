@@ -10,7 +10,7 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import {
 		type Container,
-		type OrganizationalUnitContainer,
+		type OrganizationalUnitPayload,
 		organizationalUnitType
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -24,7 +24,7 @@
 	import type { Snippet } from 'svelte';
 
 	interface Props {
-		container: OrganizationalUnitContainer;
+		container: Container<OrganizationalUnitPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		relatedContainers?: Container[];
 	}

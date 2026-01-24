@@ -3,11 +3,11 @@
 	import CalendarDays from '~icons/heroicons/calendar-days-16-solid';
 	import ExclamationCircle from '~icons/heroicons/exclamation-circle-16-solid';
 	import Card from '$lib/components/Card.svelte';
-	import { type Container, type TaskContainer } from '$lib/models';
-	import { taskStatusIcons, taskStatusColors } from '$lib/theme/models';
+	import { type Container, type TaskPayload } from '$lib/models';
+	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
 
 	interface Props {
-		container: TaskContainer;
+		container: Container<TaskPayload>;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;
 		showTaskStatusBadge?: boolean;
@@ -35,7 +35,7 @@
 		return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 	}
 
-	function isPending(container: TaskContainer): boolean {
+	function isPending(container: Container<TaskPayload>): boolean {
 		return (
 			container.payload.taskStatus === 'task_status.idea' ||
 			container.payload.taskStatus === 'task_status.in_planning' ||

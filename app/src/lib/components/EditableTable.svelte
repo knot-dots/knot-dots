@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { _, number } from 'svelte-i18n';
-	import { type ResourceDataContainer } from '$lib/models';
+	import { type Container, type ResourceDataPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	export interface ResourceTableRow {
-		container: ResourceDataContainer; // has payload.entries
+		container: Container<ResourceDataPayload>; // has payload.entries
 		label: string; // display text
 		href?: string; // optional overlay link URL
 		subtitle?: string; // optional muted parenthetical text
@@ -26,7 +26,9 @@
 		columnLabel: string; // first column header (translated), e.g. "Data object" or "Goal"
 		sections: ResourceTableSection[];
 		fillYearGaps?: boolean; // fill gaps between min/max year (default: false)
-		onSave: (container: ResourceDataContainer) => Promise<{ guid: string; revision: number }>;
+		onSave: (
+			container: Container<ResourceDataPayload>
+		) => Promise<{ guid: string; revision: number }>;
 	}
 
 	let { title, titleUnit, columnLabel, sections, fillYearGaps = false, onSave }: Props = $props();
@@ -71,11 +73,11 @@
 		return allYears;
 	});
 
-	function getAmountByYear(container: ResourceDataContainer): Map<number, number> {
+	function getAmountByYear(container: Container<ResourceDataPayload>): Map<number, number> {
 		return new Map(container.payload.entries.map((e) => [e.year, e.amount]));
 	}
 
-	function sumByYear(containers: ResourceDataContainer[]): Map<number, number> {
+	function sumByYear(containers: Container<ResourceDataPayload>[]): Map<number, number> {
 		const sumMap = new Map<number, number>();
 		for (const container of containers) {
 			const amounts = getAmountByYear(container);
@@ -146,7 +148,7 @@
 	function handleInput(
 		year: number,
 		event: Event,
-		container: ResourceDataContainer,
+		container: Container<ResourceDataPayload>,
 		timerKey: string,
 		locale: string = navigator.language
 	) {
@@ -201,7 +203,7 @@
 		debouncedSave(container, timerKey);
 	}
 
-	function debouncedSave(containerToSave: ResourceDataContainer, timerKey: string) {
+	function debouncedSave(containerToSave: Container<ResourceDataPayload>, timerKey: string) {
 		clearTimeout(saveTimers[timerKey]);
 		saveTimers[timerKey] = setTimeout(async () => {
 			try {

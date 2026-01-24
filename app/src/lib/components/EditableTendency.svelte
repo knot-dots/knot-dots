@@ -5,14 +5,15 @@
 	import ArrowCircleUpOutline from '~icons/knotdots/arrow-circle-up-outline';
 	import ArrowCircleUpSolid from '~icons/knotdots/arrow-circle-up-solid';
 	import {
-		type EffectContainer,
+		type Container,
+		type EffectPayload,
 		isContainerWithPayloadType,
-		type ObjectiveContainer,
+		type ObjectivePayload,
 		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
-		container: EffectContainer | ObjectiveContainer;
+		container: Container<EffectPayload> | Container<ObjectivePayload>;
 		editable?: boolean;
 	}
 

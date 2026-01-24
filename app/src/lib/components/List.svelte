@@ -1,8 +1,8 @@
 <script lang="ts" module>
-	import { type AnyContainer } from '$lib/models';
+	import type { AnyPayload, Container } from '$lib/models';
 </script>
 
-<script lang="ts" generics="Item extends AnyContainer">
+<script lang="ts" generics="Item extends Container<AnyPayload>">
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';

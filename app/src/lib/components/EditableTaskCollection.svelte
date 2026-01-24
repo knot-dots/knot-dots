@@ -7,24 +7,25 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		findAncestors,
 		type NewContainer,
 		payloadTypes,
 		predicates,
-		type TaskCollectionContainer,
-		type TaskContainer
+		type TaskCollectionPayload,
+		type TaskPayload
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: TaskCollectionContainer;
+		container: Container<TaskCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -42,7 +43,7 @@
 					relationType: [predicates.enum['is-part-of']]
 				})
 			: new Promise(() => [])
-	) as Promise<TaskContainer[]>;
+	) as Promise<Container<TaskPayload>[]>;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

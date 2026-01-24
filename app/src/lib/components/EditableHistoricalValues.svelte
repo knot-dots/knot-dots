@@ -8,11 +8,11 @@
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import type { IndicatorContainer } from '$lib/models';
+	import type { Container, IndicatorPayload } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: IndicatorContainer;
+		container: Container<IndicatorPayload>;
 		editable?: boolean;
 	}
 

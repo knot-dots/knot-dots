@@ -2,10 +2,10 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Members from '$lib/components/Members.svelte';
-	import type { AnyContainer, User } from '$lib/models';
+	import type { AnyPayload, Container, User } from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		users: User[];
 	}
 

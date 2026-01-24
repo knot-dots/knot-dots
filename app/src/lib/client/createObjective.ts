@@ -2,21 +2,20 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import saveContainer from '$lib/client/saveContainer';
 import {
-	type BinaryIndicatorContainer,
+	type BinaryIndicatorPayload,
 	type Container,
 	containerOfType,
-	type EmptyObjectiveContainer,
-	type IndicatorContainer,
+	type IndicatorPayload,
+	type InitialObjectivePayload,
 	type IooiType,
 	type NewContainer,
-	type ObjectiveContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
 
 export default async function createObjective(
 	target: Container,
-	indicator: IndicatorContainer | BinaryIndicatorContainer,
+	indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
 	iooiType?: IooiType
 ) {
 	const isOverallObjective = target.guid == indicator.guid;
@@ -26,8 +25,7 @@ export default async function createObjective(
 		target.organizational_unit,
 		target.managed_by,
 		env.PUBLIC_KC_REALM
-	) as EmptyObjectiveContainer;
-
+	) as NewContainer<InitialObjectivePayload>;
 	const response = await saveContainer({
 		...newObjective,
 		payload: {
@@ -55,6 +53,6 @@ export default async function createObjective(
 						}
 					])
 		]
-	} as NewContainer & ObjectiveContainer['payload']);
+	});
 	return await response.json();
 }

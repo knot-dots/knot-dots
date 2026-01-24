@@ -5,14 +5,19 @@
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Summary from '$lib/components/Summary.svelte';
-	import { type AnyContainer, type ContainerWithSummary, type SummaryContainer } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		type ContainerWithSummary,
+		type SummaryPayload
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: SummaryContainer;
+		container: Container<SummaryPayload>;
 		editable?: boolean;
 		parentContainer: ContainerWithSummary;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

@@ -5,29 +5,27 @@ import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
-	type AnyContainer,
 	type AnyPayload,
 	anyPayload,
 	audience,
 	type Container,
 	createCopyOf,
 	createNewContainerSchema,
-	type GoalContainer,
+	type GoalPayload,
 	indicatorCategories,
-	type IndicatorContainer,
+	type IndicatorPayload,
 	indicatorTypes,
 	isContainerWithPayloadType,
-	type MeasureContainer,
 	type MeasurePayload,
 	type NewContainer,
 	type PartialRelation,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	programTypes,
 	type Relation,
-	type ReportContainer,
+	type ReportPayload,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -44,9 +42,9 @@ import {
 import type { User } from '$lib/stores';
 import type { RequestHandler } from './$types';
 
-function findCopiedTargetGuid<T extends AnyContainer>(
+function findCopiedTargetGuid<T extends Container<AnyPayload>>(
 	originalTargetGuid: string,
-	copied: Array<GoalContainer | IndicatorContainer | T>
+	copied: Array<Container<GoalPayload> | Container<IndicatorPayload> | T>
 ): string {
 	return copied.find(({ relation }) =>
 		relation.some(
@@ -81,9 +79,9 @@ function mapRelationsByPredicate<T extends { relation: Relation[]; guid: string 
 		.filter(({ object }) => object !== undefined);
 }
 
-async function copyMeasureFromOriginal<T extends AnyContainer>(
+async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 	createdContainer: T,
-	originalMeasure: MeasureContainer,
+	originalMeasure: Container<MeasurePayload>,
 	user: User,
 	txConnection: CommonQueryMethods
 ) {
@@ -107,7 +105,7 @@ async function copyMeasureFromOriginal<T extends AnyContainer>(
 					)?.position ?? 0
 			}
 		]
-	} as NewContainer<MeasurePayload>)(txConnection)) as MeasureContainer;
+	} as NewContainer<MeasurePayload>)(txConnection)) as Container<MeasurePayload>;
 
 	const isCopyOfRelation = copiedMeasure.relation.find(
 		({ object, predicate }) => predicate === predicates.enum['is-copy-of'] && object !== undefined
@@ -119,12 +117,14 @@ async function copyMeasureFromOriginal<T extends AnyContainer>(
 }
 
 async function copyGoalsFromOriginal(
-	createdMeasure: MeasureContainer,
-	originalGoals: GoalContainer[],
+	createdMeasure: Container<MeasurePayload>,
+	originalGoals: Container<GoalPayload>[],
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
-	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
+	const isPartOfObjects: Array<Container<MeasurePayload> | Container<GoalPayload>> = [
+		createdMeasure
+	];
 
 	const originalGoalsSorted = originalGoals.toSorted(
 		(a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel
@@ -162,7 +162,9 @@ async function copyGoalsFromOriginal(
 		});
 
 		isPartOfObjects.push(
-			(await createContainer(copy as NewContainer<AnyPayload>)(txConnection)) as GoalContainer
+			(await createContainer(copy as NewContainer<AnyPayload>)(
+				txConnection
+			)) as Container<GoalPayload>
 		);
 	}
 
@@ -170,9 +172,9 @@ async function copyGoalsFromOriginal(
 }
 
 async function copyTasksFromOriginal(
-	createdMeasure: MeasureContainer,
+	createdMeasure: Container<MeasurePayload>,
 	originals: Container[],
-	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	isPartOfObjects: Array<Container<MeasurePayload> | Container<GoalPayload>>,
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
@@ -208,18 +210,18 @@ async function copyTasksFromOriginal(
 }
 
 async function copyIndicatorsFromOriginal(
-	createdMeasure: MeasureContainer,
+	createdMeasure: Container<MeasurePayload>,
 	originals: Container[],
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
-	const measuredByObjects: IndicatorContainer[] = [];
+	const measuredByObjects: Container<IndicatorPayload>[] = [];
 
 	const organizationIndicators = (await getManyContainers(
 		[createdMeasure.organization],
 		{ type: [payloadTypes.enum.indicator] },
 		''
-	)(txConnection)) as IndicatorContainer[];
+	)(txConnection)) as Container<IndicatorPayload>[];
 
 	for (const copyFrom of originals.filter((container) =>
 		isContainerWithPayloadType(payloadTypes.enum.indicator, container)
@@ -251,7 +253,7 @@ async function copyIndicatorsFromOriginal(
 			measuredByObjects.push(
 				(await createContainer(copy as NewContainer<AnyPayload>)(
 					txConnection
-				)) as IndicatorContainer
+				)) as Container<IndicatorPayload>
 			);
 		}
 	}
@@ -260,10 +262,10 @@ async function copyIndicatorsFromOriginal(
 }
 
 async function copyEffectsFromOriginal(
-	createdMeasure: MeasureContainer,
+	createdMeasure: Container<MeasurePayload>,
 	originals: Container[],
-	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
-	indicators: IndicatorContainer[],
+	isPartOfObjects: Array<Container<MeasurePayload> | Container<GoalPayload>>,
+	indicators: Container<IndicatorPayload>[],
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
@@ -300,9 +302,9 @@ async function copyEffectsFromOriginal(
 }
 
 async function copySectionsFromOriginal(
-	createdContainer: AnyContainer,
+	createdContainer: Container<AnyPayload>,
 	originals: Container[],
-	isPartOfObjects: Array<AnyContainer>,
+	isPartOfObjects: Array<Container<AnyPayload>>,
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
@@ -334,7 +336,7 @@ async function copySectionsFromOriginal(
 }
 
 async function copyMeasure(
-	createdContainer: MeasureContainer,
+	createdContainer: Container<MeasurePayload>,
 	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: CommonQueryMethods
@@ -392,7 +394,7 @@ async function copyMeasure(
 }
 
 async function copyProgram(
-	createdProgram: ProgramContainer,
+	createdProgram: Container<ProgramPayload>,
 	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: CommonQueryMethods
@@ -408,7 +410,7 @@ async function copyProgram(
 		)
 		.filter(({ guid }) => guid !== isCopyOfRelation.object);
 
-	const isPartOfObjects = [createdProgram] as AnyContainer[];
+	const isPartOfObjects = [createdProgram] as Container<AnyPayload>[];
 
 	for (const copyFrom of originalParts) {
 		if (isContainerWithPayloadType(payloadTypes.enum.measure, copyFrom)) {
@@ -451,7 +453,7 @@ async function copyProgram(
 }
 
 async function copyReportContainer(
-	createdContainer: ReportContainer,
+	createdContainer: Container<ReportPayload>,
 	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: CommonQueryMethods
@@ -514,7 +516,7 @@ export const GET = (async ({ locals, url }) => {
 		error(400, { message: parseResult.error.message });
 	}
 
-	let containers: AnyContainer[];
+	let containers: Container<AnyPayload>[];
 
 	if (parseResult.data.isPartOfProgram.length > 0) {
 		containers = await locals.pool.connect(

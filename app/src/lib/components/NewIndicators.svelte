@@ -16,12 +16,12 @@
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		type Container,
 		containerOfType,
 		findConnected,
 		indicatorCategories,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isContainerWithPayloadType,
 		type NewContainer,
 		overlayKey,
@@ -107,7 +107,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>;
+		) as NewContainer<IndicatorTemplatePayload>;
 
 		container.payload.title = '';
 		container.payload.unit = units.enum['unit.cubic_meter'];
@@ -125,7 +125,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<BinaryIndicatorContainer, 'payload'>;
+		) as NewContainer<BinaryIndicatorPayload>;
 
 		container.payload.title = '';
 		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
@@ -139,7 +139,10 @@
 
 	function handleDndConsider(
 		event: CustomEvent<
-			DndEvent<{ guid: string; container: IndicatorTemplateContainer | BinaryIndicatorContainer }>
+			DndEvent<{
+				guid: string;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
+			}>
 		>
 	) {
 		const { trigger, id } = event.detail.info;
@@ -163,7 +166,10 @@
 
 	function handleDndFinalize(
 		event: CustomEvent<
-			DndEvent<{ guid: string; container: IndicatorTemplateContainer | BinaryIndicatorContainer }>
+			DndEvent<{
+				guid: string;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
+			}>
 		>
 	) {
 		if (!shouldIgnoreDndEvents) {

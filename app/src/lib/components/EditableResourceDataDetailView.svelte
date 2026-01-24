@@ -3,28 +3,28 @@
 	import { page } from '$app/state';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
 		ResourceTableRow,
 		ResourceTableSection
 	} from '$lib/components/EditableTable.svelte';
+	import EditableTable from '$lib/components/EditableTable.svelte';
 	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
 	import saveContainer from '$lib/client/saveContainer';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import {
-		predicates,
+		type AnyPayload,
+		type Container,
+		findDescendants,
+		type GoalPayload,
+		isContainerWithPayloadType,
+		type MeasurePayload,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
-		findDescendants,
-		type AnyContainer,
-		type Container,
-		type GoalContainer,
-		type MeasureContainer,
-		type ResourceDataContainer,
-		type ResourceV2Container,
-		isContainerWithPayloadType,
-		resourceDataTypes
+		predicates,
+		type ResourceDataPayload,
+		resourceDataTypes,
+		type ResourceV2Payload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { _ } from 'svelte-i18n';
@@ -36,9 +36,9 @@
 	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 
 	interface Props {
-		container: ResourceDataContainer;
+		container: Container<ResourceDataPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();
@@ -70,11 +70,12 @@
 		});
 	});
 
-	let currentResource = $state<ResourceV2Container | undefined>(undefined);
+	let currentResource = $state<Container<ResourceV2Payload> | undefined>(undefined);
 
 	$effect(() => {
 		fetchContainerRevisions(container.payload.resource).then((revisions) => {
-			currentResource = (revisions[revisions.length - 1] as ResourceV2Container) ?? undefined;
+			currentResource =
+				(revisions[revisions.length - 1] as Container<ResourceV2Payload>) ?? undefined;
 		});
 	});
 
@@ -87,8 +88,8 @@
 
 	// --- Budget table data fetching ---
 
-	let goalContainers = $state<GoalContainer[]>([]);
-	let measureContainers = $state<MeasureContainer[]>([]);
+	let goalContainers = $state<Container<GoalPayload>[]>([]);
+	let measureContainers = $state<Container<MeasurePayload>[]>([]);
 
 	$effect(() => {
 		if (!isBudgetContainer) return;
@@ -132,7 +133,7 @@
 		);
 	});
 
-	let allResourceDataContainers = $state<ResourceDataContainer[]>([]);
+	let allResourceDataContainers = $state<Container<ResourceDataPayload>[]>([]);
 
 	$effect(() => {
 		if (!isBudgetContainer || !parentGoal) {
@@ -167,7 +168,7 @@
 			);
 	});
 
-	function getBudgetsForGoal(goal: GoalContainer): ResourceDataContainer[] {
+	function getBudgetsForGoal(goal: Container<GoalPayload>): Container<ResourceDataPayload>[] {
 		return allBudgetContainers.filter((budget) =>
 			budget.relation.some(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === goal.guid
@@ -175,7 +176,9 @@
 		);
 	}
 
-	function getResourceDataForMeasure(measure: MeasureContainer): ResourceDataContainer[] {
+	function getResourceDataForMeasure(
+		measure: Container<MeasurePayload>
+	): Container<ResourceDataPayload>[] {
 		return allResourceDataContainers.filter((rd) =>
 			rd.relation.some(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === measure.guid
@@ -282,7 +285,7 @@
 
 	// onSave callback for EditableTable
 	async function handleSave(
-		containerToSave: ResourceDataContainer
+		containerToSave: Container<ResourceDataPayload>
 	): Promise<{ guid: string; revision: number }> {
 		const response = await saveContainer(containerToSave);
 		if (!response.ok) {

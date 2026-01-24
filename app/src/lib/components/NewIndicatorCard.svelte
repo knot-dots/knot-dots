@@ -7,19 +7,20 @@
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
-		type ActualDataContainer,
-		type BinaryIndicatorContainer,
-		type IndicatorTemplateContainer,
+		type ActualDataPayload,
+		type BinaryIndicatorPayload,
+		type Container,
+		type IndicatorTemplatePayload,
 		isContainerWithPayloadType,
 		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
 		button?: Snippet;
-		container: IndicatorTemplateContainer | BinaryIndicatorContainer;
-		relatedContainers?: ActualDataContainer[];
+		container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
+		relatedContainers?: Container<ActualDataPayload>[];
 		showRelationFilter?: boolean;
-		comparisonDataMap?: SvelteMap<string, ActualDataContainer[]>;
+		comparisonDataMap?: SvelteMap<string, Container<ActualDataPayload>[]>;
 	}
 
 	const {

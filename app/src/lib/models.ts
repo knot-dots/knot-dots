@@ -644,6 +644,8 @@ export type BinaryIndicatorPayload = z.infer<typeof binaryIndicatorPayload>;
 
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
 
+export type InitialBinaryIndicatorPayload = z.infer<typeof initialBinaryIndicatorPayload>;
+
 const unrefinedCategoryPayload = z
 	.object({
 		description: z.string().trim().optional(),
@@ -1709,8 +1711,6 @@ export type Container<P = Payload> = z.infer<
 	ReturnType<typeof createContainerSchema<z.ZodType<P>>>
 >;
 
-export type AnyContainer = Container<AnyPayload>;
-
 export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
 		managed_by: z.string().uuid(),
@@ -1728,18 +1728,6 @@ export const newContainer = createNewContainerSchema(anyInitialPayload);
 export type NewContainer<P extends AnyInitialPayload = AnyInitialPayload> = z.infer<
 	ReturnType<typeof createNewContainerSchema<z.ZodType<P>>>
 >;
-
-export type EmptyContainer = NewContainer;
-
-export type EmptyEffectContainer = NewContainer<InitialEffectPayload>;
-
-export type EmptyIndicatorContainer = NewContainer<InitialIndicatorPayload>;
-
-export type EmptyObjectiveContainer = NewContainer<InitialObjectivePayload>;
-
-export type EmptyOrganizationalUnitContainer = NewContainer<InitialOrganizationalUnitPayload>;
-
-export type EmptyRuleContainer = NewContainer<InitialRulePayload>;
 
 function createModifiedContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
@@ -1769,109 +1757,9 @@ export function isContainerWithPayloadType<T extends PayloadType>(
 	return container.payload.type == payloadType;
 }
 
-export type ContainerWithEffect = Container<MeasurePayload | SimpleMeasurePayload>;
-
-export type ActualDataContainer = Container<ActualDataPayload>;
-
-export type AdministrativeAreaBasicDataContainer = Container<AdministrativeAreaBasicDataPayload>;
-
-export type BinaryIndicatorContainer = Container<BinaryIndicatorPayload>;
-
-export type CategoryContainer = Container<CategoryPayload>;
-
-export type ChapterContainer = Container<ChapterPayload>;
-
-export type CustomCollectionContainer = Container<CustomCollectionPayload>;
-
-export type EffectContainer = Container<EffectPayload>;
-
-export type EffectCollectionContainer = Container<EffectCollectionPayload>;
-
-export type FileCollectionContainer = Container<FileCollectionPayload>;
-
-export type GoalContainer = Container<GoalPayload>;
-
-export type GoalCollectionContainer = Container<GoalCollectionPayload>;
-
-export type HelpContainer = Container<HelpPayload>;
-
-export type IndicatorContainer = Container<IndicatorPayload>;
-
-export type IndicatorCollectionContainer = Container<IndicatorCollectionPayload>;
-
-export type IndicatorTemplateContainer = Container<IndicatorTemplatePayload>;
-
-export type KnowledgeContainer = Container<KnowledgePayload>;
-
-export type MapContainer = Container<MapPayload>;
-
-export type MeasureContainer = Container<MeasurePayload>;
-
-export type MeasureCollectionContainer = Container<MeasureCollectionPayload>;
-
-export type ObjectiveContainer = Container<ObjectivePayload>;
-
-export type ObjectiveCollectionContainer = Container<ObjectiveCollectionPayload>;
-
-export type OrganizationContainer = Container<OrganizationPayload>;
-
-export type OrganizationalUnitContainer = Container<OrganizationalUnitPayload>;
-
-export type PageContainer = Container<PagePayload>;
-
-export type ProgressContainer = Container<ProgressPayload>;
-
-export type ReportContainer = Container<ReportPayload>;
-
-export type RuleContainer = Container<RulePayload>;
-
-export type ResourceContainer = Container<ResourcePayload>;
-
-export type ResourceCollectionContainer = Container<ResourceCollectionPayload>;
-
-export type ResourceDataContainer = Container<ResourceDataPayload>;
-
-export type ResourceDataCollectionContainer = Container<ResourceDataCollectionPayload>;
-
-export type ResourceV2Container = Container<ResourceV2Payload>;
-
-export type SimpleMeasureContainer = Container<SimpleMeasurePayload>;
-
-export type SummaryContainer = Container<SummaryPayload>;
-
-export type ProgramContainer = Container<ProgramPayload>;
-
-export type ProgramCollectionContainer = Container<ProgramCollectionPayload>;
-
-export type TextContainer = Container<TextPayload>;
-
-export type TaskContainer = Container<TaskPayload>;
-
-export type TermContainer = Container<TermPayload>;
-
-export type TaskCollectionContainer = Container<TaskCollectionPayload>;
-
-export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
-
-export type ImageContainer = Container<ImagePayload>;
-
-export type TeaserContainer = Container<TeaserPayload>;
-
-export type ContentPartnerContainer = Container<ContentPartnerPayload>;
-
-export type ContentPartnerCollectionContainer = Container<ContentPartnerCollectionPayload>;
-
-export type TeaserCollectionContainer = Container<TeaserCollectionPayload>;
-
-export type CollectionContainer = Container<
-	ContentPartnerCollectionPayload | TeaserCollectionPayload
->;
-
-export type TeaserLikeContainer = Container<
-	TeaserPayload | InfoBoxPayload | TeaserHighlightPayload | QuotePayload | ColContentPayload
->;
-
-export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
+export function isContainer(
+	container: Container<AnyPayload> | NewContainer
+): container is Container {
 	return (
 		container.payload.type !== payloadTypes.enum.organization &&
 		container.payload.type !== payloadTypes.enum.organizational_unit
@@ -1889,71 +1777,57 @@ function hasProperty(
 
 export type PayloadWithAudience = AnyPayload & { audience: Audience[] };
 
-export type ContainerWithAudience = Container<PayloadWithAudience>;
-
 export function isContainerWithAudience(
-	container: AnyContainer | NewContainer
-): container is ContainerWithAudience {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithAudience> {
 	return hasProperty(container.payload, 'audience');
 }
 
 export type PayloadWithBody = AnyPayload & { body: string | undefined };
 
-export type ContainerWithBody = Container<PayloadWithBody>;
-
 export function isContainerWithBody(
-	container: AnyContainer | NewContainer
-): container is ContainerWithBody {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithBody> {
 	return hasProperty(container.payload, 'body');
 }
 
 export type PayloadWithSdg = AnyPayload & { sdg: SustainableDevelopmentGoal[] };
 
-export type ContainerWithSdg = Container<PayloadWithSdg>;
-
 export function isContainerWithSdg(
-	container: AnyContainer | NewContainer
-): container is ContainerWithSdg {
-	return hasProperty(container.payload, 'sdg');
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithSdg> {
+	return hasProperty(container.payload, 'category');
 }
 
 export type PayloadWithDescription = AnyPayload & { description: string | undefined };
 
-export type ContainerWithDescription = Container<PayloadWithDescription>;
-
 export function isContainerWithDescription(
-	container: AnyContainer | NewContainer
-): container is ContainerWithDescription {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithDescription> {
 	return hasProperty(container.payload, 'description');
 }
 
 export type PayloadWithDuration = AnyPayload & { startDate: string; endDate: string };
 
-export type ContainerWithDuration = Container<PayloadWithDuration>;
-
 export function isContainerWithDuration(
-	container: AnyContainer | NewContainer
-): container is ContainerWithDuration {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithDuration> {
 	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
 }
 
 export type PayloadWithEditorialState = AnyPayload & { editorialState: EditorialState | undefined };
 
-export type ContainerWithEditorialState = Container<PayloadWithEditorialState>;
-
 export function isContainerWithEditorialState(
-	container: AnyContainer | NewContainer
-): container is ContainerWithEditorialState {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithEditorialState> {
 	return hasProperty(container.payload, 'editorialState');
 }
 
 export type PayloadWithFulfillmentDate = AnyPayload & { fulfillmentDate: string | undefined };
 
-export type ContainerWithFulfillmentDate = Container<PayloadWithFulfillmentDate>;
-
 export function isContainerWithFulfillmentDate(
-	container: AnyContainer | NewContainer
-): container is ContainerWithFulfillmentDate {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithFulfillmentDate> {
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
@@ -1962,38 +1836,32 @@ export type PayloadWithHierarchyLevel = AnyPayload & { hierarchyLevel: number };
 export type ContainerWithHierarchyLevel = Container<PayloadWithHierarchyLevel>;
 
 export function isContainerWithHierarchyLevel(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithHierarchyLevel {
 	return hasProperty(container.payload, 'hierarchyLevel');
 }
 
 export type PayloadWithName = AnyPayload & { name: string | undefined };
 
-export type ContainerWithName = Container<PayloadWithName>;
-
 export function isContainerWithName(
-	container: AnyContainer | NewContainer
-): container is ContainerWithName {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithName> {
 	return hasProperty(container.payload, 'name');
 }
 
 export type PayloadWithProgress = AnyPayload & { progress: number | undefined };
 
-export type ContainerWithProgress = Container<PayloadWithProgress>;
-
 export function isContainerWithProgress(
-	container: AnyContainer | NewContainer
-): container is ContainerWithProgress {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithProgress> {
 	return hasProperty(container.payload, 'progress');
 }
 
 export type PayloadWithStatus = AnyPayload & { status: Status };
 
-export type ContainerWithStatus = Container<PayloadWithStatus>;
-
 export function isContainerWithStatus(
-	container: AnyContainer | NewContainer
-): container is ContainerWithStatus {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithStatus> {
 	return hasProperty(container.payload, 'status');
 }
 
@@ -2002,28 +1870,24 @@ export type PayloadWithSummary = AnyPayload & { summary: string | undefined };
 export type ContainerWithSummary = Container<PayloadWithSummary>;
 
 export function isContainerWithSummary(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithSummary {
 	return hasProperty(container.payload, 'summary');
 }
 
 export type PayloadWithTitle = AnyPayload & { title: string | undefined };
 
-export type ContainerWithTitle = Container<PayloadWithTitle>;
-
 export function isContainerWithTitle(
-	container: AnyContainer | NewContainer
-): container is ContainerWithTitle {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithTitle> {
 	return hasProperty(container.payload, 'title');
 }
 
 export type PayloadWithTopic = AnyPayload & { topic: Topic[] };
 
-export type ContainerWithTopic = Container<PayloadWithTopic>;
-
 export function isContainerWithTopic(
-	container: AnyContainer | NewContainer
-): container is ContainerWithTopic {
+	container: Container<AnyPayload> | NewContainer
+): container is Container<PayloadWithTopic> {
 	return hasProperty(container.payload, 'topic');
 }
 
@@ -2067,7 +1931,7 @@ export const newUser = z.object({
 export type NewUser = z.infer<typeof newUser>;
 
 export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
-	return function (candidate: AnyContainer) {
+	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
 				(r) =>
@@ -2080,7 +1944,7 @@ export function isPartOf(container: { relation: PartialRelation[]; guid: string 
 }
 
 export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: string }) {
-	return function (candidate: AnyContainer) {
+	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
 				(r) =>
@@ -2093,7 +1957,7 @@ export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: 
 }
 
 export function isRelatedTo(container: { relation: Relation[]; guid: string }) {
-	return function (candidate: AnyContainer) {
+	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
 				({ object, subject }) =>
@@ -2109,18 +1973,18 @@ export function isSuggestedByAI(container: Container) {
 }
 
 export function hasMember(user: { guid: string }) {
-	return (container: AnyContainer) =>
+	return (container: Container<AnyPayload>) =>
 		container.user.find(
 			({ predicate, subject }) =>
 				subject === user.guid && predicate === predicates.enum['is-member-of']
 		);
 }
 
-export function etag(container: AnyContainer) {
+export function etag(container: Container<AnyPayload>) {
 	return `"${container.revision}"`;
 }
 
-export function isAdminOf(user: { guid: string }, container: AnyContainer) {
+export function isAdminOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2129,7 +1993,7 @@ export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
-export function isCollaboratorOf(user: { guid: string }, container: AnyContainer) {
+export function isCollaboratorOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2138,7 +2002,7 @@ export function isCollaboratorOf(user: { guid: string }, container: AnyContainer
 	);
 }
 
-export function isHeadOf(user: { guid: string }, container: AnyContainer) {
+export function isHeadOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) => user.guid == subject && predicate == predicates.enum['is-head-of']
@@ -2146,7 +2010,7 @@ export function isHeadOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
-export function isMemberOf(user: { guid: string }, container: AnyContainer) {
+export function isMemberOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2155,7 +2019,7 @@ export function isMemberOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
-export function isObserverOf(user: { guid: string }, container: AnyContainer) {
+export function isObserverOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2168,7 +2032,7 @@ export function isObserverOf(user: { guid: string }, container: AnyContainer) {
 }
 
 export function isAssignedTo(user: { guid: string }) {
-	return (container: TaskContainer) => container.payload.assignee.includes(user.guid);
+	return (container: Container<TaskPayload>) => container.payload.assignee.includes(user.guid);
 }
 
 export function containerOfType(
@@ -2201,7 +2065,7 @@ export function mayDelete(container: Container<AnyPayload>, ability: MongoAbilit
 	);
 }
 
-export function newIndicatorTemplateFromIndicator(container: IndicatorContainer) {
+export function newIndicatorTemplateFromIndicator(container: Container<IndicatorPayload>) {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { historicalValues, quantity, ...copiedPayload } = container.payload;
 	return createNewContainerSchema(indicatorTemplatePayload).parse({
@@ -2213,8 +2077,8 @@ export function newIndicatorTemplateFromIndicator(container: IndicatorContainer)
 }
 
 export function newCategoryTemplateFromCategory(
-	category: CategoryContainer,
-	organization: OrganizationContainer
+	category: Container<CategoryPayload>,
+	organization: Container<OrganizationPayload>
 ) {
 	const template = containerOfType(
 		payloadTypes.enum.category,
@@ -2229,9 +2093,9 @@ export function newCategoryTemplateFromCategory(
 }
 
 export function newTermForCategoryTemplate(
-	term: TermContainer,
+	term: Container<TermPayload>,
 	categoryGuid: string,
-	organization: OrganizationContainer,
+	organization: Container<OrganizationPayload>,
 	position: number
 ) {
 	const template = containerOfType(
@@ -2253,7 +2117,7 @@ export function newTermForCategoryTemplate(
 	return template;
 }
 
-export function findConnected<T extends AnyContainer>(
+export function findConnected<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicates: Predicate[]
@@ -2280,7 +2144,7 @@ export function findConnected<T extends AnyContainer>(
 	return found;
 }
 
-export function findAncestors<T extends AnyContainer>(
+export function findAncestors<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicate: Predicate[]
@@ -2311,7 +2175,7 @@ export function findAncestors<T extends AnyContainer>(
 	return Array.from(ancestors.values());
 }
 
-export function findDescendants<T extends AnyContainer>(
+export function findDescendants<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicate: Predicate[]
@@ -2337,9 +2201,9 @@ export function findDescendants<T extends AnyContainer>(
 	return Array.from(descendants.values());
 }
 
-export function findParentObjectives(containers: Container[]): ObjectiveContainer[] {
+export function findParentObjectives(containers: Container[]): Container<ObjectivePayload>[] {
 	const roots = new Set<Container>();
-	const parentObjectives = [] as ObjectiveContainer[];
+	const parentObjectives = [] as Container<ObjectivePayload>[];
 
 	for (const container of containers) {
 		const ancestors = findAncestors(container, containers, [predicates.enum['is-part-of']]);
@@ -2365,7 +2229,9 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 	return Array.from(parentObjectives);
 }
 
-export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveContainer[] {
+export function findLeafObjectives(
+	containers: Container<ObjectivePayload>[]
+): Container<ObjectivePayload>[] {
 	return containers.filter(
 		({ relation, guid }) =>
 			relation.findIndex(
@@ -2375,7 +2241,10 @@ export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveC
 	);
 }
 
-export function findOverallObjective(container: IndicatorContainer, containers: Container[]) {
+export function findOverallObjective(
+	container: Container<IndicatorPayload>,
+	containers: Container[]
+) {
 	return containers
 		.filter((candidate) => isContainerWithPayloadType(payloadTypes.enum.objective, candidate))
 		.find(
@@ -2403,11 +2272,11 @@ export function overlayURL(url: URL, key: OverlayKey, guid: string, extraParams?
 	return `#${newParams.toString()}`;
 }
 
-export function filterOrganizationalUnits<T extends AnyContainer>(
+export function filterOrganizationalUnits<T extends Container<AnyPayload>>(
 	containers: Array<T>,
 	url: URL,
 	subordinateOrganizationalUnits: string[],
-	currentOrganizationalUnit?: OrganizationalUnitContainer
+	currentOrganizationalUnit?: Container<OrganizationalUnitPayload>
 ): Array<T> {
 	return url.searchParams.has('related-to')
 		? containers
@@ -2453,28 +2322,33 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 			});
 }
 
-export function filterMembers<T extends AnyContainer>(containers: T[], members: string[]) {
+export function filterMembers<T extends Container<AnyPayload>>(containers: T[], members: string[]) {
 	return members.length == 0
 		? containers
 		: containers.filter((container) => members.some((guid) => hasMember({ guid })(container)));
 }
 
-export function getCreator(revision: AnyContainer) {
+export function getCreator(revision: Container<AnyPayload>) {
 	return revision.user
 		.filter(({ predicate }) => predicate == predicates.enum['is-creator-of'])
 		.map(({ subject }) => subject);
 }
 
-export function getManagedBy(container: AnyContainer, candidates: AnyContainer[]) {
+export function getManagedBy(
+	container: Container<AnyPayload>,
+	candidates: Container<AnyPayload>[]
+) {
 	return candidates.find(({ guid }) => guid === container.managed_by);
 }
 
-export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicatorContainer) {
+export function hasHistoricalValues(
+	container: Container<IndicatorPayload> | NewContainer<InitialIndicatorPayload>
+) {
 	return container.payload.historicalValues.length > 0;
 }
 
 export function createCopyOf(
-	container: AnyContainer,
+	container: Container<AnyPayload>,
 	organization: string,
 	organizationalUnit: string | null
 ) {
@@ -2547,7 +2421,7 @@ export function containersByHierarchyLevel<T extends Container>(containers: T[])
 	return containersByHierarchyLevel;
 }
 
-export function titleForProgramCollection(containers: ProgramContainer[]) {
+export function titleForProgramCollection(containers: Container<ProgramPayload>[]) {
 	const programTypes = new Set(containers.map(({ payload }) => payload.programType));
 
 	if (programTypes.size == 1) {
@@ -2562,7 +2436,10 @@ export function titleForProgramCollection(containers: ProgramContainer[]) {
 	}
 }
 
-export function titleForGoalCollection(containers: GoalContainer[], hierarchyLevel: number) {
+export function titleForGoalCollection(
+	containers: Container<GoalPayload>[],
+	hierarchyLevel: number
+) {
 	const goalTypes = new Set(containers.map((c) => c.payload.goalType));
 
 	if (goalTypes.size == 1) {
@@ -2587,7 +2464,10 @@ export function titleForGoalCollection(containers: GoalContainer[], hierarchyLev
 	}
 }
 
-export function titleForMeasureCollection(containers: MeasureContainer[], hierarchyLevel: number) {
+export function titleForMeasureCollection(
+	containers: Container<MeasurePayload>[],
+	hierarchyLevel: number
+) {
 	const measureTypes = new Set(containers.map(({ payload }) => payload.measureType));
 
 	if (measureTypes.size == 1) {
@@ -2614,7 +2494,7 @@ export function titleForMeasureCollection(containers: MeasureContainer[], hierar
 
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
-	containers: AnyContainer[],
+	containers: Container<AnyPayload>[],
 	options?: { useCategoryPayload?: boolean }
 ) {
 	const useCategoryPayload = options?.useCategoryPayload ?? false;
@@ -2661,7 +2541,7 @@ export function computeFacetCount(
 }
 
 export function getOrganizationURL(
-	container: OrganizationContainer | OrganizationalUnitContainer,
+	container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>,
 	linkPath = '/all/page',
 	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string }
 ): URL {

@@ -1,13 +1,13 @@
 import { filterVisible } from '$lib/authorization';
 import {
-	type Container,
-	payloadTypes,
-	predicates,
-	type ProgramContainer,
-	computeFacetCount,
 	audience,
+	computeFacetCount,
+	type Container,
 	fromCounts,
+	payloadTypes,
 	policyFieldBNK,
+	predicates,
+	type ProgramPayload,
 	programTypes,
 	sustainableDevelopmentGoals,
 	topics
@@ -114,7 +114,7 @@ export const load = (async ({ locals, url, parent }) => {
 		}
 	}
 
-	let programs: ProgramContainer[];
+	let programs: Container<ProgramPayload>[];
 	if (features.useElasticsearch()) {
 		const esPrograms = await locals.pool.connect(
 			getManyContainersWithES(
@@ -125,7 +125,7 @@ export const load = (async ({ locals, url, parent }) => {
 				{ includeFacets: false }
 			)
 		);
-		programs = esPrograms.containers as ProgramContainer[];
+		programs = esPrograms.containers as Container<ProgramPayload>[];
 	} else {
 		programs = (await locals.pool.connect(
 			getManyContainers(
@@ -133,7 +133,7 @@ export const load = (async ({ locals, url, parent }) => {
 				{ type: [payloadTypes.enum.program] },
 				url.searchParams.get('sort') ?? ''
 			)
-		)) as ProgramContainer[];
+		)) as Container<ProgramPayload>[];
 	}
 
 	const filtered = filterVisible(containers, locals.user);

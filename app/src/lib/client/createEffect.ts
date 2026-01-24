@@ -1,19 +1,20 @@
 import { env } from '$env/dynamic/public';
+import saveContainer from '$lib/client/saveContainer';
 import {
-	type BinaryIndicatorContainer,
+	type BinaryIndicatorPayload,
 	type Container,
 	containerOfType,
-	type EmptyEffectContainer,
-	type IndicatorContainer,
+	type IndicatorPayload,
+	type InitialEffectPayload,
 	type IooiType,
+	type NewContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
-import saveContainer from '$lib/client/saveContainer';
 
 export default async function createEffect(
 	target: Container,
-	indicator: IndicatorContainer | BinaryIndicatorContainer,
+	indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
 	iooiType?: IooiType
 ) {
 	const newEffect = containerOfType(
@@ -22,7 +23,7 @@ export default async function createEffect(
 		target.organizational_unit,
 		target.managed_by,
 		env.PUBLIC_KC_REALM
-	) as EmptyEffectContainer;
+	) as NewContainer<InitialEffectPayload>;
 	const response = await saveContainer({
 		...newEffect,
 		payload: {

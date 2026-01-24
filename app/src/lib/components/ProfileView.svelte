@@ -6,23 +6,25 @@
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import TaskStatusFilterDropdown from '$lib/components/TaskStatusFilterDropdown.svelte';
 	import {
-		type AnyContainer,
-		type ContainerWithEffect,
+		type AnyPayload,
+		type Container,
 		isAssignedTo,
+		isContainerWithPayloadType,
 		isMemberOf,
-		type OrganizationalUnitContainer,
-		type OrganizationContainer,
-		type ProgramContainer,
-		type TaskContainer,
-		type TaskStatus,
-		taskStatus,
+		type MeasurePayload,
+		type OrganizationalUnitPayload,
+		type OrganizationPayload,
 		payloadTypes,
-		isContainerWithPayloadType
+		type ProgramPayload,
+		type SimpleMeasurePayload,
+		type TaskPayload,
+		type TaskStatus,
+		taskStatus
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 
 	interface Props {
-		containers: AnyContainer[];
+		containers: Container<AnyPayload>[];
 	}
 
 	let { containers }: Props = $props();
@@ -35,7 +37,7 @@
 	]);
 
 	function byTaskStatus(value: TaskStatus[]) {
-		return (container: TaskContainer) =>
+		return (container: Container<TaskPayload>) =>
 			value.length == 0 || value.includes(container.payload.taskStatus);
 	}
 
@@ -50,7 +52,7 @@
 	function bySortOption(value: string) {
 		switch (value) {
 			case 'fulfillment_date':
-				return (a: TaskContainer, b: TaskContainer) => {
+				return (a: Container<TaskPayload>, b: Container<TaskPayload>) => {
 					if (a.payload.fulfillmentDate && b.payload.fulfillmentDate) {
 						return (
 							new Date(a.payload.fulfillmentDate).getTime() -
@@ -66,10 +68,10 @@
 				};
 
 			case 'modified':
-				return (a: TaskContainer, b: TaskContainer) =>
+				return (a: Container<TaskPayload>, b: Container<TaskPayload>) =>
 					b.valid_from.getTime() - a.valid_from.getTime();
 			case 'alpha':
-				return (a: TaskContainer, b: TaskContainer) =>
+				return (a: Container<TaskPayload>, b: Container<TaskPayload>) =>
 					a.payload.title.localeCompare(b.payload.title);
 		}
 	}
@@ -107,7 +109,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.measure, container) || isContainerWithPayloadType(payloadTypes.enum.simple_measure, container))
-				.filter((c: ContainerWithEffect) => isMemberOf($user, c)) as measure (measure.guid)}
+				.filter( (c: Container<MeasurePayload | SimpleMeasurePayload>) => isMemberOf($user, c) ) as measure (measure.guid)}
 				<li>
 					<Card container={measure} />
 				</li>
@@ -119,8 +121,8 @@
 		<h2 class="details-heading">{$_('profile.my_organizations')}</h2>
 		<ul class="carousel">
 			{#each containers
-				.filter((c: AnyContainer) => isContainerWithPayloadType(payloadTypes.enum.organization, c) || isContainerWithPayloadType(payloadTypes.enum.organizational_unit, c))
-				.filter( (c: OrganizationContainer | OrganizationalUnitContainer) => isMemberOf($user, c) ) as organization (organization.guid)}
+				.filter((c: Container<AnyPayload>) => isContainerWithPayloadType(payloadTypes.enum.organization, c) || isContainerWithPayloadType(payloadTypes.enum.organizational_unit, c))
+				.filter( (c: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>) => isMemberOf($user, c) ) as organization (organization.guid)}
 				<li>
 					<OrganizationCard container={organization} />
 				</li>
@@ -133,7 +135,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter((container) => isContainerWithPayloadType(payloadTypes.enum.program, container))
-				.filter((c: ProgramContainer) => isMemberOf($user, c)) as program (program.guid)}
+				.filter((c: Container<ProgramPayload>) => isMemberOf($user, c)) as program (program.guid)}
 				<li>
 					<Card container={program} />
 				</li>

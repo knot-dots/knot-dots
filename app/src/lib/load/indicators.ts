@@ -6,9 +6,9 @@ import {
 	type Container,
 	fromCounts,
 	indicatorCategories,
-	type IndicatorContainer,
+	type IndicatorPayload,
 	indicatorTypes,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	payloadTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
@@ -35,7 +35,7 @@ export interface IndicatorFilters {
 }
 
 export interface IndicatorLoadResult {
-	containers: IndicatorContainer[];
+	containers: Container<IndicatorPayload>[];
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
 	facetData?: Record<string, Record<string, number>>;
@@ -49,7 +49,7 @@ export interface IndicatorLoadResult {
  */
 export async function getIndicatorsData(params: {
 	organizationGuid: string;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	currentOrganizationalUnit: Container<OrganizationalUnitPayload> | null;
 	filters: IndicatorFilters;
 	user: User;
 	useElasticsearch?: boolean;
@@ -81,7 +81,7 @@ export async function getIndicatorsData(params: {
 	const restrictOrgUnits = !filters.included.includes('all_organizational_units');
 
 	// Primary indicator fetch
-	let indicators: IndicatorContainer[];
+	let indicators: Container<IndicatorPayload>[];
 	let facetData: Record<string, Record<string, number>> | undefined;
 	if (useElasticsearch) {
 		const esResult = await connect(
@@ -100,7 +100,7 @@ export async function getIndicatorsData(params: {
 				{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
 			)
 		);
-		indicators = esResult.containers as IndicatorContainer[];
+		indicators = esResult.containers as Container<IndicatorPayload>[];
 		facetData = esResult.facets;
 	} else {
 		indicators = (await connect(
@@ -116,7 +116,7 @@ export async function getIndicatorsData(params: {
 				},
 				'alpha'
 			)
-		)) as IndicatorContainer[];
+		)) as Container<IndicatorPayload>[];
 	}
 
 	// Related containers (objectives/effects/indicators linked)
@@ -154,7 +154,7 @@ export async function getIndicatorsData(params: {
 				)
 			)
 		]);
-		indicators = templates as IndicatorContainer[];
+		indicators = templates as Container<IndicatorPayload>[];
 		related = actualData;
 	}
 

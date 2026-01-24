@@ -5,7 +5,7 @@
 		findAncestors,
 		findLeafObjectives,
 		findOverallObjective,
-		type IndicatorContainer,
+		type IndicatorPayload,
 		isContainerWithPayloadType,
 		isPartOf,
 		payloadTypes,
@@ -14,7 +14,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: IndicatorContainer;
+		container: Container<IndicatorPayload>;
 		relatedContainers?: Container[];
 		showEffects?: boolean;
 		showObjectives?: boolean;

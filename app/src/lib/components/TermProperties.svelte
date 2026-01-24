@@ -5,14 +5,14 @@
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyContainer, type Container, type TermContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type TermPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: TermContainer;
+		container: Container<TermPayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

@@ -1,10 +1,9 @@
 import { error, json } from '@sveltejs/kit';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
-import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { predicates, userRelation } from '$lib/models';
-import type { AnyContainer } from '$lib/models';
+import { type AnyPayload, type Container, predicates, userRelation } from '$lib/models';
 import { getAllRelatedUsers, getContainerByGuid, updateContainer } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { NotFoundError } from 'slonik';
@@ -35,7 +34,7 @@ export const GET = (async ({ locals, params }) => {
 }) satisfies RequestHandler;
 
 export const POST = (async ({ locals, params, request }) => {
-	let container: AnyContainer;
+	let container: Container<AnyPayload>;
 
 	try {
 		container = await locals.pool.connect(getContainerByGuid(params.guid));

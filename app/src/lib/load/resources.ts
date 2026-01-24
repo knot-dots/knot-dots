@@ -2,13 +2,14 @@ import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	computeFacetCount,
+	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
 	isContainerWithPayloadType,
 	payloadTypes,
 	resourceCategories,
 	resourceUnits,
-	type ResourceV2Container
+	type ResourceV2Payload
 } from '$lib/models';
 import {
 	buildCategoryFacetsWithCounts,
@@ -44,7 +45,7 @@ export async function fetchResources({
 	categoryContext?: CategoryContext;
 }) {
 	// Fetch all resource containers
-	let resourceContainers: ResourceV2Container[];
+	let resourceContainers: Array<Container<ResourceV2Payload>>;
 	let data: Record<string, Record<string, number>> | undefined;
 
 	if (features.useElasticsearch()) {
@@ -61,7 +62,7 @@ export async function fetchResources({
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			)
 		);
-		resourceContainers = esResult.containers as ResourceV2Container[];
+		resourceContainers = esResult.containers as Array<Container<ResourceV2Payload>>;
 		data = esResult.facets;
 	} else {
 		resourceContainers = (await pool.connect(
@@ -74,7 +75,7 @@ export async function fetchResources({
 				},
 				sort
 			)
-		)) as ResourceV2Container[];
+		)) as Array<Container<ResourceV2Payload>>;
 	}
 
 	// Filter by program if specified

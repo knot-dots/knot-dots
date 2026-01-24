@@ -2,13 +2,14 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import {
-	type AnyContainer,
+	type AnyPayload,
+	type Container,
 	filterMembers,
 	isContainerWithPayloadType,
-	type MeasureContainer,
+	type MeasurePayload,
 	payloadTypes,
 	predicates,
-	type SimpleMeasureContainer
+	type SimpleMeasurePayload
 } from '$lib/models';
 import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -21,7 +22,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 
 	try {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid));
-		const container = revisions.at(-1) as AnyContainer;
+		const container = revisions.at(-1) as Container<AnyPayload>;
 
 		if (!defineAbilityFor(locals.user).can('read', container)) {
 			error(404, { message: t('error.not_found') });
@@ -45,7 +46,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 				},
 				url.searchParams.get('sort') ?? ''
 			)
-		)) as Array<MeasureContainer | SimpleMeasureContainer>;
+		)) as Array<Container<MeasurePayload> | Container<SimpleMeasurePayload>>;
 
 		return {
 			container,

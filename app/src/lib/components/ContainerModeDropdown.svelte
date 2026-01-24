@@ -4,7 +4,8 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import ListType from '~icons/knotdots/tasks';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		isContainerWithPayloadType,
 		listTypes,
 		payloadTypes
@@ -12,7 +13,7 @@
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 	}
 
 	let { container = $bindable() }: Props = $props();

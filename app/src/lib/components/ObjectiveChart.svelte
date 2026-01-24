@@ -4,12 +4,13 @@
 	import { _, number } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		findDescendants,
 		findLeafObjectives,
 		isContainerWithPayloadType,
 		isRelatedTo,
-		type ObjectiveContainer,
+		type ObjectivePayload,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
@@ -17,8 +18,8 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: ObjectiveContainer;
-		relatedContainers?: AnyContainer[];
+		container: Container<ObjectivePayload>;
+		relatedContainers?: Container<AnyPayload>[];
 	}
 
 	let { container, relatedContainers = [] }: Props = $props();

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
 	import Card from '$lib/components/Card.svelte';
-	import { type ResourceDataContainer, type ResourceV2Container } from '$lib/models';
+	import { type Container, type ResourceDataPayload, type ResourceV2Payload } from '$lib/models';
 	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 
 	interface Props {
-		container: ResourceDataContainer;
-		resourceContainer?: ResourceV2Container;
+		container: Container<ResourceDataPayload>;
+		resourceContainer?: Container<ResourceV2Payload>;
 		href?: () => string;
 	}
 
@@ -23,13 +23,14 @@
 		})
 	);
 
-	let fetchedResource = $state<ResourceV2Container | undefined>(undefined);
+	let fetchedResource = $state<Container<ResourceV2Payload> | undefined>(undefined);
 
 	$effect(() => {
 		if (!resourceContainer && container.payload.resource) {
 			fetchedResource = undefined;
 			fetchContainerRevisions(container.payload.resource).then((revisions) => {
-				fetchedResource = (revisions[revisions.length - 1] as ResourceV2Container) ?? undefined;
+				fetchedResource =
+					(revisions[revisions.length - 1] as Container<ResourceV2Payload>) ?? undefined;
 			});
 		} else {
 			fetchedResource = undefined;

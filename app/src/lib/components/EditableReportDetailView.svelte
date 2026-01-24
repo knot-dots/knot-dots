@@ -8,14 +8,14 @@
 	import Header from '$lib/components/Header.svelte';
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type AnyContainer, predicates, type ReportContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type ReportPayload } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ReportContainer;
+		container: Container<ReportPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

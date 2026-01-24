@@ -3,19 +3,19 @@
 	import Help from '$lib/components/Help.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		audience,
 		computeFacetCount,
 		type Container,
+		isContainerWithPayloadType,
+		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
-		topics,
-		payloadTypes,
-		isContainerWithPayloadType
+		topics
 	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		containers: Container[];
 	}
 

@@ -5,16 +5,17 @@
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
 		type Container,
-		type ContainerWithEffect,
-		type EmptyContainer,
+		type MeasurePayload,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
-		predicates
+		predicates,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 
 	interface Props {
-		container: Container | EmptyContainer;
+		container: Container | NewContainer;
 		editable?: boolean;
 	}
 
@@ -32,7 +33,7 @@
 				payloadType: [payloadTypes.enum.measure]
 			},
 			'alpha'
-		) as Promise<ContainerWithEffect[]>
+		) as Promise<Container<MeasurePayload | SimpleMeasurePayload>[]>
 	);
 
 	let isPartOfMeasureObject = $derived(

@@ -10,12 +10,13 @@
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		audience,
 		computeFacetCount,
+		type Container,
 		containerOfType,
 		indicatorCategories,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		indicatorTypes,
 		type NewContainer,
 		overlayKey,
@@ -31,7 +32,7 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		containers: IndicatorTemplateContainer[];
+		containers: Container<IndicatorTemplatePayload>[];
 	}
 
 	let { containers }: Props = $props();
@@ -49,7 +50,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & Pick<IndicatorTemplateContainer, 'payload'>;
+		) as NewContainer & Pick<Container<IndicatorTemplatePayload>, 'payload'>;
 
 		container.payload.title = '';
 		container.payload.unit = units.enum['unit.cubic_meter'];
@@ -60,14 +61,14 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	async function useIndicatorTemplate(template: IndicatorTemplateContainer) {
+	async function useIndicatorTemplate(template: Container<IndicatorTemplatePayload>) {
 		const container = containerOfType(
 			payloadTypes.enum.actual_data,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & Pick<ActualDataContainer, 'payload'>;
+		) as NewContainer & Pick<Container<ActualDataPayload>, 'payload'>;
 
 		container.payload = {
 			...container.payload,
@@ -112,7 +113,7 @@
 		}
 	}
 
-	async function select(container: IndicatorTemplateContainer) {
+	async function select(container: Container<IndicatorTemplatePayload>) {
 		await useIndicatorTemplate(container);
 	}
 

@@ -5,8 +5,9 @@
 	import {
 		audience,
 		computeFacetCount,
+		type Container,
 		isContainerWithPayloadType,
-		type MeasureContainer,
+		type MeasurePayload,
 		payloadTypes,
 		policyFieldBNK,
 		predicates,
@@ -15,7 +16,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		containers: MeasureContainer[];
+		containers: Container<MeasurePayload>[];
 	}
 
 	let { containers }: Props = $props();

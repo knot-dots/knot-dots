@@ -6,26 +6,27 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
+		isContainerWithPayloadType,
 		isPartOf,
 		type NewContainer,
-		type ResourceDataCollectionContainer,
 		payloadTypes,
 		predicates,
-		type ResourceV2Container,
-		isContainerWithPayloadType
+		type ResourceDataCollectionPayload,
+		type ResourceV2Payload
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 	import fetchContainers from '$lib/client/fetchContainers';
 
 	interface Props {
-		container: ResourceDataCollectionContainer;
+		container: Container<ResourceDataCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -50,7 +51,7 @@
 			: []
 	);
 
-	let resourceContainers: ResourceV2Container[] = $state([]);
+	let resourceContainers: Container<ResourceV2Payload>[] = $state([]);
 
 	onMount(async () => {
 		const containers = await fetchContainers({ payloadType: ['resource_v2'] }, 'alpha');

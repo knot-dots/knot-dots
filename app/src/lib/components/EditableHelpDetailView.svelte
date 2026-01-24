@@ -7,15 +7,14 @@
 	import Header from '$lib/components/Header.svelte';
 	import HelpProperties from '$lib/components/HelpProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import type { AnyContainer, HelpContainer } from '$lib/models';
-	import { predicates } from '$lib/models';
+	import { type AnyPayload, type Container, type HelpPayload, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: HelpContainer;
+		container: Container<HelpPayload>;
 		layout?: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

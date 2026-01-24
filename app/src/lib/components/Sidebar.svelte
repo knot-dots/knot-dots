@@ -23,9 +23,10 @@
 	import logo from '$lib/assets/logo.svg';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import {
+		type Container,
 		getOrganizationURL,
-		type OrganizationalUnitContainer,
-		type OrganizationContainer
+		type OrganizationalUnitPayload,
+		type OrganizationPayload
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
@@ -45,7 +46,9 @@
 		sidebarExpanded = false;
 	}
 
-	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function landingPageURL(
+		container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>
+	) {
 		return getOrganizationURL(container, '/all/page', env).toString();
 	}
 </script>

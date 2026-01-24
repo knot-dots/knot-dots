@@ -6,8 +6,9 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
 	import {
-		type AnyContainer,
-		type CategoryContainer,
+		type AnyPayload,
+		type CategoryPayload,
+		type Container,
 		container as containerSchema,
 		containerOfType,
 		isContainerWithPayloadType,
@@ -15,13 +16,13 @@
 		payloadTypes,
 		type Predicate,
 		predicates,
-		type TermContainer
+		type TermPayload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: CategoryContainer | TermContainer;
-		relatedContainers: AnyContainer[];
+		container: Container<CategoryPayload> | Container<TermPayload>;
+		relatedContainers: Container<AnyPayload>[];
 		predicate?: Predicate;
 	}
 
@@ -33,11 +34,11 @@
 
 	type TermDragItem = {
 		guid: string;
-		term?: TermContainer;
+		term?: Container<TermPayload>;
 		isCreateForm?: boolean;
 	};
 
-	let terms: TermContainer[] = $derived(
+	let terms: Container<TermPayload>[] = $derived(
 		relatedContainers
 			.filter((c) => isContainerWithPayloadType(payloadTypes.enum.term, c))
 			.filter(({ guid }) => guid !== container.guid)
@@ -54,7 +55,9 @@
 					term
 				};
 			})
-			.filter((entry): entry is { position: number; term: TermContainer } => entry !== null)
+			.filter(
+				(entry): entry is { position: number; term: Container<TermPayload> } => entry !== null
+			)
 			.toSorted((a, b) => a.position - b.position)
 			.map(({ term }) => {
 				let _ = $state(term);
@@ -103,7 +106,7 @@
 		showCreateFormAt = position;
 	}
 
-	async function syncParentRelations(nextTerms: TermContainer[]) {
+	async function syncParentRelations(nextTerms: Container<TermPayload>[]) {
 		const currentRelations = container.relation;
 		container.relation = [
 			...nextTerms.map(({ guid }, index) => ({
@@ -144,7 +147,7 @@
 		}
 	}
 
-	function hasSameOrder(nextTerms: TermContainer[]) {
+	function hasSameOrder(nextTerms: Container<TermPayload>[]) {
 		return (
 			nextTerms.length === terms.length &&
 			nextTerms.every((term, index) => term.guid === terms[index]?.guid)
@@ -158,7 +161,7 @@
 	async function handleDndFinalize(event: CustomEvent<{ items: TermDragItem[] }>) {
 		const orderedTerms = event.detail.items
 			.map(({ term }) => term)
-			.filter((term): term is TermContainer => Boolean(term));
+			.filter((term): term is Container<TermPayload> => Boolean(term));
 
 		if (hasSameOrder(orderedTerms)) {
 			return;
@@ -194,7 +197,7 @@
 			container.organizational_unit,
 			container.managed_by,
 			container.realm
-		) as Omit<NewContainer, 'payload'> & Pick<TermContainer, 'payload'>;
+		) as Omit<NewContainer, 'payload'> & Pick<Container<TermPayload>, 'payload'>;
 		newTerm.payload.title = formState.title;
 		newTerm.payload.description = formState.description;
 		newTerm.payload.filterLabel = formState.filterLabel;
@@ -232,7 +235,7 @@
 		}
 	}
 
-	async function detachTerm(term: TermContainer) {
+	async function detachTerm(term: Container<TermPayload>) {
 		if (removingGuid) {
 			return;
 		}

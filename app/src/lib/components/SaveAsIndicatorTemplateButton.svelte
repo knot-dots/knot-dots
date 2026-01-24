@@ -2,7 +2,8 @@
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
-		type IndicatorContainer,
+		type Container,
+		type IndicatorPayload,
 		newIndicatorTemplateFromIndicator,
 		payloadTypes,
 		quantities
@@ -11,14 +12,14 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: IndicatorContainer;
+		container: Container<IndicatorPayload>;
 	}
 
 	let { container }: Props = $props();
 
 	let saveAsIndicatorTemplateDisabled = $state(false);
 
-	function saveIndicatorAsTemplate(c: IndicatorContainer) {
+	function saveIndicatorAsTemplate(c: Container<IndicatorPayload>) {
 		return async () => {
 			saveAsIndicatorTemplateDisabled = true;
 			await saveContainer(newIndicatorTemplateFromIndicator(c));

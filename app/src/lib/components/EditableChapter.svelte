@@ -22,7 +22,7 @@
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		type ProgramContainer
+		type ProgramPayload
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { ability, newContainer } from '$lib/stores';
@@ -30,7 +30,7 @@
 	interface Props {
 		container: Container;
 		editable?: boolean;
-		isPartOf: ProgramContainer;
+		isPartOf: Container<ProgramPayload>;
 		relatedContainers: Container[];
 	}
 

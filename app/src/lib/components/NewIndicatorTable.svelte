@@ -8,17 +8,17 @@
 	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		type Container,
 		containerOfType,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isContainerWithPayloadType,
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
-		container: IndicatorTemplateContainer;
+		container: Container<IndicatorTemplatePayload>;
 		editable?: boolean;
 		relatedContainers?: Container[];
 	}
@@ -61,7 +61,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<ActualDataContainer, 'payload'>;
+		) as NewContainer<ActualDataPayload>;
 
 		newActualDataContainer.payload = {
 			...newActualDataContainer.payload,
@@ -86,7 +86,7 @@
 		}
 	}
 
-	function updateCustomActualData(container: ActualDataContainer, year: number) {
+	function updateCustomActualData(container: Container<ActualDataPayload>, year: number) {
 		let timer: ReturnType<typeof setTimeout>;
 
 		return async (event: Event) => {
@@ -118,7 +118,7 @@
 		};
 	}
 
-	function append(container: ActualDataContainer) {
+	function append(container: Container<ActualDataPayload>) {
 		return async () => {
 			container.payload.values = [...container.payload.values, [Math.max(...years) + 1, 0]];
 			await tick();
@@ -126,7 +126,7 @@
 		};
 	}
 
-	function prepend(container: ActualDataContainer) {
+	function prepend(container: Container<ActualDataPayload>) {
 		return () => {
 			container.payload.values = [
 				[years.length ? Math.min(...years) - 1 : new Date().getFullYear(), 0],

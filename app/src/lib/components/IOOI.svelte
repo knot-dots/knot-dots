@@ -15,14 +15,14 @@
 	import {
 		type Container,
 		containerOfType,
-		type EffectContainer,
-		type GoalContainer,
+		type EffectPayload,
+		type GoalPayload,
 		type IooiType,
 		iooiTypes,
 		isContainerWithPayloadType,
-		type MeasureContainer,
+		type MeasurePayload,
 		type NewContainer,
-		type ObjectiveContainer,
+		type ObjectivePayload,
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
@@ -38,7 +38,7 @@
 	} from '$lib/stores';
 
 	interface Props {
-		container: GoalContainer | MeasureContainer;
+		container: Container<GoalPayload> | Container<MeasurePayload>;
 		containers: Container[];
 	}
 
@@ -176,7 +176,7 @@
 		}
 	});
 
-	type IooiItem = ObjectiveContainer | EffectContainer;
+	type IooiItem = Container<ObjectivePayload> | Container<EffectPayload>;
 
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
 	let resourceData = $derived(

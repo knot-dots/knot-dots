@@ -3,7 +3,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		computeFacetCount,
 		type Container,
 		isContainerWithPayloadType,
@@ -13,7 +13,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		containers: Container[];
 	}
 

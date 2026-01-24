@@ -22,7 +22,7 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		audience,
 		computeFacetCount,
 		type Container,
@@ -32,7 +32,7 @@
 		type PayloadType,
 		policyFieldBNK,
 		predicates,
-		type ProgramContainer,
+		type ProgramPayload,
 		programTypes,
 		sustainableDevelopmentGoals,
 		topics
@@ -41,9 +41,9 @@
 	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: ProgramContainer;
+		container: Container<ProgramPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

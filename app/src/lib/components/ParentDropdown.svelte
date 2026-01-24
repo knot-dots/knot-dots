@@ -5,8 +5,8 @@
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
 		type Container,
-		type EmptyContainer,
 		findDescendants,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
@@ -14,7 +14,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: Container | EmptyContainer;
+		container: Container | NewContainer;
 		editable?: boolean;
 		labelledBy?: string;
 		offset?: [number, number];

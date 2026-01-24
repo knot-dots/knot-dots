@@ -6,7 +6,7 @@ import {
 	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
@@ -58,13 +58,13 @@ export default (async function load({ depends, locals, parent, url }) {
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = (await locals.pool.connect(
 			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-		)) as OrganizationalUnitContainer[];
+		)) as Container<OrganizationalUnitPayload>[];
 		subordinateOrganizationalUnits = relatedOrganizationalUnits
 			.filter(
-				(unit: OrganizationalUnitContainer) =>
+				(unit: Container<OrganizationalUnitPayload>) =>
 					unit.payload.level > currentOrganizationalUnit.payload.level
 			)
-			.map((unit: OrganizationalUnitContainer) => unit.guid);
+			.map((unit: Container<OrganizationalUnitPayload>) => unit.guid);
 	}
 
 	if (url.searchParams.has('related-to')) {

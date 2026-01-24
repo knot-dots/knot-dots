@@ -5,16 +5,16 @@
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
 		type Container,
-		type EmptyContainer,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
 		predicates,
-		type ProgramContainer
+		type ProgramPayload
 	} from '$lib/models';
 
 	interface Props {
-		container: Container | EmptyContainer;
+		container: Container | NewContainer;
 		editable?: boolean;
 	}
 
@@ -32,7 +32,7 @@
 				payloadType: [payloadTypes.enum.program]
 			},
 			'alpha'
-		) as Promise<ProgramContainer[]>
+		) as Promise<Container<ProgramPayload>[]>
 	);
 
 	let isPartOfProgramObject = $derived(

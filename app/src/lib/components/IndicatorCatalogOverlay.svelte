@@ -14,14 +14,16 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		audience,
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		computeFacetCount,
+		type Container,
 		containerOfType,
-		type EmptyIndicatorContainer,
 		indicatorCategories,
-		type IndicatorContainer,
-		type IndicatorTemplateContainer,
+		type IndicatorPayload,
+		type IndicatorTemplatePayload,
 		indicatorTypes,
+		type InitialBinaryIndicatorPayload,
+		type InitialIndicatorPayload,
 		isContainerWithPayloadType,
 		type NewContainer,
 		overlayKey,
@@ -37,8 +39,8 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		indicatorTemplates: IndicatorTemplateContainer[];
-		indicators: Array<BinaryIndicatorContainer | IndicatorContainer>;
+		indicatorTemplates: Container<IndicatorTemplatePayload>[];
+		indicators: Array<Container<BinaryIndicatorPayload> | Container<IndicatorPayload>>;
 	}
 
 	let { indicatorTemplates, indicators }: Props = $props();
@@ -56,7 +58,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & EmptyIndicatorContainer;
+		) as NewContainer<InitialIndicatorPayload>;
 
 		container.payload.quantity = quantities.enum['quantity.custom'];
 		container.payload.title = '';
@@ -75,7 +77,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<BinaryIndicatorContainer, 'payload'>;
+		) as NewContainer<InitialBinaryIndicatorPayload>;
 
 		container.payload.title = '';
 		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
@@ -85,21 +87,21 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	function createIndicatorFromTemplate(template: IndicatorTemplateContainer) {
+	function createIndicatorFromTemplate(template: Container<IndicatorTemplatePayload>) {
 		const container = containerOfType(
 			payloadTypes.enum.indicator,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & EmptyIndicatorContainer;
+		) as NewContainer<InitialIndicatorPayload>;
 
 		container.payload = {
 			...template.payload,
 			historicalValues: container.payload.historicalValues,
 			quantity: template.guid,
 			type: container.payload.type
-		} as IndicatorContainer['payload'];
+		};
 
 		$newContainer = container;
 
@@ -107,7 +109,10 @@
 	}
 
 	async function select(
-		container: BinaryIndicatorContainer | IndicatorContainer | IndicatorTemplateContainer
+		container:
+			| Container<BinaryIndicatorPayload>
+			| Container<IndicatorPayload>
+			| Container<IndicatorTemplatePayload>
 	) {
 		if (
 			isContainerWithPayloadType(payloadTypes.enum.binary_indicator, container) ||
@@ -141,8 +146,8 @@
 	}
 
 	function alreadyInUse(
-		indicatorTemplate: IndicatorTemplateContainer,
-		indicators: IndicatorContainer[]
+		indicatorTemplate: Container<IndicatorTemplatePayload>,
+		indicators: Container<IndicatorPayload>[]
 	) {
 		return indicators.findIndex((ic) => ic.payload.quantity == indicatorTemplate.guid) > -1;
 	}

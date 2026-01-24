@@ -1,34 +1,35 @@
 import { type BrowserContext, test as base } from '@playwright/test';
 import { locale } from 'svelte-i18n';
 import {
-	type AnyContainer,
-	type CategoryContainer,
+	type AnyPayload,
+	type CategoryPayload,
+	type Container,
 	containerOfType,
-	type EffectContainer,
+	type EffectPayload,
 	etag,
-	type GoalContainer,
-	type IndicatorContainer,
-	type IndicatorTemplateContainer,
+	type GoalPayload,
+	type IndicatorPayload,
+	type IndicatorTemplatePayload,
 	type InitialCategoryPayload,
 	type InitialResourceDataPayload,
 	type InitialTermPayload,
-	type MeasureContainer,
+	type MeasurePayload,
 	type NewContainer,
-	type ObjectiveContainer,
-	type OrganizationalUnitContainer,
-	type OrganizationContainer,
+	type ObjectivePayload,
+	type OrganizationalUnitPayload,
+	type OrganizationPayload,
 	payloadTypes,
 	type Predicate,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	quantities,
-	type ReportContainer,
-	type ResourceDataContainer,
+	type ReportPayload,
+	type ResourceDataPayload,
 	resourceDataTypes,
-	type ResourceV2Container,
-	type TaskCollectionContainer,
-	type TaskContainer,
-	type TermContainer
+	type ResourceV2Payload,
+	type TaskCollectionPayload,
+	type TaskPayload,
+	type TermPayload
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
@@ -41,37 +42,37 @@ type MyFixtures = {
 	landingPage: LandingPage;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
-	testIndicatorTemplate: IndicatorTemplateContainer;
+	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
 	testCategoryWithTerms: {
-		category: CategoryContainer;
-		terms: TermContainer[];
+		category: Container<CategoryPayload>;
+		terms: Array<Container<TermPayload>>;
 		termNames: string[];
 	};
 };
 
 type MyWorkerFixtures = {
 	adminContext: BrowserContext;
-	defaultOrganization: OrganizationContainer;
-	testOrganization: OrganizationContainer;
-	testOrganizationalUnit: OrganizationalUnitContainer;
-	testProgram: ProgramContainer;
-	testGoal: GoalContainer;
-	testSubordinateGoal: GoalContainer;
-	testIndicator: IndicatorContainer;
-	testObjective: ObjectiveContainer;
-	testMeasure: MeasureContainer;
-	testSubordinateMeasure: MeasureContainer;
-	testEffect: EffectContainer;
-	testResourceV2: ResourceV2Container;
-	testResourceDataBudget: ResourceDataContainer;
-	testResourceDataPlanned: ResourceDataContainer;
-	testResourceDataActual: ResourceDataContainer;
-	testGoalBudget: ResourceDataContainer;
-	testSubordinateGoalBudget: ResourceDataContainer;
-	testSubordinateMeasureResourceData: ResourceDataContainer;
-	testTask: TaskContainer;
-	testTaskCollection: TaskCollectionContainer;
-	testReport: ReportContainer;
+	defaultOrganization: Container<OrganizationPayload>;
+	testOrganization: Container<OrganizationPayload>;
+	testOrganizationalUnit: Container<OrganizationalUnitPayload>;
+	testProgram: Container<ProgramPayload>;
+	testGoal: Container<GoalPayload>;
+	testSubordinateGoal: Container<GoalPayload>;
+	testIndicator: Container<IndicatorPayload>;
+	testObjective: Container<ObjectivePayload>;
+	testMeasure: Container<MeasurePayload>;
+	testSubordinateMeasure: Container<MeasurePayload>;
+	testEffect: Container<EffectPayload>;
+	testResourceV2: Container<ResourceV2Payload>;
+	testResourceDataBudget: Container<ResourceDataPayload>;
+	testResourceDataPlanned: Container<ResourceDataPayload>;
+	testResourceDataActual: Container<ResourceDataPayload>;
+	testGoalBudget: Container<ResourceDataPayload>;
+	testSubordinateGoalBudget: Container<ResourceDataPayload>;
+	testSubordinateMeasureResourceData: Container<ResourceDataPayload>;
+	testTask: Container<TaskPayload>;
+	testTaskCollection: Container<TaskCollectionPayload>;
+	testReport: Container<ReportPayload>;
 };
 
 locale.set('en');
@@ -86,7 +87,7 @@ async function createContainer(context: BrowserContext, newContainer: NewContain
 	return response.json();
 }
 
-async function deleteContainer(context: BrowserContext, container: AnyContainer) {
+async function deleteContainer(context: BrowserContext, container: Container<AnyPayload>) {
 	const response = await context.request.get(`/container/${container.guid}`);
 
 	if (!response.ok()) {
@@ -102,7 +103,7 @@ async function deleteContainer(context: BrowserContext, container: AnyContainer)
 async function inviteUser(
 	context: BrowserContext,
 	email: string,
-	container: AnyContainer,
+	container: Container<AnyPayload>,
 	role: Predicate[] = []
 ) {
 	const inviteResponse = await context.request.post(`/user`, { data: { email, container } });
@@ -134,7 +135,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			const response = await adminContext.request.get('/', { maxRedirects: 0 });
 			const guid = response.headers()['location'].split('/')[1];
 			const organizationResponse = await adminContext.request.get(`/container/${guid}`);
-			const defaultOrganization: OrganizationContainer = await organizationResponse.json();
+			const defaultOrganization: Container<OrganizationPayload> = await organizationResponse.json();
 
 			await use(defaultOrganization);
 		},
@@ -174,9 +175,12 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		) as NewContainer<InitialCategoryPayload>;
 		newCategory.payload.title = categoryTitle;
 
-		const category = (await createContainer(adminContext, newCategory)) as CategoryContainer;
+		const category = (await createContainer(
+			adminContext,
+			newCategory
+		)) as Container<CategoryPayload>;
 
-		const terms: TermContainer[] = [];
+		const terms: Array<Container<TermPayload>> = [];
 		for (const [index, termName] of termNames.entries()) {
 			const newTerm = containerOfType(
 				payloadTypes.enum.term,
@@ -196,7 +200,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				}
 			];
 
-			const term = (await createContainer(adminContext, newTerm)) as TermContainer;
+			const term = (await createContainer(adminContext, newTerm)) as Container<TermPayload>;
 			terms.push(term);
 		}
 
@@ -212,7 +216,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				defaultOrganization.guid,
 				'knot-dots'
-			) as OrganizationContainer;
+			) as Container<OrganizationPayload>;
 			const testOrganization = await createContainer(adminContext, {
 				...newOrganization,
 				payload: {
@@ -237,7 +241,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as OrganizationalUnitContainer;
+			) as Container<OrganizationalUnitPayload>;
 			const testOrganizationalUnit = await createContainer(adminContext, {
 				...newOrganizationalUnit,
 				payload: {
@@ -260,13 +264,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ProgramContainer;
+			) as Container<ProgramPayload>;
 			const testProgram = await createContainer(adminContext, {
 				...newProgram,
 				payload: {
 					...newProgram.payload,
 					title: `Test Program ${workerInfo.workerIndex}`
-				} as ProgramContainer['payload']
+				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testProgram, [
 				predicates.enum['is-head-of'],
@@ -287,13 +291,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as GoalContainer;
+			) as Container<GoalPayload>;
 			const testGoal = await createContainer(adminContext, {
 				...newGoal,
 				payload: {
-					...(newGoal.payload as GoalContainer['payload']),
+					...newGoal.payload,
 					title: `Test Goal ${workerInfo.workerIndex}`
-				} as GoalContainer['payload']
+				}
 			});
 
 			await use(testGoal);
@@ -310,13 +314,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as GoalContainer;
+			) as Container<GoalPayload>;
 			const testSubordinateGoal = await createContainer(adminContext, {
 				...newGoal,
 				payload: {
-					...(newGoal.payload as GoalContainer['payload']),
+					...newGoal.payload,
 					title: `Subordinate Goal ${workerInfo.workerIndex}`
-				} as GoalContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -340,7 +344,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as IndicatorContainer;
+			) as Container<IndicatorPayload>;
 			const testIndicator = await createContainer(adminContext, {
 				...newIndicator,
 				payload: {
@@ -349,7 +353,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					indicatorCategory: ['indicator_category.custom'],
 					unit: 'unit.percent',
 					quantity: quantities.enum['quantity.custom']
-				} as IndicatorContainer['payload']
+				}
 			});
 
 			await use(testIndicator);
@@ -365,7 +369,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			null,
 			testOrganization.guid,
 			'knot-dots'
-		) as IndicatorContainer;
+		) as Container<IndicatorPayload>;
 		const testIndicatorTemplate = await createContainer(adminContext, {
 			...newIndicatorTemplate,
 			payload: {
@@ -373,7 +377,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				title: `Test Indicator Template ${workerInfo.workerIndex}`,
 				indicatorCategory: ['indicator_category.wegweiser_kommune'],
 				unit: 'unit.km'
-			} as IndicatorContainer['payload']
+			}
 		});
 
 		await use(testIndicatorTemplate);
@@ -388,14 +392,14 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ObjectiveContainer;
+			) as Container<ObjectivePayload>;
 			const testObjective = await createContainer(adminContext, {
 				...newObjective,
 				payload: {
 					...newObjective.payload,
 					title: `Test Objective ${workerInfo.workerIndex}`,
 					iooiType: 'iooi.output'
-				} as ObjectiveContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -424,13 +428,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testProgram.guid,
 				'knot-dots'
-			) as MeasureContainer;
+			) as Container<MeasurePayload>;
 			const testMeasure = await createContainer(adminContext, {
 				...newMeasure,
 				payload: {
 					...newMeasure.payload,
 					title: `Test Measure ${workerInfo.workerIndex}`
-				} as MeasureContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -458,13 +462,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testProgram.guid,
 				'knot-dots'
-			) as MeasureContainer;
+			) as Container<MeasurePayload>;
 			const testSubordinateMeasure = await createContainer(adminContext, {
 				...newMeasure,
 				payload: {
 					...newMeasure.payload,
 					title: `Subordinate Measure ${workerInfo.workerIndex}`
-				} as MeasureContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -493,14 +497,14 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as EffectContainer;
+			) as Container<EffectPayload>;
 			const testEffect = await createContainer(adminContext, {
 				...newEffect,
 				payload: {
 					...newEffect.payload,
 					title: `Test Effect ${workerInfo.workerIndex}`,
 					iooiType: 'iooi.output'
-				} as EffectContainer['payload'],
+				} as Container<EffectPayload>['payload'],
 				relation: [
 					{
 						position: 0,
@@ -529,7 +533,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ResourceV2Container;
+			) as Container<ResourceV2Payload>;
 			const testResourceV2 = await createContainer(adminContext, {
 				...newResourceV2,
 				payload: {
@@ -537,7 +541,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					title: `Test Resource ${workerInfo.workerIndex}`,
 					resourceCategory: 'resource_category.money',
 					resourceUnit: 'unit.euro'
-				} as ResourceV2Container['payload']
+				}
 			});
 
 			await use(testResourceV2);
@@ -554,7 +558,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ResourceDataContainer;
+			) as Container<ResourceDataPayload>;
 			const testResourceDataBudget = await createContainer(adminContext, {
 				...newResourceData,
 				payload: {
@@ -566,7 +570,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 						{ year: 2025, amount: 10000 },
 						{ year: 2026, amount: 15000 }
 					]
-				} as ResourceDataContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -590,7 +594,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ResourceDataContainer;
+			) as Container<ResourceDataPayload>;
 			const testResourceDataPlanned = await createContainer(adminContext, {
 				...newResourceData,
 				payload: {
@@ -603,7 +607,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 						{ year: 2025, amount: 8000 },
 						{ year: 2026, amount: 12000 }
 					]
-				} as ResourceDataContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -627,7 +631,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ResourceDataContainer;
+			) as Container<ResourceDataPayload>;
 			const testResourceDataActual = await createContainer(adminContext, {
 				...newResourceData,
 				payload: {
@@ -639,7 +643,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 						{ year: 2025, amount: 7500 },
 						{ year: 2026, amount: 11000 }
 					]
-				} as ResourceDataContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -663,7 +667,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ResourceDataContainer;
+			) as Container<ResourceDataPayload>;
 			const testGoalBudget = await createContainer(adminContext, {
 				...newResourceData,
 				payload: {
@@ -675,7 +679,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 						{ year: 2025, amount: 50000 },
 						{ year: 2026, amount: 60000 }
 					]
-				} as ResourceDataContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -703,7 +707,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ResourceDataContainer;
+			) as Container<ResourceDataPayload>;
 			const testSubordinateGoalBudget = await createContainer(adminContext, {
 				...newResourceData,
 				payload: {
@@ -715,7 +719,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 						{ year: 2025, amount: 20000 },
 						{ year: 2026, amount: 25000 }
 					]
-				} as ResourceDataContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -755,7 +759,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 						{ year: 2025, amount: 5000 },
 						{ year: 2026, amount: 7000 }
 					]
-				} as ResourceDataContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -779,7 +783,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testGoal.managed_by,
 				'knot-dots'
-			) as TaskCollectionContainer;
+			) as Container<TaskCollectionPayload>;
 			const testTaskCollection = await createContainer(adminContext, {
 				...newTaskCollection,
 				relation: [
@@ -799,7 +803,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testTaskCollection.managed_by,
 				'knot-dots'
-			) as TaskContainer;
+			) as Container<TaskPayload>;
 			const testTask = await createContainer(adminContext, {
 				...newTask,
 				payload: {
@@ -824,13 +828,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ReportContainer;
+			) as Container<ReportPayload>;
 			const testReport = await createContainer(adminContext, {
 				...newReport,
 				payload: {
 					...newReport.payload,
 					title: `Test Report ${workerInfo.workerIndex}`
-				} as ReportContainer['payload']
+				}
 			});
 
 			await use(testReport);

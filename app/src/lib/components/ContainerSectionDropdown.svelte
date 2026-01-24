@@ -11,18 +11,23 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type ColContentPayload,
+		type Container,
+		type InfoBoxPayload,
 		isContainerWithPayloadType,
 		payloadTypes,
-		type TeaserLikeContainer
+		type QuotePayload,
+		type TeaserHighlightPayload,
+		type TeaserPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		ondelete?: () => Promise<void>;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 		payloadSuffix?: '' | 'Right';
 	}
 
@@ -52,11 +57,13 @@
 			isContainerWithPayloadType(payloadTypes.enum.teaser_highlight, container) ||
 			isContainerWithPayloadType(payloadTypes.enum.quote, container) ||
 			isContainerWithPayloadType(payloadTypes.enum.col_content, container)
-			? (container as TeaserLikeContainer)
+			? (container as Container<
+					TeaserPayload | InfoBoxPayload | TeaserHighlightPayload | QuotePayload | ColContentPayload
+				>)
 			: null
 	);
 
-	async function handleDelete(container: AnyContainer) {
+	async function handleDelete(container: Container<AnyPayload>) {
 		const response = await deleteContainer(container);
 
 		if (response.ok) {
@@ -78,9 +85,9 @@
 	 */
 	function getBooleanField(key: 'titleEnable' | 'textEnable' | 'imageEnable' | 'linkEnable') {
 		if (!teaserContainer) return null;
-		const pKey = (
-			payloadSuffix === 'Right' ? `${key}Right` : key
-		) as keyof TeaserLikeContainer['payload'];
+		const pKey = (payloadSuffix === 'Right' ? `${key}Right` : key) as keyof Container<
+			TeaserPayload | InfoBoxPayload | TeaserHighlightPayload | QuotePayload | ColContentPayload
+		>['payload'];
 		// We return the actual object and the specific key to allow binding
 		return { payload: teaserContainer.payload, key: pKey };
 	}

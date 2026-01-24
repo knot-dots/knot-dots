@@ -13,9 +13,10 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import {
-		type ActualDataContainer,
-		type AnyContainer,
-		type BinaryIndicatorContainer,
+		type ActualDataPayload,
+		type AnyPayload,
+		type BinaryIndicatorPayload,
+		type Container,
 		containerOfType,
 		isContainerWithPayloadType,
 		type NewContainer,
@@ -25,9 +26,9 @@
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: BinaryIndicatorContainer;
+		container: Container<BinaryIndicatorPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();
@@ -43,7 +44,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM
-		) as Omit<NewContainer, 'payload'> & Pick<ActualDataContainer, 'payload'>;
+		) as Omit<NewContainer, 'payload'> & Pick<Container<ActualDataPayload>, 'payload'>;
 		newActualDataContainer.payload.indicator = guid;
 		newActualDataContainer.payload.title = title;
 		return newActualDataContainer;
@@ -98,7 +99,7 @@
 		};
 	}
 
-	function updateActualData(container: ActualDataContainer) {
+	function updateActualData(container: Container<ActualDataPayload>) {
 		return async (value: boolean) => {
 			container.payload.booleanValue = value;
 

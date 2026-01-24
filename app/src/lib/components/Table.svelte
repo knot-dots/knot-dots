@@ -3,13 +3,13 @@
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import type { ActualDataContainer, Container } from '$lib/models';
+	import type { ActualDataPayload, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		columns: Array<{ heading: string; key: string }>;
 		rows: Container[];
-		actualDataContainers?: ActualDataContainer[];
+		actualDataContainers?: Container<ActualDataPayload>[];
 	}
 
 	let { columns, rows: originalRows, actualDataContainers = [] }: Props = $props();

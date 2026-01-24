@@ -9,14 +9,14 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import { type AnyContainer, type CategoryContainer, predicates } from '$lib/models';
+	import { type AnyPayload, type CategoryPayload, type Container, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: CategoryContainer;
+		container: Container<CategoryPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

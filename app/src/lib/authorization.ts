@@ -1,7 +1,13 @@
-import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import type { MongoAbility } from '@casl/ability';
-import { payloadTypes, predicates, visibility } from '$lib/models';
-import type { AnyContainer, EmptyContainer, PayloadType } from '$lib/models';
+import { AbilityBuilder, createMongoAbility, type MongoAbility } from '@casl/ability';
+import {
+	type AnyPayload,
+	type Container,
+	type NewContainer,
+	type PayloadType,
+	payloadTypes,
+	predicates,
+	visibility
+} from '$lib/models';
 import type { User } from '$lib/stores';
 
 type Actions =
@@ -13,7 +19,7 @@ type Actions =
 	| 'invite-members'
 	| 'relate'
 	| 'prioritize';
-type Subjects = AnyContainer | EmptyContainer | PayloadType | 'all';
+type Subjects = Container<AnyPayload> | NewContainer | PayloadType | 'all';
 
 const specialTypes: PayloadType[] = [
 	payloadTypes.enum.binary_indicator,
@@ -266,7 +272,10 @@ export default function defineAbilityFor(user: User) {
 	});
 }
 
-export function filterVisible<T extends AnyContainer>(containers: Array<T>, user: User): Array<T> {
+export function filterVisible<T extends Container<AnyPayload>>(
+	containers: Array<T>,
+	user: User
+): Array<T> {
 	const ability = defineAbilityFor(user);
 	return containers.filter((c) => ability.can('read', c));
 }

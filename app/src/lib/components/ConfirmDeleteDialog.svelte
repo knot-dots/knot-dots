@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
-	import { type AnyContainer, findDescendants, predicates } from '$lib/models';
+	import { type AnyPayload, type Container, findDescendants, predicates } from '$lib/models';
 
 	interface Props {
 		dialog: HTMLDialogElement;
 		handleSubmit: (event: SubmitEvent) => void;
-		container: AnyContainer;
-		relatedContainers: AnyContainer[];
+		container: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let { dialog = $bindable(), handleSubmit, container, relatedContainers }: Props = $props();

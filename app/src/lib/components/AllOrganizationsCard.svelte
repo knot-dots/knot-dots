@@ -4,7 +4,7 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import Card from '$lib/components/Card.svelte';
-	import { type OrganizationContainer } from '$lib/models';
+	import { type Container, type OrganizationPayload } from '$lib/models';
 
 	interface Props {
 		linkPath: string;
@@ -14,8 +14,8 @@
 
 	let defaultOrganization = $derived(
 		page.data.organizations.find(
-			({ payload }: OrganizationContainer) => payload.default
-		) as OrganizationContainer
+			({ payload }: Container<OrganizationPayload>) => payload.default
+		) as Container<OrganizationPayload>
 	);
 
 	function href() {

@@ -3,7 +3,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		audience,
 		computeFacetCount,
 		type Container,
@@ -15,7 +15,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		containers: Container[];
 	}
 

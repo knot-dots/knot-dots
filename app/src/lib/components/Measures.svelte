@@ -3,11 +3,16 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { type ContainerWithEffect, status } from '$lib/models';
+	import {
+		type Container,
+		type MeasurePayload,
+		type SimpleMeasurePayload,
+		status
+	} from '$lib/models';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 
 	interface Props {
-		containers: ContainerWithEffect[];
+		containers: Container<MeasurePayload | SimpleMeasurePayload>[];
 	}
 
 	let { containers }: Props = $props();
