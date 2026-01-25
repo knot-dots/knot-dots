@@ -6,7 +6,7 @@
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableImage from '$lib/components/EditableImage.svelte';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import {
 		container as containerSchema,
 		containerOfType,
@@ -44,6 +44,7 @@
 
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let terms = $state([] as TermContainer[]);
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let termItems = $state([] as TermDragItem[]);
 	let creating = $state(false);
 	let removingGuid = $state<string | null>(null);

@@ -13,6 +13,7 @@
 
 	let { columns, rows: originalRows }: Props = $props();
 
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let rows = $state([] as Container[]);
 
 	$effect(() => {
