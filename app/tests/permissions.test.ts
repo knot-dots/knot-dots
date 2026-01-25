@@ -7,7 +7,7 @@ let editableTask: string;
 test.describe('Permissions', () => {
 	test.skip(
 		({ browserName }) => browserName !== 'chromium',
-		'This suite runs only on Chromium because we are just testing write rights'
+		'This suite runs only on Chromium because we are just testing write permissions'
 	);
 	test.describe('as admin', () => {
 		test.use({ storageState: 'tests/.auth/admin.json' });

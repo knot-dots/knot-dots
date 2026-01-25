@@ -15,6 +15,12 @@ import {
 	type TaskCollectionContainer,
 	type TaskContainer
 } from '$lib/models';
+import { DotsBoard, TaskStatusBoard } from './boards';
+
+type MyFixtures = {
+	dotsBoard: DotsBoard;
+	taskStatusBoard: TaskStatusBoard;
+};
 
 type MyWorkerFixtures = {
 	adminContext: BrowserContext;
@@ -60,8 +66,7 @@ async function inviteUser(context: BrowserContext, email: string, container: Any
 	await context.request.post(`/user`, { data: { email, container } });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export const test = base.extend<{}, MyWorkerFixtures>({
+export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	adminContext: [
 		async ({ browser }, use, workerInfo) => {
 			const adminContext = await browser.newContext({
@@ -84,6 +89,12 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 		},
 		{ auto: true, scope: 'worker' }
 	],
+	dotsBoard: async ({ page }, use) => {
+		await use(new DotsBoard(page));
+	},
+	taskStatusBoard: async ({ page }, use) => {
+		await use(new TaskStatusBoard(page));
+	},
 	testOrganization: [
 		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
 			const newOrganization = containerOfType(
