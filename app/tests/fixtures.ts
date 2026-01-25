@@ -10,6 +10,7 @@ import {
 	type OrganizationalUnitContainer,
 	type OrganizationContainer,
 	payloadTypes,
+	type Predicate,
 	predicates,
 	type ProgramContainer,
 	type ReportContainer,
@@ -64,8 +65,22 @@ async function deleteContainer(context: BrowserContext, container: AnyContainer)
 	});
 }
 
-async function inviteUser(context: BrowserContext, email: string, container: AnyContainer) {
-	await context.request.post(`/user`, { data: { email, container } });
+async function inviteUser(
+	context: BrowserContext,
+	email: string,
+	container: AnyContainer,
+	role: Predicate[] = []
+) {
+	const inviteResponse = await context.request.post(`/user`, { data: { email, container } });
+	if (role.length > 0) {
+		await context.request.post(`/container/${container.guid}/user`, {
+			data: role.map((r) => ({
+				object: container.guid,
+				predicate: r,
+				subject: inviteResponse.headers()['location'].split('/').at(-1)
+			}))
+		});
+	}
 }
 
 export const test = base.extend<MyFixtures, MyWorkerFixtures>({
@@ -158,6 +173,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				...newProgram,
 				payload: { ...newProgram.payload, title: `Test Program ${workerInfo.workerIndex}` }
 			});
+			await inviteUser(adminContext, 'builderbob@bobby.com', testProgram, [
+				predicates.enum['is-head-of'],
+				predicates.enum['is-member-of']
+			]);
 
 			await use(testProgram);
 
@@ -191,7 +210,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payloadTypes.enum.measure,
 				testOrganization.guid,
 				null,
-				testOrganization.guid,
+				testProgram.guid,
 				'knot-dots'
 			) as MeasureContainer;
 			const testMeasure = await createContainer(adminContext, {

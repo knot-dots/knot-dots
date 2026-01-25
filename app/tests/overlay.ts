@@ -15,6 +15,14 @@ export default class Overlay {
 		return this.locator.getByRole('link', { name: 'Close' });
 	}
 
+	get deleteButton() {
+		return this.locator.getByRole('button', { name: 'Delete' });
+	}
+
+	get disclosePropertiesButton() {
+		return this.locator.getByRole('button', { name: 'Show all properties' });
+	}
+
 	get editModeToggle() {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
@@ -41,5 +49,10 @@ export default class Overlay {
 		}
 
 		return this.sections.nth(numberOfSections);
+	}
+
+	async delete() {
+		await this.deleteButton.click();
+		await this.page.getByRole('button', { name: `I want to delete` }).click();
 	}
 }

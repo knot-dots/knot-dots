@@ -13,7 +13,7 @@ const persons = [
 	},
 	{
 		name: 'Bob Builder',
-		mail: ' builderbob@bobby.com',
+		mail: 'builderbob@bobby.com',
 		passw: 'schnabeltasse',
 		file_name: 'bob'
 	}
