@@ -12,6 +12,7 @@ import {
 	payloadTypes,
 	predicates,
 	type ProgramContainer,
+	type ReportContainer,
 	type TaskCollectionContainer,
 	type TaskContainer
 } from '$lib/models';
@@ -32,6 +33,7 @@ type MyWorkerFixtures = {
 	testMeasure: MeasureContainer;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
+	testReport: ReportContainer;
 };
 
 locale.set('en');
@@ -252,6 +254,29 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testTask);
 
 			await deleteContainer(adminContext, testTask);
+		},
+		{ scope: 'worker' }
+	],
+	testReport: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newReport = containerOfType(
+				payloadTypes.enum.report,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ReportContainer;
+			const testReport = await createContainer(adminContext, {
+				...newReport,
+				payload: {
+					...newReport.payload,
+					title: `Test Report ${workerInfo.workerIndex}`
+				}
+			});
+
+			await use(testReport);
+
+			await deleteContainer(adminContext, testReport);
 		},
 		{ scope: 'worker' }
 	]

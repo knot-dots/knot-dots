@@ -1,45 +1,27 @@
 import { expect, test } from './fixtures';
 
-// This test verifies that chapter and text section heading levels follow
-// the chapter numbering structure.
-
-test.describe('Chapter section heading levels', () => {
+test.describe('Chapters', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	const title = `Report ${crypto.randomUUID()}`;
-
-	test.beforeEach('add report', async ({ dotsBoard, isMobile }) => {
+	test('chapter and text headings follow chapter structure', async ({
+		dotsBoard,
+		isMobile,
+		testReport
+	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		await dotsBoard.goto('');
+		await dotsBoard.goto(`/${testReport.organization}`);
 
 		// Ensure feature flag is enabled
 		await dotsBoard.sidebar.openProfileSettings();
 		await dotsBoard.page.getByLabel('Report').check();
+		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await dotsBoard.page.reload();
+		await response;
 
-		// Add a report
-		await dotsBoard.page.getByLabel('Add item').first().click();
-		await dotsBoard.page.getByRole('menuitem', { name: 'Report' }).click();
-
-		// Fill out a minimal form and save
-		await dotsBoard.page.getByRole('textbox', { name: 'Title' }).fill(title);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-	});
-
-	test.afterEach('delete goal', async ({ page, isMobile }) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Delete the goal
-		await page.getByRole('button', { name: 'Delete' }).click();
-		await page.getByRole('button', { name: `I want to delete "${title}"` }).click();
-
-		await expect(page.getByTitle(title)).not.toBeAttached();
-	});
-
-	test('chapter and text headings follow chapter structure', async ({ dotsBoard, isMobile }) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		await dotsBoard.card(testReport.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testReport.payload.title);
+		await dotsBoard.overlay.editModeToggle.check();
 
 		// Helper to add a Chapter section and set its number
 		async function addChapter(number: string) {
