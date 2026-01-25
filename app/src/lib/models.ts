@@ -556,10 +556,10 @@ export const editorialState = z.enum(editorialStateValues);
 export type EditorialState = z.infer<typeof editorialState>;
 
 export const relation = z.object({
-	object: z.string().uuid(),
+	object: z.uuid(),
 	position: z.number().int().nonnegative(),
 	predicate: z.string().max(128),
-	subject: z.string().uuid()
+	subject: z.uuid()
 });
 
 export type Relation = z.infer<typeof relation>;
@@ -573,12 +573,12 @@ export type PartialRelation = z.infer<typeof partialRelation>;
 
 export const userRelation = z.object({
 	predicate: predicates,
-	subject: z.string().uuid()
+	subject: z.uuid()
 });
 
 export const taskPriority = z.object({
 	priority: z.number().int(),
-	task: z.string().uuid()
+	task: z.uuid()
 });
 
 export type TaskPriority = z.infer<typeof taskPriority>;
@@ -703,7 +703,7 @@ const actualDataPayload = z
 			.transform(deduplicate)
 			.default([audience.enum['audience.citizens']]),
 		booleanValue: z.boolean().default(false),
-		indicator: z.string().uuid(),
+		indicator: z.uuid(),
 		source: z.string().optional(),
 		title: z.string(),
 		type: z.literal(payloadTypes.enum.actual_data),
@@ -789,7 +789,7 @@ const fileCollectionPayload = z
 					name: z.string(),
 					size: z.number().int().nonnegative(),
 					type: z.string(),
-					url: z.string().url()
+					url: z.url()
 				})
 			)
 			.default([]),
@@ -808,10 +808,7 @@ const initialFileCollectionPayload = fileCollectionPayload;
 
 const goalPayload = basePayload
 	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		fulfillmentDate: z.iso.date().optional(),
 		goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
 		goalType: goalType.optional(),
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
@@ -858,7 +855,7 @@ const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: 
 
 const indicatorPayload = basePayload
 	.extend({
-		externalReference: z.string().url().optional(),
+		externalReference: z.url().optional(),
 		historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
@@ -917,7 +914,7 @@ const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 const mapPayload = z
 	.object({
-		geometry: z.string().uuid().optional(),
+		geometry: z.uuid().optional(),
 		title: z
 			.string()
 			.trim()
@@ -935,12 +932,12 @@ const measurePayload = basePayload
 	.extend({
 		annotation: z.string().trim().optional(),
 		comment: z.string().trim().optional(),
-		endDate: z.string().date().optional(),
+		endDate: z.iso.date().optional(),
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().optional(),
 		result: z.string().trim().optional(),
-		startDate: z.string().date().optional(),
+		startDate: z.iso.date().optional(),
 		status: status.default(status.enum['status.idea']),
 		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
@@ -1019,14 +1016,8 @@ const rulePayload = basePayload
 	.extend({
 		ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
 		type: z.literal(payloadTypes.enum.rule),
-		validFrom: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		validUntil: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional()
+		validFrom: z.iso.date().optional(),
+		validUntil: z.iso.date().optional()
 	})
 	.strict();
 
@@ -1040,14 +1031,11 @@ const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
 	.extend({
 		annotation: z.string().trim().optional(),
-		endDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
+		endDate: z.iso.date().optional(),
+		file: z.array(z.tuple([z.url(), z.string()])).default([]),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().default(0),
-		startDate: z.string().date().optional(),
+		startDate: z.iso.date().optional(),
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
 	})
@@ -1079,9 +1067,9 @@ const programPayload = basePayload
 	})
 	.extend({
 		chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		level: levels.default(levels.enum['level.local']),
-		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
+		pdf: z.array(z.tuple([z.url(), z.string()])).default([]),
 		programStatus: programStatus.default(programStatus.enum['program_status.idea']),
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
@@ -1164,7 +1152,7 @@ const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
 		amount: z.coerce.number().optional(),
-		fulfillmentDate: z.string().date().optional(),
+		fulfillmentDate: z.iso.date().optional(),
 		type: z.literal(payloadTypes.enum.resource),
 		unit: z.string().optional()
 	})
@@ -1260,10 +1248,10 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
-		assignee: z.array(z.string().uuid()).transform(deduplicate).default([]),
+		assignee: z.array(z.uuid()).transform(deduplicate).default([]),
 		benefit: benefit.optional(),
 		effort: z.string().optional(),
-		fulfillmentDate: z.string().date().optional(),
+		fulfillmentDate: z.iso.date().optional(),
 		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
 		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
 		type: z.literal(payloadTypes.enum.task)
@@ -1277,7 +1265,7 @@ const initialTaskPayload = taskPayload.partial({ title: true });
 const imagePayload = z
 	.object({
 		body: z.string().trim().optional(),
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		imageAltText: z.string().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.image),
@@ -1300,12 +1288,12 @@ const teaserPayload = z
 		cardStyle: z.string().optional(),
 		colSize: teaserColSizes.default('33-66'),
 		description: z.string().optional(),
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		imageAltText: z.string().optional(),
 		imageAltTextRight: z.string().optional(),
 		imageEnable: z.boolean().default(true),
 		imageEnableRight: z.boolean().default(false),
-		imageRight: z.string().url().optional(),
+		imageRight: z.url().optional(),
 		link: z.string().optional(),
 		linkEnable: z.boolean().default(false),
 		linkEnableRight: z.boolean().default(false),
@@ -1406,7 +1394,7 @@ const initialColContentPayload = colContentPayload.partial({ title: true });
 
 const contentPartnerPayload = basePayload
 	.extend({
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.content_partner),
 		visibility: visibility.default(visibility.enum['organization'])
@@ -1465,7 +1453,7 @@ const organizationPayload = z
 	.object({
 		boards: z.array(boards).transform(deduplicate).default([]),
 		color: backgroundColor.optional(),
-		cover: z.string().url().optional(),
+		cover: z.url().optional(),
 		default: z.boolean().default(false),
 		description: z.string().trim().optional(),
 		favorite: z
@@ -1477,7 +1465,7 @@ const organizationPayload = z
 				})
 			)
 			.default([]),
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		name: z.string().trim(),
 		organizationCategory: organizationCategories.optional(),
 		type: z.literal(payloadTypes.enum.organization),
@@ -1494,7 +1482,7 @@ const organizationalUnitPayload = z
 		administrativeType: administrativeTypes.optional(),
 		boards: z.array(boards).transform(deduplicate).default([]),
 		color: backgroundColor.optional(),
-		cover: z.string().url().optional(),
+		cover: z.url().optional(),
 		cityAndMunicipalityTypeBBSR: z.string().optional(),
 		description: z.string().trim().optional(),
 		favorite: z
@@ -1507,8 +1495,8 @@ const organizationalUnitPayload = z
 			)
 			.default([]),
 		federalState: z.string().optional(),
-		geometry: z.string().uuid().optional(),
-		image: z.string().url().optional(),
+		geometry: z.uuid().optional(),
+		image: z.url().optional(),
 		level: z.number().int().positive().default(1),
 		name: z.string().trim(),
 		nameBBSR: z.string().optional(),
@@ -1679,10 +1667,10 @@ export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
 
 function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
-		guid: z.string().uuid(),
-		managed_by: z.string().uuid(),
-		organization: z.string().uuid(),
-		organizational_unit: z.string().uuid().nullable(),
+		guid: z.uuid(),
+		managed_by: z.uuid(),
+		organization: z.uuid(),
+		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
 		realm: z.string().max(1024),
 		relation: z.array(relation).default([]),
@@ -1713,9 +1701,9 @@ export type Container<P = Payload> = z.infer<
 
 export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
-		managed_by: z.string().uuid(),
-		organization: z.string().uuid(),
-		organizational_unit: z.string().uuid().nullable(),
+		managed_by: z.uuid(),
+		organization: z.uuid(),
+		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
 		realm: z.string().max(1024),
 		relation: z.array(partialRelation).default([]),
@@ -1731,10 +1719,10 @@ export type NewContainer<P extends AnyInitialPayload = AnyInitialPayload> = z.in
 
 function createModifiedContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
-		guid: z.string().uuid(),
-		managed_by: z.string().uuid(),
-		organization: z.string().uuid(),
-		organizational_unit: z.string().uuid().nullable(),
+		guid: z.uuid(),
+		managed_by: z.uuid(),
+		organization: z.uuid(),
+		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
 		realm: z.string().max(1024),
 		relation: z.array(partialRelation).default([]),
@@ -1892,10 +1880,10 @@ export function isContainerWithTopic(
 }
 
 export const user = z.object({
-	email: z.string().email().optional(),
+	email: z.email().optional(),
 	family_name: z.string().max(32).default(''),
 	given_name: z.string().max(32).default(''),
-	guid: z.string().uuid(),
+	guid: z.uuid(),
 	realm: z.string().max(1024),
 	settings: z.object({
 		features: z.array(z.string()).transform(deduplicate).optional()
@@ -1913,18 +1901,18 @@ export function displayName(user: User) {
 }
 
 export const keycloakUser = z.object({
-	email: z.string().email(),
+	email: z.email(),
 	emailVerified: z.boolean(),
 	enabled: z.boolean(),
 	firstName: z.string().optional(),
-	id: z.string().uuid(),
+	id: z.uuid(),
 	lastName: z.string().optional()
 });
 
 export type KeycloakUser = z.infer<typeof keycloakUser>;
 
 export const newUser = z.object({
-	email: z.string().email(),
+	email: z.email(),
 	container: anyContainer
 });
 
