@@ -5,7 +5,6 @@
 	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
-	import KnowledgeOverlay from '$lib/components/KnowledgeOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
@@ -68,11 +67,9 @@
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}
-		<ChaptersOverlay containers={data.containers} />
+		<ChaptersOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['content-partners']}
 		<ContentPartnersOverlay containers={data.containers} />
-	{:else if data.key === overlayKey.enum['knowledge']}
-		<KnowledgeOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['teasers']}
 		<TeasersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['relations']}

@@ -7,7 +7,7 @@ let editableTask: string;
 test.describe('Permissions', () => {
 	test.skip(
 		({ browserName }) => browserName !== 'chromium',
-		'This suite runs only on Chromium because we are just testing write rights'
+		'This suite runs only on Chromium because we are just testing write permissions'
 	);
 	test.describe('as admin', () => {
 		test.use({ storageState: 'tests/.auth/admin.json' });
@@ -55,7 +55,7 @@ test.describe('Permissions', () => {
 			await page.getByRole('article', { name: suborgTitle }).click();
 			await page.getByRole('button', { name: 'All', exact: true }).click();
 			await page.getByRole('menuitem', { name: 'Tasks' }).click();
-			await page.getByRole('link', { name: 'Add item' }).first().click();
+			await page.getByRole('button', { name: 'Add item' }).first().click();
 			await page.getByRole('textbox', { name: 'Title' }).fill(editableTask);
 			await page.getByRole('button', { name: 'Save' }).click();
 			await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();

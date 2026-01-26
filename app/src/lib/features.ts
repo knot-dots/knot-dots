@@ -5,19 +5,24 @@ export const featureFlags = new Map([
 			'ImportFromCsv',
 			'AI',
 			'Elasticsearch',
-			'Teaser',
 			'TeaserCollection',
-			'InfoBox',
-			'Quote',
-			'TwoColumn',
-			'Stage',
-			'Image',
 			'ContentPartner',
-			'Knowledge',
 			'ResourcesV2'
 		] as const
 	],
-	['beta', ['AdministrativeArea', 'Report'] as const]
+	[
+		'beta',
+		[
+			'AdministrativeArea',
+			'Image',
+			'InfoBox',
+			'Quote',
+			'Report',
+			'Stage',
+			'Teaser',
+			'TwoColumn'
+		] as const
+	]
 ]);
 
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
@@ -63,9 +68,6 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useContentPartner() {
 			return features.includes('ContentPartner');
-		},
-		useKnowledge() {
-			return features.includes('Knowledge');
 		},
 		useStage() {
 			return features.includes('Stage');

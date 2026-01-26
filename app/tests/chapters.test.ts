@@ -1,91 +1,42 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
-// This test verifies that chapter and text section heading levels follow
-// the chapter numbering structure.
-
-test.describe('Chapter section heading levels', () => {
-	// Use admin to ensure we have permission to create and edit
+test.describe('Chapters', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	const title = `Report ${crypto.randomUUID()}`;
-
-	test.beforeEach('add report', async ({ page, isMobile }) => {
+	test('chapter and text headings follow chapter structure', async ({
+		dotsBoard,
+		isMobile,
+		testReport
+	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		await page.goto('/');
+		await dotsBoard.goto(`/${testReport.organization}`);
 
 		// Ensure feature flag is enabled
-		await page.getByRole('navigation').getByText('AA').click();
-		await page.getByRole('navigation').getByRole('button', { name: 'Settings' }).click();
-		await page.getByLabel('Report').check();
-		await page.getByRole('button', { name: 'Save' }).click();
+		await dotsBoard.sidebar.openProfileSettings();
+		await dotsBoard.page.getByLabel('Report').check();
+		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
+		await response;
 
-		// Activate edit mode
-		await page.getByLabel('edit mode').check();
-
-		// Navigate to Dots board
-		await page.getByText('dots', { exact: true }).click();
-
-		// Add a report
-		await page.getByLabel('Add item').first().click();
-		await page.getByRole('menuitem', { name: 'Report' }).click();
-
-		// Fill out a minimal form and save
-		await page.getByRole('textbox', { name: 'Title' }).fill(title);
-		await page.getByRole('button', { name: 'Save' }).click();
-	});
-
-	test.afterEach('delete goal', async ({ page, isMobile }) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Delete the goal
-		await page.getByRole('button', { name: 'Delete' }).click();
-		await page.getByRole('button', { name: `I want to delete "${title}"` }).click();
-
-		await expect(page.getByTitle(title)).not.toBeAttached();
-	});
-
-	test('chapter and text headings follow chapter structure', async ({ page, isMobile }) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		const overlay = page.locator('.overlay');
+		await dotsBoard.card(testReport.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testReport.payload.title);
+		await dotsBoard.overlay.editModeToggle.check();
 
 		// Helper to add a Chapter section and set its number
 		async function addChapter(number: string) {
-			const numberOfSections = await overlay.locator('.sections section').count();
-
-			if (numberOfSections === 0) {
-				await overlay.getByRole('button', { name: 'Add section' }).click();
-				await overlay.getByRole('menuitem', { name: 'Chapter' }).click();
-			} else {
-				const lastSection = overlay.locator('.sections section').nth(numberOfSections - 1);
-				await lastSection.hover();
-				await lastSection.getByRole('button', { name: 'Add section' }).click({ force: true });
-				await lastSection.getByRole('menuitem', { name: 'Chapter' }).click({ force: true });
-			}
-
-			const section = overlay.locator('.sections section').nth(numberOfSections);
-			const chapterTitle = section.getByRole('textbox', { name: 'Title' });
-			await chapterTitle.fill(`Chapter ${number}`, { force: true });
-			const numberInput = section.getByRole('textbox', { name: 'Chapter number' });
-			await numberInput.fill(number, { force: true });
+			const section = await dotsBoard.overlay.addSection('Chapter');
+			await section.getByRole('textbox', { name: 'Title' }).fill(`Chapter ${number}`);
+			await section.getByRole('textbox', { name: 'Chapter number' }).fill(number);
 		}
 
 		// Helper to add a Text section and set its heading
-		async function addText(headingText: string) {
-			const numberOfSections = await overlay.locator('.sections section').count();
-			const lastSection = overlay.locator('.sections section').nth(numberOfSections - 1);
-			await lastSection.hover();
-			await lastSection.getByRole('button', { name: 'Add section' }).click({ force: true });
-			await lastSection.getByRole('menuitem', { name: 'Text' }).click({ force: true });
-
-			// The editable text section heading is a contenteditable heading element
-			const textHeading = overlay
-				.locator('.sections section')
-				.nth(numberOfSections)
-				.getByRole('heading');
-			await textHeading.fill(headingText, { force: true });
+		async function addText(heading: string) {
+			const section = await dotsBoard.overlay.addSection('Text');
+			await section.getByRole('heading').fill(heading);
 		}
+
+		await dotsBoard.overlay.editModeToggle.check();
 
 		// Build the requested structure:
 		// 1, [Text], 1.1, [Text], 2, [Text], 2.1, [Text], 2.1.1, [Text]
@@ -101,7 +52,7 @@ test.describe('Chapter section heading levels', () => {
 		await addText('Text after 2.1.1');
 
 		// Collect the heading tag names in the same order as the section list
-		const headings = overlay.locator('ul li section .details-heading');
+		const headings = dotsBoard.overlay.locator.locator('ul li section .details-heading');
 		const count = await headings.count();
 
 		// We expect 10 headings (5 chapters + 5 text sections)

@@ -47,7 +47,9 @@
 			.filter((t) =>
 				$mayCreateContainer(
 					t as PayloadType,
-					page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
+					addItemParams.has('managedBy')
+						? (addItemParams.get('managedBy') as string)
+						: (page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid)
 				)
 			) as PayloadType[]
 	);
@@ -57,7 +59,9 @@
 			payloadType,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			params.has('managedBy')
+				? (params.get('managedBy') as string)
+				: (page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid),
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
@@ -100,6 +104,13 @@
 					object: o,
 					position: 0,
 					predicate: predicates.enum['is-part-of-measure']
+				})
+			),
+			...params.getAll(predicates.enum['is-part-of-program']).map(
+				(o): PartialRelation => ({
+					object: o,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
 				})
 			)
 		];

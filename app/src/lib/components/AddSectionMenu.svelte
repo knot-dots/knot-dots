@@ -4,7 +4,6 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
 	import Briefcase from '~icons/flowbite/briefcase-solid';
-	import Book from '~icons/flowbite/book-solid';
 	import File from '~icons/flowbite/file-solid';
 	import Quote from '~icons/flowbite/quote-solid';
 	import BasicData from '~icons/knotdots/basic-data';
@@ -23,7 +22,6 @@
 	import Star from '~icons/knotdots/star';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
-	import Tiles from '~icons/knotdots/tiles';
 	import TwoCol from '~icons/knotdots/two-column';
 	import Link from '~icons/knotdots/link';
 	import Collection from '~icons/knotdots/collection';
@@ -41,7 +39,6 @@
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isIndicatorCollectionContainer,
-		isKnowledgeCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
@@ -160,13 +157,6 @@
 			(isOrganizationContainer(parentContainer) ||
 				isOrganizationalUnitContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
-	);
-
-	let mayAddKnowledgeCollection = $derived(
-		createFeatureDecisions(page.data.features).useKnowledge() &&
-			(isOrganizationContainer(parentContainer) ||
-				isOrganizationalUnitContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isKnowledgeCollectionContainer)
 	);
 
 	let mayAddTeaserSection = $derived(
@@ -334,14 +324,11 @@
 				: []),
 			...(mayAddImage ? [{ icon: Image, label: $_('image'), value: payloadTypes.enum.image }] : []),
 			...(mayAddTeaserCollection
-				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
-				: []),
-			...(mayAddTeaserCollection
 				? [
 						{
 							icon: Collection,
-							label: $_('accordion'),
-							value: payloadTypes.enum.accordion_collection
+							label: $_('teasers'),
+							value: payloadTypes.enum.teaser_collection
 						}
 					]
 				: []),
@@ -364,15 +351,6 @@
 							icon: Briefcase,
 							label: $_('partners'),
 							value: payloadTypes.enum.content_partner_collection
-						}
-					]
-				: []),
-			...(mayAddKnowledgeCollection
-				? [
-						{
-							icon: Book,
-							label: $_('knowledge'),
-							value: payloadTypes.enum.knowledge_collection
 						}
 					]
 				: [])

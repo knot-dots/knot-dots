@@ -8,7 +8,6 @@
 	import { page } from '$app/state';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
-	import KnowledgeCardContent from '$lib/components/KnowledgeCardContent.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
@@ -313,14 +312,6 @@
 						</h3>
 					</header>
 				{/if}
-			</a>
-		{:else if isKnowledgeContainer(container)}
-			<a
-				href={href ? href() : computeHref(page.url)}
-				bind:this={previewLink}
-				onclick={updateOverlayHistory}
-			>
-				<KnowledgeCardContent {container} />
 			</a>
 		{:else if isTeaserContainer(container)}
 			{#if 'image' in container.payload && container.payload.image}

@@ -13,7 +13,7 @@ const persons = [
 	},
 	{
 		name: 'Bob Builder',
-		mail: ' builderbob@bobby.com',
+		mail: 'builderbob@bobby.com',
 		passw: 'schnabeltasse',
 		file_name: 'bob'
 	}
@@ -31,7 +31,7 @@ persons.forEach((person) => {
 		await page.getByRole('button', { name: 'Sign In' }).click();
 
 		// Wait for the application to be successfully logged in
-		await expect(page).toHaveTitle('knotdots.net');
+		await expect(page).toHaveTitle('knotdots.net / All');
 
 		// Add an assertion to confirm successful login
 		await expect(page.getByText(person.name)).toBeVisible();

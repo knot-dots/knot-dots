@@ -9,11 +9,14 @@
 		type AnyContainer,
 		type Container,
 		type GoalContainer,
+		isMeasureContainer,
+		isSimpleMeasureContainer,
+		overlayKey,
 		payloadTypes,
+		predicates,
 		type TaskContainer,
 		taskStatus
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 
 	interface Props {
@@ -45,6 +48,11 @@
 			return $_('goals');
 		}
 	}
+
+	function addItemUrl(init: string[][]) {
+		const params = new URLSearchParams(init);
+		return `#${params.toString()}`;
+	}
 </script>
 
 <Board>
@@ -65,9 +73,16 @@
 		<TaskBoardColumn
 			--background={taskStatusBackgrounds.get(taskStatusOption)}
 			--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
-			addItemUrl={container && $mayCreateContainer(payloadTypes.enum.task, container.managed_by)
-				? `#create=${payloadTypes.enum.task}&is-part-of-measure=${container.guid}&managed-by=${container.managed_by}&taskStatus=${taskStatusOption}`
-				: undefined}
+			addItemUrl={addItemUrl([
+				[overlayKey.enum.create, payloadTypes.enum.task],
+				['taskStatus', taskStatusOption],
+				...(container && (isMeasureContainer(container) || isSimpleMeasureContainer(container))
+					? [
+							[predicates.enum['is-part-of-measure'], container.guid],
+							['managedBy', container.managed_by]
+						]
+					: [])
+			])}
 			items={containers.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 			status={taskStatusOption}
 		>

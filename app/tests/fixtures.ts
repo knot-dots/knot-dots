@@ -10,11 +10,19 @@ import {
 	type OrganizationalUnitContainer,
 	type OrganizationContainer,
 	payloadTypes,
+	type Predicate,
 	predicates,
 	type ProgramContainer,
+	type ReportContainer,
 	type TaskCollectionContainer,
 	type TaskContainer
 } from '$lib/models';
+import { DotsBoard, TaskStatusBoard } from './boards';
+
+type MyFixtures = {
+	dotsBoard: DotsBoard;
+	taskStatusBoard: TaskStatusBoard;
+};
 
 type MyWorkerFixtures = {
 	adminContext: BrowserContext;
@@ -26,29 +34,56 @@ type MyWorkerFixtures = {
 	testMeasure: MeasureContainer;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
+	testReport: ReportContainer;
 };
 
 locale.set('en');
 
 async function createContainer(context: BrowserContext, newContainer: NewContainer) {
 	const response = await context.request.post('/container', { data: newContainer });
+
+	if (!response.ok()) {
+		throw new Error(`Failed to create container: ${response.status()} ${response.statusText()}`);
+	}
+
 	return response.json();
 }
 
 async function deleteContainer(context: BrowserContext, container: AnyContainer) {
 	const response = await context.request.get(`/container/${container.guid}`);
+
+	// If container doesn't exist or request failed, skip deletion
+	if (!response.ok()) {
+		throw new Error(
+			`Failed to fetch container for deletion: ${response.status()} ${response.statusText()}`
+		);
+	}
+
 	const currentVersion = await response.json();
 	await context.request.delete(`/container/${container.guid}`, {
 		headers: { 'If-Match': etag(currentVersion) }
 	});
 }
 
-async function inviteUser(context: BrowserContext, email: string, container: AnyContainer) {
-	await context.request.post(`/user`, { data: { email, container } });
+async function inviteUser(
+	context: BrowserContext,
+	email: string,
+	container: AnyContainer,
+	role: Predicate[] = []
+) {
+	const inviteResponse = await context.request.post(`/user`, { data: { email, container } });
+	if (role.length > 0) {
+		await context.request.post(`/container/${container.guid}/user`, {
+			data: role.map((r) => ({
+				object: container.guid,
+				predicate: r,
+				subject: inviteResponse.headers()['location'].split('/').at(-1)
+			}))
+		});
+	}
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export const test = base.extend<{}, MyWorkerFixtures>({
+export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	adminContext: [
 		async ({ browser }, use, workerInfo) => {
 			const adminContext = await browser.newContext({
@@ -71,6 +106,12 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 		},
 		{ auto: true, scope: 'worker' }
 	],
+	dotsBoard: async ({ page }, use) => {
+		await use(new DotsBoard(page));
+	},
+	taskStatusBoard: async ({ page }, use) => {
+		await use(new TaskStatusBoard(page));
+	},
 	testOrganization: [
 		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
 			const newOrganization = containerOfType(
@@ -132,6 +173,10 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 				...newProgram,
 				payload: { ...newProgram.payload, title: `Test Program ${workerInfo.workerIndex}` }
 			});
+			await inviteUser(adminContext, 'builderbob@bobby.com', testProgram, [
+				predicates.enum['is-head-of'],
+				predicates.enum['is-member-of']
+			]);
 
 			await use(testProgram);
 
@@ -165,7 +210,7 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 				payloadTypes.enum.measure,
 				testOrganization.guid,
 				null,
-				testOrganization.guid,
+				testProgram.guid,
 				'knot-dots'
 			) as MeasureContainer;
 			const testMeasure = await createContainer(adminContext, {
@@ -228,6 +273,29 @@ export const test = base.extend<{}, MyWorkerFixtures>({
 			await use(testTask);
 
 			await deleteContainer(adminContext, testTask);
+		},
+		{ scope: 'worker' }
+	],
+	testReport: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newReport = containerOfType(
+				payloadTypes.enum.report,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ReportContainer;
+			const testReport = await createContainer(adminContext, {
+				...newReport,
+				payload: {
+					...newReport.payload,
+					title: `Test Report ${workerInfo.workerIndex}`
+				}
+			});
+
+			await use(testReport);
+
+			await deleteContainer(adminContext, testReport);
 		},
 		{ scope: 'worker' }
 	]
