@@ -62,7 +62,6 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
-	'accordion_collection',
 	'chapter',
 	'col_content',
 	'content_partner',
@@ -1244,26 +1243,12 @@ const teaserCollectionPayload = z
 			.readonly()
 			.default(() => unwrapFunctionStore(_)('teasers')),
 		type: z.literal(payloadTypes.enum.teaser_collection),
-		listType: listTypes.default(listTypes.enum.wall),
-		visibility: visibility.default(visibility.enum['organization'])
-	})
-	.strict();
-
-const initialTeaserCollectionPayload = teaserCollectionPayload;
-
-const accordionCollectionPayload = z
-	.object({
-		title: z
-			.string()
-			.readonly()
-			.default(() => unwrapFunctionStore(_)('accordion')),
-		type: z.literal(payloadTypes.enum.accordion_collection),
 		listType: listTypes.default(listTypes.enum.accordion),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
-const initialAccordionCollectionPayload = accordionCollectionPayload;
+const initialTeaserCollectionPayload = teaserCollectionPayload;
 
 const initialTaskPayload = taskPayload.partial({ title: true });
 
@@ -1393,7 +1378,6 @@ const payload = z.discriminatedUnion('type', [
 	taskPayload,
 	teaserPayload,
 	teaserCollectionPayload,
-	accordionCollectionPayload,
 	teaserHighlightPayload,
 	textPayload
 ]);
@@ -2066,16 +2050,7 @@ const teaserCollectionContainer = container.extend({
 
 export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
 
-const accordionCollectionContainer = container.extend({
-	payload: accordionCollectionPayload
-});
-
-export type AccordionCollectionContainer = z.infer<typeof accordionCollectionContainer>;
-
-export type CollectionContainer =
-	| AccordionCollectionContainer
-	| ContentPartnerCollectionContainer
-	| TeaserCollectionContainer;
+export type CollectionContainer = TeaserCollectionContainer | ContentPartnerCollectionContainer;
 
 export type TeaserLikeContainer =
 	| TeaserContainer
@@ -2102,20 +2077,13 @@ export function isTeaserCollectionContainer(
 	return container.payload.type === payloadTypes.enum.teaser_collection;
 }
 
-export function isAccordionCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is AccordionCollectionContainer {
-	return container.payload.type === payloadTypes.enum.accordion_collection;
-}
-
 export function isCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is CollectionContainer {
 	return (
 		[
-			payloadTypes.enum.accordion_collection,
-			payloadTypes.enum.content_partner_collection,
-			payloadTypes.enum.teaser_collection
+			payloadTypes.enum.teaser_collection,
+			payloadTypes.enum.content_partner_collection
 		] as PayloadType[]
 	).includes(container.payload.type);
 }
@@ -2307,7 +2275,6 @@ export const emptyContainer = newContainer.extend({
 		initialTaskPayload,
 		initialTeaserPayload,
 		initialTeaserCollectionPayload,
-		initialAccordionCollectionPayload,
 		initialTeaserHighlightPayload,
 		initialUndefinedPayload
 	])

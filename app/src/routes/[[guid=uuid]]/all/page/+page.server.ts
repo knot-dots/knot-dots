@@ -14,9 +14,7 @@ import {
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ depends, locals, parent }) => {
-	depends('containers');
-
+export const load = (async ({ locals, parent }) => {
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 	const container = currentOrganizationalUnit ?? currentOrganization;
 	let organizationalUnits: string[] = [];
@@ -57,7 +55,6 @@ export const load = (async ({ depends, locals, parent }) => {
 				[predicates.enum['is-section-of']],
 				{
 					type: [
-						payloadTypes.enum.accordion_collection,
 						payloadTypes.enum.chapter,
 						payloadTypes.enum.col_content,
 						payloadTypes.enum.content_partner,

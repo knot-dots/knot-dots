@@ -22,7 +22,6 @@
 	import Star from '~icons/knotdots/star';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
-	import Tiles from '~icons/knotdots/tiles';
 	import TwoCol from '~icons/knotdots/two-column';
 	import Link from '~icons/knotdots/link';
 	import Collection from '~icons/knotdots/collection';
@@ -325,14 +324,11 @@
 				: []),
 			...(mayAddImage ? [{ icon: Image, label: $_('image'), value: payloadTypes.enum.image }] : []),
 			...(mayAddTeaserCollection
-				? [{ icon: Tiles, label: $_('teasers'), value: payloadTypes.enum.teaser_collection }]
-				: []),
-			...(mayAddTeaserCollection
 				? [
 						{
 							icon: Collection,
-							label: $_('accordion'),
-							value: payloadTypes.enum.accordion_collection
+							label: $_('teasers'),
+							value: payloadTypes.enum.teaser_collection
 						}
 					]
 				: []),

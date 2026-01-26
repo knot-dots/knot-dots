@@ -31,15 +31,14 @@
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
+		isContentPartnerCollectionContainer,
+		isContentPartnerContainer,
 		isCustomCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
-		isAccordionCollectionContainer,
 		isGoalContainer,
 		isImageContainer,
-		isContentPartnerContainer,
-		isContentPartnerCollectionContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -47,12 +46,12 @@
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
-		isResourceDataContainer,
 		isResourceCollectionContainer,
+		isResourceDataContainer,
 		isTaskCollectionContainer,
 		isTeaserCollectionContainer,
-		isTextContainer,
-		isTeaserLikeContainer
+		isTeaserLikeContainer,
+		isTextContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -72,7 +71,7 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 
 	const handleSubmit = autoSave(2000);
 
@@ -275,12 +274,13 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isTeaserCollectionContainer(container) || isAccordionCollectionContainer(container)}
+		{:else if isTeaserCollectionContainer(container)}
 			<EditableTeaserCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				fetchDisabled={isShadowItem}
 				{heading}
 			/>
 		{/if}

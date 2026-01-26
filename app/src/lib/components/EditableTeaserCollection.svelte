@@ -13,19 +13,19 @@
 	import {
 		type AnyContainer,
 		containerOfType,
-		predicates,
-		type TeaserContainer,
-		type TeaserCollectionContainer,
 		type NewContainer,
 		payloadTypes,
-		type AccordionCollectionContainer
+		predicates,
+		type TeaserCollectionContainer,
+		type TeaserContainer
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: TeaserCollectionContainer | AccordionCollectionContainer;
+		container: TeaserCollectionContainer;
 		editable?: boolean;
+		fetchDisabled?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
@@ -33,18 +33,25 @@
 
 	let {
 		container = $bindable(),
+		fetchDisabled = false,
 		editable = false,
 		heading,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let teaserRequest = $derived(
-		fetchRelatedContainers(container.guid, {
-			payloadType: [payloadTypes.enum.teaser],
-			relationType: [predicates.enum['is-part-of']]
-		})
-	) as Promise<TeaserContainer[]>;
+	let guid = $derived(container.guid);
+
+	let teaserRequest = $derived.by(() => {
+		if (fetchDisabled) {
+			return Promise.resolve([]);
+		} else {
+			return fetchRelatedContainers(guid, {
+				payloadType: [payloadTypes.enum.teaser],
+				relationType: [predicates.enum['is-part-of']]
+			});
+		}
+	}) as Promise<TeaserContainer[]>;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
