@@ -195,7 +195,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			) as GoalContainer;
 			const testGoal = await createContainer(adminContext, {
 				...newGoal,
-				payload: { ...newGoal.payload, title: `Test Goal ${workerInfo.workerIndex}` }
+				payload: {
+					...(newGoal.payload as GoalContainer['payload']),
+					title: `Test Goal ${workerInfo.workerIndex}`
+				} as GoalContainer['payload']
 			});
 
 			await use(testGoal);

@@ -620,45 +620,55 @@ const basePayload = z
 	})
 	.catchall(z.array(z.string().trim().min(1)));
 
-const categoryPayloadBase = z
-	.object({
-		description: z.string().trim().optional(),
-		key: z.string().trim().optional(),
-		level: z.number().int().nonnegative().default(0),
-		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.category),
-		visibility: visibility.default(visibility.enum['public'])
-	})
-	.superRefine((value, ctx) => {
-		const title = value.title?.trim();
-		const key = value.key?.trim();
-		const slug = slugifyCategoryKey(key || title || '');
+const categoryPayloadBaseShape = z.object({
+	description: z.string().trim().optional(),
+	key: z.string().trim().optional(),
+	level: z.number().int().nonnegative().default(0),
+	title: z.string().trim(),
+	type: z.literal(payloadTypes.enum.category),
+	visibility: visibility.default(visibility.enum['public'])
+});
 
-		if (!slug) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: 'category title is required to derive key'
-			});
-			return;
-		}
+const enforceCategoryKey = (value: { key?: string; title?: string }, ctx: z.RefinementCtx) => {
+	const title = value.title?.trim();
+	const key = value.key?.trim();
+	const slug = slugifyCategoryKey(key || title || '');
 
-		if (slug.length > 128) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: 'category key must be 128 characters or fewer'
-			});
-			return;
-		}
+	if (!slug) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'category title is required to derive key'
+		});
+		return;
+	}
 
-		value.key = slug;
-	});
+	if (slug.length > 128) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'category key must be 128 characters or fewer'
+		});
+		return;
+	}
+
+	value.key = slug;
+};
+
+const enforceCategoryKeyIfProvided = (
+	value: { key?: string; title?: string },
+	ctx: z.RefinementCtx
+) => {
+	// For partial inputs, skip when both title and key are missing; creation code fills them later.
+	if (!value.title && !value.key) return;
+	enforceCategoryKey(value, ctx);
+};
+
+const categoryPayloadBase = categoryPayloadBaseShape.superRefine(enforceCategoryKey);
 
 const categoryPayload = categoryPayloadBase;
 
-const initialCategoryPayload = categoryPayloadBase.partial({
-	key: true,
-	title: true
-});
+const initialCategoryPayload = categoryPayloadBaseShape
+	.partial({ key: true, title: true })
+	.superRefine(enforceCategoryKeyIfProvided);
 
 const termPayload = z
 	.object({
@@ -2882,30 +2892,36 @@ export function createCopyOf(
 	);
 
 	if (isMeasureContainer(container)) {
-		copy.payload = { ...container.payload, template: false };
+		copy.payload = {
+			...(container.payload as typeof copy.payload),
+			template: false
+		} as typeof copy.payload;
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
-			...container.payload,
+			...(container.payload as typeof copy.payload),
 			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
-		};
+		} as typeof copy.payload;
 	} else if (isIndicatorContainer(container)) {
-		copy.payload = { ...container.payload, historicalValues: [] };
+		copy.payload = {
+			...(container.payload as unknown as typeof copy.payload),
+			historicalValues: []
+		} as unknown as typeof copy.payload;
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
-			...container.payload,
+			...(container.payload as typeof copy.payload),
 			achievedValues: container.payload.achievedValues.map(
 				([year]) => [year, 0] as [number, number]
 			)
-		};
+		} as typeof copy.payload;
 	} else {
-		copy.payload = { ...container.payload };
+		copy.payload = { ...(container.payload as typeof copy.payload) } as typeof copy.payload;
 	}
 
 	copy.payload = {
 		...copy.payload,
 		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
-	};
+	} as typeof copy.payload;
 
 	copy.relation.push({
 		object: container.guid,
