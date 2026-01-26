@@ -30,7 +30,17 @@ let deLabels: Record<string, any> = {};
 export function createIndexWithMappings(client: Client, index: string) {
   return client.indices.create({
     index,
-    settings: { number_of_shards: 1, number_of_replicas: 0 },
+    settings: {
+      number_of_shards: 1,
+      number_of_replicas: 0,
+      analysis: {
+        analyzer: {
+          // Default to German so stemming and stop words match our labels/content
+          default: { type: 'german' },
+          default_search: { type: 'german' }
+        }
+      }
+    },
     mappings: {
       dynamic: true,
       date_detection: false,
