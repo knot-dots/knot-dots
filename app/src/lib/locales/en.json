@@ -648,6 +648,7 @@
 		"remove": "Remove",
 		"role": "Role"
 	},
+	"user_menu": "User menu",
 	"valid_from": "Valid from",
 	"valid_until": "Valid until",
 	"value": "Value",
