@@ -376,7 +376,7 @@
 				<TaskStatusIcon />
 				{$_(taskStatus)}
 			</span>
-		{:else if isContainerWithProgress(container)}
+		{:else if isContainerWithProgress(container) && container.payload.progress != null}
 			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}
 			{@const programType = container.payload.programType as ProgramType}
