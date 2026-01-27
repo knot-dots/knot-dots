@@ -26,7 +26,8 @@ export const load = (async ({ depends, locals, params }) => {
 		return {
 			container,
 			relatedContainers: filterVisible(relatedContainers, locals.user),
-			revisions: filterVisible(revisions, locals.user)
+			revisions: filterVisible(revisions, locals.user),
+			title: 'title' in container.payload ? container.payload.title : container.payload.name
 		};
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {

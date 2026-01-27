@@ -1394,6 +1394,15 @@ const organizationPayload = z.object({
 	cover: z.string().url().optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
+	favorite: z
+		.array(
+			z.object({
+				href: z.string(),
+				icon: z.url().optional(),
+				title: z.string().trim()
+			})
+		)
+		.default([]),
 	image: z.string().url().optional(),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
@@ -1410,6 +1419,15 @@ const organizationalUnitPayload = z.object({
 	cover: z.string().url().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
+	favorite: z
+		.array(
+			z.object({
+				href: z.string(),
+				icon: z.url().optional(),
+				title: z.string().trim()
+			})
+		)
+		.default([]),
 	federalState: z.string().optional(),
 	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
