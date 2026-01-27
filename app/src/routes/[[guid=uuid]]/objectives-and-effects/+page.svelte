@@ -9,6 +9,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import {
 		type Container,
 		findAncestors,
@@ -94,7 +95,7 @@
 	});
 
 	let objectivesByLevel = $derived.by(() => {
-		let objectivesByLevel = new Map<number, Container[]>();
+		let objectivesByLevel = new SvelteMap<number, Container[]>();
 
 		for (const container of data.containers.filter(isObjectiveContainer)) {
 			const ancestors = findAncestors(container, data.containers.filter(isObjectiveContainer), [

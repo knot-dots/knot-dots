@@ -5,7 +5,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import type { PageProps } from './$types';
-	import { isOrganizationalUnitContainer } from '$lib/models';
 
 	let { data }: PageProps = $props();
 

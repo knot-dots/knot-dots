@@ -7,6 +7,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import {
 		titleForProgramCollection,
 		type Container,
@@ -18,7 +19,7 @@
 	let { data }: PageProps = $props();
 
 	let knowledgeByLevel = $derived.by(() => {
-		let knowledgeByLevel = new Map<number, Container[]>();
+		let knowledgeByLevel = new SvelteMap<number, Container[]>();
 
 		for (const container of data.containers) {
 			const ancestors = findAncestors(container, data.containers, [predicates.enum['is-part-of']]);

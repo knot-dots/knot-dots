@@ -397,7 +397,7 @@ test.for([
 	}
 ])(
 	`getManyContainers and getManyContainersWithES: $name`,
-	async ({ name, filters, sort }, { connection }) => {
+	async ({ filters, sort }, { connection }) => {
 		// Get the organization GUID for Musterhausen
 		const org = await connection.one(sql.typeAlias('guid')`
 		SELECT guid FROM container 

@@ -1,10 +1,10 @@
-import { Client } from '@elastic/elasticsearch';
+import { Client, type estypes } from '@elastic/elasticsearch';
 import type { DatabaseConnection } from 'slonik';
 import type { Container, PayloadType } from '$lib/models';
 import { withUserAndRelation, sql } from './db';
 import { env as privateEnv } from '$env/dynamic/private';
 
-function buildElasticsearchSortClause(sort: string) {
+function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	if (sort === 'modified') {
 		return [
 			{ validFrom: { order: 'desc', missing: '_first', unmapped_type: 'date' } },
@@ -53,8 +53,8 @@ export function getManyContainersWithES(
 
 		try {
 			const es = new Client({ node: esUrl });
-			const must: any[] = [];
-			const filter: any[] = [];
+			const must: estypes.QueryDslQueryContainer[] = [];
+			const filter: estypes.QueryDslQueryContainer[] = [];
 
 			if (filters.terms) {
 				must.push({
@@ -100,11 +100,11 @@ export function getManyContainersWithES(
 				});
 			}
 
-			const query = { bool: { must, filter } };
+			const query: estypes.QueryDslQueryContainer = { bool: { must, filter } };
 			const esSortClauses = buildElasticsearchSortClause(sort);
 			const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
 
-			const searchParams: Record<string, any> = {
+			const searchParams: estypes.SearchRequest = {
 				index: esIndex,
 				query,
 				sort: esSortClauses,
@@ -112,9 +112,9 @@ export function getManyContainersWithES(
 				_source: ['guid']
 			};
 
-			const { hits } = await es.search(searchParams);
+			const { hits } = await es.search<{ guid: string }>(searchParams);
 
-			const guids = (hits.hits as any[]).map((h) => h._source.guid);
+			const guids = hits.hits.flatMap((h) => (h._source?.guid ? [h._source.guid] : []));
 			console.log('[getManyContainersWithES] Elasticsearch returned', guids.length, 'results');
 
 			if (guids.length === 0) return [];
@@ -154,7 +154,7 @@ export async function getFacetAggregationsForGuids(guids: string[]) {
 	}
 	const es = new Client({ node: esUrl });
 	const query = { terms: { guid: guids } } as const;
-	const aggs: Record<string, any> = {
+	const aggs: Record<string, estypes.AggregationsAggregationContainer> = {
 		audience: { terms: { field: 'payload.audience', size: 50 } },
 		category: { terms: { field: 'payload.category', size: 100 } },
 		topic: { terms: { field: 'payload.topic', size: 100 } },
@@ -166,22 +166,33 @@ export async function getFacetAggregationsForGuids(guids: string[]) {
 		taskCategory: { terms: { field: 'payload.taskCategory', size: 50 } }
 	};
 
-	const { aggregations } = await es.search({ index: esIndex, size: 0, query, aggs });
+	const { aggregations } = await es.search<unknown, estypes.SearchRequest>({
+		index: esIndex,
+		size: 0,
+		query,
+		aggs
+	});
 	const facets: Record<string, Record<string, number>> = {};
-	const toCounts = (a: any) =>
-		Object.fromEntries(
-			(a?.buckets ?? []).map((b: any) => [String(b.key_as_string ?? b.key), b.doc_count])
+	type TermsBucket = { key: string | number; key_as_string?: string; doc_count?: number };
+	const toCounts = (agg?: estypes.AggregationsAggregate): Record<string, number> => {
+		if (!agg || !('buckets' in agg)) return {};
+		const buckets = (agg as estypes.AggregationsTermsAggregateBase<TermsBucket>).buckets;
+		if (!Array.isArray(buckets)) return {};
+		return Object.fromEntries(
+			buckets.map((b) => [String(b.key_as_string ?? b.key), b.doc_count ?? 0])
 		);
-	if (aggregations) {
-		facets.audience = toCounts((aggregations as any).audience);
-		facets.category = toCounts((aggregations as any).category);
-		facets.topic = toCounts((aggregations as any).topic);
-		facets.policyFieldBNK = toCounts((aggregations as any).policyFieldBNK);
-		facets.programType = toCounts((aggregations as any).programType);
-		facets.measureType = toCounts((aggregations as any).measureType);
-		facets.indicatorCategory = toCounts((aggregations as any).indicatorCategory);
-		facets.indicatorType = toCounts((aggregations as any).indicatorType);
-		facets.taskCategory = toCounts((aggregations as any).taskCategory);
+	};
+	const aggMap = aggregations as Record<string, estypes.AggregationsAggregate> | undefined;
+	if (aggMap) {
+		facets.audience = toCounts(aggMap.audience);
+		facets.category = toCounts(aggMap.category);
+		facets.topic = toCounts(aggMap.topic);
+		facets.policyFieldBNK = toCounts(aggMap.policyFieldBNK);
+		facets.programType = toCounts(aggMap.programType);
+		facets.measureType = toCounts(aggMap.measureType);
+		facets.indicatorCategory = toCounts(aggMap.indicatorCategory);
+		facets.indicatorType = toCounts(aggMap.indicatorType);
+		facets.taskCategory = toCounts(aggMap.taskCategory);
 	}
 	return facets;
 }

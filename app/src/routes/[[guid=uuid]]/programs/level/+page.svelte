@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Header from '$lib/components/Header.svelte';
