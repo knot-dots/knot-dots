@@ -1,4 +1,5 @@
 import { filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -102,7 +103,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						payloadTypes.enum.image,
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
-						payloadTypes.enum.page,
+						...(createFeatureDecisions(locals.features).usePage() ? [payloadTypes.enum.page] : []),
 						payloadTypes.enum.program,
 						payloadTypes.enum.report,
 						payloadTypes.enum.rule,

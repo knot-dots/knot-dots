@@ -34,6 +34,7 @@
 	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favorite';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
 		isMeasureContainer,
@@ -46,7 +47,6 @@
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
-	import { createFeatureDecisions } from '$lib/features';
 
 	type FilterOption = {
 		count: number;
@@ -255,7 +255,7 @@
 			</a>
 		{/if}
 
-		{#if !overlay && page.data.title && $ability.can('update', selectedContext)}}
+		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}}
 			<button
 				aria-label={$_('favorite')}
 				class="action-button action-button--size-l action-button--favorite"

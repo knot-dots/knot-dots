@@ -24,6 +24,7 @@
 	import logo from '$lib/assets/logo.svg';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favorite';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
@@ -96,21 +97,23 @@
 			</span>
 		</a>
 	</li>
-	{#each favoritesList.item as favorite (favorite.href)}
-		{@const href = page.url.searchParams.size
-			? `${page.url.pathname}?${page.url.searchParams.toString()}`
-			: page.url.pathname}
-		<li>
-			<a
-				class="sidebar-menu-item"
-				class:sidebar-menu-item--active={favorite.href === href}
-				href={favorite.href}
-			>
-				<StarSolid />
-				{favorite.title}
-			</a>
-		</li>
-	{/each}
+	{#if createFeatureDecisions(page.data.features).useFavoriteList()}
+		{#each favoritesList.item as favorite (favorite.href)}
+			{@const href = page.url.searchParams.size
+				? `${page.url.pathname}?${page.url.searchParams.toString()}`
+				: page.url.pathname}
+			<li>
+				<a
+					class="sidebar-menu-item"
+					class:sidebar-menu-item--active={favorite.href === href}
+					href={favorite.href}
+				>
+					<StarSolid />
+					{favorite.title}
+				</a>
+			</li>
+		{/each}
+	{/if}
 	{#if $user.isAuthenticated}
 		<li>
 			<a
