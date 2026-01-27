@@ -18,7 +18,6 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 	const features = createFeatureDecisions(locals.features);
@@ -32,7 +31,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			.map(({ guid }) => guid);
 	}
 
-	containers = await locals.pool.connect(
+	const containers = await locals.pool.connect(
 		features.useElasticsearch()
 			? getManyContainersWithES(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],

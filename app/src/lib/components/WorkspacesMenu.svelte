@@ -22,8 +22,10 @@
 	import Objects from '~icons/knotdots/objects';
 	import Program from '~icons/knotdots/program';
 	import Star from '~icons/knotdots/star';
+	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import { boards } from '$lib/models';
 
 	const workspacesLeft: Record<string, Record<string, string>> = {
@@ -73,7 +75,15 @@
 			catalog: '/tasks/catalog',
 			status: '/tasks/status',
 			table: '/tasks/table'
-		}
+		},
+		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+			? {
+					resources: {
+						catalog: '/resources/catalog',
+						table: '/resources/table'
+					}
+				}
+			: undefined)
 	};
 
 	const workspacesRight: Record<string, Record<string, string>> = {
@@ -85,7 +95,10 @@
 			measures: '/measures/catalog',
 			programs: '/programs/catalog',
 			rules: '/rules/catalog',
-			tasks: '/tasks/catalog'
+			tasks: '/tasks/catalog',
+			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+				? { resources: '/resources/catalog' }
+				: undefined)
 		},
 		level: {
 			all: '/all/level',
@@ -113,7 +126,10 @@
 			measures: '/measures/table',
 			programs: '/programs/table',
 			rules: '/rules/table',
-			tasks: '/tasks/table'
+			tasks: '/tasks/table',
+			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+				? { resources: '/resources/table' }
+				: undefined)
 		}
 	};
 
@@ -190,6 +206,17 @@
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
+		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+			? [
+					{
+						exists: true,
+						icon: Resources,
+						label: $_('workspace.type.resources'),
+						recommended: false,
+						value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
+					}
+				]
+			: []),
 		...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 			? [
 					{
@@ -318,7 +345,7 @@
 		{#if menuExpanded}
 			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 				<ul class="menu">
-					{#each options as option}
+					{#each options as option (option.value)}
 						<li
 							class="menu-item"
 							class:menu-item--active={option.value === menuActive}

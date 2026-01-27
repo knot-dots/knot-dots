@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import Maximize from '~icons/flowbite/expand-outline';
 	import Minimize from '~icons/flowbite/minimize-outline';
+	import tooltip from '$lib/attachments/tooltip';
 
 	let fullScreen = getContext<{ enabled: boolean }>('overlayFullScreen');
 </script>
@@ -10,7 +11,7 @@
 <button
 	class="action-button"
 	onclick={() => (fullScreen.enabled = !fullScreen.enabled)}
-	aria-label={$_('full_screen')}
+	{@attach tooltip($_('full_screen'))}
 >
 	{#if fullScreen.enabled}<Minimize />{:else}<Maximize />{/if}
 </button>

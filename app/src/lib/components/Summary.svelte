@@ -11,9 +11,10 @@
 
 	interface Props {
 		container: Container | EmptyContainer;
+		maxLength?: number;
 	}
 
-	let { container }: Props = $props();
+	let { container, maxLength = 200 }: Props = $props();
 </script>
 
 {#if 'summary' in container.payload && container.payload.summary}
@@ -25,10 +26,11 @@
 		.use(stripMarkdown)
 		.use(remarkRehype)
 		.use(rehypeSanitize)
-		.use(rehypeExtractExcerpt, { maxLength: 200 })
+		.use(rehypeExtractExcerpt, { maxLength: maxLength, wordBoundaries: true })
 		.use(rehypeStringify)
 		.process(container.payload.description) then content}
 		{#if content.data.excerpt}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			<p>{@html content.data.excerpt}</p>
 		{/if}
 	{/await}

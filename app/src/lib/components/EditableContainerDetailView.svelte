@@ -3,7 +3,8 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
-	import { type Container, isContainerWithProgress } from '$lib/models';
+	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import { type Container, isSimpleMeasureContainer } from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
@@ -18,12 +19,7 @@
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-<form
-	class="content-details masked-overflow"
-	oninput={requestSubmit}
-	onsubmit={handleSubmit}
-	novalidate
->
+<form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
 		<header class="details-section">
 			{#if $applicationState.containerDetailView.editable}
@@ -44,6 +40,14 @@
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
 			/>
+
+			{#if isSimpleMeasureContainer(container)}
+				<EditableProgress
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					bind:value={container.payload.progress}
+				/>
+			{/if}
 		</header>
 
 		{@render data?.()}

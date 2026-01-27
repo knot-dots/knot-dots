@@ -13,7 +13,7 @@
 	{#snippet main()}
 		{#key data.container.guid}
 			<div class="detail-page-content">
-				<div class="content-details masked-overflow">
+				<div class="content-details">
 					{#if isOrganizationContainer(data.container)}
 						<EditableOrganizationDetailView
 							container={data.container}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
 	import EditableIndicatorDetailView from '$lib/components/EditableIndicatorDetailView.svelte';
@@ -12,8 +13,10 @@
 	import EditableProgramDetailView from '$lib/components/EditableProgramDetailView.svelte';
 	import EditableReportDetailView from '$lib/components/EditableReportDetailView.svelte';
 	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
+	import EditableResourceV2DetailView from '$lib/components/EditableResourceV2DetailView.svelte';
 	import EditableRuleDetailView from '$lib/components/EditableRuleDetailView.svelte';
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
+	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
@@ -22,6 +25,7 @@
 		audience,
 		computeFacetCount,
 		isContainerWithEffect,
+		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -34,9 +38,11 @@
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
+		isResourceV2Container,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		isTextContainer,
 		paramsFromFragment,
 		policyFieldBNK,
@@ -49,6 +55,7 @@
 		fetchContainersRelatedToIndicatorTemplates,
 		fetchContainersRelatedToMeasure,
 		fetchContainersRelatedToProgram,
+		fetchContainersRelatedToResource,
 		fetchRelatedContainers
 	} from '$lib/remote/data.remote';
 
@@ -100,6 +107,22 @@
 					policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
 					terms: paramsFromFragment(page.url).get('terms') ?? '',
 					topic: paramsFromFragment(page.url).getAll('topic')
+				}
+			});
+		} else if (isResourceV2Container(container)) {
+			return fetchContainersRelatedToResource({
+				guid,
+				params: {
+					organization: [page.data.currentOrganization.guid],
+					relationType: [
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-objective-for'],
+						predicates.enum['is-part-of'],
+						predicates.enum['is-section-of']
+					]
 				}
 			});
 		} else {
@@ -155,7 +178,9 @@
 	/>
 {:else if relatedContainersPromise.current}
 	{@const relatedContainers = relatedContainersPromise.current}
-	{#if isEffectContainer(container)}
+	{#if isContentPartnerContainer(container)}
+		<EditableContentPartnerDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isEffectContainer(container)}
 		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isGoalContainer(container)}
 		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
@@ -177,10 +202,14 @@
 		<EditableReportDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isResourceContainer(container)}
 		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isResourceV2Container(container)}
+		<EditableResourceV2DetailView bind:container {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}
 		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTaskContainer(container)}
 		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isTeaserContainer(container)}
+		<EditableTeaserDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTextContainer(container)}
 		<EditableTextDetailView bind:container {relatedContainers} {revisions} />
 	{/if}

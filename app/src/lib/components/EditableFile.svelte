@@ -5,6 +5,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		editable?: boolean;
@@ -19,7 +20,6 @@
 
 	function remove(index: number) {
 		return (event: Event) => {
-			const input = event.currentTarget as HTMLInputElement;
 			value = [...value.slice(0, index), ...value.slice(index + 1)];
 			requestSubmit(event);
 		};
@@ -55,14 +55,14 @@
 			{#if uploadInProgress}
 				<span class="loader"></span>
 			{:else if value}
-				{#each value as file, i}
+				{#each value as file, i (file[0])}
 					<span class="badge badge--gray">
 						<span class="badge-text">{file[1]}</span>
 						<button
-							aria-label={$_('upload.file.remove')}
 							class="button button-remove"
 							onclick={remove(i)}
 							type="button"
+							{@attach tooltip($_('upload.file.remove'))}
 						>
 							<Close />
 						</button>
@@ -94,7 +94,7 @@
 	<span class="label">{$_('files')}</span>
 	<div>
 		<ul class="value">
-			{#each value as file, i}
+			{#each value as file (file[0])}
 				<li>
 					<a class="badge badge--gray" href={transformFileURL(file[0])}>
 						<span class="badge-text">{file[1]}</span>

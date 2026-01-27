@@ -50,6 +50,7 @@
 				case 'error':
 					isThinking = false;
 					alert($_('ai_status.error'));
+					break;
 				case 'complete':
 					isThinking = false;
 					toast({
@@ -57,13 +58,12 @@
 						heading: $_('toast.ai_job_completed.heading'),
 						status: 'success'
 					});
-				default:
-					fetchContainersRelatedToProgram({
-						guid: container.guid,
-						params
-					}).refresh();
 					break;
 			}
+			fetchContainersRelatedToProgram({
+				guid: container.guid,
+				params
+			}).refresh();
 		});
 	}
 </script>

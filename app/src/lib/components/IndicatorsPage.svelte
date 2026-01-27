@@ -2,25 +2,23 @@
 	import { type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { type Container } from '$lib/models';
+
+	import type { PageData } from '../../routes/[[guid=uuid]]/indicators/catalog/$types';
 
 	interface Props {
 		children: Snippet;
-		data: {
-			containers: Container[];
-			useNewIndicators: boolean;
-			facets?: Map<string, Map<string, number>>;
-		};
+		data: PageData;
+		filterBarInitiallyOpen?: boolean;
 	}
 
-	let { children, data }: Props = $props();
+	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
 
 	let facets = $derived(data.facets);
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header {facets} {filterBarInitiallyOpen} search />
 	{/snippet}
 
 	{#snippet main()}

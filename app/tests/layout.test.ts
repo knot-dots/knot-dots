@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
-test('home screen has expected regions', async ({ page, viewport }) => {
+test('home screen has expected regions', async ({ page }) => {
 	await page.goto('/');
 	await expect(page.getByRole('banner')).toBeVisible();
 	await expect(page.getByRole('main')).toBeVisible();
@@ -27,11 +27,11 @@ test('navigation contains expected elements', async ({ page, viewport }) => {
 test.describe(() => {
 	test.use({ storageState: 'tests/.auth/bob.json' });
 
-	test('badge is not editable by Bob', async ({ page }) => {
+	test('badge is not editable by Bob', async ({ page, testGoal }) => {
 		await page.goto('/');
 		await page.getByRole('button', { name: 'All', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Goals' }).click();
-		await page.getByRole('article', { name: 'Test goal' }).first().click();
+		await page.getByRole('article', { name: testGoal.payload.title }).first().click();
 
 		// Edit switch
 		const overlay = page.locator('.overlay');
@@ -45,11 +45,11 @@ test.describe(() => {
 		}
 	});
 
-	test('progress is not editable by Bob', async ({ page }) => {
+	test('progress is not editable by Bob', async ({ page, testGoal }) => {
 		await page.goto('/');
 		await page.getByRole('button', { name: 'All', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Goals' }).click();
-		await page.getByRole('article', { name: 'Test goal' }).first().click();
+		await page.getByRole('article', { name: testGoal.payload.title }).first().click();
 
 		// Edit switch
 		const overlay = page.locator('.overlay');
@@ -62,21 +62,21 @@ test.describe(() => {
 		}
 	});
 
-	test('task badge shows category', async ({ page }) => {
+	test('task badge shows category', async ({ page, testGoal, testTask }) => {
 		await page.goto('/');
 
 		// Go to goal
 		await page.getByRole('button', { name: 'All', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Goals' }).click();
-		await page.getByRole('article', { name: 'Goal with task' }).first().click();
+		await page.getByRole('article', { name: testGoal.payload.title }).first().click();
 
 		// Open task
-		await page.getByRole('article', { name: 'Test task', exact: true }).click();
+		await page.getByRole('article', { name: testTask.payload.title, exact: true }).click();
 
 		// Get badges in heading and expect to have 'Design' badge
 		const badges = page
 			.locator('.details-section')
-			.filter({ hasText: 'Test task' })
+			.filter({ hasText: testTask.payload.title })
 			.locator('.badges');
 		await expect(badges).toHaveText(/Design/);
 	});

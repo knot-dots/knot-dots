@@ -23,6 +23,7 @@
 			{ label: $_('workspace.programs'), value: '/programs/catalog' },
 			{ label: $_('workspace.programs_by_level'), value: '/programs/level' },
 			{ label: $_('workspace.measures'), value: '/measures/status' },
+			{ label: $_('workspace.resources'), value: '/resources/catalog' },
 			...(!('default' in selectedContext.payload) || !selectedContext.payload.default
 				? [{ label: $_('workspace.tasks'), value: '/tasks/status' }]
 				: []),
@@ -78,7 +79,7 @@
 		{#if $menu.expanded}
 			<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 				<ul class="menu">
-					{#each options as option}
+					{#each options as option (option.value)}
 						<li
 							class="menu-item"
 							class:menu-item--active={option.value === $menu.active}

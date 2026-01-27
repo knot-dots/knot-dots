@@ -13,7 +13,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { ability, newContainer } from '$lib/stores';
+	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: AnyContainer;
@@ -155,7 +155,7 @@
 	}
 </script>
 
-{#if $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
+{#if $applicationState.containerDetailView.editable && $ability.can('create', payloadTypes.enum.undefined) && mayDeriveFrom(container)}
 	<DropDownMenu label={$_('create_another')} {options} handleChange={createHandler(container)}>
 		{#snippet icon()}<CodeMerge />{/snippet}
 	</DropDownMenu>

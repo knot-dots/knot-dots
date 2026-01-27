@@ -4,21 +4,25 @@
 	import {
 		toggleEmphasisCommand,
 		toggleStrongCommand,
+		wrapInBlockquoteCommand,
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
 	import { _ } from 'svelte-i18n';
 	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
+	import tooltip from '$lib/attachments/tooltip';
+	import Quote from '~icons/flowbite/quote-solid';
 
 	interface Props {
 		ctx: Ctx;
-		show: boolean;
 	}
 
-	const { ctx, show = false }: Props = $props();
+	const { ctx }: Props = $props();
 
 	const onClick = (fn: (ctx: Ctx) => void) => (e: MouseEvent) => {
 		e.preventDefault();
-		ctx && fn(ctx);
+		if (ctx) {
+			fn(ctx);
+		}
 	};
 </script>
 
@@ -27,6 +31,7 @@
 		<button
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(toggleStrongCommand.key))}
+			{@attach tooltip($_('editor.strong'))}
 		>
 			<strong>{$_('editor.strong')}</strong>
 		</button>
@@ -35,6 +40,7 @@
 		<button
 			type="button"
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(toggleEmphasisCommand.key))}
+			{@attach tooltip($_('editor.emphasis'))}
 		>
 			<em>{$_('editor.emphasis')}</em>
 		</button>
@@ -45,6 +51,14 @@
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(wrapInBulletListCommand.key))}
 		>
 			<ListBullet />
+		</button>
+	</li>
+	<li>
+		<button
+			type="button"
+			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(wrapInBlockquoteCommand.key))}
+		>
+			<Quote />
 		</button>
 	</li>
 </ul>

@@ -5,10 +5,11 @@
 
 	interface Props {
 		editable?: boolean;
+		labelledBy?: string;
 		value: GoalType | undefined;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, labelledBy, value = $bindable() }: Props = $props();
 
 	function setGoalType(v: string | null | undefined) {
 		value = (v ?? undefined) as GoalType | undefined;
@@ -21,7 +22,12 @@
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown offset={[0, -39]} {options} bind:value={() => value ?? null, setGoalType} />
+	<SingleChoiceDropdown
+		{labelledBy}
+		offset={[0, -39]}
+		{options}
+		bind:value={() => value ?? null, setGoalType}
+	/>
 {:else}
 	<span class="value">{value ? $_(value) : $_('empty')}</span>
 {/if}

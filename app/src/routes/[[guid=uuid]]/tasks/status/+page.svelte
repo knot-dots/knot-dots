@@ -8,6 +8,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
+	import TasksPage from '$lib/components/TasksPage.svelte';
 	import {
 		type GoalContainer,
 		isTaskContainer,
@@ -16,10 +17,8 @@
 		payloadTypes,
 		taskStatus
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
-	import TasksPage from '$lib/components/TasksPage.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -42,14 +41,14 @@
 				--border="solid 1px var(--color-gray-900)"
 				title={goalsColumnTitle(data.relatedContainers)}
 			>
-				<div class="vertical-scroll-wrapper masked-overflow">
-					{#each data.relatedContainers as container}
+				<div class="vertical-scroll-wrapper">
+					{#each data.relatedContainers as container (container.guid)}
 						<Card {container} showRelationFilter />
 					{/each}
 				</div>
 			</BoardColumn>
 		{/if}
-		{#each taskStatus.options as taskStatusOption}
+		{#each taskStatus.options as taskStatusOption (taskStatusOption)}
 			{#if paramsFromFragment(page.url).has(overlayKey.enum['relations'])}
 				<BoardColumn
 					--background={taskStatusBackgrounds.get(taskStatusOption)}
@@ -67,12 +66,7 @@
 				<TaskBoardColumn
 					--background={taskStatusBackgrounds.get(taskStatusOption)}
 					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
-					addItemUrl={$mayCreateContainer(
-						payloadTypes.enum.task,
-						data.currentOrganizationalUnit?.guid ?? data.currentOrganization.guid
-					)
-						? `#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`
-						: undefined}
+					addItemUrl={`#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`}
 					items={data.containers
 						.filter(isTaskContainer)
 						.filter(({ payload }) => payload.taskStatus === taskStatusOption)}

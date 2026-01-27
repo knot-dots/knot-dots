@@ -13,6 +13,7 @@
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
@@ -115,7 +116,7 @@
 		<table>
 			{#if actualDataContainer.some(({ payload }) => payload.source)}
 				<caption>
-					{#each actualDataContainer as container, i}
+					{#each actualDataContainer as container, i (container.guid)}
 						{#if container.payload.source}
 							<sup>{i + 1}</sup> {$_('indicator.source')}: {container.payload.source}
 						{/if}
@@ -126,14 +127,14 @@
 			<thead>
 				<tr>
 					<th></th>
-					{#each years as year}
+					{#each years as year (year)}
 						<th>{year}</th>
 					{/each}
 				</tr>
 			</thead>
 
 			<tbody>
-				{#each actualValuesByYear as valuesByYear, i}
+				{#each actualValuesByYear as valuesByYear, i (i)}
 					<tr class="actual-values">
 						<th scope="row">
 							{$_('indicator.table.actual_values')}
@@ -141,7 +142,7 @@
 								<sup>{i + 1}</sup>
 							{/if}
 						</th>
-						{#each years as year}
+						{#each years as year (year)}
 							<td>
 								{#if editable && !actualDataContainer[i].payload.source}
 									<input
@@ -163,7 +164,12 @@
 		{#if editable}
 			<p>
 				{#if actualDataContainer.some(({ payload }) => payload.source) && actualDataContainer.length === 1}
-					<button disabled={addingCustomActualData} onclick={addCustomActualData} type="button">
+					<button
+						disabled={addingCustomActualData}
+						onclick={addCustomActualData}
+						type="button"
+						{@attach tooltip($_('indicator.add_custom_actual_data'))}
+					>
 						{#if addingCustomActualData}
 							<span class="loader"></span>
 						{:else}

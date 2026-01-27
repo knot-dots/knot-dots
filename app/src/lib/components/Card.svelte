@@ -22,11 +22,15 @@
 		isPartOf,
 		isResourceContainer,
 		isSimpleMeasureContainer,
+		isTeaserContainer,
+		isKnowledgeContainer,
 		isTaskContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
-		predicates
+		predicates,
+		isQuoteContainer,
+		isContentPartnerContainer
 	} from '$lib/models';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
@@ -40,6 +44,7 @@
 		taskStatusIcons
 	} from '$lib/theme/models';
 	import transformFileURL from '$lib/transformFileURL';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		body?: Snippet;
@@ -50,6 +55,7 @@
 		relatedContainers?: AnyContainer[];
 		showRelationFilter?: boolean;
 		titleOverride?: boolean;
+		maxSummaryLength?: number;
 	}
 
 	let {
@@ -60,7 +66,8 @@
 		href,
 		relatedContainers = [],
 		showRelationFilter = false,
-		titleOverride = false
+		titleOverride = false,
+		maxSummaryLength
 	}: Props = $props();
 
 	let overlayContext = getContext('overlay');
@@ -123,7 +130,7 @@
 	let previewLink: HTMLAnchorElement;
 
 	function handleClick(event: MouseEvent) {
-		if (previewLink == event.target) {
+		if (!previewLink || previewLink.contains(event.target as Node)) {
 			return;
 		}
 		const isTextSelected = window.getSelection()?.toString();
@@ -134,7 +141,7 @@
 
 	function handleKeyUp(event: KeyboardEvent) {
 		if (event.key == 'Enter') {
-			previewLink.click();
+			previewLink?.click();
 		}
 	}
 
@@ -192,50 +199,51 @@
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
-	<header>
-		<h3>
-			<a
-				href={href ? href() : computeHref(page.url)}
-				bind:this={previewLink}
-				onclick={updateOverlayHistory}
-			>
-				{#if titleOverride && isObjectiveContainer(container)}
-					{@const goal = relatedContainers
-						.filter(isContainerWithObjective)
-						.find(
-							(candidate) =>
-								container.relation.findIndex(
-									({ object, predicate, subject }) =>
-										container.guid === subject &&
-										candidate.guid === object &&
-										predicate === predicates.enum['is-part-of']
-								) > -1
-						)}
-					{#if goal}
-						{goal.payload.title} ({container.payload.title})
+	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container) && !isKnowledgeContainer(container)}
+		<header>
+			<h3>
+				<a
+					href={href ? href() : computeHref(page.url)}
+					bind:this={previewLink}
+					onclick={updateOverlayHistory}
+				>
+					{#if titleOverride && isObjectiveContainer(container)}
+						{@const goal = relatedContainers
+							.filter(isContainerWithObjective)
+							.find(
+								(candidate) =>
+									container.relation.findIndex(
+										({ object, predicate, subject }) =>
+											container.guid === subject &&
+											candidate.guid === object &&
+											predicate === predicates.enum['is-part-of']
+									) > -1
+							)}
+						{#if goal}
+							{goal.payload.title} ({container.payload.title})
+						{/if}
+					{:else if titleOverride && isEffectContainer(container)}
+						{@const measure = findAncestors(container, relatedContainers, [
+							predicates.enum['is-part-of']
+						]).find(isContainerWithEffect)}
+						{#if measure}
+							{measure.payload.title} ({container.payload.title})
+						{/if}
+					{:else if 'title' in container.payload}
+						{container.payload.title}
+					{:else if 'name' in container.payload}
+						{container.payload.name}
 					{/if}
-				{:else if titleOverride && isEffectContainer(container)}
-					{@const measure = findAncestors(container, relatedContainers, [
-						predicates.enum['is-part-of']
-					]).find(isContainerWithEffect)}
-					{#if measure}
-						{measure.payload.title} ({container.payload.title})
-					{/if}
-				{:else if 'title' in container.payload}
-					{container.payload.title}
-				{:else if 'name' in container.payload}
-					{container.payload.name}
-				{/if}
-			</a>
-		</h3>
-		{#if selected && relationIcon(container, selected)}
-			{@const RelationIcon = relationIcon(container, selected)}
-			<span>
-				<RelationIcon />
-			</span>
-		{/if}
-	</header>
-
+				</a>
+			</h3>
+			{#if selected && relationIcon(container, selected)}
+				{@const RelationIcon = relationIcon(container, selected)}
+				<span>
+					<RelationIcon />
+				</span>
+			{/if}
+		</header>
+	{/if}
 	<div class="body">
 		{#if body}
 			{@render body()}
@@ -253,11 +261,11 @@
 				showObjectives
 			/>
 			<p class="badges">
-				{#each container.payload.indicatorType as indicatorType}
+				{#each container.payload.indicatorType as indicatorType (indicatorType)}
 					<span class="badge">{$_(indicatorType)}</span>
 				{/each}
 
-				{#each container.payload.indicatorCategory as indicatorCategory}
+				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
 					<span class="badge">{$_(indicatorCategory)}</span>
 				{/each}
 			</p>
@@ -280,13 +288,43 @@
 			{#if indicator && effect}
 				<EffectChart container={effect} {relatedContainers} />
 			{:else}
-				<Summary {container} />
+				<Summary {container} maxLength={maxSummaryLength} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
 				<ObjectiveChart {container} {relatedContainers} />
 			{/if}
+		{:else if isContentPartnerContainer(container)}
+			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>
+				{#if 'image' in container.payload && container.payload.image}
+					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+				{:else}
+					<header>
+						<h3>
+							{container.payload.title}
+						</h3>
+					</header>
+				{/if}
+			</a>
+		{:else if isTeaserContainer(container)}
+			{#if 'image' in container.payload && container.payload.image}
+				<p>
+					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
+				</p>
+			{/if}
+			{#if !isQuoteContainer(container)}
+				<header>
+					<h3>
+						<a
+							href={href ? href() : computeHref(page.url)}
+							bind:this={previewLink}
+							onclick={updateOverlayHistory}>{container.payload.title}</a
+						>
+					</h3>
+				</header>
+			{/if}
+			<Summary {container} maxLength={maxSummaryLength} />
 		{:else if isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />
 		{:else if isResourceContainer(container)}
@@ -339,9 +377,9 @@
 		{:else if showRelationFilter}
 			<button
 				class="button-relation button-relation--square"
-				aria-label={$_('show_relations')}
 				class:is-active={relatedTo === container.guid}
 				onclick={applyRelationFilter(page.url)}
+				{@attach tooltip($_('show_relations'))}
 			>
 				<Relation />
 			</button>

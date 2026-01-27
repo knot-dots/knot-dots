@@ -7,12 +7,19 @@
 
 	interface Props {
 		compact?: boolean;
+		labelledBy?: string;
 		offset?: [number, number];
 		options: Array<{ label: string; value: string }>;
 		value: string[];
 	}
 
-	let { compact = false, offset = [0, 4], options, value = $bindable() }: Props = $props();
+	let {
+		compact = false,
+		labelledBy,
+		offset = [0, 4],
+		options,
+		value = $bindable()
+	}: Props = $props();
 
 	const popover = createPopover({});
 
@@ -27,9 +34,9 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
+	<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
 		<span class="selected" class:truncated={compact}>
-			{#each options.filter((o) => value.includes(o.value)) as selectedOption}
+			{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
 				<span class="value" class:value--compact={compact}>{selectedOption.label}</span>
 			{:else}
 				{$_('empty')}
@@ -38,7 +45,12 @@
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<fieldset
+			aria-labelledby={labelledBy}
+			class="dropdown-panel"
+			use:popperContent={extraOpts}
+			use:popover.panel
+		>
 			<div>
 				{#each options as option (option.value)}
 					<label>

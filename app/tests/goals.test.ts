@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // This test verifies that adding a Progress section to a goal
 // makes a progress bar appear on the goal card, and that deleting
@@ -8,41 +8,12 @@ test.describe('Goal progress section', () => {
 	// Use admin to ensure we have permission to create and edit
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	const title = `Goal with progress ${Date.now()}`;
-
-	test.beforeEach('add goal', async ({ page }) => {
-		await page.goto('/');
-
-		// Navigate to Goals
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
-
-		// Create a new goal
-		await page.getByText('Add item').first().click();
-		await page.getByRole('textbox', { name: 'Title' }).fill(title);
-		await page.getByRole('button', { name: 'Save' }).click();
-
-		// Close overlay to ensure the board is fully visible again
-		await page.locator('.overlay').getByRole('link', { name: 'Close' }).click();
-		await expect(page.locator('.overlay')).toBeHidden();
-	});
-
-	test.afterEach('delete goal', async ({ page }) => {
-		// Open goal in overlay
-		await page.getByTitle(title).click();
-
-		// Activate edit mode
-		await page.getByLabel('edit mode').check();
-
-		// Delete the goal
-		await page.getByRole('button', { name: 'Delete' }).click();
-		await page.getByRole('button', { name: `I want to delete "${title}"` }).click();
-
-		await expect(page.getByTitle(title)).not.toBeAttached();
-	});
-
-	test('adding and removing a progress section updates the goal card', async ({ page }) => {
-		await page.getByTitle(title).click();
+	test('adding and removing a progress section updates the goal card', async ({
+		page,
+		testGoal
+	}) => {
+		await page.goto(`/${testGoal.organization}/goals/level`);
+		await page.getByTitle(testGoal.payload.title).click();
 
 		const overlay = page.locator('.overlay');
 		await expect(overlay).toBeVisible();
@@ -70,7 +41,7 @@ test.describe('Goal progress section', () => {
 		await expect(overlay).toBeHidden();
 
 		// Find the just-created goal card and verify it shows a progress element in the footer
-		const goalCard = page.getByRole('article', { name: title }).first();
+		const goalCard = page.getByRole('article', { name: testGoal.payload.title }).first();
 		await expect(goalCard).toBeVisible();
 		await expect(goalCard.getByRole('progressbar')).toBeVisible();
 
@@ -99,7 +70,7 @@ test.describe('Goal progress section', () => {
 		await expect(overlay).toBeHidden();
 
 		// Verify the goal card no longer shows a progress element in the footer
-		const goalCardAfter = page.getByRole('article', { name: title }).first();
+		const goalCardAfter = page.getByRole('article', { name: testGoal.payload.title }).first();
 		await expect(goalCardAfter.getByRole('progressbar')).toHaveCount(0);
 	});
 });

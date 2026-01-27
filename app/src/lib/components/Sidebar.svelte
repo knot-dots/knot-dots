@@ -18,7 +18,6 @@
 	import Cog from '~icons/knotdots/cog';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Favicon from '~icons/knotdots/favicon';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
@@ -47,7 +46,7 @@
 	}
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		return getOrganizationURL(container, '/all/page').toString();
+		return getOrganizationURL(container, '/all/page', env).toString();
 	}
 </script>
 

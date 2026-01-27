@@ -21,7 +21,6 @@
 		type NewContainer,
 		overlayKey,
 		overlayURL,
-		paramsFromFragment,
 		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
@@ -30,14 +29,13 @@
 	} from '$lib/models';
 	import { fetchIndicatorDataWegweiserKommune } from '$lib/remote/indicatorDataWegweiserKommune.remote.js';
 	import { newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		containers: IndicatorTemplateContainer[];
 	}
 
 	let { containers }: Props = $props();
-
-	let params = $derived(paramsFromFragment(page.url));
 
 	let orgContext = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
 
@@ -105,7 +103,6 @@
 		try {
 			const response = await saveContainer(container);
 			if (response.ok) {
-				const { guid } = await response.json();
 				await goto(overlayURL(page.url, overlayKey.enum.view, template.guid));
 			} else {
 				const error = await response.json();
@@ -145,7 +142,7 @@
 
 <Header {facets} workspaceOptions={[]} />
 
-<div class="content-details masked-overflow">
+<div class="content-details">
 	<div class="details">
 		<p class="details-section">
 			<button class="template-category" type="button" onclick={createCustomIndicatorTemplate}>
@@ -161,7 +158,7 @@
 						{#snippet button()}
 							<button
 								class="button-square"
-								title={$_('indicator_template.select')}
+								{@attach tooltip($_('indicator_template.select'))}
 								type="button"
 								onclick={stopPropagation(() => select(container))}
 							>
@@ -175,7 +172,7 @@
 	</div>
 </div>
 
-<Help slug={'indicator-catalog'} />
+<Help slug="indicator-catalog" />
 
 <style>
 	ul {

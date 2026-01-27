@@ -7,6 +7,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
@@ -16,15 +17,16 @@
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
+	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
+	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
 		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithName,
-		isContainerWithProgress,
 		isContainerWithTitle,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -36,15 +38,18 @@
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
+		isResourceV2Container,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		isTextContainer,
 		type NewContainer,
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
 	import { addEffectState, newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -115,10 +120,15 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button class="button-xs button-primary" type="submit">
+				<button class="button-xs button-primary" type="submit" {@attach tooltip($_('save'))}>
 					{$_('save')}
 				</button>
-				<button class="button-xs button-alternative" formnovalidate type="submit">
+				<button
+					class="button-xs button-alternative"
+					formnovalidate
+					type="submit"
+					{@attach tooltip($_('cancel'))}
+				>
 					{$_('cancel')}
 				</button>
 			</p>
@@ -149,6 +159,10 @@
 
 					{#if isContainer($newContainer)}
 						<Badges bind:container={$newContainer} editable />
+					{/if}
+
+					{#if isSimpleMeasureContainer($newContainer)}
+						<EditableProgress editable bind:value={$newContainer.payload.progress} />
 					{/if}
 				</header>
 
@@ -205,6 +219,13 @@
 						relatedContainers={[]}
 						revisions={[]}
 					/>
+				{:else if isResourceV2Container($newContainer)}
+					<ResourceV2Properties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isRuleContainer($newContainer)}
 					<RuleProperties
 						bind:container={$newContainer}
@@ -233,6 +254,8 @@
 						relatedContainers={[]}
 						revisions={[]}
 					/>
+				{:else if isTeaserContainer($newContainer)}
+					<TeaserProperties bind:container={$newContainer} editable revisions={[]} />
 				{:else if isTextContainer($newContainer)}
 					<TextProperties
 						bind:container={$newContainer}

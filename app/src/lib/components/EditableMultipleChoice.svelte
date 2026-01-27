@@ -11,15 +11,15 @@
 
 	let { editable = false, label, options, value = $bindable() }: Props = $props();
 
-	let selected = $derived(options.filter((o) => value.includes(o.value)).map(({ label }) => label));
+	const id = crypto.randomUUID();
 </script>
 
-<div class="label">{label}</div>
+<div class="label" {id}>{label}</div>
 {#if editable}
-	<MultipleChoiceDropdown {options} bind:value />
+	<MultipleChoiceDropdown labelledBy={id} {options} bind:value />
 {:else}
 	<ul class="value">
-		{#each options.filter((o) => value.includes(o.value)) as selectedOption}
+		{#each options.filter((o) => value.includes(o.value)) as selectedOption (selectedOption.value)}
 			<li>{selectedOption.label}</li>
 		{:else}
 			<li>{$_('empty')}</li>

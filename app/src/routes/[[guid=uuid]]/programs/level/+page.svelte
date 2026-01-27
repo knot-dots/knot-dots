@@ -33,7 +33,7 @@
 
 	{#snippet main()}
 		<Board>
-			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption}
+			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption (levelOption)}
 				<BoardColumn addItemUrl={`#create=program&level=${levelOption}`} title={$_(levelOption)}>
 					<MaybeDragZone
 						containers={data.containers.filter(

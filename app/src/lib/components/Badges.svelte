@@ -86,6 +86,7 @@
 
 		display: flex;
 		gap: 0.5rem;
+		line-height: 1;
 		padding: 0.375rem 0 0.75rem;
 	}
 </style>

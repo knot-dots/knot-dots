@@ -30,7 +30,7 @@
 	{#snippet main()}
 		<div>
 			<ul>
-				{#each data.containers as container}
+				{#each data.containers as container (container.guid)}
 					<li>
 						<Card --height="100%" {container} />
 					</li>

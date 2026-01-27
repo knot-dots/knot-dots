@@ -387,7 +387,7 @@
 </script>
 
 <Header workspaceOptions={[]} />
-<div class="content-details masked-overflow">
+<div class="content-details">
 	<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
 		<p class="details-section">
 			{$_('relation_overlay.help', {

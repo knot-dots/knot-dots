@@ -3,8 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
+	import Briefcase from '~icons/flowbite/briefcase-solid';
 	import File from '~icons/flowbite/file-solid';
-	import FileChartBar from '~icons/flowbite/file-chart-bar-outline';
+	import Quote from '~icons/flowbite/quote-solid';
 	import BasicData from '~icons/knotdots/basic-data';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
@@ -14,11 +15,17 @@
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
+	import Image from '~icons/knotdots/placeholder-image';
 	import Map from '~icons/knotdots/map';
 	import Progress from '~icons/knotdots/progress';
 	import Plus from '~icons/knotdots/plus';
+	import Star from '~icons/knotdots/star';
 	import Program from '~icons/knotdots/program';
 	import Text from '~icons/knotdots/text';
+	import TwoCol from '~icons/knotdots/two-column';
+	import Link from '~icons/knotdots/link';
+	import Collection from '~icons/knotdots/collection';
+	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -26,6 +33,7 @@
 		boards,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
+		isContentPartnerCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -48,6 +56,7 @@
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		compact?: boolean;
@@ -138,8 +147,41 @@
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
+	let mayAddTeaserCollection = $derived(
+		createFeatureDecisions(page.data.features).useTeaserCollection() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddContentPartnerCollection = $derived(
+		createFeatureDecisions(page.data.features).useContentPartner() &&
+			(isOrganizationContainer(parentContainer) ||
+				isOrganizationalUnitContainer(parentContainer)) &&
+			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
+	);
+
+	let mayAddTeaserSection = $derived(
+		createFeatureDecisions(page.data.features).useTeaser() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddInfoBox = $derived(
+		createFeatureDecisions(page.data.features).useInfoBox() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddQuote = $derived(
+		createFeatureDecisions(page.data.features).useQuote() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
+	let mayAddTwoColumnSection = $derived(
+		createFeatureDecisions(page.data.features).useTwoColumn() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	);
+
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
+			!isSimpleMeasureContainer(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
@@ -150,6 +192,11 @@
 	let mayAddCustomCollection = $derived(
 		createFeatureDecisions(page.data.features).useCustomCollection() &&
 			isReportContainer(parentContainer)
+	);
+
+	let mayAddImage = $derived(
+		createFeatureDecisions(page.data.features).useImage() &&
+			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
 	);
 
 	let options = $derived(
@@ -274,13 +321,51 @@
 				: []),
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
+				: []),
+			...(mayAddImage ? [{ icon: Image, label: $_('image'), value: payloadTypes.enum.image }] : []),
+			...(mayAddTeaserCollection
+				? [
+						{
+							icon: Collection,
+							label: $_('teasers'),
+							value: payloadTypes.enum.teaser_collection
+						}
+					]
+				: []),
+			...(mayAddTwoColumnSection
+				? [{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
+				: []),
+			...(mayAddTeaserSection
+				? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
+				: []),
+			...(mayAddInfoBox
+				? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
+				: []),
+			...(mayAddQuote ? [{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }] : []),
+			...(mayAddContentPartnerCollection
+				? [
+						{
+							icon: Briefcase,
+							label: $_('partners'),
+							value: payloadTypes.enum.content_partner_collection
+						}
+					]
 				: [])
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
-	<button class="dropdown-button" onchange={handleAddSection} type="button" use:menu.button>
+	<button
+		class="dropdown-button"
+		onchange={handleAddSection}
+		type="button"
+		{@attach tooltip($_('add_section'))}
+		use:menu.button
+	>
 		<Plus />
 		<span class:is-visually-hidden={compact}>{$_('add_section')}</span>
 	</button>
@@ -289,7 +374,7 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option}
+				{#each options as option (option.value)}
 					{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 						<li class="menu-item">
 							<button use:menu.item={{ value: option.value }}>

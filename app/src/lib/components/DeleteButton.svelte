@@ -6,6 +6,7 @@
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import type { AnyContainer, Container } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: AnyContainer;
@@ -34,10 +35,10 @@
 
 {#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
 	<button
-		aria-label={$_('delete')}
 		class="delete quiet"
 		type="button"
 		onclick={() => confirmDeleteDialog.showModal()}
+		{@attach tooltip($_('delete'))}
 	>
 		<TrashBin />
 	</button>

@@ -33,6 +33,7 @@
 		units
 	} from '$lib/models';
 	import { addEffectState, addObjectiveState, newContainer } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		indicatorTemplates: IndicatorTemplateContainer[];
@@ -143,7 +144,7 @@
 
 <Header {facets} workspaceOptions={[]} />
 
-<div class="content-details masked-overflow">
+<div class="content-details">
 	<div class="details">
 		<p class="details-section">
 			<button class="template-category" type="button" onclick={() => createCustomIndicator()}>
@@ -154,13 +155,13 @@
 
 		<ul class="details-section">
 			{#if params.has('alreadyInUse')}
-				{#each indicators as indicator}
+				{#each indicators as indicator (indicator.guid)}
 					<li>
 						<Card --height="100%" container={indicator}>
 							{#snippet button()}
 								<button
 									class="button-square"
-									title={$_('indicator_template.select')}
+									{@attach tooltip($_('indicator_template.select'))}
 									type="button"
 									onclick={stopPropagation(() => select(indicator))}
 								>
@@ -171,13 +172,13 @@
 					</li>
 				{/each}
 			{/if}
-			{#each indicatorTemplates.filter((c) => !alreadyInUse(c, indicators)) as template}
+			{#each indicatorTemplates.filter((c) => !alreadyInUse(c, indicators)) as template (template.guid)}
 				<li>
 					<IndicatorTemplateCard --height="100%" container={template}>
 						{#snippet button()}
 							<button
 								class="button-square"
-								title={$_('indicator_template.select')}
+								{@attach tooltip($_('indicator_template.select'))}
 								type="button"
 								onclick={stopPropagation(() => select(template))}
 							>
@@ -191,7 +192,7 @@
 	</div>
 </div>
 
-<Help slug={'indicator-catalog'} />
+<Help slug="indicator-catalog" />
 
 <style>
 	ul {

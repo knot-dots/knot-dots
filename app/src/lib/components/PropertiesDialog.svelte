@@ -12,6 +12,7 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { onMount, onDestroy } from 'svelte';
 
 	interface Props {
 		children: Snippet;
@@ -25,6 +26,11 @@
 
 	let confirmDelete = $state(false);
 
+	function closeDialog() {
+		confirmDelete = false;
+		dialog.close();
+	}
+
 	async function handleConfirmDelete(c: AnyContainer) {
 		const response = await deleteContainer(c);
 		if (response.ok) {
@@ -35,8 +41,21 @@
 				await invalidateAll();
 			}
 			confirmDelete = false;
+			closeDialog();
 		}
 	}
+
+	onMount(() => {
+		if (!dialog) return;
+		const handleBackdropClick = (e: MouseEvent) => {
+			// Native <dialog> backdrop clicks fire on the dialog element itself
+			if (e.target === dialog) {
+				closeDialog();
+			}
+		};
+		dialog.addEventListener('click', handleBackdropClick);
+		onDestroy(() => dialog.removeEventListener('click', handleBackdropClick));
+	});
 </script>
 
 <dialog bind:this={dialog}>
@@ -45,10 +64,7 @@
 			<form class="details" method="dialog" onsubmit={() => handleConfirmDelete(container)}>
 				<button
 					class="action-button action-button--size-s"
-					onclick={() => {
-						confirmDelete = false;
-						dialog.close();
-					}}
+					onclick={() => closeDialog()}
 					type="button"
 				>
 					<Close />
@@ -83,7 +99,7 @@
 			<p class="dialog-actions">
 				<span>{title}</span>
 
-				<button class="button-xs button-alternative" onclick={() => dialog.close()} type="button">
+				<button class="button-xs button-alternative" onclick={() => closeDialog()} type="button">
 					<Close />
 					<span class="is-visually-hidden">{$_('close')}</span>
 				</button>

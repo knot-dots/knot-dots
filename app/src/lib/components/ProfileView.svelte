@@ -97,7 +97,7 @@
 				.filter(isTaskContainer)
 				.filter(isAssignedTo($user))
 				.filter(byTaskStatus(taskStatusFilter))
-				.toSorted(bySortOption(sort)) as task}
+				.toSorted(bySortOption(sort)) as task (task.guid)}
 				<li>
 					<TaskCard container={task} showTaskStatusBadge />
 				</li>
@@ -110,7 +110,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter(isContainerWithEffect)
-				.filter((c: ContainerWithEffect) => isMemberOf($user, c)) as measure}
+				.filter((c: ContainerWithEffect) => isMemberOf($user, c)) as measure (measure.guid)}
 				<li>
 					<Card container={measure} />
 				</li>
@@ -123,7 +123,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter((c: AnyContainer) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c))
-				.filter( (c: OrganizationContainer | OrganizationalUnitContainer) => isMemberOf($user, c) ) as organization}
+				.filter( (c: OrganizationContainer | OrganizationalUnitContainer) => isMemberOf($user, c) ) as organization (organization.guid)}
 				<li>
 					<OrganizationCard container={organization} />
 				</li>
@@ -136,7 +136,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter(isProgramContainer)
-				.filter((c: ProgramContainer) => isMemberOf($user, c)) as program}
+				.filter((c: ProgramContainer) => isMemberOf($user, c)) as program (program.guid)}
 				<li>
 					<Card container={program} />
 				</li>

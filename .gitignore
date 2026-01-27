@@ -1,2 +1,5 @@
 docker-compose.override.yaml
+.idea
+**/.DS_Store
+.eslintcache
 

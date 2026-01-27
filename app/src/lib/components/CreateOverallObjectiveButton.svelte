@@ -10,6 +10,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorContainer;
@@ -27,7 +28,11 @@
 </script>
 
 {#if !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
-	<button type="button" onclick={createOverallObjective(container)}>
+	<button
+		type="button"
+		onclick={createOverallObjective(container)}
+		{@attach tooltip($_('overall_objective'))}
+	>
 		<Plus />{$_('overall_objective')}
 	</button>
 {/if}

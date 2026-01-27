@@ -6,7 +6,6 @@ import {
 	modifiedContainer,
 	newContainer,
 	type PartialRelation,
-	type PayloadType,
 	payloadTypes,
 	predicates,
 	type Relation

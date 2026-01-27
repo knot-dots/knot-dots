@@ -10,6 +10,7 @@
 	interface Props {
 		buttonStyle?: 'badge' | 'default';
 		editable?: boolean;
+		labelledBy?: string;
 		offset?: [number, number];
 		value: TaskStatus;
 	}
@@ -17,6 +18,7 @@
 	let {
 		buttonStyle = 'default',
 		editable = false,
+		labelledBy,
 		offset = [0, 4],
 		value = $bindable()
 	}: Props = $props();
@@ -35,7 +37,7 @@
 
 {#if editable}
 	<div class="dropdown" use:popperRef>
-		<button class="dropdown-button" type="button" use:popover.button>
+		<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
 			{#if buttonStyle === 'badge'}
 				<span class="badge badge--{taskStatusColors.get(value)}">
 					<StatusIcon />{$_(value)}
@@ -50,7 +52,12 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset
+				aria-labelledby={labelledBy}
+				class="dropdown-panel"
+				use:popperContent={extraOpts}
+				use:popover.panel
+			>
 				{#each taskStatus.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
 					{@const StatusIcon = taskStatusIcons.get(option.value)}
 					<label>

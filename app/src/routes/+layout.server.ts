@@ -2,12 +2,18 @@ import { error } from '@sveltejs/kit';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
-import { z } from 'zod';
 import { env } from '$env/dynamic/public';
-import { filterVisible } from '$lib/authorization';
-import { type AnyContainer, type KeycloakUser } from '$lib/models';
-import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
+	type AnyContainer,
+	isOrganizationalUnitContainer,
+	type KeycloakUser,
+	type OrganizationalUnitContainer,
+	organizationalUnitType,
+	type OrganizationContainer
+} from '$lib/models';
+import {
+	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
 	setUp
@@ -15,9 +21,8 @@ import {
 import { findUserById } from '$lib/server/keycloak';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals, url }) => {
+export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 	let currentOrganization;
-	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 	let user: KeycloakUser | undefined = undefined;
 
 	async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
@@ -27,24 +32,43 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
 	const [organizations, organizationalUnits] = await Promise.all([
 		filterVisibleAsync(locals.pool.connect(getManyOrganizationContainers({}, 'alpha'))),
-		filterVisibleAsync(locals.pool.connect(getManyOrganizationalUnitContainers({})))
+		filterVisibleAsync(
+			locals.pool.connect(
+				getManyOrganizationalUnitContainers({
+					exclude: {
+						organizationalUnitType: [
+							organizationalUnitType.enum['organizational_unit_type.administrative_area']
+						]
+					}
+				})
+			)
+		)
 	]);
+
+	let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+
+	if (params.guid) {
+		try {
+			const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
+			if (
+				isOrganizationalUnitContainer(containerFromParams) &&
+				defineAbilityFor(locals.user).can('read', containerFromParams)
+			) {
+				currentOrganizationalUnit = containerFromParams;
+			}
+		} catch {
+			// Do nothing.
+		}
+	}
 
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
-		// Parse GUID from the URL path
-		let guidFromURL = url.pathname.split('/')[1];
-
-		// Check if the parsed part is a valid UUID
-		if (z.uuid().safeParse(guidFromURL).success) {
-			currentOrganization = organizations.find(({ guid }) => guid === guidFromURL);
-
-			if (!currentOrganization) {
-				currentOrganizationalUnit = organizationalUnits.find(({ guid }) => guid === guidFromURL);
-				currentOrganization = organizations.find(
-					({ guid }) => guid === currentOrganizationalUnit?.organization
-				);
-			}
+		if (currentOrganizationalUnit) {
+			currentOrganization = organizations.find(
+				({ guid }) => guid === currentOrganizationalUnit.organization
+			);
+		} else if (params.guid) {
+			currentOrganization = organizations.find(({ guid }) => guid === params.guid);
 		} else {
 			currentOrganization = organizations.find(({ payload }) => payload.default);
 			if (!currentOrganization) {
@@ -65,17 +89,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 			}
 		} else {
 			currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
-		}
-
-		// If we haven't found the organization yet, try to find the organizational unit by subdomain
-		if (!currentOrganization) {
-			currentOrganizationalUnit = organizationalUnits.find(({ guid }) =>
-				url.hostname.startsWith(`${guid}.`)
-			);
-
-			currentOrganization = organizations.find(
-				({ guid }) => guid === currentOrganizationalUnit?.organization
-			);
 		}
 	}
 

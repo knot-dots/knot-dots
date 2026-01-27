@@ -13,15 +13,15 @@
 {#if editable}
 	<div class="label">{$_('valid_from')}</div>
 	<fieldset>
-		<label class="is-visually-hidden" for="startDate">
+		<label class="is-visually-hidden" for="validFrom">
 			{$_('valid_from')}
 		</label>
-		<input class="value" id="startDate" type="date" bind:value={container.payload.validFrom} />
+		<input class="value" id="validFrom" type="date" bind:value={container.payload.validFrom} />
 		–
-		<label class="is-visually-hidden" for="endDate">
+		<label class="is-visually-hidden" for="validUntil">
 			{$_('valid_until')}
 		</label>
-		<input class="value" id="endDate" type="date" bind:value={container.payload.validUntil} />
+		<input class="value" id="validUntil" type="date" bind:value={container.payload.validUntil} />
 	</fieldset>
 {:else}
 	<div class="label">{$_('valid_from')}</div>

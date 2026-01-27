@@ -2,6 +2,7 @@
 	import { setContext } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
+	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
@@ -10,6 +11,7 @@
 	import NewIndicatorCatalogOverlay from '$lib/components/NewIndicatorCatalogOverlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
+	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
 	import { overlayKey } from '$lib/models';
@@ -65,7 +67,11 @@
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}
-		<ChaptersOverlay containers={data.containers} />
+		<ChaptersOverlay container={data.container} containers={data.containers} />
+	{:else if data.key === overlayKey.enum['content-partners']}
+		<ContentPartnersOverlay containers={data.containers} />
+	{:else if data.key === overlayKey.enum['teasers']}
+		<TeasersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['relations']}
 		<RelationOverlay object={data.container} relatedContainers={data.relatedContainers} />
 	{:else if data.key === overlayKey.enum['measures']}

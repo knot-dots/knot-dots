@@ -4,7 +4,7 @@
 	import CopyCat from '~icons/knotdots/copycat';
 	import { page } from '$app/state';
 	import { type AnyContainer, type Container, createCopyOf, type NewContainer } from '$lib/models';
-	import { ability, newContainer, user } from '$lib/stores';
+	import { ability, applicationState, newContainer, user } from '$lib/stores';
 
 	interface Props {
 		container: AnyContainer;
@@ -50,7 +50,7 @@
 	}
 </script>
 
-{#if $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+{#if $applicationState.containerDetailView.editable && $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
 	<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
 		<CopyCat />
 		{$_('copy')}

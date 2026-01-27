@@ -56,6 +56,7 @@ export default (async function load({ depends, locals, url, parent }) {
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
+						payloadTypes.enum.image,
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.program,
@@ -81,6 +82,7 @@ export default (async function load({ depends, locals, url, parent }) {
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
+						payloadTypes.enum.image,
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.program,
@@ -107,6 +109,7 @@ export default (async function load({ depends, locals, url, parent }) {
 							type: [
 								payloadTypes.enum.effect,
 								payloadTypes.enum.goal,
+								payloadTypes.enum.image,
 								payloadTypes.enum.indicator,
 								payloadTypes.enum.measure,
 								payloadTypes.enum.program,
@@ -128,6 +131,7 @@ export default (async function load({ depends, locals, url, parent }) {
 							type: [
 								payloadTypes.enum.effect,
 								payloadTypes.enum.goal,
+								payloadTypes.enum.image,
 								payloadTypes.enum.indicator,
 								payloadTypes.enum.measure,
 								payloadTypes.enum.program,

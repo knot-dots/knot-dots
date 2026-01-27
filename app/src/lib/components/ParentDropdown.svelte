@@ -9,16 +9,18 @@
 		findDescendants,
 		overlayKey,
 		overlayURL,
+		payloadTypes,
 		predicates
 	} from '$lib/models';
 
 	interface Props {
 		container: Container | EmptyContainer;
 		editable?: boolean;
+		labelledBy?: string;
 		offset?: [number, number];
 	}
 
-	let { container = $bindable(), editable = false, offset = [0, 4] }: Props = $props();
+	let { container = $bindable(), editable = false, labelledBy, offset = [0, 4] }: Props = $props();
 
 	let programGuid = $derived(
 		container.relation.find(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
@@ -31,7 +33,7 @@
 				(!('guid' in container) || object !== container.guid)
 		)?.object
 	);
-	let payloadType = $derived(container.payload.type);
+	let payloadType = $derived(container.payload.type ?? payloadTypes.enum.undefined);
 
 	let isPartOfOptionsRequest = $derived(
 		createIsPartOfOptionsRequest(payloadType, container.organization, measureGuid, programGuid)
@@ -77,7 +79,7 @@
 </script>
 
 {#await isPartOfOptionsRequest}
-	<SingleChoiceDropdown options={[]} bind:value={() => isPartOfObject([]), set} />
+	<SingleChoiceDropdown {labelledBy} options={[]} bind:value={() => isPartOfObject([]), set} />
 {:then isPartOfOptions}
 	{@const options = [
 		{ label: $_('empty'), value: '' },
@@ -114,7 +116,12 @@
 			}))
 	]}
 	{#if editable}
-		<SingleChoiceDropdown {offset} {options} bind:value={() => isPartOfObject(options), set} />
+		<SingleChoiceDropdown
+			{labelledBy}
+			{offset}
+			{options}
+			bind:value={() => isPartOfObject(options), set}
+		/>
 	{:else}
 		{@const selected = options.find((o) => o.value === isPartOfObject(options))}
 		<div class="value">

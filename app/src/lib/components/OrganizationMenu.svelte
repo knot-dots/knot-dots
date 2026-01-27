@@ -21,7 +21,6 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type OrganizationalUnitContainer,
-		organizationalUnitType,
 		type OrganizationContainer,
 		payloadTypes,
 		predicates
@@ -83,13 +82,7 @@
 		for (const level of [1, 2, 3, 4]) {
 			organizationalUnitsByLevel = [
 				...organizationalUnitsByLevel,
-				organizationalUnits
-					.filter(
-						({ payload }) =>
-							payload.organizationalUnitType !=
-							organizationalUnitType.enum['organizational_unit_type.administrative_area']
-					)
-					.filter(({ payload }) => payload.level === level)
+				organizationalUnits.filter(({ payload }) => payload.level === level)
 			];
 		}
 
@@ -143,9 +136,9 @@
 						: undefined}
 					title={$_('organizations')}
 				>
-					<div class="vertical-scroll-wrapper masked-overflow">
+					<div class="vertical-scroll-wrapper">
 						{#if 'default' in currentContext.payload && currentContext.payload.default}
-							{#each organizations as container}
+							{#each organizations as container (container.guid)}
 								<OrganizationMenuCard
 									{container}
 									linkPath={pathnameWithoutContextSegment}
@@ -153,7 +146,7 @@
 								/>
 							{/each}
 						{:else}
-							{#each organizations as container}
+							{#each organizations as container (container.guid)}
 								<OrganizationMenuCard
 									{container}
 									linkPath={pathnameWithoutContextSegment}
@@ -164,7 +157,7 @@
 						{/if}
 					</div>
 				</BoardColumn>
-				{#each organizationalUnitsByLevel as containers, i}
+				{#each organizationalUnitsByLevel as containers, i (i)}
 					{@const level = i + 1}
 					<BoardColumn
 						--background="transparent"
@@ -175,8 +168,8 @@
 							: undefined}
 						title={$_('organizational_unit_level', { values: { level } })}
 					>
-						<div class="vertical-scroll-wrapper masked-overflow">
-							{#each containers as container}
+						<div class="vertical-scroll-wrapper">
+							{#each containers as container (container.guid)}
 								<OrganizationMenuCard
 									{container}
 									linkPath={pathnameWithoutContextSegment}

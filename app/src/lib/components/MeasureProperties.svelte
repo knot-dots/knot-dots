@@ -4,7 +4,6 @@
 	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableDuration from '$lib/components/EditableDuration.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
-	import EditableFile from '$lib/components/EditableFile.svelte';
 	import EditableMeasureType from '$lib/components/EditableMeasureType.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
@@ -16,14 +15,14 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type ContainerWithEffect, isSimpleMeasureContainer } from '$lib/models';
+	import type { AnyContainer, Container, ContainerWithEffect } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: ContainerWithEffect;
 		editable?: boolean;
-		relatedContainers: any[];
-		revisions: any[];
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

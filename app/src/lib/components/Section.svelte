@@ -10,6 +10,9 @@
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
+	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
+	import EditableContentPartnerSection from '$lib/components/EditableContentPartnerSection.svelte';
+	import EditableContentPartnerCollection from '$lib/components/EditableContentPartnerCollection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
@@ -17,19 +20,25 @@
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
+	import EditableResourceDataSection from '$lib/components/EditableResourceDataSection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
+	import EditableTeaserCollection from '$lib/components/EditableTeaserCollection.svelte';
+	import EditableTeaserSection from '$lib/components/EditableTeaserSection.svelte';
 	import {
 		type AnyContainer,
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
+		isContentPartnerCollectionContainer,
+		isContentPartnerContainer,
 		isCustomCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
+		isImageContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -37,9 +46,11 @@
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
-		isReportContainer,
 		isResourceCollectionContainer,
+		isResourceDataContainer,
 		isTaskCollectionContainer,
+		isTeaserCollectionContainer,
+		isTeaserLikeContainer,
 		isTextContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -60,7 +71,7 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let isShadowItem = $derived(container[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 
 	const handleSubmit = autoSave(2000);
 
@@ -152,6 +163,22 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
+		{:else if isContentPartnerCollectionContainer(container)}
+			<EditableContentPartnerCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isContentPartnerContainer(container)}
+			<EditableContentPartnerSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
 				bind:container
@@ -200,6 +227,13 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
+		{:else if isResourceDataContainer(container)}
+			<EditableResourceDataSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
 				bind:container
@@ -222,6 +256,31 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable && !isShadowItem}
+				{heading}
+			/>
+		{:else if isTeaserLikeContainer(container)}
+			<EditableTeaserSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isImageContainer(container)}
+			<EditableImageSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isTeaserCollectionContainer(container)}
+			<EditableTeaserCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				fetchDisabled={isShadowItem}
 				{heading}
 			/>
 		{/if}
@@ -247,6 +306,7 @@
 		padding: 0.25rem;
 		position: absolute;
 		top: 1.25rem;
+		z-index: 1;
 	}
 
 	.drag-handle {

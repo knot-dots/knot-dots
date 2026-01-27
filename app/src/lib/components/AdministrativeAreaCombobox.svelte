@@ -51,7 +51,7 @@
 			<ul use:combobox.items>
 				{#each administrativeAreasPromise.current?.filter((area) => area.nameOSM
 						.toLowerCase()
-						.includes($combobox.filter.toLowerCase())) ?? [] as value}
+						.includes($combobox.filter.toLowerCase())) ?? [] as value (value.officialRegionalCode)}
 					{@const active = $combobox.active?.officialRegionalCode === value.officialRegionalCode}
 					{@const selected =
 						$combobox.selected?.officialRegionalCode === value.officialRegionalCode}

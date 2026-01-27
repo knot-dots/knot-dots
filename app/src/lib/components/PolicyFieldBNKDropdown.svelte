@@ -9,10 +9,11 @@
 	interface Props {
 		compact?: boolean;
 		editable?: boolean;
+		labelledBy?: string;
 		value: string[];
 	}
 
-	let { compact = false, editable = false, value = $bindable() }: Props = $props();
+	let { compact = false, editable = false, labelledBy, value = $bindable() }: Props = $props();
 
 	const popover = createPopover({ label: $_('policy_field_bnk') });
 
@@ -33,12 +34,12 @@
 
 {#if editable || (value.length > 1 && compact)}
 	<div class="dropdown" use:popperRef>
-		<button class="dropdown-button" type="button" use:popover.button>
+		<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
 			<span class="value" class:value--compact={compact}>
 				{#each policyFieldBNK.options
 					.filter((o) => value.includes(o))
 					.slice(0, value.length > 1 && compact ? 1 : value.length)
-					.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+					.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
 					<span class="badge badge--gray truncated">{selectedOption.label}</span>
 				{:else}
 					{$_('empty')}
@@ -54,7 +55,12 @@
 
 		{#if $popover.expanded}
 			{#if editable}
-				<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset
+					aria-labelledby={labelledBy}
+					class="dropdown-panel"
+					use:popperContent={extraOpts}
+					use:popover.panel
+				>
 					<div>
 						{#each policyFieldBNK.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
 							<label>
@@ -67,7 +73,7 @@
 			{:else}
 				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 					<ul>
-						{#each value as topic}
+						{#each value as topic (topic)}
 							<li>
 								<span class="badge badge--gray">{$_(topic)}</span>
 							</li>
@@ -82,7 +88,7 @@
 		{#each policyFieldBNK.options
 			.filter((o) => value.includes(o))
 			.slice(0, compact ? 1 : value.length)
-			.map((o) => ({ label: $_(o), value: o })) as selectedOption}
+			.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
 			<span class="badge badge--gray truncated">{selectedOption.label}</span>
 		{:else}
 			{$_('empty')}

@@ -8,16 +8,18 @@
 		type Container,
 		goalsByHierarchyLevel,
 		isGoalContainer,
-		isPartOf,
+		overlayKey,
 		payloadTypes,
-		predicates
+		predicates,
+		type ProgramContainer
 	} from '$lib/models';
 
 	interface Props {
 		containers: Container[];
+		program?: ProgramContainer;
 	}
 
-	let { containers }: Props = $props();
+	let { containers, program }: Props = $props();
 
 	let goals = $derived(
 		goalsByHierarchyLevel(
@@ -31,7 +33,16 @@
 
 	let columns = $derived([
 		...Array.from(goals.entries()).map(([hierarchyLevel, containers]) => ({
-			addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
+			addItemUrl: addItemUrl([
+				[overlayKey.enum.create, payloadTypes.enum.goal],
+				['hierarchyLevel', String(hierarchyLevel)],
+				...(program
+					? [
+							[predicates.enum['is-part-of-program'], program.guid],
+							['managedBy', program.managed_by]
+						]
+					: [])
+			]),
 			containers,
 			key: `goals-${hierarchyLevel}`,
 			title: computeColumnTitleForGoals(containers)
@@ -50,13 +61,18 @@
 			title: $_('payload_group.implementation')
 		}
 	]);
+
+	function addItemUrl(init: string[][]) {
+		const params = new URLSearchParams(init);
+		return `#${params.toString()}`;
+	}
 </script>
 
 <Board>
 	{#each columns as column (column.key)}
 		<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
-			<div class="vertical-scroll-wrapper masked-overflow">
-				{#each column.containers as container}
+			<div class="vertical-scroll-wrapper">
+				{#each column.containers as container (container.guid)}
 					<Card {container} showRelationFilter />
 				{/each}
 			</div>

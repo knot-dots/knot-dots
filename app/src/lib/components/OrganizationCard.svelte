@@ -7,11 +7,12 @@
 	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
 	import {
+		getOrganizationURL,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer,
-		getOrganizationURL
+		type OrganizationContainer
 	} from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		button?: Snippet;
@@ -41,7 +42,7 @@
 
 	function organizationURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return () => {
-			return getOrganizationURL(container, linkPath).toString();
+			return getOrganizationURL(container, linkPath, env).toString();
 		};
 	}
 </script>
@@ -68,10 +69,10 @@
 			{#if showRelationFilter}
 				<button
 					class="button-relation button-relation--square"
-					aria-label={$_('show_related_objects')}
 					type="button"
 					class:is-active={relatedTo === container.guid}
 					onclick={toggleRelatedTo(page.url.searchParams)}
+					{@attach tooltip($_('show_related_objects'))}
 				>
 					<Relation />
 				</button>

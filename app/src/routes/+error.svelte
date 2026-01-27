@@ -3,7 +3,24 @@
 	import ArrowLongRight from '~icons/heroicons/arrow-long-right';
 	import { page } from '$app/state';
 	import Layout from '$lib/components/Layout.svelte';
+
+	const title = $derived.by(() => {
+		let title = page.data?.currentOrganization?.payload?.name ?? $_('page_title');
+
+		// Add organizational unit if present
+		if (page.data?.currentOrganizationalUnit) {
+			title += ' > ' + page.data.currentOrganizationalUnit.payload.name;
+		}
+
+		// Add status code
+		title += ' / ' + page.status;
+		return title;
+	});
 </script>
+
+<svelte:head>
+	<title>{title}</title>
+</svelte:head>
 
 <Layout>
 	{#snippet main()}

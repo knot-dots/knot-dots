@@ -2,7 +2,6 @@ import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
 	audience,
-	type Container,
 	type IndicatorContainer,
 	payloadTypes,
 	computeFacetCount,

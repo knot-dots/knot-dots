@@ -1,6 +1,28 @@
 export const featureFlags = new Map([
-	['alpha', ['ImportFromCsv', 'AI', 'Elasticsearch'] as const],
-	['beta', ['AdministrativeArea', 'Report'] as const]
+	[
+		'alpha',
+		[
+			'ImportFromCsv',
+			'AI',
+			'Elasticsearch',
+			'TeaserCollection',
+			'ContentPartner',
+			'ResourcesV2'
+		] as const
+	],
+	[
+		'beta',
+		[
+			'AdministrativeArea',
+			'Image',
+			'InfoBox',
+			'Quote',
+			'Report',
+			'Stage',
+			'Teaser',
+			'TwoColumn'
+		] as const
+	]
 ]);
 
 export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
@@ -25,6 +47,33 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useCustomCollection() {
 			return features.includes('Report');
+		},
+		useTeaser() {
+			return features.includes('Teaser');
+		},
+		useTeaserCollection() {
+			return features.includes('TeaserCollection');
+		},
+		useInfoBox() {
+			return features.includes('InfoBox');
+		},
+		useQuote() {
+			return features.includes('Quote');
+		},
+		useTwoColumn() {
+			return features.includes('TwoColumn');
+		},
+		useImage() {
+			return features.includes('Image');
+		},
+		useContentPartner() {
+			return features.includes('ContentPartner');
+		},
+		useStage() {
+			return features.includes('Stage');
+		},
+		useResourceWorkspace() {
+			return features.includes('ResourcesV2');
 		}
 	};
 }

@@ -47,6 +47,15 @@
   "roles": {
     "realm": [
       {
+        "id": "f5caa83a-1d2e-4fa5-a023-04177bb96c81",
+        "name": "alpha-testing",
+        "description": "Enables access to feature flags in stage alpha",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "a2cb1ea4-bc3d-4c91-9e83-21a197b37a52",
+        "attributes": {}
+      },
+      {
         "id": "30fb0dbb-f9d7-4250-a810-e64bec8a3c88",
         "name": "default-roles-knot-dots",
         "description": "${role_default-roles}",
@@ -493,6 +502,7 @@
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
+        "alpha-testing",
         "default-roles-knot-dots",
         "sysadmin"
       ],

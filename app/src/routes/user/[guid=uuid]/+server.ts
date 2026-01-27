@@ -1,6 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { type User, user as userSchema } from '$lib/models';
+import { user as userSchema } from '$lib/models';
 import { createOrUpdateUser } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { updateUser } from '$lib/server/keycloak';
@@ -23,9 +23,7 @@ export const PUT = (async ({ locals, request }) => {
 		error(422, parseResult.error);
 	}
 
-	let user: User;
-
-	[user] = await Promise.all([
+	const [user] = await Promise.all([
 		locals.pool.connect(createOrUpdateUser(parseResult.data)),
 		updateUser(parseResult.data)
 	]);

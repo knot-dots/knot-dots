@@ -2,20 +2,19 @@
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
-		type Container,
 		type IndicatorContainer,
 		newIndicatorTemplateFromIndicator,
 		payloadTypes,
 		quantities
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorContainer;
-		relatedContainers: Container[];
 	}
 
-	let { container, relatedContainers }: Props = $props();
+	let { container }: Props = $props();
 
 	let saveAsIndicatorTemplateDisabled = $state(false);
 
@@ -32,6 +31,7 @@
 		type="button"
 		onclick={saveIndicatorAsTemplate(container)}
 		disabled={saveAsIndicatorTemplateDisabled}
+		{@attach tooltip($_('indicator.save_as_template'))}
 	>
 		{$_('indicator.save_as_template')}
 	</button>
