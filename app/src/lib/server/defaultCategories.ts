@@ -60,7 +60,6 @@ type TermSeed = {
 type CategorySeed = {
 	description?: string;
 	key: string;
-	level?: number;
 	title: string;
 	terms: TermSeed[];
 };
@@ -105,12 +104,17 @@ let initializationPromise: Promise<boolean> | null = null;
 export function ensureDefaultCategoryTerms(pool: DatabasePool) {
 	if (!initializationPromise) {
 		initializationPromise = seedDefaultCategories(pool)
+			.then((result) => {
+				// When we couldn't seed (e.g., missing default org), allow a retry later.
+				if (!result) {
+					initializationPromise = null;
+				}
+				return result;
+			})
 			.catch((error) => {
 				log.error(error, 'Failed to seed default categories');
+				initializationPromise = null; // allow retry after a failure
 				throw error;
-			})
-			.finally(() => {
-				initializationPromise = null;
 			});
 	}
 
@@ -139,6 +143,11 @@ async function seedForOrganization(
 	)
 		.filter(isCategoryContainer)
 		.filter((container) => container.organization === organization.guid);
+
+	// Skip seeding entirely when categories already exist for the organization.
+	if (categories.length > 0) {
+		return true;
+	}
 
 	// Removed ensureCategoryKeys call
 
