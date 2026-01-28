@@ -23,11 +23,12 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<EditablePlainText
+		<EditableImage
 			{editable}
-			label={$_('category.terms.value_label')}
-			required
-			bind:value={container.payload.value}
+			label={$_('category.terms.icon')}
+			help={$_('upload.image.svg_only_help')}
+			allowedFileTypes={['image/svg+xml']}
+			bind:value={container.payload.icon}
 		/>
 
 		<EditablePlainText
