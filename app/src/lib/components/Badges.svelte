@@ -30,7 +30,9 @@
 
 <ul class="badges">
 	<li class="badge badge--purple">
-		{#if 'goalType' in container.payload && container.payload.goalType}
+		{#if container.payload.type === 'category'}
+			{$_('categories.columns.root')}
+		{:else if 'goalType' in container.payload && container.payload.goalType}
 			{@const goalType = container.payload.goalType as GoalType}
 			{$_(goalType)}
 		{:else if 'programType' in container.payload && container.payload.programType !== programTypes.enum['program_type.misc']}
