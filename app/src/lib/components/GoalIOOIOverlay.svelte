@@ -18,7 +18,7 @@
 	} from '$lib/models';
 	import { ability, addObjectiveState } from '$lib/stores';
 	import Card from './Card.svelte';
-	import { goto, invalidate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		container: GoalContainer;
@@ -113,7 +113,6 @@
 					if (response.ok) {
 						const updatedContainer = await response.json();
 						droppedItem.revision = updatedContainer.revision;
-						await invalidate('containers');
 					} else {
 						const error = await response.json();
 						alert(error.message);

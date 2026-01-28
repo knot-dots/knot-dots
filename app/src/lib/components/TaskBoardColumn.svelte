@@ -11,7 +11,6 @@
 	import Card from '$lib/components/Card.svelte';
 	import { containerOfType, payloadTypes, type TaskContainer, type TaskStatus } from '$lib/models';
 	import { ability } from '$lib/stores';
-	import { invalidate } from '$app/navigation';
 
 	interface Props {
 		addItemUrl?: string;
@@ -48,7 +47,6 @@
 				if (response.ok) {
 					const updatedContainer = await response.json();
 					droppedItem.revision = updatedContainer.revision;
-					await invalidate('containers');
 				} else {
 					const error = await response.json();
 					alert(error.message);
