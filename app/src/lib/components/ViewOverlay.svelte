@@ -70,11 +70,9 @@
 
 	let { container: originalContainer, revisions = [] }: Props = $props();
 
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let container = $state(originalContainer);
-
-	$effect(() => {
-		container = originalContainer;
+	let container = $derived.by(() => {
+		let _ = $state(originalContainer);
+		return _;
 	});
 
 	let guid = $derived(container.guid);
