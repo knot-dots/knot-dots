@@ -32,7 +32,9 @@ const config: PlaywrightTestConfig = {
 		trace: 'on-first-retry'
 	},
 	webServer: {
-		command: 'docker compose up --build preview',
+		command: process.env.TEST_IMAGE
+			? 'docker compose up preview'
+			: 'docker compose up --build preview',
 		port: 3000,
 		reuseExistingServer: !process.env.CI,
 		timeout: 180 * 1000
