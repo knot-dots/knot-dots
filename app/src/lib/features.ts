@@ -7,7 +7,8 @@ export const featureFlags = new Map([
 			'Elasticsearch',
 			'TeaserCollection',
 			'ContentPartner',
-			'ResourcesV2'
+			'ResourcesV2',
+			'CustomCategories'
 		] as const
 	],
 	[
@@ -74,6 +75,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useResourceWorkspace() {
 			return features.includes('ResourcesV2');
+		},
+		useCustomCategories() {
+			return features.includes('CustomCategories');
 		}
 	};
 }

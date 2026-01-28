@@ -7,7 +7,6 @@
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
 		containerOfType,
-		isCategoryContainer,
 		type GoalStatus,
 		isGoalContainer,
 		isMeasureContainer,

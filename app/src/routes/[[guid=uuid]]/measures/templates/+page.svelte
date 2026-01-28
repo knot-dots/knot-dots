@@ -8,19 +8,27 @@
 	import {
 		loadCategoryOptions,
 		buildCategoryFacets,
-		buildCategoryLabels
+		buildCategoryLabels,
+		type CategoryOptions
 	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
+		audience,
 		computeFacetCount,
 		isCategoryContainer,
 		measureTypes,
 		payloadTypes,
-		predicates
+		predicates,
+		policyFieldBNK,
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -37,6 +45,7 @@
 
 	let categoryFacets = $state(new Map<string, Map<string, number>>());
 	let facetLabels = $state(new Map<string, string>());
+	let categoryOptions = $state<CategoryOptions | null>(null);
 
 	$effect(() => {
 		const organizationScope = Array.from(
@@ -49,6 +58,13 @@
 
 		let cancelled = false;
 		(async () => {
+			if (!featureDecisions.useCustomCategories()) {
+				categoryFacets = new Map();
+				facetLabels = new Map();
+				categoryOptions = null;
+				return;
+			}
+
 			const [scopedCategories, fallbackCategories] = await Promise.all([
 				fetchContainers(
 					{ organization: organizationScope, payloadType: [payloadTypes.enum.category] },
@@ -91,6 +107,20 @@
 			if (cancelled) return;
 			categoryFacets = mappedFacets;
 			facetLabels = mappedLabels;
+			const mappedOptions: CategoryOptions = {};
+			for (const [key, value] of Object.entries(options)) {
+				if (key === '__categoryLabels__') continue;
+				if (!Array.isArray(value)) continue;
+				mappedOptions[toFacetKey(key)] = value;
+			}
+			const labelEntries = Object.entries(options.__categoryLabels__ ?? {}).map(([k, v]) => [
+				toFacetKey(k),
+				v
+			]);
+			if (labelEntries.length) {
+				mappedOptions.__categoryLabels__ = Object.fromEntries(labelEntries);
+			}
+			categoryOptions = mappedOptions;
 		})();
 
 		return () => {
@@ -105,8 +135,24 @@
 			entries.push(['included', new Map<string, number>()]);
 		}
 
-		for (const [key, values] of categoryFacets.entries()) {
-			entries.push([key, new Map<string, number>(values.entries())]);
+		if (featureDecisions.useCustomCategories()) {
+			for (const [key, values] of categoryFacets.entries()) {
+				entries.push([key, new Map<string, number>(values.entries())]);
+			}
+		} else {
+			entries.push([
+				'category',
+				new Map<string, number>(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))
+			]);
+			entries.push(['topic', new Map<string, number>(topics.options.map((v) => [v as string, 0]))]);
+			entries.push([
+				'policyFieldBNK',
+				new Map<string, number>(policyFieldBNK.options.map((v) => [v as string, 0]))
+			]);
+			entries.push([
+				'audience',
+				new Map<string, number>(audience.options.map((v) => [v as string, 0]))
+			]);
 		}
 
 		entries.push([
@@ -120,7 +166,12 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} {facetLabels} search />
+		<Header
+			{facets}
+			facetLabels={featureDecisions.useCustomCategories() ? facetLabels : undefined}
+			categoryOptions={featureDecisions.useCustomCategories() ? categoryOptions : null}
+			search
+		/>
 	{/snippet}
 
 	{#snippet main()}

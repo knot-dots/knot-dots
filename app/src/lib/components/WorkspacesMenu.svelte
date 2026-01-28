@@ -29,6 +29,8 @@
 	import { ability } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
 
+	const featureDecisions = createFeatureDecisions(page.data.features);
+
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
 			catalog: '/all/catalog',
@@ -52,9 +54,13 @@
 			level: '/knowledge/level',
 			table: '/knowledge/table'
 		},
-		categories: {
-			level: '/categories'
-		},
+		...(featureDecisions.useCustomCategories()
+			? {
+					categories: {
+						level: '/categories'
+					}
+				}
+			: undefined),
 		measures: {
 			catalog: '/measures/catalog',
 			monitoring: '/measures/monitoring',
@@ -80,7 +86,7 @@
 			status: '/tasks/status',
 			table: '/tasks/table'
 		},
-		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+		...(featureDecisions.useResourceWorkspace()
 			? {
 					resources: {
 						catalog: '/resources/catalog',
@@ -100,14 +106,12 @@
 			programs: '/programs/catalog',
 			rules: '/rules/catalog',
 			tasks: '/tasks/catalog',
-			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
-				? { resources: '/resources/catalog' }
-				: undefined)
+			...(featureDecisions.useResourceWorkspace() ? { resources: '/resources/catalog' } : undefined)
 		},
 		level: {
 			all: '/all/level',
 			knowledge: '/knowledge/level',
-			categories: '/categories',
+			...(featureDecisions.useCustomCategories() ? { categories: '/categories' } : undefined),
 			goals: '/goals/level',
 			'objectives-and-effects': '/objectives-and-effects',
 			programs: '/programs/level'
@@ -132,9 +136,7 @@
 			programs: '/programs/table',
 			rules: '/rules/table',
 			tasks: '/tasks/table',
-			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
-				? { resources: '/resources/table' }
-				: undefined)
+			...(featureDecisions.useResourceWorkspace() ? { resources: '/resources/table' } : undefined)
 		}
 	};
 
@@ -211,7 +213,7 @@
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
-		...($ability.can('create', payloadTypes.enum.category)
+		...($ability.can('create', payloadTypes.enum.category) && featureDecisions.useCustomCategories()
 			? [
 					{
 						exists: true,
@@ -222,7 +224,7 @@
 					}
 				]
 			: []),
-		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+		...(featureDecisions.useResourceWorkspace()
 			? [
 					{
 						exists: true,

@@ -10,15 +10,20 @@
 		type CategoryOptions
 	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
+		audience,
 		computeFacetCount,
 		isCategoryContainer,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		measureTypes,
+		policyFieldBNK,
 		payloadTypes,
 		predicates,
-		programTypes
+		programTypes,
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
 
 	import type { PageData } from '../../routes/[[guid=uuid]]/measures/catalog/$types';
@@ -30,6 +35,8 @@
 	}
 
 	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
+
+	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -64,6 +71,13 @@
 	let categoryOptions: CategoryOptions | null = $state(null);
 
 	$effect(() => {
+		if (!featureDecisions.useCustomCategories()) {
+			categoryFacets = new Map();
+			facetLabels = new Map();
+			categoryOptions = null;
+			return;
+		}
+
 		const organizationScope = Array.from(
 			new Set(
 				[page.data.currentOrganization?.guid, page.data.defaultOrganizationGuid].filter(
@@ -133,8 +147,24 @@
 			entries.push(['included', new Map<string, number>()]);
 		}
 
-		for (const [key, values] of categoryFacets.entries()) {
-			entries.push([key, new Map<string, number>(values.entries())]);
+		if (featureDecisions.useCustomCategories()) {
+			for (const [key, values] of categoryFacets.entries()) {
+				entries.push([key, new Map<string, number>(values.entries())]);
+			}
+		} else {
+			entries.push([
+				'category',
+				new Map<string, number>(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))
+			]);
+			entries.push(['topic', new Map<string, number>(topics.options.map((v) => [v as string, 0]))]);
+			entries.push([
+				'policyFieldBNK',
+				new Map<string, number>(policyFieldBNK.options.map((v) => [v as string, 0]))
+			]);
+			entries.push([
+				'audience',
+				new Map<string, number>(audience.options.map((v) => [v as string, 0]))
+			]);
 		}
 
 		entries.push(
@@ -149,7 +179,13 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {filterBarInitiallyOpen} {facets} {facetLabels} {categoryOptions} search />
+		<Header
+			{filterBarInitiallyOpen}
+			{facets}
+			facetLabels={featureDecisions.useCustomCategories() ? facetLabels : undefined}
+			categoryOptions={featureDecisions.useCustomCategories() ? categoryOptions : null}
+			search
+		/>
 	{/snippet}
 
 	{#snippet main()}

@@ -8,13 +8,26 @@
 	import {
 		buildCategoryFacets,
 		buildCategoryLabels,
-		loadCategoryOptions
+		loadCategoryOptions,
+		type CategoryOptions
 	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import { computeFacetCount, measureTypes, isCategoryContainer, payloadTypes } from '$lib/models';
+	import { createFeatureDecisions } from '$lib/features';
+	import {
+		audience,
+		computeFacetCount,
+		measureTypes,
+		isCategoryContainer,
+		policyFieldBNK,
+		payloadTypes,
+		sustainableDevelopmentGoals,
+		topics
+	} from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 
 	const workspaceOptions = [
 		{ label: $_('workspace.profile'), value: '/me' },
@@ -24,8 +37,16 @@
 
 	let categoryFacets = $state(new Map<string, Map<string, number>>());
 	let facetLabels = $state(new Map<string, string>());
+	let categoryOptions = $state<CategoryOptions | null>(null);
 
 	$effect(() => {
+		if (!featureDecisions.useCustomCategories()) {
+			categoryFacets = new Map();
+			facetLabels = new Map();
+			categoryOptions = null;
+			return;
+		}
+
 		const organizationScope = Array.from(
 			new Set(
 				[page.data.currentOrganization?.guid, page.data.defaultOrganizationGuid].filter(
@@ -68,6 +89,7 @@
 			if (cancelled) return;
 			categoryFacets = nextFacets;
 			facetLabels = nextLabels;
+			categoryOptions = options;
 		})();
 
 		return () => {
@@ -78,8 +100,24 @@
 	let facets = $derived.by(() => {
 		const entries: Array<[string, Map<string, number>]> = [];
 
-		for (const [key, values] of categoryFacets.entries()) {
-			entries.push([key, new Map(values.entries())]);
+		if (featureDecisions.useCustomCategories()) {
+			for (const [key, values] of categoryFacets.entries()) {
+				entries.push([key, new Map(values.entries())]);
+			}
+		} else {
+			entries.push([
+				'category',
+				new Map<string, number>(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))
+			]);
+			entries.push(['topic', new Map<string, number>(topics.options.map((v) => [v as string, 0]))]);
+			entries.push([
+				'policyFieldBNK',
+				new Map<string, number>(policyFieldBNK.options.map((v) => [v as string, 0]))
+			]);
+			entries.push([
+				'audience',
+				new Map<string, number>(audience.options.map((v) => [v as string, 0]))
+			]);
 		}
 
 		entries.push(['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]);
@@ -90,7 +128,13 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} {facetLabels} search {workspaceOptions} />
+		<Header
+			{facets}
+			facetLabels={featureDecisions.useCustomCategories() ? facetLabels : undefined}
+			categoryOptions={featureDecisions.useCustomCategories() ? categoryOptions : null}
+			search
+			{workspaceOptions}
+		/>
 	{/snippet}
 
 	{#snippet main()}

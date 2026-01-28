@@ -5,7 +5,7 @@
 
 	interface Props {
 		editable?: boolean;
-		value: SustainableDevelopmentGoal[];
+		value: SustainableDevelopmentGoal[] | string[];
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
