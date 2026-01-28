@@ -41,6 +41,7 @@
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
+	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
@@ -140,7 +141,7 @@
 			<ProgramWorkspaces container={$overlayStore.container} />
 		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
 			<MeasureWorkspaces container={$overlayStore.container} />
-		{:else if isGoalContainer($overlayStore.container)}
+		{:else if isGoalContainer($overlayStore.container) && createFeatureDecisions(page.data.features).useIOOI()}
 			<GoalWorkspaces container={$overlayStore.container} />
 		{/if}
 	{:else}
