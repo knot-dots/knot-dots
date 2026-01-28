@@ -598,12 +598,14 @@ export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high'])
 
 export type Benefit = z.infer<typeof benefit>;
 
-const slugifyCategoryKey = (source: string) =>
-	source
+const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
+	const cleaned = source
 		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9_.-]+/g, '-')
+		.replace(/[^a-zA-Z0-9_.-]+/g, '-')
 		.replace(/^-+|-+$/g, '');
+
+	return lowerCase ? cleaned.toLowerCase() : cleaned;
+};
 
 const basePayload = z
 	.object({
@@ -623,7 +625,6 @@ const basePayload = z
 const categoryPayloadBaseShape = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
-	level: z.number().int().nonnegative().default(0),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.category),
 	visibility: visibility.default(visibility.enum['public'])
@@ -632,7 +633,9 @@ const categoryPayloadBaseShape = z.object({
 const enforceCategoryKey = (value: { key?: string; title?: string }, ctx: z.RefinementCtx) => {
 	const title = value.title?.trim();
 	const key = value.key?.trim();
-	const slug = slugifyCategoryKey(key || title || '');
+	const slug = key
+		? normalizeCategoryKey(key, { lowerCase: false })
+		: normalizeCategoryKey(title || '', { lowerCase: true });
 
 	if (!slug) {
 		ctx.addIssue({

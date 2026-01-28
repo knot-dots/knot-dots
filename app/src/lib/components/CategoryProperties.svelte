@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import EditableNumber from '$lib/components/EditableNumber.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
@@ -23,8 +22,6 @@
 			bind:value={container.payload.key}
 		/>
 
-		<EditableNumber {editable} label={$_('category.level')} bind:value={container.payload.level} />
-
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
@@ -36,8 +33,6 @@
 			label={$_('category.key_label')}
 			bind:value={container.payload.key}
 		/>
-
-		<EditableNumber {editable} label={$_('category.level')} bind:value={container.payload.level} />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />

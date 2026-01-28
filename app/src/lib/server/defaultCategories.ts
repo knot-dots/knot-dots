@@ -198,7 +198,6 @@ async function createCategory(
 
 	const payload = newCategory.payload as CategoryContainer['payload'];
 	payload.key = seed.key;
-	payload.level = seed.level ?? payload.level ?? 0;
 	payload.title = seed.title;
 	if (seed.description) {
 		payload.description = seed.description;
@@ -303,23 +302,17 @@ async function ensureCategoryMetadata(
 ) {
 	const needsKeyUpdate = category.payload.key !== seed.key;
 	const needsTitleUpdate = category.payload.title !== seed.title;
-	const needsLevelUpdate = seed.level !== undefined && category.payload.level !== seed.level;
 	const needsDescriptionUpdate =
 		seed.description !== undefined && category.payload.description !== seed.description;
 
-	if (!needsKeyUpdate && !needsTitleUpdate && !needsLevelUpdate && !needsDescriptionUpdate) {
+	if (!needsKeyUpdate && !needsTitleUpdate && !needsDescriptionUpdate) {
 		return category;
 	}
-
-	const level = needsLevelUpdate
-		? (seed.level ?? category.payload.level ?? 0)
-		: (category.payload.level ?? 0);
 
 	category.payload = {
 		...category.payload,
 		key: needsKeyUpdate ? seed.key : category.payload.key,
 		title: needsTitleUpdate ? seed.title : category.payload.title,
-		level,
 		description: needsDescriptionUpdate ? seed.description : category.payload.description
 	};
 

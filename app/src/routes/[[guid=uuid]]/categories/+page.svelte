@@ -127,7 +127,7 @@
 	{#snippet main()}
 		{#key page.url.searchParams}
 			<Board>
-				<BoardColumn addItemUrl="#create=category&level=0" title={$_('categories.columns.root')}>
+				<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
 					<div class="vertical-scroll-wrapper">
 						{#each filteredContainers as container (container.guid)}
 							<Card {container} showRelationFilter />

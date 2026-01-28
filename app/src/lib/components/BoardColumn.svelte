@@ -67,8 +67,6 @@
 
 		if (isOrganizationalUnitContainer(container) && params.has('level')) {
 			container.payload.level = parseInt(params.get('level') as string);
-		} else if (isCategoryContainer(container) && params.has('level')) {
-			container.payload.level = parseInt(params.get('level') as string);
 		} else if (isRuleContainer(container) && params.has('ruleStatus')) {
 			container.payload.ruleStatus = params.get('ruleStatus') as RuleStatus;
 		} else if (isMeasureContainer(container) && params.has('status')) {
