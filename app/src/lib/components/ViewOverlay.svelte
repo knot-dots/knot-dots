@@ -166,6 +166,8 @@
 	/>
 {:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
 	<Header />
+{:else if isGoalContainer(container)}
+	<Header />
 {:else}
 	<Header sortOptions={[]} workspaceOptions={[]} />
 {/if}

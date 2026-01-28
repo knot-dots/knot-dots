@@ -14,6 +14,7 @@
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
+	import GoalWorkspaces from '$lib/components/GoalWorkspaces.svelte';
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
 	import MemberFilterDropDown from '$lib/components/MemberFilterDropDown.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
@@ -29,6 +30,7 @@
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import {
+		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
 		isSimpleMeasureContainer,
@@ -138,6 +140,8 @@
 			<ProgramWorkspaces container={$overlayStore.container} />
 		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
 			<MeasureWorkspaces container={$overlayStore.container} />
+		{:else if isGoalContainer($overlayStore.container)}
+			<GoalWorkspaces container={$overlayStore.container} />
 		{/if}
 	{:else}
 		<WorkspacesMenu />
