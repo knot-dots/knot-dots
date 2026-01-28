@@ -15,6 +15,7 @@ import {
 	filterMembers,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
+	type IooiType,
 	isProgramContainer,
 	mayDelete,
 	type MeasureContainer,
@@ -130,6 +131,7 @@ export const addEffectState = writable<AddEffectState>({});
 type AddObjectiveState = {
 	target?: Container;
 	indicator?: IndicatorContainer;
+	iooiType?: IooiType;
 };
 
 export const addObjectiveState = writable<AddObjectiveState>({});
@@ -185,6 +187,11 @@ export type OverlayData =
 	  }
 	| {
 			key: 'content-partners';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
+			key: 'goal-iooi';
 			container: AnyContainer;
 			containers: Container[];
 	  }
