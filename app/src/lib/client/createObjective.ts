@@ -6,6 +6,8 @@ import {
 	containerOfType,
 	type EmptyObjectiveContainer,
 	type IndicatorContainer,
+	type NewContainer,
+	type ObjectiveContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -20,17 +22,16 @@ export default async function createObjective(target: Container, indicator: Indi
 		env.PUBLIC_KC_REALM
 	) as EmptyObjectiveContainer;
 
-	const title = isOverallObjective
-		? unwrapFunctionStore(_)('overall_objective_title', {
-				values: { indicator: indicator.payload.title }
-			})
-		: indicator.payload.title;
-
-	const payload = newObjective.payload as EmptyObjectiveContainer['payload'] & { title: string };
-	payload.title = title ?? '';
 	const response = await saveContainer({
 		...newObjective,
-		payload,
+		payload: {
+			...newObjective.payload,
+			title: isOverallObjective
+				? unwrapFunctionStore(_)('overall_objective_title', {
+						values: { indicator: indicator.payload.title }
+					})
+				: indicator.payload.title
+		},
 		relation: [
 			{
 				object: indicator.guid,
@@ -47,6 +48,6 @@ export default async function createObjective(target: Container, indicator: Indi
 						}
 					])
 		]
-	});
+	} as NewContainer & ObjectiveContainer['payload']);
 	return await response.json();
 }
