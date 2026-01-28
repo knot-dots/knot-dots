@@ -6,7 +6,14 @@ let sharedTermNames: string[] = [];
 test.describe('Categories', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('shows four default categories', async ({ page }) => {
+	test('shows four default categories', async ({ page, dotsBoard, defaultOrganization }) => {
+		await dotsBoard.goto(`/${defaultOrganization.guid}`);
+		await dotsBoard.sidebar.openProfileSettings();
+		await dotsBoard.page.getByLabel('CustomCategories').check();
+		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
+		await response;
+
 		await page.goto('/');
 
 		await page.getByRole('button', { name: 'All', exact: true }).click();
