@@ -15,6 +15,7 @@ import {
 	filterMembers,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
+	type IooiType,
 	isProgramContainer,
 	mayDelete,
 	type MeasureContainer,
@@ -130,6 +131,7 @@ export const addEffectState = writable<AddEffectState>({});
 type AddObjectiveState = {
 	target?: Container;
 	indicator?: IndicatorContainer;
+	iooiType?: IooiType;
 };
 
 export const addObjectiveState = writable<AddObjectiveState>({});
@@ -185,6 +187,11 @@ export type OverlayData =
 	  }
 	| {
 			key: 'content-partners';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
+			key: 'goal-iooi';
 			container: AnyContainer;
 			containers: Container[];
 	  }
@@ -409,6 +416,22 @@ if (browser) {
 				container,
 				containers
 			});
+		} else if (hashParams.has(overlayKey.enum['goal-iooi'])) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum['goal-iooi']) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const containers = await fetchRelatedContainers(
+				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+				{
+					organization: [container.organization],
+					payloadType: [payloadTypes.enum.goal, payloadTypes.enum.objective],
+					relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
+					terms: hashParams.get('terms') ?? ''
+				},
+				hashParams.get('sort') ?? 'alpha'
+			);
+			setOverlayIfLatest({ key: overlayKey.enum['goal-iooi'], container, containers });
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.tasks) as string

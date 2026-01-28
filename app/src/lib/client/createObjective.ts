@@ -6,13 +6,18 @@ import {
 	containerOfType,
 	type EmptyObjectiveContainer,
 	type IndicatorContainer,
+	type IooiType,
 	type NewContainer,
 	type ObjectiveContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
 
-export default async function createObjective(target: Container, indicator: IndicatorContainer) {
+export default async function createObjective(
+	target: Container,
+	indicator: IndicatorContainer,
+	iooiType?: IooiType
+) {
 	const isOverallObjective = target.guid == indicator.guid;
 	const newObjective = containerOfType(
 		payloadTypes.enum.objective,
@@ -30,7 +35,8 @@ export default async function createObjective(target: Container, indicator: Indi
 				? unwrapFunctionStore(_)('overall_objective_title', {
 						values: { indicator: indicator.payload.title }
 					})
-				: indicator.payload.title
+				: indicator.payload.title,
+			...(iooiType ? { iooiType } : {})
 		},
 		relation: [
 			{

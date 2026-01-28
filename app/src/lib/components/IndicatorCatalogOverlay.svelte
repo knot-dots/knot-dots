@@ -98,7 +98,11 @@
 				$addEffectState = {};
 				await goto(`#${params.toString()}`);
 			} else if ($addObjectiveState.target) {
-				const objective = await createObjective($addObjectiveState.target, container);
+				const objective = await createObjective(
+					$addObjectiveState.target,
+					container,
+					$addObjectiveState.iooiType
+				);
 				const params = new URLSearchParams([[overlayKey.enum.view, objective.guid]]);
 				$addObjectiveState = {};
 				await goto(`#${params.toString()}`);

@@ -13,6 +13,7 @@ export const overlayKey = z.enum([
 	'chapters',
 	'content-partners',
 	'create',
+	'goal-iooi',
 	'indicator-catalog',
 	'new-indicator-catalog',
 	'indicators',
@@ -598,6 +599,10 @@ export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high'])
 
 export type Benefit = z.infer<typeof benefit>;
 
+export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'iooi.impact']);
+
+export type IooiType = z.infer<typeof iooiTypes>;
+
 const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
 	const cleaned = source
 		.trim()
@@ -914,6 +919,7 @@ const initialMeasureCollectionPayload = measureCollectionPayload;
 
 const objectivePayload = basePayload.omit({ category: true, summary: true, topic: true }).extend({
 	type: z.literal(payloadTypes.enum.objective),
+	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
 	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
 });
 

@@ -30,9 +30,10 @@
 		addItemUrl?: string;
 		children: Snippet;
 		title: string;
+		onCreateContainer?: () => void;
 	}
 
-	let { addItemUrl, children, title }: Props = $props();
+	let { addItemUrl, children, title, onCreateContainer }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -53,7 +54,7 @@
 			) as PayloadType[]
 	);
 
-	function createContainer(payloadType: PayloadType, params: URLSearchParams) {
+	function defaultCreateContainer(payloadType: PayloadType, params: URLSearchParams) {
 		const container = containerOfType(
 			payloadType,
 			page.data.currentOrganization.guid,
@@ -116,6 +117,22 @@
 
 		createContainerDialog.getElement().showModal();
 	}
+
+	function handleCreate() {
+		if (onCreateContainer) {
+			onCreateContainer();
+		} else {
+			defaultCreateContainer(mayCreate[0], addItemParams);
+		}
+	}
+
+	function handleCreateWithType(payloadType: PayloadType) {
+		if (onCreateContainer) {
+			onCreateContainer();
+		} else {
+			defaultCreateContainer(payloadType, addItemParams);
+		}
+	}
 </script>
 
 <section>
@@ -124,20 +141,14 @@
 			{title}
 		</h2>
 		{#if mayCreate.length === 1}
-			<button
-				class="action-button action-button--size-l"
-				onclick={() => createContainer(mayCreate[0], addItemParams)}
-				type="button"
-			>
+			<button class="action-button action-button--size-l" onclick={handleCreate} type="button">
 				<Plus />
 				<span class="is-visually-hidden">{$_('add_item')}</span>
 			</button>
 		{:else if mayCreate.length > 1}
 			<DropDownMenu
 				handleChange={(e) =>
-					e instanceof CustomEvent &&
-					e.detail.selected &&
-					createContainer(e.detail.selected, addItemParams)}
+					e instanceof CustomEvent && e.detail.selected && handleCreateWithType(e.detail.selected)}
 				label={$_('add_item')}
 				options={mayCreate.map((t) => ({ label: $_(t), value: t }))}
 			>
@@ -153,7 +164,7 @@
 	{#if mayCreate.length > 0}
 		<footer>
 			{#if addItemParams.getAll('create').length === 1}
-				<button onclick={() => createContainer(mayCreate[0], addItemParams)} type="button">
+				<button onclick={handleCreate} type="button">
 					<Plus />{$_('add_item')}
 				</button>
 			{:else if mayCreate.length > 1}
@@ -161,7 +172,7 @@
 					handleChange={(e) =>
 						e instanceof CustomEvent &&
 						e.detail.selected &&
-						createContainer(e.detail.selected, addItemParams)}
+						handleCreateWithType(e.detail.selected)}
 					label={$_('add_item')}
 					options={mayCreate.map((t) => ({ label: $_(t), value: t }))}
 				>
