@@ -52,7 +52,29 @@ jobs:
           cache-dependency-path: ./app/package-lock.json
       - run: npm ci
 
-      - run: npx playwright install --with-deps
+      # Generate SvelteKit aliases ($lib) without running full type check
+      - name: Sync SvelteKit Config
+        run: npx svelte-kit sync
+
+      # Cache Playwright browsers
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "VERSION=$(npm list @playwright/test --json | jq -r .dependencies.\"@playwright/test\".version)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Binaries
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.VERSION }}
+
+      - name: Install Playwright
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+
+      - name: Install Playwright Deps (OS-level)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
 
       - run: docker compose build
 
