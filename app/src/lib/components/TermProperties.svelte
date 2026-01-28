@@ -51,15 +51,13 @@
 			bind:value={container.payload.filterLabel}
 		/>
 
-		<label class="field">
-			<EditableImage
-				{editable}
-				label={$_('category.terms.icon')}
-				help={$_('upload.image.svg_only_help')}
-				allowedFileTypes={['image/svg+xml']}
-				bind:value={container.payload.icon}
-			/>
-		</label>
+		<EditableImage
+			{editable}
+			label={$_('category.terms.icon')}
+			help={$_('upload.image.svg_only_help')}
+			allowedFileTypes={['image/svg+xml']}
+			bind:value={container.payload.icon}
+		/>
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
@@ -83,11 +81,3 @@
 		<AuthoredBy {container} {revisions} />
 	{/snippet}
 </PropertyGrid>
-
-<style>
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-</style>
