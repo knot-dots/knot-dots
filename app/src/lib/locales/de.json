@@ -267,6 +267,10 @@
 		"heading": "Mitarbeiter*in einladen",
 		"submit": "Einladung abschicken"
 	},
+	"iooi.impact": "Impact",
+	"iooi.input": "Input",
+	"iooi.outcome": "Outcome",
+	"iooi.output": "Output",
 	"knowledge": "Wissen",
 	"knowledge.level": "Ebene {level}",
 	"knowledge_ai.label": "KI-Upload",

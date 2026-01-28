@@ -14,6 +14,7 @@
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
+	import GoalWorkspaces from '$lib/components/GoalWorkspaces.svelte';
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
 	import MemberFilterDropDown from '$lib/components/MemberFilterDropDown.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
@@ -29,6 +30,7 @@
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import {
+		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
 		isSimpleMeasureContainer,
@@ -39,6 +41,7 @@
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
+	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
@@ -138,6 +141,8 @@
 			<ProgramWorkspaces container={$overlayStore.container} />
 		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
 			<MeasureWorkspaces container={$overlayStore.container} />
+		{:else if isGoalContainer($overlayStore.container) && createFeatureDecisions(page.data.features).useIOOI()}
+			<GoalWorkspaces container={$overlayStore.container} />
 		{/if}
 	{:else}
 		<WorkspacesMenu />

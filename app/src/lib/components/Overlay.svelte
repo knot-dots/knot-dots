@@ -3,6 +3,7 @@
 	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
+	import GoalIOOIOverlay from '$lib/components/GoalIOOIOverlay.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
@@ -14,7 +15,7 @@
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
-	import { overlayKey } from '$lib/models';
+	import { isGoalContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
 	interface Props {
@@ -70,6 +71,8 @@
 		<ChaptersOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['content-partners']}
 		<ContentPartnersOverlay containers={data.containers} />
+	{:else if data.key === overlayKey.enum['goal-iooi'] && isGoalContainer(data.container)}
+		<GoalIOOIOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['teasers']}
 		<TeasersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['relations']}

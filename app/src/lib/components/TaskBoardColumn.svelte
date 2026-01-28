@@ -42,7 +42,15 @@
 
 			if (droppedItem && droppedItem.payload.taskStatus != status) {
 				droppedItem.payload.taskStatus = status;
-				saveContainer(droppedItem).catch((reason) => console.log(reason));
+				const response = await saveContainer(droppedItem);
+
+				if (response.ok) {
+					const updatedContainer = await response.json();
+					droppedItem.revision = updatedContainer.revision;
+				} else {
+					const error = await response.json();
+					alert(error.message);
+				}
 			}
 
 			saveTaskPriority(items.map(({ guid }, index) => ({ priority: index, task: guid }))).catch(

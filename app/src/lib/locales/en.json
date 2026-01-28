@@ -267,6 +267,10 @@
 		"heading": "Invite member",
 		"submit": "Send invitation"
 	},
+	"iooi.impact": "Impact",
+	"iooi.input": "Input",
+	"iooi.outcome": "Outcome",
+	"iooi.output": "Output",
 	"knowledge": "Knowledge",
 	"knowledge.level": "Level {level}",
 	"knowledge_ai.label": "AI upload",
