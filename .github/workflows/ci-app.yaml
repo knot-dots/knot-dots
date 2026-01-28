@@ -5,47 +5,62 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/ci-app.yaml'
-      - 'app/**'
+      - ".github/workflows/ci-app.yaml"
+      - "app/**"
   pull_request:
     branches:
       - main
     paths:
-      - '.github/workflows/ci-app.yaml'
-      - 'app/**'
+      - ".github/workflows/ci-app.yaml"
+      - "app/**"
 
 env:
   REGISTRY: rg.fr-par.scw.cloud/knot-dots
 
 jobs:
+  checks:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: ./app/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run check
+
   test:
     timeout-minutes: 60
-
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: app
 
     steps:
       - uses: actions/checkout@v4
-      - name: Add keycloak entry to /etc/hosts
-        run: |
-          IP="127.0.0.1"
-          HOSTNAME="keycloak"
-          # Construct the entry and append it to /etc/hosts using sudo
-          echo "$IP $HOSTNAME" | sudo tee -a /etc/hosts
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: "npm"
           cache-dependency-path: ./app/package-lock.json
-      - run: npm clean-install
-      - run: npm run lint
-      - run: npm run check
+      - run: npm ci
+
       - run: npx playwright install --with-deps
+
       - run: docker compose build
+
+      - name: Add keycloak entry to /etc/hosts
+        run: echo "127.0.0.1 keycloak" | sudo tee -a /etc/hosts
+
       - run: npx playwright test
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -54,7 +69,7 @@ jobs:
           retention-days: 7
 
   build:
-    needs: [ test ]
+    needs: [checks, test]
 
     runs-on: ubuntu-latest
 
