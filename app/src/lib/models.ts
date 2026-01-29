@@ -612,20 +612,18 @@ const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
 	return lowerCase ? cleaned.toLowerCase() : cleaned;
 };
 
-const basePayload = z
-	.object({
-		aiSuggestion: z.boolean().default(false),
-		audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
-		category: z.array(z.string().trim().min(1)).default([]),
-		description: z.string().trim().optional(),
-		editorialState: editorialState.optional(),
-		policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
-		summary: z.string().trim().max(200).optional(),
-		title: z.string().trim(),
-		topic: z.array(z.string().trim().min(1)).default([]),
-		visibility: visibility.default(visibility.enum['organization'])
-	})
-	.catchall(z.array(z.string().trim().min(1)));
+const basePayload = z.object({
+	aiSuggestion: z.boolean().default(false),
+	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+	category: z.array(z.string().trim().min(1)).default([]),
+	description: z.string().trim().optional(),
+	editorialState: editorialState.optional(),
+	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+	summary: z.string().trim().max(200).optional(),
+	title: z.string().trim(),
+	topic: z.array(z.string().trim().min(1)).default([]),
+	visibility: visibility.default(visibility.enum['organization'])
+});
 
 const categoryPayloadBaseShape = z.object({
 	description: z.string().trim().optional(),
@@ -670,9 +668,7 @@ const enforceCategoryKeyIfProvided = (
 	enforceCategoryKey(value, ctx);
 };
 
-const categoryPayloadBase = categoryPayloadBaseShape.superRefine(enforceCategoryKey);
-
-const categoryPayload = categoryPayloadBase;
+const categoryPayload = categoryPayloadBaseShape.superRefine(enforceCategoryKey);
 
 const initialCategoryPayload = categoryPayloadBaseShape
 	.partial({ key: true, title: true })
@@ -786,17 +782,20 @@ const fileCollectionPayload = z
 
 const initialFileCollectionPayload = fileCollectionPayload;
 
-const goalPayload = basePayload.extend({
-	fulfillmentDate: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional(),
-	goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
-	goalType: goalType.optional(),
-	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-	progress: z.number().nonnegative().optional(),
-	type: z.literal(payloadTypes.enum.goal)
-});
+const goalPayload = basePayload
+	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
+		goalType: goalType.optional(),
+		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
+		progress: z.number().nonnegative().optional(),
+		type: z.literal(payloadTypes.enum.goal)
+	})
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialGoalPayload = goalPayload.partial({
 	goalType: true,
@@ -816,16 +815,18 @@ const goalCollectionPayload = z
 
 const initialGoalCollectionPayload = goalCollectionPayload;
 
-const indicatorPayload = basePayload.extend({
-	externalReference: z.string().url().optional(),
-	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	indicatorCategory: z.array(indicatorCategories).default([]),
-	indicatorType: z.array(indicatorTypes).default([]),
-	measureType: z.array(measureTypes).default([]),
-	quantity: z.string(),
-	type: z.literal(payloadTypes.enum.indicator),
-	unit: z.string()
-});
+const indicatorPayload = basePayload
+	.extend({
+		externalReference: z.string().url().optional(),
+		historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		indicatorCategory: z.array(indicatorCategories).default([]),
+		indicatorType: z.array(indicatorTypes).default([]),
+		measureType: z.array(measureTypes).default([]),
+		quantity: z.string(),
+		type: z.literal(payloadTypes.enum.indicator),
+		unit: z.string()
+	})
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialIndicatorPayload = indicatorPayload.partial({
 	quantity: true,
@@ -859,7 +860,8 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 
 export const knowledgePayload = basePayload
 	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
@@ -900,7 +902,8 @@ const measurePayload = basePayload
 		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
@@ -917,11 +920,14 @@ const measureCollectionPayload = z
 
 const initialMeasureCollectionPayload = measureCollectionPayload;
 
-const objectivePayload = basePayload.omit({ category: true, summary: true, topic: true }).extend({
-	type: z.literal(payloadTypes.enum.objective),
-	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
-	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
-});
+const objectivePayload = basePayload
+	.omit({ category: true, summary: true, topic: true })
+	.extend({
+		type: z.literal(payloadTypes.enum.objective),
+		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
+		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
+	})
+	.strict();
 
 const initialObjectivePayload = objectivePayload.partial({ title: true });
 
@@ -949,18 +955,21 @@ const progressPayload = z.object({
 
 const initialProgressPayload = progressPayload;
 
-const rulePayload = basePayload.extend({
-	ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
-	type: z.literal(payloadTypes.enum.rule),
-	validFrom: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional(),
-	validUntil: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional()
-});
+const rulePayload = basePayload
+	.extend({
+		ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
+		type: z.literal(payloadTypes.enum.rule),
+		validFrom: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		validUntil: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional()
+	})
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialRulePayload = rulePayload.partial({ title: true });
 
@@ -989,7 +998,8 @@ const simpleMeasurePayload = basePayload
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
@@ -1007,7 +1017,8 @@ const programPayload = basePayload
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialProgramPayload = programPayload.partial({
 	title: true
@@ -1061,7 +1072,8 @@ const reportPayload = basePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.report)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialReportPayload = reportPayload.partial({ title: true });
 
@@ -1096,7 +1108,7 @@ const resourceCollectionPayload = z
 const initialResourceCollectionPayload = resourceCollectionPayload;
 
 const resourceV2Payload = basePayload
-	.omit({ category: true, summary: true, topic: true, audience: true })
+	.omit({ audience: true, category: true, summary: true, topic: true })
 	.extend({
 		type: z.literal(payloadTypes.enum.resource_v2),
 		resourceCategory: resourceCategories.default(
@@ -1105,7 +1117,8 @@ const resourceV2Payload = basePayload
 		resourceUnit: resourceUnits.default(resourceUnits.enum['unit.euro']),
 		visibility: visibility.default(visibility.enum['public'])
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
@@ -1310,7 +1323,8 @@ const contentPartnerPayload = basePayload
 		type: z.literal(payloadTypes.enum.content_partner),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
 

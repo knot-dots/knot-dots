@@ -171,7 +171,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			) as ProgramContainer;
 			const testProgram = await createContainer(adminContext, {
 				...newProgram,
-				payload: { ...newProgram.payload, title: `Test Program ${workerInfo.workerIndex}` }
+				payload: {
+					...newProgram.payload,
+					title: `Test Program ${workerInfo.workerIndex}`
+				} as ProgramContainer['payload']
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testProgram, [
 				predicates.enum['is-head-of'],
@@ -218,7 +221,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			) as MeasureContainer;
 			const testMeasure = await createContainer(adminContext, {
 				...newMeasure,
-				payload: { ...newMeasure.payload, title: `Test Measure ${workerInfo.workerIndex}` },
+				payload: {
+					...newMeasure.payload,
+					title: `Test Measure ${workerInfo.workerIndex}`
+				} as MeasureContainer['payload'],
 				relation: [
 					{
 						position: 0,
@@ -293,7 +299,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newReport.payload,
 					title: `Test Report ${workerInfo.workerIndex}`
-				}
+				} as ReportContainer['payload']
 			});
 
 			await use(testReport);
