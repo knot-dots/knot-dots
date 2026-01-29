@@ -1,19 +1,10 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import {
-		audience,
-		computeFacetCount,
-		measureTypes,
-		policyFieldBNK,
-		predicates,
-		sustainableDevelopmentGoals,
-		topics
-	} from '$lib/models';
+	import { predicates } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -28,20 +19,7 @@
 		]
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			...((!page.data.currentOrganization.payload.default
-				? [['included', new Map()]]
-				: []) as Array<[string, Map<string, number>]>),
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, data.containers);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

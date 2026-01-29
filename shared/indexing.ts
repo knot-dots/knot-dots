@@ -30,19 +30,32 @@ let deLabels: Record<string, any> = {};
 export function createIndexWithMappings(client: Client, index: string) {
   return client.indices.create({
     index,
-    settings: { number_of_shards: 1, number_of_replicas: 0 },
+    settings: {
+      number_of_shards: 1,
+      number_of_replicas: 0,
+      analysis: {
+        analyzer: {
+          // Default to German so stemming and stop words match our labels/content
+          default: { type: 'german' },
+          default_search: { type: 'german' }
+        }
+      }
+    },
     mappings: {
       dynamic: true,
       date_detection: false,
       properties: {
         guid: { type: 'keyword' },
         revision: { type: 'integer' },
+        validFrom: { type: 'date' },
+        priority: { type: 'integer' },
         realm: { type: 'keyword' },
         organization: { type: 'keyword' },
         organizationalUnit: { type: 'keyword' },
         managedBy: { type: 'keyword' },
         type: { type: 'keyword' },
         title: { type: 'text', fields: { keyword: { type: 'keyword', ignore_above: 256 } } },
+        titleSort: { type: 'keyword', ignore_above: 256 },
         visibility: { type: 'keyword' },
         text: { type: 'text' },
         category_labels: { type: 'text' },
@@ -117,12 +130,16 @@ export function normalizePayload(payload: any) {
 export function toDoc(row: {
   guid: string; revision: number; realm: string; organization: string;
   organizational_unit?: string | null; managed_by: string; payload: any;
+  valid_from?: string | Date | null; priority?: number | null;
 }) {
   const normalized = normalizePayload(row.payload || {});
   const type: string | undefined = normalized?.type;
   const title: string | undefined = normalized?.title ?? normalized?.name;
+  const titleSort = normalizeTitleForSort(title);
   const description: string | undefined = normalized?.description;
   const visibility: string | undefined = normalized?.visibility;
+  const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
+  const priority = row.priority ?? undefined;
 
   const mapLabels = (arr?: string[]) => (arr || []).map(resolveLabel).filter(Boolean) as string[];
   const topicLabels = mapLabels(normalized.topic);
@@ -144,7 +161,10 @@ export function toDoc(row: {
     managedBy: row.managed_by,
     type,
     title,
+    titleSort,
     visibility,
+    validFrom,
+    priority,
     payload: normalized,
     category_labels: categoryLabels,
     topic_labels: topicLabels,
@@ -168,4 +188,16 @@ export function toDoc(row: {
       ...taskCategoryLabels
     ].filter(Boolean).join(' ')
   } as const;
+}
+
+function normalizeTitleForSort(value?: string) {
+  if (!value) return undefined;
+  return value
+    .replace(/Ä/g, 'A')
+    .replace(/Ö/g, 'O')
+    .replace(/Ü/g, 'U')
+    .replace(/ä/g, 'a')
+    .replace(/ö/g, 'o')
+    .replace(/ü/g, 'u')
+    .replace(/ß/g, 'ss');
 }

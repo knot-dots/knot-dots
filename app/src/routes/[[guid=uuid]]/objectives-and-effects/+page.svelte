@@ -9,25 +9,19 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import {
-		audience,
-		computeFacetCount,
 		type Container,
 		findAncestors,
 		findConnected,
 		findDescendants,
 		findLeafObjectives,
-		indicatorCategories,
-		indicatorTypes,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
 		isRelatedTo,
-		policyFieldBNK,
-		predicates,
-		sustainableDevelopmentGoals,
-		topics
+		predicates
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -101,7 +95,7 @@
 	});
 
 	let objectivesByLevel = $derived.by(() => {
-		let objectivesByLevel = new Map<number, Container[]>();
+		let objectivesByLevel = new SvelteMap<number, Container[]>();
 
 		for (const container of data.containers.filter(isObjectiveContainer)) {
 			const ancestors = findAncestors(container, data.containers.filter(isObjectiveContainer), [
@@ -119,18 +113,7 @@
 		return objectivesByLevel;
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, data.containers);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

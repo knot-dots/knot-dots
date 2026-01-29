@@ -7,24 +7,19 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import {
-		audience,
 		titleForProgramCollection,
-		computeFacetCount,
 		type Container,
 		findAncestors,
-		policyFieldBNK,
-		predicates,
-		programTypes,
-		sustainableDevelopmentGoals,
-		topics
+		predicates
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let knowledgeByLevel = $derived.by(() => {
-		let knowledgeByLevel = new Map<number, Container[]>();
+		let knowledgeByLevel = new SvelteMap<number, Container[]>();
 
 		for (const container of data.containers) {
 			const ancestors = findAncestors(container, data.containers, [predicates.enum['is-part-of']]);
@@ -40,17 +35,7 @@
 		return knowledgeByLevel;
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, [...data.containers, ...data.programs]);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

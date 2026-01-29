@@ -4,7 +4,6 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
-	import { computeFacetCount, taskCategories } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -15,13 +14,7 @@
 		{ label: $_('workspace.profile.measures'), value: '/me/measures' }
 	];
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, data.containers);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

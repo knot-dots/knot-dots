@@ -4,14 +4,6 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
-	import {
-		audience,
-		computeFacetCount,
-		measureTypes,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics
-	} from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -22,17 +14,7 @@
 		{ label: $_('workspace.profile.measures'), value: '/me/measures' }
 	];
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, data.containers);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>
