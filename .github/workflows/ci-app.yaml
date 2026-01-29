@@ -18,7 +18,7 @@ env:
   REGISTRY: rg.fr-par.scw.cloud/knot-dots
 
 jobs:
-  checks:
+  check:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     defaults:
@@ -31,11 +31,12 @@ jobs:
           node-version: 24
           cache: "npm"
           cache-dependency-path: ./app/package-lock.json
-      - run: npm ci
-      - run: npm run lint
+      - run: npm clean-install
       - run: npm run check
+      - run: npm run lint
 
   test:
+    needs: check
     timeout-minutes: 60
     runs-on: ubuntu-latest
     defaults:
@@ -50,7 +51,7 @@ jobs:
           node-version: 24
           cache: "npm"
           cache-dependency-path: ./app/package-lock.json
-      - run: npm ci
+      - run: npm clean-install
 
       # Generate SvelteKit aliases ($lib) without running full type check
       - name: Sync SvelteKit Config
@@ -90,7 +91,7 @@ jobs:
           retention-days: 7
 
   build:
-    needs: [checks, test]
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
