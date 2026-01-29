@@ -1668,6 +1668,7 @@ export function setUp(name: string, realm: string) {
 				boards: [],
 				default: true,
 				description: '',
+				favorite: [],
 				name,
 				type: payloadTypes.enum.organization,
 				visibility: visibility.enum.public

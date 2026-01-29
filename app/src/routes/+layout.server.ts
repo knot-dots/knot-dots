@@ -10,7 +10,8 @@ import {
 	type KeycloakUser,
 	type OrganizationalUnitContainer,
 	organizationalUnitType,
-	type OrganizationContainer
+	type OrganizationContainer,
+	payloadTypes
 } from '$lib/models';
 import {
 	getContainerByGuid,
@@ -21,7 +22,9 @@ import {
 import { findUserById } from '$lib/server/keycloak';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals, params, url }) => {
+export const load: LayoutServerLoad = async ({ depends, locals, params, url }) => {
+	depends(payloadTypes.enum.organization, payloadTypes.enum.organizational_unit);
+
 	let currentOrganization;
 	let user: KeycloakUser | undefined = undefined;
 
