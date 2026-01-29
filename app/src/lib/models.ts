@@ -87,6 +87,7 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'workspace',
 	'program',
 	'program_collection',
 	'progress',
@@ -577,6 +578,10 @@ export const taskPriority = z.object({
 export type TaskPriority = z.infer<typeof taskPriority>;
 
 export const visibility = z.enum(['creator', 'members', 'organization', 'public']);
+
+const workspaceSortValues = ['alpha', 'modified', 'priority'] as const;
+
+export const workspaceSort = z.enum(workspaceSortValues);
 
 export const boards = z.enum([
 	'board.indicators',
@@ -1319,6 +1324,38 @@ const pagePayload = z.object({
 
 const initialPagePayload = pagePayload.partial({ body: true, slug: true, title: true });
 
+const workspaceFilterPayload = z
+	.object({
+		audience: z.array(audience).default([]),
+		category: z.array(sustainableDevelopmentGoals).default([]),
+		indicatorCategory: z.array(indicatorCategories).default([]),
+		indicatorType: z.array(indicatorTypes).default([]),
+		measureType: z.array(measureTypes).default([]),
+		payloadType: z.array(payloadTypes).default([]),
+		policyFieldBNK: z.array(policyFieldBNK).default([]),
+		programType: z.array(programTypes).default([]),
+		relationType: z.array(predicates).default([]),
+		relatedTo: z.string().uuid().optional(),
+		sort: workspaceSort.default(workspaceSort.enum.alpha),
+		terms: z.string().default(''),
+		topic: z.array(topics).default([])
+	})
+	.strict();
+
+const workspacePayload = z
+	.object({
+		description: z.string().trim().optional(),
+		favorite: z.boolean().default(false),
+		hideFacets: z.boolean().default(true),
+		filters: workspaceFilterPayload.default(workspaceFilterPayload.parse({})),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.workspace),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialWorkspacePayload = workspacePayload.partial({ title: true });
+
 const textPayload = z
 	.object({
 		audience: z.array(audience).default([audience.enum['audience.citizens']]),
@@ -1366,6 +1403,7 @@ const payload = z.discriminatedUnion('type', [
 	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
+	workspacePayload,
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
@@ -1704,6 +1742,18 @@ export function isPageContainer(
 	container: AnyContainer | EmptyContainer
 ): container is PageContainer {
 	return container.payload.type === payloadTypes.enum.page;
+}
+
+const workspaceContainer = container.extend({
+	payload: workspacePayload
+});
+
+export type WorkspaceContainer = z.infer<typeof workspaceContainer>;
+
+export function isWorkspaceContainer(
+	container: AnyContainer | EmptyContainer
+): container is WorkspaceContainer {
+	return container.payload.type === payloadTypes.enum.workspace;
 }
 
 const progressContainer = container.extend({
@@ -2262,6 +2312,7 @@ export const emptyContainer = newContainer.extend({
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
+		initialWorkspacePayload,
 		initialProgramCollectionPayload,
 		initialProgramPayload,
 		initialProgressPayload,
