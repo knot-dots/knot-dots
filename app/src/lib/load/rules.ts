@@ -7,7 +7,7 @@ import {
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
 import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
-import type { PageServerLoad } from '../../routes/[[guid=uuid]]/rules/$types';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/rules/$types';
 
 export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');

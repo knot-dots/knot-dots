@@ -37,7 +37,7 @@
 			if (container.guid == container.organization) {
 				window.location.href = env.PUBLIC_BASE_URL + '/all/page';
 			} else {
-				await goto(resolve('/[[guid=uuid]]/all/page', { guid: container.organization }));
+				await goto(resolve('/[guid=uuid]/all/page', { guid: container.organization }));
 				await invalidateAll();
 			}
 			confirmDelete = false;

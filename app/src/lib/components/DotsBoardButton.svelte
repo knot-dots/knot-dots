@@ -7,7 +7,7 @@
 	let context = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
 </script>
 
-<a class="button" href={resolve('/[[guid=uuid]]/all/level', { guid: context.guid })}>
+<a class="button" href={resolve('/[guid=uuid]/all/level', { guid: context.guid })}>
 	<Dots />
 	<span class="is-visually-hidden">{$_('dots')}</span>
 </a>

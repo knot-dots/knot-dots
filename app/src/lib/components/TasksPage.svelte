@@ -5,7 +5,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { computeFacetCount, predicates, taskCategories } from '$lib/models';
 
-	import type { PageData } from '../../routes/[[guid=uuid]]/tasks/catalog/$types';
+	import type { PageData } from '../../routes/[guid=uuid]/tasks/catalog/$types';
 
 	interface Props {
 		children: Snippet;

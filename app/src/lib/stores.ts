@@ -21,7 +21,7 @@ import {
 	type MeasureContainer,
 	type NewContainer,
 	overlayKey,
-	type PageContainer,
+	type HelpContainer,
 	paramsFromFragment,
 	type PayloadType,
 	payloadTypes,
@@ -207,7 +207,7 @@ export type OverlayData =
 	  }
 	| {
 			key: 'view-help';
-			container: PageContainer;
+			container: HelpContainer;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();

@@ -3,18 +3,37 @@
 	import { _ } from 'svelte-i18n';
 	import Maximize from '~icons/flowbite/expand-outline';
 	import Minimize from '~icons/flowbite/minimize-outline';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
+	import { isPageContainer } from '$lib/models';
+	import { overlay } from '$lib/stores';
 
 	let fullScreen = getContext<{ enabled: boolean }>('overlayFullScreen');
 </script>
 
-<button
-	class="action-button"
-	onclick={() => (fullScreen.enabled = !fullScreen.enabled)}
-	{@attach tooltip($_('full_screen'))}
->
-	{#if fullScreen.enabled}<Minimize />{:else}<Maximize />{/if}
-</button>
+{#if $overlay && $overlay.container && isPageContainer($overlay.container)}
+	<a
+		href={resolve('/[guid=uuid]/[contentGuid=uuid]', {
+			guid: page.data.currentOrganizationalUnit
+				? page.data.currentOrganizationalUnit.guid
+				: page.data.currentOrganization.guid,
+			contentGuid: $overlay.container.guid
+		})}
+		class="action-button"
+		{@attach tooltip($_('full_screen'))}
+	>
+		<Maximize />
+	</a>
+{:else}
+	<button
+		class="action-button"
+		onclick={() => (fullScreen.enabled = !fullScreen.enabled)}
+		{@attach tooltip($_('full_screen'))}
+	>
+		{#if fullScreen.enabled}<Minimize />{:else}<Maximize />{/if}
+	</button>
+{/if}
 
 <style>
 	button {

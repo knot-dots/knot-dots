@@ -13,7 +13,7 @@
 		topics
 	} from '$lib/models';
 
-	import type { PageData } from '../../routes/[[guid=uuid]]/rules/catalog/$types';
+	import type { PageData } from '../../routes/[guid=uuid]/rules/catalog/$types';
 
 	interface Props {
 		children: Snippet;

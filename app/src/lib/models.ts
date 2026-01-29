@@ -74,6 +74,7 @@ const payloadTypeValues = [
 	'file_collection',
 	'goal',
 	'goal_collection',
+	'help',
 	'image',
 	'indicator',
 	'indicator_collection',
@@ -813,6 +814,16 @@ const goalCollectionPayload = z
 	})
 	.strict();
 
+const helpPayload = z.object({
+	body: z.string().trim(),
+	slug: z.string(),
+	title: z.string().trim(),
+	type: z.literal(payloadTypes.enum.help),
+	visibility: visibility.default(visibility.enum['public'])
+});
+
+const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: true });
+
 const initialGoalCollectionPayload = goalCollectionPayload;
 
 const indicatorPayload = basePayload
@@ -943,6 +954,15 @@ const objectiveCollectionPayload = z
 	.strict();
 
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
+
+const pagePayload = z.object({
+	body: z.string().trim(),
+	title: z.string().trim(),
+	type: z.literal(payloadTypes.enum.page),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+const initialPagePayload = pagePayload.partial({ body: true, title: true });
 
 const progressPayload = z.object({
 	title: z
@@ -1374,6 +1394,15 @@ const organizationPayload = z.object({
 	cover: z.string().url().optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
+	favorite: z
+		.array(
+			z.object({
+				href: z.string(),
+				icon: z.url().optional(),
+				title: z.string().trim()
+			})
+		)
+		.default([]),
 	image: z.string().url().optional(),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
@@ -1390,6 +1419,15 @@ const organizationalUnitPayload = z.object({
 	cover: z.string().url().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
+	favorite: z
+		.array(
+			z.object({
+				href: z.string(),
+				icon: z.url().optional(),
+				title: z.string().trim()
+			})
+		)
+		.default([]),
 	federalState: z.string().optional(),
 	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
@@ -1405,16 +1443,6 @@ const organizationalUnitPayload = z.object({
 });
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
-
-const pagePayload = z.object({
-	body: z.string().trim(),
-	slug: z.string(),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.page),
-	visibility: visibility.default(visibility.enum['public'])
-});
-
-const initialPagePayload = pagePayload.partial({ body: true, slug: true, title: true });
 
 const textPayload = z
 	.object({
@@ -1452,6 +1480,7 @@ const payload = z.discriminatedUnion('type', [
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
+	helpPayload,
 	imagePayload,
 	indicatorCollectionPayload,
 	indicatorPayload,
@@ -1673,6 +1702,18 @@ export function isGoalCollectionContainer(
 	return container.payload.type === payloadTypes.enum.goal_collection;
 }
 
+export const helpContainer = container.extend({
+	payload: helpPayload
+});
+
+export type HelpContainer = z.infer<typeof helpContainer>;
+
+export function isHelpContainer(
+	container: AnyContainer | EmptyContainer
+): container is HelpContainer {
+	return container.payload.type === payloadTypes.enum.help;
+}
+
 const indicatorContainer = container.extend({
 	payload: indicatorPayload
 });
@@ -1805,9 +1846,7 @@ export function isOrganizationalUnitContainer(
 	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
 
-export const pageContainer = container.extend({
-	payload: pagePayload
-});
+const pageContainer = container.extend({ payload: pagePayload });
 
 export type PageContainer = z.infer<typeof pageContainer>;
 
@@ -2372,6 +2411,7 @@ export const emptyContainer = newContainer.extend({
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
+		initialHelpPayload,
 		initialImagePayload,
 		initialIndicatorCollectionPayload,
 		initialIndicatorPayload,

@@ -1,7 +1,7 @@
 import { filterVisible } from '$lib/authorization';
 import { filterOrganizationalUnits, payloadTypes, type ResourceV2Container } from '$lib/models';
 import { getManyContainers } from '$lib/server/db';
-import type { PageServerLoad } from '../../routes/[[guid=uuid]]/resources/$types';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/resources/$types';
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 	return (async ({ depends, locals, parent, url }) => {

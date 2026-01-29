@@ -1,4 +1,5 @@
 import { filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import { filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -7,7 +8,7 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
-import type { PageServerLoad } from '../../routes/[[guid=uuid]]/all/$types';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/all/$types';
 
 export default (async function load({ depends, locals, url, parent }) {
 	depends('containers');
@@ -102,6 +103,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						payloadTypes.enum.image,
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
+						...(createFeatureDecisions(locals.features).usePage() ? [payloadTypes.enum.page] : []),
 						payloadTypes.enum.program,
 						payloadTypes.enum.report,
 						payloadTypes.enum.rule,

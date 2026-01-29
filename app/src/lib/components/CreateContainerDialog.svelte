@@ -68,7 +68,7 @@
 				$addEffectState = {};
 				await goto(`#view=${effect.guid}`);
 			} else if (isOrganizationalUnitContainer(savedContainer)) {
-				await goto(resolve('/[[guid=uuid]]/all/page', { guid: savedContainer.guid }));
+				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
 			}

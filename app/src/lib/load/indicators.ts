@@ -13,7 +13,7 @@ import {
 } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { User } from '$lib/stores';
-import type { PageServerLoad } from '../../routes/[[guid=uuid]]/indicators/$types';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/indicators/$types';
 
 export interface IndicatorFilters {
 	customCategories: Record<string, string[]>;
