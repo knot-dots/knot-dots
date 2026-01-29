@@ -25,8 +25,11 @@
 	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { boards, payloadTypes } from '$lib/models';
+	import { ability } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
-	import { boards } from '$lib/models';
+
+	const featureDecisions = createFeatureDecisions(page.data.features);
 
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
@@ -51,6 +54,13 @@
 			level: '/knowledge/level',
 			table: '/knowledge/table'
 		},
+		...(featureDecisions.useCustomCategories()
+			? {
+					categories: {
+						level: '/categories'
+					}
+				}
+			: undefined),
 		measures: {
 			catalog: '/measures/catalog',
 			monitoring: '/measures/monitoring',
@@ -76,7 +86,7 @@
 			status: '/tasks/status',
 			table: '/tasks/table'
 		},
-		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+		...(featureDecisions.useResourceWorkspace()
 			? {
 					resources: {
 						catalog: '/resources/catalog',
@@ -96,13 +106,12 @@
 			programs: '/programs/catalog',
 			rules: '/rules/catalog',
 			tasks: '/tasks/catalog',
-			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
-				? { resources: '/resources/catalog' }
-				: undefined)
+			...(featureDecisions.useResourceWorkspace() ? { resources: '/resources/catalog' } : undefined)
 		},
 		level: {
 			all: '/all/level',
 			knowledge: '/knowledge/level',
+			...(featureDecisions.useCustomCategories() ? { categories: '/categories' } : undefined),
 			goals: '/goals/level',
 			'objectives-and-effects': '/objectives-and-effects',
 			programs: '/programs/level'
@@ -127,9 +136,7 @@
 			programs: '/programs/table',
 			rules: '/rules/table',
 			tasks: '/tasks/table',
-			...(createFeatureDecisions(page.data.features).useResourceWorkspace()
-				? { resources: '/resources/table' }
-				: undefined)
+			...(featureDecisions.useResourceWorkspace() ? { resources: '/resources/table' } : undefined)
 		}
 	};
 
@@ -206,7 +213,18 @@
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
-		...(createFeatureDecisions(page.data.features).useResourceWorkspace()
+		...($ability.can('create', payloadTypes.enum.category) && featureDecisions.useCustomCategories()
+			? [
+					{
+						exists: true,
+						icon: Grid,
+						label: $_('workspace.type.categories'),
+						recommended: false,
+						value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
+					}
+				]
+			: []),
+		...(featureDecisions.useResourceWorkspace()
 			? [
 					{
 						exists: true,

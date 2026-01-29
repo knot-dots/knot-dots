@@ -8,6 +8,7 @@
 	import stripMarkdown from 'strip-markdown';
 	import rehypeExtractExcerpt from 'rehype-extract-excerpt';
 	import type { Container, EmptyContainer } from '$lib/models';
+	import type { VFile } from 'vfile';
 
 	interface Props {
 		container: Container | EmptyContainer;
@@ -28,10 +29,10 @@
 		.use(rehypeSanitize)
 		.use(rehypeExtractExcerpt, { maxLength: maxLength, wordBoundaries: true })
 		.use(rehypeStringify)
-		.process(container.payload.description) then content}
-		{#if content.data.excerpt}
+		.process(container.payload.description as string) then content}
+		{#if (content as VFile).data.excerpt}
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<p>{@html content.data.excerpt}</p>
+			<p>{@html (content as VFile).data.excerpt}</p>
 		{/if}
 	{/await}
 {/if}

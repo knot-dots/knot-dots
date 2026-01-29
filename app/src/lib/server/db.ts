@@ -317,7 +317,11 @@ export function deleteContainerRecursively(container: AnyContainer) {
 			const parts = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+				[
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-program'],
+					predicates.enum['is-part-of-category']
+				],
 				{},
 				''
 			)(txConnection);
@@ -326,7 +330,8 @@ export function deleteContainerRecursively(container: AnyContainer) {
 
 			for (const part of findDescendants(container, parts, [
 				predicates.enum['is-part-of'],
-				predicates.enum['is-part-of-program']
+				predicates.enum['is-part-of-program'],
+				predicates.enum['is-part-of-category']
 			])) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}
@@ -487,6 +492,7 @@ function prepareWhereCondition(filters: {
 	assignees?: string[];
 	audience?: string[];
 	categories?: string[];
+	customCategories?: Record<string, string[]>;
 	indicatorCategories?: string[];
 	indicator?: string;
 	indicatorTypes?: string[];
@@ -516,6 +522,12 @@ function prepareWhereCondition(filters: {
 		conditions.push(
 			sql.fragment`c.payload->'category' ?| ${sql.array(filters.categories, 'text')}`
 		);
+	}
+	if (filters.customCategories) {
+		for (const [key, values] of Object.entries(filters.customCategories)) {
+			if (!values?.length) continue;
+			conditions.push(sql.fragment`c.payload->${key} ?| ${sql.array(values, 'text')}`);
+		}
 	}
 	if (filters.indicatorCategories?.length) {
 		conditions.push(
@@ -659,6 +671,7 @@ export function getManyContainers(
 		assignees?: string[];
 		audience?: string[];
 		categories?: string[];
+		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		measureTypes?: string[];
 		indicator?: string;
@@ -879,6 +892,8 @@ export function getAllRelatedContainers(
 		assignees?: string[];
 		audience?: string[];
 		categories?: string[];
+		customCategories?: Record<string, string[]>;
+		indicatorCategories?: string[];
 		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
@@ -986,6 +1001,7 @@ export function getAllRelatedContainersByProgramType(
 	programTypes: string[],
 	filters: {
 		audience?: string[];
+		customCategories?: Record<string, string[]>;
 		categories?: string[];
 		measureTypes?: string[];
 		organizationalUnits?: string[];

@@ -309,6 +309,7 @@ if (browser) {
 					predicates.enum['is-consistent-with'],
 					predicates.enum['is-duplicate-of'],
 					predicates.enum['is-equivalent-to'],
+					predicates.enum['implies'],
 					predicates.enum['is-inconsistent-with'],
 					predicates.enum['is-prerequisite-for'],
 					predicates.enum['is-sub-target-of'],

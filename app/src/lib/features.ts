@@ -8,6 +8,7 @@ export const featureFlags = new Map([
 			'TeaserCollection',
 			'ContentPartner',
 			'ResourcesV2',
+			'CustomCategories',
 			'IOOI'
 		] as const
 	],
@@ -75,6 +76,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useResourceWorkspace() {
 			return features.includes('ResourcesV2');
+		},
+		useCustomCategories() {
+			return features.includes('CustomCategories');
 		},
 		useIOOI() {
 			return features.includes('IOOI');

@@ -93,9 +93,7 @@
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
-		{#key data.container.guid}
-			<ViewOverlay container={data.container} revisions={data.revisions} />
-		{/key}
+		<ViewOverlay container={data.container} revisions={data.revisions} />
 	{/if}
 </section>
 

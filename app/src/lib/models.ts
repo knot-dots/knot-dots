@@ -63,6 +63,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'category',
 	'chapter',
 	'col_content',
 	'content_partner',
@@ -103,6 +104,7 @@ const payloadTypeValues = [
 	'simple_measure',
 	'task',
 	'task_collection',
+	'term',
 	'teaser',
 	'teaser_collection',
 	'teaser_highlight',
@@ -189,12 +191,14 @@ const predicateValues = [
 	'is-creator-of',
 	'is-duplicate-of',
 	'is-equivalent-to',
+	'implies',
 	'is-head-of',
 	'is-inconsistent-with',
 	'is-measured-by',
 	'is-member-of',
 	'is-objective-for',
 	'is-part-of',
+	'is-part-of-category',
 	'is-part-of-measure',
 	'is-part-of-program',
 	'is-prerequisite-for',
@@ -599,20 +603,95 @@ export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'i
 
 export type IooiType = z.infer<typeof iooiTypes>;
 
-const basePayload = z
+const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
+	const cleaned = source
+		.trim()
+		.replace(/[^a-zA-Z0-9_.-]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+
+	return lowerCase ? cleaned.toLowerCase() : cleaned;
+};
+
+const basePayload = z.object({
+	aiSuggestion: z.boolean().default(false),
+	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+	category: z.array(z.string().trim().min(1)).default([]),
+	description: z.string().trim().optional(),
+	editorialState: editorialState.optional(),
+	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+	summary: z.string().trim().max(200).optional(),
+	title: z.string().trim(),
+	topic: z.array(z.string().trim().min(1)).default([]),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+const categoryPayloadBaseShape = z.object({
+	description: z.string().trim().optional(),
+	key: z.string().trim().optional(),
+	title: z.string().trim(),
+	type: z.literal(payloadTypes.enum.category),
+	visibility: visibility.default(visibility.enum['public'])
+});
+
+const enforceCategoryKey = (value: { key?: string; title?: string }, ctx: z.RefinementCtx) => {
+	const title = value.title?.trim();
+	const key = value.key?.trim();
+	const slug = key
+		? normalizeCategoryKey(key, { lowerCase: false })
+		: normalizeCategoryKey(title || '', { lowerCase: true });
+
+	if (!slug) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'category title is required to derive key'
+		});
+		return;
+	}
+
+	if (slug.length > 128) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'category key must be 128 characters or fewer'
+		});
+		return;
+	}
+
+	value.key = slug;
+};
+
+const enforceCategoryKeyIfProvided = (
+	value: { key?: string; title?: string },
+	ctx: z.RefinementCtx
+) => {
+	// For partial inputs, skip when both title and key are missing; creation code fills them later.
+	if (!value.title && !value.key) return;
+	enforceCategoryKey(value, ctx);
+};
+
+const categoryPayload = categoryPayloadBaseShape.superRefine(enforceCategoryKey);
+
+const initialCategoryPayload = categoryPayloadBaseShape
+	.partial({ key: true, title: true })
+	.superRefine(enforceCategoryKeyIfProvided);
+
+const termPayload = z
 	.object({
-		aiSuggestion: z.boolean().default(false),
-		audience: z.array(audience).default([audience.enum['audience.citizens']]),
-		category: z.array(sustainableDevelopmentGoals).default([]),
 		description: z.string().trim().optional(),
-		editorialState: editorialState.optional(),
-		policyFieldBNK: z.array(policyFieldBNK).default([]),
-		summary: z.string().trim().max(200).optional(),
+		filterLabel: z.string().trim().max(256).optional(),
 		title: z.string().trim(),
-		topic: z.array(topics).default([]),
-		visibility: visibility.default(visibility.enum['organization'])
+		value: z.string().trim(),
+		icon: z.string().trim().optional(),
+		type: z.literal(payloadTypes.enum.term),
+		visibility: visibility.default(visibility.enum['public'])
 	})
 	.strict();
+
+const initialTermPayload = termPayload.partial({
+	filterLabel: true,
+	icon: true,
+	title: true,
+	value: true
+});
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
@@ -703,17 +782,20 @@ const fileCollectionPayload = z
 
 const initialFileCollectionPayload = fileCollectionPayload;
 
-const goalPayload = basePayload.extend({
-	fulfillmentDate: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional(),
-	goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
-	goalType: goalType.optional(),
-	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-	progress: z.number().nonnegative().optional(),
-	type: z.literal(payloadTypes.enum.goal)
-});
+const goalPayload = basePayload
+	.extend({
+		fulfillmentDate: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
+		goalType: goalType.optional(),
+		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
+		progress: z.number().nonnegative().optional(),
+		type: z.literal(payloadTypes.enum.goal)
+	})
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialGoalPayload = goalPayload.partial({
 	goalType: true,
@@ -733,16 +815,18 @@ const goalCollectionPayload = z
 
 const initialGoalCollectionPayload = goalCollectionPayload;
 
-const indicatorPayload = basePayload.extend({
-	externalReference: z.string().url().optional(),
-	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	indicatorCategory: z.array(indicatorCategories).default([]),
-	indicatorType: z.array(indicatorTypes).default([]),
-	measureType: z.array(measureTypes).default([]),
-	quantity: z.string(),
-	type: z.literal(payloadTypes.enum.indicator),
-	unit: z.string()
-});
+const indicatorPayload = basePayload
+	.extend({
+		externalReference: z.string().url().optional(),
+		historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		indicatorCategory: z.array(indicatorCategories).default([]),
+		indicatorType: z.array(indicatorTypes).default([]),
+		measureType: z.array(measureTypes).default([]),
+		quantity: z.string(),
+		type: z.literal(payloadTypes.enum.indicator),
+		unit: z.string()
+	})
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialIndicatorPayload = indicatorPayload.partial({
 	quantity: true,
@@ -776,7 +860,8 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 
 export const knowledgePayload = basePayload
 	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
@@ -817,7 +902,8 @@ const measurePayload = basePayload
 		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
@@ -834,11 +920,14 @@ const measureCollectionPayload = z
 
 const initialMeasureCollectionPayload = measureCollectionPayload;
 
-const objectivePayload = basePayload.omit({ category: true, summary: true, topic: true }).extend({
-	type: z.literal(payloadTypes.enum.objective),
-	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
-	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
-});
+const objectivePayload = basePayload
+	.omit({ category: true, summary: true, topic: true })
+	.extend({
+		type: z.literal(payloadTypes.enum.objective),
+		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
+		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
+	})
+	.strict();
 
 const initialObjectivePayload = objectivePayload.partial({ title: true });
 
@@ -866,18 +955,21 @@ const progressPayload = z.object({
 
 const initialProgressPayload = progressPayload;
 
-const rulePayload = basePayload.extend({
-	ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
-	type: z.literal(payloadTypes.enum.rule),
-	validFrom: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional(),
-	validUntil: z
-		.string()
-		.refine((v) => z.coerce.date().safeParse(v))
-		.optional()
-});
+const rulePayload = basePayload
+	.extend({
+		ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
+		type: z.literal(payloadTypes.enum.rule),
+		validFrom: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional(),
+		validUntil: z
+			.string()
+			.refine((v) => z.coerce.date().safeParse(v))
+			.optional()
+	})
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialRulePayload = rulePayload.partial({ title: true });
 
@@ -906,7 +998,8 @@ const simpleMeasurePayload = basePayload
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
@@ -924,7 +1017,8 @@ const programPayload = basePayload
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialProgramPayload = programPayload.partial({
 	title: true
@@ -978,7 +1072,8 @@ const reportPayload = basePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.report)
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialReportPayload = reportPayload.partial({ title: true });
 
@@ -1013,7 +1108,7 @@ const resourceCollectionPayload = z
 const initialResourceCollectionPayload = resourceCollectionPayload;
 
 const resourceV2Payload = basePayload
-	.omit({ category: true, summary: true, topic: true, audience: true })
+	.omit({ audience: true, category: true, summary: true, topic: true })
 	.extend({
 		type: z.literal(payloadTypes.enum.resource_v2),
 		resourceCategory: resourceCategories.default(
@@ -1022,7 +1117,8 @@ const resourceV2Payload = basePayload
 		resourceUnit: resourceUnits.default(resourceUnits.enum['unit.euro']),
 		visibility: visibility.default(visibility.enum['public'])
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
@@ -1227,7 +1323,8 @@ const contentPartnerPayload = basePayload
 		type: z.literal(payloadTypes.enum.content_partner),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict();
+	.strict()
+	.catchall(z.array(z.string().trim().min(1)));
 
 const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
 
@@ -1345,6 +1442,7 @@ const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	chapterPayload,
+	categoryPayload,
 	colContentPayload,
 	contentPartnerCollectionPayload,
 	contentPartnerPayload,
@@ -1382,6 +1480,7 @@ const payload = z.discriminatedUnion('type', [
 	simpleMeasurePayload,
 	taskCollectionPayload,
 	taskPayload,
+	termPayload,
 	teaserPayload,
 	teaserCollectionPayload,
 	teaserHighlightPayload,
@@ -1488,6 +1587,18 @@ export function isChapterContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ChapterContainer {
 	return container.payload.type === payloadTypes.enum.chapter;
+}
+
+const categoryContainer = container.extend({
+	payload: categoryPayload
+});
+
+export type CategoryContainer = z.infer<typeof categoryContainer>;
+
+export function isCategoryContainer(
+	container: AnyContainer | EmptyContainer
+): container is CategoryContainer {
+	return container.payload.type === payloadTypes.enum.category;
 }
 
 const customCollectionContainer = container.extend({
@@ -1931,6 +2042,18 @@ export function isTaskContainer(
 	return container.payload.type === payloadTypes.enum.task;
 }
 
+const termContainer = container.extend({
+	payload: termPayload
+});
+
+export type TermContainer = z.infer<typeof termContainer>;
+
+export function isTermContainer(
+	container: AnyContainer | EmptyContainer
+): container is TermContainer {
+	return container.payload.type === payloadTypes.enum.term;
+}
+
 const taskCollectionContainer = container.extend({
 	payload: taskCollectionPayload
 });
@@ -2239,6 +2362,7 @@ export const emptyContainer = newContainer.extend({
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
 		initialChapterPayload,
+		initialCategoryPayload,
 		initialColContentPayload,
 		initialContentPartnerCollectionPayload,
 		initialContentPartnerPayload,
@@ -2279,6 +2403,7 @@ export const emptyContainer = newContainer.extend({
 		initialTextPayload,
 		initialTaskCollectionPayload,
 		initialTaskPayload,
+		initialTermPayload,
 		initialTeaserPayload,
 		initialTeaserCollectionPayload,
 		initialTeaserHighlightPayload,
@@ -2495,6 +2620,7 @@ export function mayDelete(container: AnyContainer | EmptyContainer, ability: Mon
 		container.relation.filter(
 			({ predicate, object }) =>
 				(predicate == predicates.enum['is-part-of'] ||
+					predicate == predicates.enum['is-part-of-category'] ||
 					predicate == predicates.enum['is-part-of-measure']) &&
 				'guid' in container &&
 				object == container.guid
@@ -2512,6 +2638,49 @@ export function newIndicatorTemplateFromIndicator(container: IndicatorContainer)
 		organizational_unit: container.organization,
 		realm: container.realm
 	});
+}
+
+export function newCategoryTemplateFromCategory(
+	category: CategoryContainer,
+	organization: OrganizationContainer
+) {
+	const template = containerOfType(
+		payloadTypes.enum.category,
+		organization.guid,
+		null,
+		organization.guid,
+		organization.realm
+	) as NewContainer;
+	const payload = template.payload as CategoryContainer['payload'];
+	Object.assign(payload, category.payload);
+	payload.visibility = visibility.enum.public;
+	return template;
+}
+
+export function newTermForCategoryTemplate(
+	term: TermContainer,
+	categoryGuid: string,
+	organization: OrganizationContainer,
+	position: number
+) {
+	const template = containerOfType(
+		payloadTypes.enum.term,
+		organization.guid,
+		null,
+		organization.guid,
+		organization.realm
+	) as NewContainer;
+	const payload = template.payload as TermContainer['payload'];
+	Object.assign(payload, term.payload);
+	payload.visibility = visibility.enum.public;
+	template.relation = [
+		{
+			object: categoryGuid,
+			position,
+			predicate: predicates.enum['is-part-of-category']
+		}
+	];
+	return template;
 }
 
 export function findConnected<T extends AnyContainer>(
@@ -2746,30 +2915,36 @@ export function createCopyOf(
 	);
 
 	if (isMeasureContainer(container)) {
-		copy.payload = { ...container.payload, template: false };
+		copy.payload = {
+			...(container.payload as typeof copy.payload),
+			template: false
+		} as typeof copy.payload;
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
-			...container.payload,
+			...(container.payload as typeof copy.payload),
 			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
-		};
+		} as typeof copy.payload;
 	} else if (isIndicatorContainer(container)) {
-		copy.payload = { ...container.payload, historicalValues: [] };
+		copy.payload = {
+			...(container.payload as unknown as typeof copy.payload),
+			historicalValues: []
+		} as unknown as typeof copy.payload;
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
-			...container.payload,
+			...(container.payload as typeof copy.payload),
 			achievedValues: container.payload.achievedValues.map(
 				([year]) => [year, 0] as [number, number]
 			)
-		};
+		} as typeof copy.payload;
 	} else {
-		copy.payload = { ...container.payload };
+		copy.payload = { ...(container.payload as typeof copy.payload) } as typeof copy.payload;
 	}
 
 	copy.payload = {
 		...copy.payload,
 		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
-	};
+	} as typeof copy.payload;
 
 	copy.relation.push({
 		object: container.guid,
@@ -2829,17 +3004,32 @@ export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
 	containers: AnyContainer[]
 ) {
+	const normalizeValue = (value: unknown): string => {
+		if (value === null || value === undefined) return '';
+		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+			return String(value);
+		}
+		if (typeof value === 'object') {
+			const v = value as { guid?: unknown; value?: unknown };
+			if (v.guid !== undefined) return String(v.guid);
+			if (v.value !== undefined) return String(v.value);
+		}
+		return String(value);
+	};
+
 	for (const container of containers) {
 		for (const key of facets.keys()) {
 			if (key in container.payload) {
 				const foci = facets.get(key) as Map<string, number>;
 				if (Array.isArray(container.payload[key as keyof typeof container.payload])) {
 					for (const value of container.payload[key as keyof typeof container.payload]) {
-						foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
+						const normalized = normalizeValue(value);
+						foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 					}
 				} else {
 					const value = container.payload[key as keyof typeof container.payload];
-					foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
+					const normalized = normalizeValue(value);
+					foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 				}
 			}
 		}

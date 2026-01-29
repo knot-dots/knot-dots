@@ -3,11 +3,14 @@ import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import {
 	type AnyPayload,
+	type MeasureContainer,
 	modifiedContainer,
+	type NewContainer,
 	newContainer,
 	type PartialRelation,
 	payloadTypes,
 	predicates,
+	type ProgramContainer,
 	type Relation
 } from '$lib/models';
 import {
@@ -34,6 +37,9 @@ function initializeNewContainer(
 	});
 }
 
+const simplePayload = (type: AnyPayload['type']) =>
+	({ title: 'Lorem ipsum', type }) as Partial<AnyPayload> & Pick<AnyPayload, 'type'>;
+
 test('containers can be related to each other', async ({ connection }: Fixtures) => {
 	const expectedRelations: Relation[] = [];
 
@@ -42,7 +48,7 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			},
+			} as NewContainer & ProgramContainer['payload'],
 			[]
 		)
 	)(connection);
@@ -52,7 +58,7 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -75,7 +81,7 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			},
+			} as NewContainer & ProgramContainer['payload'],
 			[]
 		)
 	)(connection);
@@ -85,7 +91,7 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -124,7 +130,7 @@ test('relations are added or removed when updating a container', async ({
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			},
+			} as NewContainer & ProgramContainer['payload'],
 			[]
 		)
 	)(connection);
@@ -134,7 +140,7 @@ test('relations are added or removed when updating a container', async ({
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -149,7 +155,11 @@ test('relations are added or removed when updating a container', async ({
 	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
 
 	const anotherContainer = await createContainer(
-		initializeNewContainer({ title: 'Lorem ipsum', type: payloadTypes.enum.measure }, [])
+		initializeNewContainer(
+			{ title: 'Lorem ipsum', type: payloadTypes.enum.measure } as NewContainer &
+				MeasureContainer['payload'],
+			[]
+		)
 	)(connection);
 
 	const newRelation = {
@@ -191,7 +201,7 @@ test('adding more relations does not interfere with existing relations', async (
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			},
+			} as NewContainer & ProgramContainer['payload'],
 			[]
 		)
 	)(connection);
@@ -201,7 +211,7 @@ test('adding more relations does not interfere with existing relations', async (
 	for (const payloadType of partOfProgramTypes) {
 		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
-			initializeNewContainer({ title: 'Lorem ipsum', type: payloadType }, [
+			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
@@ -213,19 +223,13 @@ test('adding more relations does not interfere with existing relations', async (
 	}
 
 	const task = await createContainer(
-		initializeNewContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.task), [
 			{
-				title: 'Lorem ipsum',
-				type: payloadTypes.enum.task
-			},
-			[
-				{
-					object: expectedRelationsOfProgram[2].subject,
-					position: 0,
-					predicate: predicates.enum['is-part-of']
-				}
-			]
-		)
+				object: expectedRelationsOfProgram[2].subject,
+				position: 0,
+				predicate: predicates.enum['is-part-of']
+			}
+		])
 	)(connection);
 	expect(task.relation).toEqual([
 		{

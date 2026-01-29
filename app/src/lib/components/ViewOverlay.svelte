@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
@@ -18,12 +19,14 @@
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
 	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
+	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import {
 		type AnyContainer,
 		audience,
 		computeFacetCount,
+		isCategoryContainer,
 		isContainerWithEffect,
 		isContentPartnerContainer,
 		isEffectContainer,
@@ -40,6 +43,7 @@
 		isResourceContainer,
 		isResourceV2Container,
 		isRuleContainer,
+		isTermContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
 		isTeaserContainer,
@@ -66,7 +70,10 @@
 
 	let { container: originalContainer, revisions = [] }: Props = $props();
 
-	let container = $state(originalContainer);
+	let container = $derived.by(() => {
+		let _ = $state(originalContainer);
+		return _;
+	});
 
 	let guid = $derived(container.guid);
 
@@ -137,6 +144,7 @@
 						predicates.enum['is-measured-by'],
 						predicates.enum['is-objective-for'],
 						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-category'],
 						predicates.enum['is-section-of']
 					]
 				}
@@ -186,6 +194,8 @@
 		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isGoalContainer(container)}
 		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isCategoryContainer(container)}
+		<EditableCategoryDetailView bind:container {relatedContainers} />
 	{:else if isIndicatorContainer(container)}
 		<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isIndicatorTemplateContainer(container)}
@@ -208,6 +218,8 @@
 		<EditableResourceV2DetailView bind:container {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}
 		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
+	{:else if isTermContainer(container)}
+		<EditableTermDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTaskContainer(container)}
 		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
 	{:else if isTeaserContainer(container)}

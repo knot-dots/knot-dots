@@ -5,6 +5,7 @@ import {
 	getAllRelatedContainersByProgramType,
 	getManyContainers
 } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 function isRelatedToSome(containers: Container[]) {
@@ -18,6 +19,7 @@ function isRelatedToSome(containers: Container[]) {
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
+	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization } = await parent();
 
 	if (url.searchParams.has('related-to')) {
@@ -26,7 +28,7 @@ export const load = (async ({ locals, url, parent }) => {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.get('related-to') as string,
 				[predicates.enum['is-part-of']],
-				{ type: [payloadTypes.enum.knowledge] },
+				{ customCategories, type: [payloadTypes.enum.knowledge] },
 				url.searchParams.get('sort') ?? ''
 			)
 		);
@@ -36,10 +38,7 @@ export const load = (async ({ locals, url, parent }) => {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.getAll('programType'),
 				{
-					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
+					customCategories,
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.knowledge]
 				},
@@ -51,10 +50,7 @@ export const load = (async ({ locals, url, parent }) => {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
+					customCategories,
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.knowledge]

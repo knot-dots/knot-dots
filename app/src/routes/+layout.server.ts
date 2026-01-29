@@ -61,6 +61,8 @@ export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 		}
 	}
 
+	const defaultOrganizationGuid = organizations.find(({ payload }) => payload.default)?.guid;
+
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
 		if (currentOrganizationalUnit) {
@@ -114,6 +116,7 @@ export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 		features: locals.features,
 		organizations,
 		organizationalUnits,
+		defaultOrganizationGuid,
 		session: await locals.auth(),
 		user
 	};

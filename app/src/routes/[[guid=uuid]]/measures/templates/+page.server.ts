@@ -1,12 +1,14 @@
 import { filterVisible } from '$lib/authorization';
 import { filterOrganizationalUnits, payloadTypes } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
 	let subordinateOrganizationalUnits: string[] = [];
+	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -22,11 +24,8 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		getManyContainers(
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{
-				audience: url.searchParams.getAll('audience'),
-				categories: url.searchParams.getAll('category'),
+				customCategories,
 				measureTypes: url.searchParams.getAll('measureType'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic'),
 				template: true,
 				terms: url.searchParams.get('terms') ?? '',
 				type: [payloadTypes.enum.measure]

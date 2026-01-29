@@ -170,7 +170,12 @@
 		use:userMenu.panel
 	>
 		<li>
-			<button class="sidebar-menu-item" onclick={() => dialog.showModal()} type="button">
+			<button
+				aria-label={$_('profile.settings')}
+				class="sidebar-menu-item"
+				onclick={() => dialog.showModal()}
+				type="button"
+			>
 				<Cog />
 				<span>
 					{$_('profile.settings')}

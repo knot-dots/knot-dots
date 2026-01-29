@@ -1,47 +1,67 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { _ } from 'svelte-i18n';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
+	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
+	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { createFeatureDecisions } from '$lib/features';
-	import { type AnyContainer, type Container, type ReportContainer } from '$lib/models';
+	import { type AnyContainer, type Container, type TermContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ReportContainer;
+		container: TermContainer;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
-
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 </script>
 
 <PropertyGrid>
-	{#snippet general()}
-		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
-		{/if}
+	{#snippet top()}
+		<EditableImage
+			{editable}
+			label={$_('category.terms.icon')}
+			help={$_('upload.image.svg_only_help')}
+			allowedFileTypes={['image/svg+xml']}
+			bind:value={container.payload.icon}
+		/>
+
+		<EditablePlainText
+			{editable}
+			label={$_('category.terms.filter_label')}
+			bind:value={container.payload.filterLabel}
+		/>
 	{/snippet}
 
-	{#snippet categories()}
-		{#if featureDecisions.useCustomCategories()}
-			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
-		{:else}
-			<EditableCategory {editable} bind:value={container.payload.category} />
-			<EditableTopic {editable} bind:value={container.payload.topic} />
-			<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
-			<EditableAudience {editable} bind:value={container.payload.audience} />
+	{#snippet general()}
+		<EditablePlainText
+			{editable}
+			label={$_('category.terms.value_label')}
+			required
+			bind:value={container.payload.value}
+		/>
+
+		<EditablePlainText
+			{editable}
+			label={$_('category.terms.filter_label')}
+			bind:value={container.payload.filterLabel}
+		/>
+
+		<EditableImage
+			{editable}
+			label={$_('category.terms.icon')}
+			help={$_('upload.image.svg_only_help')}
+			allowedFileTypes={['image/svg+xml']}
+			bind:value={container.payload.icon}
+		/>
+
+		{#if $ability.can('update', container, 'visibility')}
+			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
 	{/snippet}
 

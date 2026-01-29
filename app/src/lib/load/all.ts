@@ -6,6 +6,7 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[[guid=uuid]]/all/$types';
 
 export default (async function load({ depends, locals, url, parent }) {
@@ -13,6 +14,7 @@ export default (async function load({ depends, locals, url, parent }) {
 
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
+	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 
 	if (currentOrganizationalUnit) {
@@ -39,6 +41,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						]
 					: url.searchParams.getAll('relationType'),
 				{
+					customCategories,
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
@@ -62,6 +65,7 @@ export default (async function load({ depends, locals, url, parent }) {
 				{
 					audience: url.searchParams.getAll('audience'),
 					categories: url.searchParams.getAll('category'),
+					customCategories,
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					terms: url.searchParams.get('terms') ?? '',
 					topics: url.searchParams.getAll('topic'),
@@ -87,6 +91,7 @@ export default (async function load({ depends, locals, url, parent }) {
 				{
 					audience: url.searchParams.getAll('audience'),
 					categories: url.searchParams.getAll('category'),
+					customCategories,
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',

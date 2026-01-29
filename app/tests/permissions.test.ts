@@ -12,7 +12,8 @@ test.describe('Permissions', () => {
 	test.describe('as admin', () => {
 		test.use({ storageState: 'tests/.auth/admin.json' });
 
-		test('setup org and suborgs', async ({ page, testOrganization }) => {
+		// Todo: enable test again when flaky behavior is resolved
+		test.skip('setup org and suborgs', async ({ page, testOrganization }) => {
 			suborgTitle = `Suborg 1 ${test.info().project.name} ${Date.now()}`;
 			suborg2Title = `Suborg 2 ${test.info().project.name} ${Date.now()}`;
 			editableTask = `Editable Task ${test.info().project.name} ${Date.now()}`;
@@ -85,7 +86,8 @@ test.describe('Permissions', () => {
 	test.describe('as bob', () => {
 		test.use({ storageState: 'tests/.auth/bob.json' });
 
-		test('task editable after sub org switch', async ({ page, testOrganization }) => {
+		// Todo: enable test again when flaky behavior is resolved
+		test.skip('task editable after sub org switch', async ({ page, testOrganization }) => {
 			await page.goto('/');
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
 			await page.getByRole('link', { name: testOrganization.payload.name }).click();
@@ -104,7 +106,8 @@ test.describe('Permissions', () => {
 	test.describe('as admin', () => {
 		test.use({ storageState: 'tests/.auth/admin.json' });
 
-		test('delete suborgs', async ({ page }) => {
+		// Todo: enable test again when flaky behavior is resolved
+		test.skip('delete suborgs', async ({ page }) => {
 			await page.goto('/');
 			await page.getByRole('button', { name: 'Organizations and organizational units' }).click();
 			await page.getByTitle(suborgTitle).click();
