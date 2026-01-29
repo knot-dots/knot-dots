@@ -7,7 +7,7 @@
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableImage from '$lib/components/EditableImage.svelte';
-	import { ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import {
 		container as containerSchema,
 		containerOfType,
@@ -311,7 +311,9 @@
 		}
 	}
 
-	const canEdit = $derived($ability.can('update', container));
+	const canEdit = $derived(
+		$applicationState.containerDetailView.editable && $ability.can('update', container)
+	);
 
 	const isSubterm = $derived(
 		(container.relation ?? []).some(
