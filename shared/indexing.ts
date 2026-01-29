@@ -38,6 +38,12 @@ export function createIndexWithMappings(client: Client, index: string) {
           // Default to German so stemming and stop words match our labels/content
           default: { type: 'german' },
           default_search: { type: 'german' }
+        },
+        normalizer: {
+          title_norm: {
+            type: 'custom',
+            filter: ['lowercase', 'asciifolding']
+          }
         }
       }
     },
@@ -54,8 +60,12 @@ export function createIndexWithMappings(client: Client, index: string) {
         organizationalUnit: { type: 'keyword' },
         managedBy: { type: 'keyword' },
         type: { type: 'keyword' },
-        title: { type: 'text', fields: { keyword: { type: 'keyword', ignore_above: 256 } } },
-        titleSort: { type: 'keyword', ignore_above: 256 },
+        title: {
+          type: 'text',
+          fields: {
+            keyword: { type: 'keyword', normalizer: 'title_norm', ignore_above: 2048 }
+          }
+        },
         visibility: { type: 'keyword' },
         text: { type: 'text' },
         category_labels: { type: 'text' },
@@ -135,7 +145,6 @@ export function toDoc(row: {
   const normalized = normalizePayload(row.payload || {});
   const type: string | undefined = normalized?.type;
   const title: string | undefined = normalized?.title ?? normalized?.name;
-  const titleSort = normalizeTitleForSort(title);
   const description: string | undefined = normalized?.description;
   const visibility: string | undefined = normalized?.visibility;
   const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
@@ -161,7 +170,6 @@ export function toDoc(row: {
     managedBy: row.managed_by,
     type,
     title,
-    titleSort,
     visibility,
     validFrom,
     priority,
@@ -188,16 +196,4 @@ export function toDoc(row: {
       ...taskCategoryLabels
     ].filter(Boolean).join(' ')
   } as const;
-}
-
-function normalizeTitleForSort(value?: string) {
-  if (!value) return undefined;
-  return value
-    .replace(/Ä/g, 'A')
-    .replace(/Ö/g, 'O')
-    .replace(/Ü/g, 'U')
-    .replace(/ä/g, 'a')
-    .replace(/ö/g, 'o')
-    .replace(/ü/g, 'u')
-    .replace(/ß/g, 'ss');
 }
