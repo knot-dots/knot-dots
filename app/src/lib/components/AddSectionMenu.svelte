@@ -51,6 +51,7 @@
 		isResourceCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
+		isTaskContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -84,7 +85,10 @@
 	};
 
 	let mayAddTaskCollection = $derived(
-		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
+		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer) &&
+			(isGoalContainer(parentContainer) ||
+				isMeasureContainer(parentContainer) ||
+				isTaskContainer(parentContainer))
 	);
 
 	let mayAddObjectiveCollection = $derived(
