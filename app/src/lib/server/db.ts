@@ -1414,12 +1414,12 @@ export function createUser(user: User) {
 	};
 }
 
-export function createOrUpdateUser(user: User) {
+export function createOrUpdateUser(user: User, ignoreSettingsOnUpdate: boolean = false) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
 			INSERT INTO "user" (family_name, given_name, realm, guid, settings)
 			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(<SerializableValue>user.settings)})
-			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name}, settings = ${sql.jsonb(<SerializableValue>user.settings)}
+			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name} ${ignoreSettingsOnUpdate ? sql.fragment`` : sql.fragment`, settings = ${sql.jsonb(<SerializableValue>user.settings)}`}
 			RETURNING *
 		`);
 	};
