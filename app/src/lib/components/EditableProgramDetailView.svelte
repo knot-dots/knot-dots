@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { RemoteQuery } from '@sveltejs/kit';
-	import { getContext } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
@@ -17,31 +17,38 @@
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableRow from '$lib/components/EditableRow.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
+		audience,
+		computeFacetCount,
 		type Container,
 		containerOfType,
 		type NewContainer,
 		paramsFromFragment,
 		type PayloadType,
 		payloadTypes,
+		policyFieldBNK,
 		predicates,
 		type ProgramContainer,
-		programTypes
+		programTypes,
+		sustainableDevelopmentGoals,
+		topics
 	} from '$lib/models';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: ProgramContainer;
+		layout: Snippet<[Snippet, Snippet]>;
 		relatedContainersQuery: RemoteQuery<Container[]>;
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainersQuery, revisions }: Props = $props();
+	let { container = $bindable(), layout, relatedContainersQuery, revisions }: Props = $props();
 
 	let relatedContainers = $state.raw([]) as Container[];
 
@@ -171,105 +178,130 @@
 	{/each}
 {/snippet}
 
-{#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
-	<EditableContainerDetailView bind:container>
-		{#snippet data()}
-			<ProgramProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
+{#snippet header()}
+	<Header
+		facets={computeFacetCount(
+			new Map([
+				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
+				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+			]),
+			relatedContainersQuery.current?.filter(({ guid, relation }) =>
+				relation.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
+				)
+			) ?? []
+		)}
+		search
+	/>
+{/snippet}
 
-			<div class="chapters">
-				{#each filteredParts as part, i (part.guid)}
-					<form
-						class="details-section"
-						oninput={stopPropagation(requestSubmit)}
-						onsubmit={autoSave(part, 2000)}
-						novalidate
-					>
-						<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
-						<!-- svelte-ignore binding_property_non_reactive -->
-						<EditableChapter
-							bind:container={filteredParts[i]}
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', part)}
-							isPartOf={container}
-							{relatedContainers}
-						/>
-					</form>
-				{:else}
-					{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
-						<DropDownMenu
-							handleChange={createContainer}
-							label={$_('chapter')}
-							options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+{#snippet main()}
+	{#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
+		<EditableContainerDetailView bind:container>
+			{#snippet data()}
+				<ProgramProperties
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					{relatedContainers}
+					{revisions}
+				/>
+
+				<div class="chapters">
+					{#each filteredParts as part, i (part.guid)}
+						<form
+							class="details-section"
+							oninput={stopPropagation(requestSubmit)}
+							onsubmit={autoSave(part, 2000)}
+							novalidate
 						>
-							{#snippet icon()}<Plus />{/snippet}
-						</DropDownMenu>
-					{/if}
-				{/each}
+							<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
+							<!-- svelte-ignore binding_property_non_reactive -->
+							<EditableChapter
+								bind:container={filteredParts[i]}
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', part)}
+								isPartOf={container}
+								{relatedContainers}
+							/>
+						</form>
+					{:else}
+						{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
+							<DropDownMenu
+								handleChange={createContainer}
+								label={$_('chapter')}
+								options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+							>
+								{#snippet icon()}<Plus />{/snippet}
+							</DropDownMenu>
+						{/if}
+					{/each}
+				</div>
+			{/snippet}
+		</EditableContainerDetailView>
+	{:else if $applicationState.containerDetailView.mode === 'view_mode.table'}
+		<div class="table-wrapper">
+			<div class="table">
+				<div class="table-head">
+					<div class="row">
+						<div class="cell cell--action"></div>
+						<div class="cell">{$_('title')}</div>
+						<div class="cell">{$_('object')}</div>
+						<div class="cell">{$_('description')}</div>
+						<div class="cell">{$_('visibility.label')}</div>
+						<div class="cell">{$_('status')}</div>
+						<div class="cell">{$_('category')}</div>
+						<div class="cell">{$_('topic')}</div>
+						<div class="cell">{$_('policy_field_bnk')}</div>
+						<div class="cell">{$_('audience')}</div>
+						<div class="cell">{$_('fulfillment_date')}</div>
+						<div class="cell">{$_('planned_duration')}</div>
+						<div class="cell">{$_('editorial_state')}</div>
+						<div class="cell">{$_('organizational_unit')}</div>
+						<div class="cell">{$_('goal.hierarchy_level')}</div>
+						<div class="cell">{$_('goal_type')}</div>
+					</div>
+				</div>
+				{#if $ability.cannot('update', container) || paramsFromFragment(page.url).has('type')}
+					<div class="table-body">
+						{@render row(filteredParts, false)}
+					</div>
+				{:else}
+					<div
+						class="table-body"
+						use:dragHandleZone={{ items: filteredParts, flipDurationMs: 100 }}
+						onconsider={handleDndConsider}
+						onfinalize={handleDndFinalize}
+					>
+						{@render row(filteredParts, true)}
+					</div>
+				{/if}
 			</div>
-		{/snippet}
-	</EditableContainerDetailView>
-{:else if $applicationState.containerDetailView.mode === 'view_mode.table'}
-	<div class="table-wrapper">
-		<div class="table">
-			<div class="table-head">
-				<div class="row">
-					<div class="cell cell--action"></div>
-					<div class="cell">{$_('title')}</div>
-					<div class="cell">{$_('object')}</div>
-					<div class="cell">{$_('description')}</div>
-					<div class="cell">{$_('visibility.label')}</div>
-					<div class="cell">{$_('status')}</div>
-					<div class="cell">{$_('category')}</div>
-					<div class="cell">{$_('topic')}</div>
-					<div class="cell">{$_('policy_field_bnk')}</div>
-					<div class="cell">{$_('audience')}</div>
-					<div class="cell">{$_('fulfillment_date')}</div>
-					<div class="cell">{$_('planned_duration')}</div>
-					<div class="cell">{$_('editorial_state')}</div>
-					<div class="cell">{$_('organizational_unit')}</div>
-					<div class="cell">{$_('goal.hierarchy_level')}</div>
-					<div class="cell">{$_('goal_type')}</div>
-				</div>
-			</div>
-			{#if $ability.cannot('update', container) || paramsFromFragment(page.url).has('type')}
-				<div class="table-body">
-					{@render row(filteredParts, false)}
-				</div>
-			{:else}
-				<div
-					class="table-body"
-					use:dragHandleZone={{ items: filteredParts, flipDurationMs: 100 }}
-					onconsider={handleDndConsider}
-					onfinalize={handleDndFinalize}
-				>
-					{@render row(filteredParts, true)}
-				</div>
-			{/if}
 		</div>
-	</div>
-{/if}
+	{/if}
 
-<footer class="content-footer bottom-actions-bar">
-	<div class="content-actions">
-		<RelationButton {container} />
-		<CreateAnotherButton {container} {relatedContainers} />
-		<CreateCopyButton {container} />
-		{#if createFeatureDecisions(page.data.features).useAI()}
-			{#if container.payload.programType == programTypes.enum['program_type.guide']}
-				<KnowledgeAIButton {container} />
-			{:else}
-				<AskAIButton {container} />
+	<footer class="content-footer bottom-actions-bar">
+		<div class="content-actions">
+			<RelationButton {container} />
+			<CreateAnotherButton {container} {relatedContainers} />
+			<CreateCopyButton {container} />
+			{#if createFeatureDecisions(page.data.features).useAI()}
+				{#if container.payload.programType === programTypes.enum['program_type.guide']}
+					<KnowledgeAIButton {container} />
+				{:else}
+					<AskAIButton {container} />
+				{/if}
 			{/if}
-		{/if}
-		<DeleteButton {container} {relatedContainers} />
-	</div>
-</footer>
+			<DeleteButton {container} {relatedContainers} />
+		</div>
+	</footer>
+{/snippet}
+
+{@render layout(header, main)}
 
 <style>
 	.chapters :global(.dropdown-button.dropdown-button--menu) {

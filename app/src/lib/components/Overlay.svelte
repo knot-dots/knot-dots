@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
@@ -10,6 +10,7 @@
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
 	import NewIndicatorCatalogOverlay from '$lib/components/NewIndicatorCatalogOverlay.svelte';
+	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
@@ -53,6 +54,10 @@
 	}
 </script>
 
+{#snippet layout(header: Snippet, main: Snippet)}
+	<OverlayLayout {header} {main} />
+{/snippet}
+
 <svelte:window onmouseup={stopExpand} />
 
 <section
@@ -93,7 +98,7 @@
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
-		<ViewOverlay container={data.container} revisions={data.revisions} />
+		<ViewOverlay container={data.container} {layout} revisions={data.revisions} />
 	{/if}
 </section>
 

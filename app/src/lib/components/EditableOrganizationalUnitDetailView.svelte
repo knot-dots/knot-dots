@@ -20,14 +20,18 @@
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import { page } from '$app/state';
+	import Header from '$lib/components/Header.svelte';
+	import type { Snippet } from 'svelte';
 
 	interface Props {
 		container: OrganizationalUnitContainer;
+		layout: Snippet<[Snippet, Snippet]>;
 		relatedContainers?: Container[];
 	}
 
 	let {
 		container: originalContainer = $bindable(),
+		layout,
 		relatedContainers: originalRelatedContainers = []
 	}: Props = $props();
 
@@ -46,84 +50,92 @@
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
-{#if container.payload.cover}
-	<div class="cover-section">
-		<img alt={$_('logo')} class="cover" src={transformFileURL(container.payload.cover)} />
-	</div>
-{/if}
-<article>
-	<div
-		class="details stage stage--{container.payload.color
-			? backgroundColors.get(container.payload.color)
-			: 'white'}"
-	>
-		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-			<div class="stage--buttons details-section">
-				{#if mayEditStage}
-					<EditableCover
+{#snippet header()}
+	<Header />
+{/snippet}
+
+{#snippet main()}
+	{#if container.payload.cover}
+		<div class="cover-section">
+			<img alt={$_('logo')} class="cover" src={transformFileURL(container.payload.cover)} />
+		</div>
+	{/if}
+	<article>
+		<div
+			class="details stage stage--{container.payload.color
+				? backgroundColors.get(container.payload.color)
+				: 'white'}"
+		>
+			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+				<div class="stage--buttons details-section">
+					{#if mayEditStage}
+						<EditableCover
+							editable={$applicationState.containerDetailView.editable}
+							label={$_('add_cover')}
+							bind:value={container.payload.cover}
+						/>
+						<ColorDropdown
+							buttonStyle="button"
+							bind:value={container.payload.color}
+							label={$_('highlight')}
+							editable={$applicationState.containerDetailView.editable}
+						/>
+					{/if}
+				</div>
+				<header class="details-section">
+					<EditableLogo
 						editable={$applicationState.containerDetailView.editable}
-						label={$_('add_cover')}
-						bind:value={container.payload.cover}
+						bind:value={container.payload.image}
 					/>
-					<ColorDropdown
-						buttonStyle="button"
-						bind:value={container.payload.color}
-						label={$_('highlight')}
-						editable={$applicationState.containerDetailView.editable}
-					/>
+
+					{#if $applicationState.containerDetailView.editable}
+						<h1
+							class="details-title"
+							contenteditable="plaintext-only"
+							bind:textContent={container.payload.name}
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+						></h1>
+					{:else}
+						<h1 class="details-title" contenteditable="false">
+							{container.payload.name}
+						</h1>
+					{/if}
+
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<button class="action-button" onclick={() => dialog.showModal()} type="button">
+							<Ellipsis />
+							<span class="is-visually-hidden">{$_('organizational_unit.properties.title')}</span>
+						</button>
+					{/if}
+				</header>
+
+				<PropertiesDialog
+					bind:dialog
+					{container}
+					{relatedContainers}
+					title={$_('organizational_unit.properties.title')}
+				>
+					<OrganizationalUnitProperties bind:container editable />
+				</PropertiesDialog>
+
+				{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+					{#key container.guid}
+						<EditableFormattedText
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.description}
+						/>
+					{/key}
 				{/if}
-			</div>
-			<header class="details-section">
-				<EditableLogo
-					editable={$applicationState.containerDetailView.editable}
-					bind:value={container.payload.image}
-				/>
+			</form>
+		</div>
+		<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+			<Sections bind:container {relatedContainers} />
+		</div>
+	</article>
+{/snippet}
 
-				{#if $applicationState.containerDetailView.editable}
-					<h1
-						class="details-title"
-						contenteditable="plaintext-only"
-						bind:textContent={container.payload.name}
-						onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					></h1>
-				{:else}
-					<h1 class="details-title" contenteditable="false">
-						{container.payload.name}
-					</h1>
-				{/if}
-
-				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-					<button class="action-button" onclick={() => dialog.showModal()} type="button">
-						<Ellipsis />
-						<span class="is-visually-hidden">{$_('organizational_unit.properties.title')}</span>
-					</button>
-				{/if}
-			</header>
-
-			<PropertiesDialog
-				bind:dialog
-				{container}
-				{relatedContainers}
-				title={$_('organizational_unit.properties.title')}
-			>
-				<OrganizationalUnitProperties bind:container editable />
-			</PropertiesDialog>
-
-			{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
-				{#key container.guid}
-					<EditableFormattedText
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.description}
-					/>
-				{/key}
-			{/if}
-		</form>
-	</div>
-	<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
-		<Sections bind:container {relatedContainers} />
-	</div>
-</article>
+{@render layout(header, main)}
 
 <style>
 	header {

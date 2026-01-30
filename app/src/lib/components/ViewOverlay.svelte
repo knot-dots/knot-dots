@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
@@ -21,12 +22,8 @@
 	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
-	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import {
 		type AnyContainer,
-		audience,
-		computeFacetCount,
 		isCategoryContainer,
 		isContainerWithEffect,
 		isContentPartnerContainer,
@@ -46,15 +43,11 @@
 		isResourceV2Container,
 		isRuleContainer,
 		isTermContainer,
-		isSimpleMeasureContainer,
 		isTaskContainer,
 		isTeaserContainer,
 		isTextContainer,
 		paramsFromFragment,
-		policyFieldBNK,
-		predicates,
-		sustainableDevelopmentGoals,
-		topics
+		predicates
 	} from '$lib/models';
 	import {
 		fetchContainersRelatedToIndicators,
@@ -67,10 +60,11 @@
 
 	interface Props {
 		container: AnyContainer;
+		layout: Snippet<[Snippet, Snippet]>;
 		revisions?: AnyContainer[];
 	}
 
-	let { container: originalContainer, revisions = [] }: Props = $props();
+	let { container: originalContainer, layout, revisions = [] }: Props = $props();
 
 	let container = $derived.by(() => {
 		let _ = $state(originalContainer);
@@ -156,81 +150,53 @@
 </script>
 
 {#if isProgramContainer(container)}
-	<Header
-		facets={computeFacetCount(
-			new Map([
-				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-			]),
-			relatedContainersPromise.current?.filter(({ guid, relation }) =>
-				relation.some(
-					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
-				)
-			) ?? []
-		)}
-		search
-	/>
-{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
-	<Header />
-{:else if isGoalContainer(container)}
-	<Header />
-{:else}
-	<Header sortOptions={[]} workspaceOptions={[]} />
-{/if}
-
-{#if isProgramContainer(container)}
 	<EditableProgramDetailView
 		bind:container
+		{layout}
 		relatedContainersQuery={relatedContainersPromise}
 		{revisions}
 	/>
 {:else if relatedContainersPromise.current}
 	{@const relatedContainers = relatedContainersPromise.current}
 	{#if isContentPartnerContainer(container)}
-		<EditableContentPartnerDetailView bind:container {relatedContainers} {revisions} />
+		<EditableContentPartnerDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isEffectContainer(container)}
-		<EditableEffectDetailView bind:container {relatedContainers} {revisions} />
+		<EditableEffectDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isGoalContainer(container)}
-		<EditableGoalDetailView bind:container {relatedContainers} {revisions} />
+		<EditableGoalDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isCategoryContainer(container)}
-		<EditableCategoryDetailView bind:container {relatedContainers} />
+		<EditableCategoryDetailView bind:container {layout} {relatedContainers} />
 	{:else if isIndicatorContainer(container)}
-		<EditableIndicatorDetailView bind:container {relatedContainers} {revisions} />
+		<EditableIndicatorDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isIndicatorTemplateContainer(container)}
-		<EditableIndicatorTemplateDetailView bind:container {relatedContainers} {revisions} />
+		<EditableIndicatorTemplateDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isKnowledgeContainer(container)}
-		<EditableKnowledgeDetailView bind:container {relatedContainers} {revisions} />
+		<EditableKnowledgeDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isContainerWithEffect(container)}
-		<EditableMeasureDetailView bind:container {relatedContainers} {revisions} />
+		<EditableMeasureDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isObjectiveContainer(container)}
-		<EditableObjectiveDetailView bind:container {relatedContainers} {revisions} />
+		<EditableObjectiveDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isOrganizationalUnitContainer(container)}
-		<EditableOrganizationalUnitDetailView bind:container />
+		<EditableOrganizationalUnitDetailView bind:container {layout} />
 	{:else if isOrganizationContainer(container)}
-		<EditableOrganizationDetailView bind:container />
+		<EditableOrganizationDetailView bind:container {layout} />
 	{:else if isPageContainer(container)}
-		<EditablePageDetailView bind:container {relatedContainers} {revisions} />
+		<EditablePageDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isReportContainer(container)}
-		<EditableReportDetailView bind:container {relatedContainers} {revisions} />
+		<EditableReportDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isResourceContainer(container)}
-		<EditableResourceDetailView bind:container {relatedContainers} {revisions} />
+		<EditableResourceDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isResourceV2Container(container)}
-		<EditableResourceV2DetailView bind:container {relatedContainers} {revisions} />
+		<EditableResourceV2DetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isRuleContainer(container)}
-		<EditableRuleDetailView bind:container {relatedContainers} {revisions} />
+		<EditableRuleDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isTermContainer(container)}
-		<EditableTermDetailView bind:container {relatedContainers} {revisions} />
+		<EditableTermDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isTaskContainer(container)}
-		<EditableTaskDetailView bind:container {relatedContainers} {revisions} />
+		<EditableTaskDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isTeaserContainer(container)}
-		<EditableTeaserDetailView bind:container {relatedContainers} {revisions} />
+		<EditableTeaserDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{:else if isTextContainer(container)}
-		<EditableTextDetailView bind:container {relatedContainers} {revisions} />
+		<EditableTextDetailView bind:container {layout} {relatedContainers} {revisions} />
 	{/if}
-
-	<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
 {/if}

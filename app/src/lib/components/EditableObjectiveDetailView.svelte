@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -11,6 +12,7 @@
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import ObjectiveProperties from '$lib/components/ObjectiveProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
@@ -26,11 +28,12 @@
 
 	interface Props {
 		container: ObjectiveContainer;
+		layout: Snippet<[Snippet, Snippet]>;
 		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, relatedContainers, revisions }: Props = $props();
 
 	const disclosure = createDisclosure({});
 
@@ -91,45 +94,95 @@
 	}
 </script>
 
-<EditableContainerDetailView bind:container>
-	{#snippet data()}
-		<ObjectiveProperties
-			bind:container
-			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-			{relatedContainers}
-			{revisions}
-		/>
+{#snippet header()}
+	<Header sortOptions={[]} workspaceOptions={[]} />
+{/snippet}
 
-		<div class="details-section">
-			{#if indicator}
-				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-					{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
-					<div class="disclosure">
-						<button class="disclosure-button" type="button" use:disclosure.button>
-							<span>
-								<small>{$_('indicator.table.edit')}</small>
-								<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
-							</span>
-							{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-						</button>
+{#snippet main()}
+	<EditableContainerDetailView bind:container>
+		{#snippet data()}
+			<ObjectiveProperties
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+				{relatedContainers}
+				{revisions}
+			/>
 
-						{#if $disclosure.expanded}
-							<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
-								<table>
-									<thead>
-										<tr>
-											<th>{$_('indicator.table.year')}</th>
-											<th>{$_('indicator.wanted_values')}</th>
-											<th>{$_('indicator.table.historical_values')}</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
-										{#if container.payload.wantedValues.length > 0}
+			<div class="details-section">
+				{#if indicator}
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
+						<div class="disclosure">
+							<button class="disclosure-button" type="button" use:disclosure.button>
+								<span>
+									<small>{$_('indicator.table.edit')}</small>
+									<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
+								</span>
+								{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+							</button>
+
+							{#if $disclosure.expanded}
+								<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
+									<table>
+										<thead>
+											<tr>
+												<th>{$_('indicator.table.year')}</th>
+												<th>{$_('indicator.wanted_values')}</th>
+												<th>{$_('indicator.table.historical_values')}</th>
+												<th></th>
+											</tr>
+										</thead>
+										<tbody>
+											{#if container.payload.wantedValues.length > 0}
+												<tr>
+													<td colspan="4">
+														<button
+															onclick={prepend}
+															type="button"
+															{@attach tooltip($_('append_row'))}
+														>
+															<Plus />
+														</button>
+													</td>
+												</tr>
+											{/if}
+
+											{#each container.payload.wantedValues as [key], index (key)}
+												<tr>
+													<td class="year">
+														{container.payload.wantedValues[index][0]}
+													</td>
+													<td class="focus-indicator">
+														<input
+															inputmode="decimal"
+															onchange={update(index)}
+															type="text"
+															value={container.payload.wantedValues[index][1]}
+															use:init={key === newRowKey}
+														/>
+													</td>
+													<td class="historical-values">
+														{historicalValuesByYear.get(container.payload.wantedValues[index][0])}
+													</td>
+													<td>
+														{#if index === 0 || index === container.payload.wantedValues.length - 1}
+															<button
+																onclick={remove(index)}
+																type="button"
+																{@attach tooltip($_('delete_row'))}
+															>
+																<Minus />
+															</button>
+														{/if}
+													</td>
+												</tr>
+											{/each}
+
 											<tr>
 												<td colspan="4">
 													<button
-														onclick={prepend}
+														onclick={append}
 														type="button"
 														{@attach tooltip($_('append_row'))}
 													>
@@ -137,74 +190,37 @@
 													</button>
 												</td>
 											</tr>
-										{/if}
+										</tbody>
+									</table>
+								</div>
+							{/if}
+						</div>
+					{/if}
 
-										{#each container.payload.wantedValues as [key], index (key)}
-											<tr>
-												<td class="year">
-													{container.payload.wantedValues[index][0]}
-												</td>
-												<td class="focus-indicator">
-													<input
-														inputmode="decimal"
-														onchange={update(index)}
-														type="text"
-														value={container.payload.wantedValues[index][1]}
-														use:init={key === newRowKey}
-													/>
-												</td>
-												<td class="historical-values">
-													{historicalValuesByYear.get(container.payload.wantedValues[index][0])}
-												</td>
-												<td>
-													{#if index === 0 || index === container.payload.wantedValues.length - 1}
-														<button
-															onclick={remove(index)}
-															type="button"
-															{@attach tooltip($_('delete_row'))}
-														>
-															<Minus />
-														</button>
-													{/if}
-												</td>
-											</tr>
-										{/each}
-
-										<tr>
-											<td colspan="4">
-												<button onclick={append} type="button" {@attach tooltip($_('append_row'))}>
-													<Plus />
-												</button>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						{/if}
-					</div>
+					<ObjectiveChart {container} {relatedContainers} />
 				{/if}
+			</div>
 
-				<ObjectiveChart {container} {relatedContainers} />
-			{/if}
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
+		{/snippet}
+	</EditableContainerDetailView>
+
+	<footer class="content-footer bottom-actions-bar">
+		<div class="content-actions">
+			<RelationButton {container} />
+			<DeleteButton {container} {relatedContainers} />
 		</div>
+	</footer>
+{/snippet}
 
-		{#key container.guid}
-			<EditableFormattedText
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				label={$_('description')}
-				bind:value={container.payload.description}
-			/>
-		{/key}
-	{/snippet}
-</EditableContainerDetailView>
-
-<footer class="content-footer bottom-actions-bar">
-	<div class="content-actions">
-		<RelationButton {container} />
-		<DeleteButton {container} {relatedContainers} />
-	</div>
-</footer>
+{@render layout(header, main)}
 
 <style>
 	input {
