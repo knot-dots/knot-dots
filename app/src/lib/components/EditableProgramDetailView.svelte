@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { RemoteQuery } from '@sveltejs/kit';
 	import { getContext, type Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
@@ -39,16 +38,31 @@
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
+	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: ProgramContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainersQuery: RemoteQuery<Container[]>;
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, relatedContainersQuery, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let relatedContainersQuery = $derived(
+		fetchContainersRelatedToProgram({
+			guid,
+			params: {
+				audience: paramsFromFragment(page.url).getAll('audience'),
+				category: paramsFromFragment(page.url).getAll('category'),
+				policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
+				terms: paramsFromFragment(page.url).get('terms') ?? '',
+				topic: paramsFromFragment(page.url).getAll('topic')
+			}
+		})
+	);
 
 	let relatedContainers = $state.raw([]) as Container[];
 
@@ -56,6 +70,24 @@
 
 	let filteredParts = $derived(
 		parts.filter(({ payload }) => byPayloadType(payload.type, page.url))
+	);
+
+	let facets = $derived(
+		computeFacetCount(
+			new Map([
+				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
+				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+			]),
+			relatedContainersQuery.current?.filter(({ guid, relation }) =>
+				relation.some(
+					({ predicate }) =>
+						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
+				)
+			) ?? []
+		)
 	);
 
 	$effect(() => {
@@ -179,24 +211,7 @@
 {/snippet}
 
 {#snippet header()}
-	<Header
-		facets={computeFacetCount(
-			new Map([
-				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-			]),
-			relatedContainersQuery.current?.filter(({ guid, relation }) =>
-				relation.some(
-					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
-				)
-			) ?? []
-		)}
-		search
-	/>
+	<Header {facets} search />
 {/snippet}
 
 {#snippet main()}

@@ -10,22 +10,23 @@
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import {
-		type AnyContainer,
-		type Container,
-		type ContainerWithEffect,
-		isMeasureContainer
-	} from '$lib/models';
+	import { type AnyContainer, type ContainerWithEffect, isMeasureContainer } from '$lib/models';
+	import { fetchContainersRelatedToMeasure } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ContainerWithEffect;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let relatedContainersQuery = $derived(fetchContainersRelatedToMeasure(guid));
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>
 
 {#snippet header()}

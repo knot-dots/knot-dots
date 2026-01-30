@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/state';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
@@ -32,7 +31,6 @@
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
-		isMeasureContainer,
 		isObjectiveContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -45,18 +43,8 @@
 		isTermContainer,
 		isTaskContainer,
 		isTeaserContainer,
-		isTextContainer,
-		paramsFromFragment,
-		predicates
+		isTextContainer
 	} from '$lib/models';
-	import {
-		fetchContainersRelatedToIndicators,
-		fetchContainersRelatedToIndicatorTemplates,
-		fetchContainersRelatedToMeasure,
-		fetchContainersRelatedToProgram,
-		fetchContainersRelatedToResource,
-		fetchRelatedContainers
-	} from '$lib/remote/data.remote';
 
 	interface Props {
 		container: AnyContainer;
@@ -70,133 +58,48 @@
 		let _ = $state(originalContainer);
 		return _;
 	});
-
-	let guid = $derived(container.guid);
-
-	let organization = $derived(container.organization);
-
-	let relatedContainersPromise = $derived.by(() => {
-		if (isIndicatorContainer(container)) {
-			return fetchContainersRelatedToIndicators({
-				guid,
-				params: {
-					organization: [container.organization],
-					...(page.data.currentOrganizationalUnit
-						? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
-						: undefined),
-					...(paramsFromFragment(page.url).has('program')
-						? { program: paramsFromFragment(page.url).get('program') as string }
-						: undefined)
-				}
-			});
-		} else if (isIndicatorTemplateContainer(container)) {
-			return fetchContainersRelatedToIndicatorTemplates({
-				guid,
-				params: {
-					organization: page.data.currentOrganization.guid,
-					...(page.data.currentOrganizationalUnit
-						? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
-						: undefined)
-				}
-			});
-		} else if (isMeasureContainer(container)) {
-			return fetchContainersRelatedToMeasure(guid);
-		} else if (isProgramContainer(container)) {
-			return fetchContainersRelatedToProgram({
-				guid,
-				params: {
-					audience: paramsFromFragment(page.url).getAll('audience'),
-					category: paramsFromFragment(page.url).getAll('category'),
-					policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
-					terms: paramsFromFragment(page.url).get('terms') ?? '',
-					topic: paramsFromFragment(page.url).getAll('topic')
-				}
-			});
-		} else if (isResourceV2Container(container)) {
-			return fetchContainersRelatedToResource({
-				guid,
-				params: {
-					organization: [page.data.currentOrganization.guid],
-					relationType: [
-						predicates.enum['is-consistent-with'],
-						predicates.enum['is-equivalent-to'],
-						predicates.enum['is-inconsistent-with'],
-						predicates.enum['is-measured-by'],
-						predicates.enum['is-objective-for'],
-						predicates.enum['is-part-of'],
-						predicates.enum['is-section-of']
-					]
-				}
-			});
-		} else {
-			return fetchRelatedContainers({
-				guid,
-				params: {
-					organization: [organization],
-					relationType: [
-						predicates.enum['is-consistent-with'],
-						predicates.enum['is-equivalent-to'],
-						predicates.enum['is-inconsistent-with'],
-						predicates.enum['is-measured-by'],
-						predicates.enum['is-objective-for'],
-						predicates.enum['is-part-of'],
-						predicates.enum['is-part-of-category'],
-						predicates.enum['is-section-of']
-					]
-				}
-			});
-		}
-	});
 </script>
 
-{#if isProgramContainer(container)}
-	<EditableProgramDetailView
-		bind:container
-		{layout}
-		relatedContainersQuery={relatedContainersPromise}
-		{revisions}
-	/>
-{:else if relatedContainersPromise.current}
-	{@const relatedContainers = relatedContainersPromise.current}
-	{#if isContentPartnerContainer(container)}
-		<EditableContentPartnerDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isEffectContainer(container)}
-		<EditableEffectDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isGoalContainer(container)}
-		<EditableGoalDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isCategoryContainer(container)}
-		<EditableCategoryDetailView bind:container {layout} {relatedContainers} />
-	{:else if isIndicatorContainer(container)}
-		<EditableIndicatorDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isIndicatorTemplateContainer(container)}
-		<EditableIndicatorTemplateDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isKnowledgeContainer(container)}
-		<EditableKnowledgeDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isContainerWithEffect(container)}
-		<EditableMeasureDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isObjectiveContainer(container)}
-		<EditableObjectiveDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isOrganizationalUnitContainer(container)}
-		<EditableOrganizationalUnitDetailView bind:container {layout} />
-	{:else if isOrganizationContainer(container)}
-		<EditableOrganizationDetailView bind:container {layout} />
-	{:else if isPageContainer(container)}
-		<EditablePageDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isReportContainer(container)}
-		<EditableReportDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isResourceContainer(container)}
-		<EditableResourceDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isResourceV2Container(container)}
-		<EditableResourceV2DetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isRuleContainer(container)}
-		<EditableRuleDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isTermContainer(container)}
-		<EditableTermDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isTaskContainer(container)}
-		<EditableTaskDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isTeaserContainer(container)}
-		<EditableTeaserDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{:else if isTextContainer(container)}
-		<EditableTextDetailView bind:container {layout} {relatedContainers} {revisions} />
-	{/if}
+{#if isContentPartnerContainer(container)}
+	<EditableContentPartnerDetailView bind:container {layout} {revisions} />
+{:else if isEffectContainer(container)}
+	<EditableEffectDetailView bind:container {layout} {revisions} />
+{:else if isGoalContainer(container)}
+	<EditableGoalDetailView bind:container {layout} {revisions} />
+{:else if isCategoryContainer(container)}
+	<EditableCategoryDetailView bind:container {layout} />
+{:else if isIndicatorContainer(container)}
+	<EditableIndicatorDetailView bind:container {layout} {revisions} />
+{:else if isIndicatorTemplateContainer(container)}
+	<EditableIndicatorTemplateDetailView bind:container {layout} {revisions} />
+{:else if isKnowledgeContainer(container)}
+	<EditableKnowledgeDetailView bind:container {layout} {revisions} />
+{:else if isContainerWithEffect(container)}
+	<EditableMeasureDetailView bind:container {layout} {revisions} />
+{:else if isObjectiveContainer(container)}
+	<EditableObjectiveDetailView bind:container {layout} {revisions} />
+{:else if isOrganizationalUnitContainer(container)}
+	<EditableOrganizationalUnitDetailView bind:container {layout} />
+{:else if isOrganizationContainer(container)}
+	<EditableOrganizationDetailView bind:container {layout} />
+{:else if isPageContainer(container)}
+	<EditablePageDetailView bind:container {layout} {revisions} />
+{:else if isProgramContainer(container)}
+	<EditableProgramDetailView bind:container {layout} {revisions} />}
+{:else if isReportContainer(container)}
+	<EditableReportDetailView bind:container {layout} {revisions} />
+{:else if isResourceContainer(container)}
+	<EditableResourceDetailView bind:container {layout} {revisions} />
+{:else if isResourceV2Container(container)}
+	<EditableResourceV2DetailView bind:container {layout} {revisions} />
+{:else if isRuleContainer(container)}
+	<EditableRuleDetailView bind:container {layout} {revisions} />
+{:else if isTermContainer(container)}
+	<EditableTermDetailView bind:container {layout} {revisions} />
+{:else if isTaskContainer(container)}
+	<EditableTaskDetailView bind:container {layout} {revisions} />
+{:else if isTeaserContainer(container)}
+	<EditableTeaserDetailView bind:container {layout} {revisions} />
+{:else if isTextContainer(container)}
+	<EditableTextDetailView bind:container {layout} {revisions} />
 {/if}

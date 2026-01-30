@@ -10,17 +10,42 @@
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import TermProperties from '$lib/components/TermProperties.svelte';
-	import { predicates, type AnyContainer, type Container, type TermContainer } from '$lib/models';
+	import { predicates, type AnyContainer, type TermContainer } from '$lib/models';
+	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: TermContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let organization = $derived(container.organization);
+
+	let relatedContainersQuery = $derived(
+		fetchRelatedContainers({
+			guid,
+			params: {
+				organization: [organization],
+				relationType: [
+					predicates.enum['is-consistent-with'],
+					predicates.enum['is-equivalent-to'],
+					predicates.enum['is-inconsistent-with'],
+					predicates.enum['is-measured-by'],
+					predicates.enum['is-objective-for'],
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-category'],
+					predicates.enum['is-section-of']
+				]
+			}
+		})
+	);
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	const editable = $derived(
 		$applicationState.containerDetailView.editable && $ability.can('update', container)

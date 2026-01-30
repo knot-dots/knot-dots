@@ -20,7 +20,6 @@
 	import {
 		type AnyContainer,
 		titleForProgramCollection,
-		type Container,
 		findOverallObjective,
 		type IndicatorContainer,
 		isContainerWithEffect,
@@ -30,16 +29,37 @@
 		isRelatedTo,
 		paramsFromFragment
 	} from '$lib/models';
+	import { fetchContainersRelatedToIndicators } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: IndicatorContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let organization = $derived(container.organization);
+
+	let relatedContainersQuery = $derived(
+		fetchContainersRelatedToIndicators({
+			guid,
+			params: {
+				organization: [organization],
+				...(page.data.currentOrganizationalUnit
+					? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
+					: undefined),
+				...(paramsFromFragment(page.url).has('program')
+					? { program: paramsFromFragment(page.url).get('program') as string }
+					: undefined)
+			}
+		})
+	);
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	let currentTab: IndicatorTab = $derived.by(() => {
 		const parseResult = tab.safeParse(paramsFromURL(page.url).get('tab'));

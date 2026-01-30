@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -9,17 +10,33 @@
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
-	import { type AnyContainer, type Container, type IndicatorTemplateContainer } from '$lib/models';
+	import { type AnyContainer, type IndicatorTemplateContainer } from '$lib/models';
+	import { fetchContainersRelatedToIndicatorTemplates } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let relatedContainersQuery = $derived(
+		fetchContainersRelatedToIndicatorTemplates({
+			guid,
+			params: {
+				organization: page.data.currentOrganization.guid,
+				...(page.data.currentOrganizationalUnit
+					? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
+					: undefined)
+			}
+		})
+	);
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	let viewMode = $state('chart');
 </script>

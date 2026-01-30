@@ -7,18 +7,43 @@
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import type { AnyContainer, Container, ContentPartnerContainer } from '$lib/models';
+	import { type AnyContainer, type ContentPartnerContainer, predicates } from '$lib/models';
 	import ContentPartnerProperties from './ContentPartnerProperties.svelte';
+	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ContentPartnerContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let organization = $derived(container.organization);
+
+	let relatedContainersQuery = $derived(
+		fetchRelatedContainers({
+			guid,
+			params: {
+				organization: [organization],
+				relationType: [
+					predicates.enum['is-consistent-with'],
+					predicates.enum['is-equivalent-to'],
+					predicates.enum['is-inconsistent-with'],
+					predicates.enum['is-measured-by'],
+					predicates.enum['is-objective-for'],
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-category'],
+					predicates.enum['is-section-of']
+				]
+			}
+		})
+	);
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>
 
 {#snippet header()}

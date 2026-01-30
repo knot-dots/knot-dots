@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
@@ -10,17 +11,39 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
-	import { type AnyContainer, type Container, type ResourceV2Container } from '$lib/models';
+	import { type AnyContainer, predicates, type ResourceV2Container } from '$lib/models';
+	import { fetchContainersRelatedToResource } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ResourceV2Container;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let relatedContainersQuery = $derived(
+		fetchContainersRelatedToResource({
+			guid,
+			params: {
+				organization: [page.data.currentOrganization.guid],
+				relationType: [
+					predicates.enum['is-consistent-with'],
+					predicates.enum['is-equivalent-to'],
+					predicates.enum['is-inconsistent-with'],
+					predicates.enum['is-measured-by'],
+					predicates.enum['is-objective-for'],
+					predicates.enum['is-part-of'],
+					predicates.enum['is-section-of']
+				]
+			}
+		})
+	);
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>
 
 {#snippet header()}
