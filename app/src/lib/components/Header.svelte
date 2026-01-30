@@ -255,7 +255,7 @@
 			</a>
 		{/if}
 
-		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}}
+		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
 			<button
 				aria-label={$_('favorite')}
 				class="action-button action-button--size-l action-button--favorite"

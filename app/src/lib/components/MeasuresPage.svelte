@@ -17,7 +17,6 @@
 		isCategoryContainer,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
-		measureTypes,
 		policyFieldBNK,
 		payloadTypes,
 		predicates,
@@ -168,7 +167,6 @@
 		}
 
 		entries.push(
-			['measureType', new Map<string, number>(measureTypes.options.map((v) => [v as string, 0]))],
 			['programType', new Map<string, number>(programTypes.options.map((v) => [v as string, 0]))],
 			['member', memberFacet]
 		);

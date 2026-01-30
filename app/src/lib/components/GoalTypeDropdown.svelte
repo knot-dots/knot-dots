@@ -5,29 +5,19 @@
 
 	interface Props {
 		editable?: boolean;
-		labelledBy?: string;
 		value: GoalType | undefined;
 	}
 
-	let { editable = false, labelledBy, value = $bindable() }: Props = $props();
-
-	function setGoalType(v: string | null | undefined) {
-		value = (v ?? undefined) as GoalType | undefined;
-	}
+	let { editable = false, value = $bindable() }: Props = $props();
 
 	const options = $derived([
-		{ label: $_('empty'), value: null },
+		{ label: $_('empty'), value: undefined },
 		...goalType.options.map((o) => ({ label: $_(o), value: o }))
 	]);
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown
-		{labelledBy}
-		offset={[0, -39]}
-		{options}
-		bind:value={() => value ?? null, setGoalType}
-	/>
+	<SingleChoiceDropdown offset={[0, -39]} {options} bind:value />
 {:else}
 	<span class="value">{value ? $_(value) : $_('empty')}</span>
 {/if}

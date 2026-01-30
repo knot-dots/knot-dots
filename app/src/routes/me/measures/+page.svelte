@@ -16,7 +16,6 @@
 	import {
 		audience,
 		computeFacetCount,
-		measureTypes,
 		isCategoryContainer,
 		policyFieldBNK,
 		payloadTypes,
@@ -119,8 +118,6 @@
 				new Map<string, number>(audience.options.map((v) => [v as string, 0]))
 			]);
 		}
-
-		entries.push(['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]);
 
 		return computeFacetCount(new Map<string, Map<string, number>>(entries), data.containers);
 	});

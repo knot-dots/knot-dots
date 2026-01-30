@@ -373,7 +373,6 @@ if (browser) {
 				{
 					audience: hashParams.getAll('audience'),
 					category: hashParams.getAll('category'),
-					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-program']],
@@ -466,7 +465,6 @@ if (browser) {
 				category: hashParams.getAll('category'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
-				measureType: hashParams.getAll('measureType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
 			})) as IndicatorTemplateContainer[];
@@ -474,7 +472,6 @@ if (browser) {
 				category: hashParams.getAll('category'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
-				measureType: hashParams.getAll('measureType'),
 				organization: [values.data.currentOrganization.guid],
 				payloadType: [payloadTypes.enum.indicator],
 				topic: hashParams.getAll('topic')
@@ -490,7 +487,6 @@ if (browser) {
 				category: hashParams.getAll('category'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
-				measureType: hashParams.getAll('measureType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
 			})) as IndicatorTemplateContainer[];

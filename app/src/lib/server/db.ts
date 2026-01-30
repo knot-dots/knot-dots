@@ -496,7 +496,6 @@ function prepareWhereCondition(filters: {
 	indicatorCategories?: string[];
 	indicator?: string;
 	indicatorTypes?: string[];
-	measureTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
 	policyFieldsBNK?: string[];
@@ -543,11 +542,6 @@ function prepareWhereCondition(filters: {
 	if (filters.indicatorTypes?.length) {
 		conditions.push(
 			sql.fragment`c.payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
-		);
-	}
-	if (filters.measureTypes?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'measureType' ?| ${sql.array(filters.measureTypes, 'text')}`
 		);
 	}
 	if (filters.organizations?.length) {
@@ -673,7 +667,6 @@ export function getManyContainers(
 		categories?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		measureTypes?: string[];
 		indicator?: string;
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
@@ -894,7 +887,6 @@ export function getAllRelatedContainers(
 		categories?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
@@ -1003,7 +995,6 @@ export function getAllRelatedContainersByProgramType(
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		categories?: string[];
-		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
@@ -1423,12 +1414,12 @@ export function createUser(user: User) {
 	};
 }
 
-export function createOrUpdateUser(user: User) {
+export function createOrUpdateUser(user: User, ignoreSettingsOnUpdate: boolean = false) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
 			INSERT INTO "user" (family_name, given_name, realm, guid, settings)
 			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(<SerializableValue>user.settings)})
-			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name}, settings = ${sql.jsonb(<SerializableValue>user.settings)}
+			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name} ${ignoreSettingsOnUpdate ? sql.fragment`` : sql.fragment`, settings = ${sql.jsonb(<SerializableValue>user.settings)}`}
 			RETURNING *
 		`);
 	};

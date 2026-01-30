@@ -3,7 +3,6 @@ const KNOWN_FILTER_KEYS = new Set([
 	'indicatorCategory',
 	'indicatorType',
 	'included',
-	'measureType',
 	'member',
 	'organization',
 	'organizationalUnit',
@@ -15,7 +14,6 @@ const KNOWN_FILTER_KEYS = new Set([
 	'template',
 	'terms',
 	'type',
-	'measureTypes',
 	'programTypes'
 ]);
 

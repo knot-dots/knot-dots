@@ -46,3 +46,36 @@ test.describe('Measure monitoring', () => {
 		}
 	});
 });
+
+test.describe('Sub-measure creation', () => {
+	test.use({ storageState: 'tests/.auth/admin.json' });
+
+	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
+		await dotsBoard.goto(`/${testMeasure.organization}`);
+
+		await dotsBoard.card(testMeasure.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		const subMeasureSection = await dotsBoard.overlay.addSection('Measures');
+		const subMeasureTitle = `Sub-measure ${Date.now()}`;
+
+		await subMeasureSection.getByRole('button', { name: 'Add item' }).first().click();
+		await dotsBoard.page
+			.getByRole('dialog')
+			.getByRole('textbox', { name: 'Title' })
+			.fill(subMeasureTitle);
+		await dotsBoard.page.getByRole('dialog').getByLabel('Measure type').click();
+		await dotsBoard.page.getByRole('dialog').getByRole('radio', { name: 'Module' }).check();
+		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+
+		await dotsBoard.overlay.backButton.click();
+		await expect(subMeasureSection.getByRole('heading', { level: 2 })).toHaveText('Modules');
+		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
+		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();
+
+		// Verify persistence
+		await dotsBoard.page.reload();
+		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
+		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();
+	});
+});
