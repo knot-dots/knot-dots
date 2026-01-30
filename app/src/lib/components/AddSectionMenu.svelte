@@ -126,7 +126,8 @@
 	let mayAddMeasureCollection = $derived(
 		(isOrganizationContainer(parentContainer) ||
 			isOrganizationalUnitContainer(parentContainer) ||
-			isMeasureContainer(parentContainer)) &&
+			(isMeasureContainer(parentContainer) &&
+				createFeatureDecisions(page.data.features).useSubMeasures())) &&
 			!hasSection(parentContainer, relatedContainers).some(isMeasureCollectionContainer)
 	);
 

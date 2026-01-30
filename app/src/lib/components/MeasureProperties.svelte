@@ -43,7 +43,7 @@
 	{#snippet top()}
 		<EditableMeasureType {editable} bind:value={container.payload.measureType} />
 
-		{#if isMeasureContainer(container)}
+		{#if isMeasureContainer(container) && featureDecisions.useSubMeasures()}
 			<EditableMeasureHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 		{/if}
 

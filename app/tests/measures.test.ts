@@ -53,6 +53,13 @@ test.describe('Sub-measure creation', () => {
 	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
 		await dotsBoard.goto(`/${testMeasure.organization}`);
 
+		// Ensure feature flag is enabled
+		await dotsBoard.sidebar.openProfileSettings();
+		await dotsBoard.page.getByLabel('SubMeasures').check();
+		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
+		await response;
+
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 

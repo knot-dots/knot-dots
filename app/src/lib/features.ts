@@ -10,7 +10,8 @@ export const featureFlags = new Map([
 			'ResourcesV2',
 			'CustomCategories',
 			'IOOI',
-			'EditorialPages'
+			'EditorialPages',
+			'SubMeasures'
 		] as const
 	],
 	[
@@ -89,6 +90,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useFavoriteList() {
 			return features.includes('EditorialPages');
+		},
+		useSubMeasures() {
+			return features.includes('SubMeasures');
 		}
 	};
 }
