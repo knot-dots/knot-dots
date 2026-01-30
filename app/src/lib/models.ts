@@ -950,6 +950,8 @@ const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 const pagePayload = z.object({
 	body: z.string().trim(),
+	color: backgroundColor.optional(),
+	cover: z.url().optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.page),
 	visibility: visibility.default(visibility.enum['organization'])
