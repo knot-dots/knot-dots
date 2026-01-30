@@ -23,7 +23,6 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
-	import { getFavoriteListContext } from '$lib/contexts/favorite';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		getOrganizationURL,
@@ -39,8 +38,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
-	let favoritesList = getFavoriteListContext();
 
 	function expandSidebar() {
 		sidebarExpanded = true;
@@ -98,7 +95,7 @@
 		</a>
 	</li>
 	{#if createFeatureDecisions(page.data.features).useFavoriteList()}
-		{#each favoritesList.item as favorite (favorite.href)}
+		{#each (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).payload.favorite as favorite (favorite.href)}
 			{@const href = page.url.searchParams.size
 				? `${page.url.pathname}?${page.url.searchParams.toString()}`
 				: page.url.pathname}

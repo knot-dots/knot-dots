@@ -8,7 +8,6 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Toast from '$lib/components/Toast.svelte';
-	import { setFavoriteListContext } from '$lib/contexts/favorite';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { overlay } from '$lib/stores';
 
@@ -43,12 +42,6 @@
 	}
 
 	setToastContext(addToast);
-
-	let favoritesList = $state({
-		item: (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).payload.favorite
-	});
-
-	setFavoriteListContext(favoritesList);
 </script>
 
 <div class="app-wrapper">
