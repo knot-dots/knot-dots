@@ -122,17 +122,23 @@
 		return (event: Event) => {
 			const detail = (event as CustomEvent).detail;
 
-			if (detail.selected) {
-				const selected =
-					detail.selected === '/' ? ['all', 'page'] : detail.selected.split('/').slice(1, 3);
+			if (!detail.selected) {
+				return;
+			}
 
-				if (selected[0] == 'all' && selected[1] == 'monitoring') {
-					goto(overlayURL(url, overlayKey.enum['measure-monitoring'], container.guid));
-				} else if (selected[0] == 'tasks' && selected[1] == 'status') {
-					goto(overlayURL(url, overlayKey.enum.tasks, container.guid));
-				} else {
-					goto(overlayURL(url, overlayKey.enum.view, container.guid));
-				}
+			const selected: [string, string] =
+				detail.selected === '/' ? ['all', 'page'] : detail.selected.split('/').slice(1, 3);
+
+			if (selected.every((v, i) => v === selectedItem[i])) {
+				return;
+			}
+
+			if (selected[0] == 'all' && selected[1] == 'monitoring') {
+				goto(overlayURL(url, overlayKey.enum['measure-monitoring'], container.guid));
+			} else if (selected[0] == 'tasks' && selected[1] == 'status') {
+				goto(overlayURL(url, overlayKey.enum.tasks, container.guid));
+			} else {
+				goto(overlayURL(url, overlayKey.enum.view, container.guid));
 			}
 		};
 	}

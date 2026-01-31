@@ -75,15 +75,21 @@
 		return (event: Event) => {
 			const detail = (event as CustomEvent).detail;
 
-			if (detail.selected) {
-				const selected =
-					detail.selected === '/' ? ['all', 'page'] : detail.selected.split('/').slice(1, 3);
+			if (!detail.selected) {
+				return;
+			}
 
-				if (selected[0] == 'iooi' && selected[1] == 'board') {
-					goto(overlayURL(url, overlayKey.enum['goal-iooi'], container.guid));
-				} else {
-					goto(overlayURL(url, overlayKey.enum.view, container.guid));
-				}
+			const selected: [string, string] =
+				detail.selected === '/' ? ['all', 'page'] : detail.selected.split('/').slice(1, 3);
+
+			if (selected.every((v, i) => v === selectedItem[i])) {
+				return;
+			}
+
+			if (selected[0] == 'iooi' && selected[1] == 'board') {
+				goto(overlayURL(url, overlayKey.enum['goal-iooi'], container.guid));
+			} else {
+				goto(overlayURL(url, overlayKey.enum.view, container.guid));
 			}
 		};
 	}
