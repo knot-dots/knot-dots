@@ -6,13 +6,12 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
-	import { isPageContainer } from '$lib/models';
 	import { overlay } from '$lib/stores';
 
 	let fullScreen = getContext<{ enabled: boolean }>('overlayFullScreen');
 </script>
 
-{#if $overlay && $overlay.container && isPageContainer($overlay.container)}
+{#if $overlay && $overlay.container}
 	<a
 		href={resolve('/[guid=uuid]/[contentGuid=uuid]', {
 			guid: page.data.currentOrganizationalUnit
@@ -36,7 +35,7 @@
 {/if}
 
 <style>
-	button {
+	.action-button {
 		flex-shrink: 0;
 		margin-right: 0.5rem;
 	}
