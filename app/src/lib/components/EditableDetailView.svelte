@@ -85,7 +85,7 @@
 {:else if isPageContainer(container)}
 	<EditablePageDetailView bind:container {layout} {revisions} />
 {:else if isProgramContainer(container)}
-	<EditableProgramDetailView bind:container {layout} {revisions} />}
+	<EditableProgramDetailView bind:container {layout} {revisions} />
 {:else if isReportContainer(container)}
 	<EditableReportDetailView bind:container {layout} {revisions} />
 {:else if isResourceContainer(container)}
