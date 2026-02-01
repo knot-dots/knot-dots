@@ -95,7 +95,7 @@
 			if (pathnameWithoutContextSegments.length == 2) {
 				return pathnameWithoutContextSegments;
 			} else {
-				return ['all', 'page'];
+				return ['all', paramsFromFragment(page.url).has('table') ? 'table' : 'page'];
 			}
 		}
 	});
@@ -172,9 +172,9 @@
 	]);
 
 	function currentPath(url: URL) {
-		if (overlay) {
-			const params = paramsFromFragment(url);
+		const params = paramsFromFragment(url);
 
+		if (overlay) {
 			if (params.has('chapters')) {
 				return '/all/level';
 			} else if (params.has('view') && params.has('table')) {
@@ -188,6 +188,15 @@
 			} else {
 				return '/';
 			}
+		} else if (
+			url.pathname ==
+				resolve('/[guid=uuid]/[contentGuid=uuid]', {
+					guid: selectedContext.guid,
+					contentGuid: container.guid
+				}) &&
+			params.has('table')
+		) {
+			return '/all/table';
 		} else {
 			return '/' + (url.pathname.split('/').slice(3).join('/') ?? '');
 		}
@@ -246,7 +255,7 @@
 						resolve('/[guid=uuid]/[contentGuid=uuid]', {
 							guid: selectedContext.guid,
 							contentGuid: container.guid
-						})
+						}) + '#table'
 					);
 				}
 			} else if (selected[0] == 'indicators' && selected[1] == 'catalog') {

@@ -16,7 +16,6 @@ import {
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	type IooiType,
-	isProgramContainer,
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
@@ -31,8 +30,7 @@ import {
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
-		editable: false,
-		mode: 'view_mode.preview'
+		editable: false
 	}
 });
 
@@ -262,25 +260,6 @@ if (browser) {
 			);
 			const container = revisions[revisions.length - 1];
 
-			if (isProgramContainer(container)) {
-				if (hashParams.has('table')) {
-					applicationState.update((state) => ({
-						...state,
-						containerDetailView: {
-							...state.containerDetailView,
-							mode: 'view_mode.table'
-						}
-					}));
-				} else {
-					applicationState.update((state) => ({
-						...state,
-						containerDetailView: {
-							...state.containerDetailView,
-							mode: 'view_mode.preview'
-						}
-					}));
-				}
-			}
 			setOverlayIfLatest({
 				key: overlayKey.enum.view,
 				container,

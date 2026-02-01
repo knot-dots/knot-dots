@@ -90,6 +90,10 @@
 		)
 	);
 
+	let viewMode = $derived(
+		paramsFromFragment(page.url).has('table') ? 'view_mode.table' : 'view_mode.preview'
+	);
+
 	$effect(() => {
 		if (relatedContainersQuery.current) {
 			relatedContainers = relatedContainersQuery.current;
@@ -215,7 +219,7 @@
 {/snippet}
 
 {#snippet main()}
-	{#if $applicationState.containerDetailView.mode === 'view_mode.preview'}
+	{#if viewMode === 'view_mode.preview'}
 		<EditableContainerDetailView bind:container>
 			{#snippet data()}
 				<ProgramProperties
@@ -258,7 +262,7 @@
 				</div>
 			{/snippet}
 		</EditableContainerDetailView>
-	{:else if $applicationState.containerDetailView.mode === 'view_mode.table'}
+	{:else if viewMode === 'view_mode.table'}
 		<div class="table-wrapper">
 			<div class="table">
 				<div class="table-head">
