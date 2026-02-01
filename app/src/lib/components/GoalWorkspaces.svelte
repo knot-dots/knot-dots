@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
+	import { type Component, getContext } from 'svelte';
 	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -9,6 +9,7 @@
 	import ColumnSolid from '~icons/flowbite/column-solid';
 	import Objects from '~icons/knotdots/objects';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 
@@ -17,6 +18,8 @@
 	}
 
 	let { container }: Props = $props();
+
+	let overlay = getContext('overlay');
 
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
@@ -27,13 +30,25 @@
 		}
 	};
 
-	let selectedItem = $derived.by(() => {
-		const params = paramsFromFragment(page.url);
+	let selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
 
-		if (params.has('goal-iooi')) {
-			return ['iooi', 'board'];
+	let selectedItem = $derived.by(() => {
+		if (overlay) {
+			const params = paramsFromFragment(page.url);
+
+			if (params.has('goal-iooi')) {
+				return ['iooi', 'board'];
+			} else {
+				return ['all', 'page'];
+			}
 		} else {
-			return ['all', 'page'];
+			const pathnameWithoutContextSegments = page.url.pathname.split('/').slice(3);
+
+			if (pathnameWithoutContextSegments.length == 2) {
+				return pathnameWithoutContextSegments;
+			} else {
+				return ['all', 'page'];
+			}
 		}
 	});
 
@@ -59,16 +74,22 @@
 		}
 	]);
 
-	function pathFromParams(params: URLSearchParams) {
-		if (params.has('goal-iooi')) {
-			return '/iooi/board';
+	function currentPath(url: URL) {
+		if (overlay) {
+			const params = paramsFromFragment(url);
+
+			if (params.has('goal-iooi')) {
+				return '/iooi/board';
+			} else {
+				return '/';
+			}
 		} else {
-			return '/';
+			return '/' + (url.pathname.split('/').slice(3).join('/') ?? '');
 		}
 	}
 
 	const leftMenu = createMenu({
-		selected: pathFromParams(paramsFromFragment(page.url))
+		selected: currentPath(page.url)
 	});
 
 	function handleChange(url: URL, container: AnyContainer) {
@@ -87,9 +108,27 @@
 			}
 
 			if (selected[0] == 'iooi' && selected[1] == 'board') {
-				goto(overlayURL(url, overlayKey.enum['goal-iooi'], container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum['goal-iooi'], container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			} else {
-				goto(overlayURL(url, overlayKey.enum.view, container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.view, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			}
 		};
 	}
@@ -108,9 +147,7 @@
 	{@const extraOpts = {
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	}}
-	{@const selected = options.find(
-		({ value }) => value === pathFromParams(paramsFromFragment(page.url))
-	)}
+	{@const selected = options.find(({ value }) => value === currentPath(page.url))}
 	<div class="dropdown" use:popperRef>
 		<button
 			class="dropdown-button"

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
+	import { type Component, getContext } from 'svelte';
 	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -16,6 +16,7 @@
 	import Level from '~icons/knotdots/level';
 	import Objects from '~icons/knotdots/objects';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import {
 		type AnyContainer,
@@ -30,6 +31,8 @@
 	}
 
 	let { container }: Props = $props();
+
+	let overlay = getContext('overlay');
 
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
@@ -70,20 +73,30 @@
 	let selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
 
 	let selectedItem = $derived.by(() => {
-		const params = paramsFromFragment(page.url);
+		if (overlay) {
+			const params = paramsFromFragment(page.url);
 
-		if (params.has('chapters')) {
-			return ['all', 'level'];
-		} else if (params.has('view') && params.has('table')) {
-			return ['all', 'table'];
-		} else if (params.has('indicators')) {
-			return ['indicators', 'catalog'];
-		} else if (params.has('measures')) {
-			return ['measures', 'status'];
-		} else if (params.has('measure-monitoring')) {
-			return ['measures', 'monitoring'];
+			if (params.has('chapters')) {
+				return ['all', 'level'];
+			} else if (params.has('view') && params.has('table')) {
+				return ['all', 'table'];
+			} else if (params.has('indicators')) {
+				return ['indicators', 'catalog'];
+			} else if (params.has('measures')) {
+				return ['measures', 'status'];
+			} else if (params.has('measure-monitoring')) {
+				return ['measures', 'monitoring'];
+			} else {
+				return ['all', 'page'];
+			}
 		} else {
-			return ['all', 'page'];
+			const pathnameWithoutContextSegments = page.url.pathname.split('/').slice(3);
+
+			if (pathnameWithoutContextSegments.length == 2) {
+				return pathnameWithoutContextSegments;
+			} else {
+				return ['all', 'page'];
+			}
 		}
 	});
 
@@ -158,28 +171,34 @@
 		}
 	]);
 
-	function pathFromParams(params: URLSearchParams) {
-		if (params.has('chapters')) {
-			return '/all/level';
-		} else if (params.has('view') && params.has('table')) {
-			return '/all/table';
-		} else if (params.has('indicators')) {
-			return '/indicators/catalog';
-		} else if (params.has('measures')) {
-			return '/measures/status';
-		} else if (params.has('measure-monitoring')) {
-			return '/measures/monitoring';
+	function currentPath(url: URL) {
+		if (overlay) {
+			const params = paramsFromFragment(url);
+
+			if (params.has('chapters')) {
+				return '/all/level';
+			} else if (params.has('view') && params.has('table')) {
+				return '/all/table';
+			} else if (params.has('indicators')) {
+				return '/indicators/catalog';
+			} else if (params.has('measures')) {
+				return '/measures/status';
+			} else if (params.has('measure-monitoring')) {
+				return '/measures/monitoring';
+			} else {
+				return '/';
+			}
 		} else {
-			return '/';
+			return '/' + (url.pathname.split('/').slice(3).join('/') ?? '');
 		}
 	}
 
 	const leftMenu = createMenu({
-		selected: pathFromParams(paramsFromFragment(page.url))
+		selected: currentPath(page.url)
 	});
 
 	const rightMenu = createMenu({
-		selected: pathFromParams(paramsFromFragment(page.url))
+		selected: currentPath(page.url)
 	});
 
 	function handleChange(url: URL, container: AnyContainer) {
@@ -198,19 +217,82 @@
 			}
 
 			if (selected[0] == 'all' && selected[1] == 'page') {
-				goto(overlayURL(url, overlayKey.enum.view, container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.view, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			} else if (selected[0] == 'all' && selected[1] == 'level') {
-				goto(overlayURL(url, overlayKey.enum.chapters, container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.chapters, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			} else if (selected[0] == 'all' && selected[1] == 'table') {
-				goto(overlayURL(url, overlayKey.enum.view, container.guid, [['table', '']]));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.view, container.guid, [['table', '']]));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			} else if (selected[0] == 'indicators' && selected[1] == 'catalog') {
-				goto(overlayURL(url, overlayKey.enum.indicators, container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.indicators, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/indicators/catalog', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			} else if (selected[0] == 'measures' && selected[1] == 'status') {
-				goto(overlayURL(url, overlayKey.enum.measures, container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.measures, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/measures/status', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			} else if (selected[0] == 'measures' && selected[1] == 'monitoring') {
-				goto(overlayURL(url, overlayKey.enum['measure-monitoring'], container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum['measure-monitoring'], container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/measures/monitoring', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			} else {
-				goto(overlayURL(url, overlayKey.enum.view, container.guid));
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.view, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
 			}
 		};
 	}
@@ -229,9 +311,7 @@
 	{@const extraOpts = {
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	}}
-	{@const selected = options.find(
-		({ value }) => value === pathFromParams(paramsFromFragment(page.url))
-	)}
+	{@const selected = options.find(({ value }) => value === currentPath(page.url))}
 	<div class="dropdown" use:popperRef>
 		<button
 			class="dropdown-button"

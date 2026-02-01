@@ -6,22 +6,58 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
+	import {
+		isMeasureContainer,
+		isProgramContainer,
+		isSimpleMeasureContainer,
+		overlayKey
+	} from '$lib/models';
 	import { overlay } from '$lib/stores';
 
 	let fullScreen = getContext<{ enabled: boolean }>('overlayFullScreen');
+
+	let href = $derived.by(() => {
+		if (!$overlay?.container) {
+			return '';
+		}
+
+		const routeParams = {
+			guid: (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid,
+			contentGuid: $overlay.container.guid
+		};
+
+		switch ($overlay?.key) {
+			case overlayKey.enum['chapters']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', routeParams);
+			case overlayKey.enum['view']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]', routeParams);
+			case overlayKey.enum['goal-iooi']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', routeParams);
+			case overlayKey.enum['indicators']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/indicators/catalog', routeParams);
+			case overlayKey.enum['measure-monitoring']:
+				if (isProgramContainer($overlay.container)) {
+					return resolve('/[guid=uuid]/[contentGuid=uuid]/measures/monitoring', routeParams);
+				} else if (
+					isMeasureContainer($overlay.container) ||
+					isSimpleMeasureContainer($overlay.container)
+				) {
+					return resolve('/[guid=uuid]/[contentGuid=uuid]/all/monitoring', routeParams);
+				} else {
+					return '';
+				}
+			case overlayKey.enum['measures']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/measures/status', routeParams);
+			case overlayKey.enum['tasks']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/tasks/status', routeParams);
+			default:
+				return '';
+		}
+	});
 </script>
 
-{#if $overlay && $overlay.container}
-	<a
-		href={resolve('/[guid=uuid]/[contentGuid=uuid]', {
-			guid: page.data.currentOrganizationalUnit
-				? page.data.currentOrganizationalUnit.guid
-				: page.data.currentOrganization.guid,
-			contentGuid: $overlay.container.guid
-		})}
-		class="action-button"
-		{@attach tooltip($_('full_screen'))}
-	>
+{#if href}
+	<a {@attach tooltip($_('full_screen'))} class="action-button" {href}>
 		<Maximize />
 	</a>
 {:else}
