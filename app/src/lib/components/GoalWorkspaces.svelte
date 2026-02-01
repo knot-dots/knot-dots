@@ -54,7 +54,7 @@
 		{
 			exists: true,
 			icon: ColumnSolid,
-			label: 'IOOI',
+			label: $_('workspace.iooi'),
 			value: workspacesLeft.iooi[selectedItem[1]] ?? '/iooi/board'
 		}
 	]);
