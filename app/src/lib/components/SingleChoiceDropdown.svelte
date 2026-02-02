@@ -12,6 +12,11 @@
 		value: string | null | undefined;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface $$Events {
+		change: Event;
+	}
+
 	let { labelledBy, offset = [0, 4], options, value = $bindable() }: Props = $props();
 	let selected = $derived(options.find((o) => o.value == value));
 

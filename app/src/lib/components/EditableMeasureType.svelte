@@ -6,18 +6,10 @@
 
 	interface Props {
 		editable?: boolean;
-		value?: MeasureType[];
+		value?: MeasureType;
 	}
 
-	let { editable = false, value = $bindable([]) }: Props = $props();
-
-	const selected = $derived(value?.[0]);
-
-	function handleChange(event: Event) {
-		const target = event.target as HTMLInputElement | null;
-		const next = (target?.value || undefined) as MeasureType | undefined;
-		value = next ? [next] : [];
-	}
+	let { editable = false, value = $bindable() }: Props = $props();
 </script>
 
 <EditableSingleChoice
@@ -30,6 +22,5 @@
 			value: o
 		}))
 	]}
-	value={selected}
-	on:change={handleChange}
+	bind:value
 />

@@ -902,7 +902,7 @@ const measurePayload = basePayload
 		comment: z.string().trim().optional(),
 		endDate: z.string().date().optional(),
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-		measureType: z.array(measureTypes).default([]),
+		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().optional(),
 		resource: z
 			.array(
@@ -1009,7 +1009,7 @@ const simpleMeasurePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
-		measureType: z.array(measureTypes).default([]),
+		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().default(0),
 		resource: z
 			.array(
