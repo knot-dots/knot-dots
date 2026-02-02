@@ -7,6 +7,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
@@ -23,6 +24,7 @@
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
+		isCategoryContainer,
 		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
@@ -66,7 +68,7 @@
 				$addEffectState = {};
 				await goto(`#view=${effect.guid}`);
 			} else if (isOrganizationalUnitContainer(savedContainer)) {
-				await goto(resolve('/[[guid=uuid]]/all/page', { guid: savedContainer.guid }));
+				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
 			}
@@ -173,6 +175,8 @@
 						relatedContainers={[]}
 						revisions={[]}
 					/>
+				{:else if isCategoryContainer($newContainer)}
+					<CategoryProperties bind:container={$newContainer} editable />
 				{:else if isIndicatorContainer($newContainer)}
 					<IndicatorProperties
 						bind:container={$newContainer}

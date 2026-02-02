@@ -4,5 +4,5 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
 	const { currentOrganization } = await parent();
-	redirect(308, resolve('/[[guid=uuid]]/all/page', { guid: currentOrganization.guid }));
+	redirect(308, resolve('/[guid=uuid]/all/page', { guid: currentOrganization.guid }));
 }) satisfies PageServerLoad;

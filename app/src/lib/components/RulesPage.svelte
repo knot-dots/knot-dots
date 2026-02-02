@@ -4,7 +4,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { predicates } from '$lib/models';
 
-	import type { PageData } from '../../routes/[[guid=uuid]]/rules/catalog/$types';
+	import type { PageData } from '../../routes/[guid=uuid]/rules/catalog/$types';
 
 	interface Props {
 		children: Snippet;

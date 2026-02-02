@@ -21,7 +21,6 @@
 		type IndicatorTemplateContainer,
 		indicatorTypes,
 		isIndicatorContainer,
-		measureTypes,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -76,12 +75,14 @@
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer & EmptyIndicatorContainer;
 
-		container.payload = {
+		const payload = {
 			...template.payload,
 			historicalValues: container.payload.historicalValues,
 			quantity: template.guid,
 			type: container.payload.type
-		};
+		} as IndicatorContainer['payload'];
+
+		container.payload = payload;
 
 		$newContainer = container;
 
@@ -96,7 +97,11 @@
 				$addEffectState = {};
 				await goto(`#${params.toString()}`);
 			} else if ($addObjectiveState.target) {
-				const objective = await createObjective($addObjectiveState.target, container);
+				const objective = await createObjective(
+					$addObjectiveState.target,
+					container,
+					$addObjectiveState.iooiType
+				);
 				const params = new URLSearchParams([[overlayKey.enum.view, objective.guid]]);
 				$addObjectiveState = {};
 				await goto(`#${params.toString()}`);
@@ -130,7 +135,6 @@
 				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
 				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-				['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))]
 			]),

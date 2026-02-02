@@ -15,12 +15,13 @@ import {
 	filterMembers,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
+	type IooiType,
 	isProgramContainer,
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
 	overlayKey,
-	type PageContainer,
+	type HelpContainer,
 	paramsFromFragment,
 	type PayloadType,
 	payloadTypes,
@@ -130,6 +131,7 @@ export const addEffectState = writable<AddEffectState>({});
 type AddObjectiveState = {
 	target?: Container;
 	indicator?: IndicatorContainer;
+	iooiType?: IooiType;
 };
 
 export const addObjectiveState = writable<AddObjectiveState>({});
@@ -189,6 +191,11 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
+			key: 'goal-iooi';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
 			key: 'teasers';
 			container: AnyContainer;
 			containers: Container[];
@@ -200,7 +207,7 @@ export type OverlayData =
 	  }
 	| {
 			key: 'view-help';
-			container: PageContainer;
+			container: HelpContainer;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();
@@ -302,6 +309,7 @@ if (browser) {
 					predicates.enum['is-consistent-with'],
 					predicates.enum['is-duplicate-of'],
 					predicates.enum['is-equivalent-to'],
+					predicates.enum['implies'],
 					predicates.enum['is-inconsistent-with'],
 					predicates.enum['is-prerequisite-for'],
 					predicates.enum['is-sub-target-of'],
@@ -365,7 +373,6 @@ if (browser) {
 				{
 					audience: hashParams.getAll('audience'),
 					category: hashParams.getAll('category'),
-					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-program']],
@@ -408,6 +415,22 @@ if (browser) {
 				container,
 				containers
 			});
+		} else if (hashParams.has(overlayKey.enum['goal-iooi'])) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum['goal-iooi']) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const containers = await fetchRelatedContainers(
+				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+				{
+					organization: [container.organization],
+					payloadType: [payloadTypes.enum.goal, payloadTypes.enum.objective],
+					relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
+					terms: hashParams.get('terms') ?? ''
+				},
+				hashParams.get('sort') ?? 'alpha'
+			);
+			setOverlayIfLatest({ key: overlayKey.enum['goal-iooi'], container, containers });
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.tasks) as string
@@ -442,7 +465,6 @@ if (browser) {
 				category: hashParams.getAll('category'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
-				measureType: hashParams.getAll('measureType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
 			})) as IndicatorTemplateContainer[];
@@ -450,7 +472,6 @@ if (browser) {
 				category: hashParams.getAll('category'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
-				measureType: hashParams.getAll('measureType'),
 				organization: [values.data.currentOrganization.guid],
 				payloadType: [payloadTypes.enum.indicator],
 				topic: hashParams.getAll('topic')
@@ -466,7 +487,6 @@ if (browser) {
 				category: hashParams.getAll('category'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
-				measureType: hashParams.getAll('measureType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
 			})) as IndicatorTemplateContainer[];

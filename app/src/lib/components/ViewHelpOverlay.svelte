@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
-	import { type PageContainer } from '$lib/models';
+	import { type HelpContainer } from '$lib/models';
 
 	interface Props {
-		container: PageContainer;
+		container: HelpContainer;
 	}
 
 	let { container }: Props = $props();
@@ -11,7 +11,7 @@
 
 <Header sortOptions={[]} workspaceOptions={[]} />
 <div class="content-details">
-	{#await import('./EditablePageDetailView.svelte') then { default: EditablePageDetailView }}
+	{#await import('./EditableHelpDetailView.svelte') then { default: EditablePageDetailView }}
 		<EditablePageDetailView {container} revisions={[container]} />
 	{/await}
 </div>

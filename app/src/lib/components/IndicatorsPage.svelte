@@ -3,7 +3,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 
-	import type { PageData } from '../../routes/[[guid=uuid]]/indicators/catalog/$types';
+	import type { PageData } from '../../routes/[guid=uuid]/indicators/catalog/$types';
 
 	interface Props {
 		children: Snippet;
@@ -18,7 +18,13 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} {filterBarInitiallyOpen} search />
+		<Header
+			{facets}
+			facetLabels={data.facetLabels ?? undefined}
+			{filterBarInitiallyOpen}
+			categoryOptions={data.categoryOptions ?? null}
+			search
+		/>
 	{/snippet}
 
 	{#snippet main()}

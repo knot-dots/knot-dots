@@ -13,7 +13,8 @@
 
 	let { columns, rows: originalRows }: Props = $props();
 
-	let rows = $state($state.snapshot(originalRows)) as Container[];
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let rows = $state([] as Container[]);
 
 	$effect(() => {
 		rows = $state.snapshot(originalRows) as Container[];

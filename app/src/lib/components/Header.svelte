@@ -4,16 +4,20 @@
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
+	import StarOutline from '~icons/flowbite/star-outline';
+	import StarSolid from '~icons/flowbite/star-solid';
 	import Close from '~icons/knotdots/close';
 	import Filter from '~icons/knotdots/filter';
 	import Users from '~icons/knotdots/users';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
+	import GoalWorkspaces from '$lib/components/GoalWorkspaces.svelte';
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
 	import MemberFilterDropDown from '$lib/components/MemberFilterDropDown.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
@@ -27,8 +31,12 @@
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
+	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
+	import { getFavoriteListContext } from '$lib/contexts/favorite';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
+		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
 		isSimpleMeasureContainer,
@@ -40,8 +48,19 @@
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
 
+	type FilterOption = {
+		count: number;
+		label: string;
+		value: string;
+		guid?: string;
+		icon?: string;
+		subterms?: FilterOption[];
+	};
+
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
+		facetLabels?: Map<string, string>;
+		categoryOptions?: CategoryOptions | null;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
@@ -50,18 +69,22 @@
 
 	let {
 		facets = new Map(),
+		facetLabels = new Map(),
 		filterBarInitiallyOpen = false,
 		search = false,
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-		workspaceOptions
+		workspaceOptions,
+		categoryOptions = null
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
 
-	let filterBar = createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen });
+	let filterBar = $derived.by(() =>
+		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })
+	);
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
@@ -83,6 +106,16 @@
 
 		return count;
 	});
+
+	let favoritesList = getFavoriteListContext();
+
+	let href = $derived(
+		page.url.searchParams.size
+			? `${page.url.pathname}?${page.url.searchParams.toString()}`
+			: page.url.pathname
+	);
+
+	let isFavorite = $derived(favoritesList.item.findIndex((f) => f.href === href) > -1);
 
 	function applySort() {
 		if (overlay) {
@@ -117,6 +150,28 @@
 			goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
 		}
 	}
+
+	async function toggleFavorite() {
+		let index = favoritesList.item.findIndex((f) => f.href === href);
+
+		favoritesList.item =
+			index > -1
+				? favoritesList.item.filter((_, i) => i !== index)
+				: [...favoritesList.item, { href, title: page.data.title ?? $_('new_favorite') }];
+
+		const response = await saveContainer({
+			...selectedContext,
+			payload: { ...selectedContext.payload, favorite: favoritesList.item }
+		});
+		if (response.ok) {
+			const updatedContainer = await response.json();
+			selectedContext.revision = updatedContainer.revision;
+			await invalidate(selectedContext.payload.type);
+		} else {
+			const error = await response.json();
+			alert(error.message);
+		}
+	}
 </script>
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
@@ -138,6 +193,8 @@
 			<ProgramWorkspaces container={$overlayStore.container} />
 		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
 			<MeasureWorkspaces container={$overlayStore.container} />
+		{:else if isGoalContainer($overlayStore.container) && createFeatureDecisions(page.data.features).useIOOI()}
+			<GoalWorkspaces container={$overlayStore.container} />
 		{/if}
 	{:else}
 		<WorkspacesMenu />
@@ -191,11 +248,22 @@
 
 			<a
 				class="action-button action-button--size-l"
-				href={resolve('/[[guid=uuid]]/members', { guid: selectedContext.guid })}
+				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
 				{@attach tooltip($_('members'))}
 			>
 				<Users />
 			</a>
+		{/if}
+
+		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
+			<button
+				aria-label={$_('favorite')}
+				class="action-button action-button--size-l action-button--favorite"
+				onclick={toggleFavorite}
+				type="button"
+			>
+				{#if isFavorite}<StarSolid />{:else}<StarOutline />{/if}
+			</button>
 		{/if}
 	</form>
 
@@ -222,14 +290,33 @@
 			{/if}
 
 			{#each facets.entries() as [key, foci] (key)}
-				{@const options = [...foci.entries()]
-					.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
-					.toSorted((a, b) =>
-						a.label.localeCompare(b.label, undefined, {
-							numeric: true,
-							sensitivity: 'base'
-						})
-					)}
+				{@const labelOverride = facetLabels.get(key)}
+				{@const categoryOptionList = categoryOptions?.[key]}
+				{@const options = (
+					categoryOptionList
+						? categoryOptionList.map((option) => ({
+								...option,
+								count:
+									foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+								subterms: option.subterms?.map((sub) => ({
+									...sub,
+									count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+								}))
+							}))
+						: [...foci.entries()]
+								.map(([k, v]) => ({
+									count: v,
+									label: facetLabels.get(k) ?? $_(k),
+									value: k,
+									subterms: undefined
+								}))
+								.toSorted((a, b) =>
+									a.label.localeCompare(b.label, undefined, {
+										numeric: true,
+										sensitivity: 'base'
+									})
+								)
+				) as FilterOption[]}
 				{#if key === 'assignee'}
 					<AssigneeFilterDropDown {options} />
 				{:else if key === 'included'}
@@ -238,8 +325,8 @@
 					<RelationTypeFilterDropDown {options} />
 				{:else if key === 'member'}
 					<MemberFilterDropDown {options} />
-				{:else if options.filter(({ count }) => count > 0).length > 0 || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
-					<FilterDropDown {key} {options} />
+				{:else if options.some(({ count, subterms }: FilterOption) => (count ?? 0) > 0 || subterms?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
+					<FilterDropDown {key} {options} label={labelOverride} />
 				{/if}
 			{/each}
 		</fieldset>
@@ -306,6 +393,10 @@
 
 	.commands > .divider:first-child {
 		display: none;
+	}
+
+	.action-button--favorite {
+		--icon-color: var(--color-yellow-400);
 	}
 
 	.divider {

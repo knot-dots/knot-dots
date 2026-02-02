@@ -11,6 +11,8 @@
 	import Subsection from '$lib/components/Subsection.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
+		isContainerWithBody,
+		isContainerWithDescription,
 		type Container,
 		containerOfType,
 		isGoalCollectionContainer,
@@ -114,7 +116,7 @@
 	<EditableProgress {editable} bind:value={container.payload.progress} />
 {/if}
 
-{#if 'body' in container.payload}
+{#if isContainerWithBody(container)}
 	{#if editable}
 		<Editor bind:value={container.payload.body} />
 	{:else}
@@ -122,7 +124,7 @@
 	{/if}
 {/if}
 
-{#if 'description' in container.payload}
+{#if isContainerWithDescription(container)}
 	{#if editable}
 		<Editor bind:value={container.payload.description} />
 	{:else}

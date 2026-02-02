@@ -9,13 +9,22 @@
 	interface Props {
 		editable?: boolean;
 		label: string;
+		help?: string;
 		value: string | undefined;
+		allowedFileTypes?: string[];
 	}
 
-	let { editable = false, label, value = $bindable() }: Props = $props();
+	let { editable = false, label, help, value = $bindable(), allowedFileTypes }: Props = $props();
 
 	let uploadInProgress = $state(false);
 	const id = crypto.randomUUID();
+
+	function stopPropagation(fn: (event: Event) => void) {
+		return (event: Event) => {
+			event.stopPropagation();
+			fn(event);
+		};
+	}
 
 	function remove(event: Event) {
 		value = undefined;
@@ -33,7 +42,7 @@
 				<img alt={$_('image')} src={transformFileURL(value)} />
 				<button
 					class="button button-remove"
-					onclick={remove}
+					onclick={stopPropagation(remove)}
 					{@attach tooltip($_('upload.image.remove'))}
 					type="button"><TrashBin /></button
 				>
@@ -46,6 +55,7 @@
 			bind:value
 			{label}
 			{id}
+			{allowedFileTypes}
 			mode="input"
 			onSuccess={() => {
 				const form = document.querySelector(`[for="${id}"]`)?.parentElement?.closest('form');
@@ -55,7 +65,7 @@
 			}}
 		/>
 
-		<p class="help">{$_('upload.image.help')}</p>
+		<p class="help">{help ?? $_('upload.image.help')}</p>
 	</div>
 {:else}
 	<span class="label">{label}</span>
@@ -68,7 +78,7 @@
 			{/if}
 		</span>
 
-		<p class="help">{$_('upload.image.help')}</p>
+		<p class="help">{help ?? $_('upload.image.help')}</p>
 	</div>
 {/if}
 

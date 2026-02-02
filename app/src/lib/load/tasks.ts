@@ -20,8 +20,8 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
-import type { PageServerLoad } from '../../routes/[[guid=uuid]]/tasks/$types';
+import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
 
 function filterRelated(
 	containers: GoalContainer[],

@@ -14,6 +14,7 @@ import {
 	getPool,
 	getUser
 } from '$lib/server/db';
+import { ensureDefaultCategoryTerms } from '$lib/server/defaultCategories';
 import { withFeatures } from '$lib/server/features';
 import { withLogger } from '$lib/server/logger';
 
@@ -39,13 +40,16 @@ const { handle: withAuthentication } = SvelteKitAuth({
 				token.sub = sub;
 				const pool = await getPool();
 				await pool.connect(
-					createOrUpdateUser({
-						family_name: family_name,
-						given_name: given_name,
-						guid: sub,
-						realm: env.PUBLIC_KC_REALM ?? '',
-						settings: {}
-					})
+					createOrUpdateUser(
+						{
+							family_name: family_name,
+							given_name: given_name,
+							guid: sub,
+							realm: env.PUBLIC_KC_REALM ?? '',
+							settings: {}
+						},
+						true
+					)
 				);
 			}
 			return token;
@@ -114,7 +118,9 @@ export const handle = sequence(
 		const lang = event.request.headers.get('accept-language')?.split(',')[0];
 		locale.set(lang ?? 'de');
 
-		event.locals.pool = await getPool();
+		const pool = await getPool();
+		event.locals.pool = pool;
+		await ensureDefaultCategoryTerms(pool);
 
 		const session = await event.locals.auth();
 		if (session) {

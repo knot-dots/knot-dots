@@ -3,15 +3,16 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import PageProperties from '$lib/components/PageProperties.svelte';
-	import type { AnyContainer, PageContainer } from '$lib/models';
+	import type { AnyContainer, Container, PageContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: PageContainer;
+		relatedContainers: Container[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), revisions }: Props = $props();
+	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
 </script>
 
 <EditableContainerDetailView bind:container>
@@ -19,7 +20,7 @@
 		<PageProperties
 			bind:container
 			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-			relatedContainers={[]}
+			{relatedContainers}
 			{revisions}
 		/>
 

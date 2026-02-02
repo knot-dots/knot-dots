@@ -4,30 +4,58 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
 import {
-	filterOrganizationalUnits,
-	payloadTypes,
-	predicates,
-	computeFacetCount,
 	audience,
+	computeFacetCount,
+	filterOrganizationalUnits,
 	fromCounts,
+	payloadTypes,
 	policyFieldBNK,
+	predicates,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics
+	topics,
+	type Container,
+	type OrganizationContainer,
+	type OrganizationalUnitContainer,
+	type KeycloakUser
 } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
-import type { PageServerLoad } from '../../routes/[[guid=uuid]]/rules/$types';
+import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
+import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/rules/$types';
 
-export default (async function load({ depends, locals, parent, url }) {
+type LoadInput = {
+	depends: (deps: string) => void;
+	locals: App.Locals;
+	parent: () => Promise<unknown>;
+	url: URL;
+};
+
+type ParentData = {
+	currentOrganization: OrganizationContainer;
+	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+};
+
+export default (async function load({ depends, locals, parent, url }: LoadInput) {
 	depends('containers');
 
-	let containers;
+	let containers: Container[];
 	let subordinateOrganizationalUnits: string[] = [];
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const customCategories = extractCustomCategoryFilters(url);
+	const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
+
+	const categoryContext = features.useCustomCategories()
+		? await loadCategoryContext({
+			connect: locals.pool.connect,
+			organizationScope: [currentOrganization.guid],
+			fallbackScope: [],
+			user: locals.user as unknown as KeycloakUser
+		})
+		: null;
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -50,7 +78,7 @@ export default (async function load({ depends, locals, parent, url }) {
 							predicates.enum['is-inconsistent-with']
 						]
 					: url.searchParams.getAll('relationType'),
-				{},
+				{ customCategories },
 				url.searchParams.get('sort') ?? ''
 			)
 		);
@@ -60,11 +88,8 @@ export default (async function load({ depends, locals, parent, url }) {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.getAll('programType'),
 				{
-					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					customCategories,
 					terms: url.searchParams.get('terms') ?? '',
-					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.rule]
 				},
 				url.searchParams.get('sort') ?? ''
@@ -78,6 +103,7 @@ export default (async function load({ depends, locals, parent, url }) {
 						{
 							audience: url.searchParams.getAll('audience'),
 							categories: url.searchParams.getAll('category'),
+							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
 							terms: url.searchParams.get('terms') ?? '',
@@ -91,6 +117,7 @@ export default (async function load({ depends, locals, parent, url }) {
 						{
 							audience: url.searchParams.getAll('audience'),
 							categories: url.searchParams.getAll('category'),
+							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
 							terms: url.searchParams.get('terms') ?? '',
@@ -106,11 +133,11 @@ export default (async function load({ depends, locals, parent, url }) {
 		filterVisible(containers, locals.user),
 		url,
 		subordinateOrganizationalUnits,
-		currentOrganizationalUnit
+		currentOrganizationalUnit ?? undefined
 	);
 
 	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid), categoryContext?.keys ?? [])
 		: undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
@@ -128,15 +155,32 @@ export default (async function load({ depends, locals, parent, url }) {
 			: []) as Array<[string, Map<string, number>]>),
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
 			[string, Map<string, number>]
-		>),
-		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
-		['topic', fromCounts(topics.options as string[], data?.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
-		['programType', fromCounts(programTypes.options as string[], data?.programType)]
+		>)
 	]);
+
+	if (features.useCustomCategories() && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(
+			categoryContext.options,
+			data ? Object.fromEntries(Object.entries(data)) : {}
+		);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	} else {
+		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
+		_facets.set('category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category));
+		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
+		_facets.set('policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK));
+	}
+
+	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
 	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
 
-	return { containers: filtered, facets };
-} satisfies PageServerLoad);
+	return {
+		containers: filtered,
+		facets,
+		facetLabels: categoryContext?.labels,
+		categoryOptions: categoryContext?.options ?? null
+	};
+}) satisfies PageServerLoad;

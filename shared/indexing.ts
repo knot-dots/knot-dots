@@ -85,7 +85,6 @@ export function createIndexWithMappings(client: Client, index: string) {
             level: { type: 'keyword' },
             policyFieldBNK: { type: 'keyword' },
             programType: { type: 'keyword' },
-            measureType: { type: 'keyword' },
             indicatorCategory: { type: 'keyword' },
             indicatorType: { type: 'keyword' },
             taskCategory: { type: 'keyword' }
@@ -125,7 +124,7 @@ function sanitizeDates(obj: any) {
 export function normalizePayload(payload: any) {
   const normalized = { ...payload };
   for (const key of [
-    'category', 'topic', 'audience', 'policyFieldBNK', 'programType', 'measureType',
+    'category', 'topic', 'audience', 'policyFieldBNK', 'programType',
     'indicatorCategory', 'indicatorType', 'taskCategory'
   ]) {
     const value = normalized[key];
@@ -155,7 +154,6 @@ export function toDoc(row: {
   const audienceLabels = mapLabels(normalized.audience);
   const policyFieldLabels = mapLabels(normalized.policyFieldBNK);
   const programTypeLabels = mapLabels(normalized.programType);
-  const measureTypeLabels = mapLabels(normalized.measureType);
   const indicatorCategoryLabels = mapLabels(normalized.indicatorCategory);
   const indicatorTypeLabels = mapLabels(normalized.indicatorType);
   const taskCategoryLabels = mapLabels(normalized.taskCategory);
@@ -179,7 +177,6 @@ export function toDoc(row: {
     audience_labels: audienceLabels,
     policy_field_labels: policyFieldLabels,
     program_type_labels: programTypeLabels,
-    measure_type_labels: measureTypeLabels,
     indicator_category_labels: indicatorCategoryLabels,
     indicator_type_labels: indicatorTypeLabels,
     task_category_labels: taskCategoryLabels,
@@ -190,7 +187,6 @@ export function toDoc(row: {
       ...audienceLabels,
       ...policyFieldLabels,
       ...programTypeLabels,
-      ...measureTypeLabels,
       ...indicatorCategoryLabels,
       ...indicatorTypeLabels,
       ...taskCategoryLabels

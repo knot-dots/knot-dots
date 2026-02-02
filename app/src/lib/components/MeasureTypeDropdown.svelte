@@ -1,24 +1,20 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
-	import { measureTypes } from '$lib/models';
+	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
+	import { type MeasureType, measureTypes } from '$lib/models';
 
 	interface Props {
-		compact?: boolean;
 		editable?: boolean;
-		labelledBy?: string;
-		value: string[];
+		value?: MeasureType;
 	}
 
-	let { compact = false, editable = false, labelledBy, value = $bindable() }: Props = $props();
+	let { editable = false, value = $bindable() }: Props = $props();
 
 	const options = $derived(measureTypes.options.map((o) => ({ label: $_(o), value: o })));
-
-	let display = $derived(value.map((v) => $_(v)).join(', '));
 </script>
 
 {#if editable}
-	<MultipleChoiceDropdown {labelledBy} {options} {compact} offset={[-41, -39]} bind:value />
+	<SingleChoiceDropdown {options} offset={[0, -39]} bind:value />
 {:else}
-	<span class="value">{value.length ? display : $_('empty')}</span>
+	<span class="value">{value ? $_(value) : $_('empty')}</span>
 {/if}
