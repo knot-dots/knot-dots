@@ -62,7 +62,7 @@ export async function loadCategoryOptions(
 					terms.filter(isTermContainer)
 				);
 
-				for (const key of getCategoryKeys({ ...categoryOptions, __categoryLabels__: {} })) {
+				for (const key of getCategoryKeys(categoryOptions)) {
 					if (!categoryOptions[key]) {
 						categoryOptions[key] = [];
 					}

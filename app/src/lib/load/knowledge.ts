@@ -1,6 +1,6 @@
 import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
-import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import {
 	audience,
 	computeFacetCount,
@@ -36,7 +36,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 
 	let containers: Container[];
 	const customCategories = extractCustomCategoryFilters(url);
-	const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
+	const { currentOrganization } = (await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
 
 	const categoryContext = features.useCustomCategories()

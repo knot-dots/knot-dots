@@ -1,10 +1,4 @@
-import {
-	isCategoryContainer,
-	isTermContainer,
-	predicates,
-	type CategoryContainer,
-	type TermContainer
-} from '$lib/models';
+import { predicates, type CategoryContainer, type TermContainer } from '$lib/models';
 
 export type CategoryOption = {
 	label: string;

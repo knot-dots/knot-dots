@@ -22,7 +22,7 @@ import {
 } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
-import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
 import type { ServerLoad } from '@sveltejs/kit';
 

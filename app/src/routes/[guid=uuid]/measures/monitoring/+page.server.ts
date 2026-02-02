@@ -5,7 +5,7 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
@@ -71,6 +71,8 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			subordinateOrganizationalUnits,
 			currentOrganizationalUnit
 		),
-		facets: new Map()
+		facets: new Map(),
+		facetLabels: undefined,
+		categoryOptions: null
 	};
 }) satisfies PageServerLoad;

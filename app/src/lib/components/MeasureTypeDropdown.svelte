@@ -5,16 +5,24 @@
 
 	interface Props {
 		editable?: boolean;
-		value?: MeasureType;
+		value?: MeasureType[];
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, value = $bindable([]) }: Props = $props();
+
+	const selected = $derived(value?.[0]);
+
+	function handleChange(event: Event) {
+		const target = event.target as HTMLInputElement | null;
+		const next = (target?.value || undefined) as MeasureType | undefined;
+		value = next ? [next] : [];
+	}
 
 	const options = $derived(measureTypes.options.map((o) => ({ label: $_(o), value: o })));
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown {options} offset={[0, -39]} bind:value />
+	<SingleChoiceDropdown {options} offset={[0, -39]} value={selected} on:change={handleChange} />
 {:else}
-	<span class="value">{value ? $_(value) : $_('empty')}</span>
+	<span class="value">{selected ? $_(selected) : $_('empty')}</span>
 {/if}

@@ -19,7 +19,7 @@ import {
 } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
-import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { ServerLoad } from '@sveltejs/kit';
 
 export const load: ServerLoad = async ({ locals, url, parent }) => {
@@ -61,11 +61,11 @@ export const load: ServerLoad = async ({ locals, url, parent }) => {
 					url.searchParams.get('related-to') as string,
 					url.searchParams.getAll('relationType').length === 0
 						? [
-							predicates.enum['is-consistent-with'],
-							predicates.enum['is-equivalent-to'],
-							predicates.enum['is-inconsistent-with'],
-							predicates.enum['is-superordinate-of']
-						]
+								predicates.enum['is-consistent-with'],
+								predicates.enum['is-equivalent-to'],
+								predicates.enum['is-inconsistent-with'],
+								predicates.enum['is-superordinate-of']
+							]
 						: url.searchParams.getAll('relationType'),
 					{ customCategories },
 					url.searchParams.get('sort') ?? ''
@@ -78,33 +78,33 @@ export const load: ServerLoad = async ({ locals, url, parent }) => {
 			locals.pool.connect(
 				features.useElasticsearch()
 					? getManyContainersWithES(
-						[],
-						{
-							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
-							customCategories,
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							programTypes: url.searchParams.getAll('programType'),
-							terms: url.searchParams.get('terms') ?? '',
-							topics: url.searchParams.getAll('topic'),
-							type: [payloadTypes.enum.program]
-						},
-						url.searchParams.get('sort') ?? ''
-					)
+							[],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								customCategories,
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								terms: url.searchParams.get('terms') ?? '',
+								topics: url.searchParams.getAll('topic'),
+								type: [payloadTypes.enum.program]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
 					: getManyContainers(
-						[],
-						{
-							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
-							customCategories,
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							programTypes: url.searchParams.getAll('programType'),
-							terms: url.searchParams.get('terms') ?? '',
-							topics: url.searchParams.getAll('topic'),
-							type: [payloadTypes.enum.program]
-						},
-						url.searchParams.get('sort') ?? ''
-					)
+							[],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								customCategories,
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								terms: url.searchParams.get('terms') ?? '',
+								topics: url.searchParams.getAll('topic'),
+								type: [payloadTypes.enum.program]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
 			)
 		);
 		containers = filterVisible(containers, locals.user);
@@ -117,16 +117,16 @@ export const load: ServerLoad = async ({ locals, url, parent }) => {
 	const _facets = new Map<string, Map<string, number>>([
 		...((url.searchParams.has('related-to')
 			? [
-				[
-					'relationType',
-					new Map([
-						[predicates.enum['is-consistent-with'], 0],
-						[predicates.enum['is-equivalent-to'], 0],
-						[predicates.enum['is-inconsistent-with'], 0],
-						[predicates.enum['is-superordinate-of'], 0]
-					])
+					[
+						'relationType',
+						new Map([
+							[predicates.enum['is-consistent-with'], 0],
+							[predicates.enum['is-equivalent-to'], 0],
+							[predicates.enum['is-inconsistent-with'], 0],
+							[predicates.enum['is-superordinate-of'], 0]
+						])
+					]
 				]
-			]
 			: []) as Array<[string, Map<string, number>]>),
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
 			[string, Map<string, number>]
