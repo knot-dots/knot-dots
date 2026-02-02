@@ -21,7 +21,19 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
-import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
+import type { ServerLoad } from '@sveltejs/kit';
+
+type LoadInput = {
+	depends: (deps: string) => void;
+	locals: App.Locals;
+	parent: () => Promise<unknown>;
+	url: URL;
+};
+
+type ParentData = {
+	currentOrganization: import('$lib/models').OrganizationContainer;
+	currentOrganizationalUnit: import('$lib/models').OrganizationalUnitContainer | null;
+};
 
 function filterRelated(
 	containers: GoalContainer[],
@@ -31,14 +43,14 @@ function filterRelated(
 }
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
-	return (async ({ depends, locals, parent, url }) => {
+	return (async ({ depends, locals, parent, url }: LoadInput) => {
 		depends('containers');
 
 		let taskContainers: TaskContainer[];
 		let otherContainers: GoalContainer[];
 		let subordinateOrganizationalUnits: string[] = [];
 
-		const { currentOrganization, currentOrganizationalUnit } = await parent();
+		const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
 		const features = createFeatureDecisions(locals.features);
 
 		if (currentOrganization.payload.default) {
@@ -46,12 +58,12 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		}
 
 		if (currentOrganizationalUnit) {
-			const relatedOrganizationalUnits = await locals.pool.connect(
+			const relatedOrganizationalUnits = (await locals.pool.connect(
 				getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-			);
+			)) as import('$lib/models').OrganizationalUnitContainer[];
 			subordinateOrganizationalUnits = relatedOrganizationalUnits
-				.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
-				.map(({ guid }) => guid);
+				.filter((unit) => unit.payload.level > currentOrganizationalUnit.payload.level)
+				.map((unit) => unit.guid);
 		}
 
 		if (url.searchParams.has('related-to')) {
@@ -115,13 +127,13 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			filterVisible(taskContainers, locals.user),
 			url,
 			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
+			currentOrganizationalUnit ?? undefined
 		);
 		const relatedContainers = filterOrganizationalUnits(
 			filterVisible(filterRelated(otherContainers, containers), locals.user),
 			url,
 			subordinateOrganizationalUnits,
-			currentOrganizationalUnit
+			currentOrganizationalUnit ?? undefined
 		);
 
 		const data = features.useElasticsearch()
@@ -152,5 +164,5 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			: computeFacetCount(_facets, taskContainers);
 
 		return { containers, relatedContainers, facets };
-	}) satisfies PageServerLoad;
+	}) satisfies ServerLoad;
 }

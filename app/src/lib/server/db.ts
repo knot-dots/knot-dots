@@ -702,6 +702,7 @@ export function getManyContainers(
 		indicatorCategories?: string[];
 		indicator?: string;
 		indicatorTypes?: string[];
+		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		programTypes?: string[];

@@ -13,8 +13,7 @@ import {
 	type Container,
 	type IndicatorContainer,
 	type OrganizationContainer,
-	type OrganizationalUnitContainer,
-	type KeycloakUser
+	type OrganizationalUnitContainer
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
@@ -26,7 +25,7 @@ import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
 import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
 import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
-import type { PageServerLoad } from '../../routes/[guid=uuid]/indicators/$types';
+import type { ServerLoad } from '@sveltejs/kit';
 
 export interface IndicatorFilters {
 	customCategories: Record<string, string[]>;
@@ -153,11 +152,11 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 
 	const categoryContext = features.useCustomCategories()
 		? await loadCategoryContext({
-			connect: locals.pool.connect,
-			organizationScope: [currentOrganization.guid],
-			fallbackScope: [],
-			user: locals.user as unknown as KeycloakUser
-		})
+				connect: locals.pool.connect,
+				organizationScope: [currentOrganization.guid],
+				fallbackScope: [],
+				user: locals.user
+			})
 		: null;
 
 	const filters = {
@@ -176,7 +175,10 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 	});
 
 	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(result.combined.map((c) => c.guid), categoryContext?.keys ?? [])
+		? await getFacetAggregationsForGuids(
+				result.combined.map((c) => c.guid),
+				categoryContext?.keys ?? []
+			)
 		: undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
@@ -195,13 +197,22 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category));
+		_facets.set(
+			'category',
+			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
+		);
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set('policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK));
+		_facets.set(
+			'policyFieldBNK',
+			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
+		);
 	}
 
 	_facets.set('indicatorType', fromCounts(indicatorTypes.options as string[], data?.indicatorType));
-	_facets.set('indicatorCategory', fromCounts(indicatorCategories.options as string[], data?.indicatorCategory));
+	_facets.set(
+		'indicatorCategory',
+		fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
+	);
 
 	const facets = features.useElasticsearch()
 		? _facets
@@ -216,4 +227,4 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		facetLabels: categoryContext?.labels,
 		categoryOptions: categoryContext?.options ?? null
 	};
-}) satisfies PageServerLoad);
+} satisfies ServerLoad);

@@ -311,7 +311,12 @@ const measureTypeValues = [
 	'measure_type.partial_project',
 	'measure_type.project',
 	'measure_type.sub_measure',
-	'measure_type.sub_project'
+	'measure_type.sub_project',
+	'measure_type.network_infrastructure',
+	'measure_type.digital_twin',
+	'measure_type.sensory',
+	'measure_type.digital_platform',
+	'measure_type.user_participation'
 ] as const;
 
 export const measureTypes = z.enum(measureTypeValues);
@@ -897,7 +902,7 @@ const measurePayload = basePayload
 		comment: z.string().trim().optional(),
 		endDate: z.string().date().optional(),
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-		measureType: measureTypes.optional(),
+		measureType: z.array(measureTypes).default([]),
 		progress: z.number().nonnegative().optional(),
 		resource: z
 			.array(
@@ -1004,7 +1009,7 @@ const simpleMeasurePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
 		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
-		measureType: measureTypes.optional(),
+		measureType: z.array(measureTypes).default([]),
 		progress: z.number().nonnegative().default(0),
 		resource: z
 			.array(
