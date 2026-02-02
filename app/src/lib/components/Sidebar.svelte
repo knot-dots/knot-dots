@@ -106,7 +106,7 @@
 					href={favorite.href}
 				>
 					<StarSolid />
-					{favorite.title}
+					<span>{favorite.title}</span>
 				</a>
 			</li>
 		{/each}
