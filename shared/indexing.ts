@@ -48,6 +48,15 @@ export function createIndexWithMappings(client: Client, index: string) {
       }
     },
     mappings: {
+      dynamic_templates: [
+        {
+          payload_strings: {
+            path_match: 'payload.*',
+            match_mapping_type: 'string',
+            mapping: { type: 'keyword', ignore_above: 2048 }
+          }
+        }
+      ],
       dynamic: true,
       date_detection: false,
       properties: {
@@ -159,6 +168,11 @@ export function toDoc(row: {
   const taskCategoryLabels = mapLabels(normalized.taskCategory);
   const categoryLabels = mapLabels(normalized.category);
 
+  const additionalText = Object.entries(normalized)
+    .filter(([, value]) => Array.isArray(value))
+    .flatMap(([, value]) => (value as unknown[]))
+    .filter((value): value is string => typeof value === 'string');
+
   return {
     guid: row.guid,
     revision: row.revision,
@@ -189,7 +203,8 @@ export function toDoc(row: {
       ...programTypeLabels,
       ...indicatorCategoryLabels,
       ...indicatorTypeLabels,
-      ...taskCategoryLabels
+      ...taskCategoryLabels,
+      ...additionalText
     ].filter(Boolean).join(' ')
   } as const;
 }

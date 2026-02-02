@@ -26,6 +26,7 @@ export function getManyContainersWithES(
 		assignees?: string[];
 		audience?: string[];
 		categories?: string[];
+		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		measureTypes?: string[];
 		indicator?: string;
@@ -33,6 +34,7 @@ export function getManyContainersWithES(
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
+		resourceCategories?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
@@ -79,6 +81,14 @@ export function getManyContainersWithES(
 				filter.push({ terms: { 'payload.indicatorType': filters.indicatorTypes } });
 			if (filters.taskCategories?.length)
 				filter.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
+			if (filters.resourceCategories?.length)
+				filter.push({ terms: { 'payload.resourceCategory': filters.resourceCategories } });
+			if (filters.customCategories) {
+				for (const [key, values] of Object.entries(filters.customCategories)) {
+					if (!values?.length) continue;
+					filter.push({ terms: { [`payload.${key}`]: values } });
+				}
+			}
 			if (filters.assignees?.length)
 				filter.push({ terms: { 'payload.assignee': filters.assignees } });
 			if (filters.organizationalUnits?.length)
@@ -145,7 +155,10 @@ export function getManyContainersWithES(
 	};
 }
 
-export async function getFacetAggregationsForGuids(guids: string[]) {
+export async function getFacetAggregationsForGuids(
+	guids: string[],
+	customCategoryKeys: string[] = []
+) {
 	const esUrl = privateEnv.ELASTICSEARCH_URL;
 	console.log('[getFacetAggregationsForGuids] Fetching facets for', guids.length, 'guids');
 	const esIndex = privateEnv.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
@@ -165,6 +178,12 @@ export async function getFacetAggregationsForGuids(guids: string[]) {
 		indicatorType: { terms: { field: 'payload.indicatorType', size: 20 } },
 		taskCategory: { terms: { field: 'payload.taskCategory', size: 50 } }
 	};
+
+	const reserved = new Set(Object.keys(aggs));
+	for (const key of customCategoryKeys) {
+		if (!key || reserved.has(key)) continue;
+		aggs[key] = { terms: { field: `payload.${key}`, size: 200 } };
+	}
 
 	const { aggregations } = await es.search<unknown, estypes.SearchRequest>({
 		index: esIndex,
@@ -193,6 +212,9 @@ export async function getFacetAggregationsForGuids(guids: string[]) {
 		facets.indicatorCategory = toCounts(aggMap.indicatorCategory);
 		facets.indicatorType = toCounts(aggMap.indicatorType);
 		facets.taskCategory = toCounts(aggMap.taskCategory);
+		for (const key of customCategoryKeys) {
+			facets[key] = toCounts(aggMap[key]);
+		}
 	}
 	return facets;
 }
