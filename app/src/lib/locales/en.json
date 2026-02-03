@@ -144,6 +144,8 @@
 	"establish_relations": "Establish relations",
 	"expand_sidebar": "Expand sidebar",
 	"family_name": "Family name",
+	"favorite.change_icon": "Change icon (SVG)",
+	"favorite.rename": "Rename",
 	"feature_flags": "Feature flags",
 	"files": "Files",
 	"filter": "Filter",

@@ -144,6 +144,8 @@
 	"establish_relations": "Beziehungen festlegen",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"family_name": "Name",
+	"favorite.change_icon": "Icon ändern (SVG)",
+	"favorite.rename": "Umbenennen",
 	"feature_flags": "Feature Flags",
 	"files": "Dateien",
 	"filter": "Filtern",

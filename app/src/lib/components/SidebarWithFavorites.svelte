@@ -22,8 +22,9 @@
 	import OrganizationalUnit from '~icons/knotdots/organizational-unit';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import tooltip from '$lib/attachments/tooltip';
 	import logo from '$lib/assets/logo.svg';
+	import tooltip from '$lib/attachments/tooltip';
+	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import {
 		getOrganizationURL,
@@ -32,6 +33,16 @@
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
+
+	let currentOrganization = $derived.by(() => {
+		let _ = $state(page.data.currentOrganization);
+		return _;
+	});
+
+	let currentOrganizationalUnit = $derived.by(() => {
+		let _ = $state(page.data.currentOrganizationalUnit);
+		return _;
+	});
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
 
@@ -114,7 +125,7 @@
 					</a>
 				</li>
 
-				{#each page.data.currentOrganization.payload.favorite as favorite (favorite.href)}
+				{#each currentOrganization.payload.favorite as favorite, index (favorite.href)}
 					{@const href = page.url.searchParams.size
 						? `${page.url.pathname}?${page.url.searchParams.toString()}`
 						: page.url.pathname}
@@ -124,9 +135,15 @@
 							class:sidebar-menu-item--active={favorite.href === href}
 							href={favorite.href}
 						>
-							<StarSolid />
+							{#if favorite.icon}
+								<img alt="" class="favorite-icon" src={transformFileURL(favorite.icon)} />
+							{:else}
+								<StarSolid />
+							{/if}
+
 							<span>{favorite.title}</span>
 						</a>
+						<EditableFavorite bind:container={currentOrganization} {index} />
 					</li>
 				{/each}
 			</ul>
@@ -137,16 +154,15 @@
 		<a
 			{@attach tooltip($_('landing_page'))}
 			class="sidebar-menu-item sidebar-menu-item--collapsed"
-			class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
-				page.url.toString()}
-			href={landingPageURL(page.data.currentOrganization)}
+			class:sidebar-menu-item--active={landingPageURL(currentOrganization) === page.url.toString()}
+			href={landingPageURL(currentOrganization)}
 		>
 			<Home />
 		</a>
 	</li>
 </ul>
 
-{#if page.data.currentOrganizationalUnit}
+{#if currentOrganizationalUnit}
 	<ul
 		class="sidebar-menu"
 		class:collapsed={sidebarExpanded === false}
@@ -157,7 +173,7 @@
 			<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationalUnitMenu.button>
 				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
 				<span>
-					{page.data.currentOrganizationalUnit.payload.name}
+					{currentOrganizationalUnit.payload.name}
 				</span>
 			</button>
 		</li>
@@ -179,7 +195,7 @@
 						</a>
 					</li>
 
-					{#each page.data.currentOrganizationalUnit.payload.favorite as favorite (favorite.href)}
+					{#each currentOrganizationalUnit.payload.favorite as favorite, index (favorite.href)}
 						{@const href = page.url.searchParams.size
 							? `${page.url.pathname}?${page.url.searchParams.toString()}`
 							: page.url.pathname}
@@ -189,9 +205,15 @@
 								class:sidebar-menu-item--active={favorite.href === href}
 								href={favorite.href}
 							>
-								<StarSolid />
+								{#if favorite.icon}
+									<img alt="" class="favorite-icon" src={transformFileURL(favorite.icon)} />
+								{:else}
+									<StarSolid />
+								{/if}
+
 								<span>{favorite.title}</span>
 							</a>
+							<EditableFavorite bind:container={currentOrganizationalUnit} {index} />
 						</li>
 					{/each}
 				</ul>
@@ -202,9 +224,9 @@
 			<a
 				{@attach tooltip($_('overview'))}
 				class="sidebar-menu-item sidebar-menu-item--collapsed"
-				class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
+				class:sidebar-menu-item--active={landingPageURL(currentOrganizationalUnit) ===
 					page.url.toString()}
-				href={landingPageURL(page.data.currentOrganizationalUnit)}
+				href={landingPageURL(currentOrganizationalUnit)}
 			>
 				<OrganizationalUnit />
 			</a>
@@ -427,6 +449,11 @@
 		font-weight: 600;
 	}
 
+	.favorite-icon {
+		height: 1rem;
+		width: 1rem;
+	}
+
 	.sidebar-menu {
 		display: flex;
 		flex-direction: column;
@@ -444,6 +471,10 @@
 	.sidebar-menu.sidebar-menu--profile {
 		border-top: 1px solid var(--color-gray-200);
 		padding-top: 0.5rem;
+	}
+
+	.sidebar-menu > li {
+		gap: 0.375rem;
 	}
 
 	.sidebar-menu.expanded > li:has(> .sidebar-menu-item--collapsed) {
@@ -464,6 +495,7 @@
 		color: var(--color);
 		display: flex;
 		flex-direction: row;
+		flex-grow: 1;
 		gap: 0.375rem;
 		line-height: 1.5;
 		padding: 0.25rem;
@@ -506,6 +538,7 @@
 	}
 
 	.sidebar-menu .sidebar-menu {
+		flex-grow: 1;
 		padding: 0;
 	}
 
@@ -525,6 +558,15 @@
 		height: 1rem;
 		max-width: none;
 		width: 1rem;
+	}
+
+	@media (hover: hover) {
+		li:hover > :global(.is-visible-on-hover) {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+
+			display: block;
+		}
 	}
 
 	@media (min-width: 60rem) {
@@ -553,7 +595,7 @@
 		}
 
 		.sidebar-menu:not(.collapsed) > li:not(:has(> .sidebar-menu-item--collapsed)) {
-			display: block;
+			display: flex;
 		}
 
 		.sidebar-menu:not(.collapsed) > li:has(> .sidebar-menu-item--collapsed) {
