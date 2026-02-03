@@ -14,6 +14,36 @@
 
 	let tableContainer = $state<HTMLDivElement | null>(null);
 
+	function handleYearInput(event: Event, entry: { year: number; amount: number }) {
+		const input = event.currentTarget as HTMLInputElement;
+
+		if (!input.validity.valid) {
+			event.stopPropagation();
+			return;
+		}
+
+		const parsed = parseInt(input.value, 10);
+		if (!Number.isNaN(parsed)) {
+			entry.year = parsed;
+		}
+	}
+
+	function handleAmountInput(event: Event, entry: { year: number; amount: number }) {
+		const input = event.currentTarget as HTMLInputElement;
+
+		if (!input.validity.valid) {
+			event.stopPropagation();
+			return;
+		}
+
+		// Handle both comma and period as decimal separators
+		const normalized = input.value.replace(',', '.');
+		const parsed = parseFloat(normalized);
+		if (!Number.isNaN(parsed)) {
+			entry.amount = parsed;
+		}
+	}
+
 	function addEntryLeft(e: MouseEvent) {
 		const currentYear = new Date().getFullYear();
 		const entries = container.payload.entries;
@@ -59,10 +89,11 @@
 						{#if editable}
 							<input
 								class="resource-data__year-input"
-								bind:value={entry.year}
+								value={entry.year}
+								oninput={(e) => handleYearInput(e, entry)}
 								type="text"
 								inputmode="numeric"
-								pattern="[0-9]*"
+								pattern="[0-9]+"
 							/>
 						{:else}
 							{entry.year}
@@ -101,10 +132,11 @@
 						<td class="resource-data__value">
 							{#if editable}
 								<input
-									bind:value={entry.amount}
+									value={entry.amount}
+									oninput={(e) => handleAmountInput(e, entry)}
 									class="resource-data__value-input"
 									inputmode="decimal"
-									pattern="[0-9]*([.,][0-9]+)?"
+									pattern="-?[0-9]*([.,]([0-9]+)?)?"
 									type="text"
 								/>
 							{:else}
