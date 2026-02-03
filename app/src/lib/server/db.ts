@@ -53,6 +53,7 @@ const INDEXABLE_TYPES = new Set<string>([
 	'page',
 	'program',
 	'resource',
+	'resource_v2',
 	'rule',
 	'simple_measure',
 	'task'

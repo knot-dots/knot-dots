@@ -176,7 +176,9 @@ export async function getFacetAggregationsForGuids(
 		measureType: { terms: { field: 'payload.measureType', size: 20 } },
 		indicatorCategory: { terms: { field: 'payload.indicatorCategory', size: 100 } },
 		indicatorType: { terms: { field: 'payload.indicatorType', size: 20 } },
-		taskCategory: { terms: { field: 'payload.taskCategory', size: 50 } }
+		taskCategory: { terms: { field: 'payload.taskCategory', size: 50 } },
+		resourceCategory: { terms: { field: 'payload.resourceCategory', size: 20 } },
+		resourceUnit: { terms: { field: 'payload.resourceUnit', size: 20 } }
 	};
 
 	const reserved = new Set(Object.keys(aggs));
@@ -212,6 +214,8 @@ export async function getFacetAggregationsForGuids(
 		facets.indicatorCategory = toCounts(aggMap.indicatorCategory);
 		facets.indicatorType = toCounts(aggMap.indicatorType);
 		facets.taskCategory = toCounts(aggMap.taskCategory);
+		facets.resourceCategory = toCounts(aggMap.resourceCategory);
+		facets.resourceUnit = toCounts(aggMap.resourceUnit);
 		for (const key of customCategoryKeys) {
 			facets[key] = toCounts(aggMap[key]);
 		}

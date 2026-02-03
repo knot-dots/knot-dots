@@ -86,6 +86,8 @@ export function createIndexWithMappings(client: Client, index: string) {
         indicator_category_labels: { type: 'text' },
         indicator_type_labels: { type: 'text' },
         task_category_labels: { type: 'text' },
+        resource_category_labels: { type: 'text' },
+        resource_unit_labels: { type: 'text' },
         payload: {
           properties: {
             audience: { type: 'keyword' },
@@ -96,7 +98,9 @@ export function createIndexWithMappings(client: Client, index: string) {
             programType: { type: 'keyword' },
             indicatorCategory: { type: 'keyword' },
             indicatorType: { type: 'keyword' },
-            taskCategory: { type: 'keyword' }
+            taskCategory: { type: 'keyword' },
+            resourceCategory: { type: 'keyword' },
+            resourceUnit: { type: 'keyword' }
           }
         }
       }
@@ -134,7 +138,7 @@ export function normalizePayload(payload: any) {
   const normalized = { ...payload };
   for (const key of [
     'category', 'topic', 'audience', 'policyFieldBNK', 'programType',
-    'indicatorCategory', 'indicatorType', 'taskCategory'
+    'indicatorCategory', 'indicatorType', 'taskCategory', 'resourceCategory', 'resourceUnit'
   ]) {
     const value = normalized[key];
     if (value === undefined || value === null) normalized[key] = [];
@@ -166,6 +170,8 @@ export function toDoc(row: {
   const indicatorCategoryLabels = mapLabels(normalized.indicatorCategory);
   const indicatorTypeLabels = mapLabels(normalized.indicatorType);
   const taskCategoryLabels = mapLabels(normalized.taskCategory);
+  const resourceCategoryLabels = mapLabels(normalized.resourceCategory);
+  const resourceUnitLabels = mapLabels(normalized.resourceUnit);
   const categoryLabels = mapLabels(normalized.category);
 
   const additionalText = Object.entries(normalized)
@@ -194,6 +200,8 @@ export function toDoc(row: {
     indicator_category_labels: indicatorCategoryLabels,
     indicator_type_labels: indicatorTypeLabels,
     task_category_labels: taskCategoryLabels,
+    resource_category_labels: resourceCategoryLabels,
+    resource_unit_labels: resourceUnitLabels,
     text: [
       title, description,
       ...categoryLabels,
@@ -204,6 +212,8 @@ export function toDoc(row: {
       ...indicatorCategoryLabels,
       ...indicatorTypeLabels,
       ...taskCategoryLabels,
+      ...resourceCategoryLabels,
+      ...resourceUnitLabels,
       ...additionalText
     ].filter(Boolean).join(' ')
   } as const;
