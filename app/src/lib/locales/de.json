@@ -295,6 +295,7 @@
 	"label": {
 		"unit": "Einheit"
 	},
+	"landing_page": "Startseite",
 	"level": {
 		"global": "Global",
 		"label": "Räumliche Ebene",
@@ -374,6 +375,7 @@
 	"other_organizations": "Andere Organisationen",
 	"overall_objective": "Gesamtziel",
 	"overall_objective_title": "Gesamtziel {indicator}",
+	"overview": "Überblick",
 	"owned_by": "Zuständige Organisationsebene",
 	"page": "Seite",
 	"page_title": "knotdots.net",

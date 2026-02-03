@@ -14,14 +14,15 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Grid from '~icons/flowbite/grid-solid';
+	import Home from '~icons/flowbite/home-solid';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Cog from '~icons/knotdots/cog';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Favicon from '~icons/knotdots/favicon';
-	import Organization from '~icons/knotdots/organization';
 	import OrganizationalUnit from '~icons/knotdots/organizational-unit';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import tooltip from '$lib/attachments/tooltip';
 	import logo from '$lib/assets/logo.svg';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import {
@@ -34,7 +35,14 @@
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
 
-	const platformMenu = createDisclosure({ label: $_('platform_menu') });
+	const organizationMenu = createDisclosure({ label: $_('organization_menu'), expanded: true });
+
+	const organizationalUnitMenu = createDisclosure({
+		label: $_('organizational_unit_menu'),
+		expanded: true
+	});
+
+	const platformMenu = createDisclosure({ label: $_('platform_menu'), expanded: true });
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -75,51 +83,161 @@
 </header>
 
 <ul
-	class="sidebar-menu sidebar-menu--navigation"
+	class="sidebar-menu"
 	class:collapsed={sidebarExpanded === false}
 	class:expanded={sidebarExpanded === true}
 	data-sveltekit-preload-data="hover"
 >
 	<li>
+		<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationMenu.button>
+			{#if $organizationMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+			<span>
+				{page.data.currentOrganization.payload.name}
+			</span>
+		</button>
+	</li>
+
+	{#if $organizationMenu.expanded}
+		<li use:organizationMenu.panel>
+			<ul class="sidebar-menu">
+				<li>
+					<a
+						class="sidebar-menu-item sidebar-menu-item--secondary"
+						class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+							page.url.toString()}
+						href={landingPageURL(page.data.currentOrganization)}
+					>
+						<Home />
+						<span>
+							{$_('landing_page')}
+						</span>
+					</a>
+				</li>
+
+				{#each page.data.currentOrganization.payload.favorite as favorite (favorite.href)}
+					{@const href = page.url.searchParams.size
+						? `${page.url.pathname}?${page.url.searchParams.toString()}`
+						: page.url.pathname}
+					<li>
+						<a
+							class="sidebar-menu-item sidebar-menu-item--secondary"
+							class:sidebar-menu-item--active={favorite.href === href}
+							href={favorite.href}
+						>
+							<StarSolid />
+							<span>{favorite.title}</span>
+						</a>
+					</li>
+				{/each}
+			</ul>
+		</li>
+	{/if}
+
+	<li>
 		<a
-			class="sidebar-menu-item"
-			class:sidebar-menu-item--active={landingPageURL(
-				page.data.currentOrganizationalUnit ?? page.data.currentOrganization
-			) === page.url.toString()}
-			href={landingPageURL(page.data.currentOrganizationalUnit ?? page.data.currentOrganization)}
+			{@attach tooltip($_('landing_page'))}
+			class="sidebar-menu-item sidebar-menu-item--collapsed"
+			class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+				page.url.toString()}
+			href={landingPageURL(page.data.currentOrganization)}
 		>
 			<Home />
-			<span>
-				{(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).payload.name}
-			</span>
 		</a>
 	</li>
-	{#if createFeatureDecisions(page.data.features).useFavoriteList()}
-		{#each (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).payload.favorite as favorite (favorite.href)}
-			{@const href = page.url.searchParams.size
-				? `${page.url.pathname}?${page.url.searchParams.toString()}`
-				: page.url.pathname}
-			<li>
-				<a
-					class="sidebar-menu-item"
-					class:sidebar-menu-item--active={favorite.href === href}
-					href={favorite.href}
-				>
-					<StarSolid />
-					<span>{favorite.title}</span>
-				</a>
+</ul>
+
+{#if page.data.currentOrganizationalUnit}
+	<ul
+		class="sidebar-menu"
+		class:collapsed={sidebarExpanded === false}
+		class:expanded={sidebarExpanded === true}
+		data-sveltekit-preload-data="hover"
+	>
+		<li>
+			<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationalUnitMenu.button>
+				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+				<span>
+					{page.data.currentOrganizationalUnit.payload.name}
+				</span>
+			</button>
+		</li>
+
+		{#if $organizationalUnitMenu.expanded}
+			<li use:organizationalUnitMenu.panel>
+				<ul class="sidebar-menu">
+					<li>
+						<a
+							class="sidebar-menu-item sidebar-menu-item--secondary"
+							class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+								page.url.toString()}
+							href={landingPageURL(page.data.currentOrganization)}
+						>
+							<OrganizationalUnit />
+							<span>
+								{$_('overview')}
+							</span>
+						</a>
+					</li>
+
+					{#each page.data.currentOrganizationalUnit.payload.favorite as favorite (favorite.href)}
+						{@const href = page.url.searchParams.size
+							? `${page.url.pathname}?${page.url.searchParams.toString()}`
+							: page.url.pathname}
+						<li>
+							<a
+								class="sidebar-menu-item sidebar-menu-item--secondary"
+								class:sidebar-menu-item--active={favorite.href === href}
+								href={favorite.href}
+							>
+								<StarSolid />
+								<span>{favorite.title}</span>
+							</a>
+						</li>
+					{/each}
+				</ul>
 			</li>
-		{/each}
-	{/if}
+		{/if}
+
+		<li>
+			<a
+				{@attach tooltip($_('overview'))}
+				class="sidebar-menu-item sidebar-menu-item--collapsed"
+				class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
+					page.url.toString()}
+				href={landingPageURL(page.data.currentOrganizationalUnit)}
+			>
+				<OrganizationalUnit />
+			</a>
+		</li>
+	</ul>
+{/if}
+
+<ul
+	class="sidebar-menu"
+	class:collapsed={sidebarExpanded === false}
+	class:expanded={sidebarExpanded === true}
+	data-sveltekit-preload-data="hover"
+>
 	{#if $user.isAuthenticated}
 		<li>
 			<a
-				class="sidebar-menu-item"
+				class="sidebar-menu-item sidebar-menu-item--secondary"
 				class:sidebar-menu-item--active={'/me' === page.url.pathname}
 				href="/me"
 			>
 				<Grid />
 				<span>{$_('workspace.profile')}</span>
+			</a>
+		</li>
+
+		<li>
+			<a
+				{@attach tooltip($_('workspace.profile'))}
+				class="sidebar-menu-item sidebar-menu-item--collapsed"
+				class:sidebar-menu-item--active={'/me' === page.url.pathname}
+				href="/me"
+			>
+				<Grid />
 			</a>
 		</li>
 	{/if}
@@ -131,12 +249,11 @@
 	class:expanded={sidebarExpanded === true}
 >
 	<li>
-		<button class="sidebar-menu-item sidebar-menu-item--about" use:platformMenu.button>
-			<Favicon />
+		<button class="sidebar-menu-item sidebar-menu-item--toggle" use:platformMenu.button>
+			{#if $platformMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
 			<span>
 				{$_('about')}
 			</span>
-			{#if $platformMenu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
 	</li>
 	{#if $platformMenu.expanded}
@@ -173,16 +290,19 @@
 		</li>
 	{/if}
 	<li>
-		<a class="sidebar-menu-item" href={env.PUBLIC_BASE_URL}>
+		<a
+			{@attach tooltip($_('homepage'))}
+			class="sidebar-menu-item sidebar-menu-item--collapsed"
+			href={env.PUBLIC_BASE_URL}
+		>
 			<Favicon />
-			<span>{$_('homepage')}</span>
 		</a>
 	</li>
 </ul>
 
 {#if $userMenu.expanded}
 	<ul
-		class="sidebar-menu"
+		class="sidebar-menu sidebar-menu--profile"
 		class:collapsed={sidebarExpanded === false}
 		class:expanded={sidebarExpanded === true}
 		transition:slide={{ duration: 125, easing: cubicInOut }}
@@ -209,6 +329,26 @@
 			>
 				<ArrowRightToBracket />
 				<span>{$_('logout')}</span>
+			</button>
+		</li>
+		<li>
+			<button
+				{@attach tooltip($_('profile.settings'))}
+				class="sidebar-menu-item sidebar-menu-item--collapsed"
+				onclick={() => dialog.showModal()}
+				type="button"
+			>
+				<Cog />
+			</button>
+		</li>
+		<li>
+			<button
+				{@attach tooltip($_('logout'))}
+				class="sidebar-menu-item sidebar-menu-item--collapsed sidebar-menu-item--logout"
+				onclick={() => signOut()}
+				type="button"
+			>
+				<ArrowRightToBracket />
 			</button>
 		</li>
 	</ul>
@@ -277,6 +417,7 @@
 
 		align-items: center;
 		border-radius: 0;
+		border-top: 1px solid var(--color-gray-200);
 		display: flex;
 		gap: 0.625rem;
 		padding: 0.75rem 0.5rem;
@@ -287,35 +428,30 @@
 	}
 
 	.sidebar-menu {
-		border-bottom: 1px solid var(--gray-200, #e5e7eb);
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-		padding: 0.75rem 0.5rem;
+		padding: 0.75rem 0.5rem 0.5rem;
 	}
 
 	.sidebar-menu.sidebar-menu--about {
-		gap: 0.25rem;
-		margin-top: auto;
-		padding: 0.75rem 0.5rem;
+		margin-bottom: auto;
 	}
 
-	.sidebar-menu.sidebar-menu--about.expanded > li:last-child {
+	.sidebar-menu.sidebar-menu--about .sidebar-menu-item--secondary {
+		padding-left: 1.875rem;
+	}
+
+	.sidebar-menu.sidebar-menu--profile {
+		border-top: 1px solid var(--color-gray-200);
+		padding-top: 0.5rem;
+	}
+
+	.sidebar-menu.expanded > li:has(> .sidebar-menu-item--collapsed) {
 		display: none;
 	}
 
-	.sidebar-menu.sidebar-menu--about:not(.expanded) > li:not(:last-child) {
+	.sidebar-menu:not(.expanded) > li:not(:has(> .sidebar-menu-item--collapsed)) {
 		display: none;
-	}
-
-	.sidebar-menu.sidebar-menu--about .sidebar-menu {
-		border-bottom: none;
-		gap: 0.25rem;
-		padding: 0;
-	}
-
-	.sidebar-menu.sidebar-menu--navigation {
-		background-color: var(--color-gray-050);
 	}
 
 	.sidebar-menu-item {
@@ -328,14 +464,23 @@
 		color: var(--color);
 		display: flex;
 		flex-direction: row;
-		gap: 0.5rem;
-		line-height: 1.2;
-		padding: 0.5rem;
+		gap: 0.375rem;
+		line-height: 1.5;
+		padding: 0.25rem;
+		text-wrap: nowrap;
 		width: 100%;
 	}
 
+	.sidebar-menu-item.sidebar-menu-item--toggle {
+		--color: var(--color-gray-400);
+
+		font-size: 0.75rem;
+		gap: 0.125rem;
+		padding-left: 0;
+	}
+
 	.sidebar-menu-item.sidebar-menu-item--active {
-		background-color: var(--color-gray-200);
+		background-color: var(--color-gray-100);
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--logout {
@@ -344,16 +489,30 @@
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--secondary {
-		padding-left: 2.75rem;
+		padding-left: 0.5rem;
+	}
+
+	.sidebar-menu-item.sidebar-menu-item--collapsed {
+		padding: 0.5rem;
 	}
 
 	.sidebar-menu-item:active {
-		background-color: var(--color-gray-300);
+		background-color: var(--color-gray-100);
 	}
 
 	.sidebar-menu-item:focus,
 	.sidebar-menu-item:hover {
-		background-color: var(--color-gray-100);
+		background-color: var(--color-gray-050);
+	}
+
+	.sidebar-menu .sidebar-menu {
+		padding: 0;
+	}
+
+	.sidebar-menu-item > span {
+		overflow: hidden;
+		text-align: left;
+		text-overflow: ellipsis;
 	}
 
 	.sidebar-menu:not(.expanded) .sidebar-menu-item > span {
@@ -366,11 +525,6 @@
 		height: 1rem;
 		max-width: none;
 		width: 1rem;
-	}
-
-	.sidebar-menu-item.sidebar-menu-item--about span {
-		flex-grow: 1;
-		text-align: left;
 	}
 
 	@media (min-width: 60rem) {
@@ -398,11 +552,11 @@
 			display: revert;
 		}
 
-		.sidebar-menu.sidebar-menu--about:not(.collapsed) > li:not(:last-child) {
+		.sidebar-menu:not(.collapsed) > li:not(:has(> .sidebar-menu-item--collapsed)) {
 			display: block;
 		}
 
-		.sidebar-menu.sidebar-menu--about:not(.collapsed) > li:last-child {
+		.sidebar-menu:not(.collapsed) > li:has(> .sidebar-menu-item--collapsed) {
 			display: none;
 		}
 
