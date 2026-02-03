@@ -49,6 +49,11 @@
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
+		isResourceDataExpectedExpensesContainer,
+		isResourceDataExpectedIncomeContainer,
+		isResourceDataHistoricalExpensesContainer,
+		isResourceDataHistoricalIncomeContainer,
+		isResourceV2Container,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
 		payloadTypes,
@@ -160,6 +165,28 @@
 			(isOrganizationContainer(parentContainer) ||
 				isOrganizationalUnitContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
+	);
+
+	let mayAddHistoricalExpensesCollection = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				isResourceDataHistoricalExpensesContainer
+			)
+	);
+
+	let mayAddExpectedExpensesCollection = $derived(
+		isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isResourceDataExpectedExpensesContainer)
+	);
+
+	let mayAddHistoricalIncomeCollection = $derived(
+		isResourceV2Container(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isResourceDataHistoricalIncomeContainer)
+	);
+
+	let mayAddExpectedIncomeCollection = $derived(
+		isResourceV2Container(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isResourceDataExpectedIncomeContainer)
 	);
 
 	let mayAddTeaserSection = $derived(
@@ -277,6 +304,46 @@
 						}
 					]
 				: []),
+			...(mayAddHistoricalExpensesCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.historical_expenses'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.historical_expenses'
+						}
+					]
+				: []),
+			...(mayAddExpectedExpensesCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.expected_expenses'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.expected_expenses'
+						}
+					]
+				: []),
+			...(mayAddHistoricalIncomeCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.historical_income'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.historical_income'
+						}
+					]
+				: []),
+			...(mayAddExpectedIncomeCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.expected_income'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.expected_income'
+						}
+					]
+				: []),
 			...(mayAddIndicatorCollection
 				? [
 						{
@@ -377,10 +444,15 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (option.value)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 						<li class="menu-item">
-							<button use:menu.item={{ value: option.value }}>
+							<button
+								use:menu.item={{
+									value: { type: option.value, resourceDataType: option.resourceDataType }
+								}}
+								type="button"
+							>
 								<option.icon />
 								{option.label}
 							</button>
