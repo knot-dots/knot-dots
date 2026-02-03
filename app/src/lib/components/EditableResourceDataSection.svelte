@@ -3,7 +3,6 @@
 	import Plus from '~icons/knotdots/plus';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		getResourceDataI18nKey,
 		isResourceV2Container,
 		type AnyContainer,
 		type ResourceDataContainer,
@@ -91,9 +90,7 @@
 	<header class="resource-data__header">
 		<div class="resource-data__heading">
 			<h2 class="resource-data__title">
-				<span class="resource-data__title-main"
-					>{$_(getResourceDataI18nKey(container.payload.type))}</span
-				>
+				<span class="resource-data__title-main">{$_(container.payload.resourceDataType)}</span>
 				{#if currentResource}
 					<span class="resource-data__title-in">{$_('preposition.in')}</span>
 					<span class="resource-data__title-unit">
