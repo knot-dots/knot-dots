@@ -9,11 +9,6 @@
 		value: string | undefined;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	interface $$Events {
-		change: Event;
-	}
-
 	let { editable = false, label, options, value = $bindable() }: Props = $props();
 
 	let selected = $derived(options.find((o) => o.value == value));
