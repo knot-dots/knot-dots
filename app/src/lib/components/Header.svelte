@@ -38,6 +38,8 @@
 	import {
 		isGoalContainer,
 		isMeasureContainer,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		isProgramContainer,
 		isSimpleMeasureContainer,
 		overlayKey,
@@ -188,13 +190,17 @@
 
 	{#if workspaceOptions}
 		<Workspaces options={workspaceOptions} />
-	{:else if overlay && $overlayStore?.container}
-		{#if isProgramContainer($overlayStore.container)}
-			<ProgramWorkspaces container={$overlayStore.container} />
-		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
-			<MeasureWorkspaces container={$overlayStore.container} />
-		{:else if isGoalContainer($overlayStore.container) && createFeatureDecisions(page.data.features).useIOOI()}
-			<GoalWorkspaces container={$overlayStore.container} />
+	{:else if (overlay && $overlayStore?.container) || (!overlay && page.data.container)}
+		{@const container =
+			overlay && $overlayStore?.container ? $overlayStore.container : page.data.container}
+		{#if isProgramContainer(container)}
+			<ProgramWorkspaces {container} />
+		{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+			<MeasureWorkspaces {container} />
+		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
+			<GoalWorkspaces {container} />
+		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+			<WorkspacesMenu />
 		{/if}
 	{:else}
 		<WorkspacesMenu />
@@ -239,6 +245,19 @@
 			<a
 				class="action-button action-button--size-l"
 				href={overlayURL(page.url, overlayKey.enum.members, $overlayStore.container.guid)}
+				{@attach tooltip($_('members'))}
+			>
+				<Users />
+			</a>
+		{:else if !overlay && !$overlayStore?.key && page.data.container && (isProgramContainer(page.data.container) || isMeasureContainer(page.data.container) || isSimpleMeasureContainer(page.data.container)) && $ability.can('invite-members', page.data.container)}
+			<div class="divider"></div>
+
+			<a
+				class="action-button action-button--size-l"
+				href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
+					guid: selectedContext.guid,
+					contentGuid: page.data.container.guid
+				})}
 				{@attach tooltip($_('members'))}
 			>
 				<Users />

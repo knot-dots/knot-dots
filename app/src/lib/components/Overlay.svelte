@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
+	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import GoalIOOIOverlay from '$lib/components/GoalIOOIOverlay.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
@@ -10,11 +11,11 @@
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
 	import NewIndicatorCatalogOverlay from '$lib/components/NewIndicatorCatalogOverlay.svelte';
+	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
-	import ViewOverlay from '$lib/components/ViewOverlay.svelte';
 	import { isGoalContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
@@ -52,6 +53,10 @@
 		}
 	}
 </script>
+
+{#snippet layout(header: Snippet, main: Snippet)}
+	<OverlayLayout {header} {main} />
+{/snippet}
 
 <svelte:window onmouseup={stopExpand} />
 
@@ -93,7 +98,7 @@
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
-		<ViewOverlay container={data.container} revisions={data.revisions} />
+		<EditableDetailView container={data.container} {layout} revisions={data.revisions} />
 	{/if}
 </section>
 

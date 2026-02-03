@@ -11,6 +11,7 @@ export const featureFlags = new Map([
 			'CustomCategories',
 			'IOOI',
 			'EditorialPages',
+			'FullScreenRoutes',
 			'SubMeasures'
 		] as const
 	],
@@ -93,6 +94,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');
+		},
+		useFullScreenRoutes() {
+			return features.includes('FullScreenRoutes');
 		}
 	};
 }

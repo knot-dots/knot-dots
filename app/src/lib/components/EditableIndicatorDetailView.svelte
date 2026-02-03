@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import paramsFromURL from '$lib/client/paramsFromURL';
@@ -9,8 +10,9 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableHistoricalValues from '$lib/components/EditableHistoricalValues.svelte';
-	import type { IndicatorTab } from '$lib/components/IndicatorTabs.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import IndicatorTable from '$lib/components/IndicatorTable.svelte';
+	import { type IndicatorTab, tab } from '$lib/components/IndicatorTabs.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
@@ -18,7 +20,6 @@
 	import {
 		type AnyContainer,
 		titleForProgramCollection,
-		type Container,
 		findOverallObjective,
 		type IndicatorContainer,
 		isContainerWithEffect,
@@ -28,16 +29,37 @@
 		isRelatedTo,
 		paramsFromFragment
 	} from '$lib/models';
+	import { fetchContainersRelatedToIndicators } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
-	import { tab } from './IndicatorTabs.svelte';
 
 	interface Props {
 		container: IndicatorContainer;
-		relatedContainers: Container[];
+		layout: Snippet<[Snippet, Snippet]>;
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let organization = $derived(container.organization);
+
+	let relatedContainersQuery = $derived(
+		fetchContainersRelatedToIndicators({
+			guid,
+			params: {
+				organization: [organization],
+				...(page.data.currentOrganizationalUnit
+					? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
+					: undefined),
+				...(paramsFromFragment(page.url).has('program')
+					? { program: paramsFromFragment(page.url).get('program') as string }
+					: undefined)
+			}
+		})
+	);
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	let currentTab: IndicatorTab = $derived.by(() => {
 		const parseResult = tab.safeParse(paramsFromURL(page.url).get('tab'));
@@ -63,111 +85,126 @@
 	let overallObjective = $derived(findOverallObjective(container, relatedContainers));
 </script>
 
-<EditableContainerDetailView bind:container>
-	{#snippet data()}
-		<IndicatorProperties
-			bind:container
-			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-			{relatedContainers}
-			{revisions}
-		/>
+{#snippet header()}
+	<Header sortOptions={[]} workspaceOptions={[]} />
+{/snippet}
 
-		<div class="details-section">
-			<ul class="button-group">
-				{#each tab.options as option (option)}
-					<li class:is-active={option === currentTab}>
-						<a class="button" href={tabURL(paramsFromFragment(page.url), option)}>
-							{$_(`indicator.tab.${option}`)}
-						</a>
-					</li>
-				{/each}
-			</ul>
-
-			<select class="view-mode" bind:value={viewMode}>
-				<option value="chart">{$_('indicator.view_mode.chart')}</option>
-				<option value="table">{$_('indicator.view_mode.table')}</option>
-			</select>
-
-			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-				<EditableHistoricalValues editable bind:container />
-			{/if}
-
-			{#if viewMode === 'chart'}
-				<IndicatorChart {container} {relatedContainers} {showEffects} {showObjectives} showLegend />
-			{:else if viewMode === 'table'}
-				<IndicatorTable {container} {relatedContainers} {showEffects} {showObjectives} />
-			{/if}
-		</div>
-
-		{#if showEffects}
-			<div class="details-section">
-				<h2 class="details-heading">{$_('measures')}</h2>
-				<ul class="carousel">
-					{#each relatedContainers.filter( (c) => isContainerWithEffect(c) ) as measure (measure.guid)}
-						<li>
-							<Card container={measure} />
-						</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
-
-		{#if showObjectives}
-			<div class="details-section">
-				<h2 class="details-heading">{$_('goals')}</h2>
-				<ul class="carousel">
-					{#if overallObjective}
-						<li>
-							<Card container={overallObjective} />
-						</li>
-					{/if}
-					{#each relatedContainers.filter(isObjectiveContainer) as objective (objective.guid)}
-						{@const goal = relatedContainers
-							.filter(isContainerWithObjective)
-							.find(isRelatedTo(objective))}
-						{#if goal}
-							<li>
-								<Card container={goal} />
-							</li>
-						{/if}
-					{/each}
-				</ul>
-			</div>
-		{/if}
-
-		<div class="details-section">
-			<h2 class="details-heading">
-				{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
-			</h2>
-			<ul class="carousel">
-				{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
-					<li>
-						<Card container={program} />
-					</li>
-				{/each}
-			</ul>
-		</div>
-
-		{#key container.guid}
-			<EditableFormattedText
+{#snippet main()}
+	<EditableContainerDetailView bind:container>
+		{#snippet data()}
+			<IndicatorProperties
+				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
-				label={$_('description')}
-				bind:value={container.payload.description}
+				{relatedContainers}
+				{revisions}
 			/>
-		{/key}
-	{/snippet}
-</EditableContainerDetailView>
 
-<footer class="content-footer bottom-actions-bar">
-	<div class="content-actions">
-		<CreateOverallObjectiveButton {container} {relatedContainers} />
-		<SaveAsIndicatorTemplateButton {container} />
-		<RelationButton {container} />
-		<CreateCopyButton {container} />
-		<DeleteButton {container} {relatedContainers} />
-	</div>
-</footer>
+			<div class="details-section">
+				<ul class="button-group">
+					{#each tab.options as option (option)}
+						<li class:is-active={option === currentTab}>
+							<a class="button" href={tabURL(paramsFromFragment(page.url), option)}>
+								{$_(`indicator.tab.${option}`)}
+							</a>
+						</li>
+					{/each}
+				</ul>
+
+				<select class="view-mode" bind:value={viewMode}>
+					<option value="chart">{$_('indicator.view_mode.chart')}</option>
+					<option value="table">{$_('indicator.view_mode.table')}</option>
+				</select>
+
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<EditableHistoricalValues editable bind:container />
+				{/if}
+
+				{#if viewMode === 'chart'}
+					<IndicatorChart
+						{container}
+						{relatedContainers}
+						{showEffects}
+						{showObjectives}
+						showLegend
+					/>
+				{:else if viewMode === 'table'}
+					<IndicatorTable {container} {relatedContainers} {showEffects} {showObjectives} />
+				{/if}
+			</div>
+
+			{#if showEffects}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('measures')}</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter( (c) => isContainerWithEffect(c) ) as measure (measure.guid)}
+							<li>
+								<Card container={measure} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if showObjectives}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('goals')}</h2>
+					<ul class="carousel">
+						{#if overallObjective}
+							<li>
+								<Card container={overallObjective} />
+							</li>
+						{/if}
+						{#each relatedContainers.filter(isObjectiveContainer) as objective (objective.guid)}
+							{@const goal = relatedContainers
+								.filter(isContainerWithObjective)
+								.find(isRelatedTo(objective))}
+							{#if goal}
+								<li>
+									<Card container={goal} />
+								</li>
+							{/if}
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			<div class="details-section">
+				<h2 class="details-heading">
+					{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
+				</h2>
+				<ul class="carousel">
+					{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
+						<li>
+							<Card container={program} />
+						</li>
+					{/each}
+				</ul>
+			</div>
+
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
+		{/snippet}
+	</EditableContainerDetailView>
+
+	<footer class="content-footer bottom-actions-bar">
+		<div class="content-actions">
+			<CreateOverallObjectiveButton {container} {relatedContainers} />
+			<SaveAsIndicatorTemplateButton {container} />
+			<RelationButton {container} />
+			<CreateCopyButton {container} />
+			<DeleteButton {container} {relatedContainers} />
+		</div>
+	</footer>
+{/snippet}
+
+{@render layout(header, main)}
 
 <style>
 	select {

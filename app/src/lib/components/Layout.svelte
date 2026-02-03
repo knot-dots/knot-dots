@@ -112,8 +112,15 @@
 	}
 
 	main {
+		display: flex;
 		flex: 1;
+		flex-direction: column;
 		min-height: 0;
+		overflow-y: auto;
+	}
+
+	main > :global(:is(:not(aside))) {
+		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
 	}
 
 	.toasts {

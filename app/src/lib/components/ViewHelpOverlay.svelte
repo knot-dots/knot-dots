@@ -1,4 +1,5 @@
 <script lang="ts">
+	import EditableHelpDetailView from '$lib/components/EditableHelpDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { type HelpContainer } from '$lib/models';
 
@@ -10,11 +11,9 @@
 </script>
 
 <Header sortOptions={[]} workspaceOptions={[]} />
-<div class="content-details">
-	{#await import('./EditableHelpDetailView.svelte') then { default: EditablePageDetailView }}
-		<EditablePageDetailView {container} revisions={[container]} />
-	{/await}
-</div>
+
+<EditableHelpDetailView {container} revisions={[container]} />
+
 <footer class="content-footer">
 	<div class="content-actions"></div>
 </footer>

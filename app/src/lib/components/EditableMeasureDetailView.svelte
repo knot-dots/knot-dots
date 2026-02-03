@@ -1,71 +1,84 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import {
-		type AnyContainer,
-		type Container,
-		type ContainerWithEffect,
-		isMeasureContainer
-	} from '$lib/models';
+	import { type AnyContainer, type ContainerWithEffect, isMeasureContainer } from '$lib/models';
+	import { fetchContainersRelatedToMeasure } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ContainerWithEffect;
-		relatedContainers: Container[];
+		layout: Snippet<[Snippet, Snippet]>;
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	let guid = $derived(container.guid);
+
+	let relatedContainersQuery = $derived(fetchContainersRelatedToMeasure(guid));
+
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>
 
-<EditableContainerDetailView bind:container>
-	{#snippet data()}
-		<MeasureProperties
-			bind:container
-			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-			{relatedContainers}
-			{revisions}
-		/>
+{#snippet header()}
+	<Header />
+{/snippet}
 
-		{#key container.guid}
-			<EditableFormattedText
+{#snippet main()}
+	<EditableContainerDetailView bind:container>
+		{#snippet data()}
+			<MeasureProperties
+				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
-				label={$_('description')}
-				bind:value={container.payload.description}
+				{relatedContainers}
+				{revisions}
 			/>
-		{/key}
 
-		<Sections bind:container {relatedContainers} />
-	{/snippet}
-</EditableContainerDetailView>
-
-<footer class="content-footer bottom-actions-bar">
-	<div class="content-actions">
-		{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
-			<label>
-				<input
-					class="toggle"
-					name="template"
-					type="checkbox"
-					bind:checked={container.payload.template}
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
 				/>
-				{$_('template')}
-			</label>
-		{/if}
-		<RelationButton {container} />
-		<CreateAnotherButton {container} {relatedContainers} />
-		<CreateCopyButton {container} />
-		<DeleteButton {container} {relatedContainers} />
-	</div>
-</footer>
+			{/key}
+
+			<Sections bind:container {relatedContainers} />
+		{/snippet}
+	</EditableContainerDetailView>
+
+	<footer class="content-footer bottom-actions-bar">
+		<div class="content-actions">
+			{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
+				<label>
+					<input
+						class="toggle"
+						name="template"
+						type="checkbox"
+						bind:checked={container.payload.template}
+					/>
+					{$_('template')}
+				</label>
+			{/if}
+			<RelationButton {container} />
+			<CreateAnotherButton {container} {relatedContainers} />
+			<CreateCopyButton {container} />
+			<DeleteButton {container} {relatedContainers} />
+		</div>
+	</footer>
+{/snippet}
+
+{@render layout(header, main)}
 
 <style>
 	.toggle {

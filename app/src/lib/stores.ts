@@ -1,5 +1,7 @@
 import { derived, writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { preloadData } from '$app/navigation';
+import { resolve } from '$app/paths';
 import { page } from '$app/stores';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
@@ -7,6 +9,7 @@ import fetchContainers from '$lib/client/fetchContainers';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
 	type ApplicationState,
@@ -16,7 +19,6 @@ import {
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	type IooiType,
-	isProgramContainer,
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
@@ -31,8 +33,7 @@ import {
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
-		editable: false,
-		mode: 'view_mode.preview'
+		editable: false
 	}
 });
 
@@ -250,6 +251,8 @@ if (browser) {
 			}
 		};
 
+		const useFullScreenRoutes = createFeatureDecisions(values.data.features).useFullScreenRoutes();
+
 		if (hashParams.has(overlayKey.enum['view-help'])) {
 			const help = await fetchHelpBySlug(hashParams.get(overlayKey.enum['view-help']) as string);
 			setOverlayIfLatest({
@@ -257,45 +260,66 @@ if (browser) {
 				container: help
 			});
 		} else if (hashParams.has(overlayKey.enum.view)) {
-			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum.view) as string
-			);
-			const container = revisions[revisions.length - 1];
+			if (useFullScreenRoutes) {
+				const result = await preloadData(
+					resolve('/[guid=uuid]/[contentGuid=uuid]', {
+						guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+						contentGuid: hashParams.get(overlayKey.enum.view) as string
+					})
+				);
 
-			if (isProgramContainer(container)) {
-				if (hashParams.has('table')) {
-					applicationState.update((state) => ({
-						...state,
-						containerDetailView: {
-							...state.containerDetailView,
-							mode: 'view_mode.table'
-						}
-					}));
-				} else {
-					applicationState.update((state) => ({
-						...state,
-						containerDetailView: {
-							...state.containerDetailView,
-							mode: 'view_mode.preview'
-						}
-					}));
+				if (result.type !== 'loaded' || result.status !== 200) {
+					return;
 				}
+
+				const { container, revisions } = result.data;
+
+				setOverlayIfLatest({
+					key: overlayKey.enum.view,
+					container,
+					revisions
+				});
+			} else {
+				const revisions = await fetchContainerRevisions(
+					hashParams.get(overlayKey.enum.view) as string
+				);
+				const container = revisions[revisions.length - 1];
+
+				setOverlayIfLatest({
+					key: overlayKey.enum.view,
+					container,
+					revisions
+				});
 			}
-			setOverlayIfLatest({
-				key: overlayKey.enum.view,
-				container,
-				revisions
-			});
 		} else if (hashParams.has(overlayKey.enum.members)) {
-			const [revisions, users] = (await Promise.all([
-				fetchContainerRevisions(hashParams.get(overlayKey.enum.members) as string),
-				fetchMembers(hashParams.get(overlayKey.enum.members) as string)
-			])) as [Container[], UserRecord[]];
-			setOverlayIfLatest({
-				key: overlayKey.enum.members,
-				container: revisions[revisions.length - 1],
-				users
-			});
+			if (useFullScreenRoutes) {
+				const result = await preloadData(
+					resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
+						guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+						contentGuid: hashParams.get(overlayKey.enum.members) as string
+					})
+				);
+
+				if (result.type !== 'loaded' || result.status !== 200) {
+					return;
+				}
+
+				setOverlayIfLatest({
+					key: overlayKey.enum.members,
+					container: result.data.container,
+					users: result.data.users
+				});
+			} else {
+				const [revisions, users] = (await Promise.all([
+					fetchContainerRevisions(hashParams.get(overlayKey.enum.members) as string),
+					fetchMembers(hashParams.get(overlayKey.enum.members) as string)
+				])) as [Container[], UserRecord[]];
+				setOverlayIfLatest({
+					key: overlayKey.enum.members,
+					container: revisions[revisions.length - 1],
+					users
+				});
+			}
 		} else if (hashParams.has(overlayKey.enum.relations)) {
 			const revisions = (await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum.relations) as string
@@ -322,26 +346,51 @@ if (browser) {
 				relatedContainers
 			});
 		} else if (hashParams.has(overlayKey.enum.chapters)) {
-			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum.chapters) as string
-			);
-			const container = revisions[revisions.length - 1];
-			const containers = (await fetchRelatedContainers(
-				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
-				{
-					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
-					organization: [container.organization],
-					...(hashParams.has('related-to')
-						? { relationType: [predicates.enum['is-part-of']] }
-						: {}),
-					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
-					terms: hashParams.get('terms') ?? '',
-					topic: hashParams.getAll('topic')
-				},
-				hashParams.get('sort') ?? 'alpha'
-			)) as Container[];
-			setOverlayIfLatest({ key: overlayKey.enum.chapters, container, containers });
+			if (useFullScreenRoutes) {
+				const result = await preloadData(
+					resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', {
+						guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+						contentGuid: hashParams.get(overlayKey.enum.chapters) as string
+					}) +
+						'?' +
+						hashParams.toString()
+				);
+
+				if (result.type !== 'loaded' || result.status !== 200) {
+					return;
+				}
+
+				setOverlayIfLatest({
+					key: overlayKey.enum.chapters,
+					container: result.data.container,
+					containers: result.data.containers
+				});
+			} else {
+				const revisions = await fetchContainerRevisions(
+					hashParams.get(overlayKey.enum.chapters) as string
+				);
+				const container = revisions[revisions.length - 1];
+				const containers = (await fetchRelatedContainers(
+					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+					{
+						audience: hashParams.getAll('audience'),
+						category: hashParams.getAll('category'),
+						organization: [container.organization],
+						...(hashParams.has('related-to')
+							? { relationType: [predicates.enum['is-part-of']] }
+							: {}),
+						policyFieldBNK: hashParams.getAll('policyFieldBNK'),
+						terms: hashParams.get('terms') ?? '',
+						topic: hashParams.getAll('topic')
+					},
+					hashParams.get('sort') ?? 'alpha'
+				)) as Container[];
+				setOverlayIfLatest({
+					key: overlayKey.enum.chapters,
+					container,
+					containers
+				});
+			}
 		} else if (hashParams.has(overlayKey.enum['content-partners'])) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum['content-partners']) as string
@@ -416,50 +465,119 @@ if (browser) {
 				containers
 			});
 		} else if (hashParams.has(overlayKey.enum['goal-iooi'])) {
-			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum['goal-iooi']) as string
-			);
-			const container = revisions[revisions.length - 1];
-			const containers = await fetchRelatedContainers(
-				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
-				{
-					organization: [container.organization],
-					payloadType: [payloadTypes.enum.goal, payloadTypes.enum.objective],
-					relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
-					terms: hashParams.get('terms') ?? ''
-				},
-				hashParams.get('sort') ?? 'alpha'
-			);
-			setOverlayIfLatest({ key: overlayKey.enum['goal-iooi'], container, containers });
+			if (useFullScreenRoutes) {
+				const result = await preloadData(
+					resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', {
+						guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+						contentGuid: hashParams.get(overlayKey.enum['goal-iooi']) as string
+					})
+				);
+
+				if (result.type !== 'loaded' || result.status !== 200) {
+					return;
+				}
+
+				setOverlayIfLatest({
+					key: overlayKey.enum['goal-iooi'],
+					container: result.data.container,
+					containers: result.data.containers
+				});
+			} else {
+				const revisions = await fetchContainerRevisions(
+					hashParams.get(overlayKey.enum['goal-iooi']) as string
+				);
+				const container = revisions[revisions.length - 1];
+				const containers = await fetchRelatedContainers(
+					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+					{
+						organization: [container.organization],
+						payloadType: [payloadTypes.enum.goal, payloadTypes.enum.objective],
+						relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
+						terms: hashParams.get('terms') ?? ''
+					},
+					hashParams.get('sort') ?? 'alpha'
+				);
+				setOverlayIfLatest({
+					key: overlayKey.enum['goal-iooi'],
+					container,
+					containers
+				});
+			}
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
-			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum.tasks) as string
-			);
-			const container = revisions[revisions.length - 1];
-			const containers = await fetchRelatedContainers(
-				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
-				{
-					assignee: hashParams.getAll('assignee'),
-					payloadType: [payloadTypes.enum.goal, payloadTypes.enum.task],
-					taskCategory: hashParams.getAll('taskCategory'),
-					terms: hashParams.get('terms') ?? ''
-				},
-				'priority'
-			);
-			setOverlayIfLatest({ key: overlayKey.enum.tasks, container, containers });
+			if (useFullScreenRoutes) {
+				const result = await preloadData(
+					resolve('/[guid=uuid]/[contentGuid=uuid]/tasks/status', {
+						guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+						contentGuid: hashParams.get(overlayKey.enum.tasks) as string
+					}) +
+						'?' +
+						hashParams.toString()
+				);
+
+				if (result.type !== 'loaded' || result.status !== 200) {
+					return;
+				}
+
+				setOverlayIfLatest({
+					key: overlayKey.enum.tasks,
+					container: result.data.container,
+					containers: result.data.containers
+				});
+			} else {
+				const revisions = await fetchContainerRevisions(
+					hashParams.get(overlayKey.enum.tasks) as string
+				);
+				const container = revisions[revisions.length - 1];
+				const containers = await fetchRelatedContainers(
+					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+					{
+						assignee: hashParams.getAll('assignee'),
+						payloadType: [payloadTypes.enum.goal, payloadTypes.enum.task],
+						taskCategory: hashParams.getAll('taskCategory'),
+						terms: hashParams.get('terms') ?? ''
+					},
+					'priority'
+				);
+				setOverlayIfLatest({
+					key: overlayKey.enum.tasks,
+					container,
+					containers
+				});
+			}
 		} else if (hashParams.has(overlayKey.enum.indicators)) {
-			const revisions = (await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum.indicators) as string
-			)) as Container[];
-			const container = revisions[revisions.length - 1];
-			const relatedContainers = (await fetchContainers({
-				isPartOfProgram: [container.guid]
-			})) as Container[];
-			setOverlayIfLatest({
-				key: overlayKey.enum.indicators,
-				container,
-				containers: relatedContainers
-			});
+			if (useFullScreenRoutes) {
+				const result = await preloadData(
+					resolve('/[guid=uuid]/[contentGuid=uuid]/indicators/catalog', {
+						guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+						contentGuid: hashParams.get(overlayKey.enum.indicators) as string
+					}) +
+						'?' +
+						hashParams.toString()
+				);
+
+				if (result.type !== 'loaded' || result.status !== 200) {
+					return;
+				}
+
+				setOverlayIfLatest({
+					key: overlayKey.enum.indicators,
+					container: result.data.container,
+					containers: result.data.containers
+				});
+			} else {
+				const revisions = (await fetchContainerRevisions(
+					hashParams.get(overlayKey.enum.indicators) as string
+				)) as Container[];
+				const container = revisions[revisions.length - 1];
+				const relatedContainers = (await fetchContainers({
+					isPartOfProgram: [container.guid]
+				})) as Container[];
+				setOverlayIfLatest({
+					key: overlayKey.enum.indicators,
+					container,
+					containers: relatedContainers
+				});
+			}
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
 			const indicatorTemplates = (await fetchContainers({
 				category: hashParams.getAll('category'),

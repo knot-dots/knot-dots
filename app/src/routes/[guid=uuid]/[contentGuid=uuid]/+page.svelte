@@ -1,38 +1,13 @@
 <script lang="ts">
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import EditablePageDetailView from '$lib/components/EditablePageDetailView.svelte';
-	import { isPageContainer } from '$lib/models';
+	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	let container = $derived.by(() => {
-		let _ = $state(data.container);
-		return _;
-	});
 </script>
 
-<Layout>
-	{#snippet main()}
-		<div class="detail-page-content">
-			<div class="content-details">
-				{#if isPageContainer(container)}
-					<EditablePageDetailView
-						bind:container
-						relatedContainers={data.relatedContainers}
-						revisions={data.revisions}
-					/>
-				{/if}
-			</div>
-		</div>
-
-		<Help slug={`${data.container.payload.type.replace('_', '-')}-view`} />
+<EditableDetailView container={data.container} revisions={data.revisions}>
+	{#snippet layout(header, main)}
+		<Layout {header} {main} />
 	{/snippet}
-</Layout>
-
-<style>
-	.detail-page-content {
-		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
-	}
-</style>
+</EditableDetailView>
