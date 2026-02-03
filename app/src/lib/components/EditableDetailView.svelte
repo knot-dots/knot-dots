@@ -15,6 +15,7 @@
 	import EditableProgramDetailView from '$lib/components/EditableProgramDetailView.svelte';
 	import EditableReportDetailView from '$lib/components/EditableReportDetailView.svelte';
 	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
+	import EditableResourceDataDetailView from '$lib/components/EditableResourceDataDetailView.svelte';
 	import EditableResourceV2DetailView from '$lib/components/EditableResourceV2DetailView.svelte';
 	import EditableRuleDetailView from '$lib/components/EditableRuleDetailView.svelte';
 	import EditableTaskDetailView from '$lib/components/EditableTaskDetailView.svelte';
@@ -43,7 +44,8 @@
 		isTermContainer,
 		isTaskContainer,
 		isTeaserContainer,
-		isTextContainer
+		isTextContainer,
+		isResourceDataContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -92,6 +94,8 @@
 	<EditableResourceDetailView bind:container {layout} {revisions} />
 {:else if isResourceV2Container(container)}
 	<EditableResourceV2DetailView bind:container {layout} {revisions} />
+{:else if isResourceDataContainer(container)}
+	<EditableResourceDataDetailView bind:container {layout} {revisions} />
 {:else if isRuleContainer(container)}
 	<EditableRuleDetailView bind:container {layout} {revisions} />
 {:else if isTermContainer(container)}

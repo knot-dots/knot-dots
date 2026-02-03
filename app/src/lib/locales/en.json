@@ -105,6 +105,7 @@
 	"created_by": "{date, date, long} by {creator}",
 	"created_date": "Created at",
 	"creator": "Creator",
+	"current_resource": "Current resource",
 	"custom_collection": "Custom collection",
 	"custom_collection.add_items": "Add items",
 	"custom_collection.dialog.accept_selection": "Accept selection {count, select, 0 {} other {({count})}}",
