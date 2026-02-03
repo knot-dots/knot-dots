@@ -57,6 +57,8 @@
 				}
 			case overlayKey.enum['measures']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/measures/status', routeParams);
+			case overlayKey.enum['members']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', routeParams);
 			case overlayKey.enum['tasks']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/tasks/status', routeParams);
 			default:
