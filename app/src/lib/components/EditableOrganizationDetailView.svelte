@@ -26,14 +26,12 @@
 	}
 
 	let {
-		container: originalContainer = $bindable(),
+		container = $bindable(),
 		layout,
 		relatedContainers: originalRelatedContainers = []
 	}: Props = $props();
 
-	let container = $state(originalContainer);
-
-	let relatedContainers = $derived([originalContainer, ...originalRelatedContainers]);
+	let relatedContainers = $derived([container, ...originalRelatedContainers]);
 
 	let w = $state(0);
 
@@ -42,7 +40,6 @@
 
 	let mayEditStage = $derived(createFeatureDecisions(page.data.features).useStage());
 
-	// svelte-ignore state_referenced_locally
 	const handleSubmit = autoSave(container, 2000);
 </script>
 

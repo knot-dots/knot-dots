@@ -7,22 +7,23 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let container = $derived.by(() => {
+		let _ = $state(data.container);
+		return _;
+	});
+
+	let relatedContainers = $derived(data.relatedContainers);
+
+	$inspect(container);
 </script>
 
 {#snippet layout(header: Snippet, main: Snippet)}
 	<Layout {header} {main} />
 {/snippet}
 
-{#if isOrganizationContainer(data.container)}
-	<EditableOrganizationDetailView
-		container={data.container}
-		{layout}
-		relatedContainers={data.relatedContainers}
-	/>
-{:else if isOrganizationalUnitContainer(data.container)}
-	<EditableOrganizationalUnitDetailView
-		container={data.container}
-		{layout}
-		relatedContainers={data.relatedContainers}
-	/>
+{#if isOrganizationContainer(container)}
+	<EditableOrganizationDetailView {container} {layout} {relatedContainers} />
+{:else if isOrganizationalUnitContainer(container)}
+	<EditableOrganizationalUnitDetailView {container} {layout} {relatedContainers} />
 {/if}
