@@ -6,9 +6,11 @@
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import SidebarWithFavorites from '$lib/components/SidebarWithFavorites.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
+	import { createFeatureDecisions } from '$lib/features';
 	import { overlay } from '$lib/stores';
 
 	interface Props {
@@ -48,6 +50,8 @@
 	<nav>
 		{#if sidebar}
 			{@render sidebar()}
+		{:else if createFeatureDecisions(page.data.features).useFavoriteList()}
+			<SidebarWithFavorites />
 		{:else}
 			<Sidebar />
 		{/if}

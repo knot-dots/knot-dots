@@ -14,10 +14,12 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Grid from '~icons/flowbite/grid-solid';
-	import Home from '~icons/flowbite/home-solid';
+	import StarSolid from '~icons/flowbite/star-solid';
 	import Cog from '~icons/knotdots/cog';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Favicon from '~icons/knotdots/favicon';
+	import Organization from '~icons/knotdots/organization';
+	import OrganizationalUnit from '~icons/knotdots/organizational-unit';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
@@ -92,6 +94,23 @@
 			</span>
 		</a>
 	</li>
+	{#if createFeatureDecisions(page.data.features).useFavoriteList()}
+		{#each (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).payload.favorite as favorite (favorite.href)}
+			{@const href = page.url.searchParams.size
+				? `${page.url.pathname}?${page.url.searchParams.toString()}`
+				: page.url.pathname}
+			<li>
+				<a
+					class="sidebar-menu-item"
+					class:sidebar-menu-item--active={favorite.href === href}
+					href={favorite.href}
+				>
+					<StarSolid />
+					<span>{favorite.title}</span>
+				</a>
+			</li>
+		{/each}
+	{/if}
 	{#if $user.isAuthenticated}
 		<li>
 			<a
