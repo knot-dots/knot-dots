@@ -14,8 +14,6 @@
 	});
 
 	let relatedContainers = $derived(data.relatedContainers);
-
-	$inspect(container);
 </script>
 
 {#snippet layout(header: Snippet, main: Snippet)}

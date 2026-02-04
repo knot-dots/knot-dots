@@ -726,8 +726,6 @@ export function getManyContainers(
 			ORDER BY ${prepareOrderByExpression(sort)}
 			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``};
     `);
-		console.log('[getManyContainers] SQL returned', containerResult.length, 'results');
-
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }
