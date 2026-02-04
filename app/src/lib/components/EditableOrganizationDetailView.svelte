@@ -40,7 +40,7 @@
 
 	let mayEditStage = $derived(createFeatureDecisions(page.data.features).useStage());
 
-	const handleSubmit = autoSave(container, 2000);
+	const handleSubmit = autoSave(container, 2000, container.payload.type);
 </script>
 
 {#snippet header()}
