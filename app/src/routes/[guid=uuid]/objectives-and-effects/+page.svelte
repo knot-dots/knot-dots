@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -11,40 +11,21 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import {
-		loadCategoryOptions,
-		buildCategoryFacets,
-		buildCategoryLabels,
-		type CategoryOptions
-	} from '$lib/client/categoryOptions';
-	import fetchContainers from '$lib/client/fetchContainers';
-	import { createFeatureDecisions } from '$lib/features';
-	import {
-		audience,
-		computeFacetCount,
 		type Container,
 		findAncestors,
 		findConnected,
 		findDescendants,
 		findLeafObjectives,
-		indicatorCategories,
-		indicatorTypes,
-		isCategoryContainer,
 		isContainerWithEffect,
 		isEffectContainer,
 		isIndicatorContainer,
 		isObjectiveContainer,
 		isRelatedTo,
-		policyFieldBNK,
-		payloadTypes,
-		predicates,
-		sustainableDevelopmentGoals,
-		topics
+		predicates
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -131,108 +112,14 @@
 
 		return objectivesByLevel;
 	});
-	let categoryFacets = $state(new Map<string, Map<string, number>>());
-	let facetLabels = $state(new Map<string, string>());
-	let categoryOptions = $state<CategoryOptions | null>(null);
-
-	$effect(() => {
-		const organizationScope = Array.from(
-			new Set(
-				[page.data.currentOrganization?.guid, page.data.defaultOrganizationGuid].filter(
-					(guid): guid is string => Boolean(guid)
-				)
-			)
-		);
-
-		let cancelled = false;
-		(async () => {
-			if (!featureDecisions.useCustomCategories()) {
-				categoryFacets = new Map();
-				facetLabels = new Map();
-				categoryOptions = null;
-				return;
-			}
-
-			const [scopedCategories, fallbackCategories] = await Promise.all([
-				fetchContainers(
-					{ organization: organizationScope, payloadType: [payloadTypes.enum.category] },
-					'alpha'
-				),
-				fetchContainers({ payloadType: [payloadTypes.enum.category] }, 'alpha')
-			]);
-
-			if (cancelled) return;
-
-			const categoryKeys = Array.from(
-				new Set(
-					[...scopedCategories, ...fallbackCategories]
-						.filter(isCategoryContainer)
-						.map(({ payload }) => payload.key)
-						.filter((key): key is string => Boolean(key))
-				)
-			);
-
-			let options = await loadCategoryOptions(categoryKeys, organizationScope);
-			let nextFacets = buildCategoryFacets(options);
-			let nextLabels = buildCategoryLabels(options);
-
-			if (nextFacets.size === 0) {
-				options = await loadCategoryOptions(categoryKeys, []);
-				nextFacets = buildCategoryFacets(options);
-				nextLabels = buildCategoryLabels(options);
-			}
-
-			if (cancelled) return;
-			categoryFacets = nextFacets;
-			facetLabels = nextLabels;
-			categoryOptions = options;
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	let facets = $derived.by(() => {
-		const entries: Array<[string, Map<string, number>]> = [
-			['indicatorType', new Map<string, number>(indicatorTypes.options.map((v: string) => [v, 0]))],
-			[
-				'indicatorCategory',
-				new Map<string, number>(indicatorCategories.options.map((v: string) => [v, 0]))
-			]
-		];
-
-		if (featureDecisions.useCustomCategories()) {
-			for (const [key, values] of categoryFacets.entries()) {
-				entries.push([key, new Map<string, number>(values.entries())]);
-			}
-		} else {
-			entries.push([
-				'category',
-				new Map<string, number>(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))
-			]);
-			entries.push(['topic', new Map<string, number>(topics.options.map((v) => [v as string, 0]))]);
-			entries.push([
-				'policyFieldBNK',
-				new Map<string, number>(policyFieldBNK.options.map((v) => [v as string, 0]))
-			]);
-			entries.push([
-				'audience',
-				new Map<string, number>(audience.options.map((v) => [v as string, 0]))
-			]);
-		}
-
-		const facets = new Map<string, Map<string, number>>(entries);
-		return computeFacetCount(facets, data.containers);
-	});
 </script>
 
 <Layout>
 	{#snippet header()}
 		<Header
-			{facets}
-			facetLabels={featureDecisions.useCustomCategories() ? facetLabels : undefined}
-			categoryOptions={featureDecisions.useCustomCategories() ? categoryOptions : null}
+			facets={data.facets}
+			facetLabels={data.facetLabels}
+			categoryOptions={data.categoryOptions}
 			search
 		/>
 	{/snippet}

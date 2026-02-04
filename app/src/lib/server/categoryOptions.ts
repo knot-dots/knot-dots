@@ -6,7 +6,12 @@ import {
 	getCategoryKeys,
 	type CategoryOptions
 } from '$lib/categoryOptions';
-import { isCategoryContainer, isTermContainer, payloadTypes } from '$lib/models';
+import {
+	isCategoryContainer,
+	isTermContainer,
+	payloadTypes,
+	type CategoryContainer
+} from '$lib/models';
 import type { User } from '$lib/stores';
 import { getManyContainers } from '$lib/server/db';
 import type { DatabaseConnection } from 'slonik';
@@ -25,14 +30,42 @@ function dedupe(values: Scope) {
 	return Array.from(new Set(values.filter(Boolean)));
 }
 
-async function fetchOptionsForScope(params: { connect: Connect; scope: Scope; user: User }) {
-	const { connect, scope, user } = params;
+function normalize(values: unknown): string[] {
+	if (Array.isArray(values)) {
+		return values.filter((v): v is string => typeof v === 'string' && v.length > 0);
+	}
+	if (typeof values === 'string' && values.length > 0) {
+		return [values];
+	}
+	return [];
+}
+
+function categoryMatchesObjectTypes(category: CategoryContainer, allowed: Iterable<string>) {
+	const allowedSet = new Set(normalize(Array.from(allowed)));
+	if (allowedSet.size === 0) return true;
+
+	const configured = normalize((category.payload as Record<string, unknown>).objectTypes);
+	if (configured.length === 0) return true;
+
+	return configured.some((type) => allowedSet.has(type));
+}
+
+async function fetchOptionsForScope(params: {
+	connect: Connect;
+	scope: Scope;
+	user: User;
+	objectTypes?: unknown;
+}) {
+	const { connect, scope, user, objectTypes } = params;
 	const [categories, terms] = await Promise.all([
 		connect(getManyContainers(scope, { type: [payloadTypes.enum.category] }, 'alpha')),
 		connect(getManyContainers(scope, { type: [payloadTypes.enum.term] }, 'alpha'))
 	]);
 
-	const visibleCategories = filterVisible(categories, user).filter(isCategoryContainer);
+	const allowedTypes = new Set(normalize(objectTypes));
+	const visibleCategories = filterVisible(categories, user)
+		.filter(isCategoryContainer)
+		.filter((category) => categoryMatchesObjectTypes(category, allowedTypes));
 	const visibleTerms = filterVisible(terms, user).filter(isTermContainer);
 
 	const options = buildCategoryOptionsFromContainers(visibleCategories, visibleTerms);
@@ -46,6 +79,7 @@ export async function loadCategoryContext(params: {
 	organizationScope: Scope;
 	fallbackScope?: Scope;
 	user: User;
+	objectTypes?: unknown;
 }): Promise<CategoryContext | null> {
 	const scopes = [dedupe(params.organizationScope), dedupe(params.fallbackScope ?? [])].filter(
 		(scope) => scope.length > 0
@@ -55,7 +89,8 @@ export async function loadCategoryContext(params: {
 		const result = await fetchOptionsForScope({
 			connect: params.connect,
 			scope,
-			user: params.user
+			user: params.user,
+			objectTypes: params.objectTypes
 		});
 		if (result) {
 			return {

@@ -7,7 +7,12 @@ import {
 	type CategoryOption,
 	type CategoryOptions
 } from '$lib/categoryOptions';
-import { isCategoryContainer, isTermContainer, payloadTypes } from '$lib/models';
+import {
+	isCategoryContainer,
+	isTermContainer,
+	payloadTypes,
+	type CategoryContainer
+} from '$lib/models';
 
 export { buildCategoryFacets, buildCategoryLabels, getCategoryKeys };
 export type { CategoryOption, CategoryOptions };
@@ -22,25 +27,34 @@ function normalize(values: unknown): string[] {
 	return [];
 }
 
-const cache = new Map<string, Promise<CategoryOptions>>();
-
-function toCacheKey(categoryKeys: string[], organizationScope: string[]) {
-	const scopeKey = Array.from(new Set(normalize(organizationScope)))
-		.sort()
-		.join(',');
-	const categoriesKey = Array.from(new Set(normalize(categoryKeys)))
-		.sort()
-		.join(',');
-	return `${scopeKey}|${categoriesKey}`;
+function toCacheKey(categoryKeys: string[], organizationScope: string[], objectTypes: string[]) {
+	const scopeKey = Array.from(new Set(organizationScope)).sort().join(',');
+	const categoriesKey = Array.from(new Set(categoryKeys)).sort().join(',');
+	const objectTypesKey = Array.from(new Set(objectTypes)).sort().join(',');
+	return `${scopeKey}|${categoriesKey}|${objectTypesKey}`;
 }
+
+export function categoryMatchesObjectTypes(category: CategoryContainer, allowed: Iterable<string>) {
+	const allowedSet = new Set(normalize(Array.from(allowed)));
+	if (allowedSet.size === 0) return true;
+
+	const configured = normalize((category.payload as Record<string, unknown>).objectTypes);
+	if (configured.length === 0) return true;
+
+	return configured.some((type) => allowedSet.has(type));
+}
+
+const cache = new Map<string, Promise<CategoryOptions>>();
 
 export async function loadCategoryOptions(
 	categoryKeys: unknown,
-	organizationScope: unknown
+	organizationScope: unknown,
+	objectTypes?: unknown
 ): Promise<CategoryOptions> {
 	const normalizedCategories = normalize(categoryKeys);
 	const normalizedScope = normalize(organizationScope);
-	const cacheKey = toCacheKey(normalizedCategories, normalizedScope);
+	const normalizedObjectTypes = normalize(objectTypes);
+	const cacheKey = toCacheKey(normalizedCategories, normalizedScope, normalizedObjectTypes);
 
 	if (!cache.has(cacheKey)) {
 		cache.set(
@@ -57,20 +71,20 @@ export async function loadCategoryOptions(
 					)
 				]);
 
+				const allowedTypes = new Set(normalizedObjectTypes);
+				const filteredCategories = categories
+					.filter(isCategoryContainer)
+					.filter((category) => categoryMatchesObjectTypes(category, allowedTypes));
 				const categoryOptions = buildCategoryOptionsFromContainers(
-					categories.filter(isCategoryContainer),
+					filteredCategories,
 					terms.filter(isTermContainer)
 				);
 
-				for (const key of getCategoryKeys(categoryOptions)) {
-					if (!categoryOptions[key]) {
-						categoryOptions[key] = [];
-					}
-				}
-
-				for (const key of normalizedCategories) {
-					if (!categoryOptions[key]) {
-						categoryOptions[key] = [];
+				if (allowedTypes.size === 0) {
+					for (const key of normalizedCategories) {
+						if (!categoryOptions[key]) {
+							categoryOptions[key] = [];
+						}
 					}
 				}
 

@@ -60,7 +60,8 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 				connect: locals.pool.connect,
 				organizationScope,
 				fallbackScope: [],
-				user: locals.user
+				user: locals.user,
+				objectTypes: [payloadTypes.enum.goal]
 			})
 		: null;
 

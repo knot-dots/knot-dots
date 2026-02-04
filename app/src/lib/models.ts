@@ -120,6 +120,26 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
+const categoryObjectTypeValues = [
+	payloadTypes.enum.goal,
+	payloadTypes.enum.program,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.task,
+	payloadTypes.enum.indicator,
+	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.effect,
+	payloadTypes.enum.objective
+] as const;
+
+export const categoryObjectTypes = z.enum(categoryObjectTypeValues);
+
+export type CategoryObjectType = z.infer<typeof categoryObjectTypes>;
+
+const defaultCategoryObjectTypes = [...categoryObjectTypes.options] as CategoryObjectType[];
+
 export const chapterTypeOptions = [
 	payloadTypes.enum.goal,
 	payloadTypes.enum.knowledge,
@@ -635,6 +655,8 @@ const basePayload = z.object({
 const categoryPayloadBaseShape = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
+	level: z.number().int().nonnegative().default(0),
+	objectTypes: z.array(categoryObjectTypes).default(defaultCategoryObjectTypes),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.category),
 	visibility: visibility.default(visibility.enum['public'])

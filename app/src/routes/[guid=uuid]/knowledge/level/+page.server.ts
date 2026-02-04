@@ -20,6 +20,8 @@ import {
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import type { CategoryOptions } from '$lib/categoryOptions';
 import type { PageServerLoad } from './$types';
 
 function isRelatedToSome(containers: Container[]) {
@@ -34,8 +36,61 @@ function isRelatedToSome(containers: Container[]) {
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	const customCategories = extractCustomCategoryFilters(url);
-	const { currentOrganization } = await parent();
+	const { currentOrganization, defaultOrganizationGuid } = await parent();
 	const features = createFeatureDecisions(locals.features);
+
+	const mapFacetKey = (key: string) =>
+		key === 'sdg' ? 'category' : key === 'policy_field_bnk' ? 'policyFieldBNK' : key;
+	const mapFacets = (facets: Map<string, Map<string, number>>) => {
+		const mapped = new Map<string, Map<string, number>>();
+		for (const [key, values] of facets) {
+			mapped.set(mapFacetKey(key), values);
+		}
+		return mapped;
+	};
+	const mapLabels = (labels?: Map<string, string>) => {
+		if (!labels) return undefined;
+		const mapped = new Map<string, string>();
+		for (const [key, label] of labels) {
+			mapped.set(mapFacetKey(key), label);
+		}
+		return mapped;
+	};
+	const mapOptions = (options?: CategoryOptions | null) => {
+		if (!options) return null;
+		const mappedOptions: CategoryOptions = {};
+		for (const [key, value] of Object.entries(options)) {
+			if (key === '__categoryLabels__') continue;
+			if (!Array.isArray(value)) continue;
+			mappedOptions[mapFacetKey(key)] = value;
+		}
+		const labelEntries = Object.entries(options.__categoryLabels__ ?? {}).map(([k, v]) => [
+			mapFacetKey(k),
+			v
+		]);
+		if (labelEntries.length) {
+			mappedOptions.__categoryLabels__ = Object.fromEntries(labelEntries);
+		}
+		return mappedOptions;
+	};
+
+	const organizationScope = Array.from(
+		new Set(
+			[currentOrganization.guid, defaultOrganizationGuid].filter((guid): guid is string =>
+				Boolean(guid)
+			)
+		)
+	);
+
+	const categoryContext = features.useCustomCategories()
+		? await loadCategoryContext({
+				connect: locals.pool.connect,
+				organizationScope,
+				fallbackScope: [],
+				user: locals.user,
+				objectTypes: [payloadTypes.enum.knowledge]
+			})
+		: null;
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -112,16 +167,36 @@ export const load = (async ({ locals, url, parent }) => {
 	const filteredPrograms = filterVisible(programs.filter(isRelatedToSome(containers)), locals.user);
 
 	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		? await getFacetAggregationsForGuids(
+				filtered.map((c) => c.guid),
+				categoryContext?.keys ?? []
+			)
 		: undefined;
 
-	const _facets = new Map<string, Map<string, number>>([
-		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
-		['topic', fromCounts(topics.options as string[], data?.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
-		['programType', fromCounts(programTypes.options as string[], data?.programType)]
-	]);
+	const _facets = new Map<string, Map<string, number>>();
+
+	if (features.useCustomCategories() && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(
+			categoryContext.options,
+			data ? Object.fromEntries(Object.entries(data)) : {}
+		);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	} else {
+		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
+		_facets.set(
+			'category',
+			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
+		);
+		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
+		_facets.set(
+			'policyFieldBNK',
+			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
+		);
+	}
+
+	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
 	const facets = features.useElasticsearch()
 		? _facets
@@ -130,6 +205,8 @@ export const load = (async ({ locals, url, parent }) => {
 	return {
 		containers: filtered,
 		programs: filteredPrograms,
-		facets
+		facets: mapFacets(facets),
+		facetLabels: mapLabels(categoryContext?.labels),
+		categoryOptions: mapOptions(categoryContext?.options ?? null)
 	};
 }) satisfies PageServerLoad;
