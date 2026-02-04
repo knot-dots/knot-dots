@@ -67,85 +67,87 @@
 {/snippet}
 
 {#snippet main()}
-	{#if container.payload.cover}
-		<div class="cover-section">
-			<img alt={$_('cover')} class="cover" src={transformFileURL(container.payload.cover)} />
-		</div>
-	{/if}
-	<article>
-		<div
-			class="details stage stage--{container.payload.color
-				? backgroundColors.get(container.payload.color)
-				: 'white'}"
-		>
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<div class="stage--buttons details-section">
-					{#if mayEditStage}
-						<EditableCover
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							label={$_('add_cover')}
-							bind:value={container.payload.cover}
-						/>
-						<ColorDropdown
-							buttonStyle="button"
-							bind:value={container.payload.color}
-							label={$_('highlight')}
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-						/>
-					{/if}
-				</div>
-				<header class="details-section">
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<h1
-							class="details-title"
-							contenteditable="plaintext-only"
-							bind:textContent={container.payload.title}
-							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-						></h1>
-					{:else}
-						<h1 class="details-title" contenteditable="false">
-							{container.payload.title}
-						</h1>
-					{/if}
+	<div class="content-details">
+		{#if container.payload.cover}
+			<div class="cover-section">
+				<img alt={$_('cover')} class="cover" src={transformFileURL(container.payload.cover)} />
+			</div>
+		{/if}
+		<article>
+			<div
+				class="details stage stage--{container.payload.color
+					? backgroundColors.get(container.payload.color)
+					: 'white'}"
+			>
+				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+					<div class="stage--buttons details-section">
+						{#if mayEditStage}
+							<EditableCover
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+								label={$_('add_cover')}
+								bind:value={container.payload.cover}
+							/>
+							<ColorDropdown
+								buttonStyle="button"
+								bind:value={container.payload.color}
+								label={$_('highlight')}
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+							/>
+						{/if}
+					</div>
+					<header class="details-section">
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<h1
+								class="details-title"
+								contenteditable="plaintext-only"
+								bind:textContent={container.payload.title}
+								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							></h1>
+						{:else}
+							<h1 class="details-title" contenteditable="false">
+								{container.payload.title}
+							</h1>
+						{/if}
 
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<button class="action-button" onclick={() => dialog.showModal()} type="button">
-							<Ellipsis />
-							<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
-						</button>
-					{/if}
-				</header>
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<button class="action-button" onclick={() => dialog.showModal()} type="button">
+								<Ellipsis />
+								<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
+							</button>
+						{/if}
+					</header>
 
-				<PropertiesDialog
-					bind:dialog
-					{container}
-					{relatedContainers}
-					title={$_('organization.properties.title')}
-				>
-					<PageProperties
-						bind:container
-						editable={$ability.can('update', container)}
+					<PropertiesDialog
+						bind:dialog
+						{container}
 						{relatedContainers}
-						{revisions}
-					/>
-				</PropertiesDialog>
+						title={$_('organization.properties.title')}
+					>
+						<PageProperties
+							bind:container
+							editable={$ability.can('update', container)}
+							{relatedContainers}
+							{revisions}
+						/>
+					</PropertiesDialog>
 
-				{#key container.guid}
-					<EditableFormattedText
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.body}
-					/>
-				{/key}
-			</form>
-		</div>
+					{#key container.guid}
+						<EditableFormattedText
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.body}
+						/>
+					{/key}
+				</form>
+			</div>
 
-		<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
-			<Sections bind:container {relatedContainers} />
-		</div>
-	</article>
+			<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+				<Sections bind:container {relatedContainers} />
+			</div>
+		</article>
+	</div>
 {/snippet}
 
 {@render layout(header, main)}
