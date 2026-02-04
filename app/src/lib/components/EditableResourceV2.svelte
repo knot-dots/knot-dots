@@ -66,11 +66,19 @@
 			cancelled = true;
 		};
 	});
+
+	const id = crypto.randomUUID();
 </script>
 
-<div class="label">{$_(labelKey)}</div>
+<div class="label" {id}>{$_(labelKey)}</div>
 {#if editable}
-	<GroupedSingleChoiceDropdown {name} groups={groupedResources} {required} bind:value />
+	<GroupedSingleChoiceDropdown
+		{name}
+		labelledBy={id}
+		groups={groupedResources}
+		{required}
+		bind:value
+	/>
 {:else}
 	<div class="value">
 		{resources.find((r) => r.guid === value)?.payload.title ?? $_('none')}
