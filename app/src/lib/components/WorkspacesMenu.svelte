@@ -86,7 +86,7 @@
 			status: '/tasks/status',
 			table: '/tasks/table'
 		},
-		...(featureDecisions.useResourceWorkspace()
+		...(featureDecisions.useRessourcenplanung()
 			? {
 					resources: {
 						catalog: '/resources/catalog',
@@ -106,7 +106,7 @@
 			programs: '/programs/catalog',
 			rules: '/rules/catalog',
 			tasks: '/tasks/catalog',
-			...(featureDecisions.useResourceWorkspace() ? { resources: '/resources/catalog' } : undefined)
+			...(featureDecisions.useRessourcenplanung() ? { resources: '/resources/catalog' } : undefined)
 		},
 		level: {
 			all: '/all/level',
@@ -136,7 +136,7 @@
 			programs: '/programs/table',
 			rules: '/rules/table',
 			tasks: '/tasks/table',
-			...(featureDecisions.useResourceWorkspace() ? { resources: '/resources/table' } : undefined)
+			...(featureDecisions.useRessourcenplanung() ? { resources: '/resources/table' } : undefined)
 		}
 	};
 
@@ -224,7 +224,7 @@
 					}
 				]
 			: []),
-		...(featureDecisions.useResourceWorkspace()
+		...(featureDecisions.useRessourcenplanung()
 			? [
 					{
 						exists: true,

@@ -56,6 +56,8 @@
 		isTextContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import { createFeatureDecisions } from '$lib/features';
+	import { page } from '$app/state';
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
@@ -236,7 +238,7 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		{:else if isResourceDataCollectionContainer(container)}
+		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useRessourcenplanung()}
 			<EditableResourceDataCollection
 				bind:container
 				bind:parentContainer

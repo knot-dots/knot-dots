@@ -49,15 +49,13 @@
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
-		isResourceDataExpectedExpensesContainer,
-		isResourceDataExpectedIncomeContainer,
-		isResourceDataHistoricalExpensesContainer,
-		isResourceDataHistoricalIncomeContainer,
+		isResourceDataCollectionContainer,
 		isResourceV2Container,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		resourceDataTypes
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
@@ -168,25 +166,47 @@
 	);
 
 	let mayAddHistoricalExpensesCollection = $derived(
-		isMeasureContainer(parentContainer) &&
+		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+			isMeasureContainer(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
-				isResourceDataHistoricalExpensesContainer
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.historical_expenses']
 			)
 	);
 
 	let mayAddExpectedExpensesCollection = $derived(
-		isMeasureContainer(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isResourceDataExpectedExpensesContainer)
+		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+			isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.expected_expenses']
+			)
 	);
 
 	let mayAddHistoricalIncomeCollection = $derived(
-		isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isResourceDataHistoricalIncomeContainer)
+		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+			isResourceV2Container(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.historical_income']
+			)
 	);
 
 	let mayAddExpectedIncomeCollection = $derived(
-		isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isResourceDataExpectedIncomeContainer)
+		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+			isResourceV2Container(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.expected_income']
+			)
 	);
 
 	let mayAddTeaserSection = $derived(
