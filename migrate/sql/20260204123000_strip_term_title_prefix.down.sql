@@ -1,0 +1,1 @@
+-- No-op: title prefix removal is irreversible.

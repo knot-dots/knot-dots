@@ -9,6 +9,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { paramsFromFragment } from '$lib/models';
+	import transformFileURL from '$lib/transformFileURL';
 
 	type OptionWithSub = {
 		count?: number;
@@ -172,6 +173,13 @@
 						<label>
 							<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 							<span class="badge badge--gray">
+								{#if option.icon}
+									<img
+										src={transformFileURL(option.icon)}
+										alt=""
+										class="filter-option-icon"
+									/>
+								{/if}
 								{option.label}
 								{#if option.count !== undefined}
 									<span class="counter">({option.count})</span>
@@ -206,6 +214,13 @@
 						<label>
 							<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 							<span class="badge badge--gray">
+								{#if option.icon}
+									<img
+										src={transformFileURL(option.icon)}
+										alt=""
+										class="filter-option-icon"
+									/>
+								{/if}
 								{option.label}
 								<span class="counter">({option.count})</span>
 								{#if option.subterms?.length}
@@ -242,6 +257,13 @@
 						<label class="option option--subterm">
 							<input onchange={apply} type="checkbox" value={sub.value} bind:group={selected} />
 							<span class="badge badge--gray">
+								{#if sub.icon}
+									<img
+										src={transformFileURL(sub.icon)}
+										alt=""
+										class="filter-option-icon"
+									/>
+								{/if}
 								{sub.label}
 								{#if sub.count !== undefined}
 									<span class="counter">({sub.count})</span>
@@ -260,7 +282,15 @@
 		color: var(--color-gray-500);
 	}
 
-	.subterm-indicator {
+	.filter-option-icon {
+		height: 1rem;
+		width: 1rem;
+		object-fit: contain;
+		margin-right: 0.35rem;
+		vertical-align: middle;
+	}
+
+	:global(.subterm-indicator) {
 		height: 1rem;
 		width: 1rem;
 		color: var(--color-gray-500);
