@@ -14,5 +14,5 @@
 <EditableHierarchyLevel
 	{editable}
 	label={showLabel ? $_('measure.hierarchy_level') : undefined}
-	{value}
+	bind:value
 />
