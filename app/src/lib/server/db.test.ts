@@ -16,9 +16,12 @@ import {
 import {
 	createContainer,
 	getContainerByGuid,
+	getManyContainers,
+	sql,
 	updateContainer,
 	updateManyContainerRelations
 } from '$lib/server/db';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
 
 const organization = uuid();
 const realm = 'test';
@@ -243,3 +246,174 @@ test('adding more relations does not interfere with existing relations', async (
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
 	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
 });
+
+test.for([
+	{
+		name: 'all',
+		filters: {
+			terms: 'nachhaltig',
+			type: [
+				payloadTypes.enum.effect,
+				payloadTypes.enum.goal,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.program,
+				payloadTypes.enum.rule,
+				payloadTypes.enum.simple_measure
+			]
+		},
+		sort: 'alpha'
+	},
+	{
+		name: 'öffentlich',
+		filters: {
+			terms: 'nachhalt',
+			type: [
+				payloadTypes.enum.effect,
+				payloadTypes.enum.goal,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.program,
+				payloadTypes.enum.rule,
+				payloadTypes.enum.simple_measure
+			]
+		},
+		sort: 'alpha'
+	},
+	{
+		name: 'goal',
+		filters: { type: [payloadTypes.enum.goal] },
+		sort: 'modified'
+	},
+	{
+		name: 'goal with categories',
+		filters: { type: [payloadTypes.enum.goal], categories: ['sdg.11', 'sdg.13'] as string[] },
+		sort: 'alpha'
+	},
+	{
+		name: 'goal with audience',
+		filters: { type: [payloadTypes.enum.goal], audience: ['audience.public'] as string[] },
+		sort: 'modified'
+	},
+	{
+		name: 'indicator',
+		filters: { type: [payloadTypes.enum.indicator] },
+		sort: 'modified'
+	},
+	{
+		name: 'indicator with topics',
+		filters: { type: [payloadTypes.enum.indicator], topics: ['topic.health'] as string[] },
+		sort: 'alpha'
+	},
+	{
+		name: 'knowledge',
+		filters: { type: [payloadTypes.enum.knowledge] },
+		sort: 'alpha'
+	},
+	{
+		name: 'knowledge with categories',
+		filters: { type: [payloadTypes.enum.knowledge], categories: ['sdg.11'] as string[] },
+		sort: 'modified'
+	},
+	{
+		name: 'measure',
+		filters: { type: [payloadTypes.enum.measure] },
+		sort: 'modified'
+	},
+	{
+		name: 'measure with measureTypes',
+		filters: {
+			type: [payloadTypes.enum.measure],
+			measureTypes: ['measure_type.funding'] as string[]
+		},
+		sort: 'alpha'
+	},
+	{
+		name: 'measure with topics and audience',
+		filters: {
+			type: [payloadTypes.enum.measure],
+			topics: ['topic.economy'] as string[],
+			audience: ['audience.business'] as string[]
+		},
+		sort: 'modified'
+	},
+	{
+		name: 'objective',
+		filters: { type: [payloadTypes.enum.objective] },
+		sort: 'modified'
+	},
+	{
+		name: 'objective with categories',
+		filters: { type: [payloadTypes.enum.objective], categories: ['sdg.13'] as string[] },
+		sort: 'alpha'
+	},
+	{
+		name: 'program',
+		filters: { type: [payloadTypes.enum.program] },
+		sort: 'alpha'
+	},
+	{
+		name: 'program with audience',
+		filters: {
+			type: [payloadTypes.enum.program],
+			audience: ['audience.public', 'audience.business'] as string[]
+		},
+		sort: 'modified'
+	},
+	{
+		name: 'resource',
+		filters: { type: [payloadTypes.enum.resource] },
+		sort: 'modified'
+	},
+	{
+		name: 'resource with categories and topics',
+		filters: {
+			type: [payloadTypes.enum.resource],
+			categories: ['sdg.11'] as string[],
+			topics: ['topic.environment'] as string[]
+		},
+		sort: 'alpha'
+	},
+	{
+		name: 'rule',
+		filters: { type: [payloadTypes.enum.rule] },
+		sort: 'modified'
+	},
+	{
+		name: 'rule with topics',
+		filters: { type: [payloadTypes.enum.rule], topics: ['topic.legal'] as string[] },
+		sort: 'alpha'
+	},
+	{
+		name: 'task',
+		filters: { type: [payloadTypes.enum.task] },
+		sort: 'alpha'
+	},
+	{
+		name: 'task with categories',
+		filters: { type: [payloadTypes.enum.task], categories: ['sdg.13'] as string[] },
+		sort: 'modified'
+	},
+	{
+		name: 'task with priority sorting',
+		filters: { type: [payloadTypes.enum.task] },
+		sort: 'priority'
+	}
+])(
+	`getManyContainers and getManyContainersWithES: $name`,
+	async ({ filters, sort }, { connection }) => {
+		// Get the organization GUID for Musterhausen
+		const org = await connection.one(sql.typeAlias('guid')`
+		SELECT guid FROM container 
+		WHERE payload->>'name' = 'Musterhausen' 
+		AND payload->>'type' = 'organization'
+		LIMIT 1
+	`);
+
+		const sqlResults = await getManyContainers([org.guid], filters, sort, 1000)(connection);
+		const esResults = await getManyContainersWithES([org.guid], filters, sort, 1000)(connection);
+
+		expect(esResults.length).toBe(sqlResults.length);
+		expect(esResults.map((c) => c.guid)).toEqual(sqlResults.map((c) => c.guid));
+	}
+);

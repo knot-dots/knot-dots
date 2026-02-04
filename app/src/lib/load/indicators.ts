@@ -1,19 +1,31 @@
 import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
+	audience,
+	computeFacetCount,
+	fromCounts,
+	indicatorCategories,
+	indicatorTypes,
+	payloadTypes,
+	policyFieldBNK,
+	sustainableDevelopmentGoals,
+	topics,
 	type Container,
 	type IndicatorContainer,
-	type OrganizationalUnitContainer,
-	payloadTypes
+	type OrganizationContainer,
+	type OrganizationalUnitContainer
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
+import { createFeatureDecisions } from '$lib/features';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
-import type { PageServerLoad } from '../../routes/[guid=uuid]/indicators/$types';
+import type { ServerLoad } from '@sveltejs/kit';
 
 export interface IndicatorFilters {
 	customCategories: Record<string, string[]>;
@@ -28,6 +40,18 @@ export interface IndicatorLoadResult {
 	combined: Container[]; // visible + related merged after filtering
 	useNewIndicators: boolean;
 }
+
+type LoadInput = {
+	depends: (deps: string) => void;
+	locals: App.Locals;
+	parent: () => Promise<unknown>;
+	url: URL;
+};
+
+type ParentData = {
+	currentOrganization: OrganizationContainer;
+	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+};
 
 /**
  * Fetch indicators for an organization/org unit with fallback to templates + actual data when none exist.
@@ -119,11 +143,21 @@ export async function getIndicatorsData(params: {
 	};
 }
 
-export default (async function load({ depends, locals, parent, url }) {
+export default (async function load({ depends, locals, parent, url }: LoadInput) {
 	depends('containers');
 
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
 	const customCategories = extractCustomCategoryFilters(url);
+	const features = createFeatureDecisions(locals.features);
+
+	const categoryContext = features.useCustomCategories()
+		? await loadCategoryContext({
+				connect: locals.pool.connect,
+				organizationScope: [currentOrganization.guid],
+				fallbackScope: [],
+				user: locals.user
+			})
+		: null;
 
 	const filters = {
 		customCategories,
@@ -140,10 +174,57 @@ export default (async function load({ depends, locals, parent, url }) {
 		connect: locals.pool.connect
 	});
 
+	const data = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(
+				result.combined.map((c) => c.guid),
+				categoryContext?.keys ?? []
+			)
+		: undefined;
+
+	const _facets = new Map<string, Map<string, number>>([
+		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
+			[string, Map<string, number>]
+		>)
+	]);
+
+	if (features.useCustomCategories() && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(
+			categoryContext.options,
+			data ? Object.fromEntries(Object.entries(data)) : {}
+		);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	} else {
+		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
+		_facets.set(
+			'category',
+			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
+		);
+		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
+		_facets.set(
+			'policyFieldBNK',
+			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
+		);
+	}
+
+	_facets.set('indicatorType', fromCounts(indicatorTypes.options as string[], data?.indicatorType));
+	_facets.set(
+		'indicatorCategory',
+		fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
+	);
+
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, result.combined);
+
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
 		containers: result.combined,
 		filters,
-		useNewIndicators: result.useNewIndicators
+		useNewIndicators: result.useNewIndicators,
+		facets,
+		facetLabels: categoryContext?.labels,
+		categoryOptions: categoryContext?.options ?? null
 	};
-} satisfies PageServerLoad);
+} satisfies ServerLoad);

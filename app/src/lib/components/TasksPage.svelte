@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
-	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { computeFacetCount, predicates, taskCategories } from '$lib/models';
+	import { predicates } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/tasks/catalog/$types';
 
@@ -21,28 +20,7 @@
 		predicates: [predicates.enum['is-prerequisite-for']]
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			...((page.url.searchParams.has('related-to')
-				? [
-						[
-							'relationType',
-							new Map([
-								[predicates.enum['is-part-of'], 0],
-								[predicates.enum['is-prerequisite-for'], 0]
-							])
-						]
-					]
-				: []) as Array<[string, Map<string, number>]>),
-			...((!page.data.currentOrganization.payload.default
-				? [['included', new Map()]]
-				: []) as Array<[string, Map<string, number>]>),
-			['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-			['assignee', new Map()]
-		]);
-
-		return computeFacetCount(facets, data.containers);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

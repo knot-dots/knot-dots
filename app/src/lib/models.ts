@@ -310,7 +310,12 @@ const measureTypeValues = [
 	'measure_type.partial_project',
 	'measure_type.project',
 	'measure_type.sub_measure',
-	'measure_type.sub_project'
+	'measure_type.sub_project',
+	'measure_type.network_infrastructure',
+	'measure_type.digital_twin',
+	'measure_type.sensory',
+	'measure_type.digital_platform',
+	'measure_type.user_participation'
 ] as const;
 
 export const measureTypes = z.enum(measureTypeValues);
@@ -482,6 +487,14 @@ export type Quantity = z.infer<typeof quantities>;
 
 export function isQuantity(value: unknown): value is Quantity {
 	return quantityValues.includes(value as Quantity);
+}
+
+export function fromCounts(options: string[], counts: Record<string, number> = {}) {
+	const m = new Map<string, number>(options.map((opt) => [opt, 0]));
+	for (const [key, count] of Object.entries(counts)) {
+		m.set(key, count);
+	}
+	return m;
 }
 
 const unitValues = [
