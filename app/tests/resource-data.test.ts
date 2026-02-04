@@ -144,10 +144,12 @@ test.describe('Resource Data Collections', () => {
 		const currentYear = new Date().getFullYear();
 		await expect(table.getByRole('columnheader', { name: String(currentYear) })).toBeVisible();
 
-		// Input an amount in the new column
+		// Input an amount in the new column and wait for save
 		const amountInput = table.locator('tbody td input[inputmode="decimal"]').last();
 		await amountInput.fill('1500.50');
+		const saveResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await amountInput.blur();
+		await saveResponse;
 
 		// Navigate back to verify the card shows the updated total
 		await dotsBoard.overlay.backButton.click();
