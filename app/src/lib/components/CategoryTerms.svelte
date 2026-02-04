@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { invalidateAll } from '$app/navigation';
 	import { get } from 'svelte/store';
 	import { dndzone, dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableImage from '$lib/components/EditableImage.svelte';
-	import { ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 	import {
 		container as containerSchema,
 		containerOfType,
@@ -263,11 +264,14 @@
 
 			const created = parsed.data;
 			const nextTerms = [...terms, created];
+			terms = nextTerms; // show immediately in overlay list
 			relatedContainers = [
 				...relatedContainers.filter(({ guid }) => guid !== created.guid),
 				created
 			];
 			await syncParentRelations(nextTerms);
+			// refresh workspace columns/catalog data without full reload
+			await invalidateAll();
 			resetForm();
 		} catch (error) {
 			formError = error instanceof Error ? error.message : String(error);
@@ -297,6 +301,7 @@
 			}
 
 			const nextTerms = terms.filter(({ guid }) => guid !== term.guid);
+			terms = nextTerms;
 			relatedContainers = relatedContainers.filter(({ guid }) => guid !== term.guid);
 			await syncParentRelations(nextTerms);
 		} catch (error) {
@@ -306,7 +311,9 @@
 		}
 	}
 
-	const canEdit = $derived($ability.can('update', container));
+	const canEdit = $derived(
+		$applicationState.containerDetailView.editable && $ability.can('update', container)
+	);
 
 	const isSubterm = $derived(
 		(container.relation ?? []).some(
