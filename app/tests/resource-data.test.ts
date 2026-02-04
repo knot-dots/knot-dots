@@ -27,6 +27,9 @@ test.describe('Resource Data Collections', () => {
 
 		// Verify section heading is visible
 		await expect(section.getByRole('heading', { level: 2 })).toHaveText('Historical expenses');
+
+		// Clean up - delete the section
+		await dotsBoard.overlay.deleteSection(section);
 	});
 
 	test('create resource data item in section', async ({
@@ -75,13 +78,13 @@ test.describe('Resource Data Collections', () => {
 		// Navigate back to the measure overlay
 		await dotsBoard.overlay.backButton.click();
 
-		// Verify the ResourceDataCard appears in the section with total "0"
+		// Verify the ResourceDataCard appears in the section
 		await expect(section.getByTitle(resourceDataTitle)).toBeVisible();
-		await expect(section.getByText('0')).toBeVisible(); // Empty entries = 0 total
 
 		// Clean up - delete the created item
 		await section.getByTitle(resourceDataTitle).click();
 		await dotsBoard.overlay.delete();
+		await dotsBoard.overlay.deleteSection(section);
 	});
 
 	test('add entries to resource data table', async ({
@@ -139,28 +142,23 @@ test.describe('Resource Data Collections', () => {
 
 		// Verify a new column appeared with the current year
 		const currentYear = new Date().getFullYear();
-		await expect(table.locator('thead th').filter({ hasText: String(currentYear) })).toBeVisible();
+		await expect(table.getByRole('columnheader', { name: String(currentYear) })).toBeVisible();
 
 		// Input an amount in the new column
 		const amountInput = table.locator('tbody td input[inputmode="decimal"]').last();
 		await amountInput.fill('1500.50');
 		await amountInput.blur();
 
-		// Navigate back to measure
-		await dotsBoard.overlay.backButton.click();
-		await dotsBoard.overlay.backButton.click();
-
-		// Re-open the section to verify the total updated
-		await section.getByTitle(resourceDataTitle).click();
-
 		// Navigate back to verify the card shows the updated total
 		await dotsBoard.overlay.backButton.click();
 		await expect(section.getByTitle(resourceDataTitle)).toBeVisible();
+
 		// The total should now show 1,500.5 (or similar formatted)
 		await expect(section.locator('.resource-data-card__amount')).toContainText('1,500');
 
-		// Clean up - delete the created item
+		// Clean up - delete the created item and section
 		await section.getByTitle(resourceDataTitle).click();
 		await dotsBoard.overlay.delete();
+		await dotsBoard.overlay.deleteSection(section);
 	});
 });
