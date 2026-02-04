@@ -21,7 +21,7 @@
 {/snippet}
 
 {#if isOrganizationContainer(container)}
-	<EditableOrganizationDetailView {container} {layout} {relatedContainers} />
+	<EditableOrganizationDetailView bind:container {layout} {relatedContainers} />
 {:else if isOrganizationalUnitContainer(container)}
-	<EditableOrganizationalUnitDetailView {container} {layout} {relatedContainers} />
+	<EditableOrganizationalUnitDetailView bind:container {layout} {relatedContainers} />
 {/if}
