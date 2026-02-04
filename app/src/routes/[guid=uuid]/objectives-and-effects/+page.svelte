@@ -9,6 +9,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import {
 		loadCategoryOptions,
 		buildCategoryFacets,
@@ -113,7 +114,7 @@
 	});
 
 	let objectivesByLevel = $derived.by(() => {
-		let objectivesByLevel = new Map<number, Container[]>();
+		let objectivesByLevel = new SvelteMap<number, Container[]>();
 
 		for (const container of data.containers.filter(isObjectiveContainer)) {
 			const ancestors = findAncestors(container, data.containers.filter(isObjectiveContainer), [
@@ -130,7 +131,6 @@
 
 		return objectivesByLevel;
 	});
-
 	let categoryFacets = $state(new Map<string, Map<string, number>>());
 	let facetLabels = $state(new Map<string, string>());
 	let categoryOptions = $state<CategoryOptions | null>(null);

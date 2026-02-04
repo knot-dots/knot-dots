@@ -145,6 +145,8 @@
 	"establish_relations": "Establish relations",
 	"expand_sidebar": "Expand sidebar",
 	"family_name": "Family name",
+	"favorite.change_icon": "Change icon (SVG)",
+	"favorite.rename": "Rename",
 	"feature_flags": "Feature flags",
 	"files": "Files",
 	"filter": "Filter",
@@ -296,7 +298,7 @@
 	"label": {
 		"unit": "Unit"
 	},
-	"loading": "Loading…",
+	"landing_page": "Landing page",
 	"level": {
 		"global": "Global",
 		"label": "Level",
@@ -317,6 +319,7 @@
 		"wall": "Wall",
 		"list": "List"
 	},
+	"loading": "Loading…",
 	"login": "Log in",
 	"logo": "Logo",
 	"logout": "Log out",
@@ -375,6 +378,7 @@
 	"other_organizations": "Other organizations",
 	"overall_objective": "Overall objective",
 	"overall_objective_title": "Overall objective for {indicator}",
+	"overview": "Overview",
 	"owned_by": "Owned by",
 	"page": "Page",
 	"page_title": "knotdots.net",

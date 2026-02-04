@@ -53,6 +53,7 @@
 		isResourceV2Container,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
+		isTaskContainer,
 		payloadTypes,
 		predicates,
 		resourceDataTypes
@@ -87,7 +88,10 @@
 	};
 
 	let mayAddTaskCollection = $derived(
-		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
+		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer) &&
+			(isGoalContainer(parentContainer) ||
+				isMeasureContainer(parentContainer) ||
+				isTaskContainer(parentContainer))
 	);
 
 	let mayAddObjectiveCollection = $derived(
@@ -209,25 +213,13 @@
 			)
 	);
 
-	let mayAddTeaserSection = $derived(
-		createFeatureDecisions(page.data.features).useTeaser() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-	);
+	let mayAddTeaserSection = $derived(createFeatureDecisions(page.data.features).useTeaser());
 
-	let mayAddInfoBox = $derived(
-		createFeatureDecisions(page.data.features).useInfoBox() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-	);
+	let mayAddInfoBox = $derived(createFeatureDecisions(page.data.features).useInfoBox());
 
-	let mayAddQuote = $derived(
-		createFeatureDecisions(page.data.features).useQuote() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-	);
+	let mayAddQuote = $derived(createFeatureDecisions(page.data.features).useQuote());
 
-	let mayAddTwoColumnSection = $derived(
-		createFeatureDecisions(page.data.features).useTwoColumn() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-	);
+	let mayAddTwoColumnSection = $derived(createFeatureDecisions(page.data.features).useTwoColumn());
 
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
@@ -244,10 +236,7 @@
 			isReportContainer(parentContainer)
 	);
 
-	let mayAddImage = $derived(
-		createFeatureDecisions(page.data.features).useImage() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-	);
+	let mayAddImage = $derived(createFeatureDecisions(page.data.features).useImage());
 
 	let options = $derived(
 		[

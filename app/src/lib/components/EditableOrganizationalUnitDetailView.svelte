@@ -67,7 +67,8 @@
 				<div class="stage--buttons details-section">
 					{#if mayEditStage}
 						<EditableCover
-							editable={$applicationState.containerDetailView.editable}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
 							label={$_('add_cover')}
 							bind:value={container.payload.cover}
 						/>
@@ -75,17 +76,19 @@
 							buttonStyle="button"
 							bind:value={container.payload.color}
 							label={$_('highlight')}
-							editable={$applicationState.containerDetailView.editable}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
 						/>
 					{/if}
 				</div>
 				<header class="details-section">
 					<EditableLogo
-						editable={$applicationState.containerDetailView.editable}
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
 						bind:value={container.payload.image}
 					/>
 
-					{#if $applicationState.containerDetailView.editable}
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 						<h1
 							class="details-title"
 							contenteditable="plaintext-only"
@@ -112,7 +115,10 @@
 					{relatedContainers}
 					title={$_('organizational_unit.properties.title')}
 				>
-					<OrganizationalUnitProperties bind:container editable />
+					<OrganizationalUnitProperties
+						bind:container
+						editable={$ability.can('update', container)}
+					/>
 				</PropertiesDialog>
 
 				{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}

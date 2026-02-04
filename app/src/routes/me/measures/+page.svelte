@@ -33,7 +33,6 @@
 		{ label: $_('workspace.profile.tasks'), value: '/me/tasks' },
 		{ label: $_('workspace.profile.measures'), value: '/me/measures' }
 	];
-
 	let categoryFacets = $state(new Map<string, Map<string, number>>());
 	let facetLabels = $state(new Map<string, string>());
 	let categoryOptions = $state<CategoryOptions | null>(null);

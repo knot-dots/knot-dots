@@ -30,19 +30,51 @@ let deLabels: Record<string, any> = {};
 export function createIndexWithMappings(client: Client, index: string) {
   return client.indices.create({
     index,
-    settings: { number_of_shards: 1, number_of_replicas: 0 },
+    settings: {
+      number_of_shards: 1,
+      number_of_replicas: 0,
+      analysis: {
+        analyzer: {
+          // Default to German so stemming and stop words match our labels/content
+          default: { type: 'german' },
+          default_search: { type: 'german' }
+        },
+        normalizer: {
+          title_norm: {
+            type: 'custom',
+            filter: ['lowercase', 'asciifolding']
+          }
+        }
+      }
+    },
     mappings: {
+      dynamic_templates: [
+        {
+          payload_strings: {
+            path_match: 'payload.*',
+            match_mapping_type: 'string',
+            mapping: { type: 'keyword', ignore_above: 2048 }
+          }
+        }
+      ],
       dynamic: true,
       date_detection: false,
       properties: {
         guid: { type: 'keyword' },
         revision: { type: 'integer' },
+        validFrom: { type: 'date' },
+        priority: { type: 'integer' },
         realm: { type: 'keyword' },
         organization: { type: 'keyword' },
         organizationalUnit: { type: 'keyword' },
         managedBy: { type: 'keyword' },
         type: { type: 'keyword' },
-        title: { type: 'text', fields: { keyword: { type: 'keyword', ignore_above: 256 } } },
+        title: {
+          type: 'text',
+          fields: {
+            keyword: { type: 'keyword', normalizer: 'title_norm', ignore_above: 2048 }
+          }
+        },
         visibility: { type: 'keyword' },
         text: { type: 'text' },
         category_labels: { type: 'text' },
@@ -54,6 +86,8 @@ export function createIndexWithMappings(client: Client, index: string) {
         indicator_category_labels: { type: 'text' },
         indicator_type_labels: { type: 'text' },
         task_category_labels: { type: 'text' },
+        resource_category_labels: { type: 'text' },
+        resource_unit_labels: { type: 'text' },
         payload: {
           properties: {
             audience: { type: 'keyword' },
@@ -64,7 +98,9 @@ export function createIndexWithMappings(client: Client, index: string) {
             programType: { type: 'keyword' },
             indicatorCategory: { type: 'keyword' },
             indicatorType: { type: 'keyword' },
-            taskCategory: { type: 'keyword' }
+            taskCategory: { type: 'keyword' },
+            resourceCategory: { type: 'keyword' },
+            resourceUnit: { type: 'keyword' }
           }
         }
       }
@@ -102,7 +138,7 @@ export function normalizePayload(payload: any) {
   const normalized = { ...payload };
   for (const key of [
     'category', 'topic', 'audience', 'policyFieldBNK', 'programType',
-    'indicatorCategory', 'indicatorType', 'taskCategory'
+    'indicatorCategory', 'indicatorType', 'taskCategory', 'resourceCategory', 'resourceUnit'
   ]) {
     const value = normalized[key];
     if (value === undefined || value === null) normalized[key] = [];
@@ -116,12 +152,15 @@ export function normalizePayload(payload: any) {
 export function toDoc(row: {
   guid: string; revision: number; realm: string; organization: string;
   organizational_unit?: string | null; managed_by: string; payload: any;
+  valid_from?: string | Date | null; priority?: number | null;
 }) {
   const normalized = normalizePayload(row.payload || {});
   const type: string | undefined = normalized?.type;
   const title: string | undefined = normalized?.title ?? normalized?.name;
   const description: string | undefined = normalized?.description;
   const visibility: string | undefined = normalized?.visibility;
+  const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
+  const priority = row.priority ?? undefined;
 
   const mapLabels = (arr?: string[]) => (arr || []).map(resolveLabel).filter(Boolean) as string[];
   const topicLabels = mapLabels(normalized.topic);
@@ -131,7 +170,14 @@ export function toDoc(row: {
   const indicatorCategoryLabels = mapLabels(normalized.indicatorCategory);
   const indicatorTypeLabels = mapLabels(normalized.indicatorType);
   const taskCategoryLabels = mapLabels(normalized.taskCategory);
+  const resourceCategoryLabels = mapLabels(normalized.resourceCategory);
+  const resourceUnitLabels = mapLabels(normalized.resourceUnit);
   const categoryLabels = mapLabels(normalized.category);
+
+  const additionalText = Object.entries(normalized)
+    .filter(([, value]) => Array.isArray(value))
+    .flatMap(([, value]) => (value as unknown[]))
+    .filter((value): value is string => typeof value === 'string');
 
   return {
     guid: row.guid,
@@ -143,6 +189,8 @@ export function toDoc(row: {
     type,
     title,
     visibility,
+    validFrom,
+    priority,
     payload: normalized,
     category_labels: categoryLabels,
     topic_labels: topicLabels,
@@ -152,6 +200,8 @@ export function toDoc(row: {
     indicator_category_labels: indicatorCategoryLabels,
     indicator_type_labels: indicatorTypeLabels,
     task_category_labels: taskCategoryLabels,
+    resource_category_labels: resourceCategoryLabels,
+    resource_unit_labels: resourceUnitLabels,
     text: [
       title, description,
       ...categoryLabels,
@@ -161,7 +211,10 @@ export function toDoc(row: {
       ...programTypeLabels,
       ...indicatorCategoryLabels,
       ...indicatorTypeLabels,
-      ...taskCategoryLabels
+      ...taskCategoryLabels,
+      ...resourceCategoryLabels,
+      ...resourceUnitLabels,
+      ...additionalText
     ].filter(Boolean).join(' ')
   } as const;
 }

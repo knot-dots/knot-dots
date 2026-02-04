@@ -22,9 +22,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = {
+	const extraOpts = $derived({
 		modifiers: [{ name: 'offset', options: { offset } }]
-	};
+	});
 </script>
 
 <div class="dropdown" use:popperRef>

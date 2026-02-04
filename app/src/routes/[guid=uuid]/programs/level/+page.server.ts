@@ -1,22 +1,37 @@
 import { filterVisible } from '$lib/authorization';
-import { type Container, filterOrganizationalUnits, payloadTypes, predicates } from '$lib/models';
+import {
+	type Container,
+	filterOrganizationalUnits,
+	payloadTypes,
+	predicates,
+	computeFacetCount,
+	audience,
+	fromCounts,
+	policyFieldBNK,
+	programTypes,
+	sustainableDevelopmentGoals,
+	topics
+} from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { extractCustomCategoryFilters } from '$lib/load/customCategoryFilters';
-import type { PageServerLoad } from './$types';
+import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { createFeatureDecisions } from '$lib/features';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import type { ServerLoad } from '@sveltejs/kit';
 
-export const load = (async ({ locals, url, parent }) => {
+export const load: ServerLoad = async ({ locals, url, parent }) => {
 	let containers: Container[];
 	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const features = createFeatureDecisions(locals.features);
 
 	async function filterOrganizationalUnitsAsync<T extends Container>(promise: Promise<Array<T>>) {
 		let subordinateOrganizationalUnits: string[] = [];
 
-		const containers = await promise;
+		const nextContainers = await promise;
 
 		if (currentOrganizationalUnit) {
 			const relatedOrganizationalUnits = await locals.pool.connect(
@@ -28,9 +43,9 @@ export const load = (async ({ locals, url, parent }) => {
 		}
 
 		return [
-			...containers.filter(({ organization }) => organization != currentOrganization.guid),
+			...nextContainers.filter(({ organization }) => organization != currentOrganization.guid),
 			...filterOrganizationalUnits(
-				containers.filter(({ organization }) => organization == currentOrganization.guid),
+				nextContainers.filter(({ organization }) => organization == currentOrganization.guid),
 				url,
 				subordinateOrganizationalUnits,
 				currentOrganizationalUnit
@@ -44,7 +59,7 @@ export const load = (async ({ locals, url, parent }) => {
 				getAllRelatedContainers(
 					[],
 					url.searchParams.get('related-to') as string,
-					url.searchParams.getAll('relationType').length == 0
+					url.searchParams.getAll('relationType').length === 0
 						? [
 								predicates.enum['is-consistent-with'],
 								predicates.enum['is-equivalent-to'],
@@ -57,23 +72,73 @@ export const load = (async ({ locals, url, parent }) => {
 				)
 			)
 		);
-		return { containers: filterVisible(containers, locals.user) };
+		containers = filterVisible(containers, locals.user);
 	} else {
-		const items = await locals.pool.connect(
-			getManyContainers(
-				[],
-				{
-					customCategories,
-					programTypes: url.searchParams.getAll('programType'),
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.program]
-				},
-				url.searchParams.get('sort') ?? ''
+		containers = await filterOrganizationalUnitsAsync(
+			locals.pool.connect(
+				features.useElasticsearch()
+					? getManyContainersWithES(
+							[],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								customCategories,
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								terms: url.searchParams.get('terms') ?? '',
+								topics: url.searchParams.getAll('topic'),
+								type: [payloadTypes.enum.program]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
+					: getManyContainers(
+							[],
+							{
+								audience: url.searchParams.getAll('audience'),
+								categories: url.searchParams.getAll('category'),
+								customCategories,
+								policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+								programTypes: url.searchParams.getAll('programType'),
+								terms: url.searchParams.get('terms') ?? '',
+								topics: url.searchParams.getAll('topic'),
+								type: [payloadTypes.enum.program]
+							},
+							url.searchParams.get('sort') ?? ''
+						)
 			)
 		);
-		containers = await filterOrganizationalUnitsAsync(Promise.resolve(items));
-		return { containers: filterVisible(containers, locals.user) };
+		containers = filterVisible(containers, locals.user);
 	}
-	// Unreachable, but keep a safe fallback
-	return { containers: filterVisible(containers, locals.user) };
-}) satisfies PageServerLoad;
+
+	const data = features.useElasticsearch()
+		? await getFacetAggregationsForGuids(containers.map((c) => c.guid))
+		: undefined;
+
+	const _facets = new Map<string, Map<string, number>>([
+		...((url.searchParams.has('related-to')
+			? [
+					[
+						'relationType',
+						new Map([
+							[predicates.enum['is-consistent-with'], 0],
+							[predicates.enum['is-equivalent-to'], 0],
+							[predicates.enum['is-inconsistent-with'], 0],
+							[predicates.enum['is-superordinate-of'], 0]
+						])
+					]
+				]
+			: []) as Array<[string, Map<string, number>]>),
+		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
+			[string, Map<string, number>]
+		>),
+		['audience', fromCounts(audience.options as string[], data?.audience)],
+		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
+		['topic', fromCounts(topics.options as string[], data?.topic)],
+		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
+		['programType', fromCounts(programTypes.options as string[], data?.programType)]
+	]);
+
+	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+
+	return { containers, facets };
+};
