@@ -15,7 +15,6 @@
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Grid from '~icons/flowbite/grid-solid';
 	import Home from '~icons/flowbite/home-solid';
-	import StarSolid from '~icons/flowbite/star-solid';
 	import Cog from '~icons/knotdots/cog';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Favicon from '~icons/knotdots/favicon';
@@ -23,8 +22,6 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
-	import { getFavoriteListContext } from '$lib/contexts/favorite';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
@@ -39,8 +36,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
-	let favoritesList = getFavoriteListContext();
 
 	function expandSidebar() {
 		sidebarExpanded = true;
@@ -97,23 +92,6 @@
 			</span>
 		</a>
 	</li>
-	{#if createFeatureDecisions(page.data.features).useFavoriteList()}
-		{#each favoritesList.item as favorite (favorite.href)}
-			{@const href = page.url.searchParams.size
-				? `${page.url.pathname}?${page.url.searchParams.toString()}`
-				: page.url.pathname}
-			<li>
-				<a
-					class="sidebar-menu-item"
-					class:sidebar-menu-item--active={favorite.href === href}
-					href={favorite.href}
-				>
-					<StarSolid />
-					{favorite.title}
-				</a>
-			</li>
-		{/each}
-	{/if}
 	{#if $user.isAuthenticated}
 		<li>
 			<a

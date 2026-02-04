@@ -33,7 +33,6 @@
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
-	import { getFavoriteListContext } from '$lib/contexts/favorite';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
@@ -109,15 +108,15 @@
 		return count;
 	});
 
-	let favoritesList = getFavoriteListContext();
-
 	let href = $derived(
 		page.url.searchParams.size
 			? `${page.url.pathname}?${page.url.searchParams.toString()}`
 			: page.url.pathname
 	);
 
-	let isFavorite = $derived(favoritesList.item.findIndex((f) => f.href === href) > -1);
+	let isFavorite = $derived(
+		selectedContext.payload.favorite.findIndex((f) => f.href === href) > -1
+	);
 
 	function applySort() {
 		if (overlay) {
@@ -154,16 +153,20 @@
 	}
 
 	async function toggleFavorite() {
-		let index = favoritesList.item.findIndex((f) => f.href === href);
-
-		favoritesList.item =
-			index > -1
-				? favoritesList.item.filter((_, i) => i !== index)
-				: [...favoritesList.item, { href, title: page.data.title ?? $_('new_favorite') }];
+		let index = selectedContext.payload.favorite.findIndex((f) => f.href === href);
 
 		const response = await saveContainer({
 			...selectedContext,
-			payload: { ...selectedContext.payload, favorite: favoritesList.item }
+			payload: {
+				...selectedContext.payload,
+				favorite:
+					index > -1
+						? selectedContext.payload.favorite.filter((_, i) => i !== index)
+						: [
+								...selectedContext.payload.favorite,
+								{ href, title: page.data.title ?? $_('new_favorite') }
+							]
+			}
 		});
 		if (response.ok) {
 			const updatedContainer = await response.json();

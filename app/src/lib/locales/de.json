@@ -144,6 +144,8 @@
 	"establish_relations": "Beziehungen festlegen",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"family_name": "Name",
+	"favorite.change_icon": "Icon ändern (SVG)",
+	"favorite.rename": "Umbenennen",
 	"feature_flags": "Feature Flags",
 	"files": "Dateien",
 	"filter": "Filtern",
@@ -295,6 +297,7 @@
 	"label": {
 		"unit": "Einheit"
 	},
+	"landing_page": "Startseite",
 	"level": {
 		"global": "Global",
 		"label": "Räumliche Ebene",
@@ -374,6 +377,7 @@
 	"other_organizations": "Andere Organisationen",
 	"overall_objective": "Gesamtziel",
 	"overall_objective_title": "Gesamtziel {indicator}",
+	"overview": "Überblick",
 	"owned_by": "Zuständige Organisationsebene",
 	"page": "Seite",
 	"page_title": "knotdots.net",
