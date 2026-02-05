@@ -12,7 +12,6 @@ import {
 	filterMembers,
 	filterOrganizationalUnits,
 	fromCounts,
-	measureTypes,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
@@ -105,7 +104,6 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 							audience: url.searchParams.getAll('audience'),
 							categories: url.searchParams.getAll('category'),
 							customCategories,
-							measureTypes: url.searchParams.getAll('measureType'),
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
 							terms: url.searchParams.get('terms') ?? '',
@@ -120,7 +118,6 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 							audience: url.searchParams.getAll('audience'),
 							categories: url.searchParams.getAll('category'),
 							customCategories,
-							measureTypes: url.searchParams.getAll('measureType'),
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
 							terms: url.searchParams.get('terms') ?? '',
@@ -189,7 +186,6 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		);
 	}
 
-	_facets.set('measureType', fromCounts(measureTypes.options as string[], data?.measureType));
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 	_facets.set('member', new Map());
 

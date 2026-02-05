@@ -321,14 +321,6 @@ test.for([
 		sort: 'modified'
 	},
 	{
-		name: 'measure with measureTypes',
-		filters: {
-			type: [payloadTypes.enum.measure],
-			measureTypes: ['measure_type.funding'] as string[]
-		},
-		sort: 'alpha'
-	},
-	{
 		name: 'measure with topics and audience',
 		filters: {
 			type: [payloadTypes.enum.measure],

@@ -5,7 +5,6 @@ import {
 	computeFacetCount,
 	audience,
 	fromCounts,
-	measureTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
 	topics
@@ -41,7 +40,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						customCategories,
-						measureTypes: url.searchParams.getAll('measureType'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						topics: url.searchParams.getAll('topic'),
 						template: true,
@@ -56,7 +54,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 						audience: url.searchParams.getAll('audience'),
 						categories: url.searchParams.getAll('category'),
 						customCategories,
-						measureTypes: url.searchParams.getAll('measureType'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						topics: url.searchParams.getAll('topic'),
 						template: true,
@@ -85,8 +82,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		['audience', fromCounts(audience.options as string[], data?.audience)],
 		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
 		['topic', fromCounts(topics.options as string[], data?.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
-		['measureType', fromCounts(measureTypes.options as string[], data?.measureType)]
+		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
 	]);
 
 	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);

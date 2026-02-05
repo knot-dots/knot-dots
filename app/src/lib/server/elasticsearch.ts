@@ -28,7 +28,6 @@ export function getManyContainersWithES(
 		categories?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		measureTypes?: string[];
 		indicator?: string;
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
@@ -73,8 +72,6 @@ export function getManyContainersWithES(
 				filter.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
 			if (filters.programTypes?.length)
 				filter.push({ terms: { 'payload.programType': filters.programTypes } });
-			if (filters.measureTypes?.length)
-				filter.push({ terms: { 'payload.measureType': filters.measureTypes } });
 			if (filters.indicatorCategories?.length)
 				filter.push({ terms: { 'payload.indicatorCategory': filters.indicatorCategories } });
 			if (filters.indicatorTypes?.length)

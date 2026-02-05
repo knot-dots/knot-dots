@@ -5,7 +5,6 @@ import {
 	computeFacetCount,
 	audience,
 	fromCounts,
-	measureTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
 	topics
@@ -38,8 +37,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		['audience', fromCounts(audience.options as string[], data?.audience)],
 		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
 		['topic', fromCounts(topics.options as string[], data?.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
-		['measureType', fromCounts(measureTypes.options as string[], data?.measureType)]
+		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
 	]);
 
 	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
