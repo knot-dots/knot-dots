@@ -20,7 +20,7 @@
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
-	import EditableResourceDataSection from '$lib/components/EditableResourceDataSection.svelte';
+	import EditableResourceDataCollection from '$lib/components/EditableResourceDataCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
@@ -47,13 +47,15 @@
 		isProgramCollectionContainer,
 		isProgressContainer,
 		isResourceCollectionContainer,
-		isResourceDataContainer,
+		isResourceDataCollectionContainer,
 		isTaskCollectionContainer,
 		isTeaserCollectionContainer,
 		isTeaserLikeContainer,
 		isTextContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import { createFeatureDecisions } from '$lib/features';
+	import { page } from '$app/state';
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
@@ -227,12 +229,13 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isResourceDataContainer(container)}
-			<EditableResourceDataSection
+		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
+			<EditableResourceDataCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
+				{heading}
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection

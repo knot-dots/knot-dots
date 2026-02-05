@@ -14,7 +14,8 @@
 		isRuleContainer,
 		isSuggestedByAI,
 		isTaskContainer,
-		programTypes
+		programTypes,
+		isResourceDataContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -41,6 +42,8 @@
 			{$_(container.payload.programType as string)}
 		{:else if 'taskCategory' in container.payload && container.payload.taskCategory}
 			{$_(container.payload.taskCategory as string)}
+		{:else if isResourceDataContainer(container)}
+			{$_(container.payload.resourceDataType)}
 		{:else}
 			{$_(container.payload.type)}
 		{/if}

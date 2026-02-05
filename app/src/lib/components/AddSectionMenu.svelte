@@ -49,11 +49,13 @@
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
+		isResourceDataCollectionContainer,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
 		isTaskContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		resourceDataTypes
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
@@ -166,6 +168,28 @@
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
 	);
 
+	let mayAddActualResourceAllocationCollection = $derived(
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
+			)
+	);
+
+	let mayAddPlannedResourceAllocationCollection = $derived(
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
+			)
+	);
+
 	let mayAddTeaserSection = $derived(createFeatureDecisions(page.data.features).useTeaser());
 
 	let mayAddInfoBox = $derived(createFeatureDecisions(page.data.features).useInfoBox());
@@ -263,6 +287,26 @@
 							icon: Cash,
 							label: $_('resources'),
 							value: payloadTypes.enum.resource_collection
+						}
+					]
+				: []),
+			...(mayAddActualResourceAllocationCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.actual_resource_allocation'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.actual_resource_allocation'
+						}
+					]
+				: []),
+			...(mayAddPlannedResourceAllocationCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.planned_resource_allocation'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.planned_resource_allocation'
 						}
 					]
 				: []),
@@ -366,10 +410,15 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (option.value)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 						<li class="menu-item">
-							<button use:menu.item={{ value: option.value }}>
+							<button
+								use:menu.item={{
+									value: { type: option.value, resourceDataType: option.resourceDataType }
+								}}
+								type="button"
+							>
 								<option.icon />
 								{option.label}
 							</button>
