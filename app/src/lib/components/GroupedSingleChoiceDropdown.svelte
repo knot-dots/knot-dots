@@ -145,11 +145,11 @@
 	/* Group title styling */
 	.group-title {
 		color: var(--color-gray-400);
-		font-size: 12px;
+		font-size: 0.75rem;
 		font-weight: 500;
 		line-height: 1.5;
 		margin: 0;
-		padding: 8px 12px 4px;
+		padding: 0.5rem 0.75rem 0.25rem;
 	}
 
 	/* Disabled label styling */
