@@ -53,7 +53,6 @@
 		overlayURL
 	} from '$lib/models';
 	import { addEffectState, newContainer } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -124,15 +123,10 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button class="button-xs button-primary" type="submit" {@attach tooltip($_('save'))}>
+				<button class="button-xs button-primary" type="submit">
 					{$_('save')}
 				</button>
-				<button
-					class="button-xs button-alternative"
-					formnovalidate
-					type="submit"
-					{@attach tooltip($_('cancel'))}
-				>
+				<button class="button-xs button-alternative" formnovalidate type="submit">
 					{$_('cancel')}
 				</button>
 			</p>
