@@ -498,9 +498,10 @@
 		flex-grow: 1;
 		gap: 0.375rem;
 		line-height: 1.5;
+		max-width: 100%;
+		min-width: 0;
 		padding: 0.25rem;
 		text-wrap: nowrap;
-		width: 100%;
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--toggle {
@@ -588,6 +589,10 @@
 
 		.sidebar-menu:not(.collapsed) {
 			max-width: var(--sidebar-max-width);
+		}
+
+		.sidebar-menu:not(.collapsed) .sidebar-menu {
+			max-width: 100%;
 		}
 
 		.sidebar-menu:not(.collapsed) .sidebar-menu-item > span {
