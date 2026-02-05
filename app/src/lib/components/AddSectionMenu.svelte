@@ -170,7 +170,7 @@
 	);
 
 	let mayAddHistoricalExpensesCollection = $derived(
-		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			isMeasureContainer(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
@@ -181,7 +181,7 @@
 	);
 
 	let mayAddExpectedExpensesCollection = $derived(
-		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			isMeasureContainer(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
@@ -192,7 +192,7 @@
 	);
 
 	let mayAddHistoricalIncomeCollection = $derived(
-		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			isResourceV2Container(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
@@ -203,7 +203,7 @@
 	);
 
 	let mayAddExpectedIncomeCollection = $derived(
-		createFeatureDecisions(page.data.features).useRessourcenplanung() &&
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			isResourceV2Container(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>

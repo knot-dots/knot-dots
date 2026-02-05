@@ -13,7 +13,7 @@ test.describe('Resource Data Collections', () => {
 		// Enable ResourcesV2 feature flag
 		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('Ressourcenplanung').check();
+		await dotsBoard.page.getByLabel('ResourceV2').check();
 		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
 		await response;
@@ -40,10 +40,10 @@ test.describe('Resource Data Collections', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable Ressourcenplanung feature flag
+		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('Ressourcenplanung').check();
+		await dotsBoard.page.getByLabel('ResourceV2').check();
 		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
 		await response;
@@ -95,10 +95,10 @@ test.describe('Resource Data Collections', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable Ressourcenplanung feature flag
+		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('Ressourcenplanung').check();
+		await dotsBoard.page.getByLabel('ResourceV2').check();
 		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
 		await response;

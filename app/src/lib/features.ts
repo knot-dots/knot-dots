@@ -7,7 +7,7 @@ export const featureFlags = new Map([
 			'Elasticsearch',
 			'TeaserCollection',
 			'ContentPartner',
-			'Ressourcenplanung',
+			'ResourceV2',
 			'CustomCategories',
 			'IOOI',
 			'EditorialPages',
@@ -77,8 +77,11 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useStage() {
 			return features.includes('Stage');
 		},
-		useRessourcenplanung() {
-			return features.includes('Ressourcenplanung');
+		useResourceWorkspace() {
+			return features.includes('ResourceV2');
+		},
+		useResourcePlanning() {
+			return features.includes('ResourceV2');
 		},
 		useCustomCategories() {
 			return features.includes('CustomCategories');

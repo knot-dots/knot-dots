@@ -238,7 +238,7 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useRessourcenplanung()}
+		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
 			<EditableResourceDataCollection
 				bind:container
 				bind:parentContainer
