@@ -4,7 +4,16 @@ import type { Container, PayloadType } from '$lib/models';
 import { sql, withUserAndRelation } from './db';
 import { env as privateEnv } from '$env/dynamic/private';
 
-const es = new Client({ node: privateEnv.ELASTICSEARCH_URL });
+const es = new Client({
+	auth:
+		privateEnv.ELASTICSEARCH_USERNAME && privateEnv.ELASTICSEARCH_PASSWORD
+			? {
+					username: privateEnv.ELASTICSEARCH_USERNAME,
+					password: privateEnv.ELASTICSEARCH_PASSWORD
+				}
+			: undefined,
+	node: privateEnv.ELASTICSEARCH_URL
+});
 
 function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	if (sort === 'modified') {
