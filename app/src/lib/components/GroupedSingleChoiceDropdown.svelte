@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
@@ -52,10 +53,11 @@
 		modifiers: [{ name: 'offset', options: { offset } }]
 	});
 
-	function handleInvalid() {
+	async function handleInvalid() {
 		if (!$popover.expanded) {
 			popover.open();
-			queueMicrotask(() => buttonEl?.focus());
+			await tick();
+			buttonEl?.focus();
 		}
 	}
 </script>
@@ -102,8 +104,7 @@
 									oninvalid={handleInvalid}
 									disabled={option.disabled}
 									name={radioName}
-									required={required && option.value === firstEnabledValue}
-									tabindex={$popover.expanded ? 0 : -1}
+									{required}
 									type="radio"
 									value={option.value}
 									bind:group={value}
