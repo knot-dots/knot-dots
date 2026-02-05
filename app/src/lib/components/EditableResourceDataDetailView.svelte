@@ -3,7 +3,12 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableResourceDataTable from '$lib/components/EditableResourceDataTable.svelte';
 	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
-	import { predicates, type AnyContainer, type ResourceDataContainer } from '$lib/models';
+	import {
+		predicates,
+		type AnyContainer,
+		type ResourceDataContainer,
+		type ResourceV2Container
+	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { _ } from 'svelte-i18n';
 	import EditableFormattedText from './EditableFormattedText.svelte';
@@ -11,6 +16,7 @@
 	import Header from './Header.svelte';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import type { Snippet } from 'svelte';
+	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 
 	interface Props {
 		container: ResourceDataContainer;
@@ -44,6 +50,14 @@
 	);
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
+
+	let currentResource = $state<ResourceV2Container | undefined>(undefined);
+
+	$effect(() => {
+		fetchContainerRevisions(container.payload.resource).then((revisions) => {
+			currentResource = (revisions[revisions.length - 1] as ResourceV2Container) ?? undefined;
+		});
+	});
 </script>
 
 {#snippet header()}
@@ -75,6 +89,8 @@
 				editable={Boolean(
 					$applicationState.containerDetailView.editable && $ability.can('update', container)
 				)}
+				title={$_(container.payload.resourceDataType)}
+				unit={$_(currentResource?.payload.resourceUnit ?? 'undefined')}
 			/>
 
 			<Sections bind:container {relatedContainers} />

@@ -8,9 +8,11 @@
 	interface Props {
 		container: ResourceDataContainer;
 		editable: boolean;
+		title: string;
+		unit?: string;
 	}
 
-	let { container, editable }: Props = $props();
+	let { container, editable, title, unit }: Props = $props();
 
 	let tableContainer = $state<HTMLDivElement | null>(null);
 
@@ -63,104 +65,153 @@
 		requestSubmit(e);
 
 		await tick();
-		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'smooth' });
+		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
 	}
 </script>
 
-<div class="resource-data__table-wrapper" bind:this={tableContainer}>
-	<table class="resource-data__table">
-		<thead>
-			<tr>
-				{#if editable}
-					<th scope="col" class="resource-data__action-cell resource-data__action-cell--left">
-						<button
-							aria-label={$_('add_item')}
-							class="resource-data__cell-action"
-							onclick={addEntryLeft}
-							type="button"
-						>
-							<Plus />
-						</button>
-					</th>
-				{/if}
-
-				{#each container.payload.entries as entry (entry.year)}
-					<th scope="col" class="resource-data__year">
-						{#if editable}
-							<input
-								class="resource-data__year-input"
-								value={entry.year}
-								oninput={(e) => handleYearInput(e, entry)}
-								type="text"
-								inputmode="numeric"
-								pattern="[0-9]+"
-							/>
-						{:else}
-							{entry.year}
-						{/if}
-					</th>
-				{/each}
-
-				{#if editable && container.payload.entries.length > 0}
-					<th scope="col" class="resource-data__action-cell resource-data__action-cell--right">
-						<button
-							aria-label={$_('add_item')}
-							class="resource-data__cell-action"
-							onclick={addEntryRight}
-							type="button"
-						>
-							<Plus />
-						</button>
-					</th>
-				{/if}
-			</tr>
-		</thead>
-		<tbody>
-			{#if container.payload.entries.length === 0}
-				<tr>
-					<td class="resource-data__empty" colspan={container.payload.entries.length + 2}>
-						{$_('empty')}
-					</td>
-				</tr>
-			{:else}
+<div class="details-section">
+	<div class="resource-data__heading">
+		<h2 class="resource-data__title">
+			<span class="resource-data__title-main">{title}</span>
+			{#if unit}
+				<span class="resource-data__title-in">{$_('preposition.in')}</span>
+				<span class="resource-data__title-unit">{unit}</span>
+			{/if}
+		</h2>
+	</div>
+	<div class="resource-data__table-wrapper" bind:this={tableContainer}>
+		<table class="resource-data__table">
+			<thead>
 				<tr>
 					{#if editable}
-						<td class="resource-data__stub-cell"></td>
+						<th scope="col" class="resource-data__action-cell resource-data__action-cell--left">
+							<button
+								aria-label={$_('add_item')}
+								class="resource-data__cell-action"
+								onclick={addEntryLeft}
+								type="button"
+							>
+								<Plus />
+							</button>
+						</th>
 					{/if}
 
 					{#each container.payload.entries as entry (entry.year)}
-						<td class="resource-data__value">
+						<th scope="col" class="resource-data__year">
 							{#if editable}
 								<input
-									value={entry.amount}
-									oninput={(e) => handleAmountInput(e, entry)}
-									class="resource-data__value-input"
-									inputmode="decimal"
-									pattern="-?[0-9]*([.,]([0-9]+)?)?"
+									class="resource-data__year-input"
+									value={entry.year}
+									oninput={(e) => handleYearInput(e, entry)}
 									type="text"
+									inputmode="numeric"
+									pattern="[0-9]+"
 								/>
 							{:else}
-								{entry.amount}
+								{entry.year}
 							{/if}
-						</td>
+						</th>
 					{/each}
 
-					{#if editable}
-						<td class="resource-data__stub-cell"></td>
+					{#if editable && container.payload.entries.length > 0}
+						<th scope="col" class="resource-data__action-cell resource-data__action-cell--right">
+							<button
+								aria-label={$_('add_item')}
+								class="resource-data__cell-action"
+								onclick={addEntryRight}
+								type="button"
+							>
+								<Plus />
+							</button>
+						</th>
 					{/if}
 				</tr>
-			{/if}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#if container.payload.entries.length === 0}
+					<tr>
+						<td class="resource-data__empty" colspan={container.payload.entries.length + 2}>
+							{$_('empty')}
+						</td>
+					</tr>
+				{:else}
+					<tr>
+						{#if editable}
+							<td class="resource-data__stub-cell"></td>
+						{/if}
+
+						{#each container.payload.entries as entry (entry.year)}
+							<td class="resource-data__value">
+								{#if editable}
+									<input
+										value={entry.amount}
+										oninput={(e) => handleAmountInput(e, entry)}
+										class="resource-data__value-input"
+										inputmode="decimal"
+										pattern="-?[0-9]*([.,]([0-9]+)?)?"
+										type="text"
+									/>
+								{:else}
+									{entry.amount}
+								{/if}
+							</td>
+						{/each}
+
+						{#if editable}
+							<td class="resource-data__stub-cell"></td>
+						{/if}
+					</tr>
+				{/if}
+			</tbody>
+		</table>
+	</div>
 </div>
 
 <style>
+	.details-section {
+		border: 1px solid var(--color-gray-200);
+	}
+
 	.resource-data__table-wrapper {
-		display: block;
+		margin-top: 0.5rem;
 		overflow: auto;
 		white-space: nowrap;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 4px;
+	}
+
+	.resource-data__heading {
+		display: flex;
+		flex-direction: column;
+		gap: 0.125rem;
+	}
+
+	.resource-data__title {
+		color: var(--color-gray-900);
+		font-size: 1.125rem;
+		font-weight: 500;
+		line-height: 1.25;
+		margin: 0;
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		white-space: nowrap;
+	}
+
+	.resource-data__title-main {
+		color: var(--color-gray-900);
+	}
+
+	.resource-data__title-in {
+		color: var(--color-gray-500);
+		font-size: 0.875rem;
+		font-weight: 400;
+	}
+
+	.resource-data__title-unit {
+		color: var(--color-gray-900);
+		font-size: 0.875rem;
+		font-weight: 400;
 	}
 
 	.resource-data__table {
