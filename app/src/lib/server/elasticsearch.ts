@@ -1,8 +1,10 @@
 import { Client, type estypes } from '@elastic/elasticsearch';
 import type { DatabaseConnection } from 'slonik';
 import type { Container, PayloadType } from '$lib/models';
-import { withUserAndRelation, sql } from './db';
+import { sql, withUserAndRelation } from './db';
 import { env as privateEnv } from '$env/dynamic/private';
+
+const es = new Client({ node: privateEnv.ELASTICSEARCH_URL });
 
 function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	if (sort === 'modified') {
@@ -44,16 +46,7 @@ export function getManyContainersWithES(
 	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const esUrl = privateEnv.ELASTICSEARCH_URL;
-		const esIndex = privateEnv.ELASTICSEARCH_INDEX_ALIAS || 'containers';
-
-		if (!esUrl) {
-			console.warn('[getManyContainersWithES] No Elasticsearch URL configured');
-			return [];
-		}
-
 		try {
-			const es = new Client({ node: esUrl });
 			const must: estypes.QueryDslQueryContainer[] = [];
 			const filter: estypes.QueryDslQueryContainer[] = [];
 
@@ -112,7 +105,7 @@ export function getManyContainersWithES(
 			const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
 
 			const searchParams: estypes.SearchRequest = {
-				index: esIndex,
+				index: privateEnv.ELASTICSEARCH_INDEX_ALIAS ?? 'containers',
 				query,
 				sort: esSortClauses,
 				size: sizeParam,
@@ -149,13 +142,9 @@ export async function getFacetAggregationsForGuids(
 	guids: string[],
 	customCategoryKeys: string[] = []
 ) {
-	const esUrl = privateEnv.ELASTICSEARCH_URL;
-	console.log('[getFacetAggregationsForGuids] Fetching facets for', guids.length, 'guids');
-	const esIndex = privateEnv.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
-	if (!esUrl || guids.length === 0) {
+	if (guids.length === 0) {
 		return {} as Record<string, Record<string, number>>;
 	}
-	const es = new Client({ node: esUrl });
 	const query = { terms: { guid: guids } } as const;
 	const aggs: Record<string, estypes.AggregationsAggregationContainer> = {
 		audience: { terms: { field: 'payload.audience', size: 50 } },
@@ -178,7 +167,7 @@ export async function getFacetAggregationsForGuids(
 	}
 
 	const { aggregations } = await es.search<unknown, estypes.SearchRequest>({
-		index: esIndex,
+		index: privateEnv.ELASTICSEARCH_INDEX_CONTAINERS ?? 'containers',
 		size: 0,
 		query,
 		aggs
