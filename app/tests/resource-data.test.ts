@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.describe('Resource Data Collections', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('add Historical expenses section to measure', async ({
+	test('add Actual resource allocation section to measure', async ({
 		dotsBoard,
 		isMobile,
 		testMeasure
@@ -22,11 +22,13 @@ test.describe('Resource Data Collections', () => {
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
-		// Add Historical expenses section
-		const section = await dotsBoard.overlay.addSection('Historical expenses');
+		// Add Actual resource allocation section
+		const section = await dotsBoard.overlay.addSection('Actual resource allocation');
 
 		// Verify section heading is visible
-		await expect(section.getByRole('heading', { level: 2 })).toHaveText('Historical expenses');
+		await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+			'Actual resource allocation'
+		);
 
 		// Clean up - delete the section
 		await dotsBoard.overlay.deleteSection(section);
@@ -52,8 +54,8 @@ test.describe('Resource Data Collections', () => {
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
-		// Add Historical expenses section
-		const section = await dotsBoard.overlay.addSection('Historical expenses');
+		// Add Actual resource allocation section
+		const section = await dotsBoard.overlay.addSection('Actual resource allocation');
 
 		// Create a resource data item
 		const resourceDataTitle = `Resource Data ${Date.now()}`;
@@ -107,8 +109,8 @@ test.describe('Resource Data Collections', () => {
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
-		// Add Historical expenses section
-		const section = await dotsBoard.overlay.addSection('Historical expenses');
+		// Add Actual resource allocation section
+		const section = await dotsBoard.overlay.addSection('Actual resource allocation');
 
 		// Create a resource data item
 		const resourceDataTitle = `Resource Data ${Date.now()}`;
