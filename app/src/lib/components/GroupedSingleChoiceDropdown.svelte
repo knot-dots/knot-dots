@@ -128,12 +128,6 @@
 		height: 0;
 	}
 
-	/* Override fieldset default styling for dropdown-panel */
-	.dropdown-panel {
-		border: none;
-		padding: 0;
-	}
-
 	/* Validation state */
 	.dropdown--invalid {
 		--dropdown-button-default-background: var(--color-red-050);
