@@ -76,9 +76,8 @@
 		(item.payload as { resourceDataType?: string }).resourceDataType =
 			container.payload.resourceDataType;
 
-		// Set relations - to both the collection and the parent container
+		// Set relations to the parent container
 		item.relation = [
-			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] },
 			{ object: parentContainer.guid, position: 0, predicate: predicates.enum['is-part-of'] }
 		];
 
