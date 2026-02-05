@@ -50,7 +50,6 @@
 		isReportContainer,
 		isResourceCollectionContainer,
 		isResourceDataCollectionContainer,
-		isResourceV2Container,
 		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
 		isTaskContainer,
@@ -169,47 +168,25 @@
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
 	);
 
-	let mayAddHistoricalExpensesCollection = $derived(
+	let mayAddActualResourceAllocationCollection = $derived(
 		createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			isMeasureContainer(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
 					isResourceDataCollectionContainer(c) &&
 					c.payload.resourceDataType ===
-						resourceDataTypes.enum['resource_data_type.historical_expenses']
+						resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
 			)
 	);
 
-	let mayAddExpectedExpensesCollection = $derived(
+	let mayAddPlannedResourceAllocationCollection = $derived(
 		createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			isMeasureContainer(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(
 				(c) =>
 					isResourceDataCollectionContainer(c) &&
 					c.payload.resourceDataType ===
-						resourceDataTypes.enum['resource_data_type.expected_expenses']
-			)
-	);
-
-	let mayAddHistoricalIncomeCollection = $derived(
-		createFeatureDecisions(page.data.features).useResourcePlanning() &&
-			isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(
-				(c) =>
-					isResourceDataCollectionContainer(c) &&
-					c.payload.resourceDataType ===
-						resourceDataTypes.enum['resource_data_type.historical_income']
-			)
-	);
-
-	let mayAddExpectedIncomeCollection = $derived(
-		createFeatureDecisions(page.data.features).useResourcePlanning() &&
-			isResourceV2Container(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(
-				(c) =>
-					isResourceDataCollectionContainer(c) &&
-					c.payload.resourceDataType ===
-						resourceDataTypes.enum['resource_data_type.expected_income']
+						resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
 			)
 	);
 
@@ -313,43 +290,23 @@
 						}
 					]
 				: []),
-			...(mayAddHistoricalExpensesCollection
+			...(mayAddActualResourceAllocationCollection
 				? [
 						{
 							icon: Cash,
-							label: $_('resource_data_type.historical_expenses'),
+							label: $_('resource_data_type.actual_resource_allocation'),
 							value: payloadTypes.enum.resource_data_collection,
-							resourceDataType: 'resource_data_type.historical_expenses'
+							resourceDataType: 'resource_data_type.actual_resource_allocation'
 						}
 					]
 				: []),
-			...(mayAddExpectedExpensesCollection
+			...(mayAddPlannedResourceAllocationCollection
 				? [
 						{
 							icon: Cash,
-							label: $_('resource_data_type.expected_expenses'),
+							label: $_('resource_data_type.planned_resource_allocation'),
 							value: payloadTypes.enum.resource_data_collection,
-							resourceDataType: 'resource_data_type.expected_expenses'
-						}
-					]
-				: []),
-			...(mayAddHistoricalIncomeCollection
-				? [
-						{
-							icon: Cash,
-							label: $_('resource_data_type.historical_income'),
-							value: payloadTypes.enum.resource_data_collection,
-							resourceDataType: 'resource_data_type.historical_income'
-						}
-					]
-				: []),
-			...(mayAddExpectedIncomeCollection
-				? [
-						{
-							icon: Cash,
-							label: $_('resource_data_type.expected_income'),
-							value: payloadTypes.enum.resource_data_collection,
-							resourceDataType: 'resource_data_type.expected_income'
+							resourceDataType: 'resource_data_type.planned_resource_allocation'
 						}
 					]
 				: []),

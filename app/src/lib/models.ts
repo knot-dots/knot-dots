@@ -532,10 +532,8 @@ export const resourceUnits = z.enum(resourceUnitValues);
 export type ResourceUnit = z.infer<typeof resourceUnits>;
 
 export const resourceDataTypes = z.enum([
-	'resource_data_type.historical_expenses',
-	'resource_data_type.expected_expenses',
-	'resource_data_type.historical_income',
-	'resource_data_type.expected_income'
+	'resource_data_type.actual_resource_allocation',
+	'resource_data_type.planned_resource_allocation'
 ] as const);
 
 export type ResourceDataType = z.infer<typeof resourceDataTypes>;
@@ -1924,13 +1922,13 @@ export function isResourceDataContainer(
 	return container.payload.type === payloadTypes.enum.resource_data;
 }
 
-export function isResourceDataHistoricalExpensesContainer(
+export function isResourceDataActualResourceAllocationContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.historical_expenses']
+			resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
 	);
 }
 
@@ -1940,27 +1938,7 @@ export function isResourceDataExpectedExpensesContainer(
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.expected_expenses']
-	);
-}
-
-export function isResourceDataHistoricalIncomeContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.historical_income']
-	);
-}
-
-export function isResourceDataExpectedIncomeContainer(
-	container: AnyContainer | EmptyContainer
-): container is ResourceDataContainer {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.expected_income']
+			resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
 	);
 }
 

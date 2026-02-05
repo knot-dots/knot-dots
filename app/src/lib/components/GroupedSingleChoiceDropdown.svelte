@@ -39,7 +39,6 @@
 	let selected = $derived(flatOptions.find((o) => o.value == value));
 	let missingRequired = $derived(required && (value == null || value === ''));
 	let radioName = $derived(name ?? labelledBy ?? 'grouped-single-choice');
-	let firstEnabledValue = $derived(flatOptions.find((o) => !o.disabled)?.value);
 	let buttonEl: HTMLButtonElement | null = null;
 
 	const popover = createPopover({});

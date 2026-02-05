@@ -508,10 +508,8 @@
 	"resource_category.personnel": "Personal",
 	"resource_category": "Kategorie",
 	"resources": "Ressourcen",
-	"resource_data_type.historical_expenses": "Verwendete Ressourcen",
-	"resource_data_type.expected_expenses": "Erwartete Ressourcenbedarf",
-	"resource_data_type.historical_income": "Historische Einnahmen",
-	"resource_data_type.expected_income": "Erwartete Einnahmen",
+	"resource_data_type.actual_resource_allocation": "Verwendete Ressourcen",
+	"resource_data_type.planned_resource_allocation": "Erwarteter Ressourcenbedarf",
 	"role": {
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",
