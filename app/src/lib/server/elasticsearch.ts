@@ -1,8 +1,19 @@
 import { Client, type estypes } from '@elastic/elasticsearch';
 import type { DatabaseConnection } from 'slonik';
-import type { Container, PayloadType } from '$lib/models';
-import { withUserAndRelation, sql } from './db';
 import { env as privateEnv } from '$env/dynamic/private';
+import type { Container, PayloadType } from '$lib/models';
+import { sql, withUserAndRelation } from './db';
+
+const es = new Client({
+	auth:
+		privateEnv.ELASTICSEARCH_USERNAME && privateEnv.ELASTICSEARCH_PASSWORD
+			? {
+					username: privateEnv.ELASTICSEARCH_USERNAME,
+					password: privateEnv.ELASTICSEARCH_PASSWORD
+				}
+			: undefined,
+	node: privateEnv.ELASTICSEARCH_URL
+});
 
 function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	if (sort === 'modified') {
@@ -44,88 +55,77 @@ export function getManyContainersWithES(
 	limit?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const esUrl = privateEnv.ELASTICSEARCH_URL;
-		const esIndex = privateEnv.ELASTICSEARCH_INDEX_ALIAS || 'containers';
+		const must: estypes.QueryDslQueryContainer[] = [];
+		const filter: estypes.QueryDslQueryContainer[] = [];
 
-		if (!esUrl) {
-			console.warn('[getManyContainersWithES] No Elasticsearch URL configured');
-			return [];
+		if (filters.terms) {
+			must.push({
+				multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
+			});
+		}
+		if (filters.type?.length) filter.push({ terms: { type: filters.type } });
+		if (filters.categories?.length)
+			filter.push({ terms: { 'payload.category': filters.categories } });
+		if (filters.topics?.length) filter.push({ terms: { 'payload.topic': filters.topics } });
+		if (filters.audience?.length) filter.push({ terms: { 'payload.audience': filters.audience } });
+		if (filters.policyFieldsBNK?.length)
+			filter.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
+		if (filters.programTypes?.length)
+			filter.push({ terms: { 'payload.programType': filters.programTypes } });
+		if (filters.indicatorCategories?.length)
+			filter.push({ terms: { 'payload.indicatorCategory': filters.indicatorCategories } });
+		if (filters.indicatorTypes?.length)
+			filter.push({ terms: { 'payload.indicatorType': filters.indicatorTypes } });
+		if (filters.taskCategories?.length)
+			filter.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
+		if (filters.resourceCategories?.length)
+			filter.push({ terms: { 'payload.resourceCategory': filters.resourceCategories } });
+		if (filters.customCategories) {
+			for (const [key, values] of Object.entries(filters.customCategories)) {
+				if (!values?.length) continue;
+				filter.push({ terms: { [`payload.${key}`]: values } });
+			}
+		}
+		if (filters.assignees?.length)
+			filter.push({ terms: { 'payload.assignee': filters.assignees } });
+		if (filters.organizationalUnits?.length)
+			filter.push({ terms: { organizationalUnit: filters.organizationalUnits } });
+		if (organizations.length) filter.push({ terms: { organization: organizations } });
+		if (filters.template !== undefined) {
+			filter.push({ term: { 'payload.template': filters.template } });
+		} else {
+			// Match SQL behavior: when template filter is not specified, exclude templates by default
+			// SQL: (c.payload @> '{"template": false}' OR NOT payload ? 'template')
+			filter.push({
+				bool: {
+					should: [
+						{ term: { 'payload.template': false } },
+						{ bool: { must_not: { exists: { field: 'payload.template' } } } }
+					],
+					minimum_should_match: 1
+				}
+			});
 		}
 
-		try {
-			const es = new Client({ node: esUrl });
-			const must: estypes.QueryDslQueryContainer[] = [];
-			const filter: estypes.QueryDslQueryContainer[] = [];
+		const query: estypes.QueryDslQueryContainer = { bool: { must, filter } };
+		const esSortClauses = buildElasticsearchSortClause(sort);
+		const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
 
-			if (filters.terms) {
-				must.push({
-					multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
-				});
-			}
-			if (filters.type?.length) filter.push({ terms: { type: filters.type } });
-			if (filters.categories?.length)
-				filter.push({ terms: { 'payload.category': filters.categories } });
-			if (filters.topics?.length) filter.push({ terms: { 'payload.topic': filters.topics } });
-			if (filters.audience?.length)
-				filter.push({ terms: { 'payload.audience': filters.audience } });
-			if (filters.policyFieldsBNK?.length)
-				filter.push({ terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK } });
-			if (filters.programTypes?.length)
-				filter.push({ terms: { 'payload.programType': filters.programTypes } });
-			if (filters.indicatorCategories?.length)
-				filter.push({ terms: { 'payload.indicatorCategory': filters.indicatorCategories } });
-			if (filters.indicatorTypes?.length)
-				filter.push({ terms: { 'payload.indicatorType': filters.indicatorTypes } });
-			if (filters.taskCategories?.length)
-				filter.push({ terms: { 'payload.taskCategory': filters.taskCategories } });
-			if (filters.resourceCategories?.length)
-				filter.push({ terms: { 'payload.resourceCategory': filters.resourceCategories } });
-			if (filters.customCategories) {
-				for (const [key, values] of Object.entries(filters.customCategories)) {
-					if (!values?.length) continue;
-					filter.push({ terms: { [`payload.${key}`]: values } });
-				}
-			}
-			if (filters.assignees?.length)
-				filter.push({ terms: { 'payload.assignee': filters.assignees } });
-			if (filters.organizationalUnits?.length)
-				filter.push({ terms: { organizationalUnit: filters.organizationalUnits } });
-			if (organizations.length) filter.push({ terms: { organization: organizations } });
-			if (filters.template !== undefined) {
-				filter.push({ term: { 'payload.template': filters.template } });
-			} else {
-				// Match SQL behavior: when template filter is not specified, exclude templates by default
-				// SQL: (c.payload @> '{"template": false}' OR NOT payload ? 'template')
-				filter.push({
-					bool: {
-						should: [
-							{ term: { 'payload.template': false } },
-							{ bool: { must_not: { exists: { field: 'payload.template' } } } }
-						],
-						minimum_should_match: 1
-					}
-				});
-			}
+		const searchParams: estypes.SearchRequest = {
+			index: privateEnv.ELASTICSEARCH_INDEX_ALIAS ?? 'containers',
+			query,
+			sort: esSortClauses,
+			size: sizeParam,
+			_source: ['guid']
+		};
 
-			const query: estypes.QueryDslQueryContainer = { bool: { must, filter } };
-			const esSortClauses = buildElasticsearchSortClause(sort);
-			const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
+		const { hits } = await es.search<{ guid: string }>(searchParams);
 
-			const searchParams: estypes.SearchRequest = {
-				index: esIndex,
-				query,
-				sort: esSortClauses,
-				size: sizeParam,
-				_source: ['guid']
-			};
+		const guids = hits.hits.flatMap((h) => (h._source?.guid ? [h._source.guid] : []));
 
-			const { hits } = await es.search<{ guid: string }>(searchParams);
+		if (guids.length === 0) return [];
 
-			const guids = hits.hits.flatMap((h) => (h._source?.guid ? [h._source.guid] : []));
-
-			if (guids.length === 0) return [];
-
-			const containerResult = await connection.any(sql.typeAlias('container')`
+		const containerResult = await connection.any(sql.typeAlias('container')`
 				SELECT c.*
 				FROM container c
 				WHERE c.guid IN (${sql.join(
@@ -137,11 +137,7 @@ export function getManyContainersWithES(
 				ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)
 			`);
 
-			return withUserAndRelation<Container>(connection, containerResult);
-		} catch (err) {
-			console.error('[getManyContainersWithES] Elasticsearch error:', err);
-			throw err;
-		}
+		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }
 
@@ -149,13 +145,9 @@ export async function getFacetAggregationsForGuids(
 	guids: string[],
 	customCategoryKeys: string[] = []
 ) {
-	const esUrl = privateEnv.ELASTICSEARCH_URL;
-	console.log('[getFacetAggregationsForGuids] Fetching facets for', guids.length, 'guids');
-	const esIndex = privateEnv.ELASTICSEARCH_INDEX_CONTAINERS || 'containers';
-	if (!esUrl || guids.length === 0) {
+	if (guids.length === 0) {
 		return {} as Record<string, Record<string, number>>;
 	}
-	const es = new Client({ node: esUrl });
 	const query = { terms: { guid: guids } } as const;
 	const aggs: Record<string, estypes.AggregationsAggregationContainer> = {
 		audience: { terms: { field: 'payload.audience', size: 50 } },
@@ -178,7 +170,7 @@ export async function getFacetAggregationsForGuids(
 	}
 
 	const { aggregations } = await es.search<unknown, estypes.SearchRequest>({
-		index: esIndex,
+		index: privateEnv.ELASTICSEARCH_INDEX_CONTAINERS ?? 'containers',
 		size: 0,
 		query,
 		aggs
