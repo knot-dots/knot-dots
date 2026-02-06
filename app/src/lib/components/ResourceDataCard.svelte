@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { _, number } from 'svelte-i18n';
 	import Card from '$lib/components/Card.svelte';
 	import { type ResourceDataContainer, type ResourceV2Container } from '$lib/models';
 
@@ -15,11 +15,11 @@
 		container.payload.entries.reduce((sum, entry) => sum + Number(entry.amount ?? 0), 0)
 	);
 
-	const formattedTotal = $derived.by(() =>
-		new Intl.NumberFormat(undefined, {
+	const formattedTotal = $derived(
+		$number(totalAmount, {
 			minimumFractionDigits: 0,
 			maximumFractionDigits: 2
-		}).format(totalAmount)
+		})
 	);
 </script>
 

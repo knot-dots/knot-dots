@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { tick } from 'svelte';
+	import { _, number } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import type { ResourceDataContainer } from '$lib/models';
-	import { tick } from 'svelte';
 
 	interface Props {
 		container: ResourceDataContainer;
@@ -69,10 +69,10 @@
 	}
 
 	function formatNumber(value: number): string {
-		return new Intl.NumberFormat(undefined, {
+		return $number(value, {
 			minimumFractionDigits: 0,
 			maximumFractionDigits: 2
-		}).format(value);
+		});
 	}
 </script>
 
