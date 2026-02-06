@@ -193,6 +193,16 @@
 			)
 	);
 
+	let mayAddBudgetCollection = $derived(
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			isGoalContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
+			)
+	);
+
 	let mayAddTeaserSection = $derived(createFeatureDecisions(page.data.features).useTeaser());
 
 	let mayAddInfoBox = $derived(createFeatureDecisions(page.data.features).useInfoBox());
@@ -318,6 +328,16 @@
 							label: $_('resource_data_type.planned_resource_allocation'),
 							value: payloadTypes.enum.resource_data_collection,
 							resourceDataType: 'resource_data_type.planned_resource_allocation'
+						}
+					]
+				: []),
+			...(mayAddBudgetCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.budget'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.budget'
 						}
 					]
 				: []),

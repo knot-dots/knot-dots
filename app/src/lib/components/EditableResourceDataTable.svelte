@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { tick } from 'svelte';
+	import { _, number } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import type { ResourceDataContainer } from '$lib/models';
-	import { tick } from 'svelte';
 
 	interface Props {
 		container: ResourceDataContainer;
@@ -67,6 +67,13 @@
 		await tick();
 		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
 	}
+
+	function formatNumber(value: number): string {
+		return $number(value, {
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2
+		});
+	}
 </script>
 
 <div class="details-section">
@@ -97,7 +104,7 @@
 					{/if}
 
 					{#each container.payload.entries as entry (entry.year)}
-						<th scope="col" class="resource-data__year">
+						<th scope="col" class="resource-data__year focus-indicator">
 							{#if editable}
 								<input
 									class="resource-data__year-input"
@@ -141,10 +148,10 @@
 						{/if}
 
 						{#each container.payload.entries as entry (entry.year)}
-							<td class="resource-data__value">
+							<td class="resource-data__value focus-indicator">
 								{#if editable}
 									<input
-										value={entry.amount}
+										value={formatNumber(entry.amount)}
 										oninput={(e) => handleAmountInput(e, entry)}
 										class="resource-data__value-input"
 										inputmode="decimal"
@@ -152,7 +159,7 @@
 										type="text"
 									/>
 								{:else}
-									{entry.amount}
+									{formatNumber(entry.amount)}
 								{/if}
 							</td>
 						{/each}
@@ -347,5 +354,9 @@
 		color: var(--color-gray-500);
 		padding: 0.75rem 0.75rem;
 		text-align: left;
+	}
+
+	.focus-indicator input:focus {
+		outline-style: none;
 	}
 </style>
