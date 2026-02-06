@@ -43,6 +43,7 @@ import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keyc
 const INDEXABLE_TYPES = new Set<string>([
 	'effect',
 	'goal',
+	'help',
 	'indicator',
 	'indicator_template',
 	'knowledge',
@@ -52,7 +53,9 @@ const INDEXABLE_TYPES = new Set<string>([
 	'organizational_unit',
 	'page',
 	'program',
+	'report',
 	'resource',
+	'resource_data',
 	'resource_v2',
 	'rule',
 	'simple_measure',
