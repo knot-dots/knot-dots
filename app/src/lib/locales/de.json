@@ -105,7 +105,6 @@
 	"created_by": "{date, date, long} von {creator}",
 	"created_date": "Erstellt am",
 	"creator": "Autor*in",
-	"current_resource": "Übergeordnete Ressource",
 	"custom_collection": "Kacheln",
 	"custom_collection.add_items": "Objekte auswählen",
 	"custom_collection.dialog.accept_selection": "Auswahl übernehmen {count, select, 0 {} other {({count})}}",
