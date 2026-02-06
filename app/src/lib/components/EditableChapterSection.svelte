@@ -74,6 +74,11 @@
 			<AutoresizingTextarea
 				bind:value={container.payload.title}
 				id={idForTitle}
+				onkeydown={(e) => {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+					}
+				}}
 				placeholder={$_('chapter.title.placeholder')}
 				rows={1}
 			/>
@@ -105,9 +110,14 @@
 	}
 
 	.heading {
-		align-items: center;
+		align-items: start;
 		display: flex;
 		gap: 0.75rem;
+	}
+
+	.heading > :global(:first-child) {
+		flex-shrink: 0;
+		flex-basis: 2.25rem;
 	}
 
 	.heading button {

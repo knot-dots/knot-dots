@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
 	import saveContainer from '$lib/client/saveContainer';
+	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import { type AnyContainer, type ContainerWithSummary, type SummaryContainer } from '$lib/models';
@@ -58,45 +59,44 @@
 
 <header>
 	{#if editable}
-		<ul class="inline-actions is-visible-on-hover">
-			<li>
-				<ContainerSettingsDropdown
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					ondelete={handleDelete}
-				/>
-			</li>
-		</ul>
+		{#if $ability.can('update', parentContainer)}
+			<label class="badge badge--purple" for={id}>
+				{$_('summary')}
+			</label>
+			<ul class="inline-actions is-visible-on-hover">
+				<li>
+					<ContainerSettingsDropdown
+						bind:container
+						bind:parentContainer
+						bind:relatedContainers
+						ondelete={handleDelete}
+					/>
+				</li>
+			</ul>
+		{/if}
+	{:else}
+		<span class="badge badge--purple">{$_('summary')}</span>
 	{/if}
 </header>
 
 {#if editable && $ability.can('update', parentContainer)}
-	<label class="badge badge--purple" for={id}>
-		{$_('summary')}
-	</label>
-	<textarea
+	<AutoresizingTextarea
 		bind:value={parentContainer.payload.summary}
 		{id}
-		maxlength="200"
+		maxlength={200}
 		name="summary"
 		oninput={handleInput}
 		placeholder={$_('empty')}
-	></textarea>
+		rows={1}
+	/>
 {:else}
-	<p><span class="badge badge--purple">{$_('summary')}</span></p>
 	<Summary container={parentContainer} />
 {/if}
 
 <style>
 	label,
-	p {
+	span {
 		font-weight: 400;
-		margin: 1rem 0;
-	}
-
-	textarea {
-		border: none;
-		border-radius: 4px;
+		margin: 0.375rem 0 1rem 0;
 	}
 </style>
