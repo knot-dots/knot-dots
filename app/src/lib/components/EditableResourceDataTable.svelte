@@ -104,7 +104,7 @@
 					{/if}
 
 					{#each container.payload.entries as entry (entry.year)}
-						<th scope="col" class="resource-data__year">
+						<th scope="col" class="resource-data__year focus-indicator">
 							{#if editable}
 								<input
 									class="resource-data__year-input"
@@ -148,7 +148,7 @@
 						{/if}
 
 						{#each container.payload.entries as entry (entry.year)}
-							<td class="resource-data__value">
+							<td class="resource-data__value focus-indicator">
 								{#if editable}
 									<input
 										value={formatNumber(entry.amount)}
@@ -354,5 +354,9 @@
 		color: var(--color-gray-500);
 		padding: 0.75rem 0.75rem;
 		text-align: left;
+	}
+
+	.focus-indicator input:focus {
+		outline-style: none;
 	}
 </style>
