@@ -100,6 +100,7 @@ const payloadTypeValues = [
 	'resource_data_collection',
 	'rule',
 	'simple_measure',
+	'summary',
 	'task',
 	'task_collection',
 	'term',
@@ -1036,6 +1037,17 @@ const simpleMeasurePayload = basePayload
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
+const summaryPayload = z.object({
+	title: z
+		.string()
+		.readonly()
+		.default(() => unwrapFunctionStore(_)('summary')),
+	type: z.literal(payloadTypes.enum.summary),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+const initialSummaryPayload = summaryPayload;
+
 const programPayload = basePayload
 	.omit({
 		description: true,
@@ -1501,6 +1513,7 @@ const payload = z.discriminatedUnion('type', [
 	resourceDataPayload,
 	resourceDataCollectionPayload,
 	simpleMeasurePayload,
+	summaryPayload,
 	taskCollectionPayload,
 	taskPayload,
 	termPayload,
@@ -1978,6 +1991,16 @@ export function isSimpleMeasureContainer(
 	return container.payload.type === payloadTypes.enum.simple_measure;
 }
 
+const summaryContainer = container.extend({ payload: summaryPayload });
+
+export type SummaryContainer = z.infer<typeof summaryContainer>;
+
+export function isSummaryContainer(
+	container: AnyContainer | EmptyContainer
+): container is SummaryContainer {
+	return container.payload.type === payloadTypes.enum.summary;
+}
+
 const programContainer = container.extend({
 	payload: programPayload
 });
@@ -2308,6 +2331,16 @@ export function isContainerWithStatus(
 	return hasProperty(container.payload, 'status');
 }
 
+export type ContainerWithSummary = Omit<AnyContainer, 'payload'> & {
+	payload: AnyPayload & { summary: string | undefined };
+};
+
+export function isContainerWithSummary(
+	container: AnyContainer | NewContainer
+): container is ContainerWithSummary {
+	return hasProperty(container.payload, 'summary');
+}
+
 export type ContainerWithTitle = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { title: string | undefined };
 };
@@ -2383,6 +2416,7 @@ export const emptyContainer = newContainer.extend({
 		initialResourceDataPayload,
 		initialResourceDataCollectionPayload,
 		initialSimpleMeasurePayload,
+		initialSummaryPayload,
 		initialTextPayload,
 		initialTaskCollectionPayload,
 		initialTaskPayload,
