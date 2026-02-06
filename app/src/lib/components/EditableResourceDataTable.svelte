@@ -67,6 +67,13 @@
 		await tick();
 		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
 	}
+
+	function formatNumber(value: number): string {
+		return new Intl.NumberFormat(undefined, {
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2
+		}).format(value);
+	}
 </script>
 
 <div class="details-section">
@@ -144,7 +151,7 @@
 							<td class="resource-data__value">
 								{#if editable}
 									<input
-										value={entry.amount}
+										value={formatNumber(entry.amount)}
 										oninput={(e) => handleAmountInput(e, entry)}
 										class="resource-data__value-input"
 										inputmode="decimal"
@@ -152,7 +159,7 @@
 										type="text"
 									/>
 								{:else}
-									{entry.amount}
+									{formatNumber(entry.amount)}
 								{/if}
 							</td>
 						{/each}
