@@ -13,19 +13,20 @@
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
-	import Goal from '~icons/knotdots/goal';
-	import Grid from '~icons/knotdots/grid';
-	import Image from '~icons/knotdots/placeholder-image';
-	import Map from '~icons/knotdots/map';
-	import Progress from '~icons/knotdots/progress';
-	import Plus from '~icons/knotdots/plus';
-	import Star from '~icons/knotdots/star';
-	import Program from '~icons/knotdots/program';
-	import Text from '~icons/knotdots/text';
-	import TwoCol from '~icons/knotdots/two-column';
-	import Link from '~icons/knotdots/link';
 	import Collection from '~icons/knotdots/collection';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
+	import Goal from '~icons/knotdots/goal';
+	import Grid from '~icons/knotdots/grid';
+	import Link from '~icons/knotdots/link';
+	import Map from '~icons/knotdots/map';
+	import Image from '~icons/knotdots/placeholder-image';
+	import Plus from '~icons/knotdots/plus';
+	import Program from '~icons/knotdots/program';
+	import Progress from '~icons/knotdots/progress';
+	import Star from '~icons/knotdots/star';
+	import Summary from '~icons/knotdots/summary';
+	import Text from '~icons/knotdots/text';
+	import TwoCol from '~icons/knotdots/two-column';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -33,6 +34,7 @@
 		boards,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
+		isContainerWithSummary,
 		isContentPartnerCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
@@ -51,6 +53,7 @@
 		isResourceCollectionContainer,
 		isResourceDataCollectionContainer,
 		isSimpleMeasureContainer,
+		isSummaryContainer,
 		isTaskCollectionContainer,
 		isTaskContainer,
 		payloadTypes,
@@ -215,9 +218,17 @@
 
 	let mayAddImage = $derived(createFeatureDecisions(page.data.features).useImage());
 
+	let mayAddSummary = $derived(
+		isContainerWithSummary(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
+	);
+
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddSummary
+				? [{ icon: Summary, label: $_('summary'), value: payloadTypes.enum.summary }]
+				: []),
 			...(mayAddCustomCollection
 				? [
 						{

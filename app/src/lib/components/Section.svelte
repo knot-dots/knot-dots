@@ -31,6 +31,7 @@
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
+		isContainerWithSummary,
 		isContentPartnerCollectionContainer,
 		isContentPartnerContainer,
 		isCustomCollectionContainer,
@@ -48,6 +49,7 @@
 		isProgressContainer,
 		isResourceCollectionContainer,
 		isResourceDataCollectionContainer,
+		isSummaryContainer,
 		isTaskCollectionContainer,
 		isTeaserCollectionContainer,
 		isTeaserLikeContainer,
@@ -56,6 +58,7 @@
 	import { ability, applicationState } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
 	import { page } from '$app/state';
+	import EditableSummarySection from '$lib/components/EditableSummarySection.svelte';
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
@@ -239,6 +242,14 @@
 			/>
 		{:else if isResourceCollectionContainer(container)}
 			<EditableResourceCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isSummaryContainer(container) && isContainerWithSummary(parentContainer)}
+			<EditableSummarySection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
