@@ -74,6 +74,11 @@
 			<AutoresizingTextarea
 				bind:value={container.payload.title}
 				id={idForTitle}
+				onkeydown={(e) => {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+					}
+				}}
 				placeholder={$_('chapter.title.placeholder')}
 				rows={1}
 			/>
