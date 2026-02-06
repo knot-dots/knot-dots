@@ -511,6 +511,7 @@
 	"resources": "Resources",
 	"resource_data_type.actual_resource_allocation": "Actual resource allocation",
 	"resource_data_type.planned_resource_allocation": "Planned resource allocation",
+	"resource_data_type.budget": "Budget",
 	"role": {
 		"administrator": "Administrator",
 		"collaborator": "Collaborator",
