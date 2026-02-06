@@ -10,7 +10,6 @@
 	interface Props {
 		container: SummaryContainer;
 		editable?: boolean;
-		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: ContainerWithSummary;
 		relatedContainers: AnyContainer[];
 	}
@@ -18,7 +17,6 @@
 	let {
 		container = $bindable(),
 		editable = false,
-		heading,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();

@@ -254,7 +254,6 @@
 				bind:parentContainer
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
-				{heading}
 			/>
 		{:else if isTaskCollectionContainer(container)}
 			<EditableTaskCollection
