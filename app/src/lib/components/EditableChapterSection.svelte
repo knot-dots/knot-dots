@@ -110,9 +110,14 @@
 	}
 
 	.heading {
-		align-items: center;
+		align-items: start;
 		display: flex;
 		gap: 0.75rem;
+	}
+
+	.heading > :global(:first-child) {
+		flex-shrink: 0;
+		flex-basis: 2.25rem;
 	}
 
 	.heading button {
