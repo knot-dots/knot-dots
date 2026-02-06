@@ -34,7 +34,9 @@ test.describe('Goal progress section', () => {
 		});
 		await progressSlider.hover({ position: { x: sliderOffsetWidth, y: 10 } });
 		await page.mouse.down();
+		const saveResponse = page.waitForResponse(/x-sveltekit-invalidated/);
 		await page.mouse.up();
+		await saveResponse;
 
 		// Close the overlay to go back to the goals list/cards
 		await overlay.getByRole('link', { name: 'Close' }).click();
@@ -63,7 +65,9 @@ test.describe('Goal progress section', () => {
 		await progressSection.getByRole('button', { name: 'Delete' }).click({ force: true });
 
 		// Confirm delete in dialog
+		const deleteResponse = page.waitForResponse(/x-sveltekit-invalidated/);
 		await page.getByRole('button', { name: /I want to delete/i }).click({ force: true });
+		await deleteResponse;
 
 		// Close overlay
 		await overlay.getByRole('link', { name: 'Close' }).click();
