@@ -28,6 +28,14 @@
 			.filter(isActualDataContainer)
 			.filter(({ payload }) => payload.indicator === container.guid)
 			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
+			.map((c) => {
+				let _ = $state(c);
+				return _;
+			})
+	);
+
+	let customActualDataContainer = $derived(
+		actualDataContainer.find(({ payload }) => !payload.source)
 	);
 
 	let actualValuesByYear = $derived(
@@ -61,7 +69,8 @@
 		try {
 			const response = await saveContainer(newActualDataContainer);
 			if (response.ok) {
-				actualDataContainer = [...actualDataContainer, await response.json()];
+				let _ = $state(await response.json());
+				actualDataContainer = [...actualDataContainer, _];
 			} else {
 				const error = await response.json();
 				alert(error.message);
@@ -104,76 +113,74 @@
 	}
 </script>
 
-{#if actualDataContainer}
-	<div>
-		<table>
-			{#if actualDataContainer.some(({ payload }) => payload.source)}
-				<caption>
-					{#each actualDataContainer as container, i (container.guid)}
-						{#if container.payload.source}
-							<sup>{i + 1}</sup> {$_('indicator.source')}: {container.payload.source}
-						{/if}
-					{/each}
-				</caption>
-			{/if}
+<div>
+	<table>
+		{#if actualDataContainer.some(({ payload }) => payload.source)}
+			<caption>
+				{#each actualDataContainer as container, i (container.guid)}
+					{#if container.payload.source}
+						<sup>{i + 1}</sup> {$_('indicator.source')}: {container.payload.source}
+					{/if}
+				{/each}
+			</caption>
+		{/if}
 
-			<thead>
-				<tr>
-					<th></th>
+		<thead>
+			<tr>
+				<th></th>
+				{#each years as year (year)}
+					<th>{year}</th>
+				{/each}
+			</tr>
+		</thead>
+
+		<tbody>
+			{#each actualValuesByYear as valuesByYear, i (i)}
+				<tr class="actual-values">
+					<th scope="row">
+						{$_('indicator.table.actual_values')}
+						{#if actualDataContainer[i].payload.source}
+							<sup>{i + 1}</sup>
+						{/if}
+					</th>
 					{#each years as year (year)}
-						<th>{year}</th>
+						<td>
+							{#if editable && !actualDataContainer[i].payload.source}
+								<input
+									inputmode="decimal"
+									oninput={updateCustomActualData(actualDataContainer[i], year)}
+									type="text"
+									value={valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
+								/>
+							{:else}
+								{valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
+							{/if}
+						</td>
 					{/each}
 				</tr>
-			</thead>
+			{/each}
+		</tbody>
+	</table>
 
-			<tbody>
-				{#each actualValuesByYear as valuesByYear, i (i)}
-					<tr class="actual-values">
-						<th scope="row">
-							{$_('indicator.table.actual_values')}
-							{#if actualDataContainer[i].payload.source}
-								<sup>{i + 1}</sup>
-							{/if}
-						</th>
-						{#each years as year (year)}
-							<td>
-								{#if editable && !actualDataContainer[i].payload.source}
-									<input
-										inputmode="decimal"
-										oninput={updateCustomActualData(actualDataContainer[i], year)}
-										type="text"
-										value={valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
-									/>
-								{:else}
-									{valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
-								{/if}
-							</td>
-						{/each}
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-
-		{#if editable}
-			<p>
-				{#if actualDataContainer.some(({ payload }) => payload.source) && actualDataContainer.length === 1}
-					<button
-						disabled={addingCustomActualData}
-						onclick={addCustomActualData}
-						type="button"
-						{@attach tooltip($_('indicator.add_custom_actual_data'))}
-					>
-						{#if addingCustomActualData}
-							<span class="loader"></span>
-						{:else}
-							{$_('indicator.add_custom_actual_data')}
-						{/if}
-					</button>
-				{/if}
-			</p>
-		{/if}
-	</div>
-{/if}
+	{#if editable}
+		<p>
+			{#if !customActualDataContainer}
+				<button
+					disabled={addingCustomActualData}
+					onclick={addCustomActualData}
+					type="button"
+					{@attach tooltip($_('indicator.add_custom_actual_data'))}
+				>
+					{#if addingCustomActualData}
+						<span class="loader"></span>
+					{:else}
+						{$_('indicator.add_custom_actual_data')}
+					{/if}
+				</button>
+			{/if}
+		</p>
+	{/if}
+</div>
 
 <style>
 	div {
