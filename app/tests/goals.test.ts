@@ -9,72 +9,41 @@ test.describe('Goal progress section', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
 	test('adding and removing a progress section updates the goal card', async ({
-		page,
+		dotsBoard,
 		testGoal
 	}) => {
-		await page.goto(`/${testGoal.organization}/goals/level`);
-		await page.getByTitle(testGoal.payload.title).click();
+		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.card(testGoal.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
 
-		const overlay = page.locator('.overlay');
-		await expect(overlay).toBeVisible();
-
-		// Activate edit mode
-		await overlay.getByLabel('edit mode').check();
-
-		// Add a Progress section
-		await page.getByRole('button', { name: 'Add section' }).click();
-		await page.getByRole('menuitem', { name: 'Progress' }).click();
-
-		const progressSlider = overlay.getByRole('slider');
+		// Add a Progress section and set the progress slider to 80%
+		const section = await dotsBoard.overlay.addSection('Progress');
+		const progressSlider = section.getByRole('slider');
 		await expect(progressSlider).toBeVisible();
-
-		// Playwright slider interaction
 		const sliderOffsetWidth = await progressSlider.evaluate((el) => {
 			return el.getBoundingClientRect().width * 0.8;
 		});
 		await progressSlider.hover({ position: { x: sliderOffsetWidth, y: 10 } });
-		await page.mouse.down();
-		const saveResponse = page.waitForResponse(/x-sveltekit-invalidated/);
-		await page.mouse.up();
+		await dotsBoard.page.mouse.down();
+		const saveResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+		await dotsBoard.page.mouse.up();
 		await saveResponse;
 
-		// Close the overlay to go back to the goals list/cards
-		await overlay.getByRole('link', { name: 'Close' }).click();
-		await expect(overlay).toBeHidden();
+		// Verify the card shows a progress bar in the footer
+		await dotsBoard.overlay.closeButton.click();
+		await expect(dotsBoard.card(testGoal.payload.title).getByRole('progressbar')).toBeVisible();
 
-		// Find the just-created goal card and verify it shows a progress element in the footer
-		const goalCard = page.getByRole('article', { name: testGoal.payload.title }).first();
-		await expect(goalCard).toBeVisible();
-		await expect(goalCard.getByRole('progressbar')).toBeVisible();
-
-		// Reopen the goal overlay by clicking the card
-		await goalCard.click();
-		await expect(overlay).toBeVisible();
-
-		// Activate edit mode again
-		await overlay.getByLabel('edit mode').check();
-
-		// Locate the Progress section area and open its settings dropdown
-		const progressSection = overlay
-			.getByRole('listitem')
-			.filter({ has: page.getByRole('heading', { name: 'Progress' }) });
-		await progressSection.hover();
-		await progressSection.getByRole('button', { name: 'Settings' }).click({ force: true });
-
-		// Click the Delete action which opens a confirmation dialog
-		await progressSection.getByRole('button', { name: 'Delete' }).click({ force: true });
-
-		// Confirm delete in dialog
-		const deleteResponse = page.waitForResponse(/x-sveltekit-invalidated/);
-		await page.getByRole('button', { name: /I want to delete/i }).click({ force: true });
+		// Remove the Summary section
+		await dotsBoard.card(testGoal.payload.title).click();
+		await section.hover();
+		await section.getByRole('button', { name: 'Settings' }).click();
+		await section.getByRole('button', { name: 'Delete' }).click();
+		const deleteResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+		await dotsBoard.page.getByRole('button', { name: /I want to delete/i }).click();
 		await deleteResponse;
 
-		// Close overlay
-		await overlay.getByRole('link', { name: 'Close' }).click();
-		await expect(overlay).toBeHidden();
-
-		// Verify the goal card no longer shows a progress element in the footer
-		const goalCardAfter = page.getByRole('article', { name: testGoal.payload.title }).first();
-		await expect(goalCardAfter.getByRole('progressbar')).toHaveCount(0);
+		// Verify the goal card no longer shows a progress bar in the footer
+		await dotsBoard.overlay.closeButton.click();
+		await expect(dotsBoard.card(testGoal.payload.title).getByRole('progressbar')).not.toBeVisible();
 	});
 });
