@@ -62,7 +62,7 @@ test.describe('Resource Data Collections', () => {
 		await section.getByRole('button', { name: 'Add item' }).first().click();
 
 		// Select the resource from the grouped dropdown
-		await dotsBoard.page.getByRole('dialog').getByLabel('Current resource').click();
+		await dotsBoard.page.getByRole('dialog').getByLabel('Resource').click();
 		await dotsBoard.page
 			.getByRole('dialog')
 			.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) })
@@ -117,7 +117,7 @@ test.describe('Resource Data Collections', () => {
 		await section.getByRole('button', { name: 'Add item' }).first().click();
 
 		// Select the resource from the grouped dropdown
-		await dotsBoard.page.getByRole('dialog').getByLabel('Current resource').click();
+		await dotsBoard.page.getByRole('dialog').getByLabel('Resource').click();
 		await dotsBoard.page
 			.getByRole('dialog')
 			.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) })

@@ -20,7 +20,7 @@
 	let {
 		editable = false,
 		required = false,
-		labelKey = 'current_resource',
+		labelKey = 'resource',
 		name = 'resource',
 		value = $bindable()
 	}: Props = $props();
