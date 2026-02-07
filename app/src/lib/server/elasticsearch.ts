@@ -170,7 +170,7 @@ export async function getFacetAggregationsForGuids(
 	}
 
 	const { aggregations } = await es.search<unknown, estypes.SearchRequest>({
-		index: privateEnv.ELASTICSEARCH_INDEX_CONTAINERS ?? 'containers',
+		index: privateEnv.ELASTICSEARCH_INDEX_ALIAS ?? 'containers',
 		size: 0,
 		query,
 		aggs
