@@ -148,10 +148,9 @@ test.describe('Resource Data Collections', () => {
 
 		// Input an amount in the new column and wait for save
 		const amountInput = table.locator('tbody td input[inputmode="decimal"]').last();
+		const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
 		await amountInput.fill('1500.50');
-		const saveResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await amountInput.blur();
-		await saveResponse;
+		await invalidateRequest;
 
 		// Navigate back to verify the card shows the updated total
 		await dotsBoard.overlay.backButton.click();
@@ -309,10 +308,9 @@ test.describe('Resource Data Collections in Goals', () => {
 
 		// Input an amount in the new column and wait for save
 		const amountInput = table.locator('tbody td input[inputmode="decimal"]').last();
+		const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
 		await amountInput.fill('25000.00');
-		const saveResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await amountInput.blur();
-		await saveResponse;
+		await invalidateRequest;
 
 		// Navigate back to verify the card shows the updated total
 		await dotsBoard.overlay.backButton.click();
