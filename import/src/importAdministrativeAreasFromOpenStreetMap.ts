@@ -10,7 +10,7 @@ import {
 	insertIntoAdministrativeAreaOpenStreetMap,
 	insertIntoSpatialFeature,
 	spatialFeature
-} from './db';
+} from './db.ts';
 
 type State = {
 	relId: number;
