@@ -4,7 +4,7 @@ import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
 import { getPool } from './db';
-import { createIndexWithMappings, toDoc } from '../shared/indexing';
+import { createIndexWithMappings, toDoc } from '@knot-dots/shared/indexing';
 
 interface Row {
 	guid: string;
