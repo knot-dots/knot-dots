@@ -69,7 +69,8 @@ jobs:
       - name: Build Docker Image (Test)
         uses: docker/build-push-action@v6
         with:
-          context: "{{defaultContext}}:app"
+          context: "."
+          file: "./app/Dockerfile"
           target: production
           load: true
           tags: app:test # Tag used locally for testing
@@ -109,7 +110,8 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: "{{defaultContext}}:app"
+          context: "."
+          file: "./app/Dockerfile"
           target: production
           push: ${{ github.event_name == 'push' }}
           tags: |
