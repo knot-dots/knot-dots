@@ -42,8 +42,8 @@ services:
       context: .
       dockerfile: import/Dockerfile
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       elasticsearch:
         condition: service_healthy
     env_file:

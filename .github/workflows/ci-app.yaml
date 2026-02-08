@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 24
           cache: "npm"
-          cache-dependency-path: ./app/package-lock.json
+          cache-dependency-path: ./package-lock.json
       - run: npm clean-install
       - run: npm run check
       - run: npm run lint
@@ -75,7 +75,7 @@ jobs:
         with:
           node-version: 24
           cache: "npm"
-          cache-dependency-path: ./app/package-lock.json
+          cache-dependency-path: ./package-lock.json
       - run: npm clean-install
       - name: Generate SvelteKit aliases ($lib) without running full type check
         run: npx svelte-kit sync
