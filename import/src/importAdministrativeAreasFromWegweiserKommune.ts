@@ -84,9 +84,9 @@ const envSchema = z
 		IMPORT_ORGANIZATIONAL_UNIT_LEVEL: z.coerce.number().int().positive().default(1),
 		IMPORT_TYPES: z
 			.string()
+			.default('KREISFREIE_STADT,LANDKREIS,GEMEINDE')
 			.transform((value) => value.split(','))
-			.pipe(regionType.array())
-			.default('KREISFREIE_STADT,LANDKREIS,GEMEINDE'),
+			.pipe(regionType.array()),
 		IMPORT_USER: z.string().uuid(),
 		PUBLIC_KC_REALM: z.string().default('knot-dots')
 	})
