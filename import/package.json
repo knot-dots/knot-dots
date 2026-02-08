@@ -1,5 +1,5 @@
 {
-  "name": "knotdots-import",
+  "name": "@knot-dots/import",
   "version": "1.0.0",
   "scripts": {
     "administrative-areas-from-open-street-map": "tsx src/importAdministrativeAreasFromOpenStreetMap.ts",
