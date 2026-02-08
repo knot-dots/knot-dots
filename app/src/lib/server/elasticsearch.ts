@@ -1,4 +1,5 @@
-import { Client, type estypes } from '@elastic/elasticsearch';
+// @ts-ignore
+import { Client, estypes } from '@elastic/elasticsearch';
 import type { DatabaseConnection } from 'slonik';
 import { env as privateEnv } from '$env/dynamic/private';
 import type { Container, PayloadType } from '$lib/models';
