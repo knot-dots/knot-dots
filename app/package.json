@@ -1,5 +1,5 @@
 {
-	"name": "knotdots.net",
+	"name": "@knot-dots/app",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
