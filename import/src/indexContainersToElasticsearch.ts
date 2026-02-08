@@ -3,8 +3,8 @@ import { sql } from 'slonik';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
-import { getPool } from './db';
-import { createIndexWithMappings, toDoc } from '@knot-dots/shared/indexing';
+import { getPool } from './db.ts';
+import { createIndexWithMappings, toDoc } from '@knot-dots/shared/indexing.ts';
 
 interface Row {
 	guid: string;
