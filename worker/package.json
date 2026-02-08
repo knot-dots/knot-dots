@@ -7,15 +7,15 @@
     "start": "node src/index.ts"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^8.15.1",
     "@aws-sdk/client-sqs": "^3.918.0",
+    "@elastic/elasticsearch": "^8.15.1",
     "roarr": "^7.21.1",
     "serialize-error": "^12.0.0",
     "slonik": "^48.7.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "@types/node": "^24.0.3"
+    "@types/node": "^24.0.3",
+    "typescript": "^5.9.3"
   }
 }
