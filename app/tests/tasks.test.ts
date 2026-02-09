@@ -34,7 +34,7 @@ test.describe('Subtask creation', () => {
 		const subtaskSection = await taskStatusBoard.overlay.addSection('Tasks');
 		const subtaskTitle = `Subtask ${Date.now()}`;
 
-		await subtaskSection.getByRole('button', { name: 'Add item' }).click();
+		await subtaskSection.getByRole('button', { name: 'Add item' }).first().click();
 		await taskStatusBoard.page.getByRole('textbox', { name: 'Title' }).fill(subtaskTitle);
 		await taskStatusBoard.page.getByRole('button', { name: 'Save' }).click();
 		await expect(taskStatusBoard.overlay.title).toHaveText(subtaskTitle);
