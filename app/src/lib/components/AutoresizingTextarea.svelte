@@ -1,19 +1,11 @@
 <script lang="ts">
 	import type { HTMLTextareaAttributes } from 'svelte/elements';
 
-	let { onkeydown, value = $bindable(), ...props }: HTMLTextareaAttributes = $props();
-
-	function handleKeydown(event: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) {
-		if (event.key === 'Enter') {
-			event.preventDefault();
-		}
-
-		onkeydown?.(event);
-	}
+	let { value = $bindable(), ...props }: HTMLTextareaAttributes = $props();
 </script>
 
-<span>
-	<textarea bind:value {...props} onkeydown={handleKeydown}></textarea>
+<span data-replicated-value={value}>
+	<textarea bind:value {...props}></textarea>
 </span>
 
 <style>
@@ -31,7 +23,7 @@
 		--outline-offset: 0.25rem;
 
 		background-color: revert;
-		min-height: 1.5rem;
+		min-height: 0;
 		overflow: hidden;
 		resize: none;
 		width: calc(100%);
