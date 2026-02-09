@@ -39,8 +39,8 @@
 
 		// Get the decimal and thousand separators for the locale
 		const parts = new Intl.NumberFormat(locale).formatToParts(1000.1);
-		const decimalSeparator = parts.find((part) => part.type === 'decimal')?.value || '.';
-		const thousandSeparator = parts.find((part) => part.type === 'group')?.value || ',';
+		const decimalSeparator = parts.find((part) => part.type === 'decimal')?.value ?? '.';
+		const thousandSeparator = parts.find((part) => part.type === 'group')?.value ?? ',';
 
 		// Escape separators for use in regex
 		const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
