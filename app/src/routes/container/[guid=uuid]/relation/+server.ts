@@ -125,7 +125,6 @@ export const GET = (async ({ locals, params, url }) => {
 						assignees: parseResult.data.assignee,
 						audience: parseResult.data.audience,
 						sdg: parseResult.data.sdg,
-						measureTypes: parseResult.data.measureType,
 						organizationalUnits: parseResult.data.organizationalUnit,
 						policyFieldsBNK: parseResult.data.policyFieldBNK,
 						programTypes: parseResult.data.programType,

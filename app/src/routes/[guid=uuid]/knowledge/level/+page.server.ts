@@ -39,8 +39,7 @@ export const load = (async ({ locals, url, parent }) => {
 	const { currentOrganization, defaultOrganizationGuid } = await parent();
 	const features = createFeatureDecisions(locals.features);
 
-	const mapFacetKey = (key: string) =>
-		key === 'policy_field_bnk' ? 'policyFieldBNK' : key;
+	const mapFacetKey = (key: string) => (key === 'policy_field_bnk' ? 'policyFieldBNK' : key);
 	const mapFacets = (facets: Map<string, Map<string, number>>) => {
 		const mapped = new Map<string, Map<string, number>>();
 		for (const [key, values] of facets) {

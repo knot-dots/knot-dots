@@ -26,6 +26,12 @@
 	let { container = $bindable(), editable = false, revisions }: Props = $props();
 
 	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
+
+	const payload = container.payload as typeof container.payload & {
+		sdg: string[];
+		topic: string[];
+		policyFieldBNK: string[];
+	};
 </script>
 
 <PropertyGrid>
@@ -67,9 +73,9 @@
 		{#if featureDecisions.useCustomCategories()}
 			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 		{:else}
-			<EditableCategory {editable} bind:value={container.payload.sdg} />
-			<EditableTopic {editable} bind:value={container.payload.topic} />
-			<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
+			<EditableCategory {editable} bind:value={payload.sdg} />
+			<EditableTopic {editable} bind:value={payload.topic} />
+			<EditablePolicyFieldBNK {editable} bind:value={payload.policyFieldBNK} />
 			<EditableAudience {editable} bind:value={container.payload.audience} />
 		{/if}
 

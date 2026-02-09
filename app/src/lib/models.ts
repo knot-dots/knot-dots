@@ -1267,6 +1267,7 @@ const teaserPayload = z
 		audience: z.array(audience).default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
 		bodyRight: z.string().trim().optional(),
+		category: z.array(z.string().trim().min(1)).default([]),
 		cardStyle: z.string().optional(),
 		colSize: teaserColSizes.default('33-66'),
 		description: z.string().optional(),
@@ -1282,17 +1283,21 @@ const teaserPayload = z
 		linkRight: z.string().optional(),
 		linkCaption: z.string().optional(),
 		linkCaptionRight: z.string().optional(),
+		policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+		sdg: z.array(sustainableDevelopmentGoals).default([]),
 		textEnable: z.boolean().default(false),
 		textEnableRight: z.boolean().default(true),
 		title: z.string().trim(),
 		titleEnable: z.boolean().default(false),
 		titleEnableRight: z.boolean().default(true),
 		titleRight: z.string().trim().optional(),
+		topic: z.array(z.string().trim().min(1)).default([]),
 		type: z.literal(payloadTypes.enum.teaser),
 		style: z.string().optional().default('default'),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict(); // means no extra fields allowed
+	.strict()
+	.catchall(z.array(z.string().trim().min(1))); // allow custom category keys
 
 // For creating new empty teasers (title optional during creation)
 const initialTeaserPayload = teaserPayload.partial({ title: true });

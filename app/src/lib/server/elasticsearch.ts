@@ -64,8 +64,7 @@ export function getManyContainersWithES(
 			});
 		}
 		if (filters.type?.length) filter.push({ terms: { type: filters.type } });
-		if (filters.sdg?.length)
-			filter.push({ terms: { 'payload.category': filters.sdg } });
+		if (filters.sdg?.length) filter.push({ terms: { 'payload.category': filters.sdg } });
 		if (filters.topics?.length) filter.push({ terms: { 'payload.topic': filters.topics } });
 		if (filters.audience?.length) filter.push({ terms: { 'payload.audience': filters.audience } });
 		if (filters.policyFieldsBNK?.length)

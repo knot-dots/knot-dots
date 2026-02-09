@@ -554,9 +554,7 @@ function prepareWhereCondition(filters: {
 		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
 	if (filters.sdg?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`
-		);
+		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
 	}
 	if (filters.customCategories) {
 		for (const [key, values] of Object.entries(filters.customCategories)) {

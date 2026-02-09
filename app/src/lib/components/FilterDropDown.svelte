@@ -176,11 +176,7 @@
 							<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 							<span class="badge badge--gray">
 								{#if option.icon}
-									<img
-										src={transformFileURL(option.icon)}
-										alt=""
-										class="filter-option-icon"
-									/>
+									<img src={transformFileURL(option.icon)} alt="" class="filter-option-icon" />
 								{/if}
 								{option.label}
 								{#if option.count !== undefined}
@@ -217,11 +213,7 @@
 							<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
 							<span class="badge badge--gray">
 								{#if option.icon}
-									<img
-										src={transformFileURL(option.icon)}
-										alt=""
-										class="filter-option-icon"
-									/>
+									<img src={transformFileURL(option.icon)} alt="" class="filter-option-icon" />
 								{/if}
 								{option.label}
 								<span class="counter">({option.count})</span>
@@ -260,11 +252,7 @@
 							<input onchange={apply} type="checkbox" value={sub.value} bind:group={selected} />
 							<span class="badge badge--gray">
 								{#if sub.icon}
-									<img
-										src={transformFileURL(sub.icon)}
-										alt=""
-										class="filter-option-icon"
-									/>
+									<img src={transformFileURL(sub.icon)} alt="" class="filter-option-icon" />
 								{/if}
 								{sub.label}
 								{#if sub.count !== undefined}

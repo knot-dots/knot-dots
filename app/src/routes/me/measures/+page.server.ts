@@ -5,6 +5,7 @@ import {
 	computeFacetCount,
 	audience,
 	fromCounts,
+	measureTypes,
 	policyFieldBNK,
 	payloadTypes,
 	sustainableDevelopmentGoals,

@@ -4,6 +4,7 @@ import {
 	payloadTypes,
 	computeFacetCount,
 	audience,
+	measureTypes,
 	fromCounts,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
@@ -26,8 +27,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		await parent();
 	const features = createFeatureDecisions(locals.features);
 
-	const mapFacetKey = (key: string) =>
-		key === 'policy_field_bnk' ? 'policyFieldBNK' : key;
+	const mapFacetKey = (key: string) => (key === 'policy_field_bnk' ? 'policyFieldBNK' : key);
 	const mapFacets = (facets: Map<string, Map<string, number>>) => {
 		const mapped = new Map<string, Map<string, number>>();
 		for (const [key, values] of facets) {

@@ -275,7 +275,9 @@
 		>
 			{#if isContainerWithEditorialState(container) && $ability.can('read', container, 'payload.editorialState')}
 				<EditorialStateDropdown
-					aiSuggestion={'aiSuggestion' in container.payload && container.payload.aiSuggestion}
+					aiSuggestion={'aiSuggestion' in container.payload
+						? Boolean(container.payload.aiSuggestion)
+						: undefined}
 					editable={editable && $ability.can('update', container, 'payload.editorialState')}
 					bind:value={container.payload.editorialState}
 				/>

@@ -52,7 +52,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 					[currentOrganization.guid],
 					{
 						audience: url.searchParams.getAll('audience'),
-							sdg: url.searchParams.getAll('sdg'),
+						sdg: url.searchParams.getAll('sdg'),
 						customCategories,
 						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 						indicatorTypes: url.searchParams.getAll('indicatorType'),

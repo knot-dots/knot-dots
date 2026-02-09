@@ -201,6 +201,7 @@
 		filter = {
 			audience: [],
 			category: [],
+			sdg: [],
 			indicatorCategory: [],
 			type: [],
 			policyFieldBNK: [],
