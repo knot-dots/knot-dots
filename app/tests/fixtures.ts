@@ -14,6 +14,7 @@ import {
 	predicates,
 	type ProgramContainer,
 	type ReportContainer,
+	type ResourceV2Container,
 	type TaskCollectionContainer,
 	type TaskContainer
 } from '$lib/models';
@@ -32,6 +33,7 @@ type MyWorkerFixtures = {
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
 	testMeasure: MeasureContainer;
+	testResourceV2: ResourceV2Container;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
 	testReport: ReportContainer;
@@ -234,6 +236,31 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testMeasure);
 
 			await deleteContainer(adminContext, testMeasure);
+		},
+		{ scope: 'worker' }
+	],
+	testResourceV2: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newResourceV2 = containerOfType(
+				payloadTypes.enum.resource_v2,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceV2Container;
+			const testResourceV2 = await createContainer(adminContext, {
+				...newResourceV2,
+				payload: {
+					...newResourceV2.payload,
+					title: `Test Resource ${workerInfo.workerIndex}`,
+					resourceCategory: 'resource_category.money',
+					resourceUnit: 'unit.euro'
+				} as ResourceV2Container['payload']
+			});
+
+			await use(testResourceV2);
+
+			await deleteContainer(adminContext, testResourceV2);
 		},
 		{ scope: 'worker' }
 	],

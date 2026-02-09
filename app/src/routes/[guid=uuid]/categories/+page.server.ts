@@ -1,18 +1,17 @@
 import { error, type ServerLoad } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
-import { payloadTypes, predicates, type Container } from '$lib/models';
+import { type Container, payloadTypes, predicates } from '$lib/models';
 import { getManyContainers } from '$lib/server/db';
 
 export const load: ServerLoad = async ({ locals, parent, url }) => {
-	const featureDecisions = createFeatureDecisions(locals.features ?? []);
-
-	if (!featureDecisions.useCustomCategories()) {
+	if (!createFeatureDecisions(locals.features ?? []).useCustomCategories()) {
 		error(404, { message: 'not_found' });
 	}
 
-	if (!locals.user.isAuthenticated || !locals.user.roles.includes('sysadmin')) {
-		error(403, { message: 'forbidden' });
+	if (!locals.user.isAuthenticated) {
+		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
 	const { currentOrganization, defaultOrganizationGuid } = await parent();

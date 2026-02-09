@@ -108,7 +108,7 @@
 										<li>
 											<label>
 												<input type="checkbox" name="feature" value={flag} bind:group={features} />
-												{flag}
+												{$_(flag)}
 											</label>
 										</li>
 									{/each}

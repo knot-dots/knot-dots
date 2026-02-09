@@ -5,7 +5,6 @@ import {
 	computeFacetCount,
 	audience,
 	fromCounts,
-	measureTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
 	topics
@@ -97,7 +96,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 						audience: url.searchParams.getAll('audience'),
 						sdg: url.searchParams.getAll('sdg'),
 						customCategories,
-						measureTypes: url.searchParams.getAll('measureType'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						topics: url.searchParams.getAll('topic'),
 						template: true,
@@ -112,7 +110,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 						audience: url.searchParams.getAll('audience'),
 						sdg: url.searchParams.getAll('sdg'),
 						customCategories,
-						measureTypes: url.searchParams.getAll('measureType'),
 						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						topics: url.searchParams.getAll('topic'),
 						template: true,

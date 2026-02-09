@@ -51,6 +51,13 @@ export default class Overlay {
 		return this.sections.nth(numberOfSections);
 	}
 
+	async deleteSection(section: Locator) {
+		await section.hover();
+		await section.getByRole('button', { name: 'Settings' }).click();
+		await section.getByRole('button', { name: 'Delete' }).click();
+		await this.page.getByRole('button', { name: /I want to delete/i }).click();
+	}
+
 	async delete() {
 		await this.deleteButton.click();
 		await this.page.getByRole('button', { name: `I want to delete` }).click();

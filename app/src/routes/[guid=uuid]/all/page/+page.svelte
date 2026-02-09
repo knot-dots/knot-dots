@@ -14,8 +14,6 @@
 	});
 
 	let relatedContainers = $derived(data.relatedContainers);
-
-	$inspect(container);
 </script>
 
 {#snippet layout(header: Snippet, main: Snippet)}
@@ -23,7 +21,7 @@
 {/snippet}
 
 {#if isOrganizationContainer(container)}
-	<EditableOrganizationDetailView {container} {layout} {relatedContainers} />
+	<EditableOrganizationDetailView bind:container {layout} {relatedContainers} />
 {:else if isOrganizationalUnitContainer(container)}
-	<EditableOrganizationalUnitDetailView {container} {layout} {relatedContainers} />
+	<EditableOrganizationalUnitDetailView bind:container {layout} {relatedContainers} />
 {/if}

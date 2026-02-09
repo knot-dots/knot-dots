@@ -26,9 +26,9 @@
 	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { boards, payloadTypes } from '$lib/models';
-	import { ability } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
+	import { boards, payloadTypes } from '$lib/models';
+	import { mayCreateContainer } from '$lib/stores';
 
 	const featureDecisions = createFeatureDecisions(page.data.features);
 
@@ -214,7 +214,10 @@
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
-		...($ability.can('create', payloadTypes.enum.category) && featureDecisions.useCustomCategories()
+		...($mayCreateContainer(
+			payloadTypes.enum.category,
+			(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
+		) && featureDecisions.useCustomCategories()
 			? [
 					{
 						exists: true,

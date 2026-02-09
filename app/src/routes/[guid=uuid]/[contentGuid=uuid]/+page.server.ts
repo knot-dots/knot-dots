@@ -6,9 +6,7 @@ import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/se
 import type { PageServerLoad } from './$types';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 
-export const load = (async ({ depends, locals, params }) => {
-	depends('containers');
-
+export const load = (async ({ locals, params }) => {
 	try {
 		const [revisions, relatedContainers] = await Promise.all([
 			locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid)),

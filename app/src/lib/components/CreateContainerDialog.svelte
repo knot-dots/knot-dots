@@ -19,6 +19,7 @@
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
+	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
@@ -41,6 +42,7 @@
 		isReportContainer,
 		isResourceContainer,
 		isResourceV2Container,
+		isResourceDataContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -51,7 +53,6 @@
 		overlayURL
 	} from '$lib/models';
 	import { addEffectState, newContainer } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -122,15 +123,10 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button class="button-xs button-primary" type="submit" {@attach tooltip($_('save'))}>
+				<button class="button-xs button-primary" type="submit">
 					{$_('save')}
 				</button>
-				<button
-					class="button-xs button-alternative"
-					formnovalidate
-					type="submit"
-					{@attach tooltip($_('cancel'))}
-				>
+				<button class="button-xs button-alternative" formnovalidate type="submit">
 					{$_('cancel')}
 				</button>
 			</p>
@@ -225,6 +221,13 @@
 					/>
 				{:else if isResourceV2Container($newContainer)}
 					<ResourceV2Properties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isResourceDataContainer($newContainer)}
+					<ResourceDataProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

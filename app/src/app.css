@@ -972,24 +972,7 @@ label > input[type='checkbox'].toggle {
 	width: auto;
 }
 
-/* Container detail page content */
-.detail-page-content {
-	background-color: white;
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	overflow: auto;
-}
-
-.content-header {
-	padding: 1.5rem 1.5rem 0;
-}
-
-.content-header a,
-.content-header button {
-	float: right;
-}
-
+/* Main and overlay content */
 .content-details {
 	flex-grow: 1;
 	overflow-y: auto;
