@@ -82,8 +82,8 @@
 				...('audience' in container.payload && 'audience' in derived.payload
 					? { audience: container.payload.audience as typeof derived.payload.audience }
 					: undefined),
-				...('category' in container.payload && 'category' in derived.payload
-					? { category: container.payload.category }
+				...('sdg' in container.payload && 'sdg' in derived.payload
+					? { sdg: container.payload.sdg }
 					: undefined),
 				...('ruleStatus' in container.payload && 'ruleStatus' in derived.payload
 					? { ruleStatus: container.payload.ruleStatus }

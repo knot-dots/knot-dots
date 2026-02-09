@@ -40,7 +40,7 @@ export const load = (async ({ locals, url, parent }) => {
 	const features = createFeatureDecisions(locals.features);
 
 	const mapFacetKey = (key: string) =>
-		key === 'sdg' ? 'category' : key === 'policy_field_bnk' ? 'policyFieldBNK' : key;
+		key === 'policy_field_bnk' ? 'policyFieldBNK' : key;
 	const mapFacets = (facets: Map<string, Map<string, number>>) => {
 		const mapped = new Map<string, Map<string, number>>();
 		for (const [key, values] of facets) {
@@ -122,7 +122,7 @@ export const load = (async ({ locals, url, parent }) => {
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							topics: url.searchParams.getAll('topic'),
@@ -136,7 +136,7 @@ export const load = (async ({ locals, url, parent }) => {
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							topics: url.searchParams.getAll('topic'),
@@ -185,10 +185,7 @@ export const load = (async ({ locals, url, parent }) => {
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set(
-			'category',
-			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
-		);
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
 		_facets.set(
 			'policyFieldBNK',

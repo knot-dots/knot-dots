@@ -99,7 +99,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
@@ -113,7 +113,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
@@ -169,10 +169,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set(
-			'category',
-			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
-		);
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
 		_facets.set(
 			'policyFieldBNK',

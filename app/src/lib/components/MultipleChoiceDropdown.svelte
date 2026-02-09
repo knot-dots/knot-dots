@@ -270,7 +270,6 @@
 
 	.dropdown-panel {
 		position: relative;
-		overflow: visible;
 	}
 
 	.subterms-flyout {

@@ -56,7 +56,7 @@
 			guid,
 			params: {
 				audience: paramsFromFragment(page.url).getAll('audience'),
-				category: paramsFromFragment(page.url).getAll('category'),
+				sdg: paramsFromFragment(page.url).getAll('sdg'),
 				policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
 				terms: paramsFromFragment(page.url).get('terms') ?? '',
 				topic: paramsFromFragment(page.url).getAll('topic')
@@ -77,7 +77,7 @@
 			new Map([
 				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
 				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 			]),

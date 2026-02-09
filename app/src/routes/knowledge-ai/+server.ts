@@ -95,7 +95,7 @@ export const POST = (async ({ locals, request }) => {
 								organizational_unit: container.organizational_unit,
 								payload: {
 									aiSuggestion: true,
-									category: object.category.map((c) => c.substring(0, 6)),
+									sdg: object.category.map((c) => c.substring(0, 6)),
 									description: object.description,
 									editorialState: editorialState.enum['editorial_state.draft'],
 									summary: object.summary,

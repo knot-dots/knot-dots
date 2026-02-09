@@ -9,6 +9,7 @@ import {
 	isIndicatorContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
+	measureTypes,
 	policyFieldBNK,
 	predicates,
 	relation,
@@ -32,7 +33,8 @@ export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
-		category: z.array(sustainableDevelopmentGoals).default([]),
+		sdg: z.array(sustainableDevelopmentGoals).default([]),
+		measureType: z.array(measureTypes).default([]),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
@@ -103,7 +105,7 @@ export const GET = (async ({ locals, params, url }) => {
 					container.guid,
 					{
 						assignees: parseResult.data.assignee,
-						categories: parseResult.data.category,
+						sdg: parseResult.data.sdg,
 						policyFieldsBNK: parseResult.data.policyFieldBNK,
 						taskCategories: parseResult.data.taskCategory,
 						terms: parseResult.data.terms[0],
@@ -122,7 +124,8 @@ export const GET = (async ({ locals, params, url }) => {
 					{
 						assignees: parseResult.data.assignee,
 						audience: parseResult.data.audience,
-						categories: parseResult.data.category,
+						sdg: parseResult.data.sdg,
+						measureTypes: parseResult.data.measureType,
 						organizationalUnits: parseResult.data.organizationalUnit,
 						policyFieldsBNK: parseResult.data.policyFieldBNK,
 						programTypes: parseResult.data.programType,
