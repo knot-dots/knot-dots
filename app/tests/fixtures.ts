@@ -14,6 +14,7 @@ import {
 	predicates,
 	type ProgramContainer,
 	type ReportContainer,
+	type ResourceV2Container,
 	type TaskCollectionContainer,
 	type TaskContainer
 } from '$lib/models';
@@ -32,6 +33,7 @@ type MyWorkerFixtures = {
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
 	testMeasure: MeasureContainer;
+	testResourceV2: ResourceV2Container;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
 	testReport: ReportContainer;
@@ -43,7 +45,7 @@ async function createContainer(context: BrowserContext, newContainer: NewContain
 	const response = await context.request.post('/container', { data: newContainer });
 
 	if (!response.ok()) {
-		throw new Error(`Failed to create container: ${response.status()} ${response.statusText()}`);
+		throw new Error(`Failed to create ${newContainer.payload.type}: ${response.status()}}`);
 	}
 
 	return response.json();
@@ -52,11 +54,8 @@ async function createContainer(context: BrowserContext, newContainer: NewContain
 async function deleteContainer(context: BrowserContext, container: AnyContainer) {
 	const response = await context.request.get(`/container/${container.guid}`);
 
-	// If container doesn't exist or request failed, skip deletion
 	if (!response.ok()) {
-		throw new Error(
-			`Failed to fetch container for deletion: ${response.status()} ${response.statusText()}`
-		);
+		console.log(`Failed to fetch container for deletion: ${response.status()}`);
 	}
 
 	const currentVersion = await response.json();
@@ -171,7 +170,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			) as ProgramContainer;
 			const testProgram = await createContainer(adminContext, {
 				...newProgram,
-				payload: { ...newProgram.payload, title: `Test Program ${workerInfo.workerIndex}` }
+				payload: {
+					...newProgram.payload,
+					title: `Test Program ${workerInfo.workerIndex}`
+				} as ProgramContainer['payload']
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testProgram, [
 				predicates.enum['is-head-of'],
@@ -195,7 +197,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			) as GoalContainer;
 			const testGoal = await createContainer(adminContext, {
 				...newGoal,
-				payload: { ...newGoal.payload, title: `Test Goal ${workerInfo.workerIndex}` }
+				payload: {
+					...(newGoal.payload as GoalContainer['payload']),
+					title: `Test Goal ${workerInfo.workerIndex}`
+				} as GoalContainer['payload']
 			});
 
 			await use(testGoal);
@@ -215,7 +220,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			) as MeasureContainer;
 			const testMeasure = await createContainer(adminContext, {
 				...newMeasure,
-				payload: { ...newMeasure.payload, title: `Test Measure ${workerInfo.workerIndex}` },
+				payload: {
+					...newMeasure.payload,
+					title: `Test Measure ${workerInfo.workerIndex}`
+				} as MeasureContainer['payload'],
 				relation: [
 					{
 						position: 0,
@@ -228,6 +236,31 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testMeasure);
 
 			await deleteContainer(adminContext, testMeasure);
+		},
+		{ scope: 'worker' }
+	],
+	testResourceV2: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newResourceV2 = containerOfType(
+				payloadTypes.enum.resource_v2,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceV2Container;
+			const testResourceV2 = await createContainer(adminContext, {
+				...newResourceV2,
+				payload: {
+					...newResourceV2.payload,
+					title: `Test Resource ${workerInfo.workerIndex}`,
+					resourceCategory: 'resource_category.money',
+					resourceUnit: 'unit.euro'
+				} as ResourceV2Container['payload']
+			});
+
+			await use(testResourceV2);
+
+			await deleteContainer(adminContext, testResourceV2);
 		},
 		{ scope: 'worker' }
 	],
@@ -290,7 +323,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newReport.payload,
 					title: `Test Report ${workerInfo.workerIndex}`
-				}
+				} as ReportContainer['payload']
 			});
 
 			await use(testReport);

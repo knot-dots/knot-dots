@@ -7,6 +7,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
@@ -18,11 +19,13 @@
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
+	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
+		isCategoryContainer,
 		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
@@ -39,6 +42,7 @@
 		isReportContainer,
 		isResourceContainer,
 		isResourceV2Container,
+		isResourceDataContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -49,7 +53,6 @@
 		overlayURL
 	} from '$lib/models';
 	import { addEffectState, newContainer } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -66,7 +69,7 @@
 				$addEffectState = {};
 				await goto(`#view=${effect.guid}`);
 			} else if (isOrganizationalUnitContainer(savedContainer)) {
-				await goto(resolve('/[[guid=uuid]]/all/page', { guid: savedContainer.guid }));
+				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
 			}
@@ -120,15 +123,10 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button class="button-xs button-primary" type="submit" {@attach tooltip($_('save'))}>
+				<button class="button-xs button-primary" type="submit">
 					{$_('save')}
 				</button>
-				<button
-					class="button-xs button-alternative"
-					formnovalidate
-					type="submit"
-					{@attach tooltip($_('cancel'))}
-				>
+				<button class="button-xs button-alternative" formnovalidate type="submit">
 					{$_('cancel')}
 				</button>
 			</p>
@@ -173,6 +171,8 @@
 						relatedContainers={[]}
 						revisions={[]}
 					/>
+				{:else if isCategoryContainer($newContainer)}
+					<CategoryProperties bind:container={$newContainer} editable />
 				{:else if isIndicatorContainer($newContainer)}
 					<IndicatorProperties
 						bind:container={$newContainer}
@@ -221,6 +221,13 @@
 					/>
 				{:else if isResourceV2Container($newContainer)}
 					<ResourceV2Properties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isResourceDataContainer($newContainer)}
+					<ResourceDataProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

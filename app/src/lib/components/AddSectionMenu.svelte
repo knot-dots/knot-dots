@@ -13,19 +13,20 @@
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
-	import Goal from '~icons/knotdots/goal';
-	import Grid from '~icons/knotdots/grid';
-	import Image from '~icons/knotdots/placeholder-image';
-	import Map from '~icons/knotdots/map';
-	import Progress from '~icons/knotdots/progress';
-	import Plus from '~icons/knotdots/plus';
-	import Star from '~icons/knotdots/star';
-	import Program from '~icons/knotdots/program';
-	import Text from '~icons/knotdots/text';
-	import TwoCol from '~icons/knotdots/two-column';
-	import Link from '~icons/knotdots/link';
 	import Collection from '~icons/knotdots/collection';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
+	import Goal from '~icons/knotdots/goal';
+	import Grid from '~icons/knotdots/grid';
+	import Link from '~icons/knotdots/link';
+	import Map from '~icons/knotdots/map';
+	import Image from '~icons/knotdots/placeholder-image';
+	import Plus from '~icons/knotdots/plus';
+	import Program from '~icons/knotdots/program';
+	import Progress from '~icons/knotdots/progress';
+	import Star from '~icons/knotdots/star';
+	import Summary from '~icons/knotdots/summary';
+	import Text from '~icons/knotdots/text';
+	import TwoCol from '~icons/knotdots/two-column';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -33,6 +34,7 @@
 		boards,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
+		isContainerWithSummary,
 		isContentPartnerCollectionContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
@@ -49,10 +51,14 @@
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
+		isResourceDataCollectionContainer,
 		isSimpleMeasureContainer,
+		isSummaryContainer,
 		isTaskCollectionContainer,
+		isTaskContainer,
 		payloadTypes,
-		predicates
+		predicates,
+		resourceDataTypes
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
@@ -84,7 +90,10 @@
 	};
 
 	let mayAddTaskCollection = $derived(
-		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
+		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer) &&
+			(isGoalContainer(parentContainer) ||
+				isMeasureContainer(parentContainer) ||
+				isTaskContainer(parentContainer))
 	);
 
 	let mayAddObjectiveCollection = $derived(
@@ -124,7 +133,10 @@
 	);
 
 	let mayAddMeasureCollection = $derived(
-		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
+		(isOrganizationContainer(parentContainer) ||
+			isOrganizationalUnitContainer(parentContainer) ||
+			(isMeasureContainer(parentContainer) &&
+				createFeatureDecisions(page.data.features).useSubMeasures())) &&
 			!hasSection(parentContainer, relatedContainers).some(isMeasureCollectionContainer)
 	);
 
@@ -159,25 +171,45 @@
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
 	);
 
-	let mayAddTeaserSection = $derived(
-		createFeatureDecisions(page.data.features).useTeaser() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	let mayAddActualResourceAllocationCollection = $derived(
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
+			)
 	);
 
-	let mayAddInfoBox = $derived(
-		createFeatureDecisions(page.data.features).useInfoBox() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	let mayAddPlannedResourceAllocationCollection = $derived(
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			isMeasureContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType ===
+						resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
+			)
 	);
 
-	let mayAddQuote = $derived(
-		createFeatureDecisions(page.data.features).useQuote() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	let mayAddBudgetCollection = $derived(
+		createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			isGoalContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(
+				(c) =>
+					isResourceDataCollectionContainer(c) &&
+					c.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
+			)
 	);
 
-	let mayAddTwoColumnSection = $derived(
-		createFeatureDecisions(page.data.features).useTwoColumn() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
-	);
+	let mayAddTeaserSection = $derived(createFeatureDecisions(page.data.features).useTeaser());
+
+	let mayAddInfoBox = $derived(createFeatureDecisions(page.data.features).useInfoBox());
+
+	let mayAddQuote = $derived(createFeatureDecisions(page.data.features).useQuote());
+
+	let mayAddTwoColumnSection = $derived(createFeatureDecisions(page.data.features).useTwoColumn());
 
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
@@ -194,14 +226,19 @@
 			isReportContainer(parentContainer)
 	);
 
-	let mayAddImage = $derived(
-		createFeatureDecisions(page.data.features).useImage() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+	let mayAddImage = $derived(createFeatureDecisions(page.data.features).useImage());
+
+	let mayAddSummary = $derived(
+		isContainerWithSummary(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
 	);
 
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			...(mayAddSummary
+				? [{ icon: Summary, label: $_('summary'), value: payloadTypes.enum.summary }]
+				: []),
 			...(mayAddCustomCollection
 				? [
 						{
@@ -271,6 +308,36 @@
 							icon: Cash,
 							label: $_('resources'),
 							value: payloadTypes.enum.resource_collection
+						}
+					]
+				: []),
+			...(mayAddActualResourceAllocationCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.actual_resource_allocation'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.actual_resource_allocation'
+						}
+					]
+				: []),
+			...(mayAddPlannedResourceAllocationCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.planned_resource_allocation'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.planned_resource_allocation'
+						}
+					]
+				: []),
+			...(mayAddBudgetCollection
+				? [
+						{
+							icon: Cash,
+							label: $_('resource_data_type.budget'),
+							value: payloadTypes.enum.resource_data_collection,
+							resourceDataType: 'resource_data_type.budget'
 						}
 					]
 				: []),
@@ -374,10 +441,15 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (option.value)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 						<li class="menu-item">
-							<button use:menu.item={{ value: option.value }}>
+							<button
+								use:menu.item={{
+									value: { type: option.value, resourceDataType: option.resourceDataType }
+								}}
+								type="button"
+							>
 								<option.icon />
 								{option.label}
 							</button>

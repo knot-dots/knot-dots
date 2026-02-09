@@ -7,8 +7,12 @@ export const featureFlags = new Map([
 			'Elasticsearch',
 			'TeaserCollection',
 			'ContentPartner',
-			'ResourcesV2',
-			'IOOI'
+			'ResourceV2',
+			'CustomCategories',
+			'IOOI',
+			'EditorialPages',
+			'FullScreenRoutes',
+			'SubMeasures'
 		] as const
 	],
 	[
@@ -74,10 +78,28 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 			return features.includes('Stage');
 		},
 		useResourceWorkspace() {
-			return features.includes('ResourcesV2');
+			return features.includes('ResourceV2');
+		},
+		useResourcePlanning() {
+			return features.includes('ResourceV2');
+		},
+		useCustomCategories() {
+			return features.includes('CustomCategories');
 		},
 		useIOOI() {
 			return features.includes('IOOI');
+		},
+		usePage() {
+			return features.includes('EditorialPages');
+		},
+		useFavoriteList() {
+			return features.includes('EditorialPages');
+		},
+		useSubMeasures() {
+			return features.includes('SubMeasures');
+		},
+		useFullScreenRoutes() {
+			return features.includes('FullScreenRoutes');
 		}
 	};
 }

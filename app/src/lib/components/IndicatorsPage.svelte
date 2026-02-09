@@ -1,54 +1,30 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import {
-		audience,
-		computeFacetCount,
-		type Container,
-		indicatorCategories,
-		indicatorTypes,
-		isIndicatorContainer,
-		isIndicatorTemplateContainer,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics
-	} from '$lib/models';
+
+	import type { PageData } from '../../routes/[guid=uuid]/indicators/catalog/$types';
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[]; useNewIndicators: boolean };
+		data: PageData;
 		filterBarInitiallyOpen?: boolean;
 	}
 
 	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			...((!page.data.currentOrganization.payload.default
-				? [['included', new Map()]]
-				: []) as Array<[string, Map<string, number>]>),
-			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(
-			facets,
-			data.containers.filter((c) =>
-				data.useNewIndicators ? isIndicatorTemplateContainer(c) : isIndicatorContainer(c)
-			)
-		);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} {filterBarInitiallyOpen} search />
+		<Header
+			{facets}
+			facetLabels={data.facetLabels ?? undefined}
+			{filterBarInitiallyOpen}
+			categoryOptions={data.categoryOptions ?? null}
+			search
+		/>
 	{/snippet}
 
 	{#snippet main()}

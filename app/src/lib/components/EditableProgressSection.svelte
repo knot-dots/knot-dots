@@ -28,9 +28,7 @@
 
 	const id = crypto.randomUUID();
 
-	async function handleChange(event: Event) {
-		event.stopPropagation();
-
+	async function handleChange() {
 		const response = await saveContainer(parentContainer);
 		if (response.ok) {
 			const updatedContainer = await response.json();
@@ -85,6 +83,7 @@
 			max="1"
 			min="0"
 			onchange={handleChange}
+			oninput={(e) => e.stopPropagation()}
 			step="0.1"
 			type="range"
 		/>

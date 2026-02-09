@@ -1,6 +1,5 @@
 /.svelte-kit
 /build
 node_modules
-.idea/*
 tests/.auth
 test-results

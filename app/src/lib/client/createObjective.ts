@@ -7,6 +7,8 @@ import {
 	type EmptyObjectiveContainer,
 	type IndicatorContainer,
 	type IooiType,
+	type NewContainer,
+	type ObjectiveContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -24,6 +26,7 @@ export default async function createObjective(
 		target.managed_by,
 		env.PUBLIC_KC_REALM
 	) as EmptyObjectiveContainer;
+
 	const response = await saveContainer({
 		...newObjective,
 		payload: {
@@ -51,6 +54,6 @@ export default async function createObjective(
 						}
 					])
 		]
-	});
+	} as NewContainer & ObjectiveContainer['payload']);
 	return await response.json();
 }

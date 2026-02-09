@@ -10,7 +10,8 @@ import {
 	type KeycloakUser,
 	type OrganizationalUnitContainer,
 	organizationalUnitType,
-	type OrganizationContainer
+	type OrganizationContainer,
+	payloadTypes
 } from '$lib/models';
 import {
 	getContainerByGuid,
@@ -21,7 +22,9 @@ import {
 import { findUserById } from '$lib/server/keycloak';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals, params, url }) => {
+export const load: LayoutServerLoad = async ({ depends, locals, params, url }) => {
+	depends(payloadTypes.enum.organization, payloadTypes.enum.organizational_unit);
+
 	let currentOrganization;
 	let user: KeycloakUser | undefined = undefined;
 
@@ -60,6 +63,8 @@ export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 			// Do nothing.
 		}
 	}
+
+	const defaultOrganizationGuid = organizations.find(({ payload }) => payload.default)?.guid;
 
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
@@ -114,6 +119,7 @@ export const load: LayoutServerLoad = async ({ locals, params, url }) => {
 		features: locals.features,
 		organizations,
 		organizationalUnits,
+		defaultOrganizationGuid,
 		session: await locals.auth(),
 		user
 	};

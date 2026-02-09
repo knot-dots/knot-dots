@@ -16,11 +16,13 @@ type Actions =
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const specialTypes: PayloadType[] = [
+	payloadTypes.enum.category,
+	payloadTypes.enum.indicator,
+	payloadTypes.enum.indicator_template,
 	payloadTypes.enum.organization,
 	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.program,
-	payloadTypes.enum.indicator,
-	payloadTypes.enum.indicator_template
+	payloadTypes.enum.term
 ];
 
 const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
@@ -38,7 +40,9 @@ export default function defineAbilityFor(user: User) {
 		can('delete-recursively', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.program,
-			payloadTypes.enum.goal
+			payloadTypes.enum.goal,
+			payloadTypes.enum.category,
+			payloadTypes.enum.term
 		]);
 		can('invite-members', [
 			payloadTypes.enum.measure,
@@ -112,9 +116,13 @@ export default function defineAbilityFor(user: User) {
 				managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 			}
 		);
-		can(['create', 'update', 'delete'], payloadTypes.enum.indicator, {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		can(
+			['create', 'update', 'delete', 'delete-recursively'],
+			[payloadTypes.enum.category, payloadTypes.enum.term],
+			{
+				managed_by: { $in: [...user.adminOf, ...user.headOf] }
+			}
+		);
 		can('update', payloadTypes.enum.program, ['chapterType'], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});

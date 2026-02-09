@@ -74,13 +74,13 @@
 				container.realm
 			) as NewContainer;
 
-			derived.payload = {
+			const derivedPayload = {
 				...derived.payload,
 				...('assignee' in container.payload && isTaskContainer(derived)
 					? { assignee: container.payload.assignee }
 					: undefined),
 				...('audience' in container.payload && 'audience' in derived.payload
-					? { audience: container.payload.audience }
+					? { audience: container.payload.audience as typeof derived.payload.audience }
 					: undefined),
 				...('category' in container.payload && 'category' in derived.payload
 					? { category: container.payload.category }
@@ -103,7 +103,9 @@
 				...('visibility' in container.payload && 'visibility' in derived.payload
 					? { visibility: container.payload.visibility }
 					: undefined)
-			};
+			} as typeof derived.payload;
+
+			derived.payload = derivedPayload;
 
 			const isPartOfProgramRelation = container.relation.find(
 				({ predicate }) => predicate === predicates.enum['is-part-of-program']

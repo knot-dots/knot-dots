@@ -4,13 +4,13 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
-	import { type SustainableDevelopmentGoal, sustainableDevelopmentGoals } from '$lib/models';
+	import { sustainableDevelopmentGoals, type SustainableDevelopmentGoal } from '$lib/models';
 	import { sdgIcons } from '$lib/theme/models';
 
 	interface Props {
 		compact?: boolean;
 		editable?: boolean;
-		value: SustainableDevelopmentGoal[];
+		value: string[];
 	}
 
 	let { compact = false, editable = false, value = $bindable() }: Props = $props();
@@ -30,6 +30,10 @@
 			}
 		]
 	});
+
+	function sdg(key: string) {
+		return sdgIcons.get(key as SustainableDevelopmentGoal);
+	}
 </script>
 
 {#if editable || (value.length > 6 && compact)}
@@ -40,8 +44,10 @@
 					.filter((o) => value.includes(o))
 					.slice(0, value.length > 6 && compact ? 5 : value.length)
 					.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
-					{@const sdgIcon = sdgIcons.get(selectedOption.value)}
-					<img src={sdgIcon} width="30" height="30" alt={selectedOption.label} />
+					{@const sdgIcon = sdg(selectedOption.value)}
+					{#if sdgIcon}
+						<img src={sdgIcon} width="30" height="30" alt={selectedOption.label} />
+					{/if}
 				{:else}
 					{$_('empty')}
 				{/each}
@@ -59,10 +65,12 @@
 				<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 					<div>
 						{#each sustainableDevelopmentGoals.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
-							{@const sdgIcon = sdgIcons.get(option.value)}
+							{@const sdgIcon = sdg(option.value)}
 							<label>
 								<input type="checkbox" value={option.value} bind:group={value} />
-								<img src={sdgIcon} width="30" height="30" alt={option.label} />
+								{#if sdgIcon}
+									<img src={sdgIcon} width="30" height="30" alt={option.label} />
+								{/if}
 								{option.label}
 							</label>
 						{/each}
@@ -72,14 +80,11 @@
 				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 					<ul class="value">
 						{#each value as category (category)}
+							{@const icon = sdg(category)}
 							<li>
-								<img
-									src={sdgIcons.get(category)}
-									alt={$_(category)}
-									title={$_(category)}
-									width="30"
-									height="30"
-								/>
+								{#if icon}
+									<img src={icon} alt={$_(category)} title={$_(category)} width="30" height="30" />
+								{/if}
 							</li>
 						{/each}
 					</ul>
@@ -90,14 +95,11 @@
 {:else}
 	<ul class="value" class:value--compact={compact}>
 		{#each value as category (category)}
+			{@const icon = sdg(category)}
 			<li>
-				<img
-					src={sdgIcons.get(category)}
-					alt={$_(category)}
-					title={$_(category)}
-					width="30"
-					height="30"
-				/>
+				{#if icon}
+					<img src={icon} alt={$_(category)} title={$_(category)} width="30" height="30" />
+				{/if}
 			</li>
 		{:else}
 			{$_('empty')}

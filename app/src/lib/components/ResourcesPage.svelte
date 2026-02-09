@@ -1,56 +1,37 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
-	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import {
-		computeFacetCount,
-		resourceCategories,
-		resourceUnits,
-		type Container,
-		predicates
-	} from '$lib/models';
+	import type { PageData } from '../../routes/[guid=uuid]/resources/catalog/$types';
+	import { predicates } from '$lib/models';
 
 	interface Props {
 		children: Snippet;
-		data: { containers: Container[] };
+		data: PageData;
 		sortOptions?: [string, string][];
+		filterBarInitiallyOpen?: boolean;
 	}
 
-	let { children, data, sortOptions }: Props = $props();
+	let { children, data, sortOptions, filterBarInitiallyOpen = false }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-prerequisite-for']]
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			...((page.url.searchParams.has('related-to')
-				? [
-						[
-							'relationType',
-							new Map([
-								[predicates.enum['is-part-of'], 0],
-								[predicates.enum['is-prerequisite-for'], 0]
-							])
-						]
-					]
-				: []) as Array<[string, Map<string, number>]>),
-			...((!page.data.currentOrganization.payload.default
-				? [['included', new Map()]]
-				: []) as Array<[string, Map<string, number>]>),
-			['resourceCategory', new Map(resourceCategories.options.map((v) => [v as string, 0]))],
-			['resourceUnit', new Map(resourceUnits.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, data.containers);
-	});
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search {sortOptions} />
+		<Header
+			{filterBarInitiallyOpen}
+			{facets}
+			facetLabels={data.facetLabels ?? undefined}
+			categoryOptions={data.categoryOptions ?? null}
+			search
+			{sortOptions}
+		/>
 	{/snippet}
 
 	{#snippet main()}

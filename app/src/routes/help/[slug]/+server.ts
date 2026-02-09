@@ -14,7 +14,7 @@ export const GET = (async ({ locals, params }) => {
 	} catch (e) {
 		if (
 			e instanceof NotFoundError &&
-			defineAbilityFor(locals.user).can('create', payloadTypes.enum.page)
+			defineAbilityFor(locals.user).can('create', payloadTypes.enum.help)
 		) {
 			const organizations = await locals.pool.connect(
 				getManyOrganizationContainers({ default: true }, '')
@@ -22,7 +22,7 @@ export const GET = (async ({ locals, params }) => {
 			const container = await locals.pool.connect(
 				createContainer(
 					newContainer.parse({
-						payload: { body: '', slug: params.slug, title: '', type: payloadTypes.enum.page },
+						payload: { body: '', slug: params.slug, title: '', type: payloadTypes.enum.help },
 						managed_by: organizations[0].guid,
 						organization: organizations[0].guid,
 						organizational_unit: null,
