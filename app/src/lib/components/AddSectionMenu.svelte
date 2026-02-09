@@ -118,7 +118,8 @@
 	);
 
 	let mayAddResourceCollection = $derived(
-		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
+		!createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
 	);
 
