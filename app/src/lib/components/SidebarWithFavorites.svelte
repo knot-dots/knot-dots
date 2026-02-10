@@ -12,7 +12,7 @@
 	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
-	import ChevronUp from '~icons/flowbite/chevron-up-outline';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Grid from '~icons/flowbite/grid-solid';
 	import Home from '~icons/flowbite/home-solid';
 	import StarSolid from '~icons/flowbite/star-solid';
@@ -101,7 +101,7 @@
 >
 	<li>
 		<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationMenu.button>
-			{#if $organizationMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+			{#if $organizationMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 			<span>
 				{page.data.currentOrganization.payload.name}
 			</span>
@@ -171,7 +171,7 @@
 	>
 		<li>
 			<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationalUnitMenu.button>
-				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 				<span>
 					{currentOrganizationalUnit.payload.name}
 				</span>
@@ -272,7 +272,7 @@
 >
 	<li>
 		<button class="sidebar-menu-item sidebar-menu-item--toggle" use:platformMenu.button>
-			{#if $platformMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+			{#if $platformMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 			<span>
 				{$_('about')}
 			</span>
