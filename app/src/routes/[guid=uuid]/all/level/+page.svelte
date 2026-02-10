@@ -10,7 +10,7 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		computeColumnTitleForGoals,
-		goalsByHierarchyLevel,
+		containersByHierarchyLevel,
 		isGoalContainer,
 		isProgramContainer,
 		isReportContainer,
@@ -23,7 +23,7 @@
 	let { data }: PageProps = $props();
 
 	let goals = $derived(
-		goalsByHierarchyLevel(
+		containersByHierarchyLevel(
 			data.containers
 				.filter(isGoalContainer)
 				.filter(({ relation }) =>

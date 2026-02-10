@@ -2984,23 +2984,23 @@ export function createCopyOf(
 	return copy;
 }
 
-export function goalsByHierarchyLevel(containers: GoalContainer[]) {
-	const goalsByHierarchyLevel = new Map<number, GoalContainer[]>([[1, []]]);
+export function containersByHierarchyLevel(containers: GoalContainer[]) {
+	const containersByHierarchyLevel = new Map<number, GoalContainer[]>([[1, []]]);
 
 	for (const container of containers) {
 		const hierarchyLevel = container.payload.hierarchyLevel;
 
-		if (goalsByHierarchyLevel.has(hierarchyLevel)) {
-			goalsByHierarchyLevel.set(hierarchyLevel, [
-				...(goalsByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
+		if (containersByHierarchyLevel.has(hierarchyLevel)) {
+			containersByHierarchyLevel.set(hierarchyLevel, [
+				...(containersByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
 				container
 			]);
 		} else {
-			goalsByHierarchyLevel.set(hierarchyLevel, [container]);
+			containersByHierarchyLevel.set(hierarchyLevel, [container]);
 		}
 	}
 
-	return goalsByHierarchyLevel;
+	return containersByHierarchyLevel;
 }
 
 export function titleForProgramCollection(containers: ProgramContainer[]) {

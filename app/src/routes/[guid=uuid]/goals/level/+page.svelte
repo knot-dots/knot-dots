@@ -5,12 +5,16 @@
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { computeColumnTitleForGoals, goalsByHierarchyLevel, isGoalContainer } from '$lib/models';
+	import {
+		computeColumnTitleForGoals,
+		containersByHierarchyLevel,
+		isGoalContainer
+	} from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let goals = $derived(goalsByHierarchyLevel(data.containers.filter(isGoalContainer)));
+	let goals = $derived(containersByHierarchyLevel(data.containers.filter(isGoalContainer)));
 
 	let columns = $derived(
 		Array.from(goals.entries())

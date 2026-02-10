@@ -6,7 +6,7 @@
 	import {
 		computeColumnTitleForGoals,
 		type Container,
-		goalsByHierarchyLevel,
+		containersByHierarchyLevel,
 		isGoalContainer,
 		overlayKey,
 		payloadTypes,
@@ -22,7 +22,7 @@
 	let { containers, program }: Props = $props();
 
 	let goals = $derived(
-		goalsByHierarchyLevel(
+		containersByHierarchyLevel(
 			containers
 				.filter(isGoalContainer)
 				.filter(({ relation }) =>

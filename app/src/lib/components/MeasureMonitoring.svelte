@@ -5,7 +5,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import {
 		computeColumnTitleForGoals,
-		goalsByHierarchyLevel,
+		containersByHierarchyLevel,
 		type IndicatorContainer,
 		isEffectContainer,
 		isGoalContainer,
@@ -30,7 +30,7 @@
 	let { measure, measures, containers, indicators, showMeasures = false }: Props = $props();
 
 	let goals = $derived(
-		goalsByHierarchyLevel(
+		containersByHierarchyLevel(
 			containers
 				.filter(isGoalContainer)
 				.filter(({ relation }) =>
