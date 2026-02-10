@@ -1095,6 +1095,7 @@ const effectPayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
 		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
 		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 		type: z.literal(payloadTypes.enum.effect)
 	});

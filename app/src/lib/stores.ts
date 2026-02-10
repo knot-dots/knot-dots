@@ -125,6 +125,7 @@ if (browser) {
 type AddEffectState = {
 	target?: Container;
 	effect?: IndicatorContainer;
+	iooiType?: IooiType;
 };
 
 export const addEffectState = writable<AddEffectState>({});
@@ -193,6 +194,11 @@ export type OverlayData =
 	  }
 	| {
 			key: 'goal-iooi';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
+			key: 'measure-iooi';
 			container: AnyContainer;
 			containers: Container[];
 	  }
@@ -503,6 +509,31 @@ if (browser) {
 					containers
 				});
 			}
+		} else if (hashParams.has(overlayKey.enum['measure-iooi'])) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum['measure-iooi']) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const containers = await fetchRelatedContainers(
+				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+				{
+					organization: [container.organization],
+					payloadType: [
+						payloadTypes.enum.measure,
+						payloadTypes.enum.simple_measure,
+						payloadTypes.enum.effect,
+						payloadTypes.enum.resource_data
+					],
+					relationType: [predicates.enum['is-part-of'], predicates.enum['is-measured-by']],
+					terms: hashParams.get('terms') ?? ''
+				},
+				hashParams.get('sort') ?? 'alpha'
+			);
+			setOverlayIfLatest({
+				key: overlayKey.enum['measure-iooi'],
+				container,
+				containers
+			});
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
 			if (useFullScreenRoutes) {
 				const result = await preloadData(
