@@ -497,7 +497,11 @@ if (browser) {
 					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 					{
 						organization: [container.organization],
-						payloadType: [payloadTypes.enum.goal, payloadTypes.enum.objective],
+						payloadType: [
+							payloadTypes.enum.goal,
+							payloadTypes.enum.objective,
+							payloadTypes.enum.resource_data
+						],
 						relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
 						terms: hashParams.get('terms') ?? ''
 					},
