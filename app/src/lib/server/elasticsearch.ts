@@ -1,19 +1,25 @@
 import { Client, type estypes } from '@elastic/elasticsearch';
 import type { DatabaseConnection } from 'slonik';
 import { env as privateEnv } from '$env/dynamic/private';
+import { createFeatureDecisions } from '$lib/features';
 import type { Container, PayloadType } from '$lib/models';
+import { getFeatures } from '$lib/server/features';
 import { sql, withUserAndRelation } from './db';
 
-const es = new Client({
-	auth:
-		privateEnv.ELASTICSEARCH_USERNAME && privateEnv.ELASTICSEARCH_PASSWORD
-			? {
-					username: privateEnv.ELASTICSEARCH_USERNAME,
-					password: privateEnv.ELASTICSEARCH_PASSWORD
-				}
-			: undefined,
-	node: privateEnv.ELASTICSEARCH_URL
-});
+let es: Client;
+
+if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+	es = new Client({
+		auth:
+			privateEnv.ELASTICSEARCH_USERNAME && privateEnv.ELASTICSEARCH_PASSWORD
+				? {
+						username: privateEnv.ELASTICSEARCH_USERNAME,
+						password: privateEnv.ELASTICSEARCH_PASSWORD
+					}
+				: undefined,
+		node: privateEnv.ELASTICSEARCH_URL
+	});
+}
 
 function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	if (sort === 'modified') {
