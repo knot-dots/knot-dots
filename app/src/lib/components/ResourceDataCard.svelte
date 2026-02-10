@@ -2,6 +2,7 @@
 	import { _, number } from 'svelte-i18n';
 	import Card from '$lib/components/Card.svelte';
 	import { type ResourceDataContainer, type ResourceV2Container } from '$lib/models';
+	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 
 	interface Props {
 		container: ResourceDataContainer;
@@ -9,7 +10,7 @@
 		href?: () => string;
 	}
 
-	let { container, resourceContainer = undefined, href }: Props = $props();
+	let { container, resourceContainer, href }: Props = $props();
 
 	const totalAmount = $derived.by(() =>
 		container.payload.entries.reduce((sum, entry) => sum + Number(entry.amount ?? 0), 0)
@@ -21,6 +22,21 @@
 			maximumFractionDigits: 2
 		})
 	);
+
+	let fetchedResource = $state<ResourceV2Container | undefined>(undefined);
+
+	$effect(() => {
+		if (!resourceContainer && container.payload.resource) {
+			fetchedResource = undefined;
+			fetchContainerRevisions(container.payload.resource).then((revisions) => {
+				fetchedResource = (revisions[revisions.length - 1] as ResourceV2Container) ?? undefined;
+			});
+		} else {
+			fetchedResource = undefined;
+		}
+	});
+
+	const currentResource = $derived(resourceContainer ?? fetchedResource);
 </script>
 
 <Card {container} {href}>
@@ -28,8 +44,8 @@
 		<div class="resource-data-card__body">
 			<div class="resource-data-card__number">
 				<p class="resource-data-card__amount">{formattedTotal}</p>
-				{#if resourceContainer}
-					<p class="resource-data-card__unit">{$_(resourceContainer.payload.resourceUnit)}</p>
+				{#if currentResource}
+					<p class="resource-data-card__unit">{$_(currentResource.payload.resourceUnit)}</p>
 				{/if}
 			</div>
 			<p class="resource-data-card__label">{$_('total')}</p>
@@ -37,8 +53,8 @@
 	{/snippet}
 
 	{#snippet footer()}
-		{#if resourceContainer && resourceContainer.payload.title}
-			<span class="badge">{resourceContainer.payload.title}</span>
+		{#if currentResource?.payload.title}
+			<span class="badge">{currentResource.payload.title}</span>
 		{/if}
 	{/snippet}
 </Card>
