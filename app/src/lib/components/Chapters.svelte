@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -8,10 +7,14 @@
 		type Container,
 		containersByHierarchyLevel,
 		isGoalContainer,
+		isMeasureContainer,
+		isRuleContainer,
+		isSimpleMeasureContainer,
 		overlayKey,
 		payloadTypes,
 		predicates,
-		type ProgramContainer
+		type ProgramContainer,
+		titleForMeasureCollection
 	} from '$lib/models';
 
 	interface Props {
@@ -31,6 +34,14 @@
 		)
 	);
 
+	let measuresAndRules = $derived(
+		containersByHierarchyLevel(
+			containers.filter(
+				(c) => isMeasureContainer(c) || isSimpleMeasureContainer(c) || isRuleContainer(c)
+			)
+		)
+	);
+
 	let columns = $derived([
 		...Array.from(goals.entries()).map(([hierarchyLevel, containers]) => ({
 			addItemUrl: addItemUrl([
@@ -47,19 +58,48 @@
 			key: `goals-${hierarchyLevel}`,
 			title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
 		})),
-		{
-			addItemUrl: undefined,
-			containers: containers.filter(
-				(c) =>
-					[
-						payloadTypes.enum.measure,
-						payloadTypes.enum.rule,
-						payloadTypes.enum.simple_measure
-					].findIndex((payloadType) => payloadType === c.payload.type) > -1
-			),
-			key: 'implementation',
-			title: $_('payload_group.implementation')
-		}
+		...Array.from(measuresAndRules.entries())
+			.toSorted()
+			.map(([hierarchyLevel, containers]) => {
+				if (hierarchyLevel === 1) {
+					return {
+						addItemUrl: addItemUrl([
+							[overlayKey.enum.create, payloadTypes.enum.measure],
+							[overlayKey.enum.create, payloadTypes.enum.simple_measure],
+							[overlayKey.enum.create, payloadTypes.enum.rule],
+							['hierarchyLevel', String(hierarchyLevel)],
+							...(program
+								? [
+										[predicates.enum['is-part-of-program'], program.guid],
+										['managedBy', program.managed_by]
+									]
+								: [])
+						]),
+						containers,
+						key: `implementation-${hierarchyLevel}`,
+						title: titleForMeasureCollection(
+							containers.filter(isMeasureContainer),
+							[...measuresAndRules.keys()].length > 1 ? hierarchyLevel : 0
+						)
+					};
+				} else {
+					return {
+						addItemUrl: addItemUrl([
+							[overlayKey.enum.create, payloadTypes.enum.measure],
+							['hierarchyLevel', String(hierarchyLevel)],
+							...(program
+								? [
+										[predicates.enum['is-part-of-program'], program.guid],
+										['managedBy', program.managed_by]
+									]
+								: [])
+						]),
+						containers,
+						key: `implementation-${hierarchyLevel}`,
+						title: titleForMeasureCollection(containers.filter(isMeasureContainer), hierarchyLevel)
+					};
+				}
+			})
 	]);
 
 	function addItemUrl(init: string[][]) {

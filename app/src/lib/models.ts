@@ -2313,6 +2313,16 @@ export function isContainerWithFulfillmentDate(
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
+export type ContainerWithHierarchyLevel = Omit<AnyContainer, 'payload'> & {
+	payload: AnyPayload & { hierarchyLevel: number };
+};
+
+export function isContainerWithHierarchyLevel(
+	container: AnyContainer | NewContainer
+): container is ContainerWithHierarchyLevel {
+	return hasProperty(container.payload, 'hierarchyLevel');
+}
+
 export type ContainerWithName = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { name: string | undefined };
 };
@@ -2984,15 +2994,22 @@ export function createCopyOf(
 	return copy;
 }
 
-export function containersByHierarchyLevel(containers: GoalContainer[]) {
-	const containersByHierarchyLevel = new Map<number, GoalContainer[]>([[1, []]]);
+/**
+ * This function is used for creating columns for goals and measures based on
+ * their hierarchy level. Objects without a hierarchy level like rules
+ * might be mixed with measures in some boards. Those are assigned level 1.
+ */
+export function containersByHierarchyLevel<T extends Container>(containers: T[]) {
+	const containersByHierarchyLevel = new Map<number, T[]>([[1, []]]);
 
 	for (const container of containers) {
-		const hierarchyLevel = container.payload.hierarchyLevel;
+		const hierarchyLevel = isContainerWithHierarchyLevel(container)
+			? container.payload.hierarchyLevel
+			: 1;
 
 		if (containersByHierarchyLevel.has(hierarchyLevel)) {
 			containersByHierarchyLevel.set(hierarchyLevel, [
-				...(containersByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
+				...(containersByHierarchyLevel.get(hierarchyLevel) as T[]),
 				container
 			]);
 		} else {
