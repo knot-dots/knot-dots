@@ -310,12 +310,7 @@ const measureTypeValues = [
 	'measure_type.partial_project',
 	'measure_type.project',
 	'measure_type.sub_measure',
-	'measure_type.sub_project',
-	'measure_type.network_infrastructure',
-	'measure_type.digital_twin',
-	'measure_type.sensory',
-	'measure_type.digital_platform',
-	'measure_type.user_participation'
+	'measure_type.sub_project'
 ] as const;
 
 export const measureTypes = z.enum(measureTypeValues);
