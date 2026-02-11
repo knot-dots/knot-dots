@@ -3,12 +3,13 @@
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Table from '$lib/components/Table.svelte';
+	import { payloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<GoalsPage {data}>
+<GoalsPage {data} showSaveWorkspace savePayloadType={[payloadTypes.enum.goal]}>
 	<Table
 		columns={[
 			{ heading: $_('title'), key: 'title' },

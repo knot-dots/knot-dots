@@ -8,7 +8,12 @@
 	let { data }: PageProps = $props();
 </script>
 
-<TasksPage {data} filterBarInitiallyOpen>
+<TasksPage
+	{data}
+	filterBarInitiallyOpen
+	showSaveWorkspace
+	savePayloadType={[payloadTypes.enum.task]}
+>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.task]} />
 	<Help slug="tasks-catalog" />
 </TasksPage>

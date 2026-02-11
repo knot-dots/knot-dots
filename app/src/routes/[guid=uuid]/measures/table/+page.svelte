@@ -3,12 +3,17 @@
 	import Help from '$lib/components/Help.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
 	import Table from '$lib/components/Table.svelte';
+	import { payloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<MeasuresPage {data}>
+<MeasuresPage
+	{data}
+	showSaveWorkspace
+	savePayloadType={[payloadTypes.enum.measure, payloadTypes.enum.simple_measure]}
+>
 	<Table
 		columns={[
 			{ heading: $_('title'), key: 'title' },

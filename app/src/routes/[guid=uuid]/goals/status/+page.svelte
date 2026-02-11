@@ -5,14 +5,14 @@
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { goalStatus } from '$lib/models';
+	import { goalStatus, payloadTypes } from '$lib/models';
 	import { goalStatusBackgrounds, goalStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<GoalsPage {data}>
+<GoalsPage {data} showSaveWorkspace savePayloadType={[payloadTypes.enum.goal]}>
 	<Board>
 		{#each goalStatus.options as statusOption (statusOption)}
 			<BoardColumn
