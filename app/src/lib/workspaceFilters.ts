@@ -1,4 +1,4 @@
-import { payloadTypes, predicates, workspaceSort, type PayloadType } from '$lib/models';
+import { payloadTypes, predicates, workspaceSort, workspaceView, type PayloadType } from '$lib/models';
 
 export type WorkspaceFilters = {
 	audience: string[];
@@ -14,7 +14,16 @@ export type WorkspaceFilters = {
 	sort: typeof workspaceSort.enum[keyof typeof workspaceSort.enum];
 	terms: string;
 	topic: string[];
+	view: typeof workspaceView.enum[keyof typeof workspaceView.enum];
 };
+
+function viewFromUrl(url: URL): WorkspaceFilters['view'] {
+	const segments = url.pathname.split('/').filter(Boolean);
+	const last = segments[segments.length - 1];
+	return workspaceView.options.includes(last as any)
+		? (last as WorkspaceFilters['view'])
+		: workspaceView.enum.catalog;
+}
 
 export function filtersFromUrl(url: URL): WorkspaceFilters {
 	const params = url.searchParams;
@@ -32,7 +41,8 @@ export function filtersFromUrl(url: URL): WorkspaceFilters {
 		relatedTo: params.get('related-to') ?? undefined,
 		sort: (params.get('sort') as WorkspaceFilters['sort']) ?? workspaceSort.enum.alpha,
 		terms: params.get('terms') ?? '',
-		topic: params.getAll('topic')
+		topic: params.getAll('topic'),
+		view: (params.get('view') as WorkspaceFilters['view']) ?? viewFromUrl(url)
 	};
 }
 
@@ -48,6 +58,7 @@ export function filtersToQuery(filters: WorkspaceFilters): URLSearchParams {
 	if (filters.relatedTo) query.append('related-to', filters.relatedTo);
 	if (filters.sort && filters.sort !== workspaceSort.enum.alpha) query.append('sort', filters.sort);
 	if (filters.terms) query.append('terms', filters.terms);
+	if (filters.view && filters.view !== workspaceView.enum.catalog) query.append('view', filters.view);
 
 	return query;
 }

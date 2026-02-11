@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 	import { getContext } from 'svelte';
-	import { createDisclosure } from 'svelte-headlessui';
+	import { createDisclosure, createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { createPopperActions } from 'svelte-popperjs';
 	import Sort from '~icons/flowbite/sort-outline';
 	import StarOutline from '~icons/flowbite/star-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Close from '~icons/knotdots/close';
+	import Ellipsis from '~icons/knotdots/ellipsis';
 	import Filter from '~icons/knotdots/filter';
 	import Users from '~icons/knotdots/users';
 	import { goto, invalidate } from '$app/navigation';
@@ -31,6 +33,7 @@
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
+	import SaveWorkspaceButton from '$lib/components/SaveWorkspaceButton.svelte';
 	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -43,7 +46,8 @@
 		isSimpleMeasureContainer,
 		overlayKey,
 		overlayURL,
-		paramsFromFragment
+		paramsFromFragment,
+		type PayloadType
 	} from '$lib/models';
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
@@ -66,6 +70,8 @@
 		search?: boolean;
 		sortOptions?: [string, string][];
 		workspaceOptions?: { label: string; value: string }[];
+		showSaveWorkspace?: boolean;
+		savePayloadType?: PayloadType[];
 	}
 
 	let {
@@ -78,7 +84,9 @@
 			[$_('sort_modified'), 'modified']
 		],
 		workspaceOptions,
-		categoryOptions = null
+		categoryOptions = null,
+		showSaveWorkspace = false,
+		savePayloadType = []
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
@@ -89,11 +97,28 @@
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
+	const workspaceMenu = createPopover({
+		label: $_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })
+	});
+
+	const [workspaceMenuRef, workspaceMenuContent] = createPopperActions({
+		placement: 'bottom-end',
+		strategy: 'fixed'
+	});
+
+	const workspaceMenuOpts = {
+		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+	};
+
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
-	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
+	const currentSortParam = $derived.by(() => {
+		const params = overlay ? paramsFromFragment(page.url) : page.url.searchParams;
+		return params.get('sort') ?? 'alpha';
+	});
+
 
 	let activeFilters = $derived.by(() => {
 		let count = 0;
@@ -118,19 +143,23 @@
 		selectedContext.payload.favorite.findIndex((f) => f.href === href) > -1
 	);
 
-	function applySort() {
+	function applySort(event: Event) {
+		const nextSort =
+			event.currentTarget && 'value' in event.currentTarget
+				? String((event.currentTarget as HTMLInputElement).value)
+				: currentSortParam;
 		if (overlay) {
 			const query = new URLSearchParams(page.url.hash.substring(1));
 			query.delete('sort');
-			if (selectedSort != 'alpha') {
-				query.append('sort', selectedSort);
+			if (nextSort != 'alpha') {
+				query.append('sort', nextSort);
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
 			const query = new URLSearchParams(page.url.searchParams);
 			query.delete('sort');
-			if (selectedSort != 'alpha') {
-				query.append('sort', selectedSort);
+			if (nextSort != 'alpha') {
+				query.append('sort', nextSort);
 			}
 			goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
 		}
@@ -351,6 +380,36 @@
 					<FilterDropDown {key} {options} label={labelOverride} />
 				{/if}
 			{/each}
+
+			{#if showSaveWorkspace}
+				<div class="filterbar-actions dropdown" use:workspaceMenuRef>
+					<button
+						class="dropdown-button dropdown-button--command"
+						type="button"
+						use:workspaceMenu.button
+					>
+						<Ellipsis />
+						<span class="is-visually-hidden">
+							{$_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })}
+						</span>
+					</button>
+
+					{#if $workspaceMenu.expanded}
+						<fieldset
+							class="dropdown-panel"
+							use:workspaceMenu.panel
+							use:workspaceMenuContent={workspaceMenuOpts}
+						>
+							<div class="workspace-menu">
+								<SaveWorkspaceButton
+									mode="create"
+									defaultPayloadType={savePayloadType}
+								/>
+							</div>
+						</fieldset>
+					{/if}
+				</div>
+			{/if}
 		</fieldset>
 	{:else if $sortBar.expanded}
 		<fieldset aria-labelledby="legend" use:sortBar.panel>
@@ -359,7 +418,12 @@
 			{#each sortOptions as [label, value] (value)}
 				{@const Icon = sortIcons.get(value)}
 				<label class="sort-option">
-					<input onchange={applySort} type="radio" {value} bind:group={selectedSort} />
+					<input
+						onchange={applySort}
+						type="radio"
+						{value}
+						checked={value === currentSortParam}
+					/>
 					<Icon />
 					{label}
 				</label>
@@ -446,8 +510,9 @@
 		font-size: 0.875rem;
 		gap: 0.25rem;
 		justify-content: safe center;
-		overflow: auto;
-		padding: 0.5rem 1rem;
+		overflow: visible;
+		padding: 0.5rem 4rem 0.5rem 1rem;
+		position: relative;
 	}
 
 	.filter-and-sort fieldset > :global(*) {
@@ -467,6 +532,16 @@
 
 	.filter-and-sort button:first-of-type {
 		margin-right: 0.75rem;
+	}
+
+	.filterbar-actions {
+		right: 1rem;
+		position: absolute;
+	}
+
+	.workspace-menu {
+		display: flex;
+		padding: 0.5rem 0.75rem;
 	}
 
 	.indicator {

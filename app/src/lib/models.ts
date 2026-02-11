@@ -26,7 +26,8 @@ export const overlayKey = z.enum([
 	'tasks',
 	'teasers',
 	'view',
-	'view-help'
+	'view-help',
+	'workspace'
 ]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;
@@ -600,6 +601,10 @@ export const visibility = z.enum(['creator', 'members', 'organization', 'public'
 const workspaceSortValues = ['alpha', 'modified', 'priority'] as const;
 
 export const workspaceSort = z.enum(workspaceSortValues);
+
+const workspaceViewValues = ['catalog', 'table', 'level', 'status'] as const;
+
+export const workspaceView = z.enum(workspaceViewValues);
 
 export const boards = z.enum([
 	'board.indicators',
@@ -1472,7 +1477,8 @@ const workspaceFilterPayload = z
 		relatedTo: z.string().uuid().optional(),
 		sort: workspaceSort.default(workspaceSort.enum.alpha),
 		terms: z.string().default(''),
-		topic: z.array(topics).default([])
+		topic: z.array(topics).default([]),
+		view: workspaceView.default(workspaceView.enum.catalog)
 	})
 	.strict();
 
@@ -2918,6 +2924,9 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
+				if (c.payload.type === payloadTypes.enum.workspace) {
+					return true;
+				}
 				const included = url.searchParams.has('includedChanged')
 					? url.searchParams.getAll('included')
 					: ['subordinate_organizational_units'];
@@ -3112,8 +3121,13 @@ export function computeFacetCount(
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
+			const foci = facets.get(key) as Map<string, number>;
+			if (key === 'payloadType') {
+				const normalized = normalizeValue(container.payload.type);
+				foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+				continue;
+			}
 			if (key in container.payload) {
-				const foci = facets.get(key) as Map<string, number>;
 				if (Array.isArray(container.payload[key as keyof typeof container.payload])) {
 					for (const value of container.payload[key as keyof typeof container.payload]) {
 						const normalized = normalizeValue(value);

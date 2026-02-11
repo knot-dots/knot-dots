@@ -5,6 +5,8 @@
 	import Check from '~icons/flowbite/check-circle-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { env } from '$env/dynamic/public';
+	import Dialog from '$lib/components/Dialog.svelte';
+	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import {
 		containerOfType,
 		etag,
@@ -79,7 +81,6 @@
 
 				const container = (await created.json()) as WorkspaceContainer;
 				dialogRef.close();
-				goto(`/${page.data.currentOrganization.guid}/workspace/${container.guid}`);
 			} else if (workspace) {
 				const updatedPayload = {
 					...workspace.payload,
@@ -123,31 +124,25 @@
 	{/if}
 </button>
 
-<dialog bind:this={dialogRef} class="dialog dialog--narrow">
-	<form method="dialog" class="dialog__body" on:submit|preventDefault={save}>
-		<header class="dialog__header">
-			<h2>
-				{mode === 'create'
-					? $_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })
-					: $_('workspace.save_changes', { default: 'Änderungen speichern' })}
-			</h2>
-		</header>
+<Dialog bind:dialog={dialogRef}>
+	<form method="dialog" class="workspace-dialog" on:submit|preventDefault={save}>
+		<h2>
+			{mode === 'create'
+				? $_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })
+				: $_('workspace.save_changes', { default: 'Änderungen speichern' })}
+		</h2>
 
-		<label class="field">
+		<label class="field" for="workspace-title">
 			<span>{$_('workspace.title', { default: 'Titel' })}</span>
-			<input bind:value={title} required />
+			<input id="workspace-title" bind:value={title} required />
 		</label>
 
-		<label class="field">
-			<span>{$_('workspace.description', { default: 'Beschreibung für Karte' })}</span>
-			<textarea bind:value={description} rows={3}></textarea>
-		</label>
-
-		<label class="field checkbox">
-			<input bind:checked={favorite} type="checkbox" />
-			<span>{$_('workspace.favorite', { default: 'Als Favorit markieren' })}</span>
-		</label>
-
+		<EditableFormattedText
+			editable
+			label={$_('workspace.description', { default: 'Beschreibung' })}
+			bind:value={description}
+		/>
+		
 		{#if errorMessage}
 			<p class="error">{errorMessage}</p>
 		{/if}
@@ -161,29 +156,45 @@
 			</button>
 		</footer>
 	</form>
-</dialog>
+</Dialog>
 
 <style>
-	dialog {
-		max-width: 30rem;
+	.workspace-dialog {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.workspace-dialog h2 {
+		color: var(--color-gray-900);
+		font-size: 1.25rem;
+		margin: 0;
 	}
 
 	.field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
-		margin-top: 1rem;
+		gap: 0.375rem;
 	}
 
-	.field.checkbox {
-		align-items: center;
-		flex-direction: row;
-		gap: 0.5rem;
-	}
-
-	input,
-	textarea {
+	input {
+		border: 1px solid var(--color-gray-200);
+		border-radius: 6px;
+		color: var(--color-gray-700);
+		padding: 0.5rem 0.625rem;
 		width: 100%;
+	}
+
+
+	.dialog__footer {
+		display: flex;
+		gap: 0.5rem;
+		justify-content: flex-end;
+		margin-top: 0.5rem;
+	}
+
+	.workspace-dialog :global(.details-section) {
+		padding: 0;
 	}
 
 	.error {
