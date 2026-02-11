@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload blob report
         uses: actions/upload-artifact@v4
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         with:
           name: blob-report-${{ matrix.shardIndex }}
           path: ./app/blob-report
@@ -118,7 +118,7 @@ jobs:
 
   merge-reports:
     needs: test
-    if: !cancelled()
+    if: ${{ !cancelled() }}
     timeout-minutes: 10
     runs-on: ubuntu-latest
     defaults:
