@@ -3018,7 +3018,7 @@ export function titleForProgramCollection(containers: ProgramContainer[]) {
 	}
 }
 
-export function computeColumnTitleForGoals(containers: GoalContainer[], hierarchyLevel: number) {
+export function titleForGoalCollection(containers: GoalContainer[], hierarchyLevel: number) {
 	const goalTypes = new Set(containers.map((c) => c.payload.goalType));
 
 	if (goalTypes.size == 1) {

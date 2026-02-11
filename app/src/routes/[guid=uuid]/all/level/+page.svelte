@@ -9,7 +9,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		computeColumnTitleForGoals,
+		titleForGoalCollection,
 		containersByHierarchyLevel,
 		isGoalContainer,
 		isProgramContainer,
@@ -49,10 +49,7 @@
 				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
 				containers: containers.slice(0, browser ? undefined : 10),
 				key: `goals-${hierarchyLevel}`,
-				title: computeColumnTitleForGoals(
-					containers,
-					[...goals.keys()].length > 1 ? hierarchyLevel : 0
-				)
+				title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
 			})),
 		{
 			addItemUrl: '#create=measure&create=rule&create=simple_measure',

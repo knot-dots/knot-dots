@@ -4,7 +4,7 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		computeColumnTitleForGoals,
+		titleForGoalCollection,
 		containersByHierarchyLevel,
 		type IndicatorContainer,
 		isEffectContainer,
@@ -54,10 +54,7 @@
 					: undefined,
 				containers: containers,
 				key: `goals-${hierarchyLevel}`,
-				title: computeColumnTitleForGoals(
-					containers,
-					[...goals.keys()].length > 1 ? hierarchyLevel : 0
-				)
+				title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
 			})),
 		{
 			addItemUrl: measure
