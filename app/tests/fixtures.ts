@@ -3,16 +3,20 @@ import { locale } from 'svelte-i18n';
 import {
 	type AnyContainer,
 	containerOfType,
+	type EffectContainer,
 	etag,
 	type GoalContainer,
+	type IndicatorContainer,
 	type MeasureContainer,
 	type NewContainer,
+	type ObjectiveContainer,
 	type OrganizationalUnitContainer,
 	type OrganizationContainer,
 	payloadTypes,
 	type Predicate,
 	predicates,
 	type ProgramContainer,
+	quantities,
 	type ReportContainer,
 	type ResourceV2Container,
 	type TaskCollectionContainer,
@@ -32,7 +36,10 @@ type MyWorkerFixtures = {
 	testOrganizationalUnit: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
+	testIndicator: IndicatorContainer;
+	testObjective: ObjectiveContainer;
 	testMeasure: MeasureContainer;
+	testEffect: EffectContainer;
 	testResourceV2: ResourceV2Container;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
@@ -45,7 +52,7 @@ async function createContainer(context: BrowserContext, newContainer: NewContain
 	const response = await context.request.post('/container', { data: newContainer });
 
 	if (!response.ok()) {
-		throw new Error(`Failed to create ${newContainer.payload.type}: ${response.status()}}`);
+		throw new Error(`Failed to create ${newContainer.payload.type}: ${await response.text()}`);
 	}
 
 	return response.json();
@@ -209,6 +216,68 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
+	testIndicator: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newIndicator = containerOfType(
+				payloadTypes.enum.indicator,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as IndicatorContainer;
+			const testIndicator = await createContainer(adminContext, {
+				...newIndicator,
+				payload: {
+					...newIndicator.payload,
+					title: `Test Indicator ${workerInfo.workerIndex}`,
+					indicatorCategory: ['indicator_category.custom'],
+					unit: 'unit.percent',
+					quantity: quantities.enum['quantity.custom']
+				} as IndicatorContainer['payload']
+			});
+
+			await use(testIndicator);
+
+			await deleteContainer(adminContext, testIndicator);
+		},
+		{ scope: 'worker' }
+	],
+	testObjective: [
+		async ({ adminContext, testOrganization, testGoal, testIndicator }, use, workerInfo) => {
+			const newObjective = containerOfType(
+				payloadTypes.enum.objective,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ObjectiveContainer;
+			const testObjective = await createContainer(adminContext, {
+				...newObjective,
+				payload: {
+					...newObjective.payload,
+					title: `Test Objective ${workerInfo.workerIndex}`,
+					iooiType: 'iooi.output'
+				} as ObjectiveContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testGoal.guid
+					},
+					{
+						position: 1,
+						predicate: predicates.enum['is-objective-for'],
+						object: testIndicator.guid
+					}
+				]
+			});
+
+			await use(testObjective);
+
+			await deleteContainer(adminContext, testObjective);
+		},
+		{ scope: 'worker' }
+	],
 	testMeasure: [
 		async ({ adminContext, testOrganization, testProgram }, use, workerInfo) => {
 			const newMeasure = containerOfType(
@@ -236,6 +305,42 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testMeasure);
 
 			await deleteContainer(adminContext, testMeasure);
+		},
+		{ scope: 'worker' }
+	],
+	testEffect: [
+		async ({ adminContext, testOrganization, testMeasure, testIndicator }, use, workerInfo) => {
+			const newEffect = containerOfType(
+				payloadTypes.enum.effect,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as EffectContainer;
+			const testEffect = await createContainer(adminContext, {
+				...newEffect,
+				payload: {
+					...newEffect.payload,
+					title: `Test Effect ${workerInfo.workerIndex}`,
+					iooiType: 'iooi.output'
+				} as EffectContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testMeasure.guid
+					},
+					{
+						position: 1,
+						predicate: predicates.enum['is-measured-by'],
+						object: testIndicator.guid
+					}
+				]
+			});
+
+			await use(testEffect);
+
+			await deleteContainer(adminContext, testEffect);
 		},
 		{ scope: 'worker' }
 	],
