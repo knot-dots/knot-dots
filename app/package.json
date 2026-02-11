@@ -11,7 +11,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
 		"lint": "prettier --check ./src ./tests && eslint --concurrency=auto ./src ./tests",
-		"format": "prettier --write ./src ./tests"
+		"format": "prettier --write ./src ./tests",
+		"fix": "eslint --fix --concurrency=auto ./src ./tests"
 	},
 	"type": "module",
 	"dependencies": {
@@ -61,6 +62,8 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.14.0",
 		"globals": "^17.0.0",
+		"eslint-import-resolver-typescript": "^4.4.4",
+		"eslint-plugin-import": "^2.32.0",
 		"leaflet": "^1.9.4",
 		"nodemailer": "^7.0.12",
 		"postcss": "^8.5.6",
