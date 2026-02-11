@@ -54,7 +54,10 @@
 					: undefined,
 				containers: containers,
 				key: `goals-${hierarchyLevel}`,
-				title: computeColumnTitleForGoals(containers)
+				title: computeColumnTitleForGoals(
+					containers,
+					[...goals.keys()].length > 1 ? hierarchyLevel : 0
+				)
 			})),
 		{
 			addItemUrl: measure

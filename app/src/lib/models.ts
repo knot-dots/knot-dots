@@ -3008,39 +3008,63 @@ export function titleForProgramCollection(containers: ProgramContainer[]) {
 
 	if (programTypes.size == 1) {
 		const programType = programTypes.values().next().value;
-		return unwrapFunctionStore(_)(`${programType}.plural`);
+		if (programType === undefined) {
+			return unwrapFunctionStore(_)('programs');
+		} else {
+			return unwrapFunctionStore(_)(`${programType}.plural`);
+		}
 	} else {
 		return unwrapFunctionStore(_)('programs');
 	}
 }
 
-export function computeColumnTitleForGoals(containers: GoalContainer[]) {
+export function computeColumnTitleForGoals(containers: GoalContainer[], hierarchyLevel: number) {
 	const goalTypes = new Set(containers.map((c) => c.payload.goalType));
 
 	if (goalTypes.size == 1) {
 		const goalType = goalTypes.values().next().value;
-		return unwrapFunctionStore(_)(goalType ? `${goalType}.plural` : 'goals');
-	} else if (goalTypes.size >= 1) {
+		if (goalType === undefined) {
+			if (hierarchyLevel) {
+				return unwrapFunctionStore(_)('goals_by_hierarchy_level', {
+					values: { level: hierarchyLevel }
+				});
+			} else {
+				return unwrapFunctionStore(_)('goals');
+			}
+		} else {
+			return unwrapFunctionStore(_)(goalType ? `${goalType}.plural` : 'goals');
+		}
+	} else if (hierarchyLevel) {
 		return unwrapFunctionStore(_)('goals_by_hierarchy_level', {
-			values: { level: containers[0].payload.hierarchyLevel }
+			values: { level: hierarchyLevel }
 		});
 	} else {
 		return unwrapFunctionStore(_)('goals');
 	}
 }
 
-export function titleForMeasureCollection(containers: MeasureContainer[]) {
+export function titleForMeasureCollection(containers: MeasureContainer[], hierarchyLevel: number) {
 	const measureTypes = new Set(containers.map(({ payload }) => payload.measureType));
 
 	if (measureTypes.size == 1) {
 		const measureType = measureTypes.values().next().value;
-		return unwrapFunctionStore(_)(`${measureType}.plural`);
-	} else if (measureTypes.size >= 1) {
-		return unwrapFunctionStore(_)('measures_by_hierarchy_level', {
-			values: { level: containers[0].payload.hierarchyLevel }
+		if (measureType === undefined) {
+			if (hierarchyLevel) {
+				return unwrapFunctionStore(_)('measure_by_hierarchy_level', {
+					values: { level: hierarchyLevel }
+				});
+			} else {
+				return unwrapFunctionStore(_)('measures');
+			}
+		} else {
+			return unwrapFunctionStore(_)(`${measureType}.plural`);
+		}
+	} else if (hierarchyLevel) {
+		return unwrapFunctionStore(_)('measure_by_hierarchy_level', {
+			values: { level: hierarchyLevel }
 		});
 	} else {
-		return unwrapFunctionStore(_)('measures');
+		return unwrapFunctionStore(_)('payload_group.implementation');
 	}
 }
 

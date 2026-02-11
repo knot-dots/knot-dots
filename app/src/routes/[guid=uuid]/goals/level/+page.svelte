@@ -23,7 +23,10 @@
 				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
 				containers: containers.slice(0, browser ? undefined : 10),
 				key: `goals-${hierarchyLevel}`,
-				title: computeColumnTitleForGoals(containers)
+				title: computeColumnTitleForGoals(
+					containers,
+					[...goals.keys()].length > 1 ? hierarchyLevel : 0
+				)
 			}))
 	);
 </script>
